@@ -1,0 +1,140 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { beepSuccess, beepError, beepNotify, unlockAudio, notify, getNotifyStatus } from '@/components'
+import { speak, stopSpeak, unlockVoice } from '@/components'
+import Button from '@/components/basic/Button.vue'
+import Card from '@/components/data/Card.vue'
+
+const audioUnlocked = ref(false)
+const voiceUnlocked = ref(false)
+const speaking = ref(false)
+const log = ref<string[]>([])
+const notifyPerm = ref(getNotifyStatus())
+
+function addLog(msg: string) {
+  log.value.unshift(`[${new Date().toLocaleTimeString()}] ${msg}`)
+  if (log.value.length > 10) log.value.pop()
+}
+
+function doUnlockAudio() {
+  unlockAudio()
+  audioUnlocked.value = true
+  addLog('蜂鸣音 AudioContext 已解锁')
+}
+
+function doUnlockVoice() {
+  unlockVoice()
+  voiceUnlocked.value = true
+  addLog('语音播报 SpeechSynthesis 已解锁')
+}
+
+function doBeep(type: 'success' | 'error' | 'notify') {
+  if (!audioUnlocked.value) doUnlockAudio()
+  if (type === 'success') beepSuccess()
+  if (type === 'error') beepError()
+  if (type === 'notify') beepNotify()
+  addLog(`蜂鸣音：${type}`)
+}
+
+function doSpeak(text: string) {
+  if (!voiceUnlocked.value) doUnlockVoice()
+  speaking.value = true
+  speak(text)
+  addLog(`播报：${text}`)
+  // 语音播报是异步的，延迟检测完成状态
+  setTimeout(() => { speaking.value = false; addLog('播报完成') }, 2000)
+}
+
+function doStopSpeak() {
+  stopSpeak()
+  speaking.value = false
+  addLog('停止播报')
+}
+
+// ---- 系统通知 ----
+async function doNotify(title: string, bodyOrOptions?: string | { body?: string; url?: string; autoClose?: number; onClick?: () => void }) {
+  await notify(title, bodyOrOptions ?? '')
+  notifyPerm.value = getNotifyStatus()
+  addLog(`系统通知：${title}`)
+}
+
+function doNotifyUrl() {
+  doNotify('打开百度', { body: '点击跳转', url: 'https://www.baidu.com', autoClose: 5000 })
+}
+
+function doNotifyClick() {
+  doNotify('点击测试', { body: '点击通知看效果', onClick: () => alert('通知被点击了！') })
+}
+</script>
+
+<template>
+  <div class="demo">
+    <h2 class="demo-title">通知反馈（蜂鸣 + 语音 + 系统通知）</h2>
+    <p class="demo-desc">蜂鸣音（操作反馈音效）、语音播报（TTS 朗读文字）、系统通知（Windows/macOS 通知中心）。浏览器要求用户交互后才能播放音频。</p>
+
+    <Card title="蜂鸣音（Beep）" style="margin-bottom: 24px">
+      <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:12px">
+        ⚠️ 浏览器限制：首次播放前需用户交互。点击「解锁音频」按钮后才能播放。
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <Button text="解锁音频" variant="ghost" size="sm" icon="volume-high" @click="doUnlockAudio" :disabled="audioUnlocked" />
+        <Button text="成功音" variant="primary" size="sm" @click="doBeep('success')" />
+        <Button text="错误音" variant="danger" size="sm" @click="doBeep('error')" />
+        <Button text="通知音" variant="secondary" size="sm" @click="doBeep('notify')" />
+      </div>
+    </Card>
+
+    <Card title="语音播报（Voice / TTS）" style="margin-bottom: 24px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <Button text="解锁语音" variant="ghost" size="sm" icon="megaphone" @click="doUnlockVoice" :disabled="voiceUnlocked" />
+        <Button text="播报：操作成功" variant="primary" size="sm" @click="doSpeak('操作成功')" :disabled="speaking" />
+        <Button text="播报：请注意" variant="secondary" size="sm" @click="doSpeak('请注意，有新订单到达')" :disabled="speaking" />
+        <Button text="播报：错误" variant="danger" size="sm" @click="doSpeak('操作失败，请重试')" :disabled="speaking" />
+        <Button text="停止" variant="outline" size="sm" @click="doStopSpeak" :disabled="!speaking" />
+      </div>
+    </Card>
+
+    <Card title="系统通知（Notify）" style="margin-bottom: 24px">
+      <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:12px">
+        Windows / macOS 通知中心。首次调用 notify() 会弹权限请求，授权后永久生效。当前权限：<code>{{ notifyPerm }}</code>
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <Button text="基础通知" variant="primary" size="sm" icon="bell-ring" @click="doNotify('扫码成功', 'S12345678901')" />
+        <Button text="带 URL 通知" variant="secondary" size="sm" @click="doNotifyUrl" />
+        <Button text="点击回调通知" variant="outline" size="sm" @click="doNotifyClick" />
+      </div>
+    </Card>
+
+    <Card title="操作日志">
+      <div v-if="log.length" style="font-size:13px;font-family:monospace;line-height:1.8">
+        <div v-for="(item, i) in log" :key="i" style="color:var(--color-text-muted)">{{ item }}</div>
+      </div>
+      <p v-else style="font-size:13px;color:var(--color-text-muted)">暂无操作记录</p>
+    </Card>
+
+    <Card title="API" style="margin-top:24px">
+      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+        <thead><tr style="border-bottom:2px solid var(--color-border);text-align:left;">
+          <th style="padding:6px 8px;">函数</th><th style="padding:6px 8px;">来源</th><th style="padding:6px 8px;">说明</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>unlockAudio()</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">useBeep</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">解锁 AudioContext</td></tr>
+          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>beepSuccess()</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">useBeep</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">成功提示音</td></tr>
+          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>beepError()</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">useBeep</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">错误提示音</td></tr>
+          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>beepNotify()</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">useBeep</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">通知提示音</td></tr>
+          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>unlockVoice()</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">useVoice</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">解锁 SpeechSynthesis</td></tr>
+          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>speak(text, onEnd?)</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">useVoice</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">朗读文字，播完后回调</td></tr>
+          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>stopSpeak()</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">useVoice</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">停止播报</td></tr>
+          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>notify(title, bodyOrOptions?)</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">useNotify</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">发送系统通知，首次自动请求权限。支持 <code>{ body, url, autoClose, onClick }</code></td></tr>
+          <tr><td style="padding:6px 8px;"><code>getNotifyStatus()</code></td><td style="padding:6px 8px;">useNotify</td><td style="padding:6px 8px;">返回 'granted' | 'denied' | 'prompt' | 'unsupported'</td></tr>
+        </tbody>
+      </table>
+    </Card>
+  </div>
+</template>
+
+<style scoped>
+.demo-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.demo-desc { color: var(--color-text-muted); margin-bottom: 24px; font-size: 14px; line-height: 1.6; }
+code { background: var(--color-bg-alt); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+</style>

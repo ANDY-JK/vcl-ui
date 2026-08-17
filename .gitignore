@@ -1,0 +1,45 @@
+# mkcert 开发证书（仅本机有效）
+/key.pem
+/cert.pem
+
+# Playwright 调试产物（MCP 日志 / CLI 快照）
+/.playwright-mcp/
+/.playwright-cli/
+
+# 测试生成物（生成器保留在 tests/fixtures/gen-fake-cam.mjs，大体积产物不入库）
+tests/fixtures/*.y4m
+
+# Superpowers 缓存
+/.superpowers/
+
+# 本地环境变量（含密钥，禁止提交）
+.env.local
+.env.*.local
+
+# 构建产物
+dist/
+
+# 依赖目录（已被跟踪，清理历史后禁止再进版本控制）
+node_modules/
+
+# 开发工具缓存（不应进版本控制）
+.serena/
+.codegraph/
+.claude/
+.mimosa/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# IDE 目录
+.vscode/
+.idea/
+
+# 日志文件
+*.log
+
+# TypeScript 构建信息
+*.tsbuildinfo
+evidence/
+scratch/

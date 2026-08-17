@@ -1,0 +1,10 @@
+/** 表单组件按需导入入口 */
+export { default as Input } from './Input.vue'
+export { default as Select } from './Select.vue'
+export { default as Group } from './Group.vue'
+export { default as IconPicker } from './IconPicker.vue'
+export { default as Upload } from './Upload.vue'
+export { default as CameraCapture } from './CameraCapture.vue'
+export { useBarcodeScanner, DEFAULT_CAPTURE_REGION } from './useBarcodeScanner'
+export type { BarcodeScannerOptions, CaptureRegion } from './useBarcodeScanner'
+export type { DropZoneConfig, DropZoneFile } from './types'

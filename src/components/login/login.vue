@@ -1,0 +1,501 @@
+<!-- ⛔ 保护 — 登录页模板，禁止：clamp() → px，表单结构/校验逻辑，slot 层级
+     需我确认：login 接口签名、社交登录按钮布局 -->
+<template>
+  <div class="login-page" :style="{ minHeight: props.minHeight }">
+    <div class="floating-shapes">
+      <div class="shape" />
+      <div class="shape" />
+      <div class="shape" />
+      <div class="shape" />
+    </div>
+
+    <div class="login-container" :style="{ '--login-max-width': props.maxWidth }">
+      <!-- 左侧品牌面板 -->
+      <div v-if="!props.hideBrand" class="login-left">
+        <div class="brand-logo">
+          <div class="logo-icon">
+            <slot name="logo">
+              <IconSvg :type="tenantMode ? 'house' : 'layout-dashboard'" size="lg" color="#fff" />
+            </slot>
+          </div>
+          <h2>{{ brandTitle || (tenantMode ? '租户业务管理平台' : 'SaaS 管理系统') }}</h2>
+          <p>{{ brandSubtitle || (tenantMode ? '由管理员分配账号使用' : '现代化企业级业务管理平台，助力数字化转型') }}</p>
+        </div>
+
+        <ul v-if="features && features.length" class="features-list">
+          <li v-for="f in features" :key="f">{{ f }}</li>
+        </ul>
+        <ul v-else class="features-list">
+          <template v-if="tenantMode">
+            <li>智能数据录入与管理</li>
+            <li>灵活的业务流程协作</li>
+            <li>高效的报表导出</li>
+            <li>实时数据看板监控</li>
+          </template>
+          <template v-else>
+            <li>智能数据分析与可视化</li>
+            <li>灵活的权限与租户管理</li>
+            <li>高效的数据导入导出</li>
+            <li>实时监控与审计日志</li>
+          </template>
+        </ul>
+      </div>
+
+      <!-- 右侧表单面板 -->
+      <div class="login-right">
+        <div class="login-header">
+          <h1><slot name="welcome-title">欢迎回来</slot></h1>
+          <p><slot name="subtitle">{{ tenantMode ? '请登录您的工作账号' : '请登录您的账户以继续' }}</slot></p>
+        </div>
+
+        <div class="login-form">
+          <Input
+            v-model="form.username"
+            :label="usernameLabel"
+            type="text"
+            icon="user"
+            autocomplete="username"
+            :rules="usernameRules"
+            :hint="usernameHint"
+            @keyup="handleEnter"
+          />
+
+          <Input
+            v-model="form.password"
+            :label="passwordLabel"
+            type="password"
+            icon="lock"
+            autocomplete="current-password"
+            :rules="passwordRules"
+            @keyup="handleEnter"
+          />
+
+          <div class="form-options">
+            <label class="remember-me" @click="rememberMe = !rememberMe">
+              <span class="checkbox-icon" :class="{ checked: rememberMe }">
+                <IconSvg v-if="rememberMe" type="circle-check" size="sm" />
+              </span>
+              <span><slot name="remember-text">记住用户名</slot></span>
+            </label>
+            <a
+              v-if="showForgotPassword && !tenantMode"
+              href="javascript:;"
+              class="forgot-password"
+              @click="emit('forgot-password')"
+            ><slot name="forgot-text">忘记密码？</slot></a>
+          </div>
+
+          <Button
+            :text="submitText"
+            variant="primary"
+            :loading="internalLoading || loading || externalLoading"
+            block
+            @click="handleSubmit"
+          />
+
+          <Toast
+            v-if="displayError"
+            variant="inline"
+            :type="errorType"
+            :message="displayError"
+            closable
+          />
+
+          <template v-if="showSocialLogin && !tenantMode">
+            <Divider :text="socialDividerText" />
+
+            <div class="social-login">
+              <div class="social-btn" title="手机号登录" @click="emit('social-login', 'phone')">
+                <IconSvg type="house" size="md" class="social-icon" />
+                <span class="social-text"><slot name="social-phone-text">手机号</slot></span>
+              </div>
+              <div class="social-btn" title="微信扫码登录" @click="emit('social-login', 'wechat')">
+                <IconSvg type="user" size="md" class="social-icon" />
+                <span class="social-text">微信</span>
+              </div>
+              <div class="social-btn" title="企业SSO登录" @click="emit('social-login', 'sso')">
+                <IconSvg type="key" size="md" class="social-icon" />
+                <span class="social-text">SSO</span>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="footer-text">
+          <template v-if="tenantMode">
+            <span><slot name="tenant-footer-text">由管理员分配账号</slot></span>
+          </template>
+          <template v-else>
+            <template v-if="showRegister">
+              <slot name="register-prompt">还没有账户？</slot><a href="javascript:;" class="register-link" @click="emit('register')"><slot name="register-text">立即注册</slot></a>
+            </template>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
+import Input from '@/components/form/Input.vue'
+import Button from '@/components/basic/Button.vue'
+import IconSvg from '@/components/basic/IconSvg.vue'
+import Toast from '@/components/feedback/Toast.vue'
+import Divider from '@/components/data/Divider.vue'
+// storageGet/Set/Delete 实际走 localStorage（indexedDB.ts 统一抽象），非 IndexedDB
+import { storageGet, storageSet, storageDelete } from '@/components/storage/indexedDB'
+
+// ======================== Props ========================
+
+const props = withDefaults(defineProps<{
+  // === 布局 ===
+  /** 容器最大宽度，CSS 值，默认 960px */
+  maxWidth?: string
+  /** 强制隐藏左侧品牌面板 */
+  hideBrand?: boolean
+  /** 容器最小高度，CSS 值，默认 100% */
+  minHeight?: string
+
+  // === 内容 ===
+  /** 租户登录模式 */
+  tenantMode?: boolean
+  /** 外部控制加载态（如 API 请求中） */
+  loading?: boolean
+  /** 外部注入错误/提示信息 */
+  error?: string
+  /** 最大尝试次数，0 禁用锁定 */
+  maxAttempts?: number
+  /** 锁定分钟数 */
+  lockMinutes?: number
+  /** 品牌标题 */
+  brandTitle?: string
+  /** 品牌副标题 */
+  brandSubtitle?: string
+  /** 自定义特性列表 */
+  features?: string[]
+  /** 是否显示社交登录 */
+  showSocialLogin?: boolean
+  /** 是否显示忘记密码入口 */
+  showForgotPassword?: boolean
+  /** 是否显示注册入口 */
+  showRegister?: boolean
+}>(), {
+  maxWidth: '960px',
+  hideBrand: false,
+  minHeight: '100%',
+  tenantMode: false,
+  loading: false,
+  maxAttempts: 5,
+  lockMinutes: 15,
+  showSocialLogin: true,
+  showForgotPassword: true,
+  showRegister: true,
+})
+
+// ======================== Emits ========================
+
+const emit = defineEmits<{
+  /** 提交登录 */
+  submit: [payload: { username: string; password: string; rememberMe: boolean }]
+  /** 点击忘记密码 */
+  'forgot-password': []
+  /** 点击注册 */
+  register: []
+  /** 点击社交登录按钮 */
+  'social-login': [provider: string]
+}>()
+
+// ======================== 表单 & 校验 ========================
+
+const form = reactive({ username: '', password: '' })
+const rememberMe = ref(false)
+const externalLoading = computed(() => props.loading)
+/** 内部提交中状态：点击后立即反馈，防重复提交 */
+const internalLoading = ref(false)
+
+const usernameLabel = '用户名'
+const passwordLabel = '密码'
+const submitText = '登 录'
+const socialDividerText = '其他登录方式'
+
+const usernameHint = computed(() =>
+  form.username.length > 0 && form.username.length < 3 ? '用户名至少 3 个字符' : ''
+)
+
+const usernameRules = [
+  (v: string) => v.trim() ? undefined : '请输入用户名',
+  (v: string) => v.length >= 3 ? undefined : '用户名至少 3 个字符',
+]
+
+const passwordRules = [
+  (v: string) => v ? undefined : '请输入密码',
+  (v: string) => v.length >= 6 ? undefined : '密码至少 6 个字符',
+]
+
+// ======================== 锁定逻辑（内置，依赖 indexedDB 存储） ========================
+
+const lockUntil = ref(0)
+const internalError = ref('')
+const errorType = ref<'circle-alert' | 'success' | 'warning' | 'error'>('error')
+let lockTimer: ReturnType<typeof setInterval> | null = null
+
+// 锁定状态存 localStorage，属客户端辅助防护可被清除绕过，服务端锁定才是核心
+const ATTEMPT_KEY = '_login_attempts'
+const LOCK_KEY = '_login_lock_until'
+
+/** 最终展示的错误：外部注入优先，否则内部锁定/校验错误 */
+const displayError = computed(() => props.error || internalError.value)
+
+function recordFailedAttempt(serverMsg?: string) {
+  internalLoading.value = false
+  if (props.maxAttempts <= 0) return
+  const attempts = (Number(storageGet<string>(ATTEMPT_KEY)) || 0) + 1
+  storageSet(ATTEMPT_KEY, String(attempts))
+
+  if (attempts >= props.maxAttempts) {
+    const until = Date.now() + props.lockMinutes * 60 * 1000
+    storageSet(LOCK_KEY, String(until))
+    storageSet(ATTEMPT_KEY, '0')
+    lockUntil.value = until
+    startLockCountdown()
+  } else {
+    internalError.value = serverMsg || `用户名或密码错误 (${attempts}/${props.maxAttempts})`
+    errorType.value = 'error'
+  }
+}
+
+function startLockCountdown() {
+  if (lockTimer) clearInterval(lockTimer)
+  lockTimer = setInterval(() => {
+    const remaining = Math.max(0, lockUntil.value - Date.now())
+    if (remaining <= 0) {
+      lockUntil.value = 0
+      storageDelete(LOCK_KEY)
+      internalError.value = ''
+      if (lockTimer) { clearInterval(lockTimer); lockTimer = null }
+    } else {
+      const min = Math.floor(remaining / 60000)
+      const sec = Math.floor((remaining % 60000) / 1000)
+      internalError.value = `账户已锁定，请 ${min}:${String(sec).padStart(2, '0')} 后重试`
+      errorType.value = 'warning'
+    }
+  }, 1000)
+}
+
+onUnmounted(() => { if (lockTimer) clearInterval(lockTimer) })
+
+// ======================== 初始化 ========================
+
+onMounted(() => {
+  const savedUsername = storageGet<string>('remembered_username')
+  if (savedUsername) {
+    form.username = savedUsername
+    rememberMe.value = true
+  }
+
+  const lkUntil = Number(storageGet<string>(LOCK_KEY)) || 0
+  if (lkUntil > Date.now()) {
+    lockUntil.value = lkUntil
+    startLockCountdown()
+  }
+})
+
+// ======================== 提交 ========================
+
+const handleEnter = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') handleSubmit()
+}
+
+const handleSubmit = () => {
+  internalError.value = ''
+
+  // 提交中：忽略重复点击
+  if (internalLoading.value) return
+  if (lockUntil.value > Date.now()) return
+
+  if (!form.username || form.username.length < 3 || !form.password || form.password.length < 6) {
+    internalError.value = '请输入正确的用户名和密码'
+    errorType.value = 'warning'
+    return
+  }
+
+  // 记住用户名立即生效
+  if (rememberMe.value) {
+    storageSet('remembered_username', form.username)
+  } else {
+    storageDelete('remembered_username')
+  }
+
+  // 点击后立即进入加载态（按钮转圈 + 禁点），父组件回调或兜底超时后恢复
+  internalLoading.value = true
+  window.setTimeout(() => { internalLoading.value = false }, 15000)
+  emit('submit', {
+    username: form.username,
+    password: form.password,
+    rememberMe: rememberMe.value,
+  })
+}
+
+// ======================== 暴露方法 ========================
+
+defineExpose({
+  /** 外部通知登录失败时调用（触发锁定计数） */
+  notifyFailed: recordFailedAttempt,
+  /** 外部通知登录成功时调用（清除锁定） */
+  notifySuccess: () => {
+    internalLoading.value = false
+    storageDelete(ATTEMPT_KEY)
+    storageDelete(LOCK_KEY)
+    internalError.value = ''
+  },
+  /** 清除表单 */
+  resetForm: () => {
+    form.username = ''
+    form.password = ''
+    rememberMe.value = false
+    internalError.value = ''
+  },
+})
+</script>
+
+<style scoped>
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3B56E0 50%, #E54545 100%);
+  padding: clamp(12px, 3vw, 20px);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.floating-shapes { position: absolute; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.shape { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.08); }
+.shape:nth-child(1) { width: 80px; height: 80px; left: 10%; top: 20%; }
+.shape:nth-child(2) { width: 120px; height: 120px; right: 15%; top: 60%; }
+.shape:nth-child(3) { width: 60px; height: 60px; left: 25%; bottom: 15%; }
+.shape:nth-child(4) { width: 100px; height: 100px; right: 30%; top: 10%; }
+
+.login-container {
+  display: flex;
+  width: 100%;
+  max-width: var(--login-max-width, 960px);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  background: rgba(255, 255, 255, 0.98);
+  animation: slideUp 0.5s ease-out;
+  z-index: 1;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- 左侧 ---- */
+.login-left {
+  flex: 1;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3B56E0 100%);
+  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+  padding: var(--space-12) 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.login-left::before {
+  content: '';
+  position: absolute;
+  top: -50%; right: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+}
+
+.brand-logo { position: relative; z-index: 1; margin-bottom: var(--space-12); }
+.logo-icon {
+  width: 64px; height: 64px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-xl);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: var(--space-5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.brand-logo h2 { font-size: 32px; font-weight: 600; margin-bottom: var(--space-3); letter-spacing: -0.5px; }
+.brand-logo p { font-size: 16px; opacity: 0.9; line-height: 1.6; }
+
+.features-list { position: relative; z-index: 1; list-style: none; }
+.features-list li { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); font-size: 15px; }
+.features-list li::before {
+  content: '\2713';
+  width: 24px; height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0;
+}
+
+/* ---- 右侧 ---- */
+.login-right {
+  flex: 1;
+  padding: var(--space-12);
+  display: flex; flex-direction: column;
+  background: white;
+  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+}
+.login-header { flex-shrink: 0; padding-bottom: var(--space-8); }
+.login-header h1 { font-size: 22px; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-2); }
+.login-header p { font-size: 14px; color: var(--color-text-secondary); }
+
+.login-form {
+  display: flex; flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-options { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.remember-me { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; color: var(--color-text-secondary); user-select: none; }
+.checkbox-icon {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: white; background: white;
+  transition: all var(--transition-fast);
+}
+.checkbox-icon.checked { background: var(--color-primary); border-color: var(--color-primary); }
+.forgot-password { color: var(--color-primary); text-decoration: none; font-weight: 500; }
+.forgot-password:hover { color: var(--color-primary-hover); }
+
+.social-login { display: flex; gap: var(--space-3); }
+.social-btn {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: white;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+.social-btn:hover { border-color: var(--color-primary); background: var(--color-bg); transform: translateY(-1px); }
+.social-icon { color: var(--color-text-muted); }
+.social-text { font-size: 12px; color: var(--color-text-secondary); }
+
+.footer-text { text-align: center; font-size: 14px; color: var(--color-text-muted); padding-top: var(--space-8); }
+.register-link { color: var(--color-primary); text-decoration: none; font-weight: 500; }
+.register-link:hover { text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .login-left { display: none; }
+  .login-container { max-width: min(var(--login-max-width, 960px), 440px); }
+  .login-right { padding: var(--space-10); }
+}
+@media (max-width: 480px) {
+  .login-right { padding: var(--space-8); }
+  .login-header h1 { font-size: 20px; }
+  .social-btn { padding: var(--space-2); }
+}
+</style>

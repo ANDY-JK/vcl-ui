@@ -1,0 +1,184 @@
+<script setup lang="ts">
+// ⛔ 保护 — 图片，禁止：lazy loading 逻辑删除，尺寸比例，fallback 占位
+//    需我确认：src fallback、aspect-ratio 默认值
+	import { ref, onMounted, onUnmounted, computed } from 'vue'
+	import IconSvg from '@/components/basic/IconSvg.vue'
+	import ImagePreview from '@/components/data/ImagePreview.vue'
+
+const props = withDefaults(defineProps<{
+  src?: string
+  alt?: string
+  /** 图片宽度 */
+  width?: number
+  /** 图片高度 */
+  height?: number
+  /** 默认尺寸（宽高未设时） */
+  size?: number
+  /** object-fit */
+  fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down'
+  /** 圆角 */
+  radius?: number
+  /** 圆形 */
+  round?: boolean
+  /** 是否懒加载 */
+  lazy?: boolean
+  /** 点击放大预览 */
+  preview?: boolean
+  /** 加载中文本 */
+  loadingText?: string
+  /** 加载失败文本 */
+  errorText?: string
+}>(), {
+  alt: '',
+  size: 80,
+  fit: 'cover',
+  lazy: true,
+  preview: true,
+  loadingText: '',
+  errorText: '',
+})
+
+const emit = defineEmits<{
+  load: [src: string]
+  error: [src: string]
+  click: [src: string]
+}>()
+
+const loaded = ref(false)
+const failed = ref(false)
+const inView = ref(!props.lazy)
+const imgRef = ref<HTMLImageElement | null>(null)
+const _lightboxOpen = ref(false)
+
+let _observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  if (props.lazy && imgRef.value) {
+    // 环境降级：无 IntersectionObserver（旧 Safari/WebView）时直接加载
+    if (typeof IntersectionObserver !== 'undefined') {
+      _observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            inView.value = true
+            _observer?.disconnect()
+            _observer = null
+          }
+        },
+        { rootMargin: '200px' },
+      )
+      _observer.observe(imgRef.value)
+    } else {
+      inView.value = true
+    }
+  }
+})
+
+onUnmounted(() => {
+  _observer?.disconnect()
+})
+
+const _w = computed(() => (props.width || props.size) + 'px')
+const _h = computed(() => (props.height || props.size) + 'px')
+const _rad = computed(() => props.round ? '50%' : (props.radius ?? 4) + 'px')
+
+function onLoad() {
+  loaded.value = true
+  emit('load', props.src || '')
+}
+
+function onError() {
+  failed.value = true
+  emit('error', props.src || '')
+}
+
+	function onClick() {
+	  emit('click', props.src || '')
+	  if (props.preview && loaded.value) _lightboxOpen.value = true
+	}
+</script>
+
+<template>
+  <div
+    class="v-image"
+    :style="{ width: _w, height: _h, borderRadius: _rad }"
+    :class="{ loaded, failed, clickable: preview && loaded }"
+    ref="imgRef"
+    @click="onClick"
+    role="img"
+    :aria-label="alt || '图片'"
+  >
+    <!-- 加载占位 -->
+    <div v-if="!loaded && !failed" class="v-image-placeholder">
+      <IconSvg type="image" size="md" />
+      <span v-if="loadingText" class="v-image-text">{{ loadingText }}</span>
+    </div>
+
+    <!-- 加载失败 -->
+    <div v-if="failed" class="v-image-error">
+      <IconSvg type="circle-alert" size="md" />
+      <span v-if="errorText" class="v-image-text">{{ errorText }}</span>
+    </div>
+
+    <!-- 真实图片 -->
+    <img
+      v-show="inView"
+      :src="src"
+      :alt="alt"
+      class="v-image-img"
+      :class="{ invisible: !loaded }"
+      :style="{ objectFit: fit, borderRadius: _rad }"
+      @load="onLoad"
+      @error="onError"
+    />
+  </div>
+
+	  <!-- 灯箱预览 -->
+	  <!-- #ifndef MP_WEIXIN -->
+	  <Teleport to="body">
+	  <!-- #endif -->
+	    <ImagePreview
+	      v-if="_lightboxOpen"
+	      :src="src || ''"
+	      @close="_lightboxOpen = false"
+	    />
+	  <!-- #ifndef MP_WEIXIN -->
+	  </Teleport>
+	  <!-- #endif -->
+</template>
+
+<style scoped>
+.v-image {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--color-bg-alt, #EAECF0);
+  flex-shrink: 0;
+  cursor: default;
+}
+.v-image.clickable { cursor: pointer; }
+.v-image.clickable:hover { opacity: 0.9; }
+
+.v-image-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: opacity var(--transition-slow);
+}
+.v-image-img.invisible { opacity: 0; }
+
+.v-image-placeholder,
+.v-image-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted, #5F6672);
+}
+.v-image-error { color: var(--color-danger, #E54545); }
+.v-image-text { font-size: 11px; }
+	</style>

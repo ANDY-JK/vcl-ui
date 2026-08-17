@@ -1,0 +1,103 @@
+{
+  "name": "vue-component-lib",
+  "version": "1.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "main": "./dist/vue-component-lib.cjs",
+  "module": "./dist/vue-component-lib.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vue-component-lib.js",
+      "require": "./dist/vue-component-lib.cjs"
+    },
+    "./basic": {
+      "types": "./src/components/basic/index.ts",
+      "import": "./src/components/basic/index.ts"
+    },
+    "./data": {
+      "types": "./src/components/data/index.ts",
+      "import": "./src/components/data/index.ts"
+    },
+    "./form": {
+      "types": "./src/components/form/index.ts",
+      "import": "./src/components/form/index.ts"
+    },
+    "./feedback": {
+      "types": "./src/components/feedback/index.ts",
+      "import": "./src/components/feedback/index.ts"
+    },
+    "./nav": {
+      "types": "./src/components/nav/index.ts",
+      "import": "./src/components/nav/index.ts"
+    },
+    "./layout": {
+      "types": "./src/components/layout/index.ts",
+      "import": "./src/components/layout/index.ts"
+    },
+    "./chart": {
+      "types": "./src/components/chart/index.ts",
+      "import": "./src/components/chart/index.ts"
+    },
+    "./login": {
+      "types": "./src/components/login/index.ts",
+      "import": "./src/components/login/index.ts"
+    },
+    "./storage": {
+      "types": "./src/components/storage/index.ts",
+      "import": "./src/components/storage/index.ts"
+    },
+    "./wc": {
+      "types": "./src/components/wc/index.ts",
+      "import": "./src/components/wc/index.ts"
+    },
+    "./dist/*": "./dist/*",
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src/components",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "echarts": "^5.0.0 || ^6.0.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0"
+  },
+  "dependencies": {
+    "@amap/amap-jsapi-loader": "^1.0.1",
+    "@iconify/vue": "^4.1.0",
+    "@lucide/vue": "^1.21.0",
+    "@vuemap/vue-amap": "^2.1.17",
+    "echarts-wordcloud": "^2.1.0",
+    "html2canvas": "^1.4.1",
+    "jszip": "^3.10.1",
+    "xlsx": "^0.18.5",
+    "zxing-wasm": "^3.0.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/test-utils": "^2.4.11",
+    "happy-dom": "^20.11.1",
+    "pinia": "^2.1.7",
+    "playwright-core": "^1.62.1",
+    "puppeteer-core": "^25.7.0",
+    "typescript": "~5.4.0",
+    "vite": "^5.4.0",
+    "vitest": "^4.1.10",
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "vue-tsc": "^2.0.0"
+  }
+}
