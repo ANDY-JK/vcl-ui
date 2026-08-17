@@ -3,7 +3,7 @@
 //    需我确认：TreeNode 接口扩展、勾选联动逻辑
 import { reactive, computed, inject, provide, watch, onMounted } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { useTreeFlatten } from '@/composables/useTreeFlatten'
+import { useTreeFlatten } from '@/components/_internal/useTreeFlatten'
 
 defineOptions({ name: 'Tree' })
 
