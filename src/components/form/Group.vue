@@ -382,7 +382,7 @@ onUnmounted(() => {
 
   <!-- ===== slider ===== -->
   <div v-else-if="isSlider" class="slider-root" :class="{ disabled, 'is-range': isRange }">
-    <div class="slider-track" ref="trackRef" @pointerdown="onTrackDown">
+    <div class="slider-track" :class="{ dragging }" ref="trackRef" @pointerdown="onTrackDown">
       <div class="slider-rail" />
       <div class="slider-fill" :style="fillStyle" />
       <div
@@ -447,6 +447,7 @@ onUnmounted(() => {
 .slider-track { flex: 1; position: relative; height: var(--track-height); margin: calc(var(--thumb-size) / 2) 0; cursor: pointer; touch-action: none; border-radius: 100px; }
 .slider-rail { position: absolute; inset: 0; background: var(--color-bg-alt); border-radius: 100px; }
 .slider-fill { position: absolute; top: 0; bottom: 0; background: var(--color-primary); border-radius: 100px; pointer-events: none; transition: left var(--transition-fast), width var(--transition-fast); }
+.slider-track.dragging .slider-fill { transition: none; }
 .slider-thumb { position: absolute; top: 50%; width: var(--thumb-size); height: var(--thumb-size); transform: translate(-50%, -50%); border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-primary); box-shadow: var(--shadow-sm); cursor: grab; z-index: 2; transition: box-shadow var(--transition-fast), transform var(--transition-fast); }
 .slider-thumb:hover { transform: translate(-50%, -50%) scale(1.1); }
 .slider-thumb:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--color-primary-light), var(--shadow-sm); }
