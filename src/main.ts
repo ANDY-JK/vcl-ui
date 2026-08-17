@@ -1,10 +1,11 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
-import router from './router'
-// 开发时用源码样式，构建后用 dist 产物
-import '@/styles/global.css'
-// 外部项目引用: import 'vue-component-lib/dist/vue-component-lib.css'
+import router from './demos/router'
+// 组件库设计令牌（CSS 变量）
+import '@/components/tokens.css'
+// Demo 站点全局重置 + 工具类
+import './demos/site.css'
 
 const app = createApp(App)
 app.use(createPinia())
