@@ -109,9 +109,7 @@ onUnmounted(unmountEsc)
 </script>
 
 <template>
-  <!-- #ifndef MP_WEIXIN -->
   <Teleport to="body">
-    <!-- #endif -->
     <Transition name="drawer">
       <div
         v-if="destroyOnClose ? visible : hasOpened"
@@ -150,9 +148,7 @@ onUnmounted(unmountEsc)
         </div>
       </div>
     </Transition>
-    <!-- #ifndef MP_WEIXIN -->
   </Teleport>
-  <!-- #endif -->
 </template>
 
 <style scoped>

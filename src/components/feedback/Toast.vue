@@ -153,9 +153,7 @@ defineExpose({
   </div>
 
   <!-- toast 模式：全局弹幕 — H5 Teleport 到 body, 小程序直接渲染(已在根节点) -->
-  <!-- #ifndef MP_WEIXIN -->
   <Teleport v-if="isToast" to="body">
-    <!-- #endif -->
     <div v-if="isToast" class="toast-container" :class="[`toast-${position}`]" aria-live="polite">
       <TransitionGroup name="toast">
         <div v-for="t in toasts" :key="t.id" class="toast-item" :style="{ background: colorMap[t.type] }">
@@ -178,9 +176,7 @@ defineExpose({
         </div>
       </TransitionGroup>
     </div>
-    <!-- #ifndef MP_WEIXIN -->
   </Teleport>
-  <!-- #endif -->
 </template>
 
 <style>

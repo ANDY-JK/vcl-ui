@@ -97,9 +97,7 @@ useClickOutside([triggerRef, floatingRef], close)
     </span>
 
     <!-- 浮层 -->
-    <!-- #ifndef MP_WEIXIN -->
     <Teleport to="body">
-      <!-- #endif -->
       <Transition :name="isTooltip ? 'tip' : 'pop'">
         <div
           v-show="open"
@@ -118,9 +116,7 @@ useClickOutside([triggerRef, floatingRef], close)
           </template>
         </div>
       </Transition>
-      <!-- #ifndef MP_WEIXIN -->
     </Teleport>
-    <!-- #endif -->
   </span>
 </template>
 

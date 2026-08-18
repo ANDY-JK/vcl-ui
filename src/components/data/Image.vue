@@ -136,13 +136,9 @@ function onClick() {
   </div>
 
   <!-- 灯箱预览 -->
-  <!-- #ifndef MP_WEIXIN -->
   <Teleport to="body">
-    <!-- #endif -->
     <ImagePreview v-if="_lightboxOpen" :src="src || ''" @close="_lightboxOpen = false" />
-    <!-- #ifndef MP_WEIXIN -->
   </Teleport>
-  <!-- #endif -->
 </template>
 
 <style scoped>
