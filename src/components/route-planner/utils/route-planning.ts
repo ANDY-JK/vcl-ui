@@ -15,21 +15,19 @@
  * - 组内排序：最近邻或角度扫描
  * - 分天限制：每天最多8家、驾驶≤6小时、单段≤100km
  */
-import { calculateDistance } from '@/components/geolocation/geolocation'
-import type {
-  Store, DayPlan, RoutePlan, RouteOptions,
-} from '@/components/route-planner/types'
+import { calcDistance as calculateDistance } from '@/components/amap/amap-service'
+import type { Store, DayPlan, RoutePlan, RouteOptions } from '@/components/route-planner/types'
 
 /** 默认配置 */
 const DEFAULTS = {
-  dailyLimitHours: 8,        // 每天驾驶+拜访总时长上限（从 6h 提升到 8h，因为现在包含拜访时间）
-  maxStoresPerDay: 8,        // 每天最多门店数
-  maxSegmentKm: 80,          // 单段最大距离（超过则分天，80km≈1h 驾驶）
-  maxDetourKm: 50,           // 最大绕路成本
+  dailyLimitHours: 8, // 每天驾驶+拜访总时长上限（从 6h 提升到 8h，因为现在包含拜访时间）
+  maxStoresPerDay: 8, // 每天最多门店数
+  maxSegmentKm: 80, // 单段最大距离（超过则分天，80km≈1h 驾驶）
+  maxDetourKm: 50, // 最大绕路成本
   roadFactor: 1.4,
   avgSpeedKmh: 50,
-  clusterRadiusKm: 30,       // 聚类半径（30km内的门店聚为一组）
-  defaultVisitMinutes: 30,   // 每家门店默认拜访耗时
+  clusterRadiusKm: 30, // 聚类半径（30km内的门店聚为一组）
+  defaultVisitMinutes: 30, // 每家门店默认拜访耗时
   maxDrivingMinutesPerDay: 240, // 每日驾驶时间上限（分钟），避免整天浪费在开车上
 }
 
@@ -41,10 +39,8 @@ export function planRoute(options: RouteOptions): RoutePlan {
   const { stores } = opts
 
   // 过滤有效门店
-  const validStores = stores.filter(
-    s => s.longitude != null && s.latitude != null && !s.skipped,
-  )
-  const skippedStores = stores.filter(s => s.skipped)
+  const validStores = stores.filter((s) => s.longitude != null && s.latitude != null && !s.skipped)
+  const skippedStores = stores.filter((s) => s.skipped)
 
   // 确定起点
   let startPoint = opts.startPoint
@@ -118,7 +114,10 @@ export async function enrichAccommodations(plan: RoutePlan): Promise<RoutePlan> 
     let mainCity = ''
     let maxCount = 0
     for (const [city, count] of cityCounts) {
-      if (count > maxCount) { maxCount = count; mainCity = city }
+      if (count > maxCount) {
+        maxCount = count
+        mainCity = city
+      }
     }
 
     // 住宿建议：城市 + 区县（如果有的话）
@@ -153,11 +152,7 @@ interface StoreCluster {
  * 距离聚类：将相距小于 clusterRadiusKm 的门店聚为一组
  * 使用简单的贪心聚类：从离起点最近的门店开始，吸收附近的未分组门店
  */
-function clusterStores(
-  stores: Store[],
-  startPoint: { lat: number; lon: number },
-  radiusKm: number,
-): StoreCluster[] {
+function clusterStores(stores: Store[], startPoint: { lat: number; lon: number }, radiusKm: number): StoreCluster[] {
   const unassigned = [...stores]
   const clusters: StoreCluster[] = []
   const radiusM = radiusKm * 1000
@@ -168,7 +163,10 @@ function clusterStores(
     let seedDist = Infinity
     for (let i = 0; i < unassigned.length; i++) {
       const d = calculateDistance(startPoint.lat, startPoint.lon, unassigned[i].latitude!, unassigned[i].longitude!)
-      if (d < seedDist) { seedDist = d; seedIdx = i }
+      if (d < seedDist) {
+        seedDist = d
+        seedIdx = i
+      }
     }
 
     const seed = unassigned[seedIdx]
@@ -208,7 +206,20 @@ function buildLoopFromClusters(
   orderedClusters: StoreCluster[],
   originalStart: { lat: number; lon: number },
   initialSkipped: Store[],
-  opts: Required<Pick<RouteOptions, 'dailyLimitHours' | 'maxStoresPerDay' | 'maxSegmentKm' | 'roadFactor' | 'avgSpeedKmh' | 'maxDetourKm' | 'clusterRadiusKm' | 'defaultVisitMinutes' | 'maxDrivingMinutesPerDay'>> & { targetDays?: number },
+  opts: Required<
+    Pick<
+      RouteOptions,
+      | 'dailyLimitHours'
+      | 'maxStoresPerDay'
+      | 'maxSegmentKm'
+      | 'roadFactor'
+      | 'avgSpeedKmh'
+      | 'maxDetourKm'
+      | 'clusterRadiusKm'
+      | 'defaultVisitMinutes'
+      | 'maxDrivingMinutesPerDay'
+    >
+  > & { targetDays?: number },
 ): RoutePlan {
   let currentStart = originalStart
   const loopStores: Store[] = []
@@ -235,13 +246,13 @@ function buildLoopFromClusters(
   for (let iter = 0; iter < 3; iter++) {
     const result = detectDetourSkips(filteredStores, originalStart, opts.maxDetourKm)
     if (result.skipped.length === 0) break
-    filteredStores = filteredStores.filter(s => result.kept.has(s.id))
+    filteredStores = filteredStores.filter((s) => result.kept.has(s.id))
     allSkipped = [...allSkipped, ...result.skipped]
   }
 
   // 分天切割
   let effectiveStores = filteredStores
-  let timeSkipped: Store[] = []
+  const timeSkipped: Store[] = []
 
   // 如果指定了计划天数，超出时间预算的门店直接跳过
   if (opts.targetDays && opts.targetDays > 0) {
@@ -302,7 +313,7 @@ function buildLoopFromClusters(
     day.drivingTimeMin = estimateDrivingTime(dayDistM, opts)
     // 兜底：如果时间算出来是 0 但距离不为 0，用距离反算
     if (day.drivingTimeMin === 0 && day.drivingDistanceM > 0) {
-      day.drivingTimeMin = Math.round(day.drivingDistanceM / ((opts.avgSpeedKmh || 50) * 1000 / 60))
+      day.drivingTimeMin = Math.round(day.drivingDistanceM / (((opts.avgSpeedKmh || 50) * 1000) / 60))
     }
     totalDistM += day.drivingDistanceM
     totalTimeMin += day.drivingTimeMin
@@ -328,10 +339,7 @@ function buildLoopFromClusters(
  * 策略 A：角度环形排序
  * 以起点为圆心按方位角排序，路线自然形成顺时针环形
  */
-function orderClustersByAngle(
-  clusters: StoreCluster[],
-  start: { lat: number; lon: number },
-): StoreCluster[] {
+function orderClustersByAngle(clusters: StoreCluster[], start: { lat: number; lon: number }): StoreCluster[] {
   if (clusters.length <= 1) return [...clusters]
   return [...clusters].sort((a, b) => {
     const bearingA = computeBearing(start.lat, start.lon, a.centroid.lat, a.centroid.lon)
@@ -344,19 +352,20 @@ function orderClustersByAngle(
  * 策略 B：最近邻排序（回退方案）
  * 每次选离当前位置最近的聚类，适合分散分布
  */
-function orderClustersByNN(
-  clusters: StoreCluster[],
-  start: { lat: number; lon: number },
-): StoreCluster[] {
+function orderClustersByNN(clusters: StoreCluster[], start: { lat: number; lon: number }): StoreCluster[] {
   if (clusters.length <= 1) return [...clusters]
   const remaining = [...clusters]
   const ordered: StoreCluster[] = []
   let current = start
   while (remaining.length > 0) {
-    let nearestIdx = 0, nearestDist = Infinity
+    let nearestIdx = 0,
+      nearestDist = Infinity
     for (let i = 0; i < remaining.length; i++) {
       const d = calculateDistance(current.lat, current.lon, remaining[i].centroid.lat, remaining[i].centroid.lon)
-      if (d < nearestDist) { nearestDist = d; nearestIdx = i }
+      if (d < nearestDist) {
+        nearestDist = d
+        nearestIdx = i
+      }
     }
     const [nearest] = remaining.splice(nearestIdx, 1)
     ordered.push(nearest)
@@ -369,12 +378,12 @@ function orderClustersByNN(
  * 计算从点1到点2的方位角（0°~360°，正北为0，顺时针）
  */
 function computeBearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const dLon = (lon2 - lon1) * Math.PI / 180
-  const radLat1 = lat1 * Math.PI / 180
-  const radLat2 = lat2 * Math.PI / 180
+  const dLon = ((lon2 - lon1) * Math.PI) / 180
+  const radLat1 = (lat1 * Math.PI) / 180
+  const radLat2 = (lat2 * Math.PI) / 180
   const y = Math.sin(dLon) * Math.cos(radLat2)
   const x = Math.cos(radLat1) * Math.sin(radLat2) - Math.sin(radLat1) * Math.cos(radLat2) * Math.cos(dLon)
-  let bearing = Math.atan2(y, x) * 180 / Math.PI
+  const bearing = (Math.atan2(y, x) * 180) / Math.PI
   return (bearing + 360) % 360
 }
 
@@ -422,7 +431,8 @@ function twoOptOptimize(stores: Store[]): Store[] {
         const distBD = distBetween(b, d)
         const swappedDist = distAC + distBD
 
-        if (swappedDist < currentDist * 0.98) { // 2% 阈值避免微小震荡
+        if (swappedDist < currentDist * 0.98) {
+          // 2% 阈值避免微小震荡
           // 执行 2-opt：反转 i+1 到 j 之间的顺序
           reverseSegment(route, i + 1, j)
           improved = true
@@ -460,12 +470,16 @@ function nearestNeighborSort(stores: Store[], start: { lat: number; lon: number 
   const ordered: Store[] = []
   let current = start
   while (remaining.length > 0) {
-    let nearestIdx = 0, nearestDist = Infinity
+    let nearestIdx = 0,
+      nearestDist = Infinity
     for (let i = 0; i < remaining.length; i++) {
       const s = remaining[i]
       if (s.latitude == null || s.longitude == null) continue
       const dist = calculateDistance(current.lat, current.lon, s.latitude, s.longitude)
-      if (dist < nearestDist) { nearestDist = dist; nearestIdx = i }
+      if (dist < nearestDist) {
+        nearestDist = dist
+        nearestIdx = i
+      }
     }
     const [nearest] = remaining.splice(nearestIdx, 1)
     ordered.push(nearest)
@@ -492,7 +506,20 @@ function nearestNeighborSort(stores: Store[], start: { lat: number; lon: number 
 function splitIntoDays(
   stores: Store[],
   startPoint: { lat: number; lon: number },
-  opts: Required<Pick<RouteOptions, 'dailyLimitHours' | 'maxStoresPerDay' | 'maxSegmentKm' | 'roadFactor' | 'avgSpeedKmh' | 'maxDetourKm' | 'clusterRadiusKm' | 'defaultVisitMinutes' | 'maxDrivingMinutesPerDay'>>,
+  opts: Required<
+    Pick<
+      RouteOptions,
+      | 'dailyLimitHours'
+      | 'maxStoresPerDay'
+      | 'maxSegmentKm'
+      | 'roadFactor'
+      | 'avgSpeedKmh'
+      | 'maxDetourKm'
+      | 'clusterRadiusKm'
+      | 'defaultVisitMinutes'
+      | 'maxDrivingMinutesPerDay'
+    >
+  >,
   clusterMap: Map<string, number>,
 ): Store[][] {
   if (stores.length === 0) return []
@@ -502,8 +529,8 @@ function splitIntoDays(
   const maxSegM = opts.maxSegmentKm * 1000
   const result: Store[][] = []
   let currentDay: Store[] = []
-  let accumulatedMin = 0       // 驾驶 + 拜访
-  let accumulatedDriving = 0   // 仅驾驶
+  let accumulatedMin = 0 // 驾驶 + 拜访
+  let accumulatedDriving = 0 // 仅驾驶
   let dayStart = startPoint
   /** 当天已包含的聚类集合 */
   let dayClusters = new Set<number>()
@@ -540,7 +567,7 @@ function splitIntoDays(
       // 驾驶时间超限（不管是否同聚类，安全第一）
       (projectedDriving > maxDrivingMin && currentDay.length > 0) ||
       // 门店数达上限
-      (currentDay.length >= opts.maxStoresPerDay) ||
+      currentDay.length >= opts.maxStoresPerDay ||
       // 单段距离超限（且当天已有门店，不用等）
       (distM > maxSegM && currentDay.length > 0)
 
@@ -576,7 +603,20 @@ function splitIntoDays(
 function mergeSmallDays(
   days: Store[][],
   startPoint: { lat: number; lon: number },
-  opts: Required<Pick<RouteOptions, 'dailyLimitHours' | 'maxStoresPerDay' | 'maxSegmentKm' | 'roadFactor' | 'avgSpeedKmh' | 'maxDetourKm' | 'clusterRadiusKm' | 'defaultVisitMinutes' | 'maxDrivingMinutesPerDay'>>,
+  opts: Required<
+    Pick<
+      RouteOptions,
+      | 'dailyLimitHours'
+      | 'maxStoresPerDay'
+      | 'maxSegmentKm'
+      | 'roadFactor'
+      | 'avgSpeedKmh'
+      | 'maxDetourKm'
+      | 'clusterRadiusKm'
+      | 'defaultVisitMinutes'
+      | 'maxDrivingMinutesPerDay'
+    >
+  >,
   _clusterMap: Map<string, number>,
 ): Store[][] {
   if (days.length <= 1) return days
@@ -608,8 +648,7 @@ function mergeSmallDays(
           const prevDayStart = i === 1 ? startPoint : { lat: prevDay[0].latitude!, lon: prevDay[0].longitude! }
           const prevDayDriving = estimateDayTime(prevDay, prevDayStart, opts)
           // 总时间 + 驾驶上限双重检查
-          if (prevDayDriving + addedTime <= limitMin * 1.2
-            && prevDayDriving + driveTime <= maxDrivingMin) {
+          if (prevDayDriving + addedTime <= limitMin * 1.2 && prevDayDriving + driveTime <= maxDrivingMin) {
             mergeToPrev = true
           }
         }
@@ -623,9 +662,12 @@ function mergeSmallDays(
         if (firstOfNext.latitude != null && firstOfNext.longitude != null) {
           const driveTime = estimateTimeBetween(singleStore, firstOfNext, opts)
           const addedTime = driveTime + singleVisit
-          const nextDayDriving = estimateDayTime(nextDay, { lat: singleStore.latitude!, lon: singleStore.longitude! }, opts)
-          if (nextDayDriving + addedTime <= limitMin * 1.2
-            && nextDayDriving + driveTime <= maxDrivingMin) {
+          const nextDayDriving = estimateDayTime(
+            nextDay,
+            { lat: singleStore.latitude!, lon: singleStore.longitude! },
+            opts,
+          )
+          if (nextDayDriving + addedTime <= limitMin * 1.2 && nextDayDriving + driveTime <= maxDrivingMin) {
             mergeToNext = true
           }
         }
@@ -657,7 +699,11 @@ function estimateTimeBetween(a: Store, b: Store, opts: Pick<RouteOptions, 'roadF
 }
 
 /** 估算一天的驾驶时间（分钟） */
-function estimateDayTime(day: Store[], start: { lat: number; lon: number }, opts: Pick<RouteOptions, 'roadFactor' | 'avgSpeedKmh'>): number {
+function estimateDayTime(
+  day: Store[],
+  start: { lat: number; lon: number },
+  opts: Pick<RouteOptions, 'roadFactor' | 'avgSpeedKmh'>,
+): number {
   let total = 0
   let from = start
   for (const s of day) {
@@ -686,9 +732,7 @@ function detectDetourSkips(
     return { kept, skipped }
   }
 
-  const points: Array<{ lat: number; lon: number; storeId?: string }> = [
-    { lat: startPoint.lat, lon: startPoint.lon },
-  ]
+  const points: Array<{ lat: number; lon: number; storeId?: string }> = [{ lat: startPoint.lat, lon: startPoint.lon }]
   for (const s of orderedStores) {
     if (s.latitude != null && s.longitude != null) {
       points.push({ lat: s.latitude, lon: s.longitude, storeId: s.id })
@@ -701,9 +745,10 @@ function detectDetourSkips(
     segmentDistances.push(calculateDistance(points[i].lat, points[i].lon, points[i + 1].lat, points[i + 1].lon))
   }
 
-  const avgSegment = segmentDistances.length > 1
-    ? segmentDistances.slice(0, -1).reduce((a, b) => a + b, 0) / (segmentDistances.length - 1)
-    : segmentDistances[0] || 10000
+  const avgSegment =
+    segmentDistances.length > 1
+      ? segmentDistances.slice(0, -1).reduce((a, b) => a + b, 0) / (segmentDistances.length - 1)
+      : segmentDistances[0] || 10000
 
   const adaptiveThresholdM = Math.min(avgSegment * 1.5, maxDetourKm * 1000)
   const thresholdM = Math.max(adaptiveThresholdM, 10000)
@@ -720,7 +765,7 @@ function detectDetourSkips(
     const detourCost = distToCurr + distCurrToNext - distDirect
 
     if (detourCost > thresholdM) {
-      skipped.push(orderedStores.find(s => s.id === curr.storeId)!)
+      skipped.push(orderedStores.find((s) => s.id === curr.storeId)!)
     } else {
       kept.add(curr.storeId)
     }
@@ -731,20 +776,17 @@ function detectDetourSkips(
 
 /** 计算质心 */
 function calcCentroid(stores: Store[]): { lat: number; lon: number } {
-  const valid = stores.filter(s => s.latitude != null && s.longitude != null)
+  const valid = stores.filter((s) => s.latitude != null && s.longitude != null)
   if (valid.length === 0) return { lat: 0, lon: 0 }
-  const sum = valid.reduce(
-    (acc, s) => ({ lat: acc.lat + s.latitude!, lon: acc.lon + s.longitude! }),
-    { lat: 0, lon: 0 },
-  )
+  const sum = valid.reduce((acc, s) => ({ lat: acc.lat + s.latitude!, lon: acc.lon + s.longitude! }), {
+    lat: 0,
+    lon: 0,
+  })
   return { lat: sum.lat / valid.length, lon: sum.lon / valid.length }
 }
 
 /** 估算驾驶时间（分钟） */
-function estimateDrivingTime(
-  straightDistM: number,
-  opts: Pick<RouteOptions, 'roadFactor' | 'avgSpeedKmh'>,
-): number {
+function estimateDrivingTime(straightDistM: number, opts: Pick<RouteOptions, 'roadFactor' | 'avgSpeedKmh'>): number {
   const roadDistM = straightDistM * (opts.roadFactor ?? 1.4)
   const speedMmin = ((opts.avgSpeedKmh ?? 50) * 1000) / 60
   return Math.round(roadDistM / speedMmin)

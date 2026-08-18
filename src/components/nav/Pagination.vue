@@ -2,8 +2,11 @@
 // ⛔ 保护 — 分页，禁止：clamp() → px，页码计算逻辑，ellipsis 行为
 //    需我确认：pageSize 选项、maxPages 显示数
 import { computed, ref } from 'vue'
+import { useT } from '@/components/_internal/i18n'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { calcTotalPages } from './pagination-utils'
+import { calcTotalPages } from './utils/pagination-utils'
+
+const t = useT()
 
 interface Props {
   modelValue: number
@@ -101,7 +104,9 @@ function onJumperKeyup(e: KeyboardEvent) {
       />
     </span>
 
-    <span class="page-info">共 {{ Number.isFinite(total) ? total : 0 }} 条</span>
+    <span class="page-info"
+      >{{ t('pagination.total') }} {{ Number.isFinite(total) ? total : 0 }} {{ t('pagination.items') }}</span
+    >
   </nav>
 </template>
 
@@ -136,8 +141,15 @@ function onJumperKeyup(e: KeyboardEvent) {
   border-color: var(--color-primary);
   color: white;
 }
-.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.page-btn.ellipsis { border-color: transparent; background: transparent; cursor: default; }
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.page-btn.ellipsis {
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+}
 
 .page-info {
   margin-left: clamp(8px, 1.5vw, 12px);
@@ -168,6 +180,11 @@ function onJumperKeyup(e: KeyboardEvent) {
   border-color: var(--color-primary);
 }
 .jumper-input::-webkit-inner-spin-button,
-.jumper-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.jumper-input { -moz-appearance: textfield; }
+.jumper-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.jumper-input {
+  -moz-appearance: textfield;
+}
 </style>

@@ -46,7 +46,7 @@ const searchText = ref('')
 const localIcon = ref(props.modelValue)
 const localColor = ref(props.color)
 const localBgColor = ref(props.bgColor)
-const colorTarget = ref<'fg' | 'bg'>('fg')  // 预设色板作用于哪个颜色
+const colorTarget = ref<'fg' | 'bg'>('fg') // 预设色板作用于哪个颜色
 const localProvider = ref<'lucide' | 'solar'>(props.provider)
 const solarIcons = ref<string[]>([])
 const solarLoading = ref(false)
@@ -62,7 +62,7 @@ async function loadSolarIcons() {
     // 仅取 -linear 变体（Apple 风格）
     solarIcons.value = names.filter((n: string) => n.endsWith('-linear')).sort()
   } catch (e) {
-    import.meta.env.DEV && console.warn('[IconPicker] 在线图标加载失败，降级使用内置图标', e)
+    if (import.meta.env.DEV) console.warn('[IconPicker] 在线图标加载失败，降级使用内置图标', e)
     solarIcons.value = SOLAR_ICONS
   } finally {
     solarLoading.value = false
@@ -106,8 +106,13 @@ const pagedIcons = computed(() => filteredIcons.value.slice(0, iconPage.value * 
 const iconSentinel = ref<HTMLDivElement | null>(null)
 let _iconObserver: IntersectionObserver | null = null
 
-watch(searchText, () => { iconPage.value = 1 })
-watch(localProvider, () => { iconPage.value = 1; searchText.value = '' })
+watch(searchText, () => {
+  iconPage.value = 1
+})
+watch(localProvider, () => {
+  iconPage.value = 1
+  searchText.value = ''
+})
 
 onMounted(() => {
   _iconObserver = new IntersectionObserver(([entry]) => {
@@ -116,13 +121,17 @@ onMounted(() => {
     }
   })
 })
-onUnmounted(() => { _iconObserver?.disconnect() })
+onUnmounted(() => {
+  _iconObserver?.disconnect()
+})
 
 // 确保 sentinel 挂载后 observer 绑定（面板打开时 sentinel 才存在于 DOM）
 watch(open, (val) => {
   if (val) {
     iconPage.value = 1
-    nextTick(() => { if (iconSentinel.value) _iconObserver?.observe(iconSentinel.value) })
+    nextTick(() => {
+      if (iconSentinel.value) _iconObserver?.observe(iconSentinel.value)
+    })
   }
 })
 
@@ -137,7 +146,10 @@ function solarIconName(name: string): string {
 }
 
 async function toggle(e: MouseEvent) {
-  if (open.value) { open.value = false; return }
+  if (open.value) {
+    open.value = false
+    return
+  }
   localIcon.value = props.modelValue
   localColor.value = props.color
   localBgColor.value = props.bgColor
@@ -148,10 +160,7 @@ async function toggle(e: MouseEvent) {
   if (localProvider.value === 'solar') loadSolarIcons()
   open.value = true
   await nextTick()
-  await Promise.race([
-    new Promise(r => requestAnimationFrame(r)),
-    new Promise(r => setTimeout(r, 100)),
-  ])
+  await Promise.race([new Promise((r) => requestAnimationFrame(r)), new Promise((r) => setTimeout(r, 100))])
   updatePosition(e.currentTarget as HTMLElement)
 }
 
@@ -171,12 +180,7 @@ function confirm() {
 
 <template>
   <div class="picker-root">
-    <button
-      ref="triggerRef"
-      type="button"
-      class="picker-trigger"
-      @click="toggle"
-    >
+    <button ref="triggerRef" type="button" class="picker-trigger" @click="toggle">
       <span class="trigger-icon" :style="{ background: bgColor === 'transparent' ? 'var(--color-bg-alt)' : bgColor }">
         <Icon v-if="provider === 'solar'" :icon="solarIconName(modelValue)" :width="20" :height="20" :color="color" />
         <IconSvg v-else :type="modelValue" size="md" :color="color" />
@@ -187,19 +191,32 @@ function confirm() {
 
     <!-- #ifndef MP_WEIXIN -->
     <Teleport to="body">
-    <!-- #endif -->
+      <!-- #endif -->
       <Transition name="drop">
-        <div
-          v-show="open"
-          ref="floatingRef"
-          class="picker-panel"
-          :class="[`flip-${direction}`]"
-          :style="floatingStyle"
-        >
+        <div v-show="open" ref="floatingRef" class="picker-panel" :class="[`flip-${direction}`]" :style="floatingStyle">
           <!-- 提供者切换 -->
           <div class="provider-switch" role="tablist" aria-label="图标提供者">
-            <button class="provider-tab" role="tab" :aria-selected="localProvider === 'lucide'" :class="{ active: localProvider === 'lucide' }" @click="localProvider = 'lucide'">Lucide</button>
-            <button class="provider-tab" role="tab" :aria-selected="localProvider === 'solar'" :class="{ active: localProvider === 'solar' }" @click="localProvider = 'solar'; loadSolarIcons()">Solar</button>
+            <button
+              class="provider-tab"
+              role="tab"
+              :aria-selected="localProvider === 'lucide'"
+              :class="{ active: localProvider === 'lucide' }"
+              @click="localProvider = 'lucide'"
+            >
+              Lucide
+            </button>
+            <button
+              class="provider-tab"
+              role="tab"
+              :aria-selected="localProvider === 'solar'"
+              :class="{ active: localProvider === 'solar' }"
+              @click="
+                localProvider = 'solar'
+                loadSolarIcons()
+              "
+            >
+              Solar
+            </button>
           </div>
 
           <!-- 搜索 -->
@@ -212,26 +229,86 @@ function confirm() {
           <div class="panel-colors">
             <div class="color-group">
               <span class="color-label">图标</span>
-              <input type="color" :value="localColor" @input="localColor = ($event.target as HTMLInputElement).value; colorTarget = 'fg'" class="native-picker" />
-              <input type="text" :value="localColor" @input="localColor = ($event.target as HTMLInputElement).value; colorTarget = 'fg'" @focus="colorTarget = 'fg'" class="hex-input" />
+              <input
+                type="color"
+                :value="localColor"
+                class="native-picker"
+                @input="
+                  localColor = ($event.target as HTMLInputElement).value
+                  colorTarget = 'fg'
+                "
+              />
+              <input
+                type="text"
+                :value="localColor"
+                class="hex-input"
+                @input="
+                  localColor = ($event.target as HTMLInputElement).value
+                  colorTarget = 'fg'
+                "
+                @focus="colorTarget = 'fg'"
+              />
             </div>
             <div class="color-group">
               <span class="color-label">背景</span>
-              <input type="color" :value="localBgColor" @input="localBgColor = ($event.target as HTMLInputElement).value; colorTarget = 'bg'" class="native-picker" />
-              <input type="text" :value="localBgColor" @input="localBgColor = ($event.target as HTMLInputElement).value; colorTarget = 'bg'" @focus="colorTarget = 'bg'" class="hex-input" />
-              <button class="transparent-btn" :class="{ active: localBgColor === 'transparent' }" @click="localBgColor = 'transparent'; colorTarget = 'bg'">无</button>
+              <input
+                type="color"
+                :value="localBgColor"
+                class="native-picker"
+                @input="
+                  localBgColor = ($event.target as HTMLInputElement).value
+                  colorTarget = 'bg'
+                "
+              />
+              <input
+                type="text"
+                :value="localBgColor"
+                class="hex-input"
+                @input="
+                  localBgColor = ($event.target as HTMLInputElement).value
+                  colorTarget = 'bg'
+                "
+                @focus="colorTarget = 'bg'"
+              />
+              <button
+                class="transparent-btn"
+                :class="{ active: localBgColor === 'transparent' }"
+                @click="
+                  localBgColor = 'transparent'
+                  colorTarget = 'bg'
+                "
+              >
+                无
+              </button>
             </div>
           </div>
 
           <!-- 选中预览 + 预设 + 确认 -->
           <div class="panel-preview">
             <span class="preview-icon-bg" :style="{ background: localBgColor }">
-              <Icon v-if="localProvider === 'solar'" :icon="solarIconName(localIcon)" :width="24" :height="24" :color="localColor" />
+              <Icon
+                v-if="localProvider === 'solar'"
+                :icon="solarIconName(localIcon)"
+                :width="24"
+                :height="24"
+                :color="localColor"
+              />
               <IconSvg v-else :type="localIcon" size="lg" :color="localColor" />
             </span>
-            <span class="preview-name">{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span>
+            <span class="preview-name"
+              >{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span
+            >
             <div class="preset-colors">
-              <button v-for="c in presetColors" :key="c" class="preset-dot" :style="{ background: c }" :class="{ active: (colorTarget === 'fg' ? localColor : localBgColor) === c }" :aria-label="`选择颜色 ${c}`" :aria-pressed="(colorTarget === 'fg' ? localColor : localBgColor) === c" @click="colorTarget === 'fg' ? (localColor = c) : (localBgColor = c)" />
+              <button
+                v-for="c in presetColors"
+                :key="c"
+                class="preset-dot"
+                :style="{ background: c }"
+                :class="{ active: (colorTarget === 'fg' ? localColor : localBgColor) === c }"
+                :aria-label="`选择颜色 ${c}`"
+                :aria-pressed="(colorTarget === 'fg' ? localColor : localBgColor) === c"
+                @click="colorTarget === 'fg' ? (localColor = c) : (localBgColor = c)"
+              />
             </div>
             <button type="button" class="confirm-btn" @click="confirm">确定</button>
           </div>
@@ -249,29 +326,39 @@ function confirm() {
               @click="selectIcon(name)"
             >
               <span class="icon-item-bg">
-                <Icon v-if="localProvider === 'solar'" :icon="'solar:' + name" :width="20" :height="20" color="var(--color-text)" />
+                <Icon
+                  v-if="localProvider === 'solar'"
+                  :icon="'solar:' + name"
+                  :width="20"
+                  :height="20"
+                  color="var(--color-text)"
+                />
                 <IconSvg v-else :type="name" size="md" color="var(--color-text)" />
               </span>
               <span>{{ name }}</span>
             </button>
             <p v-if="solarLoading" class="empty-tip">加载 Solar 图标中…</p>
             <p v-else-if="!filteredIcons.length" class="empty-tip">无匹配图标</p>
-            <div ref="iconSentinel" style="height:1px" />
+            <div ref="iconSentinel" style="height: 1px" />
           </div>
-
         </div>
       </Transition>
-    <!-- #ifndef MP_WEIXIN -->
+      <!-- #ifndef MP_WEIXIN -->
     </Teleport>
     <!-- #endif -->
   </div>
 </template>
 
 <style scoped>
-.picker-root { position: relative; display: inline-flex; }
+.picker-root {
+  position: relative;
+  display: inline-flex;
+}
 
 .picker-trigger {
-  display: inline-flex; align-items: center; gap: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   height: clamp(38px, 6vw, 42px);
   padding: 0 clamp(8px, 1.5vw, 12px);
   background: var(--color-surface);
@@ -282,30 +369,46 @@ function confirm() {
   transition: border-color var(--transition-fast);
   font-family: inherit;
 }
-.picker-trigger:hover { border-color: var(--color-primary); }
+.picker-trigger:hover {
+  border-color: var(--color-primary);
+}
 .trigger-icon {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
   background: var(--color-bg-alt);
 }
 .trigger-placeholder {
-  color: var(--color-text-muted); font-size: 13px;
+  color: var(--color-text-muted);
+  font-size: 13px;
 }
 .trigger-arrow {
-  color: var(--color-text-muted); transition: transform var(--transition-fast);
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
 }
-.trigger-arrow.rotated { transform: rotate(180deg); }
+.trigger-arrow.rotated {
+  transform: rotate(180deg);
+}
 
 /* 提供者切换 Tab */
 .provider-switch {
-  display: flex; gap: 0;
+  display: flex;
+  gap: 0;
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
 .provider-tab {
-  flex: 1; padding: var(--space-2) 12px; font-size: 12px;
-  border: none; background: transparent; cursor: pointer;
-  color: var(--color-text-muted); font-family: inherit;
+  flex: 1;
+  padding: var(--space-2) 12px;
+  font-size: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-family: inherit;
   transition: all var(--transition-fast);
   border-bottom: 2px solid transparent;
 }
@@ -327,99 +430,172 @@ function confirm() {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
 .panel-search {
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) 12px;
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
 .panel-input {
-  flex: 1; border: none; background: transparent;
-  font-size: 13px; outline: none;
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  outline: none;
 }
 
 .panel-colors {
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) 8px;
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
 .color-group {
-  display: flex; align-items: center; gap: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   padding: 3px var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
   flex-shrink: 0;
 }
-.color-label { font-size: 11px; color: var(--color-text-muted); white-space: nowrap; }
-.native-picker {
-  width: 22px; height: 22px;
-  border: none; border-radius: var(--radius-sm); cursor: pointer; padding: 0;
+.color-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
 }
-.native-picker::-webkit-color-swatch-wrapper { padding: 0; }
-.native-picker::-webkit-color-swatch { border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
+.native-picker {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 0;
+}
+.native-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.native-picker::-webkit-color-swatch {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
 .hex-input {
-  width: 62px; height: 22px;
+  width: 62px;
+  height: 22px;
   padding: 1px var(--space-1);
-  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
-  font-size: 11px; font-family: monospace;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-family: monospace;
   background: var(--color-surface);
   color: var(--color-text-secondary);
 }
 .transparent-btn {
-  padding: 1px var(--space-2); height: 22px;
+  padding: 1px var(--space-2);
+  height: 22px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
-  font-size: 10px; color: var(--color-text-muted);
-  cursor: pointer; transition: all var(--transition-fast);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
-.transparent-btn:hover { border-color: var(--color-text-muted); color: var(--color-text-secondary); }
-.transparent-btn.active { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+.transparent-btn:hover {
+  border-color: var(--color-text-muted);
+  color: var(--color-text-secondary);
+}
+.transparent-btn.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
 
 /* 选中预览行 */
 .panel-preview {
-  display: flex; align-items: center; gap: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   padding: var(--space-2) 12px;
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
 .preview-icon-bg {
-  display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
 }
 .preview-name {
-  font-size: 13px; font-weight: 500; color: var(--color-text);
-  overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
-.preview-hex { font-size: 10px; color: var(--color-text-muted); font-weight: 400; font-family: monospace; white-space: nowrap; }
-.preset-colors { display: flex; gap: 3px; margin-left: auto; flex-shrink: 0; align-items: center; }
+.preview-hex {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-family: monospace;
+  white-space: nowrap;
+}
+.preset-colors {
+  display: flex;
+  gap: 3px;
+  margin-left: auto;
+  flex-shrink: 0;
+  align-items: center;
+}
 .preset-dot {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid transparent; cursor: pointer;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
   transition: all var(--transition-fast);
 }
-.preset-dot:hover { transform: scale(1.2); }
-.preset-dot.active { border-color: var(--color-text); transform: scale(1.25); }
+.preset-dot:hover {
+  transform: scale(1.2);
+}
+.preset-dot.active {
+  border-color: var(--color-text);
+  transform: scale(1.25);
+}
 .panel-preview .confirm-btn {
-  padding: var(--space-1) 14px; height: 28px;
-  border: none; border-radius: var(--radius-sm);
-  background: var(--color-primary); color: white;
-  font-size: 12px; white-space: nowrap;
-  cursor: pointer; transition: opacity var(--transition-fast);
+  padding: var(--space-1) 14px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
   flex-shrink: 0;
 }
-.panel-preview .confirm-btn:hover { opacity: 0.85; }
-
+.panel-preview .confirm-btn:hover {
+  opacity: 0.85;
+}
 
 .panel-icons {
-  flex: 1; overflow-y: auto;
+  flex: 1;
+  overflow-y: auto;
   background: var(--color-bg);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
@@ -430,41 +606,83 @@ function confirm() {
   scrollbar-color: var(--color-border) transparent;
 }
 /* 自定义滚动条样式 */
-.panel-icons::-webkit-scrollbar { width: 5px; }
-.panel-icons::-webkit-scrollbar-track { background: transparent; }
-.panel-icons::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-lg); }
-.panel-icons::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+.panel-icons::-webkit-scrollbar {
+  width: 5px;
+}
+.panel-icons::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel-icons::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.panel-icons::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
 .icon-item-bg {
-  display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
   transition: background var(--transition-fast);
 }
 .icon-item {
-  display: flex; flex-direction: column; align-items: center;
-  gap: var(--space-1); padding: 5px var(--space-1);
-  border: 1px solid transparent; border-radius: var(--radius-md);
-  font-size: 10px; color: var(--color-text-secondary);
-  background: transparent; cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 5px var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  background: transparent;
+  cursor: pointer;
   transition: all var(--transition-fast);
   font-family: inherit;
 }
-.icon-item:hover { border-color: var(--color-border); background: var(--color-bg-alt); }
+.icon-item:hover {
+  border-color: var(--color-border);
+  background: var(--color-bg-alt);
+}
 .icon-item.selected {
   border-color: var(--color-primary);
   background: var(--color-primary-light);
 }
 .empty-tip {
   grid-column: 1 / -1;
-  text-align: center; color: var(--color-text-muted); padding: var(--space-5);
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-5);
   font-size: 12px;
 }
 
 /* 面板动画：弹性缓动 + 微缩放，进场 200ms 退场 150ms（退场快于进场） */
-.drop-enter-active { transition: opacity var(--transition-normal), transform var(--transition-normal); }
-.drop-leave-active { transition: opacity var(--transition-fast), transform var(--transition-fast); }
-.drop-enter-from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-.drop-leave-to   { opacity: 0; transform: translateY(-4px) scale(0.97); }
+.drop-enter-active {
+  transition:
+    opacity var(--transition-normal),
+    transform var(--transition-normal);
+}
+.drop-leave-active {
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+.drop-enter-from {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+}
+.drop-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.97);
+}
 /* 向上展开时动画方向反转 */
-.flip-up.drop-enter-from { transform: translateY(6px) scale(0.97); }
-.flip-up.drop-leave-to   { transform: translateY(4px) scale(0.97); }
+.flip-up.drop-enter-from {
+  transform: translateY(6px) scale(0.97);
+}
+.flip-up.drop-leave-to {
+  transform: translateY(4px) scale(0.97);
+}
 </style>

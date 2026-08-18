@@ -3,7 +3,10 @@
 //    需我确认：ExtraColumn 接口扩展、toggle 行为
 import IconSvg from '@/components/basic/IconSvg.vue'
 
-interface ExtraColumn { key: string; label: string }
+interface ExtraColumn {
+  key: string
+  label: string
+}
 
 interface Props {
   items: Record<string, any>[]
@@ -24,7 +27,7 @@ interface Props {
   phoneField?: string
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   idKey: 'id',
   titleField: 'display_name',
   descriptionField: 'description',
@@ -45,6 +48,14 @@ const emit = defineEmits<{
   /** variant='button' 时点击按钮，payload: { name, phone, address, item } */
   buttonClick: [payload: { name: string; phone: string; address: string; item: Record<string, any> }]
 }>()
+
+/** switch toggle — 同步更新 item 数据，使 extraColumns 等状态标签立即更新 */
+function onToggle(item: Record<string, any>, newValue: boolean) {
+  if (props.toggleField) {
+    item[props.toggleField] = newValue
+  }
+  emit('toggle', item, newValue)
+}
 </script>
 
 <template>
@@ -60,27 +71,20 @@ const emit = defineEmits<{
     </div>
 
     <div v-else class="list-items">
-      <div
-        v-for="item in items"
-        :key="item[idKey]"
-        class="list-item"
-        @click="emit('itemClick', item)"
-      >
-        <div class="item-icon" v-if="item[iconField]">
+      <div v-for="item in items" :key="item[idKey]" class="list-item" @click="emit('itemClick', item)">
+        <div v-if="item[iconField]" class="item-icon">
           <IconSvg :type="item[iconField]" size="md" />
         </div>
         <div class="item-content">
-          <div class="item-title">{{ item[titleField] }}</div>
+          <div class="item-title">
+            {{ item[titleField] }}
+          </div>
           <div v-if="item[descriptionField]" class="item-desc">
             {{ item[descriptionField] }}
           </div>
         </div>
         <div v-if="extraColumns.length" class="item-extras">
-          <span
-            v-for="col in extraColumns"
-            :key="col.key"
-            class="item-extra"
-          >{{ item[col.key] }}</span>
+          <span v-for="col in extraColumns" :key="col.key" class="item-extra">{{ item[col.key] }}</span>
         </div>
         <!-- 开关变体 -->
         <label
@@ -93,7 +97,7 @@ const emit = defineEmits<{
             class="toggle-input"
             :checked="item[toggleField]"
             :disabled="disabled"
-            @change="emit('toggle', item, ($event.target as HTMLInputElement).checked)"
+            @change="onToggle(item, ($event.target as HTMLInputElement).checked)"
           />
           <span class="toggle-switch" :class="{ disabled }" />
         </label>
@@ -103,13 +107,17 @@ const emit = defineEmits<{
           v-if="variant === 'button'"
           class="item-action-btn"
           :disabled="disabled"
-          @click.stop="emit('buttonClick', {
-            name: item[titleField],
-            phone: item[phoneField] ?? '',
-            address: item[descriptionField] ?? '',
-            item,
-          })"
-        >{{ buttonLabel }}</button>
+          @click.stop="
+            emit('buttonClick', {
+              name: item[titleField],
+              phone: item[phoneField] ?? '',
+              address: item[descriptionField] ?? '',
+              item,
+            })
+          "
+        >
+          {{ buttonLabel }}
+        </button>
       </div>
     </div>
   </div>
@@ -123,7 +131,8 @@ const emit = defineEmits<{
   overflow: hidden;
 }
 
-.list-loading, .list-empty {
+.list-loading,
+.list-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -132,8 +141,14 @@ const emit = defineEmits<{
   color: var(--color-text-muted);
   font-size: clamp(11px, 1.8vw, 13px);
 }
-.list-loading svg { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.list-loading svg {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .list-item {
   display: flex;
@@ -144,8 +159,12 @@ const emit = defineEmits<{
   cursor: pointer;
   transition: background var(--transition-fast);
 }
-.list-item:last-child { border-bottom: none; }
-.list-item:hover { background: var(--color-bg-alt); }
+.list-item:last-child {
+  border-bottom: none;
+}
+.list-item:hover {
+  background: var(--color-bg-alt);
+}
 
 .item-icon {
   width: clamp(30px, 5.5vw, 38px);
@@ -157,16 +176,37 @@ const emit = defineEmits<{
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
 }
-.item-content { flex: 1; min-width: 0; }
-.item-title { font-size: clamp(12px, 1.8vw, 14px); font-weight: 500; }
-.item-desc { font-size: clamp(11px, 1.5vw, 12px); color: var(--color-text-muted); margin-top: var(--space-1); }
+.item-content {
+  flex: 1;
+  min-width: 0;
+}
+.item-title {
+  font-size: clamp(12px, 1.8vw, 14px);
+  font-weight: 500;
+}
+.item-desc {
+  font-size: clamp(11px, 1.5vw, 12px);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
 
-.item-extras { display: flex; gap: clamp(8px, 2vw, 16px); }
-.item-extra { font-size: clamp(11px, 1.5vw, 12px); color: var(--color-text-muted); }
+.item-extras {
+  display: flex;
+  gap: clamp(8px, 2vw, 16px);
+}
+.item-extra {
+  font-size: clamp(11px, 1.5vw, 12px);
+  color: var(--color-text-muted);
+}
 
 /* 开关 */
-.item-toggle { display: flex; flex-shrink: 0; }
-.toggle-input { display: none; }
+.item-toggle {
+  display: flex;
+  flex-shrink: 0;
+}
+.toggle-input {
+  display: none;
+}
 .toggle-switch {
   width: clamp(40px, 6vw, 46px);
   height: clamp(22px, 3.2vw, 26px);
@@ -176,7 +216,10 @@ const emit = defineEmits<{
   cursor: pointer;
   transition: background var(--transition-fast);
 }
-.toggle-switch.disabled { opacity: 0.4; cursor: not-allowed; }
+.toggle-switch.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 .toggle-switch::after {
   content: '';
   position: absolute;
@@ -209,6 +252,11 @@ const emit = defineEmits<{
   transition: opacity var(--transition-fast);
   white-space: nowrap;
 }
-.item-action-btn:hover { opacity: 0.85; }
-.item-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.item-action-btn:hover {
+  opacity: 0.85;
+}
+.item-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style>

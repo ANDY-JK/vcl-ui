@@ -54,7 +54,9 @@ function saveCache(): void {
     if (startPoint.value) {
       localStorage.setItem(CACHE_START_KEY, JSON.stringify(startPoint.value))
     }
-  } catch { /* 存储满时静默失败 */ }
+  } catch {
+    /* 存储满时静默失败 */
+  }
 }
 
 /** 从 localStorage 恢复门店数据 */
@@ -74,9 +76,7 @@ function loadCache(): { stores: Store[]; startPoint: typeof startPoint.value } |
 }
 
 // ── 计算属性 ──
-const validStores = computed(() =>
-  stores.value.filter(s => s.longitude != null && s.latitude != null && !s.skipped),
-)
+const validStores = computed(() => stores.value.filter((s) => s.longitude != null && s.latitude != null && !s.skipped))
 
 const canGenerate = computed(() => validStores.value.length > 0 && !loading.value)
 
@@ -93,9 +93,7 @@ async function processImport(data: File | ArrayBuffer): Promise<void> {
     }
 
     // 去重：按 name + address 检测已存在的门店
-    const existingKeys = new Set(
-      stores.value.map(s => `${s.name}|${s.address}`),
-    )
+    const existingKeys = new Set(stores.value.map((s) => `${s.name}|${s.address}`))
     const newItems: Store[] = []
     let dupCount = 0
 
@@ -146,7 +144,9 @@ async function processImport(data: File | ArrayBuffer): Promise<void> {
     if (needGeocode.length > 0) msg += `，${needGeocode.length} 条已自动定位`
     importStage.value = 'done'
     ;(importStage as any)._msg = msg
-    setTimeout(() => { importStage.value = 'idle' }, 3000)
+    setTimeout(() => {
+      importStage.value = 'idle'
+    }, 3000)
   } catch (e) {
     console.error('导入失败:', e)
     importStage.value = 'idle'
@@ -217,7 +217,7 @@ async function handleSetCustomStart(): Promise<void> {
   }
 }
 
-  // ── 路线规划（一键生成 + 自动获取驾车数据） ──
+// ── 路线规划（一键生成 + 自动获取驾车数据） ──
 async function handleGenerate(): Promise<void> {
   if (validStores.value.length === 0) return
 
@@ -239,14 +239,13 @@ async function handleGenerate(): Promise<void> {
     startSource = sp.name === '我的位置' ? 'gps' : 'excel'
   }
 
-  const finalStart = sp && sp.lat !== 0
-    ? { lat: sp.lat, lon: sp.lon }
-    : { lat: validStores.value[0].latitude!, lon: validStores.value[0].longitude! }
+  const finalStart =
+    sp && sp.lat !== 0
+      ? { lat: sp.lat, lon: sp.lon }
+      : { lat: validStores.value[0].latitude!, lon: validStores.value[0].longitude! }
 
   // 记录实际使用的起点名
-  const actualName = startSource === 'firstStore'
-    ? (validStores.value[0]?.city || '第一家门店')
-    : (sp?.name || '起点')
+  const actualName = startSource === 'firstStore' ? validStores.value[0]?.city || '第一家门店' : sp?.name || '起点'
   actualStartName.value = actualName
 
   // 第一步：生成路线（估算）
@@ -307,9 +306,7 @@ async function handleReplan(): Promise<void> {
   }
 
   // 从全部门店中筛选未访问的
-  const remainingStores = stores.value.filter(s =>
-    !visitedIds.has(s.id) && s.longitude != null && s.latitude != null,
-  )
+  const remainingStores = stores.value.filter((s) => !visitedIds.has(s.id) && s.longitude != null && s.latitude != null)
 
   if (remainingStores.length === 0) return
 
@@ -324,7 +321,9 @@ async function handleReplan(): Promise<void> {
     })
     hasRealDriving.value = true
     importStage.value = 'done'
-    setTimeout(() => { importStage.value = 'idle' }, 2000)
+    setTimeout(() => {
+      importStage.value = 'idle'
+    }, 2000)
   } catch {
     importStage.value = 'idle'
   }
@@ -357,10 +356,10 @@ function handleRemove(id: string): void {
 
 /** 跳过/取消跳过整个城市 */
 function handleSkipCity(city: string): void {
-  const cityStores = stores.value.filter(s => s.city === city)
+  const cityStores = stores.value.filter((s) => s.city === city)
   if (cityStores.length === 0) return
   // 如果该城市所有门店都已跳过，则取消跳过；否则全部跳过
-  const allSkipped = cityStores.every(s => s.skipped)
+  const allSkipped = cityStores.every((s) => s.skipped)
   for (const s of cityStores) {
     if (s.skipped !== !allSkipped) {
       toggleSkip(s.id)
@@ -371,7 +370,7 @@ function handleSkipCity(city: string): void {
 
 /** 删除整个城市的所有门店 */
 function handleRemoveCity(city: string): void {
-  const ids = stores.value.filter(s => s.city === city).map(s => s.id)
+  const ids = stores.value.filter((s) => s.city === city).map((s) => s.id)
   for (const id of ids) {
     removeStore(id)
   }
@@ -393,7 +392,7 @@ function downloadResult(): void {
 
   // CSV with BOM for Excel
   const header = '门店名,四级乡镇,详细地址,联系人,电话,经度,纬度,坐标来源\n'
-  const rows = stores.value.map(s => {
+  const rows = stores.value.map((s) => {
     const cols = [
       s.name,
       s.fullAddr || [s.province, s.city, s.district, s.town].filter(Boolean).join(''),
@@ -405,10 +404,12 @@ function downloadResult(): void {
       s.coordSource || '',
     ]
     // CSV 转义：含逗号或引号的字段用引号包裹
-    return cols.map(c => {
-      const str = String(c)
-      return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str
-    }).join(',')
+    return cols
+      .map((c) => {
+        const str = String(c)
+        return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str
+      })
+      .join(',')
   })
 
   const csv = '\uFEFF' + header + rows.join('\n')
@@ -423,7 +424,8 @@ function downloadResult(): void {
 }
 function downloadTemplate(): void {
   // 生成一个简单的 CSV 模板（比 xlsx 更通用，任何表格软件都能打开）
-  const csvContent = '\uFEFF门店名,省,市,区/县,镇/乡,详细地址,联系人,电话,经度,纬度\n示例门店,湖南省,长沙市,芙蓉区,xx街道,五一大道xx号,张三,13800138000,112.98,28.19\n'
+  const csvContent =
+    '\uFEFF门店名,省,市,区/县,镇/乡,详细地址,联系人,电话,经度,纬度\n示例门店,湖南省,长沙市,芙蓉区,xx街道,五一大道xx号,张三,13800138000,112.98,28.19\n'
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -482,23 +484,16 @@ onMounted(async () => {
     <header class="header">
       <h1>🗺️ 门店巡访路线规划器</h1>
       <div class="header-actions">
-        <button class="btn-locate" :disabled="locating" @click="handleLocate()" title="用 GPS 定位当前位置作为起点">
+        <button class="btn-locate" :disabled="locating" title="用 GPS 定位当前位置作为起点" @click="handleLocate()">
           {{ locating ? '📍 定位中...' : '📍 我的位置' }}
         </button>
-        <button class="btn-template" @click="downloadTemplate" title="下载 Excel 导入模板">
-          📥 下载模板
-        </button>
-        <button class="btn-export" @click="downloadResult" title="导出含坐标的完整数据" :disabled="stores.length === 0">
+        <button class="btn-template" title="下载 Excel 导入模板" @click="downloadTemplate">📥 下载模板</button>
+        <button class="btn-export" title="导出含坐标的完整数据" :disabled="stores.length === 0" @click="downloadResult">
           💾 导出结果
         </button>
         <label class="btn-import">
           📂 导入 Excel
-          <input
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            style="display: none"
-            @change="handleFileChange"
-          />
+          <input type="file" accept=".xlsx,.xls,.csv" style="display: none" @change="handleFileChange" />
         </label>
         <button class="btn-key" @click="showKeyInput = !showKeyInput">🔑 设置Key</button>
         <button class="btn-clear" @click="handleClear">🗑️ 清空</button>
@@ -526,7 +521,7 @@ onMounted(async () => {
     <div class="start-point-bar" :class="{ 'no-gps': !startPoint || startPoint.lat === 0 }">
       <template v-if="startPoint && startPoint.lat !== 0">
         🚩 起点：{{ startPoint.name }}（{{ startPoint.lat.toFixed(4) }}, {{ startPoint.lon.toFixed(4) }}）
-        <button class="btn-start-reset" @click="startPoint = null" title="清除起点">✕</button>
+        <button class="btn-start-reset" title="清除起点" @click="startPoint = null">✕</button>
       </template>
       <div class="start-input-row">
         <input
@@ -536,7 +531,11 @@ onMounted(async () => {
           class="start-input"
           @keyup.enter="handleSetCustomStart"
         />
-        <button class="btn-start-set" :disabled="searchingStart || !customStartInput.trim()" @click="handleSetCustomStart">
+        <button
+          class="btn-start-set"
+          :disabled="searchingStart || !customStartInput.trim()"
+          @click="handleSetCustomStart"
+        >
           {{ searchingStart ? '搜索中...' : '设为起点' }}
         </button>
       </div>
@@ -573,7 +572,11 @@ onMounted(async () => {
       </aside>
 
       <!-- 折叠按钮 -->
-      <button class="collapse-btn" @click="leftCollapsed = !leftCollapsed" :title="leftCollapsed ? '展开门店列表' : '收起门店列表'">
+      <button
+        class="collapse-btn"
+        :title="leftCollapsed ? '展开门店列表' : '收起门店列表'"
+        @click="leftCollapsed = !leftCollapsed"
+      >
         {{ leftCollapsed ? '▶' : '◀' }}
       </button>
 
@@ -585,11 +588,7 @@ onMounted(async () => {
       <!-- 右：结果 -->
       <aside class="right-panel">
         <div class="result-actions">
-          <button
-            class="btn-generate"
-            :disabled="!canGenerate"
-            @click="handleGenerate"
-          >
+          <button class="btn-generate" :disabled="!canGenerate" @click="handleGenerate">
             🚀 {{ plan ? '重新生成' : '生成路线' }}
           </button>
           <div class="target-days">
@@ -609,8 +608,8 @@ onMounted(async () => {
             v-if="plan"
             class="btn-replan"
             :disabled="loading"
-            @click="handleReplan"
             title="从当前位置（当天最后一家门店）重新规划剩余路线"
+            @click="handleReplan"
           >
             🔄 重新规划
           </button>
@@ -626,12 +625,7 @@ onMounted(async () => {
     </div>
 
     <!-- 添加/编辑弹窗 -->
-    <StoreFormModal
-      :visible="showForm"
-      :store="editingStore"
-      @close="showForm = false"
-      @save="handleSave"
-    />
+    <StoreFormModal :visible="showForm" :store="editingStore" @close="showForm = false" @save="handleSave" />
   </div>
 </template>
 

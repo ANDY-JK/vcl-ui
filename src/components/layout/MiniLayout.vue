@@ -43,7 +43,7 @@ const pageTitle = computed(() => (route.meta.title as string) || '')
 
 const activeTab = computed(() => {
   const path = route.path
-  const found = tabs.find(t => path.startsWith(t.route))
+  const found = tabs.find((t) => path.startsWith(t.route))
   return found?.name || 'home'
 })
 
@@ -52,7 +52,7 @@ function goTab(tab: TabItem) {
 }
 
 function goBack() {
-  if (window.history.length > 1) {
+  if (typeof window !== 'undefined' && window.history.length > 1) {
     router.back()
   } else {
     router.push('/mini/home')
@@ -78,7 +78,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   <div class="mini-layout">
     <!-- 子页面模式：返回头 -->
     <header v-if="isSubPage" class="sub-header">
-      <button class="back-btn" @click="goBack" aria-label="返回">
+      <button class="back-btn" aria-label="返回" @click="goBack">
         <IconSvg type="arrow-left" size="md" />
       </button>
       <span class="sub-title">{{ pageTitle }}</span>
@@ -92,8 +92,8 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
         type="text"
         class="search-input"
         placeholder="搜索商品/订单..."
-        @focus="router.push('/mini/products')"
         readonly
+        @focus="router.push('/mini/products')"
       />
       <a href="#/button" class="back-to-pc" title="返回PC组件库">← 组件库</a>
     </div>
@@ -117,7 +117,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
       </button>
       <!-- 中间扫码 -->
       <div class="scan-spot">
-        <button class="scan-btn" @click="openScan" aria-label="扫码">
+        <button class="scan-btn" aria-label="扫码" @click="openScan">
           <IconSvg type="plus" size="lg" color="white" />
         </button>
       </div>
@@ -136,17 +136,13 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
     <!-- 扫码类型选择 -->
     <!-- #ifndef MP_WEIXIN -->
     <Teleport to="body">
-    <!-- #endif -->
+      <!-- #endif -->
       <Transition name="sheet">
         <div v-if="showScan" class="scan-overlay" @click.self="showScan = false">
           <div class="scan-sheet">
             <div class="sheet-title">选择扫码类型</div>
             <div class="sheet-grid">
-              <button
-                v-for="st in scanTypes" :key="st.name"
-                class="scan-type-btn"
-                @click="selectScan(st)"
-              >
+              <button v-for="st in scanTypes" :key="st.name" class="scan-type-btn" @click="selectScan(st)">
                 <div class="scan-type-icon" :style="{ background: st.color }">
                   <IconSvg :type="st.icon" size="md" color="white" />
                 </div>
@@ -157,7 +153,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
           </div>
         </div>
       </Transition>
-    <!-- #ifndef MP_WEIXIN -->
+      <!-- #ifndef MP_WEIXIN -->
     </Teleport>
     <!-- #endif -->
   </div>
@@ -198,7 +194,9 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   cursor: pointer;
   transition: background var(--transition-fast);
 }
-.back-btn:hover { background: var(--color-bg-alt); }
+.back-btn:hover {
+  background: var(--color-bg-alt);
+}
 .sub-title {
   flex: 1;
   font-size: 16px;
@@ -206,23 +204,34 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   color: var(--color-text);
   text-align: center;
 }
-.sub-spacer { width: 36px; }
+.sub-spacer {
+  width: 36px;
+}
 
 /* 搜索栏 */
 .search-bar {
   flex-shrink: 0;
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) 12px;
   background: var(--color-surface);
   color: var(--color-text-muted);
 }
 .search-input {
-  flex: 1; border: none; background: var(--color-bg);
-  border-radius: 20px; padding: var(--space-2) 12px;
-  font-size: 13px; outline: none; color: var(--color-text);
+  flex: 1;
+  border: none;
+  background: var(--color-bg);
+  border-radius: 20px;
+  padding: var(--space-2) 12px;
+  font-size: 13px;
+  outline: none;
+  color: var(--color-text);
   cursor: pointer;
 }
-.search-input::placeholder { color: var(--color-text-muted); }
+.search-input::placeholder {
+  color: var(--color-text-muted);
+}
 .back-to-pc {
   flex-shrink: 0;
   font-size: 11px;
@@ -234,7 +243,9 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   opacity: 0.6;
   transition: opacity var(--transition-fast);
 }
-.back-to-pc:hover { opacity: 1; }
+.back-to-pc:hover {
+  opacity: 1;
+}
 
 .mini-content {
   flex: 1;
@@ -284,63 +295,117 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   position: relative;
 }
 .scan-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   margin-top: -14px;
   border: 4px solid var(--color-bg);
   border-radius: 50%;
   background: var(--color-primary);
-  box-shadow: 0 2px 12px rgba(79,110,247,0.35);
-  cursor: pointer; transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: 0 2px 12px rgba(79, 110, 247, 0.35);
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
-.scan-btn:hover { transform: scale(1.08); box-shadow: 0 4px 18px rgba(79,110,247,0.45); }
+.scan-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 18px rgba(79, 110, 247, 0.45);
+}
 
 /* 扫码选择弹层 */
 .scan-overlay {
-  position: fixed; inset: 0; z-index: var(--z-overlay, 1500); /* 全屏遮罩：高于弹窗(modal 1000)、低于下拉(dropdown 2000) */
-  display: flex; align-items: flex-end;
-  background: rgba(0,0,0,0.35);
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay, 1500); /* 全屏遮罩：高于弹窗(modal 1000)、低于下拉(dropdown 2000) */
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(2px);
 }
 .scan-sheet {
-  width: clamp(320px, 88vw, 540px); margin: 0 auto;
+  width: clamp(320px, 88vw, 540px);
+  margin: 0 auto;
   background: var(--color-surface);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: var(--space-5) 16px calc(16px + env(safe-area-inset-bottom, 0px));
 }
 .sheet-title {
-  font-size: 15px; font-weight: 600; color: var(--color-text);
-  text-align: center; margin-bottom: var(--space-4);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+  margin-bottom: var(--space-4);
 }
 .sheet-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 .scan-type-btn {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
-  padding: var(--space-3) 8px; border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md); background: var(--color-bg);
-  cursor: pointer; transition: all var(--transition-fast); font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 8px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
 }
-.scan-type-btn:hover { border-color: var(--color-primary); background: var(--color-primary-light); }
+.scan-type-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
 .scan-type-icon {
-  display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
-.scan-type-label { font-size: 12px; color: var(--color-text-secondary); font-weight: 500; }
+.scan-type-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
 .sheet-cancel {
-  width: 100%; padding: var(--space-3); border: 1px solid var(--color-border);
-  border-radius: var(--radius-md); background: var(--color-surface);
-  font-size: 14px; color: var(--color-text-secondary);
-  cursor: pointer; transition: background var(--transition-fast); font-family: inherit;
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  font-family: inherit;
 }
-.sheet-cancel:hover { background: var(--color-bg-alt); }
+.sheet-cancel:hover {
+  background: var(--color-bg-alt);
+}
 
 /* 弹层动画 */
-.sheet-enter-active { transition: all var(--transition-normal); }
-.sheet-leave-active { transition: all var(--transition-fast); }
+.sheet-enter-active {
+  transition: all var(--transition-normal);
+}
+.sheet-leave-active {
+  transition: all var(--transition-fast);
+}
 .sheet-enter-from .scan-sheet,
-.sheet-leave-to .scan-sheet { transform: translateY(100%); }
-.sheet-enter-from { opacity: 0; }
-.sheet-leave-to { opacity: 0; }
+.sheet-leave-to .scan-sheet {
+  transform: translateY(100%);
+}
+.sheet-enter-from {
+  opacity: 0;
+}
+.sheet-leave-to {
+  opacity: 0;
+}
 </style>

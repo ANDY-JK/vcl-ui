@@ -27,11 +27,25 @@ export { default as IconPicker } from './form/IconPicker.vue'
 export { default as Upload } from './form/Upload.vue'
 export { default as CameraCapture } from './form/CameraCapture.vue'
 // 独立工具：无内置组件使用，供业务项目按需接入
-export { useBarcodeScanner, DEFAULT_CAPTURE_REGION } from './form/useBarcodeScanner'
-export { amapKeywordSearch, searchNearby, isValidLatLon, calculateDistance, geolocationCalc, fetchPoiDetail, batchFetchPoiPhotos, setAmapKey } from './geolocation/geolocation'
-export type { PoiItem, PoiPhoto } from './geolocation/geolocation'
-export type { BarcodeScannerOptions, CaptureRegion } from './form/useBarcodeScanner'
-export type { DropZoneConfig, DropZoneFile } from './form/types'
+export { useBarcodeScanner, DEFAULT_CAPTURE_REGION } from './form/utils/useBarcodeScanner'
+// 高德地图统一模块
+export { default as AmapWidget } from './amap/AmapWidget.vue'
+export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityCode } from './amap/amap-key'
+export {
+  isValidLatLon,
+  calcDistance,
+  keywordSearch,
+  searchNearby,
+  fetchPoiDetail,
+  batchFetchPoiPhotos,
+  getDrivingRoute,
+  geocodeCalc,
+  detectPlatform,
+  buildNavLink,
+} from './amap/amap-service'
+export type { LatLng, PoiPhoto, PoiItem, DrivingRouteResult, NavLink, NavPoint } from './amap/amap-service'
+export type { BarcodeScannerOptions, CaptureRegion } from './form/utils/useBarcodeScanner'
+export type { DropZoneConfig, DropZoneFile } from './form/utils/types'
 
 // 反馈
 export { default as Toast } from './feedback/Toast.vue'
@@ -43,11 +57,11 @@ export { default as OfflineIndicator } from './feedback/OfflineIndicator.vue'
 export { default as ReadOnlyOverlay } from './feedback/ReadOnlyOverlay.vue'
 export { default as ErrorBoundary } from './feedback/ErrorBoundary.vue'
 // 独立工具：无内置组件使用，供业务项目按需接入
-export { beepSuccess, beepError, beepNotify, unlockAudio } from './feedback/useBeep'
-export { speak, stopSpeak, unlockVoice } from './feedback/useVoice'
-export type { VoiceLang } from './feedback/useVoice'
-export { notify, getNotifyStatus } from './feedback/useNotify'
-export type { NotifyOptions } from './feedback/useNotify'
+export { beepSuccess, beepError, beepNotify, beepWarning, unlockAudio } from './feedback/composables/useBeep'
+export { speak, stopSpeak, unlockVoice } from './feedback/composables/useVoice'
+export type { VoiceLang } from './feedback/composables/useVoice'
+export { notify, getNotifyStatus } from './feedback/composables/useNotify'
+export type { NotifyOptions } from './feedback/composables/useNotify'
 export { default as ConfirmModal } from './feedback/ConfirmModal.vue'
 
 // 导航
@@ -79,15 +93,26 @@ export { default as ForgotPasswordPage } from './login/forgot-password.vue'
 export { default as PortalLogin } from './login/portal_login.vue'
 
 // 导航数据（外部可引用 NavNode 类型 + 示例数据）
-export { navTree, flattenNodes, getPrevNext, getCategory, getCurrentLabel } from './layout/navData'
-export type { NavNode } from './layout/navData'
+export { navTree, flattenNodes, getPrevNext, getCategory, getCurrentLabel } from './layout/utils/navData'
+export type { NavNode } from './layout/utils/navData'
 
 // DataTable 类型 & 工具
 export { createLocalStorage } from './data/composables/types'
-export type { Column, ColumnOption, RowAction, RowContextAction, ColumnFilterState, FilterOption, RowMeta, OptionSort, TableStorage, Emits } from './data/composables/types'
+export type {
+  Column,
+  ColumnOption,
+  RowAction,
+  RowContextAction,
+  ColumnFilterState,
+  FilterOption,
+  RowMeta,
+  OptionSort,
+  TableStorage,
+  Emits,
+} from './data/composables/types'
 
 // 类型
-export type { ChartType, ChartData, ChartSeriesItem, ChartProps } from './chart/types'
+export type { ChartType, ChartData, ChartSeriesItem, ChartProps } from './chart/utils/types'
 export type { ImageItem, ImageSrc } from './data/ImagePreview.vue'
 export type { Option, MenuItem, FeedbackType, TabItem } from './shared/types'
 export type { RegisterPayload } from './login/register.vue'
@@ -107,6 +132,20 @@ export { storageSet, storageGet, storageDelete, storageHas } from './storage/ind
 export { dbPut, dbGet, dbDelete, dbHas, dbGetAll, dbKeys, dbCount, dbClear, dbBatch } from './storage/indexedDB'
 // 合同收集存储适配层 — 本地 IndexedDB + 云端 Supabase 双后端
 export { createBackend, validateStorageConfig } from './storage/contract-storage'
-export type { StorageConfig, StorageBackend, StoreFile, StoreUploadState, SupabaseConfig } from './storage/contract-storage'
+export type {
+  StorageConfig,
+  StorageBackend,
+  StoreFile,
+  StoreUploadState,
+  SupabaseConfig,
+} from './storage/contract-storage'
 // 类型
 export type { CascaderOption } from './shared/types'
+
+// 主题
+export { useTheme } from './_internal/useTheme'
+export type { ThemeMode } from './_internal/useTheme'
+
+// 国际化
+export { i18n, setLocale, getLocale, useT, useI18n } from './_internal/i18n'
+export type { Locale } from './_internal/i18n'

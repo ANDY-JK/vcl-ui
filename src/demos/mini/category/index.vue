@@ -29,15 +29,13 @@ function selectCat(name: string) {
     </div>
 
     <div class="cat-grid">
-      <button
-        v-for="c in categories" :key="c.name"
-        class="cat-card"
-        @click="selectCat(c.name)"
-      >
+      <button v-for="c in categories" :key="c.name" class="cat-card" @click="selectCat(c.name)">
         <div class="cat-icon" :style="{ background: c.color + '18', color: c.color }">
           <IconSvg :type="c.icon" size="lg" />
         </div>
-        <div class="cat-name">{{ c.name }}</div>
+        <div class="cat-name">
+          {{ c.name }}
+        </div>
         <div class="cat-count">{{ c.count }} 件商品</div>
       </button>
     </div>
@@ -46,7 +44,9 @@ function selectCat(name: string) {
     <div class="section-title">最近浏览</div>
     <div class="recent-row">
       <div v-for="i in 4" :key="i" class="recent-item" @click="router.push('/mini/products/detail/' + i)">
-        <div class="recent-thumb"><IconSvg type="box" size="md" /></div>
+        <div class="recent-thumb">
+          <IconSvg type="box" size="md" />
+        </div>
         <div class="recent-name">SKU-{{ 1000 + i }}</div>
       </div>
     </div>
@@ -54,43 +54,98 @@ function selectCat(name: string) {
 </template>
 
 <style scoped>
-.page { padding: 12px; }
+.page {
+  padding: 12px;
+}
 
 .search-bar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; margin-bottom: 12px;
-  background: var(--color-surface); border: 1px solid var(--color-border);
-  border-radius: var(--radius-md); color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
   cursor: pointer;
 }
-.search-placeholder { font-size: 13px; }
+.search-placeholder {
+  font-size: 13px;
+}
 
-.cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
 .cat-card {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 16px 8px; background: var(--color-surface); border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-light); cursor: pointer;
-  transition: all 150ms ease; font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 8px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: inherit;
 }
-.cat-card:hover { border-color: var(--color-primary); transform: translateY(-1px); }
+.cat-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
 .cat-icon {
-  display: flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px; border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
 }
-.cat-name { font-size: 13px; font-weight: 500; color: var(--color-text); }
-.cat-count { font-size: 10px; color: var(--color-text-muted); }
+.cat-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+.cat-count {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
 
-.section-title { font-size: 14px; font-weight: 600; color: var(--color-text); margin-bottom: 8px; }
-.recent-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+.recent-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
 .recent-item {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   cursor: pointer;
 }
 .recent-thumb {
-  display: flex; align-items: center; justify-content: center;
-  width: 48px; height: 48px; border-radius: var(--radius-sm);
-  background: var(--color-bg); color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
   border: 1px solid var(--color-border-light);
 }
-.recent-name { font-size: 10px; color: var(--color-text-secondary); }
+.recent-name {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
 </style>

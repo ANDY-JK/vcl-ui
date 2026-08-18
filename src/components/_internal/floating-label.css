@@ -1,0 +1,37 @@
+/**
+ * 浮动标签（Floating Label）共享样式
+ *
+ * 从 Input.vue 和 Select.vue 中抽离的重复 .fl-label 样式。
+ * 两个组件的浮动标签样式几乎完全一致，统一维护避免漂移。
+ *
+ * 用法：在组件 <style> 中 @import 使用，或在模板中引入。
+ * 注意：此样式不包含 scoped 标记，需在组件 <style> 中 @import 引入。
+ */
+
+.fl-label {
+  position: absolute;
+  left: var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(12px, 1.8vw, 14px);
+  color: var(--color-text-muted);
+  pointer-events: none;
+  transition: all var(--transition-fast);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 16px);
+  z-index: 1;
+}
+
+.fl-label.raised {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: clamp(10px, 1.5vw, 11px);
+  color: var(--color-primary);
+  background: var(--color-surface);
+  padding: 0 var(--space-1);
+  left: calc(var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)) - 4px);
+  z-index: 2;
+}

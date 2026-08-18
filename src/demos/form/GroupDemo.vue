@@ -27,24 +27,31 @@ const fruitOptions = [
     <!-- Radio -->
     <section class="demo-section">
       <h3>type="radio" — 单选按钮组</h3>
-      <Group type="radio" v-model="radioVal" :options="fruitOptions" direction="horizontal" aria-label="水果单选" />
+      <Group v-model="radioVal" type="radio" :options="fruitOptions" direction="horizontal" aria-label="水果单选" />
       <p class="result">当前值：{{ radioVal }}</p>
     </section>
 
     <!-- Checkbox -->
     <section class="demo-section">
       <h3>type="checkbox" — 复选按钮组</h3>
-      <Group type="checkbox" v-model="checkboxVal" :options="fruitOptions" direction="horizontal" :max="3" aria-label="水果多选" />
+      <Group
+        v-model="checkboxVal"
+        type="checkbox"
+        :options="fruitOptions"
+        direction="horizontal"
+        :max="3"
+        aria-label="水果多选"
+      />
       <p class="result">当前值：{{ checkboxVal.join(', ') }}</p>
     </section>
 
     <!-- Switch -->
     <section class="demo-section">
       <h3>type="switch" — 开关</h3>
-      <div style="display:flex;gap:24px;align-items:center">
-        <Group type="switch" v-model="switchVal" label="默认尺寸" size="md" />
-        <Group type="switch" v-model="switchVal" label="小尺寸" size="sm" />
-        <Group type="switch" v-model="switchVal" label="禁用" disabled />
+      <div style="display: flex; gap: 24px; align-items: center">
+        <Group v-model="switchVal" type="switch" label="默认尺寸" size="md" />
+        <Group v-model="switchVal" type="switch" label="小尺寸" size="sm" />
+        <Group v-model="switchVal" type="switch" label="禁用" disabled />
       </div>
       <p class="result">当前值：{{ switchVal }}</p>
     </section>
@@ -52,10 +59,10 @@ const fruitOptions = [
     <!-- Rate -->
     <section class="demo-section">
       <h3>type="rate" — 评分</h3>
-      <div style="display:flex;gap:32px;align-items:center">
-        <Group type="rate" v-model="rateVal" :rate-max="5" />
-        <Group type="rate" v-model="rateVal" :rate-max="5" allow-half color="#EF4444" />
-        <Group type="rate" v-model="rateVal" :rate-max="10" color="#10B981" />
+      <div style="display: flex; gap: 32px; align-items: center">
+        <Group v-model="rateVal" type="rate" :rate-max="5" />
+        <Group v-model="rateVal" type="rate" :rate-max="5" allow-half color="#EF4444" />
+        <Group v-model="rateVal" type="rate" :rate-max="10" color="#10B981" />
       </div>
       <p class="result">当前值：{{ rateVal }}</p>
     </section>
@@ -63,33 +70,51 @@ const fruitOptions = [
     <!-- Slider -->
     <section class="demo-section">
       <h3>type="slider" — 滑块（单值）</h3>
-      <Group type="slider" v-model="sliderVal" :min="0" :slider-max="100" :step="1" />
+      <Group v-model="sliderVal" type="slider" :min="0" :slider-max="100" :step="1" />
       <p class="result">当前值：{{ sliderVal }}</p>
     </section>
 
     <section class="demo-section">
       <h3>type="slider" — 滑块（范围）</h3>
-      <Group type="slider" v-model="sliderRange" :min="0" :slider-max="100" :step="5" />
+      <Group v-model="sliderRange" type="slider" :min="0" :slider-max="100" :step="5" />
       <p class="result">当前值：{{ sliderRange[0] }} ~ {{ sliderRange[1] }}</p>
     </section>
 
     <!-- 禁用态 -->
     <section class="demo-section">
       <h3>禁用态</h3>
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <Group type="radio" v-model="radioVal" :options="fruitOptions" disabled />
-        <Group type="checkbox" v-model="checkboxVal" :options="fruitOptions" disabled />
-        <Group type="rate" v-model="rateVal" disabled />
-        <Group type="slider" v-model="sliderVal" disabled />
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <Group v-model="radioVal" type="radio" :options="fruitOptions" disabled />
+        <Group v-model="checkboxVal" type="checkbox" :options="fruitOptions" disabled />
+        <Group v-model="rateVal" type="rate" disabled />
+        <Group v-model="sliderVal" type="slider" disabled />
       </div>
     </section>
   </div>
 </template>
 
 <style scoped>
-.demo-container { max-width: 640px; }
-.demo-section { margin-bottom: 24px; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
-.demo-section h3 { margin: 0 0 12px; font-size: 15px; }
-.desc { color: var(--color-text-muted); font-size: 13px; margin-bottom: 16px; }
-.result { margin: 8px 0 0; font-size: 12px; color: var(--color-primary); }
+.demo-container {
+  max-width: 640px;
+}
+.demo-section {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.demo-section h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+.desc {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.result {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--color-primary);
+}
 </style>

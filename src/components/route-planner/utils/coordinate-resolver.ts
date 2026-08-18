@@ -1,19 +1,17 @@
 /**
- * 三级坐标解析器
+ * coordinate-resolver.ts — 三级坐标解析器
+ *
+ * REST API 调用已统一到 @/components/amap/amap-service.ts
  * Priority 1: 已有经纬度 → 直接用
  * Priority 2: 门店名+详细地址 → 高德地理编码
  * Priority 3: 四级地址+人民政府 → 高德地理编码（直接用 Excel 原始字符串，不拆解重建）
  */
-import { amapKeywordSearch, isValidLatLon, setAmapKey as setGeoKey } from '@/components/geolocation/geolocation'
+
+// re-export 统一 Key 管理
+export { setAmapKey } from '@/components/amap/amap-key'
+
+import { keywordSearch, isValidLatLon } from '@/components/amap/amap-service'
 import type { Store, CoordResult, CoordSource, ProgressCallback } from '@/components/route-planner/types'
-
-import { getAmapRestKey, setAmapKey } from './amap-key'
-
-/** 初始化时将 Key 同步给 geolocation 模块（共用同一个 REST Key） */
-setGeoKey(getAmapRestKey())
-
-/** 设置高德 Key（供用户覆盖） — 同步更新 route-planner 和 geolocation 两个模块 */
-export { setAmapKey }
 
 /**
  * 解析单个门店的坐标（三级策略）
@@ -24,8 +22,7 @@ export async function resolveCoordinate(store: Partial<Store>): Promise<CoordRes
   const cityLimit = store.city || store.district || ''
 
   // Priority 1: 已有经纬度
-  if (store.longitude != null && store.latitude != null
-    && isValidLatLon(store.latitude, store.longitude)) {
+  if (store.longitude != null && store.latitude != null && isValidLatLon(store.latitude, store.longitude)) {
     return {
       longitude: store.longitude,
       latitude: store.latitude,
@@ -36,9 +33,8 @@ export async function resolveCoordinate(store: Partial<Store>): Promise<CoordRes
   // Priority 2: 门店名 + 详细地址（带城市限定）
   if (store.name || store.address) {
     const query2 = [store.name, store.address].filter(Boolean).join(' ')
-    const result2 = await amapKeywordSearch(query2, cityLimit)
-    if (result2.latitude != null && result2.longitude != null
-      && isValidLatLon(result2.latitude, result2.longitude)) {
+    const result2 = await keywordSearch(query2, cityLimit)
+    if (result2.latitude != null && result2.longitude != null && isValidLatLon(result2.latitude, result2.longitude)) {
       return {
         longitude: result2.longitude,
         latitude: result2.latitude,
@@ -47,9 +43,12 @@ export async function resolveCoordinate(store: Partial<Store>): Promise<CoordRes
     }
     // 降级：只用地址（去掉门店名干扰）+ 城市限定
     if (store.address && store.name) {
-      const result2b = await amapKeywordSearch(store.address, cityLimit)
-      if (result2b.latitude != null && result2b.longitude != null
-        && isValidLatLon(result2b.latitude, result2b.longitude)) {
+      const result2b = await keywordSearch(store.address, cityLimit)
+      if (
+        result2b.latitude != null &&
+        result2b.longitude != null &&
+        isValidLatLon(result2b.latitude, result2b.longitude)
+      ) {
         return {
           longitude: result2b.longitude,
           latitude: result2b.latitude,
@@ -63,12 +62,10 @@ export async function resolveCoordinate(store: Partial<Store>): Promise<CoordRes
   // 优先用 Excel 原始「四级乡镇」列拼接，无则用拆解后的省市区镇字段回退
   const townshipQuery = store.fullAddr
     ? `${store.fullAddr}人民政府`
-    : [store.province, store.city, store.district, store.town, '人民政府']
-      .filter(Boolean).join('')
+    : [store.province, store.city, store.district, store.town, '人民政府'].filter(Boolean).join('')
   if (townshipQuery.length > 0) {
-    const result3 = await amapKeywordSearch(townshipQuery, cityLimit)
-    if (result3.latitude != null && result3.longitude != null
-      && isValidLatLon(result3.latitude, result3.longitude)) {
+    const result3 = await keywordSearch(townshipQuery, cityLimit)
+    if (result3.latitude != null && result3.longitude != null && isValidLatLon(result3.latitude, result3.longitude)) {
       return {
         longitude: result3.longitude,
         latitude: result3.latitude,
@@ -100,13 +97,14 @@ export async function batchResolveCoordinates(
     onProgress?.(i + 1, total)
 
     // 已有坐标直接保留
-    if (partial.longitude != null && partial.latitude != null
-      && isValidLatLon(partial.latitude, partial.longitude)) {
-      results.push(toFullStore(partial, {
-        longitude: partial.longitude,
-        latitude: partial.latitude,
-        source: 'original',
-      }))
+    if (partial.longitude != null && partial.latitude != null && isValidLatLon(partial.latitude, partial.longitude)) {
+      results.push(
+        toFullStore(partial, {
+          longitude: partial.longitude,
+          latitude: partial.latitude,
+          source: 'original',
+        }),
+      )
       continue
     }
 
@@ -116,11 +114,13 @@ export async function batchResolveCoordinates(
       results.push(toFullStore(partial, coord))
     } catch {
       // 编码失败，保留但标记为 none
-      results.push(toFullStore(partial, {
-        longitude: null,
-        latitude: null,
-        source: 'none',
-      }))
+      results.push(
+        toFullStore(partial, {
+          longitude: null,
+          latitude: null,
+          source: 'none',
+        }),
+      )
     }
 
     // 限速延迟
@@ -133,11 +133,14 @@ export async function batchResolveCoordinates(
 }
 
 /** 将 Partial<Store> + CoordResult 合并为完整 Store */
-function toFullStore(partial: Partial<Store>, coord: {
-  longitude: number | null
-  latitude: number | null
-  source: CoordSource
-}): Store {
+function toFullStore(
+  partial: Partial<Store>,
+  coord: {
+    longitude: number | null
+    latitude: number | null
+    source: CoordSource
+  },
+): Store {
   return {
     id: partial.id || generateId(),
     name: partial.name || '',
@@ -163,5 +166,5 @@ function generateId(): string {
 
 /** 延时 */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }

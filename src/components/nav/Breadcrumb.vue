@@ -4,7 +4,11 @@
 import { RouterLink } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
-interface Crumb { label: string; path?: string; to?: string }
+interface Crumb {
+  label: string
+  path?: string
+  to?: string
+}
 
 interface Props {
   items: Crumb[]
@@ -32,16 +36,13 @@ function normalizeTo(p: string): string {
         v-if="(item.path || item.to) && isRouteLink((item.path || item.to)!)"
         class="crumb-link"
         :to="normalizeTo((item.path || item.to)!)"
-      >{{ item.label }}</RouterLink>
+      >
+        {{ item.label }}
+      </RouterLink>
       <a v-else-if="item.path" class="crumb-link" :href="item.path">{{ item.label }}</a>
-	      <span v-else class="crumb-current" aria-current="page">{{ item.label }}</span>
+      <span v-else class="crumb-current" aria-current="page">{{ item.label }}</span>
       <span v-if="separator && idx < items.length - 1" class="crumb-sep-text">{{ separator }}</span>
-      <IconSvg
-        v-else-if="idx < items.length - 1"
-        type="chevron-right"
-        size="sm"
-        class="crumb-sep"
-      />
+      <IconSvg v-else-if="idx < items.length - 1" type="chevron-right" size="sm" class="crumb-sep" />
     </template>
   </nav>
 </template>
@@ -60,7 +61,9 @@ function normalizeTo(p: string): string {
   text-decoration: none;
   transition: color var(--transition-fast);
 }
-.crumb-link:hover { color: var(--color-primary); }
+.crumb-link:hover {
+  color: var(--color-primary);
+}
 
 .crumb-current {
   color: var(--color-text);

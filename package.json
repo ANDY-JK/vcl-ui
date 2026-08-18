@@ -3,13 +3,29 @@
   "version": "1.0.0",
   "type": "module",
   "sideEffects": false,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview",
+    "lint": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.{ts,vue,css}\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:unit": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage --reporter=html --outputDir=reports/coverage",
+    "quality-check": "npm run typecheck && npm run lint && npm run test:unit && npm run build",
+    "prepare": "husky",
+    "report:coverage": "vitest run --coverage --reporter=html --outputDir=reports/coverage",
+    "report:audit": "npm audit --registry=https://registry.npmjs.org",
+    "scan:deps": "depcheck",
+    "scan:secrets": "npx gitleaks detect --source . --no-banner",
+    "test:e2e": "npx playwright test",
+    "test:e2e:headed": "npx playwright test --headed",
+    "test:e2e:ui": "npx playwright test --ui"
   },
   "main": "./dist/vue-component-lib.cjs",
   "module": "./dist/vue-component-lib.js",
@@ -83,21 +99,40 @@
     "echarts-wordcloud": "^2.1.0",
     "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
-    "xlsx": "^0.18.5",
+    "vue-i18n": "^9.14.4",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zxing-wasm": "^3.0.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
     "@vitejs/plugin-vue": "^5.0.0",
+    "@vitest/coverage-v8": "^4.1.10",
     "@vue/test-utils": "^2.4.11",
+    "eslint-plugin-vue": "^10.10.0",
     "happy-dom": "^20.11.1",
+    "husky": "^9.1.7",
+    "jiti": "^2.7.0",
+    "lint-staged": "^17.3.0",
     "pinia": "^2.1.7",
     "playwright-core": "^1.62.1",
-    "puppeteer-core": "^25.7.0",
+    "prettier": "^3.9.6",
     "typescript": "~5.4.0",
+    "typescript-eslint": "^8.67.0",
     "vite": "^5.4.0",
     "vitest": "^4.1.10",
     "vue": "^3.4.0",
+    "vue-eslint-parser": "^10.4.1",
     "vue-router": "^4.3.0",
     "vue-tsc": "^2.0.0"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "src/**/*.{css,scss}": [
+      "prettier --write"
+    ]
   }
 }

@@ -1,42 +1,45 @@
 <script setup lang="ts">
 // ⛔ 保护 — 图片，禁止：lazy loading 逻辑删除，尺寸比例，fallback 占位
 //    需我确认：src fallback、aspect-ratio 默认值
-	import { ref, onMounted, onUnmounted, computed } from 'vue'
-	import IconSvg from '@/components/basic/IconSvg.vue'
-	import ImagePreview from '@/components/data/ImagePreview.vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import IconSvg from '@/components/basic/IconSvg.vue'
+import ImagePreview from '@/components/data/ImagePreview.vue'
 
-const props = withDefaults(defineProps<{
-  src?: string
-  alt?: string
-  /** 图片宽度 */
-  width?: number
-  /** 图片高度 */
-  height?: number
-  /** 默认尺寸（宽高未设时） */
-  size?: number
-  /** object-fit */
-  fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down'
-  /** 圆角 */
-  radius?: number
-  /** 圆形 */
-  round?: boolean
-  /** 是否懒加载 */
-  lazy?: boolean
-  /** 点击放大预览 */
-  preview?: boolean
-  /** 加载中文本 */
-  loadingText?: string
-  /** 加载失败文本 */
-  errorText?: string
-}>(), {
-  alt: '',
-  size: 80,
-  fit: 'cover',
-  lazy: true,
-  preview: true,
-  loadingText: '',
-  errorText: '',
-})
+const props = withDefaults(
+  defineProps<{
+    src?: string
+    alt?: string
+    /** 图片宽度 */
+    width?: number
+    /** 图片高度 */
+    height?: number
+    /** 默认尺寸（宽高未设时） */
+    size?: number
+    /** object-fit */
+    fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down'
+    /** 圆角 */
+    radius?: number
+    /** 圆形 */
+    round?: boolean
+    /** 是否懒加载 */
+    lazy?: boolean
+    /** 点击放大预览 */
+    preview?: boolean
+    /** 加载中文本 */
+    loadingText?: string
+    /** 加载失败文本 */
+    errorText?: string
+  }>(),
+  {
+    alt: '',
+    size: 80,
+    fit: 'cover',
+    lazy: true,
+    preview: true,
+    loadingText: '',
+    errorText: '',
+  },
+)
 
 const emit = defineEmits<{
   load: [src: string]
@@ -79,7 +82,7 @@ onUnmounted(() => {
 
 const _w = computed(() => (props.width || props.size) + 'px')
 const _h = computed(() => (props.height || props.size) + 'px')
-const _rad = computed(() => props.round ? '50%' : (props.radius ?? 4) + 'px')
+const _rad = computed(() => (props.round ? '50%' : (props.radius ?? 4) + 'px'))
 
 function onLoad() {
   loaded.value = true
@@ -91,21 +94,21 @@ function onError() {
   emit('error', props.src || '')
 }
 
-	function onClick() {
-	  emit('click', props.src || '')
-	  if (props.preview && loaded.value) _lightboxOpen.value = true
-	}
+function onClick() {
+  emit('click', props.src || '')
+  if (props.preview && loaded.value) _lightboxOpen.value = true
+}
 </script>
 
 <template>
   <div
+    ref="imgRef"
     class="v-image"
     :style="{ width: _w, height: _h, borderRadius: _rad }"
     :class="{ loaded, failed, clickable: preview && loaded }"
-    ref="imgRef"
-    @click="onClick"
     role="img"
     :aria-label="alt || '图片'"
+    @click="onClick"
   >
     <!-- 加载占位 -->
     <div v-if="!loaded && !failed" class="v-image-placeholder">
@@ -132,18 +135,14 @@ function onError() {
     />
   </div>
 
-	  <!-- 灯箱预览 -->
-	  <!-- #ifndef MP_WEIXIN -->
-	  <Teleport to="body">
-	  <!-- #endif -->
-	    <ImagePreview
-	      v-if="_lightboxOpen"
-	      :src="src || ''"
-	      @close="_lightboxOpen = false"
-	    />
-	  <!-- #ifndef MP_WEIXIN -->
-	  </Teleport>
-	  <!-- #endif -->
+  <!-- 灯箱预览 -->
+  <!-- #ifndef MP_WEIXIN -->
+  <Teleport to="body">
+    <!-- #endif -->
+    <ImagePreview v-if="_lightboxOpen" :src="src || ''" @close="_lightboxOpen = false" />
+    <!-- #ifndef MP_WEIXIN -->
+  </Teleport>
+  <!-- #endif -->
 </template>
 
 <style scoped>
@@ -153,12 +152,16 @@ function onError() {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--color-bg-alt, #EAECF0);
+  background: var(--color-bg-alt, #eaecf0);
   flex-shrink: 0;
   cursor: default;
 }
-.v-image.clickable { cursor: pointer; }
-.v-image.clickable:hover { opacity: 0.9; }
+.v-image.clickable {
+  cursor: pointer;
+}
+.v-image.clickable:hover {
+  opacity: 0.9;
+}
 
 .v-image-img {
   width: 100%;
@@ -166,7 +169,9 @@ function onError() {
   display: block;
   transition: opacity var(--transition-slow);
 }
-.v-image-img.invisible { opacity: 0; }
+.v-image-img.invisible {
+  opacity: 0;
+}
 
 .v-image-placeholder,
 .v-image-error {
@@ -177,8 +182,12 @@ function onError() {
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  color: var(--color-text-muted, #5F6672);
+  color: var(--color-text-muted, #5f6672);
 }
-.v-image-error { color: var(--color-danger, #E54545); }
-.v-image-text { font-size: 11px; }
-	</style>
+.v-image-error {
+  color: var(--color-danger, #e54545);
+}
+.v-image-text {
+  font-size: 11px;
+}
+</style>

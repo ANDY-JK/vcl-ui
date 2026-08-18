@@ -37,20 +37,22 @@ const favorited = ref(false)
     <!-- 基本信息 -->
     <div class="info-section">
       <div class="info-head">
-        <div class="info-name">{{ product.name }}</div>
+        <div class="info-name">
+          {{ product.name }}
+        </div>
         <button class="fav-btn" :class="{ on: favorited }" @click="favorited = !favorited">
-          <IconSvg
-            type="star"
-            size="md"
-            :color="favorited ? 'var(--color-warning)' : 'var(--color-text-muted)'"
-          />
+          <IconSvg type="star" size="md" :color="favorited ? 'var(--color-warning)' : 'var(--color-text-muted)'" />
         </button>
       </div>
       <div class="info-meta">
-        <Tag size="sm">{{ product.category }}</Tag>
+        <Tag size="sm">
+          {{ product.category }}
+        </Tag>
         <span class="info-sku">{{ product.sku }}</span>
       </div>
-      <div class="info-price">¥{{ product.price }} <span class="info-unit">/ {{ product.unit }}</span></div>
+      <div class="info-price">
+        ¥{{ product.price }} <span class="info-unit">/ {{ product.unit }}</span>
+      </div>
     </div>
 
     <!-- 详细信息 -->
@@ -76,7 +78,9 @@ const favorited = ref(false)
     </Card>
 
     <Card title="商品描述">
-      <p class="product-desc">{{ product.desc }}</p>
+      <p class="product-desc">
+        {{ product.desc }}
+      </p>
     </Card>
 
     <!-- 库存记录 -->
@@ -106,86 +110,214 @@ const favorited = ref(false)
     <!-- 底部操作 -->
     <div class="bottom-bar">
       <div class="qty-control">
-        <button class="qty-btn" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1">
+        <button class="qty-btn" :disabled="qty <= 1" @click="qty = Math.max(1, qty - 1)">
           <IconSvg type="minus" size="sm" />
         </button>
         <span class="qty-value">{{ qty }}</span>
-        <button class="qty-btn" @click="qty = Math.min(product.stock, qty + 1)" :disabled="qty >= product.stock">
+        <button class="qty-btn" :disabled="qty >= product.stock" @click="qty = Math.min(product.stock, qty + 1)">
           <IconSvg type="plus" size="sm" />
         </button>
       </div>
-      <button class="action-btn outline">
-        <IconSvg type="download" size="sm" /> 入库
-      </button>
-      <button class="action-btn primary">
-        <IconSvg type="upload" size="sm" /> 出库
-      </button>
+      <button class="action-btn outline"><IconSvg type="download" size="sm" /> 入库</button>
+      <button class="action-btn primary"><IconSvg type="upload" size="sm" /> 出库</button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.page { padding-bottom: 60px; }
+.page {
+  padding-bottom: 60px;
+}
 
 .image-placeholder {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-  height: 180px; margin: -12px -12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 180px;
+  margin: -12px -12px 12px;
   background: linear-gradient(135deg, var(--color-primary), #6366f1);
-  color: rgba(255,255,255,0.7); font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
 }
 
-.info-section { padding: 0 0 12px; }
-.info-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.info-name { font-size: 18px; font-weight: 600; color: var(--color-text); }
+.info-section {
+  padding: 0 0 12px;
+}
+.info-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.info-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
 .fav-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border: none; border-radius: 50%;
-  background: var(--color-bg); cursor: pointer; transition: background 120ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-bg);
+  cursor: pointer;
+  transition: background 120ms;
 }
-.fav-btn:hover { background: var(--color-bg-alt); }
-.info-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.info-sku { font-size: 12px; color: var(--color-text-muted); }
-.info-price { font-size: 24px; font-weight: 700; color: var(--color-danger); }
-.info-unit { font-size: 13px; font-weight: 400; color: var(--color-text-muted); }
+.fav-btn:hover {
+  background: var(--color-bg-alt);
+}
+.info-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.info-sku {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.info-price {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-danger);
+}
+.info-unit {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
 
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.detail-item { display: flex; flex-direction: column; gap: 2px; }
-.detail-label { font-size: 11px; color: var(--color-text-muted); }
-.detail-value { font-size: 13px; color: var(--color-text); }
-.detail-value.stock { font-weight: 600; color: var(--color-primary); }
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.detail-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.detail-value {
+  font-size: 13px;
+  color: var(--color-text);
+}
+.detail-value.stock {
+  font-weight: 600;
+  color: var(--color-primary);
+}
 
-.product-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
+.product-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
 
-.log-mini { display: flex; flex-direction: column; gap: 6px; }
-.log-mini-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.log-type { padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 500; }
-.log-type.in { background: rgba(34,173,95,0.12); color: var(--color-success); }
-.log-type.out { background: rgba(239,68,68,0.12); color: var(--color-danger); }
-.log-desc { flex: 1; color: var(--color-text); }
-.log-qty { font-weight: 600; color: var(--color-text); }
-.log-time { color: var(--color-text-muted); font-size: 11px; }
+.log-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.log-mini-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.log-type {
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+}
+.log-type.in {
+  background: rgba(34, 173, 95, 0.12);
+  color: var(--color-success);
+}
+.log-type.out {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--color-danger);
+}
+.log-desc {
+  flex: 1;
+  color: var(--color-text);
+}
+.log-qty {
+  font-weight: 600;
+  color: var(--color-text);
+}
+.log-time {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
 
 .bottom-bar {
-  position: sticky; bottom: 0;
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; margin: 12px -12px -12px;
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 12px -12px -12px;
   background: var(--color-surface);
   border-top: 1px solid var(--color-border-light);
 }
-.qty-control { display: flex; align-items: center; gap: 4px; }
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .qty-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; border: 1px solid var(--color-border);
-  border-radius: 50%; background: var(--color-surface);
-  color: var(--color-text); cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
 }
-.qty-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.qty-value { width: 32px; text-align: center; font-size: 15px; font-weight: 600; }
+.qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.qty-value {
+  width: 32px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+}
 .action-btn {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px;
-  padding: 10px; border-radius: var(--radius-md);
-  font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
 }
-.action-btn.outline { border: 1px solid var(--color-primary); background: var(--color-surface); color: var(--color-primary); }
-.action-btn.primary { border: none; background: var(--color-primary); color: #fff; }
+.action-btn.outline {
+  border: 1px solid var(--color-primary);
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+.action-btn.primary {
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+}
 </style>

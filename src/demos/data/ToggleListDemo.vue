@@ -51,47 +51,110 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
     </Card>
 
     <Card title="通知设置（switch 变体）" style="margin-bottom: 16px">
-      <ToggleList
-        :items="notifyItems"
-        variant="switch"
-        toggleField="is_enabled"
-        @toggle="onToggle"
-      />
+      <ToggleList :items="notifyItems" variant="switch" toggle-field="is_enabled" @toggle="onToggle" />
     </Card>
 
     <Card title="发快递（button 变体）">
-      <ToggleList
-        :items="buttonItems"
-        variant="button"
-        button-label="发快递"
-        @button-click="onButtonClick"
-      />
+      <ToggleList :items="buttonItems" variant="button" button-label="发快递" @button-click="onButtonClick" />
     </Card>
 
     <Card title="Props" style="margin-top: 24px">
-      <table style="width:100%;font-size:13px;border-collapse:collapse;">
-        <thead><tr style="border-bottom:2px solid var(--color-border);text-align:left;">
-          <th style="padding:6px 8px;">Prop</th><th style="padding:6px 8px;">类型</th><th style="padding:6px 8px;">默认值</th><th style="padding:6px 8px;">说明</th>
-        </tr></thead>
+      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: 6px 8px">Prop</th>
+            <th style="padding: 6px 8px">类型</th>
+            <th style="padding: 6px 8px">默认值</th>
+            <th style="padding: 6px 8px">说明</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>items</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">Record&lt;string, any&gt;[]</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">—</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">列表数据</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>variant</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'switch' | 'button'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'switch'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">变体：开关 / 操作按钮</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>titleField</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">string</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'display_name'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">标题字段映射</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>descriptionField</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">string</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'description'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">描述字段映射</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>toggleField</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">string</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'is_enabled'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">开关值字段映射</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>buttonLabel</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">string</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'发快递'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">按钮文字（variant='button'）</td></tr>
-          <tr><td style="padding:6px 8px;"><code>extraColumns</code></td><td style="padding:6px 8px;">ExtraColumn[]</td><td style="padding:6px 8px;">[]</td><td style="padding:6px 8px;">额外信息列</td></tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>items</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              Record&lt;string, any&gt;[]
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">列表数据</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>variant</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'switch' | 'button'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'switch'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">变体：开关 / 操作按钮</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>titleField</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'display_name'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">标题字段映射</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>descriptionField</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'description'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">描述字段映射</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>toggleField</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'is_enabled'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">开关值字段映射</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>buttonLabel</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'发快递'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              按钮文字（variant='button'）
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px">
+              <code>extraColumns</code>
+            </td>
+            <td style="padding: 6px 8px">ExtraColumn[]</td>
+            <td style="padding: 6px 8px">[]</td>
+            <td style="padding: 6px 8px">额外信息列</td>
+          </tr>
         </tbody>
       </table>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-top:8px;">
-        Events: <code>@toggle(item, value)</code> | <code>@itemClick(item)</code> | <code>@buttonClick({ name, phone, address, item })</code>
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
+        Events: <code>@toggle(item, value)</code> | <code>@itemClick(item)</code> |
+        <code>@buttonClick({ name, phone, address, item })</code>
       </p>
     </Card>
   </div>
 </template>
 
 <style scoped>
-.demo-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.demo-desc { color: var(--color-text-muted); margin-bottom: 24px; font-size: 14px; line-height: 1.6; }
-code { background: var(--color-bg-alt); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+.demo-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.demo-desc {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+code {
+  background: var(--color-bg-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
 </style>

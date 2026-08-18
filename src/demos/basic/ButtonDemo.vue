@@ -7,7 +7,9 @@ const loading = ref(false)
 
 function simulateLoading() {
   loading.value = true
-  setTimeout(() => { loading.value = false }, 1500)
+  setTimeout(() => {
+    loading.value = false
+  }, 1500)
 }
 </script>
 
@@ -40,7 +42,7 @@ function simulateLoading() {
     <Card title="状态组合" style="margin-bottom: 24px">
       <div class="demo-row">
         <Button text="带图标" variant="primary" icon="plus" />
-        <Button text="带箭头" variant="outline" showArrow />
+        <Button text="带箭头" variant="outline" show-arrow />
         <Button text="通栏宽度" variant="primary" block />
         <Button text="加载中..." variant="primary" :loading="loading" @click="simulateLoading" />
         <Button text="禁用状态" variant="primary" disabled />
@@ -50,19 +52,82 @@ function simulateLoading() {
     </Card>
 
     <Card title="Props">
-      <table style="width:100%;font-size:13px;border-collapse:collapse;">
-        <thead><tr style="border-bottom:2px solid var(--color-border);text-align:left;">
-          <th style="padding:6px 8px;">Prop</th><th style="padding:6px 8px;">类型</th><th style="padding:6px 8px;">默认值</th><th style="padding:6px 8px;">说明</th>
-        </tr></thead>
+      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: 6px 8px">Prop</th>
+            <th style="padding: 6px 8px">类型</th>
+            <th style="padding: 6px 8px">默认值</th>
+            <th style="padding: 6px 8px">说明</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>text</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">string</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">—</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">按钮文字</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>variant</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'primary' | 'secondary' | 'outline' | 'danger' | 'ghost'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'primary'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">按钮变体</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>size</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'sm' | 'md' | 'lg'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">'md'</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">按钮尺寸</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>icon</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">string</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">—</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">图标名</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>showArrow</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">boolean</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">false</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">显示右侧箭头</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>block</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">boolean</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">false</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">通栏宽度</td></tr>
-          <tr><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);"><code>loading</code></td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">boolean</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">false</td><td style="padding:6px 8px;border-bottom:1px solid var(--color-border-light);">加载中状态</td></tr>
-          <tr><td style="padding:6px 8px;"><code>disabled</code></td><td style="padding:6px 8px;">boolean</td><td style="padding:6px 8px;">false</td><td style="padding:6px 8px;">禁用状态</td></tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>text</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">按钮文字</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>variant</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              'primary' | 'secondary' | 'outline' | 'danger' | 'ghost'
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'primary'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">按钮变体</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>size</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'sm' | 'md' | 'lg'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'md'</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">按钮尺寸</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>icon</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">图标名</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>showArrow</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">false</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">显示右侧箭头</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>block</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">false</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">通栏宽度</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>loading</code>
+            </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">false</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">加载中状态</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px">
+              <code>disabled</code>
+            </td>
+            <td style="padding: 6px 8px">boolean</td>
+            <td style="padding: 6px 8px">false</td>
+            <td style="padding: 6px 8px">禁用状态</td>
+          </tr>
         </tbody>
       </table>
     </Card>
@@ -70,8 +135,22 @@ function simulateLoading() {
 </template>
 
 <style scoped>
-.demo { }
-.demo-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.demo-desc { color: var(--color-text-muted); margin-bottom: 24px; font-size: 14px; }
-.demo-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.demo {
+}
+.demo-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.demo-desc {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
 </style>

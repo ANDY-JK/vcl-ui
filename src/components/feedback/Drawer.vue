@@ -5,20 +5,21 @@ import { ref, watch, onMounted, onUnmounted, nextTick, computed, toRef } from 'v
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { registerModal } from '@/components/_internal/useModalManager'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
+import { useEscClose } from '@/components/_internal/useEscClose'
 
-	interface Props {
-	  visible: boolean
-	  title?: string
-	  placement?: 'left' | 'right' | 'top' | 'bottom'
-	  width?: string
-	  height?: string
-	  closable?: boolean
-	  maskClosable?: boolean
-	  zIndex?: number
-	  destroyOnClose?: boolean
-	  /** 设为 true 时不参与全局弹窗互斥管理（组件内部弹窗用） */
-	  internal?: boolean
-	}
+interface Props {
+  visible: boolean
+  title?: string
+  placement?: 'left' | 'right' | 'top' | 'bottom'
+  width?: string
+  height?: string
+  closable?: boolean
+  maskClosable?: boolean
+  zIndex?: number
+  destroyOnClose?: boolean
+  /** 设为 true 时不参与全局弹窗互斥管理（组件内部弹窗用） */
+  internal?: boolean
+}
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
@@ -41,8 +42,8 @@ const emit = defineEmits<{
 
 const drawerPanel = ref<HTMLElement | null>(null)
 const hasOpened = ref(false)
-const normalizedWidth = computed(() => typeof props.width === 'number' ? props.width + 'px' : props.width)
-const normalizedHeight = computed(() => typeof props.height === 'number' ? props.height + 'px' : props.height)
+const normalizedWidth = computed(() => (typeof props.width === 'number' ? props.width + 'px' : props.width))
+const normalizedHeight = computed(() => (typeof props.height === 'number' ? props.height + 'px' : props.height))
 const isVertical = computed(() => props.placement === 'left' || props.placement === 'right')
 
 // --- 焦点管理：打开聚焦面板 / Tab 循环 trap / 关闭恢复焦点 ---
@@ -60,47 +61,69 @@ function close() {
   emit('close')
 }
 
-	watch(() => props.visible, async (v) => {
-	  if (v) {
-	    hasOpened.value = true
-	    await nextTick()
-	    emit('afterOpen')
-	  } else {
-	    emit('afterClose')
-	  }
-	})
+watch(
+  () => props.visible,
+  async (v) => {
+    if (v) {
+      hasOpened.value = true
+      await nextTick()
+      emit('afterOpen')
+    } else {
+      emit('afterClose')
+    }
+  },
+)
 
-		// --- 弹窗竞态管理：同页面只允许一个弹窗（internal 跳过）---
-		let _unregDrawer: (() => void) | null = null
-		watch(() => props.visible, v => {
-		  if (props.internal) return
-		  if (v) {
-		    _unregDrawer = registerModal(close)
-		  } else {
-		    if (_unregDrawer) { _unregDrawer(); _unregDrawer = null }
-		  }
-		})
-		onUnmounted(() => {
-		  if (_unregDrawer) { _unregDrawer(); _unregDrawer = null }
-		})
+// --- 弹窗竞态管理：同页面只允许一个弹窗（internal 跳过）---
+let _unregDrawer: (() => void) | null = null
+watch(
+  () => props.visible,
+  (v) => {
+    if (props.internal) return
+    if (v) {
+      _unregDrawer = registerModal(close)
+    } else {
+      if (_unregDrawer) {
+        _unregDrawer()
+        _unregDrawer = null
+      }
+    }
+  },
+)
+onUnmounted(() => {
+  if (_unregDrawer) {
+    _unregDrawer()
+    _unregDrawer = null
+  }
+})
 
-function onKeydown(e: KeyboardEvent) {
-  if (!props.visible) return
-  if (e.key === 'Escape' && props.closable) { close(); return }
-}
+// ESC 关闭 — 使用共享 useEscClose composable
+const { mount: mountEsc, unmount: unmountEsc } = useEscClose(
+  () => props.visible,
+  () => props.closable,
+  close,
+)
 
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+onMounted(mountEsc)
+onUnmounted(unmountEsc)
 </script>
 
 <template>
   <!-- #ifndef MP_WEIXIN -->
   <Teleport to="body">
-  <!-- #endif -->
+    <!-- #endif -->
     <Transition name="drawer">
-      <div v-if="destroyOnClose ? visible : hasOpened" class="drawer-overlay" :class="{ hidden: !visible }" :style="{ zIndex }" @click.self="maskClosable && close()">
+      <div
+        v-if="destroyOnClose ? visible : hasOpened"
+        class="drawer-overlay"
+        :class="{ hidden: !visible }"
+        :style="{ zIndex }"
+        @click.self="maskClosable && close()"
+      >
         <div
-          ref="drawerPanel" tabindex="-1" class="drawer-panel"
+          ref="drawerPanel"
+          tabindex="-1"
+          class="drawer-panel"
           :class="[`drawer-${placement}`]"
           :style="isVertical ? { width: normalizedWidth } : { height: normalizedHeight }"
           role="dialog"
@@ -110,7 +133,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
         >
           <div class="drawer-header">
             <slot name="header">
-              <h4 class="drawer-title">{{ title }}</h4>
+              <h4 class="drawer-title">
+                {{ title }}
+              </h4>
             </slot>
             <button v-if="closable" class="drawer-close" aria-label="关闭抽屉" @click="close">
               <IconSvg type="x" size="md" />
@@ -125,7 +150,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
         </div>
       </div>
     </Transition>
-  <!-- #ifndef MP_WEIXIN -->
+    <!-- #ifndef MP_WEIXIN -->
   </Teleport>
   <!-- #endif -->
 </template>
@@ -151,10 +176,28 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   background: var(--color-surface);
   box-shadow: var(--shadow-lg);
 }
-.drawer-right { top: 0; bottom: 0; right: 0; }
-.drawer-left { top: 0; bottom: 0; left: 0; }
-.drawer-top { left: 0; right: 0; top: 0; max-height: 90vh; }
-.drawer-bottom { left: 0; right: 0; bottom: 0; max-height: 90vh; }
+.drawer-right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
+.drawer-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+.drawer-top {
+  left: 0;
+  right: 0;
+  top: 0;
+  max-height: 90vh;
+}
+.drawer-bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 90vh;
+}
 
 .drawer-header {
   display: flex;
@@ -164,7 +207,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
-.drawer-title { font-size: clamp(14px, 2.2vw, 16px); font-weight: 600; }
+.drawer-title {
+  font-size: clamp(14px, 2.2vw, 16px);
+  font-weight: 600;
+}
 
 .drawer-close {
   display: flex;
@@ -175,7 +221,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   cursor: pointer;
   border-radius: var(--radius-sm);
 }
-.drawer-close:hover { background: var(--color-bg-alt); }
+.drawer-close:hover {
+  background: var(--color-bg-alt);
+}
 
 .drawer-body {
   flex: 1;
@@ -190,7 +238,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 }
 
 /* 动画 */
-.drawer-enter-active, .drawer-leave-active {
+.drawer-enter-active,
+.drawer-leave-active {
   transition: opacity var(--transition-normal);
 }
 .drawer-enter-active .drawer-panel,
@@ -198,13 +247,24 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   transition: transform var(--transition-normal);
 }
 
-.drawer-enter-from, .drawer-leave-to { opacity: 0; }
+.drawer-enter-from,
+.drawer-leave-to {
+  opacity: 0;
+}
 .drawer-enter-from .drawer-right,
-.drawer-leave-to .drawer-right { transform: translateX(100%); }
+.drawer-leave-to .drawer-right {
+  transform: translateX(100%);
+}
 .drawer-enter-from .drawer-left,
-.drawer-leave-to .drawer-left { transform: translateX(-100%); }
+.drawer-leave-to .drawer-left {
+  transform: translateX(-100%);
+}
 .drawer-enter-from .drawer-top,
-.drawer-leave-to .drawer-top { transform: translateY(-100%); }
+.drawer-leave-to .drawer-top {
+  transform: translateY(-100%);
+}
 .drawer-enter-from .drawer-bottom,
-.drawer-leave-to .drawer-bottom { transform: translateY(100%); }
+.drawer-leave-to .drawer-bottom {
+  transform: translateY(100%);
+}
 </style>

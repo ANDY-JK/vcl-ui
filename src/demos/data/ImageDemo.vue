@@ -29,8 +29,14 @@ const multiImages = [
 ]
 const multiStartIdx = ref(0)
 
-function openSingle(url: string) { singleSrc.value = url; singleVisible.value = true }
-function openMulti(idx: number) { multiStartIdx.value = idx; multiVisible.value = true }
+function openSingle(url: string) {
+  singleSrc.value = url
+  singleVisible.value = true
+}
+function openMulti(idx: number) {
+  multiStartIdx.value = idx
+  multiVisible.value = true
+}
 </script>
 
 <template>
@@ -41,75 +47,76 @@ function openMulti(idx: number) { multiStartIdx.value = idx; multiVisible.value 
     </p>
 
     <!-- ══════════════ Image 基础 ══════════════ -->
-    <Card title="基本用法" style="margin-bottom:24px">
-      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
-        <div style="text-align:center;">
+    <Card title="基本用法" style="margin-bottom: 24px">
+      <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :size="60" alt="示例" />
           <p class="cap">size=60</p>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :size="100" alt="示例" />
           <p class="cap">size=100</p>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :width="160" :height="100" alt="示例" />
           <p class="cap">width=160 height=100</p>
         </div>
       </div>
     </Card>
 
-    <Card title="圆角 & 圆形" style="margin-bottom:24px">
-      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
-        <div style="text-align:center;">
+    <Card title="圆角 & 圆形" style="margin-bottom: 24px">
+      <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :size="80" :radius="4" alt="默认圆角" />
           <p class="cap">radius=4（默认）</p>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :size="80" :radius="16" alt="大圆角" />
           <p class="cap">radius=16</p>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :size="80" round alt="圆形" />
           <p class="cap">round</p>
         </div>
       </div>
     </Card>
 
-    <Card title="Object-Fit 模式" style="margin-bottom:24px">
-      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
-        <div style="text-align:center;">
+    <Card title="Object-Fit 模式" style="margin-bottom: 24px">
+      <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :width="140" :height="80" fit="cover" alt="cover" />
           <p class="cap">cover（默认）</p>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :width="140" :height="80" fit="contain" alt="contain" />
           <p class="cap">contain</p>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :width="140" :height="80" fit="fill" alt="fill" />
           <p class="cap">fill</p>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align: center">
           <Image :src="demoImages.valid" :width="140" :height="80" fit="scale-down" alt="scale-down" />
           <p class="cap">scale-down</p>
         </div>
       </div>
     </Card>
 
-    <Card title="灯箱预览（点击放大）" style="margin-bottom:24px">
-      <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:12px;">
-        默认 preview=true，点击图片可全屏预览。按 ESC 或点击遮罩关闭。多图画廊、标注、下载等高级能力见下方 ImagePreview。
+    <Card title="灯箱预览（点击放大）" style="margin-bottom: 24px">
+      <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
+        默认 preview=true，点击图片可全屏预览。按 ESC 或点击遮罩关闭。多图画廊、标注、下载等高级能力见下方
+        ImagePreview。
       </p>
       <Image :src="demoImages.valid" :size="120" alt="点击预览" />
     </Card>
 
-    <Card title="加载失败状态" style="margin-bottom:24px">
-      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
-        <div style="text-align:center;">
+    <Card title="加载失败状态" style="margin-bottom: 24px">
+      <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap">
+        <div style="text-align: center">
           <Image :src="demoImages.broken" :size="80" alt="加载失败" />
           <p class="cap">默认提示</p>
         </div>
-        <div style="text-align:center;">
+        <div style="text-align: center">
           <Image :src="demoImages.broken" :size="80" error-text="图片不见了" alt="自定义错误" />
           <p class="cap">自定义文案</p>
         </div>
@@ -117,8 +124,8 @@ function openMulti(idx: number) { multiStartIdx.value = idx; multiVisible.value 
     </Card>
 
     <!-- ══════════════ Avatar 头像 ══════════════ -->
-    <Card title="Avatar 头像 — 尺寸（圆形）" style="margin-bottom:24px">
-      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <Card title="Avatar 头像 — 尺寸（圆形）" style="margin-bottom: 24px">
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
         <Avatar :src="photoUrl" size="sm" name="小" />
         <Avatar :src="photoUrl" size="md" name="中" />
         <Avatar :src="photoUrl" size="lg" name="大" />
@@ -126,37 +133,41 @@ function openMulti(idx: number) { multiStartIdx.value = idx; multiVisible.value 
       </div>
     </Card>
 
-    <Card title="Avatar 头像 — 形状对比" style="margin-bottom:24px">
-      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <Card title="Avatar 头像 — 形状对比" style="margin-bottom: 24px">
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
         <Avatar :src="photoUrl" size="lg" shape="circle" name="圆形" />
         <Avatar :src="photoUrl" size="lg" shape="rounded" name="圆角" />
       </div>
     </Card>
 
-    <Card title="Avatar 头像 — 回退策略（图片失败→文字首字母）" style="margin-bottom:24px">
-      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <Card title="Avatar 头像 — 回退策略（图片失败→文字首字母）" style="margin-bottom: 24px">
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
         <Avatar src="invalid-url" size="lg" name="张三" />
         <Avatar size="lg" name="李四" />
         <Avatar size="lg" name="王五六" />
         <Avatar size="md" name="Alice Smith" />
       </div>
-      <p style="margin-top:8px;font-size:12px;color:var(--color-text-muted)">无 src 或 src 加载失败时，取 name 前两个单词首字母大写</p>
+      <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">
+        无 src 或 src 加载失败时，取 name 前两个单词首字母大写
+      </p>
     </Card>
 
     <!-- ══════════════ ImagePreview 全屏预览 ══════════════ -->
-    <Card title="ImagePreview 全屏预览 — 单图模式（:src）" style="margin-bottom:24px">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <Card title="ImagePreview 全屏预览 — 单图模式（:src）" style="margin-bottom: 24px">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
         <Button text="宽图" variant="secondary" @click="openSingle('https://picsum.photos/seed/wide2/1200/600')" />
         <Button text="长图" variant="secondary" @click="openSingle('https://picsum.photos/seed/tall2/600/1200')" />
         <Button text="大图" variant="secondary" @click="openSingle('https://picsum.photos/seed/big2/1600/900')" />
       </div>
     </Card>
 
-    <Card title="ImagePreview 全屏预览 — 多图模式（:src 数组）" style="margin-bottom:24px">
-      <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:10px;">
-        支持<strong>缩放拖拽</strong>（滚轮 / 双指缩放 / 双击）、<strong>旋转翻转</strong>、<strong>标注</strong>（矩形 / 圆形 / 画笔，R / C / P 快捷键）、<strong>下载 / 复制</strong>（含标注合成图）、<strong>缩略图侧边栏</strong>、左右箭头 / 键盘 ← → / 触摸滑动。
+    <Card title="ImagePreview 全屏预览 — 多图模式（:src 数组）" style="margin-bottom: 24px">
+      <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 10px">
+        支持<strong>缩放拖拽</strong>（滚轮 / 双指缩放 / 双击）、<strong>旋转翻转</strong>、<strong>标注</strong>（矩形
+        / 圆形 / 画笔，R / C / P 快捷键）、<strong>下载 / 复制</strong
+        >（含标注合成图）、<strong>缩略图侧边栏</strong>、左右箭头 / 键盘 ← → / 触摸滑动。
       </p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
         <Button v-for="(img, i) in multiImages" :key="i" :text="img.label!" variant="secondary" @click="openMulti(i)" />
       </div>
     </Card>
@@ -164,42 +175,138 @@ function openMulti(idx: number) { multiStartIdx.value = idx; multiVisible.value 
     <!-- ══════════════ Props 表 ══════════════ -->
     <Card title="Image Props">
       <table class="props-table">
-        <thead><tr><th>Prop</th><th>类型</th><th>默认</th><th>说明</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td><code>src</code></td><td>string</td><td>—</td><td>图片地址</td></tr>
-          <tr><td><code>width / height</code></td><td>number</td><td>—</td><td>宽高（px）</td></tr>
-          <tr><td><code>size</code></td><td>number</td><td>80</td><td>默认宽高（px）</td></tr>
-          <tr><td><code>fit</code></td><td>string</td><td>'cover'</td><td>object-fit</td></tr>
-          <tr><td><code>radius</code></td><td>number</td><td>4</td><td>圆角（px）</td></tr>
-          <tr><td><code>round</code></td><td>boolean</td><td>false</td><td>圆形</td></tr>
-          <tr><td><code>lazy</code></td><td>boolean</td><td>true</td><td>懒加载</td></tr>
-          <tr><td><code>preview</code></td><td>boolean</td><td>true</td><td>点击灯箱预览</td></tr>
+          <tr>
+            <td><code>src</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>图片地址</td>
+          </tr>
+          <tr>
+            <td><code>width / height</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>宽高（px）</td>
+          </tr>
+          <tr>
+            <td><code>size</code></td>
+            <td>number</td>
+            <td>80</td>
+            <td>默认宽高（px）</td>
+          </tr>
+          <tr>
+            <td><code>fit</code></td>
+            <td>string</td>
+            <td>'cover'</td>
+            <td>object-fit</td>
+          </tr>
+          <tr>
+            <td><code>radius</code></td>
+            <td>number</td>
+            <td>4</td>
+            <td>圆角（px）</td>
+          </tr>
+          <tr>
+            <td><code>round</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>圆形</td>
+          </tr>
+          <tr>
+            <td><code>lazy</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>懒加载</td>
+          </tr>
+          <tr>
+            <td><code>preview</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>点击灯箱预览</td>
+          </tr>
         </tbody>
       </table>
     </Card>
 
-    <Card title="Avatar Props" style="margin-top:24px">
+    <Card title="Avatar Props" style="margin-top: 24px">
       <table class="props-table">
-        <thead><tr><th>Prop</th><th>类型</th><th>默认</th><th>说明</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td><code>src</code></td><td>string</td><td>—</td><td>头像图片地址</td></tr>
-          <tr><td><code>name</code></td><td>string</td><td>—</td><td>姓名（失败时取首字母）</td></tr>
-          <tr><td><code>size</code></td><td>'sm' | 'md' | 'lg' | 'xl'</td><td>'md'</td><td>尺寸 32/40/56/72px</td></tr>
-          <tr><td><code>shape</code></td><td>'circle' | 'rounded'</td><td>'circle'</td><td>形状</td></tr>
+          <tr>
+            <td><code>src</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>头像图片地址</td>
+          </tr>
+          <tr>
+            <td><code>name</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>姓名（失败时取首字母）</td>
+          </tr>
+          <tr>
+            <td><code>size</code></td>
+            <td>'sm' | 'md' | 'lg' | 'xl'</td>
+            <td>'md'</td>
+            <td>尺寸 32/40/56/72px</td>
+          </tr>
+          <tr>
+            <td><code>shape</code></td>
+            <td>'circle' | 'rounded'</td>
+            <td>'circle'</td>
+            <td>形状</td>
+          </tr>
         </tbody>
       </table>
     </Card>
 
-    <Card title="ImagePreview Props" style="margin-top:24px">
+    <Card title="ImagePreview Props" style="margin-top: 24px">
       <table class="props-table">
-        <thead><tr><th>Prop</th><th>类型</th><th>默认</th><th>说明</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td><code>src</code></td><td>string | ImageItem | array</td><td>—</td><td>图片源（单图/多图）</td></tr>
-          <tr><td><code>initialIndex</code></td><td>number</td><td>0</td><td>多图初始索引</td></tr>
-          <tr><td><code>title</code></td><td>string</td><td>—</td><td>标题</td></tr>
+          <tr>
+            <td><code>src</code></td>
+            <td>string | ImageItem | array</td>
+            <td>—</td>
+            <td>图片源（单图/多图）</td>
+          </tr>
+          <tr>
+            <td><code>initialIndex</code></td>
+            <td>number</td>
+            <td>0</td>
+            <td>多图初始索引</td>
+          </tr>
+          <tr>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>标题</td>
+          </tr>
         </tbody>
       </table>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-top:8px;">
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
         Events: <code>@close</code> | <code>@change</code>（多图切换）
       </p>
     </Card>
@@ -211,11 +318,39 @@ function openMulti(idx: number) { multiStartIdx.value = idx; multiVisible.value 
 </template>
 
 <style scoped>
-.demo-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.demo-desc { color: var(--color-text-muted); margin-bottom: 24px; font-size: 14px; }
-.cap { font-size: 11px; color: var(--color-text-muted); margin-top: 4px; }
-code { background: var(--color-bg-alt); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
-.props-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-.props-table th { padding: 6px 8px; border-bottom: 2px solid var(--color-border); text-align: left; }
-.props-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border-light); }
+.demo-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.demo-desc {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+.cap {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+code {
+  background: var(--color-bg-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.props-table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+.props-table th {
+  padding: 6px 8px;
+  border-bottom: 2px solid var(--color-border);
+  text-align: left;
+}
+.props-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-border-light);
+}
 </style>

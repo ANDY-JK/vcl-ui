@@ -18,7 +18,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { useTreeFlatten } from '@/components/_internal/useTreeFlatten'
-import { parseDate } from './date-utils'
+import { parseDate } from './utils/date-utils'
 import DatePanel from './date-panel/DatePanel.vue'
 import TimeColumns from './date-panel/TimeColumns.vue'
 import type { Option, MenuItem, CascaderOption } from '@/components/shared/types'
@@ -103,11 +103,17 @@ const isTime = computed(() => props.type === 'time')
 const errorMsg = ref('')
 let _touched = false
 function validate() {
-  if (!props.rules?.length) { errorMsg.value = ''; return }
+  if (!props.rules?.length) {
+    errorMsg.value = ''
+    return
+  }
   const value = props.modelValue == null ? '' : String(props.modelValue)
   for (const rule of props.rules) {
     const msg = rule(value)
-    if (msg) { errorMsg.value = msg; return }
+    if (msg) {
+      errorMsg.value = msg
+      return
+    }
   }
   errorMsg.value = ''
 }
@@ -115,7 +121,12 @@ function markTouched() {
   _touched = true
   validate()
 }
-watch(() => props.modelValue, () => { if (_touched) validate() })
+watch(
+  () => props.modelValue,
+  () => {
+    if (_touched) validate()
+  },
+)
 
 const hasValue = computed(() => {
   const v = props.modelValue
@@ -131,7 +142,14 @@ const hasValue = computed(() => {
 const open = ref(false)
 let openedAt = 0
 
-const { triggerRef, floatingRef, direction: flipDir, floatingStyle, updatePosition, prepareOpen } = useFloating({
+const {
+  triggerRef,
+  floatingRef,
+  direction: flipDir,
+  floatingStyle,
+  updatePosition,
+  prepareOpen,
+} = useFloating({
   offset: 4,
   defaultDirection: 'down',
   minSize: 160,
@@ -201,7 +219,7 @@ function toggleOpen(e?: MouseEvent) {
   emit('visibleChange', true)
   // 下一帧更新位置（等面板渲染完成）
   nextTick(() => {
-    requestAnimationFrame(() => updatePosition(e?.currentTarget as HTMLElement || undefined))
+    requestAnimationFrame(() => updatePosition((e?.currentTarget as HTMLElement) || undefined))
   })
 }
 
@@ -233,7 +251,9 @@ function getPinyinIndex(text: string): { full: string; first: string } {
   } else {
     try {
       const full = pinyin(text, { toneType: 'none', type: 'string' }).toLowerCase()
-      const first = pinyin(text, { pattern: 'first', toneType: 'none', type: 'string' }).replace(/\s/g, '').toLowerCase()
+      const first = pinyin(text, { pattern: 'first', toneType: 'none', type: 'string' })
+        .replace(/\s/g, '')
+        .toLowerCase()
       result = { full, first }
     } catch {
       warnOnce('Select', '拼音解析失败，已降级为普通搜索')
@@ -256,49 +276,65 @@ function matchPinyinFast(text: string, keyword: string): boolean {
 }
 
 /** 选项变化时清理过期缓存项（防止内存泄漏） */
-watch(() => props.options, () => {
-  // 选项列表变化时，清理不在新选项中的缓存项
-  if (!props.options || props.options.length === 0) {
-    _pinyinCache.clear()
-    return
-  }
-  const newLabels = new Set(props.options.map(o => o.label))
-  for (const key of _pinyinCache.keys()) {
-    if (!newLabels.has(key)) _pinyinCache.delete(key)
-  }
-})
+watch(
+  () => props.options,
+  () => {
+    // 选项列表变化时，清理不在新选项中的缓存项
+    if (!props.options || props.options.length === 0) {
+      _pinyinCache.clear()
+      return
+    }
+    const newLabels = new Set(props.options.map((o) => o.label))
+    for (const key of _pinyinCache.keys()) {
+      if (!newLabels.has(key)) _pinyinCache.delete(key)
+    }
+  },
+)
 
-const filterKeyword = computed(() => isCombobox.value ? comboText.value : searchText.value)
+// combobox 打开面板时如果 comboText 等于已选值（watch 同步来的），不做过滤，显示全部
+// 只有用户主动输入时才过滤
+const filterKeyword = computed(() => {
+  if (isCombobox.value) {
+    // comboText 和已选 label 一样时 = 打开面板自动同步的，不是用户输入
+    if (open.value && comboText.value === lastCommittedText) return ''
+    return comboText.value
+  }
+  return searchText.value
+})
 
 const filteredOptions = computed(() => {
   if (!props.options) return []
   if (!filterKeyword.value) return props.options
-  return props.options.filter(o =>
-    matchPinyinFast(o.label, filterKeyword.value) ||
-    matchPinyinFast(String(o.value), filterKeyword.value) ||
-    (o._search ? matchPinyinFast(o._search, filterKeyword.value) : false)
+  return props.options.filter(
+    (o) =>
+      matchPinyinFast(o.label, filterKeyword.value) ||
+      matchPinyinFast(String(o.value), filterKeyword.value) ||
+      (o._search ? matchPinyinFast(o._search, filterKeyword.value) : false),
   )
 })
 
-watch(filteredOptions, () => { highlightIdx.value = -1 })
+watch(filteredOptions, () => {
+  highlightIdx.value = -1
+})
 
 /* ════════════════════════════════════════
    显示文本
    ════════════════════════════════════════ */
 const selectedLabels = computed(() => {
-  if (isTreeSelect.value) return treeSelectedPaths.value.map(p => p.map(n => n.label).join(' / '))
+  if (isTreeSelect.value) return treeSelectedPaths.value.map((p) => p.map((n) => n.label).join(' / '))
   if (!props.options) return []
   if (props.multiple) {
     const vals = (props.modelValue || []) as (string | number | boolean)[]
-    return vals.map(v => props.options!.find(o => String(o.value) === String(v))?.label || String(v))
+    return vals.map((v) => props.options!.find((o) => String(o.value) === String(v))?.label || String(v))
   }
-  const found = props.options.find(o => String(o.value) === String(props.modelValue))
+  const found = props.options.find((o) => String(o.value) === String(props.modelValue))
   return found ? [found.label] : []
 })
 
 const displayText = computed(() => {
   if (isDate.value || isDateRange.value || isTime.value) return triggerDisplayText.value
-  if (isTreeSelect.value) return treeDisplayText.value
+  // tree-select 有 tag 显示完整路径时，input 不再重复显示文字
+  if (isTreeSelect.value) return comboTags.value.length > 0 ? '' : treeDisplayText.value
   if (isCombobox.value && !props.multiple) return comboText.value
   return selectedLabels.value.join(', ')
 })
@@ -313,21 +349,23 @@ const floatingRaised = computed(() => {
    ════════════════════════════════════════ */
 const comboTags = computed(() => {
   if (isTreeSelect.value) {
-    return treeSelectedPaths.value.map(p => ({
+    return treeSelectedPaths.value.map((p) => ({
       value: p[p.length - 1].value,
-      label: p.map(n => n.label).join(' / '),
+      label: p.map((n) => n.label).join(' / '),
     }))
   }
   if (!isCombobox.value || !props.multiple) return []
   const vals = (props.modelValue || []) as (string | number | boolean)[]
-  return vals.map(v => ({
+  return vals.map((v) => ({
     value: v,
-    label: props.options?.find(o => String(o.value) === String(v))?.label || String(v),
+    label: props.options?.find((o) => String(o.value) === String(v))?.label || String(v),
   }))
 })
 
 function removeComboTag(tag: { value: string | number | boolean; label: string }) {
-  const vals = ((props.modelValue || []) as (string | number | boolean)[]).filter(v => String(v) !== String(tag.value))
+  const vals = ((props.modelValue || []) as (string | number | boolean)[]).filter(
+    (v) => String(v) !== String(tag.value),
+  )
   emit('update:modelValue', vals)
   emit('change', vals)
 }
@@ -336,7 +374,8 @@ function removeComboTag(tag: { value: string | number | boolean; label: string }
    选项选择
    ════════════════════════════════════════ */
 function isSelected(opt: Option) {
-  if (props.multiple) return ((props.modelValue || []) as (string | number | boolean)[]).some(v => String(v) === String(opt.value))
+  if (props.multiple)
+    return ((props.modelValue || []) as (string | number | boolean)[]).some((v) => String(v) === String(opt.value))
   if (isCombobox.value) {
     if (!comboText.value) return String(props.modelValue) === String(opt.value)
     return opt.label === comboText.value || String(opt.value) === comboText.value
@@ -349,8 +388,9 @@ function selectOption(opt: Option) {
   markTouched()
   if (props.multiple) {
     const vals = [...((props.modelValue || []) as (string | number | boolean)[])]
-    const idx = vals.findIndex(v => String(v) === String(opt.value))
-    if (idx >= 0) vals.splice(idx, 1); else vals.push(opt.value)
+    const idx = vals.findIndex((v) => String(v) === String(opt.value))
+    if (idx >= 0) vals.splice(idx, 1)
+    else vals.push(opt.value)
     emit('update:modelValue', vals)
     emit('change', vals)
     if (isCombobox.value) {
@@ -445,28 +485,27 @@ function findTreePath(nodes: CascaderOption[], value: string | number): Cascader
 const treeSelectedPaths = computed((): CascaderOption[][] => {
   const vals = Array.isArray(props.modelValue) ? (props.modelValue as (string | number)[]) : []
   return vals
-    .map(v => findTreePath(props.cascaderOptions || [], v))
+    .map((v) => findTreePath(props.cascaderOptions || [], v))
     .filter((p): p is CascaderOption[] => !!p && p.length > 0)
 })
 
-const treeDisplayText = computed(() =>
-  treeSelectedPaths.value.map(p => p.map(n => n.label).join(' / ')).join(', '),
-)
+const treeDisplayText = computed(() => treeSelectedPaths.value.map((p) => p.map((n) => n.label).join(' / ')).join(', '))
 
-function isTreeSelected(flatNode: typeof treeNodes.value[number]): boolean {
+function isTreeSelected(flatNode: (typeof treeNodes.value)[number]): boolean {
   if (!Array.isArray(props.modelValue)) return false
-  return (props.modelValue as (string | number)[]).some(v => String(v) === String(flatNode.node.value))
+  return (props.modelValue as (string | number)[]).some((v) => String(v) === String(flatNode.node.value))
 }
 
-function onTreeNodeClick(flatNode: typeof treeNodes.value[number]) {
+function onTreeNodeClick(flatNode: (typeof treeNodes.value)[number]) {
   if (flatNode.node.disabled) return
   if (!flatNode.isLeaf) {
     treeFlatten.toggleExpand(flatNode.node.value)
     return
   }
   const vals = [...(Array.isArray(props.modelValue) ? (props.modelValue as (string | number)[]) : [])]
-  const idx = vals.findIndex(v => String(v) === String(flatNode.node.value))
-  if (idx >= 0) vals.splice(idx, 1); else vals.push(flatNode.node.value)
+  const idx = vals.findIndex((v) => String(v) === String(flatNode.node.value))
+  if (idx >= 0) vals.splice(idx, 1)
+  else vals.push(flatNode.node.value)
   emit('update:modelValue', vals)
   emit('change', vals)
 }
@@ -479,18 +518,22 @@ function hasTreeChildren(node: CascaderOption): boolean {
    Combobox 事件
    ════════════════════════════════════════ */
 // 外部 modelValue 变化同步输入框
-watch(() => props.modelValue, (val) => {
-  if (!isCombobox.value || props.multiple) return
-  if (val === '' || val === undefined || val === null) {
-    comboText.value = ''
-    lastCommittedText = ''
-    return
-  }
-  const found = props.options?.find(o => String(o.value) === String(val))
-  const label = found ? found.label : String(val)
-  comboText.value = label
-  lastCommittedText = label
-}, { immediate: true })
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (!isCombobox.value || props.multiple) return
+    if (val === '' || val === undefined || val === null) {
+      comboText.value = ''
+      lastCommittedText = ''
+      return
+    }
+    const found = props.options?.find((o) => String(o.value) === String(val))
+    const label = found ? found.label : String(val)
+    comboText.value = label
+    lastCommittedText = label
+  },
+  { immediate: true },
+)
 
 function onComboFocus() {
   if (props.disabled) return
@@ -522,7 +565,7 @@ function onComboInput() {
 }
 
 function commitComboValue(text: string) {
-  const matched = props.options?.find(o => o.label === text || String(o.value) === text)
+  const matched = props.options?.find((o) => o.label === text || String(o.value) === text)
   if (matched) {
     emit('update:modelValue', matched.value as SelectModelValue)
     emit('change', matched.value as SelectModelValue)
@@ -554,7 +597,7 @@ function onComboBlur() {
     } else {
       const prev = props.modelValue
       if (prev !== '' && prev !== undefined && prev !== null) {
-        const found = props.options?.find(o => String(o.value) === String(prev))
+        const found = props.options?.find((o) => String(o.value) === String(prev))
         comboText.value = found ? found.label : String(prev)
       } else {
         comboText.value = ''
@@ -595,10 +638,10 @@ function onComboKeydown(e: KeyboardEvent) {
         if (filteredOptions.value.length > 0) {
           addVal = filteredOptions.value[0].value
         } else {
-          const matched = props.options?.find(o => o.label === text || String(o.value) === text)
+          const matched = props.options?.find((o) => o.label === text || String(o.value) === text)
           addVal = matched ? matched.value : text
         }
-        if (!vals.some(v => String(v) === String(addVal))) {
+        if (!vals.some((v) => String(v) === String(addVal))) {
           vals.push(addVal)
           emit('update:modelValue', vals)
           emit('change', vals)
@@ -616,15 +659,21 @@ function onComboKeydown(e: KeyboardEvent) {
 /* ════════════════════════════════════════
    键盘导航
    ════════════════════════════════════════ */
-const navItems = computed(() => isMenu.value ? (props.items || []) : filteredOptions.value)
-const navCount = computed(() => isTreeSelect.value ? treeNodes.value.length : navItems.value.length)
+const navItems = computed(() => (isMenu.value ? props.items || [] : filteredOptions.value))
+const navCount = computed(() => (isTreeSelect.value ? treeNodes.value.length : navItems.value.length))
 
 function onTriggerKeydown(e: KeyboardEvent) {
   if (isMenu.value) return
-  if (e.key === 'Escape') { closePanel(); return }
+  if (e.key === 'Escape') {
+    closePanel()
+    return
+  }
   if (e.key === 'ArrowDown' || e.key === 'Enter') {
     e.preventDefault()
-    if (!open.value) { toggleOpen(); return }
+    if (!open.value) {
+      toggleOpen()
+      return
+    }
     if (e.key === 'ArrowDown') highlightIdx.value = Math.min(highlightIdx.value + 1, navCount.value - 1)
     if (e.key === 'Enter' && highlightIdx.value >= 0) {
       if (isTreeSelect.value) {
@@ -670,12 +719,16 @@ const dateTimePlaceholder = computed(() => {
   return props.placeholder || (isDate.value ? '请选择日期' : isTime.value ? '请选择时间' : '')
 })
 
-watch(() => props.modelValue, (val) => {
-  if (isDate.value) {
-    const parsed = parseDate(String(val || ''), dateFmt.value)
-    if (parsed) modelMonth.value = { year: parsed.y, month: parsed.m }
-  }
-}, { immediate: true })
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (isDate.value) {
+      const parsed = parseDate(String(val || ''), dateFmt.value)
+      if (parsed) modelMonth.value = { year: parsed.y, month: parsed.m }
+    }
+  },
+  { immediate: true },
+)
 
 function onDateSelect(date: string) {
   markTouched()
@@ -684,17 +737,21 @@ function onDateSelect(date: string) {
   emit('change', date)
 }
 
-watch(() => props.modelValue, (val) => {
-  if (isDateRange.value) {
-    const arr = Array.isArray(val) ? val : []
-    draftStart.value = arr[0] ? String(arr[0]) : ''
-    draftEnd.value = arr[1] ? String(arr[1]) : ''
-    draftHover.value = ''
-    const first = draftStart.value || draftEnd.value
-    const parsed = parseDate(first, dateFmt.value)
-    if (parsed) modelMonth.value = { year: parsed.y, month: parsed.m }
-  }
-}, { immediate: true })
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (isDateRange.value) {
+      const arr = Array.isArray(val) ? val : []
+      draftStart.value = arr[0] ? String(arr[0]) : ''
+      draftEnd.value = arr[1] ? String(arr[1]) : ''
+      draftHover.value = ''
+      const first = draftStart.value || draftEnd.value
+      const parsed = parseDate(first, dateFmt.value)
+      if (parsed) modelMonth.value = { year: parsed.y, month: parsed.m }
+    }
+  },
+  { immediate: true },
+)
 
 function onDateRangeClick(date: string) {
   if (!draftStart.value || draftEnd.value) {
@@ -724,9 +781,13 @@ function onDateRangeConfirm() {
   emit('change', value)
 }
 
-watch(() => props.modelValue, (val) => {
-  if (isTime.value) draftTime.value = String(val || '')
-}, { immediate: true })
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (isTime.value) draftTime.value = String(val || '')
+  },
+  { immediate: true },
+)
 
 watch(open, async (val) => {
   if (val && isTime.value) {
@@ -735,14 +796,18 @@ watch(open, async (val) => {
   }
 })
 
-function onTimePick(time: string) { draftTime.value = time }
+function onTimePick(time: string) {
+  draftTime.value = time
+}
 function onTimeConfirm() {
   markTouched()
   closePanel()
   emit('update:modelValue', draftTime.value)
   emit('change', draftTime.value)
 }
-function onTimeCancel() { closePanel() }
+function onTimeCancel() {
+  closePanel()
+}
 </script>
 
 <template>
@@ -752,19 +817,17 @@ function onTimeCancel() { closePanel() }
       <div
         ref="triggerRef"
         class="trigger-wrapper"
-        :class="{ open, disabled, 'has-floating': label, 'has-tags': multiple && comboTags.length }"
+        :class="{ open, disabled, 'has-floating': label, 'has-tags': comboTags.length > 0 }"
         @click="!isCombobox && toggleOpen($event)"
       >
         <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
 
         <!-- 多选 tag -->
-        <span
-          v-for="tag in comboTags"
-          :key="String(tag.value)"
-          class="combobox-tag"
-        >
+        <span v-for="tag in comboTags" :key="String(tag.value)" class="combobox-tag">
           <span class="tag-text">{{ tag.label }}</span>
-          <button type="button" class="tag-close" tabindex="-1" @mousedown.prevent @click.stop="removeComboTag(tag)">×</button>
+          <button type="button" class="tag-close" tabindex="-1" @mousedown.prevent @click.stop="removeComboTag(tag)">
+            ×
+          </button>
         </span>
 
         <input
@@ -773,29 +836,38 @@ function onTimeCancel() { closePanel() }
           type="text"
           class="trigger-input"
           :class="{ readonly: !isCombobox }"
-          :placeholder="label ? '' : (isDate || isDateRange || isTime ? dateTimePlaceholder : placeholder)"
+          :placeholder="label ? '' : isDate || isDateRange || isTime ? dateTimePlaceholder : placeholder"
           :disabled="disabled"
           :readonly="!isCombobox"
           role="combobox"
           :aria-expanded="open"
-          :aria-haspopup="isMenu ? 'menu' : (isTreeSelect ? 'tree' : (isDate || isDateRange || isTime ? 'dialog' : 'listbox'))"
+          :aria-haspopup="
+            isMenu ? 'menu' : isTreeSelect ? 'tree' : isDate || isDateRange || isTime ? 'dialog' : 'listbox'
+          "
           aria-autocomplete="list"
           :aria-controls="open ? 'select-dropdown-list' : undefined"
           :aria-activedescendant="open && highlightIdx >= 0 ? `select-option-${highlightIdx}` : undefined"
           autocomplete="off"
-          @click.stop="isCombobox ? (!open && toggleOpen($event)) : toggleOpen($event)"
+          @click.stop="isCombobox ? !open && toggleOpen($event) : toggleOpen($event)"
           @focus="isCombobox ? onComboFocus() : emit('focus')"
-          @blur="isCombobox ? onComboBlur() : markTouched(), emit('blur')"
-          @input="isCombobox ? (comboText = ($event.target as HTMLInputElement).value, onComboInput()) : undefined"
+          @blur="(isCombobox ? onComboBlur() : markTouched(), emit('blur'))"
+          @input="isCombobox ? ((comboText = ($event.target as HTMLInputElement).value), onComboInput()) : undefined"
           @keydown="isCombobox ? onComboKeydown($event) : onTriggerKeydown($event)"
         />
 
-        <span v-if="clearable && hasValue" class="select-clear" role="button" aria-label="清除" tabindex="-1" @click="onClear">
+        <span
+          v-if="clearable && hasValue"
+          class="select-clear"
+          role="button"
+          aria-label="清除"
+          tabindex="-1"
+          @click="onClear"
+        >
           <IconSvg type="x" size="xs" />
         </span>
 
         <IconSvg
-          :type="isTime ? 'clock' : (isDate || isDateRange ? 'calendar' : 'chevron-down')"
+          :type="isTime ? 'clock' : isDate || isDateRange ? 'calendar' : 'chevron-down'"
           size="sm"
           class="trigger-arrow"
           :class="{ rotated: open }"
@@ -810,17 +882,23 @@ function onTimeCancel() { closePanel() }
         <Transition name="drop">
           <div
             v-if="open"
+            :id="open ? 'select-dropdown-list' : undefined"
             ref="floatingRef"
             class="dropdown-panel"
             :class="[`flip-${flipDir}`]"
             :style="floatingStyle"
-            :id="open ? 'select-dropdown-list' : undefined"
-            :role="isMenu ? 'menu' : (isTreeSelect ? 'tree' : 'listbox')"
+            :role="isMenu ? 'menu' : isTreeSelect ? 'tree' : 'listbox'"
           >
             <!-- 搜索框（select / tree-select 模式） -->
             <div v-if="(isSelect || isTreeSelect) && searchable" class="panel-search">
               <IconSvg type="search" size="sm" />
-              <input ref="searchInputRef" v-model="searchText" type="text" class="panel-input" placeholder="输入搜索..." />
+              <input
+                ref="searchInputRef"
+                v-model="searchText"
+                type="text"
+                class="panel-input"
+                placeholder="输入搜索..."
+              />
             </div>
 
             <!-- Loading -->
@@ -849,7 +927,7 @@ function onTimeCancel() { closePanel() }
               <template v-if="treeNodes.length">
                 <button
                   v-for="(flatNode, idx) in treeNodes"
-                  :key="flatNode.path.map(n => String(n.value)).join('>')"
+                  :key="flatNode.path.map((n) => String(n.value)).join('>')"
                   type="button"
                   class="panel-item tree-node-item"
                   :class="{
@@ -891,7 +969,7 @@ function onTimeCancel() { closePanel() }
             <!-- Date 面板 -->
             <DatePanel
               v-else-if="isDate"
-              v-model:modelMonth="modelMonth"
+              v-model:model-month="modelMonth"
               :selected="String(props.modelValue || '')"
               :min="props.dateMin"
               :max="props.dateMax"
@@ -902,7 +980,7 @@ function onTimeCancel() { closePanel() }
             <!-- Date-range 面板 -->
             <DatePanel
               v-else-if="isDateRange"
-              v-model:modelMonth="modelMonth"
+              v-model:model-month="modelMonth"
               :selected="[draftStart, draftEnd]"
               :hover-end="draftHover"
               :min="props.dateMin"
@@ -914,7 +992,9 @@ function onTimeCancel() { closePanel() }
             >
               <template #actions>
                 <button type="button" class="dd-btn" @click="onTimeCancel">取消</button>
-                <button type="button" class="dd-btn dd-btn-primary" :disabled="!draftStart" @click="onDateRangeConfirm">确定</button>
+                <button type="button" class="dd-btn dd-btn-primary" :disabled="!draftStart" @click="onDateRangeConfirm">
+                  确定
+                </button>
               </template>
             </DatePanel>
 
@@ -946,12 +1026,12 @@ function onTimeCancel() { closePanel() }
             <div v-else class="panel-list">
               <button
                 v-for="(opt, idx) in filteredOptions"
+                :id="`select-option-${idx}`"
                 :key="String(opt.value)"
                 type="button"
                 class="panel-item"
                 :class="{ selected: isSelected(opt), disabled: opt.disabled, highlighted: idx === highlightIdx }"
                 :disabled="opt.disabled"
-                :id="`select-option-${idx}`"
                 role="option"
                 :aria-selected="isSelected(opt)"
                 @click="selectOption(opt)"
@@ -963,12 +1043,7 @@ function onTimeCancel() { closePanel() }
                     <span v-if="opt.desc" class="item-desc">{{ opt.desc }}</span>
                   </div>
                 </slot>
-                <IconSvg
-                  v-if="isSelected(opt)"
-                  type="circle-check-big"
-                  size="sm"
-                  color="var(--color-primary)"
-                />
+                <IconSvg v-if="isSelected(opt)" type="circle-check-big" size="sm" color="var(--color-primary)" />
               </button>
             </div>
           </div>
@@ -979,10 +1054,22 @@ function onTimeCancel() { closePanel() }
 </template>
 
 <style scoped>
-.select-dropdown-root { position: relative; width: 100%; }
-.select-dropdown-root.has-floating { overflow: visible; }
-.select-dropdown-root.error .trigger-wrapper { border-color: var(--color-danger); }
-.select-error { color: var(--color-danger); font-size: 12px; margin-top: 4px; line-height: 1.4; }
+.select-dropdown-root {
+  position: relative;
+  width: 100%;
+}
+.select-dropdown-root.has-floating {
+  overflow: visible;
+}
+.select-dropdown-root.error .trigger-wrapper {
+  border-color: var(--color-danger);
+}
+.select-error {
+  color: var(--color-danger);
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
 
 .fl-label {
   position: absolute;
@@ -1009,11 +1096,15 @@ function onTimeCancel() { closePanel() }
   padding: 0 var(--space-1);
   left: calc(var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)) - 4px);
 }
-.select-dropdown-root.error .fl-label.raised { color: var(--color-danger); }
+.select-dropdown-root.error .fl-label.raised {
+  color: var(--color-danger);
+}
 
 .trigger-wrapper {
   position: relative;
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   width: 100%;
   height: var(--ctrl-height, clamp(42px, 7vw, 48px));
   padding: 0 var(--ctrl-padding-x, clamp(8px, 1.5vw, 12px));
@@ -1024,45 +1115,121 @@ function onTimeCancel() { closePanel() }
   transition: border-color var(--transition-fast);
   cursor: pointer;
 }
-.trigger-wrapper.open { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); }
-.trigger-wrapper.disabled { opacity: 1; background: var(--bg-secondary, #f4f5f7); cursor: not-allowed; }
+.trigger-wrapper.open {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+.trigger-wrapper.disabled {
+  opacity: 1;
+  background: var(--bg-secondary, #f4f5f7);
+  cursor: not-allowed;
+}
 
 .combobox-tag {
-  display: inline-flex; align-items: center; gap: var(--space-1); flex-shrink: 0;
-  height: clamp(22px, 3.5vw, 26px); padding: 0 var(--space-2);
-  background: var(--color-primary-light); border-radius: var(--radius-sm);
-  font-size: clamp(11px, 1.6vw, 12px); color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  height: 28px;
+  padding: 0 var(--space-2);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--color-primary);
+}
+.combobox-tag .tag-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .tag-close {
-  display: flex; align-items: center; justify-content: center;
-  width: 14px; height: 14px; padding: 0; border: none; border-radius: 50%;
-  background: transparent; color: var(--color-primary); font-size: 12px; line-height: 1;
-  cursor: pointer; opacity: 0.6; transition: opacity var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
 }
-.tag-close:hover { opacity: 1; background: rgba(79,110,247,0.15); }
-.trigger-wrapper.has-tags { height: auto; min-height: var(--ctrl-height, clamp(38px, 6vw, 42px)); padding-block: clamp(3px, 0.5vw, 5px); flex-wrap: wrap; }
+.tag-close:hover {
+  opacity: 1;
+  background: rgba(79, 110, 247, 0.15);
+}
+.trigger-wrapper.has-tags {
+  height: auto;
+  min-height: var(--ctrl-height, clamp(38px, 6vw, 42px));
+  padding-block: 5px;
+  flex-wrap: wrap;
+}
 .trigger-input {
-  flex: 1; min-width: 0; height: 100%;
-  border: none; outline: none; background: transparent;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
   font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 14px));
   color: var(--color-text);
 }
-.trigger-input::placeholder { color: var(--color-text-muted); }
-.trigger-input:disabled { color: var(--color-text); cursor: not-allowed; }
-.trigger-input.readonly { cursor: pointer; }
-.trigger-arrow { color: var(--color-text-muted); transition: transform var(--transition-fast); flex-shrink: 0; }
-.trigger-arrow.rotated { transform: rotate(180deg); }
+.trigger-input::placeholder {
+  color: var(--color-text-muted);
+}
+.trigger-input:disabled {
+  color: var(--color-text);
+  cursor: not-allowed;
+}
+.trigger-input.readonly {
+  cursor: pointer;
+}
+.trigger-arrow {
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+}
+.trigger-arrow.rotated {
+  transform: rotate(180deg);
+}
 
 .select-clear {
-  display: flex; align-items: center; justify-content: center;
-  width: 18px; height: 18px; padding: 0; flex-shrink: 0;
-  border: none; border-radius: 50%;
-  background: var(--color-text-muted); color: var(--color-surface);
-  font-size: 12px; line-height: 1; cursor: pointer;
-  opacity: 0.6; transition: opacity var(--transition-fast), background var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  color: var(--color-surface);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity var(--transition-fast),
+    background var(--transition-fast);
 }
-.select-clear:hover { opacity: 1; background: var(--color-text); }
-.trigger-wrapper .select-clear { margin-right: var(--space-1); }
+.select-clear:hover {
+  opacity: 1;
+  background: var(--color-text);
+}
+.trigger-wrapper .select-clear {
+  margin-right: var(--space-1);
+}
 
 .dropdown-panel:has(> .dp-header),
 .dropdown-panel:has(> .tp-columns) {
@@ -1082,16 +1249,25 @@ function onTimeCancel() { closePanel() }
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 .panel-search {
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: clamp(6px, 1vw, 8px) clamp(8px, 1.5vw, 12px);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
-.panel-input { flex: 1; border: none; background: transparent; font-size: clamp(11px, 1.8vw, 13px); outline: none; }
+.panel-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: clamp(11px, 1.8vw, 13px);
+  outline: none;
+}
 .panel-list {
   flex: 1;
   max-height: clamp(140px, 26vw, 200px);
@@ -1099,59 +1275,154 @@ function onTimeCancel() { closePanel() }
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
-.panel-list::-webkit-scrollbar { width: 5px; }
-.panel-list::-webkit-scrollbar-track { background: transparent; }
-.panel-list::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-lg); }
-.panel-list::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+.panel-list::-webkit-scrollbar {
+  width: 5px;
+}
+.panel-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel-list::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.panel-list::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
 .panel-item {
-  display: flex; align-items: center; gap: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   width: 100%;
   padding: clamp(6px, 1vw, 8px) clamp(8px, 1.5vw, 12px);
-  border: none; background: transparent;
-  font-size: clamp(11px, 1.8vw, 13px); color: var(--color-text);
-  cursor: pointer; transition: background var(--transition-fast); text-align: left;
+  border: none;
+  background: transparent;
+  font-size: clamp(11px, 1.8vw, 13px);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-align: left;
 }
-.panel-item:hover:not(.disabled) { background: var(--color-bg-alt); }
-.panel-item.selected { background: var(--color-primary-light); }
-.panel-item.highlighted { background: var(--color-bg-alt); }
-.panel-item.disabled { opacity: 0.4; cursor: not-allowed; }
-.panel-item.danger { color: var(--color-danger); }
-.panel-item.danger:hover { background: #FEF2F2; }
-.item-text { display: flex; flex-direction: column; flex: 1; }
-.item-label { font-size: clamp(12px, 1.8vw, 14px); }
-.item-desc { font-size: clamp(10px, 1.5vw, 12px); color: var(--color-text-muted); }
-.menu-divider { margin: var(--space-1) 0; border-top: 1px solid var(--color-border-light); }
+.panel-item:hover:not(.disabled) {
+  background: var(--color-bg-alt);
+}
+.panel-item.selected {
+  background: var(--color-primary-light);
+}
+.panel-item.highlighted {
+  background: var(--color-bg-alt);
+}
+.panel-item.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.panel-item.danger {
+  color: var(--color-danger);
+}
+.panel-item.danger:hover {
+  background: #fef2f2;
+}
+.item-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.item-label {
+  font-size: clamp(12px, 1.8vw, 14px);
+}
+.item-desc {
+  font-size: clamp(10px, 1.5vw, 12px);
+  color: var(--color-text-muted);
+}
+.menu-divider {
+  margin: var(--space-1) 0;
+  border-top: 1px solid var(--color-border-light);
+}
 
-.tree-node-item .expand-icon { flex-shrink: 0; color: var(--color-text-muted); transition: transform var(--transition-fast); }
-.tree-node-item .expand-icon.expanded { transform: rotate(90deg); }
-.tree-node-item .expand-placeholder { width: 16px; flex-shrink: 0; }
-.tree-node-item .item-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-node-item .expand-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
+}
+.tree-node-item .expand-icon.expanded {
+  transform: rotate(90deg);
+}
+.tree-node-item .expand-placeholder {
+  width: 16px;
+  flex-shrink: 0;
+}
+.tree-node-item .item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .panel-status {
-  display: flex; justify-content: center;
+  display: flex;
+  justify-content: center;
   padding: clamp(16px, 3vw, 24px);
-  color: var(--color-text-muted); font-size: clamp(11px, 1.8vw, 13px);
+  color: var(--color-text-muted);
+  font-size: clamp(11px, 1.8vw, 13px);
 }
-.panel-status svg { animation: spin 1s linear infinite; }
+.panel-status svg {
+  animation: spin 1s linear infinite;
+}
 
-.drop-enter-active { transition: opacity var(--transition-normal), transform var(--transition-normal); }
-.drop-leave-active { transition: opacity var(--transition-fast), transform var(--transition-fast); }
-.drop-enter-from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-.drop-leave-to   { opacity: 0; transform: translateY(-4px) scale(0.97); }
-.flip-up.drop-enter-from { transform: translateY(6px) scale(0.97); }
-.flip-up.drop-leave-to   { transform: translateY(4px) scale(0.97); }
+.drop-enter-active {
+  transition:
+    opacity var(--transition-normal),
+    transform var(--transition-normal);
+}
+.drop-leave-active {
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+}
+.drop-enter-from {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+}
+.drop-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.97);
+}
+.flip-up.drop-enter-from {
+  transform: translateY(6px) scale(0.97);
+}
+.flip-up.drop-leave-to {
+  transform: translateY(4px) scale(0.97);
+}
 
-.dd-footer { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-3); }
+.dd-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
 .dd-btn {
   padding: clamp(4px, 0.8vw, 6px) clamp(12px, 2vw, 16px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface); color: var(--color-text);
-  font-size: clamp(11px, 1.6vw, 12px); cursor: pointer;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: clamp(11px, 1.6vw, 12px);
+  cursor: pointer;
   transition: all var(--transition-fast);
 }
-.dd-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
-.dd-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.dd-btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
-.dd-btn-primary:hover { opacity: 0.85; color: #fff; }
+.dd-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.dd-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.dd-btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.dd-btn-primary:hover {
+  opacity: 0.85;
+  color: #fff;
+}
 </style>

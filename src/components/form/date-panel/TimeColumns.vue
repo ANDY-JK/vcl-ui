@@ -2,7 +2,7 @@
 // ⛔ 保护 — 时间列面板（Select type="time" 复用），禁止：clamp() → px，分钟 step 对齐逻辑删除
 // ⭐ 时/分/秒三列滚动列表；select 输出 format 格式完整时间，分钟已对齐 step
 import { ref, computed, watch, nextTick } from 'vue'
-import { pad2 } from '../date-utils'
+import { pad2 } from '../utils/date-utils'
 
 interface Props {
   /** 当前时间字符串（可为空） */
@@ -73,7 +73,10 @@ function scrollToValue() {
   if (showSeconds.value) scrollToIndex(secondColRef.value, curS.value)
 }
 
-watch(() => props.value, () => nextTick(scrollToValue))
+watch(
+  () => props.value,
+  () => nextTick(scrollToValue),
+)
 
 defineExpose({ scrollToValue })
 
@@ -93,42 +96,34 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   <div class="tp-columns">
     <div ref="hourColRef" class="tp-column">
       <div class="tp-col-title">时</div>
-      <div
-        v-for="h in hours"
-        :key="h"
-        class="tp-cell"
-        :class="{ selected: h === curH }"
-        @click="onPick('hour', h)"
-      >{{ pad2(h) }}</div>
+      <div v-for="h in hours" :key="h" class="tp-cell" :class="{ selected: h === curH }" @click="onPick('hour', h)">
+        {{ pad2(h) }}
+      </div>
     </div>
     <div ref="minuteColRef" class="tp-column">
       <div class="tp-col-title">分</div>
-      <div
-        v-for="m in minutes"
-        :key="m"
-        class="tp-cell"
-        :class="{ selected: m === curM }"
-        @click="onPick('minute', m)"
-      >{{ pad2(m) }}</div>
+      <div v-for="m in minutes" :key="m" class="tp-cell" :class="{ selected: m === curM }" @click="onPick('minute', m)">
+        {{ pad2(m) }}
+      </div>
     </div>
     <div v-if="showSeconds" ref="secondColRef" class="tp-column">
       <div class="tp-col-title">秒</div>
-      <div
-        v-for="s in seconds"
-        :key="s"
-        class="tp-cell"
-        :class="{ selected: s === curS }"
-        @click="onPick('second', s)"
-      >{{ pad2(s) }}</div>
+      <div v-for="s in seconds" :key="s" class="tp-cell" :class="{ selected: s === curS }" @click="onPick('second', s)">
+        {{ pad2(s) }}
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 /* ===== 时间列（视觉与拆分前一致） ===== */
-.tp-columns { display: flex; gap: var(--space-2); }
+.tp-columns {
+  display: flex;
+  gap: var(--space-2);
+}
 .tp-column {
-  flex: 1; min-width: 0;
+  flex: 1;
+  min-width: 0;
   position: relative; /* 作为子项 offsetTop 的定位参照 */
   max-height: clamp(150px, 30vw, 200px);
   overflow-y: auto; /* 原生滚轮滚动 */
@@ -137,13 +132,24 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
-.tp-column::-webkit-scrollbar { width: 4px; }
-.tp-column::-webkit-scrollbar-track { background: transparent; }
-.tp-column::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: var(--radius-md); }
+.tp-column::-webkit-scrollbar {
+  width: 4px;
+}
+.tp-column::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tp-column::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-md);
+}
 .tp-col-title {
-  position: sticky; top: 0; z-index: 1;
-  text-align: center; font-size: clamp(10px, 1.5vw, 11px);
-  color: var(--color-text-muted); font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: center;
+  font-size: clamp(10px, 1.5vw, 11px);
+  color: var(--color-text-muted);
+  font-weight: 600;
   padding: var(--space-1) 0;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-light);
@@ -155,8 +161,16 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   color: var(--color-text);
   cursor: pointer;
   user-select: none;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
-.tp-cell:hover { background: var(--color-bg-alt); }
-.tp-cell.selected { background: var(--color-primary); color: #fff; font-weight: 600; }
+.tp-cell:hover {
+  background: var(--color-bg-alt);
+}
+.tp-cell.selected {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
 </style>

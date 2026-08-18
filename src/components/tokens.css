@@ -10,49 +10,49 @@
    ===== 设计令牌（SaaS 专业蓝灰 — 长时间舒适阅读） ===== */
 :root {
   /* 主色调 — 稳重蓝 */
-  --color-primary: #4F6EF7;
+  --color-primary: #4f6ef7;
   --color-primary-rgb: 79, 110, 247;
-  --color-primary-hover: #3B56E0;
-  --color-primary-light: #EEF1FE;
+  --color-primary-hover: #3b56e0;
+  --color-primary-light: #eef1fe;
 
   /* 中性色 — 干净白/浅灰 */
-  --color-surface: #FFFFFF;
-  --color-bg: #F4F5F7;
-  --color-bg-alt: #EAECF0;
+  --color-surface: #ffffff;
+  --color-bg: #f4f5f7;
+  --color-bg-alt: #eaecf0;
 
   /* 文字 — 高对比深灰 */
-  --color-text: #13161F;
+  --color-text: #13161f;
   --color-text-secondary: #505560;
-  --color-text-muted: #5F6672;
+  --color-text-muted: #5f6672;
 
   /* 边框 — 可见分隔 */
-  --color-border: #D5D8DE;
-  --color-border-light: #E8EAEF;
+  --color-border: #d5d8de;
+  --color-border-light: #e8eaef;
 
   /* 侧边栏 — 深灰蓝 */
-  --color-sidebar: #1A1F2E;
+  --color-sidebar: #1a1f2e;
   --color-sidebar-hover: rgba(255, 255, 255, 0.08);
   --color-sidebar-active: rgba(79, 110, 247, 0.22);
-  --color-sidebar-text: #C0C5CF;
-  --color-sidebar-text-active: #E2E5ED;
+  --color-sidebar-text: #c0c5cf;
+  --color-sidebar-text-active: #e2e5ed;
 
   /* 状态色 */
-  --color-success: #22AD5F;
-  --color-success-bg: #F0FDF4;
-  --color-success-text: #16A34A;
-  --color-success-border: #BBF7D0;
-  --color-warning: #F59E0B;
-  --color-warning-bg: #FFFBEB;
-  --color-warning-text: #D97706;
-  --color-warning-border: #FDE68A;
-  --color-danger: #E54545;
-  --color-danger-bg: #FEF2F2;
-  --color-danger-hover: #DC2626;
-  --color-danger-border: #FECACA;
-  --color-info: #4F6EF7;
-  --color-info-bg: #EFF6FF;
-  --color-info-text: #3B82F6;
-  --color-info-border: #93C5FD;
+  --color-success: #22ad5f;
+  --color-success-bg: #f0fdf4;
+  --color-success-text: #16a34a;
+  --color-success-border: #bbf7d0;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fffbeb;
+  --color-warning-text: #d97706;
+  --color-warning-border: #fde68a;
+  --color-danger: #e54545;
+  --color-danger-bg: #fef2f2;
+  --color-danger-hover: #dc2626;
+  --color-danger-border: #fecaca;
+  --color-info: #4f6ef7;
+  --color-info-bg: #eff6ff;
+  --color-info-text: #3b82f6;
+  --color-info-border: #93c5fd;
 
   /* 间距 - 使用 clamp 实现流体 */
   --space-1: clamp(2px, 0.5vw, 4px);
@@ -88,13 +88,13 @@
   --transition-slow: 300ms ease;
 
   /* 层级 — 全局 z-index 变量，组件引用变量而非硬编码数字 */
-  --z-sticky: 100;     /* 表头、工具栏等 sticky */
-  --z-overlay: 1500;   /* 全屏表格 — 高于弹窗但低于下拉 */
-  --z-dropdown: 2000;  /* 筛选下拉、右键菜单 — 高于全屏表格 */
-  --z-readonly: 2500;  /* 全屏只读遮罩 — 压 modal/overlay/dropdown */
-  --z-modal: 1000;     /* 弹窗蒙板 */
-  --z-tooltip: 3000;   /* 提示气泡 */
-  --z-top: 9999;       /* 最高优先级通知 */
+  --z-sticky: 100; /* 表头、工具栏等 sticky */
+  --z-overlay: 1500; /* 全屏表格 — 高于弹窗但低于下拉 */
+  --z-dropdown: 2000; /* 筛选下拉、右键菜单 — 高于全屏表格 */
+  --z-readonly: 2500; /* 全屏只读遮罩 — 压 modal/overlay/dropdown */
+  --z-modal: 1000; /* 弹窗蒙板 */
+  --z-tooltip: 3000; /* 提示气泡 */
+  --z-top: 9999; /* 最高优先级通知 */
 
   /* 布局 */
   --sidebar-width: clamp(220px, 18vw, 280px);
@@ -109,7 +109,118 @@
 /* ===== 移动端变量覆写 ===== */
 @media (max-width: 767px) {
   :root {
-    --sidebar-width: 0px;        /* 移动端侧栏变为 overlay */
+    --sidebar-width: 0px; /* 移动端侧栏变为 overlay */
     --content-max-width: 100%;
+  }
+}
+
+/* ===== 暗色模式 — 通过 data-theme="dark" 或 prefers-color-scheme 自动激活 =====
+   使用方式：
+   1. 手动切换：<html data-theme="dark">
+   2. 自动跟随系统：无 data-theme 属性时由 @media prefers-color-scheme 触发
+   3. JS 控制：import { useTheme } from '@/components/_internal/useTheme'
+   仅覆写颜色变量，间距/圆角/动效/z-index 继承亮色值 */
+:root[data-theme='dark'] {
+  /* 主色调 — 保持品牌蓝一致，hover 提亮 */
+  --color-primary: #6b8af9;
+  --color-primary-hover: #8aa5fb;
+  --color-primary-light: #1e2433;
+
+  /* 中性色 — 深底 */
+  --color-surface: #1a1d24;
+  --color-bg: #131519;
+  --color-bg-alt: #22252e;
+
+  /* 文字 — 浅色高对比 */
+  --color-text: #e8eaf0;
+  --color-text-secondary: #a0a6b0;
+  --color-text-muted: #6b7280;
+
+  /* 边框 — 深色可辨 */
+  --color-border: #2d3139;
+  --color-border-light: #232730;
+
+  /* 侧边栏 — 更深 */
+  --color-sidebar: #0f1115;
+  --color-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --color-sidebar-active: rgba(107, 138, 249, 0.18);
+  --color-sidebar-text: #8b92a0;
+  --color-sidebar-text-active: #c0c5cf;
+
+  /* 状态色 — 暗底调亮 */
+  --color-success: #34d399;
+  --color-success-bg: #0a2e1f;
+  --color-success-text: #6ee7b7;
+  --color-success-border: #0f3d2a;
+  --color-warning: #fbbf24;
+  --color-warning-bg: #2e1f0a;
+  --color-warning-text: #fcd34d;
+  --color-warning-border: #3d2a0f;
+  --color-danger: #f87171;
+  --color-danger-bg: #2e0f0f;
+  --color-danger-hover: #ef4444;
+  --color-danger-border: #3d1515;
+  --color-info: #6b8af9;
+  --color-info-bg: #1a1e2e;
+  --color-info-text: #93b0fd;
+  --color-info-border: #1e2d4d;
+
+  /* 阴影 — 暗底减淡 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+}
+
+/* ===== 自动跟随系统暗色（无 data-theme 属性时生效） ===== */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    /* 主色调 */
+    --color-primary: #6b8af9;
+    --color-primary-hover: #8aa5fb;
+    --color-primary-light: #1e2433;
+
+    /* 中性色 */
+    --color-surface: #1a1d24;
+    --color-bg: #131519;
+    --color-bg-alt: #22252e;
+
+    /* 文字 */
+    --color-text: #e8eaf0;
+    --color-text-secondary: #a0a6b0;
+    --color-text-muted: #6b7280;
+
+    /* 边框 */
+    --color-border: #2d3139;
+    --color-border-light: #232730;
+
+    /* 侧边栏 */
+    --color-sidebar: #0f1115;
+    --color-sidebar-hover: rgba(255, 255, 255, 0.06);
+    --color-sidebar-active: rgba(107, 138, 249, 0.18);
+    --color-sidebar-text: #8b92a0;
+    --color-sidebar-text-active: #c0c5cf;
+
+    /* 状态色 */
+    --color-success: #34d399;
+    --color-success-bg: #0a2e1f;
+    --color-success-text: #6ee7b7;
+    --color-success-border: #0f3d2a;
+    --color-warning: #fbbf24;
+    --color-warning-bg: #2e1f0a;
+    --color-warning-text: #fcd34d;
+    --color-warning-border: #3d2a0f;
+    --color-danger: #f87171;
+    --color-danger-bg: #2e0f0f;
+    --color-danger-hover: #ef4444;
+    --color-danger-border: #3d1515;
+    --color-info: #6b8af9;
+    --color-info-bg: #1a1e2e;
+    --color-info-text: #93b0fd;
+    --color-info-border: #1e2d4d;
+
+    /* 阴影 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
   }
 }

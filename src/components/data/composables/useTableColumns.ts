@@ -7,10 +7,10 @@ import type { Column } from './types'
 import { measureColumnWidth, measureDomTextWidth } from './utils'
 
 // 表头图标尺寸常量（与 IconSvg size="sm" 对齐）
-const SORT_ARROW_W = 24       // 排序箭头图标 16 + sort-arrows padding 左右各 4
-const FILTER_ICON_W = 24      // 筛选图标宽
-const ICON_GAP = 2            // 标题→图标间距（对齐 .th-inner gap）
-const FILTER_GAP = 0          // 图标间微间距
+const SORT_ARROW_W = 24 // 排序箭头图标 16 + sort-arrows padding 左右各 4
+const FILTER_ICON_W = 24 // 筛选图标宽
+const ICON_GAP = 2 // 标题→图标间距（对齐 .th-inner gap）
+const FILTER_GAP = 0 // 图标间微间距
 
 export function useTableColumns(
   props: {
@@ -46,34 +46,41 @@ export function useTableColumns(
     dynamicFixedRight.value = r
   }
   syncStaticFixed()
-  watch(() => props.columns.map(c => c.key).join(','), () => syncStaticFixed())
+  watch(
+    () => props.columns.map((c) => c.key).join(','),
+    () => syncStaticFixed(),
+  )
 
   /** 级联固定到左侧：该列及之前所有列 */
   function fixLeftCascade(colKey: string) {
-    const keys = displayColumns.value.map(c => c.key)
+    const keys = displayColumns.value.map((c) => c.key)
     const idx = keys.indexOf(colKey)
     if (idx < 0) return
     const newLeft = keys.slice(0, idx + 1)
     // 与左侧固定重叠的右侧列从右区域移除（保持右区域连续后缀）
-    const newRight = new Set([...dynamicFixedRight.value].filter(k => !newLeft.includes(k)))
+    const newRight = new Set([...dynamicFixedRight.value].filter((k) => !newLeft.includes(k)))
     dynamicFixedLeft.value = new Set(newLeft)
     dynamicFixedRight.value = newRight
   }
   /** 级联固定到右侧：该列及之后所有列 */
   function fixRightCascade(colKey: string) {
-    const keys = displayColumns.value.map(c => c.key)
+    const keys = displayColumns.value.map((c) => c.key)
     const idx = keys.indexOf(colKey)
     if (idx < 0) return
     const newRight = keys.slice(idx)
     // 与右侧固定重叠的左侧列从左区域移除（保持左区域连续前缀）
-    const newLeft = new Set([...dynamicFixedLeft.value].filter(k => !newRight.includes(k)))
+    const newLeft = new Set([...dynamicFixedLeft.value].filter((k) => !newRight.includes(k)))
     dynamicFixedRight.value = new Set(newRight)
     dynamicFixedLeft.value = newLeft
   }
   /** 取消该列固定 */
   function unfixColumn(colKey: string) {
-    const l = new Set(dynamicFixedLeft.value); l.delete(colKey); dynamicFixedLeft.value = l
-    const r = new Set(dynamicFixedRight.value); r.delete(colKey); dynamicFixedRight.value = r
+    const l = new Set(dynamicFixedLeft.value)
+    l.delete(colKey)
+    dynamicFixedLeft.value = l
+    const r = new Set(dynamicFixedRight.value)
+    r.delete(colKey)
+    dynamicFixedRight.value = r
   }
   /** 双击自适应：测量该列内容宽度并设置 */
   function autoFitColumn(col: Column) {
@@ -93,9 +100,7 @@ export function useTableColumns(
     return false
   }
 
-  const visibleColumns = computed(() =>
-    props.columns.filter((c) => !hiddenColumns.value.has(c.key)),
-  )
+  const visibleColumns = computed(() => props.columns.filter((c) => !hiddenColumns.value.has(c.key)))
 
   // --- 列宽拖拽 ---
   const resizing = ref<{ colKey: string; startX: number; startW: number } | null>(null)
@@ -108,7 +113,7 @@ export function useTableColumns(
   function onResizeMove(e: MouseEvent) {
     if (!resizing.value) return
     const diff = e.clientX - resizing.value.startX
-    const col = visibleColumns.value.find(c => c.key === resizing.value!.colKey)
+    const col = visibleColumns.value.find((c) => c.key === resizing.value!.colKey)
     // 复用 applyAutoFit 同一套动态底线
     const floor = col ? headerMinW(col) : 60
     columnWidths.value[resizing.value.colKey] = Math.max(floor, resizing.value.startW + diff)
@@ -128,7 +133,9 @@ export function useTableColumns(
     resizing.value = null
     // 抑制紧随的 click 事件误触排序/筛选（mouseup → click 在同帧触发）
     _resizeJustEnded.value = true
-    setTimeout(() => { _resizeJustEnded.value = false }, 150)
+    setTimeout(() => {
+      _resizeJustEnded.value = false
+    }, 150)
   }
 
   function startResize(col: Column, e: MouseEvent) {
@@ -183,7 +190,7 @@ export function useTableColumns(
     if (col.sortable !== false || col.filterable !== false) w += ICON_GAP
     if (col.sortable !== false) w += SORT_ARROW_W
     if (col.filterable !== false) w += FILTER_GAP + FILTER_ICON_W
-    return Math.ceil(w + 21)               // TH padding 10px×2 + flex 子像素舍入 1px
+    return Math.ceil(w + 21) // TH padding 10px×2 + flex 子像素舍入 1px
   }
 
   // ── applyAutoFit 冷却：多 watch 并发触发时只执行最后一次 ──
@@ -191,7 +198,7 @@ export function useTableColumns(
   //         数据加载阶段可能 3-5 次连续重算列宽，导致表格左右抖动。
   // AFTER: 300ms 冷却窗口内多次调用只保留最后一次，大幅减少列宽重算次数。
   let _autoFitTimer: ReturnType<typeof setTimeout> | null = null
-  const AUTO_FIT_COOLDOWN = 300  // ms，可调整
+  const AUTO_FIT_COOLDOWN = 300 // ms，可调整
 
   function applyAutoFit() {
     if (!props.autoFit) return
@@ -220,7 +227,7 @@ export function useTableColumns(
 
     // 扣掉元素边框/间距 + 复选框列宽
     const selectW = props.selectable ? 40 : 0
-		const actionsW = actionsWidth?.value ?? 0
+    const actionsW = actionsWidth?.value ?? 0
     const borderOverhead = (props.bordered ? cols.length + 4 : 0) + 8
     const usableW = containerW - borderOverhead - selectW - actionsW
 
@@ -235,7 +242,7 @@ export function useTableColumns(
       return Math.ceil(Math.max(hW, maxW + 20))
     })
 
-    const hMins = cols.map(col => headerMinW(col))
+    const hMins = cols.map((col) => headerMinW(col))
     const totalHMin = hMins.reduce((s, w) => s + w, 0)
     const totalIdeal = ideal.reduce((s, w) => s + w, 0)
 
@@ -247,7 +254,7 @@ export function useTableColumns(
 
     // 将 final 宽度写入 columnWidths，缩放至恰好填满容器（不低于表头最小宽）
     const applyFinal = (final: number[]) => {
-      let sum = final.reduce((s, w) => s + w, 0)
+      const sum = final.reduce((s, w) => s + w, 0)
       if (sum > 0 && Math.abs(sum - usableW) > 1) {
         const ratio = usableW / sum
         // 等比缩放但保底：不低于 headerMinW
@@ -258,11 +265,14 @@ export function useTableColumns(
         let diff = usableW - final.reduce((s, w) => s + w, 0)
         for (let i = 0; diff !== 0 && i < final.length; i++) {
           const adj = diff > 0 ? 1 : -1
-          final[i] += adj; diff -= adj
+          final[i] += adj
+          diff -= adj
         }
       }
       const map: Record<string, number> = {}
-      cols.forEach((col, i) => { map[col.key] = final[i] })
+      cols.forEach((col, i) => {
+        map[col.key] = final[i]
+      })
       columnWidths.value = map
     }
 
@@ -286,47 +296,47 @@ export function useTableColumns(
         for (const col of cols) {
           if (diff === 0) break
           const adj = diff > 0 ? 1 : -1
-          map[col.key] += adj; diff -= adj
+          map[col.key] += adj
+          diff -= adj
         }
       } else {
-        cols.forEach((col, i) => { map[col.key] = ideal[i] })
+        cols.forEach((col, i) => {
+          map[col.key] = ideal[i]
+        })
       }
       columnWidths.value = map
     }
     // 溢出 → 瀑布流递增压缩（先压最宽列，逐步扩展压缩组）
     else {
+      const final = [...ideal]
+      let remaining = totalIdeal - usableW
 
-    const final = [...ideal]
-    let remaining = totalIdeal - usableW
+      // 按理想宽降序排列可压缩列；floor 保底含平均内容宽，防止单元格内容截断
+      const sorted = cols
+        .map((_col, i) => ({ idx: i, ideal: ideal[i], hMin: hMins[i] }))
+        .filter((c) => c.ideal > c.hMin)
+        .sort((a, b) => b.ideal - a.ideal)
+      // 每列压缩保底：hMin / ideal·40%比例 / 硬下限 — 不依赖 avgW，避免高方差失真
+      const colFloor = (c: (typeof sorted)[number]) => Math.max(c.hMin, Math.ceil(c.ideal * 0.4), minW)
 
-    // 按理想宽降序排列可压缩列；floor 保底含平均内容宽，防止单元格内容截断
-    const sorted = cols
-      .map((_col, i) => ({ idx: i, ideal: ideal[i], hMin: hMins[i] }))
-      .filter(c => c.ideal > c.hMin)
-      .sort((a, b) => b.ideal - a.ideal)
-    // 每列压缩保底：hMin / ideal·40%比例 / 硬下限 — 不依赖 avgW，避免高方差失真
-    const colFloor = (c: typeof sorted[number]) =>
-      Math.max(c.hMin, Math.ceil(c.ideal * 0.4), minW)
-
-    // 贪心压缩：按 ideal 降序逐列扛溢出，扛到保底线才轮下一列 — 窄列优先保护
-    for (const sc of sorted) {
-      if (remaining <= 0) break
-      const canGive = final[sc.idx] - colFloor(sc)
-      if (canGive >= remaining) {
-        final[sc.idx] -= remaining
-        remaining = 0
-        break
+      // 贪心压缩：按 ideal 降序逐列扛溢出，扛到保底线才轮下一列 — 窄列优先保护
+      for (const sc of sorted) {
+        if (remaining <= 0) break
+        const canGive = final[sc.idx] - colFloor(sc)
+        if (canGive >= remaining) {
+          final[sc.idx] -= remaining
+          break
+        }
+        final[sc.idx] = colFloor(sc)
+        remaining -= canGive
       }
-      final[sc.idx] = colFloor(sc)
-      remaining -= canGive
-    }
 
-    applyFinal(final)
-    // applyFinal 等比缩放可能突破 colFloor 保底线 → 拉回安全线
-    for (const sc of sorted) {
-      const key = cols[sc.idx].key
-      if (columnWidths.value[key] < colFloor(sc)) columnWidths.value[key] = colFloor(sc)
-    }
+      applyFinal(final)
+      // applyFinal 等比缩放可能突破 colFloor 保底线 → 拉回安全线
+      for (const sc of sorted) {
+        const key = cols[sc.idx].key
+        if (columnWidths.value[key] < colFloor(sc)) columnWidths.value[key] = colFloor(sc)
+      }
     }
 
     // 恢复用户手动调整的列宽（最后执行，覆盖 autoFit 计算值）
@@ -371,7 +381,7 @@ export function useTableColumns(
   }
 
   // ==================== 列拖拽排序 ====================
-  const _columnOrder = ref<string[]>(props.columns.map(c => c.key))
+  const _columnOrder = ref<string[]>(props.columns.map((c) => c.key))
   // 列顺序变化后，固定区域按「前 N 列 / 后 M 列」语义跟随新顺序重建，
   // 避免固定集合停留在旧列 key 上造成中间空洞/偏移错位
   watch(_columnOrder, (order, oldOrder) => {
@@ -404,7 +414,11 @@ export function useTableColumns(
   }
   function onColDrop(e: DragEvent, targetKey: string) {
     e.preventDefault()
-    if (!_dragCol.value || _dragCol.value === targetKey) { _dragCol.value = null; _dragOverCol.value = null; return }
+    if (!_dragCol.value || _dragCol.value === targetKey) {
+      _dragCol.value = null
+      _dragOverCol.value = null
+      return
+    }
     const keys = [..._columnOrder.value]
     const fromIdx = keys.indexOf(_dragCol.value)
     const toIdx = keys.indexOf(targetKey)
@@ -428,16 +442,38 @@ export function useTableColumns(
   })
 
   return {
-    hiddenColumns, visibleColumns, displayColumns,
-    resizing, columnWidths, startResize, onResizeMove, onResizeEnd,
-    fixedLeftOffsets, fixedRightOffsets,
+    hiddenColumns,
+    visibleColumns,
+    displayColumns,
+    resizing,
+    columnWidths,
+    startResize,
+    onResizeMove,
+    onResizeEnd,
+    fixedLeftOffsets,
+    fixedRightOffsets,
     applyAutoFit,
-    isCardView, _windowWidth, onWindowResizeCard,
-    dynamicFixedLeft, dynamicFixedRight, fixLeftCascade, fixRightCascade, unfixColumn, isColumnFixed, autoFitColumn,
-    _userResizedCols, _resizeJustEnded,
+    isCardView,
+    _windowWidth,
+    onWindowResizeCard,
+    dynamicFixedLeft,
+    dynamicFixedRight,
+    fixLeftCascade,
+    fixRightCascade,
+    unfixColumn,
+    isColumnFixed,
+    autoFitColumn,
+    _userResizedCols,
+    _resizeJustEnded,
     headerMinW,
     // 列拖拽
-    _columnOrder, _dragCol, _dragOverCol,
-    onColDragStart, onColDragOver, onColDragLeave, onColDrop, onColDragEnd,
+    _columnOrder,
+    _dragCol,
+    _dragOverCol,
+    onColDragStart,
+    onColDragOver,
+    onColDragLeave,
+    onColDrop,
+    onColDragEnd,
   }
 }

@@ -31,20 +31,30 @@ const form = ref<Partial<Store>>({
 const isEdit = computed(() => !!props.store)
 const nameError = ref(false)
 
-watch(() => props.visible, (val) => {
-  if (val) {
-    nameError.value = false
-    if (props.store) {
-      form.value = { ...props.store }
-    } else {
-      form.value = {
-        name: '', address: '', province: '', city: '',
-        district: '', town: '', contact: '', phone: '',
-        longitude: null, latitude: null,
+watch(
+  () => props.visible,
+  (val) => {
+    if (val) {
+      nameError.value = false
+      if (props.store) {
+        form.value = { ...props.store }
+      } else {
+        form.value = {
+          name: '',
+          address: '',
+          province: '',
+          city: '',
+          district: '',
+          town: '',
+          contact: '',
+          phone: '',
+          longitude: null,
+          latitude: null,
+        }
       }
     }
-  }
-})
+  },
+)
 
 function handleSubmit(): void {
   // 门店名和地址至少填一个
@@ -65,7 +75,7 @@ function handleSubmit(): void {
     phone: form.value.phone?.trim() || '',
     longitude: form.value.longitude ?? null,
     latitude: form.value.latitude ?? null,
-    coordSource: (form.value.longitude && form.value.latitude) ? 'manual' : 'none',
+    coordSource: form.value.longitude && form.value.latitude ? 'manual' : 'none',
     skipped: false,
   }
 
@@ -138,31 +148,21 @@ function handleSubmit(): void {
           <div class="form-row form-grid-2">
             <div>
               <label>经度（可选）</label>
-              <input
-                v-model.number="form.longitude"
-                type="number"
-                step="0.000001"
-                placeholder="113.123456"
-              />
+              <input v-model.number="form.longitude" type="number" step="0.000001" placeholder="113.123456" />
             </div>
             <div>
               <label>纬度（可选）</label>
-              <input
-                v-model.number="form.latitude"
-                type="number"
-                step="0.000001"
-                placeholder="28.123456"
-              />
+              <input v-model.number="form.latitude" type="number" step="0.000001" placeholder="28.123456" />
             </div>
           </div>
 
-          <p class="form-hint">
-            💡 有经纬度优先使用；无经纬度时将通过地址自动解析
-          </p>
+          <p class="form-hint">💡 有经纬度优先使用；无经纬度时将通过地址自动解析</p>
 
           <div class="modal-footer">
             <button type="button" class="btn-cancel" @click="emit('close')">取消</button>
-            <button type="submit" class="btn-save">{{ isEdit ? '保存修改' : '添加门店' }}</button>
+            <button type="submit" class="btn-save">
+              {{ isEdit ? '保存修改' : '添加门店' }}
+            </button>
           </div>
         </form>
       </div>
@@ -182,7 +182,7 @@ function handleSubmit(): void {
 }
 
 .modal-box {
-  background: #fff;
+  background: var(--color-surface, #fff);
   border-radius: 12px;
   width: 480px;
   max-width: 90vw;
@@ -196,7 +196,7 @@ function handleSubmit(): void {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border-light, #e2e8f0);
 }
 
 .modal-header h3 {
@@ -210,12 +210,12 @@ function handleSubmit(): void {
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
   padding: 4px;
 }
 
 .btn-close:hover {
-  color: #475569;
+  color: var(--color-text-secondary, #475569);
 }
 
 .modal-body {
@@ -230,14 +230,14 @@ function handleSubmit(): void {
   display: block;
   font-size: 12px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--color-text-secondary, #64748b);
   margin-bottom: 4px;
 }
 
 .form-row input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-light, #e2e8f0);
   border-radius: 6px;
   font-size: 14px;
   outline: none;
@@ -245,7 +245,7 @@ function handleSubmit(): void {
 }
 
 .form-row input:focus {
-  border-color: #3b82f6;
+  border-color: var(--color-primary, #3b82f6);
 }
 
 .form-grid-2,
@@ -264,7 +264,7 @@ function handleSubmit(): void {
 
 .form-hint {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
   margin: 8px 0 0;
 }
 
@@ -273,7 +273,7 @@ function handleSubmit(): void {
   justify-content: flex-end;
   gap: 10px;
   padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-border-light, #e2e8f0);
 }
 
 .btn-cancel,
@@ -287,38 +287,39 @@ function handleSubmit(): void {
 }
 
 .btn-cancel {
-  background: #fff;
-  border-color: #e2e8f0;
-  color: #64748b;
+  background: var(--color-surface, #fff);
+  border-color: var(--color-border-light, #e2e8f0);
+  color: var(--color-text-secondary, #64748b);
 }
 
 .btn-cancel:hover {
-  background: #f8fafc;
+  background: var(--color-bg, #f8fafc);
 }
 
 .btn-save {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: #fff;
+  background: var(--color-primary, #3b82f6);
+  border-color: var(--color-primary, #3b82f6);
+  color: var(--color-surface, #fff);
 }
 
 .btn-save:hover {
-  background: #2563eb;
+  background: var(--color-primary-hover, #2563eb);
+  border-color: var(--color-primary-hover, #2563eb);
 }
 
 .required {
-  color: #ef4444;
+  color: var(--color-danger, #ef4444);
   font-weight: 700;
 }
 
 .input-error {
-  border-color: #ef4444 !important;
-  background: #fef2f2;
+  border-color: var(--color-danger, #ef4444) !important;
+  background: var(--color-danger-bg, #fef2f2);
 }
 
 .form-error {
   font-size: 12px;
-  color: #ef4444;
+  color: var(--color-danger, #ef4444);
   margin: 4px 0 0;
 }
 </style>

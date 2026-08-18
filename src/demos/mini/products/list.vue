@@ -38,11 +38,11 @@ const searchKey = ref('')
 const filteredProducts = computed(() => {
   let list = products.value
   if (categoryFilter.value) {
-    list = list.filter(p => p.category === categoryFilter.value)
+    list = list.filter((p) => p.category === categoryFilter.value)
   }
   if (searchKey.value) {
     const kw = searchKey.value.toLowerCase()
-    list = list.filter(p => p.name.toLowerCase().includes(kw) || p.sku.toLowerCase().includes(kw))
+    list = list.filter((p) => p.name.toLowerCase().includes(kw) || p.sku.toLowerCase().includes(kw))
   }
   return list
 })
@@ -51,7 +51,11 @@ function goDetail(id: number) {
   router.push(`/mini/products/detail/${id}`)
 }
 
-const statusColor: Record<string, string> = { normal: 'var(--color-success)', low: 'var(--color-warning)', out: 'var(--color-danger)' }
+const statusColor: Record<string, string> = {
+  normal: 'var(--color-success)',
+  low: 'var(--color-warning)',
+  out: 'var(--color-danger)',
+}
 </script>
 
 <template>
@@ -73,26 +77,24 @@ const statusColor: Record<string, string> = { normal: 'var(--color-success)', lo
 
     <!-- 列表 -->
     <div v-if="filteredProducts.length" class="product-list">
-      <div
-        v-for="p in filteredProducts" :key="p.id"
-        class="product-item"
-        @click="goDetail(p.id)"
-      >
+      <div v-for="p in filteredProducts" :key="p.id" class="product-item" @click="goDetail(p.id)">
         <div class="product-thumb">
           <IconSvg type="box" size="md" />
         </div>
         <div class="product-info">
-          <div class="product-name">{{ p.name }}</div>
+          <div class="product-name">
+            {{ p.name }}
+          </div>
           <div class="product-meta">
             <span class="product-sku">{{ p.sku }}</span>
-            <Tag size="sm">{{ p.category }}</Tag>
+            <Tag size="sm">
+              {{ p.category }}
+            </Tag>
           </div>
         </div>
         <div class="product-right">
           <div class="product-price">¥{{ p.price }}</div>
-          <div class="product-stock" :style="{ color: statusColor[p.status] }">
-            库存 {{ p.stock }}
-          </div>
+          <div class="product-stock" :style="{ color: statusColor[p.status] }">库存 {{ p.stock }}</div>
         </div>
         <IconSvg type="chevron-right" size="sm" color="var(--color-text-muted)" />
       </div>
@@ -106,46 +108,122 @@ const statusColor: Record<string, string> = { normal: 'var(--color-success)', lo
 </template>
 
 <style scoped>
-.page { padding: 12px; }
+.page {
+  padding: 12px;
+}
 
 .search-bar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; margin-bottom: 10px;
-  background: var(--color-surface); border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
 }
-.search-input { flex: 1; border: none; background: transparent; font-size: 13px; outline: none; color: var(--color-text); }
-.clear-btn { display: flex; align-items: center; padding: 2px; border: none; background: transparent; color: var(--color-text-muted); cursor: pointer; }
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  outline: none;
+  color: var(--color-text);
+}
+.clear-btn {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
 
 .filter-tip {
-  display: flex; align-items: center; gap: 8px;
-  padding: 4px 0; margin-bottom: 10px; font-size: 12px; color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--color-primary);
 }
 .clear-filter {
-  border: none; background: transparent; font-size: 11px;
-  color: var(--color-text-muted); cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  cursor: pointer;
 }
 
-.product-list { display: flex; flex-direction: column; gap: 6px; }
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 .product-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px; background: var(--color-surface);
-  border: 1px solid var(--color-border-light); border-radius: var(--radius-md);
-  cursor: pointer; transition: border-color 120ms;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 120ms;
 }
-.product-item:hover { border-color: var(--color-primary); }
+.product-item:hover {
+  border-color: var(--color-primary);
+}
 .product-thumb {
-  display: flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; border-radius: var(--radius-sm);
-  background: var(--color-bg); color: var(--color-text-muted); flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
 }
-.product-info { flex: 1; min-width: 0; }
-.product-name { font-size: 14px; font-weight: 500; color: var(--color-text); margin-bottom: 4px; }
-.product-meta { display: flex; align-items: center; gap: 6px; }
-.product-sku { font-size: 11px; color: var(--color-text-muted); }
-.product-right { text-align: right; flex-shrink: 0; }
-.product-price { font-size: 15px; font-weight: 600; color: var(--color-danger); }
-.product-stock { font-size: 10px; margin-top: 2px; }
+.product-info {
+  flex: 1;
+  min-width: 0;
+}
+.product-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+.product-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.product-sku {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.product-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.product-price {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-danger);
+}
+.product-stock {
+  font-size: 10px;
+  margin-top: 2px;
+}
 
-.empty { text-align: center; padding: 60px 20px; color: var(--color-text-muted); font-size: 13px; }
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
 </style>

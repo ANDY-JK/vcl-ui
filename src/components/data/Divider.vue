@@ -28,7 +28,9 @@ withDefaults(defineProps<Props>(), {
   width: 100%;
   border-top: 1px solid var(--color-border);
 }
-.divider-h.dashed { border-top-style: dashed; }
+.divider-h.dashed {
+  border-top-style: dashed;
+}
 .divider-h.with-text {
   border-top: none;
 }
@@ -57,5 +59,7 @@ withDefaults(defineProps<Props>(), {
   border-left: 1px solid var(--color-border);
   align-self: stretch;
 }
-.divider-v.dashed { border-left-style: dashed; }
+.divider-v.dashed {
+  border-left-style: dashed;
+}
 </style>

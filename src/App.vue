@@ -33,12 +33,8 @@ const editMode = ref(false)
       <span class="topbar-tool-sep" />
 
       <!-- 纯文字 -->
-      <button class="topbar-tool-text" :class="{ active: editMode }" @click="editMode = !editMode">
-        编辑
-      </button>
-      <button class="topbar-tool-text is-danger">
-        删除
-      </button>
+      <button class="topbar-tool-text" :class="{ active: editMode }" @click="editMode = !editMode">编辑</button>
+      <button class="topbar-tool-text is-danger">删除</button>
 
       <span class="topbar-tool-sep" />
 

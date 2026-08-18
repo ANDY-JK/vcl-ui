@@ -64,29 +64,11 @@
             :hint="confirmPasswordHint"
           />
 
-          <Button
-            text="重置密码"
-            variant="primary"
-            :loading="loading"
-            block
-            @click="handleSubmit"
-          />
+          <Button text="重置密码" variant="primary" :loading="loading" block @click="handleSubmit" />
 
-          <Toast
-            v-if="displayError"
-            variant="inline"
-            type="error"
-            :message="displayError"
-            closable
-          />
+          <Toast v-if="displayError" variant="inline" type="error" :message="displayError" closable />
 
-          <Toast
-            v-if="displaySuccess"
-            variant="inline"
-            type="success"
-            :message="displaySuccess"
-            closable
-          />
+          <Toast v-if="displaySuccess" variant="inline" type="success" :message="displaySuccess" closable />
         </div>
 
         <div class="footer-text">
@@ -113,25 +95,28 @@ export interface ResetPasswordPayload {
 
 // ======================== Props ========================
 
-const props = withDefaults(defineProps<{
-  // === 布局 ===
-  /** 容器最大宽度，CSS 值，默认 960px */
-  maxWidth?: string
-  /** 强制隐藏左侧品牌面板 */
-  hideBrand?: boolean
-  /** 容器最小高度，CSS 值，默认 100vh */
-  minHeight?: string
+const props = withDefaults(
+  defineProps<{
+    // === 布局 ===
+    /** 容器最大宽度，CSS 值，默认 960px */
+    maxWidth?: string
+    /** 强制隐藏左侧品牌面板 */
+    hideBrand?: boolean
+    /** 容器最小高度，CSS 值，默认 100vh */
+    minHeight?: string
 
-  // === 内容 ===
-  loading?: boolean
-  error?: string
-  success?: string
-}>(), {
-  maxWidth: '960px',
-  hideBrand: false,
-  minHeight: '100vh',
-  loading: false,
-})
+    // === 内容 ===
+    loading?: boolean
+    error?: string
+    success?: string
+  }>(),
+  {
+    maxWidth: '960px',
+    hideBrand: false,
+    minHeight: '100vh',
+    loading: false,
+  },
+)
 
 // ======================== Emits ========================
 
@@ -153,35 +138,44 @@ const displayError = computed(() => props.error || internalError.value)
 const displaySuccess = computed(() => props.success || '')
 
 const passwordHint = computed(() =>
-  form.new_password.length > 0 && form.new_password.length < 6 ? '至少 6 个字符' : ''
+  form.new_password.length > 0 && form.new_password.length < 6 ? '至少 6 个字符' : '',
 )
 const confirmPasswordHint = computed(() =>
-  form.confirm_password.length > 0 && form.new_password !== form.confirm_password ? '两次密码不一致' : ''
+  form.confirm_password.length > 0 && form.new_password !== form.confirm_password ? '两次密码不一致' : '',
 )
 
-const cardKeyRules = [(v: string) => v.trim() ? undefined : '请输入注册卡密']
+const cardKeyRules = [(v: string) => (v.trim() ? undefined : '请输入注册卡密')]
 const passwordRules = [
-  (v: string) => v ? undefined : '请输入新密码',
-  (v: string) => v.length >= 6 ? undefined : '至少 6 个字符',
+  (v: string) => (v ? undefined : '请输入新密码'),
+  (v: string) => (v.length >= 6 ? undefined : '至少 6 个字符'),
 ]
 const confirmPasswordRules = [
-  (v: string) => v ? undefined : '请确认新密码',
-  (v: string) => v === form.new_password ? undefined : '两次密码不一致',
+  (v: string) => (v ? undefined : '请确认新密码'),
+  (v: string) => (v === form.new_password ? undefined : '两次密码不一致'),
 ]
 
 // ======================== 提交 ========================
 
-	const handleSubmit = () => {
-	  internalError.value = ''
+const handleSubmit = () => {
+  internalError.value = ''
 
-	  if (!form.card_key.trim()) { internalError.value = '请输入注册卡密'; return }
-	  if (!form.new_password || form.new_password.length < 6) { internalError.value = '新密码至少 6 个字符'; return }
-	  if (form.new_password !== form.confirm_password) { internalError.value = '两次密码不一致'; return }
+  if (!form.card_key.trim()) {
+    internalError.value = '请输入注册卡密'
+    return
+  }
+  if (!form.new_password || form.new_password.length < 6) {
+    internalError.value = '新密码至少 6 个字符'
+    return
+  }
+  if (form.new_password !== form.confirm_password) {
+    internalError.value = '两次密码不一致'
+    return
+  }
 
-	  emit('submit', {
-	    card_key: form.card_key,
-	    password: form.new_password,
-	  })
+  emit('submit', {
+    card_key: form.card_key,
+    password: form.new_password,
+  })
 }
 
 defineExpose({
@@ -200,17 +194,47 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3B56E0 50%, #E54545 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 50%, #e54545 100%);
   padding: var(--space-5);
   position: relative;
 }
 
-.floating-shapes { position: absolute; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
-.shape { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.08); }
-.shape:nth-child(1) { width: 80px; height: 80px; left: 10%; top: 20%; }
-.shape:nth-child(2) { width: 120px; height: 120px; right: 15%; top: 60%; }
-.shape:nth-child(3) { width: 60px; height: 60px; left: 25%; bottom: 15%; }
-.shape:nth-child(4) { width: 100px; height: 100px; right: 30%; top: 10%; }
+.floating-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+.shape:nth-child(1) {
+  width: 80px;
+  height: 80px;
+  left: 10%;
+  top: 20%;
+}
+.shape:nth-child(2) {
+  width: 120px;
+  height: 120px;
+  right: 15%;
+  top: 60%;
+}
+.shape:nth-child(3) {
+  width: 60px;
+  height: 60px;
+  left: 25%;
+  bottom: 15%;
+}
+.shape:nth-child(4) {
+  width: 100px;
+  height: 100px;
+  right: 30%;
+  top: 10%;
+}
 
 .login-container {
   display: flex;
@@ -227,75 +251,150 @@ defineExpose({
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3B56E0 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 100%);
   padding: var(--space-12) 44px;
-  display: flex; flex-direction: column; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   color: white;
-  position: relative; overflow: hidden;
+  position: relative;
+  overflow: hidden;
 }
 .login-left::before {
   content: '';
-  position: absolute; top: -50%; right: -50%;
-  width: 200%; height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
 }
 
-.brand-logo { position: relative; z-index: 1; margin-bottom: var(--space-12); }
+.brand-logo {
+  position: relative;
+  z-index: 1;
+  margin-bottom: var(--space-12);
+}
 .logo-icon {
-  width: 64px; height: 64px;
+  width: 64px;
+  height: 64px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-xl);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: var(--space-5);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
-.brand-logo h2 { font-size: 32px; font-weight: 600; margin-bottom: var(--space-3); }
-.brand-logo p { font-size: 16px; opacity: 0.9; line-height: 1.6; }
+.brand-logo h2 {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+}
+.brand-logo p {
+  font-size: 16px;
+  opacity: 0.9;
+  line-height: 1.6;
+}
 
-.features-list { position: relative; z-index: 1; list-style: none; }
-.features-list li { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); font-size: 15px; }
+.features-list {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+}
+.features-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  font-size: 15px;
+}
 .features-list li::before {
   content: '\2713';
-  width: 24px; height: 24px;
+  width: 24px;
+  height: 24px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 .login-right {
   flex: 1;
   padding: var(--space-12);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   background: white;
   border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
 }
-.login-header { flex-shrink: 0; padding-bottom: var(--space-8); }
-.login-header h1 { font-size: 22px; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-2); }
-.login-header p { font-size: 14px; color: var(--color-text-secondary); }
+.login-header {
+  flex-shrink: 0;
+  padding-bottom: var(--space-8);
+}
+.login-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+.login-header p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
 
 .forgot-form {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-5);
 }
 
-.footer-text { text-align: center; font-size: 14px; color: var(--color-text-muted); padding-top: var(--space-8); }
-.register-link { color: var(--color-primary); text-decoration: none; font-weight: 500; }
-.register-link:hover { text-decoration: underline; }
+.footer-text {
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  padding-top: var(--space-8);
+}
+.register-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.register-link:hover {
+  text-decoration: underline;
+}
 
 @media (max-width: 768px) {
-  .login-left { display: none; }
-  .login-container { max-width: min(var(--login-max-width, 960px), 440px); }
-  .login-right { padding: var(--space-10); }
+  .login-left {
+    display: none;
+  }
+  .login-container {
+    max-width: min(var(--login-max-width, 960px), 440px);
+  }
+  .login-right {
+    padding: var(--space-10);
+  }
 }
 @media (max-width: 480px) {
-  .login-right { padding: var(--space-8); }
-  .login-header h1 { font-size: 20px; }
+  .login-right {
+    padding: var(--space-8);
+  }
+  .login-header h1 {
+    font-size: 20px;
+  }
 }
 </style>

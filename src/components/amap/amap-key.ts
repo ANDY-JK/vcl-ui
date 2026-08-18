@@ -1,18 +1,18 @@
 /**
- * 高德 API Key 统一管理
+ * amap-key.ts — 高德 API Key 统一管理（唯一真相源）
  *
  * 组件库不内置任何 Key — 调用方必须自行设置：
- *   import { setAmapKey } from '@/components/route-planner/utils/amap-key'
+ *   import { setAmapKey } from '@/components/amap'
  *   setAmapKey('your-key')
- * 或在 .env 中配置 VITE_AMAP_KEY
+ * 或在 .env 中配置 VITE_AMAP_KEY / VITE_AMAP_SECRET
  *
- * JS API Key（前端地图 SDK）和 REST API Key（服务端接口）使用同一 Key，
- * 如需分别设置，用 setAmapKeys({ jsKey, restKey })
+ * JS API Key（前端地图 SDK）和 REST API Key（服务端接口）默认共用一个 Key，
+ * 如需分别设置，用 setAmapKeys({ jsKey, restKey, securityCode })
  */
 
 /** 高德 Key 集合 */
 interface AmapKeys {
-  /** JS API Key — 用于前端地图 SDK（RouteMap.vue 的 @vuemap/vue-amap） */
+  /** JS API Key — 用于前端地图 SDK（@vuemap/vue-amap） */
   jsKey: string
   /** REST API Key — 用于服务端接口（驾车路线、地理编码、POI 搜索） */
   restKey: string
@@ -42,9 +42,9 @@ function getKeys(): AmapKeys {
   }
 }
 
-/** 统一设置高德 Key（JS API 和 REST 共用） */
+/** 统一设置高德 Key（JS API 和 REST 共用，保留已设置的 securityCode） */
 export function setAmapKey(key: string): void {
-  _override = { jsKey: key, restKey: key, ..._override }
+  _override = { ..._override, jsKey: key, restKey: key }
 }
 
 /** 分别设置高德 Key（JS API 和 REST 可不同） */
@@ -56,7 +56,7 @@ export function setAmapKeys(keys: { jsKey?: string; restKey?: string; securityCo
 export function getAmapJsKey(): string {
   const key = getKeys().jsKey
   if (!key && !_warned) {
-    console.warn('[route-planner] 未设置高德 JS API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY')
+    console.warn('[amap] 未设置高德 JS API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY')
     _warned = true
   }
   return key
@@ -66,7 +66,7 @@ export function getAmapJsKey(): string {
 export function getAmapRestKey(): string {
   const key = getKeys().restKey
   if (!key && !_warned) {
-    console.warn('[route-planner] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY')
+    console.warn('[amap] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY')
     _warned = true
   }
   return key

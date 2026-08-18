@@ -2,27 +2,31 @@
 // ⛔ 保护 — 图表基础组件，禁止：clamp() → px，canvas resize 逻辑，ECharts dispose
 //    需我确认：loading/error slot、主题配置、toolbar 默认按钮
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { init } from './echarts-setup'
+import { init } from './utils/echarts-setup'
 import type { EChartsOption } from 'echarts'
-import type { BaseChartProps } from './types'
-import { toSize } from './utils'
+import type { BaseChartProps } from './utils/types'
+import { toSize } from './utils/chart-utils'
 
-const props = withDefaults(defineProps<BaseChartProps & {
-  toolbar?: Array<'saveAsImage' | 'zoom' | 'dataView'> | false
-}>(), {
-  option: null,
-  loading: false,
-  emptyText: '暂无数据',
-  height: '100%',
-  width: '100%',
-  darkMode: false,
-  toolbar: () => ['saveAsImage', 'zoom'],
-})
+const props = withDefaults(
+  defineProps<
+    BaseChartProps & {
+      toolbar?: Array<'saveAsImage' | 'zoom' | 'dataView'> | false
+    }
+  >(),
+  {
+    option: null,
+    loading: false,
+    emptyText: '暂无数据',
+    height: '100%',
+    width: '100%',
+    darkMode: false,
+    toolbar: () => ['saveAsImage', 'zoom'],
+  },
+)
 
 const chartRef = ref<HTMLDivElement>()
 let chartInstance: ReturnType<typeof init> | null = null
 let resizeObserver: ResizeObserver | null = null
-
 
 const containerStyle = computed(() => ({
   width: toSize(props.width, '100%'),
@@ -54,18 +58,24 @@ function buildToolbox(): any {
 }
 
 /** 合并 toolbar 到 option（合并而非覆盖用户自定义的 toolbox 配置） */
-	function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
-	  if (!opt) return opt
-	  const toolbox = buildToolbox()
-	  if (!toolbox) return opt
-	  // 注意：不能 structuredClone —— option 含函数字段（如 tooltip.position）会抛 DataCloneError
-	  // 顶层浅拷贝展开即可，嵌套结构由 ECharts setOption merge 处理
-	  if ('title' in opt) toolbox.top = 36
-	  // 合并用户传入的 toolbox 与内置 toolbox（用户配置优先）
-	  const userToolbox = (opt as Record<string, unknown>).toolbox as Record<string, unknown> | undefined
-	  const mergedToolbox = userToolbox ? { ...toolbox, ...userToolbox, feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) } } : toolbox
-	  return { ...opt, toolbox: mergedToolbox } as EChartsOption
-	}
+function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
+  if (!opt) return opt
+  const toolbox = buildToolbox()
+  if (!toolbox) return opt
+  // 注意：不能 structuredClone —— option 含函数字段（如 tooltip.position）会抛 DataCloneError
+  // 顶层浅拷贝展开即可，嵌套结构由 ECharts setOption merge 处理
+  if ('title' in opt) toolbox.top = 36
+  // 合并用户传入的 toolbox 与内置 toolbox（用户配置优先）
+  const userToolbox = (opt as Record<string, unknown>).toolbox as Record<string, unknown> | undefined
+  const mergedToolbox = userToolbox
+    ? {
+        ...toolbox,
+        ...userToolbox,
+        feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
+      }
+    : toolbox
+  return { ...opt, toolbox: mergedToolbox } as EChartsOption
+}
 
 function ensureInstance() {
   if (!chartRef.value) return
@@ -79,15 +89,15 @@ function ensureInstance() {
     return
   }
 
-	  // 创建新实例
-	  const theme = props.darkMode ? 'dark' : undefined
-	  try {
-	    chartInstance = init(el, theme)
-	  } catch (e) {
-	    console.warn('[BaseChart] ECharts 初始化失败:', e)
-	    return
-	  }
-	  if (!chartInstance) return
+  // 创建新实例
+  const theme = props.darkMode ? 'dark' : undefined
+  try {
+    chartInstance = init(el, theme)
+  } catch (e) {
+    console.warn('[BaseChart] ECharts 初始化失败:', e)
+    return
+  }
+  if (!chartInstance) return
   const opt = mergeToolbox(props.option)
   if (opt) {
     chartInstance.setOption(opt, true)
@@ -123,30 +133,39 @@ function setupObserver() {
 }
 
 // option 变化
-watch(() => props.option, (val) => {
-  if (chartInstance && !chartInstance.isDisposed()) {
-    if (val) {
-      chartInstance.setOption(mergeToolbox(val)!, true)
-    } else {
-      chartInstance.clear()
+watch(
+  () => props.option,
+  (val) => {
+    if (chartInstance && !chartInstance.isDisposed()) {
+      if (val) {
+        chartInstance.setOption(mergeToolbox(val)!, true)
+      } else {
+        chartInstance.clear()
+      }
+    } else if (val) {
+      ensureInstance()
     }
-  } else if (val) {
-    ensureInstance()
-  }
-})
+  },
+)
 
 // loading 变化
-watch(() => props.loading, (val) => {
-  if (!chartInstance || chartInstance.isDisposed()) return
-  if (val) chartInstance.showLoading()
-  else chartInstance.hideLoading()
-})
+watch(
+  () => props.loading,
+  (val) => {
+    if (!chartInstance || chartInstance.isDisposed()) return
+    if (val) chartInstance.showLoading()
+    else chartInstance.hideLoading()
+  },
+)
 
 // darkMode 变化：重建实例
-watch(() => props.darkMode, () => {
-  destroyInstance()
-  nextTick(() => ensureInstance())
-})
+watch(
+  () => props.darkMode,
+  () => {
+    destroyInstance()
+    nextTick(() => ensureInstance())
+  },
+)
 
 onMounted(() => {
   nextTick(() => {

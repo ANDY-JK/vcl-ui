@@ -14,7 +14,15 @@ export function useTableCellMenu(
     visibleColumns: ComputedRef<Column[]>
     rowMetaMap: ComputedRef<Map<Record<string, any>, any>>
     _effectivePagedData: ComputedRef<Record<string, any>[]>
-    contextMenu: Ref<{ visible: boolean; x: number; y: number; columnKey: string | null; rowKey: string | null; row: Record<string, any> | null; rowIndex: number }>
+    contextMenu: Ref<{
+      visible: boolean
+      x: number
+      y: number
+      columnKey: string | null
+      rowKey: string | null
+      row: Record<string, any> | null
+      rowIndex: number
+    }>
     closeContextMenu: () => void
     cellVal: (row: Record<string, any>, colKey: string, metaVal: string) => string
     cellOverrides: Ref<Record<string, Record<string, string>>>
@@ -30,23 +38,39 @@ export function useTableCellMenu(
   },
 ) {
   const {
-    tableWrapRef, visibleColumns, rowMetaMap, _effectivePagedData,
-    contextMenu, closeContextMenu, cellVal, cellOverrides, _selectedKeys,
-    selectedCell, selectCell, clearSelection, copySelectedCell, pasteToSelection,
-    pasteText, noteInputEl, emit,
+    tableWrapRef,
+    visibleColumns,
+    rowMetaMap,
+    _effectivePagedData,
+    contextMenu,
+    closeContextMenu,
+    cellVal,
+    cellOverrides,
+    _selectedKeys,
+    selectedCell,
+    selectCell,
+    clearSelection,
+    copySelectedCell,
+    pasteToSelection,
+    pasteText,
+    noteInputEl,
+    emit,
   } = options
 
   const contextMenuRef = ref<HTMLElement | null>(null)
   const _menuFocusIndex = ref(0)
 
-  watch(() => contextMenu.value.visible, (v) => {
-    if (!v) return
-    _menuFocusIndex.value = 0
-    nextTick(() => {
-      contextMenuRef.value?.focus()
-      updateMenuFocus()
-    })
-  })
+  watch(
+    () => contextMenu.value.visible,
+    (v) => {
+      if (!v) return
+      _menuFocusIndex.value = 0
+      nextTick(() => {
+        contextMenuRef.value?.focus()
+        updateMenuFocus()
+      })
+    },
+  )
 
   function updateMenuFocus() {
     const menu = contextMenuRef.value
@@ -86,7 +110,7 @@ export function useTableCellMenu(
     const rk = rowMetaMap.value.get(row)?.key ?? ''
     selectCell(rk, col.key, cellVal(row, col.key, rowMetaMap.value.get(row)?.texts[col.key] ?? ''), false)
     closeContextMenu()
-    const idx = _effectivePagedData.value.findIndex(r => rowMetaMap.value.get(r)?.key === rk)
+    const idx = _effectivePagedData.value.findIndex((r) => rowMetaMap.value.get(r)?.key === rk)
     contextMenu.value = {
       visible: true,
       x: event.clientX,
@@ -109,7 +133,7 @@ export function useTableCellMenu(
   async function onContextPasteCell() {
     closeContextMenu()
     if (!props.editable || !selectedCell.value) return
-    let external = ''
+    let external: string
     try {
       external = await navigator.clipboard.readText()
     } catch {
@@ -125,7 +149,15 @@ export function useTableCellMenu(
   }
 
   // ==================== 选项列下拉面板 ====================
-  const _optDrop = ref<{ rowKey: string; colKey: string; options: (string | ColumnOption)[]; currentVal: string; top: number; left: number; width: number } | null>(null)
+  const _optDrop = ref<{
+    rowKey: string
+    colKey: string
+    options: (string | ColumnOption)[]
+    currentVal: string
+    top: number
+    left: number
+    width: number
+  } | null>(null)
 
   function openOptDrop(row: Record<string, any>, col: Column, event: MouseEvent) {
     if (!col.options || !props.editable || col.editable === false) return
@@ -138,13 +170,19 @@ export function useTableCellMenu(
     const td = event.currentTarget as HTMLElement
     const rect = td.getBoundingClientRect()
     _optDrop.value = {
-      rowKey: rk, colKey: col.key, options: col.options,
+      rowKey: rk,
+      colKey: col.key,
+      options: col.options,
       currentVal: cellVal(row, col.key, rowMetaMap.value.get(row)?.texts[col.key] ?? ''),
-      top: rect.bottom + 4, left: rect.left, width: Math.max(rect.width, 100),
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: Math.max(rect.width, 100),
     }
   }
 
-  function closeOptDrop() { _optDrop.value = null }
+  function closeOptDrop() {
+    _optDrop.value = null
+  }
 
   function pickOption(val: string) {
     if (!_optDrop.value) return
@@ -163,7 +201,7 @@ export function useTableCellMenu(
   function optColor(col: Column, val: string): string {
     if (!col.options) return 'inherit'
     const opt = col.options.find((o) => (typeof o === 'string' ? o : o.value) === val)
-    return (opt && typeof opt === 'object' && opt.color) ? opt.color : 'inherit'
+    return opt && typeof opt === 'object' && opt.color ? opt.color : 'inherit'
   }
 
   // 选项面板键盘导航

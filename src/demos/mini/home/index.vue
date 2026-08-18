@@ -8,7 +8,13 @@ const router = useRouter()
 const stats = [
   { label: '今日订单', value: 128, icon: 'chart-bar', color: 'var(--color-primary)', route: '/mini/orders' },
   { label: '待发货', value: 23, icon: 'package', color: 'var(--color-warning)', route: '/mini/orders?status=pending' },
-  { label: '已签收', value: 1056, icon: 'circle-check', color: 'var(--color-success)', route: '/mini/orders?status=done' },
+  {
+    label: '已签收',
+    value: 1056,
+    icon: 'circle-check',
+    color: 'var(--color-success)',
+    route: '/mini/orders?status=done',
+  },
 ]
 
 const notices = [
@@ -50,7 +56,8 @@ const notices = [
     <!-- 消息 -->
     <Card title="最近消息">
       <div
-        v-for="n in notices" :key="n.title"
+        v-for="n in notices"
+        :key="n.title"
         class="notice-item"
         :class="{ unread: n.unread }"
         @click="router.push('/mini/notifications')"
@@ -60,7 +67,9 @@ const notices = [
             <span v-if="n.unread" class="dot" />
             {{ n.title }}
           </div>
-          <div class="notice-desc">{{ n.desc }}</div>
+          <div class="notice-desc">
+            {{ n.desc }}
+          </div>
         </div>
         <span class="notice-time">{{ n.time }}</span>
       </div>
@@ -70,45 +79,116 @@ const notices = [
 </template>
 
 <style scoped>
-.page { padding: 12px; }
+.page {
+  padding: 12px;
+}
 
-.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
 .stat-card {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 14px 8px; background: var(--color-surface); border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-light); cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
   transition: all 150ms ease;
 }
-.stat-card:hover { border-color: var(--color-primary); background: var(--color-primary-light); }
-.stat-value { font-size: 22px; font-weight: 700; color: var(--color-text); }
-.stat-label { font-size: 11px; color: var(--color-text-muted); }
-
-.quick-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.quick-btn {
-  display: flex; align-items: center; gap: 6px; padding: 10px 12px;
-  border: 1px solid var(--color-border-light); border-radius: var(--radius-md);
-  background: var(--color-bg); font-size: 13px; color: var(--color-text-secondary);
-  cursor: pointer; transition: all 150ms ease; font-family: inherit;
+.stat-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
 }
-.quick-btn:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.quick-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: inherit;
+}
+.quick-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
 
 .notice-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0; cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  cursor: pointer;
   transition: background 120ms;
 }
-.notice-item + .notice-item { border-top: 1px solid var(--color-border-light); }
-.notice-item.unread { font-weight: 500; }
-.notice-title { font-size: 13px; color: var(--color-text); display: flex; align-items: center; gap: 6px; }
-.notice-desc { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
-.notice-time { font-size: 10px; color: var(--color-text-muted); white-space: nowrap; margin-left: 12px; }
+.notice-item + .notice-item {
+  border-top: 1px solid var(--color-border-light);
+}
+.notice-item.unread {
+  font-weight: 500;
+}
+.notice-title {
+  font-size: 13px;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.notice-desc {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.notice-time {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  margin-left: 12px;
+}
 .dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--color-danger); flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  flex-shrink: 0;
 }
 .view-all {
-  display: block; width: 100%; padding: 8px; margin-top: 4px;
-  border: none; background: transparent; font-size: 12px;
-  color: var(--color-primary); cursor: pointer; font-family: inherit;
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-family: inherit;
 }
 </style>

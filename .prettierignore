@@ -1,0 +1,7 @@
+dist/
+node_modules/
+src/components/_internal/pinyin-pro/
+notes/
+backup/
+*.min.js
+*.min.css

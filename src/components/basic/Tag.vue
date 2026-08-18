@@ -51,7 +51,11 @@ const emit = defineEmits<{ close: [] }>()
 const slots = useSlots()
 
 /** 有默认插槽 + sup 模式 → 角标定位在内容右上角 */
-const isSupMode = computed(() => (props.sup || !!slots.default) && (props.count !== undefined || props.dot || props.text !== undefined || !!props.color))
+const isSupMode = computed(
+  () =>
+    (props.sup || !!slots.default) &&
+    (props.count !== undefined || props.dot || props.text !== undefined || !!props.color),
+)
 
 /** 是否可见：hidden > dot > text > count（0 需 showZero） */
 const visible = computed(() => {
@@ -109,7 +113,8 @@ const supStyle = computed(() => {
       :style="supStyle"
       role="status"
       :aria-label="dot ? '提示' : displayText"
-    >{{ displayText }}</span>
+      >{{ displayText }}</span
+    >
   </span>
 
   <!-- 内联标签模式 -->
@@ -129,37 +134,101 @@ const supStyle = computed(() => {
 <style scoped>
 /* ===== 内联标签模式 ===== */
 .tag {
-  display: inline-flex; align-items: center; gap: var(--space-1);
-  font-weight: 500; white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 500;
+  white-space: nowrap;
   transition: all var(--transition-fast);
 }
-.tag-sm { padding: 1px var(--space-2); font-size: clamp(10px, 1.4vw, 11px); }
-.tag-md { padding: var(--space-1) 10px; font-size: clamp(11px, 1.5vw, 12px); }
-.tag.rounded { border-radius: 100px; }
+.tag-sm {
+  padding: 1px var(--space-2);
+  font-size: clamp(10px, 1.4vw, 11px);
+}
+.tag-md {
+  padding: var(--space-1) 10px;
+  font-size: clamp(11px, 1.5vw, 12px);
+}
+.tag.rounded {
+  border-radius: 100px;
+}
 
 /* dot 模式：纯圆点 */
 .tag.dot {
-  width: 8px; height: 8px; padding: 0; border-radius: 50%;
-  border: none; min-width: 0; min-height: 0;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  min-width: 0;
+  min-height: 0;
 }
-.tag.dot.tag-sm { width: 6px; height: 6px; }
-.tag.dot.tag-md { width: 8px; height: 8px; }
+.tag.dot.tag-sm {
+  width: 6px;
+  height: 6px;
+}
+.tag.dot.tag-md {
+  width: 8px;
+  height: 8px;
+}
 /* 有文字时恢复正常尺寸 */
-.tag-has-text { width: auto; height: auto; }
+.tag-has-text {
+  width: auto;
+  height: auto;
+}
 
-.tag-default { background: var(--color-bg-alt); color: var(--color-text-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
-.tag-primary { background: var(--color-primary-light); color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: var(--radius-sm); }
-.tag-success  { background: var(--color-success-bg); color: var(--color-success-text); border: 1px solid var(--color-success-border); border-radius: var(--radius-sm); }
-.tag-danger   { background: var(--color-danger-bg); color: var(--color-danger-hover); border: 1px solid var(--color-danger-border); border-radius: var(--radius-sm); }
-.tag-warning  { background: var(--color-warning-bg); color: var(--color-warning-text); border: 1px solid var(--color-warning-border); border-radius: var(--radius-sm); }
-.tag-info    { background: var(--color-info-bg, #EFF6FF); color: var(--color-info-text, #3B82F6); border: 1px solid var(--color-info-border, #93C5FD); border-radius: var(--radius-sm); }
+.tag-default {
+  background: var(--color-bg-alt);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.tag-primary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+}
+.tag-success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
+  border-radius: var(--radius-sm);
+}
+.tag-danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-hover);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-sm);
+}
+.tag-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-sm);
+}
+.tag-info {
+  background: var(--color-info-bg, #eff6ff);
+  color: var(--color-info-text, #3b82f6);
+  border: 1px solid var(--color-info-border, #93c5fd);
+  border-radius: var(--radius-sm);
+}
 
 .tag-close {
-  display: inline-flex; padding: 1px; margin-left: var(--space-1);
-  border: none; background: transparent; color: inherit; opacity: 0.5;
-  cursor: pointer; border-radius: 2px;
+  display: inline-flex;
+  padding: 1px;
+  margin-left: var(--space-1);
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  border-radius: 2px;
 }
-.tag-close:hover { opacity: 1; background: rgba(0,0,0,0.08); }
+.tag-close:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.08);
+}
 
 /* ===== 角标模式（原 Badge） ===== */
 .tag-sup-wrap {
@@ -177,7 +246,7 @@ const supStyle = computed(() => {
   padding: 0 clamp(4px, 0.8vw, 6px);
   border-radius: 100px;
   background: var(--color-danger);
-  color: var(--color-badge-text, #FFFFFF);
+  color: var(--color-badge-text, #ffffff);
   font-size: clamp(10px, 1.4vw, 11px);
   font-weight: 600;
   line-height: 1;

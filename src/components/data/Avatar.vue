@@ -21,7 +21,7 @@ const initials = computed(() => {
   return trimmed
     .split(/\s+/)
     .slice(0, 2)
-    .map(s => s[0])
+    .map((s) => s[0])
     .join('')
     .toUpperCase()
 })
@@ -62,8 +62,12 @@ function onImgError() {
   user-select: none;
 }
 
-.shape-circle { border-radius: 50%; }
-.shape-rounded { border-radius: var(--radius-md); }
+.shape-circle {
+  border-radius: 50%;
+}
+.shape-rounded {
+  border-radius: var(--radius-md);
+}
 
 .avatar-img {
   width: 100%;

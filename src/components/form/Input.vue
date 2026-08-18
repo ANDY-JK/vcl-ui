@@ -7,7 +7,10 @@
 //    日期/时间选择已移至 Select 组件（type=date / date-range / time）
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, onErrorCaptured } from 'vue'
 const _error = ref<Error | null>(null)
-onErrorCaptured((e: Error) => { _error.value = e; return false })
+onErrorCaptured((e: Error) => {
+  _error.value = e
+  return false
+})
 import IconSvg from '@/components/basic/IconSvg.vue'
 
 /* ════════════════════════════════════════
@@ -124,12 +127,20 @@ function validate() {
   const val = props.modelValue == null ? '' : String(props.modelValue)
   for (const rule of props.rules) {
     const msg = rule(val)
-    if (msg) { errorMsg.value = msg; return }
+    if (msg) {
+      errorMsg.value = msg
+      return
+    }
   }
   errorMsg.value = ''
 }
 
-watch(() => props.modelValue, () => { if (touched.value) validate() })
+watch(
+  () => props.modelValue,
+  () => {
+    if (touched.value) validate()
+  },
+)
 
 /* ════════════════════════════════════════
    自动填充检测 — MutationObserver 替代 setTimeout 轮询
@@ -170,7 +181,10 @@ onMounted(() => {
   }
 })
 onUnmounted(() => {
-  if (_afFallbackTimer) { clearTimeout(_afFallbackTimer); _afFallbackTimer = null }
+  if (_afFallbackTimer) {
+    clearTimeout(_afFallbackTimer)
+    _afFallbackTimer = null
+  }
   _afObserver?.disconnect()
   _afObserver = null
   clearHold() // 清理长按定时器，防止组件卸载后 interval 继续执行
@@ -192,9 +206,15 @@ const taFocused = ref(false)
 const taValue = computed(() => String(props.modelValue ?? ''))
 const hasTaValue = computed(() => taValue.value.length > 0)
 
-function onTaFocus() { taFocused.value = true; emit('focus', new FocusEvent('focus')) }
+function onTaFocus() {
+  taFocused.value = true
+  emit('focus', new FocusEvent('focus'))
+}
 function onTaBlur(e: FocusEvent) {
-  taFocused.value = false; touched.value = true; validate(); emit('blur', e)
+  taFocused.value = false
+  touched.value = true
+  validate()
+  emit('blur', e)
 }
 function onTaInput(e: Event) {
   const v = (e.target as HTMLTextAreaElement).value
@@ -230,7 +250,7 @@ function clampRound(v: number): number {
 
 watch(
   () => props.modelValue,
-  v => {
+  (v) => {
     if (!isNumber.value) return
     const parsed = Number(numText.value)
     if (numText.value === '' && (v === null || v === undefined)) return
@@ -279,7 +299,7 @@ function commitNum() {
 
 function stepBy(dir: 1 | -1) {
   const st = props.step > 0 ? props.step : 1
-  const base = (props.modelValue as number ?? 0)
+  const base = (props.modelValue as number) ?? 0
   const next = clampRound(base + dir * st)
   numText.value = displayNum(next)
   emit('update:modelValue', next)
@@ -288,9 +308,16 @@ function stepBy(dir: 1 | -1) {
 
 function onNumKeydown(e: KeyboardEvent) {
   if (props.disabled) return
-  if (e.key === 'ArrowUp') { e.preventDefault(); stepBy(1) }
-  else if (e.key === 'ArrowDown') { e.preventDefault(); stepBy(-1) }
-  else if (e.key === 'Enter') { e.preventDefault(); commitNum() }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    stepBy(1)
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    stepBy(-1)
+  } else if (e.key === 'Enter') {
+    e.preventDefault()
+    commitNum()
+  }
 }
 
 // 长按连加
@@ -299,8 +326,14 @@ let _holdInterval: ReturnType<typeof setInterval> | null = null
 let _pointerHandled = false
 
 function clearHold() {
-  if (_holdTimer) { clearTimeout(_holdTimer); _holdTimer = null }
-  if (_holdInterval) { clearInterval(_holdInterval); _holdInterval = null }
+  if (_holdTimer) {
+    clearTimeout(_holdTimer)
+    _holdTimer = null
+  }
+  if (_holdInterval) {
+    clearInterval(_holdInterval)
+    _holdInterval = null
+  }
 }
 
 function onBtnDown(dir: 1 | -1, e: PointerEvent) {
@@ -311,14 +344,20 @@ function onBtnDown(dir: 1 | -1, e: PointerEvent) {
   clearHold()
   _holdTimer = setTimeout(() => {
     _holdInterval = setInterval(() => {
-      if (props.disabled) { clearHold(); return }
+      if (props.disabled) {
+        clearHold()
+        return
+      }
       stepBy(dir)
     }, 100)
   }, 400)
 }
 
 function onBtnClick(dir: 1 | -1) {
-  if (_pointerHandled) { _pointerHandled = false; return }
+  if (_pointerHandled) {
+    _pointerHandled = false
+    return
+  }
   stepBy(dir)
 }
 
@@ -334,9 +373,10 @@ const floatingRaised = computed(() => {
 </script>
 
 <template>
-  <div v-if="_error" class="input-field" style="color:var(--color-danger);padding:8px;font-size:12px">⚠ 输入组件异常</div>
+  <div v-if="_error" class="input-field" style="color: var(--color-danger); padding: 8px; font-size: 12px">
+    ⚠ 输入组件异常
+  </div>
   <div v-else class="input-field" :class="{ error: !!errorMsg, disabled }">
-
     <!-- ════════════════════════════════════════
          数字步进模式（原 InputNumber）
          ════════════════════════════════════════ -->
@@ -353,12 +393,17 @@ const floatingRaised = computed(() => {
           :disabled="disabled"
           @input="onNumInput"
           @focus="focused = true"
-          @blur="focused = false; commitNum()"
+          @blur="
+            focused = false
+            commitNum()
+          "
           @keydown="onNumKeydown"
         />
         <div class="step-controls">
           <button
-            type="button" class="step-btn up" tabindex="-1"
+            type="button"
+            class="step-btn up"
+            tabindex="-1"
             :disabled="disabled || plusDisabled"
             aria-label="增加"
             @pointerdown="onBtnDown(1, $event)"
@@ -370,7 +415,9 @@ const floatingRaised = computed(() => {
             <IconSvg type="plus" size="sm" />
           </button>
           <button
-            type="button" class="step-btn down" tabindex="-1"
+            type="button"
+            class="step-btn down"
+            tabindex="-1"
             :disabled="disabled || minusDisabled"
             aria-label="减少"
             @pointerdown="onBtnDown(-1, $event)"
@@ -389,7 +436,16 @@ const floatingRaised = computed(() => {
          纯数字输入（无步进按钮）
          ════════════════════════════════════════ -->
     <div v-else-if="isNumber && !isStepper" class="fl-container">
-      <div class="fl-wrap" :class="{ focused: focused && !errorMsg, 'has-error': !!errorMsg, 'has-icon': !!icon, disabled, 'is-textarea': false }">
+      <div
+        class="fl-wrap"
+        :class="{
+          focused: focused && !errorMsg,
+          'has-error': !!errorMsg,
+          'has-icon': !!icon,
+          disabled,
+          'is-textarea': false,
+        }"
+      >
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
           ref="floatInputRef"
@@ -404,7 +460,10 @@ const floatingRaised = computed(() => {
           :autocomplete="autocomplete"
           @input="onNumInput"
           @focus="onFocus"
-          @blur="onBlur($event); commitNum()"
+          @blur="
+            onBlur($event)
+            commitNum()
+          "
           @keydown="onNumKeydown"
           @keyup="emit('keyup', $event)"
           @animationstart="onAutoFillStart"
@@ -412,14 +471,23 @@ const floatingRaised = computed(() => {
         <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
         <button
           v-if="clearable && hasValue"
-          type="button" class="f-clear" tabindex="-1"
-          @click="emit('update:modelValue', null); emit('clear')"
+          type="button"
+          class="f-clear"
+          tabindex="-1"
+          @click="
+            emit('update:modelValue', null)
+            emit('clear')
+          "
         >
           <IconSvg type="x" size="sm" />
         </button>
       </div>
-      <p v-if="errorMsg" class="fl-error">{{ errorMsg }}</p>
-      <p v-else-if="hint" class="fl-hint">{{ hint }}</p>
+      <p v-if="errorMsg" class="fl-error">
+        {{ errorMsg }}
+      </p>
+      <p v-else-if="hint" class="fl-hint">
+        {{ hint }}
+      </p>
     </div>
 
     <!-- ════════════════════════════════════════
@@ -446,21 +514,33 @@ const floatingRaised = computed(() => {
         <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
         <button
           v-if="clearable && hasTaValue"
-          type="button" class="f-clear" tabindex="-1"
-          @click="emit('update:modelValue', ''); emit('clear')"
+          type="button"
+          class="f-clear"
+          tabindex="-1"
+          @click="
+            emit('update:modelValue', '')
+            emit('clear')
+          "
         >
           <IconSvg type="x" size="sm" />
         </button>
       </div>
-      <p v-if="errorMsg" class="fl-error">{{ errorMsg }}</p>
-      <p v-else-if="hint" class="fl-hint">{{ hint }}</p>
+      <p v-if="errorMsg" class="fl-error">
+        {{ errorMsg }}
+      </p>
+      <p v-else-if="hint" class="fl-hint">
+        {{ hint }}
+      </p>
     </div>
 
     <!-- ════════════════════════════════════════
          标准文本输入（text/password/email/tel/search/url）
          ════════════════════════════════════════ -->
     <div v-else class="fl-container">
-      <div class="fl-wrap" :class="{ focused: focused && !errorMsg, 'has-error': !!errorMsg, 'has-icon': !!icon, disabled }">
+      <div
+        class="fl-wrap"
+        :class="{ focused: focused && !errorMsg, 'has-error': !!errorMsg, 'has-icon': !!icon, disabled }"
+      >
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
           ref="floatInputRef"
@@ -483,29 +563,47 @@ const floatingRaised = computed(() => {
         <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
         <button
           v-if="type === 'password'"
-          type="button" class="f-toggle-pwd" tabindex="-1"
+          type="button"
+          class="f-toggle-pwd"
+          tabindex="-1"
           @click="showPassword = !showPassword"
         >
           <IconSvg :type="showPassword ? 'eye-off' : 'eye'" size="sm" />
         </button>
         <button
           v-if="clearable && hasValue && type !== 'password'"
-          type="button" class="f-clear" tabindex="-1"
-          @click="emit('update:modelValue', ''); emit('clear')"
+          type="button"
+          class="f-clear"
+          tabindex="-1"
+          @click="
+            emit('update:modelValue', '')
+            emit('clear')
+          "
         >
           <IconSvg type="x" size="sm" />
         </button>
-        <span v-if="type === 'password'" class="sr-only" role="status" aria-live="polite">{{ showPassword ? '密码已显示' : '密码已隐藏' }}</span>
+        <span v-if="type === 'password'" class="sr-only" role="status" aria-live="polite">{{
+          showPassword ? '密码已显示' : '密码已隐藏'
+        }}</span>
       </div>
-      <p v-if="errorMsg" class="fl-error">{{ errorMsg }}</p>
-      <p v-else-if="hint" class="fl-hint">{{ hint }}</p>
+      <p v-if="errorMsg" class="fl-error">
+        {{ errorMsg }}
+      </p>
+      <p v-else-if="hint" class="fl-hint">
+        {{ hint }}
+      </p>
     </div>
-
   </div>
 </template>
 
 <style scoped>
-.input-field { display: flex; flex-direction: column; gap: var(--space-1); overflow: visible; }
+@import '@/components/_internal/floating-label.css';
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  overflow: visible;
+}
 
 /* ════════════════════════════════════════════════
    浮动标签容器 + 包裹层（内联，原 FloatingLabel 组件逻辑）
@@ -526,7 +624,9 @@ const floatingRaised = computed(() => {
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 .fl-wrap.focused {
   border-color: var(--color-primary);
@@ -562,32 +662,7 @@ const floatingRaised = computed(() => {
   color: var(--color-primary);
 }
 
-/* 浮动标签 */
-.fl-label {
-  position: absolute;
-  left: var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: clamp(12px, 1.8vw, 14px);
-  color: var(--color-text-muted);
-  pointer-events: none;
-  transition: all var(--transition-fast);
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: calc(100% - 16px);
-  z-index: 1;
-}
-.fl-label.raised {
-  top: 0;
-  transform: translateY(-50%);
-  font-size: clamp(10px, 1.5vw, 11px);
-  color: var(--color-primary);
-  background: var(--color-surface);
-  padding: 0 var(--space-1);
-  left: calc(var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)) - 4px);
-}
+/* 浮动标签 — 基础样式见 @import floating-label.css，以下为 Input 专属覆写 */
 .fl-wrap.has-error .fl-label.raised {
   color: var(--color-danger);
 }
@@ -621,21 +696,32 @@ const floatingRaised = computed(() => {
 }
 .input-field.disabled .fl-wrap {
   opacity: 1;
-  background: var(--bg-secondary, #f4f5f7);
+  background: var(--color-bg-alt, #f4f5f7);
 }
 .input-field.disabled .fl-wrap input,
 .input-field.disabled .fl-wrap textarea {
   color: var(--color-text);
   cursor: not-allowed;
 }
-.input-error-msg { color: var(--color-danger); font-size: 12px; margin-top: 4px; line-height: 1.4; }
+.input-error-msg {
+  color: var(--color-danger);
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.4;
+}
 
 /* ===== floating 模式 — 输入控件样式 ===== */
 .f-input {
-  flex: 1; min-width: 0; height: var(--ctrl-height, clamp(42px, 7vw, 48px));
-  padding: 0 var(--ctrl-padding-x, clamp(8px, 1.5vw, 12px)); padding-left: clamp(6px, 1vw, 8px);
-  border: none; background: transparent;
-  font-size: var(--ctrl-font-size, clamp(13px, 2vw, 15px)); color: var(--color-text); outline: none;
+  flex: 1;
+  min-width: 0;
+  height: var(--ctrl-height, clamp(42px, 7vw, 48px));
+  padding: 0 var(--ctrl-padding-x, clamp(8px, 1.5vw, 12px));
+  padding-left: clamp(6px, 1vw, 8px);
+  border: none;
+  background: transparent;
+  font-size: var(--ctrl-font-size, clamp(13px, 2vw, 15px));
+  color: var(--color-text);
+  outline: none;
 }
 .fl-wrap:not(.has-icon) .f-input {
   padding-left: var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
@@ -643,26 +729,54 @@ const floatingRaised = computed(() => {
 
 /* textarea */
 .f-textarea {
-  flex: 1; min-width: 0; width: 100%;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
   min-height: 60px;
   padding: clamp(10px, 1.5vw, 14px) clamp(8px, 1.5vw, 12px);
-  border: none; background: transparent; outline: none; resize: vertical;
+  border: none;
+  background: transparent;
+  outline: none;
+  resize: vertical;
   font-size: var(--ctrl-font-size, clamp(13px, 2vw, 15px));
-  font-family: inherit; color: var(--color-text);
+  font-family: inherit;
+  color: var(--color-text);
   line-height: 1.5;
 }
 
 /* 密码显示/隐藏按钮 — 始终显示，保持右侧布局统一 */
-.f-toggle-pwd { position: absolute; right: 8px; display: flex; padding: var(--space-1); border: none; background: transparent; color: var(--color-text-muted); cursor: pointer; }
+.f-toggle-pwd {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  padding: var(--space-1);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
 /* 清除按钮 */
-.f-clear { position: absolute; right: 8px; display: flex; padding: var(--space-1); border: none; background: transparent; color: var(--color-text-muted); cursor: pointer; }
+.f-clear {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  padding: var(--space-1);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
 .fl-wrap:has(.f-toggle-pwd) .f-input,
 .fl-wrap:has(.f-clear) .f-input {
   padding-right: 34px;
 }
 .f-input::-ms-reveal,
-.f-input::-ms-clear { display: none; }
-.f-input::-webkit-credentials-auto-fill-button { visibility: hidden; }
+.f-input::-ms-clear {
+  display: none;
+}
+.f-input::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+}
 
 /* ── 浏览器自动填充 ── */
 .f-input:-webkit-autofill,
@@ -673,14 +787,26 @@ const floatingRaised = computed(() => {
   caret-color: var(--color-text);
   transition: background-color 5000s ease-in-out 0s;
 }
-.f-input:-webkit-autofill { animation-name: onAutoFillStart; }
-@keyframes onAutoFillStart { from { opacity: 0.99 } to { opacity: 1 } }
+.f-input:-webkit-autofill {
+  animation-name: onAutoFillStart;
+}
+@keyframes onAutoFillStart {
+  from {
+    opacity: 0.99;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 .f-input:-webkit-autofill ~ .fl-label,
 .f-input:autofill ~ .fl-label {
-  top: 0; transform: translateY(-50%);
-  font-size: clamp(10px, 1.5vw, 11px); color: var(--color-primary);
-  background: var(--color-surface); padding: 0 var(--space-1);
+  top: 0;
+  transform: translateY(-50%);
+  font-size: clamp(10px, 1.5vw, 11px);
+  color: var(--color-primary);
+  background: var(--color-surface);
+  padding: 0 var(--space-1);
   left: calc(clamp(36px, 5.5vw, 40px) - 4px);
 }
 .fl-wrap:not(.has-icon) .f-input:-webkit-autofill ~ .fl-label,
@@ -705,7 +831,9 @@ const floatingRaised = computed(() => {
   border-radius: var(--ctrl-radius, var(--radius-md));
   background: var(--color-surface);
   overflow: hidden;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 .stepper-wrap.focused {
   border-color: var(--color-primary);
@@ -727,12 +855,26 @@ const floatingRaised = computed(() => {
   font-family: inherit;
   text-align: center;
 }
-.step-input::placeholder { color: var(--color-text-muted); }
+.step-input::placeholder {
+  color: var(--color-text-muted);
+}
 
 /* 尺寸 */
-.size-sm .step-input { height: 30px; font-size: 12px; padding: 0 var(--space-2); }
-.size-md .step-input { height: var(--ctrl-height, clamp(38px, 6vw, 42px)); font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 14px)); padding: 0 var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)); }
-.size-lg .step-input { height: 46px; font-size: 15px; padding: 0 var(--space-4); }
+.size-sm .step-input {
+  height: 30px;
+  font-size: 12px;
+  padding: 0 var(--space-2);
+}
+.size-md .step-input {
+  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
+  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 14px));
+  padding: 0 var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
+}
+.size-lg .step-input {
+  height: 46px;
+  font-size: 15px;
+  padding: 0 var(--space-4);
+}
 
 /* 步进按钮（上下排） */
 .step-controls {
@@ -753,11 +895,31 @@ const floatingRaised = computed(() => {
   cursor: pointer;
   transition: background var(--transition-fast);
 }
-.step-btn + .step-btn { border-top: 1px solid var(--color-border-light); }
-.step-btn:hover:not(:disabled) { background: var(--color-bg-alt); }
-.step-btn:active:not(:disabled) { background: var(--color-primary-light); color: var(--color-primary); }
-.step-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.step-btn + .step-btn {
+  border-top: 1px solid var(--color-border-light);
+}
+.step-btn:hover:not(:disabled) {
+  background: var(--color-bg-alt);
+}
+.step-btn:active:not(:disabled) {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.step-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
 
 /* 无障碍 */
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 </style>

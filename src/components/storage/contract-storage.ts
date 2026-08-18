@@ -19,7 +19,10 @@ export interface StoreFile {
   size: number
   type: string
 }
-export interface StoreUploadState { contract?: StoreFile; ts: number }
+export interface StoreUploadState {
+  contract?: StoreFile
+  ts: number
+}
 
 export interface StorageBackend {
   readonly kind: 'local' | 'supabase'
@@ -66,7 +69,9 @@ export class IndexedDBBackend implements StorageBackend {
         const id = Number((row as unknown as Record<string, unknown>)._appleId)
         if (id) map.set(id, { contract: row.contract, ts: row.ts })
       }
-    } catch (e) { console.warn('[contract-storage] IndexedDB 加载失败:', e) }
+    } catch (e) {
+      console.warn('[contract-storage] IndexedDB 加载失败:', e)
+    }
     return map
   }
 
@@ -85,13 +90,20 @@ export class IndexedDBBackend implements StorageBackend {
     const db = await openLocalDB()
     const tx = db.transaction(STORE_NAME, 'readwrite')
     tx.objectStore(STORE_NAME).clear()
-    await new Promise<void>((resolve) => { tx.oncomplete = () => resolve(); tx.onerror = () => resolve() })
+    await new Promise<void>((resolve) => {
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => resolve()
+    })
   }
 }
 
 // ===== Supabase Storage（REST 直连，零 SDK） =====
 
-export interface SupabaseConfig { url: string; anonKey: string; bucket: string }
+export interface SupabaseConfig {
+  url: string
+  anonKey: string
+  bucket: string
+}
 
 /** 云端请求超时（毫秒），大图上传也不应无限等待 */
 const REQUEST_TIMEOUT_MS = 60_000
@@ -151,10 +163,11 @@ export function sanitizeObjectKeyPart(fileName: string): string {
   if (!/^\.[\w.]+$/.test(ext)) ext = ''
   const bodySrc = dot > 0 ? fileName.slice(0, dot) : fileName
   let body = bodySrc
-    .replace(/[^\x20-\x7E]+/g, '')          // 中文等非 ASCII 剔除
-    .replace(/[\\/:*?"<>|]+/g, '_')          // 路径/URL 敏感字符
-    .replace(/\s+/g, '_')                    // 空白（含中间空格）
-    .replace(/^[_.,-]+/, '').replace(/[_.,-]+$/, '')
+    .replace(/[^\x20-\x7E]+/g, '') // 中文等非 ASCII 剔除
+    .replace(/[\\/:*?"<>|]+/g, '_') // 路径/URL 敏感字符
+    .replace(/\s+/g, '_') // 空白（含中间空格）
+    .replace(/^[_.,-]+/, '')
+    .replace(/[_.,-]+$/, '')
   if (!body) body = 'file'
   body = body.slice(0, 60)
   return body + ext
@@ -174,7 +187,9 @@ export class SupabaseBackend implements StorageBackend {
     if (err) throw new Error(err)
   }
 
-  private get base() { return `${this.cfg.url.replace(/\/+$/, '')}/storage/v1` }
+  private get base() {
+    return `${this.cfg.url.replace(/\/+$/, '')}/storage/v1`
+  }
 
   private headers(json = false): Record<string, string> {
     const h: Record<string, string> = {
@@ -213,18 +228,23 @@ export class SupabaseBackend implements StorageBackend {
       resp = await fetch(`${this.base}${path}`, { ...init, signal: ctrl.signal })
     } catch (e) {
       const aborted = (e as Error)?.name === 'AbortError'
-      throw new Error(aborted ? `云端请求超时（${REQUEST_TIMEOUT_MS / 1000}s），请检查网络后重试` : '云端网络异常，请检查网络连接')
+      const err = new Error(
+        aborted ? `云端请求超时（${REQUEST_TIMEOUT_MS / 1000}s），请检查网络后重试` : '云端网络异常，请检查网络连接',
+      )
+      ;(err as Error & { cause?: unknown }).cause = e
+      throw err
     } finally {
       clearTimeout(timer)
     }
     if (!resp.ok) {
       // Supabase 行为：bucket 不存在时 list 静默返回空、单对象操作返回 400 "Bucket not found"；
       // 403 是 storage.objects 的 RLS 策略缺失
-      const hint = resp.status === 400 || resp.status === 404
-        ? `bucket「${this.cfg.bucket}」不存在或无权访问，请在 Supabase 控制台创建 public bucket`
-        : resp.status === 403
-          ? '云端权限不足，请检查 storage.objects 的 RLS 策略（见 notes/supabase-storage-setup.md）'
-          : `云端返回 HTTP ${resp.status}`
+      const hint =
+        resp.status === 400 || resp.status === 404
+          ? `bucket「${this.cfg.bucket}」不存在或无权访问，请在 Supabase 控制台创建 public bucket`
+          : resp.status === 403
+            ? '云端权限不足，请检查 storage.objects 的 RLS 策略（见 notes/supabase-storage-setup.md）'
+            : `云端返回 HTTP ${resp.status}`
       throw new Error(`${hint}（${path}）`)
     }
     return resp
@@ -241,7 +261,7 @@ export class SupabaseBackend implements StorageBackend {
         return
       } catch (e) {
         if (i === attempts) throw e
-        await new Promise(r => setTimeout(r, 500 * i))
+        await new Promise((r) => setTimeout(r, 500 * i))
       }
     }
   }
@@ -253,10 +273,14 @@ export class SupabaseBackend implements StorageBackend {
       headers: this.headers(true),
       body: JSON.stringify({ prefix: '', limit: 1000, offset: 0, sortBy: { column: 'name', order: 'asc' } }),
     })
-    const rows = await resp.json() as Array<{ name: string; metadata?: { size?: number; mimetype?: string } }>
+    const rows = (await resp.json()) as Array<{ name: string; metadata?: { size?: number; mimetype?: string } }>
     return rows
-      .filter(r => !r.name.endsWith('/'))
-      .map(r => ({ name: r.name, size: Number(r.metadata?.size ?? 0), mimetype: r.metadata?.mimetype || 'application/octet-stream' }))
+      .filter((r) => !r.name.endsWith('/'))
+      .map((r) => ({
+        name: r.name,
+        size: Number(r.metadata?.size ?? 0),
+        mimetype: r.metadata?.mimetype || 'application/octet-stream',
+      }))
   }
 
   async loadAll(): Promise<Map<number, StoreUploadState>> {
@@ -292,7 +316,10 @@ export class SupabaseBackend implements StorageBackend {
       }
       const name = decodeURIComponent(key)
       this.paths.set(appleId, obj.name)
-      map.set(appleId, { contract: { name, dataUrl: this.publicUrl(obj.name), size: obj.size, type: obj.mimetype }, ts: 0 })
+      map.set(appleId, {
+        contract: { name, dataUrl: this.publicUrl(obj.name), size: obj.size, type: obj.mimetype },
+        ts: 0,
+      })
     }
     return map
   }
@@ -311,7 +338,7 @@ export class SupabaseBackend implements StorageBackend {
         this.paths.delete(appleId)
       } else {
         const objects = await this.listObjects()
-        const targets = objects.filter(o => {
+        const targets = objects.filter((o) => {
           const m = o.name.match(/^(\d+)-/)
           return m && Number(m[1]) === appleId && parseTombstoneKey(o.name.slice(m[0].length)) === null
         })
@@ -440,7 +467,9 @@ export class CompositeBackend implements StorageBackend {
     const prev = this.pendingCloud.get(appleId)
     const next = (prev ?? Promise.resolve()).then(() => p).catch(() => {})
     this.pendingCloud.set(appleId, next)
-    next.finally(() => { if (this.pendingCloud.get(appleId) === next) this.pendingCloud.delete(appleId) })
+    next.finally(() => {
+      if (this.pendingCloud.get(appleId) === next) this.pendingCloud.delete(appleId)
+    })
   }
 
   /** 等待在飞上传完成；appleId 为空则等全部 */
@@ -552,7 +581,12 @@ export class CompositeBackend implements StorageBackend {
 
 // ===== 工厂：按配置选择后端 =====
 
-export interface StorageConfig { backend: 'local' | 'supabase'; url: string; anonKey: string; bucket: string }
+export interface StorageConfig {
+  backend: 'local' | 'supabase'
+  url: string
+  anonKey: string
+  bucket: string
+}
 
 /** 本地后端是唯一零配置选项；supabase 三项配置缺一不可 */
 export function validateStorageConfig(cfg: StorageConfig): string | null {

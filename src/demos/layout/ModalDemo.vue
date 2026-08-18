@@ -43,19 +43,24 @@ const warningVisible = ref(false)
 const primaryVisible = ref(false)
 const lastAction = ref('')
 
-function onConfirm(variant: string) { lastAction.value = `已确认 — ${variant}` }
-function onCancel(variant: string) { lastAction.value = `已取消 — ${variant}` }
+function onConfirm(variant: string) {
+  lastAction.value = `已确认 — ${variant}`
+}
+function onCancel(variant: string) {
+  lastAction.value = `已取消 — ${variant}`
+}
 </script>
 
 <template>
   <div class="demo">
     <h2 class="demo-title">Modal 弹窗</h2>
     <p class="demo-desc">
-      通用模态框 ModalBox（default / confirm / detail / select / form 五种模式）+ 确认弹窗 ConfirmModal（danger / warning / primary 三种变体，基于 ModalBox 封装）。
+      通用模态框 ModalBox（default / confirm / detail / select / form 五种模式）+ 确认弹窗 ConfirmModal（danger /
+      warning / primary 三种变体，基于 ModalBox 封装）。
     </p>
 
     <!-- ══════════════ ModalBox 模式 ══════════════ -->
-    <Card title="ModalBox — 点击按钮查看各种模式" style="margin-bottom:24px">
+    <Card title="ModalBox — 点击按钮查看各种模式" style="margin-bottom: 24px">
       <div class="demo-row">
         <Button text="默认弹窗" variant="primary" @click="visibleDefault = true" />
         <Button text="确认删除" variant="danger" @click="visibleConfirm = true" />
@@ -67,64 +72,71 @@ function onCancel(variant: string) { lastAction.value = `已取消 — ${variant
 
     <!-- 默认 -->
     <ModalBox v-model:visible="visibleDefault" title="默认弹窗">
-      <p style="color:var(--color-text-secondary);">这是默认插槽内容，可以放任意 HTML。</p>
+      <p style="color: var(--color-text-secondary)">这是默认插槽内容，可以放任意 HTML。</p>
     </ModalBox>
 
     <!-- 确认（ModalBox confirm 模式） -->
     <ModalBox
       v-model:visible="visibleConfirm"
-      modalType="confirm"
+      modal-type="confirm"
       title="确认删除"
-      confirmMessage="确定要删除此项吗？此操作不可撤销。"
-      confirmVariant="danger"
-      :confirmDanger="true"
-      :confirmLoading="confirmLoading"
+      confirm-message="确定要删除此项吗？此操作不可撤销。"
+      confirm-variant="danger"
+      :confirm-danger="true"
+      :confirm-loading="confirmLoading"
       @confirm="onConfirmDelete"
       @cancel="visibleConfirm = false"
     />
 
     <!-- 详情 -->
-    <ModalBox
-      v-model:visible="visibleDetail"
-      modalType="detail"
-      title="订单详情"
-      :detailItems="detailItems"
-    />
+    <ModalBox v-model:visible="visibleDetail" modal-type="detail" title="订单详情" :detail-items="detailItems" />
 
     <!-- 选择 -->
     <ModalBox
       v-model:visible="visibleSelect"
-      modalType="select"
+      modal-type="select"
       title="请选择"
-      :selectItems="selectItems"
+      :select-items="selectItems"
       @select-confirm="(v) => console.log('选中:', v)"
     />
 
     <!-- 表单 -->
-    <ModalBox
-      v-model:visible="visibleForm"
-      modalType="form"
-      title="编辑信息"
-      @form-submit="visibleForm = false"
-    >
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;">
+    <ModalBox v-model:visible="visibleForm" modal-type="form" title="编辑信息" @form-submit="visibleForm = false">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px">
           姓名
-          <input v-model="formData.name" style="height:36px;padding:0 10px;border:1px solid var(--color-border);border-radius:6px;" placeholder="请输入" />
+          <input
+            v-model="formData.name"
+            style="height: 36px; padding: 0 10px; border: 1px solid var(--color-border); border-radius: 6px"
+            placeholder="请输入"
+          />
         </label>
-        <label style="display:flex;flex-direction:column;gap:4px;font-size:13px;">
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px">
           邮箱
-          <input v-model="formData.email" style="height:36px;padding:0 10px;border:1px solid var(--color-border);border-radius:6px;" placeholder="请输入" />
+          <input
+            v-model="formData.email"
+            style="height: 36px; padding: 0 10px; border: 1px solid var(--color-border); border-radius: 6px"
+            placeholder="请输入"
+          />
         </label>
       </div>
     </ModalBox>
 
     <!-- ══════════════ ConfirmModal 独立变体 ══════════════ -->
-    <Card title="ConfirmModal — danger / warning / primary 三种变体" style="margin-bottom:24px">
-      <div v-if="lastAction" style="margin-bottom:16px;padding:8px 14px;background:var(--color-bg-alt);border-radius:6px;font-size:13px;">
+    <Card title="ConfirmModal — danger / warning / primary 三种变体" style="margin-bottom: 24px">
+      <div
+        v-if="lastAction"
+        style="
+          margin-bottom: 16px;
+          padding: 8px 14px;
+          background: var(--color-bg-alt);
+          border-radius: 6px;
+          font-size: 13px;
+        "
+      >
         {{ lastAction }}
       </div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="display: flex; gap: 12px; flex-wrap: wrap">
         <Button text="danger 危险删除" variant="danger" @click="dangerVisible = true" />
         <Button text="warning 警告提醒" variant="outline" @click="warningVisible = true" />
         <Button text="primary 普通确认" variant="primary" @click="primaryVisible = true" />
@@ -167,34 +179,109 @@ function onCancel(variant: string) { lastAction.value = `已取消 — ${variant
     <!-- ══════════════ Props ══════════════ -->
     <Card title="ModalBox Props">
       <table class="props-table">
-        <thead><tr><th>Prop</th><th>类型</th><th>默认</th><th>说明</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td><code>visible</code></td><td>boolean</td><td>—</td><td>显示/隐藏（v-model）</td></tr>
-          <tr><td><code>title</code></td><td>string</td><td>''</td><td>弹窗标题</td></tr>
-          <tr><td><code>modalType</code></td><td>string</td><td>'default'</td><td>default | confirm | form | detail | select</td></tr>
-          <tr><td><code>size</code></td><td>string</td><td>'md'</td><td>sm | md | lg | xl</td></tr>
-          <tr><td><code>closable</code></td><td>boolean</td><td>true</td><td>显示关闭按钮</td></tr>
-          <tr><td><code>maskClosable</code></td><td>boolean</td><td>true</td><td>点击遮罩关闭</td></tr>
+          <tr>
+            <td><code>visible</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>显示/隐藏（v-model）</td>
+          </tr>
+          <tr>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>弹窗标题</td>
+          </tr>
+          <tr>
+            <td><code>modalType</code></td>
+            <td>string</td>
+            <td>'default'</td>
+            <td>default | confirm | form | detail | select</td>
+          </tr>
+          <tr>
+            <td><code>size</code></td>
+            <td>string</td>
+            <td>'md'</td>
+            <td>sm | md | lg | xl</td>
+          </tr>
+          <tr>
+            <td><code>closable</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>显示关闭按钮</td>
+          </tr>
+          <tr>
+            <td><code>maskClosable</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>点击遮罩关闭</td>
+          </tr>
         </tbody>
       </table>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-top:8px;">
-        Events: <code>@confirm</code> | <code>@cancel</code> | <code>@select-confirm</code> | <code>@form-submit</code> | <code>@close</code>
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
+        Events: <code>@confirm</code> | <code>@cancel</code> | <code>@select-confirm</code> |
+        <code>@form-submit</code> | <code>@close</code>
       </p>
     </Card>
 
-    <Card title="ConfirmModal Props" style="margin-top:24px">
+    <Card title="ConfirmModal Props" style="margin-top: 24px">
       <table class="props-table">
-        <thead><tr><th>Prop</th><th>类型</th><th>默认</th><th>说明</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td><code>visible</code></td><td>boolean</td><td>—</td><td>显示/隐藏（v-model）</td></tr>
-          <tr><td><code>title</code></td><td>string</td><td>'确认操作'</td><td>弹窗标题</td></tr>
-          <tr><td><code>message</code></td><td>string</td><td>—</td><td>提示内容（必填）</td></tr>
-          <tr><td><code>confirmText</code></td><td>string</td><td>'确定'</td><td>确认按钮文案</td></tr>
-          <tr><td><code>cancelText</code></td><td>string</td><td>'取消'</td><td>取消按钮文案</td></tr>
-          <tr><td><code>variant</code></td><td>string</td><td>'danger'</td><td>danger | warning | primary</td></tr>
+          <tr>
+            <td><code>visible</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>显示/隐藏（v-model）</td>
+          </tr>
+          <tr>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>'确认操作'</td>
+            <td>弹窗标题</td>
+          </tr>
+          <tr>
+            <td><code>message</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>提示内容（必填）</td>
+          </tr>
+          <tr>
+            <td><code>confirmText</code></td>
+            <td>string</td>
+            <td>'确定'</td>
+            <td>确认按钮文案</td>
+          </tr>
+          <tr>
+            <td><code>cancelText</code></td>
+            <td>string</td>
+            <td>'取消'</td>
+            <td>取消按钮文案</td>
+          </tr>
+          <tr>
+            <td><code>variant</code></td>
+            <td>string</td>
+            <td>'danger'</td>
+            <td>danger | warning | primary</td>
+          </tr>
         </tbody>
       </table>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-top:8px;">
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
         Events: <code>@confirm</code> | <code>@cancel</code>
       </p>
     </Card>
@@ -202,11 +289,39 @@ function onCancel(variant: string) { lastAction.value = `已取消 — ${variant
 </template>
 
 <style scoped>
-.demo-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.demo-desc { color: var(--color-text-muted); margin-bottom: 24px; font-size: 14px; }
-code { background: var(--color-bg-alt); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
-.demo-row { display: flex; flex-wrap: wrap; gap: 10px; }
-.props-table { width: 100%; font-size: 13px; border-collapse: collapse; }
-.props-table th { padding: 6px 8px; border-bottom: 2px solid var(--color-border); text-align: left; }
-.props-table td { padding: 6px 8px; border-bottom: 1px solid var(--color-border-light); }
+.demo-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.demo-desc {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+code {
+  background: var(--color-bg-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.props-table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+.props-table th {
+  padding: 6px 8px;
+  border-bottom: 2px solid var(--color-border);
+  text-align: left;
+}
+.props-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-border-light);
+}
 </style>

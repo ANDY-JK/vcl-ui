@@ -91,21 +91,9 @@
 
           <slot name="extra-fields" />
 
-          <Button
-            text="注 册"
-            variant="primary"
-            :loading="loading"
-            block
-            @click="handleSubmit"
-          />
+          <Button text="注 册" variant="primary" :loading="loading" block @click="handleSubmit" />
 
-          <Toast
-            v-if="displayError"
-            variant="inline"
-            type="error"
-            :message="displayError"
-            closable
-          />
+          <Toast v-if="displayError" variant="inline" type="error" :message="displayError" closable />
         </div>
 
         <div class="footer-text">
@@ -136,38 +124,41 @@ export interface RegisterPayload {
 
 // ======================== Props ========================
 
-const props = withDefaults(defineProps<{
-  // === 布局 ===
-  /** 容器最大宽度，CSS 值，默认 960px */
-  maxWidth?: string
-  /** 强制隐藏左侧品牌面板 */
-  hideBrand?: boolean
-  /** 容器最小高度，CSS 值，默认 100vh */
-  minHeight?: string
+const props = withDefaults(
+  defineProps<{
+    // === 布局 ===
+    /** 容器最大宽度，CSS 值，默认 960px */
+    maxWidth?: string
+    /** 强制隐藏左侧品牌面板 */
+    hideBrand?: boolean
+    /** 容器最小高度，CSS 值，默认 100vh */
+    minHeight?: string
 
-  // === 内容 ===
-  loading?: boolean
-  error?: string
-  brandTitle?: string
-  brandSubtitle?: string
-  /** 是否需要卡密字段 */
-  requireCardKey?: boolean
-  /** 是否显示邮箱 & 手机号字段 */
-  showOptionalFields?: boolean
-  /** 邮箱是否必填 */
-  requireEmail?: boolean
-  /** 手机号是否必填 */
-  requirePhone?: boolean
-}>(), {
-  maxWidth: '960px',
-  hideBrand: false,
-  minHeight: '100vh',
-  loading: false,
-  requireCardKey: true,
-  showOptionalFields: true,
-  requireEmail: false,
-  requirePhone: false,
-})
+    // === 内容 ===
+    loading?: boolean
+    error?: string
+    brandTitle?: string
+    brandSubtitle?: string
+    /** 是否需要卡密字段 */
+    requireCardKey?: boolean
+    /** 是否显示邮箱 & 手机号字段 */
+    showOptionalFields?: boolean
+    /** 邮箱是否必填 */
+    requireEmail?: boolean
+    /** 手机号是否必填 */
+    requirePhone?: boolean
+  }>(),
+  {
+    maxWidth: '960px',
+    hideBrand: false,
+    minHeight: '100vh',
+    loading: false,
+    requireCardKey: true,
+    showOptionalFields: true,
+    requireEmail: false,
+    requirePhone: false,
+  },
+)
 
 // ======================== Emits ========================
 
@@ -191,27 +182,23 @@ const internalError = ref('')
 const displayError = computed(() => props.error || internalError.value)
 
 const displayNameHint = computed(() =>
-  form.display_name.length > 0 && form.display_name.length < 2 ? '至少 2 个字符' : ''
+  form.display_name.length > 0 && form.display_name.length < 2 ? '至少 2 个字符' : '',
 )
-const usernameHint = computed(() =>
-  form.username.length > 0 && form.username.length < 3 ? '至少 3 个字符' : ''
-)
-const passwordHint = computed(() =>
-  form.password.length > 0 && form.password.length < 6 ? '至少 6 个字符' : ''
-)
+const usernameHint = computed(() => (form.username.length > 0 && form.username.length < 3 ? '至少 3 个字符' : ''))
+const passwordHint = computed(() => (form.password.length > 0 && form.password.length < 6 ? '至少 6 个字符' : ''))
 
 const displayNameRules = [
-  (v: string) => v.trim() ? undefined : '请输入昵称或公司名称',
-  (v: string) => v.length >= 2 ? undefined : '至少 2 个字符',
+  (v: string) => (v.trim() ? undefined : '请输入昵称或公司名称'),
+  (v: string) => (v.length >= 2 ? undefined : '至少 2 个字符'),
 ]
-const cardKeyRules = [(v: string) => v.trim() ? undefined : '请输入注册卡密']
+const cardKeyRules = [(v: string) => (v.trim() ? undefined : '请输入注册卡密')]
 const usernameRules = [
-  (v: string) => v.trim() ? undefined : '请输入账号',
-  (v: string) => v.length >= 3 ? undefined : '至少 3 个字符',
+  (v: string) => (v.trim() ? undefined : '请输入账号'),
+  (v: string) => (v.length >= 3 ? undefined : '至少 3 个字符'),
 ]
 const passwordRules = [
-  (v: string) => v ? undefined : '请输入密码',
-  (v: string) => v.length >= 6 ? undefined : '至少 6 个字符',
+  (v: string) => (v ? undefined : '请输入密码'),
+  (v: string) => (v.length >= 6 ? undefined : '至少 6 个字符'),
 ]
 const emailRules = computed(() => [
   (v: string) => {
@@ -232,9 +219,14 @@ const handleSubmit = () => {
   internalError.value = ''
 
   // 基础必填校验
-  if (!form.display_name || form.display_name.length < 2
-    || !form.username || form.username.length < 3
-    || !form.password || form.password.length < 6) {
+  if (
+    !form.display_name ||
+    form.display_name.length < 2 ||
+    !form.username ||
+    form.username.length < 3 ||
+    !form.password ||
+    form.password.length < 6
+  ) {
     internalError.value = '请完整填写所有必填项'
     return
   }
@@ -295,17 +287,47 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3B56E0 50%, #E54545 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 50%, #e54545 100%);
   padding: var(--space-5);
   position: relative;
 }
 
-.floating-shapes { position: absolute; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
-.shape { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.08); }
-.shape:nth-child(1) { width: 80px; height: 80px; left: 10%; top: 20%; }
-.shape:nth-child(2) { width: 120px; height: 120px; right: 15%; top: 60%; }
-.shape:nth-child(3) { width: 60px; height: 60px; left: 25%; bottom: 15%; }
-.shape:nth-child(4) { width: 100px; height: 100px; right: 30%; top: 10%; }
+.floating-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+.shape:nth-child(1) {
+  width: 80px;
+  height: 80px;
+  left: 10%;
+  top: 20%;
+}
+.shape:nth-child(2) {
+  width: 120px;
+  height: 120px;
+  right: 15%;
+  top: 60%;
+}
+.shape:nth-child(3) {
+  width: 60px;
+  height: 60px;
+  left: 25%;
+  bottom: 15%;
+}
+.shape:nth-child(4) {
+  width: 100px;
+  height: 100px;
+  right: 30%;
+  top: 10%;
+}
 
 .login-container {
   display: flex;
@@ -322,68 +344,129 @@ defineExpose({
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---- 左侧 ---- */
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3B56E0 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 100%);
   border-radius: var(--radius-xl) 0 0 var(--radius-xl);
   padding: var(--space-12) 44px;
-  display: flex; flex-direction: column; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   color: white;
-  position: relative; overflow: hidden;
+  position: relative;
+  overflow: hidden;
 }
 .login-left::before {
   content: '';
-  position: absolute; top: -50%; right: -50%;
-  width: 200%; height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
 }
 
-.brand-logo { position: relative; z-index: 1; margin-bottom: var(--space-12); }
+.brand-logo {
+  position: relative;
+  z-index: 1;
+  margin-bottom: var(--space-12);
+}
 .logo-icon {
-  width: 64px; height: 64px;
+  width: 64px;
+  height: 64px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-xl);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: var(--space-5);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
-.brand-logo h2 { font-size: 32px; font-weight: 600; margin-bottom: var(--space-3); }
-.brand-logo p { font-size: 16px; opacity: 0.9; line-height: 1.6; }
+.brand-logo h2 {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+}
+.brand-logo p {
+  font-size: 16px;
+  opacity: 0.9;
+  line-height: 1.6;
+}
 
 /* ---- 右侧 ---- */
 .login-right {
   flex: 1;
   padding: var(--space-12);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   background: white;
   border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
 }
-.login-header { flex-shrink: 0; padding-bottom: var(--space-8); }
-.login-header h1 { font-size: 22px; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-2); }
-.login-header p { font-size: 14px; color: var(--color-text-secondary); }
+.login-header {
+  flex-shrink: 0;
+  padding-bottom: var(--space-8);
+}
+.login-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+.login-header p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
 
 .register-form {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-5);
   overflow: visible; /* 浮窗标签骑缝溢出，由页面级滚动处理 */
 }
 
-.footer-text { text-align: center; font-size: 14px; color: var(--color-text-muted); padding-top: var(--space-8); }
-.register-link { color: var(--color-primary); text-decoration: none; font-weight: 500; }
-.register-link:hover { text-decoration: underline; }
+.footer-text {
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  padding-top: var(--space-8);
+}
+.register-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.register-link:hover {
+  text-decoration: underline;
+}
 
 @media (max-width: 768px) {
-  .login-left { display: none; }
-  .login-container { max-width: min(var(--login-max-width, 960px), 440px); }
-  .login-right { padding: var(--space-10); }
+  .login-left {
+    display: none;
+  }
+  .login-container {
+    max-width: min(var(--login-max-width, 960px), 440px);
+  }
+  .login-right {
+    padding: var(--space-10);
+  }
 }
 @media (max-width: 480px) {
-  .login-right { padding: var(--space-8); }
-  .login-header h1 { font-size: 20px; }
+  .login-right {
+    padding: var(--space-8);
+  }
+  .login-header h1 {
+    font-size: 20px;
+  }
 }
 </style>

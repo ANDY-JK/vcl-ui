@@ -5,7 +5,11 @@ import { ref, nextTick } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
 // icon 仅在 variant='tabbar' 时渲染，underline/pill 变体静默忽略
-interface TabItem { label: string; value?: string | number; icon?: string }
+interface TabItem {
+  label: string
+  value?: string | number
+  icon?: string
+}
 
 interface Props {
   modelValue: string | number
@@ -24,14 +28,23 @@ const tablistRef = ref<HTMLElement | null>(null)
 // WAI-ARIA Tab Pattern 键盘导航：ArrowLeft/Right 切换，Home/End 跳首尾
 function onKeydown(e: KeyboardEvent) {
   if (!props.items.length) return
-  const currentIdx = props.items.findIndex(i => (i.value ?? i.label) === props.modelValue)
+  const currentIdx = props.items.findIndex((i) => (i.value ?? i.label) === props.modelValue)
   let nextIdx = currentIdx
   switch (e.key) {
-    case 'ArrowRight': nextIdx = (currentIdx + 1) % props.items.length; break
-    case 'ArrowLeft': nextIdx = (currentIdx - 1 + props.items.length) % props.items.length; break
-    case 'Home': nextIdx = 0; break
-    case 'End': nextIdx = props.items.length - 1; break
-    default: return
+    case 'ArrowRight':
+      nextIdx = (currentIdx + 1) % props.items.length
+      break
+    case 'ArrowLeft':
+      nextIdx = (currentIdx - 1 + props.items.length) % props.items.length
+      break
+    case 'Home':
+      nextIdx = 0
+      break
+    case 'End':
+      nextIdx = props.items.length - 1
+      break
+    default:
+      return
   }
   e.preventDefault()
   const item = props.items[nextIdx]
@@ -84,7 +97,9 @@ function onKeydown(e: KeyboardEvent) {
   margin-bottom: -1.5px;
   transition: all var(--transition-fast);
 }
-.tabs-underline .tab-btn:hover { color: var(--color-text); }
+.tabs-underline .tab-btn:hover {
+  color: var(--color-text);
+}
 .tabs-underline .tab-btn.active {
   color: var(--color-primary);
   border-bottom-color: var(--color-primary);
@@ -108,7 +123,9 @@ function onKeydown(e: KeyboardEvent) {
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
 }
-.tabs-pills .tab-btn:hover { color: var(--color-text); }
+.tabs-pills .tab-btn:hover {
+  color: var(--color-text);
+}
 .tabs-pills .tab-btn.active {
   background: var(--color-surface);
   color: var(--color-text);
@@ -126,9 +143,15 @@ function onKeydown(e: KeyboardEvent) {
   cursor: pointer;
   transition: all var(--transition-fast);
 }
-.tabs-card .tab-btn:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
-.tabs-card .tab-btn:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
-.tabs-card .tab-btn:not(:first-child) { margin-left: -1.5px; }
+.tabs-card .tab-btn:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+.tabs-card .tab-btn:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.tabs-card .tab-btn:not(:first-child) {
+  margin-left: -1.5px;
+}
 .tabs-card .tab-btn.active {
   background: var(--color-primary-light);
   border-color: var(--color-primary);

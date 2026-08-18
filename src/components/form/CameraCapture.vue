@@ -37,7 +37,13 @@ const showFlip = ref(false)
 let stream: MediaStream | null = null
 let streamKind: 'environment' | 'user' = 'environment'
 
-watch(() => props.modelValue, (v) => { if (v) start() }, { immediate: true })
+watch(
+  () => props.modelValue,
+  (v) => {
+    if (v) start()
+  },
+  { immediate: true },
+)
 
 async function start() {
   cameraReady.value = false
@@ -56,8 +62,10 @@ async function start() {
 async function refreshFlipAvailable(): Promise<void> {
   try {
     const devices = await navigator.mediaDevices.enumerateDevices()
-    showFlip.value = devices.filter(d => d.kind === 'videoinput').length > 1
-  } catch { showFlip.value = false }
+    showFlip.value = devices.filter((d) => d.kind === 'videoinput').length > 1
+  } catch {
+    showFlip.value = false
+  }
 }
 
 /** 取流：个别 WebView 对 facingMode 字面量不支持（抛 OverconstrainedError/TypeError），
@@ -83,12 +91,18 @@ async function openStream(kind: 'environment' | 'user') {
     // 默认 4:3 比例 + 尽量高清：拍纸质合同/协议 4:3 取景更合适；ideal 让设备在
     // 支持范围内给最高分辨率（4:3 主流档位 3264×2448 起），达不到也不拒绝、不阻塞
     const s = await acquireStream(kind)
-    if (!props.modelValue) { s.getTracks().forEach(t => t.stop()); return } // 已被关闭
+    if (!props.modelValue) {
+      s.getTracks().forEach((t) => t.stop())
+      return
+    } // 已被关闭
     stream = s
     streamKind = kind
     await nextTick()
     const video = videoRef.value
-    if (!video || !props.modelValue) { close(); return }
+    if (!video || !props.modelValue) {
+      close()
+      return
+    }
     video.srcObject = s
     await video.play()
     cameraReady.value = true
@@ -118,7 +132,7 @@ const isWeChat = typeof navigator !== 'undefined' && /MicroMessenger/i.test(navi
 
 /** 调起设备系统相机（capture input）；拍照返回的 File 经 capture 事件交付，调用方无需感知降级 */
 function triggerSystemCamera() {
-  document.querySelectorAll('input[data-camc-fallback]').forEach(el => el.remove())
+  document.querySelectorAll('input[data-camc-fallback]').forEach((el) => el.remove())
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = 'image/*'
@@ -138,7 +152,10 @@ function triggerSystemCamera() {
 }
 
 function close() {
-  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null }
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop())
+    stream = null
+  }
   cameraReady.value = false
   if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
   shotUrl.value = ''
@@ -155,7 +172,7 @@ function flip() {
   const next = streamKind === 'environment' ? 'user' : 'environment'
   const old = stream
   stream = null
-  if (old) old.getTracks().forEach(t => t.stop())
+  if (old) old.getTracks().forEach((t) => t.stop())
   cameraReady.value = false
   openStream(next)
 }
@@ -188,18 +205,22 @@ function doShot(video: HTMLVideoElement) {
     return
   }
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-  canvas.toBlob((blob) => {
-    if (!blob) {
-      // 微信等受限环境 toBlob 可能回调 null：按了快门没反应会让用户困惑，降级系统相机
-      handleCameraUnavailable('画面截取失败')
-      return
-    }
-    // 文件名保留中文（用户可见/打包下载用）；存储层 sanitizeObjectKeyPart 会
-    // 在生成对象键时 ASCII 化——Supabase 对象键不接受中文，但展示名不受影响
-    shotFile.value = new File([blob], `拍照-${Date.now()}.jpg`, { type: blob.type || 'image/jpeg' })
-    if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
-    shotUrl.value = URL.createObjectURL(blob)
-  }, 'image/jpeg', props.quality)
+  canvas.toBlob(
+    (blob) => {
+      if (!blob) {
+        // 微信等受限环境 toBlob 可能回调 null：按了快门没反应会让用户困惑，降级系统相机
+        handleCameraUnavailable('画面截取失败')
+        return
+      }
+      // 文件名保留中文（用户可见/打包下载用）；存储层 sanitizeObjectKeyPart 会
+      // 在生成对象键时 ASCII 化——Supabase 对象键不接受中文，但展示名不受影响
+      shotFile.value = new File([blob], `拍照-${Date.now()}.jpg`, { type: blob.type || 'image/jpeg' })
+      if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
+      shotUrl.value = URL.createObjectURL(blob)
+    },
+    'image/jpeg',
+    props.quality,
+  )
 }
 
 function retake() {
@@ -230,7 +251,10 @@ function cameraErrorToChinese(err: unknown): string {
 }
 
 onUnmounted(() => {
-  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null }
+  if (stream) {
+    stream.getTracks().forEach((t) => t.stop())
+    stream = null
+  }
   if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
 })
 </script>
@@ -245,8 +269,15 @@ onUnmounted(() => {
              且让人误以为画面很大、要举很高才能拍完整 -->
         <div class="camc-viewport">
           <!-- video 常驻 DOM（v-show），避免重拍/翻转后元素重建导致 srcObject 丢失 -->
-          <video ref="videoRef" class="camc-video" :class="{ 'camc-mirror': streamKind === 'user' }"
-            autoplay playsinline muted v-show="!shotUrl"></video>
+          <video
+            v-show="!shotUrl"
+            ref="videoRef"
+            class="camc-video"
+            :class="{ 'camc-mirror': streamKind === 'user' }"
+            autoplay
+            playsinline
+            muted
+          />
           <img v-if="shotUrl" :src="shotUrl" class="camc-shot" />
           <div v-if="!cameraReady && !shotUrl" class="camc-status">正在启动相机…</div>
         </div>
@@ -262,9 +293,9 @@ onUnmounted(() => {
           <!-- 取景：左取消 / 中快门 / 右翻转（无前置摄像头时右侧留空占位） -->
           <template v-else>
             <button type="button" class="camc-side" @click="cancel">取消</button>
-            <button type="button" class="camc-shutter" :disabled="!cameraReady" aria-label="拍照" @click="takeShot"></button>
+            <button type="button" class="camc-shutter" :disabled="!cameraReady" aria-label="拍照" @click="takeShot" />
             <button v-if="showFlip" type="button" class="camc-side" @click="flip">翻转</button>
-            <span v-else class="camc-side camc-side-blank"></span>
+            <span v-else class="camc-side camc-side-blank" />
           </template>
         </div>
       </div>
@@ -275,62 +306,123 @@ onUnmounted(() => {
 <style scoped>
 /* 全屏取景（Teleport 到 body） */
 .camc-mask {
-  position: fixed; inset: 0; z-index: 9999;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   background: #000;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .camc-stage {
-  position: relative; width: 100%; height: 100%; overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   /* 取景框垂直水平居中；工具栏 position:absolute 不参与流式布局 */
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 /* 4:3 取景框：宽撑满；横屏等高度受限场景按比例收窄。由 stage 的 flex 居中 */
 .camc-viewport {
-  width: 100%; max-width: calc(100vh * 4 / 3);
-  aspect-ratio: 4 / 3; background: #000;
+  width: 100%;
+  max-width: calc(100vh * 4 / 3);
+  aspect-ratio: 4 / 3;
+  background: #000;
 }
-.camc-video, .camc-shot {
-  display: block; width: 100%; height: 100%;
+.camc-video,
+.camc-shot {
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
-.camc-video.camc-mirror { transform: scaleX(-1); }
+.camc-video.camc-mirror {
+  transform: scaleX(-1);
+}
 .camc-status {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 14px; background: #000;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  background: #000;
 }
 
 /* 底部工具栏：三等分布局保证快门居中 */
 .camc-bar {
-  position: absolute; left: 0; right: 0; bottom: calc(28px + env(safe-area-inset-bottom));
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 36px; z-index: 2;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(28px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+  z-index: 2;
 }
 /* 左右侧键：同一尺寸占位，保证快门绝对居中 */
 .camc-side {
-  width: 56px; height: 56px; border: none; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16); color: #fff;
-  font-size: 13px; cursor: pointer; backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.camc-side:active { background: rgba(255, 255, 255, 0.3); }
-.camc-side-blank { background: transparent; pointer-events: none; }
+.camc-side:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+.camc-side-blank {
+  background: transparent;
+  pointer-events: none;
+}
 /* 中间快门：原生相机风大圆白圈 */
 .camc-shutter {
-  width: 72px; height: 72px; border-radius: 50%;
-  border: 4px solid #fff; background: rgba(255, 255, 255, 0.92);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
-  cursor: pointer; position: relative;
+  cursor: pointer;
+  position: relative;
 }
 .camc-shutter::after {
-  content: ''; position: absolute; inset: 10px; border-radius: 50%;
-  background: #fff; border: 1px solid rgba(0, 0, 0, 0.12);
+  content: '';
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
-.camc-shutter:active { transform: scale(0.94); }
-.camc-shutter:disabled { opacity: 0.5; }
+.camc-shutter:active {
+  transform: scale(0.94);
+}
+.camc-shutter:disabled {
+  opacity: 0.5;
+}
 .camc-shutter-confirm {
-  border-color: #3b82f6; background: #3b82f6;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 15px; font-weight: 600;
+  border-color: #3b82f6;
+  background: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
 }
-.camc-shutter-confirm::after { display: none; }
+.camc-shutter-confirm::after {
+  display: none;
+}
 </style>

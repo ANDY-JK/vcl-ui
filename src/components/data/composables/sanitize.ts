@@ -2,11 +2,43 @@
 
 /** 允许的展示标签 */
 const _allowedTags = new Set([
-  'B', 'STRONG', 'I', 'EM', 'U', 'S', 'CODE', 'PRE', 'BR', 'SPAN', 'DIV', 'P',
-  'A', 'IMG', 'UL', 'OL', 'LI', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
+  'B',
+  'STRONG',
+  'I',
+  'EM',
+  'U',
+  'S',
+  'CODE',
+  'PRE',
+  'BR',
+  'SPAN',
+  'DIV',
+  'P',
+  'A',
+  'IMG',
+  'UL',
+  'OL',
+  'LI',
+  'TABLE',
+  'THEAD',
+  'TBODY',
+  'TR',
+  'TH',
+  'TD',
 ])
 /** 允许的属性（事件属性一律剥离） */
-const _allowedAttrs = new Set(['href', 'src', 'alt', 'title', 'target', 'colspan', 'rowspan', 'style', 'align', 'color'])
+const _allowedAttrs = new Set([
+  'href',
+  'src',
+  'alt',
+  'title',
+  'target',
+  'colspan',
+  'rowspan',
+  'style',
+  'align',
+  'color',
+])
 /** 危险标签整体移除（含内容） */
 const _dangerTags = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META', 'FORM', 'INPUT', 'BUTTON'])
 
@@ -15,9 +47,10 @@ const _dangerTags = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LI
  * 非白名单普通标签被剥离但保留其文本内容；危险标签整体移除。
  */
 export function sanitizeHTML(html: string): string {
+  if (typeof document === 'undefined') return html
   const el = document.createElement('div')
   el.innerHTML = html
-  el.querySelectorAll('*').forEach(node => {
+  el.querySelectorAll('*').forEach((node) => {
     if (_dangerTags.has(node.tagName)) {
       node.remove()
       return

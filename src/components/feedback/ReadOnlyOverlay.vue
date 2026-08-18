@@ -47,8 +47,12 @@ withDefaults(defineProps<Props>(), {
   padding: clamp(12px, 2.5vw, 20px);
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity var(--transition-slow);
 }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

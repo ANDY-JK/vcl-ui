@@ -4,27 +4,27 @@ import type { EChartsOption } from 'echarts'
 
 /** 支持的图表类型 */
 export type ChartType =
-  | 'line'        // 折线图
-  | 'bar'         // 柱状图
-  | 'pie'         // 饼图
-  | 'scatter'     // 散点图
-  | 'area'        // 面积图
-  | 'radar'       // 雷达图
-  | 'gauge'       // 仪表盘
-  | 'funnel'      // 漏斗图
-  | 'heatmap'     // 热力图
-  | 'treemap'     // 矩形树图
+  | 'line' // 折线图
+  | 'bar' // 柱状图
+  | 'pie' // 饼图
+  | 'scatter' // 散点图
+  | 'area' // 面积图
+  | 'radar' // 雷达图
+  | 'gauge' // 仪表盘
+  | 'funnel' // 漏斗图
+  | 'heatmap' // 热力图
+  | 'treemap' // 矩形树图
   | 'candlestick' // K 线图
-  | 'sankey'      // 桑基图
-  | 'sunburst'    // 旭日图
-  | 'graph'       // 关系图/力导向图
-  | 'boxplot'     // 箱线图
-  | 'mixed'       // 混合图表（折线 + 柱状叠加）
-  | 'waterfall'   // 瀑布图
-  | 'pictorialBar'// 象形柱状图
-  | 'tree'        // 树图
-  | 'timeline'    // 时间轴
-  | 'wordCloud'   // 词云
+  | 'sankey' // 桑基图
+  | 'sunburst' // 旭日图
+  | 'graph' // 关系图/力导向图
+  | 'boxplot' // 箱线图
+  | 'mixed' // 混合图表（折线 + 柱状叠加）
+  | 'waterfall' // 瀑布图
+  | 'pictorialBar' // 象形柱状图
+  | 'tree' // 树图
+  | 'timeline' // 时间轴
+  | 'wordCloud' // 词云
 
 /** 工具栏按钮选项 */
 export type ToolbarButton = 'saveAsImage' | 'zoom' | 'dataView'
@@ -38,7 +38,7 @@ export interface MarkLineConfig {
   value?: number
   label?: string
   color?: string
-  yAxis?: boolean  // true=按Y轴值，false=按X轴
+  yAxis?: boolean // true=按Y轴值，false=按X轴
 }
 
 /** 标注区域配置 */

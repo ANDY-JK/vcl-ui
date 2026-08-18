@@ -3,7 +3,7 @@
 // ⭐ iso 始终按 format 格式化；范围模式下以 selected 数组为 [start, end]，hoverEnd 为悬停预览终点
 import { computed, useSlots } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { formatDate, todayISO } from '../date-utils'
+import { formatDate, todayISO } from '../utils/date-utils'
 
 interface Month {
   year: number
@@ -186,64 +186,147 @@ function onToday() {
 
 <style scoped>
 /* ===== 日历网格（视觉与拆分前一致） ===== */
-.dp-header { display: flex; align-items: center; margin-bottom: var(--space-2); }
+.dp-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
 .dp-nav-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; flex-shrink: 0;
-  border: none; background: transparent; border-radius: var(--radius-sm);
-  cursor: pointer; color: var(--color-text-muted);
-  transition: background var(--transition-fast), color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
-.dp-nav-btn:hover { background: var(--color-bg-alt); color: var(--color-text); }
+.dp-nav-btn:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
 .dp-title {
-  flex: 1; text-align: center;
-  font-size: clamp(12px, 1.8vw, 14px); font-weight: 600; color: var(--color-text);
+  flex: 1;
+  text-align: center;
+  font-size: clamp(12px, 1.8vw, 14px);
+  font-weight: 600;
+  color: var(--color-text);
 }
-.dp-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: var(--space-1); }
+.dp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: var(--space-1);
+}
 .dp-weekday {
-  text-align: center; font-size: clamp(10px, 1.5vw, 11px);
-  color: var(--color-text-muted); padding: var(--space-1) 0; font-weight: 500;
+  text-align: center;
+  font-size: clamp(10px, 1.5vw, 11px);
+  color: var(--color-text-muted);
+  padding: var(--space-1) 0;
+  font-weight: 500;
 }
-.dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-1); }
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-1);
+}
 .dp-cell {
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: clamp(28px, 4.5vw, 32px);
   font-size: clamp(11px, 1.6vw, 12px);
-  border: none; background: transparent; border-radius: var(--radius-sm);
-  color: var(--color-text); cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
-.dp-cell:hover:not(.disabled):not(.selected):not(.range-start):not(.range-end) { background: var(--color-bg-alt); }
-.dp-cell.other-month { color: var(--color-text-muted); opacity: 0.35; }
-.dp-cell.today { color: var(--color-primary); font-weight: 700; }
-.dp-cell.today.selected, .dp-cell.today.range-start, .dp-cell.today.range-end { color: #fff; }
-.dp-cell.selected { background: var(--color-primary); color: #fff; font-weight: 600; }
+.dp-cell:hover:not(.disabled):not(.selected):not(.range-start):not(.range-end) {
+  background: var(--color-bg-alt);
+}
+.dp-cell.other-month {
+  color: var(--color-text-muted);
+  opacity: 0.35;
+}
+.dp-cell.today {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+.dp-cell.today.selected,
+.dp-cell.today.range-start,
+.dp-cell.today.range-end {
+  color: #fff;
+}
+.dp-cell.selected {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
 
 /* 区间高亮：中间段淡蓝、两端主色 + 圆角 */
-.dp-cell.in-range { background: var(--color-primary-light); border-radius: 0; }
-.dp-cell.in-range.today { color: var(--color-primary); }
+.dp-cell.in-range {
+  background: var(--color-primary-light);
+  border-radius: 0;
+}
+.dp-cell.in-range.today {
+  color: var(--color-primary);
+}
 .dp-cell.range-start {
-  background: var(--color-primary); color: #fff; font-weight: 600;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
   border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 .dp-cell.range-end {
-  background: var(--color-primary); color: #fff; font-weight: 600;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
-.dp-cell.range-start.range-end { border-radius: var(--radius-sm); }
-.dp-cell.disabled { opacity: 0.25; cursor: not-allowed; }
+.dp-cell.range-start.range-end {
+  border-radius: var(--radius-sm);
+}
+.dp-cell.disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
 
 /* 底部操作区：无 actions 槽时今天按钮居中（与 Select type="date" 一致） */
-.dp-footer { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
-.dp-footer--center { justify-content: center; }
-.dp-footer--actions { margin-top: var(--space-3); }
+.dp-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.dp-footer--center {
+  justify-content: center;
+}
+.dp-footer--actions {
+  margin-top: var(--space-3);
+}
 .dp-today-btn {
   padding: var(--space-1) var(--space-3);
-  border: none; border-radius: var(--radius-sm);
-  background: transparent; color: var(--color-primary);
-  font-size: clamp(11px, 1.6vw, 12px); cursor: pointer;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: clamp(11px, 1.6vw, 12px);
+  cursor: pointer;
   transition: background var(--transition-fast);
 }
-.dp-today-btn:hover { background: var(--color-primary-light); }
-.dp-footer-spacer { flex: 1; }
+.dp-today-btn:hover {
+  background: var(--color-primary-light);
+}
+.dp-footer-spacer {
+  flex: 1;
+}
 </style>

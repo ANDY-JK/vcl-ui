@@ -11,13 +11,17 @@ const menuItems = [
   { key: 'analytics', label: '分析', icon: 'chart-line' },
   { key: 'div1', label: '', divided: true },
   {
-    key: 'content', label: '内容管理', icon: 'file-text',
+    key: 'content',
+    label: '内容管理',
+    icon: 'file-text',
     children: [
       { key: 'posts', label: '文章列表', icon: 'list' },
       { key: 'drafts', label: '草稿箱', icon: 'file-pen-line' },
       { key: 'media', label: '媒体库', icon: 'image' },
       {
-        key: 'categories', label: '分类管理', icon: 'folder-tree',
+        key: 'categories',
+        label: '分类管理',
+        icon: 'folder-tree',
         children: [
           { key: 'cat-news', label: '新闻', icon: 'newspaper' },
           { key: 'cat-blog', label: '博客', icon: 'book-open' },
@@ -26,7 +30,9 @@ const menuItems = [
     ],
   },
   {
-    key: 'users', label: '用户管理', icon: 'users',
+    key: 'users',
+    label: '用户管理',
+    icon: 'users',
     children: [
       { key: 'user-list', label: '用户列表', icon: 'user-round' },
       { key: 'roles', label: '角色权限', icon: 'shield-check', disabled: true },
@@ -35,7 +41,9 @@ const menuItems = [
   },
   { key: 'div2', label: '', divided: true },
   {
-    key: 'settings', label: '系统设置', icon: 'settings',
+    key: 'settings',
+    label: '系统设置',
+    icon: 'settings',
     children: [
       { key: 'general', label: '基本设置', icon: 'cog' },
       { key: 'security', label: '安全策略', icon: 'lock' },
@@ -48,7 +56,9 @@ const menuItems = [
 const hMenuItems = [
   { key: 'home', label: '首页', icon: 'house' },
   {
-    key: 'products', label: '产品', icon: 'package',
+    key: 'products',
+    label: '产品',
+    icon: 'package',
     children: [
       { key: 'software', label: '软件产品', icon: 'monitor' },
       { key: 'hardware', label: '硬件设备', icon: 'cpu' },
@@ -56,11 +66,15 @@ const hMenuItems = [
     ],
   },
   {
-    key: 'solutions', label: '解决方案', icon: 'lightbulb',
+    key: 'solutions',
+    label: '解决方案',
+    icon: 'lightbulb',
     children: [
       { key: 'enterprise', label: '企业版', icon: 'building-2' },
       {
-        key: 'industry', label: '行业方案', icon: 'factory',
+        key: 'industry',
+        label: '行业方案',
+        icon: 'factory',
         children: [
           { key: 'finance', label: '金融', icon: 'landmark' },
           { key: 'medical', label: '医疗', icon: 'heart-pulse' },
@@ -81,186 +95,237 @@ function onSelect(item: { key: string | number; label: string }) {
   <div class="demo">
     <h2 class="demo-title">Menu 多级菜单</h2>
     <p class="demo-desc">
-      支持 vertical（侧边栏）和 horizontal（顶部导航）两种模式，可递归渲染多级子菜单。
-      选中值：<code>{{ selectedKey }}</code>
+      支持 vertical（侧边栏）和 horizontal（顶部导航）两种模式，可递归渲染多级子菜单。 选中值：<code>{{
+        selectedKey
+      }}</code>
     </p>
 
     <!-- ========== Vertical Sidebar ========== -->
-    <Card title="Vertical 侧边栏菜单" style="margin-bottom:24px" overflowVisible>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-bottom:12px;">
+    <Card title="Vertical 侧边栏菜单" style="margin-bottom: 24px" overflow-visible>
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         <code>mode="vertical"</code> — 点击展开子菜单，内联缩进 + 滑动动画，支持多级嵌套
       </p>
-      <div style="max-width:260px;background:var(--color-sidebar);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-1);">
-        <Menu
-          :items="menuItems"
-          mode="vertical"
-          theme="dark"
-          v-model:selected-key="selectedKey"
-          @select="onSelect"
-        />
+      <div
+        style="
+          max-width: 260px;
+          background: var(--color-sidebar);
+          border-radius: var(--radius-lg);
+          padding: var(--space-3) var(--space-1);
+        "
+      >
+        <Menu v-model:selected-key="selectedKey" :items="menuItems" mode="vertical" theme="dark" @select="onSelect" />
       </div>
     </Card>
 
     <!-- ========== Collapsed Vertical ========== -->
-    <Card title="Collapsed 图标模式" style="margin-bottom:24px" overflowVisible>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-bottom:12px;">
+    <Card title="Collapsed 图标模式" style="margin-bottom: 24px" overflow-visible>
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         <code>:collapsed="true"</code> — 仅显示图标，子菜单 hover 时以浮层弹出
       </p>
-      <div style="max-width:60px;background:var(--color-sidebar);border-radius:var(--radius-lg);padding:var(--space-3) var(--space-1);">
+      <div
+        style="
+          max-width: 60px;
+          background: var(--color-sidebar);
+          border-radius: var(--radius-lg);
+          padding: var(--space-3) var(--space-1);
+        "
+      >
         <Menu
+          v-model:selected-key="selectedKey"
           :items="menuItems"
           mode="vertical"
           theme="dark"
           :collapsed="true"
-          v-model:selected-key="selectedKey"
           @select="onSelect"
         />
       </div>
     </Card>
 
     <!-- ========== Horizontal Topbar ========== -->
-    <Card title="Horizontal 顶部导航" overflowVisible>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-bottom:12px;">
-        <code>mode="horizontal"</code> — 横向排列，hover 展开下拉面板（150ms 延迟），选中值：<code>{{ hSelectedKey }}</code>
+    <Card title="Horizontal 顶部导航" overflow-visible>
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+        <code>mode="horizontal"</code> — 横向排列，hover 展开下拉面板（150ms 延迟），选中值：<code>{{
+          hSelectedKey
+        }}</code>
       </p>
-      <div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-2) var(--space-4);">
-        <Menu
-          :items="hMenuItems"
-          mode="horizontal"
-          v-model:selected-key="hSelectedKey"
-          @select="onSelect"
-        />
+      <div
+        style="
+          background: var(--color-surface);
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-lg);
+          padding: var(--space-2) var(--space-4);
+        "
+      >
+        <Menu v-model:selected-key="hSelectedKey" :items="hMenuItems" mode="horizontal" @select="onSelect" />
       </div>
     </Card>
 
     <!-- ========== API Table ========== -->
     <Card title="Props">
-      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
-          <tr style="border-bottom:2px solid var(--color-border);text-align:left;">
-            <th style="padding:4px 8px;">Prop</th>
-            <th style="padding:4px 8px;">类型</th>
-            <th style="padding:4px 8px;">默认</th>
-            <th style="padding:4px 8px;">说明</th>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: 4px 8px">Prop</th>
+            <th style="padding: 4px 8px">类型</th>
+            <th style="padding: 4px 8px">默认</th>
+            <th style="padding: 4px 8px">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>items</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">MenuItem[]</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">—</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">菜单项数组（支持 children 递归）</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>items</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">MenuItem[]</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              菜单项数组（支持 children 递归）
+            </td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>mode</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">'vertical' | 'horizontal'</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">'vertical'</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">布局方向</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>mode</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              'vertical' | 'horizontal'
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">'vertical'</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">布局方向</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>selectedKey</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">string | number</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">—</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">当前选中项的 key（支持 v-model）</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>selectedKey</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">string | number</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              当前选中项的 key（支持 v-model）
+            </td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>collapsed</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">boolean</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">false</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">折叠为仅图标模式（vertical 下有效）</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>collapsed</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">false</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              折叠为仅图标模式（vertical 下有效）
+            </td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;"><code>multiple</code></td>
-            <td style="padding:3px 8px;">boolean</td>
-            <td style="padding:3px 8px;">false</td>
-            <td style="padding:3px 8px;">是否允许多个子菜单同时展开</td>
+            <td style="padding: 3px 8px">
+              <code>multiple</code>
+            </td>
+            <td style="padding: 3px 8px">boolean</td>
+            <td style="padding: 3px 8px">false</td>
+            <td style="padding: 3px 8px">是否允许多个子菜单同时展开</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;"><code>theme</code></td>
-            <td style="padding:3px 8px;">'light' | 'dark'</td>
-            <td style="padding:3px 8px;">'light'</td>
-            <td style="padding:3px 8px;">主题色（dark 用于深色侧边栏）</td>
+            <td style="padding: 3px 8px">
+              <code>theme</code>
+            </td>
+            <td style="padding: 3px 8px">'light' | 'dark'</td>
+            <td style="padding: 3px 8px">'light'</td>
+            <td style="padding: 3px 8px">主题色（dark 用于深色侧边栏）</td>
           </tr>
         </tbody>
       </table>
     </Card>
 
     <Card title="Events">
-      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
-          <tr style="border-bottom:2px solid var(--color-border);text-align:left;">
-            <th style="padding:4px 8px;">事件</th>
-            <th style="padding:4px 8px;">参数</th>
-            <th style="padding:4px 8px;">说明</th>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: 4px 8px">事件</th>
+            <th style="padding: 4px 8px">参数</th>
+            <th style="padding: 4px 8px">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>select</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">MenuItem</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">点击叶子节点时触发</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>select</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">MenuItem</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">点击叶子节点时触发</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;"><code>update:selectedKey</code></td>
-            <td style="padding:3px 8px;">string | number</td>
-            <td style="padding:3px 8px;">选中 key 变更（支持 v-model:selectedKey）</td>
+            <td style="padding: 3px 8px">
+              <code>update:selectedKey</code>
+            </td>
+            <td style="padding: 3px 8px">string | number</td>
+            <td style="padding: 3px 8px">选中 key 变更（支持 v-model:selectedKey）</td>
           </tr>
         </tbody>
       </table>
     </Card>
 
     <Card title="MenuItem 接口">
-      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
-          <tr style="border-bottom:2px solid var(--color-border);text-align:left;">
-            <th style="padding:4px 8px;">字段</th>
-            <th style="padding:4px 8px;">类型</th>
-            <th style="padding:4px 8px;">必填</th>
-            <th style="padding:4px 8px;">说明</th>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: 4px 8px">字段</th>
+            <th style="padding: 4px 8px">类型</th>
+            <th style="padding: 4px 8px">必填</th>
+            <th style="padding: 4px 8px">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>key</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">string | number</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">是</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">唯一标识</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>key</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">string | number</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">是</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">唯一标识</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>label</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">string</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">是</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">显示文本</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>label</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">是</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">显示文本</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>icon</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">string</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">否</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">IconSvg 图标名</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>icon</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">否</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">IconSvg 图标名</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>children</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">MenuItem[]</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">否</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">子菜单项（递归渲染）</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>children</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">MenuItem[]</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">否</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">子菜单项（递归渲染）</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>disabled</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">boolean</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">否</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">禁用该项</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>disabled</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">否</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">禁用该项</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>divided</code></td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">boolean</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">否</td>
-            <td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">在此项前显示分隔线</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>divided</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">否</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">在此项前显示分隔线</td>
           </tr>
           <tr>
-            <td style="padding:3px 8px;"><code>action</code></td>
-            <td style="padding:3px 8px;">() => void</td>
-            <td style="padding:3px 8px;">否</td>
-            <td style="padding:3px 8px;">自定义点击回调（触发时同时 emit select）</td>
+            <td style="padding: 3px 8px">
+              <code>action</code>
+            </td>
+            <td style="padding: 3px 8px">() => void</td>
+            <td style="padding: 3px 8px">否</td>
+            <td style="padding: 3px 8px">自定义点击回调（触发时同时 emit select）</td>
           </tr>
         </tbody>
       </table>
@@ -269,7 +334,21 @@ function onSelect(item: { key: string | number; label: string }) {
 </template>
 
 <style scoped>
-.demo-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.demo-desc { color: var(--color-text-muted); margin-bottom: 24px; font-size: 14px; line-height: 1.6; }
-code { background: var(--color-bg-alt); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+.demo-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.demo-desc {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+code {
+  background: var(--color-bg-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
 </style>

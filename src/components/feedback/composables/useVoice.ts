@@ -4,14 +4,22 @@ let preWarmed = false
 const KEY = 'vue-lib-voice-unlocked'
 
 function doWarm(): void {
-  if (preWarmed || !window.speechSynthesis) return
+  if (preWarmed || typeof window === 'undefined' || !window.speechSynthesis) return
   try {
     speechSynthesis.getVoices()
-    const u = new SpeechSynthesisUtterance(''); u.volume = 0; u.rate = 2
+    const u = new SpeechSynthesisUtterance('')
+    u.volume = 0
+    u.rate = 2
     speechSynthesis.speak(u)
     preWarmed = true
-	    try { localStorage.setItem(KEY, '1') } catch { console.warn('[useVoice] localStorage 不可用，静默降级') }
-  } catch { console.warn('[useVoice] SpeechSynthesis 预热失败') }
+    try {
+      localStorage.setItem(KEY, '1')
+    } catch {
+      console.warn('[useVoice] localStorage 不可用，静默降级')
+    }
+  } catch {
+    console.warn('[useVoice] SpeechSynthesis 预热失败')
+  }
 }
 
 // localStorage 持久化：上次访问已预热则跳过等待
@@ -21,18 +29,27 @@ if (typeof window !== 'undefined') {
       doWarm()
     } else {
       const events = ['mousedown', 'touchstart', 'keydown']
-      function auto() { doWarm(); events.forEach(e => document.removeEventListener(e, auto)) }
-      events.forEach(e => document.addEventListener(e, auto, { once: true, passive: true }))
+      function auto() {
+        doWarm()
+        events.forEach((e) => document.removeEventListener(e, auto))
+      }
+      events.forEach((e) => document.addEventListener(e, auto, { once: true, passive: true }))
     }
-  } catch { /* localStorage 不可用，跳过持久化逻辑 */ }
+  } catch {
+    /* localStorage 不可用，跳过持久化逻辑 */
+  }
 }
 
-export function unlockVoice(): void { doWarm() }
+export function unlockVoice(): void {
+  doWarm()
+}
 
 function ensureVoices(): void {
-  if (voicesLoaded || !window.speechSynthesis) return
+  if (voicesLoaded || typeof window === 'undefined' || !window.speechSynthesis) return
   speechSynthesis.getVoices()
-  speechSynthesis.onvoiceschanged = () => { voicesLoaded = true }
+  speechSynthesis.onvoiceschanged = () => {
+    voicesLoaded = true
+  }
   voicesLoaded = true
 }
 
@@ -41,21 +58,25 @@ export type VoiceLang = 'zh' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'es' | 'auto'
 
 /** 播报文字；rate 0.1~10，pitch 0~2；lang 指定语言（默认 'zh'），'auto' 为自动检测 */
 export function speak(text: string, rate = 1, pitch = 1, lang: VoiceLang = 'zh'): void {
-  if (!window.speechSynthesis) return
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
   rate = Math.max(0.1, Math.min(10, rate))
   pitch = Math.max(0, Math.min(2, pitch))
   try {
     ensureVoices()
     speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(text)
-    u.rate = rate; u.pitch = pitch; u.volume = 0.8
+    u.rate = rate
+    u.pitch = pitch
+    u.volume = 0.8
     // 语言选择：'auto' 根据文本特征推断，否则匹配指定语言前缀
     const targetLang = lang === 'auto' ? detectLang(text) : lang
-    const voice = speechSynthesis.getVoices().find(v => v.lang.startsWith(targetLang))
+    const voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith(targetLang))
     if (voice) u.voice = voice
     u.lang = voice?.lang || targetLang
     speechSynthesis.speak(u)
-  } catch { console.warn('[useVoice] 语音播报失败') }
+  } catch {
+    console.warn('[useVoice] 语音播报失败')
+  }
 }
 
 /** 简单语言检测：根据文本字符特征推断语言 */
@@ -69,6 +90,10 @@ function detectLang(text: string): string {
 }
 
 export function stopSpeak(): void {
-  if (!window.speechSynthesis) return
-  try { speechSynthesis.cancel() } catch { console.warn('[useVoice] speechSynthesis.cancel 失败') }
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
+  try {
+    speechSynthesis.cancel()
+  } catch {
+    console.warn('[useVoice] speechSynthesis.cancel 失败')
+  }
 }

@@ -61,7 +61,9 @@ export function useTableEdit(
 ) {
   /** 当前实例唯一标识 */
   const _editKey = {}
-  function markEditActive() { _activeEditInstance = _editKey }
+  function markEditActive() {
+    _activeEditInstance = _editKey
+  }
 
   // ==================== 修改追踪 & 即时预览 ====================
   const _modifiedRows = ref<Set<string>>(new Set())
@@ -99,7 +101,9 @@ export function useTableEdit(
     displayCols.value = cols
   }
 
-  function _cellKey(rk: string, ck: string) { return `${rk}|${ck}` }
+  function _cellKey(rk: string, ck: string) {
+    return `${rk}|${ck}`
+  }
 
   /** 安全拆分 "rowKey|colKey"（rowKey 本身可能含 |） */
   function _splitCellKey(key: string): [string, string] | null {
@@ -113,8 +117,8 @@ export function useTableEdit(
     if (!col) return true
     if (col.accept === 'image') return false
     if (!col.options || col.options.length === 0) return true
-    return col.options.some(o =>
-      typeof o === 'string' ? o === value : (String(o.value) === value || String(o.label ?? o.value) === value),
+    return col.options.some((o) =>
+      typeof o === 'string' ? o === value : String(o.value) === value || String(o.label ?? o.value) === value,
     )
   }
 
@@ -165,7 +169,9 @@ export function useTableEdit(
     if (isInRange(rowKey, colKey)) return true
     if (_selectedColKey.value === colKey) return true
     if (_multiSelection.value.has(_cellKey(rowKey, colKey))) return true
-    return selectedCell.value?.rowKey === rowKey && selectedCell.value?.colKey === colKey && _multiSelection.value.size === 0
+    return (
+      selectedCell.value?.rowKey === rowKey && selectedCell.value?.colKey === colKey && _multiSelection.value.size === 0
+    )
   }
 
   /** 判断单元格是否在矩形选区（按显示顺序的行列索引） */
@@ -280,7 +286,13 @@ export function useTableEdit(
     if (nr < 0 || nr >= displayRows.value.length || nc < 0 || nc >= displayCols.value.length) return
     e.preventDefault()
     if (!rangeSel.value) {
-      startRange(ri, ci, displayRows.value, displayCols.value, hooks?.getCellDisplayValue?.(anchor.rowKey, anchor.colKey) ?? '')
+      startRange(
+        ri,
+        ci,
+        displayRows.value,
+        displayCols.value,
+        hooks?.getCellDisplayValue?.(anchor.rowKey, anchor.colKey) ?? '',
+      )
     }
     updateRange(nr, nc)
     hooks?.scrollCellIntoView?.(displayRows.value[nr], displayCols.value[nc])
@@ -301,7 +313,7 @@ export function useTableEdit(
   function enterEditFromSelection(e: KeyboardEvent) {
     const anchor = navAnchor()
     if (!anchor || !props.editable) return
-    const col = props.columns?.find(c => c.key === anchor.colKey)
+    const col = props.columns?.find((c) => c.key === anchor.colKey)
     if (!col || col.editable === false || col.options || col.accept === 'image') return
     e.preventDefault()
     startEdit(anchor.rowKey, anchor.colKey, hooks?.getCellDisplayValue?.(anchor.rowKey, anchor.colKey) ?? '')
@@ -309,7 +321,7 @@ export function useTableEdit(
 
   /** Delete/Backspace：清空选中格（矩形选区全清；只读/图片列跳过） */
   function clearSelection(e?: KeyboardEvent) {
-    const colMap = new Map((props.columns ?? []).map(c => [c.key, c]))
+    const colMap = new Map((props.columns ?? []).map((c) => [c.key, c]))
     const r = rangeSel.value
     if (r) {
       const r0 = Math.min(r.anchor.rowIndex, r.focus.rowIndex)
@@ -378,7 +390,7 @@ export function useTableEdit(
 
   /** 矩阵粘贴：从目标锚点开始逐行逐列填充（行/列均只落在当前显示范围） */
   function pasteMatrix(text: string, target: PasteTarget) {
-    const colMap = new Map((props.columns ?? []).map(c => [c.key, c]))
+    const colMap = new Map((props.columns ?? []).map((c) => [c.key, c]))
     const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
     // 末尾空行（Excel 复制常带）忽略
     while (lines.length && lines[lines.length - 1].trim() === '') lines.pop()
@@ -397,7 +409,7 @@ export function useTableEdit(
 
   /** 单值粘贴：矩形选区 → 填满整个区域；否则走原有单选/多选/整列逻辑 */
   function pasteValue(value: string) {
-    const colMap = new Map((props.columns ?? []).map(c => [c.key, c]))
+    const colMap = new Map((props.columns ?? []).map((c) => [c.key, c]))
     const r = rangeSel.value
     if (r) {
       const r0 = Math.min(r.anchor.rowIndex, r.focus.rowIndex)
@@ -465,15 +477,19 @@ export function useTableEdit(
     const r1 = Math.max(r.anchor.rowIndex, r.focus.rowIndex)
     const c0 = Math.min(r.anchor.colIndex, r.focus.colIndex)
     const c1 = Math.max(r.anchor.colIndex, r.focus.colIndex)
-    const tsv = r.rows.slice(r0, r1 + 1)
-      .map(rk => r.cols.slice(c0, c1 + 1)
-        .map(ck => {
-          const col = props.columns?.find(c => c.key === ck)
-          if (col?.accept === 'image') return ''
-          const v = hooks?.getCellDisplayValue?.(rk, ck) ?? ''
-          return String(v).replace(/[\t\r\n]+/g, ' ')
-        })
-        .join('\t'))
+    const tsv = r.rows
+      .slice(r0, r1 + 1)
+      .map((rk) =>
+        r.cols
+          .slice(c0, c1 + 1)
+          .map((ck) => {
+            const col = props.columns?.find((c) => c.key === ck)
+            if (col?.accept === 'image') return ''
+            const v = hooks?.getCellDisplayValue?.(rk, ck) ?? ''
+            return String(v).replace(/[\t\r\n]+/g, ' ')
+          })
+          .join('\t'),
+      )
       .join('\n')
     _clipboard.value = tsv
     await copyText(tsv)
@@ -529,7 +545,7 @@ export function useTableEdit(
       if (props.editable && hasSelection) {
         e.preventDefault()
         // 优先读取系统剪贴板（支持从 Excel/网页复制 TSV 矩阵）
-        let external = ''
+        let external: string
         try {
           external = await navigator.clipboard.readText()
         } catch {
@@ -613,10 +629,11 @@ export function useTableEdit(
       const curCol = editingCell.value?.colKey ?? ''
       commitEdit()
       nextTick(() => {
-        const idx = cols.findIndex(c => c.key === curCol)
+        const idx = cols.findIndex((c) => c.key === curCol)
         // 跳过图片列与下拉选项列（options 列不走内联编辑，避免假编辑态）
-        const next = cols.slice(idx + 1).find(c => c.accept !== 'image' && !c.options)
-          ?? cols.find(c => c.accept !== 'image' && !c.options)
+        const next =
+          cols.slice(idx + 1).find((c) => c.accept !== 'image' && !c.options) ??
+          cols.find((c) => c.accept !== 'image' && !c.options)
         if (next && next.key !== curCol) {
           editingCell.value = { rowKey, colKey: next.key, value: '' }
           editValue.value = ''
@@ -631,14 +648,20 @@ export function useTableEdit(
 
   // ==================== 备注模式 ====================
   const _notes = ref<Record<string, Record<string, string>>>(props.notes ?? {})
-  watch(() => props.notes, (val) => { if (val) _notes.value = { ...val } }, { deep: true })
+  watch(
+    () => props.notes,
+    (val) => {
+      if (val) _notes.value = { ...val }
+    },
+    { deep: true },
+  )
   const noteEditing = ref<{ rowKey: string; colKey: string } | null>(null)
   const noteDraft = ref('')
   const noteTooltip = ref<{ rowKey: string; colKey: string; text: string; x: number; y: number } | null>(null)
 
   /** 某单元格是否有备注 */
   function hasNote(rowKey: string, colKey: string): boolean {
-    return !!(_notes.value[rowKey]?.[colKey])
+    return !!_notes.value[rowKey]?.[colKey]
   }
 
   /** 获取备注文本 */
@@ -653,7 +676,9 @@ export function useTableEdit(
     if (!text) return
     const rect = (e.target as HTMLElement).getBoundingClientRect()
     noteTooltip.value = {
-      rowKey, colKey, text,
+      rowKey,
+      colKey,
+      text,
       x: rect.left,
       y: rect.top - 4,
     }
@@ -716,8 +741,10 @@ export function useTableEdit(
   }
 
   function onNoteKeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter') { e.preventDefault(); commitNote() }
-    else if (e.key === 'Escape') cancelNote()
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      commitNote()
+    } else if (e.key === 'Escape') cancelNote()
   }
 
   // ==================== 粘贴 & 拖拽图片 ====================
@@ -765,32 +792,65 @@ export function useTableEdit(
 
   return {
     // 编辑模式
-    editingCell, editValue,
-    startEdit, commitEdit, cancelEdit, onEditKeydown,
-    setEditInputEl, setNoteInputEl,
+    editingCell,
+    editValue,
+    startEdit,
+    commitEdit,
+    cancelEdit,
+    onEditKeydown,
+    setEditInputEl,
+    setNoteInputEl,
     noteInputEl,
     // 备注模式
-    _notes, noteEditing, noteDraft,
+    _notes,
+    noteEditing,
+    noteDraft,
     noteTooltip,
-    hasNote, getNote,
-    showNoteTooltip, hideNoteTooltip,
-    startNoteEdit, commitNote, cancelNote, onNoteKeydown,
+    hasNote,
+    getNote,
+    showNoteTooltip,
+    hideNoteTooltip,
+    startNoteEdit,
+    commitNote,
+    cancelNote,
+    onNoteKeydown,
     // @patch 2026-07-15 原始值气泡
     originalTooltip,
-    showOriginalTooltip, hideOriginalTooltip,
+    showOriginalTooltip,
+    hideOriginalTooltip,
     // 粘贴 & 拖拽
-    onCellPaste, onImageDrop, onImageDragOver, onImageDragLeave,
+    onCellPaste,
+    onImageDrop,
+    onImageDragOver,
+    onImageDragLeave,
     // 修改追踪
-    _modifiedRows, modifiedCount,
+    _modifiedRows,
+    modifiedCount,
     // 即时预览
-    getCellValue, _cellOverrides,
+    getCellValue,
+    _cellOverrides,
     // 单元格选择 & 复制黏贴
-    selectedCell, _selectedColKey, _multiSelection, _clipboard, _pasteRowKeys,
+    selectedCell,
+    _selectedColKey,
+    _multiSelection,
+    _clipboard,
+    _pasteRowKeys,
     rangeSel,
-    selectCell, toggleSelectColumn, isCellSelected,
-    isInRange, isRangeAnchor,
-    startRange, updateRange, clearRange,
-    displayRows, displayCols, setDisplayMatrix,
-    copySelectedCell, pasteToSelection, pasteText, clearSelection, onCellKeydown,
+    selectCell,
+    toggleSelectColumn,
+    isCellSelected,
+    isInRange,
+    isRangeAnchor,
+    startRange,
+    updateRange,
+    clearRange,
+    displayRows,
+    displayCols,
+    setDisplayMatrix,
+    copySelectedCell,
+    pasteToSelection,
+    pasteText,
+    clearSelection,
+    onCellKeydown,
   }
 }

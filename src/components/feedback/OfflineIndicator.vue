@@ -2,13 +2,21 @@
 // ⛔ 保护 — 离线检测，禁止：online/offline 事件监听逻辑删除
 //    需我确认：离线提示样式、重连回调
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useT } from '@/components/_internal/i18n'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
+const t = useT()
 const offline = ref(false)
 const dismissed = ref(false)
 
-function onOnline() { offline.value = false; dismissed.value = false }
-function onOffline() { offline.value = true; dismissed.value = false }
+function onOnline() {
+  offline.value = false
+  dismissed.value = false
+}
+function onOffline() {
+  offline.value = true
+  dismissed.value = false
+}
 
 onMounted(() => {
   window.addEventListener('online', onOnline)
@@ -25,7 +33,7 @@ onUnmounted(() => {
   <Transition name="slide-down">
     <div v-if="offline && !dismissed" class="offline-bar">
       <IconSvg type="wifi-off" size="sm" color="white" />
-      <span>网络连接已断开，部分功能可能不可用</span>
+      <span>{{ t('offline.disconnected') }}</span>
       <button class="offline-dismiss" @click="dismissed = true">
         <IconSvg type="x" size="sm" color="white" />
       </button>
@@ -54,15 +62,17 @@ onUnmounted(() => {
   display: flex;
   padding: var(--space-1);
   border: none;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   cursor: pointer;
 }
 
-.slide-down-enter-active, .slide-down-leave-active {
+.slide-down-enter-active,
+.slide-down-leave-active {
   transition: transform var(--transition-normal);
 }
-.slide-down-enter-from, .slide-down-leave-to {
+.slide-down-enter-from,
+.slide-down-leave-to {
   transform: translateY(-100%);
 }
 </style>

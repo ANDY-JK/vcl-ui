@@ -4,7 +4,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { navTree, type NavNode } from './navData'
+import { navTree, type NavNode } from './utils/navData'
 
 const props = defineProps<{ collapsed?: boolean; items?: NavNode[] }>()
 
@@ -13,7 +13,7 @@ const route = useRoute()
 
 const tree = computed(() => props.items || navTree)
 
-const expandedGroups = ref<Set<string>>(new Set(tree.value.map(g => g.label)))
+const expandedGroups = ref<Set<string>>(new Set(tree.value.map((g) => g.label)))
 
 function syncExpand() {
   const next = new Set<string>()
@@ -24,10 +24,16 @@ function syncExpand() {
 }
 watch(() => route.path, syncExpand, { immediate: true })
 
-function isExpanded(group: NavNode) { return expandedGroups.value.has(group.label) }
+function isExpanded(group: NavNode) {
+  return expandedGroups.value.has(group.label)
+}
 function toggleGroup(group: NavNode) {
   const next = new Set(expandedGroups.value)
-  if (next.has(group.label)) { next.delete(group.label) } else { next.add(group.label) }
+  if (next.has(group.label)) {
+    next.delete(group.label)
+  } else {
+    next.add(group.label)
+  }
   expandedGroups.value = next
 }
 
@@ -36,7 +42,7 @@ function hasActiveChild(node: NavNode): boolean {
     const resolved = router.resolve(node.route)
     if (route.path === resolved.path) return true
   }
-  if (node.children) return node.children.some(c => hasActiveChild(c))
+  if (node.children) return node.children.some((c) => hasActiveChild(c))
   return false
 }
 
@@ -86,8 +92,8 @@ const activeRoute = computed(() => route.path)
             v-else
             class="nav-l2"
             :class="{ active: child.route && activeRoute === child.route }"
-            @click="onClick(child)"
             :title="collapsed ? child.label : undefined"
+            @click="onClick(child)"
           >
             <IconSvg :type="child.icon || 'square'" size="sm" color="currentColor" />
             <span v-show="!collapsed" class="nav-label">{{ child.label }}</span>
@@ -100,8 +106,8 @@ const activeRoute = computed(() => route.path)
                 v-if="!sub.children"
                 class="nav-l3"
                 :class="{ active: sub.route && activeRoute === sub.route }"
-                @click="onClick(sub)"
                 :title="collapsed ? sub.label : undefined"
+                @click="onClick(sub)"
               >
                 <IconSvg :type="sub.icon || 'square'" size="sm" color="currentColor" />
                 <span v-show="!collapsed" class="nav-label">{{ sub.label }}</span>
@@ -114,8 +120,8 @@ const activeRoute = computed(() => route.path)
                   :key="deep.label"
                   class="nav-l4"
                   :class="{ active: deep.route && activeRoute === deep.route }"
-                  @click="onClick(deep)"
                   :title="collapsed ? deep.label : undefined"
+                  @click="onClick(deep)"
                 >
                   <IconSvg :type="deep.icon || 'square'" size="sm" color="currentColor" />
                   <span v-show="!collapsed" class="nav-label">{{ deep.label }}</span>
@@ -131,8 +137,8 @@ const activeRoute = computed(() => route.path)
         v-if="!node.children"
         class="nav-l2"
         :class="{ active: node.route && activeRoute === node.route }"
-        @click="onClick(node)"
         :title="collapsed ? node.label : undefined"
+        @click="onClick(node)"
       >
         <IconSvg :type="node.icon || 'square'" size="sm" color="currentColor" />
         <span v-show="!collapsed" class="nav-label">{{ node.label }}</span>
@@ -162,7 +168,11 @@ const activeRoute = computed(() => route.path)
 */
 
 /* ---- 共享基础：2~6 级导航项通用 ---- */
-.nav-l2, .nav-l3, .nav-l4, .nav-l5, .nav-l6 {
+.nav-l2,
+.nav-l3,
+.nav-l4,
+.nav-l5,
+.nav-l6 {
   display: flex;
   align-items: center;
   border: none;
@@ -170,7 +180,10 @@ const activeRoute = computed(() => route.path)
   background: transparent;
   color: var(--color-sidebar-text);
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast), opacity 120ms ease;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    opacity 120ms ease;
   position: relative;
   white-space: nowrap;
   line-height: 1.5;
@@ -179,7 +192,9 @@ const activeRoute = computed(() => route.path)
 .nav-l3 > :deep(svg),
 .nav-l4 > :deep(svg),
 .nav-l5 > :deep(svg),
-.nav-l6 > :deep(svg) { flex-shrink: 0; }
+.nav-l6 > :deep(svg) {
+  flex-shrink: 0;
+}
 
 .nav-l2 .nav-label,
 .nav-l3 .nav-label,
@@ -190,11 +205,19 @@ const activeRoute = computed(() => route.path)
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.nav-l2:hover, .nav-l3:hover, .nav-l4:hover, .nav-l5:hover, .nav-l6:hover {
+.nav-l2:hover,
+.nav-l3:hover,
+.nav-l4:hover,
+.nav-l5:hover,
+.nav-l6:hover {
   background: var(--color-sidebar-hover);
   color: #fff;
 }
-.nav-l2.active, .nav-l3.active, .nav-l4.active, .nav-l5.active, .nav-l6.active {
+.nav-l2.active,
+.nav-l3.active,
+.nav-l4.active,
+.nav-l5.active,
+.nav-l6.active {
   background: var(--color-sidebar-active);
   color: var(--color-sidebar-text-active);
   font-weight: 500;
@@ -207,7 +230,9 @@ const activeRoute = computed(() => route.path)
   padding: var(--space-2) 0 var(--space-5);
   scrollbar-width: none;
 }
-.accordion-nav::-webkit-scrollbar { display: none; }
+.accordion-nav::-webkit-scrollbar {
+  display: none;
+}
 
 /* ---- L1 分组标题（独立样式，不参与导航项共享） ---- */
 .nav-l1 {
@@ -220,14 +245,16 @@ const activeRoute = computed(() => route.path)
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: #DDE0E8;
+  color: #dde0e8;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.3px;
   cursor: pointer;
   transition: color var(--transition-fast);
 }
-.nav-l1:hover { color: #fff; }
+.nav-l1:hover {
+  color: #fff;
+}
 
 .nav-arrow {
   font-size: 10px;
@@ -236,7 +263,9 @@ const activeRoute = computed(() => route.path)
   flex-shrink: 0;
 }
 .nav-l1.expanded .nav-arrow,
-.nav-l2.expanded .nav-arrow { transform: rotate(180deg); }
+.nav-l2.expanded .nav-arrow {
+  transform: rotate(180deg);
+}
 
 /* ---- L2 (12px / 12px 缩进 / 0.85 透明度) ---- */
 .nav-l2 {
@@ -247,21 +276,34 @@ const activeRoute = computed(() => route.path)
   font-size: 12px;
   opacity: 0.85;
 }
-.nav-l2 > :deep(svg) { opacity: 0.65; }
+.nav-l2 > :deep(svg) {
+  opacity: 0.65;
+}
 .nav-l2:hover > :deep(svg),
-.nav-l2.active > :deep(svg) { opacity: 1; }
-.nav-l2:hover, .nav-l2.active { opacity: 1; }
+.nav-l2.active > :deep(svg) {
+  opacity: 1;
+}
+.nav-l2:hover,
+.nav-l2.active {
+  opacity: 1;
+}
 
 .nav-l2.is-group {
   justify-content: space-between;
   padding-left: calc(var(--space-3) + var(--space-4));
   font-weight: 500;
 }
-.nav-l2.is-group:hover { color: var(--color-sidebar-text-active); }
+.nav-l2.is-group:hover {
+  color: var(--color-sidebar-text-active);
+}
 
 .nav-l2.active::before {
-  content: ''; position: absolute;
-  left: 6px; top: 4px; bottom: 4px; width: 2px;
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
   border-radius: 2px;
   background: var(--color-primary);
 }
@@ -273,16 +315,27 @@ const activeRoute = computed(() => route.path)
   margin: 0 var(--space-5) 0 var(--space-4);
   padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
   font-size: 10px;
-  opacity: 0.70;
+  opacity: 0.7;
 }
-.nav-l3 > :deep(svg) { opacity: 0.55; }
+.nav-l3 > :deep(svg) {
+  opacity: 0.55;
+}
 .nav-l3:hover > :deep(svg),
-.nav-l3.active > :deep(svg) { opacity: 1; }
-.nav-l3:hover, .nav-l3.active { opacity: 1; }
+.nav-l3.active > :deep(svg) {
+  opacity: 1;
+}
+.nav-l3:hover,
+.nav-l3.active {
+  opacity: 1;
+}
 
 .nav-l3.active::before {
-  content: ''; position: absolute;
-  left: 6px; top: 3px; bottom: 3px; width: 1.5px;
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 3px;
+  bottom: 3px;
+  width: 1.5px;
   border-radius: 2px;
   background: var(--color-primary);
   opacity: 0.5;
@@ -297,14 +350,27 @@ const activeRoute = computed(() => route.path)
   font-size: 8px;
   opacity: 0.55;
 }
-.nav-l4 > :deep(svg) { opacity: 0.45; width: 14px; height: 14px; }
+.nav-l4 > :deep(svg) {
+  opacity: 0.45;
+  width: 14px;
+  height: 14px;
+}
 .nav-l4:hover > :deep(svg),
-.nav-l4.active > :deep(svg) { opacity: 1; }
-.nav-l4:hover, .nav-l4.active { opacity: 1; }
+.nav-l4.active > :deep(svg) {
+  opacity: 1;
+}
+.nav-l4:hover,
+.nav-l4.active {
+  opacity: 1;
+}
 
 .nav-l4.active::before {
-  content: ''; position: absolute;
-  left: 6px; top: 2px; bottom: 2px; width: 1.5px;
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  bottom: 2px;
+  width: 1.5px;
   border-radius: 1px 0 0 1px;
   background: var(--color-primary);
   opacity: 0.4;
@@ -319,14 +385,27 @@ const activeRoute = computed(() => route.path)
   font-size: 7px;
   opacity: 0.45;
 }
-.nav-l5 > :deep(svg) { opacity: 0.4; width: 13px; height: 13px; }
+.nav-l5 > :deep(svg) {
+  opacity: 0.4;
+  width: 13px;
+  height: 13px;
+}
 .nav-l5:hover > :deep(svg),
-.nav-l5.active > :deep(svg) { opacity: 1; }
-.nav-l5:hover, .nav-l5.active { opacity: 1; }
+.nav-l5.active > :deep(svg) {
+  opacity: 1;
+}
+.nav-l5:hover,
+.nav-l5.active {
+  opacity: 1;
+}
 
 .nav-l5.active::before {
-  content: ''; position: absolute;
-  left: 6px; top: 2px; bottom: 2px; width: 1px;
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
   border-radius: 1px 0 0 1px;
   background: var(--color-primary);
   opacity: 0.35;
@@ -341,14 +420,27 @@ const activeRoute = computed(() => route.path)
   font-size: 6px;
   opacity: 0.35;
 }
-.nav-l6 > :deep(svg) { opacity: 0.35; width: 12px; height: 12px; }
+.nav-l6 > :deep(svg) {
+  opacity: 0.35;
+  width: 12px;
+  height: 12px;
+}
 .nav-l6:hover > :deep(svg),
-.nav-l6.active > :deep(svg) { opacity: 1; }
-.nav-l6:hover, .nav-l6.active { opacity: 1; }
+.nav-l6.active > :deep(svg) {
+  opacity: 1;
+}
+.nav-l6:hover,
+.nav-l6.active {
+  opacity: 1;
+}
 
 .nav-l6.active::before {
-  content: ''; position: absolute;
-  left: 6px; top: 1px; bottom: 1px; width: 1px;
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 1px;
+  bottom: 1px;
+  width: 1px;
   border-radius: 1px 0 0 1px;
   background: var(--color-primary);
   opacity: 0.3;

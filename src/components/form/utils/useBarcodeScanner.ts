@@ -10,7 +10,10 @@ export interface CaptureRegion {
 }
 
 export const DEFAULT_CAPTURE_REGION: CaptureRegion = {
-  left: 0.175, top: 0.35, width: 0.65, height: 0.3,
+  left: 0.175,
+  top: 0.35,
+  width: 0.65,
+  height: 0.3,
 }
 
 export interface BarcodeScannerOptions {
@@ -34,8 +37,10 @@ function cameraErrorToChinese(err: any): string {
   const raw: string = err?.message || err?.name || ''
   // 精确命中
   if (raw.includes('Requested device not found')) return '未找到摄像头设备，请连接摄像头后重试'
-  if (raw.includes('Permission denied') || raw.includes('NotAllowedError')) return '摄像头权限被拒绝，请在浏览器设置中允许摄像头访问'
-  if (raw.includes('Could not start video source') || raw.includes('AbortError')) return '摄像头被其他应用占用，请关闭后重试'
+  if (raw.includes('Permission denied') || raw.includes('NotAllowedError'))
+    return '摄像头权限被拒绝，请在浏览器设置中允许摄像头访问'
+  if (raw.includes('Could not start video source') || raw.includes('AbortError'))
+    return '摄像头被其他应用占用，请关闭后重试'
   if (raw.includes('NotReadableError') || raw.includes('Hardware error')) return '摄像头硬件错误，请检查设备连接'
   if (raw.includes('OverconstrainedError')) return '摄像头不支持所需分辨率，请尝试切换摄像头'
   if (raw.includes('NotFoundError')) return '未检测到可用摄像头'
@@ -45,7 +50,16 @@ function cameraErrorToChinese(err: any): string {
 }
 
 export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
-  const { prefix, length, onScan, captureRegion: cr, scanInterval: rawInterval = 0, confirmCount = 2, cooldownMs = 3000, adaptiveInterval: useAdaptive = true } = options
+  const {
+    prefix,
+    length,
+    onScan,
+    captureRegion: cr,
+    scanInterval: rawInterval = 0,
+    confirmCount = 2,
+    cooldownMs = 3000,
+    adaptiveInterval: useAdaptive = true,
+  } = options
   // 静态间隔下限 10ms；0 = 启用动态间隔
   const staticInterval = rawInterval > 0 ? Math.max(10, rawInterval) : 0
   const region = cr || DEFAULT_CAPTURE_REGION
@@ -63,7 +77,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
   }
 
   // 动态间隔状态
-  let _baseInterval = detectBaseInterval()
+  const _baseInterval = detectBaseInterval()
   let _currentInterval = _baseInterval
   let _consecutiveFails = 0 // 连续失败次数
   let _consecutiveSuccess = 0 // 连续成功次数
@@ -78,8 +92,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
   let stream: MediaStream | null = null
   let active = false
   let _starting = false
-  let confirmHits = new Map<string, number>()
-  let acceptedAt = new Map<string, number>()
+  const confirmHits = new Map<string, number>()
+  const acceptedAt = new Map<string, number>()
   let raf = 0
   let lastScan = 0
   let busy = false
@@ -87,7 +101,10 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
 
   /** 停止并释放当前摄像头流 */
   function stopTracks(): void {
-    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null }
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop())
+      stream = null
+    }
   }
 
   function ok(code: string): boolean {
@@ -111,11 +128,18 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
         },
         audio: false,
       })
-      if (!videoRef.value) { error.value = '视频元素未挂载'; _starting = false; stopTracks(); return }
+      if (!videoRef.value) {
+        error.value = '视频元素未挂载'
+        _starting = false
+        stopTracks()
+        return
+      }
       videoRef.value.srcObject = stream
       await videoRef.value.play()
-      active = true; scanning.value = true
-      lastScan = 0; busy = false
+      active = true
+      scanning.value = true
+      lastScan = 0
+      busy = false
       scanLoop()
       _starting = false
     } catch (e: any) {
@@ -128,13 +152,20 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
 
   async function stop(): Promise<void> {
     _starting = false
-    active = false; scanning.value = false
-    cancelAnimationFrame(raf); raf = 0
+    active = false
+    scanning.value = false
+    cancelAnimationFrame(raf)
+    raf = 0
     stopTracks()
   }
 
   // 组件卸载时自动清理
-  onUnmounted(() => { active = false; cancelAnimationFrame(raf); raf = 0; stopTracks() })
+  onUnmounted(() => {
+    active = false
+    cancelAnimationFrame(raf)
+    raf = 0
+    stopTracks()
+  })
 
   function scanLoop(): void {
     if (!active) return
@@ -166,20 +197,27 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
 
   async function tick(): Promise<void> {
     if (busy || !active) return
-    const v = videoRef.value, c = canvasRef.value
+    const v = videoRef.value,
+      c = canvasRef.value
     if (!v || !c || v.readyState < 2) return
     busy = true
     try {
       if (!ctx2d) ctx2d = c.getContext('2d', { willReadFrequently: true })!
-      const vw = v.videoWidth, vh = v.videoHeight
+      const vw = v.videoWidth,
+        vh = v.videoHeight
       const s = vw > 960 * 1.1 ? 960 / vw : 1
-      const dw = s < 1 ? Math.round(vw * s) : vw, dh = s < 1 ? Math.round(vh * s) : vh
-      c.width = dw; c.height = dh
+      const dw = s < 1 ? Math.round(vw * s) : vw,
+        dh = s < 1 ? Math.round(vh * s) : vh
+      c.width = dw
+      c.height = dh
       ctx2d.drawImage(v, 0, 0, dw, dh)
-      const sx = Math.round(dw * region.left), sy = Math.round(dh * region.top)
-      const sw = Math.round(dw * region.width), sh = Math.round(dh * region.height)
+      const sx = Math.round(dw * region.left),
+        sy = Math.round(dh * region.top)
+      const sw = Math.round(dw * region.width),
+        sh = Math.round(dh * region.height)
       const results: ReadResult[] = await readBarcodes(ctx2d.getImageData(sx, sy, sw, sh), {
-        tryHarder: true, maxNumberOfSymbols: 3,
+        tryHarder: true,
+        maxNumberOfSymbols: 3,
       })
       if (!active) return // stop() 已执行：放弃本次结果，不再触发 onScan
       for (const r of results) {
@@ -198,35 +236,44 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
       // ZXing 解码失败（模糊/无条码）属正常；WASM 级错误需记录
       if (e instanceof Error && e.message?.includes('WASM')) console.warn('[Barcode] 扫描异常:', e.message)
       onScanResult(false)
-    } finally { busy = false }
+    } finally {
+      busy = false
+    }
   }
 
   async function scanPhoto(file: File): Promise<string[]> {
     const url = await new Promise<string>((r, j) => {
-      const fr = new FileReader(); fr.onload = () => r(fr.result as string); fr.onerror = j; fr.readAsDataURL(file)
+      const fr = new FileReader()
+      fr.onload = () => r(fr.result as string)
+      fr.onerror = j
+      fr.readAsDataURL(file)
     })
     // url 为 data URL，无需（也无法）revokeObjectURL
     return await new Promise((resolve, reject) => {
-        const img = new Image()
-        img.onload = async () => {
-          try {
-            const c = document.createElement('canvas')
-            // 拍照用更高分辨率——单张不赶时间
-            const TARGET = 1600
-            const s = img.width > TARGET * 1.1 ? TARGET / img.width : 1
-            c.width = s < 1 ? Math.round(img.width * s) : img.width
-            c.height = s < 1 ? Math.round(img.height * s) : img.height
-            const pctx = c.getContext('2d', { willReadFrequently: true })!
-            pctx.drawImage(img, 0, 0, c.width, c.height)
-            const results = await readBarcodes(pctx.getImageData(0, 0, c.width, c.height), {
-              tryHarder: true, maxNumberOfSymbols: 5,
-            })
-            resolve(results.map(r => r.text).filter(ok))
-          } catch (e) { console.error('scanPhoto error:', e); reject(new Error('未识别')) }
+      const img = new Image()
+      img.onload = async () => {
+        try {
+          const c = document.createElement('canvas')
+          // 拍照用更高分辨率——单张不赶时间
+          const TARGET = 1600
+          const s = img.width > TARGET * 1.1 ? TARGET / img.width : 1
+          c.width = s < 1 ? Math.round(img.width * s) : img.width
+          c.height = s < 1 ? Math.round(img.height * s) : img.height
+          const pctx = c.getContext('2d', { willReadFrequently: true })!
+          pctx.drawImage(img, 0, 0, c.width, c.height)
+          const results = await readBarcodes(pctx.getImageData(0, 0, c.width, c.height), {
+            tryHarder: true,
+            maxNumberOfSymbols: 5,
+          })
+          resolve(results.map((r) => r.text).filter(ok))
+        } catch (e) {
+          console.error('scanPhoto error:', e)
+          reject(new Error('未识别'))
         }
-        img.onerror = () => reject(new Error('图片加载失败'))
-        img.src = url
-      })
+      }
+      img.onerror = () => reject(new Error('图片加载失败'))
+      img.src = url
+    })
   }
 
   return { start, stop, scanPhoto, scanning, error, videoRef, canvasRef }

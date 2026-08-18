@@ -1,7 +1,7 @@
 // ⛔ 保护 — 图表选项构建入口，禁止：修改 builder 映射表键名、buildChartOption 签名
 //    需我确认：新增 chartType 支持
 import type { EChartsOption } from 'echarts'
-import type { ChartType, BuildParams } from '../types'
+import type { ChartType, BuildParams } from '../utils/types'
 
 // 基础图表 builders
 import { buildLine } from './core/line'

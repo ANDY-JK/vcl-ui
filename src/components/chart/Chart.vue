@@ -1,14 +1,14 @@
 <script setup lang="ts">
 // ⛔ 保护 — 图表封装，禁止：clamp() → px，ECharts 初始化逻辑，resize 监听删除
 //    需我确认：ChartType 类型扩展、color palette 默认值
-	import { computed, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { EChartsOption } from 'echarts'
 import BaseChart from './BaseChart.vue'
 import ChartLegend from './ChartLegend.vue'
 import { buildChartOption } from './options'
 import { DEFAULT_COLORS } from './options/common'
-import type { ChartProps, ChartData, BuildParams, ChartSeriesItem } from './types'
-import { toSize } from './utils'
+import type { ChartProps, ChartData, BuildParams, ChartSeriesItem } from './utils/types'
+import { toSize } from './utils/chart-utils'
 
 const props = withDefaults(defineProps<ChartProps>(), {
   type: undefined,
@@ -59,7 +59,6 @@ const emit = defineEmits<{
 
 const baseChartRef = ref<InstanceType<typeof BaseChart>>()
 
-
 /* ================================================================
    极简推断
    ================================================================ */
@@ -67,18 +66,21 @@ const baseChartRef = ref<InstanceType<typeof BaseChart>>()
 function inferChartData(raw: unknown): { categories: string[]; series: ChartSeriesItem[] } | null {
   if (!raw) return null
 
-  if (Array.isArray(raw) && raw.every(v => typeof v === 'number')) {
+  if (Array.isArray(raw) && raw.every((v) => typeof v === 'number')) {
     return { categories: raw.map((_, i) => `${i + 1}`), series: [{ name: '', data: raw }] }
   }
-  if (Array.isArray(raw) && raw.every(v => Array.isArray(v))) {
+  if (Array.isArray(raw) && raw.every((v) => Array.isArray(v))) {
     const maxLen = Math.max(...raw.map((a: any[]) => a.length))
     return {
       categories: Array.from({ length: maxLen }, (_, i) => `${i + 1}`),
       series: raw.map((arr: number[], i: number) => ({ name: `系列${i + 1}`, data: arr })),
     }
   }
-  if (Array.isArray(raw) && raw.every(v => typeof v === 'object' && v !== null && ('name' in v || 'value' in v))) {
-    return { categories: raw.map((d: any) => d.name ?? ''), series: [{ name: '', data: raw.map((d: any) => d.value ?? 0) }] }
+  if (Array.isArray(raw) && raw.every((v) => typeof v === 'object' && v !== null && ('name' in v || 'value' in v))) {
+    return {
+      categories: raw.map((d: any) => d.name ?? ''),
+      series: [{ name: '', data: raw.map((d: any) => d.value ?? 0) }],
+    }
   }
   return null
 }
@@ -86,7 +88,9 @@ function inferChartData(raw: unknown): { categories: string[]; series: ChartSeri
 function validateData(categories: string[], series: ChartSeriesItem[]): void {
   for (const s of series) {
     if (s.data && Array.isArray(s.data) && categories.length > 0 && s.data.length !== categories.length) {
-      console.warn(`[Chart] 系列 "${s.name}" 数据长度(${s.data.length})与分类数(${categories.length})不一致，ECharts 将自动处理不等长数据`)
+      console.warn(
+        `[Chart] 系列 "${s.name}" 数据长度(${s.data.length})与分类数(${categories.length})不一致，ECharts 将自动处理不等长数据`,
+      )
     }
   }
 }
@@ -162,7 +166,7 @@ const chartOption = computed<EChartsOption | null>(() => {
   if (!opt || hidden.size === 0) return opt
   const rawSeries = opt.series
   if (!Array.isArray(rawSeries)) return opt
-  const seriesArr = rawSeries.map(s => ({ ...s })) as Array<Record<string, unknown>>
+  const seriesArr = rawSeries.map((s) => ({ ...s })) as Array<Record<string, unknown>>
   const isItemLegend = props.type === 'pie' || props.type === 'funnel'
   for (let i = 0; i < seriesArr.length; i++) {
     const s = seriesArr[i]
@@ -171,7 +175,9 @@ const chartOption = computed<EChartsOption | null>(() => {
     if (isItemLegend) {
       // 饼图/漏斗：图例项对应 series[0].data 数据项 → 过滤掉隐藏项
       s.data = data.filter((d, di) => {
-        const name = String(typeof d === 'object' && d !== null ? (d as { name?: string }).name ?? `项${di + 1}` : `项${di + 1}`)
+        const name = String(
+          typeof d === 'object' && d !== null ? ((d as { name?: string }).name ?? `项${di + 1}`) : `项${di + 1}`,
+        )
         return !hidden.has(name)
       })
     } else if (hidden.has(String(s.name ?? `系列${i + 1}`))) {
@@ -217,66 +223,106 @@ function onLegendToggle(name: string) {
   if (s.has(name)) s.delete(name)
   else s.add(name)
   hiddenSeries.value = s
-  // ECharts 内置图例已关闭（showLegend:false），手动补发 legendselectchanged 保持事件契约
+  emitLegendSelectChanged()
+}
+
+function onLegendToggleAll(visible: boolean) {
+  if (visible) {
+    // 全部显示：清空 hidden
+    hiddenSeries.value = new Set()
+  } else {
+    // 全部隐藏：将所有图例项加入 hidden
+    hiddenSeries.value = new Set(legendItems.value.map((i) => i.name))
+  }
+  emitLegendSelectChanged()
+}
+
+function emitLegendSelectChanged() {
   const selected: Record<string, boolean> = {}
   for (const item of legendItems.value) selected[item.name] = item.visible
   ;(emit as (event: string, ...args: unknown[]) => void)('legendselectchanged', {
     type: 'legendselectchanged',
-    name,
     selected,
   })
 }
 
-	function bindEvents() {
-	  const instance = baseChartRef.value?.chart
-	  if (!instance || instance.isDisposed()) return
-	  const events = [
-	    'click', 'dblclick', 'mousedown', 'mouseup', 'mouseover',
-	    'mouseout', 'globalout', 'contextmenu', 'legendselectchanged',
-	    'datazoom', 'finished',
-	  ] as const
-	  for (const name of events) {
-	    instance.off(name)
-	    const handler = (params: unknown) => {
-	      if (name === 'legendselectchanged' && typeof params === 'object' && params !== null && 'selected' in params) {
-	        const p = params as { selected: Record<string, boolean> }
-	        const h = new Set<string>()
-	        for (const [key, val] of Object.entries(p.selected)) {
-	          if (!val) h.add(key)
-	        }
-	        hiddenSeries.value = h
-	      }
-	      ;(emit as (event: string, ...args: unknown[]) => void)(name, params)
-	    }
-	    instance.on(name as string, handler)
-	  }
-	}
+function bindEvents() {
+  const instance = baseChartRef.value?.chart
+  if (!instance || instance.isDisposed()) return
+  const events = [
+    'click',
+    'dblclick',
+    'mousedown',
+    'mouseup',
+    'mouseover',
+    'mouseout',
+    'globalout',
+    'contextmenu',
+    'legendselectchanged',
+    'datazoom',
+    'finished',
+  ] as const
+  for (const name of events) {
+    instance.off(name)
+    const handler = (params: unknown) => {
+      if (name === 'legendselectchanged' && typeof params === 'object' && params !== null && 'selected' in params) {
+        const p = params as { selected: Record<string, boolean> }
+        const h = new Set<string>()
+        for (const [key, val] of Object.entries(p.selected)) {
+          if (!val) h.add(key)
+        }
+        hiddenSeries.value = h
+      }
+      ;(emit as (event: string, ...args: unknown[]) => void)(name, params)
+    }
+    instance.on(name as string, handler)
+  }
+}
 
-	// 监听实例变化（覆盖 mount/type/darkMode 所有重建场景）
-	watch(() => baseChartRef.value?.chart, (inst, _old) => {
-	  if (inst && !inst.isDisposed()) {
-	    bindEvents()
-	    ;(emit as (event: string, ...args: unknown[]) => void)('chart-ready', inst)
-	  }
-	})
+// 监听实例变化（覆盖 mount/type/darkMode 所有重建场景）
+watch(
+  () => baseChartRef.value?.chart,
+  (inst, _old) => {
+    if (inst && !inst.isDisposed()) {
+      bindEvents()
+      ;(emit as (event: string, ...args: unknown[]) => void)('chart-ready', inst)
+    }
+  },
+)
 
 defineExpose({
   /** 原始 ECharts 实例（透传自 BaseChart） */
-  get chart() { return baseChartRef.value?.chart },
+  get chart() {
+    return baseChartRef.value?.chart
+  },
   /** 获取当前 option 副本 */
-  getOption() { return baseChartRef.value?.getOption() },
+  getOption() {
+    return baseChartRef.value?.getOption()
+  },
   /** 设置 option（透传给 BaseChart，会自动注入 toolbox） */
-  setOption(opt: EChartsOption, opts?: any) { baseChartRef.value?.setOption(opt, opts) },
+  setOption(opt: EChartsOption, opts?: any) {
+    baseChartRef.value?.setOption(opt, opts)
+  },
   /** 重新计算尺寸 */
-  resize(opts?: any) { baseChartRef.value?.resize(opts) },
+  resize(opts?: any) {
+    baseChartRef.value?.resize(opts)
+  },
   /** 派发图表行为（showTip / highlight 等） */
-  dispatchAction(payload: any) { baseChartRef.value?.dispatchAction(payload) },
+  dispatchAction(payload: any) {
+    baseChartRef.value?.dispatchAction(payload)
+  },
   /** 清空当前实例所有内容（保留实例） */
-  clear() { baseChartRef.value?.clear() },
+  clear() {
+    baseChartRef.value?.clear()
+  },
   /** 显示加载动画 */
-  showLoading(type?: string, opts?: any) { baseChartRef.value?.showLoading(type, opts) },
+  showLoading(type?: string, opts?: any) {
+    baseChartRef.value?.showLoading(type, opts)
+  },
   /** 隐藏加载动画 */
-  hideLoading() { baseChartRef.value?.hideLoading() },
+  hideLoading() {
+    baseChartRef.value?.hideLoading()
+  },
 })
 </script>
 
@@ -296,11 +342,20 @@ defineExpose({
       v-if="legendItems.length > 0"
       :items="legendItems"
       @toggle="onLegendToggle"
+      @toggle-all="onLegendToggleAll"
     />
   </div>
 </template>
 
 <style scoped>
-.chart-root { display: flex; flex-direction: column; min-height: 0; }
-.chart-canvas-area { flex: 1; min-height: 120px; min-width: 0; }
+.chart-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chart-canvas-area {
+  flex: 1;
+  min-height: 120px;
+  min-width: 0;
+}
 </style>

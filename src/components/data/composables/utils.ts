@@ -10,15 +10,21 @@ let _measureSpan: HTMLSpanElement | null = null
 function _getMeasureSpan(): HTMLSpanElement {
   if (!_measureSpan) {
     _measureSpan = document.createElement('span')
-    _measureSpan.style.cssText = 'position:fixed;top:0;left:0;visibility:hidden;white-space:nowrap;font-family:SimSun,"宋体",serif;pointer-events:none'
+    _measureSpan.style.cssText =
+      'position:fixed;top:0;left:0;visibility:hidden;white-space:nowrap;font-family:SimSun,"宋体",serif;pointer-events:none'
     document.body.appendChild(_measureSpan)
   }
   return _measureSpan
 }
 /** 清理测量元素（SPA 路由切换时可调用，非必须） */
 export function cleanupMeasureElements() {
-  if (_measureSpan) { _measureSpan.remove(); _measureSpan = null }
-  if (_measureCanvas) { _measureCanvas = null }
+  if (_measureSpan) {
+    _measureSpan.remove()
+    _measureSpan = null
+  }
+  if (_measureCanvas) {
+    _measureCanvas = null
+  }
 }
 
 /** canvas 测量文本宽度（用于列宽/下拉宽度计算） */
@@ -43,12 +49,9 @@ export function measureDomTextWidth(text: string, fontSize: number = 14, fontWei
 // ==================== 纯工具函数（从 useTableCore 迁出） ====================
 
 import type { Column } from './types'
-import { match as pinyinMatch } from '@/components/_internal/pinyin-pro'
 
 /** 单元格文本提取（纯函数，多处复用） */
-export function getCellText(
-  value: any, col: Column, row: Record<string, any>, idx: number,
-): string {
+export function getCellText(value: any, col: Column, row: Record<string, any>, idx: number): string {
   if (col.render) {
     // 防御：render 声明返回 string，但实际可能返回 VNode/数字等任意类型
     const rendered = col.render(value, row, idx)
@@ -58,13 +61,8 @@ export function getCellText(
   return String(value)
 }
 
-/** 拼音匹配 */
-export function matchPinyin(text: string, term: string): boolean {
-  if (!text || !term) return true
-  const lower = term.toLowerCase()
-  try { return pinyinMatch(text, lower) !== null } catch { /* 降级 */ }
-  return text.toLowerCase().includes(lower)
-}
+/** 拼音匹配 — 委托给共享 usePinyinSearch 模块 */
+export { matchPinyin } from '@/components/_internal/usePinyinSearch'
 
 /** 菜单/浮层视口边界收敛：修正 left/top，确保不超出表格容器与视口（右键菜单共用） */
 export function clampFloatingPosition(
@@ -99,13 +97,11 @@ export function isLayerFresh(ms = 200): boolean {
 // ==================== 列宽测量 ====================
 
 /** 采样测量某列的内容宽度（多行取最宽行），返回最大宽和平均宽 */
-export function measureColumnWidth(
-  col: Column, sample: Record<string, any>[],
-): { maxW: number } {
+export function measureColumnWidth(col: Column, sample: Record<string, any>[]): { maxW: number } {
   let maxW = 0
   for (const row of sample) {
     const raw = getCellText(row[col.key], col, row, 0)
-    const lineW = Math.max(...raw.split('\n').map(l => measureTextWidth(l, 14)), 0)
+    const lineW = Math.max(...raw.split('\n').map((l) => measureTextWidth(l, 14)), 0)
     if (lineW > maxW) maxW = lineW
   }
   return { maxW }

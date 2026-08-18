@@ -3,23 +3,35 @@
  * 固定格式：门店名 | 四级乡镇 | 详细地址 | 联系人 | 电话 | 经度 | 纬度
  * 第1行=表头 第2行=起点/终点 第3行起=门店数据
  */
-import * as XLSX from 'xlsx'
-import { isValidLatLon } from '@/components/geolocation/geolocation'
+import { isValidLatLon } from '@/components/amap/amap-service'
 import type { Store, ImportResult } from '@/components/route-planner/types'
 
 /** 表头 → 字段（固定映射） */
 const HEADER_MAP: Record<string, string> = {
-  '门店名': 'name', '店铺名': 'name', '名称': 'name', '店名': 'name',
-  '详细地址': 'address', '地址': 'address',
-  '联系人': 'contact', '联系人姓名': 'contact',
-  '电话': 'phone', '手机号': 'phone', '手机号码': 'phone',
-  '经度': 'longitude', 'lon': 'longitude', 'lng': 'longitude',
-  '纬度': 'latitude', 'lat': 'latitude',
-  '四级乡镇': 'fullAddr', '4级乡镇': 'fullAddr', '省市区镇': 'fullAddr',
+  门店名: 'name',
+  店铺名: 'name',
+  名称: 'name',
+  店名: 'name',
+  详细地址: 'address',
+  地址: 'address',
+  联系人: 'contact',
+  联系人姓名: 'contact',
+  电话: 'phone',
+  手机号: 'phone',
+  手机号码: 'phone',
+  经度: 'longitude',
+  lon: 'longitude',
+  lng: 'longitude',
+  纬度: 'latitude',
+  lat: 'latitude',
+  四级乡镇: 'fullAddr',
+  '4级乡镇': 'fullAddr',
+  省市区镇: 'fullAddr',
 }
 
 export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult> {
   const buffer = file instanceof File ? await file.arrayBuffer() : file
+  const XLSX = await import('xlsx')
   const workbook = XLSX.read(buffer, { type: 'array' })
   const sheet = workbook.Sheets[workbook.SheetNames[0]]
   const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown as unknown[][]
@@ -37,7 +49,7 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
   })
 
   // 未映射列 → 按类型推断（电话/坐标）
-  const maxCols = Math.max(...rows.map(r => (r as unknown[]).length))
+  const maxCols = Math.max(...rows.map((r) => (r as unknown[]).length))
   const mappedCols = new Set(colMap.values())
   for (let col = 0; col < maxCols; col++) {
     if (mappedCols.has(col)) continue
@@ -45,15 +57,22 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
     for (let i = 1; i <= Math.min(5, rows.length - 1); i++) {
       sample.push((rows[i] as unknown[])?.[col])
     }
-    const phoneCount = sample.filter(v => v != null && /^\d{11}$/.test(String(v).trim())).length
+    const phoneCount = sample.filter((v) => v != null && /^\d{11}$/.test(String(v).trim())).length
     if (phoneCount >= 2 && !colMap.has('phone')) {
-      colMap.set('phone', col); mappedCols.add(col); continue
+      colMap.set('phone', col)
+      mappedCols.add(col)
+      continue
     }
-    const nums = sample.filter(v => v != null && !isNaN(parseFloat(String(v))))
+    const nums = sample.filter((v) => v != null && !isNaN(parseFloat(String(v))))
     if (nums.length >= 3) {
-      const avg = nums.map(v => parseFloat(String(v))).reduce((a, b) => a + b, 0) / nums.length
-      if (avg > 70 && avg <= 180 && !colMap.has('longitude')) { colMap.set('longitude', col); mappedCols.add(col) }
-      else if (avg > 0 && avg <= 90 && !colMap.has('latitude')) { colMap.set('latitude', col); mappedCols.add(col) }
+      const avg = nums.map((v) => parseFloat(String(v))).reduce((a, b) => a + b, 0) / nums.length
+      if (avg > 70 && avg <= 180 && !colMap.has('longitude')) {
+        colMap.set('longitude', col)
+        mappedCols.add(col)
+      } else if (avg > 0 && avg <= 90 && !colMap.has('latitude')) {
+        colMap.set('latitude', col)
+        mappedCols.add(col)
+      }
     }
   }
 
@@ -149,15 +168,19 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
 }
 
 function trimData(rawRows: unknown[][]): unknown[][] {
-  let lastRow = 0, lastCol = 0
+  let lastRow = 0,
+    lastCol = 0
   for (let i = 0; i < rawRows.length; i++) {
     const row = rawRows[i]
     if (!row || !Array.isArray(row)) continue
     for (let j = 0; j < row.length; j++) {
-      if (row[j] != null && row[j] !== '') { lastRow = i; lastCol = Math.max(lastCol, j) }
+      if (row[j] != null && row[j] !== '') {
+        lastRow = i
+        lastCol = Math.max(lastCol, j)
+      }
     }
   }
-  return rawRows.slice(0, lastRow + 1).map(r => (r as unknown[]).slice(0, lastCol + 1))
+  return rawRows.slice(0, lastRow + 1).map((r) => (r as unknown[]).slice(0, lastCol + 1))
 }
 
 function getStr(row: (string | number | undefined)[], idx: number | undefined): string {
@@ -177,19 +200,33 @@ function getNum(row: (string | number | undefined)[], idx: number | undefined): 
 function parseFourLevelAddress(addr: string): { province: string; city: string; district: string; town: string } {
   if (!addr) return { province: '', city: '', district: '', town: '' }
   let remaining = addr
-  let province = '', city = '', district = '', town = ''
+  let province = '',
+    city = '',
+    district = '',
+    town = ''
 
   const p = remaining.match(/(.+?省|.+?自治区)/)
-  if (p) { province = p[1]; remaining = remaining.slice(p[0].length) }
+  if (p) {
+    province = p[1]
+    remaining = remaining.slice(p[0].length)
+  }
 
   const c = remaining.match(/(.+?市|.+?州|.+?盟)/)
-  if (c) { city = c[1]; remaining = remaining.slice(c[0].length) }
+  if (c) {
+    city = c[1]
+    remaining = remaining.slice(c[0].length)
+  }
 
   const d = remaining.match(/(.+?区|.+?县|.+?市)/)
-  if (d) { district = d[1]; remaining = remaining.slice(d[0].length) }
+  if (d) {
+    district = d[1]
+    remaining = remaining.slice(d[0].length)
+  }
 
   const t = remaining.match(/(.+?镇|.+?乡|.+?街道)/)
-  if (t) { town = t[1] }
+  if (t) {
+    town = t[1]
+  }
 
   return { province, city, district, town }
 }

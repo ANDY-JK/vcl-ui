@@ -54,7 +54,14 @@ const rowList = computed(() => {
 </script>
 
 <template>
-  <div v-if="loading" class="skel" :class="{ 'skel-animated': animated }" :style="blockStyle" role="status" aria-label="加载中">
+  <div
+    v-if="loading"
+    class="skel"
+    :class="{ 'skel-animated': animated }"
+    :style="blockStyle"
+    role="status"
+    aria-label="加载中"
+  >
     <span v-if="avatarSize" class="skel-avatar" :style="{ width: avatarSize, height: avatarSize }" />
     <div class="skel-body">
       <span v-if="title" class="skel-line skel-title" />
@@ -102,8 +109,12 @@ const rowList = computed(() => {
   animation: skel-shimmer 1.5s infinite;
 }
 @keyframes skel-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* 无障碍：系统关闭动效时停止流光 */

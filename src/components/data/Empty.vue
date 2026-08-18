@@ -22,8 +22,12 @@ withDefaults(defineProps<Props>(), {
 <template>
   <div class="empty" role="status" aria-live="polite">
     <IconSvg :type="icon" size="lg" class="empty-icon" />
-    <p v-if="title" class="empty-title">{{ title }}</p>
-    <p v-if="description" class="empty-description">{{ description }}</p>
+    <p v-if="title" class="empty-title">
+      {{ title }}
+    </p>
+    <p v-if="description" class="empty-description">
+      {{ description }}
+    </p>
     <div v-if="$slots.default" class="empty-action">
       <slot />
     </div>

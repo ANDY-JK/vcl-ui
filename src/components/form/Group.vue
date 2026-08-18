@@ -6,7 +6,7 @@
 // ════════════════════════════════════════════════
 import { ref, computed } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { clamp, alignStep } from './slider-utils'
+import { clamp, alignStep } from './utils/slider-utils'
 import type { Option } from '@/components/shared/types'
 
 interface Props {
@@ -65,9 +65,11 @@ const props = withDefaults(defineProps<Props>(), {
   showValue: true,
 })
 
+type GroupValue = string | number | boolean | (string | number | boolean)[] | [number, number]
+
 const emit = defineEmits<{
-  'update:modelValue': [v: any]
-  change: [v: any]
+  'update:modelValue': [v: GroupValue]
+  change: [v: GroupValue]
 }>()
 
 /* ════════════════════════════════════════
@@ -86,7 +88,7 @@ function onClick(opt: Option) {
   if (opt.disabled || props.disabled) return
   if (isCheckbox.value) {
     const vals = [...((props.modelValue || []) as (string | number | boolean)[])]
-    const idx = vals.findIndex(v => String(v) === String(opt.value))
+    const idx = vals.findIndex((v) => String(v) === String(opt.value))
     if (idx >= 0) vals.splice(idx, 1)
     else if (!props.max || vals.length < props.max) vals.push(opt.value)
     emit('update:modelValue', vals)
@@ -99,7 +101,7 @@ function onClick(opt: Option) {
 
 function isChecked(val: string | number | boolean) {
   if (isCheckbox.value) {
-    return ((props.modelValue || []) as (string | number | boolean)[]).some(v => String(v) === String(val))
+    return ((props.modelValue || []) as (string | number | boolean)[]).some((v) => String(v) === String(val))
   }
   return String(props.modelValue) === String(val)
 }
@@ -159,7 +161,11 @@ function snap(v: number): number {
 function norm(): [number, number] {
   if (Array.isArray(props.modelValue)) {
     let a = clamp(typeof props.modelValue[0] === 'number' ? props.modelValue[0] : props.min, props.min, props.sliderMax)
-    let b = clamp(typeof props.modelValue[1] === 'number' ? props.modelValue[1] : props.sliderMax, props.min, props.sliderMax)
+    let b = clamp(
+      typeof props.modelValue[1] === 'number' ? props.modelValue[1] : props.sliderMax,
+      props.min,
+      props.sliderMax,
+    )
     if (a > b) [a, b] = [b, a]
     return [a, b]
   }
@@ -313,7 +319,13 @@ onUnmounted(() => {
   </div>
 
   <!-- ===== checkbox ===== -->
-  <div v-else-if="isCheckbox" class="group-checkbox" :class="[`direction-${direction}`]" role="group" :aria-label="ariaLabel">
+  <div
+    v-else-if="isCheckbox"
+    class="group-checkbox"
+    :class="[`direction-${direction}`]"
+    role="group"
+    :aria-label="ariaLabel"
+  >
     <label
       v-for="opt in options"
       :key="String(opt.value)"
@@ -382,7 +394,7 @@ onUnmounted(() => {
 
   <!-- ===== slider ===== -->
   <div v-else-if="isSlider" class="slider-root" :class="{ disabled, 'is-range': isRange }">
-    <div class="slider-track" :class="{ dragging }" ref="trackRef" @pointerdown="onTrackDown">
+    <div ref="trackRef" class="slider-track" :class="{ dragging }" @pointerdown="onTrackDown">
       <div class="slider-rail" />
       <div class="slider-fill" :style="fillStyle" />
       <div
@@ -407,51 +419,234 @@ onUnmounted(() => {
 
 <style scoped>
 /* ===== radio / checkbox ===== */
-.group-radio, .group-checkbox { display: flex; gap: var(--space-1); }
-.direction-horizontal { flex-direction: row; flex-wrap: wrap; gap: clamp(10px, 1.8vw, 16px); }
-.direction-vertical { flex-direction: column; }
-.choice-item { display: flex; align-items: center; gap: var(--space-2); font-size: clamp(12px, 1.8vw, 14px); padding: var(--space-2) 0; cursor: pointer; }
-.choice-item.disabled { opacity: 0.45; cursor: not-allowed; }
-.choice-box { display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
-.is-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--color-border); }
-.is-checkbox { width: 18px; height: 18px; border-radius: var(--radius-sm); border: 2px solid var(--color-border); }
-.choice-box.checked { border-color: var(--color-primary); }
-.is-checkbox.checked { background: var(--color-primary); }
-.choice-label { color: var(--color-text); }
+.group-radio,
+.group-checkbox {
+  display: flex;
+  gap: var(--space-1);
+}
+.direction-horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: clamp(10px, 1.8vw, 16px);
+}
+.direction-vertical {
+  flex-direction: column;
+}
+.choice-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: clamp(12px, 1.8vw, 14px);
+  padding: var(--space-2) 0;
+  cursor: pointer;
+}
+.choice-item.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.choice-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.is-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+}
+.is-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-border);
+}
+.choice-box.checked {
+  border-color: var(--color-primary);
+}
+.is-checkbox.checked {
+  background: var(--color-primary);
+}
+.choice-label {
+  color: var(--color-text);
+}
 
 /* ===== switch ===== */
-.switch { display: inline-flex; align-items: center; gap: var(--space-3); cursor: pointer; }
-.switch.disabled { opacity: 0.45; cursor: not-allowed; }
-.switch:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-.switch-track { position: relative; display: inline-block; border-radius: 100px; background: var(--color-border); transition: background var(--transition-fast); cursor: pointer; }
-.track-md { width: clamp(40px, 6vw, 44px); height: clamp(22px, 3vw, 24px); }
-.track-sm { width: clamp(28px, 4vw, 32px); height: clamp(16px, 2vw, 18px); }
-.switch-track.on { background: var(--color-primary); }
-.switch-thumb { position: absolute; top: 50%; left: 2px; border-radius: 50%; background: white; transition: transform var(--transition-fast); box-shadow: var(--shadow-sm); }
-.thumb-md { width: 20px; height: 20px; margin-top: -10px; }
-.thumb-sm { width: 14px; height: 14px; margin-top: -7px; }
-.thumb-md.on { transform: translateX(clamp(16px, 2.5vw, 20px)); }
-.thumb-sm.on { transform: translateX(clamp(10px, 1.5vw, 14px)); }
-.switch-label { font-size: clamp(12px, 1.8vw, 14px); color: var(--color-text); }
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+.switch.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.switch:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.switch-track {
+  position: relative;
+  display: inline-block;
+  border-radius: 100px;
+  background: var(--color-border);
+  transition: background var(--transition-fast);
+  cursor: pointer;
+}
+.track-md {
+  width: clamp(40px, 6vw, 44px);
+  height: clamp(22px, 3vw, 24px);
+}
+.track-sm {
+  width: clamp(28px, 4vw, 32px);
+  height: clamp(16px, 2vw, 18px);
+}
+.switch-track.on {
+  background: var(--color-primary);
+}
+.switch-thumb {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  border-radius: 50%;
+  background: white;
+  transition: transform var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+.thumb-md {
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+}
+.thumb-sm {
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+}
+.thumb-md.on {
+  transform: translateX(clamp(16px, 2.5vw, 20px));
+}
+.thumb-sm.on {
+  transform: translateX(clamp(10px, 1.5vw, 14px));
+}
+.switch-label {
+  font-size: clamp(12px, 1.8vw, 14px);
+  color: var(--color-text);
+}
 
 /* ===== rate ===== */
-.rate { display: inline-flex; gap: var(--space-1); }
-.rate-btn { display: flex; padding: 0; border: none; background: transparent; cursor: pointer; transition: transform var(--transition-fast); }
-.rate-btn:not(:disabled):hover { transform: scale(1.15); }
-.rate-btn:disabled { cursor: default; }
-.half-wrap { position: relative; display: inline-flex; }
-.half-clip { position: absolute; left: 0; top: 0; width: 50%; overflow: hidden; }
+.rate {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+.rate-btn {
+  display: flex;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+.rate-btn:not(:disabled):hover {
+  transform: scale(1.15);
+}
+.rate-btn:disabled {
+  cursor: default;
+}
+.half-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.half-clip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+}
 
 /* ===== slider ===== */
-.slider-root { display: flex; align-items: center; gap: var(--space-3); width: 100%; --thumb-size: 16px; --track-height: 6px; }
-.slider-track { flex: 1; position: relative; height: var(--track-height); margin: calc(var(--thumb-size) / 2) 0; cursor: pointer; touch-action: none; border-radius: 100px; }
-.slider-rail { position: absolute; inset: 0; background: var(--color-bg-alt); border-radius: 100px; }
-.slider-fill { position: absolute; top: 0; bottom: 0; background: var(--color-primary); border-radius: 100px; pointer-events: none; transition: left var(--transition-fast), width var(--transition-fast); }
-.slider-track.dragging .slider-fill { transition: none; }
-.slider-thumb { position: absolute; top: 50%; width: var(--thumb-size); height: var(--thumb-size); transform: translate(-50%, -50%); border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-primary); box-shadow: var(--shadow-sm); cursor: grab; z-index: 2; transition: box-shadow var(--transition-fast), transform var(--transition-fast); }
-.slider-thumb:hover { transform: translate(-50%, -50%) scale(1.1); }
-.slider-thumb:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--color-primary-light), var(--shadow-sm); }
-.slider-thumb.dragging { cursor: grabbing; box-shadow: var(--shadow-md); transform: translate(-50%, -50%) scale(1.15); }
-.slider-value { flex-shrink: 0; min-width: 34px; text-align: right; font-size: clamp(12px, 1.8vw, 13px); font-variant-numeric: tabular-nums; font-weight: 500; color: var(--color-text-secondary); }
-.slider-root.disabled { opacity: 0.5; pointer-events: none; cursor: not-allowed; }
+.slider-root {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  --thumb-size: 16px;
+  --track-height: 6px;
+}
+.slider-track {
+  flex: 1;
+  position: relative;
+  height: var(--track-height);
+  margin: calc(var(--thumb-size) / 2) 0;
+  cursor: pointer;
+  touch-action: none;
+  border-radius: 100px;
+}
+.slider-rail {
+  position: absolute;
+  inset: 0;
+  background: var(--color-bg-alt);
+  border-radius: 100px;
+}
+.slider-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--color-primary);
+  border-radius: 100px;
+  pointer-events: none;
+  transition:
+    left var(--transition-fast),
+    width var(--transition-fast);
+}
+.slider-track.dragging .slider-fill {
+  transition: none;
+}
+.slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  cursor: grab;
+  z-index: 2;
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+.slider-thumb:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+.slider-thumb:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--color-primary-light),
+    var(--shadow-sm);
+}
+.slider-thumb.dragging {
+  cursor: grabbing;
+  box-shadow: var(--shadow-md);
+  transform: translate(-50%, -50%) scale(1.15);
+}
+.slider-value {
+  flex-shrink: 0;
+  min-width: 34px;
+  text-align: right;
+  font-size: clamp(12px, 1.8vw, 13px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+.slider-root.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
 </style>

@@ -16,14 +16,86 @@ const baseCols = [
   { key: 'date', title: '入职报到日期', sortable: true },
 ]
 const baseData = [
-  { id: 1, name: '张三', dept: '技术部', position: '前端开发工程师', desc: '负责组件库维护与前端架构设计\n微服务架构设计与性能优化\nVue3 + TypeScript + Vite 全栈技术方案', status: '在线', amount: 15800, date: '2024-03-15' },
-  { id: 2, name: '李四', dept: '产品部', position: '高级产品经理', desc: 'B端SaaS产品规划', status: '在线', amount: 22000, date: '2024-01-10' },
-  { id: 3, name: '王五', dept: '设计部', position: 'UI/UX 设计师', desc: '负责视觉规范制定', status: '离线', amount: 13500, date: '2024-06-01' },
-  { id: 4, name: '赵六', dept: '技术部', position: '后端开发', desc: '微服务架构设计与实现', status: '在线', amount: 18500, date: '2024-12-20' },
-  { id: 5, name: '孙七', dept: '市场部', position: '市场总监', desc: '品牌推广', status: '离线', amount: 25000, date: '2024-02-28' },
-  { id: 6, name: '周八', dept: '技术部', position: '测试工程师', desc: '自动化测试用例编写', status: '在线', amount: 12000, date: '2024-07-05' },
-  { id: 7, name: '吴九', dept: '运营部', position: '内容运营', desc: '社区内容管理', status: '在线', amount: 10500, date: '2024-09-18' },
-  { id: 8, name: '郑十', dept: '产品部', position: '产品助理', desc: '需求文档整理', status: '离线', amount: 9000, date: '2024-11-20' },
+  {
+    id: 1,
+    name: '张三',
+    dept: '技术部',
+    position: '前端开发工程师',
+    desc: '负责组件库维护与前端架构设计\n微服务架构设计与性能优化\nVue3 + TypeScript + Vite 全栈技术方案',
+    status: '在线',
+    amount: 15800,
+    date: '2024-03-15',
+  },
+  {
+    id: 2,
+    name: '李四',
+    dept: '产品部',
+    position: '高级产品经理',
+    desc: 'B端SaaS产品规划',
+    status: '在线',
+    amount: 22000,
+    date: '2024-01-10',
+  },
+  {
+    id: 3,
+    name: '王五',
+    dept: '设计部',
+    position: 'UI/UX 设计师',
+    desc: '负责视觉规范制定',
+    status: '离线',
+    amount: 13500,
+    date: '2024-06-01',
+  },
+  {
+    id: 4,
+    name: '赵六',
+    dept: '技术部',
+    position: '后端开发',
+    desc: '微服务架构设计与实现',
+    status: '在线',
+    amount: 18500,
+    date: '2024-12-20',
+  },
+  {
+    id: 5,
+    name: '孙七',
+    dept: '市场部',
+    position: '市场总监',
+    desc: '品牌推广',
+    status: '离线',
+    amount: 25000,
+    date: '2024-02-28',
+  },
+  {
+    id: 6,
+    name: '周八',
+    dept: '技术部',
+    position: '测试工程师',
+    desc: '自动化测试用例编写',
+    status: '在线',
+    amount: 12000,
+    date: '2024-07-05',
+  },
+  {
+    id: 7,
+    name: '吴九',
+    dept: '运营部',
+    position: '内容运营',
+    desc: '社区内容管理',
+    status: '在线',
+    amount: 10500,
+    date: '2024-09-18',
+  },
+  {
+    id: 8,
+    name: '郑十',
+    dept: '产品部',
+    position: '产品助理',
+    desc: '需求文档整理',
+    status: '离线',
+    amount: 9000,
+    date: '2024-11-20',
+  },
 ]
 
 // ========== 全功能 ==========
@@ -70,12 +142,96 @@ const editCols = [
   { key: 'remark', title: '备注说明' },
 ]
 const editData = [
-  { id: 1, product: '无线蓝牙耳机', category: '电子产品', stock: 256, sales: 183, price: 299, supplier: 'XX科技有限公司', sku: 'SKU-1001', brand: '声阔', origin: '广东深圳', unit: '副', weight: 0.18, remark: '支持蓝牙 5.3' },
-  { id: 2, product: '机械键盘', category: '电子产品', stock: 128, sales: 97, price: 459, supplier: 'YY贸易有限公司', sku: 'SKU-1002', brand: 'Keychron', origin: '江苏苏州', unit: '把', weight: 0.86, remark: '红轴 87 键' },
-  { id: 3, product: '办公椅人体工学', category: '办公用品', stock: 45, sales: 32, price: 1299, supplier: 'ZZ供应链管理公司', sku: 'SKU-2001', brand: '西昊', origin: '浙江湖州', unit: '张', weight: 12.5, remark: '需自行组装' },
-  { id: 4, product: 'A4打印纸', category: '办公用品', stock: 800, sales: 620, price: 25, supplier: 'AA商贸', sku: 'SKU-2002', brand: '得力', origin: '山东济南', unit: '包', weight: 2.2, remark: '70g 500 张' },
-  { id: 5, product: '保温杯不锈钢', category: '日用百货', stock: 300, sales: 215, price: 89, supplier: 'BB集团', sku: 'SKU-3001', brand: '膳魔师', origin: '广东东莞', unit: '个', weight: 0.32, remark: '500ml 316 不锈钢' },
-  { id: 6, product: '充电宝20000mAh', category: '电子产品', stock: 150, sales: 98, price: 159, supplier: 'XX科技有限公司', sku: 'SKU-1003', brand: '罗马仕', origin: '广东惠州', unit: '个', weight: 0.4, remark: '22.5W 快充' },
+  {
+    id: 1,
+    product: '无线蓝牙耳机',
+    category: '电子产品',
+    stock: 256,
+    sales: 183,
+    price: 299,
+    supplier: 'XX科技有限公司',
+    sku: 'SKU-1001',
+    brand: '声阔',
+    origin: '广东深圳',
+    unit: '副',
+    weight: 0.18,
+    remark: '支持蓝牙 5.3',
+  },
+  {
+    id: 2,
+    product: '机械键盘',
+    category: '电子产品',
+    stock: 128,
+    sales: 97,
+    price: 459,
+    supplier: 'YY贸易有限公司',
+    sku: 'SKU-1002',
+    brand: 'Keychron',
+    origin: '江苏苏州',
+    unit: '把',
+    weight: 0.86,
+    remark: '红轴 87 键',
+  },
+  {
+    id: 3,
+    product: '办公椅人体工学',
+    category: '办公用品',
+    stock: 45,
+    sales: 32,
+    price: 1299,
+    supplier: 'ZZ供应链管理公司',
+    sku: 'SKU-2001',
+    brand: '西昊',
+    origin: '浙江湖州',
+    unit: '张',
+    weight: 12.5,
+    remark: '需自行组装',
+  },
+  {
+    id: 4,
+    product: 'A4打印纸',
+    category: '办公用品',
+    stock: 800,
+    sales: 620,
+    price: 25,
+    supplier: 'AA商贸',
+    sku: 'SKU-2002',
+    brand: '得力',
+    origin: '山东济南',
+    unit: '包',
+    weight: 2.2,
+    remark: '70g 500 张',
+  },
+  {
+    id: 5,
+    product: '保温杯不锈钢',
+    category: '日用百货',
+    stock: 300,
+    sales: 215,
+    price: 89,
+    supplier: 'BB集团',
+    sku: 'SKU-3001',
+    brand: '膳魔师',
+    origin: '广东东莞',
+    unit: '个',
+    weight: 0.32,
+    remark: '500ml 316 不锈钢',
+  },
+  {
+    id: 6,
+    product: '充电宝20000mAh',
+    category: '电子产品',
+    stock: 150,
+    sales: 98,
+    price: 159,
+    supplier: 'XX科技有限公司',
+    sku: 'SKU-1003',
+    brand: '罗马仕',
+    origin: '广东惠州',
+    unit: '个',
+    weight: 0.4,
+    remark: '22.5W 快充',
+  },
 ]
 
 // ========== 列级编辑开关（对齐 SaaS 副本） ==========
@@ -107,10 +263,31 @@ const imageCols = [
   { key: 'status', title: '当前在职状态', align: 'center' as const },
 ]
 const imageData = [
-  { id: 1, avatar: 'https://picsum.photos/seed/alice/88/88', name: 'Alice', role: '前端开发', mail: 'alice@company.com', status: '在线' },
+  {
+    id: 1,
+    avatar: 'https://picsum.photos/seed/alice/88/88',
+    name: 'Alice',
+    role: '前端开发',
+    mail: 'alice@company.com',
+    status: '在线',
+  },
   { id: 2, avatar: '', name: 'Bob', role: '产品经理', mail: 'bob@company.com', status: '在线' },
-  { id: 3, avatar: 'https://picsum.photos/seed/charlie/88/88', name: 'Charlie', role: 'UI 设计师', mail: 'charlie@company.com', status: '离线' },
-  { id: 4, avatar: 'https://picsum.photos/seed/diana/88/88', name: 'Diana', role: '后端开发', mail: 'diana@company.com', status: '在线' },
+  {
+    id: 3,
+    avatar: 'https://picsum.photos/seed/charlie/88/88',
+    name: 'Charlie',
+    role: 'UI 设计师',
+    mail: 'charlie@company.com',
+    status: '离线',
+  },
+  {
+    id: 4,
+    avatar: 'https://picsum.photos/seed/diana/88/88',
+    name: 'Diana',
+    role: '后端开发',
+    mail: 'diana@company.com',
+    status: '在线',
+  },
   { id: 5, avatar: '', name: 'Eve', role: '测试工程师', mail: 'eve@company.com', status: '离线' },
 ]
 const imageSelectedKeys = ref<string[]>([])
@@ -122,8 +299,17 @@ function onImageBatchChange(colKey: string, newValue: string, rowKeys: string[])
 // ========== 列下拉选项 ==========
 const dropdownCols = [
   { key: 'name', title: '员工姓名', sortable: true },
-  { key: 'dept', title: '所属部门及科室', options: ['技术部', '产品部', '设计部', '市场部', '运营部'], align: 'center' as const },
-  { key: 'role', title: '岗位角色及技术方向', options: ['前端开发', '后端开发', '产品经理', 'UI设计师', '测试工程师', '运营专员'] },
+  {
+    key: 'dept',
+    title: '所属部门及科室',
+    options: ['技术部', '产品部', '设计部', '市场部', '运营部'],
+    align: 'center' as const,
+  },
+  {
+    key: 'role',
+    title: '岗位角色及技术方向',
+    options: ['前端开发', '后端开发', '产品经理', 'UI设计师', '测试工程师', '运营专员'],
+  },
   { key: 'level', title: '职级及薪资等级', options: ['P5', 'P6', 'P7', 'P8', 'M1', 'M2'], align: 'center' as const },
   { key: 'status', title: '员工在职状态', options: ['在职', '离职', '试用期', '实习'], align: 'center' as const },
 ]
@@ -156,20 +342,44 @@ const rowActions: RowAction[] = [
 ]
 /** 右键菜单项 — 用 onClick 内联绑定，比事件监听更直观 */
 const rowContextActions: RowContextAction[] = [
-  { key: 'view', label: '查看详情', icon: 'eye', onClick: (row) => { actionLog.value = `查看：${row.name}` } },
-  { key: 'copy', label: '复制姓名', icon: 'copy', onClick: (row) => { navigator.clipboard?.writeText(row.name); actionLog.value = `已复制：${row.name}` } },
-  { key: 'delete', label: '删除此行', icon: 'trash2', danger: true, onClick: (row) => { actionRows.value = actionRows.value.filter(r => r.id !== row.id); actionLog.value = `已删除：${row.name}` } },
+  {
+    key: 'view',
+    label: '查看详情',
+    icon: 'eye',
+    onClick: (row) => {
+      actionLog.value = `查看：${row.name}`
+    },
+  },
+  {
+    key: 'copy',
+    label: '复制姓名',
+    icon: 'copy',
+    onClick: (row) => {
+      navigator.clipboard?.writeText(row.name)
+      actionLog.value = `已复制：${row.name}`
+    },
+  },
+  {
+    key: 'delete',
+    label: '删除此行',
+    icon: 'trash2',
+    danger: true,
+    onClick: (row) => {
+      actionRows.value = actionRows.value.filter((r) => r.id !== row.id)
+      actionLog.value = `已删除：${row.name}`
+    },
+  },
 ]
 function onRowAction(actionKey: string, row: Record<string, any>) {
   if (actionKey === 'delete') {
-    actionRows.value = actionRows.value.filter(r => r.id !== row.id)
+    actionRows.value = actionRows.value.filter((r) => r.id !== row.id)
     actionLog.value = `已删除：${row.name}`
   } else if (actionKey === 'edit') {
     actionLog.value = `编辑：${row.name}`
   }
 }
 function addRow() {
-  const id = Math.max(...actionRows.value.map(r => r.id), 0) + 1
+  const id = Math.max(...actionRows.value.map((r) => r.id), 0) + 1
   actionRows.value.push({ id, name: `新员工${id}`, dept: '', position: '', status: '在职' })
   actionLog.value = `已添加：新员工${id}`
 }
@@ -232,19 +442,36 @@ const modal2Cols = [
     <!-- ===== 1. 基础 ===== -->
     <Card title="基础用法 — 排序 + 筛选 + 行/单元格自定义样式">
       <p class="demo-hint">行样式：在线绿色背景；单元格：金额>15000 红色加粗</p>
-      <DataTable namespace="demo-base" :columns="baseCols" :data="baseData" row-key="id" :truncate-threshold="20"
-        :row-style="(row) => row.status === '在线' ? { background: '#e8f5e9' } : {} as Record<string, string>"
-        :cell-style="(key, row) => key === 'amount' && row.amount > 15000 ? { color: '#e53935', fontWeight: 'bold' } : {} as Record<string, string>"
+      <DataTable
+        namespace="demo-base"
+        :columns="baseCols"
+        :data="baseData"
+        row-key="id"
+        :truncate-threshold="20"
+        :row-style="(row) => (row.status === '在线' ? { background: '#e8f5e9' } : ({} as Record<string, string>))"
+        :cell-style="
+          (key, row) =>
+            key === 'amount' && row.amount > 15000
+              ? { color: '#e53935', fontWeight: 'bold' }
+              : ({} as Record<string, string>)
+        "
       />
     </Card>
 
     <!-- ===== 2. 全功能 ===== -->
     <Card title="全功能 — 行选择 + 分页 + 导出 + 固定列">
       <DataTable
-        namespace="demo-full" :columns="fullCols" :data="fullData" row-key="id"
-        selectable v-model:selected-keys="fullSelectedKeys"
-        exportable export-scope="page" export-file-name="商品数据"
-        :page-size="8" v-model:current-page="fullCurrentPage"
+        v-model:selected-keys="fullSelectedKeys"
+        v-model:current-page="fullCurrentPage"
+        namespace="demo-full"
+        :columns="fullCols"
+        :data="fullData"
+        row-key="id"
+        selectable
+        exportable
+        export-scope="page"
+        export-file-name="商品数据"
+        :page-size="8"
       />
       <p class="demo-hint">已选 {{ fullSelectedKeys.length }} 行 / 第 {{ fullCurrentPage }} 页</p>
     </Card>
@@ -252,40 +479,66 @@ const modal2Cols = [
     <!-- ===== 3. 编辑模式 + 原始值气泡 ===== -->
     <Card title="编辑模式 — 双击编辑 + 原始值气泡 + 已修改角标">
       <p class="demo-hint">
-        双击单元格编辑（Enter 确认 / Escape 取消 / Tab 切列）。长按单元格拖动可框选区域，
-        Ctrl+C 复制选区 / Ctrl+V 粘贴（支持 Excel 表格数据，筛选后只改可见行）。修改后 hover 单元格查看原始值。
+        双击单元格编辑（Enter 确认 / Escape 取消 / Tab 切列）。长按单元格拖动可框选区域， Ctrl+C 复制选区 / Ctrl+V
+        粘贴（支持 Excel 表格数据，筛选后只改可见行）。修改后 hover 单元格查看原始值。
       </p>
       <DataTable
-        namespace="demo-edit" row-key="id" :columns="editCols" :data="editData"
-        editable original-tooltip modified-mark exportable excel-exportable export-file-name="编辑导出"
-        @cell-change="(_rk, ck, nv) => editLog = `列「${ck}」→ ${nv}`"
+        namespace="demo-edit"
+        row-key="id"
+        :columns="editCols"
+        :data="editData"
+        editable
+        original-tooltip
+        modified-mark
+        exportable
+        excel-exportable
+        export-file-name="编辑导出"
+        @cell-change="(_rk, ck, nv) => (editLog = `列「${ck}」→ ${nv}`)"
       >
         <template #toolbar-actions>
           <button
             class="toolbar-export-btn"
             title="toolbar-actions 插槽：使用方可在工具栏追加自己的按钮（刷新/导入等）"
             @click="editLog = '插槽示例按钮已点击（使用方通过 toolbar-actions 插槽注入）'"
-          >插槽示例</button>
+          >
+            插槽示例
+          </button>
         </template>
       </DataTable>
-      <p v-if="editLog" class="demo-hint" style="color:var(--color-primary);">{{ editLog }}</p>
+      <p v-if="editLog" class="demo-hint" style="color: var(--color-primary)">
+        {{ editLog }}
+      </p>
     </Card>
 
     <!-- ===== 3.5 列级编辑开关（对齐 SaaS 副本） ===== -->
     <Card title="列级编辑开关 — 只读列演示">
       <p class="demo-hint">列配置 <code>editable: false</code> 可禁用单列编辑：工号列双击不会进入编辑，其余列正常。</p>
-      <DataTable namespace="demo-col-edit" row-key="id" :columns="colEditCols" :data="colEditData" editable max-height="280px" />
+      <DataTable
+        namespace="demo-col-edit"
+        row-key="id"
+        :columns="colEditCols"
+        :data="colEditData"
+        editable
+        max-height="280px"
+      />
     </Card>
 
     <!-- ===== 4. 图片列 + 批量修改 ===== -->
     <Card title="图片列 + 批量修改">
       <p class="demo-hint">空头像双击可粘贴/拖入图片。勾选多行 → 工具栏"批量修改"统一改值。</p>
       <DataTable
-        namespace="demo-image" :columns="imageCols" :data="imageData" row-key="id"
-        selectable editable v-model:selected-keys="imageSelectedKeys"
+        v-model:selected-keys="imageSelectedKeys"
+        namespace="demo-image"
+        :columns="imageCols"
+        :data="imageData"
+        row-key="id"
+        selectable
+        editable
         @batch-change="onImageBatchChange"
       />
-      <p v-if="imageBatchLog" class="demo-hint" style="color:var(--color-primary);">{{ imageBatchLog }}</p>
+      <p v-if="imageBatchLog" class="demo-hint" style="color: var(--color-primary)">
+        {{ imageBatchLog }}
+      </p>
     </Card>
 
     <!-- ===== 5. 列下拉选项 ===== -->
@@ -300,11 +553,18 @@ const modal2Cols = [
         每行末尾有编辑/删除按钮；<strong>右键数据行</strong>弹出菜单，菜单项通过 <code>onClick</code> 直接绑定回调。
       </p>
       <DataTable
-        namespace="demo-actions" :columns="actionCols" :data="actionRows" row-key="id"
-        :row-actions="rowActions" :row-context-actions="rowContextActions"
-        editable @row-action="onRowAction"
+        namespace="demo-actions"
+        :columns="actionCols"
+        :data="actionRows"
+        row-key="id"
+        :row-actions="rowActions"
+        :row-context-actions="rowContextActions"
+        editable
+        @row-action="onRowAction"
       />
-      <div v-if="actionLog" class="demo-hint" style="color:var(--color-primary);margin-top:8px;">{{ actionLog }}</div>
+      <div v-if="actionLog" class="demo-hint" style="color: var(--color-primary); margin-top: 8px">
+        {{ actionLog }}
+      </div>
       <button class="demo-add-btn" @click="addRow">+ 添加行</button>
     </Card>
 
@@ -327,7 +587,9 @@ const modal2Cols = [
         <Card type="stat" value="156" label="商品种类" icon="package" color="#F59E0B" />
         <Card type="stat" value="↓ 5.2%" label="退货率" icon="trending-down" color="var(--color-danger)" />
       </div>
-      <p style="margin: 16px 0 8px; color: var(--color-text-secondary); font-size: 14px;">以下为各商品库存及销售明细：</p>
+      <p style="margin: 16px 0 8px; color: var(--color-text-secondary); font-size: 14px">
+        以下为各商品库存及销售明细：
+      </p>
       <DataTable namespace="demo-modal2" :columns="modal2Cols" :data="modal2Data" row-key="id" :page-size="4" />
     </ModalBox>
 
@@ -344,21 +606,37 @@ const modal2Cols = [
         <Card type="stat" value="5" label="品类" icon="grid" color="#F59E0B" />
         <Card type="stat" value="↑ 12%" label="环比增长" icon="trending-up" color="var(--color-success)" />
       </div>
-      <p style="margin: 16px 0 8px; color: var(--color-text-secondary); font-size: 14px;">滚动查看更多数据：</p>
+      <p style="margin: 16px 0 8px; color: var(--color-text-secondary); font-size: 14px">滚动查看更多数据：</p>
       <DataTable namespace="demo-modal4" :columns="modalLargeCols" :data="modalLargeData" row-key="id" />
     </ModalBox>
   </div>
 </template>
 
 <style scoped>
-.demo-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.demo-desc { color: var(--color-text-muted); margin-bottom: 24px; font-size: 14px; }
-.demo-hint { margin: 0 0 12px 0; font-size: 13px; color: var(--color-text-muted); }
+.demo-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.demo-desc {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+.demo-hint {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
 .demo-add-btn {
-  margin-top: 8px; padding: 6px 16px;
-  border: 1px dashed var(--color-primary); border-radius: var(--radius-sm);
-  background: var(--color-primary-light); color: var(--color-primary);
-  cursor: pointer; font-size: 13px;
+  margin-top: 8px;
+  padding: 6px 16px;
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 13px;
 }
 .demo-modal-row {
   display: flex;
@@ -371,6 +649,8 @@ const modal2Cols = [
   margin-bottom: 8px;
 }
 @media (max-width: 600px) {
-  .modal-grid { grid-template-columns: repeat(2, 1fr); }
+  .modal-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 </style>

@@ -5,13 +5,13 @@
 //          因为 <script setup> 不能包含 ES module exports
 import { ref, computed, provide } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { TOAST_KEY } from './toast-context'
-import type { ToastItem } from './toast-context'
+import { TOAST_KEY } from './composables/toast-context'
+import type { ToastItem } from './composables/toast-context'
 
 interface Props {
   /** 'toast' 全局弹幕 | 'inline' 内联提示条（替代 Alert） */
   variant?: 'toast' | 'inline'
-  type?: 'circle-alert' | 'success' | 'warning' | 'error'
+  type?: 'circle-alert' | 'info' | 'success' | 'warning' | 'error'
   title?: string
   message?: string
   closable?: boolean
@@ -53,20 +53,20 @@ const colorMap: Record<string, string> = {
 }
 
 const inlineBgMap: Record<string, string> = {
-  info: '#EFF6FF',
-  success: '#F0FDF4',
-  warning: '#FFFBEB',
-  error: '#FEF2F2',
+  info: 'var(--color-info-bg)',
+  success: 'var(--color-success-bg)',
+  warning: 'var(--color-warning-bg)',
+  error: 'var(--color-danger-bg)',
 }
 const inlineBorderMap: Record<string, string> = {
-  info: '#BFDBFE',
-  success: '#BBF7D0',
-  warning: '#FDE68A',
-  error: '#FECACA',
+  info: 'var(--color-info-border)',
+  success: 'var(--color-success-border)',
+  warning: 'var(--color-warning-border)',
+  error: 'var(--color-danger-border)',
 }
 
 function removeToast(id: number) {
-  const idx = toasts.value.findIndex(t => t.id === id)
+  const idx = toasts.value.findIndex((t) => t.id === id)
   if (idx >= 0) toasts.value.splice(idx, 1)
 }
 
@@ -81,7 +81,7 @@ function show(
     actionText?: string
     onAction?: () => void
     closable?: boolean
-  }
+  },
 ) {
   const id = nextId++
   const dur = duration ?? (type === 'error' ? 5000 : 3000)
@@ -133,11 +133,19 @@ defineExpose({
 
 <template>
   <!-- inline 模式：内联提示条（替代 Alert） -->
-  <div v-if="isInline && inlineVisible" class="toast-inline" :style="{ background: inlineBgMap[type], borderColor: inlineBorderMap[type] }">
+  <div
+    v-if="isInline && inlineVisible"
+    class="toast-inline"
+    :style="{ background: inlineBgMap[type], borderColor: inlineBorderMap[type] }"
+  >
     <IconSvg v-if="showIcon" :type="iconMap[type]" size="md" :color="colorMap[type]" class="toast-inline-icon" />
     <div class="toast-inline-body">
-      <div v-if="title" class="toast-inline-title">{{ title }}</div>
-      <div class="toast-inline-msg">{{ message }}</div>
+      <div v-if="title" class="toast-inline-title">
+        {{ title }}
+      </div>
+      <div class="toast-inline-msg">
+        {{ message }}
+      </div>
     </div>
     <button v-if="closable" type="button" class="toast-inline-close" @click="inlineVisible = false">
       <IconSvg type="x" size="sm" />
@@ -147,37 +155,30 @@ defineExpose({
   <!-- toast 模式：全局弹幕 — H5 Teleport 到 body, 小程序直接渲染(已在根节点) -->
   <!-- #ifndef MP_WEIXIN -->
   <Teleport v-if="isToast" to="body">
-  <!-- #endif -->
+    <!-- #endif -->
     <div v-if="isToast" class="toast-container" :class="[`toast-${position}`]" aria-live="polite">
       <TransitionGroup name="toast">
-        <div
-          v-for="t in toasts"
-          :key="t.id"
-          class="toast-item"
-          :style="{ background: colorMap[t.type] }"
-        >
+        <div v-for="t in toasts" :key="t.id" class="toast-item" :style="{ background: colorMap[t.type] }">
           <IconSvg :type="iconMap[t.type]" size="md" color="white" class="toast-icon" />
           <span class="toast-msg">{{ t.message }}</span>
           <button
             v-if="t.actionText || t.undoText"
             class="toast-undo"
             :aria-label="t.actionText || t.undoText"
-            @click="(t.onAction || t.onUndo)?.(); removeToast(t.id)"
+            @click="
+              ;(t.onAction || t.onUndo)?.()
+              removeToast(t.id)
+            "
           >
             {{ t.actionText || t.undoText }}
           </button>
-          <button
-            v-if="t.closable"
-            class="toast-close"
-            aria-label="关闭通知"
-            @click="removeToast(t.id)"
-          >
+          <button v-if="t.closable" class="toast-close" aria-label="关闭通知" @click="removeToast(t.id)">
             <IconSvg type="x" size="sm" color="white" />
           </button>
         </div>
       </TransitionGroup>
     </div>
-  <!-- #ifndef MP_WEIXIN -->
+    <!-- #ifndef MP_WEIXIN -->
   </Teleport>
   <!-- #endif -->
 </template>
@@ -198,19 +199,27 @@ defineExpose({
 }
 /* position 变体 — 覆盖居中默认值 */
 .toast-top-right {
-  left: auto; right: clamp(10px, 2vw, 16px); transform: none;
+  left: auto;
+  right: clamp(10px, 2vw, 16px);
+  transform: none;
 }
 .toast-top-left {
-  left: clamp(10px, 2vw, 16px); transform: none;
+  left: clamp(10px, 2vw, 16px);
+  transform: none;
 }
 .toast-bottom-right {
-  top: auto; left: auto; right: clamp(10px, 2vw, 16px);
-  bottom: clamp(10px, 2vw, 16px); transform: none;
+  top: auto;
+  left: auto;
+  right: clamp(10px, 2vw, 16px);
+  bottom: clamp(10px, 2vw, 16px);
+  transform: none;
 }
 .toast-bottom-left {
-  top: auto; right: auto;
+  top: auto;
+  right: auto;
   bottom: clamp(10px, 2vw, 16px);
-  left: clamp(10px, 2vw, 16px); transform: none;
+  left: clamp(10px, 2vw, 16px);
+  transform: none;
 }
 
 .toast-item {
@@ -292,13 +301,31 @@ defineExpose({
   border: 1px solid;
   font-size: clamp(12px, 1.8vw, 14px);
 }
-.toast-inline-icon { flex-shrink: 0; margin-top: 1px; }
-.toast-inline-body { flex: 1; }
-.toast-inline-title { font-weight: 600; margin-bottom: var(--space-1); color: var(--color-text); }
-.toast-inline-msg { color: var(--color-text-secondary); }
-.toast-inline-close {
-  display: flex; padding: var(--space-1); border: none; background: transparent;
-  color: var(--color-text-muted); cursor: pointer; border-radius: var(--radius-sm);
+.toast-inline-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
-.toast-inline-close:hover { background: rgba(0,0,0,0.06); }
+.toast-inline-body {
+  flex: 1;
+}
+.toast-inline-title {
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+  color: var(--color-text);
+}
+.toast-inline-msg {
+  color: var(--color-text-secondary);
+}
+.toast-inline-close {
+  display: flex;
+  padding: var(--space-1);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.toast-inline-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
 </style>

@@ -5,8 +5,10 @@
 let _boost = 0
 
 export function boostZTop() {
+  if (typeof document === 'undefined') return () => {}
   if (++_boost === 1) document.documentElement.style.setProperty('--z-top', '10001')
   return () => {
+    if (typeof document === 'undefined') return
     if (--_boost === 0) document.documentElement.style.removeProperty('--z-top')
   }
 }

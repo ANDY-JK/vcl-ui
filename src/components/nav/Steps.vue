@@ -3,7 +3,10 @@
 //    需我确认：direction 方向、current 状态管理
 import IconSvg from '@/components/basic/IconSvg.vue'
 
-interface Step { label: string; desc?: string }
+interface Step {
+  label: string
+  desc?: string
+}
 
 interface Props {
   steps: Step[]
@@ -54,8 +57,12 @@ function onStepClick(idx: number, step: Step) {
         <span v-else class="step-num">{{ idx + 1 }}</span>
       </div>
       <div class="step-text">
-        <div class="step-label">{{ step.label }}</div>
-        <div v-if="step.desc" class="step-desc">{{ step.desc }}</div>
+        <div class="step-label">
+          {{ step.label }}
+        </div>
+        <div v-if="step.desc" class="step-desc">
+          {{ step.desc }}
+        </div>
       </div>
       <div v-if="idx < steps.length - 1" class="step-line" :class="{ filled: idx < current }" />
     </div>
@@ -63,9 +70,15 @@ function onStepClick(idx: number, step: Step) {
 </template>
 
 <style scoped>
-.steps { display: flex; }
-.steps-horizontal { flex-direction: row; }
-.steps-vertical { flex-direction: column; }
+.steps {
+  display: flex;
+}
+.steps-horizontal {
+  flex-direction: row;
+}
+.steps-vertical {
+  flex-direction: column;
+}
 
 .step {
   display: flex;
@@ -115,8 +128,12 @@ function onStepClick(idx: number, step: Step) {
   font-weight: 500;
   color: var(--color-text-muted);
 }
-.step.active .step-label { color: var(--color-text); }
-.step.done .step-label { color: var(--color-text-secondary); }
+.step.active .step-label {
+  color: var(--color-text);
+}
+.step.done .step-label {
+  color: var(--color-text-secondary);
+}
 
 .step-desc {
   font-size: clamp(10px, 1.5vw, 12px);
@@ -132,14 +149,22 @@ function onStepClick(idx: number, step: Step) {
   margin-top: clamp(10px, 1.6vw, 13px);
   transition: background var(--transition-fast);
 }
-.step-line.filled { background: var(--color-primary); }
+.step-line.filled {
+  background: var(--color-primary);
+}
 
-.step.clickable { cursor: pointer; }
+.step.clickable {
+  cursor: pointer;
+}
 .step.clickable:hover .step-num {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
-.step.clickable:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+.step.clickable:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
 
 .steps-vertical .step {
   flex-direction: row;

@@ -4,25 +4,34 @@
   <div v-if="hasError" class="error-boundary-fallback">
     <slot name="fallback" :error="error" :retry="retry">
       <div class="eb-icon">!</div>
-      <p class="eb-title">{{ title }}</p>
-      <p class="eb-desc">{{ error?.message || '未知错误' }}</p>
-      <button class="eb-btn" @click="retry">{{ retryText }}</button>
+      <p class="eb-title">
+        {{ title }}
+      </p>
+      <p class="eb-desc">
+        {{ error?.message || '未知错误' }}
+      </p>
+      <button class="eb-btn" @click="retry">
+        {{ retryText }}
+      </button>
     </slot>
   </div>
   <slot v-else :key="resetKey" />
 </template>
 
 <script setup lang="ts">
-import { ref, onErrorCaptured } from 'vue'
+import { ref, watch, onErrorCaptured } from 'vue'
 
 interface Props {
   title?: string
   retryText?: string
+  /** 监听值变化时自动重置错误状态（如路由参数、组件 key 等） */
+  watchKey?: string | number
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   title: '页面加载异常',
   retryText: '重新加载',
+  watchKey: undefined,
 })
 
 const emit = defineEmits<{
@@ -46,6 +55,18 @@ function retry() {
   error.value = null
   resetKey.value++
 }
+
+/** watchKey 变化时自动重置，避免错误状态残留到新内容 */
+watch(
+  () => props.watchKey,
+  () => {
+    if (hasError.value) {
+      hasError.value = false
+      error.value = null
+      resetKey.value++
+    }
+  },
+)
 </script>
 
 <style scoped>
@@ -58,16 +79,31 @@ function retry() {
   text-align: center;
 }
 .eb-icon {
-  width: 48px; height: 48px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: var(--color-warning, #f59e0b);
   color: white;
-  font-size: 24px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: var(--space-4);
 }
-.eb-title { font-size: 16px; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-1); }
-.eb-desc { font-size: 13px; color: var(--color-text-muted); margin-bottom: var(--space-4); max-width: 400px; word-break: break-all; }
+.eb-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+.eb-desc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+  max-width: 400px;
+  word-break: break-all;
+}
 .eb-btn {
   padding: var(--space-2) 24px;
   border: 1px solid var(--color-primary);
@@ -78,5 +114,7 @@ function retry() {
   cursor: pointer;
   font-family: inherit;
 }
-.eb-btn:hover { opacity: 0.9; }
+.eb-btn:hover {
+  opacity: 0.9;
+}
 </style>

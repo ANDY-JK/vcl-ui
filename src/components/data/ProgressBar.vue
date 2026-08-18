@@ -106,8 +106,12 @@ function onPointerUp() {
 
 function onKeydown(e: KeyboardEvent) {
   if (props.disabled) return
-  const delta = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? props.step
-    : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -props.step : 0
+  const delta =
+    e.key === 'ArrowRight' || e.key === 'ArrowUp'
+      ? props.step
+      : e.key === 'ArrowLeft' || e.key === 'ArrowDown'
+        ? -props.step
+        : 0
   if (delta === 0) return
   e.preventDefault()
   const newVal = snapToStep(props.modelValue + delta)
@@ -141,11 +145,17 @@ onUnmounted(() => {
       :disabled="disabled"
       @change="onInputChange(($event.target as HTMLInputElement).value)"
     />
-    <div class="slider-track" ref="trackRef" :class="{ dragging }" @pointerdown="onTrackPointerDown">
+    <div ref="trackRef" class="slider-track" :class="{ dragging }" @pointerdown="onTrackPointerDown">
       <div class="slider-rail" />
       <div class="slider-fill" :style="{ width: sliderPercent + '%' }" />
       <div v-if="showStops" class="slider-stops">
-        <span v-for="s in stops" :key="s.value" class="slider-stop" :class="{ active: s.active }" :style="{ left: s.percent + '%' }" />
+        <span
+          v-for="s in stops"
+          :key="s.value"
+          class="slider-stop"
+          :class="{ active: s.active }"
+          :style="{ left: s.percent + '%' }"
+        />
       </div>
       <div
         class="slider-thumb"
@@ -153,7 +163,9 @@ onUnmounted(() => {
         :style="{ left: sliderPercent + '%' }"
         tabindex="0"
         role="slider"
-        :aria-valuemin="min" :aria-valuemax="max" :aria-valuenow="modelValue"
+        :aria-valuemin="min"
+        :aria-valuemax="max"
+        :aria-valuenow="modelValue"
         @pointerdown="onPointerDown"
         @keydown="onKeydown"
       />
@@ -175,73 +187,177 @@ onUnmounted(() => {
 
 <style scoped>
 /* ===== 只读进度条 ===== */
-.progress-wrap { display: flex; align-items: center; gap: clamp(7px, 1.2vw, 10px); width: 100%; }
-.progress-track { flex: 1; background: var(--color-bg-alt); border-radius: 100px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 100px; transition: width var(--transition-slow); }
-.fill-primary { background: var(--color-primary); }
-.fill-success { background: var(--color-success); }
-.fill-warning { background: var(--color-warning); }
-.fill-danger { background: var(--color-danger); }
-.progress-fill.striped { background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent); background-size: 16px 16px; }
-.progress-fill.animated.striped { animation: progress-stripe 0.6s linear infinite; }
-@keyframes progress-stripe { to { background-position: 16px 0; } }
-.progress-text { font-size: clamp(11px, 1.8vw, 13px); color: var(--color-text-secondary); font-weight: 500; min-width: clamp(30px, 4.8vw, 40px); text-align: right; }
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: clamp(7px, 1.2vw, 10px);
+  width: 100%;
+}
+.progress-track {
+  flex: 1;
+  background: var(--color-bg-alt);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width var(--transition-slow);
+}
+.fill-primary {
+  background: var(--color-primary);
+}
+.fill-success {
+  background: var(--color-success);
+}
+.fill-warning {
+  background: var(--color-warning);
+}
+.fill-danger {
+  background: var(--color-danger);
+}
+.progress-fill.striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 16px 16px;
+}
+.progress-fill.animated.striped {
+  animation: progress-stripe 0.6s linear infinite;
+}
+@keyframes progress-stripe {
+  to {
+    background-position: 16px 0;
+  }
+}
+.progress-text {
+  font-size: clamp(11px, 1.8vw, 13px);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  min-width: clamp(30px, 4.8vw, 40px);
+  text-align: right;
+}
 
 /* ===== 滑块模式 ===== */
 .progress-slider {
-  display: flex; align-items: center; gap: var(--space-3); width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
   --thumb-size: 14px;
   --track-height: 6px;
 }
 
 /* 输入框 — 与滑块视觉协调 */
 .slider-input {
-  width: 42px; flex-shrink: 0;
-  height: 26px; padding: 0 var(--space-1);
+  width: 42px;
+  flex-shrink: 0;
+  height: 26px;
+  padding: 0 var(--space-1);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 12px; font-family: inherit;
-  text-align: center; color: var(--color-text);
+  font-size: 12px;
+  font-family: inherit;
+  text-align: center;
+  color: var(--color-text);
   background: var(--color-surface);
-  outline: none; transition: border-color var(--transition-fast);
+  outline: none;
+  transition: border-color var(--transition-fast);
 }
-.slider-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+.slider-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
 
 /* 轨道 */
 .slider-track {
-  flex: 1; position: relative;
+  flex: 1;
+  position: relative;
   height: var(--track-height);
   margin: calc(var(--thumb-size) / 2) 0;
-  cursor: pointer; touch-action: none;
+  cursor: pointer;
+  touch-action: none;
   border-radius: 100px;
 }
-.slider-track.dragging { cursor: grabbing; }
+.slider-track.dragging {
+  cursor: grabbing;
+}
 
 /* 轨道背景 */
-.slider-rail { position: absolute; inset: 0; background: var(--color-bg-alt); border-radius: 100px; }
+.slider-rail {
+  position: absolute;
+  inset: 0;
+  background: var(--color-bg-alt);
+  border-radius: 100px;
+}
 
 /* 填充条 */
-.slider-fill { position: absolute; top: 0; bottom: 0; left: 0; background: var(--color-primary); border-radius: 100px; pointer-events: none; }
+.slider-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--color-primary);
+  border-radius: 100px;
+  pointer-events: none;
+}
 
 /* 刻度 */
-.slider-stops { position: absolute; inset: 0; pointer-events: none; }
-.slider-stop { position: absolute; top: 50%; width: 5px; height: 5px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--color-surface); border: 1.5px solid var(--color-border); }
-.slider-stop.active { border-color: var(--color-primary); }
+.slider-stops {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.slider-stop {
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+}
+.slider-stop.active {
+  border-color: var(--color-primary);
+}
 
 /* 滑块拇指 */
 .slider-thumb {
-  position: absolute; top: 50%;
-  width: var(--thumb-size); height: var(--thumb-size);
+  position: absolute;
+  top: 50%;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: var(--color-surface);
   border: 2px solid var(--color-primary);
   box-shadow: var(--shadow-sm);
-  cursor: grab; z-index: 2;
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  cursor: grab;
+  z-index: 2;
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
-.slider-thumb:focus-visible { box-shadow: 0 0 0 3px var(--color-primary-light); outline: none; }
-.slider-thumb.dragging { cursor: grabbing; box-shadow: var(--shadow-md); transform: translate(-50%, -50%) scale(1.15); }
+.slider-thumb:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+  outline: none;
+}
+.slider-thumb.dragging {
+  cursor: grabbing;
+  box-shadow: var(--shadow-md);
+  transform: translate(-50%, -50%) scale(1.15);
+}
 
-.progress-slider.disabled { opacity: 0.5; pointer-events: none; }
+.progress-slider.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
 </style>

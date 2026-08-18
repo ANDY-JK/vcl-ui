@@ -1,24 +1,36 @@
 // ⛔ 保护 — 图表公共配置，禁止：DEFAULT_COLORS 色板删除，textColor/mutedColor 逻辑
 //    需我确认：色板值修改、grid 间距调整
 import type { EChartsOption } from 'echarts'
-import type { BuildParams, MarkLineConfig, MarkAreaConfig } from '../types'
+import type { BuildParams, MarkLineConfig, MarkAreaConfig } from '../utils/types'
 
 /** 默认色板 —— 对齐项目 CSS 变量主色系 */
 export const DEFAULT_COLORS = [
-  '#4F6EF7', '#22AD5F', '#F59E0B', '#E54545',
-  '#8B5CF6', '#EC4899', '#06B6D4', '#10B981',
-  '#F97316', '#6366F1', '#14B8A6', '#D946EF',
-  '#0EA5E9', '#84CC16', '#EAB308', '#A855F7',
+  '#4F6EF7',
+  '#22AD5F',
+  '#F59E0B',
+  '#E54545',
+  '#8B5CF6',
+  '#EC4899',
+  '#06B6D4',
+  '#10B981',
+  '#F97316',
+  '#6366F1',
+  '#14B8A6',
+  '#D946EF',
+  '#0EA5E9',
+  '#84CC16',
+  '#EAB308',
+  '#A855F7',
 ]
 
 /** 内置色板预设 —— 对标 Excel 配色方案 */
 export const PALETTE_PRESETS: Record<string, string[]> = {
   default: DEFAULT_COLORS,
-  ocean: ['#0077B6','#00B4D8','#90E0EF','#CAF0F8','#03045E','#023E8A','#0096C7','#48CAE4'],
-  forest: ['#2D6A4F','#40916C','#52B788','#95D5B2','#1B4332','#74C69D','#A7C957','#386641'],
-  sunset: ['#FF6B35','#F7C59F','#EFEFD0','#004E89','#1A659E','#F25F5C','#FFB347','#70C1B3'],
-  midnight: ['#7B2FBE','#4A00E0','#8E2DE2','#C33764','#1D267D','#0C134F','#5C469C','#D4ADFC'],
-  pastel: ['#FFB3BA','#FFDFBA','#FFFFBA','#BAFFC9','#BAE1FF','#D4BAFF','#FFB3E6','#B3FFE0'],
+  ocean: ['#0077B6', '#00B4D8', '#90E0EF', '#CAF0F8', '#03045E', '#023E8A', '#0096C7', '#48CAE4'],
+  forest: ['#2D6A4F', '#40916C', '#52B788', '#95D5B2', '#1B4332', '#74C69D', '#A7C957', '#386641'],
+  sunset: ['#FF6B35', '#F7C59F', '#EFEFD0', '#004E89', '#1A659E', '#F25F5C', '#FFB347', '#70C1B3'],
+  midnight: ['#7B2FBE', '#4A00E0', '#8E2DE2', '#C33764', '#1D267D', '#0C134F', '#5C469C', '#D4ADFC'],
+  pastel: ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#D4BAFF', '#FFB3E6', '#B3FFE0'],
 }
 
 /** 获取文字颜色（适配深浅主题） */
@@ -42,7 +54,8 @@ export function resolvePalette(palette: string | undefined, customColors: string
 export function resolveLegendPosition(pos: BuildParams['legendPosition']): Record<string, any> {
   const vertical = pos === 'left' || pos === 'right'
   if (vertical) {
-    return pos === 'left' ? { left: 0, top: 'middle', orient: 'vertical' }
+    return pos === 'left'
+      ? { left: 0, top: 'middle', orient: 'vertical' }
       : { right: 0, top: 'middle', orient: 'vertical' }
   }
   return pos === 'top' ? { top: 0 } : { bottom: 0 }
@@ -67,7 +80,7 @@ export function buildLegendConfig(
   const effectivePosition: BuildParams['legendPosition'] = autoVertical ? 'right' : position
   const isVertical = effectivePosition === 'left' || effectivePosition === 'right'
 
-// 长名称 formatter（>8字自动截断），不改 data 以保持点击切换匹配
+  // 长名称 formatter（>8字自动截断），不改 data 以保持点击切换匹配
   const maxNameLen = 8
   const hasLongNames = data.some((n: string) => n.length > maxNameLen)
 
@@ -88,9 +101,10 @@ export function buildLegendConfig(
   }
 
   if (isVertical) {
-    const vertPos = effectivePosition === 'left'
-      ? { left: 0, top: 'middle', orient: 'vertical' as const }
-      : { right: 0, top: 'middle', orient: 'vertical' as const }
+    const vertPos =
+      effectivePosition === 'left'
+        ? { left: 0, top: 'middle', orient: 'vertical' as const }
+        : { right: 0, top: 'middle', orient: 'vertical' as const }
     return {
       option: {
         ...baseStyle,
@@ -120,7 +134,12 @@ export function buildMarkLine(ml: MarkLineConfig | MarkLineConfig[] | undefined)
     silent: true,
     symbol: 'none',
     data: items.map((m: MarkLineConfig) => {
-      if (m.type) return { type: m.type, name: m.label || m.type, lineStyle: m.color ? { color: m.color, type: 'dashed' } : { type: 'dashed' } }
+      if (m.type)
+        return {
+          type: m.type,
+          name: m.label || m.type,
+          lineStyle: m.color ? { color: m.color, type: 'dashed' } : { type: 'dashed' },
+        }
       return {
         yAxis: m.value,
         name: m.label || String(m.value ?? ''),
@@ -148,7 +167,7 @@ export function buildMarkArea(ma: MarkAreaConfig | MarkAreaConfig[] | undefined)
  * 规则：任意分类名超过 4 个字符 → 自动旋转 45°
  */
 export function autoLabelRotate(categories: string[]): number {
-  const hasLong = categories.some(c => c && c.length > 4)
+  const hasLong = categories.some((c) => c && c.length > 4)
   return hasLong ? 45 : 0
 }
 
@@ -217,7 +236,7 @@ function buildTooltip(showTooltip: boolean, trigger: 'axis' | 'item' = 'axis'): 
 
 /** 构建公共外层：title / tooltip / grid / color / animation（图例由 ChartLegend 独立渲染） */
 export function buildCommonChrome(p: BuildParams): EChartsOption {
-  const seriesNames = p.series.map(s => s.name).filter(Boolean) as string[]
+  const seriesNames = p.series.map((s) => s.name).filter(Boolean) as string[]
   const dataZoom = autoDataZoom(p.categories, p.darkMode)
 
   // grid 填满（无 ECharts legend 占位）
@@ -264,7 +283,10 @@ export function buildXAxis(p: BuildParams, extra?: Record<string, any>): any {
   return {
     type: 'category',
     data: p.categories as (string | number)[],
-    axisLabel: { color: mutedColor(p), rotate: extra?.labelRotate ?? p.xAxis?.labelRotate ?? autoLabelRotate(p.categories) },
+    axisLabel: {
+      color: mutedColor(p),
+      rotate: extra?.labelRotate ?? p.xAxis?.labelRotate ?? autoLabelRotate(p.categories),
+    },
     axisTick: { show: true, alignWithLabel: true },
     splitLine: { show: true, lineStyle: { color: p.darkMode ? '#444' : '#C0C4CC', type: 'solid', width: 1 } },
     name: extra?.name ?? p.xAxis?.title,

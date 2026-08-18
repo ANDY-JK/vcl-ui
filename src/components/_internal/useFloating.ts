@@ -17,7 +17,14 @@ interface FloatingOptions {
 }
 
 export function useFloating(options: FloatingOptions = {}) {
-  const { offset = 4, defaultDirection = 'down', minSize = 120, matchWidth = true, maxMatchWidth = false, zIndex = '2000' } = options
+  const {
+    offset = 4,
+    defaultDirection = 'down',
+    minSize = 120,
+    matchWidth = true,
+    maxMatchWidth = false,
+    zIndex = '2000',
+  } = options
 
   const triggerRef: Ref<HTMLElement | null> = ref(null)
   const floatingRef: Ref<HTMLElement | null> = ref(null)
@@ -33,14 +40,16 @@ export function useFloating(options: FloatingOptions = {}) {
     const vw = window.innerWidth
     const vh = window.innerHeight
     const fw = Math.max(floating.offsetWidth, minSize, r.width)
-    const fh = Math.max(floating.offsetHeight, minSize)
+    // 面板实际渲染高度（受 CSS max-height 限制后的值）
+    // 面板刚渲染时可能 fh=0，用 minSize 兜底避免方向判断错误
+    const fh = floating.offsetHeight || minSize
 
     // 1. 计算四个方向剩余空间
     const space = {
-      down:  vh - r.bottom - offset,
-      up:    r.top - offset,
+      down: vh - r.bottom - offset,
+      up: r.top - offset,
       right: vw - r.right - offset,
-      left:  r.left - offset,
+      left: r.left - offset,
     }
 
     // 2. 选方向：默认方向优先，够就选；不够试反方向；再不够选空间大的
@@ -147,6 +156,16 @@ export function useFloating(options: FloatingOptions = {}) {
     if (!style.maxWidth) style.maxWidth = `${Math.max(r.width, vw - 16)}px`
     if (maxH) style.maxHeight = `${maxH}px`
     floatingStyle.value = style
+    // 直接操作 DOM 确保即时生效（Vue 异步更新可能导致 requestAnimationFrame 中看到旧值）
+    if (floating) {
+      floating.style.position = style.position
+      floating.style.top = style.top
+      floating.style.left = style.left
+      floating.style.zIndex = style.zIndex
+      if (style.minWidth) floating.style.minWidth = style.minWidth
+      if (style.maxWidth) floating.style.maxWidth = style.maxWidth
+      if (style.maxHeight) floating.style.maxHeight = style.maxHeight
+    }
   }
 
   /** 打开前预定位到触发器附近，避免从左上角闪现 */
@@ -154,11 +173,44 @@ export function useFloating(options: FloatingOptions = {}) {
     const trigger = triggerRef.value
     if (!trigger) return
     const r = trigger.getBoundingClientRect()
-    floatingStyle.value = {
-      position: 'fixed',
-      top: `${r.bottom + offset}px`,
-      left: `${r.left}px`,
-      zIndex,
+    const vh = window.innerHeight
+    // 预判方向：下方空间不足且上方更大 → 向上
+    const spaceDown = vh - r.bottom - offset
+    const spaceUp = r.top - offset
+    const shouldFlipUp = spaceDown < spaceUp * 0.3 && spaceUp > 100
+
+    if (shouldFlipUp) {
+      direction.value = 'up'
+      const style: Record<string, string> = {
+        position: 'fixed',
+        top: `${Math.max(8, r.top - 200 - offset)}px`, // 预估高度 200px，updatePosition 会修正
+        left: `${r.left}px`,
+        zIndex,
+      }
+      floatingStyle.value = style
+      const floating = floatingRef.value
+      if (floating) {
+        floating.style.position = style.position
+        floating.style.top = style.top
+        floating.style.left = style.left
+        floating.style.zIndex = style.zIndex
+      }
+    } else {
+      direction.value = 'down'
+      const style: Record<string, string> = {
+        position: 'fixed',
+        top: `${r.bottom + offset}px`,
+        left: `${r.left}px`,
+        zIndex,
+      }
+      floatingStyle.value = style
+      const floating = floatingRef.value
+      if (floating) {
+        floating.style.position = style.position
+        floating.style.top = style.top
+        floating.style.left = style.left
+        floating.style.zIndex = style.zIndex
+      }
     }
   }
 

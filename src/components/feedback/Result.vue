@@ -42,8 +42,12 @@ const colorMap: Record<string, string> = {
 <template>
   <div class="result" :class="{ fullWidth }">
     <IconSvg :type="iconMap[status]" size="lg" :color="colorMap[status]" class="result-icon" />
-    <h2 class="result-title">{{ title }}</h2>
-    <p v-if="description" class="result-desc">{{ description }}</p>
+    <h2 class="result-title">
+      {{ title }}
+    </h2>
+    <p v-if="description" class="result-desc">
+      {{ description }}
+    </p>
     <div v-if="$slots.extra || actionText" class="result-actions">
       <Button v-if="actionText" :text="actionText" variant="primary" @click="emit('action')" />
       <slot name="extra" />
@@ -61,7 +65,9 @@ const colorMap: Record<string, string> = {
   padding: clamp(40px, 8vw, 64px) 20px;
 }
 
-.result.fullWidth { grid-column: 1 / -1; }
+.result.fullWidth {
+  grid-column: 1 / -1;
+}
 
 .result-icon {
   width: clamp(48px, 8vw, 64px);

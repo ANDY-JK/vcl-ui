@@ -11,7 +11,7 @@ export interface NotifyOptions {
 }
 
 async function ensure(): Promise<boolean> {
-  if (!('Notification' in window)) return false
+  if (typeof window === 'undefined' || !('Notification' in window)) return false
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
   return (await Notification.requestPermission()) === 'granted'
@@ -26,29 +26,39 @@ export async function notify(title: string, bodyOrOptions?: string | NotifyOptio
       }
       return
     }
-    const opts: NotifyOptions = typeof bodyOrOptions === 'string'
-      ? { body: bodyOrOptions }
-      : (bodyOrOptions || {})
+    const opts: NotifyOptions = typeof bodyOrOptions === 'string' ? { body: bodyOrOptions } : bodyOrOptions || {}
 
     const n = new Notification(title, { body: opts.body || '' })
 
     // 默认点击行为：聚焦窗口 + 关闭
     n.onclick = () => {
-      if (opts.onClick) { opts.onClick() }
-      else if (opts.url) { window.open(opts.url, '_blank') }
-      else { window.focus() }
+      if (opts.onClick) {
+        opts.onClick()
+      } else if (opts.url) {
+        if (typeof window !== 'undefined') window.open(opts.url, '_blank')
+      } else {
+        if (typeof window !== 'undefined') window.focus()
+      }
       n.close()
     }
 
     if (opts.autoClose && opts.autoClose > 0) {
-      setTimeout(() => { try { n.close() } catch { console.warn('[useNotify] 自动关闭通知失败') } }, opts.autoClose)
+      setTimeout(() => {
+        try {
+          n.close()
+        } catch {
+          console.warn('[useNotify] 自动关闭通知失败')
+        }
+      }, opts.autoClose)
     }
-  } catch { console.warn('[useNotify] 通知发送失败') }
+  } catch {
+    console.warn('[useNotify] 通知发送失败')
+  }
 }
 
 /** 获取当前通知权限状态 */
 export function getNotifyStatus(): 'granted' | 'denied' | 'prompt' | 'unsupported' {
-  if (!window.isSecureContext) return 'unsupported'
+  if (typeof window === 'undefined' || !window.isSecureContext) return 'unsupported'
   if (typeof Notification === 'undefined') return 'unsupported'
   return Notification.permission as 'granted' | 'denied' | 'prompt'
 }

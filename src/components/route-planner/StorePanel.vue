@@ -41,11 +41,12 @@ function isExpanded(city: string): boolean {
 const filteredStores = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   if (!q) return props.stores
-  return props.stores.filter(s =>
-    s.name.toLowerCase().includes(q) ||
-    s.address.toLowerCase().includes(q) ||
-    s.city.toLowerCase().includes(q) ||
-    s.contact?.toLowerCase().includes(q),
+  return props.stores.filter(
+    (s) =>
+      s.name.toLowerCase().includes(q) ||
+      s.address.toLowerCase().includes(q) ||
+      s.city.toLowerCase().includes(q) ||
+      s.contact?.toLowerCase().includes(q),
   )
 })
 
@@ -100,8 +101,8 @@ function sourceLabel(source: string): string {
 // ── 统计 ──
 const stats = computed(() => {
   const total = props.stores.length
-  const withCoord = props.stores.filter(s => s.longitude && s.latitude).length
-  const skipped = props.stores.filter(s => s.skipped).length
+  const withCoord = props.stores.filter((s) => s.longitude && s.latitude).length
+  const skipped = props.stores.filter((s) => s.skipped).length
   return { total, withCoord, skipped }
 })
 </script>
@@ -121,20 +122,8 @@ const stats = computed(() => {
     <!-- 搜索框 -->
     <div class="search-bar">
       <span class="search-icon">🔍</span>
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="搜索门店名、城市、地址..."
-        class="search-input"
-      />
-      <button
-        v-if="searchQuery"
-        class="search-clear"
-        @click="searchQuery = ''"
-        title="清除搜索"
-      >
-        ✕
-      </button>
+      <input v-model="searchQuery" type="text" placeholder="搜索门店名、城市、地址..." class="search-input" />
+      <button v-if="searchQuery" class="search-clear" title="清除搜索" @click="searchQuery = ''">✕</button>
     </div>
 
     <!-- 分组列表 -->
@@ -145,16 +134,14 @@ const stats = computed(() => {
           <span class="group-name">{{ city }}</span>
           <span class="group-count">{{ cityStores.length }}家</span>
           <div class="group-batch" @click.stop>
-            <button
-              class="btn-batch"
-              title="跳过/取消跳过此城市所有门店"
-              @click="emit('skipCity', city)"
-            >⏭️</button>
+            <button class="btn-batch" title="跳过/取消跳过此城市所有门店" @click="emit('skipCity', city)">⏭️</button>
             <button
               class="btn-batch btn-batch-danger"
               title="删除此城市所有门店"
               @click="requestDeleteCity(city, cityStores.length)"
-            >🗑️</button>
+            >
+              🗑️
+            </button>
           </div>
         </div>
         <div v-if="isExpanded(city)" class="store-list">
@@ -165,7 +152,9 @@ const stats = computed(() => {
             :class="{ skipped: store.skipped, noCoord: !store.longitude }"
           >
             <div class="store-info">
-              <div class="store-name">{{ store.name || store.address }}</div>
+              <div class="store-name">
+                {{ store.name || store.address }}
+              </div>
               <div class="store-meta">
                 <span class="source-tag">{{ sourceLabel(store.coordSource) }}</span>
                 <span v-if="store.contact" class="contact">{{ store.contact }} {{ store.phone }}</span>
@@ -204,7 +193,9 @@ const stats = computed(() => {
       <div v-if="confirmTarget" class="confirm-overlay" @click.self="cancelDelete">
         <div class="confirm-box">
           <p class="confirm-text">确定删除「{{ confirmTarget.name }}」？</p>
-          <p class="confirm-hint">{{ confirmTarget.city ? '将删除该城市所有门店' : '删除后不可恢复' }}</p>
+          <p class="confirm-hint">
+            {{ confirmTarget.city ? '将删除该城市所有门店' : '删除后不可恢复' }}
+          </p>
           <div class="confirm-actions">
             <button class="btn-cancel" @click="cancelDelete">取消</button>
             <button class="btn-confirm-delete" @click="confirmDelete">确认删除</button>
@@ -228,14 +219,14 @@ const stats = computed(() => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border-light, #e2e8f0);
   flex-shrink: 0;
 }
 
 .btn-add {
   padding: 6px 14px;
-  background: #3b82f6;
-  color: #fff;
+  background: var(--color-primary, #3b82f6);
+  color: var(--color-surface, #fff);
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -243,18 +234,18 @@ const stats = computed(() => {
 }
 
 .btn-add:hover {
-  background: #2563eb;
+  background: var(--color-primary-hover, #2563eb);
 }
 
 .stats {
   display: flex;
   gap: 10px;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
 }
 
 .skip-count {
-  color: #f59e0b;
+  color: var(--color-warning, #f59e0b);
 }
 
 /* 搜索框 */
@@ -262,7 +253,7 @@ const stats = computed(() => {
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border-light, #e2e8f0);
   gap: 6px;
   flex-shrink: 0;
 }
@@ -277,27 +268,27 @@ const stats = computed(() => {
   border: none;
   outline: none;
   font-size: 13px;
-  color: #334155;
+  color: var(--color-text, #334155);
   background: transparent;
 }
 
 .search-input::placeholder {
-  color: #cbd5e1;
+  color: var(--color-text-muted, #cbd5e1);
 }
 
 .search-clear {
   background: none;
   border: none;
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
 }
 
 .search-clear:hover {
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--color-text-secondary, #64748b);
+  background: var(--color-bg-alt, #f1f5f9);
 }
 
 .group-list {
@@ -315,22 +306,22 @@ const stats = computed(() => {
   justify-content: space-between;
   align-items: center;
   padding: 6px 10px;
-  background: #f1f5f9;
+  background: var(--color-bg-alt, #f1f5f9);
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #475569;
+  color: var(--color-text-secondary, #475569);
   cursor: pointer;
   user-select: none;
 }
 
 .group-header:hover {
-  background: #e2e8f0;
+  background: var(--color-border-light, #e2e8f0);
 }
 
 .group-arrow {
   font-size: 9px;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
   width: 14px;
   flex-shrink: 0;
 }
@@ -361,16 +352,16 @@ const stats = computed(() => {
 }
 
 .btn-batch:hover {
-  background: #e2e8f0;
+  background: var(--color-border-light, #e2e8f0);
 }
 
 .btn-batch-danger:hover {
-  background: #fef2f2;
+  background: var(--color-danger-bg, #fef2f2);
 }
 
 .group-count {
   font-weight: 400;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
   font-size: 12px;
 }
 
@@ -388,7 +379,7 @@ const stats = computed(() => {
 }
 
 .store-item:hover {
-  background: #f8fafc;
+  background: var(--color-bg, #f8fafc);
 }
 
 .store-item.skipped {
@@ -397,7 +388,7 @@ const stats = computed(() => {
 }
 
 .store-item.noCoord {
-  border-left: 3px solid #f59e0b;
+  border-left: 3px solid var(--color-warning, #f59e0b);
 }
 
 .store-info {
@@ -407,7 +398,7 @@ const stats = computed(() => {
 
 .store-name {
   font-size: 13px;
-  color: #334155;
+  color: var(--color-text, #334155);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -418,7 +409,7 @@ const stats = computed(() => {
   gap: 8px;
   margin-top: 2px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
 }
 
 .source-tag {
@@ -448,7 +439,7 @@ const stats = computed(() => {
 }
 
 .btn-icon:hover {
-  background: #e2e8f0;
+  background: var(--color-border-light, #e2e8f0);
 }
 
 .empty-state {
@@ -457,7 +448,7 @@ const stats = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
   font-size: 14px;
   padding: 24px;
 }
@@ -481,7 +472,7 @@ const stats = computed(() => {
 }
 
 .confirm-box {
-  background: #fff;
+  background: var(--color-surface, #fff);
   border-radius: 12px;
   padding: 24px 28px;
   text-align: center;
@@ -491,13 +482,13 @@ const stats = computed(() => {
 
 .confirm-text {
   font-size: 15px;
-  color: #1e293b;
+  color: var(--color-text, #1e293b);
   margin: 0 0 4px;
 }
 
 .confirm-hint {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--color-text-muted, #94a3b8);
   margin: 0 0 16px;
 }
 
@@ -509,22 +500,22 @@ const stats = computed(() => {
 
 .btn-cancel {
   padding: 8px 20px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border-light, #e2e8f0);
   border-radius: 6px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-text-secondary, #64748b);
   cursor: pointer;
 }
 
 .btn-cancel:hover {
-  background: #f8fafc;
+  background: var(--color-bg, #f8fafc);
 }
 
 .btn-confirm-delete {
   padding: 8px 20px;
-  background: #ef4444;
-  color: #fff;
+  background: var(--color-danger, #ef4444);
+  color: var(--color-surface, #fff);
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -532,6 +523,6 @@ const stats = computed(() => {
 }
 
 .btn-confirm-delete:hover {
-  background: #dc2626;
+  background: var(--color-danger-hover, #dc2626);
 }
 </style>

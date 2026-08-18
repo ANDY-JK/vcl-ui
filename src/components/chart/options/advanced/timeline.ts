@@ -1,6 +1,6 @@
 // ⛔ 保护 — 时间轴 builder（timeline 组件包裹任意基础图表）
 import type { EChartsOption } from 'echarts'
-import type { BuildParams } from '../../types'
+import type { BuildParams } from '../../utils/types'
 import { buildBar } from '../core/bar'
 import { textColor } from '../common'
 
@@ -25,7 +25,7 @@ export function buildTimeline(p: BuildParams): EChartsOption {
     }
   }
 
-  const baseOptions = timePoints.map(tp => {
+  const baseOptions = timePoints.map((tp) => {
     const childParams: BuildParams = { ...p, categories: tp.categories, series: tp.series }
     return buildBar(childParams)
   })
@@ -33,13 +33,15 @@ export function buildTimeline(p: BuildParams): EChartsOption {
   return {
     baseOption: {
       timeline: {
-        data: timePoints.map(tp => tp.time),
+        data: timePoints.map((tp) => tp.time),
         axisType: 'category' as const,
         autoPlay: true,
         playInterval: 2000,
         label: { color: textColor(p) },
       },
-      title: p.title ? { text: p.title, left: 'center', textStyle: { fontSize: 14, color: textColor(p), fontWeight: 600 } } : undefined,
+      title: p.title
+        ? { text: p.title, left: 'center', textStyle: { fontSize: 14, color: textColor(p), fontWeight: 600 } }
+        : undefined,
       tooltip: p.showTooltip ? { trigger: 'axis' as const } : undefined,
       backgroundColor: 'transparent' as const,
     },

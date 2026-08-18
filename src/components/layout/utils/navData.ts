@@ -49,7 +49,11 @@ export const navTree: NavNode[] = [
     icon: 'square-pen',
     children: [
       { label: 'Input 输入（text/number/textarea/search）', icon: 'square-pen', route: '/input' },
-      { label: 'Select 选择器（select/combobox/date/time/cascader/tree/menu）', icon: 'circle-check', route: '/select' },
+      {
+        label: 'Select 选择器（select/combobox/date/time/cascader/tree/menu）',
+        icon: 'circle-check',
+        route: '/select',
+      },
       { label: 'Group 选择组（radio/checkbox/switch/rate/slider）', icon: 'check-square', route: '/group' },
       { label: 'Icon 图标（渲染+选择器）', icon: 'star', route: '/icon' },
       { label: 'Upload 上传', icon: 'upload', route: '/upload' },
@@ -164,14 +168,14 @@ function getFlat(nodes: NavNode[]): NavNode[] {
 /** 根据路由获取当前组件名 */
 export function getCurrentLabel(currentRoute: string, nodes?: NavNode[]): string {
   const flat = nodes ? getFlat(nodes) : _flat
-  const item = flat.find(item => item.route === currentRoute)
+  const item = flat.find((item) => item.route === currentRoute)
   return item?.label || ''
 }
 
 /** 根据当前路由获取上一个/下一个组件 */
 export function getPrevNext(currentRoute: string, nodes?: NavNode[]) {
   const flat = nodes ? getFlat(nodes) : _flat
-  const idx = flat.findIndex(item => item.route === currentRoute)
+  const idx = flat.findIndex((item) => item.route === currentRoute)
   return {
     current: idx >= 0 ? flat[idx] : null,
     prev: idx > 0 ? flat[idx - 1] : null,
@@ -183,7 +187,7 @@ export function getPrevNext(currentRoute: string, nodes?: NavNode[]) {
 export function getCategory(currentRoute: string, nodes?: NavNode[]): string {
   const tree = nodes || navTree
   for (const group of tree) {
-    if (group.children?.some(c => c.route === currentRoute)) return group.label
+    if (group.children?.some((c) => c.route === currentRoute)) return group.label
     const deep = findCategoryLabel(group.children ?? [], currentRoute)
     if (deep) return deep
   }

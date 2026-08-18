@@ -20,9 +20,22 @@ export interface FloatAction {
 export interface FieldConfig {
   key: string
   name: string
-  type: 'text' | 'select' | 'textarea' | 'number' | 'date'
-       | 'radio' | 'switch' | 'checkbox' | 'rate' | 'color' | 'icon-picker'
-       | 'cascader' | 'tree-select' | 'time' | 'slider'
+  type:
+    | 'text'
+    | 'select'
+    | 'textarea'
+    | 'number'
+    | 'date'
+    | 'radio'
+    | 'switch'
+    | 'checkbox'
+    | 'rate'
+    | 'color'
+    | 'icon-picker'
+    | 'cascader'
+    | 'tree-select'
+    | 'time'
+    | 'slider'
   required?: boolean
   defaultValue?: string
   options?: string[]
@@ -128,7 +141,7 @@ export interface PersistedFormData {
 
 /** 单元格图片 */
 export interface CellImage {
-  src: string  // base64 或 url
+  src: string // base64 或 url
   width?: number
   height?: number
 }

@@ -25,19 +25,26 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const justifyMap: Record<string, string> = {
-  start: 'flex-start', end: 'flex-end', center: 'center',
-  between: 'space-between', around: 'space-around', evenly: 'space-evenly',
+  start: 'flex-start',
+  end: 'flex-end',
+  center: 'center',
+  between: 'space-between',
+  around: 'space-around',
+  evenly: 'space-evenly',
 }
 
 const alignMap: Record<string, string> = {
-  start: 'flex-start', end: 'flex-end', center: 'center',
-  stretch: 'stretch', baseline: 'baseline',
+  start: 'flex-start',
+  end: 'flex-end',
+  center: 'center',
+  stretch: 'stretch',
+  baseline: 'baseline',
 }
 
 const flexStyle = computed<CSSProperties>(() => ({
   display: props.inline ? 'inline-flex' : 'flex',
   // Space 兼容：horizontal → row, vertical → column
-  flexDirection: props.direction === 'vertical' ? 'column' : (props.direction === 'horizontal' ? 'row' : props.direction),
+  flexDirection: props.direction === 'vertical' ? 'column' : props.direction === 'horizontal' ? 'row' : props.direction,
   justifyContent: justifyMap[props.justify] || props.justify,
   alignItems: alignMap[props.align] || props.align,
   gap: props.gap,
@@ -55,5 +62,8 @@ const flexStyle = computed<CSSProperties>(() => ({
 </template>
 
 <style scoped>
-.flex { box-sizing: border-box; width: 100%; }
+.flex {
+  box-sizing: border-box;
+  width: 100%;
+}
 </style>

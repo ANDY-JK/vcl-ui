@@ -33,9 +33,7 @@ const treeData: TreeNode[] = [
         key: '1-2',
         label: '已下架',
         icon: 'archive',
-        children: [
-          { key: '1-2-1', label: '旧版工具', icon: 'wrench' },
-        ],
+        children: [{ key: '1-2-1', label: '旧版工具', icon: 'wrench' }],
       },
     ],
   },
@@ -169,46 +167,39 @@ function onNodeClick(node: TreeNode) {
   <div class="demo">
     <h2 class="demo-title">Tree 树形控件</h2>
     <p class="demo-desc">
-      递归树形控件，用于展示层级数据。支持 <strong>展开/折叠</strong>、<strong>多选联动</strong>、<strong>单选高亮</strong>、<strong>图标</strong> 和 <strong>禁用</strong>。
+      递归树形控件，用于展示层级数据。支持
+      <strong>展开/折叠</strong>、<strong>多选联动</strong>、<strong>单选高亮</strong>、<strong>图标</strong> 和
+      <strong>禁用</strong>。
     </p>
 
     <div class="grid-2-col" style="margin-bottom: 24px">
       <!-- Basic tree -->
-      <Card title="基础用法" overflowVisible>
-        <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
-          点击箭头或标签展开/折叠子节点
-        </p>
-        <Tree
-          :data="treeData"
-          @node-click="onNodeClick"
-        />
+      <Card title="基础用法" overflow-visible>
+        <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">点击箭头或标签展开/折叠子节点</p>
+        <Tree :data="treeData" @node-click="onNodeClick" />
       </Card>
 
       <!-- Checkable tree -->
-      <Card title="多选联动" overflowVisible>
+      <Card title="多选联动" overflow-visible>
         <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
           勾选父节点自动选中所有子节点，半选状态自动计算
         </p>
-        <Tree
-          :data="checkableData"
-          checkable
-          @check-change="onCheckChange"
-        />
+        <Tree :data="checkableData" checkable @check-change="onCheckChange" />
         <p style="margin-top: 8px; font-size: 11px; color: var(--color-text-muted)">
           已选中: {{ checkedKeys.length > 0 ? checkedKeys.join(', ') : '无' }}
         </p>
       </Card>
 
       <!-- Selectable tree -->
-      <Card title="单选模式" overflowVisible>
+      <Card title="单选模式" overflow-visible>
         <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
           点击节点高亮选中，不会自动展开/折叠
         </p>
         <Tree
           :data="selectableData"
           selectable
-          :selectedKey="selectedKey"
-          @update:selectedKey="(k) => (selectedKey = k)"
+          :selected-key="selectedKey"
+          @update:selected-key="(k) => (selectedKey = k)"
         />
         <p style="margin-top: 8px; font-size: 11px; color: var(--color-text-muted)">
           当前选中: {{ selectedKey ?? '无' }}
@@ -216,48 +207,126 @@ function onNodeClick(node: TreeNode) {
       </Card>
 
       <!-- Expand all / default expanded -->
-      <Card title="默认展开" overflowVisible>
+      <Card title="默认展开" overflow-visible>
         <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
           通过 defaultExpandedKeys 指定初始展开的节点
         </p>
-        <Tree
-          :data="treeData"
-          :defaultExpandedKeys="['1', '2']"
-        />
+        <Tree :data="treeData" :default-expanded-keys="['1', '2']" />
       </Card>
     </div>
 
     <Card title="API">
-      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
-          <tr style="border-bottom:2px solid var(--color-border);text-align:left;">
-            <th style="padding:4px 8px;">属性</th>
-            <th style="padding:4px 8px;">类型</th>
-            <th style="padding:4px 8px;">默认值</th>
-            <th style="padding:4px 8px;">说明</th>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: 4px 8px">属性</th>
+            <th style="padding: 4px 8px">类型</th>
+            <th style="padding: 4px 8px">默认值</th>
+            <th style="padding: 4px 8px">说明</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>data</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>TreeNode[]</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">—</td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">树形数据源</td></tr>
-          <tr><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>checkable</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>boolean</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>false</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">是否显示复选框</td></tr>
-          <tr><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>selectable</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>boolean</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>false</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">点击节点高亮选中</td></tr>
-          <tr><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>selectedKey</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>string | number | null</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>null</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">当前选中的节点 key</td></tr>
-          <tr><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>defaultExpandedKeys</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>(string | number)[]</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>[]</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">初始展开的节点 key 列表</td></tr>
-          <tr><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>expandAll</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>boolean</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);"><code>false</code></td><td style="padding:3px 8px;border-bottom:1px solid var(--color-border-light);">是否展开所有节点</td></tr>
+          <tr>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>data</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>TreeNode[]</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">树形数据源</td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>checkable</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>boolean</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>false</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">是否显示复选框</td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>selectable</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>boolean</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>false</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">点击节点高亮选中</td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>selectedKey</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>string | number | null</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>null</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">当前选中的节点 key</td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>defaultExpandedKeys</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>(string | number)[]</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>[]</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              初始展开的节点 key 列表
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>expandAll</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>boolean</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+              <code>false</code>
+            </td>
+            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">是否展开所有节点</td>
+          </tr>
         </tbody>
       </table>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-top:12px">
-        <strong>TreeNode 接口：</strong><code>key</code> · <code>label</code> · <code>children?</code> · <code>disabled?</code> · <code>checked?</code> · <code>icon?</code>
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 12px">
+        <strong>TreeNode 接口：</strong><code>key</code> · <code>label</code> · <code>children?</code> ·
+        <code>disabled?</code> · <code>checked?</code> · <code>icon?</code>
       </p>
-      <p style="font-size:12px;color:var(--color-text-muted);margin-top:8px">
-        <strong>Events：</strong><code>@node-click(node)</code> · <code>@check-change(keys, node)</code> · <code>@update:selectedKey(key)</code>
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
+        <strong>Events：</strong><code>@node-click(node)</code> · <code>@check-change(keys, node)</code> ·
+        <code>@update:selectedKey(key)</code>
       </p>
     </Card>
   </div>
 </template>
 
 <style scoped>
-.demo-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-.demo-desc { color: var(--color-text-muted); margin-bottom: 24px; font-size: 14px; }
-code { background: var(--color-bg-alt); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+.demo-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.demo-desc {
+  color: var(--color-text-muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+code {
+  background: var(--color-bg-alt);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
 </style>

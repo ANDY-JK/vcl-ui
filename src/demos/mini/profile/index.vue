@@ -42,9 +42,13 @@ const menuGroups = [
   <div class="page">
     <!-- 用户卡片 -->
     <div class="user-card" @click="router.push('/mini/settings')">
-      <div class="avatar"><IconSvg type="user" size="lg" color="white" /></div>
+      <div class="avatar">
+        <IconSvg type="user" size="lg" color="white" />
+      </div>
       <div class="user-info">
-        <div class="user-name">{{ user.name }}</div>
+        <div class="user-name">
+          {{ user.name }}
+        </div>
         <div class="user-meta">
           <span>{{ user.role }}</span>
           <span class="dot-sep">·</span>
@@ -76,17 +80,21 @@ const menuGroups = [
 
     <!-- 菜单 -->
     <div v-for="group in menuGroups" :key="group.title" class="menu-group">
-      <div class="menu-group-title">{{ group.title }}</div>
+      <div class="menu-group-title">
+        {{ group.title }}
+      </div>
       <div class="menu-list">
-        <button
-          v-for="m in group.items" :key="m.label"
-          class="menu-item"
-          @click="router.push(m.route)"
-        >
-          <div class="menu-icon"><IconSvg :type="m.icon" size="md" /></div>
+        <button v-for="m in group.items" :key="m.label" class="menu-item" @click="router.push(m.route)">
+          <div class="menu-icon">
+            <IconSvg :type="m.icon" size="md" />
+          </div>
           <div class="menu-info">
-            <div class="menu-label">{{ m.label }}</div>
-            <div class="menu-desc">{{ m.desc }}</div>
+            <div class="menu-label">
+              {{ m.label }}
+            </div>
+            <div class="menu-desc">
+              {{ m.desc }}
+            </div>
           </div>
           <span v-if="m.badge" class="menu-badge">{{ m.badge }}</span>
           <IconSvg type="chevron-right" size="sm" color="var(--color-text-muted)" />
@@ -104,69 +112,169 @@ const menuGroups = [
 </template>
 
 <style scoped>
-.page { padding: 12px; }
+.page {
+  padding: 12px;
+}
 
 .user-card {
-  display: flex; align-items: center; gap: 12px;
-  padding: 20px 16px; margin-bottom: 12px;
-  background: var(--color-surface); border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-light); cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
+  margin-bottom: 12px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
   transition: border-color 120ms;
 }
-.user-card:hover { border-color: var(--color-primary); }
-.avatar {
-  display: flex; align-items: center; justify-content: center;
-  width: 52px; height: 52px; border-radius: 50%;
-  background: var(--color-primary); flex-shrink: 0;
+.user-card:hover {
+  border-color: var(--color-primary);
 }
-.user-info { flex: 1; }
-.user-name { font-size: 18px; font-weight: 600; color: var(--color-text); }
-.user-meta { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-.dot-sep { color: var(--color-border); }
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+.user-info {
+  flex: 1;
+}
+.user-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.user-meta {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dot-sep {
+  color: var(--color-border);
+}
 
 .shortcut-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
   margin-bottom: 16px;
 }
 .shortcut {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 12px 4px; border: none; border-radius: var(--radius-md);
-  background: var(--color-surface); font-size: 11px; color: var(--color-text-secondary);
-  cursor: pointer; font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
   transition: background 120ms;
 }
-.shortcut:hover { background: var(--color-bg-alt); }
+.shortcut:hover {
+  background: var(--color-bg-alt);
+}
 
-.menu-group { margin-bottom: 12px; }
-.menu-group-title { font-size: 12px; color: var(--color-text-muted); padding: 0 4px; margin-bottom: 4px; }
-.menu-list { background: var(--color-surface); border-radius: var(--radius-md); overflow: hidden; }
+.menu-group {
+  margin-bottom: 12px;
+}
+.menu-group-title {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding: 0 4px;
+  margin-bottom: 4px;
+}
+.menu-list {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
 .menu-item {
-  display: flex; align-items: center; gap: 10px; width: 100%;
-  padding: 14px 12px; border: none; background: transparent;
-  cursor: pointer; transition: background 120ms ease; font-family: inherit; text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 120ms ease;
+  font-family: inherit;
+  text-align: left;
 }
-.menu-item + .menu-item { border-top: 1px solid var(--color-border-light); }
-.menu-item:hover { background: var(--color-bg-alt); }
+.menu-item + .menu-item {
+  border-top: 1px solid var(--color-border-light);
+}
+.menu-item:hover {
+  background: var(--color-bg-alt);
+}
 .menu-icon {
-  display: flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border-radius: var(--radius-sm);
-  background: var(--color-bg); color: var(--color-text-secondary); flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
 }
-.menu-info { flex: 1; min-width: 0; }
-.menu-label { font-size: 14px; color: var(--color-text); }
-.menu-desc { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+.menu-info {
+  flex: 1;
+  min-width: 0;
+}
+.menu-label {
+  font-size: 14px;
+  color: var(--color-text);
+}
+.menu-desc {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
 .menu-badge {
-  display: flex; align-items: center; justify-content: center;
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--color-danger); color: #fff; font-size: 10px; font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .logout-btn {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  width: 100%; padding: 12px; margin-top: 12px;
-  border: 1px solid var(--color-border); border-radius: var(--radius-md);
-  background: var(--color-surface); color: var(--color-text-muted);
-  font-size: 14px; cursor: pointer; transition: all 150ms ease; font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  font-family: inherit;
 }
-.logout-btn:hover { border-color: var(--color-danger); color: var(--color-danger); }
+.logout-btn:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
 </style>

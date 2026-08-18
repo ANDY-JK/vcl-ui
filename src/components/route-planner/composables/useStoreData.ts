@@ -2,7 +2,7 @@
  * 门店数据管理 — CRUD + localStorage 持久化
  */
 import { ref, computed, watch } from 'vue'
-import { isValidLatLon } from '@/components/geolocation/geolocation'
+import { isValidLatLon } from '@/components/amap/amap-service'
 import type { Store } from '@/components/route-planner/types'
 
 const STORAGE_KEY = 'route-planner-stores'
@@ -43,9 +43,7 @@ export function useStoreData() {
   const allStores = computed(() => stores.value)
 
   /** 有效门店（有坐标） */
-  const validStores = computed(() =>
-    stores.value.filter(s => s.longitude != null && s.latitude != null),
-  )
+  const validStores = computed(() => stores.value.filter((s) => s.longitude != null && s.latitude != null))
 
   /** 按城市分组统计 */
   const cityStats = computed(() => {
@@ -73,7 +71,7 @@ export function useStoreData() {
 
   /** 更新门店 */
   function updateStore(id: string, data: Partial<Store>): void {
-    const idx = stores.value.findIndex(s => s.id === id)
+    const idx = stores.value.findIndex((s) => s.id === id)
     if (idx !== -1) {
       stores.value[idx] = { ...stores.value[idx], ...data }
     }
@@ -81,7 +79,7 @@ export function useStoreData() {
 
   /** 删除门店 */
   function removeStore(id: string): void {
-    stores.value = stores.value.filter(s => s.id !== id)
+    stores.value = stores.value.filter((s) => s.id !== id)
   }
 
   /** 批量导入 */
@@ -91,7 +89,7 @@ export function useStoreData() {
 
   /** 切换跳过状态 */
   function toggleSkip(id: string): void {
-    const store = stores.value.find(s => s.id === id)
+    const store = stores.value.find((s) => s.id === id)
     if (store) store.skipped = !store.skipped
   }
 

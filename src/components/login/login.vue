@@ -19,11 +19,15 @@
             </slot>
           </div>
           <h2>{{ brandTitle || (tenantMode ? '租户业务管理平台' : 'SaaS 管理系统') }}</h2>
-          <p>{{ brandSubtitle || (tenantMode ? '由管理员分配账号使用' : '现代化企业级业务管理平台，助力数字化转型') }}</p>
+          <p>
+            {{ brandSubtitle || (tenantMode ? '由管理员分配账号使用' : '现代化企业级业务管理平台，助力数字化转型') }}
+          </p>
         </div>
 
         <ul v-if="features && features.length" class="features-list">
-          <li v-for="f in features" :key="f">{{ f }}</li>
+          <li v-for="f in features" :key="f">
+            {{ f }}
+          </li>
         </ul>
         <ul v-else class="features-list">
           <template v-if="tenantMode">
@@ -44,8 +48,14 @@
       <!-- 右侧表单面板 -->
       <div class="login-right">
         <div class="login-header">
-          <h1><slot name="welcome-title">欢迎回来</slot></h1>
-          <p><slot name="subtitle">{{ tenantMode ? '请登录您的工作账号' : '请登录您的账户以继续' }}</slot></p>
+          <h1>
+            <slot name="welcome-title"> 欢迎回来 </slot>
+          </h1>
+          <p>
+            <slot name="subtitle">
+              {{ tenantMode ? '请登录您的工作账号' : '请登录您的账户以继续' }}
+            </slot>
+          </p>
         </div>
 
         <div class="login-form">
@@ -82,7 +92,8 @@
               href="javascript:;"
               class="forgot-password"
               @click="emit('forgot-password')"
-            ><slot name="forgot-text">忘记密码？</slot></a>
+              ><slot name="forgot-text">忘记密码？</slot></a
+            >
           </div>
 
           <Button
@@ -93,13 +104,7 @@
             @click="handleSubmit"
           />
 
-          <Toast
-            v-if="displayError"
-            variant="inline"
-            :type="errorType"
-            :message="displayError"
-            closable
-          />
+          <Toast v-if="displayError" variant="inline" :type="errorType" :message="displayError" closable />
 
           <template v-if="showSocialLogin && !tenantMode">
             <Divider :text="socialDividerText" />
@@ -127,7 +132,10 @@
           </template>
           <template v-else>
             <template v-if="showRegister">
-              <slot name="register-prompt">还没有账户？</slot><a href="javascript:;" class="register-link" @click="emit('register')"><slot name="register-text">立即注册</slot></a>
+              <slot name="register-prompt"> 还没有账户？ </slot
+              ><a href="javascript:;" class="register-link" @click="emit('register')"
+                ><slot name="register-text">立即注册</slot></a
+              >
             </template>
           </template>
         </div>
@@ -148,50 +156,53 @@ import { storageGet, storageSet, storageDelete } from '@/components/storage/inde
 
 // ======================== Props ========================
 
-const props = withDefaults(defineProps<{
-  // === 布局 ===
-  /** 容器最大宽度，CSS 值，默认 960px */
-  maxWidth?: string
-  /** 强制隐藏左侧品牌面板 */
-  hideBrand?: boolean
-  /** 容器最小高度，CSS 值，默认 100% */
-  minHeight?: string
+const props = withDefaults(
+  defineProps<{
+    // === 布局 ===
+    /** 容器最大宽度，CSS 值，默认 960px */
+    maxWidth?: string
+    /** 强制隐藏左侧品牌面板 */
+    hideBrand?: boolean
+    /** 容器最小高度，CSS 值，默认 100% */
+    minHeight?: string
 
-  // === 内容 ===
-  /** 租户登录模式 */
-  tenantMode?: boolean
-  /** 外部控制加载态（如 API 请求中） */
-  loading?: boolean
-  /** 外部注入错误/提示信息 */
-  error?: string
-  /** 最大尝试次数，0 禁用锁定 */
-  maxAttempts?: number
-  /** 锁定分钟数 */
-  lockMinutes?: number
-  /** 品牌标题 */
-  brandTitle?: string
-  /** 品牌副标题 */
-  brandSubtitle?: string
-  /** 自定义特性列表 */
-  features?: string[]
-  /** 是否显示社交登录 */
-  showSocialLogin?: boolean
-  /** 是否显示忘记密码入口 */
-  showForgotPassword?: boolean
-  /** 是否显示注册入口 */
-  showRegister?: boolean
-}>(), {
-  maxWidth: '960px',
-  hideBrand: false,
-  minHeight: '100%',
-  tenantMode: false,
-  loading: false,
-  maxAttempts: 5,
-  lockMinutes: 15,
-  showSocialLogin: true,
-  showForgotPassword: true,
-  showRegister: true,
-})
+    // === 内容 ===
+    /** 租户登录模式 */
+    tenantMode?: boolean
+    /** 外部控制加载态（如 API 请求中） */
+    loading?: boolean
+    /** 外部注入错误/提示信息 */
+    error?: string
+    /** 最大尝试次数，0 禁用锁定 */
+    maxAttempts?: number
+    /** 锁定分钟数 */
+    lockMinutes?: number
+    /** 品牌标题 */
+    brandTitle?: string
+    /** 品牌副标题 */
+    brandSubtitle?: string
+    /** 自定义特性列表 */
+    features?: string[]
+    /** 是否显示社交登录 */
+    showSocialLogin?: boolean
+    /** 是否显示忘记密码入口 */
+    showForgotPassword?: boolean
+    /** 是否显示注册入口 */
+    showRegister?: boolean
+  }>(),
+  {
+    maxWidth: '960px',
+    hideBrand: false,
+    minHeight: '100%',
+    tenantMode: false,
+    loading: false,
+    maxAttempts: 5,
+    lockMinutes: 15,
+    showSocialLogin: true,
+    showForgotPassword: true,
+    showRegister: true,
+  },
+)
 
 // ======================== Emits ========================
 
@@ -219,18 +230,16 @@ const passwordLabel = '密码'
 const submitText = '登 录'
 const socialDividerText = '其他登录方式'
 
-const usernameHint = computed(() =>
-  form.username.length > 0 && form.username.length < 3 ? '用户名至少 3 个字符' : ''
-)
+const usernameHint = computed(() => (form.username.length > 0 && form.username.length < 3 ? '用户名至少 3 个字符' : ''))
 
 const usernameRules = [
-  (v: string) => v.trim() ? undefined : '请输入用户名',
-  (v: string) => v.length >= 3 ? undefined : '用户名至少 3 个字符',
+  (v: string) => (v.trim() ? undefined : '请输入用户名'),
+  (v: string) => (v.length >= 3 ? undefined : '用户名至少 3 个字符'),
 ]
 
 const passwordRules = [
-  (v: string) => v ? undefined : '请输入密码',
-  (v: string) => v.length >= 6 ? undefined : '密码至少 6 个字符',
+  (v: string) => (v ? undefined : '请输入密码'),
+  (v: string) => (v.length >= 6 ? undefined : '密码至少 6 个字符'),
 ]
 
 // ======================== 锁定逻辑（内置，依赖 indexedDB 存储） ========================
@@ -273,7 +282,10 @@ function startLockCountdown() {
       lockUntil.value = 0
       storageDelete(LOCK_KEY)
       internalError.value = ''
-      if (lockTimer) { clearInterval(lockTimer); lockTimer = null }
+      if (lockTimer) {
+        clearInterval(lockTimer)
+        lockTimer = null
+      }
     } else {
       const min = Math.floor(remaining / 60000)
       const sec = Math.floor((remaining % 60000) / 1000)
@@ -283,7 +295,9 @@ function startLockCountdown() {
   }, 1000)
 }
 
-onUnmounted(() => { if (lockTimer) clearInterval(lockTimer) })
+onUnmounted(() => {
+  if (lockTimer) clearInterval(lockTimer)
+})
 
 // ======================== 初始化 ========================
 
@@ -329,7 +343,9 @@ const handleSubmit = () => {
 
   // 点击后立即进入加载态（按钮转圈 + 禁点），父组件回调或兜底超时后恢复
   internalLoading.value = true
-  window.setTimeout(() => { internalLoading.value = false }, 15000)
+  window.setTimeout(() => {
+    internalLoading.value = false
+  }, 15000)
   emit('submit', {
     username: form.username,
     password: form.password,
@@ -364,18 +380,48 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3B56E0 50%, #E54545 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 50%, #e54545 100%);
   padding: clamp(12px, 3vw, 20px);
   position: relative;
   overflow-x: hidden;
 }
 
-.floating-shapes { position: absolute; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
-.shape { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.08); }
-.shape:nth-child(1) { width: 80px; height: 80px; left: 10%; top: 20%; }
-.shape:nth-child(2) { width: 120px; height: 120px; right: 15%; top: 60%; }
-.shape:nth-child(3) { width: 60px; height: 60px; left: 25%; bottom: 15%; }
-.shape:nth-child(4) { width: 100px; height: 100px; right: 30%; top: 10%; }
+.floating-shapes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+.shape:nth-child(1) {
+  width: 80px;
+  height: 80px;
+  left: 10%;
+  top: 20%;
+}
+.shape:nth-child(2) {
+  width: 120px;
+  height: 120px;
+  right: 15%;
+  top: 60%;
+}
+.shape:nth-child(3) {
+  width: 60px;
+  height: 60px;
+  left: 25%;
+  bottom: 15%;
+}
+.shape:nth-child(4) {
+  width: 100px;
+  height: 100px;
+  right: 30%;
+  top: 10%;
+}
 
 .login-container {
   display: flex;
@@ -389,14 +435,20 @@ defineExpose({
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ---- 左侧 ---- */
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3B56E0 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 100%);
   border-radius: var(--radius-xl) 0 0 var(--radius-xl);
   padding: var(--space-12) 44px;
   display: flex;
@@ -409,69 +461,145 @@ defineExpose({
 .login-left::before {
   content: '';
   position: absolute;
-  top: -50%; right: -50%;
-  width: 200%; height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
 }
 
-.brand-logo { position: relative; z-index: 1; margin-bottom: var(--space-12); }
+.brand-logo {
+  position: relative;
+  z-index: 1;
+  margin-bottom: var(--space-12);
+}
 .logo-icon {
-  width: 64px; height: 64px;
+  width: 64px;
+  height: 64px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-xl);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: var(--space-5);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
-.brand-logo h2 { font-size: 32px; font-weight: 600; margin-bottom: var(--space-3); letter-spacing: -0.5px; }
-.brand-logo p { font-size: 16px; opacity: 0.9; line-height: 1.6; }
+.brand-logo h2 {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  letter-spacing: -0.5px;
+}
+.brand-logo p {
+  font-size: 16px;
+  opacity: 0.9;
+  line-height: 1.6;
+}
 
-.features-list { position: relative; z-index: 1; list-style: none; }
-.features-list li { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); font-size: 15px; }
+.features-list {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+}
+.features-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  font-size: 15px;
+}
 .features-list li::before {
   content: '\2713';
-  width: 24px; height: 24px;
+  width: 24px;
+  height: 24px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 /* ---- 右侧 ---- */
 .login-right {
   flex: 1;
   padding: var(--space-12);
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   background: white;
   border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
 }
-.login-header { flex-shrink: 0; padding-bottom: var(--space-8); }
-.login-header h1 { font-size: 22px; font-weight: 600; color: var(--color-text); margin-bottom: var(--space-2); }
-.login-header p { font-size: 14px; color: var(--color-text-secondary); }
+.login-header {
+  flex-shrink: 0;
+  padding-bottom: var(--space-8);
+}
+.login-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+.login-header p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
 
 .login-form {
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-5);
 }
 
-.form-options { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-.remember-me { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; color: var(--color-text-secondary); user-select: none; }
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  user-select: none;
+}
 .checkbox-icon {
-  width: 16px; height: 16px;
+  width: 16px;
+  height: 16px;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
-  color: white; background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: white;
   transition: all var(--transition-fast);
 }
-.checkbox-icon.checked { background: var(--color-primary); border-color: var(--color-primary); }
-.forgot-password { color: var(--color-primary); text-decoration: none; font-weight: 500; }
-.forgot-password:hover { color: var(--color-primary-hover); }
+.checkbox-icon.checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.forgot-password {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.forgot-password:hover {
+  color: var(--color-primary-hover);
+}
 
-.social-login { display: flex; gap: var(--space-3); }
+.social-login {
+  display: flex;
+  gap: var(--space-3);
+}
 .social-btn {
   flex: 1;
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
   padding: var(--space-3);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -480,22 +608,54 @@ defineExpose({
   transition: all var(--transition-fast);
   user-select: none;
 }
-.social-btn:hover { border-color: var(--color-primary); background: var(--color-bg); transform: translateY(-1px); }
-.social-icon { color: var(--color-text-muted); }
-.social-text { font-size: 12px; color: var(--color-text-secondary); }
+.social-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--color-bg);
+  transform: translateY(-1px);
+}
+.social-icon {
+  color: var(--color-text-muted);
+}
+.social-text {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
 
-.footer-text { text-align: center; font-size: 14px; color: var(--color-text-muted); padding-top: var(--space-8); }
-.register-link { color: var(--color-primary); text-decoration: none; font-weight: 500; }
-.register-link:hover { text-decoration: underline; }
+.footer-text {
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  padding-top: var(--space-8);
+}
+.register-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.register-link:hover {
+  text-decoration: underline;
+}
 
 @media (max-width: 768px) {
-  .login-left { display: none; }
-  .login-container { max-width: min(var(--login-max-width, 960px), 440px); }
-  .login-right { padding: var(--space-10); }
+  .login-left {
+    display: none;
+  }
+  .login-container {
+    max-width: min(var(--login-max-width, 960px), 440px);
+  }
+  .login-right {
+    padding: var(--space-10);
+  }
 }
 @media (max-width: 480px) {
-  .login-right { padding: var(--space-8); }
-  .login-header h1 { font-size: 20px; }
-  .social-btn { padding: var(--space-2); }
+  .login-right {
+    padding: var(--space-8);
+  }
+  .login-header h1 {
+    font-size: 20px;
+  }
+  .social-btn {
+    padding: var(--space-2);
+  }
 }
 </style>

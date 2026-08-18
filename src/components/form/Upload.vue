@@ -2,8 +2,12 @@
 // ⛔ 保护 — 文件上传，禁止：clamp() → px，拖拽区尺寸比例，进度条动画
 //    需我确认：accept 文件类型、multiple 多文件逻辑、预览图尺寸
 import { ref, watch, computed, onUnmounted, onErrorCaptured } from 'vue'
+import { formatSize } from '@/components/_internal/format-utils'
 const _error = ref<Error | null>(null)
-onErrorCaptured((e: Error) => { _error.value = e; return false })
+onErrorCaptured((e: Error) => {
+  _error.value = e
+  return false
+})
 import IconSvg from '@/components/basic/IconSvg.vue'
 import ProgressBar from '@/components/data/ProgressBar.vue'
 import CameraCapture from '@/components/form/CameraCapture.vue'
@@ -78,28 +82,28 @@ const timers: ReturnType<typeof setInterval>[] = []
 let fileId = 0
 
 // 同步外部 modelValue → 内部 files（双向：外部清空时内部也清，避免预览残留）
-watch(() => props.modelValue, (val) => {
-  if (val && val.length > 0) {
-    if (files.value.length === 0) files.value = val
-  } else if (val && val.length === 0) {
-    // 竞态防护：内部有正在上传的文件时，外部空数组通常是「父组件 modelValue getter
-    // 尚未反映本次上传」的同步回环。立即清空会让 realUpload 完成时 emit 空数组，
-    // 父组件 onUpload 误判为「用户删除文件」→ 落盘空记录 → 拍照返回刷新后图片丢失
-    // （每个门店首次上传必现，需拍两次）。等上传完成 emit 后由父组件重新推入即可。
-    if (files.value.some(f => f.status === 'uploading')) return
-    files.value.forEach(f => { if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url) })
-    files.value = []
-  }
-}, { immediate: true })
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (val && val.length > 0) {
+      if (files.value.length === 0) files.value = val
+    } else if (val && val.length === 0) {
+      // 竞态防护：内部有正在上传的文件时，外部空数组通常是「父组件 modelValue getter
+      // 尚未反映本次上传」的同步回环。立即清空会让 realUpload 完成时 emit 空数组，
+      // 父组件 onUpload 误判为「用户删除文件」→ 落盘空记录 → 拍照返回刷新后图片丢失
+      // （每个门店首次上传必现，需拍两次）。等上传完成 emit 后由父组件重新推入即可。
+      if (files.value.some((f) => f.status === 'uploading')) return
+      files.value.forEach((f) => {
+        if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
+      })
+      files.value = []
+    }
+  },
+  { immediate: true },
+)
 
 function syncModel() {
   emit('update:modelValue', [...files.value])
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / 1024 / 1024).toFixed(1) + ' MB'
 }
 
 /** 图片压缩：canvas resize + quality 调整（移动端尤其需要） */
@@ -109,8 +113,14 @@ async function compressImage(file: File): Promise<File> {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {
       const url = URL.createObjectURL(file)
       const img = new Image()
-      img.onload = () => { URL.revokeObjectURL(url); resolve(img) }
-      img.onerror = (e) => { URL.revokeObjectURL(url); reject(e) }
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        resolve(img)
+      }
+      img.onerror = (e) => {
+        URL.revokeObjectURL(url)
+        reject(e)
+      }
       img.src = url
     })
     // 等比缩小到 maxWidth 以内
@@ -126,7 +136,7 @@ async function compressImage(file: File): Promise<File> {
     ctx.drawImage(img, 0, 0, width, height)
     const blob: Blob = await new Promise((resolve, reject) => {
       canvas.toBlob(
-        (b) => b ? resolve(b) : reject(new Error('压缩失败')),
+        (b) => (b ? resolve(b) : reject(new Error('压缩失败'))),
         file.type === 'image/png' ? 'image/png' : 'image/jpeg',
         props.compressQuality,
       )
@@ -145,7 +155,9 @@ function processFiles(fileList: FileList | null) {
   // card 模式且已有文件 → 替换而非追加
   if (props.variant === 'card' && files.value.length) {
     // 清理旧 blob URL
-    files.value.forEach(f => { if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url) })
+    files.value.forEach((f) => {
+      if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
+    })
     files.value = []
   }
   const newFiles: UploadFile[] = []
@@ -167,7 +179,7 @@ function processFiles(fileList: FileList | null) {
       emit('error', `文件 "${f.name}" 小于 ${props.minSize}KB 限制`)
       continue
     }
-    if (files.value.some(existing => existing.name === f.name && existing.size === f.size)) {
+    if (files.value.some((existing) => existing.name === f.name && existing.size === f.size)) {
       emit('error', `文件 "${f.name}" 已存在`)
       continue
     }
@@ -183,7 +195,7 @@ function processFiles(fileList: FileList | null) {
     files.value.unshift(uf)
 
     // 异步压缩图片后上传
-    compressImage(f).then(compressed => {
+    compressImage(f).then((compressed) => {
       uf.size = compressed.size
       if (props.customRequest) {
         realUpload(uf, compressed)
@@ -207,7 +219,11 @@ function createPreviews(newFiles: UploadFile[], fileList: FileList) {
 }
 
 async function realUpload(uf: UploadFile, rawFile: File) {
-  if (!props.customRequest) { uf.status = 'error'; emit('error', '未配置 customRequest'); return }
+  if (!props.customRequest) {
+    uf.status = 'error'
+    emit('error', '未配置 customRequest')
+    return
+  }
   try {
     const result = await props.customRequest(rawFile)
     uf.progress = 100
@@ -240,7 +256,7 @@ function simulateUpload(uf: UploadFile) {
 function removeFile(uf: UploadFile) {
   // 释放 Blob URL 避免内存泄漏
   if (uf.url?.startsWith('blob:')) URL.revokeObjectURL(uf.url)
-  files.value = files.value.filter(f => f.id !== uf.id)
+  files.value = files.value.filter((f) => f.id !== uf.id)
   emit('remove', uf)
   syncModel()
 }
@@ -249,7 +265,9 @@ function onDragOver(e: DragEvent) {
   e.preventDefault()
   if (props.drag && !props.disabled) dragging.value = true
 }
-function onDragLeave() { dragging.value = false }
+function onDragLeave() {
+  dragging.value = false
+}
 function onDrop(e: DragEvent) {
   e.preventDefault()
   dragging.value = false
@@ -263,35 +281,36 @@ function onInputChange(e: Event) {
 /** 检查文件 MIME 是否匹配 accept 模式（如 "image/*" 匹配 "image/png"） */
 function isMimeAccepted(file: File, accept: string): boolean {
   if (!accept) return true
-  const types = accept.split(',').map(s => s.trim())
-  return types.some(t => {
+  const types = accept.split(',').map((s) => s.trim())
+  return types.some((t) => {
     if (t.endsWith('/*')) return file.type.startsWith(t.slice(0, -1))
     if (t.startsWith('.')) return file.name.toLowerCase().endsWith(t.toLowerCase())
     return file.type === t
   })
 }
 
-	function onPaste(e: ClipboardEvent) {
-	  if (props.disabled) return
-	  const tag = (e.target as HTMLElement)?.tagName
-	  if (tag === 'INPUT' || tag === 'TEXTAREA') return
-	  const items = e.clipboardData?.items
-	  if (!items) return
-	  const dt = new DataTransfer()
-	  for (let i = 0; i < items.length; i++) {
-	    const f = items[i].getAsFile()
-	    if (!f) continue
-	    // accept 白名单校验：仅允许匹配 accept 的文件类型，防止恶意 SVG/HTML 粘贴
-	    if (props.accept && !isMimeAccepted(f, props.accept)) continue
-	    dt.items.add(f)
-	  }
-	  if (dt.files.length) processFiles(dt.files)
-	}
+function onPaste(e: ClipboardEvent) {
+  if (props.disabled) return
+  const tag = (e.target as HTMLElement)?.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return
+  const items = e.clipboardData?.items
+  if (!items) return
+  const dt = new DataTransfer()
+  for (let i = 0; i < items.length; i++) {
+    const f = items[i].getAsFile()
+    if (!f) continue
+    // accept 白名单校验：仅允许匹配 accept 的文件类型，防止恶意 SVG/HTML 粘贴
+    if (props.accept && !isMimeAccepted(f, props.accept)) continue
+    dt.items.add(f)
+  }
+  if (dt.files.length) processFiles(dt.files)
+}
 
 function retryFile(fileId: number) {
-  const f = files.value.find(x => x.id === fileId)
+  const f = files.value.find((x) => x.id === fileId)
   if (f && f.status === 'error') {
-    f.status = 'uploading'; f.progress = 0
+    f.status = 'uploading'
+    f.progress = 0
     simulateUpload(f)
   }
 }
@@ -320,11 +339,11 @@ function pickFrom(kind: 'camera' | 'gallery' | 'browse') {
   sheetOpen.value = false
   if (props.disabled) return
   // 移除上一次残留的临时 input（用户取消选择时不会触发 change）
-  document.querySelectorAll('input[data-up-temp]').forEach(el => el.remove())
+  document.querySelectorAll('input[data-up-temp]').forEach((el) => el.remove())
   const input = document.createElement('input')
   input.type = 'file'
   // 浏览 = 全类型文件浏览器（对齐 iOS 原生「浏览」）；拍照/相册 = 原 accept（默认图片）
-  input.accept = kind === 'browse' ? '' : (props.accept || 'image/*')
+  input.accept = kind === 'browse' ? '' : props.accept || 'image/*'
   if (kind === 'camera') input.setAttribute('capture', 'environment')
   input.setAttribute('data-up-temp', '1')
   input.style.display = 'none'
@@ -371,7 +390,12 @@ function onDefaultInputClick(e: MouseEvent) {
 
 // card 模式：当前预览索引 + 多张翻页
 const cardIdx = ref(0)
-watch(() => files.value.length, () => { cardIdx.value = 0 })
+watch(
+  () => files.value.length,
+  () => {
+    cardIdx.value = 0
+  },
+)
 const cardPreviewUrl = computed(() => {
   if (props.variant !== 'card') return ''
   const f = files.value[cardIdx.value]
@@ -382,7 +406,11 @@ const cardFileCount = computed(() => files.value.length)
 const cardHovered = ref(false)
 let _clickTimer: ReturnType<typeof setTimeout> | null = null
 function onCardClick() {
-  if (_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null; return }
+  if (_clickTimer) {
+    clearTimeout(_clickTimer)
+    _clickTimer = null
+    return
+  }
   _clickTimer = setTimeout(() => {
     _clickTimer = null
     if (files.value.length) emit('preview', cardPreviewUrl.value)
@@ -390,11 +418,20 @@ function onCardClick() {
   }, 280)
 }
 function onCardDblClick() {
-  if (_clickTimer) { clearTimeout(_clickTimer); _clickTimer = null }
+  if (_clickTimer) {
+    clearTimeout(_clickTimer)
+    _clickTimer = null
+  }
   handlePick()
 }
-function cardPrev(e: Event) { e.stopPropagation(); if (cardFileCount.value > 1) cardIdx.value = (cardIdx.value - 1 + cardFileCount.value) % cardFileCount.value }
-function cardNext(e: Event) { e.stopPropagation(); if (cardFileCount.value > 1) cardIdx.value = (cardIdx.value + 1) % cardFileCount.value }
+function cardPrev(e: Event) {
+  e.stopPropagation()
+  if (cardFileCount.value > 1) cardIdx.value = (cardIdx.value - 1 + cardFileCount.value) % cardFileCount.value
+}
+function cardNext(e: Event) {
+  e.stopPropagation()
+  if (cardFileCount.value > 1) cardIdx.value = (cardIdx.value + 1) % cardFileCount.value
+}
 
 /** 程序化控制文件输入 */
 defineExpose({
@@ -404,25 +441,38 @@ defineExpose({
   triggerFileInput,
 })
 
-	onUnmounted(() => {
-	  timers.forEach(t => clearInterval(t))
+onUnmounted(() => {
+  timers.forEach((t) => clearInterval(t))
   timers.length = 0
   // 清理所有未释放的 Blob URL
-  files.value.forEach(f => { if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url) })
+  files.value.forEach((f) => {
+    if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
+  })
 })
 </script>
 
 <template>
-  <div v-if="_error" class="card-wrap" style="display:flex;align-items:center;justify-content:center;color:var(--color-danger);font-size:11px">⚠ 上传组件异常</div>
+  <div
+    v-if="_error"
+    class="card-wrap"
+    style="display: flex; align-items: center; justify-content: center; color: var(--color-danger); font-size: 11px"
+  >
+    ⚠ 上传组件异常
+  </div>
   <!-- ===== card 变体：精确对标旧项目 dropZone 结构 ===== -->
-  <div v-else-if="variant === 'card'" class="card-wrap"
+  <div
+    v-else-if="variant === 'card'"
+    class="card-wrap"
     :class="{ 'card-dragging': dragging, 'card-disabled': disabled }"
     role="button"
     :tabindex="disabled ? -1 : 0"
     :aria-label="label || '上传文件'"
     :aria-disabled="disabled ? 'true' : 'false'"
-    @dragover="onDragOver" @dragleave="onDragLeave" @drop="onDrop"
-    @mouseenter="cardHovered = true" @mouseleave="cardHovered = false"
+    @dragover="onDragOver"
+    @dragleave="onDragLeave"
+    @drop="onDrop"
+    @mouseenter="cardHovered = true"
+    @mouseleave="cardHovered = false"
     @paste="onPaste"
     @keydown.enter.prevent="handlePick"
     @keydown.space.prevent="handlePick"
@@ -430,7 +480,9 @@ defineExpose({
     <!-- 内容容器 -->
     <div class="card-content">
       <!-- ① 标签：始终居中，pointer-events:none -->
-      <p class="card-label">{{ label }}</p>
+      <p class="card-label">
+        {{ label }}
+      </p>
 
       <!-- ② 预览图：有文件时显示 -->
       <img v-if="cardPreviewUrl" :src="cardPreviewUrl" class="card-img" />
@@ -443,57 +495,90 @@ defineExpose({
       </template>
 
       <!-- ④ 点击区：接收点击/双击 -->
-      <div class="card-click-area"
-        @click.stop="onCardClick"
-        @dblclick.stop="onCardDblClick"></div>
+      <div class="card-click-area" @click.stop="onCardClick" @dblclick.stop="onCardDblClick" />
 
       <!-- ⑤ 删除按钮：hover 时显示 -->
-      <button v-if="files.length && cardHovered && !disabled" type="button" class="card-clear"
-        @click.stop="files = []; syncModel()">删除</button>
+      <button
+        v-if="files.length && cardHovered && !disabled"
+        type="button"
+        class="card-clear"
+        @click.stop="
+          files = []
+          syncModel()
+        "
+      >
+        删除
+      </button>
     </div>
     <!-- 隐藏的 file input（对标旧项目） -->
-    <input ref="fileInputRef" type="file" style="display:none"
-      :accept="accept" :multiple="multiple" :disabled="disabled"
+    <input
+      ref="fileInputRef"
+      type="file"
+      style="display: none"
+      :accept="accept"
+      :multiple="multiple"
+      :disabled="disabled"
       :webkitdirectory="directory ? '' : undefined"
-      @change="onInputChange" />
+      @change="onInputChange"
+    />
   </div>
 
   <!-- ===== default 变体：标准上传区 ===== -->
-	  <div v-else class="upload-wrap" @paste="onPaste">
-    <slot name="trigger" :openFileDialog="triggerFileInput">
-      <div class="upload-area" :class="{ dragging, disabled }"
+  <div v-else class="upload-wrap" @paste="onPaste">
+    <slot name="trigger" :open-file-dialog="triggerFileInput">
+      <div
+        class="upload-area"
+        :class="{ dragging, disabled }"
         role="button"
         :tabindex="disabled ? -1 : 0"
         :aria-label="'上传文件'"
         :aria-disabled="disabled ? 'true' : 'false'"
-        @dragover="onDragOver" @dragleave="onDragLeave" @drop="onDrop"
+        @dragover="onDragOver"
+        @dragleave="onDragLeave"
+        @drop="onDrop"
         @keydown.enter.prevent="handlePick"
         @keydown.space.prevent="handlePick"
       >
-        <input type="file" class="upload-input" ref="fileInputRef"
-          :accept="accept" :multiple="multiple" :disabled="disabled"
+        <input
+          ref="fileInputRef"
+          type="file"
+          class="upload-input"
+          :accept="accept"
+          :multiple="multiple"
+          :disabled="disabled"
           :webkitdirectory="directory ? '' : undefined"
-          @change="onInputChange" @click="onDefaultInputClick" />
+          @change="onInputChange"
+          @click="onDefaultInputClick"
+        />
         <IconSvg type="upload" size="lg" color="var(--color-text-muted)" />
         <p class="upload-hint">
-          <template v-if="dragging">释放文件以上传</template>
-          <template v-else>拖拽 / 粘贴 / <span class="upload-link">点击上传</span></template>
+          <template v-if="dragging"> 释放文件以上传 </template>
+          <template v-else> 拖拽 / 粘贴 / <span class="upload-link">点击上传</span> </template>
         </p>
-        <p class="upload-limit" v-if="maxSize">单个文件不超过 {{ maxSize }}MB</p>
+        <p v-if="maxSize" class="upload-limit">单个文件不超过 {{ maxSize }}MB</p>
       </div>
     </slot>
 
     <div v-if="files.length" class="upload-list">
-      <slot name="file-item" v-for="(f, idx) in files" :key="f.id" :file="f" :index="idx">
+      <slot v-for="(f, idx) in files" :key="f.id" name="file-item" :file="f" :index="idx">
         <div class="upload-item">
-          <IconSvg type="file" size="md" class="upload-file-icon" />          <div class="upload-file-info">
-            <div class="upload-file-name">{{ f.name }}</div>
+          <IconSvg type="file" size="md" class="upload-file-icon" />
+          <div class="upload-file-info">
+            <div class="upload-file-name">
+              {{ f.name }}
+            </div>
             <div class="upload-file-meta">
               <span>{{ formatSize(f.size) }}</span>
-              <span v-if="f.status === 'done'" style="color:var(--color-success)">✓ 上传成功</span>
-              <span v-else-if="f.status === 'error'" style="color:var(--color-danger)">✗ 上传失败</span>
+              <span v-if="f.status === 'done'" style="color: var(--color-success)">✓ 上传成功</span>
+              <span v-else-if="f.status === 'error'" style="color: var(--color-danger)">✗ 上传失败</span>
             </div>
-            <ProgressBar v-if="f.status === 'uploading'" :percent="f.progress" :showText="false" :height="4" style="margin-top:4px" />
+            <ProgressBar
+              v-if="f.status === 'uploading'"
+              :percent="f.progress"
+              :show-text="false"
+              :height="4"
+              style="margin-top: 4px"
+            />
           </div>
           <button type="button" class="upload-remove" aria-label="移除文件" @click="removeFile(f)">
             <IconSvg type="x" size="sm" />
@@ -516,126 +601,282 @@ defineExpose({
   </Teleport>
 
   <!-- ===== 页面内拍照（CameraCapture 组件：原生相机布局，中键快门+左右侧键） ===== -->
-  <CameraCapture
-    v-model="cameraOpen"
-    @capture="onCameraCapture"
-    @error="onCameraError"
-  />
+  <CameraCapture v-model="cameraOpen" @capture="onCameraCapture" @error="onCameraError" />
 </template>
 
 <style scoped>
 /* ===== card 变体（精确对标旧项目 drop-zone） ===== */
 .card-wrap {
-  position: relative; width: 110px; height: 110px;
-  border: 2px dashed #ccc; background: #fff;
-  overflow: hidden; box-sizing: border-box;
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border: 2px dashed var(--color-border, #ccc);
+  background: var(--color-surface, #fff);
+  overflow: hidden;
+  box-sizing: border-box;
 }
-.card-wrap:hover, .card-dragging { border-color: var(--color-primary, #3b82f6); }
-.card-disabled { opacity: 0.5; }
+.card-wrap:hover,
+.card-dragging {
+  border-color: var(--color-primary, #3b82f6);
+}
+.card-disabled {
+  opacity: 0.5;
+}
 /* 内容容器 */
 .card-content {
-  position: relative; width: 100%; height: 100%;
-  display: flex; justify-content: center; align-items: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 /* 点击区（30% 居中，z:3 高于图片和标签） */
 .card-click-area {
-  position: absolute; width: 30%; height: 30%; top: 35%; left: 35%;
-  z-index: 3; cursor: pointer;
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  top: 35%;
+  left: 35%;
+  z-index: 3;
+  cursor: pointer;
 }
 /* 标签文字（对标 .drop-zone p，始终居中，不拦截点击） */
 .card-label {
-  position: absolute; margin: 0; text-align: center;
-  font-size: 12px; color: #007bff; z-index: 2; pointer-events: none;
-  top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;
+  position: absolute;
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-primary, #007bff);
+  z-index: 2;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
 }
 /* 预览图（对标 .drop-zone img） */
 .card-img {
-  max-width: 100%; max-height: 100%; object-fit: cover;
-  position: relative; z-index: 1;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  position: relative;
+  z-index: 1;
 }
 .card-filename {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  margin: 0; padding: var(--space-1) 4px;
-  font-size: 9px; color: #fff; background: rgba(0,0,0,0.5);
-  text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: var(--space-1) 4px;
+  font-size: 9px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   z-index: 3;
 }
 /* 多张翻页箭头 */
 .card-arrow {
-  position: absolute; top: 50%; transform: translateY(-50%); z-index: 8;
-  width: 22px; height: 22px; border: none; border-radius: 50%;
-  background: rgba(0,0,0,.35); color: #fff; font-size: 14px; line-height: 1;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity .15s;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 8;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
 }
-.card-wrap:hover .card-arrow { opacity: 1; }
-.card-arrow-left { left: 4px; }
-.card-arrow-right { right: 4px; }
+.card-wrap:hover .card-arrow {
+  opacity: 1;
+}
+.card-arrow-left {
+  left: 4px;
+}
+.card-arrow-right {
+  right: 4px;
+}
 /* 计数标记 */
 .card-count {
-  position: absolute; bottom: 4px; right: 6px; z-index: 8;
-  font-size: 10px; font-weight: 600; color: #fff;
-  background: rgba(0,0,0,.5); padding: 1px 5px; border-radius: var(--radius-md);
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  z-index: 8;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1px 5px;
+  border-radius: var(--radius-md);
 }
 /* 删除按钮 */
 .card-clear {
-  position: absolute; top: 5px; right: 5px; z-index: 10;
-  padding: var(--space-1) 5px; border: none; border-radius: var(--radius-sm);
-  background: #ef4444; color: #fff; font-size: 10px; cursor: pointer; font-weight: 600;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+  padding: var(--space-1) 5px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 /* ===== default 变体 ===== */
-.upload-wrap { display: flex; flex-direction: column; gap: var(--space-3); }
+.upload-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
 .upload-area {
-  position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
-  padding: clamp(24px, 4vw, 36px); border: 2px dashed var(--color-border);
-  border-radius: var(--radius-lg); background: var(--color-bg);
-  cursor: pointer; transition: all var(--transition-fast);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: clamp(24px, 4vw, 36px);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
-.upload-area:hover:not(.disabled) { border-color: var(--color-primary); background: var(--color-primary-light); }
-.upload-area.dragging { border-color: var(--color-primary); background: var(--color-primary-light); }
-.upload-area.disabled { opacity: 0.5; cursor: not-allowed; }
-.upload-input { position: absolute; inset: 0; opacity: 0; cursor: inherit; }
-.upload-hint { font-size: clamp(13px, 1.8vw, 14px); color: var(--color-text-secondary); }
-.upload-link { color: var(--color-primary); font-weight: 500; }
-.upload-limit { font-size: clamp(11px, 1.5vw, 12px); color: var(--color-text-muted); }
-.upload-list { display: flex; flex-direction: column; gap: clamp(6px, 1vw, 8px); }
+.upload-area:hover:not(.disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.upload-area.dragging {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.upload-area.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.upload-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+.upload-hint {
+  font-size: clamp(13px, 1.8vw, 14px);
+  color: var(--color-text-secondary);
+}
+.upload-link {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+.upload-limit {
+  font-size: clamp(11px, 1.5vw, 12px);
+  color: var(--color-text-muted);
+}
+.upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1vw, 8px);
+}
 .upload-item {
-  display: flex; align-items: center; gap: clamp(7px, 1.2vw, 10px);
+  display: flex;
+  align-items: center;
+  gap: clamp(7px, 1.2vw, 10px);
   padding: clamp(7px, 1.2vw, 10px) clamp(8px, 1.5vw, 12px);
-  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
 }
-.upload-file-icon { flex-shrink: 0; color: var(--color-text-muted); }
-.upload-file-info { flex: 1; min-width: 0; }
-.upload-file-name { font-size: clamp(11px, 1.8vw, 13px); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.upload-file-meta { display: flex; gap: clamp(8px, 1.5vw, 12px); font-size: clamp(10px, 1.4vw, 11px); color: var(--color-text-muted); margin-top: var(--space-1); }
+.upload-file-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+.upload-file-info {
+  flex: 1;
+  min-width: 0;
+}
+.upload-file-name {
+  font-size: clamp(11px, 1.8vw, 13px);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.upload-file-meta {
+  display: flex;
+  gap: clamp(8px, 1.5vw, 12px);
+  font-size: clamp(10px, 1.4vw, 11px);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
 .upload-remove {
-  display: flex; padding: var(--space-1); border: none; background: transparent;
-  color: var(--color-text-muted); cursor: pointer; border-radius: 50%;
+  display: flex;
+  padding: var(--space-1);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: 50%;
 }
-.upload-remove:hover { background: var(--color-bg-alt); color: var(--color-danger); }
+.upload-remove:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-danger);
+}
 </style>
 
 <!-- 移动端菜单样式：Teleport 到 body，scoped 不生效，用全局类名前缀 -->
 <style>
 .up-sheet-mask {
-  position: fixed; inset: 0; z-index: 9999;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   background: rgba(0, 0, 0, 0.35);
-  display: flex; align-items: flex-end; justify-content: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 .up-sheet {
-  width: 100%; max-width: 480px;
+  width: 100%;
+  max-width: 480px;
   background: var(--color-bg, #fff);
   border-radius: 14px 14px 0 0;
   padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.up-sheet-item, .up-sheet-cancel {
-  width: 100%; padding: 12px; border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 10px; background: var(--color-surface, #f8fafc);
-  font-size: 15px; color: var(--color-text, #0f172a);
-  cursor: pointer; text-align: center;
+.up-sheet-item,
+.up-sheet-cancel {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 10px;
+  background: var(--color-surface, #f8fafc);
+  font-size: 15px;
+  color: var(--color-text, #0f172a);
+  cursor: pointer;
+  text-align: center;
 }
-.up-sheet-item:active { background: var(--color-bg-alt, #f1f5f9); }
-.up-sheet-cancel { border-color: transparent; color: var(--color-text-muted, #64748b); background: transparent; }
+.up-sheet-item:active {
+  background: var(--color-bg-alt, #f1f5f9);
+}
+.up-sheet-cancel {
+  border-color: transparent;
+  color: var(--color-text-muted, #64748b);
+  background: transparent;
+}
 </style>
