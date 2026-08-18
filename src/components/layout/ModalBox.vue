@@ -199,9 +199,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
        其他模式：通用 ModalBox 模板
        ════════════════════════════════════════ -->
   <template v-else>
-    <!-- #ifndef MP_WEIXIN -->
     <Teleport to="body">
-      <!-- #endif -->
       <Transition name="modal">
         <div
           v-if="visible"
@@ -287,9 +285,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
           </div>
         </div>
       </Transition>
-      <!-- #ifndef MP_WEIXIN -->
     </Teleport>
-    <!-- #endif -->
   </template>
 </template>
 

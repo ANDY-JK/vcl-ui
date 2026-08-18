@@ -182,7 +182,7 @@ function handleSubmit(): void {
 }
 
 .modal-box {
-  background: var(--color-surface, #fff);
+  background: var(--color-surface);
   border-radius: 12px;
   width: 480px;
   max-width: 90vw;
@@ -196,7 +196,7 @@ function handleSubmit(): void {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--color-border-light, #e2e8f0);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .modal-header h3 {
@@ -210,12 +210,12 @@ function handleSubmit(): void {
   border: none;
   font-size: 18px;
   cursor: pointer;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   padding: 4px;
 }
 
 .btn-close:hover {
-  color: var(--color-text-secondary, #475569);
+  color: var(--color-text-secondary);
 }
 
 .modal-body {
@@ -230,14 +230,14 @@ function handleSubmit(): void {
   display: block;
   font-size: 12px;
   font-weight: 500;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   margin-bottom: 4px;
 }
 
 .form-row input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--color-border-light, #e2e8f0);
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
   font-size: 14px;
   outline: none;
@@ -245,7 +245,7 @@ function handleSubmit(): void {
 }
 
 .form-row input:focus {
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--color-primary);
 }
 
 .form-grid-2,
@@ -264,7 +264,7 @@ function handleSubmit(): void {
 
 .form-hint {
   font-size: 12px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   margin: 8px 0 0;
 }
 
@@ -273,7 +273,7 @@ function handleSubmit(): void {
   justify-content: flex-end;
   gap: 10px;
   padding-top: 16px;
-  border-top: 1px solid var(--color-border-light, #e2e8f0);
+  border-top: 1px solid var(--color-border-light);
 }
 
 .btn-cancel,
@@ -287,39 +287,39 @@ function handleSubmit(): void {
 }
 
 .btn-cancel {
-  background: var(--color-surface, #fff);
-  border-color: var(--color-border-light, #e2e8f0);
-  color: var(--color-text-secondary, #64748b);
+  background: var(--color-surface);
+  border-color: var(--color-border-light);
+  color: var(--color-text-secondary);
 }
 
 .btn-cancel:hover {
-  background: var(--color-bg, #f8fafc);
+  background: var(--color-bg);
 }
 
 .btn-save {
-  background: var(--color-primary, #3b82f6);
-  border-color: var(--color-primary, #3b82f6);
-  color: var(--color-surface, #fff);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-surface);
 }
 
 .btn-save:hover {
-  background: var(--color-primary-hover, #2563eb);
-  border-color: var(--color-primary-hover, #2563eb);
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .required {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger);
   font-weight: 700;
 }
 
 .input-error {
-  border-color: var(--color-danger, #ef4444) !important;
-  background: var(--color-danger-bg, #fef2f2);
+  border-color: var(--color-danger) !important;
+  background: var(--color-danger-bg);
 }
 
 .form-error {
   font-size: 12px;
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger);
   margin: 4px 0 0;
 }
 </style>

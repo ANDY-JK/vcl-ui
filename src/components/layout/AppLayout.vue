@@ -426,11 +426,11 @@ function onProgressMouseUp() {
   gap: var(--space-2);
   padding: var(--space-3) clamp(12px, 2vw, 16px);
   background:
-    linear-gradient(180deg, rgba(79, 110, 247, 0.03) 0%, transparent 2px),
-    linear-gradient(90deg, rgba(79, 110, 247, 0.015) 1px, transparent 1px) 0 0 / 3px 100%,
-    #1a1f2e;
+    linear-gradient(180deg, rgba(var(--color-primary-rgb), 0.03) 0%, transparent 2px),
+    linear-gradient(90deg, rgba(var(--color-primary-rgb), 0.015) 1px, transparent 1px) 0 0 / 3px 100%,
+    var(--color-sidebar);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  border-bottom: 1px solid rgba(79, 110, 247, 0.15);
+  border-bottom: 1px solid rgba(var(--color-primary-rgb), 0.15);
   overflow: hidden;
 }
 .topbar-glow {
@@ -439,7 +439,14 @@ function onProgressMouseUp() {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #4f6ef7 20%, #4f6ef7 50%, #4f6ef7 80%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-primary) 20%,
+    var(--color-primary) 50%,
+    var(--color-primary) 80%,
+    transparent 100%
+  );
   opacity: 0.5;
 }
 .topbar-hamburger {
@@ -452,19 +459,19 @@ function onProgressMouseUp() {
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: #505560;
+  color: var(--color-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
   transition: all var(--transition-fast);
 }
 .topbar-hamburger:hover {
-  background: rgba(79, 110, 247, 0.08);
-  color: #4f6ef7;
+  background: rgba(var(--color-primary-rgb), 0.08);
+  color: var(--color-primary);
 }
 .topbar-prompt {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: 14px;
-  color: #4f6ef7;
+  color: var(--color-primary);
   opacity: 0.7;
   margin-right: var(--space-1);
 }
@@ -472,19 +479,19 @@ function onProgressMouseUp() {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: 13px;
   font-weight: 600;
-  color: #4f6ef7;
+  color: var(--color-primary);
   letter-spacing: 0.3px;
 }
 .topbar-sep {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: 14px;
-  color: #505560;
+  color: var(--color-text-secondary);
   font-weight: 300;
 }
 .topbar-title {
   font-size: 14px;
   font-weight: 500;
-  color: #d5d8de;
+  color: var(--color-sidebar-text-active);
   letter-spacing: 0.2px;
 }
 
@@ -520,47 +527,47 @@ function onProgressMouseUp() {
   border: 1px solid rgba(255, 255, 255, 0.08); /* 微弱亮边，框出按钮区域 */
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04); /* 默认微白底 — 告知用户这里有功能 */
-  color: #505560; /* 与 hamburger 一致的暗色图标 */
+  color: var(--color-text-secondary); /* 与 hamburger 一致的暗色图标 */
   cursor: pointer;
   transition: all var(--transition-fast);
   flex-shrink: 0;
   position: relative;
 }
 .topbar-tool-btn:hover {
-  color: #4f6ef7;
-  background: rgba(79, 110, 247, 0.08);
-  border-color: rgba(79, 110, 247, 0.15);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.08);
+  border-color: rgba(var(--color-primary-rgb), 0.15);
 }
 .topbar-tool-btn:active {
   transform: scale(0.95);
-  background: rgba(79, 110, 247, 0.12);
+  background: rgba(var(--color-primary-rgb), 0.12);
   transition:
     transform var(--transition-fast),
     background var(--transition-fast);
 }
 /* 键盘焦点环 — 保留可访问性 */
 .topbar-tool-btn:focus-visible {
-  outline: 2px solid #4f6ef7;
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 /* 激活/选中态 — 有主色边框 + 微亮底色 */
 .topbar-tool-btn.active {
-  color: #4f6ef7;
-  background: rgba(79, 110, 247, 0.12);
-  border-color: rgba(79, 110, 247, 0.25);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.12);
+  border-color: rgba(var(--color-primary-rgb), 0.25);
 }
 .topbar-tool-btn.active:hover {
-  background: rgba(79, 110, 247, 0.18);
-  border-color: rgba(79, 110, 247, 0.35);
+  background: rgba(var(--color-primary-rgb), 0.18);
+  border-color: rgba(var(--color-primary-rgb), 0.35);
 }
 /* 危险操作变体 — 红色激活 */
 .topbar-tool-btn.is-danger:hover {
-  color: #ef4444;
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-btn.is-danger.active {
-  color: #ef4444;
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -584,7 +591,7 @@ function onProgressMouseUp() {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
-  color: #a0a7b8;
+  color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.2px;
@@ -594,7 +601,7 @@ function onProgressMouseUp() {
   flex-shrink: 0;
 }
 .topbar-tool-text:hover {
-  color: #d5d8de;
+  color: var(--color-sidebar-text-active);
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.15);
 }
@@ -603,28 +610,28 @@ function onProgressMouseUp() {
   transition: transform var(--transition-fast);
 }
 .topbar-tool-text:focus-visible {
-  outline: 2px solid #4f6ef7;
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 /* 文字按钮 — 主色高亮态 */
 .topbar-tool-text.active {
-  color: #4f6ef7;
-  background: rgba(79, 110, 247, 0.12);
-  border-color: rgba(79, 110, 247, 0.25);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.12);
+  border-color: rgba(var(--color-primary-rgb), 0.25);
   font-weight: 600;
 }
 .topbar-tool-text.active:hover {
-  background: rgba(79, 110, 247, 0.18);
-  border-color: rgba(79, 110, 247, 0.35);
+  background: rgba(var(--color-primary-rgb), 0.18);
+  border-color: rgba(var(--color-primary-rgb), 0.35);
 }
 /* 文字按钮 — 危险红色 */
 .topbar-tool-text.is-danger:hover {
-  color: #ef4444;
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-text.is-danger.active {
-  color: #ef4444;
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -640,7 +647,7 @@ function onProgressMouseUp() {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
-  color: #a0a7b8;
+  color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -660,43 +667,43 @@ function onProgressMouseUp() {
   flex-shrink: 0;
 }
 .topbar-tool-label:hover {
-  color: #d5d8de;
+  color: var(--color-sidebar-text-active);
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.15);
 }
 .topbar-tool-label:hover > svg {
-  color: #4f6ef7;
+  color: var(--color-primary);
 }
 .topbar-tool-label:active {
   transform: scale(0.97);
   transition: transform var(--transition-fast);
 }
 .topbar-tool-label:focus-visible {
-  outline: 2px solid #4f6ef7;
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 /* 图标+文字按钮 — 主色高亮态 */
 .topbar-tool-label.active {
-  color: #4f6ef7;
-  background: rgba(79, 110, 247, 0.12);
-  border-color: rgba(79, 110, 247, 0.25);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb), 0.12);
+  border-color: rgba(var(--color-primary-rgb), 0.25);
   font-weight: 600;
 }
 .topbar-tool-label.active:hover {
-  background: rgba(79, 110, 247, 0.18);
-  border-color: rgba(79, 110, 247, 0.35);
+  background: rgba(var(--color-primary-rgb), 0.18);
+  border-color: rgba(var(--color-primary-rgb), 0.35);
 }
 /* 图标+文字按钮 — 危险红色 */
 .topbar-tool-label.is-danger:hover {
-  color: #ef4444;
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-label.is-danger:hover > svg {
-  color: #ef4444;
+  color: var(--color-danger);
 }
 .topbar-tool-label.is-danger.active {
-  color: #ef4444;
+  color: var(--color-danger);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -711,7 +718,7 @@ function onProgressMouseUp() {
   height: 28px;
   border-radius: 50%;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -721,7 +728,7 @@ function onProgressMouseUp() {
 }
 .user-name {
   font-size: 13px;
-  color: #a0a7b8;
+  color: var(--color-text-muted);
   max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -736,12 +743,12 @@ function onProgressMouseUp() {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
-  color: #505560;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-normal);
 }
 .logout-btn:hover {
-  color: #ef4444;
+  color: var(--color-danger);
   border-color: rgba(239, 68, 68, 0.3);
   background: rgba(239, 68, 68, 0.06);
 }
@@ -768,9 +775,9 @@ function onProgressMouseUp() {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-2) clamp(12px, 2vw, 16px);
-  background: linear-gradient(0deg, rgba(79, 110, 247, 0.02) 0%, transparent 2px), #1a1f2e;
+  background: linear-gradient(0deg, rgba(var(--color-primary-rgb), 0.02) 0%, transparent 2px), var(--color-sidebar);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
-  border-top: 1px solid rgba(79, 110, 247, 0.12);
+  border-top: 1px solid rgba(var(--color-primary-rgb), 0.12);
 }
 .nav-btn {
   display: flex;
@@ -780,14 +787,14 @@ function onProgressMouseUp() {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
-  color: #c0c5cf;
+  color: var(--color-sidebar-text);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-normal);
 }
 .nav-btn:hover {
-  color: #fff;
+  color: var(--color-surface);
   border-color: rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.06);
@@ -825,15 +832,15 @@ function onProgressMouseUp() {
   border-radius: var(--radius-sm);
 }
 .nav-center:hover .nav-progress {
-  box-shadow: 0 0 10px rgba(79, 110, 247, 0.6);
+  box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.6);
 }
 .nav-center:active .nav-progress {
-  box-shadow: 0 0 14px rgba(79, 110, 247, 0.75);
+  box-shadow: 0 0 14px rgba(var(--color-primary-rgb), 0.75);
 }
 .nav-progress-track {
   flex: 1;
   height: 2px;
-  background: rgba(79, 110, 247, 0.12);
+  background: rgba(var(--color-primary-rgb), 0.12);
   border-radius: 2px;
   transition:
     height var(--transition-fast),
@@ -842,9 +849,9 @@ function onProgressMouseUp() {
 }
 .nav-progress {
   height: 100%;
-  background: #4f6ef7;
+  background: var(--color-primary);
   border-radius: 2px;
-  box-shadow: 0 0 6px rgba(79, 110, 247, 0.4);
+  box-shadow: 0 0 6px rgba(var(--color-primary-rgb), 0.4);
   transition:
     width var(--transition-normal),
     box-shadow var(--transition-fast);
@@ -852,7 +859,7 @@ function onProgressMouseUp() {
 }
 .nav-percent {
   font-size: 10px;
-  color: #4f6ef7;
+  color: var(--color-primary);
   font-weight: 600;
   opacity: 0.7;
   min-width: 32px;

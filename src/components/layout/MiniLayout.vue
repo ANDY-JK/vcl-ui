@@ -134,9 +134,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
     </nav>
 
     <!-- 扫码类型选择 -->
-    <!-- #ifndef MP_WEIXIN -->
     <Teleport to="body">
-      <!-- #endif -->
       <Transition name="sheet">
         <div v-if="showScan" class="scan-overlay" @click.self="showScan = false">
           <div class="scan-sheet">
@@ -153,9 +151,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
           </div>
         </div>
       </Transition>
-      <!-- #ifndef MP_WEIXIN -->
     </Teleport>
-    <!-- #endif -->
   </div>
 </template>
 

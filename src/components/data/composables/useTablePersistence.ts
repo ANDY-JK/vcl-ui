@@ -5,7 +5,7 @@ import { createLocalStorage } from './types'
 
 /** 列结构简单 hash，生成稳定的 auto namespace（页面刷新不丢映射） */
 function _colHash(columns: Column[]): string {
-  const s = columns.map(c => c.key).join('|')
+  const s = columns.map((c) => c.key).join('|')
   let h = 0
   for (let i = 0; i < s.length; i++) {
     h = ((h << 5) - h + s.charCodeAt(i)) | 0
@@ -54,8 +54,8 @@ export function useTablePersistence(
 
   // ---- 键名空间 ----
   const _autoId = `-i${_colHash(columns)}`
-  const _ns = computed(() => namespace ? `-${namespace}` : _autoId)
-  const _colKey = computed(() => columns.map(c => c.key).join('|'))
+  const _ns = computed(() => (namespace ? `-${namespace}` : _autoId))
+  const _colKey = computed(() => columns.map((c) => c.key).join('|'))
 
   /** 同步加载并应用：检测 _store.get 是否返回 Promise，同步 store（localStorage）即时应用，避免异步竞态 */
   function _loadAndApply<T>(key: string, apply: (cached: T | null) => void): void {
@@ -63,30 +63,48 @@ export function useTablePersistence(
       const result = _store.get(`dt${_ns.value}-${key}`)
       if (result instanceof Promise) {
         // 异步存储适配器：保持 .then() 回调模式
-        result.then((raw) => {
-          if (!raw) { apply(null); return }
-          apply(JSON.parse(raw) as T)
-        }).catch(() => apply(null))
+        result
+          .then((raw) => {
+            if (!raw) {
+              apply(null)
+              return
+            }
+            try {
+              apply(JSON.parse(raw) as T)
+            } catch {
+              apply(null)
+            }
+          })
+          .catch(() => apply(null))
       } else {
         // 同步存储（localStorage 默认）：立即应用，无竞态
-        if (!result) { apply(null); return }
+        if (!result) {
+          apply(null)
+          return
+        }
         apply(JSON.parse(result) as T)
       }
-    } catch { apply(null) }
+    } catch {
+      apply(null)
+    }
   }
 
   /** 内置 storageSet：typed → JSON.stringify → write */
   async function _persist(key: string, value: unknown): Promise<void> {
     try {
       await _store.set(`dt${_ns.value}-${key}`, JSON.stringify(value))
-    } catch { /* quota / network 静默 */ }
+    } catch {
+      /* quota / network 静默 */
+    }
   }
 
   /** 内置 remove */
   async function _removePersist(key: string): Promise<void> {
     try {
       await _store.remove(`dt${_ns.value}-${key}`)
-    } catch { /* 静默 */ }
+    } catch {
+      /* 静默 */
+    }
   }
 
   // ---- 旧格式键清理（一次性） ----
@@ -95,7 +113,11 @@ export function useTablePersistence(
     if (_oldKeysCleaned) return
     _oldKeysCleaned = true
     for (const feat of FEATURES) {
-      try { await _store.remove(`dt${_ns.value}-${_colKey.value}-${feat}`) } catch { /* 忽略 */ }
+      try {
+        await _store.remove(`dt${_ns.value}-${_colKey.value}-${feat}`)
+      } catch {
+        /* 忽略 */
+      }
     }
   }
 
@@ -114,7 +136,7 @@ export function useTablePersistence(
     function _restoreSort(): void {
       if (_sortRestored && opts.sortState!.value.key) return // 已成功恢复且当前有排序，不覆盖
       _loadAndApply<{ key: string; order: string; history: Record<string, 'asc' | 'desc'> }>('sort', (cached) => {
-        if (cached?.key && columns.some(c => c.key === cached.key)) {
+        if (cached?.key && columns.some((c) => c.key === cached.key)) {
           _cleanOldFormatKeys()
           opts.sortState!.value = { key: cached.key, order: cached.order === 'desc' ? 'desc' : 'asc' }
           if (cached.history) opts.sortHistory!.value = cached.history
@@ -124,12 +146,21 @@ export function useTablePersistence(
     }
     _restoreSort()
     // 流式加载：列可能在数据到达后才逐步出现，列变化时补恢复
-    watch(() => columns.map(c => c.key).join(','), () => { _restoreSort() })
-    watch([opts.sortState, opts.sortHistory], ([s, h]) => {
-      _cleanOldFormatKeys()
-      if (s.key) _persist('sort', { key: s.key, order: s.order, history: h })
-      else _removePersist('sort')
-    }, { deep: true })
+    watch(
+      () => columns.map((c) => c.key).join(','),
+      () => {
+        _restoreSort()
+      },
+    )
+    watch(
+      [opts.sortState, opts.sortHistory],
+      ([s, h]) => {
+        _cleanOldFormatKeys()
+        if (s.key) _persist('sort', { key: s.key, order: s.order, history: h })
+        else _removePersist('sort')
+      },
+      { deep: true },
+    )
   }
 
   // ========== 筛选持久化 ==========
@@ -140,7 +171,7 @@ export function useTablePersistence(
           _cleanOldFormatKeys()
           const restored: Record<string, { searchText: string; selectedValues: string[] }> = {}
           for (const [key, vals] of Object.entries(cached)) {
-            if (vals.length > 0 && columns.some(c => c.key === key)) {
+            if (vals.length > 0 && columns.some((c) => c.key === key)) {
               restored[key] = { searchText: '', selectedValues: vals }
             }
           }
@@ -151,16 +182,25 @@ export function useTablePersistence(
       })
     }
     _restoreFilter()
-    watch(() => columns.map(c => c.key).join(','), () => { _restoreFilter() })
-    watch(opts.filterState, (fs) => {
-      _cleanOldFormatKeys()
-      const slim: Record<string, string[]> = {}
-      for (const [key, s] of Object.entries(fs)) {
-        if (s.selectedValues.length > 0) slim[key] = [...s.selectedValues]
-      }
-      if (Object.keys(slim).length > 0) _persist('filter', slim)
-      else _removePersist('filter')
-    }, { deep: true })
+    watch(
+      () => columns.map((c) => c.key).join(','),
+      () => {
+        _restoreFilter()
+      },
+    )
+    watch(
+      opts.filterState,
+      (fs) => {
+        _cleanOldFormatKeys()
+        const slim: Record<string, string[]> = {}
+        for (const [key, s] of Object.entries(fs)) {
+          if (s.selectedValues.length > 0) slim[key] = [...s.selectedValues]
+        }
+        if (Object.keys(slim).length > 0) _persist('filter', slim)
+        else _removePersist('filter')
+      },
+      { deep: true },
+    )
   }
 
   // ========== 列顺序持久化 ==========
@@ -182,7 +222,12 @@ export function useTablePersistence(
       })
     }
     _restoreColOrder()
-    watch(() => columns.map(c => c.key).join(','), () => { _restoreColOrder() })
+    watch(
+      () => columns.map((c) => c.key).join(','),
+      () => {
+        _restoreColOrder()
+      },
+    )
     watch(opts._columnOrder, (order) => {
       _cleanOldFormatKeys()
       _persist('colorder', order)
@@ -204,21 +249,30 @@ export function useTablePersistence(
   }
   if (_isActive('colwidth') && opts.columnWidths) {
     // 拖拽列宽时 mousemove 高频触发 columnWidths 变化，防抖 200ms 只在松手后写一次
-    watch(opts.columnWidths, (widths) => {
-      if (_widthTimer) clearTimeout(_widthTimer)
-      _widthTimer = setTimeout(() => {
-        _widthTimer = null
-        persistWidths(widths)
-      }, 200)
-    }, { deep: true })
+    watch(
+      opts.columnWidths,
+      (widths) => {
+        if (_widthTimer) clearTimeout(_widthTimer)
+        _widthTimer = setTimeout(() => {
+          _widthTimer = null
+          persistWidths(widths)
+        }, 200)
+      },
+      { deep: true },
+    )
   }
 
   // ========== 密度持久化 ==========
   if (_isActive('dense') && opts._dense) {
     if (!opts.denseProp) {
       _loadAndApply<string>('dense', (cached) => {
-        if (cached === '1') { _cleanOldFormatKeys(); opts._dense!.value = true }
-        else if (cached === '0') { _cleanOldFormatKeys(); opts._dense!.value = false }
+        if (cached === '1') {
+          _cleanOldFormatKeys()
+          opts._dense!.value = true
+        } else if (cached === '0') {
+          _cleanOldFormatKeys()
+          opts._dense!.value = false
+        }
       })
     }
     watch(opts._dense, (val) => {
@@ -233,7 +287,7 @@ export function useTablePersistence(
       _loadAndApply<string[]>('hiddenCols', (cached) => {
         if (cached && Array.isArray(cached) && cached.length > 0) {
           _cleanOldFormatKeys()
-          const validKeys = new Set(columns.map(c => c.key))
+          const validKeys = new Set(columns.map((c) => c.key))
           for (const k of cached) {
             if (validKeys.has(k)) opts.hiddenColumns!.value.add(k)
           }
@@ -241,13 +295,22 @@ export function useTablePersistence(
       })
     }
     _restoreHiddenCols()
-    watch(() => columns.map(c => c.key).join(','), () => { _restoreHiddenCols() })
-    watch(opts.hiddenColumns, (hc) => {
-      _cleanOldFormatKeys()
-      const arr = Array.from(hc).filter(k => columns.some(c => c.key === k))
-      if (arr.length > 0) _persist('hiddenCols', arr)
-      else _removePersist('hiddenCols')
-    }, { deep: true })
+    watch(
+      () => columns.map((c) => c.key).join(','),
+      () => {
+        _restoreHiddenCols()
+      },
+    )
+    watch(
+      opts.hiddenColumns,
+      (hc) => {
+        _cleanOldFormatKeys()
+        const arr = Array.from(hc).filter((k) => columns.some((c) => c.key === k))
+        if (arr.length > 0) _persist('hiddenCols', arr)
+        else _removePersist('hiddenCols')
+      },
+      { deep: true },
+    )
   }
 
   // ========== 固定列持久化（左右互斥，随布局恢复） ==========
@@ -256,7 +319,7 @@ export function useTablePersistence(
       _loadAndApply<{ left: string[]; right: string[]; userSet?: boolean }>('fixedCols', (cached) => {
         if (!cached || !Array.isArray(cached.left) || !Array.isArray(cached.right)) return
         _cleanOldFormatKeys()
-        const validKeys = new Set(columns.map(c => c.key))
+        const validKeys = new Set(columns.map((c) => c.key))
         const left = new Set<string>()
         const right = new Set<string>()
         for (const k of cached.left) if (validKeys.has(k)) left.add(k)
@@ -279,17 +342,26 @@ export function useTablePersistence(
       })
     }
     _restoreFixedCols()
-    watch(() => columns.map(c => c.key).join(','), () => { _restoreFixedCols() })
-    watch([opts.dynamicFixedLeft, opts.dynamicFixedRight], ([l, r]) => {
-      _cleanOldFormatKeys()
-      const payload = {
-        left: [...l].filter(k => columns.some(c => c.key === k)),
-        right: [...r].filter(k => columns.some(c => c.key === k)),
-        // 显式记录用户已接管固定状态：即使全部取消也要记住，防止静态 fixed 重新生效
-        userSet: true,
-      }
-      _persist('fixedCols', payload)
-    }, { deep: true })
+    watch(
+      () => columns.map((c) => c.key).join(','),
+      () => {
+        _restoreFixedCols()
+      },
+    )
+    watch(
+      [opts.dynamicFixedLeft, opts.dynamicFixedRight],
+      ([l, r]) => {
+        _cleanOldFormatKeys()
+        const payload = {
+          left: [...l].filter((k) => columns.some((c) => c.key === k)),
+          right: [...r].filter((k) => columns.some((c) => c.key === k)),
+          // 显式记录用户已接管固定状态：即使全部取消也要记住，防止静态 fixed 重新生效
+          userSet: true,
+        }
+        _persist('fixedCols', payload)
+      },
+      { deep: true },
+    )
   }
 
   // ========== 列宽恢复（供 DataTable 数据到达后调用） ==========

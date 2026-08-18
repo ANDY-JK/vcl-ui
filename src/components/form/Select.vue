@@ -302,14 +302,33 @@ const filterKeyword = computed(() => {
   return searchText.value
 })
 
+/** Debounced 搜索关键词：200ms 防抖后再生效，避免 1000+ 选项时每次按键全量过滤卡顿 */
+const _debouncedKeyword = ref(filterKeyword.value)
+let _debounceTimer: ReturnType<typeof setTimeout> | null = null
+watch(filterKeyword, (val) => {
+  if (_debounceTimer) clearTimeout(_debounceTimer)
+  // 空值立即生效（清除搜索时无需等待）
+  if (!val) {
+    _debouncedKeyword.value = val
+    return
+  }
+  _debounceTimer = setTimeout(() => {
+    _debouncedKeyword.value = val
+  }, 200)
+})
+onUnmounted(() => {
+  if (_debounceTimer) clearTimeout(_debounceTimer)
+})
+
 const filteredOptions = computed(() => {
   if (!props.options) return []
-  if (!filterKeyword.value) return props.options
+  const kw = _debouncedKeyword.value
+  if (!kw) return props.options
   return props.options.filter(
     (o) =>
-      matchPinyinFast(o.label, filterKeyword.value) ||
-      matchPinyinFast(String(o.value), filterKeyword.value) ||
-      (o._search ? matchPinyinFast(o._search, filterKeyword.value) : false),
+      matchPinyinFast(o.label, kw) ||
+      matchPinyinFast(String(o.value), kw) ||
+      (o._search ? matchPinyinFast(o._search, kw) : false),
   )
 })
 

@@ -280,15 +280,15 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--color-border-light, #e2e8f0);
-  border-top-color: var(--color-primary, #3b82f6);
+  border: 3px solid var(--color-border-light);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 12px;
@@ -315,7 +315,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .empty-step {
   font-size: 12px;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -328,8 +328,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--color-info-bg, #e0f2fe);
-  color: var(--color-info-text, #0369a1);
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
   font-size: 11px;
   font-weight: 600;
   flex-shrink: 0;
@@ -343,8 +343,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 /* 汇总卡片 */
 .summary-card {
-  background: linear-gradient(135deg, var(--color-success-bg, #f0fdf4), var(--color-success-bg, #dcfce7));
-  border: 1px solid var(--color-success-border, #bbf7d0);
+  background: linear-gradient(135deg, var(--color-success-bg), var(--color-success-bg));
+  border: 1px solid var(--color-success-border);
   border-radius: 10px;
   padding: 12px;
   margin-bottom: 12px;
@@ -353,7 +353,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .summary-title {
   font-size: 14px;
   font-weight: 700;
-  color: var(--color-success-text, #166534);
+  color: var(--color-success-text);
   margin-bottom: 8px;
   display: flex;
   align-items: center;
@@ -369,13 +369,13 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .source-badge.real {
-  background: var(--color-success-bg, #dcfce7);
-  color: var(--color-success-text, #166534);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .source-badge.estimated {
-  background: var(--color-warning-bg, #fef3c7);
-  color: var(--color-warning-text, #92400e);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .summary-stats {
@@ -393,25 +393,25 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: block;
   font-size: 16px;
   font-weight: 700;
-  color: var(--color-text, #1e293b);
+  color: var(--color-text);
 }
 
 .stat-label {
   font-size: 10px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 
 .summary-route {
   font-size: 11px;
-  color: var(--color-success-text, #166534);
+  color: var(--color-success-text);
   text-align: center;
   padding-top: 6px;
-  border-top: 1px dashed var(--color-success-border, #bbf7d0);
+  border-top: 1px dashed var(--color-success-border);
 }
 
 .enriching-tip {
   font-size: 12px;
-  color: var(--color-primary, #3b82f6);
+  color: var(--color-primary);
   text-align: center;
   margin: 0 0 10px;
 }
@@ -424,15 +424,15 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-card {
-  border: 1px solid var(--color-border-light, #e2e8f0);
+  border: 1px solid var(--color-border-light);
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.2s;
 }
 
 .day-card.current {
-  border-color: var(--color-primary, #3b82f6);
-  box-shadow: 0 0 0 1px var(--color-primary, #3b82f6);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .day-card.completed {
@@ -440,7 +440,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-card.expanded {
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--color-primary);
 }
 
 /* 天头 */
@@ -449,13 +449,13 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   justify-content: space-between;
   align-items: center;
   padding: 8px 10px;
-  background: var(--color-bg, #f8fafc);
+  background: var(--color-bg);
   cursor: pointer;
   user-select: none;
 }
 
 .day-header:hover {
-  background: var(--color-bg-alt, #f1f5f9);
+  background: var(--color-bg-alt);
 }
 
 .day-header-left {
@@ -468,8 +468,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--color-border-light, #e2e8f0);
-  color: var(--color-text-secondary, #64748b);
+  background: var(--color-border-light);
+  color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -478,14 +478,14 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-badge.current {
-  background: var(--color-primary, #3b82f6);
-  color: var(--color-surface, #fff);
+  background: var(--color-primary);
+  color: var(--color-surface);
 }
 
 .day-summary-text {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text, #334155);
+  color: var(--color-text);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -502,18 +502,18 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .density-good {
-  background: var(--color-success-bg, #dcfce7);
-  color: var(--color-success-text, #166534);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .density-ok {
-  background: var(--color-warning-bg, #fef3c7);
-  color: var(--color-warning-text, #92400e);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .density-low {
-  background: var(--color-danger-bg, #fef2f2);
-  color: var(--color-danger-hover, #dc2626);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-hover);
 }
 
 .day-header-right {
@@ -524,7 +524,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .day-cities {
   font-size: 10px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -533,13 +533,13 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .expand-icon {
   font-size: 9px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 
 /* 展开详情 */
 .day-detail {
   padding: 10px;
-  border-top: 1px solid var(--color-bg-alt, #f1f5f9);
+  border-top: 1px solid var(--color-bg-alt);
 }
 
 /* 导航按钮 */
@@ -552,8 +552,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .btn-nav-day {
   flex: 1;
   padding: 8px;
-  background: linear-gradient(135deg, var(--color-primary, #3b82f6), var(--color-primary-hover, #2563eb));
-  color: var(--color-surface, #fff);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: var(--color-surface);
   border: none;
   border-radius: 6px;
   font-size: 12px;
@@ -567,9 +567,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .btn-set-current {
   padding: 8px 10px;
-  background: var(--color-success-bg, #f0fdf4);
-  color: var(--color-success-text, #166534);
-  border: 1px solid var(--color-success-border, #bbf7d0);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
   border-radius: 6px;
   font-size: 11px;
   cursor: pointer;
@@ -577,7 +577,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 /* 路线概览 */
 .route-overview {
-  background: var(--color-bg, #f8fafc);
+  background: var(--color-bg);
   border-radius: 6px;
   padding: 8px;
   margin-bottom: 10px;
@@ -589,7 +589,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
 }
 
 .route-icon {
@@ -599,7 +599,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .route-arrow {
   text-align: center;
   font-size: 10px;
-  color: var(--color-text-muted, #cbd5e1);
+  color: var(--color-text-muted);
   margin: 2px 0;
 }
 
@@ -612,15 +612,15 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .store-chip {
   padding: 2px 6px;
-  background: var(--color-info-bg, #e0f2fe);
-  color: var(--color-info-text, #0369a1);
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
   border-radius: 4px;
   font-size: 10px;
   white-space: nowrap;
 }
 
 .return-info {
-  color: var(--color-warning, #f59e0b);
+  color: var(--color-warning);
   font-weight: 500;
 }
 
@@ -638,19 +638,19 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   gap: 6px;
   padding: 5px 6px;
   border-radius: 4px;
-  background: var(--color-bg, #fafafa);
+  background: var(--color-bg);
 }
 
 .store-item:hover {
-  background: var(--color-bg-alt, #f1f5f9);
+  background: var(--color-bg-alt);
 }
 
 .store-num {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--color-primary, #3b82f6);
-  color: var(--color-surface, #fff);
+  background: var(--color-primary);
+  color: var(--color-surface);
   font-size: 10px;
   font-weight: 600;
   display: flex;
@@ -668,7 +668,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .store-name {
   font-size: 12px;
-  color: var(--color-text, #334155);
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -676,7 +676,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .store-city {
   font-size: 9px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
@@ -686,41 +686,41 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .seg-info {
   font-size: 10px;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   white-space: nowrap;
-  background: var(--color-bg-alt, #f1f5f9);
+  background: var(--color-bg-alt);
   padding: 1px 5px;
   border-radius: 4px;
 }
 
 .seg-end {
-  color: var(--color-warning, #f59e0b);
-  background: var(--color-warning-bg, #fef3c7);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
 }
 
 .btn-nav-mini {
-  background: var(--color-info-bg, #eff6ff);
-  border: 1px solid var(--color-info-border, #bfdbfe);
+  background: var(--color-info-bg);
+  border: 1px solid var(--color-info-border);
   border-radius: 4px;
   cursor: pointer;
   font-size: 10px;
   padding: 2px 6px;
   flex-shrink: 0;
-  color: var(--color-primary-hover, #2563eb);
+  color: var(--color-primary-hover);
   font-weight: 500;
 }
 
 .btn-nav-mini:hover {
-  background: var(--color-primary, #3b82f6);
-  border-color: var(--color-primary, #3b82f6);
-  color: var(--color-surface, #fff);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-surface);
 }
 
 /* 跳过列表 */
 .skipped-section {
   margin-top: 10px;
-  background: var(--color-warning-bg, #fffbeb);
-  border: 1px solid var(--color-warning-border, #fde68a);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
   border-radius: 8px;
   padding: 10px;
 }
@@ -728,7 +728,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .skipped-header {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-warning-text, #92400e);
+  color: var(--color-warning-text);
   margin-bottom: 6px;
 }
 
@@ -741,9 +741,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .skipped-item {
   font-size: 10px;
-  color: var(--color-text-muted, #78716c);
+  color: var(--color-text-muted);
   padding: 2px 6px;
-  background: var(--color-warning-bg, #fef3c7);
+  background: var(--color-warning-bg);
   border-radius: 4px;
 }
 

@@ -239,16 +239,16 @@ const hasContent = computed(() => props.stores.length > 0 || (props.plan && prop
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg, #f8fafc);
-  color: var(--color-text-muted, #94a3b8);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 
 .spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid var(--color-border-light, #e2e8f0);
-  border-top-color: var(--color-primary, #3b82f6);
+  border: 3px solid var(--color-border-light);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 8px;
@@ -269,7 +269,7 @@ const hasContent = computed(() => props.stores.length > 0 || (props.plan && prop
   align-items: center;
   justify-content: center;
   background: rgba(248, 250, 252, 0.9);
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 14px;
   z-index: 2;
   pointer-events: none;
@@ -309,6 +309,6 @@ const hasContent = computed(() => props.stores.length > 0 || (props.plan && prop
 
 .legend-text {
   font-size: 10px;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
 }
 </style>

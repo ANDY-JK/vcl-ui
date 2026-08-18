@@ -189,9 +189,7 @@ function confirm() {
       <IconSvg type="chevron-down" size="sm" class="trigger-arrow" :class="{ rotated: open }" />
     </button>
 
-    <!-- #ifndef MP_WEIXIN -->
     <Teleport to="body">
-      <!-- #endif -->
       <Transition name="drop">
         <div v-show="open" ref="floatingRef" class="picker-panel" :class="[`flip-${direction}`]" :style="floatingStyle">
           <!-- 提供者切换 -->
@@ -343,9 +341,7 @@ function confirm() {
           </div>
         </div>
       </Transition>
-      <!-- #ifndef MP_WEIXIN -->
     </Teleport>
-    <!-- #endif -->
   </div>
 </template>
 

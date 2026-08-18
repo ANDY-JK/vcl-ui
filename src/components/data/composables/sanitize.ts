@@ -39,6 +39,17 @@ const _allowedAttrs = new Set([
   'align',
   'color',
 ])
+/** style 属性中危险 CSS 模式（expression/url javascript: 等） */
+const _dangerousCss = [
+  /expression\s*\(/i,
+  /javascript:/i,
+  /url\s*\(\s*['"]?\s*javascript:/i,
+  /url\s*\(\s*['"]?\s*data:\s*text\/html/i,
+  /-moz-binding/i,
+  /behavior\s*:/i,
+  /@import/i,
+  /vbscript:/i,
+]
 /** 危险标签整体移除（含内容） */
 const _dangerTags = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META', 'FORM', 'INPUT', 'BUTTON'])
 
@@ -67,6 +78,10 @@ export function sanitizeHTML(html: string): string {
       const val = node.getAttribute(attr) || ''
       if ((attr === 'href' || attr === 'src') && !/^(https?:|data:image\/|mailto:|#)/i.test(val)) {
         node.removeAttribute(attr)
+      }
+      // style 属性过滤危险 CSS 值（expression()/javascript:/url(javascript:)等）
+      if (attr === 'style' && _dangerousCss.some((re) => re.test(val))) {
+        node.removeAttribute('style')
       }
     }
   })

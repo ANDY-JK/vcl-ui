@@ -219,14 +219,14 @@ const stats = computed(() => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--color-border-light, #e2e8f0);
+  border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
 
 .btn-add {
   padding: 6px 14px;
-  background: var(--color-primary, #3b82f6);
-  color: var(--color-surface, #fff);
+  background: var(--color-primary);
+  color: var(--color-surface);
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -234,18 +234,18 @@ const stats = computed(() => {
 }
 
 .btn-add:hover {
-  background: var(--color-primary-hover, #2563eb);
+  background: var(--color-primary-hover);
 }
 
 .stats {
   display: flex;
   gap: 10px;
   font-size: 12px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 
 .skip-count {
-  color: var(--color-warning, #f59e0b);
+  color: var(--color-warning);
 }
 
 /* 搜索框 */
@@ -253,7 +253,7 @@ const stats = computed(() => {
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--color-border-light, #e2e8f0);
+  border-bottom: 1px solid var(--color-border-light);
   gap: 6px;
   flex-shrink: 0;
 }
@@ -268,27 +268,27 @@ const stats = computed(() => {
   border: none;
   outline: none;
   font-size: 13px;
-  color: var(--color-text, #334155);
+  color: var(--color-text);
   background: transparent;
 }
 
 .search-input::placeholder {
-  color: var(--color-text-muted, #cbd5e1);
+  color: var(--color-text-muted);
 }
 
 .search-clear {
   background: none;
   border: none;
   font-size: 14px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
 }
 
 .search-clear:hover {
-  color: var(--color-text-secondary, #64748b);
-  background: var(--color-bg-alt, #f1f5f9);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-alt);
 }
 
 .group-list {
@@ -306,22 +306,22 @@ const stats = computed(() => {
   justify-content: space-between;
   align-items: center;
   padding: 6px 10px;
-  background: var(--color-bg-alt, #f1f5f9);
+  background: var(--color-bg-alt);
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-secondary, #475569);
+  color: var(--color-text-secondary);
   cursor: pointer;
   user-select: none;
 }
 
 .group-header:hover {
-  background: var(--color-border-light, #e2e8f0);
+  background: var(--color-border-light);
 }
 
 .group-arrow {
   font-size: 9px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   width: 14px;
   flex-shrink: 0;
 }
@@ -352,16 +352,16 @@ const stats = computed(() => {
 }
 
 .btn-batch:hover {
-  background: var(--color-border-light, #e2e8f0);
+  background: var(--color-border-light);
 }
 
 .btn-batch-danger:hover {
-  background: var(--color-danger-bg, #fef2f2);
+  background: var(--color-danger-bg);
 }
 
 .group-count {
   font-weight: 400;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
@@ -379,7 +379,7 @@ const stats = computed(() => {
 }
 
 .store-item:hover {
-  background: var(--color-bg, #f8fafc);
+  background: var(--color-bg);
 }
 
 .store-item.skipped {
@@ -388,7 +388,7 @@ const stats = computed(() => {
 }
 
 .store-item.noCoord {
-  border-left: 3px solid var(--color-warning, #f59e0b);
+  border-left: 3px solid var(--color-warning);
 }
 
 .store-info {
@@ -398,7 +398,7 @@ const stats = computed(() => {
 
 .store-name {
   font-size: 13px;
-  color: var(--color-text, #334155);
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -409,7 +409,7 @@ const stats = computed(() => {
   gap: 8px;
   margin-top: 2px;
   font-size: 11px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }
 
 .source-tag {
@@ -439,7 +439,7 @@ const stats = computed(() => {
 }
 
 .btn-icon:hover {
-  background: var(--color-border-light, #e2e8f0);
+  background: var(--color-border-light);
 }
 
 .empty-state {
@@ -448,7 +448,7 @@ const stats = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-size: 14px;
   padding: 24px;
 }
@@ -472,7 +472,7 @@ const stats = computed(() => {
 }
 
 .confirm-box {
-  background: var(--color-surface, #fff);
+  background: var(--color-surface);
   border-radius: 12px;
   padding: 24px 28px;
   text-align: center;
@@ -482,13 +482,13 @@ const stats = computed(() => {
 
 .confirm-text {
   font-size: 15px;
-  color: var(--color-text, #1e293b);
+  color: var(--color-text);
   margin: 0 0 4px;
 }
 
 .confirm-hint {
   font-size: 12px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   margin: 0 0 16px;
 }
 
@@ -500,22 +500,22 @@ const stats = computed(() => {
 
 .btn-cancel {
   padding: 8px 20px;
-  background: var(--color-surface, #fff);
-  border: 1px solid var(--color-border-light, #e2e8f0);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
   border-radius: 6px;
   font-size: 13px;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .btn-cancel:hover {
-  background: var(--color-bg, #f8fafc);
+  background: var(--color-bg);
 }
 
 .btn-confirm-delete {
   padding: 8px 20px;
-  background: var(--color-danger, #ef4444);
-  color: var(--color-surface, #fff);
+  background: var(--color-danger);
+  color: var(--color-surface);
   border: none;
   border-radius: 6px;
   font-size: 13px;
@@ -523,6 +523,6 @@ const stats = computed(() => {
 }
 
 .btn-confirm-delete:hover {
-  background: var(--color-danger-hover, #dc2626);
+  background: var(--color-danger-hover);
 }
 </style>
