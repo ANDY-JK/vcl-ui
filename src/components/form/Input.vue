@@ -297,6 +297,26 @@ function commitNum() {
   emit('change', next)
 }
 
+function onStepperBlur() {
+  focused.value = false
+  commitNum()
+}
+
+function clearNumValue() {
+  emit('update:modelValue', null)
+  emit('clear')
+}
+
+function clearTaValue() {
+  emit('update:modelValue', '')
+  emit('clear')
+}
+
+function clearTextValue() {
+  emit('update:modelValue', '')
+  emit('clear')
+}
+
 function stepBy(dir: 1 | -1) {
   const st = props.step > 0 ? props.step : 1
   const base = (props.modelValue as number) ?? 0
@@ -397,10 +417,7 @@ const floatingRaised = computed(() => {
           :disabled="disabled"
           @input="onNumInput"
           @focus="focused = true"
-          @blur="
-            focused = false
-            commitNum()
-          "
+          @blur="onStepperBlur"
           @keydown="onNumKeydown"
         />
         <div class="step-controls">
@@ -464,25 +481,13 @@ const floatingRaised = computed(() => {
           :autocomplete="autocomplete"
           @input="onNumInput"
           @focus="onFocus"
-          @blur="
-            onBlur($event)
-            commitNum()
-          "
+          @blur="onStepperBlur"
           @keydown="onNumKeydown"
           @keyup="emit('keyup', $event)"
           @animationstart="onAutoFillStart"
         />
         <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
-        <button
-          v-if="clearable && hasValue"
-          type="button"
-          class="f-clear"
-          tabindex="-1"
-          @click="
-            emit('update:modelValue', null)
-            emit('clear')
-          "
-        >
+        <button v-if="clearable && hasValue" type="button" class="f-clear" tabindex="-1" @click="clearNumValue">
           <IconSvg type="x" size="sm" />
         </button>
       </div>
@@ -516,16 +521,7 @@ const floatingRaised = computed(() => {
           @keyup="emit('keyup', $event)"
         />
         <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
-        <button
-          v-if="clearable && hasTaValue"
-          type="button"
-          class="f-clear"
-          tabindex="-1"
-          @click="
-            emit('update:modelValue', '')
-            emit('clear')
-          "
-        >
+        <button v-if="clearable && hasTaValue" type="button" class="f-clear" tabindex="-1" @click="clearTaValue">
           <IconSvg type="x" size="sm" />
         </button>
       </div>
@@ -579,10 +575,7 @@ const floatingRaised = computed(() => {
           type="button"
           class="f-clear"
           tabindex="-1"
-          @click="
-            emit('update:modelValue', '')
-            emit('clear')
-          "
+          @click="clearTextValue"
         >
           <IconSvg type="x" size="sm" />
         </button>

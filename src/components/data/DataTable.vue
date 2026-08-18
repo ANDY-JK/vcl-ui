@@ -179,6 +179,17 @@ function colTitle(col: Column): string {
 const tableWrapRef = ref<HTMLElement | null>(null)
 let closeContextMenu: () => void = () => {}
 
+/** 右键菜单项点击：优先执行内联回调，否则 emit 事件，最后关闭菜单 */
+function onContextItemClick(act: RowContextAction) {
+  const ctx = contextMenu.value
+  if (act.onClick) {
+    act.onClick(ctx.row!, ctx.rowIndex)
+  } else {
+    emit('rowContextAction', act.key, ctx.row!, ctx.rowIndex)
+  }
+  closeContextMenu()
+}
+
 // 前向引用：useTableCore 产出 displayData 后回填，解决与 useTableColumns 的循环依赖
 const _displayDataRef = ref<Record<string, any>[]>([])
 
@@ -3012,12 +3023,7 @@ function onFilterOptionLeave(e: MouseEvent) {
               class="dt-context-item"
               :class="{ 'ctx-danger': act.danger }"
               role="menuitem"
-              @click="
-                act.onClick
-                  ? act.onClick(contextMenu.row!, contextMenu.rowIndex)
-                  : emit('rowContextAction', act.key, contextMenu.row!, contextMenu.rowIndex)
-                closeContextMenu()
-              "
+              @click="onContextItemClick(act)"
             >
               <IconSvg v-if="act.icon" :type="act.icon" size="sm" />
               <span>{{ act.label }}</span>
