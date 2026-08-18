@@ -455,7 +455,13 @@ onUnmounted(() => {
   <div
     v-if="_error"
     class="card-wrap"
-    style="display: flex; align-items: center; justify-content: center; color: var(--color-danger); font-size: 11px"
+    style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-danger);
+      font-size: clamp(10px, 1.3vw, 11px);
+    "
   >
     ⚠ 上传组件异常
   </div>
@@ -577,7 +583,7 @@ onUnmounted(() => {
               :percent="f.progress"
               :show-text="false"
               :height="4"
-              style="margin-top: 4px"
+              style="margin-top: var(--space-1)"
             />
           </div>
           <button type="button" class="upload-remove" aria-label="移除文件" @click="removeFile(f)">
@@ -646,7 +652,7 @@ onUnmounted(() => {
   position: absolute;
   margin: 0;
   text-align: center;
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   color: var(--color-primary, #007bff);
   z-index: 2;
   pointer-events: none;
@@ -691,7 +697,7 @@ onUnmounted(() => {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.35);
   color: #fff;
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -854,19 +860,19 @@ onUnmounted(() => {
   max-width: 480px;
   background: var(--color-bg, #fff);
   border-radius: 14px 14px 0 0;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  padding: var(--space-3) var(--space-4) calc(16px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 .up-sheet-item,
 .up-sheet-cancel {
   width: 100%;
-  padding: 12px;
+  padding: var(--space-3);
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 10px;
   background: var(--color-surface, #f8fafc);
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
   color: var(--color-text, #0f172a);
   cursor: pointer;
   text-align: center;

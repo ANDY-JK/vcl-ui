@@ -1060,14 +1060,14 @@ const displayTitle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
+  height: var(--ctrl-height);
   padding: 0 var(--space-3) 0 var(--space-4);
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.04);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .ip-title {
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   color: rgba(255, 255, 255, 0.9);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1081,18 +1081,18 @@ const displayTitle = computed(() => {
   flex-shrink: 0;
 }
 .ip-counter-header {
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
 }
 .ip-hdr-btn {
-  width: 36px;
+  width: clamp(28px, 4vw, 36px);
   height: 36px;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
   color: rgba(255, 255, 255, 0.5);
-  font-size: 18px;
+  font-size: clamp(16px, 2.5vw, 18px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1105,13 +1105,13 @@ const displayTitle = computed(() => {
   background: rgba(255, 255, 255, 0.12);
 }
 .ip-close {
-  width: 36px;
+  width: clamp(28px, 4vw, 36px);
   height: 36px;
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
-  font-size: 18px;
+  font-size: clamp(16px, 2.5vw, 18px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1197,8 +1197,8 @@ const displayTitle = computed(() => {
   transform: scale(1.15);
 }
 .ip-spinner {
-  width: 40px;
-  height: 40px;
+  width: clamp(32px, 5vw, 40px);
+  height: clamp(32px, 5vw, 40px);
   border: 3px solid rgba(255, 255, 255, 0.2);
   border-top-color: #fff;
   border-radius: 50%;
@@ -1211,7 +1211,7 @@ const displayTitle = computed(() => {
 }
 .ip-error {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
 }
 
 /* 左右箭头 */
@@ -1304,7 +1304,7 @@ const displayTitle = computed(() => {
   flex-shrink: 0;
 }
 .ip-thumb-label {
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   color: rgba(255, 255, 255, 0.55);
   padding: var(--space-1) 6px 6px;
   overflow: hidden;
@@ -1330,13 +1330,13 @@ const displayTitle = computed(() => {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .ip-toolbar > button {
-  width: 36px;
+  width: clamp(28px, 4vw, 36px);
   height: 36px;
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1357,7 +1357,7 @@ const displayTitle = computed(() => {
 }
 .ip-counter {
   color: rgba(255, 255, 255, 0.45);
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   margin: 0 var(--space-2);
 }
 
@@ -1411,8 +1411,8 @@ const displayTitle = computed(() => {
     flex-shrink: 0;
   }
   .ip-close {
-    width: 40px;
-    height: 40px;
+    width: clamp(32px, 5vw, 40px);
+    height: clamp(32px, 5vw, 40px);
     flex-shrink: 0;
   }
   .ip-color-dot {
@@ -1422,18 +1422,18 @@ const displayTitle = computed(() => {
     flex-shrink: 1;
   }
   .ip-toolbar {
-    height: 48px;
+    height: var(--ctrl-height);
     padding: 0 var(--space-2);
   }
   .ip-toolbar > button {
-    width: 40px;
-    height: 40px;
+    width: clamp(32px, 5vw, 40px);
+    height: clamp(32px, 5vw, 40px);
   }
   /* 左右箭头移动端无 hover，改为常显 */
   .ip-arrow {
     opacity: 0.8;
-    width: 40px;
-    height: 40px;
+    width: clamp(32px, 5vw, 40px);
+    height: clamp(32px, 5vw, 40px);
   }
   /* 缩略图面板改为底部横排（文档流内），不挤占主图宽度也不遮挡主图 */
   .ip-body {
@@ -1461,7 +1461,7 @@ const displayTitle = computed(() => {
     height: 56px;
   }
   .ip-thumb-label {
-    padding: 2px 4px 4px;
+    padding: var(--space-1) var(--space-1) 4px;
   }
 }
 </style>

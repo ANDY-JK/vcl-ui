@@ -218,18 +218,18 @@ const stats = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: var(--space-3) var(--space-3);
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
 
 .btn-add {
-  padding: 6px 14px;
+  padding: var(--space-1) 14px;
   background: var(--color-primary);
   color: var(--color-surface);
   border: none;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   cursor: pointer;
 }
 
@@ -240,7 +240,7 @@ const stats = computed(() => {
 .stats {
   display: flex;
   gap: 10px;
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   color: var(--color-text-muted);
 }
 
@@ -252,14 +252,14 @@ const stats = computed(() => {
 .search-bar {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border-light);
   gap: 6px;
   flex-shrink: 0;
 }
 
 .search-icon {
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   flex-shrink: 0;
 }
 
@@ -267,7 +267,7 @@ const stats = computed(() => {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-text);
   background: transparent;
 }
@@ -279,11 +279,11 @@ const stats = computed(() => {
 .search-clear {
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-text-muted);
   cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: var(--space-1) var(--space-1);
+  border-radius: var(--radius-sm);
 }
 
 .search-clear:hover {
@@ -294,21 +294,21 @@ const stats = computed(() => {
 .group-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: var(--space-2);
 }
 
 .group {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .group-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 10px;
+  padding: var(--space-1) var(--space-3);
   background: var(--color-bg-alt);
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   font-weight: 600;
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -340,8 +340,8 @@ const stats = computed(() => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 12px;
-  padding: 2px 4px;
+  font-size: clamp(11px, 1.5vw, 12px);
+  padding: var(--space-1) var(--space-1);
   border-radius: 3px;
   opacity: 0.5;
   transition: opacity 0.15s;
@@ -362,18 +362,18 @@ const stats = computed(() => {
 .group-count {
   font-weight: 400;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
 }
 
 .store-list {
-  padding: 4px 0;
+  padding: var(--space-1) 0;
 }
 
 .store-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   border-radius: 6px;
   transition: background 0.15s;
 }
@@ -397,7 +397,7 @@ const stats = computed(() => {
 }
 
 .store-name {
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
@@ -406,9 +406,9 @@ const stats = computed(() => {
 
 .store-meta {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   margin-top: 2px;
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   color: var(--color-text-muted);
 }
 
@@ -424,7 +424,7 @@ const stats = computed(() => {
 
 .store-actions {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   flex-shrink: 0;
 }
 
@@ -432,9 +432,9 @@ const stats = computed(() => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 14px;
-  padding: 4px;
-  border-radius: 4px;
+  font-size: var(--ctrl-font-size);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
   transition: background 0.15s;
 }
 
@@ -449,13 +449,13 @@ const stats = computed(() => {
   align-items: center;
   justify-content: center;
   color: var(--color-text-muted);
-  font-size: 14px;
-  padding: 24px;
+  font-size: var(--ctrl-font-size);
+  padding: var(--space-8);
 }
 
 .empty-state .hint {
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: clamp(11px, 1.5vw, 12px);
+  margin-top: var(--space-1);
   text-align: center;
   line-height: 1.6;
 }
@@ -473,21 +473,21 @@ const stats = computed(() => {
 
 .confirm-box {
   background: var(--color-surface);
-  border-radius: 12px;
-  padding: 24px 28px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) 28px;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   max-width: 340px;
 }
 
 .confirm-text {
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
   color: var(--color-text);
   margin: 0 0 4px;
 }
 
 .confirm-hint {
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   color: var(--color-text-muted);
   margin: 0 0 16px;
 }
@@ -499,11 +499,11 @@ const stats = computed(() => {
 }
 
 .btn-cancel {
-  padding: 8px 20px;
+  padding: var(--space-2) 20px;
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-text-secondary);
   cursor: pointer;
 }
@@ -513,12 +513,12 @@ const stats = computed(() => {
 }
 
 .btn-confirm-delete {
-  padding: 8px 20px;
+  padding: var(--space-2) 20px;
   background: var(--color-danger);
   color: var(--color-surface);
   border: none;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   cursor: pointer;
 }
 

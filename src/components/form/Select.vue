@@ -1085,8 +1085,8 @@ function onTimeCancel() {
 }
 .select-error {
   color: var(--color-danger);
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: clamp(11px, 1.5vw, 12px);
+  margin-top: var(--space-1);
   line-height: 1.4;
 }
 
@@ -1156,7 +1156,7 @@ function onTimeCancel() {
   padding: 0 var(--space-2);
   background: var(--color-primary-light);
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   line-height: 1;
   color: var(--color-primary);
 }
@@ -1177,7 +1177,7 @@ function onTimeCancel() {
   border-radius: 50%;
   background: transparent;
   color: var(--color-primary);
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;
@@ -1234,7 +1234,7 @@ function onTimeCancel() {
   border-radius: 50%;
   background: var(--color-text-muted);
   color: var(--color-surface);
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;

@@ -378,7 +378,7 @@ function onProgressMouseUp() {
   flex-shrink: 0;
 }
 .logo-text {
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
   font-weight: 600;
   white-space: nowrap;
   letter-spacing: 0.3px;
@@ -470,26 +470,26 @@ function onProgressMouseUp() {
 }
 .topbar-prompt {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-primary);
   opacity: 0.7;
   margin-right: var(--space-1);
 }
 .topbar-category {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   font-weight: 600;
   color: var(--color-primary);
   letter-spacing: 0.3px;
 }
 .topbar-sep {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-text-secondary);
   font-weight: 300;
 }
 .topbar-title {
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   font-weight: 500;
   color: var(--color-sidebar-text-active);
   letter-spacing: 0.2px;
@@ -521,8 +521,8 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: clamp(28px, 4vw, 32px);
+  height: clamp(28px, 4vw, 32px);
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.08); /* 微弱亮边，框出按钮区域 */
   border-radius: var(--radius-sm);
@@ -586,13 +586,13 @@ function onProgressMouseUp() {
 .topbar-tool-text {
   display: flex;
   align-items: center;
-  height: 32px;
+  height: clamp(28px, 4vw, 32px);
   padding: 0 var(--space-3);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   font-weight: 500;
   letter-spacing: 0.2px;
   white-space: nowrap;
@@ -642,13 +642,13 @@ function onProgressMouseUp() {
   align-items: center;
   gap: var(--space-2);
   flex-wrap: nowrap; /* 绝不换行 —— 图标和文字始终同排 */
-  height: 32px;
+  height: clamp(28px, 4vw, 32px);
   padding: 0 var(--space-3) 0 var(--space-2);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
@@ -722,12 +722,12 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   font-weight: 600;
   line-height: 1;
 }
 .user-name {
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-text-muted);
   max-width: 100px;
   overflow: hidden;
@@ -788,7 +788,7 @@ function onProgressMouseUp() {
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
   color: var(--color-sidebar-text);
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -862,7 +862,7 @@ function onProgressMouseUp() {
   color: var(--color-primary);
   font-weight: 600;
   opacity: 0.7;
-  min-width: 32px;
+  min-width: clamp(28px, 4vw, 32px);
   text-align: right;
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   pointer-events: none;

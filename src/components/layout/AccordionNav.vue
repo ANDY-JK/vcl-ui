@@ -246,7 +246,7 @@ const activeRoute = computed(() => route.path)
   border-radius: var(--radius-sm);
   background: transparent;
   color: #dde0e8;
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
   font-weight: 600;
   letter-spacing: 0.3px;
   cursor: pointer;
@@ -273,7 +273,7 @@ const activeRoute = computed(() => route.path)
   width: calc(100% - var(--space-3) - var(--space-5));
   margin: 0 var(--space-5) 0 var(--space-3);
   padding: var(--space-2) var(--space-3);
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   opacity: 0.85;
 }
 .nav-l2 > :deep(svg) {

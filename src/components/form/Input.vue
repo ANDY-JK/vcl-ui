@@ -373,7 +373,11 @@ const floatingRaised = computed(() => {
 </script>
 
 <template>
-  <div v-if="_error" class="input-field" style="color: var(--color-danger); padding: 8px; font-size: 12px">
+  <div
+    v-if="_error"
+    class="input-field"
+    style="color: var(--color-danger); padding: var(--space-2); font-size: clamp(11px, 1.5vw, 12px)"
+  >
     ⚠ 输入组件异常
   </div>
   <div v-else class="input-field" :class="{ error: !!errorMsg, disabled }">
@@ -705,8 +709,8 @@ const floatingRaised = computed(() => {
 }
 .input-error-msg {
   color: var(--color-danger);
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: clamp(11px, 1.5vw, 12px);
+  margin-top: var(--space-1);
   line-height: 1.4;
 }
 
@@ -862,7 +866,7 @@ const floatingRaised = computed(() => {
 /* 尺寸 */
 .size-sm .step-input {
   height: 30px;
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   padding: 0 var(--space-2);
 }
 .size-md .step-input {
@@ -872,7 +876,7 @@ const floatingRaised = computed(() => {
 }
 .size-lg .step-input {
   height: 46px;
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
   padding: 0 var(--space-4);
 }
 

@@ -485,13 +485,13 @@ defineExpose({
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
-  font-size: 32px;
+  font-size: clamp(28px, 5vw, 32px);
   font-weight: 600;
   margin-bottom: var(--space-3);
   letter-spacing: -0.5px;
 }
 .brand-logo p {
-  font-size: 16px;
+  font-size: clamp(14px, 2.2vw, 16px);
   opacity: 0.9;
   line-height: 1.6;
 }
@@ -506,7 +506,7 @@ defineExpose({
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-5);
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
 }
 .features-list li::before {
   content: '\2713';
@@ -517,7 +517,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   flex-shrink: 0;
 }
 
@@ -541,7 +541,7 @@ defineExpose({
   margin-bottom: var(--space-2);
 }
 .login-header p {
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-text-secondary);
 }
 
@@ -555,7 +555,7 @@ defineExpose({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
 }
 .remember-me {
   display: flex;
@@ -617,13 +617,13 @@ defineExpose({
   color: var(--color-text-muted);
 }
 .social-text {
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   color: var(--color-text-secondary);
 }
 
 .footer-text {
   text-align: center;
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   color: var(--color-text-muted);
   padding-top: var(--space-8);
 }
@@ -652,7 +652,7 @@ defineExpose({
     padding: var(--space-8);
   }
   .login-header h1 {
-    font-size: 20px;
+    font-size: clamp(18px, 3vw, 20px);
   }
   .social-btn {
     padding: var(--space-2);

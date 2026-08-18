@@ -281,17 +281,17 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   align-items: center;
   justify-content: center;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
 }
 
 .spinner {
-  width: 32px;
-  height: 32px;
+  width: clamp(28px, 4vw, 32px);
+  height: clamp(28px, 4vw, 32px);
   border: 3px solid var(--color-border-light);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 @keyframes spin {
@@ -301,20 +301,20 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .state-empty .hint {
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: clamp(11px, 1.5vw, 12px);
+  margin-top: var(--space-1);
 }
 
 .empty-steps {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 12px;
+  margin-top: var(--space-3);
   text-align: left;
 }
 
 .empty-step {
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
@@ -330,7 +330,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   border-radius: 50%;
   background: var(--color-info-bg);
   color: var(--color-info-text);
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -346,18 +346,18 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   background: linear-gradient(135deg, var(--color-success-bg), var(--color-success-bg));
   border: 1px solid var(--color-success-border);
   border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .summary-title {
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
   font-weight: 700;
   color: var(--color-success-text);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .source-badge {
@@ -382,7 +382,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .stat {
@@ -391,7 +391,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .stat-num {
   display: block;
-  font-size: 16px;
+  font-size: clamp(14px, 2.2vw, 16px);
   font-weight: 700;
   color: var(--color-text);
 }
@@ -402,7 +402,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .summary-route {
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   color: var(--color-success-text);
   text-align: center;
   padding-top: 6px;
@@ -410,7 +410,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .enriching-tip {
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   color: var(--color-primary);
   text-align: center;
   margin: 0 0 10px;
@@ -425,7 +425,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .day-card {
   border: 1px solid var(--color-border-light);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   transition: all 0.2s;
 }
@@ -448,7 +448,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   background: var(--color-bg);
   cursor: pointer;
   user-select: none;
@@ -461,7 +461,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .day-header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .day-badge {
@@ -470,7 +470,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   border-radius: 50%;
   background: var(--color-border-light);
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -483,12 +483,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-summary-text {
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   font-weight: 600;
   color: var(--color-text);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   flex-wrap: wrap;
 }
 
@@ -497,7 +497,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   font-size: 10px;
   font-weight: 500;
   padding: 1px 5px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   white-space: nowrap;
 }
 
@@ -551,12 +551,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .btn-nav-day {
   flex: 1;
-  padding: 8px;
+  padding: var(--space-2);
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   color: var(--color-surface);
   border: none;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   font-weight: 600;
   cursor: pointer;
 }
@@ -566,12 +566,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .btn-set-current {
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   background: var(--color-success-bg);
   color: var(--color-success-text);
   border: 1px solid var(--color-success-border);
   border-radius: 6px;
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   cursor: pointer;
 }
 
@@ -579,7 +579,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .route-overview {
   background: var(--color-bg);
   border-radius: 6px;
-  padding: 8px;
+  padding: var(--space-2);
   margin-bottom: 10px;
 }
 
@@ -588,12 +588,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   color: var(--color-text-secondary);
 }
 
 .route-icon {
-  font-size: 14px;
+  font-size: var(--ctrl-font-size);
 }
 
 .route-arrow {
@@ -606,15 +606,15 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .route-stores-brief {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  padding: 4px 0;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
 }
 
 .store-chip {
   padding: 2px 6px;
   background: var(--color-info-bg);
   color: var(--color-info-text);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 10px;
   white-space: nowrap;
 }
@@ -629,7 +629,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .store-item {
@@ -637,7 +637,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   align-items: center;
   gap: 6px;
   padding: 5px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--color-bg);
 }
 
@@ -667,7 +667,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-name {
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
@@ -690,7 +690,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   white-space: nowrap;
   background: var(--color-bg-alt);
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .seg-end {
@@ -701,7 +701,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .btn-nav-mini {
   background: var(--color-info-bg);
   border: 1px solid var(--color-info-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 10px;
   padding: 2px 6px;
@@ -721,12 +721,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   margin-top: 10px;
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 10px;
 }
 
 .skipped-header {
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   font-weight: 600;
   color: var(--color-warning-text);
   margin-bottom: 6px;
@@ -735,8 +735,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .skipped-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  padding: 4px 0;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
 }
 
 .skipped-item {
@@ -744,7 +744,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   color: var(--color-text-muted);
   padding: 2px 6px;
   background: var(--color-warning-bg);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .skipped-hint {

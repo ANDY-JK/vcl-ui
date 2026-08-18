@@ -379,7 +379,7 @@ function confirm() {
 }
 .trigger-placeholder {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
 }
 .trigger-arrow {
   color: var(--color-text-muted);
@@ -399,7 +399,7 @@ function confirm() {
 .provider-tab {
   flex: 1;
   padding: var(--space-2) 12px;
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -444,7 +444,7 @@ function confirm() {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   outline: none;
 }
 
@@ -466,7 +466,7 @@ function confirm() {
   flex-shrink: 0;
 }
 .color-label {
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   color: var(--color-text-muted);
   white-space: nowrap;
 }
@@ -491,7 +491,7 @@ function confirm() {
   padding: 1px var(--space-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: clamp(10px, 1.3vw, 11px);
   font-family: monospace;
   background: var(--color-surface);
   color: var(--color-text-secondary);
@@ -530,13 +530,13 @@ function confirm() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: clamp(32px, 5vw, 40px);
+  height: clamp(32px, 5vw, 40px);
   border-radius: var(--radius-md);
   flex-shrink: 0;
 }
 .preview-name {
-  font-size: 13px;
+  font-size: var(--ctrl-font-size);
   font-weight: 500;
   color: var(--color-text);
   overflow: hidden;
@@ -579,7 +579,7 @@ function confirm() {
   border-radius: var(--radius-sm);
   background: var(--color-primary);
   color: white;
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
   white-space: nowrap;
   cursor: pointer;
   transition: opacity var(--transition-fast);
@@ -652,7 +652,7 @@ function confirm() {
   text-align: center;
   color: var(--color-text-muted);
   padding: var(--space-5);
-  font-size: 12px;
+  font-size: clamp(11px, 1.5vw, 12px);
 }
 
 /* 面板动画：弹性缓动 + 微缩放，进场 200ms 退场 150ms（退场快于进场） */
