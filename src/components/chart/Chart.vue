@@ -6,6 +6,7 @@ import type { EChartsOption } from 'echarts'
 import BaseChart from './BaseChart.vue'
 import ChartLegend from './ChartLegend.vue'
 import { buildChartOption } from './options'
+import { ensureWordCloud } from './utils/echarts-setup'
 import { DEFAULT_COLORS } from './options/common'
 import type { ChartProps, ChartData, BuildParams, ChartSeriesItem } from './utils/types'
 import { toSize } from './utils/chart-utils'
@@ -278,6 +279,16 @@ function bindEvents() {
     instance.on(name as string, handler)
   }
 }
+
+// wordCloud 图表类型按需加载 echarts-wordcloud 模块（~30KB gzip）
+// 其他类型不需要此模块，避免增加首屏 bundle
+watch(
+  () => props.type,
+  (t) => {
+    if (t === 'wordCloud') ensureWordCloud()
+  },
+  { immediate: true },
+)
 
 // 监听实例变化（覆盖 mount/type/darkMode 所有重建场景）
 watch(

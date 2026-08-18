@@ -37,7 +37,13 @@ import {
   MarkPointComponent,
   TimelineComponent,
 } from 'echarts/components'
-import 'echarts-wordcloud'
+// echarts-wordcloud 按需动态加载（~30KB gzip），仅在 wordCloud 图表类型使用时导入
+let _wordCloudLoaded = false
+export async function ensureWordCloud(): Promise<void> {
+  if (_wordCloudLoaded) return
+  await import('echarts-wordcloud')
+  _wordCloudLoaded = true
+}
 
 use([
   CanvasRenderer,
