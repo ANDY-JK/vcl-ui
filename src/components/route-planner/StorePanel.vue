@@ -129,7 +129,15 @@ const stats = computed(() => {
     <!-- 分组列表 -->
     <div class="group-list">
       <div v-for="[city, cityStores] in grouped" :key="city" class="group">
-        <div class="group-header" @click="toggleGroup(city)">
+        <div
+          class="group-header"
+          role="button"
+          tabindex="0"
+          :aria-expanded="isExpanded(city)"
+          @click="toggleGroup(city)"
+          @keydown.enter.prevent="toggleGroup(city)"
+          @keydown.space.prevent="toggleGroup(city)"
+        >
           <span class="group-arrow">{{ isExpanded(city) ? '▼' : '▶' }}</span>
           <span class="group-name">{{ city }}</span>
           <span class="group-count">{{ cityStores.length }}家</span>
@@ -191,7 +199,7 @@ const stats = computed(() => {
     <!-- 删除确认弹窗 -->
     <Teleport to="body">
       <div v-if="confirmTarget" class="confirm-overlay" @click.self="cancelDelete">
-        <div class="confirm-box">
+        <div class="confirm-box" role="alertdialog" aria-modal="true" aria-label="删除确认">
           <p class="confirm-text">确定删除「{{ confirmTarget.name }}」？</p>
           <p class="confirm-hint">
             {{ confirmTarget.city ? '将删除该城市所有门店' : '删除后不可恢复' }}

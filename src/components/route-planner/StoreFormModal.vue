@@ -2,8 +2,10 @@
 /**
  * 添加/编辑门店弹窗
  */
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import type { Store } from '@/components/route-planner/types'
+import { useEscClose } from '@/components/_internal/useEscClose'
+import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 
 const props = defineProps<{
   visible: boolean
@@ -14,6 +16,22 @@ const emit = defineEmits<{
   (e: 'close'): void
   (e: 'save', store: Store): void
 }>()
+
+const modalBoxRef = ref<HTMLElement | null>(null)
+
+// 焦点陷阱：打开时聚焦弹窗、Tab 循环、关闭时恢复焦点（内部自动 watch visible）
+useFocusTrap({
+  visible: computed(() => props.visible),
+  getContainer: () => modalBoxRef.value,
+})
+// ESC 关闭
+const { mount: mountEsc, unmount: unmountEsc } = useEscClose(
+  () => props.visible,
+  () => true,
+  () => emit('close'),
+)
+onMounted(mountEsc)
+onUnmounted(unmountEsc)
 
 const form = ref<Partial<Store>>({
   name: '',
@@ -87,10 +105,10 @@ function handleSubmit(): void {
 <template>
   <Teleport to="body">
     <div v-if="visible" class="modal-overlay" @click.self="emit('close')">
-      <div class="modal-box">
+      <div ref="modalBoxRef" class="modal-box" role="dialog" aria-modal="true" :aria-label="isEdit ? '编辑门店' : '添加门店'">
         <div class="modal-header">
           <h3>{{ isEdit ? '编辑门店' : '添加门店' }}</h3>
-          <button class="btn-close" @click="emit('close')">✕</button>
+          <button class="btn-close" aria-label="关闭" @click="emit('close')">✕</button>
         </div>
 
         <form class="modal-body" @submit.prevent="handleSubmit">
