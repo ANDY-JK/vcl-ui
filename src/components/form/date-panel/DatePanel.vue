@@ -4,6 +4,10 @@
 import { computed, useSlots } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { formatDate, todayISO } from '../utils/date-utils'
+import { useT, useTm } from '@/components/_internal/i18n'
+
+const t = useT()
+const tm = useTm()
 
 interface Month {
   year: number
@@ -152,16 +156,16 @@ function onToday() {
 
 <template>
   <div class="dp-header">
-    <button type="button" class="dp-nav-btn" aria-label="上个月" @click="prevMonth">
+    <button type="button" class="dp-nav-btn" :aria-label="t('form.prevMonth')" @click="prevMonth">
       <IconSvg type="chevron-left" size="sm" />
     </button>
-    <span class="dp-title">{{ modelMonth.year }}年{{ modelMonth.month }}月</span>
-    <button type="button" class="dp-nav-btn" aria-label="下个月" @click="nextMonth">
+    <span class="dp-title">{{ t('form.yearMonth', { year: modelMonth.year, month: modelMonth.month }) }}</span>
+    <button type="button" class="dp-nav-btn" :aria-label="t('form.nextMonth')" @click="nextMonth">
       <IconSvg type="chevron-right" size="sm" />
     </button>
   </div>
   <div class="dp-weekdays">
-    <span v-for="w in ['日', '一', '二', '三', '四', '五', '六']" :key="w" class="dp-weekday">{{ w }}</span>
+    <span v-for="w in tm('form.weekdays')" :key="w" class="dp-weekday">{{ w }}</span>
   </div>
   <div class="dp-grid">
     <button
@@ -178,7 +182,7 @@ function onToday() {
     </button>
   </div>
   <div class="dp-footer" :class="slots.actions ? 'dp-footer--actions' : 'dp-footer--center'">
-    <button type="button" class="dp-today-btn" @click="onToday">今天</button>
+    <button type="button" class="dp-today-btn" @click="onToday">{{ t('form.today') }}</button>
     <span v-if="slots.actions" class="dp-footer-spacer" />
     <slot name="actions" />
   </div>

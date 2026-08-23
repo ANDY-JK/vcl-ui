@@ -3,6 +3,9 @@
 // ⭐ 时/分/秒三列滚动列表；select 输出 format 格式完整时间，分钟已对齐 step
 import { ref, computed, watch, nextTick } from 'vue'
 import { pad2 } from '../utils/date-utils'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface Props {
   /** 当前时间字符串（可为空） */
@@ -95,19 +98,19 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
 <template>
   <div class="tp-columns">
     <div ref="hourColRef" class="tp-column">
-      <div class="tp-col-title">时</div>
+      <div class="tp-col-title">{{ t('form.hour') }}</div>
       <div v-for="h in hours" :key="h" class="tp-cell" :class="{ selected: h === curH }" @click="onPick('hour', h)">
         {{ pad2(h) }}
       </div>
     </div>
     <div ref="minuteColRef" class="tp-column">
-      <div class="tp-col-title">分</div>
+      <div class="tp-col-title">{{ t('form.minute') }}</div>
       <div v-for="m in minutes" :key="m" class="tp-cell" :class="{ selected: m === curM }" @click="onPick('minute', m)">
         {{ pad2(m) }}
       </div>
     </div>
     <div v-if="showSeconds" ref="secondColRef" class="tp-column">
-      <div class="tp-col-title">秒</div>
+      <div class="tp-col-title">{{ t('form.second') }}</div>
       <div v-for="s in seconds" :key="s" class="tp-cell" :class="{ selected: s === curS }" @click="onPick('second', s)">
         {{ pad2(s) }}
       </div>

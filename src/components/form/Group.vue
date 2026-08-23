@@ -7,7 +7,11 @@
 import { ref, computed, useId } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { clamp, alignStep } from './utils/slider-utils'
+import { useT } from '@/components/_internal/i18n'
 import type { Option } from '@/components/shared/types'
+
+// 命名为 tt 避免与 slider 模板 v-for 的 thumb 变量 t 冲突
+const tt = useT()
 
 interface Props {
   /** 统一类型：radio | checkbox | switch | rate | slider */
@@ -385,7 +389,7 @@ onUnmounted(() => {
     :aria-valuenow="Number(modelValue)"
     aria-valuemin="0"
     :aria-valuemax="rateMax"
-    :aria-label="`评分 ${modelValue}/${rateMax}`"
+    :aria-label="tt('form.rateLabel', { value: modelValue, max: rateMax })"
     @mouseleave="hoverVal = 0"
   >
     <button
@@ -423,7 +427,7 @@ onUnmounted(() => {
         :style="{ left: t.percent + '%' }"
         role="slider"
         tabindex="0"
-        :aria-label="isRange ? (i === 0 ? '最小值' : '最大值') : '滑块'"
+        :aria-label="isRange ? (i === 0 ? tt('form.sliderMin') : tt('form.sliderMax')) : tt('form.slider')"
         :aria-valuemin="min"
         :aria-valuemax="sliderMax"
         :aria-valuenow="t.value"

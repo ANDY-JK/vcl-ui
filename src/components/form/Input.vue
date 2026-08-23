@@ -12,6 +12,9 @@ onErrorCaptured((e: Error) => {
   return false
 })
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 /** 无障碍：label 与控件关联的唯一 id（number/textarea/text 三模式互斥，共享同一 id） */
 const inputId = useId()
@@ -401,7 +404,7 @@ const floatingRaised = computed(() => {
     class="input-field"
     style="color: var(--color-danger); padding: var(--space-2); font-size: clamp(11px, 1.5vw, 12px)"
   >
-    ⚠ 输入组件异常
+    ⚠ {{ t('form.inputError') }}
   </div>
   <div v-else class="input-field" :class="{ error: !!errorMsg, disabled }">
     <!-- ════════════════════════════════════════
@@ -429,7 +432,7 @@ const floatingRaised = computed(() => {
             class="step-btn up"
             tabindex="-1"
             :disabled="disabled || plusDisabled"
-            aria-label="增加"
+            :aria-label="t('form.increase')"
             @pointerdown="onBtnDown(1, $event)"
             @pointerup="clearHold"
             @pointerleave="clearHold"
@@ -443,7 +446,7 @@ const floatingRaised = computed(() => {
             class="step-btn down"
             tabindex="-1"
             :disabled="disabled || minusDisabled"
-            aria-label="减少"
+            :aria-label="t('form.decrease')"
             @pointerdown="onBtnDown(-1, $event)"
             @pointerup="clearHold"
             @pointerleave="clearHold"
@@ -586,7 +589,7 @@ const floatingRaised = computed(() => {
           <IconSvg type="x" size="sm" />
         </button>
         <span v-if="type === 'password'" class="sr-only" role="status" aria-live="polite">{{
-          showPassword ? '密码已显示' : '密码已隐藏'
+          showPassword ? t('form.passwordShown') : t('form.passwordHidden')
         }}</span>
       </div>
       <p v-if="errorMsg" class="fl-error">

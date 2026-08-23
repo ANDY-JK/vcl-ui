@@ -3,6 +3,9 @@
 //    侧键左右按需显示。替代系统相机调起（避免页面切后台被浏览器杀进程重建刷新）。
 //    需我确认：布局结构、采集参数（4:3 高清）、拍照后交付方式（capture 事件）
 import { ref, watch, nextTick, onUnmounted } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface Props {
   /** 显隐控制（v-model） */
@@ -51,7 +54,7 @@ async function start() {
   shotFile.value = null
   streamKind = 'environment'
   if (!navigator.mediaDevices?.getUserMedia) {
-    handleCameraUnavailable('当前环境不支持页面内拍照')
+    handleCameraUnavailable(t('form.cameraUnavailable'))
     return
   }
   await refreshFlipAvailable()
@@ -119,7 +122,7 @@ function handleCameraUnavailable(msg: string) {
   if (props.fallbackOnError) {
     close()
     emit('update:modelValue', false)
-    emit('error', `${msg}，已切换系统相机`)
+    emit('error', t('form.cameraSwitched', { msg }))
     triggerSystemCamera()
   } else {
     emit('error', msg)
@@ -186,7 +189,7 @@ function takeShot() {
     setTimeout(() => {
       if (!props.modelValue || !cameraReady.value) return
       if (video.videoWidth) doShot(video)
-      else handleCameraUnavailable('画面截取失败')
+      else handleCameraUnavailable(t('form.captureFailed'))
     }, 150)
     return
   }
@@ -201,7 +204,7 @@ function doShot(video: HTMLVideoElement) {
   const ctx = canvas.getContext('2d')
   if (!ctx || typeof canvas.toBlob !== 'function') {
     // 取景画面正常但截帧能力缺失（个别受限内核）→ 降级系统相机，避免按快门没反应
-    handleCameraUnavailable('画面截取失败')
+    handleCameraUnavailable(t('form.captureFailed'))
     return
   }
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
@@ -209,12 +212,12 @@ function doShot(video: HTMLVideoElement) {
     (blob) => {
       if (!blob) {
         // 微信等受限环境 toBlob 可能回调 null：按了快门没反应会让用户困惑，降级系统相机
-        handleCameraUnavailable('画面截取失败')
+        handleCameraUnavailable(t('form.captureFailed'))
         return
       }
       // 文件名保留中文（用户可见/打包下载用）；存储层 sanitizeObjectKeyPart 会
       // 在生成对象键时 ASCII 化——Supabase 对象键不接受中文，但展示名不受影响
-      shotFile.value = new File([blob], `拍照-${Date.now()}.jpg`, { type: blob.type || 'image/jpeg' })
+      shotFile.value = new File([blob], `${t('form.camera')}-${Date.now()}.jpg`, { type: blob.type || 'image/jpeg' })
       if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
       shotUrl.value = URL.createObjectURL(blob)
     },
@@ -237,17 +240,17 @@ function useShot() {
   emit('capture', f)
 }
 
-/** 浏览器摄像头错误 → 用户可读中文 */
+/** 浏览器摄像头错误 → 用户可读文案 */
 function cameraErrorToChinese(err: unknown): string {
   const raw = `${(err as Error)?.message || (err as Error)?.name || ''}`
-  if (raw.includes('NotAllowedError')) return '摄像头权限被拒绝，请在浏览器设置中允许后重试'
-  if (raw.includes('NotReadableError') || raw.includes('AbortError')) return '摄像头被其他应用占用，请关闭后重试'
-  if (raw.includes('OverconstrainedError')) return '摄像头不支持所需分辨率'
-  if (raw.includes('NotFoundError')) return '未检测到可用摄像头'
-  if (raw.includes('NotSupportedError')) return '当前浏览器不支持摄像头访问'
-  if (raw.includes('SecurityError')) return '摄像头访问被安全策略阻止（请使用 HTTPS 或 localhost）'
-  if (raw.includes('Requested device not found')) return '未找到摄像头设备，请连接摄像头后重试'
-  return '相机启动失败，请重试'
+  if (raw.includes('NotAllowedError')) return t('form.cameraErrNotAllowed')
+  if (raw.includes('NotReadableError') || raw.includes('AbortError')) return t('form.cameraErrOccupied')
+  if (raw.includes('OverconstrainedError')) return t('form.cameraErrResolution')
+  if (raw.includes('NotFoundError')) return t('form.cameraErrNotFound')
+  if (raw.includes('NotSupportedError')) return t('form.cameraErrNotSupported')
+  if (raw.includes('SecurityError')) return t('form.cameraErrSecurity')
+  if (raw.includes('Requested device not found')) return t('form.cameraErrDeviceNotFound')
+  return t('form.cameraErrFallback')
 }
 
 onUnmounted(() => {
@@ -279,22 +282,22 @@ onUnmounted(() => {
             muted
           />
           <img v-if="shotUrl" :src="shotUrl" class="camc-shot" />
-          <div v-if="!cameraReady && !shotUrl" class="camc-status">正在启动相机…</div>
+          <div v-if="!cameraReady && !shotUrl" class="camc-status">{{ t('form.cameraStarting') }}</div>
         </div>
 
         <!-- 底部工具栏：中间快门 + 左右侧键 -->
         <div class="camc-bar">
           <!-- 已拍：左重拍 / 中「使用」 / 右取消 -->
           <template v-if="shotUrl">
-            <button type="button" class="camc-side" @click="retake">重拍</button>
-            <button type="button" class="camc-shutter camc-shutter-confirm" @click="useShot">使用</button>
-            <button type="button" class="camc-side" @click="cancel">取消</button>
+            <button type="button" class="camc-side" @click="retake">{{ t('form.retake') }}</button>
+            <button type="button" class="camc-shutter camc-shutter-confirm" @click="useShot">{{ t('form.use') }}</button>
+            <button type="button" class="camc-side" @click="cancel">{{ t('form.cancel') }}</button>
           </template>
           <!-- 取景：左取消 / 中快门 / 右翻转（无前置摄像头时右侧留空占位） -->
           <template v-else>
-            <button type="button" class="camc-side" @click="cancel">取消</button>
-            <button type="button" class="camc-shutter" :disabled="!cameraReady" aria-label="拍照" @click="takeShot" />
-            <button v-if="showFlip" type="button" class="camc-side" @click="flip">翻转</button>
+            <button type="button" class="camc-side" @click="cancel">{{ t('form.cancel') }}</button>
+            <button type="button" class="camc-shutter" :disabled="!cameraReady" :aria-label="t('form.takePhoto')" @click="takeShot" />
+            <button v-if="showFlip" type="button" class="camc-side" @click="flip">{{ t('form.flip') }}</button>
             <span v-else class="camc-side camc-side-blank" />
           </template>
         </div>

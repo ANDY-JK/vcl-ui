@@ -19,6 +19,7 @@ import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
 import { useTreeFlatten } from '@/components/_internal/useTreeFlatten'
+import { useT } from '@/components/_internal/i18n'
 import { parseDate } from './utils/date-utils'
 import DatePanel from './date-panel/DatePanel.vue'
 import TimeColumns from './date-panel/TimeColumns.vue'
@@ -92,6 +93,7 @@ const emit = defineEmits<{
    ════════════════════════════════════════ */
 /** 无障碍：浮动 label 与 trigger input 关联的唯一 id */
 const selectInputId = useId()
+const t = useT()
 const isSelect = computed(() => props.type === 'select')
 const isCombobox = computed(() => props.type === 'combobox')
 const isMenu = computed(() => props.type === 'menu' && !!props.items)
@@ -734,7 +736,7 @@ const triggerDisplayText = computed(() => {
 
 const dateTimePlaceholder = computed(() => {
   if (isDateRange.value) return `${props.rangePlaceholder[0]} ~ ${props.rangePlaceholder[1]}`
-  return props.placeholder || (isDate.value ? '请选择日期' : isTime.value ? '请选择时间' : '')
+  return props.placeholder || (isDate.value ? t('form.selectDate') : isTime.value ? t('form.selectTime') : '')
 })
 
 watch(
@@ -878,7 +880,7 @@ function onTimeCancel() {
           v-if="clearable && hasValue"
           class="select-clear"
           role="button"
-          aria-label="清除"
+          :aria-label="t('form.clear')"
           tabindex="-1"
           @click="onClear"
         >
@@ -916,7 +918,7 @@ function onTimeCancel() {
                 v-model="searchText"
                 type="text"
                 class="panel-input"
-                placeholder="输入搜索..."
+                :placeholder="t('form.searchInput')"
               />
             </div>
 
@@ -1010,9 +1012,9 @@ function onTimeCancel() {
               @hover="onDateRangeHover"
             >
               <template #actions>
-                <button type="button" class="dd-btn" @click="onTimeCancel">取消</button>
+                <button type="button" class="dd-btn" @click="onTimeCancel">{{ t('form.cancel') }}</button>
                 <button type="button" class="dd-btn dd-btn-primary" :disabled="!draftStart" @click="onDateRangeConfirm">
-                  确定
+                  {{ t('form.confirm') }}
                 </button>
               </template>
             </DatePanel>
@@ -1027,16 +1029,16 @@ function onTimeCancel() {
                 @select="onTimePick"
               />
               <div class="dd-footer">
-                <button type="button" class="dd-btn" @click="onTimeCancel">取消</button>
-                <button type="button" class="dd-btn dd-btn-primary" @click="onTimeConfirm">确定</button>
+                <button type="button" class="dd-btn" @click="onTimeCancel">{{ t('form.cancel') }}</button>
+                <button type="button" class="dd-btn dd-btn-primary" @click="onTimeConfirm">{{ t('form.confirm') }}</button>
               </div>
             </template>
 
             <!-- 空选项状态 -->
             <div v-else-if="!filteredOptions.length" class="panel-status">
               <slot name="empty">
-                <template v-if="isCombobox && allowCreate && comboText">按回车使用"{{ comboText }}"</template>
-                <template v-else-if="isCombobox && allowCreate && !options?.length">输入搜索或直接回车创建</template>
+                <template v-if="isCombobox && allowCreate && comboText">{{ t('form.enterToUse', { text: comboText }) }}</template>
+                <template v-else-if="isCombobox && allowCreate && !options?.length">{{ t('form.enterToCreate') }}</template>
                 <template v-else>{{ emptyText }}</template>
               </slot>
             </div>

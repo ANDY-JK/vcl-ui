@@ -3,6 +3,9 @@
 //    需我确认：accept 文件类型、multiple 多文件逻辑、预览图尺寸
 import { ref, watch, computed, onUnmounted, onErrorCaptured } from 'vue'
 import { formatSize } from '@/components/_internal/format-utils'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 const _error = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
   _error.value = e
@@ -136,7 +139,7 @@ async function compressImage(file: File): Promise<File> {
     ctx.drawImage(img, 0, 0, width, height)
     const blob: Blob = await new Promise((resolve, reject) => {
       canvas.toBlob(
-        (b) => (b ? resolve(b) : reject(new Error('压缩失败'))),
+        (b) => (b ? resolve(b) : reject(new Error(t('form.compressFailed')))),
         file.type === 'image/png' ? 'image/png' : 'image/jpeg',
         props.compressQuality,
       )
@@ -168,19 +171,19 @@ function processFiles(fileList: FileList | null) {
     // accept 白名单校验（文件选择、拖拽、目录选择都走这里）：
     // 移动端选择器可能由宿主（如微信内置浏览器）提供拍照入口，但格式仍须匹配 accept
     if (props.accept && !isMimeAccepted(f, props.accept)) {
-      emit('error', `文件 "${f.name}" 类型不支持（仅支持 ${props.accept}）`)
+      emit('error', t('form.typeNotSupported', { name: f.name, accept: props.accept }))
       continue
     }
     if (f.size > props.maxSize * 1024 * 1024) {
-      emit('error', `文件 "${f.name}" 超过 ${props.maxSize}MB 限制`)
+      emit('error', t('form.sizeExceeded', { name: f.name, max: props.maxSize }))
       continue
     }
     if (props.minSize && f.size < props.minSize * 1024) {
-      emit('error', `文件 "${f.name}" 小于 ${props.minSize}KB 限制`)
+      emit('error', t('form.sizeTooSmall', { name: f.name, min: props.minSize }))
       continue
     }
     if (files.value.some((existing) => existing.name === f.name && existing.size === f.size)) {
-      emit('error', `文件 "${f.name}" 已存在`)
+      emit('error', t('form.fileExists', { name: f.name }))
       continue
     }
     const uf: UploadFile = {
@@ -221,7 +224,7 @@ function createPreviews(newFiles: UploadFile[], fileList: FileList) {
 async function realUpload(uf: UploadFile, rawFile: File) {
   if (!props.customRequest) {
     uf.status = 'error'
-    emit('error', '未配置 customRequest')
+    emit('error', t('form.noCustomRequest'))
     return
   }
   try {
@@ -232,7 +235,7 @@ async function realUpload(uf: UploadFile, rawFile: File) {
     syncModel()
   } catch (e: any) {
     uf.status = 'error'
-    emit('error', e?.message || '上传失败')
+    emit('error', e?.message || t('form.uploadFailed'))
     syncModel()
   }
 }
@@ -463,7 +466,7 @@ onUnmounted(() => {
       font-size: clamp(10px, 1.3vw, 11px);
     "
   >
-    ⚠ 上传组件异常
+    ⚠ {{ t('form.uploadError') }}
   </div>
   <!-- ===== card 变体：精确对标旧项目 dropZone 结构 ===== -->
   <div
@@ -472,7 +475,7 @@ onUnmounted(() => {
     :class="{ 'card-dragging': dragging, 'card-disabled': disabled }"
     role="button"
     :tabindex="disabled ? -1 : 0"
-    :aria-label="label || '上传文件'"
+    :aria-label="label || t('form.upload')"
     :aria-disabled="disabled ? 'true' : 'false'"
     @dragover="onDragOver"
     @dragleave="onDragLeave"
@@ -510,7 +513,7 @@ onUnmounted(() => {
         class="card-clear"
         @click.stop="files = []; syncModel()"
       >
-        删除
+        {{ t('form.delete') }}
       </button>
     </div>
     <!-- 隐藏的 file input（对标旧项目） -->
@@ -534,7 +537,7 @@ onUnmounted(() => {
         :class="{ dragging, disabled }"
         role="button"
         :tabindex="disabled ? -1 : 0"
-        :aria-label="'上传文件'"
+        :aria-label="t('form.upload')"
         :aria-disabled="disabled ? 'true' : 'false'"
         @dragover="onDragOver"
         @dragleave="onDragLeave"
@@ -555,10 +558,10 @@ onUnmounted(() => {
         />
         <IconSvg type="upload" size="lg" color="var(--color-text-muted)" />
         <p class="upload-hint">
-          <template v-if="dragging"> 释放文件以上传 </template>
-          <template v-else> 拖拽 / 粘贴 / <span class="upload-link">点击上传</span> </template>
+          <template v-if="dragging">{{ t('form.dropHint') }}</template>
+          <template v-else>{{ t('form.dragHint') }}<span class="upload-link">{{ t('form.clickUpload') }}</span></template>
         </p>
-        <p v-if="maxSize" class="upload-limit">单个文件不超过 {{ maxSize }}MB</p>
+        <p v-if="maxSize" class="upload-limit">{{ t('form.uploadLimit', { max: maxSize }) }}</p>
       </div>
     </slot>
 
@@ -572,8 +575,8 @@ onUnmounted(() => {
             </div>
             <div class="upload-file-meta">
               <span>{{ formatSize(f.size) }}</span>
-              <span v-if="f.status === 'done'" style="color: var(--color-success)">✓ 上传成功</span>
-              <span v-else-if="f.status === 'error'" style="color: var(--color-danger)">✗ 上传失败</span>
+              <span v-if="f.status === 'done'" style="color: var(--color-success)">✓ {{ t('form.uploadSuccess') }}</span>
+              <span v-else-if="f.status === 'error'" style="color: var(--color-danger)">✗ {{ t('form.uploadFailed') }}</span>
             </div>
             <ProgressBar
               v-if="f.status === 'uploading'"
@@ -583,7 +586,7 @@ onUnmounted(() => {
               style="margin-top: var(--space-1)"
             />
           </div>
-          <button type="button" class="upload-remove" aria-label="移除文件" @click="removeFile(f)">
+          <button type="button" class="upload-remove" :aria-label="t('form.removeFile')" @click="removeFile(f)">
             <IconSvg type="x" size="sm" />
           </button>
         </div>
@@ -595,10 +598,10 @@ onUnmounted(() => {
   <Teleport to="body">
     <div v-if="sheetOpen" class="up-sheet-mask" @click="sheetOpen = false">
       <div class="up-sheet" @click.stop>
-        <button type="button" class="up-sheet-item" @click="openCamera">📷 拍照</button>
-        <button type="button" class="up-sheet-item" @click="pickFrom('gallery')">🖼 相册</button>
-        <button type="button" class="up-sheet-item" @click="pickFrom('browse')">📄 浏览</button>
-        <button type="button" class="up-sheet-cancel" @click="sheetOpen = false">取消</button>
+        <button type="button" class="up-sheet-item" @click="openCamera">📷 {{ t('form.camera') }}</button>
+        <button type="button" class="up-sheet-item" @click="pickFrom('gallery')">🖼 {{ t('form.gallery') }}</button>
+        <button type="button" class="up-sheet-item" @click="pickFrom('browse')">📄 {{ t('form.browse') }}</button>
+        <button type="button" class="up-sheet-cancel" @click="sheetOpen = false">{{ t('form.cancel') }}</button>
       </div>
     </div>
   </Teleport>

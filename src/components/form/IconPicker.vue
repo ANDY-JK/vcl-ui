@@ -8,6 +8,9 @@ import { SOLAR_ICONS } from '@/components/_internal/solar-icons'
 import lucideIconNames from '@/components/_internal/lucide-icons.json'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 /** Lucide 全量图标名（kebab-case），从预构建 JSON 加载，避免运行时 Object.keys + map 1500+ 项 */
 const allIcons = lucideIconNames as string[]
@@ -193,7 +196,7 @@ function confirm() {
       <Transition name="drop">
         <div v-show="open" ref="floatingRef" class="picker-panel" :class="[`flip-${direction}`]" :style="floatingStyle">
           <!-- 提供者切换 -->
-          <div class="provider-switch" role="tablist" aria-label="图标提供者">
+          <div class="provider-switch" role="tablist" :aria-label="t('form.iconProvider')">
             <button
               class="provider-tab"
               role="tab"
@@ -217,13 +220,13 @@ function confirm() {
           <!-- 搜索 -->
           <div class="panel-search">
             <IconSvg type="search" size="sm" />
-            <input v-model="searchText" type="text" class="panel-input" placeholder="搜索图标..." />
+            <input v-model="searchText" type="text" class="panel-input" :placeholder="t('form.searchIcon')" />
           </div>
 
           <!-- 颜色选择 -->
           <div class="panel-colors">
             <div class="color-group">
-              <span class="color-label">图标</span>
+              <span class="color-label">{{ t('form.iconColor') }}</span>
               <input
                 type="color"
                 :value="localColor"
@@ -239,7 +242,7 @@ function confirm() {
               />
             </div>
             <div class="color-group">
-              <span class="color-label">背景</span>
+              <span class="color-label">{{ t('form.bgColor') }}</span>
               <input
                 type="color"
                 :value="localBgColor"
@@ -258,7 +261,7 @@ function confirm() {
                 :class="{ active: localBgColor === 'transparent' }"
                 @click="localBgColor = 'transparent'; colorTarget = 'bg'"
               >
-                无
+                {{ t('form.none') }}
               </button>
             </div>
           </div>
@@ -283,12 +286,12 @@ function confirm() {
                 class="preset-dot"
                 :style="{ background: c }"
                 :class="{ active: (colorTarget === 'fg' ? localColor : localBgColor) === c }"
-                :aria-label="`选择颜色 ${c}`"
+                :aria-label="t('form.selectColor', { color: c })"
                 :aria-pressed="(colorTarget === 'fg' ? localColor : localBgColor) === c"
                 @click="colorTarget === 'fg' ? (localColor = c) : (localBgColor = c)"
               />
             </div>
-            <button type="button" class="confirm-btn" @click="confirm">确定</button>
+            <button type="button" class="confirm-btn" @click="confirm">{{ t('form.confirm') }}</button>
           </div>
 
           <!-- 图标网格 -->
@@ -299,7 +302,7 @@ function confirm() {
               type="button"
               class="icon-item"
               :class="{ selected: name === localIcon }"
-              :aria-label="`选择图标 ${name}`"
+              :aria-label="t('form.selectIconName', { name })"
               :aria-pressed="name === localIcon"
               @click="selectIcon(name)"
             >
@@ -315,8 +318,8 @@ function confirm() {
               </span>
               <span>{{ name }}</span>
             </button>
-            <p v-if="solarLoading" class="empty-tip">加载 Solar 图标中…</p>
-            <p v-else-if="!filteredIcons.length" class="empty-tip">无匹配图标</p>
+            <p v-if="solarLoading" class="empty-tip">{{ t('form.loadingSolar') }}</p>
+            <p v-else-if="!filteredIcons.length" class="empty-tip">{{ t('form.noMatchIcon') }}</p>
             <div ref="iconSentinel" style="height: 1px" />
           </div>
         </div>
