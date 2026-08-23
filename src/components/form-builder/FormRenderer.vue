@@ -23,9 +23,12 @@ import Divider from '@/components/data/Divider.vue'
 import FieldError from './FieldError.vue'
 import { getComponentCategory, isLayoutField, getComponentType } from './fieldRegistry'
 import { sanitizeHTML } from '@/components/data/composables/sanitize'
+import { useT } from '@/components/_internal/i18n'
 import type { FormField } from './types'
 import type { Option } from '@/components/shared/types'
 import type { UploadFile } from '@/components/form/Upload.vue'
+
+const t = useT()
 
 const props = defineProps<{
   /** 字段定义 */
@@ -81,7 +84,7 @@ const subformCols = computed(() => {
   const raw = (props.field.props?.subformColumns as string) ?? ''
   return raw.split('\n').filter(Boolean).map(line => {
     const [label, key, type] = line.split('|')
-    return { label: label?.trim() || '列', key: key?.trim() || 'col', type: type?.trim() || 'text' }
+    return { label: label?.trim() || t('formBuilder.column'), key: key?.trim() || 'col', type: type?.trim() || 'text' }
   })
 })
 
@@ -349,9 +352,9 @@ const uploadProps = computed(() => ({
         </label>
         <div class="fb-subform">
           <div class="fb-subform-head">
-            <span class="fb-subform-title">{{ subformCols.length }} 列 · {{ subformRows.length }} 行</span>
+            <span class="fb-subform-title">{{ t('formBuilder.subformHead', { cols: subformCols.length, rows: subformRows.length }) }}</span>
             <button class="fb-subform-add" type="button" @click="emit('update:modelValue', [...subformRows, {}])">
-              + 添加行
+              {{ t('formBuilder.addRow') }}
             </button>
           </div>
           <div v-if="subformRows.length" class="fb-subform-rows">
@@ -369,7 +372,7 @@ const uploadProps = computed(() => ({
               </button>
             </div>
           </div>
-          <div v-else class="fb-subform-empty">暂无数据，点击「添加行」</div>
+          <div v-else class="fb-subform-empty">{{ t('formBuilder.subformEmpty') }}</div>
         </div>
         <FieldError :message="error ?? ''" />
       </div>
@@ -380,9 +383,9 @@ const uploadProps = computed(() => ({
           {{ field.label }}
           <span v-if="field.required" class="fb-required">*</span>
         </label>
-        <div class="fb-relate" @click="emit('update:modelValue', { id: 1, name: '示例数据' })">
+        <div class="fb-relate" @click="emit('update:modelValue', { id: 1, name: t('formBuilder.sampleData') })">
           <span :class="{ 'fb-relate-placeholder': !relateDisplayText }">
-            {{ relateDisplayText || field.placeholder || '点击选择关联数据' }}
+            {{ relateDisplayText || field.placeholder || t('formBuilder.clickSelect') }}
           </span>
           <svg class="fb-relate-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         </div>
@@ -435,7 +438,7 @@ const uploadProps = computed(() => ({
             @pointerup="endSignature"
             @pointerleave="endSignature"
           />
-          <button class="fb-signature-clear" type="button" @click="clearSignature">清除</button>
+          <button class="fb-signature-clear" type="button" @click="clearSignature">{{ t('formBuilder.clear') }}</button>
         </div>
         <FieldError :message="error ?? ''" />
       </div>
@@ -448,24 +451,24 @@ const uploadProps = computed(() => ({
         </label>
         <div class="fb-address">
           <select v-model="addressProvince" class="fb-address-select" @change="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)">
-            <option value="">选择省/直辖市</option>
+            <option value="">{{ t('formBuilder.selectProvince') }}</option>
             <option v-for="p in addressProvinces" :key="p" :value="p">{{ p }}</option>
           </select>
           <select v-model="addressCity" class="fb-address-select" @change="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)">
-            <option value="">选择市</option>
+            <option value="">{{ t('formBuilder.selectCity') }}</option>
             <option v-for="c in addressCitiesForProvince" :key="c" :value="c">{{ c }}</option>
           </select>
           <input
             v-model="addressDistrict"
             class="fb-address-input"
-            placeholder="区/县"
+            :placeholder="t('formBuilder.districtPlaceholder')"
             @input="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)"
           >
           <input
             v-if="field.props?.addressDetail"
             v-model="addressDetailText"
             class="fb-address-input fb-address-detail"
-            placeholder="详细地址"
+            :placeholder="t('formBuilder.addressPlaceholder')"
             @input="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)"
           >
         </div>
@@ -483,12 +486,12 @@ const uploadProps = computed(() => ({
             v-model="idcardTypeIndex"
             class="fb-idcard-type"
           >
-            <option v-for="(t, i) in idcardTypes" :key="i" :value="i">{{ t }}</option>
+            <option v-for="(item, i) in idcardTypes" :key="i" :value="i">{{ item }}</option>
           </select>
           <input
             class="fb-idcard-input"
             :value="modelValue as string ?? ''"
-            :placeholder="idcardTypes[idcardTypeIndex] || '证件号码'"
+            :placeholder="idcardTypes[idcardTypeIndex] || t('formBuilder.idNumber')"
             @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
           >
         </div>
@@ -518,7 +521,7 @@ const uploadProps = computed(() => ({
             </div>
           </div>
         </div>
-        <div v-else class="fb-matrix-empty">请配置行/列标题</div>
+        <div v-else class="fb-matrix-empty">{{ t('formBuilder.matrixEmpty') }}</div>
         <FieldError :message="error ?? ''" />
       </div>
 
@@ -529,7 +532,7 @@ const uploadProps = computed(() => ({
         </label>
         <div class="fb-serial">
           <span class="fb-serial-value">{{ serialValue }}</span>
-          <span class="fb-serial-hint">自动生成</span>
+          <span class="fb-serial-hint">{{ t('formBuilder.autoGenerate') }}</span>
         </div>
         <FieldError :message="error ?? ''" />
       </div>

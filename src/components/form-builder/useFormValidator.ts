@@ -13,6 +13,9 @@
 import { ref, type Ref } from 'vue'
 import type { FormSchema, FormField, FormData, FormErrors } from './types'
 import { isLayoutField, isFieldVisible } from './useFormSchema'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 // ════════════════════════════════════════
 // 值提取与空值判断
@@ -64,7 +67,7 @@ export function validateField(field: FormField, value: unknown, data: FormData, 
 
   // required 空值检查
   if (field.required && isEmptyValue(field, value)) {
-    return `${field.label}不能为空`
+    return t('formBuilder.fieldRequired', { label: field.label })
   }
 
   // requiredOnly 模式跳过 rules
@@ -129,34 +132,34 @@ export function validateAll(
  */
 export const validators = {
   /** 最小长度 */
-  minLen(len: number, label = '该字段') {
+  minLen(len: number, label = t('formBuilder.thisField')) {
     return (v: string) =>
-      v.length < len ? `${label}至少 ${len} 个字符` : undefined
+      v.length < len ? t('formBuilder.minLen', { label, len }) : undefined
   },
   /** 最大长度 */
-  maxLen(len: number, label = '该字段') {
+  maxLen(len: number, label = t('formBuilder.thisField')) {
     return (v: string) =>
-      v.length > len ? `${label}最多 ${len} 个字符` : undefined
+      v.length > len ? t('formBuilder.maxLen', { label, len }) : undefined
   },
   /** 手机号格式 */
   phone() {
     return (v: string) =>
-      v && !/^1[3-9]\d{9}$/.test(v) ? '请输入正确的手机号' : undefined
+      v && !/^1[3-9]\d{9}$/.test(v) ? t('formBuilder.phoneInvalid') : undefined
   },
   /** 邮箱格式 */
   email() {
     return (v: string) =>
-      v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? '请输入正确的邮箱地址' : undefined
+      v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? t('formBuilder.emailInvalid') : undefined
   },
   /** 身份证号 */
   idCard() {
     return (v: string) =>
-      v && !/^\d{17}[\dXx]$/.test(v) ? '请输入正确的身份证号' : undefined
+      v && !/^\d{17}[\dXx]$/.test(v) ? t('formBuilder.idCardInvalid') : undefined
   },
   /** URL 格式 */
   url() {
     return (v: string) =>
-      v && !/^https?:\/\/.+/.test(v) ? '请输入正确的 URL（以 http:// 或 https:// 开头）' : undefined
+      v && !/^https?:\/\/.+/.test(v) ? t('formBuilder.urlInvalid') : undefined
   },
   /** 正则匹配 */
   pattern(regex: RegExp, msg: string) {
@@ -167,31 +170,31 @@ export const validators = {
     return (v: string) => (fn(v) ? undefined : msg)
   },
   /** 最小值（数字字段） */
-  minVal(min: number, label = '该字段') {
+  minVal(min: number, label = t('formBuilder.thisField')) {
     return (v: string) => {
       const n = Number(v)
-      return v && !isNaN(n) && n < min ? `${label}不能小于 ${min}` : undefined
+      return v && !isNaN(n) && n < min ? t('formBuilder.minVal', { label, min }) : undefined
     }
   },
   /** 最大值（数字字段） */
-  maxVal(max: number, label = '该字段') {
+  maxVal(max: number, label = t('formBuilder.thisField')) {
     return (v: string) => {
       const n = Number(v)
-      return v && !isNaN(n) && n > max ? `${label}不能大于 ${max}` : undefined
+      return v && !isNaN(n) && n > max ? t('formBuilder.maxVal', { label, max }) : undefined
     }
   },
   /** 数值范围 */
-  range(min: number, max: number, label = '该字段') {
+  range(min: number, max: number, label = t('formBuilder.thisField')) {
     return (v: string) => {
       const n = Number(v)
-      return v && !isNaN(n) && (n < min || n > max) ? `${label}范围为 ${min}-${max}` : undefined
+      return v && !isNaN(n) && (n < min || n > max) ? t('formBuilder.rangeVal', { label, min, max }) : undefined
     }
   },
   /** 必选项（用于 checkbox/select 多选至少选 N 项） */
-  minSelect(n: number, label = '该字段') {
+  minSelect(n: number, label = t('formBuilder.thisField')) {
     return (v: unknown) => {
       const count = Array.isArray(v) ? v.length : 0
-      return count < n ? `${label}至少选择 ${n} 项` : undefined
+      return count < n ? t('formBuilder.minSelect', { label, n }) : undefined
     }
   },
 }
