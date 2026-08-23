@@ -13,7 +13,7 @@
  * - advanced 分支：渲染 subform/relate/richtext/signature/address/idcard/matrix/serial
  */
 
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import Input from '@/components/form/Input.vue'
 import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
@@ -134,6 +134,15 @@ const addressDetailText = ref('')
 const signatureCanvasRef = ref<HTMLCanvasElement>()
 let signatureDrawing = false
 
+/** 把指针事件坐标换算为 canvas 内部像素坐标（canvas 属性尺寸与 CSS 显示尺寸可能不一致） */
+function signaturePoint(e: PointerEvent): { x: number; y: number } {
+  const canvas = signatureCanvasRef.value!
+  const rect = canvas.getBoundingClientRect()
+  const scaleX = canvas.width / rect.width
+  const scaleY = canvas.height / rect.height
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY }
+}
+
 function startSignature(e: PointerEvent): void {
   signatureDrawing = true
   const canvas = signatureCanvasRef.value
@@ -144,8 +153,8 @@ function startSignature(e: PointerEvent): void {
   ctx.lineWidth = 2
   ctx.lineCap = 'round'
   ctx.beginPath()
-  const rect = canvas.getBoundingClientRect()
-  ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top)
+  const p = signaturePoint(e)
+  ctx.moveTo(p.x, p.y)
 }
 
 function drawSignature(e: PointerEvent): void {
@@ -154,13 +163,17 @@ function drawSignature(e: PointerEvent): void {
   if (!canvas) return
   const ctx = canvas.getContext('2d')
   if (!ctx) return
-  const rect = canvas.getBoundingClientRect()
-  ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top)
+  const p = signaturePoint(e)
+  ctx.lineTo(p.x, p.y)
   ctx.stroke()
 }
 
 function endSignature(): void {
+  if (!signatureDrawing) return
   signatureDrawing = false
+  // 绘制结束即回写 dataURL，保证提交时签名字段有值
+  const canvas = signatureCanvasRef.value
+  if (canvas) emit('update:modelValue', canvas.toDataURL('image/png'))
 }
 
 function clearSignature(): void {
@@ -169,7 +182,28 @@ function clearSignature(): void {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   ctx.clearRect(0, 0, canvas.width, canvas.height)
+  emit('update:modelValue', '')
 }
+
+/** 回显已有签名（编辑/预览场景，modelValue 为 dataURL 时画到 canvas） */
+function loadSignatureImage(): void {
+  const dataUrl = props.modelValue
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) return
+  const canvas = signatureCanvasRef.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  const img = new Image()
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+  }
+  img.src = dataUrl
+}
+
+onMounted(() => {
+  if (props.field.type === 'signature') loadSignatureImage()
+})
 
 /** 富文本编辑器 ref */
 const richtextContent = computed({
@@ -207,15 +241,6 @@ function updateSubformCell(rowIndex: number, colKey: string, value: unknown): vo
   emit('update:modelValue', rows)
 }
 
-/** 关联选择显示值 */
-const relateDisplayText = computed(() => {
-  const v = props.modelValue
-  if (!v) return ''
-  if (typeof v === 'string') return v
-  if (typeof v === 'object' && v !== null) return (v as Record<string, unknown>).name as string ?? ''
-  return String(v)
-})
-
 // ════════════════════════════════════════
 // 透传 props
 // ════════════════════════════════════════
@@ -233,6 +258,7 @@ const inputProps = computed(() => ({
   readonly: props.field.readonly,
   rules: (props.field.rules ?? []) as ((v: string) => string | undefined)[],
   required: props.field.required,
+  size: styleSize.value,
   ...extraProps.value,
 }))
 
@@ -259,6 +285,17 @@ const groupProps = computed(() => ({
   label: props.field.label,
   options: resolvedOptions.value,
   disabled: props.field.disabled,
+  size: styleSize.value === 'lg' ? 'md' : styleSize.value,
+  ...extraProps.value,
+}))
+
+/** relate 关联选择 props（复用 Select 组件，type 固定为 select） */
+const relateProps = computed(() => ({
+  type: 'select' as const,
+  label: props.field.label,
+  placeholder: props.field.placeholder ?? t('formBuilder.clickSelect'),
+  options: resolvedOptions.value,
+  disabled: props.field.disabled,
   ...extraProps.value,
 }))
 
@@ -269,10 +306,62 @@ const uploadProps = computed(() => ({
   disabled: props.field.disabled,
   ...extraProps.value,
 }))
+
+// ════════════════════════════════════════
+// 样式配置（styleConfig）落地
+// ════════════════════════════════════════
+
+interface StyleConfig {
+  labelWidth?: string
+  labelPosition?: 'left' | 'top' | 'hidden'
+  controlWidth?: string
+  size?: 'small' | 'default' | 'large'
+  radius?: 'default' | '0px' | '12px' | '20px'
+  customClass?: string
+  borderColor?: string
+  focusBorderColor?: string
+  customCss?: string
+}
+
+/** 字段样式配置（来自 field.props.styleConfig） */
+const styleConfig = computed<StyleConfig>(() => {
+  return (props.field.props?.styleConfig as StyleConfig) ?? {}
+})
+
+/** 原子组件尺寸映射：small→sm / default→md / large→lg */
+const styleSize = computed<'sm' | 'md' | 'lg' | undefined>(() => {
+  switch (styleConfig.value.size) {
+    case 'small': return 'sm'
+    case 'large': return 'lg'
+    default: return 'md'
+  }
+})
+
+/** 根容器 class（customClass） */
+const styleClass = computed(() => styleConfig.value.customClass ?? '')
+
+/** 根容器 style：圆角/边框色/控件宽度以 CSS 变量下发，供原生控件消费 */
+const styleVars = computed<Record<string, string>>(() => {
+  const vars: Record<string, string> = {}
+  const sc = styleConfig.value
+  const radiusMap: Record<string, string> = { default: '6px', '0px': '0px', '12px': '12px', '20px': '20px' }
+  if (sc.radius) vars['--fb-radius'] = radiusMap[sc.radius] ?? sc.radius
+  if (sc.borderColor) vars['--fb-field-border'] = sc.borderColor
+  if (sc.focusBorderColor) vars['--fb-field-focus-border'] = sc.focusBorderColor
+  if (sc.controlWidth && sc.controlWidth !== '100%') vars['--fb-control-width'] = sc.controlWidth
+  return vars
+})
+
+/** 标签位置（供高级字段 label 布局） */
+const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'left')
 </script>
 
 <template>
-  <div class="fb-renderer">
+  <div
+    class="fb-renderer"
+    :class="[styleClass, { 'fb-label-hidden': styleLabelPosition === 'hidden' }]"
+    :style="styleVars"
+  >
     <!-- ═══ 纯布局元素 ═══ -->
     <template v-if="isLayout">
       <Divider v-if="field.type === 'divider'" />
@@ -379,16 +468,10 @@ const uploadProps = computed(() => ({
 
       <!-- 关联选择 -->
       <div v-else-if="field.type === 'relate'" class="fb-advanced-field">
-        <label v-if="field.label" class="fb-adv-label">
-          {{ field.label }}
-          <span v-if="field.required" class="fb-required">*</span>
-        </label>
-        <div class="fb-relate" @click="emit('update:modelValue', { id: 1, name: t('formBuilder.sampleData') })">
-          <span :class="{ 'fb-relate-placeholder': !relateDisplayText }">
-            {{ relateDisplayText || field.placeholder || t('formBuilder.clickSelect') }}
-          </span>
-          <svg class="fb-relate-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        </div>
+        <Select
+          v-model="inputValue"
+          v-bind="relateProps"
+        />
         <FieldError :message="error ?? ''" />
       </div>
 
@@ -553,6 +636,56 @@ const uploadProps = computed(() => ({
 <style scoped>
 .fb-renderer {
   width: 100%;
+}
+
+/* ── styleConfig 落地：CSS 变量消费 ── */
+.fb-renderer {
+  --fb-radius: 6px;
+  --fb-field-border: var(--color-border, #e2e8f0);
+  --fb-field-focus-border: var(--color-primary, #3b82f6);
+  --fb-control-width: 100%;
+}
+/* 控件宽度（controlWidth） */
+.fb-renderer .fb-advanced-field,
+.fb-renderer .fb-subform,
+.fb-renderer .fb-address,
+.fb-renderer .fb-idcard,
+.fb-renderer .fb-matrix,
+.fb-renderer .fb-richtext,
+.fb-renderer .fb-signature-wrap,
+.fb-renderer .fb-relate,
+.fb-renderer .fb-serial {
+  width: var(--fb-control-width);
+}
+/* 圆角 + 边框色：作用于高级字段的原生控件 */
+.fb-address-select,
+.fb-address-input,
+.fb-idcard-type,
+.fb-idcard-input,
+.fb-subform-input {
+  border-radius: var(--fb-radius);
+  border-color: var(--fb-field-border);
+}
+.fb-address-select:focus,
+.fb-address-input:focus,
+.fb-idcard-input:focus,
+.fb-subform-input:focus {
+  border-color: var(--fb-field-focus-border);
+}
+.fb-subform,
+.fb-address,
+.fb-idcard,
+.fb-matrix,
+.fb-richtext,
+.fb-signature-wrap,
+.fb-relate,
+.fb-serial {
+  border-radius: var(--fb-radius);
+  border-color: var(--fb-field-border);
+}
+/* 标签隐藏（labelPosition=hidden） */
+.fb-label-hidden :deep(label) {
+  display: none;
 }
 
 /* 标题字段 */

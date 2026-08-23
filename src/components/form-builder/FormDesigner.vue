@@ -29,7 +29,7 @@ import OutlineTree from './designer/OutlineTree.vue'
 import {
   createField, toFormSchema, flattenNodes, findNode, updateNodeInTree,
   removeNodeFromTree, insertNode, insertChildNode, isContainerNode,
-  getNodePath, moveNodeRelative,
+  getNodePath, moveNodeRelative, findParent,
   type DesignerNode, type DesignerNodeType, type FormMeta, type FormDesign,
 } from './designer/types'
 
@@ -180,13 +180,26 @@ function duplicateNode(id: string): void {
 
 function moveNode(id: string, dir: -1 | 1): void {
   snapshot()
-  // 简化版：只在根级移动
-  const list = [...currentNodes.value]
-  const i = list.findIndex(f => f.id === id)
+  // 定位节点所在层级，在其父级（根级或某容器 children）内交换
+  const loc = findParent(currentNodes.value, id)
+  if (!loc) return
+  const i = loc.index
   const j = i + dir
-  if (i < 0 || j < 0 || j >= list.length) return
-  ;[list[i], list[j]] = [list[j], list[i]]
-  patchNodes(list)
+  if (j < 0 || j >= loc.parent.length) return
+  const siblings = [...loc.parent]
+  ;[siblings[i], siblings[j]] = [siblings[j], siblings[i]]
+  // 根级直接 patch；容器内需重建树
+  if (loc.parent === currentNodes.value) {
+    patchNodes(siblings)
+  } else {
+    const rebuild = (list: DesignerNode[]): DesignerNode[] =>
+      list.map((n) => {
+        if (n.children === loc.parent) return { ...n, children: siblings }
+        if (n.children?.length) return { ...n, children: rebuild(n.children) }
+        return n
+      })
+    patchNodes(rebuild(currentNodes.value))
+  }
 }
 
 function reorderNode(from: number, to: number): void {
@@ -609,6 +622,7 @@ const selectedPath = computed(() => {
         :selected-id="selectedId"
         @select="selectedId = $event"
         @remove="removeNode"
+        @move="sortNode"
       />
 
       <!-- 中栏：画布 -->
@@ -678,6 +692,7 @@ const selectedPath = computed(() => {
             :selected-id="selectedId"
             @select="selectedId = $event; activeTab = 'design'"
             @remove="removeNode"
+            @move="sortNode"
           />
         </div>
       </div>

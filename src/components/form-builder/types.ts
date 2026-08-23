@@ -203,6 +203,8 @@ options?: Option[]
   group?: string
   /** 条件显示 */
   visibleWhen?: VisibleWhen
+  /** 字段所属容器（设计器容器嵌套时由 toFormSchema 填充） */
+  container?: FieldContainer
   /**
    * 字段联动配置
    *
@@ -238,6 +240,27 @@ options?: Option[]
 
 /** 布局模式 */
 export type FormLayout = 'single' | 'grid' | 'steps'
+
+/** 设计器容器类型（card/grid/tabs/collapse/steps） */
+export type FieldContainerType = 'card' | 'grid' | 'tabs' | 'collapse' | 'steps'
+
+/**
+ * 字段的容器归属（toFormSchema 从设计器树填充）
+ *
+ * 设计器里字段可被拖入容器；toFormSchema 不再丢弃容器，而是把
+ * 「最近的容器祖先」信息挂到每个字段上，FormBuilder 据此把字段
+ * 渲染进对应的容器包装（card=卡片、grid=栅格、tabs/collapse/steps=带标题分组）。
+ */
+export interface FieldContainer {
+  /** 容器类型 */
+  type: FieldContainerType
+  /** 容器显示标题（card/grid/tabs/collapse/steps 通用） */
+  label?: string
+  /** 容器唯一 id（设计器节点 id，用于区分同名的多个容器） */
+  id?: string
+  /** grid 栅格列数 */
+  columns?: number
+}
 
 /** 步骤定义（steps 模式） */
 export interface FormStep {

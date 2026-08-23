@@ -11,7 +11,7 @@
  * DesignerNode[] (树) → toFormSchema() → FormSchema (扁平) → FormBuilder 渲染
  */
 
-import type { FormSchema, FormField, FieldType } from '../types'
+import type { FormSchema, FormField, FieldType, FieldContainer, FieldContainerType } from '../types'
 import type { Option, CascaderOption } from '@/components/shared/types'
 
 // ════════════════════════════════════════
@@ -730,22 +730,42 @@ export function moveNodeInTree(nodes: DesignerNode[], fromId: string, toParentId
 // ════════════════════════════════════════
 
 /**
+ * 深度优先遍历节点树，为每个字段节点携带其「最近的容器祖先」上下文。
+ * 容器不再被丢弃：card/grid/tabs/collapse/steps 会以 FieldContainer 信息
+ * 挂到其子孙字段上，由 FormBuilder 据此渲染容器包装。
+ */
+function flattenWithContainer(
+  nodes: DesignerNode[],
+  container: FieldContainer | null,
+  out: Array<{ node: DesignerNode; container: FieldContainer | null }>,
+): void {
+  for (const node of nodes) {
+    if (isContainerNode(node)) {
+      const cfg = node.containerConfig
+      const ctx: FieldContainer = { type: node.type as FieldContainerType, label: node.label, id: node.id }
+      if (node.type === 'grid' && cfg?.columns) ctx.columns = cfg.columns
+      flattenWithContainer(node.children ?? [], ctx, out)
+    } else {
+      out.push({ node, container })
+    }
+  }
+}
+
+/**
  * 设计数据 → FormSchema（FormBuilder 可渲染格式）
  *
  * v3 变化：
  * - 支持 nodes 树形结构（优先）
  * - 兼容旧版 fields 平铺结构
- * - 容器节点转换为 FormField 中的 group/layout 信息
+ * - 容器节点转换为字段的 container 归属信息（不再丢弃）
  */
 export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema {
-  // 兼容：如果传入的是旧版平铺 fields（所有节点都是字段），直接映射
-  // v3：从树形 nodes 中提取所有字段节点（扁平化）
-  const allNodes = flattenNodes(nodes)
+  // v3：递归遍历节点树，为每个字段携带最近的容器祖先上下文（容器不再被丢弃）
+  const pairs: Array<{ node: DesignerNode; container: FieldContainer | null }> = []
+  flattenWithContainer(nodes, null, pairs)
   const formFields: FormField[] = []
 
-  for (const f of allNodes) {
-    // 跳过容器节点（容器只影响布局，不映射为 FormField）
-    if (isContainerNode(f)) continue
+  for (const { node: f, container } of pairs) {
     // 跳过无 key 的字段（divider/title 除外）
     if (!f.key && f.type !== 'divider' && f.type !== 'title') continue
 
@@ -842,6 +862,10 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
         ...(dat.linkageField ? { linkageField: dat.linkageField } : {}),
         ...(dat.cacheData !== undefined ? { cacheData: dat.cacheData } : {}),
       }
+    } else if (dat?.sourceType === 'userList' || dat?.sourceType === 'deptList' || dat?.sourceType === 'database') {
+      // 实体类数据源（用户/部门/数据库）：库内不内置具体数据，映射为 static，
+      // 实际选项由字段自身 options 提供（设计器或调用方注入）。记录进 schema 避免静默丢失。
+      base.dataSource = { type: 'static' }
     }
 
     // v3 高级字段专属属性映射到 props
@@ -854,6 +878,9 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
     if (f.serialDateFormat) base.props = { ...base.props, serialDateFormat: f.serialDateFormat }
     if (f.richtextToolbar) base.props = { ...base.props, richtextToolbar: f.richtextToolbar }
     if (f.relateEntityType) base.props = { ...base.props, relateEntityType: f.relateEntityType }
+
+    // 样式配置透传（FormRenderer 消费 size/radius/borderColor/focusBorderColor/customClass 等）
+    if (f.styleConfig) base.props = { ...base.props, styleConfig: f.styleConfig }
 
     // 校验规则映射（从 validation 导出）
     const val = f.validation
@@ -887,6 +914,7 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       if (rules.length) base.rules = rules
     }
 
+    if (container) base.container = container
     formFields.push(base)
   }
 

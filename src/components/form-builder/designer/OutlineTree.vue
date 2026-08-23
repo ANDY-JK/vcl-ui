@@ -22,10 +22,73 @@ const props = defineProps({
 const emit = defineEmits<{
   select: [id: string]
   remove: [id: string]
+  /** 拖拽排序：把 sourceId 移动到 targetId 的 before/after/inside */
+  move: [sourceId: string, targetId: string, position: 'before' | 'after' | 'inside']
 }>()
 
 /** 搜索关键词 */
 const searchQuery = ref('')
+
+/** 当前拖拽中的节点 id */
+const dragId = ref<string | null>(null)
+/** 当前拖拽悬停的目标节点 id 与落点位置（用于视觉反馈） */
+const dropTarget = ref<{ id: string; position: 'before' | 'after' | 'inside' } | null>(null)
+
+function onDragStart(id: string, e: DragEvent): void {
+  dragId.value = id
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', id)
+  }
+}
+
+function onDragOver(id: string, isContainer: boolean, e: DragEvent): void {
+  if (!dragId.value || dragId.value === id) return
+  e.preventDefault()
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+  const el = e.currentTarget as HTMLElement
+  const rect = el.getBoundingClientRect()
+  const y = e.clientY - rect.top
+  let position: 'before' | 'after' | 'inside'
+  if (isContainer) {
+    // 容器节点：上 1/3 = before，下 1/3 = after，中间 = inside（放入容器）
+    if (y < rect.height / 3) position = 'before'
+    else if (y > (rect.height * 2) / 3) position = 'after'
+    else position = 'inside'
+  } else {
+    position = y < rect.height / 2 ? 'before' : 'after'
+  }
+  dropTarget.value = { id, position }
+}
+
+function onDragLeave(id: string): void {
+  if (dropTarget.value?.id === id) dropTarget.value = null
+}
+
+function onDrop(id: string, isContainer: boolean, e: DragEvent): void {
+  e.preventDefault()
+  const sourceId = dragId.value ?? e.dataTransfer?.getData('text/plain')
+  dragId.value = null
+  dropTarget.value = null
+  if (!sourceId || sourceId === id) return
+  const el = e.currentTarget as HTMLElement
+  const rect = el.getBoundingClientRect()
+  const y = e.clientY - rect.top
+  let position: 'before' | 'after' | 'inside'
+  if (isContainer) {
+    if (y < rect.height / 3) position = 'before'
+    else if (y > (rect.height * 2) / 3) position = 'after'
+    else position = 'inside'
+  } else {
+    position = y < rect.height / 2 ? 'before' : 'after'
+  }
+  emit('move', sourceId, id, position)
+}
+
+function onDragEnd(): void {
+  dragId.value = null
+  dropTarget.value = null
+}
 
 /** 展开状态 map：nodeId → boolean */
 const expandedMap = ref<Record<string, boolean>>({})
@@ -172,9 +235,19 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
         :class="{
           selected: item.node.id === selectedId,
           container: isContainerNode(item.node),
+          'ldo-dragging': item.node.id === dragId,
+          'ldo-drop-before': dropTarget?.id === item.node.id && dropTarget.position === 'before',
+          'ldo-drop-after': dropTarget?.id === item.node.id && dropTarget.position === 'after',
+          'ldo-drop-inside': dropTarget?.id === item.node.id && dropTarget.position === 'inside',
         }"
         :style="{ 'padding-left': 8 + item.level * 16 + 'px' }"
+        :draggable="true"
         @click="emit('select', item.node.id)"
+        @dragstart="onDragStart(item.node.id, $event)"
+        @dragover="onDragOver(item.node.id, isContainerNode(item.node), $event)"
+        @dragleave="onDragLeave(item.node.id)"
+        @drop="onDrop(item.node.id, isContainerNode(item.node), $event)"
+        @dragend="onDragEnd"
       >
         <!-- 展开/折叠箭头 -->
         <span
@@ -224,5 +297,38 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
   display: inline-block;
   width: 16px;
   flex-shrink: 0;
+}
+
+/* ── 拖拽排序反馈 ── */
+.ldo-node {
+  cursor: grab;
+  position: relative;
+}
+.ldo-node:active {
+  cursor: grabbing;
+}
+.ldo-node.ldo-dragging {
+  opacity: 0.4;
+}
+/* 落点位置指示线（before/after 上下沿；inside 整框高亮） */
+.ldo-node.ldo-drop-before::before,
+.ldo-node.ldo-drop-after::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  background: var(--color-primary, #3b82f6);
+  border-radius: 1px;
+}
+.ldo-node.ldo-drop-before::before {
+  top: -1px;
+}
+.ldo-node.ldo-drop-after::after {
+  bottom: -1px;
+}
+.ldo-node.ldo-drop-inside {
+  box-shadow: inset 0 0 0 2px var(--color-primary, #3b82f6);
+  background: var(--color-primary-light, #eef1ff);
 }
 </style>

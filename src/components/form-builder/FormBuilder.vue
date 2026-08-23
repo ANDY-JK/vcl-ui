@@ -360,24 +360,6 @@ const visibleFields = computed(() => {
   return normalized.value.fields.filter((f) => isFieldVisibleWithLinkage(f, formData.value))
 })
 
-/** 可见字段按 group 分组 */
-const visibleGrouped = computed(() => {
-  const groups: { name: string; fields: FormField[] }[] = []
-  const groupMap = new Map<string, FormField[]>()
-
-  for (const f of visibleFields.value) {
-    const g = f.group ?? ''
-    if (!groupMap.has(g)) groupMap.set(g, [])
-    groupMap.get(g)!.push(f)
-  }
-
-  for (const [name, fields] of groupMap) {
-    groups.push({ name, fields })
-  }
-
-  return groups
-})
-
 /** 当前应渲染的字段列表（steps 模式只渲染当前步骤） */
 const renderFields = computed<FormField[]>(() => {
   if (normalized.value.layout === 'steps' && normalized.value.steps) {
@@ -386,14 +368,58 @@ const renderFields = computed<FormField[]>(() => {
   return visibleFields.value
 })
 
-/** 当前渲染的字段按 group 分组 */
-const renderGrouped = computed(() => {
-  if (normalized.value.layout === 'steps') {
-    // steps 模式不按 group 分卡片，直接平铺
-    return [{ name: '', fields: renderFields.value }]
+/** 一个渲染区块：按容器归属把字段切分成连续段 */
+interface RenderSection {
+  id: string
+  /** 区块标题（容器 label 或 group 名） */
+  title: string | null
+  /** 是否多列网格布局（grid 容器 或 表单 layout=grid） */
+  isGrid: boolean
+  /** 网格列数 */
+  columns: number
+  /** 字段默认跨列数（未显式 span 时） */
+  defaultSpan: number
+  fields: FormField[]
+}
+
+/** 把 renderFields 按「容器/group 归属」切分为连续区块，保持字段原始顺序 */
+const renderSections = computed<RenderSection[]>(() => {
+  const sections: RenderSection[] = []
+  let cur: RenderSection | null = null
+  let curKey = ''
+  for (const f of renderFields.value) {
+    const c = f.container
+    let title: string | null
+    let isGrid: boolean
+    let columns: number
+    let spanDefault: number
+    if (c) {
+      title = c.label ?? null
+      isGrid = c.type === 'grid'
+      columns = c.columns ?? 2
+      // grid 容器内字段默认均分列宽
+      spanDefault = isGrid ? Math.max(1, Math.floor(24 / columns)) : 24
+    } else {
+      title = f.group ?? null
+      isGrid = normalized.value.layout === 'grid'
+      columns = normalized.value.columns ?? 2
+      spanDefault = defaultSpan.value
+    }
+    const key = c ? `c:${c.id ?? ''}` : `g:${f.group ?? ''}`
+    if (!cur || key !== curKey) {
+      cur = { id: 's' + sections.length, title, isGrid, columns, defaultSpan: spanDefault, fields: [] }
+      sections.push(cur)
+      curKey = key
+    }
+    cur.fields.push(f)
   }
-  return visibleGrouped.value
+  return sections
 })
+
+/** 计算字段在网格里的跨列 span（按区块列数） */
+function spanOf(field: FormField, section: RenderSection): number {
+  return Math.max(1, Math.min(field.span || section.defaultSpan, section.columns))
+}
 
 /** 是否显示步骤导航 */
 const showSteps = computed(() => normalized.value.layout === 'steps' && totalSteps.value > 0)
@@ -437,21 +463,25 @@ const stepCompletion = computed(() => {
 
     <!-- 表单主体 -->
     <form class="fb-form" @submit.prevent="handleSubmit">
-      <!-- single / grid 模式：按 group 分卡片渲染 -->
+      <!-- single / grid 模式：按容器/分组切分渲染 -->
       <template v-if="normalized.layout !== 'steps'">
         <Card
-          v-for="(group, gi) in renderGrouped"
-          :key="gi"
+          v-for="section in renderSections"
+          :key="section.id"
           class="fb-group-card"
-          :title="group.name || undefined"
+          :title="section.title || undefined"
           :no-body-padding="false"
         >
-          <div class="fb-fields" :class="{ 'fb-grid': normalized.layout === 'grid' }" :style="{ '--fb-cols': Math.max(1, normalized.columns || 2) }">
+          <div
+            class="fb-fields"
+            :class="{ 'fb-grid': section.isGrid }"
+            :style="section.isGrid ? { '--fb-cols': Math.max(1, section.columns) } : {}"
+          >
             <div
-              v-for="field in group.fields"
+              v-for="field in section.fields"
               :key="field.key"
               class="fb-field"
-              :style="{ '--fb-span': Math.max(1, Math.min(field.span || defaultSpan, normalized.columns || 2)) }"
+              :style="{ '--fb-span': spanOf(field, section) }"
             >
               <FormRenderer
                 v-model="formData[field.key]"
