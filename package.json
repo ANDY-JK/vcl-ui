@@ -30,10 +30,10 @@
   },
   "main": "./dist/vue-component-lib.cjs",
   "module": "./dist/vue-component-lib.js",
-  "types": "./dist/index.d.ts",
+  "types": "./src/components/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/components/index.ts",
       "import": "./dist/vue-component-lib.js",
       "require": "./dist/vue-component-lib.cjs"
     },
