@@ -159,7 +159,28 @@ export interface FieldDataSource {
 // ════════════════════════════════════════
 
 /**
- * 单个表单字段定义
+ * 字段事件动作（运行时消费）
+ *
+ * 由设计器事件页配置，toFormSchema 映射，FormBuilder 执行：
+ * - onChange: 值变化时触发（setValue / toggleVisible / showTip / callApi / linkField）
+ * - onBlur:   值变化后触发（autoValidate 字段级校验 / format 去空格 / submit 提交）
+ */
+export interface FieldEventAction {
+  /** 动作类型 */
+  action?: string
+  /** 目标字段 key（setValue / toggleVisible 用） */
+  targetField?: string
+}
+
+/** 字段运行时事件配置 */
+export interface FieldEvents {
+  onChange?: FieldEventAction
+  onFocus?: FieldEventAction
+  onBlur?: FieldEventAction
+}
+
+/**
+ * 表单字段定义
  *
  * type 决定渲染哪个原子组件，其余属性透传给对应组件。
  * 类型不安全但灵活：props 字段可携带任意组件特有属性。
@@ -214,6 +235,8 @@ options?: Option[]
    * - followOptions: 自身选项根据依赖字段过滤
    */
   linkage?: FieldLinkage
+  /** 字段事件动作（onChange/onBlur/onFocus，由设计器事件页配置） */
+  events?: FieldEvents
   /**
    * 远程数据源配置
    *
@@ -260,6 +283,14 @@ export interface FieldContainer {
   id?: string
   /** grid 栅格列数 */
   columns?: number
+  /** tabs 标签页定义（type=tabs） */
+  tabs?: { label: string; name: string }[]
+  /** collapse 折叠项定义（type=collapse） */
+  collapseItems?: { title: string; expanded: boolean }[]
+  /** steps 步骤定义（type=steps） */
+  steps?: { title: string }[]
+  /** 字段在该容器内的槽位下标（tabs/collapse/steps 用，对应 tabs[]/collapseItems[]/steps[] 下标） */
+  slot?: number
 }
 
 /** 步骤定义（steps 模式） */
@@ -310,6 +341,14 @@ export interface FormSchema {
   hideActions?: boolean
   /** 是否在字段变更时实时校验（默认 false，仅提交时校验） */
   validateOnChange?: boolean
+  /** 提交模式（默认 once） */
+  submitMode?: 'once' | 'multiple' | 'unique'
+  /** 提交成功后清空表单（默认 false） */
+  clearAfterSubmit?: boolean
+  /** 标签位置 */
+  labelPosition?: 'left' | 'top' | 'hidden'
+  /** 标签宽度 */
+  labelWidth?: 'default' | '80px' | '120px' | 'auto'
 }
 
 // ════════════════════════════════════════

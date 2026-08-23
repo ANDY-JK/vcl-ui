@@ -16,7 +16,7 @@ import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import {
-  getTypeLabel, parseCascaderOptions, isContainerNode,
+  getTypeLabel, parseCascaderOptions, isContainerNode, flattenNodes,
   type DesignerNode,
 } from './types'
 
@@ -83,9 +83,9 @@ function onNumberEmit(key: keyof DesignerNode, v: unknown): void {
   emit('update', { [key]: isNaN(num) ? 0 : num } as Partial<DesignerNode>)
 }
 
-/** 可选的触发字段列表 */
+/** 可选的触发字段列表（含容器内字段，供条件显示/事件目标字段选择） */
 const visibleWhenFieldOptions = computed(() => {
-  const all = props.allNodes ?? []
+  const all = flattenNodes(props.allNodes ?? [])
   const myKey = props.node.key
   return all
     .filter(n => n.id !== props.node.id && !isContainerNode(n))
@@ -784,6 +784,16 @@ const linkageHelpText = computed(() => {
               :options="[{ value: '', label: '— 选择动作 —' }, { value: 'linkField', label: '联动其他字段' }, { value: 'callApi', label: '调用 API' }, { value: 'showTip', label: '显示提示' }, { value: 'setValue', label: '设置字段值' }, { value: 'toggleVisible', label: '显示/隐藏字段' }]"
               @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: true, action: String($event ?? ''), targetField: node.eventConfig?.onChange?.targetField } } })"
             />
+            <!-- setValue / toggleVisible 需要目标字段 -->
+            <div v-if="node.eventConfig?.onChange?.action === 'setValue' || node.eventConfig?.onChange?.action === 'toggleVisible'" class="ldp-prop" style="padding: 0; border: none; margin-top: 8px;">
+              <label>目标字段</label>
+              <Select
+                :model-value="node.eventConfig?.onChange?.targetField ?? ''"
+                :options="visibleWhenFieldOptions"
+                placeholder="选择目标字段"
+                @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: true, action: node.eventConfig?.onChange?.action, targetField: $event === null ? '' : String($event ?? '') } } })"
+              />
+            </div>
           </div>
         </div>
 

@@ -149,6 +149,8 @@ export interface DesignerNode {
   // ── v3 高级字段默认值 ──
   /** relate 关联选择：关联实体类型 */
   relateEntityType?: 'user' | 'dept' | 'role' | 'custom'
+  /** 字段在其父容器内的槽位下标（tabs/collapse/steps 容器用，对应容器定义数组下标） */
+  containerSlot?: number
 
   // ── 容器节点属性（字段节点不使用） ──
   /** 是否容器节点 */
@@ -744,9 +746,16 @@ function flattenWithContainer(
       const cfg = node.containerConfig
       const ctx: FieldContainer = { type: node.type as FieldContainerType, label: node.label, id: node.id }
       if (node.type === 'grid' && cfg?.columns) ctx.columns = cfg.columns
+      if (node.type === 'tabs' && cfg?.tabs?.length) ctx.tabs = cfg.tabs
+      if (node.type === 'collapse' && cfg?.collapseItems?.length) ctx.collapseItems = cfg.collapseItems
+      if (node.type === 'steps' && cfg?.steps?.length) ctx.steps = cfg.steps
       flattenWithContainer(node.children ?? [], ctx, out)
     } else {
-      out.push({ node, container })
+      // 字段携带其 containerSlot（父容器 tabs/collapse/steps 槽位）
+      const c = container && node.containerSlot !== undefined
+        ? { ...container, slot: node.containerSlot }
+        : container
+      out.push({ node, container: c })
     }
   }
 }
@@ -851,6 +860,20 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       }
     }
 
+    // 事件动作映射（从 eventConfig 导出，运行时由 FormBuilder 消费）
+    if (evt?.onChange?.enabled && evt.onChange.action) {
+      base.events = {
+        ...base.events,
+        onChange: { action: evt.onChange.action, targetField: evt.onChange.targetField },
+      }
+    }
+    if (evt?.onBlur?.enabled && evt.onBlur.action) {
+      base.events = { ...base.events, onBlur: { action: evt.onBlur.action } }
+    }
+    if (evt?.onFocus?.enabled && evt.onFocus.action) {
+      base.events = { ...base.events, onFocus: { action: evt.onFocus.action } }
+    }
+
     // 数据源配置映射（从 dataConfig 导出）
     const dat = f.dataConfig
     if (dat?.sourceType === 'api' && dat.apiUrl) {
@@ -930,6 +953,10 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
     steps: meta?.steps,
     hideActions: meta?.hideActions,
     validateOnChange: meta?.validateOnChange,
+    submitMode: meta?.submitMode,
+    clearAfterSubmit: meta?.clearAfterSubmit,
+    labelPosition: meta?.labelPosition,
+    labelWidth: meta?.labelWidth,
   }
 }
 

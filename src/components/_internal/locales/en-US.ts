@@ -362,5 +362,8 @@ export default {
     matrixEmpty: 'Please configure row/column titles',
     autoGenerate: 'Auto-generated',
     inputContent: 'Enter content...',
+    eventTip: '"{field}" changed',
+    eventNoApi: 'No API URL configured',
+    submitOnce: 'This form can only be submitted once',
   },
 }

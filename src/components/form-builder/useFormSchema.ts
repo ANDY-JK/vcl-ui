@@ -45,7 +45,7 @@ const DEFAULT_SPAN_GRID = 12 // 2 列 grid → 每列 12
 export function normalizeSchema(schema: FormSchema): Required<
   Pick<FormSchema, 'fields' | 'layout' | 'columns' | 'submitText' | 'resetText' | 'hideActions' | 'validateOnChange'>
 > &
-  Pick<FormSchema, 'title' | 'description' | 'steps'> {
+  Pick<FormSchema, 'title' | 'description' | 'steps' | 'submitMode' | 'clearAfterSubmit' | 'labelPosition' | 'labelWidth'> {
   const merged = { ...DEFAULT_SCHEMA, ...schema }
   // fields 确保非空数组
   if (!merged.fields || merged.fields.length === 0) {
@@ -69,7 +69,7 @@ export function normalizeSchema(schema: FormSchema): Required<
   return merged as Required<
     Pick<FormSchema, 'fields' | 'layout' | 'columns' | 'submitText' | 'resetText' | 'hideActions' | 'validateOnChange'>
   > &
-    Pick<FormSchema, 'title' | 'description' | 'steps'>
+    Pick<FormSchema, 'title' | 'description' | 'steps' | 'submitMode' | 'clearAfterSubmit' | 'labelPosition' | 'labelWidth'>
 }
 
 // ════════════════════════════════════════

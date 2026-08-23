@@ -365,5 +365,8 @@ export default {
     matrixEmpty: '请配置行/列标题',
     autoGenerate: '自动生成',
     inputContent: '输入内容...',
+    eventTip: '「{field}」值变化',
+    eventNoApi: '未配置 API 地址',
+    submitOnce: '该表单仅可提交一次',
   },
 }

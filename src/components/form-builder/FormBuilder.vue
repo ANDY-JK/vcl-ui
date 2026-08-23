@@ -23,11 +23,14 @@ import { useFormValidator } from './useFormValidator'
 import { useFormStorage } from './useFormStorage'
 import { useFormLinkage } from './useFormLinkage'
 import FormRenderer from './FormRenderer.vue'
+import FieldList from './FieldList.vue'
 import Button from '@/components/basic/Button.vue'
 import Steps from '@/components/nav/Steps.vue'
+import Tabs from '@/components/nav/Tabs.vue'
+import Collapse from '@/components/data/Collapse.vue'
 import Card from '@/components/data/Card.vue'
 import Toast from '@/components/feedback/Toast.vue'
-import type { FormSchema, FormData, FormField, FormErrors } from './types'
+import type { FormSchema, FormData, FormField, FormErrors, FieldContainer } from './types'
 
 const t = useT()
 
@@ -271,11 +274,29 @@ function handleSubmit(): void {
   for (const field of normalized.value.fields) {
     if (isLayoutField(field.type)) continue
     if (!isFieldVisibleWithLinkage(field, formData.value)) continue
+    if (isHiddenByEvent(field.key)) continue
     submitData[field.key] = formData.value[field.key]
+  }
+
+  // 提交模式：unique 模式下若已提交过则拦截（防止重复提交）
+  if (normalized.value.submitMode === 'unique' && hasSubmitted.value) {
+    toastRef.value?.show(t('formBuilder.submitOnce'), 'warning', 2000)
+    return
   }
 
   submitting.value = true
   emit('submit', submitData)
+
+  // 提交模式：once/unique 模式下提交后禁用再次提交（multiple 允许多次）
+  if (normalized.value.submitMode !== 'multiple') {
+    hasSubmitted.value = true
+  }
+
+  // 提交后清空
+  if (normalized.value.clearAfterSubmit) {
+    formData.value = { ...initialData.value }
+    clearErrors()
+  }
 
   // 提交成功后清除草稿
   if (props.storageKey) {
@@ -289,6 +310,8 @@ function handleSubmit(): void {
 }
 
 let submitTimer: ReturnType<typeof setTimeout> | null = null
+/** 是否已提交过（submitMode=unique 用） */
+const hasSubmitted = ref(false)
 
 /** 停止提交 loading 状态 — 供父组件通过 ref 调用 */
 function stopSubmit(): void {
@@ -343,6 +366,8 @@ function handleReset(): void {
   formData.value = { ...initialData.value }
   clearErrors()
   currentStep.value = 0
+  hasSubmitted.value = false
+  hiddenByEvent.value = new Set()
   // 重置时清除草稿，避免下次加载又恢复旧数据
   if (props.storageKey) {
     clearDraft(props.storageKey).catch(() => {})
@@ -355,9 +380,83 @@ function handleReset(): void {
 // 计算属性
 // ════════════════════════════════════════
 
-/** 可见字段列表（过滤 visibleWhen + 联动隐藏） */
+/** 事件动作隐藏的字段 key 集合（toggleVisible 用） */
+const hiddenByEvent = ref<Set<string>>(new Set())
+
+/** 字段是否被事件动作隐藏 */
+function isHiddenByEvent(key: string): boolean {
+  return hiddenByEvent.value.has(key)
+}
+
+/** FieldList 回写字段值 */
+function onFieldUpdate(key: string, value: unknown): void {
+  formData.value = { ...formData.value, [key]: value }
+}
+
+/**
+ * 执行字段的事件动作（由 FormRenderer @change 触发）
+ * 支持：setValue / toggleVisible / showTip / callApi / linkField（onChange）
+ *       autoValidate / format / submit（onBlur）
+ */
+function handleFieldChange(field: FormField, trigger: 'change' | 'blur'): void {
+  const evt = field.events?.[trigger === 'change' ? 'onChange' : 'onBlur']
+  if (!evt?.action) return
+  const target = evt.targetField
+
+  switch (evt.action) {
+    case 'setValue': {
+      if (target) {
+        // 把当前字段值同步给目标字段
+        formData.value = { ...formData.value, [target]: formData.value[field.key] }
+      }
+      break
+    }
+    case 'toggleVisible': {
+      if (target) {
+        const next = new Set(hiddenByEvent.value)
+        if (next.has(target)) next.delete(target)
+        else next.add(target)
+        hiddenByEvent.value = next
+      }
+      break
+    }
+    case 'showTip': {
+      toastRef.value?.show(t('formBuilder.eventTip', { field: field.label }), 'info', 1500)
+      break
+    }
+    case 'callApi': {
+      // 无 URL 配置时给出可区分的提示，避免静默失败
+      toastRef.value?.show(t('formBuilder.eventNoApi'), 'warning', 2000)
+      break
+    }
+    case 'linkField': {
+      // 联动字段：linkage 引擎已处理 followValue/showHide，这里无需额外动作
+      break
+    }
+    case 'autoValidate': {
+      validateOne(field.key)
+      break
+    }
+    case 'format': {
+      const v = formData.value[field.key]
+      if (typeof v === 'string' && v !== v.trim()) {
+        formData.value = { ...formData.value, [field.key]: v.trim() }
+      }
+      break
+    }
+    case 'submit': {
+      handleSubmit()
+      break
+    }
+  }
+}
+
+/** 可见字段列表（过滤 visibleWhen + 联动隐藏 + 事件隐藏） */
 const visibleFields = computed(() => {
-  return normalized.value.fields.filter((f) => isFieldVisibleWithLinkage(f, formData.value))
+  return normalized.value.fields.filter((f) => {
+    if (isHiddenByEvent(f.key)) return false
+    return isFieldVisibleWithLinkage(f, formData.value)
+  })
 })
 
 /** 当前应渲染的字段列表（steps 模式只渲染当前步骤） */
@@ -379,6 +478,8 @@ interface RenderSection {
   columns: number
   /** 字段默认跨列数（未显式 span 时） */
   defaultSpan: number
+  /** 区块对应的容器定义（tabs/collapse/steps 走交互渲染，其余走卡片/网格） */
+  container?: FieldContainer
   fields: FormField[]
 }
 
@@ -407,7 +508,7 @@ const renderSections = computed<RenderSection[]>(() => {
     }
     const key = c ? `c:${c.id ?? ''}` : `g:${f.group ?? ''}`
     if (!cur || key !== curKey) {
-      cur = { id: 's' + sections.length, title, isGrid, columns, defaultSpan: spanDefault, fields: [] }
+      cur = { id: 's' + sections.length, title, isGrid, columns, defaultSpan: spanDefault, container: c ?? undefined, fields: [] }
       sections.push(cur)
       curKey = key
     }
@@ -416,9 +517,57 @@ const renderSections = computed<RenderSection[]>(() => {
   return sections
 })
 
-/** 计算字段在网格里的跨列 span（按区块列数） */
-function spanOf(field: FormField, section: RenderSection): number {
-  return Math.max(1, Math.min(field.span || section.defaultSpan, section.columns))
+// ════════════════════════════════════════
+// 容器交互渲染辅助（tabs/collapse/steps）
+// ════════════════════════════════════════
+
+/** tabs 容器：当前激活 tab 名 */
+const tabStates = ref<Record<string, string>>({})
+/** collapse 容器：展开状态（collapseIndex → bool） */
+const collapseStates = ref<Record<string, boolean>>({})
+/** steps 容器：当前步骤下标 */
+const stepStates = ref<Record<string, number>>({})
+
+/** 取 tabs 容器当前激活 tab 名（缺省第一个） */
+function activeTabOf(section: RenderSection): string {
+  const id = section.container?.id ?? ''
+  const tabs = section.container?.tabs ?? []
+  if (tabStates.value[id] !== undefined) return tabStates.value[id]
+  return tabs[0]?.name ?? ''
+}
+
+/** 取 collapse 容器某折叠项展开状态 */
+function collapseOpen(section: RenderSection, index: number): boolean {
+  const id = section.container?.id ?? ''
+  const items = section.container?.collapseItems ?? []
+  if (collapseStates.value[`${id}:${index}`] !== undefined) return collapseStates.value[`${id}:${index}`]
+  return items[index]?.expanded ?? false
+}
+
+/** 取 steps 容器当前步骤 */
+function stepIndexOf(section: RenderSection): number {
+  const id = section.container?.id ?? ''
+  return stepStates.value[id] ?? 0
+}
+
+/** tabs 容器：按槽位过滤出当前 tab 的字段 */
+function fieldsInTab(section: RenderSection, tabName: string): FormField[] {
+  const tabs = section.container?.tabs ?? []
+  const idx = tabs.findIndex((t) => t.name === tabName)
+  return section.fields.filter((f) => {
+    const slot = f.container?.slot ?? 0
+    return slot === idx
+  })
+}
+
+/** collapse 容器：按槽位过滤某折叠项的字段 */
+function fieldsInCollapse(section: RenderSection, index: number): FormField[] {
+  return section.fields.filter((f) => (f.container?.slot ?? 0) === index)
+}
+
+/** steps 容器：按槽位过滤某步骤的字段 */
+function fieldsInStep(section: RenderSection, index: number): FormField[] {
+  return section.fields.filter((f) => (f.container?.slot ?? 0) === index)
 }
 
 /** 是否显示步骤导航 */
@@ -465,34 +614,112 @@ const stepCompletion = computed(() => {
     <form class="fb-form" @submit.prevent="handleSubmit">
       <!-- single / grid 模式：按容器/分组切分渲染 -->
       <template v-if="normalized.layout !== 'steps'">
-        <Card
-          v-for="section in renderSections"
-          :key="section.id"
-          class="fb-group-card"
-          :title="section.title || undefined"
-          :no-body-padding="false"
-        >
-          <div
-            class="fb-fields"
-            :class="{ 'fb-grid': section.isGrid }"
-            :style="section.isGrid ? { '--fb-cols': Math.max(1, section.columns) } : {}"
+        <template v-for="section in renderSections" :key="section.id">
+          <!-- tabs 容器：真实切页 -->
+          <Card
+            v-if="section.container?.type === 'tabs'"
+            class="fb-group-card"
+            :title="section.title || undefined"
+            :no-body-padding="false"
           >
-            <div
-              v-for="field in section.fields"
-              :key="field.key"
-              class="fb-field"
-              :style="{ '--fb-span': spanOf(field, section) }"
-            >
-              <FormRenderer
-                v-model="formData[field.key]"
-                :field="field"
-                :error="errors[field.key]"
-                :disabled="disabled || field.disabled || readonly"
-                :dynamic-options="getFieldOptions(field)"
+            <Tabs
+              :model-value="activeTabOf(section)"
+              :items="(section.container.tabs ?? []).map(t => ({ label: t.label, value: t.name }))"
+              @update:model-value="tabStates[section.container!.id ?? ''] = String($event)"
+            />
+            <div class="fb-fields">
+              <FieldList
+                :fields="fieldsInTab(section, activeTabOf(section))"
+                :section="section"
+                :form-data="formData"
+                :errors="errors"
+                :disabled="disabled || readonly"
+                :get-options="getFieldOptions"
+                @update:field="onFieldUpdate"
+                @change="(f: FormField) => handleFieldChange(f, 'change')"
               />
             </div>
-          </div>
-        </Card>
+          </Card>
+
+          <!-- collapse 容器：真实折叠 -->
+          <Card
+            v-else-if="section.container?.type === 'collapse'"
+            class="fb-group-card"
+            :title="section.title || undefined"
+            :no-body-padding="false"
+          >
+            <Collapse
+              v-for="(item, ci) in (section.container.collapseItems ?? [])"
+              :key="ci"
+              :title="item.title"
+              :open="collapseOpen(section, ci)"
+              @update:open="collapseStates[`${section.container!.id ?? ''}:${ci}`] = $event"
+            >
+              <FieldList
+                :fields="fieldsInCollapse(section, ci)"
+                :section="section"
+                :form-data="formData"
+                :errors="errors"
+                :disabled="disabled || readonly"
+                :get-options="getFieldOptions"
+                @update:field="onFieldUpdate"
+                @change="(f: FormField) => handleFieldChange(f, 'change')"
+              />
+            </Collapse>
+          </Card>
+
+          <!-- steps 容器：步骤导航 -->
+          <Card
+            v-else-if="section.container?.type === 'steps'"
+            class="fb-group-card"
+            :title="section.title || undefined"
+            :no-body-padding="false"
+          >
+            <Steps
+              :steps="(section.container.steps ?? []).map(s => ({ label: s.title }))"
+              :current="stepIndexOf(section)"
+              clickable
+              @step-click="(i: number) => stepStates[section.container!.id ?? ''] = i"
+            />
+            <div class="fb-fields">
+              <FieldList
+                :fields="fieldsInStep(section, stepIndexOf(section))"
+                :section="section"
+                :form-data="formData"
+                :errors="errors"
+                :disabled="disabled || readonly"
+                :get-options="getFieldOptions"
+                @update:field="onFieldUpdate"
+                @change="(f: FormField) => handleFieldChange(f, 'change')"
+              />
+            </div>
+          </Card>
+
+          <!-- card / grid / 普通分组：原卡片 + 网格渲染 -->
+          <Card
+            v-else
+            class="fb-group-card"
+            :title="section.title || undefined"
+            :no-body-padding="false"
+          >
+            <div
+              class="fb-fields"
+              :class="{ 'fb-grid': section.isGrid }"
+              :style="section.isGrid ? { '--fb-cols': Math.max(1, section.columns) } : {}"
+            >
+              <FieldList
+                :fields="section.fields"
+                :section="section"
+                :form-data="formData"
+                :errors="errors"
+                :disabled="disabled || readonly"
+                :get-options="getFieldOptions"
+                @update:field="onFieldUpdate"
+                @change="(f: FormField) => handleFieldChange(f, 'change')"
+              />
+            </div>
+          </Card>
+        </template>
       </template>
 
       <!-- steps 模式：渲染当前步骤字段 -->
@@ -509,6 +736,7 @@ const stepCompletion = computed(() => {
               :error="errors[field.key]"
               :disabled="disabled || field.disabled || readonly"
               :dynamic-options="getFieldOptions(field)"
+              @change="handleFieldChange(field, 'change')"
             />
           </div>
         </div>

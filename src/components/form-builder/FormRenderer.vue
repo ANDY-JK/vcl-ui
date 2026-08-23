@@ -43,6 +43,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [v: unknown]
+  /** 值变化（透传原子组件 change，供 FormBuilder 执行事件动作） */
+  change: []
 }>()
 
 // ════════════════════════════════════════
@@ -375,6 +377,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
       <Input
         v-model="inputValue"
         v-bind="inputProps"
+        @change="emit('change')"
       />
       <FieldError :message="error ?? ''" />
     </template>
@@ -384,6 +387,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
       <Select
         v-model="inputValue"
         v-bind="selectProps"
+        @change="emit('change')"
       />
       <FieldError :message="error ?? ''" />
     </template>
@@ -398,6 +402,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <Group
           v-model="groupValue"
           v-bind="groupProps"
+          @change="emit('change')"
         />
         <FieldError :message="error ?? ''" />
       </div>
