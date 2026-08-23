@@ -26,6 +26,8 @@ import {
 const props = defineProps({
   nodes: { type: Array as PropType<DesignerNode[]>, default: () => [] },
   selectedId: { type: String as PropType<string | null>, default: null },
+  /** 多选集合（Ctrl/Cmd+点选） */
+  selectedIds: { type: Array as PropType<string[]>, default: () => [] },
   /** 设备模式 */
   device: { type: String as PropType<'desktop' | 'tablet' | 'mobile'>, default: 'desktop' },
   /** 表单标题 */
@@ -37,7 +39,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits<{
-  select: [id: string]
+  /** additive=true 表示 Ctrl/Cmd+点击，追加到多选而非单选 */
+  select: [id: string, additive?: boolean]
   add: [type: DesignerNodeType]
   move: [id: string, dir: -1 | 1]
   duplicate: [id: string]
@@ -73,6 +76,11 @@ const previewSchema = computed(() => {
 /** 根据 key 查找字段定义 */
 function findFieldByKey(key: string) {
   return previewSchema.value.fields.find(f => f.key === key)
+}
+
+/** 节点是否处于选中态（单选选中 或 多选集合内） */
+function isSelected(id: string): boolean {
+  return id === props.selectedId || props.selectedIds.includes(id)
 }
 
 // ════════════════════════════════════════
@@ -344,8 +352,8 @@ const deviceClass = computed(() => `device-${props.device}`)
           <div
             v-if="isContainerNode(node)"
             class="ldc-container"
-            :class="{ selected: node.id === selectedId, 'drop-target': dropTargetId === node.id }"
-            @click="emit('select', node.id)"
+            :class="{ selected: isSelected(node.id), 'drop-target': dropTargetId === node.id }"
+            @click="emit('select', node.id, ($event.ctrlKey || $event.metaKey))"
             @dragover="onNodeDragOver($event, node)"
             @drop="onNodeDrop($event, node)"
           >
@@ -546,11 +554,11 @@ const deviceClass = computed(() => `device-${props.device}`)
           <div
             v-else
             class="ldc-card"
-            :class="{ selected: node.id === selectedId, dragging: sortDragId === node.id }"
+            :class="{ selected: isSelected(node.id), dragging: sortDragId === node.id }"
             draggable="true"
             role="listitem"
             :aria-label="`字段 ${node.label}（可拖拽排序）`"
-            @click="emit('select', node.id)"
+            @click="emit('select', node.id, ($event.ctrlKey || $event.metaKey))"
             @dragstart="onNodeDragStart($event, node)"
             @dragover="onNodeDragOver($event, node)"
             @drop="onNodeDrop($event, node)"

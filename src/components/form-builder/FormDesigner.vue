@@ -76,6 +76,8 @@ function patchNodes(list: DesignerNode[]): void {
 // ════════════════════════════════════════
 
 const selectedId = ref<string | null>(null)
+/** 多选集合（Ctrl/Cmd+点选进入；空 = 单选模式） */
+const selectedIds = ref<Set<string>>(new Set())
 const activeTab = ref<'design' | 'preview' | 'outline' | 'schema'>('design')
 const showSettings = ref(false)
 const previewData = ref<Record<string, unknown>>({})
@@ -85,6 +87,32 @@ const selectedNode = computed(() => {
   if (!selectedId.value) return null
   return findNode(currentNodes.value, selectedId.value)
 })
+
+/** 是否处于多选模式 */
+const isMultiSelect = computed(() => selectedIds.value.size > 0)
+
+/** 处理画布/大纲树选中事件（additive = Ctrl/Cmd+点选） */
+function handleSelect(id: string, additive = false): void {
+  if (additive) {
+    // Ctrl/Cmd+点选：切换该节点在多选集合中的状态
+    const next = new Set(selectedIds.value)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    selectedIds.value = next
+    // 主选中保持为最后点击的节点（属性面板编辑用）
+    selectedId.value = id
+  } else {
+    // 普通点选：清空多选，恢复单选
+    selectedIds.value = new Set()
+    selectedId.value = id
+  }
+}
+
+/** 清除选中（含多选） */
+function clearSelection(): void {
+  selectedId.value = null
+  selectedIds.value = new Set()
+}
 
 const tip = ref('')
 let _tipTimer: ReturnType<typeof setTimeout> | null = null
@@ -169,8 +197,25 @@ function assignSlot(sourceId: string, slot: number): void {
 /** 待删除节点 id（容器带子节点时需确认） */
 const pendingRemoveId = ref<string | null>(null)
 const pendingRemoveLabel = ref('')
+/** 待批量删除的 id 集合（多选删除确认用） */
+const pendingRemoveIds = ref<string[]>([])
 
 function removeNode(id: string): void {
+  // 多选模式下：删除整个选中集合（含当前 id）
+  if (selectedIds.value.size > 0 && selectedIds.value.has(id)) {
+    const ids = [...selectedIds.value]
+    const hasContainerWithChildren = ids.some((nid) => {
+      const n = findNode(currentNodes.value, nid)
+      return n && isContainerNode(n) && !!n.children?.length
+    })
+    if (hasContainerWithChildren || ids.length > 1) {
+      pendingRemoveIds.value = ids
+      return
+    }
+    doRemoveNodes(ids)
+    return
+  }
+
   const node = findNode(currentNodes.value, id)
   if (!node) return
   // 容器节点带子节点时，删除会连带删掉子字段，弹确认
@@ -183,9 +228,19 @@ function removeNode(id: string): void {
 }
 
 function doRemoveNode(id: string): void {
+  doRemoveNodes([id])
+}
+
+/** 批量删除多个节点（单次快照） */
+function doRemoveNodes(ids: string[]): void {
   snapshot()
-  patchNodes(removeNodeFromTree(currentNodes.value, id))
-  if (selectedId.value === id) selectedId.value = null
+  let next = currentNodes.value
+  for (const id of ids) {
+    next = removeNodeFromTree(next, id)
+  }
+  patchNodes(next)
+  if (selectedId.value && ids.includes(selectedId.value)) selectedId.value = null
+  selectedIds.value = new Set()
 }
 
 function onConfirmRemove(): void {
@@ -193,6 +248,12 @@ function onConfirmRemove(): void {
   pendingRemoveId.value = null
   pendingRemoveLabel.value = ''
   if (id) doRemoveNode(id)
+}
+
+function onConfirmRemoveBatch(): void {
+  const ids = pendingRemoveIds.value
+  pendingRemoveIds.value = []
+  if (ids.length) doRemoveNodes(ids)
 }
 
 function duplicateNode(id: string): void {
@@ -521,7 +582,7 @@ function onConfirmClearAll(): void {
   clearAllVisible.value = false
   snapshot()
   patchNodes([])
-  selectedId.value = null
+  clearSelection()
 }
 
 // ════════════════════════════════════════
@@ -547,6 +608,7 @@ const selectedPath = computed(() => {
         表单设计器
       </span>
       <span class="ld-count">{{ nodeCount }} 个节点 · {{ containerCount }} 个容器</span>
+      <span v-if="isMultiSelect" class="ld-tip">{{ selectedIds.size }} 项已选中（Delete 批量删除）</span>
       <span v-if="tip" class="ld-tip">{{ tip }}</span>
       <div class="ld-toolbar-actions">
         <!-- 撤销/重做 -->
@@ -726,7 +788,7 @@ const selectedPath = computed(() => {
       <OutlineTree
         :nodes="currentNodes"
         :selected-id="selectedId"
-        @select="selectedId = $event"
+        @select="handleSelect"
         @remove="removeNode"
         @move="sortNode"
       />
@@ -736,10 +798,11 @@ const selectedPath = computed(() => {
         <DesignerCanvas
           :nodes="currentNodes"
           :selected-id="selectedId"
+          :selected-ids="[...selectedIds]"
           :device="device"
           :form-title="meta.title ?? '表单标题'"
           :form-description="meta.description ?? '表单描述'"
-          @select="selectedId = $event"
+          @select="handleSelect"
           @add="addNode"
           @move="moveNode"
           @duplicate="duplicateNode"
@@ -797,7 +860,7 @@ const selectedPath = computed(() => {
           <OutlineTree
             :nodes="currentNodes"
             :selected-id="selectedId"
-            @select="selectedId = $event; activeTab = 'design'"
+            @select="handleSelect($event); activeTab = 'design'"
             @remove="removeNode"
             @move="sortNode"
           />
@@ -846,6 +909,17 @@ const selectedPath = computed(() => {
     variant="warning"
     @update:visible="pendingRemoveId = null"
     @confirm="onConfirmRemove"
+  />
+
+  <!-- 批量删除确认弹窗 -->
+  <ConfirmModal
+    :visible="pendingRemoveIds.length > 0"
+    :title="t('formBuilder.batchRemoveTitle')"
+    :message="t('formBuilder.batchRemoveMsg', { count: pendingRemoveIds.length })"
+    confirm-text="删除"
+    variant="danger"
+    @update:visible="pendingRemoveIds = []"
+    @confirm="onConfirmRemoveBatch"
   />
 </template>
 

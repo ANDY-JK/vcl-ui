@@ -329,6 +329,8 @@ export default {
     clearFieldsMsg: 'Clear all fields? This cannot be undone.',
     removeContainerTitle: 'Remove Container',
     removeContainerMsg: 'Removing "{label}" will also delete all fields inside it. Continue?',
+    batchRemoveTitle: 'Batch Remove',
+    batchRemoveMsg: 'Remove the {count} selected nodes?',
     clearRecordsTitle: 'Clear Records',
     collected: 'Collected',
     records: 'records',

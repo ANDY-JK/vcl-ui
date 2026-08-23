@@ -332,6 +332,8 @@ export default {
     clearFieldsMsg: '确定清空所有字段？此操作不可撤销。',
     removeContainerTitle: '删除容器',
     removeContainerMsg: '删除容器「{label}」将同时删除其中的所有字段，确定继续？',
+    batchRemoveTitle: '批量删除',
+    batchRemoveMsg: '确定删除选中的 {count} 个节点？',
     clearRecordsTitle: '清空收集记录',
     collected: '已收集',
     records: '条',
