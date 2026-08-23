@@ -22,6 +22,7 @@ import CameraCapture from '@/components/form/CameraCapture.vue'
 import Divider from '@/components/data/Divider.vue'
 import FieldError from './FieldError.vue'
 import { getComponentCategory, isLayoutField, getComponentType } from './fieldRegistry'
+import { sanitizeHTML } from '@/components/data/composables/sanitize'
 import type { FormField } from './types'
 import type { Option } from '@/components/shared/types'
 import type { UploadFile } from '@/components/form/Upload.vue'
@@ -410,8 +411,8 @@ const uploadProps = computed(() => ({
             class="fb-richtext-body"
             data-richtext-editor
             contenteditable="true"
-            v-html="richtextContent"
-            @input="emit('update:modelValue', ($event.target as HTMLElement).innerHTML)"
+            @input="emit('update:modelValue', sanitizeHTML(($event.target as HTMLElement).innerHTML))"
+            v-html="sanitizeHTML(richtextContent)"
           />
         </div>
         <FieldError :message="error ?? ''" />

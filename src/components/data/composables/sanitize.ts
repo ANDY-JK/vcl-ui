@@ -1,4 +1,4 @@
-// DataTable 单元格 HTML 白名单消毒（col.cell 返回的富文本渲染前调用）
+// HTML 白名单消毒（DataTable 单元格 col.cell、FormRenderer 富文本字段共用）
 
 /** 允许的展示标签 */
 const _allowedTags = new Set([
@@ -14,6 +14,12 @@ const _allowedTags = new Set([
   'SPAN',
   'DIV',
   'P',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
   'A',
   'IMG',
   'UL',

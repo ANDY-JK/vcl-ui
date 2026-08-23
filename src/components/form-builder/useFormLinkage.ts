@@ -38,14 +38,259 @@ function extractFields(formula: string): string[] {
   return fields
 }
 
+// ════════════════════════════════════════
+// 受限表达式求值器（替代 new Function，杜绝代码注入）
+// 只识别字面量与白名单运算符；任何标识符/属性/调用都会抛错并由调用方降级。
+// ════════════════════════════════════════
+
+type Tok =
+  | { kind: 'num'; value: number }
+  | { kind: 'str'; value: string }
+  | { kind: 'bool'; value: boolean }
+  | { kind: 'null' }
+  | { kind: 'op'; value: string }
+
+/** 词法分析：只产出字面量 token 与运算符 token */
+function tokenize(src: string): Tok[] {
+  const tokens: Tok[] = []
+  let i = 0
+  const n = src.length
+  while (i < n) {
+    const ch = src[i]
+    if (/\s/.test(ch)) {
+      i++
+      continue
+    }
+    // 数字字面量
+    if (/[0-9.]/.test(ch)) {
+      let j = i
+      while (j < n && /[0-9.]/.test(src[j])) j++
+      const num = Number(src.slice(i, j))
+      if (Number.isNaN(num)) throw new Error('invalid number')
+      tokens.push({ kind: 'num', value: num })
+      i = j
+      continue
+    }
+    // 字符串字面量（单/双引号，支持转义）
+    if (ch === '"' || ch === "'") {
+      const quote = ch
+      let j = i + 1
+      let val = ''
+      while (j < n && src[j] !== quote) {
+        if (src[j] === '\\' && j + 1 < n) {
+          val += src[j + 1]
+          j += 2
+          continue
+        }
+        val += src[j]
+        j++
+      }
+      if (j >= n) throw new Error('unterminated string')
+      tokens.push({ kind: 'str', value: val })
+      i = j + 1
+      continue
+    }
+    // 布尔/null/逻辑关键字（and/or）
+    if (/[a-zA-Z]/.test(ch)) {
+      let j = i
+      while (j < n && /[a-zA-Z_]/.test(src[j])) j++
+      const word = src.slice(i, j).toLowerCase()
+      if (word === 'true') tokens.push({ kind: 'bool', value: true })
+      else if (word === 'false') tokens.push({ kind: 'bool', value: false })
+      else if (word === 'null') tokens.push({ kind: 'null' })
+      else if (word === 'and') tokens.push({ kind: 'op', value: 'and' })
+      else if (word === 'or') tokens.push({ kind: 'op', value: 'or' })
+      else throw new Error(`unexpected identifier: ${word}`)
+      i = j
+      continue
+    }
+    // 多字符运算符优先
+    const three = src.slice(i, i + 3)
+    if (three === '!==') {
+      tokens.push({ kind: 'op', value: three })
+      i += 3
+      continue
+    }
+    const two = src.slice(i, i + 2)
+    if (['==', '!=', '>=', '<=', '&&', '||', '==='].includes(two)) {
+      tokens.push({ kind: 'op', value: two })
+      i += 2
+      continue
+    }
+    if ('+-*/%()<>!'.includes(ch)) {
+      tokens.push({ kind: 'op', value: ch })
+      i++
+      continue
+    }
+    throw new Error(`unexpected char: ${ch}`)
+  }
+  return tokens
+}
+
+function truthy(v: unknown): boolean {
+  if (v === null || v === undefined) return false
+  if (typeof v === 'boolean') return v
+  if (typeof v === 'number') return v !== 0 && !Number.isNaN(v)
+  if (typeof v === 'string') return v !== ''
+  return true
+}
+
+function looseEq(a: unknown, b: unknown): boolean {
+  if (typeof a === 'number' && typeof b === 'number') return a === b
+  if (typeof a === 'string' || typeof b === 'string') return String(a) === String(b)
+  if (typeof a === 'boolean' || typeof b === 'boolean') return truthy(a) === truthy(b)
+  return a === b
+}
+
+function compareOp(op: string, a: unknown, b: unknown): boolean {
+  if (op === '==') return looseEq(a, b)
+  if (op === '!=') return !looseEq(a, b)
+  if (op === '===') return a === b
+  if (op === '!==') return a !== b
+  const na = typeof a === 'number' ? a : Number(a)
+  const nb = typeof b === 'number' ? b : Number(b)
+  if (!Number.isNaN(na) && !Number.isNaN(nb)) {
+    if (op === '>') return na > nb
+    if (op === '<') return na < nb
+    if (op === '>=') return na >= nb
+    if (op === '<=') return na <= nb
+  }
+  const sa = String(a)
+  const sb = String(b)
+  if (op === '>') return sa > sb
+  if (op === '<') return sa < sb
+  if (op === '>=') return sa >= sb
+  if (op === '<=') return sa <= sb
+  throw new Error(`unknown operator: ${op}`)
+}
+
+class ExprParser {
+  private pos = 0
+
+  constructor(private tokens: Tok[]) {}
+
+  parse(): unknown {
+    const v = this.parseOr()
+    if (this.pos < this.tokens.length) throw new Error('trailing tokens')
+    return v
+  }
+
+  private peek(): Tok | undefined {
+    return this.tokens[this.pos]
+  }
+
+  private isOp(...ops: string[]): boolean {
+    const t = this.peek()
+    return !!t && t.kind === 'op' && ops.includes(t.value)
+  }
+
+  private takeOp(): string {
+    const t = this.tokens[this.pos++]
+    if (t.kind === 'op') return t.value
+    throw new Error('expected operator')
+  }
+
+  private parseOr(): unknown {
+    let left = this.parseAnd()
+    while (this.isOp('||', 'or')) {
+      this.takeOp()
+      left = truthy(left) || truthy(this.parseAnd())
+    }
+    return left
+  }
+
+  private parseAnd(): unknown {
+    let left = this.parseCompare()
+    while (this.isOp('&&', 'and')) {
+      this.takeOp()
+      left = truthy(left) && truthy(this.parseCompare())
+    }
+    return left
+  }
+
+  private parseCompare(): unknown {
+    let left = this.parseAdd()
+    while (this.isOp('==', '!=', '===', '!==', '>', '<', '>=', '<=')) {
+      left = compareOp(this.takeOp(), left, this.parseAdd())
+    }
+    return left
+  }
+
+  private parseAdd(): unknown {
+    let left = this.parseMul()
+    while (this.isOp('+', '-')) {
+      const op = this.takeOp()
+      const right = this.parseMul()
+      left = op === '+' ? add(left, right) : sub(left, right)
+    }
+    return left
+  }
+
+  private parseMul(): unknown {
+    let left = this.parseUnary()
+    while (this.isOp('*', '/', '%')) {
+      left = mulDiv(this.takeOp(), left, this.parseUnary())
+    }
+    return left
+  }
+
+  private parseUnary(): unknown {
+    if (this.isOp('!')) {
+      this.takeOp()
+      return !truthy(this.parseUnary())
+    }
+    if (this.isOp('-')) {
+      this.takeOp()
+      const v = this.parseUnary()
+      if (typeof v === 'number') return -v
+      throw new Error('negate non-number')
+    }
+    return this.parsePrimary()
+  }
+
+  private parsePrimary(): unknown {
+    const t = this.tokens[this.pos++]
+    if (!t) throw new Error('unexpected end')
+    if (t.kind === 'num' || t.kind === 'str' || t.kind === 'bool') return t.value
+    if (t.kind === 'null') return null
+    if (t.kind === 'op' && t.value === '(') {
+      const v = this.parseOr()
+      const close = this.tokens[this.pos++]
+      if (!close || close.kind !== 'op' || close.value !== ')') throw new Error('unbalanced paren')
+      return v
+    }
+    throw new Error('unexpected token')
+  }
+}
+
+function add(a: unknown, b: unknown): unknown {
+  if (typeof a === 'number' && typeof b === 'number') return a + b
+  return String(a) + String(b)
+}
+
+function sub(a: unknown, b: unknown): number {
+  return (typeof a === 'number' ? a : Number(a)) - (typeof b === 'number' ? b : Number(b))
+}
+
+function mulDiv(op: string, a: unknown, b: unknown): number {
+  const na = typeof a === 'number' ? a : Number(a)
+  const nb = typeof b === 'number' ? b : Number(b)
+  if (op === '*') return na * nb
+  if (op === '/') return na / nb
+  return na % nb
+}
+
+/** 受限表达式安全求值：只支持字面量与白名单运算符 */
+function safeEvaluate(expr: string): unknown {
+  return new ExprParser(tokenize(expr)).parse()
+}
+
 /**
- * 安全求值公式
+ * 安全求值公式（无 eval / new Function）
  *
- * 策略：
- * 1. 替换所有 `{{fieldName}}` 为实际值
- * 2. 尝试算术求值（如果全是数字）
- * 3. 尝试布尔条件求值（含 == != > < >= <=）
- * 4. 否则返回替换后的字符串
+ * 1. 替换所有 `{{fieldName}}` 为字面量（字符串加引号包裹）
+ * 2. 用受限求值器计算（算术 / 比较 / 逻辑 / 字符串拼接）
+ * 3. 求值失败退化为纯字符串拼接
  */
 function evaluateFormula(formula: string, data: FormData): unknown {
   let expr = formula
@@ -76,44 +321,12 @@ function evaluateFormula(formula: string, data: FormData): unknown {
     expr = expr.replace(new RegExp(`\\{\\{${f}\\}\\}`, 'g'), replacement)
   }
 
-  // 尝试条件表达式求值（含比较运算符）
-  if (/==|!=|>=|<=|>|<|\band\b|\bor\b/i.test(expr)) {
-    try {
-      // 安全的布尔求值：使用 Function 构造器
-      // eslint-disable-next-line no-new-func
-      const result = new Function(`return (${expr})`)()
-      if (typeof result === 'boolean') return result
-      // 非布尔结果，尝试 truthy 判断
-      return !!result
-    } catch {
-      // 求值失败，继续尝试其他方式
-    }
-  }
-
-  // 尝试算术求值
-  if (/^[\d\s+\-*/().]+$/.test(expr)) {
-    try {
-      // eslint-disable-next-line no-new-func
-      const result = new Function(`return (${expr})`)()
-      if (typeof result === 'number' && !isNaN(result)) return result
-    } catch {
-      // 算术求值失败
-    }
-  }
-
-  // 字符串拼接：移除引号包裹的空字符串
-  // 例如 `"张""三"` → `张三`
   try {
-    // eslint-disable-next-line no-new-func
-    const result = new Function(`return (${expr})`)()
-    if (typeof result === 'string') return result
-    if (typeof result === 'number' && !isNaN(result)) return result
+    return safeEvaluate(expr)
   } catch {
-    // 最终 fallback：直接返回替换后的原始表达式（去掉 {{}}）
+    // 求值失败：退化为纯字符串拼接（去掉引号）
     return expr.replace(/"/g, '')
   }
-
-  return expr.replace(/"/g, '')
 }
 
 // ════════════════════════════════════════

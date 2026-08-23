@@ -5,13 +5,16 @@
 //    合并：Input + InputNumber + Textarea
 //    type 取值：text | password | email | tel | number | textarea | search | url
 //    日期/时间选择已移至 Select 组件（type=date / date-range / time）
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, onErrorCaptured } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, onErrorCaptured, useId } from 'vue'
 const _error = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
   _error.value = e
   return false
 })
 import IconSvg from '@/components/basic/IconSvg.vue'
+
+/** 无障碍：label 与控件关联的唯一 id（number/textarea/text 三模式互斥，共享同一 id） */
+const inputId = useId()
 
 /* ════════════════════════════════════════
    Props — 统一接口
@@ -469,6 +472,7 @@ const floatingRaised = computed(() => {
       >
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
+          :id="inputId"
           ref="floatInputRef"
           class="f-input"
           type="text"
@@ -486,7 +490,7 @@ const floatingRaised = computed(() => {
           @keyup="emit('keyup', $event)"
           @animationstart="onAutoFillStart"
         />
-        <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
         <button v-if="clearable && hasValue" type="button" class="f-clear" tabindex="-1" @click="clearNumValue">
           <IconSvg type="x" size="sm" />
         </button>
@@ -505,6 +509,7 @@ const floatingRaised = computed(() => {
     <div v-else-if="isTextarea" class="fl-container">
       <div class="fl-wrap is-textarea" :class="{ focused: taFocused && !errorMsg, 'has-error': !!errorMsg, disabled }">
         <textarea
+          :id="inputId"
           ref="floatInputRef"
           class="f-textarea"
           :value="taValue"
@@ -520,7 +525,7 @@ const floatingRaised = computed(() => {
           @blur="onTaBlur"
           @keyup="emit('keyup', $event)"
         />
-        <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
         <button v-if="clearable && hasTaValue" type="button" class="f-clear" tabindex="-1" @click="clearTaValue">
           <IconSvg type="x" size="sm" />
         </button>
@@ -543,6 +548,7 @@ const floatingRaised = computed(() => {
       >
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
+          :id="inputId"
           ref="floatInputRef"
           :type="actualType"
           :value="String(modelValue ?? '')"
@@ -560,7 +566,7 @@ const floatingRaised = computed(() => {
           @keyup="emit('keyup', $event)"
           @animationstart="onAutoFillStart"
         />
-        <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
         <button
           v-if="type === 'password'"
           type="button"
@@ -716,7 +722,7 @@ const floatingRaised = computed(() => {
   padding-left: clamp(var(--space-1), 1vw, 8px);
   border: none;
   background: transparent;
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px), 2vw, 15px));
+  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
   color: var(--color-text);
   outline: none;
 }
@@ -735,7 +741,7 @@ const floatingRaised = computed(() => {
   background: transparent;
   outline: none;
   resize: vertical;
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px), 2vw, 15px));
+  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
   font-family: inherit;
   color: var(--color-text);
   line-height: 1.5;

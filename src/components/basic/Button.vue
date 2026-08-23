@@ -98,7 +98,7 @@ const emit = defineEmits<{ click: [e: MouseEvent] }>()
 .btn-md {
   height: var(--ctrl-height, clamp(36px, 5.5vw, 40px));
   padding: 0 var(--ctrl-padding-x, clamp(12px, 2vw, 16px));
-  font-size: var(--ctrl-font-size, clamp(12px, 1.8vw, 15px), 1.8vw, clamp(14px, 1.8vw, 15px)));
+  font-size: var(--ctrl-font-size, clamp(12px, 1.8vw, 15px));
   border-radius: var(--ctrl-radius, var(--radius-md));
 }
 .btn-lg {

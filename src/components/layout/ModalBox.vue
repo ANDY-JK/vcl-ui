@@ -224,7 +224,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
               <h3 class="modal-title">
                 {{ title }}
               </h3>
-              <button v-if="closable" class="modal-close" @click="close">
+              <button v-if="closable" class="modal-close" aria-label="关闭" @click="close">
                 <IconSvg type="x" size="md" />
               </button>
             </div>

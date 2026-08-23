@@ -11,7 +11,7 @@
  *
  * 支持模式：select | combobox | menu | cascader | tree-select | date | date-range | time
  */
-import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted, useId } from 'vue'
 import { pinyin } from '@/components/_internal/pinyin-pro'
 import { warnOnce } from '@/components/_internal/warnOnce'
 import IconSvg from '@/components/basic/IconSvg.vue'
@@ -90,6 +90,8 @@ const emit = defineEmits<{
 /* ════════════════════════════════════════
    模式判断
    ════════════════════════════════════════ */
+/** 无障碍：浮动 label 与 trigger input 关联的唯一 id */
+const selectInputId = useId()
 const isSelect = computed(() => props.type === 'select')
 const isCombobox = computed(() => props.type === 'combobox')
 const isMenu = computed(() => props.type === 'menu' && !!props.items)
@@ -836,7 +838,7 @@ function onTimeCancel() {
         :class="{ open, disabled, 'has-floating': label, 'has-tags': comboTags.length > 0 }"
         @click="!isCombobox && toggleOpen($event)"
       >
-        <label v-if="label" class="fl-label" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="selectInputId" :class="{ raised: floatingRaised }">{{ label }}</label>
 
         <!-- 多选 tag -->
         <span v-for="tag in comboTags" :key="String(tag.value)" class="combobox-tag">
@@ -847,6 +849,7 @@ function onTimeCancel() {
         </span>
 
         <input
+          :id="selectInputId"
           ref="comboInputRef"
           :value="isCombobox ? comboText : displayText"
           type="text"
