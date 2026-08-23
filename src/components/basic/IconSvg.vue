@@ -1,18 +1,32 @@
 <script lang="ts">
 // ⛔ 保护 — 图标渲染核心，使用 lucide-vue-next + @iconify/vue
-import { defineComponent, computed, h } from 'vue'
+import { defineComponent, computed, h, ref } from 'vue'
 import { icons as lucideIcons } from '@lucide/vue'
 import { Icon } from '@iconify/vue'
-import { ensureSolarIcons } from '@/components/_internal/solar-icons-registry'
-
-// 模块加载时立即注册 Solar 图标到 @iconify/vue 内存缓存，确保离线可用
-ensureSolarIcons()
+import { ensureSolarIcons, isSolarReady } from '@/components/_internal/solar-icons-registry'
 
 const sizeMap: Record<string, number> = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 }
 
 /** kebab-case → PascalCase */
 function toPascal(kebab: string): string {
   return kebab.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join('')
+}
+
+/** 兜底占位 SVG（图标未命中或 Solar 数据异步加载中时使用） */
+function renderFallback(sz: number, clr: string) {
+  return h('svg', {
+    class: 'icon-svg',
+    width: sz, height: sz, color: clr,
+    viewBox: '0 0 24 24',
+    fill: 'none', stroke: 'currentColor',
+    'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+    'aria-hidden': true,
+  }, [
+    h('rect', { x: 3, y: 3, width: 7, height: 7, rx: 1 }),
+    h('rect', { x: 14, y: 3, width: 7, height: 7, rx: 1 }),
+    h('rect', { x: 3, y: 14, width: 7, height: 7, rx: 1 }),
+    h('rect', { x: 14, y: 14, width: 7, height: 7, rx: 1 }),
+  ])
 }
 
 export default defineComponent({
@@ -25,6 +39,8 @@ export default defineComponent({
   },
   setup(props) {
     const px = computed(() => sizeMap[props.size] || 20)
+    // Solar 图标数据按需加载：默认 lucide 不加载 235KB 的 solar 数据
+    const solarReady = ref(isSolarReady())
 
     /** Solar 图标变体后缀 */
     const SOLAR_VARIANTS = ['linear', 'bold', 'broken', 'outline', 'bold-duotone', 'line-duotone']
@@ -40,8 +56,13 @@ export default defineComponent({
       const sz = px.value
       const clr = props.color
 
-      // Solar 提供者 → @iconify/vue（数据已预注册到本地缓存，不发起网络请求）
+      // Solar 提供者 → @iconify/vue（数据动态加载，加载完成前渲染兜底）
       if (props.provider === 'solar') {
+        if (!solarReady.value) {
+          // 触发异步加载，完成后重新渲染
+          ensureSolarIcons().then(() => { solarReady.value = true })
+          return renderFallback(sz, clr)
+        }
         return h(Icon, {
           icon: toSolarIconName(props.type),
           width: sz,
@@ -66,19 +87,7 @@ export default defineComponent({
       }
 
       // 兜底 SVG
-      return h('svg', {
-        class: 'icon-svg',
-        width: sz, height: sz, color: clr,
-        viewBox: '0 0 24 24',
-        fill: 'none', stroke: 'currentColor',
-        'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-        'aria-hidden': true,
-      }, [
-        h('rect', { x: 3, y: 3, width: 7, height: 7, rx: 1 }),
-        h('rect', { x: 14, y: 3, width: 7, height: 7, rx: 1 }),
-        h('rect', { x: 3, y: 14, width: 7, height: 7, rx: 1 }),
-        h('rect', { x: 14, y: 14, width: 7, height: 7, rx: 1 }),
-      ])
+      return renderFallback(sz, clr)
     }
   },
 })
