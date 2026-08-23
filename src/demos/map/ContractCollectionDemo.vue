@@ -591,6 +591,15 @@ const uploadCount = computed(() => {
 
 // ===== 导出 ZIP =====
 const exporting = ref(false)
+
+/** 时间戳 → 本地可读时间（YYYY-MM-DD HH:mm），ts 为 0/缺失时返回空 */
+function formatTs(ts: number): string {
+  if (!ts) return ''
+  const d = new Date(ts)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 async function exportZip(): Promise<void> {
   const zip = new JSZip()
   let fileCount = 0
@@ -639,13 +648,14 @@ async function exportZip(): Promise<void> {
       营业执照地址: s.address,
       电话: s.phone,
       柜机协议: up?.contract ? '✓ 已上传' : '✗ 未上传',
+      上传时间: up?.ts ? formatTs(up.ts) : '',
       开始日期: s.startDate,
     }
   })
   const XLSX = await import('xlsx')
   const ws = XLSX.utils.json_to_sheet(rows)
   // 设置列宽
-  ws['!cols'] = [{ wch: 10 }, { wch: 35 }, { wch: 25 }, { wch: 45 }, { wch: 14 }, { wch: 12 }, { wch: 12 }]
+  ws['!cols'] = [{ wch: 10 }, { wch: 35 }, { wch: 25 }, { wch: 45 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 12 }]
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, '门店合同收集')
   zip.file('门店数据.xlsx', XLSX.write(wb, { type: 'array', bookType: 'xlsx' }))

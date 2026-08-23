@@ -250,20 +250,22 @@ export class SupabaseBackend implements StorageBackend {
     }
   }
 
-  /** 列出 bucket 根目录所有对象，返回 { name, size, mimetype }[] */
-  private async listObjects(): Promise<Array<{ name: string; size: number; mimetype: string }>> {
+  /** 列出 bucket 根目录所有对象，返回 { name, size, mimetype, createdAt }[] */
+  private async listObjects(): Promise<Array<{ name: string; size: number; mimetype: string; createdAt: number }>> {
     const resp = await this.request(`/object/list/${this.cfg.bucket}`, {
       method: 'POST',
       headers: this.headers(true),
       body: JSON.stringify({ prefix: '', limit: 1000, offset: 0, sortBy: { column: 'name', order: 'asc' } }),
     })
-    const rows = (await resp.json()) as Array<{ name: string; metadata?: { size?: number; mimetype?: string } }>
+    const rows = (await resp.json()) as Array<{ name: string; created_at?: string; metadata?: { size?: number; mimetype?: string } }>
     return rows
       .filter((r) => !r.name.endsWith('/'))
       .map((r) => ({
         name: r.name,
         size: Number(r.metadata?.size ?? 0),
         mimetype: r.metadata?.mimetype || 'application/octet-stream',
+        // 对象创建时间 ≈ 上传时间；缺失/非法回退 0（导出层对 0 显示为空）
+        createdAt: r.created_at ? new Date(r.created_at).getTime() : 0,
       }))
   }
 
@@ -302,7 +304,8 @@ export class SupabaseBackend implements StorageBackend {
       this.paths.set(appleId, obj.name)
       map.set(appleId, {
         contract: { name, dataUrl: this.publicUrl(obj.name), size: obj.size, type: obj.mimetype },
-        ts: 0,
+        // 上传时间取对象创建时间（≈ 上传时刻）；缺失回退 0（导出层对 0 显示为空）
+        ts: obj.createdAt,
       })
     }
     return map
