@@ -18,29 +18,11 @@ import { ref, watch, nextTick } from 'vue'
 import { ElAmap, initAMapApiLoader } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import { getAmapJsKey, getAmapSecurityCode } from './amap-key'
+import type { MarkerItem } from './types'
 
 // ════════════════════════════════════════
 // Props & Emits
 // ════════════════════════════════════════
-
-interface MarkerItem {
-  /** 经度 */
-  longitude: number
-  /** 纬度 */
-  latitude: number
-  /** 标记标题 */
-  title?: string
-  /** 标记颜色：red / blue / green（默认 blue） */
-  color?: 'red' | 'blue' | 'green'
-  /** 自定义图标 URL */
-  iconUrl?: string
-  /** 标记大小 [width, height] */
-  iconSize?: [number, number]
-  /** 弹出信息窗内容（HTML 字符串） */
-  infoWindow?: string
-  /** 自定义数据（emit 时回传） */
-  data?: T
-}
 
 const props = withDefaults(
   defineProps<{
@@ -49,7 +31,7 @@ const props = withDefaults(
     /** 缩放级别 */
     zoom?: number
     /** 标记列表 */
-    markers?: MarkerItem[]
+    markers?: MarkerItem<T>[]
     /** 是否显示工具条 */
     showToolBar?: boolean
     /** 是否显示比例尺 */
@@ -71,7 +53,7 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  'marker-click': [marker: MarkerItem, index: number]
+  'marker-click': [marker: MarkerItem<T>, index: number]
   'map-click': [lng: number, lat: number]
   ready: [map: any]
 }>()

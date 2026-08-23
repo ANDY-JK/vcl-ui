@@ -1,10 +1,23 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    dts({
+      // 逐文件生成 .d.ts；显式加载 vite/client 类型以解析 import.meta.env
+      tsconfigPath: './tsconfig.json',
+      include: ['src/components'],
+      exclude: ['src/demos', 'src/App.vue', 'src/main.ts'],
+      rollupTypes: false,
+      compilerOptions: {
+        types: ['vite/client'],
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
