@@ -190,7 +190,7 @@ onUnmounted(() => {
 .progress-wrap {
   display: flex;
   align-items: center;
-  gap: clamp(7px, 1.2vw, 10px);
+  gap: clamp(7px, 1.2vw, var(--space-2));
   width: 100%;
 }
 .progress-track {
@@ -238,7 +238,7 @@ onUnmounted(() => {
   }
 }
 .progress-text {
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   font-weight: 500;
   min-width: clamp(30px, 4.8vw, 40px);
@@ -263,7 +263,7 @@ onUnmounted(() => {
   padding: 0 var(--space-1);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   font-family: inherit;
   text-align: center;
   color: var(--color-text);

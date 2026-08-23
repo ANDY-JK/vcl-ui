@@ -75,14 +75,14 @@ const rowList = computed(() => {
 /* 灰阶骨架块 — 全 scoped，无 :deep 泄漏 */
 .skel {
   display: flex;
-  gap: clamp(10px, 1.5vw, 14px);
+  gap: clamp(var(--space-2), 1.5vw, 14px);
   width: 100%;
 }
 .skel-body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.5vw, 12px);
+  gap: clamp(var(--space-2), 1.5vw, 12px);
   min-width: 0;
 }
 .skel-line {

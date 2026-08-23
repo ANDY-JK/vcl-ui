@@ -138,10 +138,10 @@ function toggle() {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: clamp(8px, 1.5vw, 12px) clamp(10px, 2vw, 16px);
+  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px);
   border: none;
   background: var(--color-surface);
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 500;
   color: var(--color-text);
   cursor: pointer;
@@ -178,7 +178,7 @@ function toggle() {
 }
 
 .collapse-body {
-  padding: clamp(8px, 1.5vw, 12px) clamp(10px, 2vw, 16px) clamp(10px, 2vw, 16px);
+  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px) clamp(10px, 2vw, 16px);
   border-top: 1px solid var(--color-border-light);
   background: var(--color-bg);
 }

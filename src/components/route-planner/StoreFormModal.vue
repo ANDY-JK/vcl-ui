@@ -183,35 +183,35 @@ function handleSubmit(): void {
 
 .modal-box {
   background: var(--color-surface);
-  border-radius: 12px;
-  width: 480px;
+  border-radius: var(--radius-lg);
+  width: clamp(360px, 50vw, 480px);
   max-width: 90vw;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: var(--space-4) 20px;
   border-bottom: 1px solid var(--color-border-light);
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: clamp(16px, 2.5vw, 28px);
   font-weight: 600;
 }
 
 .btn-close {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: clamp(18px, 3vw, 28px);
   cursor: pointer;
   color: var(--color-text-muted);
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .btn-close:hover {
@@ -219,27 +219,27 @@ function handleSubmit(): void {
 }
 
 .modal-body {
-  padding: 20px;
+  padding: var(--space-5);
 }
 
 .form-row {
-  margin-bottom: 14px;
+  margin-bottom: var(--space-3);
 }
 
 .form-row label {
   display: block;
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 500;
   color: var(--color-text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .form-row input {
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--space-2) 12px;
   border: 1px solid var(--color-border-light);
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: var(--radius-md);
+  font-size: clamp(14px, 1.8vw, 15px);
   outline: none;
   transition: border-color 0.2s;
 }
@@ -251,7 +251,7 @@ function handleSubmit(): void {
 .form-grid-2,
 .form-grid-4 {
   display: grid;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .form-grid-2 {
@@ -263,24 +263,24 @@ function handleSubmit(): void {
 }
 
 .form-hint {
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   color: var(--color-text-muted);
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding-top: 16px;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--color-border-light);
 }
 
 .btn-cancel,
 .btn-save {
-  padding: 8px 20px;
-  border-radius: 6px;
-  font-size: 14px;
+  padding: var(--space-2) 20px;
+  border-radius: var(--radius-md);
+  font-size: clamp(14px, 1.8vw, 15px);
   cursor: pointer;
   border: 1px solid;
   transition: all 0.2s;
@@ -318,8 +318,8 @@ function handleSubmit(): void {
 }
 
 .form-error {
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   color: var(--color-danger);
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 </style>

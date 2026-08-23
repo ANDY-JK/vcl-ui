@@ -104,9 +104,7 @@ function onJumperKeyup(e: KeyboardEvent) {
       />
     </span>
 
-    <span class="page-info"
-      >{{ t('pagination.total') }} {{ Number.isFinite(total) ? total : 0 }} {{ t('pagination.items') }}</span
-    >
+    <span class="page-info">{{ t('pagination.total') }} {{ Number.isFinite(total) ? total : 0 }} {{ t('pagination.items') }}</span>
   </nav>
 </template>
 
@@ -127,7 +125,7 @@ function onJumperKeyup(e: KeyboardEvent) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -152,8 +150,8 @@ function onJumperKeyup(e: KeyboardEvent) {
 }
 
 .page-info {
-  margin-left: clamp(8px, 1.5vw, 12px);
-  font-size: clamp(11px, 1.8vw, 13px);
+  margin-left: clamp(var(--space-2), 1.5vw, 12px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-muted);
 }
 
@@ -170,7 +168,7 @@ function onJumperKeyup(e: KeyboardEvent) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   outline: none;
   box-sizing: border-box;

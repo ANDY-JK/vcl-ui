@@ -150,24 +150,24 @@ useClickOutside([triggerRef, floatingRef], close)
   overflow: hidden;
 }
 .popover-title {
-  padding: clamp(7px, 1.2vw, 10px) clamp(10px, 1.8vw, 14px);
-  font-size: clamp(11px, 1.8vw, 13px);
+  padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 1.8vw, 14px);
+  font-size: clamp(11px, 1.8vw, 15px);
   font-weight: 600;
   border-bottom: 1px solid var(--color-border-light);
 }
 .popover-body {
-  padding: clamp(8px, 1.5vw, 12px) clamp(10px, 1.8vw, 14px);
-  font-size: clamp(11px, 1.8vw, 13px);
+  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 1.8vw, 14px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-secondary);
 }
 
 /* ===== tooltip 气泡 ===== */
 .tooltip-pop {
   max-width: clamp(180px, 32vw, 320px);
-  padding: clamp(3px, 0.6vw, 6px) clamp(5px, 1vw, 10px);
+  padding: clamp(3px, 0.6vw, var(--space-1)) clamp(5px, 1vw, 10px);
   background: var(--color-sidebar);
   color: white;
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   border-radius: var(--radius-sm);
   white-space: normal;
   word-break: break-word;
@@ -189,18 +189,18 @@ useClickOutside([triggerRef, floatingRef], close)
 }
 .pop-enter-from {
   opacity: 0;
-  transform: translateY(-6px) scale(0.97);
+  transform: translateY(calc(-1 * var(--space-2))) scale(0.97);
 }
 .pop-leave-to {
   opacity: 0;
-  transform: translateY(-4px) scale(0.97);
+  transform: translateY(calc(-1 * var(--space-1))) scale(0.97);
 }
 /* 向上展开时动画方向反转 */
 .flip-up.pop-enter-from {
-  transform: translateY(6px) scale(0.97);
+  transform: translateY(var(--space-2)) scale(0.97);
 }
 .flip-up.pop-leave-to {
-  transform: translateY(4px) scale(0.97);
+  transform: translateY(var(--space-1)) scale(0.97);
 }
 
 /* tooltip：纯淡入淡出，轻量快速 */

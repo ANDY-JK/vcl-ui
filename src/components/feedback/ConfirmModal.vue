@@ -35,23 +35,23 @@ const variantMeta = computed(() => {
   const map = {
     danger: {
       icon: 'circle-alert',
-      iconColor: 'var(--color-danger, #e53e3e)',
-      borderColor: 'var(--color-danger-border, #fecaca)',
-      bg: 'var(--color-danger-bg, #fef2f2)',
+      iconColor: 'var(--color-danger)',
+      borderColor: 'var(--color-danger-border)',
+      bg: 'var(--color-danger-bg)',
       btnClass: 'btn-danger',
     },
     warning: {
       icon: 'circle-alert',
-      iconColor: 'var(--color-warning, #d97706)',
-      borderColor: 'var(--color-warning-border, #fde68a)',
-      bg: 'var(--color-warning-bg, #fffbeb)',
+      iconColor: 'var(--color-warning)',
+      borderColor: 'var(--color-warning-border)',
+      bg: 'var(--color-warning-bg)',
       btnClass: 'btn-warning',
     },
     primary: {
       icon: 'info',
-      iconColor: 'var(--color-primary, #3b82f6)',
-      borderColor: 'var(--color-primary-border, #bfdbfe)',
-      bg: 'var(--color-primary-light, #eff6ff)',
+      iconColor: 'var(--color-primary)',
+      borderColor: 'var(--color-info-border)',
+      bg: 'var(--color-primary-light)',
       btnClass: 'btn-primary',
     },
   }
@@ -60,6 +60,16 @@ const variantMeta = computed(() => {
 
 function close() {
   emit('update:visible', false)
+}
+
+function onCancel() {
+  emit('cancel')
+  close()
+}
+
+function onConfirm() {
+  emit('confirm')
+  close()
 }
 </script>
 
@@ -83,20 +93,14 @@ function close() {
       <div class="confirm-footer">
         <button
           class="confirm-btn cancel"
-          @click="
-            emit('cancel')
-            close()
-          "
+          @click="onCancel"
         >
           {{ cancelText }}
         </button>
         <button
           :class="['confirm-btn', variantMeta.btnClass]"
           :disabled="loading"
-          @click="
-            emit('confirm')
-            close()
-          "
+          @click="onConfirm"
         >
           <IconSvg v-if="loading" type="loader" size="xs" class="confirm-loading-icon" />
           {{ confirmText }}
@@ -120,7 +124,7 @@ function close() {
 .confirm-msg {
   margin: 0;
   line-height: 1.7;
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   color: var(--color-text);
   flex: 1;
 }
@@ -139,7 +143,7 @@ function close() {
   padding: var(--space-2) 22px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -170,40 +174,40 @@ function close() {
 /* 取消 */
 .confirm-btn.cancel {
   border-color: var(--color-border);
-  background: var(--color-surface, #fff);
+  background: var(--color-surface);
   color: var(--color-text-secondary);
 }
 .confirm-btn.cancel:hover {
-  background: var(--color-bg-alt, #f1f5f9);
+  background: var(--color-bg-alt);
 }
 
 /* danger */
 .confirm-btn.btn-danger {
-  border-color: var(--color-danger-border, #fca5a5);
-  background: var(--color-danger, #ef4444);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger);
   color: #fff;
 }
 .confirm-btn.btn-danger:hover {
-  background: var(--color-danger-hover, #dc2626);
+  background: var(--color-danger-hover);
 }
 
 /* warning */
 .confirm-btn.btn-warning {
-  border-color: var(--color-warning-border, #fcd34d);
-  background: var(--color-warning, #f59e0b);
+  border-color: var(--color-warning-border);
+  background: var(--color-warning);
   color: #fff;
 }
 .confirm-btn.btn-warning:hover {
-  background: var(--color-warning-hover, #d97706);
+  background: var(--color-warning-text);
 }
 
 /* primary */
 .confirm-btn.btn-primary {
-  border-color: var(--color-primary-border, #93c5fd);
-  background: var(--color-primary, #3b82f6);
+  border-color: var(--color-info-border);
+  background: var(--color-primary);
   color: #fff;
 }
 .confirm-btn.btn-primary:hover {
-  background: var(--color-primary-hover, #2563eb);
+  background: var(--color-primary-hover);
 }
 </style>

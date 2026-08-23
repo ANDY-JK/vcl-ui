@@ -113,8 +113,7 @@ const supStyle = computed(() => {
       :style="supStyle"
       role="status"
       :aria-label="dot ? '提示' : displayText"
-      >{{ displayText }}</span
-    >
+    >{{ displayText }}</span>
   </span>
 
   <!-- 内联标签模式 -->
@@ -143,11 +142,11 @@ const supStyle = computed(() => {
 }
 .tag-sm {
   padding: 1px var(--space-2);
-  font-size: clamp(10px, 1.4vw, 11px);
+  font-size: clamp(10px, 1.4vw, 15px);
 }
 .tag-md {
   padding: var(--space-1) 10px;
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
 }
 .tag.rounded {
   border-radius: 100px;
@@ -208,9 +207,9 @@ const supStyle = computed(() => {
   border-radius: var(--radius-sm);
 }
 .tag-info {
-  background: var(--color-info-bg, #eff6ff);
-  color: var(--color-info-text, #3b82f6);
-  border: 1px solid var(--color-info-border, #93c5fd);
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+  border: 1px solid var(--color-info-border);
   border-radius: var(--radius-sm);
 }
 
@@ -223,7 +222,7 @@ const supStyle = computed(() => {
   color: inherit;
   opacity: 0.5;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 .tag-close:hover {
   opacity: 1;
@@ -243,11 +242,11 @@ const supStyle = computed(() => {
   justify-content: center;
   min-width: clamp(16px, 2vw, 18px);
   height: clamp(16px, 2vw, 18px);
-  padding: 0 clamp(4px, 0.8vw, 6px);
+  padding: 0 clamp(var(--space-1), 0.8vw, 6px);
   border-radius: 100px;
   background: var(--color-danger);
-  color: var(--color-badge-text, #ffffff);
-  font-size: clamp(10px, 1.4vw, 11px);
+  color: #ffffff;
+  font-size: clamp(10px, 1.4vw, 15px);
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;

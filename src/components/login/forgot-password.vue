@@ -299,12 +299,12 @@ defineExpose({
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
-  font-size: 32px;
+  font-size: clamp(32px, 4vw, 36px);
   font-weight: 600;
   margin-bottom: var(--space-3);
 }
 .brand-logo p {
-  font-size: 16px;
+  font-size: clamp(16px, 2.5vw, 28px);
   opacity: 0.9;
   line-height: 1.6;
 }
@@ -330,7 +330,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   flex-shrink: 0;
 }
 
@@ -353,7 +353,7 @@ defineExpose({
   margin-bottom: var(--space-2);
 }
 .login-header p {
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   color: var(--color-text-secondary);
 }
 
@@ -365,7 +365,7 @@ defineExpose({
 
 .footer-text {
   text-align: center;
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   color: var(--color-text-muted);
   padding-top: var(--space-8);
 }
@@ -394,7 +394,7 @@ defineExpose({
     padding: var(--space-8);
   }
   .login-header h1 {
-    font-size: 20px;
+    font-size: clamp(20px, 3vw, 32px);
   }
 }
 </style>

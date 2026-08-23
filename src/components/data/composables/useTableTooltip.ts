@@ -1,37 +1,85 @@
-// ==================== 截断 tooltip + 单元格详情弹窗 ====================
-import { ref } from 'vue'
+/**
+ * DataTable 截断文本气泡 composable
+ *
+ * 功能：当单元格文本被截断（ellipsis）时，hover 300ms 后显示 tooltip。
+ * - 自动检测文本是否溢出（scrollWidth > clientWidth）
+ * - 超过 50 字的有弹窗图标，不用 tooltip
+ * - 使用 computeFloatingPosition 自动判断弹出方向（上/下）
+ * - HTML 转义 + \n→<br> 支持多行文本
+ */
+import { ref, onUnmounted, type Ref } from 'vue'
+import { computeFloatingPosition } from '@/components/_internal/useFloating'
 
-export function useTableTooltip(props: { truncateMode?: 'ellipsis' | 'wrap' | 'none' }) {
+export interface UseTableTooltipOptions {
+  /** 截断模式，仅 ellipsis 模式下激活 tooltip */
+  truncateMode: Ref<string>
+}
+
+export interface TableTooltipReturn {
+  _tooltipText: Ref<string>
+  _tooltipVisible: Ref<boolean>
+  _tooltipStyle: Ref<Record<string, string>>
+  showTooltip: (e: MouseEvent, text: string) => void
+  hideTooltip: () => void
+  onTooltipKeydown: (e: KeyboardEvent) => void
+}
+
+export function useTableTooltip(options: UseTableTooltipOptions): TableTooltipReturn {
+  const { truncateMode } = options
+
   const _tooltipText = ref('')
   const _tooltipVisible = ref(false)
   const _tooltipStyle = ref<Record<string, string>>({})
   let _tooltipTimer: ReturnType<typeof setTimeout> | null = null
 
   function showTooltip(e: MouseEvent, text: string) {
-    if (!text || props.truncateMode !== 'ellipsis') return
+    if (!text || truncateMode.value !== 'ellipsis') return
+    // 超过 50 字有弹窗图标，不用 tooltip
     if (text.length > 50) return
     const td = (e.target as HTMLElement).closest('td') as HTMLElement | null
     if (!td) return
+    // 检测内部 .cell-text-inner span 是否溢出
     const span = td.querySelector('.cell-text-inner') as HTMLElement | null
     if (!span || span.scrollWidth <= span.clientWidth + 2) return
     _tooltipTimer = setTimeout(() => {
       const rect = td.getBoundingClientRect()
-      _tooltipText.value = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '<br>')
-      _tooltipStyle.value = {
-        position: 'fixed',
-        left: `${Math.max(4, rect.left)}px`,
-        top: `${rect.bottom + 4}px`,
-        maxWidth: `${Math.min(400, window.innerWidth - rect.left - 16)}px`,
-        maxHeight: '200px',
-        overflowY: 'auto',
-        zIndex: 'var(--z-tooltip, 3000)',
-      }
+      // 转义 HTML 后 \n → <br>，支持多行文本正常换行
+      _tooltipText.value = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/\n/g, '<br>')
+      _tooltipStyle.value = (() => {
+        const result = computeFloatingPosition({
+          rect,
+          floatingW: Math.min(400, window.innerWidth - rect.left - 16),
+          floatingH: 80, // 预估 tooltip 高度
+          offset: 4,
+          defaultDirection: 'down',
+        })
+        const base: Record<string, string> = {
+          position: 'fixed',
+          left: `${result.left}px`,
+          maxWidth: `${Math.min(400, window.innerWidth - result.left - 16)}px`,
+          maxHeight: '200px',
+          overflowY: 'auto',
+          zIndex: 'var(--z-tooltip, 3000)',
+        }
+        // above 模式用 bottom 定位，底边贴着单元格顶部
+        return result.above
+          ? { ...base, bottom: `${window.innerHeight - rect.top + 4}px`, top: 'auto' }
+          : { ...base, top: `${result.top}px` }
+      })()
       _tooltipVisible.value = true
     }, 300)
   }
 
   function hideTooltip() {
-    if (_tooltipTimer) { clearTimeout(_tooltipTimer); _tooltipTimer = null }
+    if (_tooltipTimer) {
+      clearTimeout(_tooltipTimer)
+      _tooltipTimer = null
+    }
     _tooltipVisible.value = false
   }
 
@@ -39,10 +87,9 @@ export function useTableTooltip(props: { truncateMode?: 'ellipsis' | 'wrap' | 'n
     if (e.key === 'Escape') hideTooltip()
   }
 
-  /** 清理定时器（供 onUnmounted 调用） */
-  function cleanupTooltip() {
+  onUnmounted(() => {
     if (_tooltipTimer) clearTimeout(_tooltipTimer)
-  }
+  })
 
   return {
     _tooltipText,
@@ -51,50 +98,5 @@ export function useTableTooltip(props: { truncateMode?: 'ellipsis' | 'wrap' | 'n
     showTooltip,
     hideTooltip,
     onTooltipKeydown,
-    cleanupTooltip,
-  }
-}
-
-// ==================== 截断单元格详情弹窗 ====================
-export function useCellDetailModal() {
-  const _cellDetailModal = ref<{ visible: boolean; title: string; content: string }>({
-    visible: false, title: '', content: '',
-  })
-
-  function openCellDetail(colTitle: string, text: string, closeScreenshot?: () => void) {
-    if (closeScreenshot) closeScreenshot()
-    _cellDetailModal.value = { visible: true, title: colTitle, content: text }
-  }
-
-  return {
-    _cellDetailModal,
-    openCellDetail,
-  }
-}
-
-// ==================== 图片预览灯箱 ====================
-export function useImageLightbox() {
-  let _lightboxTimer: ReturnType<typeof setTimeout> | null = null
-  const _lightboxSrc = ref('')
-
-  function onImageClick(_e: MouseEvent, src: string) {
-    if (_lightboxTimer) { clearTimeout(_lightboxTimer); _lightboxTimer = null; return }
-    _lightboxTimer = setTimeout(() => {
-      _lightboxSrc.value = src
-      _lightboxTimer = null
-    }, 280)
-  }
-
-  function closeLightbox() { _lightboxSrc.value = '' }
-
-  function cleanupLightbox() {
-    if (_lightboxTimer) clearTimeout(_lightboxTimer)
-  }
-
-  return {
-    _lightboxSrc,
-    onImageClick,
-    closeLightbox,
-    cleanupLightbox,
   }
 }

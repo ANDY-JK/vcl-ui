@@ -91,14 +91,14 @@ const emit = defineEmits<{ click: [e: MouseEvent] }>()
 /* 尺寸 — 弹性高度，移动端不小于 44px 触控标准 */
 .btn-sm {
   height: clamp(30px, 5vw, 32px);
-  padding: 0 clamp(8px, 1.5vw, 12px);
-  font-size: clamp(11px, 1.5vw, 12px);
+  padding: 0 clamp(var(--space-2), 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   border-radius: var(--radius-sm);
 }
 .btn-md {
   height: var(--ctrl-height, clamp(36px, 5.5vw, 40px));
   padding: 0 var(--ctrl-padding-x, clamp(12px, 2vw, 16px));
-  font-size: var(--ctrl-font-size, clamp(12px, 1.8vw, 14px));
+  font-size: var(--ctrl-font-size, clamp(12px, 1.8vw, 15px), 1.8vw, clamp(14px, 1.8vw, 15px)));
   border-radius: var(--ctrl-radius, var(--radius-md));
 }
 .btn-lg {

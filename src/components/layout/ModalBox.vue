@@ -332,12 +332,12 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(6px, 1.2vw, 10px) clamp(8px, 1.5vw, 12px);
+  padding: clamp(var(--space-1), 1.2vw, 10px) clamp(8px, 1.5vw, 12px);
   border-bottom: 1px solid var(--color-border-light);
 }
 
 .modal-title {
-  font-size: clamp(14px, 2.2vw, 16px);
+  font-size: clamp(14px, 2.2vw, 36px);
   font-weight: 600;
 }
 
@@ -360,13 +360,13 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
   max-width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: clamp(6px, 1.2vw, 10px);
+  padding: clamp(var(--space-1), 1.2vw, 10px);
 }
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: clamp(6px, 1vw, 8px);
-  padding: clamp(10px, 2vw, 16px) clamp(12px, 2.5vw, 20px);
+  gap: clamp(var(--space-1), 1vw, 8px);
+  padding: clamp(var(--space-2), 2vw, 16px) clamp(12px, 2.5vw, 20px);
   border-top: 1px solid var(--color-border-light);
 }
 
@@ -378,9 +378,9 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
 .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: clamp(8px, 1.2vw, 10px) 0;
+  padding: clamp(var(--space-2), 1.2vw, 10px) 0;
   border-bottom: 1px solid var(--color-border-light);
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
 }
 .detail-label {
   color: var(--color-text-muted);
@@ -418,10 +418,10 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
   flex-direction: column;
 }
 .select-item-label {
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
 }
 .select-item-desc {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text-muted);
 }
 

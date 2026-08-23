@@ -508,10 +508,7 @@ onUnmounted(() => {
         v-if="files.length && cardHovered && !disabled"
         type="button"
         class="card-clear"
-        @click.stop="
-          files = []
-          syncModel()
-        "
+        @click.stop="files = []; syncModel()"
       >
         删除
       </button>
@@ -616,14 +613,14 @@ onUnmounted(() => {
   position: relative;
   width: 110px;
   height: 110px;
-  border: 2px dashed var(--color-border, #ccc);
-  background: var(--color-surface, #fff);
+  border: 2px dashed var(--color-border);
+  background: var(--color-surface);
   overflow: hidden;
   box-sizing: border-box;
 }
 .card-wrap:hover,
 .card-dragging {
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--color-primary);
 }
 .card-disabled {
   opacity: 0.5;
@@ -652,8 +649,8 @@ onUnmounted(() => {
   position: absolute;
   margin: 0;
   text-align: center;
-  font-size: clamp(11px, 1.5vw, 12px);
-  color: var(--color-primary, #007bff);
+  font-size: clamp(11px, 1.5vw, 15px);
+  color: var(--color-primary);
   z-index: 2;
   pointer-events: none;
   top: 50%;
@@ -721,7 +718,7 @@ onUnmounted(() => {
   bottom: 4px;
   right: 6px;
   z-index: 8;
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   font-weight: 600;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
@@ -739,7 +736,7 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
   background: #ef4444;
   color: #fff;
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   cursor: pointer;
   font-weight: 600;
 }
@@ -756,7 +753,7 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  padding: clamp(24px, 4vw, 36px);
+  padding: clamp(var(--space-6), 4vw, 36px);
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-bg);
@@ -782,7 +779,7 @@ onUnmounted(() => {
   cursor: inherit;
 }
 .upload-hint {
-  font-size: clamp(13px, 1.8vw, 14px);
+  font-size: clamp(13px, 1.8vw, 15px);
   color: var(--color-text-secondary);
 }
 .upload-link {
@@ -790,19 +787,19 @@ onUnmounted(() => {
   font-weight: 500;
 }
 .upload-limit {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text-muted);
 }
 .upload-list {
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1vw, 8px);
+  gap: clamp(var(--space-1), 1vw, 8px);
 }
 .upload-item {
   display: flex;
   align-items: center;
-  gap: clamp(7px, 1.2vw, 10px);
-  padding: clamp(7px, 1.2vw, 10px) clamp(8px, 1.5vw, 12px);
+  gap: clamp(7px, 1.2vw, var(--space-2));
+  padding: clamp(7px, 1.2vw, 10px) clamp(var(--space-2), 1.5vw, 12px);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -816,7 +813,7 @@ onUnmounted(() => {
   min-width: 0;
 }
 .upload-file-name {
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -824,8 +821,8 @@ onUnmounted(() => {
 }
 .upload-file-meta {
   display: flex;
-  gap: clamp(8px, 1.5vw, 12px);
-  font-size: clamp(10px, 1.4vw, 11px);
+  gap: clamp(var(--space-2), 1.5vw, 12px);
+  font-size: clamp(10px, 1.4vw, 15px);
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
@@ -858,7 +855,7 @@ onUnmounted(() => {
 .up-sheet {
   width: 100%;
   max-width: 480px;
-  background: var(--color-bg, #fff);
+  background: var(--color-bg);
   border-radius: 14px 14px 0 0;
   padding: var(--space-3) var(--space-4) calc(16px + env(safe-area-inset-bottom));
   display: flex;
@@ -869,20 +866,20 @@ onUnmounted(() => {
 .up-sheet-cancel {
   width: 100%;
   padding: var(--space-3);
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 10px;
-  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
   font-size: clamp(13px, 2vw, 15px);
-  color: var(--color-text, #0f172a);
+  color: var(--color-text);
   cursor: pointer;
   text-align: center;
 }
 .up-sheet-item:active {
-  background: var(--color-bg-alt, #f1f5f9);
+  background: var(--color-bg-alt);
 }
 .up-sheet-cancel {
   border-color: transparent;
-  color: var(--color-text-muted, #64748b);
+  color: var(--color-text-muted);
   background: transparent;
 }
 </style>

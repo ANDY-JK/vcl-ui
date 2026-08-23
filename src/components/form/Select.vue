@@ -17,6 +17,7 @@ import { warnOnce } from '@/components/_internal/warnOnce'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
+import { useDebounceFn } from '@/components/_internal/useDebounce'
 import { useTreeFlatten } from '@/components/_internal/useTreeFlatten'
 import { parseDate } from './utils/date-utils'
 import DatePanel from './date-panel/DatePanel.vue'
@@ -304,20 +305,16 @@ const filterKeyword = computed(() => {
 
 /** Debounced 搜索关键词：200ms 防抖后再生效，避免 1000+ 选项时每次按键全量过滤卡顿 */
 const _debouncedKeyword = ref(filterKeyword.value)
-let _debounceTimer: ReturnType<typeof setTimeout> | null = null
+const { run: _debounceSearch } = useDebounceFn((val: string) => {
+  _debouncedKeyword.value = val
+}, 200)
 watch(filterKeyword, (val) => {
-  if (_debounceTimer) clearTimeout(_debounceTimer)
   // 空值立即生效（清除搜索时无需等待）
   if (!val) {
     _debouncedKeyword.value = val
     return
   }
-  _debounceTimer = setTimeout(() => {
-    _debouncedKeyword.value = val
-  }, 200)
-})
-onUnmounted(() => {
-  if (_debounceTimer) clearTimeout(_debounceTimer)
+  _debounceSearch(val)
 })
 
 const filteredOptions = computed(() => {
@@ -1085,7 +1082,7 @@ function onTimeCancel() {
 }
 .select-error {
   color: var(--color-danger);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   margin-top: var(--space-1);
   line-height: 1.4;
 }
@@ -1095,7 +1092,7 @@ function onTimeCancel() {
   left: var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
   top: 50%;
   transform: translateY(-50%);
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   color: var(--color-text-muted);
   pointer-events: none;
   transition: all var(--transition-fast);
@@ -1109,7 +1106,7 @@ function onTimeCancel() {
 .fl-label.raised {
   top: 0;
   transform: translateY(-50%);
-  font-size: clamp(10px, 1.5vw, 11px);
+  font-size: clamp(10px, 1.5vw, 15px);
   color: var(--color-primary);
   background: var(--color-surface);
   padding: 0 var(--space-1);
@@ -1130,7 +1127,7 @@ function onTimeCancel() {
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--ctrl-radius, var(--radius-md));
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 14px));
+  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
   transition: border-color var(--transition-fast);
   cursor: pointer;
 }
@@ -1177,7 +1174,7 @@ function onTimeCancel() {
   border-radius: 50%;
   background: transparent;
   color: var(--color-primary);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;
@@ -1200,7 +1197,7 @@ function onTimeCancel() {
   border: none;
   outline: none;
   background: transparent;
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 14px));
+  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
   color: var(--color-text);
 }
 .trigger-input::placeholder {
@@ -1234,7 +1231,7 @@ function onTimeCancel() {
   border-radius: 50%;
   background: var(--color-text-muted);
   color: var(--color-surface);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;
@@ -1275,7 +1272,7 @@ function onTimeCancel() {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: clamp(6px, 1vw, 8px) clamp(8px, 1.5vw, 12px);
+  padding: clamp(var(--space-1), 1vw, 8px) clamp(8px, 1.5vw, 12px);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-muted);
   flex-shrink: 0;
@@ -1284,7 +1281,7 @@ function onTimeCancel() {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   outline: none;
 }
 .panel-list {
@@ -1312,10 +1309,10 @@ function onTimeCancel() {
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  padding: clamp(6px, 1vw, 8px) clamp(8px, 1.5vw, 12px);
+  padding: clamp(var(--space-1), 1vw, 8px) clamp(8px, 1.5vw, 12px);
   border: none;
   background: transparent;
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text);
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -1346,10 +1343,10 @@ function onTimeCancel() {
   flex: 1;
 }
 .item-label {
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
 }
 .item-desc {
-  font-size: clamp(10px, 1.5vw, 12px);
+  font-size: clamp(10px, 1.5vw, 15px);
   color: var(--color-text-muted);
 }
 .menu-divider {
@@ -1378,9 +1375,9 @@ function onTimeCancel() {
 .panel-status {
   display: flex;
   justify-content: center;
-  padding: clamp(16px, 3vw, 24px);
+  padding: clamp(var(--space-4), 3vw, 24px);
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
 }
 .panel-status svg {
   animation: spin 1s linear infinite;
@@ -1418,12 +1415,12 @@ function onTimeCancel() {
   margin-top: var(--space-3);
 }
 .dd-btn {
-  padding: clamp(4px, 0.8vw, 6px) clamp(12px, 2vw, 16px);
+  padding: clamp(var(--space-1), 0.8vw, 6px) clamp(12px, 2vw, 16px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: clamp(11px, 1.6vw, 12px);
+  font-size: clamp(11px, 1.6vw, 15px);
   cursor: pointer;
   transition: all var(--transition-fast);
 }

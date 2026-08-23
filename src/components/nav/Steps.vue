@@ -83,7 +83,7 @@ function onStepClick(idx: number, step: Step) {
 .step {
   display: flex;
   align-items: flex-start;
-  gap: clamp(6px, 1.2vw, 10px);
+  gap: clamp(var(--space-1), 1.2vw, 10px);
   position: relative;
   flex: 1;
 }
@@ -102,7 +102,7 @@ function onStepClick(idx: number, step: Step) {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   font-weight: 600;
   background: var(--color-bg-alt);
   color: var(--color-text-muted);
@@ -124,7 +124,7 @@ function onStepClick(idx: number, step: Step) {
   padding-top: var(--space-1);
 }
 .step-label {
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 500;
   color: var(--color-text-muted);
 }
@@ -136,7 +136,7 @@ function onStepClick(idx: number, step: Step) {
 }
 
 .step-desc {
-  font-size: clamp(10px, 1.5vw, 12px);
+  font-size: clamp(10px, 1.5vw, 15px);
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
@@ -146,7 +146,7 @@ function onStepClick(idx: number, step: Step) {
   min-width: clamp(16px, 3vw, 24px);
   min-height: 2px;
   background: var(--color-border);
-  margin-top: clamp(10px, 1.6vw, 13px);
+  margin-top: clamp(var(--space-2), 1.6vw, 13px);
   transition: background var(--transition-fast);
 }
 .step-line.filled {

@@ -27,7 +27,7 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
     <h2 class="demo-title">Toast 通知</h2>
     <p class="demo-desc">内联提示 + 顶部通知条，四种类型。</p>
 
-    <Card title='Toast 内联提示 (variant="inline")' style="margin-bottom: 24px">
+    <Card title="Toast 内联提示 (variant=&quot;inline&quot;)" style="margin-bottom: 24px">
       <div style="display: flex; flex-direction: column; gap: 8px">
         <Toast variant="inline" type="circle-alert" message="这是一条普通信息提示" />
         <Toast variant="inline" type="success" message="操作成功！数据已保存" title="成功" />

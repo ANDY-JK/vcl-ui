@@ -349,7 +349,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   background: #000;
 }
 
@@ -362,7 +362,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 36px;
+  padding: 0 var(--space-7);
   z-index: 2;
 }
 /* 左右侧键：同一尺寸占位，保证快门绝对居中 */
@@ -373,7 +373,7 @@ onUnmounted(() => {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.16);
   color: #fff;
-  font-size: 13px;
+  font-size: clamp(13px, 1.8vw, 15px);
   cursor: pointer;
   backdrop-filter: blur(4px);
   display: flex;

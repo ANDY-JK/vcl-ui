@@ -1,0 +1,254 @@
+/**
+ * 表单校验引擎 composable
+ *
+ * 职责：
+ * 1. 按 Schema 的 required + rules 校验全部字段
+ * 2. 单字段实时校验（validateOnChange 模式）
+ * 3. 提交时全量校验，返回首个错误字段
+ *
+ * 校验规则签名与 Input 组件一致：(v: string) => string | undefined
+ * 返回非空字符串 = 错误信息；返回 undefined = 通过
+ */
+
+import { ref, type Ref } from 'vue'
+import type { FormSchema, FormField, FormData, FormErrors } from './types'
+import { isLayoutField, isFieldVisible } from './useFormSchema'
+
+// ════════════════════════════════════════
+// 值提取与空值判断
+// ════════════════════════════════════════
+
+/** 将字段值转为 string 供规则校验（规则签名是 (v: string) => ...） */
+function valueToString(v: unknown): string {
+  if (v === null || v === undefined) return ''
+  if (typeof v === 'string') return v
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v)
+  if (Array.isArray(v)) return v.length > 0 ? String(v) : ''
+  // 对象（不应出现在表单字段中）
+  try {
+    return JSON.stringify(v)
+  } catch {
+    return ''
+  }
+}
+
+/** 判断字段值是否为空（required 校验用） */
+function isEmptyValue(_field: FormField, v: unknown): boolean {
+  if (v === null || v === undefined) return true
+  if (typeof v === 'string') return v.trim() === ''
+  if (typeof v === 'number') return false // 0 是合法值
+  if (typeof v === 'boolean') return false // false 是合法值
+  if (Array.isArray(v)) return v.length === 0
+  return false
+}
+
+// ════════════════════════════════════════
+// 单字段校验
+// ════════════════════════════════════════
+
+/**
+ * 校验单个字段
+ *
+ * 优先级：required 空值检查 → rules 规则数组
+ * 不可见字段跳过校验（hidden = valid）
+ *
+ * @param requiredOnly 仅校验必填（跳过 rules），用于步骤间快速校验
+ * @returns 错误信息（空字符串 = 通过）
+ */
+export function validateField(field: FormField, value: unknown, data: FormData, requiredOnly = false): string {
+  // 纯布局字段不参与校验
+  if (isLayoutField(field.type)) return ''
+
+  // 不可见字段跳过
+  if (!isFieldVisible(field, data)) return ''
+
+  // required 空值检查
+  if (field.required && isEmptyValue(field, value)) {
+    return `${field.label}不能为空`
+  }
+
+  // requiredOnly 模式跳过 rules
+  if (requiredOnly) return ''
+
+  // rules 规则数组（支持简单签名和上下文签名两种）
+  if (field.rules && field.rules.length > 0) {
+    const rawVal = value // 原始值（供上下文签名用）
+    const strVal = valueToString(value) // 字符串值（供简单签名用）
+    for (const rule of field.rules) {
+      // 上下文签名：(v: unknown, data: FormData) => string | undefined
+      // 简单签名：(v: string) => string | undefined
+      // 用函数.length 判断：>=2 的传入上下文
+      const err = rule.length >= 2
+        ? (rule as (v: unknown, data: FormData) => string | undefined)(rawVal, data)
+        : (rule as (v: string) => string | undefined)(strVal)
+      if (err) return err
+    }
+  }
+
+  return ''
+}
+
+// ════════════════════════════════════════
+// 全量校验
+// ════════════════════════════════════════
+
+/**
+ * 校验全部字段
+ *
+ * @param requiredOnly 仅校验必填（跳过 rules），用于步骤间快速校验
+ * @returns { errors, isValid, firstErrorKey }
+ */
+export function validateAll(
+  fields: FormField[],
+  data: FormData,
+  requiredOnly = false,
+): { errors: FormErrors; isValid: boolean; firstErrorKey: string | null } {
+  const errors: FormErrors = {}
+  let firstErrorKey: string | null = null
+
+  for (const field of fields) {
+    if (isLayoutField(field.type)) continue
+    const err = validateField(field, data[field.key], data, requiredOnly)
+    if (err) {
+      errors[field.key] = err
+      if (firstErrorKey === null) firstErrorKey = field.key
+    }
+  }
+
+  return { errors, isValid: Object.keys(errors).length === 0, firstErrorKey }
+}
+
+// ════════════════════════════════════════
+// 预置校验规则工厂
+// ════════════════════════════════════════
+
+/**
+ * 预置校验规则工厂函数
+ *
+ * 与 Input 组件的 rules 签名兼容：(v: string) => string | undefined
+ */
+export const validators = {
+  /** 最小长度 */
+  minLen(len: number, label = '该字段') {
+    return (v: string) =>
+      v.length < len ? `${label}至少 ${len} 个字符` : undefined
+  },
+  /** 最大长度 */
+  maxLen(len: number, label = '该字段') {
+    return (v: string) =>
+      v.length > len ? `${label}最多 ${len} 个字符` : undefined
+  },
+  /** 手机号格式 */
+  phone() {
+    return (v: string) =>
+      v && !/^1[3-9]\d{9}$/.test(v) ? '请输入正确的手机号' : undefined
+  },
+  /** 邮箱格式 */
+  email() {
+    return (v: string) =>
+      v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? '请输入正确的邮箱地址' : undefined
+  },
+  /** 身份证号 */
+  idCard() {
+    return (v: string) =>
+      v && !/^\d{17}[\dXx]$/.test(v) ? '请输入正确的身份证号' : undefined
+  },
+  /** URL 格式 */
+  url() {
+    return (v: string) =>
+      v && !/^https?:\/\/.+/.test(v) ? '请输入正确的 URL（以 http:// 或 https:// 开头）' : undefined
+  },
+  /** 正则匹配 */
+  pattern(regex: RegExp, msg: string) {
+    return (v: string) => (v && !regex.test(v) ? msg : undefined)
+  },
+  /** 自定义条件 */
+  custom(fn: (v: string) => boolean, msg: string) {
+    return (v: string) => (fn(v) ? undefined : msg)
+  },
+  /** 最小值（数字字段） */
+  minVal(min: number, label = '该字段') {
+    return (v: string) => {
+      const n = Number(v)
+      return v && !isNaN(n) && n < min ? `${label}不能小于 ${min}` : undefined
+    }
+  },
+  /** 最大值（数字字段） */
+  maxVal(max: number, label = '该字段') {
+    return (v: string) => {
+      const n = Number(v)
+      return v && !isNaN(n) && n > max ? `${label}不能大于 ${max}` : undefined
+    }
+  },
+  /** 数值范围 */
+  range(min: number, max: number, label = '该字段') {
+    return (v: string) => {
+      const n = Number(v)
+      return v && !isNaN(n) && (n < min || n > max) ? `${label}范围为 ${min}-${max}` : undefined
+    }
+  },
+  /** 必选项（用于 checkbox/select 多选至少选 N 项） */
+  minSelect(n: number, label = '该字段') {
+    return (v: unknown) => {
+      const count = Array.isArray(v) ? v.length : 0
+      return count < n ? `${label}至少选择 ${n} 项` : undefined
+    }
+  },
+}
+
+// ════════════════════════════════════════
+// composable
+// ════════════════════════════════════════
+
+/**
+ * 表单校验 composable
+ *
+ * 提供 errors 响应式状态 + validate / validateOne / clearErrors 方法
+ */
+export function useFormValidator(schemaRef: Ref<FormSchema>, dataRef: Ref<FormData>) {
+  const errors = ref<FormErrors>({})
+
+  /** 校验单个字段并写入 errors */
+  function validateOne(key: string): boolean {
+    const schema = schemaRef.value
+    const field = schema.fields.find((f) => f.key === key)
+    if (!field) return true
+    const err = validateField(field, dataRef.value[key], dataRef.value)
+    if (err) {
+      errors.value[key] = err
+    } else {
+      delete errors.value[key]
+      // 触发响应式更新
+      errors.value = { ...errors.value }
+    }
+    return !err
+  }
+
+  /** 校验全部字段 */
+  function validate(): boolean {
+    const result = validateAll(schemaRef.value.fields, dataRef.value)
+    errors.value = result.errors
+    return result.isValid
+  }
+
+  /** 清除全部错误 */
+  function clearErrors(): void {
+    errors.value = {}
+  }
+
+  /** 清除单个字段错误 */
+  function clearError(key: string): void {
+    if (errors.value[key]) {
+      delete errors.value[key]
+      errors.value = { ...errors.value }
+    }
+  }
+
+  return {
+    errors,
+    validate,
+    validateOne,
+    clearErrors,
+    clearError,
+  }
+}

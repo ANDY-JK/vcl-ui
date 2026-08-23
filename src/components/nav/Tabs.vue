@@ -87,10 +87,10 @@ function onKeydown(e: KeyboardEvent) {
   border-bottom: 1.5px solid var(--color-border);
 }
 .tabs-underline .tab-btn {
-  padding: clamp(7px, 1.2vw, 10px) clamp(10px, 2vw, 16px);
+  padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 2vw, 16px);
   border: none;
   background: transparent;
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -108,16 +108,16 @@ function onKeydown(e: KeyboardEvent) {
 
 /* pills */
 .tabs-pills {
-  gap: clamp(3px, 0.5vw, 4px);
-  padding: clamp(3px, 0.5vw, 4px);
+  gap: clamp(3px, 0.5vw, var(--space-1));
+  padding: clamp(3px, 0.5vw, var(--space-1));
   background: var(--color-bg-alt);
   border-radius: var(--radius-lg);
 }
 .tabs-pills .tab-btn {
-  padding: clamp(6px, 1vw, 8px) clamp(10px, 2vw, 16px);
+  padding: clamp(var(--space-1), 1vw, 8px) clamp(10px, 2vw, 16px);
   border: none;
   background: transparent;
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   border-radius: var(--radius-md);
@@ -135,10 +135,10 @@ function onKeydown(e: KeyboardEvent) {
 
 /* card */
 .tabs-card .tab-btn {
-  padding: clamp(7px, 1.2vw, 10px) clamp(10px, 2vw, 16px);
+  padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 2vw, 16px);
   border: 1.5px solid var(--color-border);
   background: var(--color-bg);
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -170,11 +170,11 @@ function onKeydown(e: KeyboardEvent) {
   flex-direction: column;
   align-items: center;
   gap: var(--space-1);
-  padding: clamp(6px, 1vw, 8px) clamp(3px, 0.5vw, 4px);
+  padding: clamp(6px, 1vw, 8px) clamp(3px, 0.5vw, var(--space-1));
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: clamp(10px, 1.5vw, 11px);
+  font-size: clamp(10px, 1.5vw, 15px);
   color: var(--color-text-muted);
   transition: color var(--transition-fast);
 }

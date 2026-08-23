@@ -125,6 +125,44 @@ export { default as StorePanel } from './route-planner/StorePanel.vue'
 export { default as StoreFormModal } from './route-planner/StoreFormModal.vue'
 export { default as ImportProgress } from './route-planner/ImportProgress.vue'
 
+// 低代码表单平台 — 设计器 + 渲染引擎 + 数据收集
+export { default as FormDesigner } from './form-builder/FormDesigner.vue'
+export { default as FormBuilder } from './form-builder/FormBuilder.vue'
+export { default as FormCollect } from './form-builder/FormCollect.vue'
+export { default as FormRenderer } from './form-builder/FormRenderer.vue'
+export { default as FieldError } from './form-builder/FieldError.vue'
+export { useFormSchema, isFieldVisible, createInitialData, SCHEMA_VERSION } from './form-builder/useFormSchema'
+export { useFormValidator, validateField, validateAll, validators } from './form-builder/useFormValidator'
+export { useFormStorage } from './form-builder/useFormStorage'
+export { getFieldRegistration, getComponentCategory, isLayoutField, getComponentType, getFieldComponent, getRegisteredTypes, registerField, unregisterField, isFieldRegistered } from './form-builder/fieldRegistry'
+export type { FieldRegistration } from './form-builder/fieldRegistry'
+export { contractCollectionSchema, inspectionSchema, registrationSchema } from './form-builder/presets'
+export {
+  FIELD_TYPES, createField, toFormSchema, parseCascaderOptions, getTypeLabel,
+  collectStorageKey, genFieldId, genRecordId,
+} from './form-builder/designer/types'
+export { createLocalFormStore } from './form-builder/designer/store'
+export type { FormStore, FormMetaItem } from './form-builder/designer/store'
+export type {
+  FieldType,
+  FormField,
+  FormSchema,
+  FormLayout,
+  FormStep,
+  FormData,
+  FormErrors,
+  ValidationRule,
+  VisibleWhen,
+} from './form-builder/types'
+export type {
+  DesignerFieldType,
+  DesignerField,
+  FormMeta,
+  FormDesign,
+  CollectRecord,
+  FieldTypeMeta,
+} from './form-builder/designer/types'
+
 // 存储与持久化
 // 轻量 API（localStorage）— 同步，带 TTL
 export { storageSet, storageGet, storageDelete, storageHas } from './storage/indexedDB'

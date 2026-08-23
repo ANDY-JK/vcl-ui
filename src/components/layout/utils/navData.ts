@@ -145,6 +145,7 @@ export const navTree: NavNode[] = [
       { label: 'Amap 高德地图', icon: 'map-pin', route: '/amap' },
       { label: 'RoutePlanner 路线规划', icon: 'route', route: '/route-planner' },
       { label: 'ContractCollection 合同收集', icon: 'file-text', route: '/contract-collection' },
+      { label: 'FormDesigner 低代码表单', icon: 'layout-template', route: '/form-builder' },
     ],
   },
 ]

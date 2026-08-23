@@ -163,10 +163,7 @@ defineExpose({
             v-if="t.actionText || t.undoText"
             class="toast-undo"
             :aria-label="t.actionText || t.undoText"
-            @click="
-              ;(t.onAction || t.onUndo)?.()
-              removeToast(t.id)
-            "
+            @click=";(t.onAction || t.onUndo)?.(); removeToast(t.id)"
           >
             {{ t.actionText || t.undoText }}
           </button>
@@ -188,7 +185,7 @@ defineExpose({
   z-index: var(--z-top, 9999);
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1vw, 8px);
+  gap: clamp(var(--space-1), 1vw, 8px);
   pointer-events: none;
   width: calc(100% - clamp(16px, 4vw, 32px));
   max-width: clamp(320px, 64vw, 480px);
@@ -221,11 +218,11 @@ defineExpose({
 .toast-item {
   display: flex;
   align-items: center;
-  gap: clamp(6px, 1vw, 8px);
-  padding: clamp(9px, 1.5vw, 12px) clamp(10px, 1.8vw, 14px);
+  gap: clamp(var(--space-1), 1vw, 8px);
+  padding: clamp(9px, 1.5vw, 12px) clamp(var(--space-2), 1.8vw, 14px);
   border-radius: var(--radius-md);
   color: white;
-  font-size: clamp(13px, 1.8vw, 14px);
+  font-size: clamp(13px, 1.8vw, 15px);
   box-shadow: var(--shadow-lg);
   pointer-events: auto;
   line-height: 1.4;
@@ -237,17 +234,17 @@ defineExpose({
 
 .toast-msg {
   flex: 1;
-  font-size: clamp(13px, 1.8vw, 14px);
+  font-size: clamp(13px, 1.8vw, 15px);
 }
 
 .toast-undo {
   flex-shrink: 0;
-  padding: clamp(2px, 0.4vw, 3px) clamp(7px, 1.2vw, 10px);
+  padding: clamp(var(--space-0), 0.4vw, 3px) clamp(7px, 1.2vw, 10px);
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--radius-sm);
   background: transparent;
   color: white;
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   cursor: pointer;
   font-weight: 500;
   white-space: nowrap;
@@ -291,11 +288,11 @@ defineExpose({
 .toast-inline {
   display: flex;
   align-items: flex-start;
-  gap: clamp(8px, 1.5vw, 12px);
-  padding: clamp(8px, 1.5vw, 12px) clamp(10px, 2vw, 16px);
+  gap: clamp(var(--space-2), 1.5vw, 12px);
+  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px);
   border-radius: var(--radius-md);
   border: 1px solid;
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
 }
 .toast-inline-icon {
   flex-shrink: 0;

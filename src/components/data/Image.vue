@@ -148,7 +148,7 @@ function onClick() {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--color-bg-alt, #eaecf0);
+  background: var(--color-bg-alt);
   flex-shrink: 0;
   cursor: default;
 }
@@ -178,12 +178,12 @@ function onClick() {
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  color: var(--color-text-muted, #5f6672);
+  color: var(--color-text-muted);
 }
 .v-image-error {
-  color: var(--color-danger, #e54545);
+  color: var(--color-danger);
 }
 .v-image-text {
-  font-size: 11px;
+  font-size: clamp(11px, 1.5vw, 14px);
 }
 </style>

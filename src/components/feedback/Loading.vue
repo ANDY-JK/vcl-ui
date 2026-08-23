@@ -83,7 +83,7 @@ withDefaults(defineProps<Props>(), {
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  padding: clamp(20px, 4vw, 32px) clamp(24px, 5vw, 40px);
+  padding: clamp(var(--space-5), 4vw, 32px) clamp(24px, 5vw, 40px);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-lg);
@@ -118,7 +118,7 @@ withDefaults(defineProps<Props>(), {
   height: clamp(32px, 5vw, 40px);
 }
 .spinner-text {
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-muted);
 }
 
@@ -134,8 +134,8 @@ withDefaults(defineProps<Props>(), {
 .skel-card {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.5vw, 12px);
-  padding: clamp(10px, 1.8vw, 16px);
+  gap: clamp(var(--space-2), 1.5vw, 12px);
+  padding: clamp(var(--space-2), 1.8vw, 16px);
 }
 .skel-text {
   display: block;
@@ -143,6 +143,6 @@ withDefaults(defineProps<Props>(), {
 .skel-lines {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.5vw, 12px);
+  gap: clamp(var(--space-2), 1.5vw, 12px);
 }
 </style>

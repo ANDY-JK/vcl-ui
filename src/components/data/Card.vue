@@ -101,8 +101,8 @@ const trendUi = computed(() => ({
 .stat-card {
   display: flex;
   align-items: center;
-  gap: clamp(12px, 2vw, 16px);
-  padding: clamp(14px, 2.5vw, 20px);
+  gap: clamp(var(--space-3), 2vw, 16px);
+  padding: clamp(var(--space-3), 2.5vw, 20px);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -130,12 +130,12 @@ const trendUi = computed(() => ({
   flex: 1;
 }
 .stat-value {
-  font-size: clamp(18px, 3.2vw, 24px);
+  font-size: clamp(18px, 3.2vw, 36px);
   font-weight: 700;
   line-height: 1.2;
 }
 .stat-label {
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
@@ -143,7 +143,7 @@ const trendUi = computed(() => ({
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
   font-weight: 500;
 }
 
@@ -175,7 +175,7 @@ const trendUi = computed(() => ({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(8px, 1.5vw, 14px) clamp(10px, 1.8vw, 16px);
+  padding: clamp(var(--space-2), 1.5vw, 14px) clamp(10px, 1.8vw, 16px);
   border-bottom: 1px solid var(--color-border-light);
 }
 .grid-title {
@@ -184,13 +184,13 @@ const trendUi = computed(() => ({
 }
 .grid-body {
   flex: 1;
-  padding: clamp(4px, 1.8vw, 8px);
+  padding: clamp(var(--space-1), 1.8vw, 8px);
 }
 .grid-footer {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2);
-  padding: clamp(6px, 1vw, 10px) clamp(10px, 1.8vw, 16px);
+  padding: clamp(var(--space-1), 1vw, 10px) clamp(10px, 1.8vw, 16px);
   border-top: 1px solid var(--color-border-light);
   background: var(--color-bg-alt);
 }

@@ -131,24 +131,31 @@ export function useTableExtras(
 
   // ==================== 右键菜单 ====================
   const contextMenu = ref<{
-    visible: boolean; x: number; y: number
+    visible: boolean; x: number; y: number; above: boolean
     columnKey: string | null
     rowKey: string | null; row: Record<string, any> | null; rowIndex: number
   }>(
-    { visible: false, x: 0, y: 0, columnKey: null, rowKey: null, row: null, rowIndex: -1 },
+    { visible: false, x: 0, y: 0, above: false, columnKey: null, rowKey: null, row: null, rowIndex: -1 },
   )
   const contextMenuStyle = computed(() => {
     if (!contextMenu.value.visible) return { display: 'none' }
-    return { position: 'fixed' as const, left: `${contextMenu.value.x}px`, top: `${contextMenu.value.y}px`, zIndex: 'var(--z-dropdown, 2000)' }
+    const base = { position: 'fixed' as const, left: `${contextMenu.value.x}px`, zIndex: 'var(--z-dropdown, 2000)' }
+    // above 模式：菜单底边贴着点击点向上展开（用 bottom 定位）
+    // 此时 contextMenu.value.y 存的是原始 clientY
+    return contextMenu.value.above
+      ? { ...base, bottom: `${window.innerHeight - contextMenu.value.y}px`, top: 'auto' as const }
+      : { ...base, top: `${contextMenu.value.y}px` }
   })
 
   function showContextMenu(col: Column, event: MouseEvent, closeFilter?: () => void) {
     closeFilter?.()
     markLayerOpen()
     contextMenu.value.columnKey = col.key
-    const pos = clampFloatingPosition(event.clientX, event.clientY, 140, 80, tableWrapRef.value)
+    const pos = clampFloatingPosition(event.clientX, event.clientY, 160, 200, tableWrapRef.value)
     contextMenu.value.x = pos.left
-    contextMenu.value.y = pos.top
+    // above 模式下 y 保留原始 clientY，让 bottom 定位自动处理
+    contextMenu.value.y = pos.above ? event.clientY : pos.top
+    contextMenu.value.above = pos.above
     contextMenu.value.visible = true
   }
 
@@ -158,6 +165,7 @@ export function useTableExtras(
     contextMenu.value.rowKey = null
     contextMenu.value.row = null
     contextMenu.value.rowIndex = -1
+    contextMenu.value.above = false
   }
 
   /** 行右键菜单：右键数据行触发 */
@@ -179,7 +187,8 @@ export function useTableExtras(
       tableWrapRef.value,
     )
     contextMenu.value.x = pos.left
-    contextMenu.value.y = pos.top
+    contextMenu.value.y = pos.above ? event.clientY : pos.top
+    contextMenu.value.above = pos.above
     contextMenu.value.visible = true
   }
 

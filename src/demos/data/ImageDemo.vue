@@ -164,8 +164,7 @@ function openMulti(idx: number) {
     <Card title="ImagePreview 全屏预览 — 多图模式（:src 数组）" style="margin-bottom: 24px">
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 10px">
         支持<strong>缩放拖拽</strong>（滚轮 / 双指缩放 / 双击）、<strong>旋转翻转</strong>、<strong>标注</strong>（矩形
-        / 圆形 / 画笔，R / C / P 快捷键）、<strong>下载 / 复制</strong
-        >（含标注合成图）、<strong>缩略图侧边栏</strong>、左右箭头 / 键盘 ← → / 触摸滑动。
+        / 圆形 / 画笔，R / C / P 快捷键）、<strong>下载 / 复制</strong>（含标注合成图）、<strong>缩略图侧边栏</strong>、左右箭头 / 键盘 ← → / 触摸滑动。
       </p>
       <div style="display: flex; gap: 10px; flex-wrap: wrap">
         <Button v-for="(img, i) in multiImages" :key="i" :text="img.label!" variant="secondary" @click="openMulti(i)" />

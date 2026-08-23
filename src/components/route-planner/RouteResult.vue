@@ -167,8 +167,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
                   v-if="storeDensity(day) != null"
                   class="density-tag"
                   :class="densityLabel(storeDensity(day)).cls"
-                  >{{ densityLabel(storeDensity(day)).text }}</span
-                >
+                >{{ densityLabel(storeDensity(day)).text }}</span>
               </span>
             </div>
             <div class="day-header-right">
@@ -301,36 +300,36 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .state-empty .hint {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   margin-top: var(--space-1);
 }
 
 .empty-steps {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1);
   margin-top: var(--space-3);
   text-align: left;
 }
 
 .empty-step {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .step-num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: clamp(18px, 2.5vw, 20px);
+  height: clamp(18px, 2.5vw, 20px);
   border-radius: 50%;
   background: var(--color-info-bg);
   color: var(--color-info-text);
-  font-size: clamp(10px, 1.3vw, 11px);
+  font-size: clamp(10px, 1.3vw, 15px);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -338,14 +337,14 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .result-content {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: var(--space-2);
 }
 
 /* 汇总卡片 */
 .summary-card {
   background: linear-gradient(135deg, var(--color-success-bg), var(--color-success-bg));
   border: 1px solid var(--color-success-border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: var(--space-3);
   margin-bottom: var(--space-3);
 }
@@ -361,10 +360,10 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .source-badge {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 10px;
+  padding: var(--space-0) 6px;
+  border-radius: var(--radius-lg);
   white-space: nowrap;
 }
 
@@ -381,7 +380,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .summary-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: var(--space-1);
   margin-bottom: var(--space-2);
 }
 
@@ -391,36 +390,36 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .stat-num {
   display: block;
-  font-size: clamp(14px, 2.2vw, 16px);
+  font-size: clamp(14px, 2.2vw, 36px);
   font-weight: 700;
   color: var(--color-text);
 }
 
 .stat-label {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-muted);
 }
 
 .summary-route {
-  font-size: clamp(10px, 1.3vw, 11px);
+  font-size: clamp(10px, 1.3vw, 15px);
   color: var(--color-success-text);
   text-align: center;
-  padding-top: 6px;
+  padding-top: var(--space-1);
   border-top: 1px dashed var(--color-success-border);
 }
 
 .enriching-tip {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-primary);
   text-align: center;
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-2);
 }
 
 /* 分天列表 */
 .day-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .day-card {
@@ -465,12 +464,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-badge {
-  width: 22px;
-  height: 22px;
+  width: clamp(20px, 2.8vw, 22px);
+  height: clamp(20px, 2.8vw, 22px);
   border-radius: 50%;
   background: var(--color-border-light);
   color: var(--color-text-secondary);
-  font-size: clamp(10px, 1.3vw, 11px);
+  font-size: clamp(10px, 1.3vw, 15px);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -483,7 +482,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-summary-text {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   font-weight: 600;
   color: var(--color-text);
   display: flex;
@@ -494,9 +493,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 /* 门店密度标签 */
 .density-tag {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   font-weight: 500;
-  padding: 1px 5px;
+  padding: var(--space-1) var(--space-1);
   border-radius: var(--radius-md);
   white-space: nowrap;
 }
@@ -519,34 +518,34 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .day-header-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
 }
 
 .day-cities {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-muted);
-  max-width: 120px;
+  max-width: clamp(100px, 12vw, 120px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .expand-icon {
-  font-size: 9px;
+  font-size: clamp(8px, 1.1vw, 9px);
   color: var(--color-text-muted);
 }
 
 /* 展开详情 */
 .day-detail {
-  padding: 10px;
+  padding: var(--space-2);
   border-top: 1px solid var(--color-bg-alt);
 }
 
 /* 导航按钮 */
 .day-nav {
   display: flex;
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 
 .btn-nav-day {
@@ -555,14 +554,14 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   color: var(--color-surface);
   border: none;
-  border-radius: 6px;
-  font-size: clamp(11px, 1.5vw, 12px);
+  border-radius: var(--radius-md);
+  font-size: clamp(11px, 1.5vw, 15px);
   font-weight: 600;
   cursor: pointer;
 }
 
 .btn-nav-day:hover {
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-set-current {
@@ -570,25 +569,25 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   background: var(--color-success-bg);
   color: var(--color-success-text);
   border: 1px solid var(--color-success-border);
-  border-radius: 6px;
-  font-size: clamp(10px, 1.3vw, 11px);
+  border-radius: var(--radius-md);
+  font-size: clamp(10px, 1.3vw, 15px);
   cursor: pointer;
 }
 
 /* 路线概览 */
 .route-overview {
   background: var(--color-bg);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: var(--space-2);
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2);
 }
 
 .route-start,
 .route-end {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: clamp(10px, 1.3vw, 11px);
+  gap: var(--space-1);
+  font-size: clamp(10px, 1.3vw, 15px);
   color: var(--color-text-secondary);
 }
 
@@ -598,9 +597,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .route-arrow {
   text-align: center;
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-muted);
-  margin: 2px 0;
+  margin: var(--space-0) 0;
 }
 
 .route-stores-brief {
@@ -611,11 +610,11 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-chip {
-  padding: 2px 6px;
+  padding: var(--space-0) 6px;
   background: var(--color-info-bg);
   color: var(--color-info-text);
   border-radius: var(--radius-sm);
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   white-space: nowrap;
 }
 
@@ -628,15 +627,15 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 .store-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-0);
   margin-bottom: var(--space-2);
 }
 
 .store-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 6px;
+  gap: var(--space-1);
+  padding: 5px var(--space-1);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
 }
@@ -646,12 +645,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-num {
-  width: 18px;
-  height: 18px;
+  width: clamp(16px, 2.2vw, 18px);
+  height: clamp(16px, 2.2vw, 18px);
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-surface);
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -667,7 +666,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-name {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
@@ -675,7 +674,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-city {
-  font-size: 9px;
+  font-size: clamp(8px, 1.1vw, 9px);
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
@@ -685,12 +684,11 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .seg-info {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-secondary);
   white-space: nowrap;
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-1);;
 }
 
 .seg-end {
@@ -703,8 +701,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   border: 1px solid var(--color-info-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 10px;
-  padding: 2px 6px;
+  font-size: clamp(10px, 1.3vw, 13px);
+  padding: var(--space-0) 6px;
   flex-shrink: 0;
   color: var(--color-primary-hover);
   font-weight: 500;
@@ -718,18 +716,18 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 /* 跳过列表 */
 .skipped-section {
-  margin-top: 10px;
+  margin-top: var(--space-2);
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-border);
   border-radius: var(--radius-md);
-  padding: 10px;
+  padding: var(--space-2);
 }
 
 .skipped-header {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   font-weight: 600;
   color: var(--color-warning-text);
-  margin-bottom: 6px;
+  margin-bottom: var(--space-1);
 }
 
 .skipped-list {
@@ -740,16 +738,16 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .skipped-item {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-muted);
-  padding: 2px 6px;
+  padding: var(--space-0) 6px;
   background: var(--color-warning-bg);
   border-radius: var(--radius-sm);
 }
 
 .skipped-hint {
-  font-size: 10px;
-  color: #a16207;
-  margin: 6px 0 0;
+  font-size: clamp(10px, 1.3vw, 13px);
+  color: var(--color-warning-text);
+  margin: var(--space-1) 0 0;
 }
 </style>

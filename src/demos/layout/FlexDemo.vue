@@ -8,9 +8,7 @@ import Button from '@/components/basic/Button.vue'
   <div class="demo">
     <h2 class="demo-title">Flex 弹性布局</h2>
     <p class="demo-desc">
-      弹性布局容器，通过 <code>direction</code>、<code>justify</code>、<code>align</code>、<code>gap</code>、<code
-        >wrap</code
-      >
+      弹性布局容器，通过 <code>direction</code>、<code>justify</code>、<code>align</code>、<code>gap</code>、<code>wrap</code>
       等 props 快速构建布局。<br />
       <strong>已合并原 Space 组件</strong>——<code>direction</code> 同时支持 <code>'horizontal'/'vertical'</code>（Space
       语法）和 <code>'row'/'column'</code>（Flex 原生）。

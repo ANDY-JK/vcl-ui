@@ -49,6 +49,7 @@ export function measureDomTextWidth(text: string, fontSize: number = 14, fontWei
 // ==================== 纯工具函数（从 useTableCore 迁出） ====================
 
 import type { Column } from './types'
+import { computePointerPosition } from '@/components/_internal/useFloating'
 
 /** 单元格文本提取（纯函数，多处复用） */
 export function getCellText(value: any, col: Column, row: Record<string, any>, idx: number): string {
@@ -64,24 +65,17 @@ export function getCellText(value: any, col: Column, row: Record<string, any>, i
 /** 拼音匹配 — 委托给共享 usePinyinSearch 模块 */
 export { matchPinyin } from '@/components/_internal/usePinyinSearch'
 
-/** 菜单/浮层视口边界收敛：修正 left/top，确保不超出表格容器与视口（右键菜单共用） */
+/** 菜单/浮层视口边界收敛：修正 left/top，确保不超出表格容器与视口（右键菜单共用）
+ *  返回 above 标记：true 表示下方空间不足，调用方应改用 bottom 定位（向上弹出）
+ *  委托给通用 computePointerPosition，保持 API 兼容 */
 export function clampFloatingPosition(
   clientX: number,
   clientY: number,
   menuW: number,
   menuH: number,
   tableWrap: HTMLElement | null,
-): { left: number; top: number } {
-  const tableRect = tableWrap?.getBoundingClientRect()
-  const tableRight = tableRect?.right ?? window.innerWidth
-  const tableLeft = tableRect?.left ?? 0
-  let left = clientX
-  let top = clientY
-  if (left + menuW > tableRight) left = tableRight - menuW
-  if (left < tableLeft) left = tableLeft
-  if (left + menuW > window.innerWidth) left = window.innerWidth - menuW - 10
-  if (top + menuH > window.innerHeight) top = window.innerHeight - menuH - 10
-  return { left, top }
+): { left: number; top: number; above: boolean } {
+  return computePointerPosition(clientX, clientY, menuW, menuH, tableWrap)
 }
 
 // 轻量浮层（筛选/右键菜单/列设置/选项面板）滚动关闭冷却：

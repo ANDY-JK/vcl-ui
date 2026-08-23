@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, watch } from 'vue'
 import { useBarcodeScanner } from '@/components/form/utils/useBarcodeScanner'
 import { beepSuccess, speak, notify, unlockAudio, unlockVoice, CameraCapture } from '@/components/index'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Card from '@/components/data/Card.vue'
+import ModalBox from '@/components/layout/ModalBox.vue'
 
 // 反馈开关
 const soundOn = ref(true)
@@ -121,10 +122,9 @@ async function openModal() {
   await nextTick()
   start5()
 }
-async function closeModal() {
-  await stop5()
-  visible.value = false
-}
+watch(visible, async (v) => {
+  if (!v) await stop5()
+})
 function tabTo(t: typeof activeTab.value) {
   if (activeTab.value === 'scan' && t !== 'scan') stop5()
   else if (t === 'scan' && activeTab.value !== 'scan') lastResult.value = ''
@@ -280,105 +280,82 @@ function onCamError(msg: string) {
           color: var(--color-text-muted);
         "
       >
-        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
-          ><input v-model="soundOn" type="checkbox" /> 蜂鸣</label
-        >
-        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
-          ><input v-model="voiceOn" type="checkbox" /> 语音</label
-        >
-        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
-          ><input v-model="notifyOn" type="checkbox" /> 通知</label
-        >
+        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"><input v-model="soundOn" type="checkbox" /> 蜂鸣</label>
+        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"><input v-model="voiceOn" type="checkbox" /> 语音</label>
+        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"><input v-model="notifyOn" type="checkbox" /> 通知</label>
       </div>
       <button class="btn" @click="openModal"><IconSvg type="scan" size="sm" /> 打开扫码弹窗</button>
-      <span v-if="modalCodes.length" style="margin-left: 8px; font-size: 13px; color: var(--color-primary)"
-        >{{ modalCodes.length }} 条</span
-      >
+      <span v-if="modalCodes.length" style="margin-left: 8px; font-size: 13px; color: var(--color-primary)">{{ modalCodes.length }} 条</span>
     </Card>
 
     <!-- Modal -->
-    <Teleport to="body">
-      <Transition name="modal-fade">
-        <div v-if="visible" class="modal-overlay" @click.self="closeModal">
-          <div class="modal-box">
-            <div class="modal-head">
-              <h3>扫码</h3>
-              <button class="modal-close" @click="closeModal">
-                <IconSvg type="x" size="sm" />
-              </button>
-            </div>
-            <div class="modal-body">
-              <template v-if="activeTab === 'scan'">
-                <div class="scan-box">
-                  <div v-if="!s5 && !e5" class="scan-idle"><span class="spinner" /><span>启动摄像头...</span></div>
-                  <div v-show="s5" class="scan-live">
-                    <video ref="v5" class="scan-video" autoplay playsinline muted />
-                    <span class="mask top" /><span class="mask bot" /><span class="mask left" /><span
-                      class="mask right"
-                    />
-                    <span class="cnr tl" /><span class="cnr tr" /><span class="cnr bl" /><span class="cnr br" />
-                    <span class="beam" />
-                    <span class="scanning-txt">扫描中</span>
-                  </div>
-                  <canvas ref="c5" style="display: none" />
-                  <div v-if="e5" class="scan-err">
-                    <p>{{ e5 }}</p>
-                    <button @click="start5()">重试</button>
-                  </div>
-                </div>
-              </template>
-              <template v-else-if="activeTab === 'input'">
-                <div class="input-area">
-                  <IconSvg type="edit" size="lg" color="var(--color-text-muted)" /><input
-                    v-model="manualInput"
-                    class="input-big"
-                    placeholder="输入条码编号回车"
-                    @keyup.enter="submitManual"
-                  />
-                </div>
-              </template>
-              <template v-else>
-                <div class="upload-box" @click="modalFileInput?.click()">
-                  <div v-if="modalPhotoScanning"><span class="spinner" /><span>识别中...</span></div>
-                  <template v-else>
-                    <IconSvg type="camera" size="lg" color="var(--color-text-muted)" /><span>点击拍照识别</span>
-                  </template>
-                </div>
-                <input ref="modalFileInput" type="file" accept="image/*" style="display: none" @change="onModalPhoto" />
-              </template>
-              <Transition name="toast-pop">
-                <div v-if="lastResult" class="toast" :class="lastValid ? 'ok' : 'fail'">
-                  <IconSvg :type="lastValid ? 'check' : 'x'" size="sm" /><span>{{ lastResult }}</span
-                  ><span class="toast-tag">{{ lastValid ? '有效' : '无效' }}</span>
-                </div>
-              </Transition>
-            </div>
-            <div v-if="modalCodes.length" class="code-list">
-              <div class="list-head">已扫描 {{ modalCodes.length }} 条</div>
-              <ul>
-                <li v-for="(c, i) in modalCodes" :key="c">
-                  {{ c
-                  }}<button @click="removeCode(i)">
-                    <IconSvg type="x" size="sm" />
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div class="tab-bar">
-              <button :class="{ active: activeTab === 'scan' }" @click="tabTo('scan')">
-                <IconSvg type="scan" size="sm" />扫码
-              </button>
-              <button :class="{ active: activeTab === 'input' }" @click="tabTo('input')">
-                <IconSvg type="edit" size="sm" />输入
-              </button>
-              <button :class="{ active: activeTab === 'upload' }" @click="tabTo('upload')">
-                <IconSvg type="image" size="sm" />上传
-              </button>
-            </div>
+    <ModalBox v-model:visible="visible" title="扫码" size="sm">
+      <template v-if="activeTab === 'scan'">
+        <div class="scan-box">
+          <div v-if="!s5 && !e5" class="scan-idle"><span class="spinner" /><span>启动摄像头...</span></div>
+          <div v-show="s5" class="scan-live">
+            <video ref="v5" class="scan-video" autoplay playsinline muted />
+            <span class="mask top" /><span class="mask bot" /><span class="mask left" /><span
+              class="mask right"
+            />
+            <span class="cnr tl" /><span class="cnr tr" /><span class="cnr bl" /><span class="cnr br" />
+            <span class="beam" />
+            <span class="scanning-txt">扫描中</span>
+          </div>
+          <canvas ref="c5" style="display: none" />
+          <div v-if="e5" class="scan-err">
+            <p>{{ e5 }}</p>
+            <button @click="start5()">重试</button>
           </div>
         </div>
+      </template>
+      <template v-else-if="activeTab === 'input'">
+        <div class="input-area">
+          <IconSvg type="edit" size="lg" color="var(--color-text-muted)" /><input
+            v-model="manualInput"
+            class="input-big"
+            placeholder="输入条码编号回车"
+            @keyup.enter="submitManual"
+          />
+        </div>
+      </template>
+      <template v-else>
+        <div class="upload-box" @click="modalFileInput?.click()">
+          <div v-if="modalPhotoScanning"><span class="spinner" /><span>识别中...</span></div>
+          <template v-else>
+            <IconSvg type="camera" size="lg" color="var(--color-text-muted)" /><span>点击拍照识别</span>
+          </template>
+        </div>
+        <input ref="modalFileInput" type="file" accept="image/*" style="display: none" @change="onModalPhoto" />
+      </template>
+      <Transition name="toast-pop">
+        <div v-if="lastResult" class="toast" :class="lastValid ? 'ok' : 'fail'">
+          <IconSvg :type="lastValid ? 'check' : 'x'" size="sm" /><span>{{ lastResult }}</span><span class="toast-tag">{{ lastValid ? '有效' : '无效' }}</span>
+        </div>
       </Transition>
-    </Teleport>
+      <div v-if="modalCodes.length" class="code-list">
+        <div class="list-head">已扫描 {{ modalCodes.length }} 条</div>
+        <ul>
+          <li v-for="(c, i) in modalCodes" :key="c">
+            {{ c
+            }}<button @click="removeCode(i)">
+              <IconSvg type="x" size="sm" />
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div class="tab-bar">
+        <button :class="{ active: activeTab === 'scan' }" @click="tabTo('scan')">
+          <IconSvg type="scan" size="sm" />扫码
+        </button>
+        <button :class="{ active: activeTab === 'input' }" @click="tabTo('input')">
+          <IconSvg type="edit" size="sm" />输入
+        </button>
+        <button :class="{ active: activeTab === 'upload' }" @click="tabTo('upload')">
+          <IconSvg type="image" size="sm" />上传
+        </button>
+      </div>
+    </ModalBox>
 
     <!-- CameraCapture 拍照组件 -->
     <Card title="CameraCapture 页面内拍照" style="margin-top: 16px">
@@ -771,76 +748,6 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   border-radius: 10px;
   margin-top: 12px;
   border: 1px solid var(--color-border);
-}
-
-/* modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.modal-box {
-  width: 100%;
-  max-width: 400px;
-  max-height: 90vh;
-  background: var(--color-surface);
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: var(--shadow-xl);
-}
-.modal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-border-light);
-}
-.modal-head h3 {
-  font-size: 16px;
-  font-weight: 600;
-}
-.modal-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--color-text-muted);
-  cursor: pointer;
-}
-.modal-close:hover {
-  background: var(--color-bg);
-}
-.modal-body {
-  position: relative;
-  padding: 16px;
-  min-height: 220px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.modal-fade-enter-active {
-  transition: opacity 0.25s ease-out;
-}
-.modal-fade-leave-active {
-  transition: opacity 0.2s ease-in;
-}
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
-.modal-box .scan-box {
-  margin-bottom: 0;
 }
 
 /* 输入 */

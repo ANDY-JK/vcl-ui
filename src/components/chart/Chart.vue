@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // ⛔ 保护 — 图表封装，禁止：clamp() → px，ECharts 初始化逻辑，resize 监听删除
 //    需我确认：ChartType 类型扩展、color palette 默认值
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 import type { EChartsOption } from 'echarts'
 import BaseChart from './BaseChart.vue'
 import ChartLegend from './ChartLegend.vue'
@@ -160,8 +160,12 @@ const hiddenSeries = ref<Set<string>>(new Set())
  * series 是空操作（空系列名/饼图数据项场景均失效），改为隐藏系列数据后重新
  * setOption 控制显隐。浅拷贝即可 —— option 含函数字段（如 tooltip.position），
  * 不能用 structuredClone。
+ * wordCloudReady 作为依赖：当 echarts-wordcloud 异步加载完成后，
+ * 触发 computed 重新计算 → BaseChart setOption → wordCloud series 正确渲染。
  */
 const chartOption = computed<EChartsOption | null>(() => {
+  // 读取 wordCloudReady 触发依赖（wordCloud 模块异步加载完成后重新计算）
+  void wordCloudReady.value
   const opt = resolvedOption.value
   const hidden = hiddenSeries.value
   if (!opt || hidden.size === 0) return opt
@@ -282,10 +286,21 @@ function bindEvents() {
 
 // wordCloud 图表类型按需加载 echarts-wordcloud 模块（~30KB gzip）
 // 其他类型不需要此模块，避免增加首屏 bundle
+// 加载完成后 wordCloudReady=true → :key 变化 → BaseChart 重新创建 → 自动 setOption
+const wordCloudReady = ref(false)
+let _isMounted = true
+onUnmounted(() => { _isMounted = false })
 watch(
   () => props.type,
-  (t) => {
-    if (t === 'wordCloud') ensureWordCloud()
+  async (t) => {
+    if (t === 'wordCloud') {
+      await ensureWordCloud()
+      if (!_isMounted) return
+      // wordCloudReady 变化触发 :key 变化 → BaseChart 重新挂载 → 自动渲染 wordCloud
+      wordCloudReady.value = true
+    } else {
+      wordCloudReady.value = false
+    }
   },
   { immediate: true },
 )
@@ -341,8 +356,9 @@ defineExpose({
   <div class="chart-root" :style="{ height: toSize(height, '100%'), width: toSize(width, '100%') }">
     <BaseChart
       ref="baseChartRef"
+      :key="props.type === 'wordCloud' ? `wc-${wordCloudReady}` : 'chart'"
       class="chart-canvas-area"
-      :option="chartOption"
+      :option="props.type === 'wordCloud' && !wordCloudReady ? null : chartOption"
       height="100%"
       width="100%"
       :dark-mode="darkMode"
@@ -366,7 +382,7 @@ defineExpose({
 }
 .chart-canvas-area {
   flex: 1;
-  min-height: 120px;
+  min-height: clamp(80px, 20vw, 120px);
   min-width: 0;
 }
 </style>

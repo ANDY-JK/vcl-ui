@@ -304,8 +304,7 @@ const levelStyle = computed(() => {
           class="tree-arrow"
           :class="{ 'tree-arrow--expanded': isExpanded(node.key) }"
           @click.stop="state.toggleExpand(node.key)"
-          ><IconSvg type="chevron-right" size="sm"
-        /></span>
+        ><IconSvg type="chevron-right" size="sm" /></span>
         <span v-else class="tree-arrow tree-arrow--spacer" />
 
         <!-- 勾选框 -->
@@ -382,7 +381,7 @@ const levelStyle = computed(() => {
   top: 4px;
   bottom: 4px;
   width: 2px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: var(--color-primary);
 }
 

@@ -45,8 +45,8 @@ withDefaults(defineProps<Props>(), {
   border-top-style: dashed;
 }
 .divider-text {
-  padding: 0 clamp(10px, 2vw, 16px);
-  font-size: clamp(11px, 1.8vw, 13px);
+  padding: 0 clamp(var(--space-2), 2vw, 16px);
+  font-size: clamp(11px, 1.8vw, 15px);
   color: var(--color-text-muted);
   white-space: nowrap;
 }

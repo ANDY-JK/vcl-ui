@@ -195,7 +195,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
 }
 .sub-title {
   flex: 1;
-  font-size: 16px;
+  font-size: clamp(16px, 2.5vw, 28px);
   font-weight: 600;
   color: var(--color-text);
   text-align: center;
@@ -218,9 +218,9 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   flex: 1;
   border: none;
   background: var(--color-bg);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: var(--space-2) 12px;
-  font-size: 13px;
+  font-size: clamp(13px, 1.8vw, 15px);
   outline: none;
   color: var(--color-text);
   cursor: pointer;
@@ -230,7 +230,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
 }
 .back-to-pc {
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: clamp(11px, 1.5vw, 14px);
   color: var(--color-primary);
   text-decoration: none;
   padding: var(--space-1) 8px;
@@ -278,7 +278,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   color: var(--color-primary);
 }
 .tab-label {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   font-weight: 500;
 }
 
@@ -367,7 +367,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   border-radius: 50%;
 }
 .scan-type-label {
-  font-size: 12px;
+  font-size: clamp(12px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   font-weight: 500;
 }
@@ -377,7 +377,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: background var(--transition-fast);

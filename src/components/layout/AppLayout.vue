@@ -7,6 +7,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import AccordionNav from './AccordionNav.vue'
 import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
 import { getPrevNext, getCategory, type NavNode } from './utils/navData'
+import { useThrottleFn } from '@/components/_internal/useDebounce'
 
 const props = withDefaults(
   defineProps<{
@@ -50,14 +51,8 @@ function checkScreen() {
 // 监听内容区 DOM 变化 + 路由切换，自动更新滚动状态
 let mutationObserver: MutationObserver | null = null
 
-function scheduleScrollCheck() {
-  // 防抖：合并短时间内多次 DOM 变化
-  if (scrollTimer) return
-  scrollTimer = setTimeout(() => {
-    scrollTimer = null
-    updateScrollPercent()
-  }, 50)
-}
+// 节流：合并短时间内多次 DOM 变化/滚动事件，固定间隔执行一次
+const { run: scheduleScrollCheck, cancel: cancelScrollCheck } = useThrottleFn(updateScrollPercent, 50)
 
 onMounted(() => {
   checkScreen()
@@ -74,7 +69,8 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', onProgressMouseMove)
   document.removeEventListener('mouseup', onProgressMouseUp)
   mutationObserver?.disconnect()
-  if (scrollTimer) clearTimeout(scrollTimer)
+  cancelScrollCheck()
+  cancelBodyScroll()
 })
 
 router.afterEach(async () => {
@@ -103,16 +99,12 @@ const progressRef = ref<HTMLElement | null>(null)
 const scrollPercent = ref(0)
 const hasScroll = ref(false)
 const isDragging = ref(false)
-let scrollTimer: ReturnType<typeof setTimeout> | null = null
 
-function onBodyScroll() {
+// 滚动节流 30ms
+const { run: onBodyScroll, cancel: cancelBodyScroll } = useThrottleFn(() => {
   if (isDragging.value) return
-  if (scrollTimer) return
-  scrollTimer = setTimeout(() => {
-    scrollTimer = null
-    updateScrollPercent()
-  }, 30)
-}
+  updateScrollPercent()
+}, 30)
 function updateScrollPercent() {
   const el = bodyRef.value
   if (!el) return
@@ -268,7 +260,7 @@ function onProgressMouseUp() {
 
       <div class="content-bottombar">
         <button v-if="nav.prev" class="nav-btn" @click="goDemo(nav.prev.route!)">
-          <IconSvg type="arrow-left" size="sm" /><span class="nav-label">{{ nav.prev.label }}</span>
+          <IconSvg type="arrow-left" size="sm" /><span class="toolbar-label">{{ nav.prev.label }}</span>
         </button>
         <span v-else class="nav-btn is-empty" />
 
@@ -280,8 +272,7 @@ function onProgressMouseUp() {
         </div>
 
         <button v-if="nav.next" class="nav-btn" @click="goDemo(nav.next.route!)">
-          <span class="nav-label">{{ nav.next.label }}</span
-          ><IconSvg type="arrow-right" size="sm" />
+          <span class="toolbar-label">{{ nav.next.label }}</span><IconSvg type="arrow-right" size="sm" />
         </button>
         <span v-else class="nav-btn is-empty" />
       </div>
@@ -592,7 +583,7 @@ function onProgressMouseUp() {
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   font-weight: 500;
   letter-spacing: 0.2px;
   white-space: nowrap;
@@ -648,7 +639,7 @@ function onProgressMouseUp() {
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
@@ -722,7 +713,7 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   font-weight: 600;
   line-height: 1;
 }
@@ -788,7 +779,7 @@ function onProgressMouseUp() {
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
   color: var(--color-sidebar-text);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -807,7 +798,7 @@ function onProgressMouseUp() {
 .nav-btn.is-empty {
   visibility: hidden;
 }
-.nav-label {
+.toolbar-label {
   font-weight: 500;
   letter-spacing: 0.2px;
   max-width: clamp(80px, 14vw, 160px);
@@ -841,7 +832,7 @@ function onProgressMouseUp() {
   flex: 1;
   height: 2px;
   background: rgba(var(--color-primary-rgb), 0.12);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition:
     height var(--transition-fast),
     border-radius var(--transition-fast);
@@ -850,7 +841,7 @@ function onProgressMouseUp() {
 .nav-progress {
   height: 100%;
   background: var(--color-primary);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 0 6px rgba(var(--color-primary-rgb), 0.4);
   transition:
     width var(--transition-normal),
@@ -858,7 +849,7 @@ function onProgressMouseUp() {
   pointer-events: none;
 }
 .nav-percent {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-primary);
   font-weight: 600;
   opacity: 0.7;

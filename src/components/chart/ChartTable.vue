@@ -208,7 +208,7 @@ function onChartReady(inst: any) {
   flex-shrink: 0;
 }
 .ct-title {
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   font-weight: 600;
 }
 .ct-toggles {
@@ -225,7 +225,7 @@ function onChartReady(inst: any) {
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  font-size: 11px;
+  font-size: clamp(11px, 1.5vw, 14px);
   cursor: pointer;
   white-space: nowrap;
 }

@@ -92,8 +92,7 @@
               href="javascript:;"
               class="forgot-password"
               @click="emit('forgot-password')"
-              ><slot name="forgot-text">忘记密码？</slot></a
-            >
+            ><slot name="forgot-text">忘记密码？</slot></a>
           </div>
 
           <Button
@@ -132,10 +131,7 @@
           </template>
           <template v-else>
             <template v-if="showRegister">
-              <slot name="register-prompt"> 还没有账户？ </slot
-              ><a href="javascript:;" class="register-link" @click="emit('register')"
-                ><slot name="register-text">立即注册</slot></a
-              >
+              <slot name="register-prompt"> 还没有账户？ </slot><a href="javascript:;" class="register-link" @click="emit('register')"><slot name="register-text">立即注册</slot></a>
             </template>
           </template>
         </div>
@@ -381,7 +377,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 50%, #e54545 100%);
-  padding: clamp(12px, 3vw, 20px);
+  padding: clamp(var(--space-3), 3vw, 20px);
   position: relative;
   overflow-x: hidden;
 }
@@ -485,13 +481,13 @@ defineExpose({
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
-  font-size: clamp(28px, 5vw, 32px);
+  font-size: clamp(28px, 4vw, 36px);
   font-weight: 600;
   margin-bottom: var(--space-3);
   letter-spacing: -0.5px;
 }
 .brand-logo p {
-  font-size: clamp(14px, 2.2vw, 16px);
+  font-size: clamp(14px, 2.2vw, 18px);
   opacity: 0.9;
   line-height: 1.6;
 }
@@ -510,14 +506,14 @@ defineExpose({
 }
 .features-list li::before {
   content: '\2713';
-  width: 24px;
-  height: 24px;
+  width: clamp(20px, 3vw, 24px);
+  height: clamp(20px, 3vw, 24px);
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 14px);
   flex-shrink: 0;
 }
 
@@ -617,7 +613,7 @@ defineExpose({
   color: var(--color-text-muted);
 }
 .social-text {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 14px);
   color: var(--color-text-secondary);
 }
 
@@ -652,7 +648,7 @@ defineExpose({
     padding: var(--space-8);
   }
   .login-header h1 {
-    font-size: clamp(18px, 3vw, 20px);
+    font-size: clamp(18px, 3vw, 28px);
   }
   .social-btn {
     padding: var(--space-2);

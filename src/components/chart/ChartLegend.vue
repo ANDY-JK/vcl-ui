@@ -50,7 +50,7 @@ function onToggleAll() {
 .cl-root {
   flex-shrink: 0;
   padding: var(--space-2) 12px 4px;
-  border-top: 1px solid var(--color-border-light, #eee);
+  border-top: 1px solid var(--color-border-light);
   margin-top: var(--space-1);
 }
 .cl-header {
@@ -62,8 +62,8 @@ function onToggleAll() {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  font-size: 11px;
-  padding: 2px 8px;
+  font-size: clamp(11px, 1.5vw, 14px);
+  padding: var(--space-0) 8px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s;
@@ -86,13 +86,13 @@ function onToggleAll() {
 .cl-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: var(--space-1) 6px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-1);
   border: none;
   background: none;
   cursor: pointer;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: clamp(12px, 1.6vw, 15px);
   color: var(--color-text);
   transition:
     opacity 0.15s,
@@ -100,21 +100,21 @@ function onToggleAll() {
   line-height: 1.6;
 }
 .cl-item:hover {
-  background: var(--color-bg-hover, #e8e9eb);
+  background: var(--color-bg-alt);
 }
 .cl-item.off {
   opacity: 0.3;
 }
 .cl-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
+  width: clamp(8px, 1.5vw, 10px);
+  height: clamp(8px, 1.5vw, 10px);
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .cl-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
+  max-width: clamp(100px, 18vw, 140px);
 }
 </style>

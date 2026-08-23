@@ -167,7 +167,7 @@ defineExpose({
 .logo-icon {
   width: 64px;
   height: 64px;
-  margin: 0 auto 16px;
+  margin: 0 auto var(--space-4);
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   border-radius: var(--radius-xl);
   display: flex;
@@ -176,7 +176,7 @@ defineExpose({
   box-shadow: 0 6px 16px rgba(79, 110, 247, 0.3);
 }
 .logo-section h1 {
-  font-size: 24px;
+  font-size: clamp(24px, 3.5vw, 36px);
   font-weight: 600;
   color: var(--color-text);
 }

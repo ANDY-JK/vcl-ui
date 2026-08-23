@@ -36,8 +36,16 @@ const containerStyle = computed(() => ({
 const showEmpty = computed(() => {
   if (props.loading) return false
   if (!props.option) return true
-  // EChartsOption 类型过于宽泛无法精确 narrowing，局部用 Record 代替 any
   const opt = props.option as Record<string, unknown>
+
+  // Timeline compound option: 检查 baseOption 和 options 数组
+  const baseOption = opt.baseOption as Record<string, unknown> | undefined
+  if (baseOption) {
+    const optionsArr = opt.options as unknown[] | undefined
+    return !optionsArr?.length
+  }
+
+  // Standard option
   const series = opt.series as unknown[] | undefined
   const hasSeries = !!series?.length
   const dataset = opt.dataset as Record<string, unknown> | undefined
@@ -57,22 +65,31 @@ function buildToolbox(): any {
   return { show: true, right: 4, top: 4, feature }
 }
 
-/** 合并 toolbar 到 option（合并而非覆盖用户自定义的 toolbox 配置） */
+/** 合并 toolbar 到 option（合并而非覆盖用户自定义的 toolbox 配置）
+ * 支持 standard option 和 timeline compound option ({ baseOption, options })
+ */
 function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
   if (!opt) return opt
   const toolbox = buildToolbox()
   if (!toolbox) return opt
-  // 注意：不能 structuredClone —— option 含函数字段（如 tooltip.position）会抛 DataCloneError
-  // 顶层浅拷贝展开即可，嵌套结构由 ECharts setOption merge 处理
+
+  // Timeline compound option: toolbox 挂到 baseOption 内部
+  const compound = opt as unknown as { baseOption?: Record<string, unknown> }
+  if (compound.baseOption) {
+    const bo = compound.baseOption
+    if ('title' in bo) toolbox.top = 36
+    const userToolbox = bo.toolbox as Record<string, unknown> | undefined
+    const mergedToolbox = userToolbox
+      ? { ...toolbox, ...userToolbox, feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) } }
+      : toolbox
+    return { ...opt, baseOption: { ...bo, toolbox: mergedToolbox } } as EChartsOption
+  }
+
+  // Standard option
   if ('title' in opt) toolbox.top = 36
-  // 合并用户传入的 toolbox 与内置 toolbox（用户配置优先）
   const userToolbox = (opt as Record<string, unknown>).toolbox as Record<string, unknown> | undefined
   const mergedToolbox = userToolbox
-    ? {
-        ...toolbox,
-        ...userToolbox,
-        feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
-      }
+    ? { ...toolbox, ...userToolbox, feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) } }
     : toolbox
   return { ...opt, toolbox: mergedToolbox } as EChartsOption
 }
@@ -100,7 +117,27 @@ function ensureInstance() {
   if (!chartInstance) return
   const opt = mergeToolbox(props.option)
   if (opt) {
-    chartInstance.setOption(opt, true)
+    // Compound option (timeline) 不支持 notMerge:true，会破坏 Timeline 组件内部状态
+    const isCompound = !!(opt as Record<string, unknown>).baseOption
+    try {
+      chartInstance.setOption(opt, isCompound ? false : true)
+    } catch (e) {
+      // ECharts Timeline compound option 在某些版本有内部 bug（ondraw/layoutInstance 错误）
+      // 降级：去掉 compound 结构，仅渲染第一个 option 的内容
+      if (isCompound) {
+        const compound = opt as unknown as { baseOption?: Record<string, unknown>; options?: unknown[] }
+        const fallbackOpt = (compound.options?.[0] || compound.baseOption) as EChartsOption | undefined
+        if (fallbackOpt) {
+          try {
+            chartInstance.setOption(mergeToolbox(fallbackOpt)!, true)
+          } catch {
+            /* 最终降级失败，放弃渲染 */
+        }
+        }
+      } else {
+        console.warn('[BaseChart] setOption 失败:', e)
+      }
+    }
   }
   if (props.loading) {
     chartInstance.showLoading()
@@ -138,7 +175,20 @@ watch(
   (val) => {
     if (chartInstance && !chartInstance.isDisposed()) {
       if (val) {
-        chartInstance.setOption(mergeToolbox(val)!, true)
+        const merged = mergeToolbox(val)!
+        const isCompound = !!(merged as Record<string, unknown>).baseOption
+        try {
+          chartInstance.setOption(merged, isCompound ? false : true)
+        } catch {
+          // compound option 出错时降级为第一个子 option
+          if (isCompound) {
+            const compound = merged as unknown as { baseOption?: Record<string, unknown>; options?: unknown[] }
+            const fallbackOpt = (compound.options?.[0] || compound.baseOption) as EChartsOption | undefined
+            if (fallbackOpt) {
+              try { chartInstance.setOption(mergeToolbox(fallbackOpt)!, true) } catch { /* give up */ }
+            }
+          }
+        }
       } else {
         chartInstance.clear()
       }
@@ -196,7 +246,14 @@ defineExpose({
   },
   /** 设置 option（内部会自动注入 toolbox 配置） */
   setOption(opt: EChartsOption, opts?: { notMerge?: boolean; replaceMerge?: string[] }) {
-    chartInstance?.setOption(mergeToolbox(opt)!, opts)
+    if (!chartInstance || chartInstance.isDisposed()) return
+    // 检查 DOM 元素是否仍然挂载（避免在 Vue 重新渲染后操作已替换的 canvas）
+    if (!chartRef.value || !chartRef.value.isConnected) return
+    try {
+      chartInstance.setOption(mergeToolbox(opt)!, opts)
+    } catch {
+      /* 静默降级：ECharts 在 DOM 被替换后 setOption 可能出错 */
+    }
   },
   /** 重新计算尺寸（容器变化时调用） */
   resize(opts?: { width?: number; height?: number; silent?: boolean }) {
@@ -244,14 +301,14 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg, #f4f5f7);
+  background: var(--color-bg);
   opacity: 0.85;
   border-radius: var(--radius-md);
   z-index: 1;
 }
 
 .chart-empty-text {
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   color: var(--color-text-muted);
 }
 </style>

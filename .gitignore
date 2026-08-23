@@ -43,3 +43,20 @@ Thumbs.db
 *.tsbuildinfo
 evidence/
 scratch/
+
+# 工具报告产物（可随时重新生成，不应入库）
+eslint-report.json
+vitest-report.txt
+eslint-audit-report.json
+
+# Playwright 测试结果产物
+/test-results/
+
+# 误写产物（构建脚本把 index.html 写到了根目录 null 文件）
+null
+
+# 嵌套规则库仓库（独立 git 管理，不属于本组件库）
+/rulebase/
+
+# 临时校验截图
+form-builder-zh-check.png

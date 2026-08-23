@@ -40,11 +40,11 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(8px, 1.5vw, 12px);
+  gap: clamp(var(--space-2), 1.5vw, 12px);
   color: white;
-  font-size: clamp(14px, 2.2vw, 16px);
+  font-size: clamp(14px, 2.2vw, 36px);
   text-align: center;
-  padding: clamp(12px, 2.5vw, 20px);
+  padding: clamp(var(--space-3), 2.5vw, 20px);
 }
 
 .fade-enter-active,

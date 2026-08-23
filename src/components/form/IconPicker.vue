@@ -208,10 +208,7 @@ function confirm() {
               role="tab"
               :aria-selected="localProvider === 'solar'"
               :class="{ active: localProvider === 'solar' }"
-              @click="
-                localProvider = 'solar'
-                loadSolarIcons()
-              "
+              @click="localProvider = 'solar'; loadSolarIcons()"
             >
               Solar
             </button>
@@ -231,19 +228,13 @@ function confirm() {
                 type="color"
                 :value="localColor"
                 class="native-picker"
-                @input="
-                  localColor = ($event.target as HTMLInputElement).value
-                  colorTarget = 'fg'
-                "
+                @input="localColor = ($event.target as HTMLInputElement).value; colorTarget = 'fg'"
               />
               <input
                 type="text"
                 :value="localColor"
                 class="hex-input"
-                @input="
-                  localColor = ($event.target as HTMLInputElement).value
-                  colorTarget = 'fg'
-                "
+                @input="localColor = ($event.target as HTMLInputElement).value; colorTarget = 'fg'"
                 @focus="colorTarget = 'fg'"
               />
             </div>
@@ -253,28 +244,19 @@ function confirm() {
                 type="color"
                 :value="localBgColor"
                 class="native-picker"
-                @input="
-                  localBgColor = ($event.target as HTMLInputElement).value
-                  colorTarget = 'bg'
-                "
+                @input="localBgColor = ($event.target as HTMLInputElement).value; colorTarget = 'bg'"
               />
               <input
                 type="text"
                 :value="localBgColor"
                 class="hex-input"
-                @input="
-                  localBgColor = ($event.target as HTMLInputElement).value
-                  colorTarget = 'bg'
-                "
+                @input="localBgColor = ($event.target as HTMLInputElement).value; colorTarget = 'bg'"
                 @focus="colorTarget = 'bg'"
               />
               <button
                 class="transparent-btn"
                 :class="{ active: localBgColor === 'transparent' }"
-                @click="
-                  localBgColor = 'transparent'
-                  colorTarget = 'bg'
-                "
+                @click="localBgColor = 'transparent'; colorTarget = 'bg'"
               >
                 无
               </button>
@@ -293,9 +275,7 @@ function confirm() {
               />
               <IconSvg v-else :type="localIcon" size="lg" :color="localColor" />
             </span>
-            <span class="preview-name"
-              >{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span
-            >
+            <span class="preview-name">{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span>
             <div class="preset-colors">
               <button
                 v-for="c in presetColors"
@@ -356,11 +336,11 @@ function confirm() {
   align-items: center;
   gap: var(--space-2);
   height: clamp(38px, 6vw, 42px);
-  padding: 0 clamp(8px, 1.5vw, 12px);
+  padding: 0 clamp(var(--space-2), 1.5vw, 12px);
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
-  font-size: clamp(13px, 1.8vw, 14px);
+  font-size: clamp(13px, 1.8vw, 15px);
   cursor: pointer;
   transition: border-color var(--transition-fast);
   font-family: inherit;
@@ -372,8 +352,8 @@ function confirm() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: clamp(22px, 4vw, 28px);
+  height: clamp(22px, 4vw, 28px);
   border-radius: var(--radius-sm);
   background: var(--color-bg-alt);
 }
@@ -398,8 +378,8 @@ function confirm() {
 }
 .provider-tab {
   flex: 1;
-  padding: var(--space-2) 12px;
-  font-size: clamp(11px, 1.5vw, 12px);
+  padding: var(--space-2) var(--space-3);
+  font-size: clamp(11px, 1.5vw, 14px);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -435,7 +415,7 @@ function confirm() {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) 12px;
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-muted);
   flex-shrink: 0;
@@ -452,7 +432,7 @@ function confirm() {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) 8px;
+  padding: var(--space-2) var(--space-1);
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
@@ -460,19 +440,19 @@ function confirm() {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 3px var(--space-2);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
   flex-shrink: 0;
 }
 .color-label {
-  font-size: clamp(10px, 1.3vw, 11px);
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-muted);
   white-space: nowrap;
 }
 .native-picker {
-  width: 22px;
-  height: 22px;
+  width: clamp(18px, 3vw, 22px);
+  height: clamp(18px, 3vw, 22px);
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -486,23 +466,23 @@ function confirm() {
   border-radius: var(--radius-sm);
 }
 .hex-input {
-  width: 62px;
-  height: 22px;
-  padding: 1px var(--space-1);
+  width: clamp(52px, 8vw, 62px);
+  height: clamp(18px, 3vw, 22px);
+  padding: var(--space-1) var(--space-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: clamp(10px, 1.3vw, 11px);
+  font-size: clamp(10px, 1.3vw, 13px);
   font-family: monospace;
   background: var(--color-surface);
   color: var(--color-text-secondary);
 }
 .transparent-btn {
-  padding: 1px var(--space-2);
-  height: 22px;
+  padding: var(--space-1) var(--space-2);
+  height: clamp(18px, 3vw, 22px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -522,7 +502,7 @@ function confirm() {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-2) 12px;
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border-light);
   flex-shrink: 0;
 }
@@ -544,7 +524,7 @@ function confirm() {
   min-width: 0;
 }
 .preview-hex {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-muted);
   font-weight: 400;
   font-family: monospace;
@@ -552,14 +532,14 @@ function confirm() {
 }
 .preset-colors {
   display: flex;
-  gap: 3px;
+  gap: var(--space-1);
   margin-left: auto;
   flex-shrink: 0;
   align-items: center;
 }
 .preset-dot {
-  width: 16px;
-  height: 16px;
+  width: clamp(12px, 2vw, 16px);
+  height: clamp(12px, 2vw, 16px);
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -573,13 +553,13 @@ function confirm() {
   transform: scale(1.25);
 }
 .panel-preview .confirm-btn {
-  padding: var(--space-1) 14px;
-  height: 28px;
+  padding: var(--space-1) var(--space-3);
+  height: clamp(22px, 4vw, 28px);
   border: none;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
   color: white;
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 14px);
   white-space: nowrap;
   cursor: pointer;
   transition: opacity var(--transition-fast);
@@ -594,8 +574,8 @@ function confirm() {
   overflow-y: auto;
   background: var(--color-bg);
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
-  gap: 1px;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(44px, 6vw, 54px), 1fr));
+  gap: var(--space-1);
   padding: var(--space-1);
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -603,7 +583,7 @@ function confirm() {
 }
 /* 自定义滚动条样式 */
 .panel-icons::-webkit-scrollbar {
-  width: 5px;
+  width: var(--space-1);
 }
 .panel-icons::-webkit-scrollbar-track {
   background: transparent;
@@ -619,8 +599,8 @@ function confirm() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: clamp(22px, 4vw, 28px);
+  height: clamp(22px, 4vw, 28px);
   border-radius: var(--radius-sm);
   transition: background var(--transition-fast);
 }
@@ -629,10 +609,10 @@ function confirm() {
   flex-direction: column;
   align-items: center;
   gap: var(--space-1);
-  padding: 5px var(--space-1);
+  padding: var(--space-1) var(--space-1);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-secondary);
   background: transparent;
   cursor: pointer;
@@ -652,7 +632,7 @@ function confirm() {
   text-align: center;
   color: var(--color-text-muted);
   padding: var(--space-5);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 14px);
 }
 
 /* 面板动画：弹性缓动 + 微缩放，进场 200ms 退场 150ms（退场快于进场） */
@@ -668,17 +648,17 @@ function confirm() {
 }
 .drop-enter-from {
   opacity: 0;
-  transform: translateY(-6px) scale(0.97);
+  transform: translateY(calc(-1 * var(--space-2))) scale(0.97);
 }
 .drop-leave-to {
   opacity: 0;
-  transform: translateY(-4px) scale(0.97);
+  transform: translateY(calc(-1 * var(--space-1))) scale(0.97);
 }
 /* 向上展开时动画方向反转 */
 .flip-up.drop-enter-from {
-  transform: translateY(6px) scale(0.97);
+  transform: translateY(var(--space-2)) scale(0.97);
 }
 .flip-up.drop-leave-to {
-  transform: translateY(4px) scale(0.97);
+  transform: translateY(var(--space-1)) scale(0.97);
 }
 </style>

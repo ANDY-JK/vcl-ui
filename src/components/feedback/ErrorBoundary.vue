@@ -75,16 +75,16 @@ watch(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(32px, 6vw, 64px);
+  padding: clamp(var(--space-7), 6vw, 64px);
   text-align: center;
 }
 .eb-icon {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-warning, #f59e0b);
+  background: var(--color-warning);
   color: white;
-  font-size: 24px;
+  font-size: clamp(24px, 3.5vw, 36px);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -92,13 +92,13 @@ watch(
   margin-bottom: var(--space-4);
 }
 .eb-title {
-  font-size: 16px;
+  font-size: clamp(16px, 2.5vw, 28px);
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: var(--space-1);
 }
 .eb-desc {
-  font-size: 13px;
+  font-size: clamp(13px, 1.8vw, 15px);
   color: var(--color-text-muted);
   margin-bottom: var(--space-4);
   max-width: 400px;
@@ -110,7 +110,7 @@ watch(
   border-radius: var(--radius-md);
   background: var(--color-primary);
   color: white;
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   cursor: pointer;
   font-family: inherit;
 }

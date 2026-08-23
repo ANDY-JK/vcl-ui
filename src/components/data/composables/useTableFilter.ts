@@ -5,6 +5,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import type { Column, ColumnFilterState, FilterOption, OptionSort } from './types'
 import { matchPinyin } from './useTableCore'
 import { measureTextWidth, markLayerOpen } from './utils'
+import { computeFloatingPosition } from '@/components/_internal/useFloating'
 
 export function useTableFilter(
   props: { columns: Column[]; data: Record<string, any>[]; pinyinSearch?: boolean },
@@ -221,32 +222,29 @@ export function useTableFilter(
 
   function updateDropdownPosition(event: MouseEvent) {
     const target = event.currentTarget as HTMLElement
-    // 表格模式下定位父级 <th>，卡片模式下直接用触发元素
     const anchor = target.closest('th') || target
     const rect = anchor.getBoundingClientRect()
-    const vw = window.innerWidth
-    const vh = window.innerHeight
-    const spaceBelow = vh - rect.bottom
-    const spaceAbove = rect.top
     const ddW = filterDdWidth()
-
     const tableRect = tableWrapRef.value?.getBoundingClientRect()
-    const tableLeft = tableRect?.left ?? 8
-    const tableRight = tableRect?.right ?? (vw - 8)
 
-    let left = rect.left
-    if (left + ddW > tableRight) left = rect.right - ddW
-    if (left < tableLeft) left = tableLeft
-    if (left + ddW > vw - 4) left = vw - ddW - 4
-    if (left < 4) left = 4
+    const result = computeFloatingPosition({
+      rect,
+      floatingW: ddW,
+      floatingH: 200, // 预估下拉高度
+      offset: 4,
+      defaultDirection: 'down',
+      containerLeft: tableRect?.left,
+      containerRight: tableRect?.right,
+    })
 
-    const preferAbove = spaceBelow < 220 && spaceAbove > spaceBelow
+    const preferAbove = result.direction === 'up'
     filterDropdownAbove.value = preferAbove
+    const vh = window.innerHeight
     const maxH = preferAbove ? Math.min(360, rect.top - 8) : Math.min(360, vh - rect.bottom - 12)
 
     filterDropdownStyle.value = preferAbove
-      ? { position: 'fixed', bottom: `${vh - rect.top + 4}px`, left: `${left}px`, width: `${ddW}px`, maxHeight: `${maxH}px`, zIndex: 'var(--z-dropdown, 2000)', top: 'auto' }
-      : { position: 'fixed', top: `${rect.bottom + 4}px`, left: `${left}px`, width: `${ddW}px`, maxHeight: `${maxH}px`, zIndex: 'var(--z-dropdown, 2000)' }
+      ? { position: 'fixed', bottom: `${vh - rect.top + 4}px`, left: `${result.left}px`, width: `${ddW}px`, maxHeight: `${maxH}px`, zIndex: 'var(--z-dropdown, 2000)', top: 'auto' }
+      : { position: 'fixed', top: `${rect.bottom + 4}px`, left: `${result.left}px`, width: `${ddW}px`, maxHeight: `${maxH}px`, zIndex: 'var(--z-dropdown, 2000)' }
   }
 
   // ==================== 打开 / 关闭筛选 ====================

@@ -62,7 +62,7 @@ const colorMap: Record<string, string> = {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: clamp(40px, 8vw, 64px) 20px;
+  padding: clamp(40px, 8vw, 64px) var(--space-5);
 }
 
 .result.fullWidth {
@@ -72,18 +72,18 @@ const colorMap: Record<string, string> = {
 .result-icon {
   width: clamp(48px, 8vw, 64px);
   height: clamp(48px, 8vw, 64px);
-  margin-bottom: clamp(14px, 2.5vw, 20px);
+  margin-bottom: clamp(var(--space-3), 2.5vw, 20px);
 }
 
 .result-title {
-  font-size: clamp(18px, 3vw, 22px);
+  font-size: clamp(18px, 3vw, 36px);
   font-weight: 600;
-  margin-bottom: clamp(6px, 1vw, 8px);
+  margin-bottom: clamp(var(--space-1), 1vw, 8px);
   color: var(--color-text);
 }
 
 .result-desc {
-  font-size: clamp(13px, 1.8vw, 14px);
+  font-size: clamp(13px, 1.8vw, 15px);
   color: var(--color-text-secondary);
   max-width: clamp(340px, 64vw, 480px);
   line-height: 1.6;
@@ -91,7 +91,7 @@ const colorMap: Record<string, string> = {
 
 .result-actions {
   display: flex;
-  gap: clamp(8px, 1.5vw, 12px);
-  margin-top: clamp(16px, 3vw, 24px);
+  gap: clamp(var(--space-2), 1.5vw, 12px);
+  margin-top: clamp(var(--space-4), 3vw, 24px);
 }
 </style>

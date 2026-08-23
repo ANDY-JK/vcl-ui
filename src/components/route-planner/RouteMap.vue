@@ -241,17 +241,17 @@ const hasContent = computed(() => props.stores.length > 0 || (props.plan && prop
   justify-content: center;
   background: var(--color-bg);
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: clamp(13px, 1.8vw, 15px);
 }
 
 .spinner {
-  width: 28px;
-  height: 28px;
+  width: clamp(24px, 3vw, 28px);
+  height: clamp(24px, 3vw, 28px);
   border: 3px solid var(--color-border-light);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 @keyframes spin {
@@ -270,45 +270,45 @@ const hasContent = computed(() => props.stores.length > 0 || (props.plan && prop
   justify-content: center;
   background: rgba(248, 250, 252, 0.9);
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: clamp(14px, 1.8vw, 15px);
   z-index: 2;
   pointer-events: none;
 }
 
 .guide-hint {
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: clamp(12px, 1.8vw, 15px);
+  margin-top: var(--space-1);
 }
 
 /* 图例 */
 .map-legend {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
+  bottom: var(--space-3);
+  left: var(--space-3);
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 6px;
-  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-2);
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 10px;
-  max-width: 220px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  gap: var(--space-1) var(--space-2);
+  max-width: clamp(180px, 22vw, 220px);
+  box-shadow: var(--shadow-sm);
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .legend-color {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
+  width: clamp(8px, 1.2vw, 10px);
+  height: clamp(8px, 1.2vw, 10px);
+  border-radius: var(--radius-sm);
 }
 
 .legend-text {
-  font-size: 10px;
+  font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-text-secondary);
 }
 </style>

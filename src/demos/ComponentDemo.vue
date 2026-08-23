@@ -93,6 +93,10 @@ const demoMap: Record<string, any> = {
     loader: () => import('./map/ContractCollectionDemo.vue'),
     errorComponent: ErrorFallback,
   }),
+  'form-builder': defineAsyncComponent({
+    loader: () => import('./form/FormBuilderDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
   storage: defineAsyncComponent({ loader: () => import('./map/StorageDemo.vue'), errorComponent: ErrorFallback }),
 }
 

@@ -427,7 +427,7 @@ onUnmounted(() => {
 .direction-horizontal {
   flex-direction: row;
   flex-wrap: wrap;
-  gap: clamp(10px, 1.8vw, 16px);
+  gap: clamp(var(--space-2), 1.8vw, 16px);
 }
 .direction-vertical {
   flex-direction: column;
@@ -436,7 +436,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   padding: var(--space-2) 0;
   cursor: pointer;
 }
@@ -532,7 +532,7 @@ onUnmounted(() => {
   transform: translateX(clamp(10px, 1.5vw, 14px));
 }
 .switch-label {
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   color: var(--color-text);
 }
 
@@ -639,7 +639,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   min-width: 34px;
   text-align: right;
-  font-size: clamp(12px, 1.8vw, 13px);
+  font-size: clamp(12px, 1.8vw, 15px);
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   color: var(--color-text-secondary);

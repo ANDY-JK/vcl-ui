@@ -32,11 +32,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'mobile-chrome',
-      use: { ...devices['Pixel 5'] },
+      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     },
   ],
   // 自动启动开发服务器

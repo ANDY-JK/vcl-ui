@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, computed } from 'vue'
 import {
   searchNearby,
   calcDistance,
@@ -13,6 +13,7 @@ import {
   getAmapJsKey,
   getAmapSecurityCode,
 } from '@/components'
+import ModalBox from '@/components/layout/ModalBox.vue'
 import { ElAmap, initAMapApiLoader } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import type { PoiItem } from '@/components'
@@ -45,6 +46,10 @@ const calcRes = ref<{ distance: number; amapLat: number; amapLon: number; exceed
 
 // ==================== 详情面板 ====================
 const detailPoi = ref<(PoiItem & { distanceM: number }) | null>(null)
+const detailVisible = computed({
+  get: () => detailPoi.value !== null,
+  set: (v) => { if (!v) { detailPoi.value = null; lightboxSrc.value = '' } },
+})
 const lightboxSrc = ref('')
 
 // ==================== 地图 ====================
@@ -314,11 +319,6 @@ async function openDetail(p: PoiItem & { distanceM: number }) {
     detailLoading.value = false
   }
 }
-function closeDetail() {
-  detailPoi.value = null
-  lightboxSrc.value = ''
-}
-
 /** 图片加载失败 → 改为占位 */
 function onImgFail(e: Event) {
   const el = e.target as HTMLImageElement
@@ -413,47 +413,41 @@ function onImgFail(e: Event) {
     <div v-if="!pois.length && !loading" class="empty-hint">输入门店名称和地址，点击"搜索周边"</div>
 
     <!-- ③ POI 详情浮层 -->
-    <Teleport to="body">
-      <div v-if="detailPoi" class="poi-detail-overlay" @click.self="closeDetail">
-        <div class="poi-detail-panel">
-          <button class="poi-detail-close" @click="closeDetail">✕</button>
-          <div class="poi-detail-head">
-            <h3>{{ detailPoi.name }}</h3>
-            <span class="poi-detail-dist" :class="{ warn: detailPoi.distanceM > 700 }">{{
-              fm(detailPoi.distanceM)
-            }}</span>
-          </div>
-          <div class="poi-detail-addr">📍 {{ detailPoi.address }}</div>
-          <div class="poi-detail-cord">🌐 {{ f(detailPoi.latitude) }}, {{ f(detailPoi.longitude) }}</div>
-          <div v-if="detailPoi.type" class="poi-detail-type">🏷️ {{ detailPoi.type }}</div>
+    <ModalBox v-model:visible="detailVisible" :title="detailPoi?.name || ''" size="md">
+      <template v-if="detailPoi">
+        <div class="poi-detail-head">
+          <span class="poi-detail-dist" :class="{ warn: detailPoi.distanceM > 700 }">{{
+            fm(detailPoi.distanceM)
+          }}</span>
+        </div>
+        <div class="poi-detail-addr">📍 {{ detailPoi.address }}</div>
+        <div class="poi-detail-cord">🌐 {{ f(detailPoi.latitude) }}, {{ f(detailPoi.longitude) }}</div>
+        <div v-if="detailPoi.type" class="poi-detail-type">🏷️ {{ detailPoi.type }}</div>
 
-          <!-- 图片画廊 -->
-          <div v-if="detailLoading" class="poi-detail-loading">⏳ 加载照片中…</div>
-          <div v-else-if="detailPoi.photos && detailPoi.photos.length" class="poi-detail-photos">
-            <div class="poi-detail-photos-label">📸 照片（{{ detailPoi.photos.length }}）</div>
-            <div class="poi-detail-photos-grid">
-              <div
-                v-for="(photo, pi) in detailPoi.photos"
-                :key="pi"
-                class="poi-detail-photo-item"
-                @click="lightboxSrc = photo.url"
-              >
-                <img :src="photo.url" :alt="photo.title || detailPoi.name" loading="lazy" @error="onImgFail" />
-                <span v-if="photo.title" class="poi-detail-photo-title">{{ photo.title }}</span>
-              </div>
+        <!-- 图片画廊 -->
+        <div v-if="detailLoading" class="poi-detail-loading">⏳ 加载照片中…</div>
+        <div v-else-if="detailPoi.photos && detailPoi.photos.length" class="poi-detail-photos">
+          <div class="poi-detail-photos-label">📸 照片（{{ detailPoi.photos.length }}）</div>
+          <div class="poi-detail-photos-grid">
+            <div
+              v-for="(photo, pi) in detailPoi.photos"
+              :key="pi"
+              class="poi-detail-photo-item"
+              @click="lightboxSrc = photo.url"
+            >
+              <img :src="photo.url" :alt="photo.title || detailPoi.name" loading="lazy" @error="onImgFail" />
+              <span v-if="photo.title" class="poi-detail-photo-title">{{ photo.title }}</span>
             </div>
           </div>
-          <div v-else class="poi-detail-no-photos">
-            <span>暂无门店照片</span>
-          </div>
-
-          <!-- 操作 -->
-          <div class="poi-detail-actions">
-            <button class="btn btn-secondary" @click="closeDetail">关闭</button>
-          </div>
         </div>
-      </div>
-    </Teleport>
+        <div v-else class="poi-detail-no-photos">
+          <span>暂无门店照片</span>
+        </div>
+      </template>
+      <template #footer>
+        <button class="btn btn-secondary" @click="detailVisible = false">关闭</button>
+      </template>
+    </ModalBox>
 
     <!-- ④ 图片预览 -->
     <ImagePreview v-if="lightboxSrc" :src="lightboxSrc" @close="lightboxSrc = ''" />
@@ -474,13 +468,13 @@ function onImgFail(e: Event) {
 }
 .demo-desc {
   font-size: 13px;
-  color: var(--color-text-muted, #64748b);
+  color: var(--color-text-muted);
   margin-bottom: 16px;
 }
 
 .toolbar {
-  background: var(--color-surface, #f8fafc);
-  border: 1px solid var(--color-border, #e2e8f0);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 12px;
@@ -494,10 +488,10 @@ function onImgFail(e: Event) {
   flex: 1;
   min-width: 140px;
   padding: 7px 10px;
-  border: 1px solid var(--color-border, #d1d5db);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 13px;
-  background: var(--color-bg, #fff);
+  background: var(--color-bg);
 }
 .inp-sm {
   flex: 0.5;
@@ -523,7 +517,7 @@ function onImgFail(e: Event) {
   cursor: not-allowed;
 }
 .btn-primary {
-  background: var(--color-primary, #3b82f6);
+  background: var(--color-primary);
   color: #fff;
 }
 .btn-secondary {
@@ -532,25 +526,25 @@ function onImgFail(e: Event) {
 }
 .gps-display {
   font-size: 13px;
-  color: var(--color-primary, #3b82f6);
+  color: var(--color-primary);
   font-weight: 500;
 }
 .radius-label {
   font-size: 13px;
-  color: var(--color-text-muted, #64748b);
+  color: var(--color-text-muted);
   margin-left: 4px;
 }
 .radius-select {
   padding: 5px 8px;
-  border: 1px solid var(--color-border, #d1d5db);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 13px;
-  background: var(--color-bg, #fff);
+  background: var(--color-bg);
 }
 .calc-info {
   margin-top: 8px;
   font-size: 13px;
-  color: var(--color-text-muted, #64748b);
+  color: var(--color-text-muted);
 }
 
 /* ② 地图 + 卡片列表 */
@@ -559,7 +553,7 @@ function onImgFail(e: Event) {
   height: 500px;
   margin-bottom: 14px;
   border-radius: 10px;
-  border: 1px solid var(--color-border, #e2e8f0);
+  border: 1px solid var(--color-border);
 }
 .map-shell :deep(.el-vue-amap-container),
 .map-shell :deep(.el-vue-amap) {
@@ -591,8 +585,8 @@ function onImgFail(e: Event) {
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: #1f2937;
-  border-bottom: 1px solid #f1f5f9;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -601,7 +595,7 @@ function onImgFail(e: Event) {
 .panel-gps {
   font-size: 11px;
   font-weight: 400;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-family: monospace;
 }
 
@@ -612,18 +606,18 @@ function onImgFail(e: Event) {
   gap: 10px;
   padding: 10px 14px;
   cursor: pointer;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--color-border-light);
   transition: background 0.12s;
 }
 .poi-card:last-child {
   border-bottom: none;
 }
 .poi-card:hover {
-  background: #f0f7ff;
+  background: var(--color-info-bg);
 }
 .poi-card.active {
-  background: #eff6ff;
-  border-left: 3px solid #dc2626;
+  background: var(--color-info-bg);
+  border-left: 3px solid var(--color-danger-hover);
   padding-left: 11px;
 }
 
@@ -634,8 +628,8 @@ function onImgFail(e: Event) {
   overflow: hidden;
   flex-shrink: 0;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
-  background: #f1f5f9;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -647,7 +641,7 @@ function onImgFail(e: Event) {
   display: block;
 }
 .poi-card-img:hover {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
 }
 .poi-card-noimg {
   font-size: 22px;
@@ -662,14 +656,14 @@ function onImgFail(e: Event) {
 .poi-card-name {
   font-size: 13px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .poi-card-addr {
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -683,7 +677,7 @@ function onImgFail(e: Event) {
 }
 .poi-card-type {
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .poi-card-detail {
@@ -703,7 +697,7 @@ function onImgFail(e: Event) {
   opacity: 1;
 }
 .poi-card-detail:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-alt);
 }
 
 .badge {
@@ -711,102 +705,56 @@ function onImgFail(e: Event) {
   font-weight: 700;
   padding: 1px 8px;
   border-radius: 10px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
   white-space: nowrap;
   flex-shrink: 0;
 }
 .badge.warn {
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 /* ④ POI 详情浮层 */
-.poi-detail-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9000;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.poi-detail-panel {
-  background: var(--color-bg, #fff);
-  border-radius: 12px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 24px;
-  position: relative;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
-}
-.poi-detail-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 50%;
-  background: #f1f5f9;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-}
-.poi-detail-close:hover {
-  background: #e2e8f0;
-}
 .poi-detail-head {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
 }
-.poi-detail-head h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
-}
 .poi-detail-dist {
   font-size: 14px;
   font-weight: 700;
   padding: 2px 10px;
   border-radius: 10px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
   white-space: nowrap;
 }
 .poi-detail-dist.warn {
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 .poi-detail-addr {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-bottom: 4px;
 }
 .poi-detail-cord {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-family: monospace;
   margin-bottom: 4px;
 }
 .poi-detail-type {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   margin-bottom: 12px;
 }
 .poi-detail-loading {
   padding: 24px 0;
   text-align: center;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   font-size: 13px;
 }
 
@@ -817,7 +765,7 @@ function onImgFail(e: Event) {
 .poi-detail-photos-label {
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-text-secondary);
   margin-bottom: 8px;
 }
 .poi-detail-photos-grid {
@@ -830,8 +778,8 @@ function onImgFail(e: Event) {
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
   aspect-ratio: 4/3;
 }
 .poi-detail-photo-item img {
@@ -860,31 +808,24 @@ function onImgFail(e: Event) {
 .poi-detail-no-photos {
   padding: 24px 0;
   text-align: center;
-  color: #9ca3af;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
-.poi-detail-actions {
-  margin-top: 16px;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
 /* 空状态 */
 .empty-hint {
   height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 .ok {
-  color: #16a34a;
+  color: var(--color-success-text);
   font-weight: 600;
 }
 .over {
-  color: #dc2626;
+  color: var(--color-danger-hover);
   font-weight: 600;
 }
 @media (max-width: 768px) {

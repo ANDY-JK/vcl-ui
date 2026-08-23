@@ -1209,9 +1209,11 @@ td.cell-has-options:hover .cell-options-arrow {
   font-weight: 500;
 }
 .opt-drop-item.focused {
-  background: var(--color-bg);
-  outline: 1px solid var(--color-primary);
-  outline-offset: -1px;
+background: var(--color-bg-alt);
+}
+/* 选中+焦点重叠时：用 active 的浅蓝背景，不被 focused 灰色覆盖 */
+.opt-drop-item.active.focused {
+background: rgba(var(--color-primary-rgb, 64 158 255), 0.08);
 }
 .opt-drop-check {
   color: var(--color-primary);

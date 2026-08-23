@@ -66,9 +66,7 @@ onMounted(() => {
   <div class="demo">
     <h2 class="demo-title">Storage 组合存储演示</h2>
     <p class="demo-desc">
-      统一存储抽象层：<code>storageGet/Set/Delete</code> 走 localStorage（同步，轻量 KV），<code
-        >dbPut/dbGet/dbDelete</code
-      >
+      统一存储抽象层：<code>storageGet/Set/Delete</code> 走 localStorage（同步，轻量 KV），<code>dbPut/dbGet/dbDelete</code>
       走 IndexedDB（异步，支持 TTL 过期、动态 Store、批量事务）。 组合存储架构见
       <code>contract-storage.ts</code>（IndexedDB 毫秒级落盘 + Supabase 异步同步 + 墓碑对账）。
     </p>
@@ -118,7 +116,7 @@ onMounted(() => {
             border-radius: 4px;
             white-space: pre-wrap;
           "
-          >{{ lsResult || '(未读取)' }}</pre>
+        >{{ lsResult || '(未读取)' }}</pre>
       </div>
 
       <div>
@@ -136,8 +134,7 @@ onMounted(() => {
               padding: 2px 6px;
               border-radius: 3px;
             "
-            >{{ k }}</span
-          >
+          >{{ k }}</span>
           <span v-if="!lsAllKeys.length">(空)</span>
         </div>
       </div>
@@ -206,7 +203,7 @@ onMounted(() => {
             max-height: 200px;
             overflow: auto;
           "
-          >{{ dbResult || '(未读取)' }}</pre>
+        >{{ dbResult || '(未读取)' }}</pre>
       </div>
     </Card>
 

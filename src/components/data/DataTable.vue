@@ -2,7 +2,7 @@
 // ⛔ 保护 — 禁止：clamp() → px，table-layout:fixed 删除，列宽计算链路，结构层级
 //    允许：autoFit 开启时外部 col.width 已被禁止，列宽完全由内部动态管理
 //    需我确认：props 增删、默认值修改、模板结构变更、CSS 变量替换
-import { ref, watch, computed, onMounted, onUnmounted, onErrorCaptured, nextTick, inject, type ComputedRef } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted, onErrorCaptured, nextTick, inject, toRef, type ComputedRef } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Result from '@/components/feedback/Result.vue'
@@ -22,6 +22,9 @@ import { useTableEdit } from './composables/useTableEdit'
 import './composables/data-table-global.css'
 import { sanitizeHTML } from './composables/sanitize'
 import { clampFloatingPosition, isLayerFresh, markLayerOpen } from './composables/utils'
+import { useTableTooltip } from './composables/useTableTooltip'
+import { computeFloatingPosition } from '@/components/_internal/useFloating'
+import { useDebounceFn } from '@/components/_internal/useDebounce'
 
 // 内部异常兜底 — 单组件出错不导致页面崩溃
 const _internalError = ref<Error | null>(null)
@@ -168,6 +171,78 @@ const _cellClass = (colKey: string, row: Record<string, any>, idx: number) =>
 const _cellStyle = (colKey: string, row: Record<string, any>, idx: number) =>
   props.cellStyle?.(colKey, row as T, idx) ?? {}
 
+// ── 命名事件处理器（替代多行内联表达式，兼容测试环境解析） ──
+
+/** 表格滚动 */
+function onScrollTable(e: Event) {
+  onTableScroll(e)
+  onScrollProgress(e)
+}
+
+/** 卡片视图滚动 */
+function onScrollCardView(e: Event) {
+  onTableScroll(e)
+  onScrollProgress(e)
+  onCardScroll(e)
+}
+
+/** 表头单元格点击 */
+function onHeaderCellClick(e: MouseEvent, col: Column) {
+  if (_resizeJustEnded) return
+  if (e.ctrlKey && props.editable) toggleSelectColumn(col.key)
+  else toggleSort(col)
+}
+
+/** 单元格 mouseenter */
+function onCellMouseEnter(e: MouseEvent, row: Record<string, any>, colKey: string) {
+  const rowMeta = rowMetaMap.value.get(row)
+  showTooltip(e, rowMeta?.texts[colKey] ?? '')
+  showNoteTooltip(e, rowMeta?.key ?? '', colKey)
+  showOriginalTooltip(e, rowMeta?.key ?? '', colKey, rowMeta?.texts[colKey] ?? '')
+}
+
+/** 单元格 mouseleave */
+function onCellMouseLeave() {
+  hideTooltip()
+  hideNoteTooltip()
+  hideOriginalTooltip()
+}
+
+/** 图片加载失败 */
+function onImgError(e: Event) {
+  ;(e.target as HTMLImageElement).style.display = 'none'
+}
+
+/** 右键菜单 — 隐藏当前列 */
+function onCtxHideColumn() {
+  hideCurrentColumn()
+  closeContextMenu()
+}
+
+/** 右键菜单 — 固定到左侧 */
+function onCtxFixLeftCascade() {
+  fixLeftCascade(contextMenu.value.columnKey!)
+  closeContextMenu()
+}
+
+/** 右键菜单 — 固定到右侧 */
+function onCtxFixRightCascade() {
+  fixRightCascade(contextMenu.value.columnKey!)
+  closeContextMenu()
+}
+
+/** 右键菜单 — 取消固定 */
+function onCtxUnfixColumn() {
+  onUnfixFromMenu(contextMenu.value.columnKey!)
+  closeContextMenu()
+}
+
+/** 右键菜单 — 显示全部列 */
+function onCtxShowAllColumns() {
+  showAllColumns()
+  closeContextMenu()
+}
+
 /** emptyText 回退：未传入时用 i18n */
 const effectiveEmptyText = computed(() => props.emptyText || t('table.noData'))
 
@@ -298,14 +373,13 @@ function toggleGlobalSearch() {
 
 // 全局搜索 200ms 防抖 — v-model 即时更新但数据过滤延迟触发
 const searchTerm = ref('')
-let _searchTimer: ReturnType<typeof setTimeout> | null = null
+const { run: _doSearch, cancel: _cancelSearchDebounce } = useDebounceFn((val: string) => {
+  searchTerm.value = val
+  // 服务端搜索模式：抛出事件让后端处理
+  if (props.searchMode === 'server') emit('search', val)
+}, 200)
 watch(globalSearch, (val) => {
-  if (_searchTimer) clearTimeout(_searchTimer)
-  _searchTimer = setTimeout(() => {
-    searchTerm.value = val
-    // 服务端搜索模式：抛出事件让后端处理
-    if (props.searchMode === 'server') emit('search', val)
-  }, 200)
+  _doSearch(val)
 })
 
 // 4. 数据核心：排序 + 数据管道 + 分页/虚拟滚动
@@ -1194,6 +1268,7 @@ const _optDrop = ref<{
   top: number
   left: number
   width: number
+  above: boolean
 } | null>(null)
 function openOptDrop(row: Record<string, any>, col: Column, event: MouseEvent) {
   // 防御：非编辑模式或列级禁用不允许打开选项面板
@@ -1207,15 +1282,25 @@ function openOptDrop(row: Record<string, any>, col: Column, event: MouseEvent) {
   }
   const td = event.currentTarget as HTMLElement
   const rect = td.getBoundingClientRect()
-  const gap = 4
+  _optDropTriggerRect = rect
+  // 预估下拉面板高度：每项 32px + 内边距
+  const estMenuH = Math.min(320, Math.max(120, col.options.length * 32 + 12))
+  const result = computeFloatingPosition({
+    rect,
+    floatingW: Math.max(rect.width, 100),
+    floatingH: estMenuH,
+    offset: 4,
+    defaultDirection: 'down',
+  })
   _optDrop.value = {
     rowKey: rk,
     colKey: col.key,
     options: col.options,
     currentVal: cellVal(row, col.key, rowMetaMap.value.get(row)?.texts[col.key] ?? ''),
-    top: rect.bottom + gap,
-    left: rect.left,
+    top: result.top,
+    left: result.left,
     width: Math.max(rect.width, 100),
+    above: result.above,
   }
 }
 function closeOptDrop() {
@@ -1342,27 +1427,35 @@ function toggleColSettings(e?: MouseEvent) {
   if (!_colSettingsShow.value) return
   markLayerOpen()
   closeFilter()
-  // 相对触发按钮定位：优先向下，底部空间不足时向上（复用筛选下拉的方向判定思路）
   const btn = (e?.currentTarget as HTMLElement | null) ?? null
   const rect = btn?.getBoundingClientRect()
   if (!rect) {
     _colSettingsStyle.value = { top: '56px', right: '16px' }
     return
   }
-  const spaceBelow = window.innerHeight - rect.bottom
-  const left = Math.max(8, Math.min(rect.right - _colSettingsWidth, window.innerWidth - _colSettingsWidth - 8))
-  // 先按下方放置，渲染后按实际高度修正方向（内容高度随列数变化，固定估算会溢出）
-  _colSettingsAbove.value = false
-  _colSettingsStyle.value = { top: `${rect.bottom + 4}px`, left: `${left}px` }
+  // 用通用算法预估方向和位置
+  const result = computeFloatingPosition({
+    rect,
+    floatingW: _colSettingsWidth,
+    floatingH: 300,
+    offset: 4,
+    defaultDirection: 'down',
+  })
+  _colSettingsAbove.value = result.direction === 'up'
+  _colSettingsStyle.value = result.direction === 'up'
+    ? { bottom: `${window.innerHeight - rect.top + 4}px`, left: `${result.left}px` }
+    : { top: `${rect.bottom + 4}px`, left: `${result.left}px` }
+  // 渲染后按实际高度修正方向
   nextTick(() => {
     const el = colSettingsRef.value
     if (!el) return
     const h = el.offsetHeight
     const fitsBelow = rect.bottom + 4 + h <= window.innerHeight - 8
     const spaceAbove = rect.top - 8
+    const spaceBelow = window.innerHeight - rect.bottom
     if (!fitsBelow && spaceAbove > spaceBelow) {
       _colSettingsAbove.value = true
-      _colSettingsStyle.value = { bottom: `${window.innerHeight - rect.top + 4}px`, left: `${left}px` }
+      _colSettingsStyle.value = { bottom: `${window.innerHeight - rect.top + 4}px`, left: `${result.left}px` }
     }
   })
 }
@@ -1556,10 +1649,40 @@ function onContextMenuKeydown(e: KeyboardEvent) {
 
 const optDropRef = ref<HTMLElement | null>(null)
 const _optFocusIndex = ref(0)
+// 面板打开时的触发单元格 rect 快照，用于渲染后精确重定位
+let _optDropTriggerRect: DOMRect | null = null
 watch(_optDrop, (v) => {
   if (!v) return
   _optFocusIndex.value = 0
-  nextTick(() => optDropRef.value?.focus())
+  nextTick(() => {
+    optDropRef.value?.focus()
+    // 渲染后用实际高度重新计算位置，修复预估高度不精确导致的向上弹出重叠问题
+    // 直接操作 DOM 避免修改 _optDrop.value 触发 watch 循环
+    if (optDropRef.value && _optDropTriggerRect) {
+      const panelEl = optDropRef.value
+      const panelH = panelEl.offsetHeight
+      const triggerRect = _optDropTriggerRect
+      const vh = window.innerHeight
+      const offset = 4
+      const spaceDown = vh - triggerRect.bottom - offset
+      const spaceUp = triggerRect.top - offset
+      let newTop: number
+      if (spaceDown >= panelH) {
+        newTop = triggerRect.bottom + offset
+      } else if (spaceUp >= panelH) {
+        newTop = triggerRect.top - panelH - offset
+      } else {
+        // 上下都不够：选空间大的方向
+        newTop = spaceDown >= spaceUp
+          ? triggerRect.bottom + offset
+          : Math.max(8, triggerRect.top - panelH - offset)
+      }
+      // 边界裁剪：不超出视口
+      if (newTop < 8) newTop = 8
+      if (newTop + panelH > vh - 8) newTop = Math.max(8, vh - panelH - 8)
+      panelEl.style.top = newTop + 'px'
+    }
+  })
 })
 function onOptDropKeydown(e: KeyboardEvent) {
   if (!_optDrop.value) return
@@ -1597,6 +1720,7 @@ function onCellContextMenu(row: Record<string, any>, col: Column, event: MouseEv
     visible: true,
     x: event.clientX,
     y: event.clientY,
+    above: false,
     columnKey: col.key,
     rowKey: rk,
     row,
@@ -1605,7 +1729,8 @@ function onCellContextMenu(row: Record<string, any>, col: Column, event: MouseEv
   // 菜单边界（3 项 + 分隔线）
   const pos = clampFloatingPosition(event.clientX, event.clientY, 140, 150, tableWrapRef.value)
   contextMenu.value.x = pos.left
-  contextMenu.value.y = pos.top
+  contextMenu.value.y = pos.above ? event.clientY : pos.top
+  contextMenu.value.above = pos.above
 }
 
 async function onContextCopyCell() {
@@ -1829,8 +1954,7 @@ onMounted(() => {
 onUnmounted(() => {
   _releaseZTop?.()
   flushWidths()
-  if (_searchTimer) clearTimeout(_searchTimer)
-  if (_tooltipTimer) clearTimeout(_tooltipTimer)
+  _cancelSearchDebounce()
   // @patch 2026-08-09 清理拖选残留状态
   if (_rangeTimer) clearTimeout(_rangeTimer)
   stopRangeAutoScroll()
@@ -1882,53 +2006,9 @@ onUnmounted(() => {
 })
 
 // ==================== 截断气泡 ====================
-const _tooltipText = ref('')
-const _tooltipVisible = ref(false)
-const _tooltipStyle = ref<Record<string, string>>({})
-let _tooltipTimer: ReturnType<typeof setTimeout> | null = null
-
-function showTooltip(e: MouseEvent, text: string) {
-  if (!text || props.truncateMode !== 'ellipsis') return
-  // 超过 50 字有弹窗图标，不用 tooltip
-  if (text.length > 50) return
-  const td = (e.target as HTMLElement).closest('td') as HTMLElement | null
-  if (!td) return
-  // 检测内部 .cell-text-inner span 是否溢出
-  const span = td.querySelector('.cell-text-inner') as HTMLElement | null
-  if (!span || span.scrollWidth <= span.clientWidth + 2) return
-  _tooltipTimer = setTimeout(() => {
-    const rect = td.getBoundingClientRect()
-    // 转义 HTML 后 \n → <br>，支持多行文本正常换行
-    _tooltipText.value = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/\n/g, '<br>')
-    _tooltipStyle.value = {
-      position: 'fixed',
-      left: `${Math.max(4, rect.left)}px`,
-      top: `${rect.bottom + 4}px`,
-      maxWidth: `${Math.min(400, window.innerWidth - rect.left - 16)}px`,
-      maxHeight: '200px',
-      overflowY: 'auto',
-      zIndex: 'var(--z-tooltip, 3000)',
-    }
-    _tooltipVisible.value = true
-  }, 300)
-}
-
-function hideTooltip() {
-  if (_tooltipTimer) {
-    clearTimeout(_tooltipTimer)
-    _tooltipTimer = null
-  }
-  _tooltipVisible.value = false
-}
-
-function onTooltipKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') hideTooltip()
-}
+const { _tooltipText, _tooltipVisible, _tooltipStyle, showTooltip, hideTooltip, onTooltipKeydown } = useTableTooltip({
+  truncateMode: toRef(props, 'truncateMode'),
+})
 
 // ==================== 截断单元格弹窗 — 长文本点击展开完整版 ====================
 const _cellDetailModal = ref<{ visible: boolean; title: string; content: string }>({
@@ -2144,12 +2224,7 @@ function onFilterOptionLeave(e: MouseEvent) {
           :style="
             maxHeight ? { maxHeight } : autoHeight ? { '--dt-scroll-min': (_dense ? 32 : 40) * 10 + 'px' } : undefined
           "
-          @scroll="
-            (e) => {
-              onTableScroll(e)
-              onScrollProgress(e)
-            }
-          "
+          @scroll="onScrollTable"
         >
           <table
             class="data-table"
@@ -2201,13 +2276,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                   :aria-sort="
                     sortState.key === col.key ? (sortState.order === 'asc' ? 'ascending' : 'descending') : undefined
                   "
-                  @click="
-                    (e) => {
-                      if (_resizeJustEnded) return
-                      if (e.ctrlKey && editable) toggleSelectColumn(col.key)
-                      else toggleSort(col)
-                    }
-                  "
+                  @click="onHeaderCellClick($event, col)"
                   @keydown="(e) => onThKeydown(e, col)"
                   @contextmenu.prevent="showContextMenu(col, $event)"
                   @dragstart="onColDragStart($event, col.key)"
@@ -2400,25 +2469,8 @@ function onFilterOptionLeave(e: MouseEvent) {
                   ]"
                   @mousedown="(e) => onCellMouseDown(e, row, col, rowDisplayIndex(idx), ci)"
                   @contextmenu="(e) => onCellContextMenuGuard(row, col, e)"
-                  @mouseenter="
-                    (e) => {
-                      showTooltip(e, rowMetaMap.get(row)?.texts[col.key] ?? '')
-                      showNoteTooltip(e, rowMetaMap.get(row)?.key ?? '', col.key)
-                      /* @patch 2026-07-15 */ showOriginalTooltip(
-                        e,
-                        rowMetaMap.get(row)?.key ?? '',
-                        col.key,
-                        rowMetaMap.get(row)?.texts[col.key] ?? '',
-                      )
-                    }
-                  "
-                  @mouseleave="
-                    () => {
-                      hideTooltip()
-                      hideNoteTooltip()
-                      /* @patch 2026-07-15 */ hideOriginalTooltip()
-                    }
-                  "
+                  @mouseenter="onCellMouseEnter($event, row, col.key)"
+                  @mouseleave="onCellMouseLeave"
                   @click.stop="onCellClick(row, col, $event)"
                   @dblclick.stop="onCellDblClick(row, col, $event)"
                   @paste="(e) => onCellPaste(e, rowMetaMap.get(row)?.key ?? '', col.key, col.accept || 'all')"
@@ -2430,9 +2482,9 @@ function onFilterOptionLeave(e: MouseEvent) {
                   <input
                     v-if="
                       editable &&
-                      !col.options &&
-                      editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
-                      editingCell?.colKey === col.key
+                        !col.options &&
+                        editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
+                        editingCell?.colKey === col.key
                     "
                     :ref="setEditInputEl"
                     v-model="editValue"
@@ -2455,16 +2507,12 @@ function onFilterOptionLeave(e: MouseEvent) {
                     <img
                       v-if="
                         col.accept !== 'text' &&
-                        isImageUrl(cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? ''))
+                          isImageUrl(cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? ''))
                       "
                       :src="cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')"
                       class="cell-image"
                       :style="{ width: (col.imageSize || 40) + 'px', height: (col.imageSize || 40) + 'px' }"
-                      @error="
-                        (e) => {
-                          ;(e.target as HTMLImageElement).style.display = 'none'
-                        }
-                      "
+                      @error="onImgError"
                       @click.stop="
                         onImageClick($event, cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? ''))
                       "
@@ -2507,8 +2555,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                             :style="{
                               color: optColor(col, cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')),
                             }"
-                            >{{ cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '') }}</span
-                          >
+                          >{{ cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '') }}</span>
                           <template v-else>{{
                             cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')
                           }}</template>
@@ -2518,8 +2565,8 @@ function onFilterOptionLeave(e: MouseEvent) {
                       <span
                         v-if="
                           truncateMode === 'ellipsis' &&
-                          (autoFit || (rowMetaMap.get(row)?.truncated[col.key] ?? false)) &&
-                          (rowMetaMap.get(row)?.texts[col.key]?.length || 0) > 50
+                            (autoFit || (rowMetaMap.get(row)?.truncated[col.key] ?? false)) &&
+                            (rowMetaMap.get(row)?.texts[col.key]?.length || 0) > 50
                         "
                         class="cell-expand-icon"
                         title="点击查看完整内容"
@@ -2610,13 +2657,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                   ? { maxHeight: _cardViewHeight }
                   : undefined
           "
-          @scroll="
-            (e) => {
-              onTableScroll(e)
-              onScrollProgress(e)
-              onCardScroll(e)
-            }
-          "
+          @scroll="onScrollCardView"
         >
           <div
             v-for="(row, idx) in _cardVisibleData"
@@ -2675,9 +2716,9 @@ function onFilterOptionLeave(e: MouseEvent) {
                 <input
                   v-if="
                     editable &&
-                    !col.options &&
-                    editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
-                    editingCell?.colKey === col.key
+                      !col.options &&
+                      editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
+                      editingCell?.colKey === col.key
                   "
                   :ref="setEditInputEl"
                   v-model="editValue"
@@ -2690,9 +2731,9 @@ function onFilterOptionLeave(e: MouseEvent) {
                 <select
                   v-else-if="
                     editable &&
-                    col.options &&
-                    editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
-                    editingCell?.colKey === col.key
+                      col.options &&
+                      editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
+                      editingCell?.colKey === col.key
                   "
                   v-model="editValue"
                   class="card-edit-select"
@@ -2773,9 +2814,7 @@ function onFilterOptionLeave(e: MouseEvent) {
       <!-- ========== 分页控件 ========== -->
       <div v-if="!_isFullscreen && pageSize > 0 && displayTotalPages > 1" class="table-pagination">
         <span class="pagination-status">
-          <template v-if="selectable && _selectedKeys.length > 0"
-            >已选 <strong>{{ _selectedKeys.length }}</strong> 行 - </template
-          >第 {{ _currentPage }} / {{ displayTotalPages }} 页
+          <template v-if="selectable && _selectedKeys.length > 0">已选 <strong>{{ _selectedKeys.length }}</strong> 行 - </template>第 {{ _currentPage }} / {{ displayTotalPages }} 页
         </span>
         <button class="page-btn" :disabled="_currentPage <= 1" @click="setPage(_currentPage - 1)">
           <IconSvg type="chevron-left" size="sm" />
@@ -2869,8 +2908,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                   class="dt-filter-option-text"
                   @mouseenter="onFilterOptionEnter"
                   @mouseleave="onFilterOptionLeave"
-                  >{{ opt.label || opt.value || '空白' }}</span
-                >
+                >{{ opt.label || opt.value || '空白' }}</span>
                 <span class="dt-filter-option-count">{{ opt.count }}</span>
               </div>
               <div v-if="filteredOptions.length === 0" class="dt-filter-no-result">无匹配结果</div>
@@ -3042,10 +3080,7 @@ function onFilterOptionLeave(e: MouseEvent) {
               class="dt-context-item"
               :class="{ disabled: visibleColumns.length <= 1 }"
               role="menuitem"
-              @click="
-                hideCurrentColumn()
-                closeContextMenu()
-              "
+              @click="onCtxHideColumn"
             >
               隐藏该列
             </div>
@@ -3053,20 +3088,14 @@ function onFilterOptionLeave(e: MouseEvent) {
             <div
               class="dt-context-item"
               role="menuitem"
-              @click="
-                fixLeftCascade(contextMenu.columnKey!)
-                closeContextMenu()
-              "
+              @click="onCtxFixLeftCascade"
             >
               固定到左侧（含之前所有列）
             </div>
             <div
               class="dt-context-item"
               role="menuitem"
-              @click="
-                fixRightCascade(contextMenu.columnKey!)
-                closeContextMenu()
-              "
+              @click="onCtxFixRightCascade"
             >
               固定到右侧（含之后所有列）
             </div>
@@ -3074,10 +3103,7 @@ function onFilterOptionLeave(e: MouseEvent) {
               v-if="isColumnFixed(visibleColumns.find((c) => c.key === contextMenu.columnKey)!)"
               class="dt-context-item"
               role="menuitem"
-              @click="
-                onUnfixFromMenu(contextMenu.columnKey!)
-                closeContextMenu()
-              "
+              @click="onCtxUnfixColumn"
             >
               取消固定
             </div>
@@ -3086,10 +3112,7 @@ function onFilterOptionLeave(e: MouseEvent) {
               class="dt-context-item"
               :class="{ disabled: hiddenColumns.size === 0 }"
               role="menuitem"
-              @click="
-                showAllColumns()
-                closeContextMenu()
-              "
+              @click="onCtxShowAllColumns"
             >
               显示全部
             </div>
@@ -3184,6 +3207,7 @@ function onFilterOptionLeave(e: MouseEvent) {
               top: _optDrop.top + 'px',
               left: _optDrop.left + 'px',
               minWidth: _optDrop.width + 'px',
+              maxHeight: '320px',
               zIndex: 'var(--z-tooltip, 3000)',
             }"
             role="listbox"

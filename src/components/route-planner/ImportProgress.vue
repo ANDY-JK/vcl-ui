@@ -31,35 +31,35 @@ const percent = (current: number, total: number): number => {
 
 <style scoped>
 .import-progress {
-  padding: 12px;
-  background: var(--color-surface, #f8fafc);
-  border-radius: 8px;
-  border: 1px solid var(--color-border, #e2e8f0);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 }
 
 .progress-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 13px;
-  color: var(--color-text, #334155);
+  margin-bottom: var(--space-2);
+  font-size: clamp(13px, 1.8vw, 15px);
+  color: var(--color-text);
 }
 
 .progress-count {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .progress-bar {
   height: 6px;
-  background: var(--color-border, #e2e8f0);
+  background: var(--color-border);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--color-primary, #3b82f6);
+  background: var(--color-primary);
   border-radius: 3px;
   transition: width 0.3s ease;
 }

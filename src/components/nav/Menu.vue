@@ -268,7 +268,7 @@ const levelStyle = computed(() => {
   border-radius: var(--radius-md);
   cursor: pointer;
   color: var(--color-text);
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   line-height: 1.5;
   transition:
     background var(--transition-fast),

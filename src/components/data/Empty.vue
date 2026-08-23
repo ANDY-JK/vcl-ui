@@ -40,7 +40,7 @@ withDefaults(defineProps<Props>(), {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(24px, 5vw, 48px) clamp(12px, 3vw, 24px);
+  padding: clamp(24px, 5vw, 48px) clamp(var(--space-3), 3vw, 24px);
   text-align: center;
   gap: var(--space-2);
   min-height: clamp(120px, 20vh, 200px);
@@ -55,14 +55,14 @@ withDefaults(defineProps<Props>(), {
 
 .empty-title {
   margin: 0;
-  font-size: clamp(14px, 2vw, 16px);
+  font-size: clamp(14px, 2vw, 36px);
   font-weight: 500;
   color: var(--color-text);
 }
 
 .empty-description {
   margin: 0;
-  font-size: clamp(12px, 1.6vw, 13px);
+  font-size: clamp(12px, 1.6vw, 15px);
   color: var(--color-text-secondary);
   line-height: 1.5;
 }

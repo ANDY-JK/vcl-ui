@@ -51,11 +51,11 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(6px, 1vw, 8px);
-  padding: clamp(8px, 1.2vw, 10px) clamp(10px, 2vw, 16px);
+  gap: clamp(var(--space-1), 1vw, 8px);
+  padding: clamp(var(--space-2), 1.2vw, 10px) clamp(10px, 2vw, 16px);
   background: var(--color-warning);
   color: white;
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
 }
 
 .offline-dismiss {

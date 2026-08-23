@@ -1389,9 +1389,7 @@ const mixedSeries = [
       />
       <div style="margin-top: 12px; font-size: 13px; color: var(--color-text-muted)">
         <span v-for="item in legendItems" :key="item.name" style="margin-right: 12px">
-          <span :style="{ opacity: item.visible ? 1 : 0.3 }"
-            >{{ item.name }}: {{ item.visible ? '显示' : '隐藏' }}</span
-          >
+          <span :style="{ opacity: item.visible ? 1 : 0.3 }">{{ item.name }}: {{ item.visible ? '显示' : '隐藏' }}</span>
         </span>
       </div>
       <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 12px">

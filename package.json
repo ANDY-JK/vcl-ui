@@ -25,7 +25,8 @@
     "scan:secrets": "npx gitleaks detect --source . --no-banner",
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed",
-    "test:e2e:ui": "npx playwright test --ui"
+    "test:e2e:ui": "npx playwright test --ui",
+    "gen:docs": "node scripts/gen-api-docs.mjs"
   },
   "main": "./dist/vue-component-lib.cjs",
   "module": "./dist/vue-component-lib.js",
@@ -92,7 +93,6 @@
     "vue-router": "^4.3.0"
   },
   "dependencies": {
-    "@amap/amap-jsapi-loader": "^1.0.1",
     "@iconify/vue": "^4.1.0",
     "@lucide/vue": "^1.21.0",
     "@vuemap/vue-amap": "^2.1.17",
@@ -115,7 +115,6 @@
     "jiti": "^2.7.0",
     "lint-staged": "^17.3.0",
     "pinia": "^2.1.7",
-    "playwright-core": "^1.62.1",
     "prettier": "^3.9.6",
     "typescript": "~5.4.0",
     "typescript-eslint": "^8.67.0",

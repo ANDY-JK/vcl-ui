@@ -228,7 +228,7 @@ const stats = computed(() => {
   background: var(--color-primary);
   color: var(--color-surface);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: var(--ctrl-font-size);
   cursor: pointer;
 }
@@ -239,8 +239,8 @@ const stats = computed(() => {
 
 .stats {
   display: flex;
-  gap: 10px;
-  font-size: clamp(11px, 1.5vw, 12px);
+  gap: var(--space-2);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text-muted);
 }
 
@@ -254,7 +254,7 @@ const stats = computed(() => {
   align-items: center;
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--color-border-light);
-  gap: 6px;
+  gap: var(--space-1);
   flex-shrink: 0;
 }
 
@@ -307,7 +307,7 @@ const stats = computed(() => {
   align-items: center;
   padding: var(--space-1) var(--space-3);
   background: var(--color-bg-alt);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: var(--ctrl-font-size);
   font-weight: 600;
   color: var(--color-text-secondary);
@@ -320,9 +320,9 @@ const stats = computed(() => {
 }
 
 .group-arrow {
-  font-size: 9px;
+  font-size: clamp(8px, 1.1vw, 9px);
   color: var(--color-text-muted);
-  width: 14px;
+  width: clamp(12px, 1.6vw, 14px);
   flex-shrink: 0;
 }
 
@@ -332,17 +332,17 @@ const stats = computed(() => {
 
 .group-batch {
   display: flex;
-  gap: 2px;
-  margin-left: 4px;
+  gap: var(--space-0);
+  margin-left: var(--space-1);
 }
 
 .btn-batch {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   padding: var(--space-1) var(--space-1);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   opacity: 0.5;
   transition: opacity 0.15s;
 }
@@ -362,7 +362,7 @@ const stats = computed(() => {
 .group-count {
   font-weight: 400;
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
 }
 
 .store-list {
@@ -374,7 +374,7 @@ const stats = computed(() => {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-2) var(--space-3);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   transition: background 0.15s;
 }
 
@@ -407,8 +407,8 @@ const stats = computed(() => {
 .store-meta {
   display: flex;
   gap: var(--space-2);
-  margin-top: 2px;
-  font-size: clamp(10px, 1.3vw, 11px);
+  margin-top: var(--space-0);
+  font-size: clamp(10px, 1.3vw, 15px);
   color: var(--color-text-muted);
 }
 
@@ -454,7 +454,7 @@ const stats = computed(() => {
 }
 
 .empty-state .hint {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   margin-top: var(--space-1);
   text-align: center;
   line-height: 1.6;
@@ -474,27 +474,27 @@ const stats = computed(() => {
 .confirm-box {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  padding: var(--space-8) 28px;
+  padding: var(--space-8) var(--space-8);
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  max-width: 340px;
+  box-shadow: var(--shadow-lg);
+  max-width: clamp(280px, 35vw, 340px);
 }
 
 .confirm-text {
   font-size: clamp(13px, 2vw, 15px);
   color: var(--color-text);
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-1);
 }
 
 .confirm-hint {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text-muted);
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-4);
 }
 
 .confirm-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--space-2);
   justify-content: center;
 }
 
@@ -502,7 +502,7 @@ const stats = computed(() => {
   padding: var(--space-2) 20px;
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: var(--ctrl-font-size);
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -517,7 +517,7 @@ const stats = computed(() => {
   background: var(--color-danger);
   color: var(--color-surface);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: var(--ctrl-font-size);
   cursor: pointer;
 }

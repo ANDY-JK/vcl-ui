@@ -107,14 +107,7 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
           v-if="variant === 'button'"
           class="item-action-btn"
           :disabled="disabled"
-          @click.stop="
-            emit('buttonClick', {
-              name: item[titleField],
-              phone: item[phoneField] ?? '',
-              address: item[descriptionField] ?? '',
-              item,
-            })
-          "
+          @click.stop="emit('buttonClick', { name: item[titleField], phone: item[phoneField] ?? '', address: item[descriptionField] ?? '', item })"
         >
           {{ buttonLabel }}
         </button>
@@ -136,10 +129,10 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(6px, 1vw, 8px);
-  padding: clamp(24px, 5vw, 40px) clamp(12px, 2.5vw, 20px);
+  gap: clamp(var(--space-1), 1vw, 8px);
+  padding: clamp(24px, 5vw, 40px) clamp(var(--space-3), 2.5vw, 20px);
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(11px, 1.8vw, 15px);
 }
 .list-loading svg {
   animation: spin 1s linear infinite;
@@ -153,8 +146,8 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
 .list-item {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 1.5vw, 12px);
-  padding: clamp(8px, 1.5vw, 12px) clamp(10px, 2vw, 16px);
+  gap: clamp(var(--space-2), 1.5vw, 12px);
+  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px);
   border-bottom: 1px solid var(--color-border-light);
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -181,21 +174,21 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
   min-width: 0;
 }
 .item-title {
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 15px);
   font-weight: 500;
 }
 .item-desc {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
 
 .item-extras {
   display: flex;
-  gap: clamp(8px, 2vw, 16px);
+  gap: clamp(var(--space-2), 2vw, 16px);
 }
 .item-extra {
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text-muted);
 }
 
@@ -243,7 +236,7 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
 .item-action-btn {
   flex-shrink: 0;
   padding: var(--space-1) clamp(10px, 2vw, 14px);
-  font-size: clamp(11px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.5vw, 15px);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-md);
   background: var(--color-primary);

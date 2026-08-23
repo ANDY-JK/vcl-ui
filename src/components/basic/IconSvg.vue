@@ -3,6 +3,10 @@
 import { defineComponent, computed, h } from 'vue'
 import { icons as lucideIcons } from '@lucide/vue'
 import { Icon } from '@iconify/vue'
+import { ensureSolarIcons } from '@/components/_internal/solar-icons-registry'
+
+// 模块加载时立即注册 Solar 图标到 @iconify/vue 内存缓存，确保离线可用
+ensureSolarIcons()
 
 const sizeMap: Record<string, number> = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 }
 
@@ -36,7 +40,7 @@ export default defineComponent({
       const sz = px.value
       const clr = props.color
 
-      // Solar 提供者 → @iconify/vue
+      // Solar 提供者 → @iconify/vue（数据已预注册到本地缓存，不发起网络请求）
       if (props.provider === 'solar') {
         return h(Icon, {
           icon: toSolarIconName(props.type),
