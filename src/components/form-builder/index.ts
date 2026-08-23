@@ -31,6 +31,7 @@ export type { FieldRegistration } from './fieldRegistry'
 export { contractCollectionSchema } from './presets/contract-collection'
 export { inspectionSchema } from './presets/inspection'
 export { registrationSchema } from './presets/registration'
+export { containerDemoNodes, containerDemoMeta } from './presets/container-demo'
 
 // ── 设计器类型与工具 ──
 export {

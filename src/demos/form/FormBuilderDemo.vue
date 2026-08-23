@@ -9,8 +9,8 @@
  */
 import { ref, computed } from 'vue'
 import { FormDesigner, FormCollect, FormBuilder, toFormSchema } from '@/components/form-builder'
-import type { DesignerField, FormMeta } from '@/components/form-builder'
-import { registrationSchema, inspectionSchema, contractCollectionSchema } from '@/components/form-builder'
+import type { DesignerField, DesignerNode, FormMeta } from '@/components/form-builder'
+import { registrationSchema, inspectionSchema, contractCollectionSchema, containerDemoNodes, containerDemoMeta } from '@/components/form-builder'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
 // ════════════════════════════════════════
@@ -40,11 +40,12 @@ const previewData = ref<Record<string, unknown>>({})
 /** 预览用 Schema（从设计数据转换） */
 const previewSchema = computed(() => toFormSchema(fields.value, meta.value))
 
-// 预置模板列表
+// 预置模板列表（schema 为平铺 FormSchema；nodes 为含嵌套容器的 DesignerNode 树）
 const presets = [
   { key: 'registration', label: '用户登记', icon: 'user', schema: registrationSchema },
   { key: 'inspection', label: '设备巡检', icon: 'clipboard-check', schema: inspectionSchema },
   { key: 'contract', label: '合同收集', icon: 'file-text', schema: contractCollectionSchema },
+  { key: 'container', label: '容器布局', icon: 'layout-template', nodes: containerDemoNodes, meta: containerDemoMeta },
 ] as const
 
 // 当前选中的预置模板
@@ -55,7 +56,15 @@ function loadPreset(key: string): void {
   const preset = presets.find(p => p.key === key)
   if (!preset) return
   activePreset.value = key
-  const s = preset.schema
+
+  // nodes 形态：直接使用含嵌套容器的节点树
+  if ('nodes' in preset && preset.nodes) {
+    fields.value = preset.nodes as DesignerNode[]
+    meta.value = { ...(preset.meta as FormMeta) }
+    return
+  }
+
+  const s = (preset as { schema: typeof registrationSchema }).schema
   // 将 FormSchema 反向映射为 DesignerField[]
   fields.value = s.fields.map((f, i): DesignerField => ({
     id: 'pf' + (i + 1),
