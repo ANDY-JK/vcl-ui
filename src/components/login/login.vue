@@ -18,9 +18,9 @@
               <IconSvg :type="tenantMode ? 'house' : 'layout-dashboard'" size="lg" color="#fff" />
             </slot>
           </div>
-          <h2>{{ brandTitle || (tenantMode ? '租户业务管理平台' : 'SaaS 管理系统') }}</h2>
+          <h2>{{ brandTitle || (tenantMode ? t('login.brandTitleTenant') : t('login.brandTitle')) }}</h2>
           <p>
-            {{ brandSubtitle || (tenantMode ? '由管理员分配账号使用' : '现代化企业级业务管理平台，助力数字化转型') }}
+            {{ brandSubtitle || (tenantMode ? t('login.brandSubtitleTenant') : t('login.brandSubtitle')) }}
           </p>
         </div>
 
@@ -30,18 +30,9 @@
           </li>
         </ul>
         <ul v-else class="features-list">
-          <template v-if="tenantMode">
-            <li>智能数据录入与管理</li>
-            <li>灵活的业务流程协作</li>
-            <li>高效的报表导出</li>
-            <li>实时数据看板监控</li>
-          </template>
-          <template v-else>
-            <li>智能数据分析与可视化</li>
-            <li>灵活的权限与租户管理</li>
-            <li>高效的数据导入导出</li>
-            <li>实时监控与审计日志</li>
-          </template>
+          <li v-for="f in (tenantMode ? tm('login.featuresTenant') : tm('login.featuresSaaS'))" :key="f">
+            {{ f }}
+          </li>
         </ul>
       </div>
 
@@ -49,11 +40,11 @@
       <div class="login-right">
         <div class="login-header">
           <h1>
-            <slot name="welcome-title"> 欢迎回来 </slot>
+            <slot name="welcome-title">{{ t('login.welcomeTitle') }}</slot>
           </h1>
           <p>
             <slot name="subtitle">
-              {{ tenantMode ? '请登录您的工作账号' : '请登录您的账户以继续' }}
+              {{ tenantMode ? t('login.welcomeSubtitleTenant') : t('login.welcomeSubtitle') }}
             </slot>
           </p>
         </div>
@@ -86,14 +77,14 @@
               <span class="checkbox-icon" :class="{ checked: rememberMe }">
                 <IconSvg v-if="rememberMe" type="circle-check" size="sm" />
               </span>
-              <span><slot name="remember-text">记住用户名</slot></span>
+              <span><slot name="remember-text">{{ t('login.rememberUsername') }}</slot></span>
             </label>
             <a
               v-if="showForgotPassword && !tenantMode"
               href="javascript:;"
               class="forgot-password"
               @click="emit('forgot-password')"
-            ><slot name="forgot-text">忘记密码？</slot></a>
+            ><slot name="forgot-text">{{ t('login.forgotPasswordQ') }}</slot></a>
           </div>
 
           <Button
@@ -112,11 +103,11 @@
             <div class="social-login">
               <button type="button" class="social-btn" @click="emit('social-login', 'phone')">
                 <IconSvg type="house" size="md" class="social-icon" />
-                <span class="social-text"><slot name="social-phone-text">手机号</slot></span>
+                <span class="social-text"><slot name="social-phone-text">{{ t('login.socialPhone') }}</slot></span>
               </button>
               <button type="button" class="social-btn" @click="emit('social-login', 'wechat')">
                 <IconSvg type="user" size="md" class="social-icon" />
-                <span class="social-text">微信</span>
+                <span class="social-text">{{ t('login.socialWechat') }}</span>
               </button>
               <button type="button" class="social-btn" @click="emit('social-login', 'sso')">
                 <IconSvg type="key" size="md" class="social-icon" />
@@ -128,11 +119,11 @@
 
         <div class="footer-text">
           <template v-if="tenantMode">
-            <span><slot name="tenant-footer-text">由管理员分配账号</slot></span>
+            <span><slot name="tenant-footer-text">{{ t('login.tenantFooter') }}</slot></span>
           </template>
           <template v-else>
             <template v-if="showRegister">
-              <slot name="register-prompt"> 还没有账户？ </slot><a href="javascript:;" class="register-link" @click="emit('register')"><slot name="register-text">立即注册</slot></a>
+              <slot name="register-prompt">{{ t('login.registerPrompt') }}</slot><a href="javascript:;" class="register-link" @click="emit('register')"><slot name="register-text">{{ t('login.registerNow') }}</slot></a>
             </template>
           </template>
         </div>
@@ -148,8 +139,12 @@ import Button from '@/components/basic/Button.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Toast from '@/components/feedback/Toast.vue'
 import Divider from '@/components/data/Divider.vue'
+import { useT, useTm } from '@/components/_internal/i18n'
 // storageGet/Set/Delete 实际走 localStorage（indexedDB.ts 统一抽象），非 IndexedDB
 import { storageGet, storageSet, storageDelete } from '@/components/storage/indexedDB'
+
+const t = useT()
+const tm = useTm()
 
 // ======================== Props ========================
 
@@ -222,21 +217,23 @@ const externalLoading = computed(() => props.loading)
 /** 内部提交中状态：点击后立即反馈，防重复提交 */
 const internalLoading = ref(false)
 
-const usernameLabel = '用户名'
-const passwordLabel = '密码'
-const submitText = '登 录'
-const socialDividerText = '其他登录方式'
+const usernameLabel = t('login.username')
+const passwordLabel = t('login.password')
+const submitText = t('login.submitBtn')
+const socialDividerText = t('login.socialDivider')
 
-const usernameHint = computed(() => (form.username.length > 0 && form.username.length < 3 ? '用户名至少 3 个字符' : ''))
+const usernameHint = computed(() =>
+  form.username.length > 0 && form.username.length < 3 ? t('login.usernameHint') : '',
+)
 
 const usernameRules = [
-  (v: string) => (v.trim() ? undefined : '请输入用户名'),
-  (v: string) => (v.length >= 3 ? undefined : '用户名至少 3 个字符'),
+  (v: string) => (v.trim() ? undefined : t('login.usernameRequired')),
+  (v: string) => (v.length >= 3 ? undefined : t('login.usernameHint')),
 ]
 
 const passwordRules = [
-  (v: string) => (v ? undefined : '请输入密码'),
-  (v: string) => (v.length >= 6 ? undefined : '密码至少 6 个字符'),
+  (v: string) => (v ? undefined : t('login.passwordRequired')),
+  (v: string) => (v.length >= 6 ? undefined : t('login.passwordHint')),
 ]
 
 // ======================== 锁定逻辑（内置，依赖 indexedDB 存储） ========================
@@ -266,7 +263,7 @@ function recordFailedAttempt(serverMsg?: string) {
     lockUntil.value = until
     startLockCountdown()
   } else {
-    internalError.value = serverMsg || `用户名或密码错误 (${attempts}/${props.maxAttempts})`
+    internalError.value = serverMsg || t('login.attemptsLeft', { attempts, max: props.maxAttempts })
     errorType.value = 'error'
   }
 }
@@ -286,7 +283,7 @@ function startLockCountdown() {
     } else {
       const min = Math.floor(remaining / 60000)
       const sec = Math.floor((remaining % 60000) / 1000)
-      internalError.value = `账户已锁定，请 ${min}:${String(sec).padStart(2, '0')} 后重试`
+      internalError.value = t('login.lockedCountdown', { time: `${min}:${String(sec).padStart(2, '0')}` })
       errorType.value = 'warning'
     }
   }, 1000)
@@ -326,7 +323,7 @@ const handleSubmit = () => {
   if (lockUntil.value > Date.now()) return
 
   if (!form.username || form.username.length < 3 || !form.password || form.password.length < 6) {
-    internalError.value = '请输入正确的用户名和密码'
+    internalError.value = t('login.invalidCredentialsFull')
     errorType.value = 'warning'
     return
   }

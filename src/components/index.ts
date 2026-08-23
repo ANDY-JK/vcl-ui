@@ -185,5 +185,5 @@ export { useTheme } from './_internal/useTheme'
 export type { ThemeMode } from './_internal/useTheme'
 
 // 国际化
-export { i18n, setLocale, getLocale, useT, useI18n } from './_internal/i18n'
+export { i18n, setLocale, getLocale, useT, useTm, useI18n } from './_internal/i18n'
 export type { Locale } from './_internal/i18n'

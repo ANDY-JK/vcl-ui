@@ -57,5 +57,13 @@ export function useT() {
   return i18n.global.t
 }
 
+/**
+ * 安全的原始 message 获取函数 — 用于数组/对象类型的 message（如特性列表）
+ * t() 会把数组插值成字符串，tm() 返回原始值。
+ */
+export function useTm() {
+  return i18n.global.tm
+}
+
 /** 原始 useI18n — 供需要完整 i18n 上下文（如 scope、locale ref）的场景使用 */
 export { useI18n } from 'vue-i18n'
