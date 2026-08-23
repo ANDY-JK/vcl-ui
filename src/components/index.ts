@@ -177,6 +177,9 @@ export type {
   StoreUploadState,
   SupabaseConfig,
 } from './storage/contract-storage'
+// 统一存储门面 — 声明意图、自动路由 localStorage / IndexedDB / 云端
+export { storage, setCloudAdapter } from './storage/unified'
+export type { StorageWriteOptions, CloudKVAdapter } from './storage/unified'
 // 类型
 export type { CascaderOption } from './shared/types'
 
