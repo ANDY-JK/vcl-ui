@@ -12,6 +12,8 @@
  * - clearAll 不再静默吞错，全部失败时报错
  */
 
+import { dbPut, dbGetAll, dbClear } from './indexedDB'
+
 export interface StoreFile {
   name: string
   /** 图片本体：本地落盘为 Blob（毫秒级，相机返回重建页面前已存好）；云端引用/兼容旧数据为 string（data: 或 http(s) URL） */
@@ -34,23 +36,15 @@ export interface StorageBackend {
   clearAll(): Promise<void>
 }
 
-// ===== 本地 IndexedDB =====
+// ===== 本地 IndexedDB（复用统一存储层 indexedDB.ts，不再自开引擎） =====
 
-const DB_NAME = 'ContractCollectionDB'
-const DB_VERSION = 2
 const STORE_NAME = 'uploads'
 
-function openLocalDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION)
-    req.onerror = () => reject(req.error)
-    req.onsuccess = () => resolve(req.result)
-    req.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result
-      if (db.objectStoreNames.contains(STORE_NAME)) db.deleteObjectStore(STORE_NAME)
-      db.createObjectStore(STORE_NAME, { keyPath: '_appleId' })
-    }
-  })
+/** 本地落盘记录：appleId 冗余存于 value，dbGetAll 反查归属时无需依赖 store key */
+interface LocalRecord {
+  contract?: StoreFile
+  ts: number
+  appleId: number
 }
 
 export class IndexedDBBackend implements StorageBackend {
@@ -59,15 +53,9 @@ export class IndexedDBBackend implements StorageBackend {
   async loadAll(): Promise<Map<number, StoreUploadState>> {
     const map = new Map<number, StoreUploadState>()
     try {
-      const db = await openLocalDB()
-      const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).getAll()
-      const rows = await new Promise<StoreUploadState[]>((resolve, reject) => {
-        req.onsuccess = () => resolve(req.result as StoreUploadState[])
-        req.onerror = () => reject(req.error)
-      })
+      const rows = await dbGetAll<LocalRecord>(STORE_NAME)
       for (const row of rows) {
-        const id = Number((row as unknown as Record<string, unknown>)._appleId)
-        if (id) map.set(id, { contract: row.contract, ts: row.ts })
+        if (row && row.appleId) map.set(row.appleId, { contract: row.contract, ts: row.ts })
       }
     } catch (e) {
       console.warn('[contract-storage] IndexedDB 加载失败:', e)
@@ -76,24 +64,20 @@ export class IndexedDBBackend implements StorageBackend {
   }
 
   async saveRecord(appleId: number, state: StoreUploadState): Promise<void> {
-    const db = await openLocalDB()
-    const tx = db.transaction(STORE_NAME, 'readwrite')
-    // toRaw 解包由调用方保证，这里直接存普通对象
-    tx.objectStore(STORE_NAME).put({ contract: state.contract, ts: state.ts, _appleId: appleId })
-    await new Promise<void>((resolve) => {
-      tx.oncomplete = () => resolve()
-      tx.onerror = () => resolve() // 失败不阻塞 UI
-    })
+    // 复用统一层 dbPut；失败不阻塞 UI（保持原语义）
+    try {
+      await dbPut(STORE_NAME, String(appleId), { contract: state.contract, ts: state.ts, appleId })
+    } catch (e) {
+      console.warn('[contract-storage] IndexedDB 保存失败:', appleId, e)
+    }
   }
 
   async clearAll(): Promise<void> {
-    const db = await openLocalDB()
-    const tx = db.transaction(STORE_NAME, 'readwrite')
-    tx.objectStore(STORE_NAME).clear()
-    await new Promise<void>((resolve) => {
-      tx.oncomplete = () => resolve()
-      tx.onerror = () => resolve()
-    })
+    try {
+      await dbClear(STORE_NAME)
+    } catch (e) {
+      console.warn('[contract-storage] IndexedDB 清空失败:', e)
+    }
   }
 }
 
