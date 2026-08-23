@@ -4,7 +4,7 @@
 //  合并：CheckboxGroup + RadioGroup + Switch + Rate + Slider
 //  type 取值：radio | checkbox | switch | rate | slider
 // ════════════════════════════════════════════════
-import { ref, computed } from 'vue'
+import { ref, computed, useId } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { clamp, alignStep } from './utils/slider-utils'
 import type { Option } from '@/components/shared/types'
@@ -66,6 +66,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 type GroupValue = string | number | boolean | (string | number | boolean)[] | [number, number]
+
+/** radio 分组唯一 name（避免多个 Group 实例的 radio 互相干扰） */
+const groupId = useId()
 
 const emit = defineEmits<{
   'update:modelValue': [v: GroupValue]
@@ -309,8 +312,16 @@ onUnmounted(() => {
       :key="String(opt.value)"
       class="choice-item"
       :class="{ disabled: opt.disabled || disabled }"
-      @click="opt.disabled || disabled ? null : onClick(opt)"
     >
+      <input
+        type="radio"
+        class="choice-input sr-only"
+        :name="`radio-${groupId}`"
+        :value="String(opt.value)"
+        :checked="isChecked(opt.value)"
+        :disabled="opt.disabled || disabled"
+        @change="onClick(opt)"
+      />
       <span class="choice-box is-radio" :class="{ checked: isChecked(opt.value) }">
         <IconSvg v-if="isChecked(opt.value)" type="circle-check-big" size="sm" color="var(--color-primary)" />
       </span>
@@ -331,8 +342,15 @@ onUnmounted(() => {
       :key="String(opt.value)"
       class="choice-item"
       :class="{ disabled: opt.disabled || disabled }"
-      @click="onClick(opt)"
     >
+      <input
+        type="checkbox"
+        class="choice-input sr-only"
+        :value="String(opt.value)"
+        :checked="isChecked(opt.value)"
+        :disabled="opt.disabled || disabled"
+        @change="onClick(opt)"
+      />
       <span class="choice-box is-checkbox" :class="{ checked: isChecked(opt.value) }">
         <IconSvg v-if="isChecked(opt.value)" type="circle-check-big" size="sm" color="white" />
       </span>
@@ -419,6 +437,18 @@ onUnmounted(() => {
 
 <style scoped>
 /* ===== radio / checkbox ===== */
+/* 真实 input 视觉隐藏但保留可访问性（label 包裹，聚焦可见） */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .group-radio,
 .group-checkbox {
   display: flex;
