@@ -142,13 +142,18 @@ const linkageHelpText = computed(() => {
       </div>
 
       <!-- 属性分页 tab -->
-      <div class="ldp-prop-tabs">
+      <div class="ldp-prop-tabs" role="tablist">
         <div
           v-for="tab in availableTabs"
           :key="tab.id"
           class="ldp-prop-tab"
           :class="{ active: activeTab === tab.id }"
+          role="tab"
+          :aria-selected="activeTab === tab.id"
+          tabindex="0"
           @click="activeTab = tab.id"
+          @keydown.enter.prevent="activeTab = tab.id"
+          @keydown.space.prevent="activeTab = tab.id"
         >{{ tab.label }}</div>
       </div>
 

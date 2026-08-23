@@ -327,6 +327,8 @@ export default {
     noExportableFields: 'No exportable fields',
     clearFieldsTitle: 'Clear Fields',
     clearFieldsMsg: 'Clear all fields? This cannot be undone.',
+    removeContainerTitle: 'Remove Container',
+    removeContainerMsg: 'Removing "{label}" will also delete all fields inside it. Continue?',
     clearRecordsTitle: 'Clear Records',
     collected: 'Collected',
     records: 'records',

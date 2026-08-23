@@ -103,11 +103,16 @@ const redoStack = ref<DesignerNode[][]>([])
 const canUndo = computed(() => undoStack.value.length > 0)
 const canRedo = computed(() => redoStack.value.length > 0)
 
+/** 当前正在做「属性编辑」的字段 id（用于把连续属性编辑合并为一个撤销单元） */
+let editingPropId: string | null = null
+
 /** 记录快照（每次操作前调用） */
 function snapshot(): void {
   undoStack.value.push(JSON.parse(JSON.stringify(currentNodes.value)))
   if (undoStack.value.length > 50) undoStack.value.shift()
   redoStack.value = []
+  // 结构操作打断了属性编辑的连续性，重置跟踪，下次属性编辑重新快照
+  editingPropId = null
 }
 
 function undo(): void {
@@ -142,9 +147,11 @@ function insertAt(type: DesignerNodeType, index: number): void {
   selectedId.value = f.id
 }
 
-function insertIntoContainer(type: DesignerNodeType, containerId: string, index: number): void {
+function insertIntoContainer(type: DesignerNodeType, containerId: string, index: number, slot?: number): void {
   snapshot()
   const f = createField(type, flattenNodes(currentNodes.value).length + 1)
+  // tabs/collapse/steps 容器：记录字段所在槽位（第几个 tab/折叠项/步骤）
+  if (slot !== undefined && slot >= 0) f.containerSlot = slot
   const updated = insertChildNode(currentNodes.value, containerId, f, index)
   if (updated !== currentNodes.value) {
     patchNodes(updated)
@@ -152,10 +159,40 @@ function insertIntoContainer(type: DesignerNodeType, containerId: string, index:
   }
 }
 
+/** 把字段移动到 tabs/collapse/steps 容器的指定槽位 */
+function assignSlot(sourceId: string, slot: number): void {
+  snapshot()
+  const updated = updateNodeInTree(currentNodes.value, sourceId, { containerSlot: slot })
+  patchNodes(updated)
+}
+
+/** 待删除节点 id（容器带子节点时需确认） */
+const pendingRemoveId = ref<string | null>(null)
+const pendingRemoveLabel = ref('')
+
 function removeNode(id: string): void {
+  const node = findNode(currentNodes.value, id)
+  if (!node) return
+  // 容器节点带子节点时，删除会连带删掉子字段，弹确认
+  if (isContainerNode(node) && node.children?.length) {
+    pendingRemoveId.value = id
+    pendingRemoveLabel.value = node.label
+    return
+  }
+  doRemoveNode(id)
+}
+
+function doRemoveNode(id: string): void {
   snapshot()
   patchNodes(removeNodeFromTree(currentNodes.value, id))
   if (selectedId.value === id) selectedId.value = null
+}
+
+function onConfirmRemove(): void {
+  const id = pendingRemoveId.value
+  pendingRemoveId.value = null
+  pendingRemoveLabel.value = ''
+  if (id) doRemoveNode(id)
 }
 
 function duplicateNode(id: string): void {
@@ -218,7 +255,11 @@ function sortNode(sourceId: string, targetId: string, position: 'before' | 'afte
 }
 
 function updateNode(id: string, patchObj: Partial<DesignerNode>): void {
-  // 属性编辑不需要撤销快照（太频繁），只在结构操作时快照
+  // 属性编辑进撤销栈：对同一字段的连续编辑合并为一个撤销单元（首次编辑时快照一次）
+  if (editingPropId !== id) {
+    snapshot()
+    editingPropId = id
+  }
   patchNodes(updateNodeInTree(currentNodes.value, id, patchObj))
 }
 
@@ -642,6 +683,7 @@ const selectedPath = computed(() => {
           @insert-at="insertAt"
           @insert-into-container="insertIntoContainer"
           @sort-node="sortNode"
+          @assign-slot="assignSlot"
           :breadcrumb-path="selectedPath"
         />
       </div>
@@ -728,6 +770,17 @@ const selectedPath = computed(() => {
     variant="danger"
     @update:visible="clearAllVisible = $event"
     @confirm="onConfirmClearAll"
+  />
+
+  <!-- 删除容器确认弹窗 -->
+  <ConfirmModal
+    :visible="!!pendingRemoveId"
+    :title="t('formBuilder.removeContainerTitle')"
+    :message="t('formBuilder.removeContainerMsg', { label: pendingRemoveLabel })"
+    confirm-text="删除"
+    variant="warning"
+    @update:visible="pendingRemoveId = null"
+    @confirm="onConfirmRemove"
   />
 </template>
 

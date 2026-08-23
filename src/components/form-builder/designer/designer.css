@@ -1515,6 +1515,28 @@
   min-height: 80px;
 }
 
+/* ── tabs/collapse/steps 容器：槽位体 ── */
+.ldc-slot-body {
+  margin-bottom: 8px;
+  padding: 8px;
+  border: 1px dashed transparent;
+  border-radius: var(--radius-sm, 6px);
+}
+.ldc-slot-body:hover {
+  border-color: var(--color-border, #e5e7eb);
+}
+.ldc-slot-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+.ldc-collapse-list,
+.ldc-steps-list {
+  padding: 12px;
+}
+
 /* ── grid 容器 ── */
 .ldc-grid-row {
   display: flex;
