@@ -81,7 +81,8 @@
           />
 
           <div class="form-options">
-            <label class="remember-me" @click="rememberMe = !rememberMe">
+            <label class="remember-me">
+              <input v-model="rememberMe" type="checkbox" class="remember-checkbox" />
               <span class="checkbox-icon" :class="{ checked: rememberMe }">
                 <IconSvg v-if="rememberMe" type="circle-check" size="sm" />
               </span>
@@ -109,18 +110,18 @@
             <Divider :text="socialDividerText" />
 
             <div class="social-login">
-              <div class="social-btn" title="手机号登录" @click="emit('social-login', 'phone')">
+              <button type="button" class="social-btn" @click="emit('social-login', 'phone')">
                 <IconSvg type="house" size="md" class="social-icon" />
                 <span class="social-text"><slot name="social-phone-text">手机号</slot></span>
-              </div>
-              <div class="social-btn" title="微信扫码登录" @click="emit('social-login', 'wechat')">
+              </button>
+              <button type="button" class="social-btn" @click="emit('social-login', 'wechat')">
                 <IconSvg type="user" size="md" class="social-icon" />
                 <span class="social-text">微信</span>
-              </div>
-              <div class="social-btn" title="企业SSO登录" @click="emit('social-login', 'sso')">
+              </button>
+              <button type="button" class="social-btn" @click="emit('social-login', 'sso')">
                 <IconSvg type="key" size="md" class="social-icon" />
                 <span class="social-text">SSO</span>
-              </div>
+              </button>
             </div>
           </template>
         </div>
@@ -561,6 +562,18 @@ defineExpose({
   color: var(--color-text-secondary);
   user-select: none;
 }
+/* 真实 checkbox 视觉隐藏但保留键盘焦点与读屏语义 */
+.remember-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .checkbox-icon {
   width: 16px;
   height: 16px;
@@ -603,6 +616,7 @@ defineExpose({
   cursor: pointer;
   transition: all var(--transition-fast);
   user-select: none;
+  font-family: inherit;
 }
 .social-btn:hover {
   border-color: var(--color-primary);
