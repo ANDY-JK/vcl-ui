@@ -369,6 +369,8 @@ export default {
     inputContent: '输入内容...',
     eventTip: '「{field}」值变化',
     eventNoApi: '未配置 API 地址',
+    eventApiDone: '「{field}」接口调用成功',
+    eventApiFail: '「{field}」接口调用失败：{err}',
     submitOnce: '该表单仅可提交一次',
   },
 }

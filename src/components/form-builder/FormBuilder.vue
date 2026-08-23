@@ -425,8 +425,24 @@ function handleFieldChange(field: FormField, trigger: 'change' | 'blur'): void {
       break
     }
     case 'callApi': {
-      // 无 URL 配置时给出可区分的提示，避免静默失败
-      toastRef.value?.show(t('formBuilder.eventNoApi'), 'warning', 2000)
+      const url = evt.apiUrl
+      if (!url) {
+        toastRef.value?.show(t('formBuilder.eventNoApi'), 'warning', 2000)
+        break
+      }
+      // 后台调用接口，不阻塞交互；结果作为提示反馈
+      const value = formData.value[field.key]
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field: field.key, value }),
+      })
+        .then((resp) => {
+          if (!resp.ok) throw new Error('HTTP ' + resp.status)
+          return resp.json().catch(() => ({}))
+        })
+        .then(() => toastRef.value?.show(t('formBuilder.eventApiDone', { field: field.label }), 'success', 1500))
+        .catch((err) => toastRef.value?.show(t('formBuilder.eventApiFail', { field: field.label, err: String(err?.message ?? err) }), 'error', 2500))
       break
     }
     case 'linkField': {

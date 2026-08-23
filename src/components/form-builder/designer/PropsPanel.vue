@@ -799,6 +799,15 @@ const linkageHelpText = computed(() => {
                 @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: true, action: node.eventConfig?.onChange?.action, targetField: $event === null ? '' : String($event ?? '') } } })"
               />
             </div>
+            <!-- callApi 需要接口地址 -->
+            <div v-if="node.eventConfig?.onChange?.action === 'callApi'" class="ldp-prop" style="padding: 0; border: none; margin-top: 8px;">
+              <label>接口地址</label>
+              <Input
+                :model-value="node.eventConfig?.onChange?.apiUrl ?? ''"
+                placeholder="https://api.example.com/xxx"
+                @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: true, action: 'callApi', apiUrl: $event === null ? '' : String($event ?? '') } } })"
+              />
+            </div>
           </div>
         </div>
 

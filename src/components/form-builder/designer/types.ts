@@ -216,6 +216,8 @@ export interface DesignerEventConfig {
     enabled: boolean
     action?: string
     targetField?: string
+    /** callApi 动作的接口地址 */
+    apiUrl?: string
   }
   /** 获得焦点事件 */
   onFocus?: {
@@ -864,7 +866,11 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
     if (evt?.onChange?.enabled && evt.onChange.action) {
       base.events = {
         ...base.events,
-        onChange: { action: evt.onChange.action, targetField: evt.onChange.targetField },
+        onChange: {
+          action: evt.onChange.action,
+          targetField: evt.onChange.targetField,
+          apiUrl: evt.onChange.apiUrl,
+        },
       }
     }
     if (evt?.onBlur?.enabled && evt.onBlur.action) {

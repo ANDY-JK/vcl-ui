@@ -366,6 +366,8 @@ export default {
     inputContent: 'Enter content...',
     eventTip: '"{field}" changed',
     eventNoApi: 'No API URL configured',
+    eventApiDone: '"{field}" API call succeeded',
+    eventApiFail: '"{field}" API call failed: {err}',
     submitOnce: 'This form can only be submitted once',
   },
 }

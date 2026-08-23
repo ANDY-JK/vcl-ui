@@ -170,6 +170,8 @@ export interface FieldEventAction {
   action?: string
   /** 目标字段 key（setValue / toggleVisible 用） */
   targetField?: string
+  /** callApi 动作的接口地址 */
+  apiUrl?: string
 }
 
 /** 字段运行时事件配置 */
