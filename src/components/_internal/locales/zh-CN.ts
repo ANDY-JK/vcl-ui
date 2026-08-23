@@ -372,5 +372,7 @@ export default {
     eventApiDone: '「{field}」接口调用成功',
     eventApiFail: '「{field}」接口调用失败：{err}',
     submitOnce: '该表单仅可提交一次',
+    copied: '已复制，Ctrl+V 粘贴',
+    nothingToPaste: '剪贴板为空，请先复制节点',
   },
 }

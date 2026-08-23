@@ -199,11 +199,7 @@ function duplicateNode(id: string): void {
   snapshot()
   const node = findNode(currentNodes.value, id)
   if (!node) return
-  const copy: DesignerNode = {
-    ...JSON.parse(JSON.stringify(node)),
-    id: 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    key: node.key ? node.key + '_copy' : undefined,
-  }
+  const copy = cloneNode(node)
   // 找到原节点位置，插入到后面
   const flat = flattenNodes(currentNodes.value)
   const idx = flat.findIndex(f => f.id === id)
@@ -211,6 +207,69 @@ function duplicateNode(id: string): void {
     patchNodes(insertNode(currentNodes.value, copy, idx + 1))
   } else {
     patchNodes([...currentNodes.value, copy])
+  }
+  selectedId.value = copy.id
+}
+
+// ════════════════════════════════════════
+// 复制/粘贴（Ctrl+C / Ctrl+V 跨会话剪贴板）
+// ════════════════════════════════════════
+
+/** 被复制的节点（深拷贝，避免后续编辑污染剪贴板内容） */
+let clipboardNode: DesignerNode | null = null
+
+/** 深拷贝节点并生成新 id（key 加 _copy 后缀避免重复） */
+function cloneNode(node: DesignerNode): DesignerNode {
+  const copy: DesignerNode = JSON.parse(JSON.stringify(node))
+  copy.id = 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  if (node.key) copy.key = node.key + '_copy'
+  // 递归重生成子节点 id，避免与新节点 id 冲突
+  if (copy.children?.length) {
+    const rekey = (list: DesignerNode[]): void => {
+      for (const child of list) {
+        child.id = 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+        if (child.children?.length) rekey(child.children)
+      }
+    }
+    rekey(copy.children)
+  }
+  return copy
+}
+
+/** 复制选中节点到剪贴板 */
+function copyNode(id: string): void {
+  const node = findNode(currentNodes.value, id)
+  if (!node) return
+  clipboardNode = JSON.parse(JSON.stringify(node))
+  showTip(t('formBuilder.copied'))
+}
+
+/** 粘贴剪贴板节点到选中节点之后（同父级） */
+function pasteNode(id: string): void {
+  if (!clipboardNode) {
+    showTip(t('formBuilder.nothingToPaste'))
+    return
+  }
+  snapshot()
+  const copy = cloneNode(clipboardNode)
+  // 找到选中节点的父级和索引，插入到其后
+  const loc = findParent(currentNodes.value, id)
+  if (!loc) {
+    patchNodes([...currentNodes.value, copy])
+  } else {
+    const siblings = [...loc.parent]
+    siblings.splice(loc.index + 1, 0, copy)
+    if (loc.parent === currentNodes.value) {
+      patchNodes(siblings)
+    } else {
+      const rebuild = (list: DesignerNode[]): DesignerNode[] =>
+        list.map((n) => {
+          if (n.children === loc.parent) return { ...n, children: siblings }
+          if (n.children?.length) return { ...n, children: rebuild(n.children) }
+          return n
+        })
+      patchNodes(rebuild(currentNodes.value))
+    }
   }
   selectedId.value = copy.id
 }
@@ -291,6 +350,12 @@ function onCanvasKeydown(e: KeyboardEvent): void {
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
     e.preventDefault()
     duplicateNode(id)
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+    e.preventDefault()
+    copyNode(id)
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+    e.preventDefault()
+    pasteNode(id)
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
     e.preventDefault()
     undo()

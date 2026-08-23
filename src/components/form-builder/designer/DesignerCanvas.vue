@@ -548,6 +548,8 @@ const deviceClass = computed(() => `device-${props.device}`)
             class="ldc-card"
             :class="{ selected: node.id === selectedId, dragging: sortDragId === node.id }"
             draggable="true"
+            role="listitem"
+            :aria-label="`字段 ${node.label}（可拖拽排序）`"
             @click="emit('select', node.id)"
             @dragstart="onNodeDragStart($event, node)"
             @dragover="onNodeDragOver($event, node)"

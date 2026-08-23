@@ -369,5 +369,7 @@ export default {
     eventApiDone: '"{field}" API call succeeded',
     eventApiFail: '"{field}" API call failed: {err}',
     submitOnce: 'This form can only be submitted once',
+    copied: 'Copied. Press Ctrl+V to paste',
+    nothingToPaste: 'Clipboard is empty. Copy a node first',
   },
 }
