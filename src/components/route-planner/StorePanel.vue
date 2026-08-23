@@ -4,6 +4,9 @@
  */
 import { ref, computed } from 'vue'
 import type { Store } from '@/components/route-planner/types'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = defineProps<{
   stores: Store[]
@@ -54,7 +57,7 @@ const filteredStores = computed(() => {
 const grouped = computed(() => {
   const map = new Map<string, Store[]>()
   for (const s of filteredStores.value) {
-    const key = s.city || '未分组'
+    const key = s.city || t('routePlanner.ungrouped')
     if (!map.has(key)) map.set(key, [])
     map.get(key)!.push(s)
   }
@@ -65,11 +68,11 @@ const grouped = computed(() => {
 const confirmTarget = ref<{ id?: string; name: string; city?: string } | null>(null)
 
 function requestDelete(store: Store): void {
-  confirmTarget.value = { id: store.id, name: store.name || store.address || '未知门店' }
+  confirmTarget.value = { id: store.id, name: store.name || store.address || t('routePlanner.unknownStore') }
 }
 
 function requestDeleteCity(city: string, count: number): void {
-  confirmTarget.value = { city, name: `${city}（${count}家门店）` }
+  confirmTarget.value = { city, name: t('routePlanner.cityStoresCount', { city, count }) }
 }
 
 function confirmDelete(): void {
@@ -89,11 +92,11 @@ function cancelDelete(): void {
 // ── 坐标来源标签 ──
 function sourceLabel(source: string): string {
   const map: Record<string, string> = {
-    original: '🔵 已有坐标',
-    address_geocode: '🟢 地址解析',
-    township_geocode: '🟡 区域定位',
-    manual: '🔵 手动填写',
-    none: '⚪ 无坐标',
+    original: t('routePlanner.sourceOriginal'),
+    address_geocode: t('routePlanner.sourceGeocode'),
+    township_geocode: t('routePlanner.sourceTownship'),
+    manual: t('routePlanner.sourceManual'),
+    none: t('routePlanner.sourceNone'),
   }
   return map[source] || source
 }
@@ -111,19 +114,19 @@ const stats = computed(() => {
   <div class="store-panel">
     <!-- 操作栏 -->
     <div class="panel-actions">
-      <button class="btn-add" @click="emit('add')">➕ 添加门店</button>
+      <button class="btn-add" @click="emit('add')">{{ t('routePlanner.addStoreBtn') }}</button>
       <div class="stats">
-        <span>共 {{ stats.total }}</span>
-        <span>已定位 {{ stats.withCoord }}</span>
-        <span v-if="stats.skipped" class="skip-count">跳过 {{ stats.skipped }}</span>
+        <span>{{ t('routePlanner.totalCount', { count: stats.total }) }}</span>
+        <span>{{ t('routePlanner.withCoord', { count: stats.withCoord }) }}</span>
+        <span v-if="stats.skipped" class="skip-count">{{ t('routePlanner.skipped', { count: stats.skipped }) }}</span>
       </div>
     </div>
 
     <!-- 搜索框 -->
     <div class="search-bar">
       <span class="search-icon">🔍</span>
-      <input v-model="searchQuery" type="text" placeholder="搜索门店名、城市、地址..." class="search-input" />
-      <button v-if="searchQuery" class="search-clear" title="清除搜索" @click="searchQuery = ''">✕</button>
+      <input v-model="searchQuery" type="text" :placeholder="t('routePlanner.searchPlaceholder')" class="search-input" />
+      <button v-if="searchQuery" class="search-clear" :title="t('routePlanner.clearSearch')" @click="searchQuery = ''">✕</button>
     </div>
 
     <!-- 分组列表 -->
@@ -140,12 +143,12 @@ const stats = computed(() => {
         >
           <span class="group-arrow">{{ isExpanded(city) ? '▼' : '▶' }}</span>
           <span class="group-name">{{ city }}</span>
-          <span class="group-count">{{ cityStores.length }}家</span>
+          <span class="group-count">{{ t('routePlanner.storeCountUnit', { count: cityStores.length }) }}</span>
           <div class="group-batch" @click.stop>
-            <button class="btn-batch" title="跳过/取消跳过此城市所有门店" @click="emit('skipCity', city)">⏭️</button>
+            <button class="btn-batch" :title="t('routePlanner.skipCityTitle')" @click="emit('skipCity', city)">⏭️</button>
             <button
               class="btn-batch btn-batch-danger"
-              title="删除此城市所有门店"
+              :title="t('routePlanner.deleteCityTitle')"
               @click="requestDeleteCity(city, cityStores.length)"
             >
               🗑️
@@ -169,15 +172,15 @@ const stats = computed(() => {
               </div>
             </div>
             <div class="store-actions">
-              <button class="btn-icon" title="编辑" @click="emit('edit', store)">✏️</button>
+              <button class="btn-icon" :title="t('routePlanner.editTitle')" @click="emit('edit', store)">✏️</button>
               <button
                 class="btn-icon"
-                :title="store.skipped ? '取消跳过' : '跳过此门店'"
+                :title="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
                 @click="emit('toggleSkip', store.id)"
               >
                 {{ store.skipped ? '↩️' : '⏭️' }}
               </button>
-              <button class="btn-icon btn-danger" title="删除" @click="requestDelete(store)">🗑️</button>
+              <button class="btn-icon btn-danger" :title="t('routePlanner.deleteTitle')" @click="requestDelete(store)">🗑️</button>
             </div>
           </div>
         </div>
@@ -185,28 +188,28 @@ const stats = computed(() => {
 
       <!-- 搜索无结果 -->
       <div v-if="searchQuery && grouped.length === 0" class="empty-state">
-        <p>🔍 未找到匹配的门店</p>
-        <p class="hint">试试其他关键词，或「添加门店」</p>
+        <p>{{ t('routePlanner.noMatch') }}</p>
+        <p class="hint">{{ t('routePlanner.noMatchHint') }}</p>
       </div>
 
       <!-- 空状态 -->
       <div v-if="stores.length === 0" class="empty-state">
-        <p>📋 暂无门店数据</p>
-        <p class="hint">导入 Excel 或手动添加门店开始规划路线</p>
+        <p>{{ t('routePlanner.noData') }}</p>
+        <p class="hint">{{ t('routePlanner.noDataHint') }}</p>
       </div>
     </div>
 
     <!-- 删除确认弹窗 -->
     <Teleport to="body">
       <div v-if="confirmTarget" class="confirm-overlay" @click.self="cancelDelete">
-        <div class="confirm-box" role="alertdialog" aria-modal="true" aria-label="删除确认">
-          <p class="confirm-text">确定删除「{{ confirmTarget.name }}」？</p>
+        <div class="confirm-box" role="alertdialog" aria-modal="true" :aria-label="t('routePlanner.deleteConfirmTitle')">
+          <p class="confirm-text">{{ t('routePlanner.deleteConfirm', { name: confirmTarget.name }) }}</p>
           <p class="confirm-hint">
-            {{ confirmTarget.city ? '将删除该城市所有门店' : '删除后不可恢复' }}
+            {{ confirmTarget.city ? t('routePlanner.deleteCityHint') : t('routePlanner.deleteStoreHint') }}
           </p>
           <div class="confirm-actions">
-            <button class="btn-cancel" @click="cancelDelete">取消</button>
-            <button class="btn-confirm-delete" @click="confirmDelete">确认删除</button>
+            <button class="btn-cancel" @click="cancelDelete">{{ t('routePlanner.cancel') }}</button>
+            <button class="btn-confirm-delete" @click="confirmDelete">{{ t('routePlanner.confirmDelete') }}</button>
           </div>
         </div>
       </div>

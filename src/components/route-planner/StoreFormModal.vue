@@ -6,6 +6,9 @@ import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import type { Store } from '@/components/route-planner/types'
 import { useEscClose } from '@/components/_internal/useEscClose'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = defineProps<{
   visible: boolean
@@ -105,81 +108,81 @@ function handleSubmit(): void {
 <template>
   <Teleport to="body">
     <div v-if="visible" class="modal-overlay" @click.self="emit('close')">
-      <div ref="modalBoxRef" class="modal-box" role="dialog" aria-modal="true" :aria-label="isEdit ? '编辑门店' : '添加门店'">
+      <div ref="modalBoxRef" class="modal-box" role="dialog" aria-modal="true" :aria-label="isEdit ? t('routePlanner.editStore') : t('routePlanner.addStoreTitle')">
         <div class="modal-header">
-          <h3>{{ isEdit ? '编辑门店' : '添加门店' }}</h3>
-          <button class="btn-close" aria-label="关闭" @click="emit('close')">✕</button>
+          <h3>{{ isEdit ? t('routePlanner.editStore') : t('routePlanner.addStoreTitle') }}</h3>
+          <button class="btn-close" :aria-label="t('routePlanner.cancel')" @click="emit('close')">✕</button>
         </div>
 
         <form class="modal-body" @submit.prevent="handleSubmit">
           <div class="form-row">
-            <label><span class="required">*</span> 门店名</label>
+            <label><span class="required">*</span> {{ t('routePlanner.storeNameLabel') }}</label>
             <input
               v-model="form.name"
               type="text"
-              placeholder="如：中国移动xx营业厅"
+              :placeholder="t('routePlanner.storeNamePlaceholder')"
               :class="{ 'input-error': nameError && !form.name?.trim() }"
             />
           </div>
 
           <div class="form-row">
-            <label><span class="required">*</span> 详细地址</label>
+            <label><span class="required">*</span> {{ t('routePlanner.addressLabel') }}</label>
             <input
               v-model="form.address"
               type="text"
-              placeholder="如：xx市xx区xx路xx号"
+              :placeholder="t('routePlanner.addressPlaceholder')"
               :class="{ 'input-error': nameError && !form.address?.trim() }"
             />
           </div>
-          <p v-if="nameError" class="form-error">⚠️ 门店名和地址至少填写一项</p>
+          <p v-if="nameError" class="form-error">{{ t('routePlanner.nameAddressRequired') }}</p>
 
           <div class="form-row form-grid-4">
             <div>
-              <label>省</label>
-              <input v-model="form.province" type="text" placeholder="湖南省" />
+              <label>{{ t('routePlanner.province') }}</label>
+              <input v-model="form.province" type="text" :placeholder="t('routePlanner.provincePlaceholder')" />
             </div>
             <div>
-              <label>市</label>
-              <input v-model="form.city" type="text" placeholder="长沙市" />
+              <label>{{ t('routePlanner.city') }}</label>
+              <input v-model="form.city" type="text" :placeholder="t('routePlanner.cityPlaceholder')" />
             </div>
             <div>
-              <label>区/县</label>
-              <input v-model="form.district" type="text" placeholder="芙蓉区" />
+              <label>{{ t('routePlanner.district') }}</label>
+              <input v-model="form.district" type="text" :placeholder="t('routePlanner.districtPlaceholder')" />
             </div>
             <div>
-              <label>镇/乡</label>
-              <input v-model="form.town" type="text" placeholder="xx镇" />
-            </div>
-          </div>
-
-          <div class="form-row form-grid-2">
-            <div>
-              <label>联系人</label>
-              <input v-model="form.contact" type="text" placeholder="姓名" />
-            </div>
-            <div>
-              <label>电话</label>
-              <input v-model="form.phone" type="text" placeholder="11位手机号" />
+              <label>{{ t('routePlanner.town') }}</label>
+              <input v-model="form.town" type="text" :placeholder="t('routePlanner.townPlaceholder')" />
             </div>
           </div>
 
           <div class="form-row form-grid-2">
             <div>
-              <label>经度（可选）</label>
+              <label>{{ t('routePlanner.contact') }}</label>
+              <input v-model="form.contact" type="text" :placeholder="t('routePlanner.contactPlaceholder')" />
+            </div>
+            <div>
+              <label>{{ t('routePlanner.phone') }}</label>
+              <input v-model="form.phone" type="text" :placeholder="t('routePlanner.phonePlaceholder')" />
+            </div>
+          </div>
+
+          <div class="form-row form-grid-2">
+            <div>
+              <label>{{ t('routePlanner.longitudeOptional') }}</label>
               <input v-model.number="form.longitude" type="number" step="0.000001" placeholder="113.123456" />
             </div>
             <div>
-              <label>纬度（可选）</label>
+              <label>{{ t('routePlanner.latitudeOptional') }}</label>
               <input v-model.number="form.latitude" type="number" step="0.000001" placeholder="28.123456" />
             </div>
           </div>
 
-          <p class="form-hint">💡 有经纬度优先使用；无经纬度时将通过地址自动解析</p>
+          <p class="form-hint">{{ t('routePlanner.coordHint') }}</p>
 
           <div class="modal-footer">
-            <button type="button" class="btn-cancel" @click="emit('close')">取消</button>
+            <button type="button" class="btn-cancel" @click="emit('close')">{{ t('routePlanner.cancel') }}</button>
             <button type="submit" class="btn-save">
-              {{ isEdit ? '保存修改' : '添加门店' }}
+              {{ isEdit ? t('routePlanner.saveEdit') : t('routePlanner.addStoreTitle') }}
             </button>
           </div>
         </form>

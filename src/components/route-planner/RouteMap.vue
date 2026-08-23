@@ -8,6 +8,9 @@ import { ElAmap, initAMapApiLoader } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import type { Store, RoutePlan } from '@/components/route-planner/types'
 import { getAmapJsKey, getAmapSecurityCode } from '@/components/amap/amap-key'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = defineProps<{
   stores: Store[]
@@ -90,7 +93,7 @@ function renderAll(): void {
     const sp = props.plan.startPoint
     const startMarker = new AMap.Marker({
       position: [sp.lon, sp.lat],
-      title: '起点/终点',
+      title: t('routePlanner.startEnd'),
       icon: new AMap.Icon({
         size: new AMap.Size(30, 30),
         image: 'https://webapi.amap.com/theme/v1.3/markers/n/start.png',
@@ -121,7 +124,7 @@ function renderAll(): void {
             content: `<div style="padding:4px 2px;font-size:12px;line-height:1.6">
               <strong>${store.name}</strong><br/>
               📍 ${store.address || store.city || ''}<br/>
-              📅 第 ${day.day} 天 · 第 ${day.stores.indexOf(store) + 1} 家
+              📅 ${t('routePlanner.mapInfoWindow', { day: day.day, idx: day.stores.indexOf(store) + 1 })}
             </div>`,
             offset: new AMap.Pixel(0, -28),
           })
@@ -203,18 +206,18 @@ const hasContent = computed(() => props.stores.length > 0 || (props.plan && prop
     </div>
     <div v-if="!mapReady" class="map-loading">
       <div class="spinner" />
-      <p>地图加载中...</p>
+      <p>{{ t('routePlanner.mapLoading') }}</p>
     </div>
     <!-- 空数据引导 -->
     <div v-if="mapReady && !hasContent" class="map-empty-guide">
-      <p>📍 暂无门店数据</p>
-      <p class="guide-hint">导入 Excel 或添加门店后，地图将自动显示标记</p>
+      <p>{{ t('routePlanner.mapEmpty') }}</p>
+      <p class="guide-hint">{{ t('routePlanner.mapGuide') }}</p>
     </div>
     <!-- 天颜色图例 -->
     <div v-if="plan && plan.days.length > 0" class="map-legend">
       <div v-for="day in plan.days" :key="day.day" class="legend-item">
         <span class="legend-color" :style="{ background: getDayColor(day.day) }" />
-        <span class="legend-text">第{{ day.day }}天</span>
+        <span class="legend-text">{{ t('routePlanner.dayLegend', { day: day.day }) }}</span>
       </div>
     </div>
   </div>

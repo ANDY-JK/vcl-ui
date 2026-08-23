@@ -2,6 +2,10 @@
 /**
  * 导入进度条
  */
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
+
 defineProps<{
   current: number
   total: number
@@ -17,7 +21,7 @@ const percent = (current: number, total: number): number => {
 <template>
   <div class="import-progress">
     <div class="progress-header">
-      <span class="progress-label">{{ label || '处理中...' }}</span>
+      <span class="progress-label">{{ label || t('routePlanner.processing') }}</span>
       <span class="progress-count">{{ current }} / {{ total }}</span>
     </div>
     <div class="progress-bar">

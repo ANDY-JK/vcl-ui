@@ -8,6 +8,9 @@
 import { ref, computed } from 'vue'
 import { calcDistance as calculateDistance } from '@/components/amap/amap-service'
 import type { RoutePlan, NavLink, Store } from '@/components/route-planner/types'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = defineProps<{
   plan: RoutePlan | null
@@ -28,15 +31,15 @@ const currentDay = ref(1)
 function formatTime(min: number): string {
   const h = Math.floor(min / 60)
   const m = Math.round(min % 60)
-  if (h === 0) return `${m}分钟`
-  if (m === 0) return `${h}小时`
-  return `${h}小时${m}分钟`
+  if (h === 0) return t('routePlanner.minutes', { m })
+  if (m === 0) return t('routePlanner.hours', { h })
+  return t('routePlanner.hoursMinutes', { h, m })
 }
 
 /** 格式化距离 */
 function formatDistance(m: number): string {
-  if (m < 1000) return `${Math.round(m)}米`
-  return `${(m / 1000).toFixed(1)}公里`
+  if (m < 1000) return t('routePlanner.meters', { m: Math.round(m) })
+  return t('routePlanner.kilometers', { km: (m / 1000).toFixed(1) })
 }
 
 /** 两点间估算距离和驾驶时间 */
@@ -84,9 +87,9 @@ function storeDensity(day: { stores: { length: number }; drivingDistanceM: numbe
 /** 密度等级 */
 function densityLabel(density: number | null): { text: string; cls: string } {
   if (density == null) return { text: '', cls: '' }
-  if (density >= 10) return { text: `${density}家/100km`, cls: 'density-good' }
-  if (density >= 4) return { text: `${density}家/100km`, cls: 'density-ok' }
-  return { text: `⚠️ ${density}家/100km`, cls: 'density-low' }
+  if (density >= 10) return { text: t('routePlanner.densityPer100km', { d: density }), cls: 'density-good' }
+  if (density >= 4) return { text: t('routePlanner.densityPer100km', { d: density }), cls: 'density-ok' }
+  return { text: t('routePlanner.densityLow', { d: density }), cls: 'density-low' }
 }
 </script>
 
@@ -95,16 +98,16 @@ function densityLabel(density: number | null): { text: string; cls: string } {
     <!-- 加载中 -->
     <div v-if="loading" class="state-loading">
       <div class="spinner" />
-      <p>正在规划路线...</p>
+      <p>{{ t('routePlanner.planning') }}</p>
     </div>
 
     <!-- 空状态 -->
     <div v-else-if="!plan" class="state-empty">
-      <p>📋 暂无路线方案</p>
+      <p>{{ t('routePlanner.noRoute') }}</p>
       <div class="empty-steps">
-        <div class="empty-step"><span class="step-num">①</span> 导入或添加门店</div>
-        <div class="empty-step"><span class="step-num">②</span> 点击「生成路线」</div>
-        <div class="empty-step"><span class="step-num">③</span> 查看地图和分天计划</div>
+        <div class="empty-step"><span class="step-num">①</span> {{ t('routePlanner.stepImport') }}</div>
+        <div class="empty-step"><span class="step-num">②</span> {{ t('routePlanner.stepGenerate') }}</div>
+        <div class="empty-step"><span class="step-num">③</span> {{ t('routePlanner.stepView') }}</div>
       </div>
     </div>
 
@@ -113,34 +116,34 @@ function densityLabel(density: number | null): { text: string; cls: string } {
       <!-- 汇总卡片 -->
       <div class="summary-card">
         <div class="summary-title">
-          📋 巡访路线总览
-          <span v-if="hasRealDriving" class="source-badge real">🛣️ 驾车实测</span>
-          <span v-else class="source-badge estimated">📏 直线估算</span>
+          {{ t('routePlanner.overviewTitle') }}
+          <span v-if="hasRealDriving" class="source-badge real">{{ t('routePlanner.realDriving') }}</span>
+          <span v-else class="source-badge estimated">{{ t('routePlanner.estimated') }}</span>
         </div>
         <div class="summary-stats">
           <div class="stat">
             <span class="stat-num">{{ plan.totalDays }}</span>
-            <span class="stat-label">天</span>
+            <span class="stat-label">{{ t('routePlanner.daysLabel') }}</span>
           </div>
           <div class="stat">
             <span class="stat-num">{{ plan.totalStores }}</span>
-            <span class="stat-label">家门店</span>
+            <span class="stat-label">{{ t('routePlanner.storesLabel') }}</span>
           </div>
           <div class="stat">
             <span class="stat-num">{{ totalDist }}</span>
-            <span class="stat-label">总里程</span>
+            <span class="stat-label">{{ t('routePlanner.totalDistance') }}</span>
           </div>
           <div class="stat">
             <span class="stat-num">{{ totalDriveTime }}</span>
-            <span class="stat-label">总驾驶</span>
+            <span class="stat-label">{{ t('routePlanner.totalDriving') }}</span>
           </div>
         </div>
         <div class="summary-route">
-          🚩 {{ startPointName || '起点' }}出发 → {{ plan.totalDays }}天巡访 → 🏁 返回{{ startPointName || '起点' }}
+          {{ t('routePlanner.routeSummary', { start: startPointName || t('routePlanner.startPoint'), days: plan.totalDays }) }}
         </div>
       </div>
 
-      <p v-if="enriching" class="enriching-tip">🔄 正在获取实际驾车数据...</p>
+      <p v-if="enriching" class="enriching-tip">{{ t('routePlanner.enriching') }}</p>
 
       <!-- 分天列表 -->
       <div class="day-list">
@@ -161,7 +164,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
                 {{ day.day }}
               </span>
               <span class="day-summary-text">
-                {{ day.stores.length }}家 · {{ formatTime(day.drivingTimeMin) }} ·
+                {{ t('routePlanner.dayStores', { count: day.stores.length }) }} · {{ formatTime(day.drivingTimeMin) }} ·
                 {{ formatDistance(day.drivingDistanceM) }}
                 <span
                   v-if="storeDensity(day) != null"
@@ -183,8 +186,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
           <div v-if="expandedDay === day.day" class="day-detail">
             <!-- 导航按钮 -->
             <div v-if="day.navLink" class="day-nav">
-              <button class="btn-nav-day" @click="openNav(day.navLink)">📱 开始导航</button>
-              <button class="btn-set-current" @click="setCurrentDay(day.day)">📍 标记为当前</button>
+              <button class="btn-nav-day" @click="openNav(day.navLink)">{{ t('routePlanner.startNav') }}</button>
+              <button class="btn-set-current" @click="setCurrentDay(day.day)">{{ t('routePlanner.setCurrent') }}</button>
             </div>
 
             <!-- 路线概览 -->
@@ -192,7 +195,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
               <div class="route-start">
                 <span class="route-icon">{{ dayIdx === 0 ? '🚩' : '🏨' }}</span>
                 <span>{{
-                  dayIdx === 0 ? (startPointName ? `从「${startPointName}」出发` : '从起点出发') : '继续出发'
+                  dayIdx === 0
+                    ? (startPointName ? t('routePlanner.fromStart', { name: startPointName }) : t('routePlanner.fromStartDefault'))
+                    : t('routePlanner.continueStart')
                 }}</span>
               </div>
               <div class="route-arrow">↓</div>
@@ -204,7 +209,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
               <div class="route-arrow">↓</div>
               <div class="route-end">
                 <span class="route-icon">{{ dayIdx === plan.days.length - 1 ? '🏁' : '🏨' }}</span>
-                <span>{{ dayIdx === plan.days.length - 1 ? '回到起点' : '结束当天' }}</span>
+                <span>{{ dayIdx === plan.days.length - 1 ? t('routePlanner.backToStart') : t('routePlanner.endDay') }}</span>
                 <span v-if="dayIdx === plan.days.length - 1 && day.returnLeg" class="return-info">
                   · {{ formatDistance(day.returnLeg.distanceM) }}
                 </span>
@@ -225,11 +230,11 @@ function densityLabel(density: number | null): { text: string; cls: string } {
                       → {{ segmentInfo(store, day.stores[idx + 1])!.dist }} ·
                       {{ segmentInfo(store, day.stores[idx + 1])!.time }}
                     </span>
-                    <span v-else class="seg-info seg-no-data">→ 无坐标</span>
+                    <span v-else class="seg-info seg-no-data">{{ t('routePlanner.noCoord') }}</span>
                   </template>
                   <template v-else>
                     <span class="seg-info seg-end">
-                      {{ dayIdx === plan!.days.length - 1 ? '→ 返回起点' : '' }}
+                      {{ dayIdx === plan!.days.length - 1 ? t('routePlanner.returnStart') : '' }}
                     </span>
                   </template>
                 </div>
@@ -239,7 +244,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
                   :title="day.legNavLinks[idx].label"
                   @click="openNav(day.legNavLinks[idx])"
                 >
-                  导航
+                  {{ t('routePlanner.nav') }}
                 </button>
               </div>
             </div>
@@ -250,15 +255,15 @@ function densityLabel(density: number | null): { text: string; cls: string } {
       <!-- 跳过列表 -->
       <div v-if="plan.skippedStores.length > 0" class="skipped-section">
         <div class="skipped-header">
-          ⚠️ {{ plan.skippedStores.length }} 家门店未纳入计划
-          <span class="skipped-reason">（路途遥远 或 超出计划天数）</span>
+          {{ t('routePlanner.skippedWarn', { count: plan.skippedStores.length }) }}
+          <span class="skipped-reason">{{ t('routePlanner.skippedReason') }}</span>
         </div>
         <div class="skipped-list">
           <div v-for="store in plan.skippedStores" :key="store.id" class="skipped-item">
             {{ store.name }}（{{ store.city }}）
           </div>
         </div>
-        <p class="skipped-hint">💡 这些门店偏离主路线太远，点击「重新生成」可重新计算</p>
+        <p class="skipped-hint">{{ t('routePlanner.skippedHint') }}</p>
       </div>
     </div>
   </div>
