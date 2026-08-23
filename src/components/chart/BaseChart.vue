@@ -54,6 +54,20 @@ const showEmpty = computed(() => {
   return !hasSeries && !hasDataset
 })
 
+/** 无障碍：从 option.title 提取图表名称，作为容器 aria-label（读屏把 canvas 当图片朗读） */
+const ariaLabel = computed(() => {
+  const opt = props.option as Record<string, unknown> | null
+  const title = opt?.title as string | Record<string, unknown> | Array<Record<string, unknown>> | undefined
+  if (!title) return props.emptyText
+  if (typeof title === 'string') return title
+  if (Array.isArray(title)) {
+    const texts = title.map((t) => t?.text).filter(Boolean) as string[]
+    return texts.length ? texts.join('、') : props.emptyText
+  }
+  const text = title.text
+  return text ? String(text) : props.emptyText
+})
+
 /** 构建 toolbar 配置 */
 function buildToolbox(): any {
   if (props.toolbar === false) return undefined
@@ -279,9 +293,9 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="chartRef" class="base-chart" :style="containerStyle">
+  <div ref="chartRef" class="base-chart" :style="containerStyle" role="img" :aria-label="ariaLabel">
     <!-- 空数据遮罩 -->
-    <div v-if="showEmpty" class="chart-empty-overlay">
+    <div v-if="showEmpty" class="chart-empty-overlay" role="status">
       <span class="chart-empty-text">{{ emptyText }}</span>
     </div>
   </div>

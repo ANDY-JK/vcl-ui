@@ -242,6 +242,8 @@ defineExpose({
     class="amap-widget"
     :class="customClass"
     style="width: 100%; height: 100%; min-height: 300px; position: relative"
+    role="region"
+    :aria-label="`地图（${markers.length} 个标记）`"
   >
     <ElAmap :center="center" :zoom="zoom" :map-style="mapStyle" @init="onMapInit" />
   </div>
