@@ -40,7 +40,13 @@ export interface StorageBackend {
 
 const STORE_NAME = 'uploads'
 
-/** 本地落盘记录：appleId 冗余存于 value，dbGetAll 反查归属时无需依赖 store key */
+/** 本地落盘记录：appleId 冗余存于 value，dbGetAll 反查归属时无需依赖 store key
+ *
+ * ⛔ 受保护契约（依赖 indexedDB.ts 的 StoreItem 包装格式，见该文件头部注释）：
+ * - dbPut 自动包裹 StoreItem（keyPath:'key'），dbGetAll 返回**解包后**的 value ——
+ *   本接口即解包后形态，形状变更必须同步 contract-storage 与 tests/unit/contract-storage.spec.ts
+ * - store key = String(appleId)，value 内 appleId 与 key 必须一致（loadAll 以 value.appleId 为归属）
+ */
 interface LocalRecord {
   contract?: StoreFile
   ts: number
