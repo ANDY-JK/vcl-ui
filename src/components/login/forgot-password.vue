@@ -17,36 +17,36 @@
               <IconSvg type="lock" size="lg" color="#fff" />
             </slot>
           </div>
-          <h2>重置密码</h2>
-          <p>输入注册时使用的卡密和新密码进行重置</p>
+          <h2>{{ t('login.resetTitle') }}</h2>
+          <p>{{ t('login.resetHeroSubtitle') }}</p>
         </div>
 
         <ul class="features-list">
-          <li>确保账户安全</li>
-          <li>使用注册卡密验证身份</li>
-          <li>设置新密码后即可登录</li>
+          <li>{{ t('login.resetStep1') }}</li>
+          <li>{{ t('login.resetStep2') }}</li>
+          <li>{{ t('login.resetStep3') }}</li>
         </ul>
       </div>
 
       <div class="login-right">
         <div class="login-header">
-          <h1>忘记密码？</h1>
-          <p>输入注册卡密和新密码</p>
+          <h1>{{ t('login.resetHeroTitle') }}</h1>
+          <p>{{ t('login.resetSubtitle') }}</p>
         </div>
 
         <div class="forgot-form">
           <Input
             v-model="form.card_key"
-            label="注册卡密"
+            :label="t('login.resetCardKey')"
             type="text"
             icon="key"
             :rules="cardKeyRules"
-            hint="请输入注册时使用的卡密"
+            :hint="t('login.resetCardKeyHint')"
           />
 
           <Input
             v-model="form.new_password"
-            label="新密码"
+            :label="t('login.newPassword')"
             type="password"
             icon="lock"
             autocomplete="new-password"
@@ -56,7 +56,7 @@
 
           <Input
             v-model="form.confirm_password"
-            label="确认新密码"
+            :label="t('login.confirmPassword')"
             type="password"
             icon="lock"
             autocomplete="new-password"
@@ -64,7 +64,7 @@
             :hint="confirmPasswordHint"
           />
 
-          <Button text="重置密码" variant="primary" :loading="loading" block @click="handleSubmit" />
+          <Button :text="t('login.resetBtn')" variant="primary" :loading="loading" block @click="handleSubmit" />
 
           <Toast v-if="displayError" variant="inline" type="error" :message="displayError" closable />
 
@@ -72,7 +72,8 @@
         </div>
 
         <div class="footer-text">
-          想起来了？<a href="javascript:;" class="register-link" @click="emit('go-login')">返回登录</a>
+          {{ t('login.rememberPassword')
+          }}<button type="button" class="register-link" @click="emit('go-login')">{{ t('login.goLogin') }}</button>
         </div>
       </div>
     </div>
@@ -81,7 +82,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { Input, Button, IconSvg, Toast } from './_shared'
+import { Input, Button, IconSvg, Toast, useT } from './_shared'
+
+const t = useT()
 
 // ======================== 类型 ========================
 
@@ -135,20 +138,20 @@ const displayError = computed(() => props.error || internalError.value)
 const displaySuccess = computed(() => props.success || '')
 
 const passwordHint = computed(() =>
-  form.new_password.length > 0 && form.new_password.length < 6 ? '至少 6 个字符' : '',
+  form.new_password.length > 0 && form.new_password.length < 6 ? t('login.passwordMinLength') : '',
 )
 const confirmPasswordHint = computed(() =>
-  form.confirm_password.length > 0 && form.new_password !== form.confirm_password ? '两次密码不一致' : '',
+  form.confirm_password.length > 0 && form.new_password !== form.confirm_password ? t('login.passwordMismatch') : '',
 )
 
-const cardKeyRules = [(v: string) => (v.trim() ? undefined : '请输入注册卡密')]
+const cardKeyRules = [(v: string) => (v.trim() ? undefined : t('login.cardKeyRequired'))]
 const passwordRules = [
-  (v: string) => (v ? undefined : '请输入新密码'),
-  (v: string) => (v.length >= 6 ? undefined : '至少 6 个字符'),
+  (v: string) => (v ? undefined : t('login.newPasswordRequired')),
+  (v: string) => (v.length >= 6 ? undefined : t('login.passwordMinLength')),
 ]
 const confirmPasswordRules = [
-  (v: string) => (v ? undefined : '请确认新密码'),
-  (v: string) => (v === form.new_password ? undefined : '两次密码不一致'),
+  (v: string) => (v ? undefined : t('login.confirmPasswordRequired')),
+  (v: string) => (v === form.new_password ? undefined : t('login.passwordMismatch')),
 ]
 
 // ======================== 提交 ========================
@@ -157,15 +160,15 @@ const handleSubmit = () => {
   internalError.value = ''
 
   if (!form.card_key.trim()) {
-    internalError.value = '请输入注册卡密'
+    internalError.value = t('login.cardKeyRequired')
     return
   }
   if (!form.new_password || form.new_password.length < 6) {
-    internalError.value = '新密码至少 6 个字符'
+    internalError.value = t('login.newPasswordRequired') + ' (' + t('login.passwordMinLength') + ')'
     return
   }
   if (form.new_password !== form.confirm_password) {
-    internalError.value = '两次密码不一致'
+    internalError.value = t('login.passwordMismatch')
     return
   }
 
@@ -370,6 +373,11 @@ defineExpose({
   color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
 }
 .register-link:hover {
   text-decoration: underline;

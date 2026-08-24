@@ -17,21 +17,21 @@
               <IconSvg type="layout-dashboard" size="lg" color="#fff" />
             </slot>
           </div>
-          <h2>{{ brandTitle || 'SaaS 管理系统' }}</h2>
-          <p>{{ brandSubtitle || '现代化企业级业务管理平台，助力数字化转型' }}</p>
+          <h2>{{ brandTitle || t('login.brandTitle') }}</h2>
+          <p>{{ brandSubtitle || t('login.brandSubtitle') }}</p>
         </div>
       </div>
 
       <div class="login-right">
         <div class="login-header">
-          <h1>创建账户</h1>
-          <p>填写以下信息完成注册</p>
+          <h1>{{ t('login.registerTitle') }}</h1>
+          <p>{{ t('login.registerSubtitle') }}</p>
         </div>
 
         <div class="register-form">
           <Input
             v-model="form.display_name"
-            label="昵称 / 公司名称"
+            :label="t('login.displayName')"
             type="text"
             icon="house"
             :rules="displayNameRules"
@@ -41,16 +41,16 @@
           <Input
             v-if="requireCardKey"
             v-model="form.card_key"
-            label="卡密"
+            :label="t('login.cardKey')"
             type="text"
             icon="key"
             :rules="cardKeyRules"
-            hint="请联系管理员获取注册卡密"
+            :hint="t('login.cardKeyHint')"
           />
 
           <Input
             v-model="form.username"
-            label="账号"
+            :label="t('login.account')"
             type="text"
             icon="user"
             autocomplete="username"
@@ -60,7 +60,7 @@
 
           <Input
             v-model="form.password"
-            label="密码"
+            :label="t('login.password')"
             type="password"
             icon="lock"
             autocomplete="new-password"
@@ -72,7 +72,7 @@
           <template v-if="showOptionalFields">
             <Input
               v-model="form.email"
-              :label="requireEmail ? '邮箱' : '邮箱（选填）'"
+              :label="requireEmail ? t('login.email') : t('login.emailOptional')"
               type="email"
               icon="bell"
               autocomplete="email"
@@ -81,7 +81,7 @@
 
             <Input
               v-model="form.phone"
-              :label="requirePhone ? '手机号' : '手机号（选填）'"
+              :label="requirePhone ? t('login.socialPhone') : t('login.phoneOptional')"
               type="tel"
               icon="settings"
               autocomplete="tel"
@@ -91,13 +91,14 @@
 
           <slot name="extra-fields" />
 
-          <Button text="注 册" variant="primary" :loading="loading" block @click="handleSubmit" />
+          <Button :text="t('login.registerBtn')" variant="primary" :loading="loading" block @click="handleSubmit" />
 
           <Toast v-if="displayError" variant="inline" type="error" :message="displayError" closable />
         </div>
 
         <div class="footer-text">
-          已有账户？<a href="javascript:;" class="register-link" @click="emit('go-login')">返回登录</a>
+          {{ t('login.haveAccount')
+          }}<button type="button" class="register-link" @click="emit('go-login')">{{ t('login.goLogin') }}</button>
         </div>
       </div>
     </div>
@@ -106,7 +107,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { Input, Button, IconSvg, Toast, isValidPhone, isValidEmail } from './_shared'
+import { Input, Button, IconSvg, Toast, isValidPhone, isValidEmail, useT } from './_shared'
+
+const t = useT()
 
 // ======================== 类型 ========================
 
@@ -179,34 +182,38 @@ const internalError = ref('')
 const displayError = computed(() => props.error || internalError.value)
 
 const displayNameHint = computed(() =>
-  form.display_name.length > 0 && form.display_name.length < 2 ? '至少 2 个字符' : '',
+  form.display_name.length > 0 && form.display_name.length < 2 ? t('login.displayNameHint') : '',
 )
-const usernameHint = computed(() => (form.username.length > 0 && form.username.length < 3 ? '至少 3 个字符' : ''))
-const passwordHint = computed(() => (form.password.length > 0 && form.password.length < 6 ? '至少 6 个字符' : ''))
+const usernameHint = computed(() =>
+  form.username.length > 0 && form.username.length < 3 ? t('login.usernameMinLength') : '',
+)
+const passwordHint = computed(() =>
+  form.password.length > 0 && form.password.length < 6 ? t('login.passwordMinLength') : '',
+)
 
 const displayNameRules = [
-  (v: string) => (v.trim() ? undefined : '请输入昵称或公司名称'),
-  (v: string) => (v.length >= 2 ? undefined : '至少 2 个字符'),
+  (v: string) => (v.trim() ? undefined : t('login.displayNameRequired')),
+  (v: string) => (v.length >= 2 ? undefined : t('login.displayNameHint')),
 ]
-const cardKeyRules = [(v: string) => (v.trim() ? undefined : '请输入注册卡密')]
+const cardKeyRules = [(v: string) => (v.trim() ? undefined : t('login.cardKeyRequired'))]
 const usernameRules = [
-  (v: string) => (v.trim() ? undefined : '请输入账号'),
-  (v: string) => (v.length >= 3 ? undefined : '至少 3 个字符'),
+  (v: string) => (v.trim() ? undefined : t('login.accountRequired')),
+  (v: string) => (v.length >= 3 ? undefined : t('login.usernameMinLength')),
 ]
 const passwordRules = [
-  (v: string) => (v ? undefined : '请输入密码'),
-  (v: string) => (v.length >= 6 ? undefined : '至少 6 个字符'),
+  (v: string) => (v ? undefined : t('login.passwordRequired')),
+  (v: string) => (v.length >= 6 ? undefined : t('login.passwordMinLength')),
 ]
 const emailRules = computed(() => [
   (v: string) => {
-    if (!v) return props.requireEmail ? '请输入邮箱' : undefined
-    return isValidEmail(v) ? undefined : '邮箱格式不正确'
+    if (!v) return props.requireEmail ? t('login.emailRequired') : undefined
+    return isValidEmail(v) ? undefined : t('login.emailInvalid')
   },
 ])
 const phoneRules = computed(() => [
   (v: string) => {
-    if (!v) return props.requirePhone ? '请输入手机号' : undefined
-    return isValidPhone(v) ? undefined : '手机号格式不正确'
+    if (!v) return props.requirePhone ? t('login.phoneRequired') : undefined
+    return isValidPhone(v) ? undefined : t('login.phoneInvalid')
   },
 ])
 
@@ -224,33 +231,33 @@ const handleSubmit = () => {
     !form.password ||
     form.password.length < 6
   ) {
-    internalError.value = '请完整填写所有必填项'
+    internalError.value = t('login.fillAllRequired')
     return
   }
 
   // 卡密校验
   if (props.requireCardKey && !form.card_key.trim()) {
-    internalError.value = '请输入注册卡密'
+    internalError.value = t('login.cardKeyRequired')
     return
   }
 
   // 可选必填校验
   if (props.requireEmail && !form.email) {
-    internalError.value = '请输入邮箱'
+    internalError.value = t('login.emailRequired')
     return
   }
   if (props.requirePhone && !form.phone) {
-    internalError.value = '请输入手机号'
+    internalError.value = t('login.phoneRequired')
     return
   }
 
   // 格式校验
   if (form.email && !isValidEmail(form.email)) {
-    internalError.value = '邮箱格式不正确'
+    internalError.value = t('login.emailInvalid')
     return
   }
   if (form.phone && !isValidPhone(form.phone)) {
-    internalError.value = '手机号格式不正确'
+    internalError.value = t('login.phoneInvalid')
     return
   }
 
@@ -442,6 +449,11 @@ defineExpose({
   color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
 }
 .register-link:hover {
   text-decoration: underline;

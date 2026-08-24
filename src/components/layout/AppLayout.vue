@@ -8,6 +8,9 @@ import AccordionNav from './AccordionNav.vue'
 import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
 import { getPrevNext, getCategory, type NavNode } from './utils/navData'
 import { useThrottleFn } from '@/components/_internal/useDebounce'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = withDefaults(
   defineProps<{
@@ -170,8 +173,8 @@ function onProgressMouseUp() {
         <button
           v-if="!isMobile"
           class="collapse-btn"
-          :aria-label="sidebarCollapsed ? '展开' : '收起'"
-          :title="sidebarCollapsed ? '展开' : '收起'"
+          :aria-label="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
+          :title="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
           @click="toggleCollapse"
         >
           <svg
@@ -195,7 +198,12 @@ function onProgressMouseUp() {
     <main class="content">
       <div class="content-topbar">
         <div class="topbar-glow" />
-        <button v-if="isMobile" class="topbar-hamburger" aria-label="菜单" @click="sidebarOpen = !sidebarOpen">
+        <button
+          v-if="isMobile"
+          class="topbar-hamburger"
+          :aria-label="t('common.menu')"
+          @click="sidebarOpen = !sidebarOpen"
+        >
           <svg
             width="16"
             height="16"
@@ -244,7 +252,7 @@ function onProgressMouseUp() {
                 </div>
                 <span class="user-name">{{ username }}</span>
               </div>
-              <button class="logout-btn" title="退出登录" @click="emit('logout')">
+              <button class="logout-btn" :title="t('common.logout')" @click="emit('logout')">
                 <IconSvg type="log-out" size="sm" />
               </button>
             </template>
@@ -272,7 +280,8 @@ function onProgressMouseUp() {
         </div>
 
         <button v-if="nav.next" class="nav-btn" @click="goDemo(nav.next.route!)">
-          <span class="toolbar-label">{{ nav.next.label }}</span><IconSvg type="arrow-right" size="sm" />
+          <span class="toolbar-label">{{ nav.next.label }}</span
+          ><IconSvg type="arrow-right" size="sm" />
         </button>
         <span v-else class="nav-btn is-empty" />
       </div>
