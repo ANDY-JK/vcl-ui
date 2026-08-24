@@ -19,6 +19,11 @@ interface Props {
   destroyOnClose?: boolean
   /** 设为 true 时不参与全局弹窗互斥管理（组件内部弹窗用） */
   internal?: boolean
+  /**
+   * 弹窗互斥域。同一 scope 的弹窗"新开即关旧"，不同 scope 互不影响。
+   * 默认不传 → 全页面全局互斥（历史行为）。需要与其它弹窗共存（如 Drawer 内开确认框）时传独立 scope。
+   */
+  mutexScope?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -74,14 +79,14 @@ watch(
   },
 )
 
-// --- 弹窗竞态管理：同页面只允许一个弹窗（internal 跳过）---
+// --- 弹窗竞态管理：同 scope 只允许一个弹窗（internal 跳过）---
 let _unregDrawer: (() => void) | null = null
 watch(
   () => props.visible,
   (v) => {
     if (props.internal) return
     if (v) {
-      _unregDrawer = registerModal(close)
+      _unregDrawer = registerModal(close, props.mutexScope)
     } else {
       if (_unregDrawer) {
         _unregDrawer()

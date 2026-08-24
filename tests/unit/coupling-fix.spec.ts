@@ -6,6 +6,7 @@ import {
 } from '@/components/form-builder/designer/types'
 import type { FormDesign, DesignerNode } from '@/components/form-builder/designer/types'
 import Toast from '@/components/feedback/Toast.vue'
+import * as useModalManagerLib from '@/components/_internal/useModalManager'
 
 function makeNode(type: string, key?: string): DesignerNode {
   return { id: `n_${Math.random().toString(36).slice(2)}`, type: type as DesignerNode['type'], label: type, key }
@@ -130,5 +131,49 @@ describe('H12连带: useVoice/useBeep 顶层副作用幂等守卫', () => {
     // 不抛异常即通过（jsdom 无 speechSynthesis/AudioContext 真实实现，走 catch 静默）
     expect(() => unlockVoice()).not.toThrow()
     expect(() => unlockAudio()).not.toThrow()
+  })
+})
+
+describe('H1: useModalManager scope 隔离', () => {
+  it('不同 scope 的弹窗互不关闭', () => {
+    const { registerModal } = useModalManagerLib
+    let closedA = 0
+    let closedB = 0
+    const unregA = registerModal(() => closedA++, 'scope-a')
+    const unregB = registerModal(() => closedB++, 'scope-b')
+    // B 打开不关闭 A（不同 scope）
+    expect(closedA).toBe(0)
+    expect(closedB).toBe(0)
+    unregA()
+    unregB()
+  })
+
+  it('同 scope 新开即关旧', () => {
+    const { registerModal } = useModalManagerLib
+    let closedA = 0
+    let closedB = 0
+    const unregA = registerModal(() => closedA++, 'scope-x')
+    registerModal(() => closedB++, 'scope-x')
+    // 同 scope：B 打开时 A 被关闭
+    expect(closedA).toBe(1)
+    unregA()
+  })
+
+  it('默认 scope(global) 保持历史互斥行为', () => {
+    const { registerModal } = useModalManagerLib
+    let closedA = 0
+    const unregA = registerModal(() => closedA++)
+    registerModal(() => {})
+    expect(closedA).toBe(1)
+    unregA()
+  })
+
+  it('注销后同 scope 新弹窗不再关闭旧弹窗', () => {
+    const { registerModal } = useModalManagerLib
+    let closed = 0
+    const unreg = registerModal(() => closed++, 'scope-y')
+    unreg()
+    registerModal(() => {}, 'scope-y')
+    expect(closed).toBe(0)
   })
 })
