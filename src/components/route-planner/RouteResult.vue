@@ -140,7 +140,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
           </div>
         </div>
         <div class="summary-route">
-          {{ t('routePlanner.routeSummary', { start: startPointName || t('routePlanner.startPoint'), days: plan.totalDays }) }}
+          {{
+            t('routePlanner.routeSummary', {
+              start: startPointName || t('routePlanner.startPoint'),
+              days: plan.totalDays,
+            })
+          }}
         </div>
       </div>
 
@@ -159,7 +164,14 @@ function densityLabel(density: number | null): { text: string; cls: string } {
           }"
         >
           <!-- 天头（始终显示） -->
-          <div class="day-header" @click="toggleDay(day.day)">
+          <div
+            class="day-header"
+            role="button"
+            tabindex="0"
+            @click="toggleDay(day.day)"
+            @keydown.enter="toggleDay(day.day)"
+            @keydown.space.prevent="toggleDay(day.day)"
+          >
             <div class="day-header-left">
               <span class="day-badge" :class="{ current: currentDay === day.day }">
                 {{ day.day }}
@@ -171,7 +183,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
                   v-if="storeDensity(day) != null"
                   class="density-tag"
                   :class="densityLabel(storeDensity(day)).cls"
-                >{{ densityLabel(storeDensity(day)).text }}</span>
+                  >{{ densityLabel(storeDensity(day)).text }}</span
+                >
               </span>
             </div>
             <div class="day-header-right">
@@ -188,7 +201,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
             <!-- 导航按钮 -->
             <div v-if="day.navLink" class="day-nav">
               <button class="btn-nav-day" @click="openNav(day.navLink)">{{ t('routePlanner.startNav') }}</button>
-              <button class="btn-set-current" @click="setCurrentDay(day.day)">{{ t('routePlanner.setCurrent') }}</button>
+              <button class="btn-set-current" @click="setCurrentDay(day.day)">
+                {{ t('routePlanner.setCurrent') }}
+              </button>
             </div>
 
             <!-- 路线概览 -->
@@ -197,7 +212,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
                 <span class="route-icon">{{ dayIdx === 0 ? '🚩' : '🏨' }}</span>
                 <span>{{
                   dayIdx === 0
-                    ? (startPointName ? t('routePlanner.fromStart', { name: startPointName }) : t('routePlanner.fromStartDefault'))
+                    ? startPointName
+                      ? t('routePlanner.fromStart', { name: startPointName })
+                      : t('routePlanner.fromStartDefault')
                     : t('routePlanner.continueStart')
                 }}</span>
               </div>
@@ -210,7 +227,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
               <div class="route-arrow">↓</div>
               <div class="route-end">
                 <span class="route-icon">{{ dayIdx === plan.days.length - 1 ? '🏁' : '🏨' }}</span>
-                <span>{{ dayIdx === plan.days.length - 1 ? t('routePlanner.backToStart') : t('routePlanner.endDay') }}</span>
+                <span>{{
+                  dayIdx === plan.days.length - 1 ? t('routePlanner.backToStart') : t('routePlanner.endDay')
+                }}</span>
                 <span v-if="dayIdx === plan.days.length - 1 && day.returnLeg" class="return-info">
                   · {{ formatDistance(day.returnLeg.distanceM) }}
                 </span>
@@ -694,7 +713,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   color: var(--color-text-secondary);
   white-space: nowrap;
   background: var(--color-bg-alt);
-  padding: var(--space-1) var(--space-1);;
+  padding: var(--space-1) var(--space-1);
 }
 
 .seg-end {

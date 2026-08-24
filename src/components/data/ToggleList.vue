@@ -71,7 +71,16 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
     </div>
 
     <div v-else class="list-items">
-      <div v-for="item in items" :key="item[idKey]" class="list-item" @click="emit('itemClick', item)">
+      <div
+        v-for="item in items"
+        :key="item[idKey]"
+        class="list-item"
+        role="button"
+        tabindex="0"
+        @click="emit('itemClick', item)"
+        @keydown.enter="emit('itemClick', item)"
+        @keydown.space.prevent="emit('itemClick', item)"
+      >
         <div v-if="item[iconField]" class="item-icon">
           <IconSvg :type="item[iconField]" size="md" />
         </div>
@@ -107,7 +116,14 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
           v-if="variant === 'button'"
           class="item-action-btn"
           :disabled="disabled"
-          @click.stop="emit('buttonClick', { name: item[titleField], phone: item[phoneField] ?? '', address: item[descriptionField] ?? '', item })"
+          @click.stop="
+            emit('buttonClick', {
+              name: item[titleField],
+              phone: item[phoneField] ?? '',
+              address: item[descriptionField] ?? '',
+              item,
+            })
+          "
         >
           {{ buttonLabel }}
         </button>

@@ -99,19 +99,49 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   <div class="tp-columns">
     <div ref="hourColRef" class="tp-column">
       <div class="tp-col-title">{{ t('form.hour') }}</div>
-      <div v-for="h in hours" :key="h" class="tp-cell" :class="{ selected: h === curH }" @click="onPick('hour', h)">
+      <div
+        v-for="h in hours"
+        :key="h"
+        class="tp-cell"
+        :class="{ selected: h === curH }"
+        role="button"
+        tabindex="0"
+        @click="onPick('hour', h)"
+        @keydown.enter="onPick('hour', h)"
+        @keydown.space.prevent="onPick('hour', h)"
+      >
         {{ pad2(h) }}
       </div>
     </div>
     <div ref="minuteColRef" class="tp-column">
       <div class="tp-col-title">{{ t('form.minute') }}</div>
-      <div v-for="m in minutes" :key="m" class="tp-cell" :class="{ selected: m === curM }" @click="onPick('minute', m)">
+      <div
+        v-for="m in minutes"
+        :key="m"
+        class="tp-cell"
+        :class="{ selected: m === curM }"
+        role="button"
+        tabindex="0"
+        @click="onPick('minute', m)"
+        @keydown.enter="onPick('minute', m)"
+        @keydown.space.prevent="onPick('minute', m)"
+      >
         {{ pad2(m) }}
       </div>
     </div>
     <div v-if="showSeconds" ref="secondColRef" class="tp-column">
       <div class="tp-col-title">{{ t('form.second') }}</div>
-      <div v-for="s in seconds" :key="s" class="tp-cell" :class="{ selected: s === curS }" @click="onPick('second', s)">
+      <div
+        v-for="s in seconds"
+        :key="s"
+        class="tp-cell"
+        :class="{ selected: s === curS }"
+        role="button"
+        tabindex="0"
+        @click="onPick('second', s)"
+        @keydown.enter="onPick('second', s)"
+        @keydown.space.prevent="onPick('second', s)"
+      >
         {{ pad2(s) }}
       </div>
     </div>

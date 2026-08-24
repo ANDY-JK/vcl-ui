@@ -30,7 +30,7 @@
           </li>
         </ul>
         <ul v-else class="features-list">
-          <li v-for="f in (tenantMode ? tm('login.featuresTenant') : tm('login.featuresSaaS'))" :key="f">
+          <li v-for="f in tenantMode ? tm('login.featuresTenant') : tm('login.featuresSaaS')" :key="f">
             {{ f }}
           </li>
         </ul>
@@ -77,14 +77,18 @@
               <span class="checkbox-icon" :class="{ checked: rememberMe }">
                 <IconSvg v-if="rememberMe" type="circle-check" size="sm" />
               </span>
-              <span><slot name="remember-text">{{ t('login.rememberUsername') }}</slot></span>
+              <span
+                ><slot name="remember-text">{{ t('login.rememberUsername') }}</slot></span
+              >
             </label>
-            <a
+            <button
               v-if="showForgotPassword && !tenantMode"
-              href="javascript:;"
+              type="button"
               class="forgot-password"
               @click="emit('forgot-password')"
-            ><slot name="forgot-text">{{ t('login.forgotPasswordQ') }}</slot></a>
+            >
+              <slot name="forgot-text">{{ t('login.forgotPasswordQ') }}</slot>
+            </button>
           </div>
 
           <Button
@@ -103,7 +107,9 @@
             <div class="social-login">
               <button type="button" class="social-btn" @click="emit('social-login', 'phone')">
                 <IconSvg type="house" size="md" class="social-icon" />
-                <span class="social-text"><slot name="social-phone-text">{{ t('login.socialPhone') }}</slot></span>
+                <span class="social-text"
+                  ><slot name="social-phone-text">{{ t('login.socialPhone') }}</slot></span
+                >
               </button>
               <button type="button" class="social-btn" @click="emit('social-login', 'wechat')">
                 <IconSvg type="user" size="md" class="social-icon" />
@@ -119,11 +125,16 @@
 
         <div class="footer-text">
           <template v-if="tenantMode">
-            <span><slot name="tenant-footer-text">{{ t('login.tenantFooter') }}</slot></span>
+            <span
+              ><slot name="tenant-footer-text">{{ t('login.tenantFooter') }}</slot></span
+            >
           </template>
           <template v-else>
             <template v-if="showRegister">
-              <slot name="register-prompt">{{ t('login.registerPrompt') }}</slot><a href="javascript:;" class="register-link" @click="emit('register')"><slot name="register-text">{{ t('login.registerNow') }}</slot></a>
+              <slot name="register-prompt">{{ t('login.registerPrompt') }}</slot
+              ><button type="button" class="register-link" @click="emit('register')">
+                <slot name="register-text">{{ t('login.registerNow') }}</slot>
+              </button>
             </template>
           </template>
         </div>
@@ -584,6 +595,11 @@ defineExpose({
   color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
 }
 .forgot-password:hover {
   color: var(--color-primary-hover);
@@ -631,6 +647,11 @@ defineExpose({
   color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
 }
 .register-link:hover {
   text-decoration: underline;

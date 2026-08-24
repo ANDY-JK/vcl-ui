@@ -54,7 +54,16 @@ const trendUi = computed(() => ({
 
 <template>
   <!-- stat 模式 -->
-  <div v-if="isStat" class="stat-card" :class="{ highlight }" @click="emit('click')">
+  <div
+    v-if="isStat"
+    class="stat-card"
+    :class="{ highlight }"
+    role="button"
+    tabindex="0"
+    @click="emit('click')"
+    @keydown.enter="emit('click')"
+    @keydown.space.prevent="emit('click')"
+  >
     <div
       v-if="icon"
       class="stat-icon"
