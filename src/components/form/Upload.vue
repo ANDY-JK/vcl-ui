@@ -110,6 +110,12 @@ function syncModel() {
   emit('update:modelValue', [...files.value])
 }
 
+/** 清空全部文件并同步模型（模板 @click 只支持单表达式，抽成方法） */
+function clearAllFiles() {
+  files.value = []
+  syncModel()
+}
+
 /** 图片压缩：canvas resize + quality 调整（移动端尤其需要） */
 async function compressImage(file: File): Promise<File> {
   if (!props.compress || !file.type.startsWith('image/')) return file
@@ -520,10 +526,7 @@ onUnmounted(() => {
         v-if="files.length && cardHovered && !disabled"
         type="button"
         class="card-clear"
-        @click.stop="
-          files = []
-          syncModel()
-        "
+        @click.stop="clearAllFiles"
       >
         {{ t('form.delete') }}
       </button>
