@@ -4,35 +4,42 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface TabItem {
   name: string
-  label: string
+  /** i18n 词条 key（miniLayout. 前缀），模板渲染用 t() */
+  labelKey: string
   icon: string
   route: string
 }
 
 interface ScanType {
   name: string
-  label: string
+  labelKey: string
   icon: string
   color: string
 }
 
 const tabs: TabItem[] = [
-  { name: 'home', label: '首页', icon: 'house', route: '/mini/home' },
-  { name: 'category', label: '分类', icon: 'grid3x3', route: '/mini/category' },
-  { name: 'favorites', label: '收藏', icon: 'heart', route: '/mini/favorites' },
-  { name: 'profile', label: '我的', icon: 'user', route: '/mini/profile' },
+  { name: 'home', labelKey: 'tabHome', icon: 'house', route: '/mini/home' },
+  { name: 'category', labelKey: 'tabCategory', icon: 'grid3x3', route: '/mini/category' },
+  { name: 'favorites', labelKey: 'tabFavorites', icon: 'heart', route: '/mini/favorites' },
+  { name: 'profile', labelKey: 'tabProfile', icon: 'user', route: '/mini/profile' },
 ]
 
 const scanTypes: ScanType[] = [
-  { name: 'inbound', label: '入库扫码', icon: 'download', color: '#4F6EF7' },
-  { name: 'outbound', label: '出库扫码', icon: 'upload', color: '#F59E0B' },
-  { name: 'check', label: '盘点扫码', icon: 'circle-check', color: '#22AD5F' },
-  { name: 'transfer', label: '调拨扫码', icon: 'rotate-cw', color: '#8B5CF6' },
-  { name: 'query', label: '扫码查询', icon: 'search', color: '#06B6D4' },
+  { name: 'inbound', labelKey: 'scanInbound', icon: 'download', color: '#4F6EF7' },
+  { name: 'outbound', labelKey: 'scanOutbound', icon: 'upload', color: '#F59E0B' },
+  { name: 'check', labelKey: 'scanCheck', icon: 'circle-check', color: '#22AD5F' },
+  { name: 'transfer', labelKey: 'scanTransfer', icon: 'rotate-cw', color: '#8B5CF6' },
+  { name: 'query', labelKey: 'scanQuery', icon: 'search', color: '#06B6D4' },
 ]
+
+/** 渲染 Tab/扫码项的显示名 */
+const labelOf = (labelKey: string) => t(`miniLayout.${labelKey}`)
 
 const router = useRouter()
 const route = useRoute()
@@ -78,7 +85,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
   <div class="mini-layout">
     <!-- 子页面模式：返回头 -->
     <header v-if="isSubPage" class="sub-header">
-      <button class="back-btn" aria-label="返回" @click="goBack">
+      <button class="back-btn" :aria-label="t('miniLayout.back')" @click="goBack">
         <IconSvg type="arrow-left" size="md" />
       </button>
       <span class="sub-title">{{ pageTitle }}</span>
@@ -91,11 +98,11 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
       <input
         type="text"
         class="search-input"
-        placeholder="搜索商品/订单..."
+        :placeholder="t('miniLayout.searchPlaceholder')"
         readonly
         @focus="router.push('/mini/products')"
       />
-      <a href="#/button" class="back-to-pc" title="返回PC组件库">← 组件库</a>
+      <a href="#/button" class="back-to-pc" :title="t('miniLayout.backToPc')">← {{ t('miniLayout.componentLib') }}</a>
     </div>
 
     <!-- 内容区 -->
@@ -113,11 +120,11 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
         @click="goTab(tab)"
       >
         <IconSvg :type="tab.icon" size="md" />
-        <span class="tab-label">{{ tab.label }}</span>
+        <span class="tab-label">{{ labelOf(tab.labelKey) }}</span>
       </button>
       <!-- 中间扫码 -->
       <div class="scan-spot">
-        <button class="scan-btn" aria-label="扫码" @click="openScan">
+        <button class="scan-btn" :aria-label="t('miniLayout.scan')" @click="openScan">
           <IconSvg type="plus" size="lg" color="white" />
         </button>
       </div>
@@ -129,7 +136,7 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
         @click="goTab(tab)"
       >
         <IconSvg :type="tab.icon" size="md" />
-        <span class="tab-label">{{ tab.label }}</span>
+        <span class="tab-label">{{ labelOf(tab.labelKey) }}</span>
       </button>
     </nav>
 
@@ -138,16 +145,16 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
       <Transition name="sheet">
         <div v-if="showScan" class="scan-overlay" @click.self="showScan = false">
           <div class="scan-sheet">
-            <div class="sheet-title">选择扫码类型</div>
+            <div class="sheet-title">{{ t('miniLayout.scanTypeTitle') }}</div>
             <div class="sheet-grid">
               <button v-for="st in scanTypes" :key="st.name" class="scan-type-btn" @click="selectScan(st)">
                 <div class="scan-type-icon" :style="{ background: st.color }">
                   <IconSvg :type="st.icon" size="md" color="white" />
                 </div>
-                <span class="scan-type-label">{{ st.label }}</span>
+                <span class="scan-type-label">{{ labelOf(st.labelKey) }}</span>
               </button>
             </div>
-            <button class="sheet-cancel" @click="showScan = false">取消</button>
+            <button class="sheet-cancel" @click="showScan = false">{{ t('common.cancel') }}</button>
           </div>
         </div>
       </Transition>
