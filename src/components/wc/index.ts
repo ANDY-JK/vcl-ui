@@ -37,21 +37,21 @@ import Result from '../feedback/Result.vue'
 
 /** 组件 → Custom Element 标签名映射 */
 const componentMap: Record<string, ReturnType<typeof defineCustomElement>> = {
-  'vc-button': defineCustomElement(Button as any),
-  'vc-input': defineCustomElement(Input as any),
-  'vc-tag': defineCustomElement(Tag as any),
-  'vc-switch': defineCustomElement(Switch as any),
-  'vc-toast': defineCustomElement(Toast as any),
-  'vc-loading': defineCustomElement(Loading as any),
-  'vc-pagination': defineCustomElement(Pagination as any),
-  'vc-breadcrumb': defineCustomElement(Breadcrumb as any),
-  'vc-steps': defineCustomElement(Steps as any),
-  'vc-tabs': defineCustomElement(Tabs as any),
-  'vc-progress-bar': defineCustomElement(ProgressBar as any),
-  'vc-divider': defineCustomElement(Divider as any),
-  'vc-empty': defineCustomElement(Empty as any),
-  'vc-skeleton': defineCustomElement(Skeleton as any),
-  'vc-result': defineCustomElement(Result as any),
+  'vc-button': defineCustomElement(Button),
+  'vc-input': defineCustomElement(Input),
+  'vc-tag': defineCustomElement(Tag),
+  'vc-switch': defineCustomElement(Switch),
+  'vc-toast': defineCustomElement(Toast),
+  'vc-loading': defineCustomElement(Loading),
+  'vc-pagination': defineCustomElement(Pagination),
+  'vc-breadcrumb': defineCustomElement(Breadcrumb),
+  'vc-steps': defineCustomElement(Steps),
+  'vc-tabs': defineCustomElement(Tabs),
+  'vc-progress-bar': defineCustomElement(ProgressBar),
+  'vc-divider': defineCustomElement(Divider),
+  'vc-empty': defineCustomElement(Empty),
+  'vc-skeleton': defineCustomElement(Skeleton),
+  'vc-result': defineCustomElement(Result),
 }
 
 /**
@@ -68,7 +68,7 @@ export function registerWebComponents(prefix = 'vc'): void {
 }
 
 /** 单独注册一个组件为 Custom Element */
-export function defineWC(name: string, component: any): void {
+export function defineWC(name: string, component: Parameters<typeof defineCustomElement>[0]): void {
   if (!customElements.get(name)) {
     customElements.define(name, defineCustomElement(component))
   }
