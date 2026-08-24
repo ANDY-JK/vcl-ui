@@ -6,11 +6,11 @@
  */
 
 // re-export 通用工具
-export { detectPlatform, buildNavLink as buildLegNavLink } from '@/components/amap/amap-service'
-export type { NavLink, NavPoint } from '@/components/amap/amap-service'
+export { detectPlatform, buildNavLink as buildLegNavLink } from '@/components/amap'
+export type { NavLink, NavPoint } from '@/components/amap'
 
-import { buildNavLink } from '@/components/amap/amap-service'
-import type { NavLink, NavPoint } from '@/components/amap/amap-service'
+import { buildNavLink } from '@/components/amap'
+import type { NavLink, NavPoint } from '@/components/amap'
 import type { DayPlan } from '@/components/route-planner/types'
 
 /**

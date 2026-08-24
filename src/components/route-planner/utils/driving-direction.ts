@@ -6,10 +6,10 @@
  */
 
 // re-export 统一 API
-export { getDrivingRoute } from '@/components/amap/amap-service'
-export type { DrivingRouteResult } from '@/components/amap/amap-service'
+export { getDrivingRoute } from '@/components/amap'
+export type { DrivingRouteResult } from '@/components/amap'
 
-import { searchNearby } from '@/components/amap/amap-service'
+import { getDrivingRoute, searchNearby } from '@/components/amap'
 import type { DayPlan, RoutePlan, Accommodation } from '@/components/route-planner/types'
 
 /**
@@ -71,7 +71,6 @@ export async function enrichWithDrivingRoutes(
     const waypoints = points.slice(1, -1)
 
     try {
-      const { getDrivingRoute } = await import('@/components/amap/amap-service')
       const route = await getDrivingRoute(origin, destination, waypoints)
       if (route.distance > 0) day.drivingDistanceM = route.distance
       if (route.duration > 0) day.drivingTimeMin = Math.round(route.duration / 60)

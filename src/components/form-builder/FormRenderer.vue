@@ -214,13 +214,17 @@ const richtextContent = computed({
   set: (v: string) => emit('update:modelValue', v),
 })
 const richtextExec = ref(false)
+/** 当前字段的富文本编辑器 DOM（template ref，实例隔离，替代全局 querySelector） */
+const richtextEl = ref<HTMLElement | null>(null)
 
 function execRichtext(cmd: string, val?: string): void {
+  const el = richtextEl.value
+  if (!el) return
+  el.focus()
   document.execCommand(cmd, false, val)
   richtextExec.value = !richtextExec.value
-  // 手动 emit
-  const el = document.querySelector('[data-richtext-editor]') as HTMLElement
-  if (el) emit('update:modelValue', el.innerHTML)
+  // 手动 emit（execCommand 不触发 input 事件）
+  emit('update:modelValue', sanitizeHTML(el.innerHTML))
 }
 
 /** 流水号显示值 */
@@ -496,8 +500,8 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
             <button type="button" @click="execRichtext('formatBlock', '<p>')">P</button>
           </div>
           <div
+            ref="richtextEl"
             class="fb-richtext-body"
-            data-richtext-editor
             contenteditable="true"
             @input="emit('update:modelValue', sanitizeHTML(($event.target as HTMLElement).innerHTML))"
             v-html="sanitizeHTML(richtextContent)"

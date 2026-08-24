@@ -6,6 +6,7 @@
  */
 
 import type { FormDesign, CollectRecord } from './types'
+import { collectStorageKey } from './types'
 import { formatDateTimeZh } from '@/components/form/utils/date-utils'
 import { uuid } from '@/components/_internal/utils'
 
@@ -14,7 +15,7 @@ export interface FormMetaItem {
   id: string
   name: string
   updatedAt: string
-  /** 当前表单的存储 key（字段结构指纹），对应收集记录空间 */
+  /** 收集记录完整存储 key（含 fd_collect_ 前缀，与 FormCollect 传入 store 方法的 storageKey 一致） */
   collectKey: string
 }
 
@@ -30,13 +31,13 @@ export interface FormStore {
   /** 删除表单（连同其收集记录） */
   deleteForm(id: string): void
   /** 读取某表单的收集记录 */
-  loadRecords(collectKey: string): CollectRecord[]
+  loadRecords(storageKey: string): CollectRecord[]
   /** 追加收集记录 */
-  appendRecord(collectKey: string, record: CollectRecord): void
+  appendRecord(storageKey: string, record: CollectRecord): void
   /** 删除单条收集记录 */
-  removeRecord(collectKey: string, recordId: string): void
+  removeRecord(storageKey: string, recordId: string): void
   /** 清空某表单收集记录 */
-  clearRecords(collectKey: string): void
+  clearRecords(storageKey: string): void
 }
 
 // ════════════════════════════════════════
@@ -94,17 +95,14 @@ export function createLocalFormStore(): FormStore {
         item.name = name ?? item.name
         item.updatedAt = now
       } else {
-        // collectKey 使用完整字段结构指纹，不截断以避免碰撞
+        // collectKey 使用与 FormCollect 相同的字段结构指纹（单一实现，见 types.ts collectStorageKey）
         // v3 优先使用 nodes（树形结构），兼容旧版 fields
         const allFields = design.nodes ?? design.fields ?? []
-        const seed = allFields.map(f => `${f.key}:${f.type}`).join('|')
-        let h = 0
-        for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0
         item = {
           id: genId(),
           name: name || design.meta.title || '未命名表单',
           updatedAt: now,
-          collectKey: Math.abs(h).toString(36),
+          collectKey: collectStorageKey(allFields),
         }
         index.unshift(item)
       }
@@ -129,25 +127,25 @@ export function createLocalFormStore(): FormStore {
       index.splice(itemIndex, 1)
       saveIndex(index)
       localStorage.removeItem(`fd_form_${id}`)
-      if (item) localStorage.removeItem(`fd_collect_${item.collectKey}`)
+      if (item) localStorage.removeItem(item.collectKey)
     },
 
-    loadRecords(collectKey) {
-      return read<CollectRecord[]>(`fd_collect_${collectKey}`, [])
+    loadRecords(storageKey) {
+      return read<CollectRecord[]>(storageKey, [])
     },
 
-    appendRecord(collectKey, record) {
-      const list = this.loadRecords(collectKey)
+    appendRecord(storageKey, record) {
+      const list = this.loadRecords(storageKey)
       list.unshift(record)
-      write(`fd_collect_${collectKey}`, list)
+      write(storageKey, list)
     },
 
-    removeRecord(collectKey, recordId) {
-      write(`fd_collect_${collectKey}`, this.loadRecords(collectKey).filter(r => r.id !== recordId))
+    removeRecord(storageKey, recordId) {
+      write(storageKey, this.loadRecords(storageKey).filter(r => r.id !== recordId))
     },
 
-    clearRecords(collectKey) {
-      localStorage.removeItem(`fd_collect_${collectKey}`)
+    clearRecords(storageKey) {
+      localStorage.removeItem(storageKey)
     },
   }
 }

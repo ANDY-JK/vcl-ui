@@ -3,7 +3,7 @@
  * 其他 Vue 组件 import 入口
  */
 // Key 管理 — 从统一 amap 模块 re-export
-export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityCode } from '@/components/amap/amap-key'
+export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityCode } from '@/components/amap'
 
 // 坐标解析
 export { resolveCoordinate, batchResolveCoordinates } from './coordinate-resolver'

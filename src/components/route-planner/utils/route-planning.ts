@@ -15,7 +15,7 @@
  * - 组内排序：最近邻或角度扫描
  * - 分天限制：每天最多8家、驾驶≤6小时、单段≤100km
  */
-import { calcDistance as calculateDistance } from '@/components/amap/amap-service'
+import { calcDistance as calculateDistance } from '@/components/amap'
 import type { Store, DayPlan, RoutePlan, RouteOptions } from '@/components/route-planner/types'
 
 /** 默认配置 */

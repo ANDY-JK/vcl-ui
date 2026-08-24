@@ -26,6 +26,7 @@ import {
   type DesignerField, type FormMeta, type CollectRecord,
 } from './designer/types'
 import { createLocalFormStore, type FormStore } from './designer/store'
+import { isLayoutField } from './fieldRegistry'
 
 const t = useT()
 
@@ -64,6 +65,8 @@ const okMsg = ref('')
 
 const storageKey = computed(() => props.storageKey || collectStorageKey(props.fields))
 const records = ref<CollectRecord[]>([])
+/** 组件根节点（模板 ref，滚动定位限定在当前实例内） */
+const rootEl = ref<HTMLElement | null>(null)
 
 /** 格式化值显示 */
 function formatValue(v: unknown): string {
@@ -77,7 +80,7 @@ function formatValue(v: unknown): string {
 /** 详情表头（复用导出列配置） */
 const detailHeaders = computed(() =>
   props.exportColumns ?? props.fields
-    .filter(f => f.type !== 'divider' && f.type !== 'title')
+    .filter(f => !isLayoutField(f.type))
     .map(f => ({ key: f.key ?? f.id, label: f.label })),
 )
 
@@ -105,7 +108,7 @@ const todayCount = computed(() => {
 const stats = computed(() => [
   { label: '总记录', value: records.value.length, icon: 'database', color: '#3b82f6' },
   { label: '今日', value: todayCount.value, icon: 'calendar', color: '#10b981' },
-  { label: '字段数', value: props.fields.filter(f => f.type !== 'divider' && f.type !== 'title').length, icon: 'layout-grid', color: '#8b5cf6' },
+  { label: '字段数', value: props.fields.filter(f => !isLayoutField(f.type)).length, icon: 'layout-grid', color: '#8b5cf6' },
 ])
 
 // ════════════════════════════════════════
@@ -124,9 +127,9 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
   emit('submit', { ...data }, record)
   okMsg.value = t('formBuilder.submitSuccess')
   formData.value = {}
-  // 滚动到反馈区
+  // 滚动到反馈区（限定在当前实例内）
   nextTick(() => {
-    const el = document.querySelector('.ldc-feedback.ldc-ok')
+    const el = rootEl.value?.querySelector('.ldc-feedback.ldc-ok')
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   })
   setTimeout(() => { okMsg.value = '' }, 3000)
@@ -196,9 +199,9 @@ async function removeRecord(id: string): Promise<void> {
 function fillFormFromRecord(record: CollectRecord): void {
   formData.value = { ...record.data }
   detail.value = null
-  // 滚动到表单顶部
+  // 滚动到表单顶部（限定在当前实例内）
   nextTick(() => {
-    document.querySelector('.ldc-form-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    rootEl.value?.querySelector('.ldc-form-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   })
 }
 
@@ -233,7 +236,7 @@ async function exportExcel(): Promise<void> {
     const XLSX = await import('xlsx')
     // 优先使用自定义列配置，否则按 fields 自动生成
     const headers: { key: string; label: string }[] = props.exportColumns ?? props.fields
-      .filter(f => f.type !== 'divider' && f.type !== 'title')
+      .filter(f => !isLayoutField(f.type))
       .map(f => ({ key: f.key ?? f.id, label: f.label }))
     const rows = records.value.map(r => {
       const row: Record<string, unknown> = { '提交时间': r.time }
@@ -268,7 +271,7 @@ async function exportExcel(): Promise<void> {
 </script>
 
 <template>
-  <div class="ldc">
+  <div ref="rootEl" class="ldc">
     <!-- 表单头 -->
     <div class="ldc-head">
       <div class="ldc-head-icon" v-if="meta.title">
@@ -279,7 +282,7 @@ async function exportExcel(): Promise<void> {
         <p v-if="meta.description" class="ldc-desc">{{ meta.description }}</p>
       </div>
       <div class="ldc-meta-badge">
-        <span>{{ fields.filter(f => f.type !== 'divider' && f.type !== 'title').length }} 个字段</span>
+        <span>{{ fields.filter(f => !isLayoutField(f.type)).length }} 个字段</span>
         <span class="ldc-dot">·</span>
         <span v-if="requiredCount">必填 {{ requiredCount }} 项</span>
         <span v-else>无必填项</span>

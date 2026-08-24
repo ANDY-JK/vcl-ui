@@ -3,7 +3,7 @@
  * 固定格式：门店名 | 四级乡镇 | 详细地址 | 联系人 | 电话 | 经度 | 纬度
  * 第1行=表头 第2行=起点/终点 第3行起=门店数据
  */
-import { isValidLatLon, normalizeChinaLatLon } from '@/components/amap/amap-service'
+import { isValidLatLon, normalizeChinaLatLon } from '@/components/amap'
 import { parseRegion } from '@/components/_internal/utils'
 import type { Store, ImportResult } from '@/components/route-planner/types'
 

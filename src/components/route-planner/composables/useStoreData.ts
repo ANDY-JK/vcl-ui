@@ -2,7 +2,7 @@
  * 门店数据管理 — CRUD + localStorage 持久化
  */
 import { ref, computed, watch } from 'vue'
-import { isValidLatLon } from '@/components/amap/amap-service'
+import { isValidLatLon } from '@/components/amap'
 import type { Store } from '@/components/route-planner/types'
 
 const STORAGE_KEY = 'route-planner-stores'

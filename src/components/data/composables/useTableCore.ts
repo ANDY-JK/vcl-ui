@@ -3,10 +3,7 @@
 // ==================== 数据核心：排序 + 数据管道 + 分页/虚拟滚动 ====================
 import { ref, computed, watch, onUnmounted, type Ref, type ComputedRef } from 'vue'
 import type { Column, ColumnFilterState, RowMeta } from './types'
-
-// 工具函数已迁至 utils.ts，此处保留转出口兼容
 import { getCellText, matchPinyin } from './utils'
-export { getCellText, matchPinyin }
 
 /** 无 rowKey 行分配稳定递增 id（WeakMap 键为行对象引用，增删/排序/筛选均不改变，
  *  行对象被 GC 后条目自动清除，无泄漏） */

@@ -8,9 +8,9 @@
  */
 
 // re-export 统一 Key 管理
-export { setAmapKey } from '@/components/amap/amap-key'
+export { setAmapKey } from '@/components/amap'
 
-import { keywordSearch, isValidLatLon } from '@/components/amap/amap-service'
+import { keywordSearch, isValidLatLon } from '@/components/amap'
 import type { Store, CoordResult, CoordSource, ProgressCallback } from '@/components/route-planner/types'
 
 /**

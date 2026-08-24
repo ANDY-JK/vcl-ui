@@ -112,8 +112,8 @@ export function getComponentCategory(type: FieldType): ComponentCategory {
   return REGISTRY[type]?.category ?? 'input'
 }
 
-/** 判断字段是否为纯布局元素 */
-export function isLayoutField(type: FieldType): boolean {
+/** 判断字段是否为纯布局元素（divider/title）。入参放宽为 string，兼容设计器节点类型（DesignerNodeType） */
+export function isLayoutField(type: string): boolean {
   return REGISTRY[type]?.isLayout ?? false
 }
 

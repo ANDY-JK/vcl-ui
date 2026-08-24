@@ -250,6 +250,8 @@ function prevStep(): void {
 
 const toastRef = ref<InstanceType<typeof Toast>>()
 const submitting = ref(false)
+/** 组件根节点（模板 ref，滚动定位限定在当前实例内） */
+const rootEl = ref<HTMLElement | null>(null)
 
 function handleSubmit(): void {
   // 全量校验
@@ -258,9 +260,9 @@ function handleSubmit(): void {
 
   if (!isValid) {
     toastRef.value?.show(t('formBuilder.requiredAll'), 'error', 2000)
-    // 滚动到第一个错误字段
+    // 滚动到第一个错误字段（限定在当前组件实例内，避免多表单同页串扰）
     nextTick(() => {
-      const firstErrEl = document.querySelector('.fb-field-error')
+      const firstErrEl = rootEl.value?.querySelector('.fb-field-error')
       if (firstErrEl) {
         const fieldEl = firstErrEl.closest('.fb-field')
         fieldEl?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -610,7 +612,7 @@ const stepCompletion = computed(() => {
 </script>
 
 <template>
-  <div class="fb-builder">
+  <div ref="rootEl" class="fb-builder">
     <!-- 标题与描述 -->
     <Transition name="fb-header-fade">
       <div v-if="normalized.title || normalized.description" class="fb-header">

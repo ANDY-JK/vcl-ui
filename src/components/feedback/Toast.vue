@@ -1,9 +1,18 @@
+<script lang="ts">
+/**
+ * toast id 全局递增 — 模块级而非实例级，避免同页多个 <Toast> 实例 id 从 1
+ * 各自计数导致 remove(id) 误删另一实例的同 id toast。
+ * 注意：<script setup> 顶层 let 每实例一份，必须放普通 <script> 块才是模块作用域。
+ */
+let nextId = 1
+</script>
+
 <script setup lang="ts">
 // ⛔ 保护 — Toast 通知系统，禁止：clamp() → px，动画时序；z-index 层级 = var(--z-top, 9999)（最高优先级通知，ImagePreview 内嵌时临时提升至 10001）
 //    需我确认：ToastItem 接口增删、position 定位逻辑
 //    注意：ToastItem / ToastAPI / TOAST_KEY / useToast 已抽到 toast-context.ts，
 //          因为 <script setup> 不能包含 ES module exports
-import { ref, computed, provide } from 'vue'
+import { ref, computed, provide, onUnmounted } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { TOAST_KEY } from './composables/toast-context'
 import type { ToastItem } from './composables/toast-context'
@@ -32,7 +41,6 @@ const inlineVisible = ref(true)
 
 // toast 队列 — 通过 provide/inject 共享，多实例同页面共享同一队列
 const toasts = ref<ToastItem[]>([])
-let nextId = 1
 
 const isToast = computed(() => props.variant === 'toast')
 const isInline = computed(() => props.variant === 'inline')
@@ -121,6 +129,17 @@ if (typeof window !== 'undefined') {
     configurable: true,
   })
 }
+
+// 本实例卸载时若仍绑定 window.__toast，则清除，避免指向已卸载组件（dangling）
+onUnmounted(() => {
+  if (typeof window !== 'undefined' && (window as unknown as { __toast?: unknown }).__toast) {
+    try {
+      delete (window as unknown as { __toast?: unknown }).__toast
+    } catch {
+      // 某些环境 window.__toast 不可配置，忽略
+    }
+  }
+})
 
 /** 组件实例方法（通过 ref 或 window.__toast 调用） */
 defineExpose({

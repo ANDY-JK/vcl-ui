@@ -28,10 +28,7 @@ export { getFieldRegistration, getComponentCategory, isLayoutField, getComponent
 export type { FieldRegistration } from './fieldRegistry'
 
 // ── 预置 Schema 模板 ──
-export { contractCollectionSchema } from './presets/contract-collection'
-export { inspectionSchema } from './presets/inspection'
-export { registrationSchema } from './presets/registration'
-export { containerDemoNodes, containerDemoMeta } from './presets/container-demo'
+export { contractCollectionSchema, inspectionSchema, registrationSchema, containerDemoNodes, containerDemoMeta } from './presets'
 
 // ── 设计器类型与工具 ──
 export {
@@ -59,7 +56,7 @@ export type {
   ValidationRule,
   VisibleWhen,
 } from './types'
-export type { ComponentCategory } from './useFormSchema'
+export type { ComponentCategory } from './fieldRegistry'
 
 // ── 设计器类型 (v3) ──
 export type {

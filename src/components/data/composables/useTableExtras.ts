@@ -3,8 +3,7 @@
 // ==================== 周边功能：搜索 / 导出 / 右键菜单 / 行选择 / 持久化 / 全局事件 ====================
 import { ref, computed, watch, nextTick, type Ref, type ComputedRef } from 'vue'
 import type { Column, ColumnFilterState, RowContextAction } from './types'
-import { getCellText } from './useTableCore'
-import { clampFloatingPosition, markLayerOpen } from './utils'
+import { getCellText, clampFloatingPosition, markLayerOpen } from './utils'
 import { useTablePersistence } from './useTablePersistence'
 import { downloadBlob } from '@/components/_internal/utils'
 

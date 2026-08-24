@@ -19,6 +19,7 @@ export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityC
 export {
   // 通用工具
   isValidLatLon,
+  normalizeChinaLatLon,
   calcDistance,
   // POI 搜索
   keywordSearch,

@@ -6,7 +6,7 @@
  * - 当前天高亮
  */
 import { ref, computed } from 'vue'
-import { calcDistance as calculateDistance } from '@/components/amap/amap-service'
+import { calcDistance as calculateDistance } from '@/components/amap'
 import type { RoutePlan, NavLink, Store } from '@/components/route-planner/types'
 import { useT } from '@/components/_internal/i18n'
 

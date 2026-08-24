@@ -7,7 +7,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { ElAmap, initAMapApiLoader } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import type { Store, RoutePlan } from '@/components/route-planner/types'
-import { getAmapJsKey, getAmapSecurityCode } from '@/components/amap/amap-key'
+import { getAmapJsKey, getAmapSecurityCode } from '@/components/amap'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
