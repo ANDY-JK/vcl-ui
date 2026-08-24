@@ -30,7 +30,7 @@ import Tabs from '@/components/nav/Tabs.vue'
 import Collapse from '@/components/data/Collapse.vue'
 import Card from '@/components/data/Card.vue'
 import Toast from '@/components/feedback/Toast.vue'
-import type { FormSchema, FormData, FormField, FormErrors, FieldContainer } from './types'
+import type { FormSchema, FormData, FormField, FormErrors, RenderSection } from './types'
 
 const t = useT()
 
@@ -484,22 +484,6 @@ const renderFields = computed<FormField[]>(() => {
   }
   return visibleFields.value
 })
-
-/** 一个渲染区块：按容器归属把字段切分成连续段 */
-interface RenderSection {
-  id: string
-  /** 区块标题（容器 label 或 group 名） */
-  title: string | null
-  /** 是否多列网格布局（grid 容器 或 表单 layout=grid） */
-  isGrid: boolean
-  /** 网格列数 */
-  columns: number
-  /** 字段默认跨列数（未显式 span 时） */
-  defaultSpan: number
-  /** 区块对应的容器定义（tabs/collapse/steps 走交互渲染，其余走卡片/网格） */
-  container?: FieldContainer
-  fields: FormField[]
-}
 
 /** 把 renderFields 按「容器/group 归属」切分为连续区块，保持字段原始顺序 */
 const renderSections = computed<RenderSection[]>(() => {

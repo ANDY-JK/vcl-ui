@@ -18,8 +18,8 @@
 import { calcDistance as calculateDistance } from '@/components/amap'
 import type { Store, DayPlan, RoutePlan, RouteOptions } from '@/components/route-planner/types'
 
-/** 默认配置 */
-const DEFAULTS = {
+/** 默认配置（RouteResult 等展示层复用估算参数，禁止单侧改魔数） */
+export const DEFAULTS = {
   dailyLimitHours: 8, // 每天驾驶+拜访总时长上限（从 6h 提升到 8h，因为现在包含拜访时间）
   maxStoresPerDay: 8, // 每天最多门店数
   maxSegmentKm: 80, // 单段最大距离（超过则分天，80km≈1h 驾驶）

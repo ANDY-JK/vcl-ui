@@ -7,13 +7,8 @@
  * formData 传入的是响应式对象（按引用），子组件内直接写其属性即可触发父级深 watcher。
  */
 import FormRenderer from './FormRenderer.vue'
-import type { FormField, FormErrors } from './types'
+import type { FormField, FormErrors, RenderSection } from './types'
 import type { Option } from '@/components/shared/types'
-
-interface RenderSection {
-  columns: number
-  defaultSpan: number
-}
 
 const props = defineProps<{
   fields: FormField[]

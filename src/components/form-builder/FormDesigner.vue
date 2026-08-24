@@ -31,7 +31,7 @@ import OutlineTree from './designer/OutlineTree.vue'
 import {
   createField, toFormSchema, flattenNodes, findNode, updateNodeInTree,
   removeNodeFromTree, insertNode, insertChildNode, isContainerNode,
-  getNodePath, moveNodeRelative, findParent,
+  getNodePath, moveNodeRelative, findParent, FORM_DESIGN_VERSION,
   type DesignerNode, type DesignerNodeType, type FormMeta, type FormDesign,
 } from './designer/types'
 
@@ -443,7 +443,7 @@ function exportJson(): void {
     showTip('没有可导出的字段')
     return
   }
-  const design: FormDesign = { schemaVersion: 3, meta: props.meta, nodes: currentNodes.value }
+  const design: FormDesign = { schemaVersion: FORM_DESIGN_VERSION, meta: props.meta, nodes: currentNodes.value }
   const json = JSON.stringify(design, null, 2)
   const blob = new Blob([json], { type: 'application/json' })
   downloadBlob(blob, 'form-design.json')
@@ -548,7 +548,7 @@ const previewSchema = computed(() => toFormSchema(currentNodes.value, props.meta
 
 /** 格式化的 Schema JSON（带高亮） */
 const schemaJson = computed(() => {
-  const design: FormDesign = { schemaVersion: 3, meta: props.meta, nodes: currentNodes.value }
+  const design: FormDesign = { schemaVersion: FORM_DESIGN_VERSION, meta: props.meta, nodes: currentNodes.value }
   return JSON.stringify(design, null, 2)
 })
 

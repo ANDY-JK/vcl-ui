@@ -9,6 +9,7 @@ import { ref, computed } from 'vue'
 import { calcDistance as calculateDistance } from '@/components/amap'
 import type { RoutePlan, NavLink, Store } from '@/components/route-planner/types'
 import { useT } from '@/components/_internal/i18n'
+import { DEFAULTS } from './utils/route-planning'
 
 const t = useT()
 
@@ -46,8 +47,8 @@ function formatDistance(m: number): string {
 function segmentInfo(a: Store, b: Store): { dist: string; time: string } | null {
   if (a.latitude == null || a.longitude == null || b.latitude == null || b.longitude == null) return null
   const distM = calculateDistance(a.latitude, a.longitude, b.latitude, b.longitude)
-  const roadM = distM * 1.4
-  const timeMin = Math.round(roadM / ((50 * 1000) / 60))
+  const roadM = distM * DEFAULTS.roadFactor
+  const timeMin = Math.round(roadM / ((DEFAULTS.avgSpeedKmh * 1000) / 60))
   return { dist: formatDistance(roadM), time: formatTime(timeMin) }
 }
 

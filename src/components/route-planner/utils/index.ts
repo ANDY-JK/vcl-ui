@@ -19,4 +19,4 @@ export { planRoute, enrichAccommodations, replanFrom } from './route-planning'
 export { parseExcel } from './excel-import'
 
 // 导航深度链接
-export { buildAllNavLinks, buildDayNavLink, buildLegNavLink, detectPlatform } from './gaode-navigator'
+export { buildAllNavLinks, buildDayNavLink, buildNavLink, detectPlatform } from './gaode-navigator'

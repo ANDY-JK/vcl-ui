@@ -5,8 +5,8 @@
  * 此文件保留路线规划相关的业务逻辑（buildDayNavLink / buildAllNavLinks 等）
  */
 
-// re-export 通用工具
-export { detectPlatform, buildNavLink as buildLegNavLink } from '@/components/amap'
+// re-export 通用工具（保留原名，误导性别名 buildLegNavLink 已废弃）
+export { detectPlatform, buildNavLink } from '@/components/amap'
 export type { NavLink, NavPoint } from '@/components/amap'
 
 import { buildNavLink } from '@/components/amap'

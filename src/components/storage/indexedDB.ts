@@ -15,8 +15,14 @@ import { warnOnce } from '@/components/_internal/warnOnce'
 
 // ======================== 类型 ========================
 
-/** 存储条目包装，统一携带过期元数据 */
-interface StoreItem<T = unknown> {
+/**
+ * 存储条目包装 — IndexedDB 持久化的统一容器格式。
+ *
+ * ⛔ 受保护契约：所有 store 用 keyPath:'key'，value 即调用方传入的原始对象，
+ * dbPut 自动包裹、dbGet/dbGetAll 自动解包并过滤过期条目。
+ * 依赖此格式的上层（如 contract-storage）据此解构，改动包装格式必须同步迁移。
+ */
+export interface StoreItem<T = unknown> {
   key: string
   value: T
   _ts: number // 写入时间戳

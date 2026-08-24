@@ -14,6 +14,13 @@
 import type { FormSchema, FormField, FieldType, FieldContainer, FieldContainerType } from '../types'
 import type { Option, CascaderOption } from '@/components/shared/types'
 import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl, uuid } from '@/components/_internal/utils'
+import { extractFields } from '../expression-evaluator'
+
+/**
+ * 从联动公式中提取依赖字段 key（extractFields 的语义别名，兼容旧命名）
+ * 公式语法：`{{fieldName}}` → 提取 fieldName
+ */
+export { extractFields as extractFormulaFields }
 
 // ════════════════════════════════════════
 // 节点类型
@@ -324,6 +331,9 @@ export interface FormMeta {
   clearAfterSubmit?: boolean
 }
 
+/** 设计器数据格式版本（FormDesign.schemaVersion）。导入时兼容性检测依赖此值，改版本号需同步迁移逻辑 */
+export const FORM_DESIGN_VERSION = 3
+
 /** 完整表单设计：元信息 + 节点树 */
 export interface FormDesign {
   /** Schema 版本号（用于导入时兼容性检测） */
@@ -426,22 +436,6 @@ export const FIELD_TYPES: FieldTypeMeta[] = [
 // ════════════════════════════════════════
 // 工具函数
 // ════════════════════════════════════════
-
-/**
- * 从联动公式中提取依赖字段 key
- *
- * 公式语法：`{{fieldName}}` → 提取 fieldName
- * 例如 `{{price}} * {{quantity}}` → ['price', 'quantity']
- */
-export function extractFormulaFields(formula: string): string[] {
-  const regex = /\{\{(\w+)\}\}/g
-  const fields: string[] = []
-  let match: RegExpExecArray | null
-  while ((match = regex.exec(formula)) !== null) {
-    if (!fields.includes(match[1])) fields.push(match[1])
-  }
-  return fields
-}
 
 let _fid = 0
 /** 生成节点实例 id */
@@ -853,7 +847,7 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
     const evt = f.eventConfig
     if (evt?.linkageType && evt.linkageType !== 'none' && evt.linkageFormula) {
       // 从公式中提取依赖字段 {{fieldName}} → fieldName
-      const dependsOn = extractFormulaFields(evt.linkageFormula)
+      const dependsOn = extractFields(evt.linkageFormula)
       base.linkage = {
         type: evt.linkageType,
         formula: evt.linkageFormula,
@@ -949,7 +943,7 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
   }
 
   return {
-    schemaVersion: 3,
+    schemaVersion: FORM_DESIGN_VERSION,
     title: meta?.title,
     description: meta?.description,
     fields: formFields,

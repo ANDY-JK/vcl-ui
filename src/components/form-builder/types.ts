@@ -295,6 +295,22 @@ export interface FieldContainer {
   slot?: number
 }
 
+/** 一个渲染区块：按容器归属把字段切分成连续段（FormBuilder 产出，FieldList 消费） */
+export interface RenderSection {
+  id: string
+  /** 区块标题（容器 label 或 group 名） */
+  title: string | null
+  /** 是否多列网格布局（grid 容器 或 表单 layout=grid） */
+  isGrid: boolean
+  /** 网格列数 */
+  columns: number
+  /** 字段默认跨列数（未显式 span 时） */
+  defaultSpan: number
+  /** 区块对应的容器定义（tabs/collapse/steps 走交互渲染，其余走卡片/网格） */
+  container?: FieldContainer
+  fields: FormField[]
+}
+
 /** 步骤定义（steps 模式） */
 export interface FormStep {
   /** 步骤标题 */
