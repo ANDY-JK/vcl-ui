@@ -6,6 +6,9 @@ import { init } from './utils/echarts-setup'
 import type { EChartsOption } from 'echarts'
 import type { BaseChartProps } from './utils/types'
 import { toSize } from './utils/chart-utils'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = withDefaults(
   defineProps<
@@ -16,7 +19,7 @@ const props = withDefaults(
   {
     option: null,
     loading: false,
-    emptyText: '暂无数据',
+    emptyText: '',
     height: '100%',
     width: '100%',
     darkMode: false,
@@ -55,17 +58,18 @@ const showEmpty = computed(() => {
 })
 
 /** 无障碍：从 option.title 提取图表名称，作为容器 aria-label（读屏把 canvas 当图片朗读） */
+const emptyText = computed(() => props.emptyText || t('common.empty'))
 const ariaLabel = computed(() => {
   const opt = props.option as Record<string, unknown> | null
   const title = opt?.title as string | Record<string, unknown> | Array<Record<string, unknown>> | undefined
-  if (!title) return props.emptyText
+  if (!title) return emptyText.value
   if (typeof title === 'string') return title
   if (Array.isArray(title)) {
     const texts = title.map((t) => t?.text).filter(Boolean) as string[]
-    return texts.length ? texts.join('、') : props.emptyText
+    return texts.length ? texts.join('、') : emptyText.value
   }
   const text = title.text
-  return text ? String(text) : props.emptyText
+  return text ? String(text) : emptyText.value
 })
 
 /** 构建 toolbar 配置 */
@@ -94,7 +98,11 @@ function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
     if ('title' in bo) toolbox.top = 36
     const userToolbox = bo.toolbox as Record<string, unknown> | undefined
     const mergedToolbox = userToolbox
-      ? { ...toolbox, ...userToolbox, feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) } }
+      ? {
+          ...toolbox,
+          ...userToolbox,
+          feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
+        }
       : toolbox
     return { ...opt, baseOption: { ...bo, toolbox: mergedToolbox } } as EChartsOption
   }
@@ -103,7 +111,11 @@ function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
   if ('title' in opt) toolbox.top = 36
   const userToolbox = (opt as Record<string, unknown>).toolbox as Record<string, unknown> | undefined
   const mergedToolbox = userToolbox
-    ? { ...toolbox, ...userToolbox, feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) } }
+    ? {
+        ...toolbox,
+        ...userToolbox,
+        feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
+      }
     : toolbox
   return { ...opt, toolbox: mergedToolbox } as EChartsOption
 }
@@ -146,7 +158,7 @@ function ensureInstance() {
             chartInstance.setOption(mergeToolbox(fallbackOpt)!, true)
           } catch {
             /* 最终降级失败，放弃渲染 */
-        }
+          }
         }
       } else {
         console.warn('[BaseChart] setOption 失败:', e)
@@ -199,7 +211,11 @@ watch(
             const compound = merged as unknown as { baseOption?: Record<string, unknown>; options?: unknown[] }
             const fallbackOpt = (compound.options?.[0] || compound.baseOption) as EChartsOption | undefined
             if (fallbackOpt) {
-              try { chartInstance.setOption(mergeToolbox(fallbackOpt)!, true) } catch { /* give up */ }
+              try {
+                chartInstance.setOption(mergeToolbox(fallbackOpt)!, true)
+              } catch {
+                /* give up */
+              }
             }
           }
         }

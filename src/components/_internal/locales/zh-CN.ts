@@ -88,6 +88,11 @@ export default {
     backToPc: '返回PC组件库',
     componentLib: '组件库',
   },
+  errorBoundary: {
+    title: '页面加载异常',
+    retry: '重新加载',
+    unknownError: '未知错误',
+  },
   offline: {
     disconnected: '网络连接已断开，部分功能可能不可用',
   },

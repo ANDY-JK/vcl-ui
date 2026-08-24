@@ -85,6 +85,11 @@ export default {
     backToPc: 'Back to PC Component Library',
     componentLib: 'Component Library',
   },
+  errorBoundary: {
+    title: 'Page Load Error',
+    retry: 'Reload',
+    unknownError: 'Unknown error',
+  },
   offline: {
     disconnected: 'Network disconnected, some features may be unavailable',
   },

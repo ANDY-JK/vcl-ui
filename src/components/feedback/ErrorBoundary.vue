@@ -5,13 +5,13 @@
     <slot name="fallback" :error="error" :retry="retry">
       <div class="eb-icon">!</div>
       <p class="eb-title">
-        {{ title }}
+        {{ title || t('errorBoundary.title') }}
       </p>
       <p class="eb-desc">
-        {{ error?.message || '未知错误' }}
+        {{ error?.message || t('errorBoundary.unknownError') }}
       </p>
       <button class="eb-btn" @click="retry">
-        {{ retryText }}
+        {{ retryText || t('errorBoundary.retry') }}
       </button>
     </slot>
   </div>
@@ -20,6 +20,9 @@
 
 <script setup lang="ts">
 import { ref, watch, onErrorCaptured } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface Props {
   title?: string
@@ -29,8 +32,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: '页面加载异常',
-  retryText: '重新加载',
+  title: '',
+  retryText: '',
   watchKey: undefined,
 })
 
