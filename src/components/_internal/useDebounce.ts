@@ -12,7 +12,7 @@
  *
  * also exports useThrottle for scroll/mousemove etc.
  */
-import { ref, watch, onUnmounted, type Ref } from 'vue'
+import { ref, watch, onUnmounted, getCurrentInstance, type Ref } from 'vue'
 
 /**
  * 防抖 ref：source 变化后等待 delay ms 才同步到 debouncedRef。
@@ -24,7 +24,7 @@ export function useDebounce<T>(source: Ref<T>, delay = 300) {
 
   const stop = watch(
     source,
-    val => {
+    (val) => {
       if (timer) clearTimeout(timer)
       timer = setTimeout(() => {
         debounced.value = val
@@ -41,10 +41,13 @@ export function useDebounce<T>(source: Ref<T>, delay = 300) {
     }
   }
 
-  onUnmounted(() => {
-    cancel()
-    stop()
-  })
+  // 组件上下文才注册清理钩子（非组件调用如测试/工具场景跳过，避免 Vue warn）
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      cancel()
+      stop()
+    })
+  }
 
   return { debouncedRef: debounced, cancel }
 }
@@ -53,10 +56,7 @@ export function useDebounce<T>(source: Ref<T>, delay = 300) {
  * 防抖函数：包装一个函数，在最后一次调用后 delay ms 执行。
  * 适合事件处理函数。
  */
-export function useDebounceFn<F extends (...args: never[]) => unknown>(
-  fn: F,
-  delay = 300,
-) {
+export function useDebounceFn<F extends (...args: never[]) => unknown>(fn: F, delay = 300) {
   let timer: ReturnType<typeof setTimeout> | null = null
 
   function run(...args: Parameters<F>) {
@@ -74,7 +74,7 @@ export function useDebounceFn<F extends (...args: never[]) => unknown>(
     }
   }
 
-  onUnmounted(cancel)
+  if (getCurrentInstance()) onUnmounted(cancel)
 
   return { run, cancel }
 }
@@ -88,7 +88,7 @@ export function useThrottle<T>(source: Ref<T>, delay = 100) {
   let lastTime = 0
   let timer: ReturnType<typeof setTimeout> | null = null
 
-  const stop = watch(source, val => {
+  const stop = watch(source, (val) => {
     const now = Date.now()
     const remaining = delay - (now - lastTime)
 
@@ -115,10 +115,12 @@ export function useThrottle<T>(source: Ref<T>, delay = 100) {
     }
   }
 
-  onUnmounted(() => {
-    cancel()
-    stop()
-  })
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      cancel()
+      stop()
+    })
+  }
 
   return { throttledRef: throttled, cancel }
 }
@@ -127,10 +129,7 @@ export function useThrottle<T>(source: Ref<T>, delay = 100) {
  * 节流函数：包装一个函数，每 delay ms 最多执行一次。
  * 适合 scroll / mousemove 等事件处理函数。
  */
-export function useThrottleFn<F extends (...args: never[]) => unknown>(
-  fn: F,
-  delay = 100,
-) {
+export function useThrottleFn<F extends (...args: never[]) => unknown>(fn: F, delay = 100) {
   let lastTime = 0
   let timer: ReturnType<typeof setTimeout> | null = null
 
@@ -161,7 +160,7 @@ export function useThrottleFn<F extends (...args: never[]) => unknown>(
     }
   }
 
-  onUnmounted(cancel)
+  if (getCurrentInstance()) onUnmounted(cancel)
 
   return { run, cancel }
 }

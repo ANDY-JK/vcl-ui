@@ -1,7 +1,7 @@
 // ⛔ 保护 — 禁止修改排序/筛选/分页管道逻辑，禁止删除虚拟滚动
 //    需我确认：sortHistory 行为、truncateThreshold 默认值、pageSize 逻辑
 // ==================== 数据核心：排序 + 数据管道 + 分页/虚拟滚动 ====================
-import { ref, computed, watch, onUnmounted, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, watch, onUnmounted, getCurrentInstance, type Ref, type ComputedRef } from 'vue'
 import type { Column, ColumnFilterState, RowMeta } from './types'
 import { getCellText } from './utils'
 import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
@@ -280,12 +280,15 @@ export function useTableCore(
     })
   }
 
-  onUnmounted(() => {
-    if (_rafId) {
-      cancelAnimationFrame(_rafId)
-      _rafId = 0
-    }
-  })
+  // 组件上下文才注册 rAF 清理（非组件调用如测试/工具场景跳过，避免 Vue warn）
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      if (_rafId) {
+        cancelAnimationFrame(_rafId)
+        _rafId = 0
+      }
+    })
+  }
 
   return {
     // Sort

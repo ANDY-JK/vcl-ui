@@ -1,7 +1,12 @@
 // useFormStorage 降级行为测试（happy-dom 无 IndexedDB/navigator.storage）
 // 锁定：环境不支持时优雅降级（不抛错、返回安全值），而非崩溃
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useFormStorage } from '@/components/form-builder/useFormStorage'
+
+// 无 IndexedDB 时 loadDraft 走 catch 预期 console.warn——静默避免污染测试日志
+beforeEach(() => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
+})
 
 describe('useFormStorage 降级行为（无 IndexedDB 环境）', () => {
   it('loadDraft：IndexedDB 不可用时返回 null（不抛错）', async () => {

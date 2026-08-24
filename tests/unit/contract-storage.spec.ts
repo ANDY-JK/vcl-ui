@@ -1,11 +1,17 @@
 // M9 契约固化测试：contract-storage 依赖 StoreItem 包装格式 + 墓碑/对账逻辑
 // ⛔ 本测试锁定的是「契约形状」：dbPut 的 value 必须含 appleId 冗余、dbGetAll 返回解包后 value。
 // 若 indexedDB.ts 的 StoreItem 包装格式变更，或 contract-storage 的 LocalRecord 形状变更，此处立即红。
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   CompositeBackend, sanitizeObjectKeyPart,
   type StorageBackend, type StoreUploadState,
 } from '@/components/storage/contract-storage'
+
+// 本测试故意触发云端故障/降级路径，预期 console.warn/error 输出——静默避免污染测试日志
+beforeEach(() => {
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+})
 
 // ===== 假后端（注入 CompositeBackend，测对账逻辑，不碰真实 IndexedDB） =====
 

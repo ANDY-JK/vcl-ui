@@ -13,6 +13,8 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    // 全局 setup：静默测试环境噪音（composable 组件外调用的生命周期 warn 等）
+    setupFiles: ['tests/unit/setup.ts'],
     // 只收集 tests/unit 下的 vitest 用例，tests/*.spec.mjs 为 Playwright 套件，保持独立
     include: ['tests/unit/**/*.spec.ts'],
     coverage: {

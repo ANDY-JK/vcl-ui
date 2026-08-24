@@ -40,7 +40,7 @@ describe('P1-5 可点击元素键盘可达', () => {
 
   it('TimeColumns tp-cell：role=button + Enter 触发选中', async () => {
     const wrapper = mount(TimeColumns, {
-      props: { modelValue: '10:30', showSeconds: false },
+      props: { value: '10:30', format: 'HH:mm', step: 1 },
     })
     const cell = wrapper.findAll('.tp-cell')[0]
     expect(cell.attributes('role')).toBe('button')

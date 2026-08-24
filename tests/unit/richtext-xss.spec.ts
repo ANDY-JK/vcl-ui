@@ -46,6 +46,7 @@ describe('P0-4 富文本 v-html 消毒', () => {
     const wrapper = mount(FormRenderer, {
       props: {
         field: { type: 'richtext', key: 'c', label: '正文', props: {}, modelValue: '<p>正文</p>' },
+        modelValue: '<p>正文</p>',
       },
       global: { stubs: { FieldError: true } },
     })
