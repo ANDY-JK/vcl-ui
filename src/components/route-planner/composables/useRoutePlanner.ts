@@ -4,7 +4,7 @@
  */
 import { ref } from 'vue'
 import {
-  planRoute, enrichWithDrivingRoutes,
+  planRoute, enrichAccommodations, enrichWithDrivingRoutes,
   buildAllNavLinks, replanFrom,
 } from '@/components/route-planner/utils'
 import type { RoutePlan, RouteOptions, Store } from '@/components/route-planner/types'
@@ -25,6 +25,10 @@ export function useRoutePlanner() {
     try {
       // 基础规划（闭环回路）
       const result = planRoute(options)
+      // 补充住宿建议（当天最后门店城市/区县区域，非真实 POI）。
+      // 若不接线，buildAllNavLinks / enrichWithDrivingRoutes 读 day.accommodation 恒为 null，
+      // 跨天路线（非首日从 prevAccommodation 出发）点序列缺失。接线后住宿建议参与导航与驾车数据。
+      await enrichAccommodations(result)
       plan.value = result
 
       // 生成导航链接
@@ -77,6 +81,8 @@ export function useRoutePlanner() {
     try {
       // 从当前位置重新规划
       const newPlan = replanFrom(currentLocation, remainingStores, plan.value)
+      // 补充住宿建议（与 generate 一致，replan 后导航链接/驾车数据同样依赖 accommodation）
+      await enrichAccommodations(newPlan)
       plan.value = newPlan
 
       // 生成导航链接
