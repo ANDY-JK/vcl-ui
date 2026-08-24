@@ -23,7 +23,14 @@ function doWarm(): void {
 }
 
 // localStorage 持久化：上次访问已预热则跳过等待
-if (typeof window !== 'undefined') {
+// 幂等守卫：window 级标记防止库被多份拷贝打包时重复挂监听/重复预热（SSR 下 window 不存在直接跳过）
+let autoInited = false
+function autoInit(): void {
+  if (autoInited || typeof window === 'undefined') return
+  autoInited = true
+  const win = window as unknown as { __vueLibVoiceInited?: boolean }
+  if (win.__vueLibVoiceInited) return
+  win.__vueLibVoiceInited = true
   try {
     if (localStorage.getItem(KEY) === '1') {
       doWarm()
@@ -39,6 +46,7 @@ if (typeof window !== 'undefined') {
     /* localStorage 不可用，跳过持久化逻辑 */
   }
 }
+autoInit()
 
 export function unlockVoice(): void {
   doWarm()

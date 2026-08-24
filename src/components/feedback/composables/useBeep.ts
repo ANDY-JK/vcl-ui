@@ -23,11 +23,19 @@ function unlock(): void {
 }
 
 // 用户首次点击/按键时自动解锁，之后 beep 直接可用
-if (typeof window !== 'undefined') {
+// 幂等守卫：window 级标记防止库被多份拷贝打包时重复挂监听（SSR 下 window 不存在直接跳过）
+let autoInited = false
+function autoInit(): void {
+  if (autoInited || typeof window === 'undefined') return
+  autoInited = true
+  const win = window as unknown as { __vueLibBeepInited?: boolean }
+  if (win.__vueLibBeepInited) return
+  win.__vueLibBeepInited = true
   ;['mousedown', 'touchstart', 'keydown', 'click'].forEach((e) =>
     document.addEventListener(e, unlock, { passive: true, once: true }),
   )
 }
+autoInit()
 
 export function unlockAudio(): void {
   unlock()

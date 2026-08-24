@@ -114,3 +114,21 @@ describe('H8: 字段类型注册表与设计器元数据对齐', () => {
     }
   })
 })
+
+describe('H12连带: useVoice/useBeep 顶层副作用幂等守卫', () => {
+  it('import 后 window 级守卫标记已设置（防多份拷贝重复初始化）', async () => {
+    await import('@/components/feedback/composables/useVoice')
+    await import('@/components/feedback/composables/useBeep')
+    const win = window as unknown as { __vueLibVoiceInited?: boolean; __vueLibBeepInited?: boolean }
+    expect(win.__vueLibVoiceInited).toBe(true)
+    expect(win.__vueLibBeepInited).toBe(true)
+  })
+
+  it('unlockVoice/unlockAudio 可调用（SSR 环境静默降级）', async () => {
+    const { unlockVoice } = await import('@/components/feedback/composables/useVoice')
+    const { unlockAudio } = await import('@/components/feedback/composables/useBeep')
+    // 不抛异常即通过（jsdom 无 speechSynthesis/AudioContext 真实实现，走 catch 静默）
+    expect(() => unlockVoice()).not.toThrow()
+    expect(() => unlockAudio()).not.toThrow()
+  })
+})
