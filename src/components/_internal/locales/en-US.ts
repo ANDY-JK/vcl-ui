@@ -38,6 +38,36 @@ export default {
     info: 'Info',
     logout: 'Logout',
   },
+  imagePreview: {
+    imageLabel: 'Image {n}',
+    loadFailed: 'Failed to load image',
+    // Annotation tools
+    annoRect: 'Rectangle (R)',
+    annoPen: 'Pen (P)',
+    annoCircle: 'Circle (C)',
+    lineWidth: 'Width {w}px',
+    // Top bar
+    thumbs: 'Thumbnails',
+    close: 'Close (Esc)',
+    prev: 'Previous (←)',
+    next: 'Next (→)',
+    // Toolbar
+    rotateCCW: 'Rotate counterclockwise 90°',
+    rotateCW: 'Rotate clockwise 90°',
+    flipH: 'Flip horizontally',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    zoomActual: '1:1',
+    download: 'Download (with annotations)',
+    copy: 'Copy (with annotations)',
+    // Action results
+    downloadOk: 'Image downloaded',
+    downloadFail: 'Download failed',
+    copyOk: 'Copied to clipboard',
+    copyFail: 'Copy failed (browser permission)',
+    exportFailNotLoaded: 'Export failed (image not loaded or cross-origin)',
+    exportFailCrossOrigin: 'Export failed (image cross-origin restriction)',
+  },
   offline: {
     disconnected: 'Network disconnected, some features may be unavailable',
   },

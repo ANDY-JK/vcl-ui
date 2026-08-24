@@ -4,6 +4,11 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import Toast from '@/components/feedback/Toast.vue'
 import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_internal/useScreenshot'
 import { boostZTop } from '@/components/_internal/z-top'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
+// 模板 v-for 循环变量曾遮蔽 t()，i18n 函数用 $t 别名并收窄返回 string（ComposerTranslation 不能作索引类型）
+const $t = t as (key: string, params?: Record<string, unknown>) => string
 
 // ---- 图片项 ----
 export interface ImageItem {
@@ -811,14 +816,14 @@ async function downloadImage() {
   if (_loadState.value !== 'loaded') return
   const cvs = await buildExportCanvas()
   if (!cvs) {
-    notify('导出失败（图片未加载或跨域）', 'error')
+    notify($t('imagePreview.exportFailNotLoaded'), 'error')
     return
   }
   try {
     const ok = downloadScreenshot(cvs.toDataURL('image/png'), `${displayTitle.value || 'image'}.png`)
-    notify(ok ? '图片已下载' : '下载失败', ok ? 'success' : 'error')
+    notify(ok ? $t('imagePreview.downloadOk') : $t('imagePreview.downloadFail'), ok ? 'success' : 'error')
   } catch {
-    notify('导出失败（图片跨域限制）', 'error')
+    notify($t('imagePreview.exportFailCrossOrigin'), 'error')
   }
 }
 
@@ -826,22 +831,22 @@ async function copyImage() {
   if (_loadState.value !== 'loaded') return
   const cvs = await buildExportCanvas()
   if (!cvs) {
-    notify('导出失败（图片未加载或跨域）', 'error')
+    notify($t('imagePreview.exportFailNotLoaded'), 'error')
     return
   }
   const blob = await toPngBlob(cvs)
   if (!blob) {
-    notify('导出失败（图片跨域限制）', 'error')
+    notify($t('imagePreview.exportFailCrossOrigin'), 'error')
     return
   }
   const ok = await copyScreenshotToClipboard(blob)
-  notify(ok ? '已复制到剪贴板' : '复制失败（浏览器权限限制）', ok ? 'success' : 'error')
+  notify(ok ? $t('imagePreview.copyOk') : $t('imagePreview.copyFail'), ok ? 'success' : 'error')
 }
 
 // ---- 标题 ----
 const displayTitle = computed(() => {
   if (props.title) return props.title
-  if (isMulti.value) return currentLabel.value || `图片 ${currentIndex.value + 1}`
+  if (isMulti.value) return currentLabel.value || $t('imagePreview.imageLabel', { n: currentIndex.value + 1 })
   return currentLabel.value || ''
 })
 </script>
@@ -865,14 +870,20 @@ const displayTitle = computed(() => {
         <!-- 标注工具：矩形 / 圆形 / 画笔 / 颜色 / 粗细（单行；颜色数量按可用空间逐步裁减，窄屏先隐藏后面的色点） -->
         <div ref="annoToolsRef" class="ip-anno-tools">
           <button
-            v-for="t in ['rect', 'circle', 'pen'] as AnnoType[]"
-            :key="t"
+            v-for="tool in ['rect', 'circle', 'pen'] as AnnoType[]"
+            :key="tool"
             class="ip-hdr-btn"
-            :class="{ active: annoTool === t }"
-            :title="{ rect: '矩形 (R)', pen: '画笔 (P)', circle: '圆形 (C)' }[t]"
-            @click="setAnnoTool(t)"
+            :class="{ active: annoTool === tool }"
+            :title="
+              {
+                rect: $t('imagePreview.annoRect'),
+                pen: $t('imagePreview.annoPen'),
+                circle: $t('imagePreview.annoCircle'),
+              }[tool]
+            "
+            @click="setAnnoTool(tool)"
           >
-            <IconSvg :type="{ rect: 'square', pen: 'pen-tool', circle: 'circle' }[t]" size="sm" />
+            <IconSvg :type="{ rect: 'square', pen: 'pen-tool', circle: 'circle' }[tool]" size="sm" />
           </button>
           <span class="ip-toolbar-sep" />
           <button
@@ -890,7 +901,7 @@ const displayTitle = computed(() => {
             :key="w"
             class="ip-hdr-btn ip-w-btn"
             :class="{ active: annoWidth === w }"
-            :title="`线宽 ${w}px`"
+            :title="$t('imagePreview.lineWidth', { w })"
             @click="annoWidth = w"
           >
             <span :style="{ width: w * 2 + 'px', height: w * 2 + 'px', borderRadius: '50%', background: annoColor }" />
@@ -902,12 +913,12 @@ const displayTitle = computed(() => {
             v-if="isMulti"
             class="ip-hdr-btn"
             :class="{ active: showThumbs }"
-            title="缩略图"
+            :title="$t('imagePreview.thumbs')"
             @click="toggleThumbs"
           >
             <IconSvg type="panel-right" size="sm" />
           </button>
-          <button class="ip-close" title="关闭 (Esc)" @click="emit('close')">
+          <button class="ip-close" :title="$t('imagePreview.close')" @click="emit('close')">
             <IconSvg type="x" size="sm" />
           </button>
         </div>
@@ -931,7 +942,7 @@ const displayTitle = computed(() => {
           >
             <!-- 加载态 -->
             <div v-if="_loadState === 'loading'" class="ip-spinner" />
-            <div v-else-if="_loadState === 'error'" class="ip-error">⚠ 图片加载失败</div>
+            <div v-else-if="_loadState === 'error'" class="ip-error">⚠ {{ $t('imagePreview.loadFailed') }}</div>
 
             <!-- 图片 -->
             <img
@@ -957,7 +968,7 @@ const displayTitle = computed(() => {
               <button
                 class="ip-arrow ip-arrow-left"
                 :disabled="currentIndex <= 0"
-                title="上一张 (←)"
+                :title="$t('imagePreview.prev')"
                 @click.stop="goPrev"
               >
                 <IconSvg type="chevron-left" size="md" />
@@ -965,7 +976,7 @@ const displayTitle = computed(() => {
               <button
                 class="ip-arrow ip-arrow-right"
                 :disabled="currentIndex >= total - 1"
-                title="下一张 (→)"
+                :title="$t('imagePreview.next')"
                 @click.stop="goNext"
               >
                 <IconSvg type="chevron-right" size="md" />
@@ -976,32 +987,32 @@ const displayTitle = computed(() => {
           <!-- 底部工具栏 -->
           <div class="ip-toolbar">
             <!-- 旋转 + 翻转 -->
-            <button title="逆时针旋转 90°" @click.stop="rotateCCW">
+            <button :title="$t('imagePreview.rotateCCW')" @click.stop="rotateCCW">
               <IconSvg type="rotate-ccw" size="sm" />
             </button>
-            <button title="顺时针旋转 90°" @click.stop="rotateCW">
+            <button :title="$t('imagePreview.rotateCW')" @click.stop="rotateCW">
               <IconSvg type="rotate-cw" size="sm" />
             </button>
-            <button :class="{ active: flipH }" title="水平翻转" @click.stop="toggleFlip">
+            <button :class="{ active: flipH }" :title="$t('imagePreview.flipH')" @click.stop="toggleFlip">
               <IconSvg type="arrow-left-right" size="sm" />
             </button>
             <span class="ip-toolbar-sep" />
             <!-- 缩放 -->
-            <button title="放大" @click.stop="setScale(scale + 0.25)">
+            <button :title="$t('imagePreview.zoomIn')" @click.stop="setScale(scale + 0.25)">
               <IconSvg type="zoom-in" size="sm" />
             </button>
-            <button title="缩小" @click.stop="setScale(scale - 0.25)">
+            <button :title="$t('imagePreview.zoomOut')" @click.stop="setScale(scale - 0.25)">
               <IconSvg type="zoom-out" size="sm" />
             </button>
-            <button title="1:1" @click.stop="setScale(1)">
+            <button :title="$t('imagePreview.zoomActual')" @click.stop="setScale(1)">
               <IconSvg type="maximize" size="sm" />
             </button>
             <span class="ip-toolbar-sep" />
             <!-- 导出：下载 / 复制（合成图包含标注） -->
-            <button title="下载（含标注）" @click.stop="downloadImage">
+            <button :title="$t('imagePreview.download')" @click.stop="downloadImage">
               <IconSvg type="download" size="sm" />
             </button>
-            <button title="复制（含标注）" @click.stop="copyImage">
+            <button :title="$t('imagePreview.copy')" @click.stop="copyImage">
               <IconSvg type="copy" size="sm" />
             </button>
             <span v-if="isMulti" class="ip-counter">{{ currentIndex + 1 }} / {{ total }}</span>
@@ -1018,8 +1029,8 @@ const displayTitle = computed(() => {
             :class="{ active: i === currentIndex }"
             @click="goTo(i)"
           >
-            <img :src="item.url" :alt="item.label || `图片 ${i + 1}`" />
-            <span class="ip-thumb-label">{{ item.label || `图片 ${i + 1}` }}</span>
+            <img :src="item.url" :alt="item.label || $t('imagePreview.imageLabel', { n: i + 1 })" />
+            <span class="ip-thumb-label">{{ item.label || $t('imagePreview.imageLabel', { n: i + 1 }) }}</span>
           </div>
         </div>
       </div>

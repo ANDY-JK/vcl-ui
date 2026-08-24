@@ -41,6 +41,36 @@ export default {
     info: '提示',
     logout: '退出登录',
   },
+  imagePreview: {
+    imageLabel: '图片 {n}',
+    loadFailed: '图片加载失败',
+    // 标注工具
+    annoRect: '矩形 (R)',
+    annoPen: '画笔 (P)',
+    annoCircle: '圆形 (C)',
+    lineWidth: '线宽 {w}px',
+    // 顶部栏
+    thumbs: '缩略图',
+    close: '关闭 (Esc)',
+    prev: '上一张 (←)',
+    next: '下一张 (→)',
+    // 工具栏
+    rotateCCW: '逆时针旋转 90°',
+    rotateCW: '顺时针旋转 90°',
+    flipH: '水平翻转',
+    zoomIn: '放大',
+    zoomOut: '缩小',
+    zoomActual: '1:1',
+    download: '下载（含标注）',
+    copy: '复制（含标注）',
+    // 操作结果提示
+    downloadOk: '图片已下载',
+    downloadFail: '下载失败',
+    copyOk: '已复制到剪贴板',
+    copyFail: '复制失败（浏览器权限限制）',
+    exportFailNotLoaded: '导出失败（图片未加载或跨域）',
+    exportFailCrossOrigin: '导出失败（图片跨域限制）',
+  },
   offline: {
     disconnected: '网络连接已断开，部分功能可能不可用',
   },
