@@ -35,13 +35,15 @@ export { extractFields as extractFormulaFields }
  */
 export type DesignerNodeType = DesignerFieldType | DesignerContainerType
 
-/** 字段节点类型（原有 + v3 新增高级字段） */
+/** 字段节点类型（原有 + v3 新增高级字段 + 扩展输入/选择变体） */
 export type DesignerFieldType =
   // ── 基础 ──
   | 'text' | 'textarea' | 'number'
-  | 'select' | 'radio' | 'checkbox' | 'cascader'
-  | 'switch' | 'date' | 'time' | 'rate' | 'slider'
-  | 'upload' | 'divider' | 'title'
+  | 'password' | 'tel' | 'email' | 'url' | 'search'
+  | 'select' | 'combobox' | 'tree-select' | 'radio' | 'checkbox' | 'cascader'
+  | 'switch' | 'date' | 'date-range' | 'time' | 'rate' | 'slider'
+  | 'upload' | 'image-upload' | 'camera'
+  | 'divider' | 'title'
   // ── v3 高级字段 ──
   | 'subform'      // 子表单（可添加多行）
   | 'relate'       // 关联选择（关联用户/部门等）
@@ -375,9 +377,23 @@ export const FIELD_TYPES: FieldTypeMeta[] = [
     defaults: { placeholder: '请输入', rows: 3, span: 24 } },
   { type: 'number', label: '数字输入', icon: 'hash', group: '基础',
     defaults: { min: 0, max: 100, step: 1, span: 12 } },
+  { type: 'password', label: '密码输入', icon: 'lock', group: '基础',
+    defaults: { placeholder: '请输入密码', span: 12 } },
+  { type: 'tel', label: '电话号码', icon: 'phone', group: '基础',
+    defaults: { placeholder: '请输入电话', span: 12 } },
+  { type: 'email', label: '邮箱输入', icon: 'mail', group: '基础',
+    defaults: { placeholder: '请输入邮箱', span: 12 } },
+  { type: 'url', label: '链接输入', icon: 'link', group: '基础',
+    defaults: { placeholder: '请输入链接', span: 24 } },
+  { type: 'search', label: '搜索输入', icon: 'search', group: '基础',
+    defaults: { placeholder: '请输入搜索词', span: 12 } },
   // ── 选择 ──
   { type: 'select', label: '下拉选择', icon: 'chevron-down', group: '选择',
     defaults: { options: ['选项1', '选项2'], placeholder: '请选择', span: 12 } },
+  { type: 'combobox', label: '可输入选择', icon: 'chevrons-down-up', group: '选择',
+    defaults: { options: ['选项1', '选项2'], placeholder: '请选择或输入', span: 12 } },
+  { type: 'tree-select', label: '树选择', icon: 'chevron-down', group: '选择',
+    defaults: { placeholder: '请选择', span: 12 } },
   { type: 'radio', label: '单选按钮', icon: 'circle-check', group: '选择',
     defaults: { options: ['选项A', '选项B'], span: 12 } },
   { type: 'checkbox', label: '复选按钮', icon: 'check-square', group: '选择',
@@ -390,6 +406,8 @@ export const FIELD_TYPES: FieldTypeMeta[] = [
     defaults: { span: 12 } },
   { type: 'date', label: '日期选择', icon: 'calendar', group: '高级',
     defaults: { placeholder: '请选择日期', span: 12 } },
+  { type: 'date-range', label: '日期范围', icon: 'calendar', group: '高级',
+    defaults: { placeholder: '请选择日期范围', span: 24 } },
   { type: 'time', label: '时间选择', icon: 'clock', group: '高级',
     defaults: { placeholder: '请选择时间', span: 12 } },
   { type: 'rate', label: '评分', icon: 'star', group: '高级',
@@ -398,6 +416,10 @@ export const FIELD_TYPES: FieldTypeMeta[] = [
     defaults: { min: 0, max: 100, step: 1, span: 24 } },
   { type: 'upload', label: '文件上传', icon: 'upload', group: '高级',
     defaults: { span: 24, accept: 'image/*', multiple: true, maxSize: 10 } },
+  { type: 'image-upload', label: '图片上传', icon: 'upload', group: '高级',
+    defaults: { span: 24, accept: 'image/*', multiple: true, maxSize: 10 } },
+  { type: 'camera', label: '拍照', icon: 'camera', group: '高级',
+    defaults: { span: 24 } },
   // ── 高级字段 (v3) ──
   { type: 'subform', label: '子表单', icon: 'table', group: '高级字段',
     defaults: { span: 24, placeholder: '可添加多行', subformColumns: '姓名|name|text\n电话|phone|number' } },
@@ -491,8 +513,11 @@ export const CONTAINER_TYPES: DesignerContainerType[] = ['card', 'grid', 'tabs',
 
 /** 获取所有字段类型（非容器） */
 export const FIELD_NODE_TYPES: DesignerFieldType[] = [
-  'text', 'textarea', 'number', 'select', 'radio', 'checkbox', 'cascader',
-  'switch', 'date', 'time', 'rate', 'slider', 'upload', 'divider', 'title',
+  'text', 'textarea', 'number', 'password', 'tel', 'email', 'url', 'search',
+  'select', 'combobox', 'tree-select', 'radio', 'checkbox', 'cascader',
+  'switch', 'date', 'date-range', 'time', 'rate', 'slider',
+  'upload', 'image-upload', 'camera',
+  'divider', 'title',
   'subform', 'relate', 'richtext', 'signature', 'address', 'idcard', 'matrix', 'serial',
 ]
 

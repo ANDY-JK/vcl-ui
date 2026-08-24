@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createLocalFormStore } from '@/components/form-builder/designer/store'
-import { collectStorageKey } from '@/components/form-builder/designer/types'
+import {
+  collectStorageKey, createField, FIELD_TYPES, FIELD_NODE_TYPES,
+} from '@/components/form-builder/designer/types'
 import type { FormDesign, DesignerNode } from '@/components/form-builder/designer/types'
 import Toast from '@/components/feedback/Toast.vue'
 
@@ -80,5 +82,35 @@ describe('H2: Toast id 全局唯一（多实例不冲突）', () => {
     expect(a.vm).toBeDefined()
     a.unmount()
     b.unmount()
+  })
+})
+
+describe('H8: 字段类型注册表与设计器元数据对齐', () => {
+  // REGISTRY 已注册但 FIELD_TYPES 曾缺失的 10 个类型（补齐后 createField 不再崩溃）
+  const extendedTypes = [
+    'password', 'tel', 'email', 'url', 'search',
+    'combobox', 'tree-select', 'date-range', 'image-upload', 'camera',
+  ] as const
+
+  it('createField 对扩展类型可创建节点（含 label/icon/defaults）', () => {
+    for (const type of extendedTypes) {
+      const node = createField(type, 1)
+      expect(node.type).toBe(type)
+      expect(node.id).toBeTruthy()
+      expect(node.label).toBeTruthy()
+      // 字段节点自动生成 key
+      expect(node.key).toBe('field1')
+    }
+    // FIELD_TYPES 覆盖全部扩展类型
+    const ftTypes = FIELD_TYPES.map((t: { type: string }) => t.type)
+    for (const type of extendedTypes) {
+      expect(ftTypes).toContain(type)
+    }
+  })
+
+  it('FIELD_NODE_TYPES 与 DesignerFieldType 覆盖扩展类型', () => {
+    for (const type of extendedTypes) {
+      expect(FIELD_NODE_TYPES).toContain(type)
+    }
   })
 })

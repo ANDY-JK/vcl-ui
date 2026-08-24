@@ -109,7 +109,7 @@ const builtinValidations = computed(() => {
 
 /** 判断字段类型是否需要显示选项编辑 */
 const hasOptions = computed(() =>
-  ['select', 'radio', 'checkbox'].includes(props.node.type)
+  ['select', 'combobox', 'radio', 'checkbox'].includes(props.node.type)
 )
 
 /** 联动公式的 placeholder 文本 */
@@ -299,7 +299,7 @@ const linkageHelpText = computed(() => {
           </div>
 
           <!-- 占位符 -->
-          <template v-if="['text', 'textarea', 'select', 'date', 'time', 'cascader'].includes(node.type)">
+          <template v-if="['text', 'textarea', 'number', 'password', 'tel', 'email', 'url', 'search', 'select', 'combobox', 'tree-select', 'date', 'date-range', 'time', 'cascader'].includes(node.type)">
             <div class="ldp-section-title">显示设置</div>
             <div class="ldp-prop">
               <label>占位符</label>
@@ -312,7 +312,7 @@ const linkageHelpText = computed(() => {
           </template>
 
           <!-- 提示文字 -->
-          <template v-if="['text', 'textarea', 'number', 'select', 'upload'].includes(node.type)">
+          <template v-if="['text', 'textarea', 'number', 'password', 'tel', 'email', 'url', 'search', 'select', 'combobox', 'upload', 'image-upload'].includes(node.type)">
             <div class="ldp-prop">
               <label>提示文字</label>
               <Input
