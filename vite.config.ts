@@ -62,23 +62,24 @@ export default defineConfig({
         },
         // CSS 单独提取
         assetFileNames: 'vue-component-lib.[ext]',
-        // 按业务域拆分 chunk — 减少 main bundle 体积
-        manualChunks: {
-          // login 页面组件（4 个页面级组件，体积大）
-          'login-chunk': [
-            './src/components/login/login.vue',
-            './src/components/login/register.vue',
-            './src/components/login/forgot-password.vue',
-            './src/components/login/portal_login.vue',
-          ],
-          // route-planner 业务组件（5 个组件 + composables + utils）
-          'route-planner-chunk': [
-            './src/components/route-planner/RouteMap.vue',
-            './src/components/route-planner/RouteResult.vue',
-            './src/components/route-planner/StorePanel.vue',
-            './src/components/route-planner/StoreFormModal.vue',
-            './src/components/route-planner/ImportProgress.vue',
-          ],
+        // 按业务域拆分 chunk — 减小主 bundle，让按需加载/摇树更有效
+        manualChunks(id) {
+          // 依赖库（echarts 等已 external，这里是剩余的重型依赖）
+          if (id.includes('node_modules')) {
+            // 把 xlsx/zxing-wasm 等重型动态依赖拆出主链
+            if (id.includes('xlsx') || id.includes('zxing-wasm')) return 'vendor-heavy'
+            return undefined
+          }
+          // 业务域（相对 src 的模块路径）
+          if (!id.includes('/src/components/')) return undefined
+          if (id.includes('/form-builder/')) return 'form-builder-chunk'
+          if (id.includes('/route-planner/')) return 'route-planner-chunk'
+          if (id.includes('/login/')) return 'login-chunk'
+          if (id.includes('/amap/')) return 'amap-chunk'
+          if (id.includes('/chart/')) return 'chart-chunk'
+          if (id.includes('/storage/')) return 'storage-chunk'
+          if (id.includes('/data/')) return 'data-chunk'
+          return undefined
         },
       },
     },

@@ -17,7 +17,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { TOAST_KEY } from './composables/toast-context'
 import type { ToastItem } from './composables/toast-context'
 
-interface Props {
+export interface Props {
   /** 'toast' 全局弹幕 | 'inline' 内联提示条（替代 Alert） */
   variant?: 'toast' | 'inline'
   type?: 'circle-alert' | 'info' | 'success' | 'warning' | 'error'
