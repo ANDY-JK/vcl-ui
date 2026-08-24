@@ -81,10 +81,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import Input from '@/components/form/Input.vue'
-import Button from '@/components/basic/Button.vue'
-import IconSvg from '@/components/basic/IconSvg.vue'
-import Toast from '@/components/feedback/Toast.vue'
+import { Input, Button, IconSvg, Toast } from './_shared'
 
 // ======================== 类型 ========================
 

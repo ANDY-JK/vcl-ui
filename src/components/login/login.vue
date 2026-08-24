@@ -134,14 +134,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
-import Input from '@/components/form/Input.vue'
-import Button from '@/components/basic/Button.vue'
-import IconSvg from '@/components/basic/IconSvg.vue'
-import Toast from '@/components/feedback/Toast.vue'
-import Divider from '@/components/data/Divider.vue'
-import { useT, useTm } from '@/components/_internal/i18n'
-// storageGet/Set/Delete 实际走 localStorage（indexedDB.ts 统一抽象），非 IndexedDB
-import { storageGet, storageSet, storageDelete } from '@/components/storage/indexedDB'
+import { Input, Button, IconSvg, Toast, Divider, useT, useTm, storageGet, storageSet, storageDelete } from './_shared'
 
 const t = useT()
 const tm = useTm()
