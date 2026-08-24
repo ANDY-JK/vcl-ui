@@ -2,7 +2,18 @@
 // ⛔ 保护 — 禁止：clamp() → px，table-layout:fixed 删除，列宽计算链路，结构层级
 //    允许：autoFit 开启时外部 col.width 已被禁止，列宽完全由内部动态管理
 //    需我确认：props 增删、默认值修改、模板结构变更、CSS 变量替换
-import { ref, watch, computed, onMounted, onUnmounted, onErrorCaptured, nextTick, inject, toRef, type ComputedRef } from 'vue'
+import {
+  ref,
+  watch,
+  computed,
+  onMounted,
+  onUnmounted,
+  onErrorCaptured,
+  nextTick,
+  inject,
+  toRef,
+  type ComputedRef,
+} from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Result from '@/components/feedback/Result.vue'
@@ -12,6 +23,7 @@ import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_int
 import { copyText } from '@/components/_internal/useCopy'
 import Toast from '@/components/feedback/Toast.vue'
 import { boostZTop } from '@/components/_internal/z-top'
+import { useToastNotify } from '@/components/_internal/useToastNotify'
 import ImagePreview from './ImagePreview.vue'
 import type { Column, ColumnOption, Emits, RowAction, RowContextAction, TableStorage } from './composables/types'
 import { useTableCore } from './composables/useTableCore'
@@ -483,11 +495,8 @@ function onTableWheel(e: WheelEvent) {
   else if (e.deltaY > 0) zoomOut()
 }
 
-// 操作反馈：组件内 Toast 实例（不依赖全局单例约定）
-const toastRef = ref<InstanceType<typeof Toast>>()
-function notify(msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
-  toastRef.value?.show(msg, type)
-}
+// 操作反馈：组件内 Toast 实例（不依赖全局单例约定，复用共享 notify）
+const { toastRef, notify } = useToastNotify()
 // 截图反馈可能发生在全屏态（全屏层级高于全局 Toast）：挂载期间提升 --z-top
 let _releaseZTop: (() => void) | null = null
 
@@ -1442,9 +1451,10 @@ function toggleColSettings(e?: MouseEvent) {
     defaultDirection: 'down',
   })
   _colSettingsAbove.value = result.direction === 'up'
-  _colSettingsStyle.value = result.direction === 'up'
-    ? { bottom: `${window.innerHeight - rect.top + 4}px`, left: `${result.left}px` }
-    : { top: `${rect.bottom + 4}px`, left: `${result.left}px` }
+  _colSettingsStyle.value =
+    result.direction === 'up'
+      ? { bottom: `${window.innerHeight - rect.top + 4}px`, left: `${result.left}px` }
+      : { top: `${rect.bottom + 4}px`, left: `${result.left}px` }
   // 渲染后按实际高度修正方向
   nextTick(() => {
     const el = colSettingsRef.value
@@ -1673,9 +1683,7 @@ watch(_optDrop, (v) => {
         newTop = triggerRect.top - panelH - offset
       } else {
         // 上下都不够：选空间大的方向
-        newTop = spaceDown >= spaceUp
-          ? triggerRect.bottom + offset
-          : Math.max(8, triggerRect.top - panelH - offset)
+        newTop = spaceDown >= spaceUp ? triggerRect.bottom + offset : Math.max(8, triggerRect.top - panelH - offset)
       }
       // 边界裁剪：不超出视口
       if (newTop < 8) newTop = 8
@@ -2482,9 +2490,9 @@ function onFilterOptionLeave(e: MouseEvent) {
                   <input
                     v-if="
                       editable &&
-                        !col.options &&
-                        editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
-                        editingCell?.colKey === col.key
+                      !col.options &&
+                      editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
+                      editingCell?.colKey === col.key
                     "
                     :ref="setEditInputEl"
                     v-model="editValue"
@@ -2507,7 +2515,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                     <img
                       v-if="
                         col.accept !== 'text' &&
-                          isImageUrl(cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? ''))
+                        isImageUrl(cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? ''))
                       "
                       :src="cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')"
                       class="cell-image"
@@ -2555,7 +2563,8 @@ function onFilterOptionLeave(e: MouseEvent) {
                             :style="{
                               color: optColor(col, cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')),
                             }"
-                          >{{ cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '') }}</span>
+                            >{{ cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '') }}</span
+                          >
                           <template v-else>{{
                             cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')
                           }}</template>
@@ -2565,8 +2574,8 @@ function onFilterOptionLeave(e: MouseEvent) {
                       <span
                         v-if="
                           truncateMode === 'ellipsis' &&
-                            (autoFit || (rowMetaMap.get(row)?.truncated[col.key] ?? false)) &&
-                            (rowMetaMap.get(row)?.texts[col.key]?.length || 0) > 50
+                          (autoFit || (rowMetaMap.get(row)?.truncated[col.key] ?? false)) &&
+                          (rowMetaMap.get(row)?.texts[col.key]?.length || 0) > 50
                         "
                         class="cell-expand-icon"
                         title="点击查看完整内容"
@@ -2716,9 +2725,9 @@ function onFilterOptionLeave(e: MouseEvent) {
                 <input
                   v-if="
                     editable &&
-                      !col.options &&
-                      editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
-                      editingCell?.colKey === col.key
+                    !col.options &&
+                    editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
+                    editingCell?.colKey === col.key
                   "
                   :ref="setEditInputEl"
                   v-model="editValue"
@@ -2731,9 +2740,9 @@ function onFilterOptionLeave(e: MouseEvent) {
                 <select
                   v-else-if="
                     editable &&
-                      col.options &&
-                      editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
-                      editingCell?.colKey === col.key
+                    col.options &&
+                    editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
+                    editingCell?.colKey === col.key
                   "
                   v-model="editValue"
                   class="card-edit-select"
@@ -2814,7 +2823,9 @@ function onFilterOptionLeave(e: MouseEvent) {
       <!-- ========== 分页控件 ========== -->
       <div v-if="!_isFullscreen && pageSize > 0 && displayTotalPages > 1" class="table-pagination">
         <span class="pagination-status">
-          <template v-if="selectable && _selectedKeys.length > 0">已选 <strong>{{ _selectedKeys.length }}</strong> 行 - </template>第 {{ _currentPage }} / {{ displayTotalPages }} 页
+          <template v-if="selectable && _selectedKeys.length > 0"
+            >已选 <strong>{{ _selectedKeys.length }}</strong> 行 - </template
+          >第 {{ _currentPage }} / {{ displayTotalPages }} 页
         </span>
         <button class="page-btn" :disabled="_currentPage <= 1" @click="setPage(_currentPage - 1)">
           <IconSvg type="chevron-left" size="sm" />
@@ -2908,7 +2919,8 @@ function onFilterOptionLeave(e: MouseEvent) {
                   class="dt-filter-option-text"
                   @mouseenter="onFilterOptionEnter"
                   @mouseleave="onFilterOptionLeave"
-                >{{ opt.label || opt.value || '空白' }}</span>
+                  >{{ opt.label || opt.value || '空白' }}</span
+                >
                 <span class="dt-filter-option-count">{{ opt.count }}</span>
               </div>
               <div v-if="filteredOptions.length === 0" class="dt-filter-no-result">无匹配结果</div>
@@ -3085,20 +3097,8 @@ function onFilterOptionLeave(e: MouseEvent) {
               隐藏该列
             </div>
             <div class="dt-context-divider" />
-            <div
-              class="dt-context-item"
-              role="menuitem"
-              @click="onCtxFixLeftCascade"
-            >
-              固定到左侧（含之前所有列）
-            </div>
-            <div
-              class="dt-context-item"
-              role="menuitem"
-              @click="onCtxFixRightCascade"
-            >
-              固定到右侧（含之后所有列）
-            </div>
+            <div class="dt-context-item" role="menuitem" @click="onCtxFixLeftCascade">固定到左侧（含之前所有列）</div>
+            <div class="dt-context-item" role="menuitem" @click="onCtxFixRightCascade">固定到右侧（含之后所有列）</div>
             <div
               v-if="isColumnFixed(visibleColumns.find((c) => c.key === contextMenu.columnKey)!)"
               class="dt-context-item"

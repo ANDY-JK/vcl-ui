@@ -4,6 +4,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import Toast from '@/components/feedback/Toast.vue'
 import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_internal/useScreenshot'
 import { boostZTop } from '@/components/_internal/z-top'
+import { useToastNotify } from '@/components/_internal/useToastNotify'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
@@ -743,11 +744,8 @@ function onImgError() {
 
 // ---- 导出：合成（原图 + 标注）→ 下载 / 复制 ----
 const imgEl = ref<HTMLImageElement | null>(null)
-// 操作反馈走 Toast 通知（右下角弹窗），不用工具栏小字
-const toastRef = ref<InstanceType<typeof Toast>>()
-function notify(msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
-  toastRef.value?.show(msg, type)
-}
+// 操作反馈走 Toast 通知（右下角弹窗），不用工具栏小字（复用共享 notify）
+const { toastRef, notify } = useToastNotify()
 
 // 标注坐标从 stage 像素换算为图片像素（基于当前显示比例；旋转/翻转时标注不联动，与画布行为一致）
 // offX/offY = 图片显示区域左/上边缘相对 stage 的偏移（getBoundingClientRect 含 transform，映射跟随缩放平移）
