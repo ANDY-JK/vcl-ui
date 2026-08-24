@@ -100,4 +100,35 @@ describe('useTableCore 大数据性能基线', () => {
     // eslint-disable-next-line no-console
     console.log(`[perf] 客户端排序: ${(t1 - t0).toFixed(1)}ms`)
   })
+
+  it(`纯数字列排序 ${ROWS} 行耗时（快速比较路径）`, () => {
+    const cols: Column[] = [
+      { key: 'id', title: 'ID' },
+      { key: 'amount', title: '金额', sortable: true },
+    ]
+    const data = Array.from({ length: ROWS }, (_, i) => ({ id: `r${i}`, amount: (i * 7919) % 100000 }))
+    const filterState = ref<Record<string, ColumnFilterState>>({})
+    const hiddenColumns = ref(new Set<string>())
+    const visibleColumns = computed(() => cols)
+    const globalSearch = ref('')
+    const core = useTableCore(
+      { data, rowKey: 'id' } as never,
+      (() => {}) as never,
+      filterState,
+      hiddenColumns,
+      visibleColumns,
+      globalSearch,
+    )
+
+    const t0 = performance.now()
+    core.toggleSort(cols[1])
+    const sorted = core.displayData.value
+    const t1 = performance.now()
+    // 验证数字排序正确性（升序）
+    for (let i = 1; i < sorted.length; i++) {
+      expect(sorted[i].amount).toBeGreaterThanOrEqual(sorted[i - 1].amount)
+    }
+    // eslint-disable-next-line no-console
+    console.log(`[perf] 纯数字列排序: ${(t1 - t0).toFixed(1)}ms`)
+  })
 })

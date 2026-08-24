@@ -119,7 +119,16 @@ export function useTableCore(
       result = [...result].sort((a, b) => {
         const va = String(a[key] ?? '')
         const vb = String(b[key] ?? '')
-        const cmp = va.localeCompare(vb, undefined, { numeric: true })
+        // 数字值快速比较（localeCompare 慢 ~100 倍）：纯数字字符串用数值比较，
+        // 其余走 localeCompare（含中文等 Unicode 排序）。空串视为最小
+        let cmp: number
+        if (va === '') cmp = vb === '' ? 0 : -1
+        else if (vb === '') cmp = 1
+        else if (/^-?\d+(\.\d+)?$/.test(va) && /^-?\d+(\.\d+)?$/.test(vb)) {
+          cmp = Number(va) - Number(vb)
+        } else {
+          cmp = va.localeCompare(vb, undefined, { numeric: true })
+        }
         return order === 'asc' ? cmp : -cmp
       })
     }
