@@ -68,7 +68,7 @@ const REGISTRY: Record<string, FieldRegistration> = {
   // ── Input 系列 ──
   text:      { type: 'text',      category: 'input',   component: Input,    componentType: 'text',     isLayout: false, label: '单行输入', icon: 'square-pen', group: '基础', defaults: { placeholder: '请输入', span: 24 } },
   textarea:  { type: 'textarea',  category: 'input',   component: Input,    componentType: 'textarea', isLayout: false, label: '多行文本', icon: 'align-left', group: '基础', defaults: { placeholder: '请输入', rows: 3, span: 24 } },
-  number:    { type: 'number',    category: 'input',   component: Input,    componentType: 'number',   isLayout: false, label: '数字输入', icon: 'hash', group: '基础', defaults: { min: 0, max: 100, step: 1, span: 12 } },
+  number:    { type: 'number',    category: 'input',   component: Input,    componentType: 'number',   isLayout: false, label: '数字输入', icon: 'hash', group: '基础', defaults: { placeholder: '请输入', min: 0, max: 100, step: 1, span: 12 } },
   password:  { type: 'password',  category: 'input',   component: Input,    componentType: 'password', isLayout: false, label: '密码输入', icon: 'lock', group: '基础', defaults: { placeholder: '请输入密码', span: 12 } },
   tel:       { type: 'tel',       category: 'input',   component: Input,    componentType: 'tel',      isLayout: false, label: '电话号码', icon: 'phone', group: '基础', defaults: { placeholder: '请输入电话', span: 12 } },
   email:     { type: 'email',     category: 'input',   component: Input,    componentType: 'email',    isLayout: false, label: '邮箱输入', icon: 'mail', group: '基础', defaults: { placeholder: '请输入邮箱', span: 12 } },

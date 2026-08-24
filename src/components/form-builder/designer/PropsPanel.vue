@@ -19,6 +19,7 @@ import {
   getTypeLabel, getTypeIcon, parseCascaderOptions, isContainerNode, flattenNodes,
   type DesignerNode,
 } from './types'
+import { getFieldDefaults, getComponentCategory } from '../fieldRegistry'
 
 const props = defineProps<{
   node: DesignerNode
@@ -107,10 +108,16 @@ const builtinValidations = computed(() => {
   ]
 })
 
-/** 判断字段类型是否需要显示选项编辑 */
-const hasOptions = computed(() =>
-  ['select', 'combobox', 'radio', 'checkbox'].includes(props.node.type)
-)
+/** 判断字段类型是否需要显示选项编辑（注册表 defaults 含 options 即需要） */
+const hasOptions = computed(() => 'options' in getFieldDefaults(props.node.type))
+
+/** 判断字段类型是否支持某通用属性（注册表 defaults 含对应 key 即支持） */
+function hasProp(key: string): boolean {
+  return key in getFieldDefaults(props.node.type)
+}
+
+/** 判断字段类型是否支持提示文字（input/select/upload 类字段） */
+const hasHint = computed(() => ['input', 'select', 'upload'].includes(getComponentCategory(props.node.type)))
 
 /** 联动公式的 placeholder 文本 */
 const linkageFormulaPlaceholder = computed(() => {
@@ -299,7 +306,7 @@ const linkageHelpText = computed(() => {
           </div>
 
           <!-- 占位符 -->
-          <template v-if="['text', 'textarea', 'number', 'password', 'tel', 'email', 'url', 'search', 'select', 'combobox', 'tree-select', 'date', 'date-range', 'time', 'cascader'].includes(node.type)">
+          <template v-if="hasProp('placeholder')">
             <div class="ldp-section-title">显示设置</div>
             <div class="ldp-prop">
               <label>占位符</label>
@@ -312,7 +319,7 @@ const linkageHelpText = computed(() => {
           </template>
 
           <!-- 提示文字 -->
-          <template v-if="['text', 'textarea', 'number', 'password', 'tel', 'email', 'url', 'search', 'select', 'combobox', 'upload', 'image-upload'].includes(node.type)">
+          <template v-if="hasHint">
             <div class="ldp-prop">
               <label>提示文字</label>
               <Input
