@@ -51,7 +51,8 @@ export function createPinyinMatcher(enabled: () => boolean) {
       result = { full: text.toLowerCase(), first: '' }
     } else {
       try {
-        const full = pinyin(text, { toneType: 'none', type: 'string' }).toLowerCase()
+        // 去空格：pinyin() 输出 "zhang san"，搜索 "zhangsan" 时需无空格全拼
+        const full = pinyin(text, { toneType: 'none', type: 'string' }).replace(/\s/g, '').toLowerCase()
         const first = pinyin(text, { pattern: 'first', toneType: 'none', type: 'string' })
           .replace(/\s/g, '')
           .toLowerCase()

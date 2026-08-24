@@ -3,7 +3,8 @@
 // ==================== 数据核心：排序 + 数据管道 + 分页/虚拟滚动 ====================
 import { ref, computed, watch, onUnmounted, type Ref, type ComputedRef } from 'vue'
 import type { Column, ColumnFilterState, RowMeta } from './types'
-import { getCellText, matchPinyin } from './utils'
+import { getCellText } from './utils'
+import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
 
 /** 无 rowKey 行分配稳定递增 id（WeakMap 键为行对象引用，增删/排序/筛选均不改变，
  *  行对象被 GC 后条目自动清除，无泄漏） */
@@ -23,12 +24,19 @@ export function stableRowId(row: object): string {
 export function useTableCore(
   props: {
     // Sort
-    sortKey?: string; sortOrder?: 'asc' | 'desc'
+    sortKey?: string
+    sortOrder?: 'asc' | 'desc'
     // Data
-    data: Record<string, any>[]; rowKey?: string; striped?: boolean
-    truncateThreshold?: number; pinyinSearch?: boolean
+    data: Record<string, any>[]
+    rowKey?: string
+    striped?: boolean
+    truncateThreshold?: number
+    pinyinSearch?: boolean
     // Pages
-    pageSize?: number; currentPage?: number; total?: number; virtualScroll?: boolean
+    pageSize?: number
+    currentPage?: number
+    total?: number
+    virtualScroll?: boolean
     maxHeight?: string
     // Modes
     filterMode?: 'client' | 'server'
@@ -41,6 +49,8 @@ export function useTableCore(
   rowHeight?: () => number,
 ) {
   const _rowH = rowHeight ?? (() => 40)
+  // 拼音匹配器（实例级，带缓存）：同一文本只做一次拼音转换，避免每行每列重复转换
+  const _pinyinMatcher = createPinyinMatcher(() => props.pinyinSearch !== false)
   // ==================== 1. 排序 ====================
   const sortState = ref<{ key: string; order: 'asc' | 'desc' }>({
     key: props.sortKey || '',
@@ -99,9 +109,7 @@ export function useTableCore(
     // 服务端筛选模式：跳过客户端过滤，后端已按 filter 事件中的条件处理
     if (props.filterMode !== 'server' && activeFilters.value.length > 0) {
       result = result.filter((row) =>
-        activeFilters.value.every(([key, s]) =>
-          s.selectedValues.includes(String(row[key] ?? '')),
-        ),
+        activeFilters.value.every(([key, s]) => s.selectedValues.includes(String(row[key] ?? ''))),
       )
     }
 
@@ -119,14 +127,23 @@ export function useTableCore(
     const term = globalSearch.value.trim()
     if (term) {
       const lowerTerm = term.toLowerCase()
-      result = result.filter((row) =>
+      // 两阶段搜索：先纯文本匹配（快路径，字符串 includes），有结果即返回；
+      // 文本无结果才做拼音匹配（慢路径，兜底"拼音搜中文"）。避免每行每列都做拼音转换
+      const textHits = result.filter((row) =>
         visibleColumns.value.some((col) => {
-          // 用 column.render 富文本化后匹配，让用户搜 "常德" 能命中 apple_id 列
           const rendered = getCellText(row[col.key], col, row, 0)
-          const val = rendered.toLowerCase()
-          return val.includes(lowerTerm) || matchPinyin(rendered, lowerTerm)
+          return rendered.toLowerCase().includes(lowerTerm)
         }),
       )
+      result =
+        textHits.length > 0
+          ? textHits
+          : result.filter((row) =>
+              visibleColumns.value.some((col) => {
+                const rendered = getCellText(row[col.key], col, row, 0)
+                return _pinyinMatcher.match(rendered, lowerTerm)
+              }),
+            )
     }
 
     return result
@@ -164,9 +181,12 @@ export function useTableCore(
 
   // ==================== 3. 分页 + 虚拟滚动 ====================
   const _currentPage = ref(props.currentPage || 1)
-  watch(() => props.currentPage, (v) => {
-    if (v !== undefined && v !== _currentPage.value) _currentPage.value = v
-  })
+  watch(
+    () => props.currentPage,
+    (v) => {
+      if (v !== undefined && v !== _currentPage.value) _currentPage.value = v
+    },
+  )
 
   function setPage(p: number) {
     _currentPage.value = p
@@ -208,9 +228,7 @@ export function useTableCore(
     return pages
   })
 
-  const isVirtual = computed(() =>
-    props.virtualScroll && !!props.maxHeight && (!props.pageSize || props.pageSize <= 0),
-  )
+  const isVirtual = computed(() => props.virtualScroll && !!props.maxHeight && (!props.pageSize || props.pageSize <= 0))
 
   const scrollContainerRef = ref<HTMLElement | null>(null)
   const scrollTop = ref(0)
@@ -253,16 +271,39 @@ export function useTableCore(
     })
   }
 
-  onUnmounted(() => { if (_rafId) { cancelAnimationFrame(_rafId); _rafId = 0 } })
+  onUnmounted(() => {
+    if (_rafId) {
+      cancelAnimationFrame(_rafId)
+      _rafId = 0
+    }
+  })
 
   return {
     // Sort
-    sortState, sortHistory, toggleSort, clearSort, sortArrowClass,
+    sortState,
+    sortHistory,
+    toggleSort,
+    clearSort,
+    sortArrowClass,
     // Data
-    activeFilters, totalCount, displayData, rowMetaMap,
+    activeFilters,
+    totalCount,
+    displayData,
+    rowMetaMap,
     // Pages
-    _currentPage, setPage, pagedData, totalPages, displayPages,
-    isVirtual, virtualTotal, virtualStartIndex, virtualVisibleData,
-    virtualTopOffset, virtualBottomOffset, scrollContainerRef, containerHeight, onTableScroll,
+    _currentPage,
+    setPage,
+    pagedData,
+    totalPages,
+    displayPages,
+    isVirtual,
+    virtualTotal,
+    virtualStartIndex,
+    virtualVisibleData,
+    virtualTopOffset,
+    virtualBottomOffset,
+    scrollContainerRef,
+    containerHeight,
+    onTableScroll,
   }
 }
