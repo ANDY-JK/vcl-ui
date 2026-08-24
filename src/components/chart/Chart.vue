@@ -2,7 +2,7 @@
 // ⛔ 保护 — 图表封装，禁止：clamp() → px，ECharts 初始化逻辑，resize 监听删除
 //    需我确认：ChartType 类型扩展、color palette 默认值
 import { computed, ref, watch, onUnmounted } from 'vue'
-import type { EChartsOption } from 'echarts'
+import type { EChartsOption, ECElementEvent } from 'echarts'
 import BaseChart from './BaseChart.vue'
 import ChartLegend from './ChartLegend.vue'
 import { buildChartOption } from './options'
@@ -48,17 +48,17 @@ const props = withDefaults(defineProps<ChartProps>(), {
 
 const emit = defineEmits<{
   'chart-ready': [instance: ReturnType<typeof import('echarts').init>]
-  click: [params: any]
-  dblclick: [params: any]
-  mousedown: [params: any]
-  mouseup: [params: any]
-  mouseover: [params: any]
-  mouseout: [params: any]
-  globalout: [params: any]
-  contextmenu: [params: any]
-  legendselectchanged: [params: any]
-  datazoom: [params: any]
-  finished: [params: any]
+  click: [params: ECElementEvent]
+  dblclick: [params: ECElementEvent]
+  mousedown: [params: ECElementEvent]
+  mouseup: [params: ECElementEvent]
+  mouseover: [params: ECElementEvent]
+  mouseout: [params: ECElementEvent]
+  globalout: [params: ECElementEvent]
+  contextmenu: [params: ECElementEvent]
+  legendselectchanged: [params: ECElementEvent]
+  datazoom: [params: ECElementEvent]
+  finished: [params: ECElementEvent]
 }>()
 
 const baseChartRef = ref<InstanceType<typeof BaseChart>>()
@@ -74,7 +74,7 @@ function inferChartData(raw: unknown): { categories: string[]; series: ChartSeri
     return { categories: raw.map((_, i) => `${i + 1}`), series: [{ name: '', data: raw }] }
   }
   if (Array.isArray(raw) && raw.every((v) => Array.isArray(v))) {
-    const maxLen = Math.max(...raw.map((a: any[]) => a.length))
+    const maxLen = Math.max(...raw.map((a: unknown[]) => a.length))
     return {
       categories: Array.from({ length: maxLen }, (_, i) => `${i + 1}`),
       series: raw.map((arr: number[], i: number) => ({ name: t('chart.seriesFallback', { n: i + 1 }), data: arr })),
@@ -82,8 +82,8 @@ function inferChartData(raw: unknown): { categories: string[]; series: ChartSeri
   }
   if (Array.isArray(raw) && raw.every((v) => typeof v === 'object' && v !== null && ('name' in v || 'value' in v))) {
     return {
-      categories: raw.map((d: any) => d.name ?? ''),
-      series: [{ name: '', data: raw.map((d: any) => d.value ?? 0) }],
+      categories: raw.map((d) => String((d as Record<string, unknown>).name ?? '')),
+      series: [{ name: '', data: raw.map((d) => (d as Record<string, unknown>).value ?? 0) }],
     }
   }
   return null
@@ -335,15 +335,15 @@ defineExpose({
     return baseChartRef.value?.getOption()
   },
   /** 设置 option（透传给 BaseChart，会自动注入 toolbox） */
-  setOption(opt: EChartsOption, opts?: any) {
+  setOption(opt: EChartsOption, opts?: { notMerge?: boolean; replaceMerge?: string[] }) {
     baseChartRef.value?.setOption(opt, opts)
   },
   /** 重新计算尺寸 */
-  resize(opts?: any) {
+  resize(opts?: { width?: number; height?: number; silent?: boolean }) {
     baseChartRef.value?.resize(opts)
   },
   /** 派发图表行为（showTip / highlight 等） */
-  dispatchAction(payload: any) {
+  dispatchAction(payload: Record<string, unknown>) {
     baseChartRef.value?.dispatchAction(payload)
   },
   /** 清空当前实例所有内容（保留实例） */
@@ -351,7 +351,7 @@ defineExpose({
     baseChartRef.value?.clear()
   },
   /** 显示加载动画 */
-  showLoading(type?: string, opts?: any) {
+  showLoading(type?: string, opts?: Record<string, unknown>) {
     baseChartRef.value?.showLoading(type, opts)
   },
   /** 隐藏加载动画 */

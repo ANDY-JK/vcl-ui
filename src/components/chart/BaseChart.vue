@@ -73,10 +73,10 @@ const ariaLabel = computed(() => {
 })
 
 /** 构建 toolbar 配置 */
-function buildToolbox(): any {
+function buildToolbox(): import('echarts').ToolboxComponentOption | undefined {
   if (props.toolbar === false) return undefined
   const buttons = props.toolbar || ['saveAsImage', 'zoom']
-  const feature: any = {}
+  const feature: NonNullable<import('echarts').ToolboxComponentOption['feature']> = {}
   if (buttons.includes('saveAsImage')) feature.saveAsImage = { title: '保存图片' }
   if (buttons.includes('zoom')) feature.dataZoom = { title: { zoom: '区域缩放', back: '还原' } }
   if (buttons.includes('dataView')) feature.dataView = { title: '数据视图', readOnly: true }
@@ -298,7 +298,7 @@ defineExpose({
     chartInstance?.clear()
   },
   /** 显示加载动画 */
-  showLoading(type?: string, opts?: Record<string, any>) {
+  showLoading(type?: string, opts?: Record<string, unknown>) {
     chartInstance?.showLoading(type, opts)
   },
   /** 隐藏加载动画 */
