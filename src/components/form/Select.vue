@@ -12,8 +12,7 @@
  * 支持模式：select | combobox | menu | cascader | tree-select | date | date-range | time
  */
 import { ref, computed, nextTick, watch, onMounted, onUnmounted, useId } from 'vue'
-import { pinyin } from '@/components/_internal/pinyin-pro'
-import { warnOnce } from '@/components/_internal/warnOnce'
+import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
@@ -242,43 +241,8 @@ function closePanel() {
    搜索时直接从缓存读取，避免重复调用 pinyin()
    ════════════════════════════════════════ */
 
-/** 拼音缓存：key = 原始文本，value = { full, first } */
-const _pinyinCache = new Map<string, { full: string; first: string }>()
-
-/** 获取文本的拼音索引（带缓存） */
-function getPinyinIndex(text: string): { full: string; first: string } {
-  if (!text) return { full: '', first: '' }
-  const cached = _pinyinCache.get(text)
-  if (cached) return cached
-  let result: { full: string; first: string }
-  if (!props.pinyinEnabled) {
-    result = { full: text.toLowerCase(), first: '' }
-  } else {
-    try {
-      const full = pinyin(text, { toneType: 'none', type: 'string' }).toLowerCase()
-      const first = pinyin(text, { pattern: 'first', toneType: 'none', type: 'string' })
-        .replace(/\s/g, '')
-        .toLowerCase()
-      result = { full, first }
-    } catch {
-      warnOnce('Select', '拼音解析失败，已降级为普通搜索')
-      result = { full: text.toLowerCase(), first: '' }
-    }
-  }
-  _pinyinCache.set(text, result)
-  return result
-}
-
-/** 快速拼音匹配（使用预计算索引） */
-function matchPinyinFast(text: string, keyword: string): boolean {
-  const lower = keyword.toLowerCase()
-  if (text.toLowerCase().includes(lower)) return true
-  if (!props.pinyinEnabled) return false
-  const idx = getPinyinIndex(text)
-  if (idx.full.includes(lower)) return true
-  if (idx.first && idx.first.includes(lower)) return true
-  return false
-}
+/** 复用共享拼音匹配器（usePinyinSearch.createPinyinMatcher，原 Select 本地实现已迁移并去空格修复） */
+const _pinyinMatcher = createPinyinMatcher(() => props.pinyinEnabled)
 
 /** 选项变化时清理过期缓存项（防止内存泄漏） */
 watch(
@@ -286,13 +250,10 @@ watch(
   () => {
     // 选项列表变化时，清理不在新选项中的缓存项
     if (!props.options || props.options.length === 0) {
-      _pinyinCache.clear()
+      _pinyinMatcher.clearCache()
       return
     }
-    const newLabels = new Set(props.options.map((o) => o.label))
-    for (const key of _pinyinCache.keys()) {
-      if (!newLabels.has(key)) _pinyinCache.delete(key)
-    }
+    _pinyinMatcher.pruneCache(new Set(props.options.map((o) => o.label)))
   },
 )
 
@@ -327,9 +288,9 @@ const filteredOptions = computed(() => {
   if (!kw) return props.options
   return props.options.filter(
     (o) =>
-      matchPinyinFast(o.label, kw) ||
-      matchPinyinFast(String(o.value), kw) ||
-      (o._search ? matchPinyinFast(o._search, kw) : false),
+      _pinyinMatcher.match(o.label, kw) ||
+      _pinyinMatcher.match(String(o.value), kw) ||
+      (o._search ? _pinyinMatcher.match(o._search, kw) : false),
   )
 })
 
@@ -840,7 +801,9 @@ function onTimeCancel() {
         :class="{ open, disabled, 'has-floating': label, 'has-tags': comboTags.length > 0 }"
         @click="!isCombobox && toggleOpen($event)"
       >
-        <label v-if="label" class="fl-label" :for="selectInputId" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="selectInputId" :class="{ raised: floatingRaised }">{{
+          label
+        }}</label>
 
         <!-- 多选 tag -->
         <span v-for="tag in comboTags" :key="String(tag.value)" class="combobox-tag">
@@ -1030,15 +993,21 @@ function onTimeCancel() {
               />
               <div class="dd-footer">
                 <button type="button" class="dd-btn" @click="onTimeCancel">{{ t('form.cancel') }}</button>
-                <button type="button" class="dd-btn dd-btn-primary" @click="onTimeConfirm">{{ t('form.confirm') }}</button>
+                <button type="button" class="dd-btn dd-btn-primary" @click="onTimeConfirm">
+                  {{ t('form.confirm') }}
+                </button>
               </div>
             </template>
 
             <!-- 空选项状态 -->
             <div v-else-if="!filteredOptions.length" class="panel-status">
               <slot name="empty">
-                <template v-if="isCombobox && allowCreate && comboText">{{ t('form.enterToUse', { text: comboText }) }}</template>
-                <template v-else-if="isCombobox && allowCreate && !options?.length">{{ t('form.enterToCreate') }}</template>
+                <template v-if="isCombobox && allowCreate && comboText">{{
+                  t('form.enterToUse', { text: comboText })
+                }}</template>
+                <template v-else-if="isCombobox && allowCreate && !options?.length">{{
+                  t('form.enterToCreate')
+                }}</template>
                 <template v-else>{{ emptyText }}</template>
               </slot>
             </div>
