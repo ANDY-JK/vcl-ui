@@ -15,9 +15,10 @@
  *   - 支持插件加载（ToolBar / Scale 等）
  */
 import { ref, watch, nextTick } from 'vue'
-import { ElAmap, initAMapApiLoader } from '@vuemap/vue-amap'
+import { ElAmap } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import { getAmapJsKey, getAmapSecurityCode } from './amap-key'
+import { amapLoader } from './amap-loader'
 import type { MarkerItem } from './types'
 
 // ════════════════════════════════════════
@@ -59,10 +60,10 @@ const emit = defineEmits<{
 }>()
 
 // ════════════════════════════════════════
-// 地图初始化
+// 地图初始化（setup 内执行，非模块加载时）
+// 用 amapLoader 协调器：首次渲染用当前 key 初始化；已初始化后 setAmapKey 无法热换（SDK 限制）
 // ════════════════════════════════════════
 
-const AMAP_KEY = getAmapJsKey()
 const AMAP_SECRET = getAmapSecurityCode()
 
 if (typeof window !== 'undefined') {
@@ -71,11 +72,8 @@ if (typeof window !== 'undefined') {
   }
 }
 
-initAMapApiLoader({
-  key: AMAP_KEY,
-  version: '2.0',
-  plugins: ['AMap.ToolBar', 'AMap.Scale'],
-})
+// 首次渲染时用当时的 key 初始化（模块级同步初始化已移除）
+amapLoader.ensureInit(getAmapJsKey())
 
 const mapReady = ref(false)
 let mapInstance: any = null

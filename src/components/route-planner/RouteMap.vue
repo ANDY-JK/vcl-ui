@@ -4,10 +4,11 @@
  * 动态居中，支持信息窗
  */
 import { ref, computed, watch, nextTick } from 'vue'
-import { ElAmap, initAMapApiLoader } from '@vuemap/vue-amap'
+import { ElAmap } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import type { Store, RoutePlan } from '@/components/route-planner/types'
 import { getAmapJsKey, getAmapSecurityCode } from '@/components/amap'
+import { amapLoader } from '@/components/amap/amap-loader'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
@@ -20,19 +21,14 @@ const props = defineProps<{
 let mapInstance: any = null
 const mapReady = ref(false)
 
-// 安全配置 + 初始化
-const AMAP_KEY = getAmapJsKey()
+// 安全配置 + 初始化（setup 内执行，非模块加载时；用协调器避免 key 锁死）
 const AMAP_SECRET = getAmapSecurityCode()
 if (typeof window !== 'undefined') {
   ;(window as unknown as Record<string, unknown>)._AMapSecurityConfig = {
     securityJsCode: AMAP_SECRET,
   }
 }
-initAMapApiLoader({
-  key: AMAP_KEY,
-  version: '2.0',
-  plugins: ['AMap.ToolBar', 'AMap.Scale'],
-})
+amapLoader.ensureInit(getAmapJsKey())
 
 /** 动态地图中心 */
 const mapCenter = computed((): [number, number] => {

@@ -33,6 +33,26 @@ let _override: Partial<AmapKeys> = {}
 /** 是否已警告过未设置 Key */
 let _warned = false
 
+/** Key 变更订阅者（amap-loader 等需要感知 key 变化的模块注册） */
+const _subscribers = new Set<(keys: AmapKeys) => void>()
+
+/** 订阅 Key 变更（返回退订函数）。amap-loader 用它感知 setAmapKey 后的变化 */
+export function onAmapKeyChange(fn: (keys: AmapKeys) => void): () => void {
+  _subscribers.add(fn)
+  return () => _subscribers.delete(fn)
+}
+
+function notifyChange(): void {
+  const keys = getKeys()
+  _subscribers.forEach((fn) => {
+    try {
+      fn(keys)
+    } catch {
+      /* 订阅者异常不影响主流程 */
+    }
+  })
+}
+
 /** 获取当前生效的 Key 集合 */
 function getKeys(): AmapKeys {
   return {
@@ -45,11 +65,13 @@ function getKeys(): AmapKeys {
 /** 统一设置高德 Key（JS API 和 REST 共用，保留已设置的 securityCode） */
 export function setAmapKey(key: string): void {
   _override = { ..._override, jsKey: key, restKey: key }
+  notifyChange()
 }
 
 /** 分别设置高德 Key（JS API 和 REST 可不同） */
 export function setAmapKeys(keys: { jsKey?: string; restKey?: string; securityCode?: string }): void {
   _override = { ..._override, ...keys }
+  notifyChange()
 }
 
 /** 获取 JS API Key（前端地图 SDK 用） */
