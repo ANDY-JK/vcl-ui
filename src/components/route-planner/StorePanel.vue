@@ -5,6 +5,7 @@
 import { ref, computed } from 'vue'
 import type { Store } from '@/components/route-planner/types'
 import { useT } from '@/components/_internal/i18n'
+import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 
 const t = useT()
 
@@ -66,6 +67,14 @@ const grouped = computed(() => {
 
 // ── 删除确认 ──
 const confirmTarget = ref<{ id?: string; name: string; city?: string } | null>(null)
+/** 确认框容器（Teleport 到 body 的 overlay 内），供焦点陷阱限定范围 */
+const confirmBoxRef = ref<HTMLElement | null>(null)
+// P2-5：确认框焦点陷阱 —— 打开时焦点移入按钮组，Tab 循环不逃逸，关闭恢复
+useFocusTrap({
+  visible: computed(() => confirmTarget.value !== null),
+  getContainer: () => confirmBoxRef.value,
+  autofocus: 'container',
+})
 
 function requestDelete(store: Store): void {
   confirmTarget.value = { id: store.id, name: store.name || store.address || t('routePlanner.unknownStore') }
@@ -125,8 +134,15 @@ const stats = computed(() => {
     <!-- 搜索框 -->
     <div class="search-bar">
       <span class="search-icon">🔍</span>
-      <input v-model="searchQuery" type="text" :placeholder="t('routePlanner.searchPlaceholder')" class="search-input" />
-      <button v-if="searchQuery" class="search-clear" :title="t('routePlanner.clearSearch')" @click="searchQuery = ''">✕</button>
+      <input
+        v-model="searchQuery"
+        type="text"
+        :placeholder="t('routePlanner.searchPlaceholder')"
+        class="search-input"
+      />
+      <button v-if="searchQuery" class="search-clear" :title="t('routePlanner.clearSearch')" @click="searchQuery = ''">
+        ✕
+      </button>
     </div>
 
     <!-- 分组列表 -->
@@ -145,7 +161,9 @@ const stats = computed(() => {
           <span class="group-name">{{ city }}</span>
           <span class="group-count">{{ t('routePlanner.storeCountUnit', { count: cityStores.length }) }}</span>
           <div class="group-batch" @click.stop>
-            <button class="btn-batch" :title="t('routePlanner.skipCityTitle')" @click="emit('skipCity', city)">⏭️</button>
+            <button class="btn-batch" :title="t('routePlanner.skipCityTitle')" @click="emit('skipCity', city)">
+              ⏭️
+            </button>
             <button
               class="btn-batch btn-batch-danger"
               :title="t('routePlanner.deleteCityTitle')"
@@ -180,7 +198,9 @@ const stats = computed(() => {
               >
                 {{ store.skipped ? '↩️' : '⏭️' }}
               </button>
-              <button class="btn-icon btn-danger" :title="t('routePlanner.deleteTitle')" @click="requestDelete(store)">🗑️</button>
+              <button class="btn-icon btn-danger" :title="t('routePlanner.deleteTitle')" @click="requestDelete(store)">
+                🗑️
+              </button>
             </div>
           </div>
         </div>
@@ -202,7 +222,14 @@ const stats = computed(() => {
     <!-- 删除确认弹窗 -->
     <Teleport to="body">
       <div v-if="confirmTarget" class="confirm-overlay" @click.self="cancelDelete">
-        <div class="confirm-box" role="alertdialog" aria-modal="true" :aria-label="t('routePlanner.deleteConfirmTitle')">
+        <div
+          ref="confirmBoxRef"
+          class="confirm-box"
+          role="alertdialog"
+          aria-modal="true"
+          tabindex="-1"
+          :aria-label="t('routePlanner.deleteConfirmTitle')"
+        >
           <p class="confirm-text">{{ t('routePlanner.deleteConfirm', { name: confirmTarget.name }) }}</p>
           <p class="confirm-hint">
             {{ confirmTarget.city ? t('routePlanner.deleteCityHint') : t('routePlanner.deleteStoreHint') }}

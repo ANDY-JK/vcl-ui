@@ -2,10 +2,20 @@
 // ⛔ 保护 — 页面内拍照组件，参照原生相机布局：中间快门键，取消/重拍/翻转等
 //    侧键左右按需显示。替代系统相机调起（避免页面切后台被浏览器杀进程重建刷新）。
 //    需我确认：布局结构、采集参数（4:3 高清）、拍照后交付方式（capture 事件）
-import { ref, watch, nextTick, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 
 const t = useT()
+
+/** 相机浮层容器（Teleport 到 body 的遮罩内），供焦点陷阱限定范围 */
+const camcStageRef = ref<HTMLElement | null>(null)
+// P2-5：弹层焦点陷阱 —— 打开时焦点移入工具栏，Tab 循环不逃逸，关闭恢复
+useFocusTrap({
+  visible: computed(() => props.modelValue),
+  getContainer: () => camcStageRef.value,
+  autofocus: 'container',
+})
 
 interface Props {
   /** 显隐控制（v-model） */
@@ -266,7 +276,7 @@ onUnmounted(() => {
   <!-- 全屏取景浮层：参照原生相机 —— 中间快门键，取消/重拍/翻转左右两侧按需显示 -->
   <Teleport to="body">
     <div v-if="props.modelValue" class="camc-mask" @click.self="cancel">
-      <div class="camc-stage">
+      <div ref="camcStageRef" class="camc-stage" tabindex="-1">
         <!-- 4:3 取景框：与原生相机一致，完整显示相机画面（不铺满全屏）。
              全屏铺满会裁掉 4:3 帧左右两侧、只露出中间竖条，取景范围 ≠ 出图范围，
              且让人误以为画面很大、要举很高才能拍完整 -->
@@ -290,13 +300,21 @@ onUnmounted(() => {
           <!-- 已拍：左重拍 / 中「使用」 / 右取消 -->
           <template v-if="shotUrl">
             <button type="button" class="camc-side" @click="retake">{{ t('form.retake') }}</button>
-            <button type="button" class="camc-shutter camc-shutter-confirm" @click="useShot">{{ t('form.use') }}</button>
+            <button type="button" class="camc-shutter camc-shutter-confirm" @click="useShot">
+              {{ t('form.use') }}
+            </button>
             <button type="button" class="camc-side" @click="cancel">{{ t('form.cancel') }}</button>
           </template>
           <!-- 取景：左取消 / 中快门 / 右翻转（无前置摄像头时右侧留空占位） -->
           <template v-else>
             <button type="button" class="camc-side" @click="cancel">{{ t('form.cancel') }}</button>
-            <button type="button" class="camc-shutter" :disabled="!cameraReady" :aria-label="t('form.takePhoto')" @click="takeShot" />
+            <button
+              type="button"
+              class="camc-shutter"
+              :disabled="!cameraReady"
+              :aria-label="t('form.takePhoto')"
+              @click="takeShot"
+            />
             <button v-if="showFlip" type="button" class="camc-side" @click="flip">{{ t('form.flip') }}</button>
             <span v-else class="camc-side camc-side-blank" />
           </template>

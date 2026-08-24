@@ -4,6 +4,7 @@
 import { ref, watch, computed, onUnmounted, onErrorCaptured } from 'vue'
 import { formatSize } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
+import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 
 const t = useT()
 const _error = ref<Error | null>(null)
@@ -327,6 +328,14 @@ function triggerFileInput() {
 // 安卓系统选择器（Photo Picker / DocumentsUI）没有相机入口，触屏设备上点击弹自绘菜单补齐
 const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
 const sheetOpen = ref(false)
+/** 底部菜单容器（Teleport 到 body 的 sheet 内），供焦点陷阱限定范围 */
+const upSheetRef = ref<HTMLElement | null>(null)
+// P2-5：底部菜单焦点陷阱 —— 打开时焦点移入选项，Tab 循环不逃逸，关闭恢复
+useFocusTrap({
+  visible: sheetOpen,
+  getContainer: () => upSheetRef.value,
+  autofocus: 'container',
+})
 
 /** 弹菜单还是直接选文件：仅移动端启用 mobileMenu 时弹菜单，桌面直接打开系统选择器 */
 function handlePick() {
@@ -511,7 +520,10 @@ onUnmounted(() => {
         v-if="files.length && cardHovered && !disabled"
         type="button"
         class="card-clear"
-        @click.stop="files = []; syncModel()"
+        @click.stop="
+          files = []
+          syncModel()
+        "
       >
         {{ t('form.delete') }}
       </button>
@@ -559,7 +571,9 @@ onUnmounted(() => {
         <IconSvg type="upload" size="lg" color="var(--color-text-muted)" />
         <p class="upload-hint">
           <template v-if="dragging">{{ t('form.dropHint') }}</template>
-          <template v-else>{{ t('form.dragHint') }}<span class="upload-link">{{ t('form.clickUpload') }}</span></template>
+          <template v-else
+            >{{ t('form.dragHint') }}<span class="upload-link">{{ t('form.clickUpload') }}</span></template
+          >
         </p>
         <p v-if="maxSize" class="upload-limit">{{ t('form.uploadLimit', { max: maxSize }) }}</p>
       </div>
@@ -575,8 +589,12 @@ onUnmounted(() => {
             </div>
             <div class="upload-file-meta">
               <span>{{ formatSize(f.size) }}</span>
-              <span v-if="f.status === 'done'" style="color: var(--color-success)">✓ {{ t('form.uploadSuccess') }}</span>
-              <span v-else-if="f.status === 'error'" style="color: var(--color-danger)">✗ {{ t('form.uploadFailed') }}</span>
+              <span v-if="f.status === 'done'" style="color: var(--color-success)"
+                >✓ {{ t('form.uploadSuccess') }}</span
+              >
+              <span v-else-if="f.status === 'error'" style="color: var(--color-danger)"
+                >✗ {{ t('form.uploadFailed') }}</span
+              >
             </div>
             <ProgressBar
               v-if="f.status === 'uploading'"
@@ -597,7 +615,7 @@ onUnmounted(() => {
   <!-- ===== 移动端「拍照/相册/文件」菜单 ===== -->
   <Teleport to="body">
     <div v-if="sheetOpen" class="up-sheet-mask" @click="sheetOpen = false">
-      <div class="up-sheet" @click.stop>
+      <div ref="upSheetRef" class="up-sheet" tabindex="-1" role="menu" :aria-label="t('form.pickSource')" @click.stop>
         <button type="button" class="up-sheet-item" @click="openCamera">📷 {{ t('form.camera') }}</button>
         <button type="button" class="up-sheet-item" @click="pickFrom('gallery')">🖼 {{ t('form.gallery') }}</button>
         <button type="button" class="up-sheet-item" @click="pickFrom('browse')">📄 {{ t('form.browse') }}</button>
