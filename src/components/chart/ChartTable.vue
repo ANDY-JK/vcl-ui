@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import Chart from '@/components/chart/Chart.vue'
-import DataTable from '@/components/data/DataTable.vue'
 import type { Column } from '@/components/data/composables/types'
 import type { ChartProps } from './utils/types'
+
+// DataTable 动态加载：chart 域不再静态依赖 data 域（M15），
+// 表格部分独立成 chunk，仅 showTable 为 true 时才拉取
+const DataTable = defineAsyncComponent(() => import('@/components/data/DataTable.vue'))
 
 // Props 逐一声明以保留 IDE 类型提示，未用 $attrs 透传
 const props = withDefaults(
