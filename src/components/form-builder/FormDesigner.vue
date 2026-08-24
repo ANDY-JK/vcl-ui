@@ -18,6 +18,8 @@
  */
 import { ref, computed, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { downloadBlob, deepClone, uuid } from '@/components/_internal/utils'
+import { copyText } from '@/components/_internal/useCopy'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import Group from '@/components/form/Group.vue'
@@ -136,7 +138,7 @@ let editingPropId: string | null = null
 
 /** 记录快照（每次操作前调用） */
 function snapshot(): void {
-  undoStack.value.push(JSON.parse(JSON.stringify(currentNodes.value)))
+  undoStack.value.push(deepClone(currentNodes.value))
   if (undoStack.value.length > 50) undoStack.value.shift()
   redoStack.value = []
   // 结构操作打断了属性编辑的连续性，重置跟踪，下次属性编辑重新快照
@@ -145,14 +147,14 @@ function snapshot(): void {
 
 function undo(): void {
   if (!undoStack.value.length) return
-  redoStack.value.push(JSON.parse(JSON.stringify(currentNodes.value)))
+  redoStack.value.push(deepClone(currentNodes.value))
   const prev = undoStack.value.pop()!
   patchNodes(prev)
 }
 
 function redo(): void {
   if (!redoStack.value.length) return
-  undoStack.value.push(JSON.parse(JSON.stringify(currentNodes.value)))
+  undoStack.value.push(deepClone(currentNodes.value))
   const next = redoStack.value.pop()!
   patchNodes(next)
 }
@@ -281,14 +283,14 @@ let clipboardNode: DesignerNode | null = null
 
 /** 深拷贝节点并生成新 id（key 加 _copy 后缀避免重复） */
 function cloneNode(node: DesignerNode): DesignerNode {
-  const copy: DesignerNode = JSON.parse(JSON.stringify(node))
-  copy.id = 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  const copy: DesignerNode = deepClone(node)
+  copy.id = uuid('n')
   if (node.key) copy.key = node.key + '_copy'
   // 递归重生成子节点 id，避免与新节点 id 冲突
   if (copy.children?.length) {
     const rekey = (list: DesignerNode[]): void => {
       for (const child of list) {
-        child.id = 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+        child.id = uuid('n')
         if (child.children?.length) rekey(child.children)
       }
     }
@@ -301,7 +303,7 @@ function cloneNode(node: DesignerNode): DesignerNode {
 function copyNode(id: string): void {
   const node = findNode(currentNodes.value, id)
   if (!node) return
-  clipboardNode = JSON.parse(JSON.stringify(node))
+  clipboardNode = deepClone(node)
   showTip(t('formBuilder.copied'))
 }
 
@@ -444,15 +446,8 @@ function exportJson(): void {
   const design: FormDesign = { schemaVersion: 3, meta: props.meta, nodes: currentNodes.value }
   const json = JSON.stringify(design, null, 2)
   const blob = new Blob([json], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'form-design.json'
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  URL.revokeObjectURL(url)
-  navigator.clipboard?.writeText(json).catch(() => {})
+  downloadBlob(blob, 'form-design.json')
+  void copyText(json)
   showTip('已导出 JSON（下载 + 复制到剪贴板）')
 }
 
@@ -559,7 +554,7 @@ const schemaJson = computed(() => {
 
 /** 复制 Schema JSON 到剪贴板 */
 function copySchema(): void {
-  navigator.clipboard?.writeText(schemaJson.value).catch(() => {})
+  void copyText(schemaJson.value)
   showTip('已复制到剪贴板')
 }
 

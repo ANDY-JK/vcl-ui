@@ -485,7 +485,9 @@
 .ldc-canvas {
   flex: 1;
   min-width: 0;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 24px 20px;
   background: #fff;
   position: relative;
@@ -999,23 +1001,23 @@
    ================================ */
 .ldp-panel::-webkit-scrollbar,
 .ldp-props::-webkit-scrollbar,
-.ldc-canvas::-webkit-scrollbar {
+.ldc-canvas-content::-webkit-scrollbar {
   width: 4px;
 }
 .ldp-panel::-webkit-scrollbar-track,
 .ldp-props::-webkit-scrollbar-track,
-.ldc-canvas::-webkit-scrollbar-track {
+.ldc-canvas-content::-webkit-scrollbar-track {
   background: transparent;
 }
 .ldp-panel::-webkit-scrollbar-thumb,
 .ldp-props::-webkit-scrollbar-thumb,
-.ldc-canvas::-webkit-scrollbar-thumb {
+.ldc-canvas-content::-webkit-scrollbar-thumb {
   background: var(--color-border, #e5e7eb);
   border-radius: 2px;
 }
 .ldp-panel::-webkit-scrollbar-thumb:hover,
 .ldp-props::-webkit-scrollbar-thumb:hover,
-.ldc-canvas::-webkit-scrollbar-thumb:hover {
+.ldc-canvas-content::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted, #9ca3af);
 }
 
@@ -1382,7 +1384,8 @@
   margin: 0 auto;
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: 600px;
 }
 .ldc-canvas-content.device-tablet {

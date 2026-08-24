@@ -111,7 +111,8 @@ t('common.confirm')   // → '确认' / 'Confirm'
 ## 📚 文档
 
 - **使用手册**：`docs/组件使用手册.md` — 组件用法、Props、示例
-- **API 文档**：`docs/api-auto.md` — 自动生成的完整类型定义
+- **工具函数**：`docs/utils-api.md` — 校验 / 行政区划 / 金额 / 字符串 / 随机 ID / 文件转换 / 脱敏 / 颜色等通用工具
+- **API 文档**：`docs/api-auto.md` — 组件类型定义（历史快照，脚本已移除，手动维护）
 - **审计报告**：`docs/audit/` — 架构/安全/性能/无障碍/国际化等 13 份专项审计
 
 ## 🛠 本地开发
@@ -123,7 +124,6 @@ npm run typecheck   # TypeScript 类型检查
 npm run lint        # ESLint
 npm run test:unit   # 单元测试 + 覆盖率
 npm run build       # 构建产物到 dist/
-npm run gen:docs    # 重新生成 API 文档
 ```
 
 ## 📄 License

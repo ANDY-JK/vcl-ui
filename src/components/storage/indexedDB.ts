@@ -34,8 +34,7 @@ export interface BatchOp {
 
 // ======================== IndexedDB 引擎 ========================
 
-const DB_NAME = 'saas_local'
-const DB_VERSION = 2
+const DB_NAME = 'saas_local_v2'
 
 let _db: IDBDatabase | null = null
 let _dbPromise: Promise<IDBDatabase> | null = null
@@ -51,7 +50,9 @@ function openDB(): Promise<IDBDatabase> {
       reject(err)
     }
     if (typeof indexedDB === 'undefined') return fail(new Error('IndexedDB 不可用'))
-    const req = indexedDB.open(DB_NAME, DB_VERSION)
+    // 打开当前已存在版本（不写死版本号）：ensureStore 会按需把库升级到更高版本，
+    // 若此处写死低版本号，升级后再打开必触发 VersionError。
+    const req = indexedDB.open(DB_NAME)
     req.onupgradeneeded = () => {
       const db = req.result
       const defaults = ['records', 'tables', 'kv']

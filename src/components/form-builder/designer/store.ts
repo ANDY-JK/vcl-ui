@@ -6,6 +6,8 @@
  */
 
 import type { FormDesign, CollectRecord } from './types'
+import { formatDateTimeZh } from '@/components/form/utils/date-utils'
+import { uuid } from '@/components/_internal/utils'
 
 /** 已保存的表单元信息（列表展示用） */
 export interface FormMetaItem {
@@ -69,7 +71,7 @@ export function createLocalFormStore(): FormStore {
   }
 
   function genId(): string {
-    return 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+    return uuid('f_')
   }
 
   return {
@@ -83,7 +85,7 @@ export function createLocalFormStore(): FormStore {
 
     saveForm(id, design, name) {
       const index = listForms()
-      const now = new Date().toLocaleString('zh-CN', { hour12: false })
+      const now = formatDateTimeZh()
       let item: FormMetaItem
       if (id) {
         const found = index.find(x => x.id === id)

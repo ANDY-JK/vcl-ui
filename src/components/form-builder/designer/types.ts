@@ -13,6 +13,7 @@
 
 import type { FormSchema, FormField, FieldType, FieldContainer, FieldContainerType } from '../types'
 import type { Option, CascaderOption } from '@/components/shared/types'
+import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl, uuid } from '@/components/_internal/utils'
 
 // ════════════════════════════════════════
 // 节点类型
@@ -450,7 +451,7 @@ export function genFieldId(): string {
 
 /** 生成收集记录 id */
 export function genRecordId(): string {
-  return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+  return uuid('r')
 }
 
 /** 收集记录存储 key：基于字段结构指纹 */
@@ -928,14 +929,14 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
         } catch { /* 无效正则跳过 */ }
       }
       if (val.builtinType) {
-        const builtinPatterns: Record<string, { re: RegExp; msg: string }> = {
-          phone: { re: /^1[3-9]\d{9}$/, msg: '请输入正确的手机号' },
-          email: { re: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, msg: '请输入正确的邮箱' },
-          idcard: { re: /^\d{17}[\dXx]$/, msg: '请输入正确的身份证号' },
-          url: { re: /^https?:\/\/.+/, msg: '请输入正确的 URL' },
+        const builtinValidators: Record<string, { check: (v: string) => boolean; msg: string }> = {
+          phone: { check: isValidPhone, msg: '请输入正确的手机号' },
+          email: { check: isValidEmail, msg: '请输入正确的邮箱' },
+          idcard: { check: isValidIdCard, msg: '请输入正确的身份证号' },
+          url: { check: isValidUrl, msg: '请输入正确的 URL' },
         }
-        const p = builtinPatterns[val.builtinType]
-        if (p) rules.push((v: string) => !p.re.test(v) ? p.msg : undefined)
+        const p = builtinValidators[val.builtinType]
+        if (p) rules.push((v: string) => !p.check(v) ? p.msg : undefined)
       }
       if (val.trim) {
         // trim 规则在 FormBuilder 层处理，这里不需要加 rule

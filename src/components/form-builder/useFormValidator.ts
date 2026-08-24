@@ -14,6 +14,7 @@ import { ref, type Ref } from 'vue'
 import type { FormSchema, FormField, FormData, FormErrors } from './types'
 import { isLayoutField, isFieldVisible } from './useFormSchema'
 import { useT } from '@/components/_internal/i18n'
+import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl } from '@/components/_internal/utils'
 
 const t = useT()
 
@@ -144,22 +145,22 @@ export const validators = {
   /** 手机号格式 */
   phone() {
     return (v: string) =>
-      v && !/^1[3-9]\d{9}$/.test(v) ? t('formBuilder.phoneInvalid') : undefined
+      v && !isValidPhone(v) ? t('formBuilder.phoneInvalid') : undefined
   },
   /** 邮箱格式 */
   email() {
     return (v: string) =>
-      v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? t('formBuilder.emailInvalid') : undefined
+      v && !isValidEmail(v) ? t('formBuilder.emailInvalid') : undefined
   },
   /** 身份证号 */
   idCard() {
     return (v: string) =>
-      v && !/^\d{17}[\dXx]$/.test(v) ? t('formBuilder.idCardInvalid') : undefined
+      v && !isValidIdCard(v) ? t('formBuilder.idCardInvalid') : undefined
   },
   /** URL 格式 */
   url() {
     return (v: string) =>
-      v && !/^https?:\/\/.+/.test(v) ? t('formBuilder.urlInvalid') : undefined
+      v && !isValidUrl(v) ? t('formBuilder.urlInvalid') : undefined
   },
   /** 正则匹配 */
   pattern(regex: RegExp, msg: string) {

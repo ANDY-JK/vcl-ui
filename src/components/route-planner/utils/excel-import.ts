@@ -3,7 +3,8 @@
  * 固定格式：门店名 | 四级乡镇 | 详细地址 | 联系人 | 电话 | 经度 | 纬度
  * 第1行=表头 第2行=起点/终点 第3行起=门店数据
  */
-import { isValidLatLon } from '@/components/amap/amap-service'
+import { isValidLatLon, normalizeChinaLatLon } from '@/components/amap/amap-service'
+import { parseRegion } from '@/components/_internal/utils'
 import type { Store, ImportResult } from '@/components/route-planner/types'
 
 /** 表头 → 字段（固定映射） */
@@ -115,7 +116,7 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
     // 完全空行跳过；允许仅四级乡镇无门店名/地址的行（乡镇标记）
     if (!name && !address && !fullAddr) continue
 
-    const parsed = parseFourLevelAddress(fullAddr)
+    const parsed = parseRegion(fullAddr)
 
     // 乡镇标记：无门店名 + 无详细地址 → 用最后一节（镇/乡/街道名）作为显示名
     const isMarker = !name && !address
@@ -124,20 +125,15 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
     let latitude = getNum(row, colMap.get('latitude'))
     let longitude = getNum(row, colMap.get('longitude'))
 
-    // 自动纠正经纬度互换
+    // 自动纠正经纬度互换（中国范围启发式）
     if (longitude != null && latitude != null) {
-      const lonIsValid = longitude >= 73 && longitude <= 135
-      const latIsValid = latitude >= 3 && latitude <= 54
-      const lonAsLat = longitude >= 3 && longitude <= 54
-      const latAsLon = latitude >= 73 && latitude <= 135
-      if (!lonIsValid && !latIsValid && latAsLon && lonAsLat) {
-        const tmp = longitude
-        longitude = latitude
-        latitude = tmp
-      }
-      if (!isValidLatLon(latitude, longitude)) {
-        longitude = null
+      const normalized = normalizeChinaLatLon(latitude, longitude)
+      if (normalized) {
+        latitude = normalized.latitude
+        longitude = normalized.longitude
+      } else {
         latitude = null
+        longitude = null
       }
     }
 
@@ -195,38 +191,4 @@ function getNum(row: (string | number | undefined)[], idx: number | undefined): 
   if (val == null || val === '') return null
   const num = typeof val === 'number' ? val : parseFloat(String(val).trim())
   return isNaN(num) ? null : num
-}
-
-function parseFourLevelAddress(addr: string): { province: string; city: string; district: string; town: string } {
-  if (!addr) return { province: '', city: '', district: '', town: '' }
-  let remaining = addr
-  let province = '',
-    city = '',
-    district = '',
-    town = ''
-
-  const p = remaining.match(/(.+?省|.+?自治区)/)
-  if (p) {
-    province = p[1]
-    remaining = remaining.slice(p[0].length)
-  }
-
-  const c = remaining.match(/(.+?市|.+?州|.+?盟)/)
-  if (c) {
-    city = c[1]
-    remaining = remaining.slice(c[0].length)
-  }
-
-  const d = remaining.match(/(.+?区|.+?县|.+?市)/)
-  if (d) {
-    district = d[1]
-    remaining = remaining.slice(d[0].length)
-  }
-
-  const t = remaining.match(/(.+?镇|.+?乡|.+?街道)/)
-  if (t) {
-    town = t[1]
-  }
-
-  return { province, city, district, town }
 }

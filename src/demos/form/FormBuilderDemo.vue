@@ -110,21 +110,6 @@ function loadPreset(key: string): void {
 
 <template>
   <div class="lc-demo">
-    <!-- 顶部标题区 -->
-    <div class="lc-demo-hero">
-      <div class="lc-demo-hero-icon">
-        <IconSvg type="layout-template" size="xl" />
-      </div>
-      <div>
-        <h2 class="lc-demo-title">低代码表单平台</h2>
-        <p class="lc-demo-subtitle">拖拽设计 → 实时预览 → 数据收集，一站式表单解决方案</p>
-      </div>
-      <div class="lc-demo-badge">
-        <span class="lc-demo-badge-dot" />
-        <span>原型 v2.0</span>
-      </div>
-    </div>
-
     <!-- 标签栏 -->
     <div class="lc-demo-tabs">
       <button
@@ -206,63 +191,6 @@ function loadPreset(key: string): void {
   padding: 20px;
   max-width: 1480px;
   margin: 0 auto;
-}
-
-/* ── 顶部标题区 — 对齐原型 ── */
-.lc-demo-hero {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-.lc-demo-hero-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #4f6ef7 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-  box-shadow: 0 6px 16px rgba(79,110,247,0.3);
-}
-.lc-demo-title {
-  margin: 0 0 2px;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
-  color: #1a202c;
-}
-.lc-demo-subtitle {
-  margin: 0;
-  font-size: 13px;
-  color: var(--color-text-secondary, #475569);
-}
-.lc-demo-badge {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  background: var(--color-bg, #fff);
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-primary, #4f6ef7);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-}
-.lc-demo-badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--color-success, #10b981);
-  animation: lc-pulse-dot 2s ease-in-out infinite;
-}
-@keyframes lc-pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
 }
 
 /* ── 标签栏 — 对齐原型 ── */
@@ -366,6 +294,9 @@ function loadPreset(key: string): void {
 .lc-demo-preview {
   max-width: 640px;
   margin: 0 auto;
+  height: 620px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 .lc-demo-placeholder {
   display: flex;

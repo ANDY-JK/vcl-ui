@@ -24,6 +24,7 @@ import FieldError from './FieldError.vue'
 import { getComponentCategory, isLayoutField, getComponentType } from './fieldRegistry'
 import { sanitizeHTML } from '@/components/data/composables/sanitize'
 import { useT } from '@/components/_internal/i18n'
+import { formatDate } from '@/components/form/utils/date-utils'
 import type { FormField } from './types'
 import type { Option } from '@/components/shared/types'
 import type { UploadFile } from '@/components/form/Upload.vue'
@@ -226,11 +227,7 @@ function execRichtext(cmd: string, val?: string): void {
 const serialValue = computed(() => {
   const prefix = (props.field.props?.serialPrefix as string) ?? ''
   const fmt = (props.field.props?.serialDateFormat as string) ?? 'YYYYMMDD'
-  const now = new Date()
-  const dateStr = fmt
-    .replace('YYYY', String(now.getFullYear()))
-    .replace('MM', String(now.getMonth() + 1).padStart(2, '0'))
-    .replace('DD', String(now.getDate()).padStart(2, '0'))
+  const dateStr = formatDate(new Date(), fmt)
   const seq = String(Math.floor(Math.random() * 10000)).padStart(4, '0')
   return `${prefix}${dateStr}${seq}`
 })

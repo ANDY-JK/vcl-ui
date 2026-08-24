@@ -51,3 +51,17 @@ export function isValidDate(y: number, m: number, d: number): boolean {
 export function todayISO(fmt: string): string {
   return formatDate(new Date(), fmt)
 }
+
+// ════════════════════════════════════════
+// 中文展示格式化（原 store.ts / FormCollect 各自内联的 toLocaleString）
+// ════════════════════════════════════════
+
+/** 中文日期：2026/8/23 */
+export function formatDateZh(d: Date = new Date()): string {
+  return d.toLocaleDateString('zh-CN')
+}
+
+/** 中文日期时间（24 小时制）：2026/8/23 14:30:00 */
+export function formatDateTimeZh(d: Date = new Date()): string {
+  return d.toLocaleString('zh-CN', { hour12: false })
+}

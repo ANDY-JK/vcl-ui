@@ -110,6 +110,7 @@ import Input from '@/components/form/Input.vue'
 import Button from '@/components/basic/Button.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Toast from '@/components/feedback/Toast.vue'
+import { isValidPhone, isValidEmail } from '@/components/_internal/utils'
 
 // ======================== 类型 ========================
 
@@ -203,13 +204,13 @@ const passwordRules = [
 const emailRules = computed(() => [
   (v: string) => {
     if (!v) return props.requireEmail ? '请输入邮箱' : undefined
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? undefined : '邮箱格式不正确'
+    return isValidEmail(v) ? undefined : '邮箱格式不正确'
   },
 ])
 const phoneRules = computed(() => [
   (v: string) => {
     if (!v) return props.requirePhone ? '请输入手机号' : undefined
-    return /^1[3-9]\d{9}$/.test(v) ? undefined : '手机号格式不正确'
+    return isValidPhone(v) ? undefined : '手机号格式不正确'
   },
 ])
 
@@ -248,11 +249,11 @@ const handleSubmit = () => {
   }
 
   // 格式校验
-  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+  if (form.email && !isValidEmail(form.email)) {
     internalError.value = '邮箱格式不正确'
     return
   }
-  if (form.phone && !/^1[3-9]\d{9}$/.test(form.phone)) {
+  if (form.phone && !isValidPhone(form.phone)) {
     internalError.value = '手机号格式不正确'
     return
   }

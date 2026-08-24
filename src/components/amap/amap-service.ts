@@ -88,6 +88,25 @@ export function isValidLatLon(lat: number, lon: number): boolean {
 }
 
 /**
+ * 归一化中国范围经纬度：自动纠正经纬度互换（如录入时经度纬度写反）。
+ * 互换判断基于中国范围启发式（经度 73~135，纬度 3~54），互换后仍非法则返回 null。
+ */
+export function normalizeChinaLatLon(
+  lat: number,
+  lon: number,
+): { latitude: number; longitude: number } | null {
+  const lonIsValid = lon >= 73 && lon <= 135
+  const latIsValid = lat >= 3 && lat <= 54
+  const lonAsLat = lon >= 3 && lon <= 54
+  const latAsLon = lat >= 73 && lat <= 135
+  if (!lonIsValid && !latIsValid && latAsLon && lonAsLat) {
+    ;[lat, lon] = [lon, lat]
+  }
+  if (!isValidLatLon(lat, lon)) return null
+  return { latitude: lat, longitude: lon }
+}
+
+/**
  * 球面余弦定理距离计算（纯函数，不调用 API）
  * 对标 Excel 公式，地球半径 6371004 米
  */

@@ -6,6 +6,7 @@ import type { Column, ColumnFilterState, RowContextAction } from './types'
 import { getCellText } from './useTableCore'
 import { clampFloatingPosition, markLayerOpen } from './utils'
 import { useTablePersistence } from './useTablePersistence'
+import { downloadBlob } from '@/components/_internal/utils'
 
 export function useTableExtras(
   props: {
@@ -102,14 +103,7 @@ export function useTableExtras(
       .map((row) => row.map((val) => `"${csvFormulaSafe(String(val)).replace(/"/g, '""')}"`).join(','))
       .join('\n')
     const blob = new Blob([BOM + header + '\n' + csvBody], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${props.exportFileName || 'export'}.csv`
-    // 下载属性不可用（部分 WebView）时降级为新窗口打开
-    if ('download' in a) a.click()
-    else window.open(url, '_blank')
-    URL.revokeObjectURL(url)
+    downloadBlob(blob, `${props.exportFileName || 'export'}.csv`)
   }
 
   // ==================== Excel 导出（xlsx 惰性加载，含编辑后显示值） ====================

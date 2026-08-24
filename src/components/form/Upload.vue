@@ -2,7 +2,7 @@
 // ⛔ 保护 — 文件上传，禁止：clamp() → px，拖拽区尺寸比例，进度条动画
 //    需我确认：accept 文件类型、multiple 多文件逻辑、预览图尺寸
 import { ref, watch, computed, onUnmounted, onErrorCaptured } from 'vue'
-import { formatSize } from '@/components/_internal/format-utils'
+import { formatSize } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()

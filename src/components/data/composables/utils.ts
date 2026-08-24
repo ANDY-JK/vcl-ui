@@ -1,4 +1,6 @@
 // 单例 canvas 复用，避免每次测量创建新元素
+import { fileToBase64 } from '@/components/_internal/utils'
+
 let _measureCanvas: HTMLCanvasElement | null = null
 function _getMeasureCtx(): CanvasRenderingContext2D | null {
   if (!_measureCanvas) _measureCanvas = document.createElement('canvas')
@@ -103,14 +105,9 @@ export function measureColumnWidth(col: Column, sample: Record<string, any>[]): 
 
 // ==================== 文件/DOM 工具 ====================
 
-/** 读取剪贴板中的图片文件，转为 dataURL */
+/** 读取剪贴板中的图片文件，转为 dataURL（复用统一 fileToBase64） */
 export function readClipboardImage(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
+  return fileToBase64(file)
 }
 
 /** 从 DropEvent / PasteEvent 中提取图片文件 */

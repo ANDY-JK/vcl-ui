@@ -33,6 +33,7 @@ export { default as AmapWidget } from './amap/AmapWidget.vue'
 export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityCode } from './amap/amap-key'
 export {
   isValidLatLon,
+  normalizeChinaLatLon,
   calcDistance,
   keywordSearch,
   searchNearby,
@@ -190,3 +191,48 @@ export type { ThemeMode } from './_internal/useTheme'
 // 国际化
 export { i18n, setLocale, getLocale, useT, useTm, useI18n } from './_internal/i18n'
 export type { Locale } from './_internal/i18n'
+
+// 通用工具函数 — 校验 / 行政区划 / 下载 / 深拷贝 / 数字金额 / 字符串 / 随机ID / 文件转换
+export {
+  isValidPhone,
+  isValidEmail,
+  isValidIdCard,
+  isValidUrl,
+  parseRegion,
+  parseAddress,
+  formatRegion,
+  splitRegionDetail,
+  downloadBlob,
+  deepClone,
+  formatNumber,
+  formatMoney,
+  formatSize,
+  toChineseAmount,
+  truncate,
+  safeParseJSON,
+  parseQueryString,
+  buildQueryString,
+  randomInt,
+  randomString,
+  uuid,
+  fileToBase64,
+  blobToBase64,
+  dataURLtoBlob,
+  uniqueBy,
+  chunk,
+  isEqual,
+  maskName,
+  maskPhone,
+  maskIdCard,
+  formatRelativeTime,
+  isPlainObject,
+  isNumeric,
+  isEmpty,
+  escapeHtml,
+  unescapeHtml,
+  hexToRgb,
+  rgbToHex,
+  isHexColor,
+} from './_internal/utils'
+export type { Region } from './_internal/utils'
+export { formatDateZh, formatDateTimeZh } from './form/utils/date-utils'

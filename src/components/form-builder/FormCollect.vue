@@ -16,6 +16,7 @@
  */
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { formatDateZh, formatDateTimeZh } from '@/components/form/utils/date-utils'
 import FormBuilder from './FormBuilder.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Button from '@/components/basic/Button.vue'
@@ -93,9 +94,9 @@ const requiredCount = computed(() => props.fields.filter(f => f.required).length
 
 /** 今日记录数 */
 const todayCount = computed(() => {
-  const today = new Date().toLocaleDateString('zh-CN')
+  const today = formatDateZh()
   return records.value.filter(r => {
-    try { return new Date(r.time).toLocaleDateString('zh-CN') === today }
+    try { return formatDateZh(new Date(r.time)) === today }
     catch { return false }
   }).length
 })
@@ -115,7 +116,7 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
 
   const record: CollectRecord = {
     id: genRecordId(),
-    time: new Date().toLocaleString('zh-CN', { hour12: false }),
+    time: formatDateTimeZh(),
     data: { ...data },
   }
   await props.store.appendRecord(storageKey.value, record)

@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
-import { formatSize } from '@/components/_internal/format-utils'
+import { formatSize } from '@/components/_internal/utils'
 import { calcTotalPages } from '@/components/nav/utils/pagination-utils'
 import { warnOnce } from '@/components/_internal/warnOnce'
 import { safeRun, safeDocument } from '@/components/_internal/ssr-guard'
 import { useEscClose } from '@/components/_internal/useEscClose'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
+import { formatDateZh, formatDateTimeZh } from '@/components/form/utils/date-utils'
 
 describe('formatSize', () => {
   it('B / KB / MB / GB 分级', () => {
@@ -86,6 +87,19 @@ describe('useEscClose', () => {
     const { onKeydown } = useEscClose(() => true, () => false, onClose)
     onKeydown({ key: 'Escape' } as KeyboardEvent)
     expect(onClose).not.toHaveBeenCalled()
+  })
+})
+
+describe('formatDateZh / formatDateTimeZh', () => {
+  it('中文日期/时间格式化不抛异常，返回非空', () => {
+    const d = new Date(2026, 7, 23, 14, 30, 5)
+    expect(formatDateZh(d)).toBeTruthy()
+    expect(formatDateTimeZh(d)).toBeTruthy()
+  })
+
+  it('默认取当前时间', () => {
+    expect(formatDateZh()).toBeTruthy()
+    expect(formatDateTimeZh()).toBeTruthy()
   })
 })
 
