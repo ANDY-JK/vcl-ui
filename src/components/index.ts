@@ -135,7 +135,7 @@ export { default as FieldError } from './form-builder/FieldError.vue'
 export { useFormSchema, isFieldVisible, createInitialData, SCHEMA_VERSION } from './form-builder/useFormSchema'
 export { useFormValidator, validateField, validateAll, validators } from './form-builder/useFormValidator'
 export { useFormStorage } from './form-builder/useFormStorage'
-export { getFieldRegistration, getComponentCategory, isLayoutField, getComponentType, getFieldComponent, getRegisteredTypes, registerField, unregisterField, isFieldRegistered } from './form-builder/fieldRegistry'
+export { getFieldRegistration, getComponentCategory, isLayoutField, getComponentType, getFieldComponent, getRegisteredTypes, registerField, isFieldRegistered } from './form-builder/fieldRegistry'
 export type { FieldRegistration } from './form-builder/fieldRegistry'
 export { contractCollectionSchema, inspectionSchema, registrationSchema } from './form-builder/presets'
 export {

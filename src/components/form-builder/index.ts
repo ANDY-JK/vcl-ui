@@ -24,7 +24,7 @@ export { useFormValidator, validateField, validateAll, validators } from './useF
 export { useFormStorage } from './useFormStorage'
 
 // ── 字段注册表 ──
-export { getFieldRegistration, getComponentCategory, isLayoutField, getComponentType, getFieldComponent, getRegisteredTypes, registerField, unregisterField, isFieldRegistered } from './fieldRegistry'
+export { getFieldRegistration, getComponentCategory, isLayoutField, getComponentType, getFieldComponent, getRegisteredTypes, registerField, isFieldRegistered } from './fieldRegistry'
 export type { FieldRegistration } from './fieldRegistry'
 
 // ── 预置 Schema 模板 ──
