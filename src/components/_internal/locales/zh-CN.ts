@@ -93,6 +93,10 @@ export default {
     retry: '重新加载',
     unknownError: '未知错误',
   },
+  chart: {
+    seriesFallback: '系列 {n}',
+    itemFallback: '项 {n}',
+  },
   offline: {
     disconnected: '网络连接已断开，部分功能可能不可用',
   },

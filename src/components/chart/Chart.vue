@@ -10,6 +10,9 @@ import { ensureWordCloud } from './utils/echarts-setup'
 import { DEFAULT_COLORS } from './options/common'
 import type { ChartProps, ChartData, BuildParams, ChartSeriesItem } from './utils/types'
 import { toSize } from './utils/chart-utils'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = withDefaults(defineProps<ChartProps>(), {
   type: undefined,
@@ -74,7 +77,7 @@ function inferChartData(raw: unknown): { categories: string[]; series: ChartSeri
     const maxLen = Math.max(...raw.map((a: any[]) => a.length))
     return {
       categories: Array.from({ length: maxLen }, (_, i) => `${i + 1}`),
-      series: raw.map((arr: number[], i: number) => ({ name: `系列${i + 1}`, data: arr })),
+      series: raw.map((arr: number[], i: number) => ({ name: t('chart.seriesFallback', { n: i + 1 }), data: arr })),
     }
   }
   if (Array.isArray(raw) && raw.every((v) => typeof v === 'object' && v !== null && ('name' in v || 'value' in v))) {
@@ -185,7 +188,7 @@ const chartOption = computed<EChartsOption | null>(() => {
         )
         return !hidden.has(name)
       })
-    } else if (hidden.has(String(s.name ?? `系列${i + 1}`))) {
+    } else if (hidden.has(String(s.name ?? t('chart.seriesFallback', { n: i + 1 })))) {
       // 常规系列：按名称置空数据实现隐藏
       s.data = []
     }
@@ -202,7 +205,11 @@ const legendItems = computed(() => {
   // 饼图 / 漏斗：从 series[0].data 提取各数据项名
   if ((props.type === 'pie' || props.type === 'funnel') && Array.isArray(seriesArr[0]?.data)) {
     return (seriesArr[0].data as Record<string, unknown>[]).map((d, i: number) => {
-      const name = String(typeof d === 'object' ? (d.name ?? `项${i + 1}`) : `项${i + 1}`)
+      const name = String(
+        typeof d === 'object'
+          ? (d.name ?? t('chart.itemFallback', { n: i + 1 }))
+          : t('chart.itemFallback', { n: i + 1 }),
+      )
       return {
         name,
         color: colors[i % colors.length] || '#999',
@@ -213,7 +220,7 @@ const legendItems = computed(() => {
 
   // 雷达：每个 series 是一个系列
   return seriesArr.map((s: Record<string, unknown>, i: number) => {
-    const name = String(s.name ?? `系列${i + 1}`)
+    const name = String(s.name ?? t('chart.seriesFallback', { n: i + 1 }))
     return {
       name,
       color: colors[i % colors.length] || '#999',
@@ -289,7 +296,9 @@ function bindEvents() {
 // 加载完成后 wordCloudReady=true → :key 变化 → BaseChart 重新创建 → 自动 setOption
 const wordCloudReady = ref(false)
 let _isMounted = true
-onUnmounted(() => { _isMounted = false })
+onUnmounted(() => {
+  _isMounted = false
+})
 watch(
   () => props.type,
   async (t) => {

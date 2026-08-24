@@ -90,6 +90,10 @@ export default {
     retry: 'Reload',
     unknownError: 'Unknown error',
   },
+  chart: {
+    seriesFallback: 'Series {n}',
+    itemFallback: 'Item {n}',
+  },
   offline: {
     disconnected: 'Network disconnected, some features may be unavailable',
   },
