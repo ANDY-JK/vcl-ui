@@ -19,7 +19,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import FormRenderer from '../FormRenderer.vue'
 import DesignerChildCard from './DesignerChildCard.vue'
 import {
-  toFormSchema, getTypeLabel, isContainerNode,
+  toFormSchema, getTypeLabel, getTypeIcon, isContainerNode,
   type DesignerNode, type DesignerNodeType, type FormMeta,
 } from './types'
 
@@ -359,7 +359,7 @@ const deviceClass = computed(() => `device-${props.device}`)
           >
             <!-- 容器头部 -->
             <div class="ldc-container-head">
-              <IconSvg :type="node.type === 'card' ? 'layout-template' : node.type === 'grid' ? 'grid-2x2' : node.type === 'tabs' ? 'panel-top' : node.type === 'collapse' ? 'chevron-down' : 'clock'" size="xs" />
+              <IconSvg :type="getTypeIcon(node.type)" size="xs" />
               <span class="ldc-container-label">{{ node.label }}</span>
               <span class="ldc-container-badge">{{ getTypeLabel(node.type) }}</span>
               <span class="ldc-container-actions" @click.stop>

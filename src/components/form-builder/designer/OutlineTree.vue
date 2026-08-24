@@ -12,7 +12,7 @@
  */
 import { computed, ref, watch, type PropType } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { isContainerNode, type DesignerNode } from './types'
+import { isContainerNode, getTypeIcon, type DesignerNode, type DesignerNodeType } from './types'
 
 const props = defineProps({
   nodes: { type: Array as PropType<DesignerNode[]>, default: () => [] },
@@ -133,22 +133,9 @@ function typeShort(type: string): string {
   return map[type] ?? type
 }
 
-/** 节点图标 */
-function nodeIcon(type: string): string {
-  const map: Record<string, string> = {
-    text: 'square-pen', textarea: 'align-left', number: 'hash',
-    select: 'chevron-down', radio: 'circle-check', checkbox: 'check-square',
-    cascader: 'chevrons-down-up', switch: 'toggle-left', date: 'calendar',
-    time: 'clock', rate: 'star', slider: 'sliders-horizontal', upload: 'upload',
-    password: 'lock', tel: 'phone', email: 'mail', url: 'link', search: 'search',
-    subform: 'table', relate: 'link', richtext: 'type',
-    signature: 'pen-tool', address: 'map-pin', idcard: 'credit-card',
-    matrix: 'grid-3x3', serial: 'bar-chart',
-    divider: 'minus', title: 'type',
-    card: 'layout-template', grid: 'grid-2x2', tabs: 'panel-top',
-    collapse: 'chevron-down', steps: 'clock',
-  }
-  return map[type] ?? 'circle'
+/** 节点图标（统一走 getTypeIcon，见 designer/types.ts） */
+function nodeIcon(type: DesignerNodeType): string {
+  return getTypeIcon(type)
 }
 
 /** 递归渲染树节点 */

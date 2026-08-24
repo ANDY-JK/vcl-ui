@@ -49,9 +49,14 @@ export interface CloudKVAdapter {
 
 let cloudAdapter: CloudKVAdapter | null = null
 
-/** 注入/移除云端 KV 适配器。传 null 关闭云端能力（退化为纯本地）。 */
-export function setCloudAdapter(adapter: CloudKVAdapter | null): void {
+/**
+ * 注入/移除云端 KV 适配器。传 null 关闭云端能力（退化为纯本地）。
+ * 返回先前适配器，便于调用方在测试/临时切换后恢复。
+ */
+export function setCloudAdapter(adapter: CloudKVAdapter | null): CloudKVAdapter | null {
+  const prev = cloudAdapter
   cloudAdapter = adapter
+  return prev
 }
 
 // ════════════════════════════════════════

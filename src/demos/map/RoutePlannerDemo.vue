@@ -47,10 +47,9 @@ const searchingStart = ref(false)
 const CACHE_KEY = 'route-planner-stores'
 const CACHE_START_KEY = 'route-planner-start'
 
-/** 保存门店数据到 localStorage */
+/** 保存起点到 localStorage（门店数据由 useStoreData 的 watch 持久化，此处不重复写同一 key） */
 function saveCache(): void {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(stores.value))
     if (startPoint.value) {
       localStorage.setItem(CACHE_START_KEY, JSON.stringify(startPoint.value))
     }

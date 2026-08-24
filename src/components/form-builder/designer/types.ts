@@ -982,6 +982,20 @@ export function getTypeLabel(type: DesignerNodeType): string {
   return extraLabels[type] ?? type
 }
 
+/** 节点类型 → 图标（读 FIELD_TYPES，扩展类型 fallback）。统一类型图标映射，禁止各处重复维护 icon map */
+export function getTypeIcon(type: DesignerNodeType): string {
+  const meta = FIELD_TYPES.find(t => t.type === type)
+  if (meta) return meta.icon
+  const extraIcons: Record<string, string> = {
+    password: 'lock',
+    tel: 'phone',
+    email: 'mail',
+    url: 'link',
+    search: 'search',
+  }
+  return extraIcons[type] ?? 'circle'
+}
+
 /**
  * v2 → v3 兼容：将旧版 DesignerField[] 转为 DesignerNode[]
  */

@@ -7,8 +7,11 @@ let _boost = 0
 export function boostZTop() {
   if (typeof document === 'undefined') return () => {}
   if (++_boost === 1) document.documentElement.style.setProperty('--z-top', '10001')
+  // 幂等释放：重复调用 release 不再递减计数，防止异常路径下 --z-top 永久残留
+  let released = false
   return () => {
-    if (typeof document === 'undefined') return
+    if (typeof document === 'undefined' || released) return
+    released = true
     if (--_boost === 0) document.documentElement.style.removeProperty('--z-top')
   }
 }

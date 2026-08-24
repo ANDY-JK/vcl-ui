@@ -16,7 +16,7 @@ import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import {
-  getTypeLabel, parseCascaderOptions, isContainerNode, flattenNodes,
+  getTypeLabel, getTypeIcon, parseCascaderOptions, isContainerNode, flattenNodes,
   type DesignerNode,
 } from './types'
 
@@ -257,7 +257,7 @@ const linkageHelpText = computed(() => {
           <div class="ldp-prop ldp-prop-readonly">
             <label>字段类型</label>
             <div class="ldp-type-readonly">
-              <IconSvg :type="node.type === 'text' ? 'square-pen' : node.type === 'textarea' ? 'align-left' : node.type === 'number' ? 'hash' : node.type === 'select' ? 'chevron-down' : node.type === 'radio' ? 'circle-check' : node.type === 'checkbox' ? 'check-square' : node.type === 'switch' ? 'toggle-left' : node.type === 'date' ? 'calendar' : node.type === 'time' ? 'clock' : node.type === 'rate' ? 'star' : node.type === 'slider' ? 'sliders-horizontal' : node.type === 'upload' ? 'upload' : node.type === 'cascader' ? 'chevrons-down-up' : node.type === 'divider' ? 'minus' : 'type'" size="xs" />
+              <IconSvg :type="getTypeIcon(node.type)" size="xs" />
               {{ getTypeLabel(node.type) }}
             </div>
           </div>
