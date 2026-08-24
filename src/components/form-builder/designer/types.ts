@@ -15,6 +15,7 @@ import type { FormSchema, FormField, FieldType, FieldContainer, FieldContainerTy
 import type { Option, CascaderOption } from '@/components/shared/types'
 import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl, uuid } from '@/components/_internal/utils'
 import { extractFields } from '../expression-evaluator'
+import { getFieldMeta, getFieldDefaults, getTypeLabel as fbGetTypeLabel, getTypeIcon as fbGetTypeIcon } from '../fieldRegistry'
 
 /**
  * 从联动公式中提取依赖字段 key（extractFields 的语义别名，兼容旧命名）
@@ -369,91 +370,18 @@ export interface FieldTypeMeta {
 }
 
 /** 节点类型注册表：设计器左侧面板数据源 */
-export const FIELD_TYPES: FieldTypeMeta[] = [
-  // ── 基础 ──
-  { type: 'text', label: '单行输入', icon: 'square-pen', group: '基础',
-    defaults: { placeholder: '请输入', span: 24 } },
-  { type: 'textarea', label: '多行文本', icon: 'align-left', group: '基础',
-    defaults: { placeholder: '请输入', rows: 3, span: 24 } },
-  { type: 'number', label: '数字输入', icon: 'hash', group: '基础',
-    defaults: { min: 0, max: 100, step: 1, span: 12 } },
-  { type: 'password', label: '密码输入', icon: 'lock', group: '基础',
-    defaults: { placeholder: '请输入密码', span: 12 } },
-  { type: 'tel', label: '电话号码', icon: 'phone', group: '基础',
-    defaults: { placeholder: '请输入电话', span: 12 } },
-  { type: 'email', label: '邮箱输入', icon: 'mail', group: '基础',
-    defaults: { placeholder: '请输入邮箱', span: 12 } },
-  { type: 'url', label: '链接输入', icon: 'link', group: '基础',
-    defaults: { placeholder: '请输入链接', span: 24 } },
-  { type: 'search', label: '搜索输入', icon: 'search', group: '基础',
-    defaults: { placeholder: '请输入搜索词', span: 12 } },
-  // ── 选择 ──
-  { type: 'select', label: '下拉选择', icon: 'chevron-down', group: '选择',
-    defaults: { options: ['选项1', '选项2'], placeholder: '请选择', span: 12 } },
-  { type: 'combobox', label: '可输入选择', icon: 'chevrons-down-up', group: '选择',
-    defaults: { options: ['选项1', '选项2'], placeholder: '请选择或输入', span: 12 } },
-  { type: 'tree-select', label: '树选择', icon: 'chevron-down', group: '选择',
-    defaults: { placeholder: '请选择', span: 12 } },
-  { type: 'radio', label: '单选按钮', icon: 'circle-check', group: '选择',
-    defaults: { options: ['选项A', '选项B'], span: 12 } },
-  { type: 'checkbox', label: '复选按钮', icon: 'check-square', group: '选择',
-    defaults: { options: ['选项A', '选项B'], span: 12 } },
-  { type: 'cascader', label: '级联选择', icon: 'chevrons-down-up', group: '选择',
-    defaults: { placeholder: '请选择', span: 24,
-      cascaderOptions: '[{"label":"一级","value":"1","children":[{"label":"二级","value":"1-1"}]}]' } },
-  // ── 高级 ──
-  { type: 'switch', label: '开关', icon: 'toggle-left', group: '高级',
-    defaults: { span: 12 } },
-  { type: 'date', label: '日期选择', icon: 'calendar', group: '高级',
-    defaults: { placeholder: '请选择日期', span: 12 } },
-  { type: 'date-range', label: '日期范围', icon: 'calendar', group: '高级',
-    defaults: { placeholder: '请选择日期范围', span: 24 } },
-  { type: 'time', label: '时间选择', icon: 'clock', group: '高级',
-    defaults: { placeholder: '请选择时间', span: 12 } },
-  { type: 'rate', label: '评分', icon: 'star', group: '高级',
-    defaults: { rateMax: 5, span: 12 } },
-  { type: 'slider', label: '滑块', icon: 'sliders-horizontal', group: '高级',
-    defaults: { min: 0, max: 100, step: 1, span: 24 } },
-  { type: 'upload', label: '文件上传', icon: 'upload', group: '高级',
-    defaults: { span: 24, accept: 'image/*', multiple: true, maxSize: 10 } },
-  { type: 'image-upload', label: '图片上传', icon: 'upload', group: '高级',
-    defaults: { span: 24, accept: 'image/*', multiple: true, maxSize: 10 } },
-  { type: 'camera', label: '拍照', icon: 'camera', group: '高级',
-    defaults: { span: 24 } },
-  // ── 高级字段 (v3) ──
-  { type: 'subform', label: '子表单', icon: 'table', group: '高级字段',
-    defaults: { span: 24, placeholder: '可添加多行', subformColumns: '姓名|name|text\n电话|phone|number' } },
-  { type: 'relate', label: '关联选择', icon: 'link', group: '高级字段',
-    defaults: { span: 24, placeholder: '点击选择关联数据', relateEntityType: 'user' } },
-  { type: 'richtext', label: '富文本', icon: 'type', group: '高级字段',
-    defaults: { span: 24, richtextToolbar: 'simple' } },
-  { type: 'signature', label: '电子签名', icon: 'pen-tool', group: '高级字段',
-    defaults: { span: 24 } },
-  { type: 'address', label: '地址选择', icon: 'map-pin', group: '高级字段',
-    defaults: { span: 24, addressDetail: true } },
-  { type: 'idcard', label: '证件号码', icon: 'credit-card', group: '高级字段',
-    defaults: { span: 24, idcardTypes: '身份证\n护照\n军官证' } },
-  { type: 'matrix', label: '评分矩阵', icon: 'grid-3x3', group: '高级字段',
-    defaults: { span: 24, matrixRows: '服务态度\n专业能力\n响应速度', matrixCols: '满意\n一般\n不满意' } },
-  { type: 'serial', label: '流水号', icon: 'bar-chart', group: '高级字段',
-    defaults: { span: 12, serialPrefix: 'NO', serialDateFormat: 'YYYYMMDD' } },
-  // ── 布局容器 (v3) ──
-  { type: 'card', label: '分组卡片', icon: 'layout-template', group: '布局容器', isContainer: true,
-    defaults: { isContainer: true, containerConfig: { } } },
-  { type: 'grid', label: '栅格行', icon: 'grid-2x2', group: '布局容器', isContainer: true,
-    defaults: { isContainer: true, containerConfig: { columns: 2 } } },
-  { type: 'tabs', label: '标签页', icon: 'panel-top', group: '布局容器', isContainer: true,
-    defaults: { isContainer: true, containerConfig: { tabs: [{ label: '标签页 1', name: 'tab1' }], activeTab: 'tab1' } } },
-  { type: 'collapse', label: '折叠面板', icon: 'chevron-down', group: '布局容器', isContainer: true,
-    defaults: { isContainer: true, containerConfig: { collapseItems: [{ title: '折叠项 1', expanded: true }], activeCollapse: 0 } } },
-  { type: 'steps', label: '步骤条', icon: 'clock', group: '布局容器', isContainer: true,
-    defaults: { isContainer: true, containerConfig: { steps: [{ title: '步骤 1' }, { title: '步骤 2' }], activeStep: 0 } } },
-  // ── 布局元素 ──
-  { type: 'divider', label: '分割线', icon: 'minus', group: '布局',
-    defaults: { span: 24 } },
-  { type: 'title', label: '标题文字', icon: 'type', group: '布局',
-    defaults: { span: 24 } },
-]
+/**
+ * 节点类型注册表 — 从 fieldRegistry 派生（单一事实源）
+ * 新增/修改字段类型只需改 fieldRegistry，此处自动同步
+ */
+export const FIELD_TYPES: FieldTypeMeta[] = getFieldMeta().map((r) => ({
+  type: r.type as DesignerNodeType,
+  label: r.label,
+  icon: r.icon,
+  group: r.group as FieldTypeMeta['group'],
+  isContainer: r.isContainer,
+  defaults: r.defaults as Partial<DesignerNode>,
+}))
 
 // ════════════════════════════════════════
 // 工具函数
@@ -478,21 +406,22 @@ export function collectStorageKey(fields: { key?: string; type: string }[]): str
   return 'fd_collect_' + Math.abs(h).toString(36)
 }
 
-/** 按注册表 defaults 创建新节点实例 */
+/** 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） */
 export function createField(type: DesignerNodeType, index: number): DesignerNode {
-  const meta = FIELD_TYPES.find(t => t.type === type)!
+  const defaults = getFieldDefaults(type)
+  const meta = FIELD_TYPES.find(t => t.type === type)
   const node: DesignerNode = {
     id: genFieldId(),
     type,
-    label: meta.label,
-    ...meta.defaults,
+    label: meta?.label ?? type,
+    ...(defaults as Partial<DesignerNode>),
   }
   // 字段节点自动生成 key
-  if (!meta.isContainer) {
+  if (!meta?.isContainer) {
     node.key = `field${index}`
   }
   // 容器节点初始化 children
-  if (meta.isContainer) {
+  if (meta?.isContainer) {
     node.children = []
   }
   return node
@@ -986,39 +915,14 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
   }
 }
 
-/** 节点类型 → 中文标签 */
+/** 节点类型 → 中文标签（委托 fieldRegistry，单一事实源） */
 export function getTypeLabel(type: DesignerNodeType): string {
-  // 先从注册表查找
-  const meta = FIELD_TYPES.find(t => t.type === type)
-  if (meta) return meta.label
-  // 扩展类型 fallback（tel/email/password/url/search 等不在 FIELD_TYPES 中）
-  const extraLabels: Record<string, string> = {
-    password: '密码输入',
-    tel: '电话号码',
-    email: '邮箱输入',
-    url: '链接输入',
-    search: '搜索输入',
-    combobox: '可输入选择',
-    'tree-select': '树选择',
-    'date-range': '日期范围',
-    'image-upload': '图片上传',
-    camera: '拍照',
-  }
-  return extraLabels[type] ?? type
+  return fbGetTypeLabel(type)
 }
 
-/** 节点类型 → 图标（读 FIELD_TYPES，扩展类型 fallback）。统一类型图标映射，禁止各处重复维护 icon map */
+/** 节点类型 → 图标（委托 fieldRegistry，单一事实源）。禁止各处重复维护 icon map */
 export function getTypeIcon(type: DesignerNodeType): string {
-  const meta = FIELD_TYPES.find(t => t.type === type)
-  if (meta) return meta.icon
-  const extraIcons: Record<string, string> = {
-    password: 'lock',
-    tel: 'phone',
-    email: 'mail',
-    url: 'link',
-    search: 'search',
-  }
-  return extraIcons[type] ?? 'circle'
+  return fbGetTypeIcon(type)
 }
 
 /**
