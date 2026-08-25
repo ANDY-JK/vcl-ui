@@ -9,13 +9,13 @@
             <IconSvg type="layout-dashboard" size="lg" color="#fff" />
           </slot>
         </div>
-        <h1>{{ title || '登录' }}</h1>
+        <h1>{{ title || t('login.title') }}</h1>
       </div>
 
       <div class="login-form">
         <Input
           v-model="form.username"
-          label="账号"
+          :label="t('login.account')"
           type="text"
           icon="user"
           autocomplete="username"
@@ -25,7 +25,7 @@
 
         <Input
           v-model="form.password"
-          label="密码"
+          :label="t('login.password')"
           type="password"
           icon="lock"
           autocomplete="current-password"
@@ -36,7 +36,7 @@
         <Toast v-if="displayError" variant="inline" type="error" :message="displayError" closable />
 
         <Button
-          text="登 录"
+          :text="t('login.submitBtn')"
           variant="primary"
           :loading="loading"
           :disabled="loading || !canSubmit"
@@ -52,7 +52,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { Input, Button, IconSvg, Toast } from './_shared'
+import { Input, Button, IconSvg, Toast, useT } from './_shared'
+
+const t = useT()
 
 // ======================== Props ========================
 
@@ -91,12 +93,12 @@ const displayError = computed(() => props.error || internalError.value)
 const canSubmit = computed(() => form.username.trim().length >= 3 && form.password.length >= 6)
 
 const usernameRules = [
-  (v: string) => (v.trim() ? undefined : '请输入账号'),
-  (v: string) => (v.length >= 3 ? undefined : '账号至少 3 个字符'),
+  (v: string) => (v.trim() ? undefined : t('login.accountRequired')),
+  (v: string) => (v.length >= 3 ? undefined : t('login.accountHint')),
 ]
 const passwordRules = [
-  (v: string) => (v ? undefined : '请输入密码'),
-  (v: string) => (v.length >= 6 ? undefined : '密码至少 6 个字符'),
+  (v: string) => (v ? undefined : t('login.passwordRequired')),
+  (v: string) => (v.length >= 6 ? undefined : t('login.passwordHint')),
 ]
 
 // ======================== 提交 ========================
@@ -108,7 +110,7 @@ const handleEnter = (event: KeyboardEvent) => {
 const handleSubmit = () => {
   internalError.value = ''
   if (!canSubmit.value) {
-    internalError.value = '请输入正确的账号和密码'
+    internalError.value = t('login.invalidCredentialsFull')
     return
   }
 

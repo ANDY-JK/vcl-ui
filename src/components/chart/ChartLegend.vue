@@ -1,6 +1,9 @@
 <script setup lang="ts">
 // 独立 HTML 图例 — flex-wrap + gap 自然撑高，永不重叠
 import { computed } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = defineProps<{
   items: { name: string; color: string; visible: boolean }[]
@@ -27,7 +30,7 @@ function onToggleAll() {
   <div v-if="items.length > 0" class="cl-root">
     <div class="cl-header">
       <button type="button" class="cl-toggle-all" :class="{ 'cl-toggle-all--active': allVisible }" @click="onToggleAll">
-        {{ allVisible ? '全不选' : '全选' }}
+        {{ allVisible ? t('chart.selectNone') : t('chart.selectAll') }}
       </button>
     </div>
     <div class="cl-list">

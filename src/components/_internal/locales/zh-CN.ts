@@ -33,6 +33,8 @@ export default {
     yes: '是',
     no: '否',
     ok: '确定',
+    sendExpress: '发快递',
+    dialog: '弹窗',
   },
   toast: {
     success: '成功',
@@ -96,6 +98,8 @@ export default {
   chart: {
     seriesFallback: '系列 {n}',
     itemFallback: '项 {n}',
+    selectAll: '全选',
+    selectNone: '全不选',
   },
   offline: {
     disconnected: '网络连接已断开，部分功能可能不可用',
@@ -239,6 +243,8 @@ export default {
     registerNow: '立即注册',
     usernameHint: '用户名至少 3 个字符',
     usernameRequired: '请输入用户名',
+    accountRequired: '请输入账号',
+    accountHint: '账号至少 3 个字符',
     passwordRequired: '请输入密码',
     passwordHint: '密码至少 6 个字符',
     invalidCredentialsFull: '请输入正确的用户名和密码',
@@ -270,7 +276,6 @@ export default {
     displayNameHint: '至少 2 个字符',
     cardKeyRequired: '请输入注册卡密',
     usernameMinLength: '至少 3 个字符',
-    accountRequired: '请输入账号',
     passwordMinLength: '至少 6 个字符',
     emailRequired: '请输入邮箱',
     emailInvalid: '邮箱格式不正确',

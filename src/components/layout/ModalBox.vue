@@ -9,6 +9,9 @@ import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import { registerModal } from '@/components/_internal/useModalManager'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useEscClose } from '@/components/_internal/useEscClose'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface DetailItem {
   label: string
@@ -220,7 +223,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
             :class="[`modal-${size}`]"
             role="dialog"
             aria-modal="true"
-            :aria-label="title || '弹窗'"
+            :aria-label="title || t('common.dialog')"
             @mousedown.stop
             @mouseup.stop
           >
@@ -229,7 +232,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
               <h3 class="modal-title">
                 {{ title }}
               </h3>
-              <button v-if="closable" class="modal-close" aria-label="关闭" @click="close">
+              <button v-if="closable" class="modal-close" :aria-label="t('common.close')" @click="close">
                 <IconSvg type="x" size="md" />
               </button>
             </div>
@@ -278,12 +281,12 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
             <div v-if="$slots.footer || modalType === 'form' || modalType === 'select'" class="modal-footer">
               <slot name="footer">
                 <template v-if="modalType === 'form'">
-                  <Button text="取消" variant="secondary" @click="close" />
-                  <Button text="提交" variant="primary" @click="emit('form-submit')" />
+                  <Button :text="t('common.cancel')" variant="secondary" @click="close" />
+                  <Button :text="t('common.submit')" variant="primary" @click="emit('form-submit')" />
                 </template>
                 <template v-else-if="modalType === 'select'">
-                  <Button text="取消" variant="secondary" @click="close" />
-                  <Button text="确认" variant="primary" @click="confirmSelect" />
+                  <Button :text="t('common.cancel')" variant="secondary" @click="close" />
+                  <Button :text="t('common.confirm')" variant="primary" @click="confirmSelect" />
                 </template>
               </slot>
             </div>

@@ -89,7 +89,12 @@ useClickOutside([triggerRef, floatingRef], close)
     <!-- 触发器 -->
     <span ref="triggerRef" @click="toggle" @mouseenter="show" @mouseleave="hide" @focus="onFocus" @blur="onBlur">
       <slot v-if="!isTooltip" name="trigger">
-        <button type="button" class="popover-btn">
+        <button
+          type="button"
+          class="popover-btn"
+          :aria-expanded="open"
+          :aria-haspopup="isTooltip ? undefined : 'dialog'"
+        >
           <IconSvg type="circle-alert" size="md" />
         </button>
       </slot>
@@ -104,6 +109,7 @@ useClickOutside([triggerRef, floatingRef], close)
           ref="floatingRef"
           :class="[isTooltip ? 'tooltip-pop' : 'popover-card', !isTooltip && `flip-${direction}`]"
           :style="floatingStyle"
+          :role="isTooltip ? undefined : 'dialog'"
           @mouseenter="isTooltip ? show() : props.trigger === 'hover' && show()"
           @mouseleave="hide"
         >

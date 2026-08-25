@@ -2,6 +2,10 @@
 // ⛔ 保护 — 切换列表，禁止：clamp() → px，展开/折叠动画
 //    需我确认：ExtraColumn 接口扩展、toggle 行为
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { computed } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface ExtraColumn {
   key: string
@@ -36,11 +40,15 @@ const props = withDefaults(defineProps<Props>(), {
   extraColumns: () => [],
   disabled: false,
   isLoading: false,
-  emptyText: '暂无数据',
+  emptyText: '',
   variant: 'switch',
-  buttonLabel: '发快递',
+  buttonLabel: '',
   phoneField: 'phone',
 })
+
+// 默认文案走 i18n：emptyText/buttonLabel 未传时用词条（'加载中...' 保持内联）
+const effectiveEmptyText = computed(() => props.emptyText || t('common.empty'))
+const effectiveButtonLabel = computed(() => props.buttonLabel || t('common.sendExpress'))
 
 const emit = defineEmits<{
   toggle: [item: Record<string, any>, newValue: boolean]
@@ -67,7 +75,7 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
 
     <div v-else-if="!items.length" class="list-empty">
       <IconSvg type="circle-alert" size="lg" color="var(--color-text-muted)" />
-      <span>{{ emptyText }}</span>
+      <span>{{ effectiveEmptyText }}</span>
     </div>
 
     <div v-else class="list-items">
@@ -125,7 +133,7 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
             })
           "
         >
-          {{ buttonLabel }}
+          {{ effectiveButtonLabel }}
         </button>
       </div>
     </div>

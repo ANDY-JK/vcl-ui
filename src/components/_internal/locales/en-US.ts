@@ -30,6 +30,8 @@ export default {
     yes: 'Yes',
     no: 'No',
     ok: 'OK',
+    sendExpress: 'Send Express',
+    dialog: 'Dialog',
   },
   toast: {
     success: 'Success',
@@ -93,6 +95,8 @@ export default {
   chart: {
     seriesFallback: 'Series {n}',
     itemFallback: 'Item {n}',
+    selectAll: 'Select All',
+    selectNone: 'Select None',
   },
   offline: {
     disconnected: 'Network disconnected, some features may be unavailable',
@@ -236,6 +240,8 @@ export default {
     registerNow: 'Sign up now',
     usernameHint: 'Username must be at least 3 characters',
     usernameRequired: 'Please enter username',
+    accountRequired: 'Please enter account',
+    accountHint: 'Account must be at least 3 characters',
     passwordRequired: 'Please enter password',
     passwordHint: 'Password must be at least 6 characters',
     invalidCredentialsFull: 'Please enter a valid username and password',
@@ -277,7 +283,6 @@ export default {
     displayNameHint: 'At least 2 characters',
     cardKeyRequired: 'Please enter the registration card key',
     usernameMinLength: 'At least 3 characters',
-    accountRequired: 'Please enter account',
     passwordMinLength: 'At least 6 characters',
     emailRequired: 'Please enter email',
     emailInvalid: 'Invalid email format',
