@@ -1,5 +1,6 @@
 import { ref, onUnmounted } from 'vue'
 import { readBarcodes, type ReadResult } from 'zxing-wasm/reader'
+import { useT } from '@/components/_internal/i18n'
 
 /** 截图区域（占画面比例，0-1） */
 export interface CaptureRegion {
@@ -32,20 +33,19 @@ export interface BarcodeScannerOptions {
   adaptiveInterval?: boolean
 }
 
-/** 将浏览器摄像头英文错误映射为用户可读中文 */
+/** 将浏览器摄像头英文错误映射为用户可读中文（复用 form.cameraErr* 词条，与 CameraCapture 一致） */
 function cameraErrorToChinese(err: any): string {
   const raw: string = err?.message || err?.name || ''
+  const t = useT()
   // 精确命中
-  if (raw.includes('Requested device not found')) return '未找到摄像头设备，请连接摄像头后重试'
-  if (raw.includes('Permission denied') || raw.includes('NotAllowedError'))
-    return '摄像头权限被拒绝，请在浏览器设置中允许摄像头访问'
-  if (raw.includes('Could not start video source') || raw.includes('AbortError'))
-    return '摄像头被其他应用占用，请关闭后重试'
-  if (raw.includes('NotReadableError') || raw.includes('Hardware error')) return '摄像头硬件错误，请检查设备连接'
-  if (raw.includes('OverconstrainedError')) return '摄像头不支持所需分辨率，请尝试切换摄像头'
-  if (raw.includes('NotFoundError')) return '未检测到可用摄像头'
-  if (raw.includes('NotSupportedError')) return '当前浏览器不支持摄像头访问'
-  if (raw.includes('SecurityError')) return '摄像头访问被安全策略阻止（请使用 HTTPS 或 localhost）'
+  if (raw.includes('Requested device not found')) return t('form.cameraErrDeviceNotFound')
+  if (raw.includes('Permission denied') || raw.includes('NotAllowedError')) return t('form.cameraErrNotAllowed')
+  if (raw.includes('Could not start video source') || raw.includes('AbortError')) return t('form.cameraErrOccupied')
+  if (raw.includes('NotReadableError') || raw.includes('Hardware error')) return t('form.cameraErrOccupied')
+  if (raw.includes('OverconstrainedError')) return t('form.cameraErrResolution')
+  if (raw.includes('NotFoundError')) return t('form.cameraErrNotFound')
+  if (raw.includes('NotSupportedError')) return t('form.cameraErrNotSupported')
+  if (raw.includes('SecurityError')) return t('form.cameraErrSecurity')
   return ''
 }
 

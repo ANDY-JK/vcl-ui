@@ -2,6 +2,9 @@
 // ⛔ 保护 — 只读遮罩，禁止：遮罩透明度；z-index 层级 = var(--z-readonly, 2500)（压 modal/overlay/dropdown）
 //    需我确认：visible 触发逻辑、slot 内容区
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface Props {
   visible: boolean
@@ -9,7 +12,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  reason: '系统维护中，当前为只读模式',
+  reason: '',
 })
 </script>
 
@@ -18,7 +21,7 @@ withDefaults(defineProps<Props>(), {
     <div v-if="visible" class="readonly-overlay">
       <div class="readonly-content">
         <IconSvg type="lock" size="lg" color="white" />
-        <p>{{ reason }}</p>
+        <p>{{ reason || t('readonly.defaultReason') }}</p>
       </div>
     </div>
   </Transition>

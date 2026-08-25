@@ -101,6 +101,9 @@ export default {
     selectAll: '全选',
     selectNone: '全不选',
   },
+  readonly: {
+    defaultReason: '系统维护中，当前为只读模式',
+  },
   offline: {
     disconnected: '网络连接已断开，部分功能可能不可用',
   },

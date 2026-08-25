@@ -98,6 +98,9 @@ export default {
     selectAll: 'Select All',
     selectNone: 'Select None',
   },
+  readonly: {
+    defaultReason: 'System is under maintenance, read-only mode',
+  },
   offline: {
     disconnected: 'Network disconnected, some features may be unavailable',
   },
