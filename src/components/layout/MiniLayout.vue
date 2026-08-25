@@ -1,10 +1,12 @@
 <script setup lang="ts">
 // ⛔ 保护 — 最小化布局骨架，禁止：clamp() → px，结构层级修改
 //    需我确认：菜单渲染逻辑、路由匹配规则
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
+import { useFocusTrap } from '@/components/_internal/useFocusTrap'
+import { useEscClose } from '@/components/_internal/useEscClose'
 
 const t = useT()
 
@@ -77,6 +79,23 @@ function selectScan(type: ScanType) {
   router.push(`/mini/scan/${type.name}`)
 }
 
+/** 扫码 sheet：焦点陷阱（Tab 循环 + 打开聚焦）+ Esc 关闭（与 StoreFormModal 等弹层一致） */
+const scanSheetRef = ref<HTMLElement | null>(null)
+useFocusTrap({
+  visible: computed(() => showScan.value),
+  getContainer: () => scanSheetRef.value,
+  autofocus: 'container',
+})
+const { mount: mountScanEsc, unmount: unmountScanEsc } = useEscClose(
+  () => showScan.value,
+  () => true,
+  () => {
+    showScan.value = false
+  },
+)
+onMounted(mountScanEsc)
+onUnmounted(unmountScanEsc)
+
 /* 安全区适配 */
 const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
 </script>
@@ -144,7 +163,14 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
     <Teleport to="body">
       <Transition name="sheet">
         <div v-if="showScan" class="scan-overlay" @click.self="showScan = false">
-          <div class="scan-sheet">
+          <div
+            ref="scanSheetRef"
+            class="scan-sheet"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="t('miniLayout.scanTypeTitle')"
+          >
             <div class="sheet-title">{{ t('miniLayout.scanTypeTitle') }}</div>
             <div class="sheet-grid">
               <button v-for="st in scanTypes" :key="st.name" class="scan-type-btn" @click="selectScan(st)">
