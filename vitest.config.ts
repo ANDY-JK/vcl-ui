@@ -26,14 +26,14 @@ export default defineConfig({
         'src/components/_internal/solar-icons.ts',
         'src/components/wc/**',
       ],
-      // 覆盖率阈值 — 阶段性目标（P1-001 测试系统恢复期）
-      // 当前：5 个核心组件 56 个测试 → ~5% 覆盖率
-      // 目标：迭代补充更多组件测试后逐步提升到 29/26/28/31
+      // 覆盖率阈值 — 2026-08-25 审计整改后基线（435 用例）
+      // 实测：31.6 stmts / 24.5 branch / 28.8 funcs / 33.1 lines
+      // 阈值取基线约 80% 留余量，低于即失败，防覆盖回退；后续随测试增长逐步上调
       thresholds: {
-        statements: 5,
-        branches: 4,
-        functions: 5,
-        lines: 5,
+        statements: 25,
+        branches: 20,
+        functions: 23,
+        lines: 26,
       },
     },
   },
