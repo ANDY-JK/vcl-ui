@@ -166,7 +166,7 @@ onUnmounted(() => {
         :aria-valuemin="min"
         :aria-valuemax="max"
         :aria-valuenow="modelValue"
-        @pointerdown="onPointerDown"
+        @pointerdown.stop="onPointerDown"
         @keydown="onKeydown"
       />
     </div>

@@ -41,6 +41,8 @@ const inlineVisible = ref(true)
 
 // toast 队列 — 通过 provide/inject 共享，多实例同页面共享同一队列
 const toasts = ref<ToastItem[]>([])
+// 各 toast 的自动关闭定时器（id → timer）：组件卸载时统一清理，防止卸载后 timer 回调操作已卸载 ref
+const _closeTimers = new Map<number, ReturnType<typeof setTimeout>>()
 
 const isToast = computed(() => props.variant === 'toast')
 const isInline = computed(() => props.variant === 'inline')
@@ -76,6 +78,11 @@ const inlineBorderMap: Record<string, string> = {
 function removeToast(id: number) {
   const idx = toasts.value.findIndex((t) => t.id === id)
   if (idx >= 0) toasts.value.splice(idx, 1)
+  const timer = _closeTimers.get(id)
+  if (timer) {
+    clearTimeout(timer)
+    _closeTimers.delete(id)
+  }
 }
 
 // 全局方法
@@ -109,13 +116,16 @@ function show(
   toasts.value.unshift(toast)
 
   if (dur > 0) {
-    setTimeout(() => removeToast(id), dur)
+    const timer = setTimeout(() => removeToast(id), dur)
+    _closeTimers.set(id, timer)
   }
   return id
 }
 
 function clearAll() {
   toasts.value.splice(0)
+  _closeTimers.forEach((t) => clearTimeout(t))
+  _closeTimers.clear()
 }
 
 // 通过 provide/inject 共享 toast API，子组件可 inject 后直接调用
@@ -139,6 +149,9 @@ onUnmounted(() => {
       // 某些环境 window.__toast 不可配置，忽略
     }
   }
+  // 清理未触发的自动关闭定时器，防止卸载后回调操作已卸载组件状态
+  _closeTimers.forEach((t) => clearTimeout(t))
+  _closeTimers.clear()
 })
 
 /** 组件实例方法（通过 ref 或 window.__toast 调用） */
@@ -182,7 +195,10 @@ defineExpose({
             v-if="t.actionText || t.undoText"
             class="toast-undo"
             :aria-label="t.actionText || t.undoText"
-            @click=";(t.onAction || t.onUndo)?.(); removeToast(t.id)"
+            @click="
+              ;(t.onAction || t.onUndo)?.()
+              removeToast(t.id)
+            "
           >
             {{ t.actionText || t.undoText }}
           </button>

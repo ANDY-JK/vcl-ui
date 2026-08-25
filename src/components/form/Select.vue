@@ -92,6 +92,8 @@ const emit = defineEmits<{
    ════════════════════════════════════════ */
 /** 无障碍：浮动 label 与 trigger input 关联的唯一 id */
 const selectInputId = useId()
+/** 下拉面板唯一 id：同页多个 Select 实例时 aria-controls/面板 id 各自独立，避免重复 id 导致关联错乱 */
+const dropdownId = useId()
 const t = useT()
 const isSelect = computed(() => props.type === 'select')
 const isCombobox = computed(() => props.type === 'combobox')
@@ -829,7 +831,7 @@ function onTimeCancel() {
             isMenu ? 'menu' : isTreeSelect ? 'tree' : isDate || isDateRange || isTime ? 'dialog' : 'listbox'
           "
           aria-autocomplete="list"
-          :aria-controls="open ? 'select-dropdown-list' : undefined"
+          :aria-controls="open ? dropdownId : undefined"
           :aria-activedescendant="open && highlightIdx >= 0 ? `select-option-${highlightIdx}` : undefined"
           autocomplete="off"
           @click.stop="isCombobox ? !open && toggleOpen($event) : toggleOpen($event)"
@@ -866,7 +868,7 @@ function onTimeCancel() {
         <Transition name="drop">
           <div
             v-if="open"
-            :id="open ? 'select-dropdown-list' : undefined"
+            :id="dropdownId"
             ref="floatingRef"
             class="dropdown-panel"
             :class="[`flip-${flipDir}`]"

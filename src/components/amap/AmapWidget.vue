@@ -19,6 +19,7 @@ import { ElAmap } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import { getAmapJsKey, getAmapSecurityCode } from './amap-key'
 import { amapLoader } from './amap-loader'
+import { sanitizeHTML } from '@/components/data/composables/sanitize'
 import type { MarkerItem } from './types'
 
 // ════════════════════════════════════════
@@ -163,7 +164,8 @@ function renderMarkers() {
 
     marker.on('click', () => {
       if (item.infoWindow) {
-        infoWindow?.setContent(item.infoWindow)
+        // 白名单消毒：infoWindow 为 HTML 字符串，可能含用户输入（店名/地址），剥离脚本/事件属性防 XSS
+        infoWindow?.setContent(sanitizeHTML(item.infoWindow))
         infoWindow?.open(mapInstance, marker.getPosition())
       }
       emit('marker-click', item, idx)
