@@ -508,6 +508,15 @@ function exportJson(): void {
 const importText = ref('')
 const showImport = ref(false)
 const importError = ref('')
+// 事件处理用命名函数：模板内联多语句 handler 会被 prettier(semi:false) 去分号重排，导致 Vue 表达式解析失败
+function closeImport() {
+  showImport.value = false
+  importError.value = ''
+}
+function selectFromOutline(id: string) {
+  handleSelect(id)
+  activeTab.value = 'design'
+}
 const importDragOver = ref(false)
 
 function onImportDrop(e: DragEvent): void {
@@ -892,15 +901,7 @@ const selectedPath = computed(() => {
       <div class="ld-import-actions">
         <span v-if="importError" class="ld-import-error">{{ importError }}</span>
         <button class="ld-btn" @click="applyImport">应用导入</button>
-        <button
-          class="ld-btn"
-          @click="
-            showImport = false
-            importError = ''
-          "
-        >
-          取消
-        </button>
+        <button class="ld-btn" @click="closeImport">取消</button>
       </div>
     </div>
 
@@ -994,10 +995,7 @@ const selectedPath = computed(() => {
           <OutlineTree
             :nodes="currentNodes"
             :selected-id="selectedId"
-            @select="
-              handleSelect($event)
-              activeTab = 'design'
-            "
+            @select="selectFromOutline"
             @remove="removeNode"
             @move="sortNode"
           />

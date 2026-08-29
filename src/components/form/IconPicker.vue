@@ -54,6 +54,24 @@ const localProvider = ref<'lucide' | 'solar'>(props.provider)
 const solarIcons = ref<string[]>([])
 const solarLoading = ref(false)
 
+// 事件处理用命名函数：模板内联多语句 handler 会被 prettier(semi:false) 去分号重排，导致 Vue 表达式解析失败
+function selectProvider(p: 'lucide' | 'solar') {
+  localProvider.value = p
+  if (p === 'solar') loadSolarIcons()
+}
+function setFgColor(e: Event) {
+  localColor.value = (e.target as HTMLInputElement).value
+  colorTarget.value = 'fg'
+}
+function setBgColor(e: Event) {
+  localBgColor.value = (e.target as HTMLInputElement).value
+  colorTarget.value = 'bg'
+}
+function setTransparentBg() {
+  localBgColor.value = 'transparent'
+  colorTarget.value = 'bg'
+}
+
 /** 加载 Solar 图标列表：优先 Iconify CDN API，失败回退内置精选列表 */
 async function loadSolarIcons() {
   if (solarIcons.value.length) return
@@ -212,7 +230,7 @@ function confirm() {
               role="tab"
               :aria-selected="localProvider === 'lucide'"
               :class="{ active: localProvider === 'lucide' }"
-              @click="localProvider = 'lucide'"
+              @click="selectProvider('lucide')"
             >
               Lucide
             </button>
@@ -221,10 +239,7 @@ function confirm() {
               role="tab"
               :aria-selected="localProvider === 'solar'"
               :class="{ active: localProvider === 'solar' }"
-              @click="
-                localProvider = 'solar'
-                loadSolarIcons()
-              "
+              @click="selectProvider('solar')"
             >
               Solar
             </button>
@@ -244,19 +259,14 @@ function confirm() {
                 type="color"
                 :value="localColor"
                 class="native-picker"
-                @input="
-                  localColor = ($event.target as HTMLInputElement).value
-                  colorTarget = 'fg'
-                "
+                @input="setFgColor($event)"
+                @focus="colorTarget = 'fg'"
               />
               <input
                 type="text"
                 :value="localColor"
                 class="hex-input"
-                @input="
-                  localColor = ($event.target as HTMLInputElement).value
-                  colorTarget = 'fg'
-                "
+                @input="setFgColor($event)"
                 @focus="colorTarget = 'fg'"
               />
             </div>
@@ -266,28 +276,20 @@ function confirm() {
                 type="color"
                 :value="localBgColor"
                 class="native-picker"
-                @input="
-                  localBgColor = ($event.target as HTMLInputElement).value
-                  colorTarget = 'bg'
-                "
+                @input="setBgColor($event)"
+                @focus="colorTarget = 'bg'"
               />
               <input
                 type="text"
                 :value="localBgColor"
                 class="hex-input"
-                @input="
-                  localBgColor = ($event.target as HTMLInputElement).value
-                  colorTarget = 'bg'
-                "
+                @input="setBgColor($event)"
                 @focus="colorTarget = 'bg'"
               />
               <button
                 class="transparent-btn"
                 :class="{ active: localBgColor === 'transparent' }"
-                @click="
-                  localBgColor = 'transparent'
-                  colorTarget = 'bg'
-                "
+                @click="setTransparentBg()"
               >
                 {{ t('form.none') }}
               </button>

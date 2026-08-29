@@ -78,6 +78,12 @@ function onInputEmit(key: keyof DesignerNode, v: unknown): void {
   emit('update', { [key]: val } as Partial<DesignerNode>)
 }
 
+/** 标签名称输入：同步 update + name-change（命名函数替代模板内联多语句，prettier 安全） */
+function onLabelInput(v: unknown): void {
+  onInputEmit('label', v)
+  emit('name-change', String(v ?? ''))
+}
+
 /** Group 值转换 */
 function onGroupEmit(key: keyof DesignerNode, v: unknown): void {
   emit('update', { [key]: !!v } as Partial<DesignerNode>)
@@ -180,14 +186,7 @@ const linkageHelpText = computed(() => {
 
         <div class="ldp-prop">
           <label>标签名称</label>
-          <Input
-            :model-value="node.label"
-            placeholder="显示名称"
-            @update:model-value="
-              onInputEmit('label', $event)
-              emit('name-change', String($event ?? ''))
-            "
-          />
+          <Input :model-value="node.label" placeholder="显示名称" @update:model-value="onLabelInput" />
         </div>
 
         <!-- 容器节点专属 -->
