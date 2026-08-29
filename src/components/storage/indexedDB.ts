@@ -70,6 +70,17 @@ function openDB(): Promise<IDBDatabase> {
     }
     req.onsuccess = () => {
       _db = req.result
+      // 另一标签页升级版本时主动释放旧连接并重置缓存，
+      // 下次调用 openDB 按新版本重开（复用上方失败自愈机制），避免旧连接事务报 InvalidStateError
+      _db.onversionchange = () => {
+        try {
+          _db?.close()
+        } catch {
+          /* 已关闭 */
+        }
+        _db = null
+        _dbPromise = null
+      }
       resolve(_db)
     }
     req.onerror = () => {
@@ -391,7 +402,9 @@ export function storageGet<T>(key: string): T | null {
       return null
     }
     return item.value
-  } catch {
+  } catch (e) {
+    // 隐私模式/数据损坏静默返回 null 是既有语义；warnOnce 保证损坏数据至少可被观测到
+    warnOnce('storageGet', `[Storage] 读取失败（返回 null）: ${key} — ${String(e)}`)
     return null
   }
 }

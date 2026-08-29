@@ -74,9 +74,12 @@ onUnmounted(() => {
   mutationObserver?.disconnect()
   cancelScrollCheck()
   cancelBodyScroll()
+  // 注销路由守卫：不注销会在组件卸载后继续执行（多实例/HMR 时累积泄漏）
+  if (removeAfterEach) removeAfterEach()
 })
 
-router.afterEach(async () => {
+// 路由变化：收起移动端抽屉 + 刷新滚动进度（保存注销函数，卸载时清理）
+const removeAfterEach = router.afterEach(async () => {
   if (isMobile.value) sidebarOpen.value = false
   await nextTick()
   updateScrollPercent()

@@ -204,15 +204,19 @@ const passwordRules = [
   (v: string) => (v ? undefined : t('login.passwordRequired')),
   (v: string) => (v.length >= 6 ? undefined : t('login.passwordMinLength')),
 ]
+// 「可选必填」生效前提：字段实际渲染（showOptionalFields=false 时字段不渲染，
+// requireEmail/requirePhone 不参与校验，否则表单永远无法提交）
+const emailRequired = computed(() => props.requireEmail && props.showOptionalFields)
+const phoneRequired = computed(() => props.requirePhone && props.showOptionalFields)
 const emailRules = computed(() => [
   (v: string) => {
-    if (!v) return props.requireEmail ? t('login.emailRequired') : undefined
+    if (!v) return emailRequired.value ? t('login.emailRequired') : undefined
     return isValidEmail(v) ? undefined : t('login.emailInvalid')
   },
 ])
 const phoneRules = computed(() => [
   (v: string) => {
-    if (!v) return props.requirePhone ? t('login.phoneRequired') : undefined
+    if (!v) return phoneRequired.value ? t('login.phoneRequired') : undefined
     return isValidPhone(v) ? undefined : t('login.phoneInvalid')
   },
 ])
@@ -241,12 +245,12 @@ const handleSubmit = () => {
     return
   }
 
-  // 可选必填校验
-  if (props.requireEmail && !form.email) {
+  // 可选必填校验（仅当字段实际渲染时生效）
+  if (emailRequired.value && !form.email) {
     internalError.value = t('login.emailRequired')
     return
   }
-  if (props.requirePhone && !form.phone) {
+  if (phoneRequired.value && !form.phone) {
     internalError.value = t('login.phoneRequired')
     return
   }

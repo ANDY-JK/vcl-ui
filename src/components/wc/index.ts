@@ -18,11 +18,11 @@
  *   3. 事件监听用 addEventListener('click', ...) 而非 @click
  */
 
-import { defineCustomElement } from 'vue'
+import { defineComponent, defineCustomElement, h } from 'vue'
 import Button from '../basic/Button.vue'
 import Input from '../form/Input.vue'
 import Tag from '../basic/Tag.vue'
-import Switch from '../form/Group.vue'
+import Group from '../form/Group.vue'
 import Toast from '../feedback/Toast.vue'
 import Loading from '../feedback/Loading.vue'
 import Pagination from '../nav/Pagination.vue'
@@ -35,23 +35,40 @@ import Empty from '../data/Empty.vue'
 import Skeleton from '../data/Skeleton.vue'
 import Result from '../feedback/Result.vue'
 
-/** 组件 → Custom Element 标签名映射 */
-const componentMap: Record<string, ReturnType<typeof defineCustomElement>> = {
-  'vc-button': defineCustomElement(Button),
-  'vc-input': defineCustomElement(Input),
-  'vc-tag': defineCustomElement(Tag),
-  'vc-switch': defineCustomElement(Switch),
-  'vc-toast': defineCustomElement(Toast),
-  'vc-loading': defineCustomElement(Loading),
-  'vc-pagination': defineCustomElement(Pagination),
-  'vc-breadcrumb': defineCustomElement(Breadcrumb),
-  'vc-steps': defineCustomElement(Steps),
-  'vc-tabs': defineCustomElement(Tabs),
-  'vc-progress-bar': defineCustomElement(ProgressBar),
-  'vc-divider': defineCustomElement(Divider),
-  'vc-empty': defineCustomElement(Empty),
-  'vc-skeleton': defineCustomElement(Skeleton),
-  'vc-result': defineCustomElement(Result),
+/** defineCustomElement 接受的组件形态 */
+type WCComponent = Parameters<typeof defineCustomElement>[0]
+
+/** Group 是五合一组件（默认 type=radio）；作为 vc-switch 注册时默认锁定为开关形态 */
+const Switch = defineComponent({
+  name: 'VcSwitchElement',
+  props: {
+    ...(Group.props as WCComponent extends { props?: infer P } ? P : Record<string, never>),
+    type: { ...((Group.props as Record<string, { default?: unknown }> | undefined)?.type ?? {}), default: 'switch' },
+  },
+  setup(rawProps) {
+    const props = rawProps as { type?: string } & Record<string, unknown>
+    // WC 桥接边界：attrs→props 透传的形状无法用 TS 精确表达，此处断言收敛
+    return () => h(Group, { ...props, type: props.type ?? 'switch' } as never)
+  },
+})
+
+/** 组件 → Custom Element 标签名映射（存原始组件，注册时才 defineCustomElement，避免模块加载期 eager 构造） */
+const componentMap: Record<string, WCComponent> = {
+  'vc-button': Button,
+  'vc-input': Input,
+  'vc-tag': Tag,
+  'vc-switch': Switch,
+  'vc-toast': Toast,
+  'vc-loading': Loading,
+  'vc-pagination': Pagination,
+  'vc-breadcrumb': Breadcrumb,
+  'vc-steps': Steps,
+  'vc-tabs': Tabs,
+  'vc-progress-bar': ProgressBar,
+  'vc-divider': Divider,
+  'vc-empty': Empty,
+  'vc-skeleton': Skeleton,
+  'vc-result': Result,
 }
 
 /**
@@ -59,16 +76,25 @@ const componentMap: Record<string, ReturnType<typeof defineCustomElement>> = {
  * 可传入前缀自定义标签名，如 registerWebComponents('my') → <my-button>
  */
 export function registerWebComponents(prefix = 'vc'): void {
-  for (const [tagName, element] of Object.entries(componentMap)) {
+  // SSR/Node 环境（自定义元素注册表不存在）：跳过并告警，不让库入口直接炸
+  if (typeof customElements === 'undefined') {
+    console.warn('[wc] 当前环境无 customElements（SSR/Node），跳过 Web Components 注册')
+    return
+  }
+  for (const [tagName, component] of Object.entries(componentMap)) {
     const customName = tagName.replace(/^vc-/, `${prefix}-`)
     if (!customElements.get(customName)) {
-      customElements.define(customName, element)
+      customElements.define(customName, defineCustomElement(component))
     }
   }
 }
 
 /** 单独注册一个组件为 Custom Element */
 export function defineWC(name: string, component: Parameters<typeof defineCustomElement>[0]): void {
+  if (typeof customElements === 'undefined') {
+    console.warn('[wc] 当前环境无 customElements（SSR/Node），跳过注册:', name)
+    return
+  }
   if (!customElements.get(name)) {
     customElements.define(name, defineCustomElement(component))
   }

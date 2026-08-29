@@ -76,6 +76,7 @@ function onJumperKeyup(e: KeyboardEvent) {
       class="page-btn"
       :class="{ active: p === modelValue, ellipsis: p === '...' }"
       :disabled="p === '...'"
+      :aria-hidden="p === '...' || undefined"
       :aria-current="p === modelValue ? 'page' : undefined"
       @click="typeof p === 'number' && goTo(p)"
     >
@@ -104,7 +105,9 @@ function onJumperKeyup(e: KeyboardEvent) {
       />
     </span>
 
-    <span class="page-info">{{ t('pagination.total') }} {{ Number.isFinite(total) ? total : 0 }} {{ t('pagination.items') }}</span>
+    <span class="page-info"
+      >{{ t('pagination.total') }} {{ Number.isFinite(total) ? total : 0 }} {{ t('pagination.items') }}</span
+    >
   </nav>
 </template>
 

@@ -38,6 +38,10 @@ export function registerModal(close: () => void, scope: string = DEFAULT_MUTEX_S
   return () => {
     if (active.value === close) {
       active.value = null
+      // 动态 scope（如按行 id）会不断创建新 key：引用归零后从 Map 移除，防无限累积
+      if (scope !== DEFAULT_MUTEX_SCOPE && active.value === null) {
+        scopes.delete(scope)
+      }
     }
   }
 }

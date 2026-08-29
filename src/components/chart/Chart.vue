@@ -182,9 +182,12 @@ const chartOption = computed<EChartsOption | null>(() => {
     if (!Array.isArray(data)) continue
     if (isItemLegend) {
       // 饼图/漏斗：图例项对应 series[0].data 数据项 → 过滤掉隐藏项
+      // 注意：兜底名必须与 legendItems 的 t('chart.itemFallback') 一致，否则点击图例无法隐藏对应项
       s.data = data.filter((d, di) => {
         const name = String(
-          typeof d === 'object' && d !== null ? ((d as { name?: string }).name ?? `项${di + 1}`) : `项${di + 1}`,
+          typeof d === 'object' && d !== null
+            ? ((d as { name?: string }).name ?? t('chart.itemFallback', { n: di + 1 }))
+            : t('chart.itemFallback', { n: di + 1 }),
         )
         return !hidden.has(name)
       })

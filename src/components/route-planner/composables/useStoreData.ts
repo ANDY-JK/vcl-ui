@@ -9,6 +9,8 @@ const STORAGE_KEY = 'route-planner-stores'
 
 /** 从 localStorage 加载，同时清洗非法坐标 */
 function loadFromStorage(): Store[] {
+  // SSR/无 localStorage 环境：返回空（模块加载期调用，必须有守卫）
+  if (typeof localStorage === 'undefined') return []
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
@@ -27,9 +29,14 @@ function loadFromStorage(): Store[] {
   }
 }
 
-/** 保存到 localStorage */
+/** 保存到 localStorage（隐私模式/配额满时不让模块级 watch 回调抛未捕获异常） */
 function saveToStorage(stores: Store[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(stores))
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stores))
+  } catch (e) {
+    console.warn('[useStoreData] 门店数据保存失败（隐私模式/配额满）:', e)
+  }
 }
 
 /** 单例状态 */

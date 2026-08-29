@@ -53,7 +53,12 @@ function play(freqs: number[], type: OscillatorType, vol: number): void {
   }
   if (!ctx || !unlocked) {
     try {
-      ctx = new AudioContext()
+      // 旧 iOS Safari（<14.5）只有 webkitAudioContext 前缀实现
+      const Ctor =
+        (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext })
+          .AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+      if (!Ctor) return
+      ctx = new Ctor()
     } catch {
       return
     }

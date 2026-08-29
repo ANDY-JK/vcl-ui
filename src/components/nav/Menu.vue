@@ -1,19 +1,11 @@
 <script setup lang="ts">
 // ⛔ 保护 — 多级菜单，禁止：递归渲染结构，hover/click 展开逻辑
 //    需我确认：item 字段扩展、submenu 定位方式
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import type { MenuItem } from './types'
 
-// --- types ---
-interface MenuItem {
-  key: string | number
-  label: string
-  icon?: string
-  children?: MenuItem[]
-  disabled?: boolean
-  divided?: boolean
-  action?: () => void
-}
+export type { MenuItem }
 
 const props = withDefaults(
   defineProps<{
@@ -50,6 +42,8 @@ function clearTimers() {
     leaveTimer = null
   }
 }
+// 卸载时清理 pending 定时器，避免回调写已卸载组件的 ref
+onBeforeUnmount(clearTimers)
 function scheduleEnter(key: string | number) {
   clearTimers()
   enterTimer = setTimeout(() => {
@@ -159,6 +153,7 @@ const levelStyle = computed(() => {
         <li v-if="item.divided" class="menu-divider" role="separator" />
         <li
           class="menu-item-wrap"
+          role="none"
           :class="{ 'has-children': item.children?.length }"
           @mouseenter="item.children?.length && isHoverMode ? scheduleEnter(item.key) : undefined"
           @mouseleave="isHoverMode ? scheduleLeave() : undefined"

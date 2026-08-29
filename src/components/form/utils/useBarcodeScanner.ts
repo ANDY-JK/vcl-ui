@@ -67,6 +67,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
   /** 设备性能评估：基于 CPU 核心数和内存推算基础扫码间隔 */
   function detectBaseInterval(): number {
     if (!useAdaptive && staticInterval > 0) return staticInterval
+    // SSR/测试环境无 navigator：按中端设备默认值，避免 ReferenceError
+    if (typeof navigator === 'undefined') return 120
     const cores = navigator.hardwareConcurrency || 4
     const memory = (navigator as any).deviceMemory as number | undefined
     // 低端设备（≤4 核或 ≤4GB）→ 150ms；中端 → 100ms；高端（≥8 核且 ≥8GB）→ 60ms
@@ -157,6 +159,9 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     cancelAnimationFrame(raf)
     raf = 0
     stopTracks()
+    // 清空连击/冷却状态：重启扫描不应残留上次会话的计数
+    confirmHits.clear()
+    acceptedAt.clear()
   }
 
   // 组件卸载时自动清理
@@ -165,7 +170,25 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     cancelAnimationFrame(raf)
     raf = 0
     stopTracks()
+    document.removeEventListener('visibilitychange', onVisibilityChange)
   })
+
+  // 页面切后台时 rAF 本身会停摆，但显式取消并重置节拍：
+  // 回到前台后立即恢复扫描，且避免隐藏期间积压的 lastScan 时序错乱
+  function onVisibilityChange(): void {
+    if (!active) return
+    if (document.hidden) {
+      cancelAnimationFrame(raf)
+      raf = 0
+    } else {
+      lastScan = 0
+      busy = false
+      if (!raf) scanLoop()
+    }
+  }
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', onVisibilityChange)
+  }
 
   function scanLoop(): void {
     if (!active) return

@@ -45,6 +45,7 @@ export {
   buildNavLink,
 } from './amap/amap-service'
 export type { LatLng, PoiPhoto, PoiItem, DrivingRouteResult, NavLink, NavPoint } from './amap/amap-service'
+export type { MarkerItem } from './amap/types'
 export type { BarcodeScannerOptions, CaptureRegion } from './form/utils/useBarcodeScanner'
 export type { DropZoneConfig, DropZoneFile } from './form/utils/types'
 
@@ -63,6 +64,8 @@ export { speak, stopSpeak, unlockVoice } from './feedback/composables/useVoice'
 export type { VoiceLang } from './feedback/composables/useVoice'
 export { notify, getNotifyStatus } from './feedback/composables/useNotify'
 export type { NotifyOptions } from './feedback/composables/useNotify'
+export { useToast, TOAST_KEY } from './feedback/composables/toast-context'
+export type { ToastItem, ToastAPI } from './feedback/composables/toast-context'
 export { default as ConfirmModal } from './feedback/ConfirmModal.vue'
 
 // 导航
@@ -135,12 +138,27 @@ export { default as FieldError } from './form-builder/FieldError.vue'
 export { useFormSchema, isFieldVisible, createInitialData, SCHEMA_VERSION } from './form-builder/useFormSchema'
 export { useFormValidator, validateField, validateAll, validators } from './form-builder/useFormValidator'
 export { useFormStorage } from './form-builder/useFormStorage'
-export { getFieldRegistration, getComponentCategory, isLayoutField, getComponentType, getFieldComponent, getRegisteredTypes, registerField, isFieldRegistered } from './form-builder/fieldRegistry'
+export {
+  getFieldRegistration,
+  getComponentCategory,
+  isLayoutField,
+  getComponentType,
+  getFieldComponent,
+  getRegisteredTypes,
+  registerField,
+  isFieldRegistered,
+} from './form-builder/fieldRegistry'
 export type { FieldRegistration } from './form-builder/fieldRegistry'
 export { contractCollectionSchema, inspectionSchema, registrationSchema } from './form-builder/presets'
 export {
-  FIELD_TYPES, createField, toFormSchema, parseCascaderOptions, getTypeLabel,
-  collectStorageKey, genFieldId, genRecordId,
+  FIELD_TYPES,
+  createField,
+  toFormSchema,
+  parseCascaderOptions,
+  getTypeLabel,
+  collectStorageKey,
+  genFieldId,
+  genRecordId,
 } from './form-builder/designer/types'
 export { createLocalFormStore } from './form-builder/designer/store'
 export type { FormStore, FormMetaItem } from './form-builder/designer/store'

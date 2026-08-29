@@ -105,9 +105,13 @@ const filteredIcons = computed(() => {
 // 分批渲染：初始只渲染前 200 个，滚动触底追加，减少首次打开的 DOM 节点数
 const PAGE_SIZE = 200
 const iconPage = ref(1)
-const pagedIcons = computed(() => filteredIcons.value.slice(0, iconPage.value * PAGE_SIZE))
+const pagedIcons = computed(() =>
+  _noInfiniteScroll ? filteredIcons.value : filteredIcons.value.slice(0, iconPage.value * PAGE_SIZE),
+)
 const iconSentinel = ref<HTMLDivElement | null>(null)
 let _iconObserver: IntersectionObserver | null = null
+/** 环境无 IntersectionObserver 时的降级标记：分页计算返回全量 */
+let _noInfiniteScroll = false
 
 watch(searchText, () => {
   iconPage.value = 1
@@ -118,6 +122,12 @@ watch(localProvider, () => {
 })
 
 onMounted(() => {
+  // 旧 WebView 无 IntersectionObserver：sentinel 永远不触发 → 无限加载失效。
+  // 降级为一次性全量渲染（图标为纯 SVG 名单，全量渲染可接受）
+  if (typeof IntersectionObserver === 'undefined') {
+    _noInfiniteScroll = true
+    return
+  }
   _iconObserver = new IntersectionObserver(([entry]) => {
     if (entry?.isIntersecting && iconPage.value * PAGE_SIZE < filteredIcons.value.length) {
       iconPage.value++
@@ -211,7 +221,10 @@ function confirm() {
               role="tab"
               :aria-selected="localProvider === 'solar'"
               :class="{ active: localProvider === 'solar' }"
-              @click="localProvider = 'solar'; loadSolarIcons()"
+              @click="
+                localProvider = 'solar'
+                loadSolarIcons()
+              "
             >
               Solar
             </button>
@@ -231,13 +244,19 @@ function confirm() {
                 type="color"
                 :value="localColor"
                 class="native-picker"
-                @input="localColor = ($event.target as HTMLInputElement).value; colorTarget = 'fg'"
+                @input="
+                  localColor = ($event.target as HTMLInputElement).value
+                  colorTarget = 'fg'
+                "
               />
               <input
                 type="text"
                 :value="localColor"
                 class="hex-input"
-                @input="localColor = ($event.target as HTMLInputElement).value; colorTarget = 'fg'"
+                @input="
+                  localColor = ($event.target as HTMLInputElement).value
+                  colorTarget = 'fg'
+                "
                 @focus="colorTarget = 'fg'"
               />
             </div>
@@ -247,19 +266,28 @@ function confirm() {
                 type="color"
                 :value="localBgColor"
                 class="native-picker"
-                @input="localBgColor = ($event.target as HTMLInputElement).value; colorTarget = 'bg'"
+                @input="
+                  localBgColor = ($event.target as HTMLInputElement).value
+                  colorTarget = 'bg'
+                "
               />
               <input
                 type="text"
                 :value="localBgColor"
                 class="hex-input"
-                @input="localBgColor = ($event.target as HTMLInputElement).value; colorTarget = 'bg'"
+                @input="
+                  localBgColor = ($event.target as HTMLInputElement).value
+                  colorTarget = 'bg'
+                "
                 @focus="colorTarget = 'bg'"
               />
               <button
                 class="transparent-btn"
                 :class="{ active: localBgColor === 'transparent' }"
-                @click="localBgColor = 'transparent'; colorTarget = 'bg'"
+                @click="
+                  localBgColor = 'transparent'
+                  colorTarget = 'bg'
+                "
               >
                 {{ t('form.none') }}
               </button>
@@ -278,7 +306,9 @@ function confirm() {
               />
               <IconSvg v-else :type="localIcon" size="lg" :color="localColor" />
             </span>
-            <span class="preview-name">{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span>
+            <span class="preview-name"
+              >{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span
+            >
             <div class="preset-colors">
               <button
                 v-for="c in presetColors"

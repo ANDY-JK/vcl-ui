@@ -3,12 +3,9 @@
 //    需我确认：separator 分隔符、item 接口字段
 import { RouterLink } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import type { Crumb } from './types'
 
-interface Crumb {
-  label: string
-  path?: string
-  to?: string
-}
+export type { Crumb }
 
 interface Props {
   items: Crumb[]

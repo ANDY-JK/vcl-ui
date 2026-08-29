@@ -1,7 +1,7 @@
 <!-- ⛔ 保护 — 错误边界，禁止修改 fallback slot 结构，禁止删除 onErrorCaptured
      需我确认：retry 重试逻辑、错误信息展示格式 -->
 <template>
-  <div v-if="hasError" class="error-boundary-fallback">
+  <div v-if="hasError" class="error-boundary-fallback" role="alert" aria-live="assertive">
     <slot name="fallback" :error="error" :retry="retry">
       <div class="eb-icon">!</div>
       <p class="eb-title">

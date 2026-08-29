@@ -5,6 +5,12 @@
  * 注意：<script setup> 顶层 let 每实例一份，必须放普通 <script> 块才是模块作用域。
  */
 let nextId = 1
+
+/**
+ * window.__toast 存活实例引用计数 — 模块级（<script setup> 顶层 let 是每实例一份），
+ * 全部 Toast 实例卸载才 delete window.__toast，避免多实例场景任一卸载导致悬空。
+ */
+let _liveToastInstances = 0
 </script>
 
 <script setup lang="ts">
@@ -56,6 +62,7 @@ const iconMap: Record<string, string> = {
 }
 
 const colorMap: Record<string, string> = {
+  'circle-alert': 'var(--color-text)',
   info: 'var(--color-info)',
   success: 'var(--color-success)',
   warning: 'var(--color-warning)',
@@ -63,12 +70,14 @@ const colorMap: Record<string, string> = {
 }
 
 const inlineBgMap: Record<string, string> = {
+  'circle-alert': 'var(--color-bg-alt)',
   info: 'var(--color-info-bg)',
   success: 'var(--color-success-bg)',
   warning: 'var(--color-warning-bg)',
   error: 'var(--color-danger-bg)',
 }
 const inlineBorderMap: Record<string, string> = {
+  'circle-alert': 'var(--color-border)',
   info: 'var(--color-info-border)',
   success: 'var(--color-success-border)',
   warning: 'var(--color-warning-border)',
@@ -114,6 +123,16 @@ function show(
     onAction: options?.onAction ?? options?.onUndo,
   }
   toasts.value.unshift(toast)
+  // 队列上限：常驻 toast 被调用方遗漏 remove 时防止长会话无限累积（丢弃最旧的一条）
+  const MAX_TOASTS = 50
+  if (toasts.value.length > MAX_TOASTS) {
+    const oldest = toasts.value.pop()!
+    const t = _closeTimers.get(oldest.id)
+    if (t) {
+      clearTimeout(t)
+      _closeTimers.delete(oldest.id)
+    }
+  }
 
   if (dur > 0) {
     const timer = setTimeout(() => removeToast(id), dur)
@@ -133,16 +152,20 @@ provide(TOAST_KEY, { toasts, show, remove: removeToast, clearAll })
 
 // @deprecated window.__toast 已废弃，推荐使用 useToast() 或组件 ref
 // 保留兼容旧代码，后续版本将移除
+// 多实例安全：引用计数——全部实例卸载才 delete，避免任一实例卸载导致
+// 其他存活实例的 __toast 悬空/消失（计数器 _liveToastInstances 定义在模块级 <script> 块）
 if (typeof window !== 'undefined') {
+  _liveToastInstances++
   Object.defineProperty(window, '__toast', {
     get: () => ({ show, remove: removeToast, clearAll }),
     configurable: true,
   })
 }
 
-// 本实例卸载时若仍绑定 window.__toast，则清除，避免指向已卸载组件（dangling）
+// 本实例卸载时引用计数归零才清除 window.__toast（dangling 防护）
 onUnmounted(() => {
-  if (typeof window !== 'undefined' && (window as unknown as { __toast?: unknown }).__toast) {
+  _liveToastInstances--
+  if (typeof window !== 'undefined' && _liveToastInstances <= 0) {
     try {
       delete (window as unknown as { __toast?: unknown }).__toast
     } catch {

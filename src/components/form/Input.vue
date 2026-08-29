@@ -55,6 +55,8 @@ interface Props {
   minlength?: number
   /** textarea 行数 */
   rows?: number
+  /** 后缀文字（输入框内右侧固定显示，如单位 "元" / "kg"） */
+  suffix?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -303,9 +305,11 @@ function commitNum() {
   emit('change', next)
 }
 
-function onStepperBlur() {
+function onStepperBlur(e: FocusEvent) {
   focused.value = false
   commitNum()
+  // number 模式此前从不 emit blur（消费方拿得到 focus 拿不到 blur），补齐
+  emit('blur', e)
 }
 
 function clearNumValue() {
@@ -570,6 +574,7 @@ const floatingRaised = computed(() => {
           @animationstart="onAutoFillStart"
         />
         <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <span v-if="suffix" class="fl-suffix" aria-hidden="true">{{ suffix }}</span>
         <button
           v-if="type === 'password'"
           type="button"
@@ -666,6 +671,15 @@ const floatingRaised = computed(() => {
 }
 .fl-wrap.focused .fl-icon {
   color: var(--color-primary);
+}
+
+/* 后缀文字（单位等固定提示） */
+.fl-suffix {
+  flex-shrink: 0;
+  padding-right: clamp(var(--space-2), 1.5vw, 12px);
+  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
+  color: var(--color-text-muted);
+  user-select: none;
 }
 
 /* 浮动标签 — 基础样式见 @import floating-label.css，以下为 Input 专属覆写 */

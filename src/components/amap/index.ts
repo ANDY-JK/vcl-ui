@@ -37,3 +37,4 @@ export {
 
 // 类型
 export type { LatLng, PoiPhoto, PoiItem, DrivingRouteResult, NavLink, NavPoint } from './amap-service'
+export type { MarkerItem } from './types'

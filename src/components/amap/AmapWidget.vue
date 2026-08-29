@@ -74,7 +74,10 @@ if (typeof window !== 'undefined') {
 }
 
 // 首次渲染时用当时的 key 初始化（模块级同步初始化已移除）
-amapLoader.ensureInit(getAmapJsKey())
+// SSR 守卫：ensureInit 内部会注入 <script> 操作 document，服务端渲染直接跳过，客户端挂载时重试
+if (typeof window !== 'undefined') {
+  amapLoader.ensureInit(getAmapJsKey())
+}
 
 const mapReady = ref(false)
 let mapInstance: any = null

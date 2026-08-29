@@ -40,7 +40,7 @@ const colorMap: Record<string, string> = {
 </script>
 
 <template>
-  <div class="result" :class="{ fullWidth }">
+  <div class="result" :class="{ fullWidth }" role="status" :aria-label="title">
     <IconSvg :type="iconMap[status]" size="lg" :color="colorMap[status]" class="result-icon" />
     <h2 class="result-title">
       {{ title }}

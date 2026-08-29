@@ -61,7 +61,8 @@ export class IndexedDBBackend implements StorageBackend {
     try {
       const rows = await dbGetAll<LocalRecord>(STORE_NAME)
       for (const row of rows) {
-        if (row && row.appleId) map.set(row.appleId, { contract: row.contract, ts: row.ts })
+        // appleId 为 0 是合法值（不能走 truthy 判断，否则 0 号记录被静默丢弃）
+        if (row && typeof row.appleId === 'number') map.set(row.appleId, { contract: row.contract, ts: row.ts })
       }
     } catch (e) {
       console.warn('[contract-storage] IndexedDB 加载失败:', e)
@@ -256,23 +257,37 @@ export class SupabaseBackend implements StorageBackend {
     }
   }
 
-  /** 列出 bucket 根目录所有对象，返回 { name, size, mimetype, createdAt }[] */
+  /** 列出 bucket 根目录所有对象，返回 { name, size, mimetype, createdAt }[]（分页拉全，避免 1000 条上限静默截断） */
   private async listObjects(): Promise<Array<{ name: string; size: number; mimetype: string; createdAt: number }>> {
-    const resp = await this.request(`/object/list/${this.cfg.bucket}`, {
-      method: 'POST',
-      headers: this.headers(true),
-      body: JSON.stringify({ prefix: '', limit: 1000, offset: 0, sortBy: { column: 'name', order: 'asc' } }),
-    })
-    const rows = (await resp.json()) as Array<{ name: string; created_at?: string; metadata?: { size?: number; mimetype?: string } }>
-    return rows
-      .filter((r) => !r.name.endsWith('/'))
-      .map((r) => ({
-        name: r.name,
-        size: Number(r.metadata?.size ?? 0),
-        mimetype: r.metadata?.mimetype || 'application/octet-stream',
-        // 对象创建时间 ≈ 上传时间；缺失/非法回退 0（导出层对 0 显示为空）
-        createdAt: r.created_at ? new Date(r.created_at).getTime() : 0,
-      }))
+    const PAGE = 1000
+    const all: Array<{ name: string; size: number; mimetype: string; createdAt: number }> = []
+    let offset = 0
+    // Supabase 单页上限 1000：循环翻页直到返回不足一页
+    for (;;) {
+      const resp = await this.request(`/object/list/${this.cfg.bucket}`, {
+        method: 'POST',
+        headers: this.headers(true),
+        body: JSON.stringify({ prefix: '', limit: PAGE, offset, sortBy: { column: 'name', order: 'asc' } }),
+      })
+      const rows = (await resp.json()) as Array<{
+        name: string
+        created_at?: string
+        metadata?: { size?: number; mimetype?: string }
+      }>
+      for (const r of rows) {
+        if (r.name.endsWith('/')) continue
+        all.push({
+          name: r.name,
+          size: Number(r.metadata?.size ?? 0),
+          mimetype: r.metadata?.mimetype || 'application/octet-stream',
+          // 对象创建时间 ≈ 上传时间；缺失/非法回退 0（导出层对 0 显示为空）
+          createdAt: r.created_at ? new Date(r.created_at).getTime() : 0,
+        })
+      }
+      if (rows.length < PAGE) break
+      offset += PAGE
+    }
+    return all
   }
 
   async loadAll(): Promise<Map<number, StoreUploadState>> {
@@ -306,7 +321,14 @@ export class SupabaseBackend implements StorageBackend {
         this.deleteObjectWithRetry(tb.name).catch(() => {})
         console.warn('[contract-storage] 删除后重新上传成功，清理残留墓碑:', appleId)
       }
-      const name = decodeURIComponent(key)
+      // bucket 被外部写入含裸 % 的对象名时 decodeURIComponent 会抛 URIError——
+      // 跳过该条并告警，不让单个污染对象崩掉整次 loadAll
+      let name = key
+      try {
+        name = decodeURIComponent(key)
+      } catch {
+        console.warn('[contract-storage] 对象名 URI 解码失败，跳过:', obj.name)
+      }
       this.paths.set(appleId, obj.name)
       map.set(appleId, {
         contract: { name, dataUrl: this.publicUrl(obj.name), size: obj.size, type: obj.mimetype },

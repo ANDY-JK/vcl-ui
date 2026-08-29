@@ -40,6 +40,8 @@ const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepa
 
 async function toggle(e: MouseEvent) {
   if (isTooltip.value || props.trigger !== 'click') return
+  // 事件派发结束后 currentTarget 会被置 null，await 前先捕获
+  const triggerEl = (e.currentTarget as HTMLElement) || triggerRef.value
   if (open.value) {
     open.value = false
     return
@@ -48,7 +50,7 @@ async function toggle(e: MouseEvent) {
   open.value = true
   await nextTick()
   await new Promise((r) => requestAnimationFrame(r))
-  updatePosition(e.currentTarget as HTMLElement)
+  updatePosition(triggerEl || undefined)
 }
 
 async function show() {
@@ -86,8 +88,8 @@ useClickOutside([triggerRef, floatingRef], close)
 
 <template>
   <span class="popover-host" :class="{ tooltip: isTooltip }">
-    <!-- 触发器 -->
-    <span ref="triggerRef" @click="toggle" @mouseenter="show" @mouseleave="hide" @focus="onFocus" @blur="onBlur">
+    <!-- 触发器（focus/blur 不冒泡，改用 focusin/focusout 才能收到插槽内子元素的焦点） -->
+    <span ref="triggerRef" @click="toggle" @mouseenter="show" @mouseleave="hide" @focusin="onFocus" @focusout="onBlur">
       <slot v-if="!isTooltip" name="trigger">
         <button
           type="button"

@@ -13,3 +13,6 @@ export { speak, stopSpeak, unlockVoice } from './composables/useVoice'
 export type { VoiceLang } from './composables/useVoice'
 export { notify, getNotifyStatus } from './composables/useNotify'
 export type { NotifyOptions } from './composables/useNotify'
+// Toast provide/inject API（消费方注入 Toast 实例后经 useToast() 编程调用）
+export { useToast, TOAST_KEY } from './composables/toast-context'
+export type { ToastItem, ToastAPI } from './composables/toast-context'

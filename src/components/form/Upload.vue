@@ -256,6 +256,9 @@ function simulateUpload(uf: UploadFile) {
       uf.progress = 100
       uf.status = 'done'
       clearInterval(timer)
+      // 从清理列表移除已完成的定时器，避免长会话中数组只增不清
+      const idx = timers.indexOf(timer)
+      if (idx >= 0) timers.splice(idx, 1)
     } else {
       uf.progress = Math.round(p)
     }
@@ -321,7 +324,17 @@ function retryFile(fileId: number) {
   if (f && f.status === 'error') {
     f.status = 'uploading'
     f.progress = 0
-    simulateUpload(f)
+    // 配置了真实上传时必须走 realUpload 链路（此前只重跑模拟进度，用户得到假进度假成功）
+    if (props.customRequest) {
+      if (f.raw) {
+        realUpload(f, f.raw as File)
+      } else {
+        f.status = 'error'
+        emit('error', t('form.uploadFailed'))
+      }
+    } else {
+      simulateUpload(f)
+    }
   }
 }
 
@@ -870,7 +883,7 @@ onUnmounted(() => {
 .up-sheet-mask {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-top, 9999);
   background: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: flex-end;

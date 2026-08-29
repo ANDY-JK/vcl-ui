@@ -84,6 +84,12 @@ function handleSubmit(): void {
     return
   }
 
+  // 坐标是否被用户改动（编辑场景对比打开时的原始坐标）
+  const coordsChanged =
+    !props.store ||
+    form.value.longitude !== (props.store.longitude ?? null) ||
+    form.value.latitude !== (props.store.latitude ?? null)
+
   const store: Store = {
     id: props.store?.id || `store_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     name: form.value.name?.trim() || '',
@@ -96,8 +102,14 @@ function handleSubmit(): void {
     phone: form.value.phone?.trim() || '',
     longitude: form.value.longitude ?? null,
     latitude: form.value.latitude ?? null,
-    coordSource: form.value.longitude && form.value.latitude ? 'manual' : 'none',
-    skipped: false,
+    // 编辑时保留原有状态：坐标未改动则不覆盖 coordSource，跳过状态不因编辑被静默重置
+    coordSource:
+      form.value.longitude && form.value.latitude
+        ? coordsChanged
+          ? 'manual'
+          : (props.store?.coordSource ?? 'manual')
+        : 'none',
+    skipped: props.store?.skipped ?? false,
   }
 
   emit('save', store)
@@ -108,7 +120,13 @@ function handleSubmit(): void {
 <template>
   <Teleport to="body">
     <div v-if="visible" class="modal-overlay" @click.self="emit('close')">
-      <div ref="modalBoxRef" class="modal-box" role="dialog" aria-modal="true" :aria-label="isEdit ? t('routePlanner.editStore') : t('routePlanner.addStoreTitle')">
+      <div
+        ref="modalBoxRef"
+        class="modal-box"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="isEdit ? t('routePlanner.editStore') : t('routePlanner.addStoreTitle')"
+      >
         <div class="modal-header">
           <h3>{{ isEdit ? t('routePlanner.editStore') : t('routePlanner.addStoreTitle') }}</h3>
           <button class="btn-close" :aria-label="t('routePlanner.cancel')" @click="emit('close')">✕</button>

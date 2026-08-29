@@ -3,14 +3,14 @@
 //    需我确认：underline/pill 模式行为
 import { ref, nextTick } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import type { TabItem } from './types'
+
+export type { TabItem }
+
+/** 实例级前缀，防止多个 Tabs 同页时 aria id 冲突 */
+const tabId = Math.random().toString(36).slice(2, 8)
 
 // icon 仅在 variant='tabbar' 时渲染，underline/pill 变体静默忽略
-interface TabItem {
-  label: string
-  value?: string | number
-  icon?: string
-}
-
 interface Props {
   modelValue: string | number
   items: TabItem[]
@@ -61,13 +61,14 @@ function onKeydown(e: KeyboardEvent) {
   <div ref="tablistRef" class="tabs" :class="[`tabs-${variant}`]" role="tablist" @keydown="onKeydown">
     <button
       v-for="item in items"
+      :id="`tab-${tabId}-${String(item.value ?? item.label)}`"
       :key="String(item.value ?? item.label)"
       type="button"
       class="tab-btn"
       :class="{ active: modelValue === (item.value ?? item.label) }"
       role="tab"
       :aria-selected="modelValue === (item.value ?? item.label)"
-      :aria-controls="`tabpanel-${String(item.value ?? item.label)}`"
+      :aria-controls="`tabpanel-${tabId}-${String(item.value ?? item.label)}`"
       @click="emit('update:modelValue', item.value ?? item.label)"
     >
       <IconSvg v-if="item.icon && variant === 'tabbar'" :type="item.icon" size="md" />

@@ -68,6 +68,9 @@ function onCancel() {
 }
 
 function onConfirm() {
+  // loading 态 = 异步确认：保持打开让父组件在完成后通过 v-model 关闭，
+  // 否则 confirm 一触发就关闭，loading spinner 永远不可见
+  if (props.loading) return
   emit('confirm')
   close()
 }
@@ -91,17 +94,10 @@ function onConfirm() {
 
     <template #footer>
       <div class="confirm-footer">
-        <button
-          class="confirm-btn cancel"
-          @click="onCancel"
-        >
+        <button class="confirm-btn cancel" @click="onCancel">
           {{ cancelText }}
         </button>
-        <button
-          :class="['confirm-btn', variantMeta.btnClass]"
-          :disabled="loading"
-          @click="onConfirm"
-        >
+        <button :class="['confirm-btn', variantMeta.btnClass]" :disabled="loading" @click="onConfirm">
           <IconSvg v-if="loading" type="loader" size="xs" class="confirm-loading-icon" />
           {{ confirmText }}
         </button>

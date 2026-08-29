@@ -32,7 +32,12 @@ withDefaults(defineProps<Props>(), {
 <template>
   <!-- fullscreen 全屏遮罩 -->
   <Teleport v-if="fullscreen" to="body">
-    <div class="loading-fullscreen" :class="{ 'loading-fullscreen--overlay': overlay }">
+    <div
+      class="loading-fullscreen"
+      :class="{ 'loading-fullscreen--overlay': overlay }"
+      role="status"
+      aria-live="polite"
+    >
       <div class="loading-fullscreen__content">
         <div class="spinner-ring" :class="[`spinner-${size}`]" />
         <span v-if="text" class="spinner-text">{{ text }}</span>
@@ -41,7 +46,13 @@ withDefaults(defineProps<Props>(), {
   </Teleport>
 
   <!-- spinner -->
-  <div v-else-if="variant === 'spinner'" class="loading-spinner" :class="[`spinner-${size}`]">
+  <div
+    v-else-if="variant === 'spinner'"
+    class="loading-spinner"
+    :class="[`spinner-${size}`]"
+    role="status"
+    aria-live="polite"
+  >
     <div class="spinner-ring" />
     <span v-if="text" class="spinner-text">{{ text }}</span>
   </div>

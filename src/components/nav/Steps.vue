@@ -2,11 +2,9 @@
 // ⛔ 保护 — 步骤条，禁止：clamp() → px，Step 接口，连线样式
 //    需我确认：direction 方向、current 状态管理
 import IconSvg from '@/components/basic/IconSvg.vue'
+import type { Step } from './types'
 
-interface Step {
-  label: string
-  desc?: string
-}
+export type { Step }
 
 interface Props {
   steps: Step[]
@@ -45,6 +43,7 @@ function onStepClick(idx: number, step: Step) {
       }"
       :role="clickable ? 'button' : undefined"
       :tabindex="clickable ? 0 : undefined"
+      :aria-current="idx === current ? 'step' : undefined"
       :aria-label="`步骤 ${idx + 1}: ${step.label}`"
       @click="clickable && onStepClick(idx, step)"
       @keydown.enter.prevent="clickable && onStepClick(idx, step)"

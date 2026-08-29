@@ -130,7 +130,9 @@ const hoverVal = ref(0)
 
 function selectRate(e: MouseEvent, i: number) {
   if (props.disabled) return
-  const val = props.allowHalf ? getHalfVal(e, i) : i + 1
+  // 键盘触发的 click（Enter/Space）clientX=0 且 detail=0，getHalfVal 会误判为左半星
+  // → 键盘操作恒选整星，鼠标点击才走半星判定
+  const val = props.allowHalf && e.detail > 0 ? getHalfVal(e, i) : i + 1
   emit('update:modelValue', val)
   emit('change', val)
 }
@@ -214,10 +216,12 @@ const displayValue = computed(() => {
 const trackRef = ref<HTMLDivElement | null>(null)
 const dragging = ref(false)
 const draggingIdx = ref(0)
-const lastValue = ref<number | [number, number]>(props.modelValue as number | [number, number])
 
 function emitChange() {
-  emit('change', Array.isArray(lastValue.value) ? ([...lastValue.value] as [number, number]) : lastValue.value)
+  // 从当前 props.modelValue（range computed）取值，避免 lastValue 快照
+  // 在父组件外部改值后回吐旧值
+  const [a, b] = range.value
+  emit('change', Array.isArray(props.modelValue) ? ([a, b] as [number, number]) : a)
 }
 
 function setValue(idx: number, raw: number) {
@@ -229,7 +233,6 @@ function setValue(idx: number, raw: number) {
   } else {
     next = v
   }
-  lastValue.value = next
   emit('update:modelValue', next)
 }
 
@@ -254,6 +257,7 @@ function onThumbDown(idx: number, e: PointerEvent) {
   dragging.value = true
   draggingIdx.value = idx
   ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  bindWindowPointer()
   setValue(idx, posToValue(e.clientX))
 }
 
@@ -264,6 +268,7 @@ function onTrackDown(e: PointerEvent) {
   const v = posToValue(e.clientX)
   draggingIdx.value = pickThumb(v)
   ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  bindWindowPointer()
   setValue(draggingIdx.value, v)
 }
 
@@ -275,6 +280,7 @@ function onPointerMove(e: PointerEvent) {
 function onPointerUp() {
   if (!dragging.value) return
   dragging.value = false
+  unbindWindowPointer()
   emitChange()
 }
 
@@ -293,19 +299,18 @@ function onThumbKeydown(idx: number, e: KeyboardEvent) {
   emitChange()
 }
 
-import { onMounted, onUnmounted } from 'vue'
-onMounted(() => {
-  if (isSlider.value) {
-    window.addEventListener('pointermove', onPointerMove)
-    window.addEventListener('pointerup', onPointerUp)
-  }
-})
-onUnmounted(() => {
-  if (isSlider.value) {
-    window.removeEventListener('pointermove', onPointerMove)
-    window.removeEventListener('pointerup', onPointerUp)
-  }
-})
+import { onUnmounted } from 'vue'
+// 指针监听按需挂载：拖拽开始（onThumbDown/onTrackDown）才挂 window 级 move/up，
+// pointerup 即摘——避免常驻监听让页面每次指针移动都进回调
+function bindWindowPointer(): void {
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('pointerup', onPointerUp)
+}
+function unbindWindowPointer(): void {
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerup', onPointerUp)
+}
+onUnmounted(unbindWindowPointer)
 </script>
 
 <template>

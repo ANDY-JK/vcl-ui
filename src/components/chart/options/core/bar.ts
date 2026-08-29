@@ -30,6 +30,12 @@ export function buildBar(p: BuildParams): EChartsOption {
         ? { label: { show: true, position: isHorizontal ? 'right' : 'top', color: mutedColor(p) } }
         : {}),
     })),
-    ...(p.stacked100 ? { yAxis: isHorizontal ? x : { ...y, min: 0, max: 100 } } : {}),
+    ...(p.stacked100
+      ? {
+          // stacked100 的 0-100 上限必须设在数值轴上：水平时数值轴是 xAxis（此前误设到类目轴）
+          xAxis: isHorizontal ? { ...y, min: 0, max: 100, name: p.xAxis?.title } : x,
+          yAxis: isHorizontal ? x : { ...y, min: 0, max: 100 },
+        }
+      : {}),
   }
 }

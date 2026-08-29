@@ -24,11 +24,15 @@ const percent = (current: number, total: number): number => {
       <span class="progress-label">{{ label || t('routePlanner.processing') }}</span>
       <span class="progress-count">{{ current }} / {{ total }}</span>
     </div>
-    <div class="progress-bar">
-      <div
-        class="progress-fill"
-        :style="{ width: percent(current, total) + '%' }"
-      />
+    <div
+      class="progress-bar"
+      role="progressbar"
+      :aria-valuenow="percent(current, total)"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      :aria-label="label || t('routePlanner.processing')"
+    >
+      <div class="progress-fill" :style="{ width: percent(current, total) + '%' }" />
     </div>
   </div>
 </template>

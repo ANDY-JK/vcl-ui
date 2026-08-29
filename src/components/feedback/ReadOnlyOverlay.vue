@@ -18,7 +18,13 @@ withDefaults(defineProps<Props>(), {
 
 <template>
   <Transition name="fade">
-    <div v-if="visible" class="readonly-overlay">
+    <div
+      v-if="visible"
+      class="readonly-overlay"
+      role="alertdialog"
+      aria-modal="true"
+      :aria-label="reason || t('readonly.defaultReason')"
+    >
       <div class="readonly-content">
         <IconSvg type="lock" size="lg" color="white" />
         <p>{{ reason || t('readonly.defaultReason') }}</p>

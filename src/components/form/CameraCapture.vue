@@ -10,12 +10,6 @@ const t = useT()
 
 /** 相机浮层容器（Teleport 到 body 的遮罩内），供焦点陷阱限定范围 */
 const camcStageRef = ref<HTMLElement | null>(null)
-// P2-5：弹层焦点陷阱 —— 打开时焦点移入工具栏，Tab 循环不逃逸，关闭恢复
-useFocusTrap({
-  visible: computed(() => props.modelValue),
-  getContainer: () => camcStageRef.value,
-  autofocus: 'container',
-})
 
 interface Props {
   /** 显隐控制（v-model） */
@@ -29,6 +23,14 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
   quality: 0.9,
   fallbackOnError: true,
+})
+
+// P2-5：弹层焦点陷阱 —— 打开时焦点移入工具栏，Tab 循环不逃逸，关闭恢复
+// 注意：必须在 props 声明之后调用（computed 内引用 props.modelValue，先声明会导致 TDZ ReferenceError）
+useFocusTrap({
+  visible: computed(() => props.modelValue),
+  getContainer: () => camcStageRef.value,
+  autofocus: 'container',
 })
 
 const emit = defineEmits<{
@@ -329,7 +331,7 @@ onUnmounted(() => {
 .camc-mask {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-top, 9999);
   background: #000;
   display: flex;
   align-items: center;

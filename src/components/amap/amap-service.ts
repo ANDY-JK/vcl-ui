@@ -91,10 +91,7 @@ export function isValidLatLon(lat: number, lon: number): boolean {
  * 归一化中国范围经纬度：自动纠正经纬度互换（如录入时经度纬度写反）。
  * 互换判断基于中国范围启发式（经度 73~135，纬度 3~54），互换后仍非法则返回 null。
  */
-export function normalizeChinaLatLon(
-  lat: number,
-  lon: number,
-): { latitude: number; longitude: number } | null {
+export function normalizeChinaLatLon(lat: number, lon: number): { latitude: number; longitude: number } | null {
   const lonIsValid = lon >= 73 && lon <= 135
   const latIsValid = lat >= 3 && lat <= 54
   const lonAsLat = lon >= 3 && lon <= 54
@@ -153,7 +150,13 @@ export async function keywordSearch(
     })
     if (city) params.set('city', city)
     const resp = await safeFetch(`https://restapi.amap.com/v5/place/text?${params.toString()}`)
-    const data = (await resp.json()) as { infocode: string; pois: Array<{ location: string }> }
+    const data = (await resp.json()) as { infocode: string; info?: string; pois: Array<{ location: string }> }
+    // Key 无效/QPS 超限/配额耗尽时高德返回 status:'0' + 错误 infocode，pois 为空——
+    // 显式暴露错误（此前静默返回 null，调用方无法区分“无结果”与“API 报错”）
+    if (data.infocode && data.infocode !== '10000') {
+      console.warn(`[amap] 关键词搜索 API 错误: infocode=${data.infocode} info=${data.info ?? ''}`, keywords)
+      return { latitude: null, longitude: null }
+    }
     const location = data.pois?.[0]?.location || ''
     if (!location) return { latitude: null, longitude: null }
     const [longitude, latitude] = location.split(',')
@@ -168,6 +171,7 @@ export async function keywordSearch(
 async function parseAroundResp(resp: Response): Promise<PoiItem[]> {
   const data = (await resp.json()) as {
     infocode: string
+    info?: string
     pois: Array<{
       name: string
       address: string
@@ -178,6 +182,11 @@ async function parseAroundResp(resp: Response): Promise<PoiItem[]> {
       distance?: number
       id?: string
     }>
+  }
+  // API 错误（Key 无效/QPS 超限）显式暴露，避免与“无结果”混淆
+  if (data.infocode && data.infocode !== '10000') {
+    console.warn(`[amap] 周边/搜索 API 错误: infocode=${data.infocode} info=${data.info ?? ''}`)
+    return []
   }
   return (data.pois || [])
     .map((p) => {

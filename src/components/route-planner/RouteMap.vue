@@ -3,13 +3,14 @@
  * 路线地图 — 高德地图展示门店标记 + 分天路线 + 起点
  * 动态居中，支持信息窗
  */
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { ElAmap } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import type { Store, RoutePlan } from '@/components/route-planner/types'
 import { getAmapJsKey, getAmapSecurityCode } from '@/components/amap'
 import { amapLoader } from '@/components/amap/amap-loader'
 import { useT } from '@/components/_internal/i18n'
+import { sanitizeHTML } from '@/components/data/composables/sanitize'
 
 const t = useT()
 
@@ -28,7 +29,10 @@ if (typeof window !== 'undefined') {
     securityJsCode: AMAP_SECRET,
   }
 }
-amapLoader.ensureInit(getAmapJsKey())
+// SSR 守卫：ensureInit 内部会注入 <script> 操作 document，服务端渲染直接跳过
+if (typeof window !== 'undefined') {
+  amapLoader.ensureInit(getAmapJsKey())
+}
 
 /** 动态地图中心 */
 const mapCenter = computed((): [number, number] => {
@@ -114,14 +118,14 @@ function renderAll(): void {
           position: pos,
           title: store.name,
         })
-        // 点击弹出信息窗
+        // 点击弹出信息窗（门店名/地址来自 Excel 导入等外部输入，必须消毒防 XSS）
         marker.on('click', () => {
           const infoWin = new AMap.InfoWindow({
-            content: `<div style="padding:4px 2px;font-size:12px;line-height:1.6">
+            content: sanitizeHTML(`<div style="padding:4px 2px;font-size:12px;line-height:1.6">
               <strong>${store.name}</strong><br/>
               📍 ${store.address || store.city || ''}<br/>
               📅 ${t('routePlanner.mapInfoWindow', { day: day.day, idx: day.stores.indexOf(store) + 1 })}
-            </div>`,
+            </div>`),
             offset: new AMap.Pixel(0, -28),
           })
           infoWin.open(mapInstance, pos)
@@ -152,11 +156,11 @@ function renderAll(): void {
       })
       marker.on('click', () => {
         const infoWin = new AMap.InfoWindow({
-          content: `<div style="padding:4px 2px;font-size:12px;line-height:1.6">
+          content: sanitizeHTML(`<div style="padding:4px 2px;font-size:12px;line-height:1.6">
             <strong>${store.name}</strong><br/>
             📍 ${store.address || ''}<br/>
             🏙️ ${store.city || ''} ${store.district || ''}
-          </div>`,
+          </div>`),
           offset: new AMap.Pixel(0, -28),
         })
         infoWin.open(mapInstance, pos)
@@ -190,6 +194,11 @@ watch(
     nextTick(renderAll)
   },
 )
+
+// 卸载时清掉 pending 的防抖回调，避免操作已销毁的地图实例
+onUnmounted(() => {
+  if (renderTimer) clearTimeout(renderTimer)
+})
 
 /** 是否有数据可显示 */
 const hasContent = computed(() => props.stores.length > 0 || (props.plan && props.plan.days.length > 0))

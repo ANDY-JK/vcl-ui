@@ -156,6 +156,11 @@ function toFullStore(
     coordSource: coord.source,
     skipped: false,
     note: partial.note,
+    // 透传解析前已有的业务字段：乡镇标记身份/四级原始地址/自定义拜访时长
+    // （缺省会导致 Excel 导入的乡镇标记丢失身份、visitMinutes 全部退回默认值）
+    fullAddr: partial.fullAddr,
+    isTownshipMarker: partial.isTownshipMarker,
+    visitMinutes: partial.visitMinutes,
   }
 }
 

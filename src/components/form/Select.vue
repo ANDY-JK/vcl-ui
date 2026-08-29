@@ -17,7 +17,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
-import { useTreeFlatten } from '@/components/_internal/useTreeFlatten'
+import { useTreeFlatten, type FlattenNode } from '@/components/_internal/useTreeFlatten'
 import { useT } from '@/components/_internal/i18n'
 import { parseDate } from './utils/date-utils'
 import DatePanel from './date-panel/DatePanel.vue'
@@ -170,15 +170,19 @@ useClickOutside([triggerRef, floatingRef], () => {
   closePanel()
 })
 
-function onExternalScroll() {
+/** 外部滚动关闭面板（捕获阶段拿真实 event，不依赖非标准的全局 event 对象） */
+function onExternalScroll(e: Event) {
   if (!open.value) return
-  const scrollEl = event?.target
+  const scrollEl = e.target
   if (scrollEl instanceof Node && floatingRef.value?.contains(scrollEl)) return
   if (Date.now() - openedAt < 300) return
   closePanel()
 }
 
-onMounted(() => window.addEventListener('scroll', onExternalScroll, true))
+onMounted(() => {
+  // SSR/测试环境无 window 时跳过（此前裸挂 + 依赖全局 event，非标准且 SSR 不安全）
+  if (typeof window !== 'undefined') window.addEventListener('scroll', onExternalScroll, true)
+})
 onUnmounted(() => {
   window.removeEventListener('scroll', onExternalScroll, true)
   if (blurTimer) clearTimeout(blurTimer)
@@ -306,11 +310,13 @@ watch(filteredOptions, () => {
 const selectedLabels = computed(() => {
   if (isTreeSelect.value) return treeSelectedPaths.value.map((p) => p.map((n) => n.label).join(' / '))
   if (!props.options) return []
+  // JS 调用方显式传 null 会覆盖默认值：兜空数组防 .find of null（TS 项目不受影响）
+  const options = props.options ?? []
   if (props.multiple) {
     const vals = (props.modelValue || []) as (string | number | boolean)[]
-    return vals.map((v) => props.options!.find((o) => String(o.value) === String(v))?.label || String(v))
+    return vals.map((v) => options.find((o) => String(o.value) === String(v))?.label || String(v))
   }
-  const found = props.options.find((o) => String(o.value) === String(props.modelValue))
+  const found = options.find((o) => String(o.value) === String(props.modelValue))
   return found ? [found.label] : []
 })
 
@@ -454,6 +460,24 @@ const treeFlatten = useTreeFlatten<CascaderOption>({
 })
 const treeNodes = computed(() => treeFlatten.flatNodes.value)
 
+/** tree-select 搜索：searchText 非空时按 label 过滤（遍历全树含折叠分支），空时回落展开态扁平列表 */
+const visibleTreeNodes = computed(() => {
+  const kw = searchText.value.trim().toLowerCase()
+  if (!kw) return treeNodes.value
+  const out: FlattenNode<CascaderOption>[] = []
+  const walk = (nodes: CascaderOption[], depth: number, path: CascaderOption[], parent: CascaderOption | null) => {
+    for (const n of nodes) {
+      const p = [...path, n]
+      if (String(n.label).toLowerCase().includes(kw)) {
+        out.push({ node: n, depth, parent, path: p, isLeaf: !n.children || n.children.length === 0 })
+      }
+      if (n.children && n.children.length > 0) walk(n.children, depth + 1, p, n)
+    }
+  }
+  walk(props.cascaderOptions || [], 0, [], null)
+  return out
+})
+
 function findTreePath(nodes: CascaderOption[], value: string | number): CascaderOption[] | null {
   for (const node of nodes) {
     if (String(node.value) === String(value)) return [node]
@@ -474,12 +498,12 @@ const treeSelectedPaths = computed((): CascaderOption[][] => {
 
 const treeDisplayText = computed(() => treeSelectedPaths.value.map((p) => p.map((n) => n.label).join(' / ')).join(', '))
 
-function isTreeSelected(flatNode: (typeof treeNodes.value)[number]): boolean {
+function isTreeSelected(flatNode: (typeof visibleTreeNodes.value)[number]): boolean {
   if (!Array.isArray(props.modelValue)) return false
   return (props.modelValue as (string | number)[]).some((v) => String(v) === String(flatNode.node.value))
 }
 
-function onTreeNodeClick(flatNode: (typeof treeNodes.value)[number]) {
+function onTreeNodeClick(flatNode: (typeof visibleTreeNodes.value)[number]) {
   if (flatNode.node.disabled) return
   if (!flatNode.isLeaf) {
     treeFlatten.toggleExpand(flatNode.node.value)
@@ -643,7 +667,7 @@ function onComboKeydown(e: KeyboardEvent) {
    键盘导航
    ════════════════════════════════════════ */
 const navItems = computed(() => (isMenu.value ? props.items || [] : filteredOptions.value))
-const navCount = computed(() => (isTreeSelect.value ? treeNodes.value.length : navItems.value.length))
+const navCount = computed(() => (isTreeSelect.value ? visibleTreeNodes.value.length : navItems.value.length))
 
 function onTriggerKeydown(e: KeyboardEvent) {
   if (isMenu.value) return
@@ -660,7 +684,7 @@ function onTriggerKeydown(e: KeyboardEvent) {
     if (e.key === 'ArrowDown') highlightIdx.value = Math.min(highlightIdx.value + 1, navCount.value - 1)
     if (e.key === 'Enter' && highlightIdx.value >= 0) {
       if (isTreeSelect.value) {
-        const flatNode = treeNodes.value[highlightIdx.value]
+        const flatNode = visibleTreeNodes.value[highlightIdx.value]
         if (flatNode) onTreeNodeClick(flatNode)
       } else {
         const item = navItems.value[highlightIdx.value]
@@ -832,7 +856,9 @@ function onTimeCancel() {
           "
           aria-autocomplete="list"
           :aria-controls="open ? dropdownId : undefined"
-          :aria-activedescendant="open && highlightIdx >= 0 ? `select-option-${highlightIdx}` : undefined"
+          :aria-activedescendant="
+            open && !isTreeSelect && highlightIdx >= 0 ? `select-option-${highlightIdx}` : undefined
+          "
           autocomplete="off"
           @click.stop="isCombobox ? !open && toggleOpen($event) : toggleOpen($event)"
           @focus="isCombobox ? onComboFocus() : emit('focus')"
@@ -910,9 +936,9 @@ function onTimeCancel() {
 
             <!-- Tree-select 模式 -->
             <div v-else-if="isTreeSelect" class="panel-list">
-              <template v-if="treeNodes.length">
+              <template v-if="visibleTreeNodes.length">
                 <button
-                  v-for="(flatNode, idx) in treeNodes"
+                  v-for="(flatNode, idx) in visibleTreeNodes"
                   :key="flatNode.path.map((n) => String(n.value)).join('>')"
                   type="button"
                   class="panel-item tree-node-item"

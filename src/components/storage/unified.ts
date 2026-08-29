@@ -14,15 +14,7 @@
  * 旧 API（storageGet/Set/Delete、dbPut/dbGet/...）保持不变，存量调用零改动。
  */
 
-import {
-  storageSet,
-  storageGet,
-  storageDelete,
-  dbPut,
-  dbGet,
-  dbDelete,
-  dbHas,
-} from './indexedDB'
+import { storageSet, storageGet, storageDelete, dbPut, dbGet, dbDelete, dbHas } from './indexedDB'
 
 // ════════════════════════════════════════
 // 类型
@@ -101,13 +93,29 @@ function removeSync(key: string): void {
 
 async function set<T = unknown>(key: string, value: T, opts: StorageWriteOptions = {}): Promise<void> {
   if (isLargeValue(value)) {
-    await dbPut(KV_STORE, key, value, opts.ttl)
+    try {
+      await dbPut(KV_STORE, key, value, opts.ttl)
+    } catch (e) {
+      // IDB 不可用（隐私模式/配额满/版本冲突）：小值尽力降级 localStorage，仍失败才上抛
+      // （写失败静默 = 调用方无感知的数据丢失，必须让失败可见）
+      try {
+        storageSet(key, value, opts.ttl)
+        console.warn('[storage] IndexedDB 写入失败，已降级 localStorage:', key, e)
+      } catch {
+        throw e
+      }
+    }
   } else {
     storageSet(key, value, opts.ttl)
   }
   if (opts.cloud) {
     if (cloudAdapter) {
-      await cloudAdapter.set(key, value)
+      try {
+        await cloudAdapter.set(key, value)
+      } catch (e) {
+        // 本地已写成功：云端失败不应让整个 set 变 rejected（与 get 的云端降级对称）
+        console.warn('[storage] 云端写入失败（本地已保存）:', key, e)
+      }
     } else {
       console.warn('[storage] 未注入云端适配器（setCloudAdapter），cloud 选项已忽略:', key)
     }
@@ -119,7 +127,13 @@ async function get<T = unknown>(key: string): Promise<T | null> {
   const local = storageGet<T>(key)
   if (local !== null) return local
 
-  const idb = await dbGet<T>(KV_STORE, key)
+  // IDB 故障（隐私模式/版本冲突/不可用）不中断降级链：跳过继续查云端
+  let idb: T | null = null
+  try {
+    idb = await dbGet<T>(KV_STORE, key)
+  } catch (e) {
+    console.warn('[storage] IndexedDB 读取失败，跳过继续降级:', key, e)
+  }
   if (idb !== null) return idb
 
   if (cloudAdapter) {
@@ -152,7 +166,19 @@ async function remove(key: string): Promise<void> {
 
 async function has(key: string): Promise<boolean> {
   if (storageGet(key) !== null) return true
-  return dbHas(KV_STORE, key)
+  try {
+    if (await dbHas(KV_STORE, key)) return true
+  } catch {
+    /* IDB 故障时继续查云端，与 get 的降级链对称 */
+  }
+  if (cloudAdapter) {
+    try {
+      return (await cloudAdapter.get(key)) !== null
+    } catch {
+      return false
+    }
+  }
+  return false
 }
 
 // ════════════════════════════════════════
@@ -170,6 +196,16 @@ function onChange(handler: ChangeHandler): () => void {
       value = e.newValue != null ? JSON.parse(e.newValue) : null
     } catch {
       value = e.newValue
+    }
+    // 写入侧是 StoreItem 包装（{key,value,_ts,_exp}），回调契约是 (key, value) —— 解包后再交出
+    if (
+      value &&
+      typeof value === 'object' &&
+      'value' in value &&
+      '_ts' in value &&
+      (value as Record<string, unknown>).key === e.key
+    ) {
+      value = (value as Record<string, unknown>).value
     }
     handler(e.key, value)
   }
