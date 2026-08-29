@@ -71,6 +71,18 @@ describe('matrix 评分矩阵', () => {
     await radio.trigger('change')
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([{ 服务: '满意' }])
   })
+
+  it('草稿回显：已有值对应的单选呈选中态（:checked 绑定，§21 候选修复）', () => {
+    const wrapper = mountField('matrix', { matrixRows: '服务\n速度', matrixCols: '满意\n差' }, { 服务: '差' })
+    const rows = wrapper.findAll('.fb-matrix-row')
+    const radiosFirstRow = rows[0]!.findAll('input[type="radio"]') // 服务行：满意/差
+    expect((radiosFirstRow[0]!.element as HTMLInputElement).checked).toBe(false)
+    expect((radiosFirstRow[1]!.element as HTMLInputElement).checked).toBe(true)
+    // 未作答行全部未选中
+    for (const radio of rows[1]!.findAll('input[type="radio"]')) {
+      expect((radio.element as HTMLInputElement).checked).toBe(false)
+    }
+  })
 })
 
 describe('serial 流水号', () => {

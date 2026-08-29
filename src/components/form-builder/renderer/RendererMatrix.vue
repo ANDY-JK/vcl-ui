@@ -43,7 +43,13 @@ function selectCell(row: string, col: string): void {
     <div v-for="(row, ri) in matrixRows" :key="ri" class="fb-matrix-row">
       <div class="fb-matrix-cell fb-matrix-first">{{ row }}</div>
       <div v-for="col in matrixCols" :key="col" class="fb-matrix-cell">
-        <input type="radio" :name="`matrix-${field.key}-${ri}`" :value="col" @change="selectCell(row, col)" />
+        <input
+          type="radio"
+          :name="`matrix-${field.key}-${ri}`"
+          :value="col"
+          :checked="(modelValue as Record<string, string>)?.[row] === col"
+          @change="selectCell(row, col)"
+        />
       </div>
     </div>
   </div>
