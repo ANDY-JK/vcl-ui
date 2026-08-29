@@ -51,6 +51,8 @@ const _dangerousCss = [
   /javascript:/i,
   /url\s*\(\s*['"]?\s*javascript:/i,
   /url\s*\(\s*['"]?\s*data:\s*text\/html/i,
+  // 外链资源（追踪像素/CSS 数据外泄/远程加载）：绝对地址与协议相对地址一律拦截，data:image 与相对路径放行
+  /url\s*\(\s*['"]?\s*(?:https?:)?\/\//i,
   /-moz-binding/i,
   /behavior\s*:/i,
   /@import/i,
@@ -89,6 +91,10 @@ export function sanitizeHTML(html: string): string {
       if (attr === 'style' && _dangerousCss.some((re) => re.test(val))) {
         node.removeAttribute('style')
       }
+    }
+    // 带 target 的链接强制补 rel，防 reverse tabnabbing（rel 不在白名单，须在属性循环后覆写）
+    if (node.tagName === 'A' && node.hasAttribute('target')) {
+      node.setAttribute('rel', 'noopener noreferrer')
     }
   })
   return el.innerHTML

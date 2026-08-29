@@ -17,6 +17,12 @@ describe('AmapWidget · infoWindow HTML 消毒（源码锁定）', () => {
     expect(src).not.toMatch(/setContent\(\s*item\.infoWindow\s*\)/)
   })
 
+  it('expose 的 openInfoWindow 也必须消毒（宿主传入内容同面）', () => {
+    // openInfoWindow expose 直插 DOM（审查 §17.2-7 遗留）：回归时 setContent(content) 裸调会被此处捕获
+    expect(src).toMatch(/setContent\(sanitizeHTML\(content\)\)/)
+    expect(src).not.toMatch(/setContent\(\s*content\s*\)/)
+  })
+
   it('sanitizeHTML 对信息窗场景剥离脚本与事件属性', async () => {
     const { sanitizeHTML } = await import('@/components/data/composables/sanitize')
     // 店名/地址注入恶意内容：script 整体移除、onclick 事件剥离

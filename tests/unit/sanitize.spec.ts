@@ -36,6 +36,31 @@ describe('sanitizeHTML · HTML 白名单消毒', () => {
     expect(sanitizeHTML('<div style="background: url(javascript:alert(1))">x</div>')).toBe('<div>x</div>')
   })
 
+  it('拦截 CSS 外链资源（绝对地址/协议相对地址）', () => {
+    expect(sanitizeHTML('<div style="background: url(https://evil.com/track.png)">x</div>')).toBe('<div>x</div>')
+    expect(sanitizeHTML('<div style="background: url(&quot;https://evil.com/x.png&quot;)">x</div>')).toBe('<div>x</div>')
+    expect(sanitizeHTML('<div style="background: url(//evil.com/track.png)">x</div>')).toBe('<div>x</div>')
+    expect(sanitizeHTML('<div style="list-style: url(http://evil.com/b.gif)">x</div>')).toBe('<div>x</div>')
+  })
+
+  it('保留 CSS 相对路径与 data:image 资源', () => {
+    expect(sanitizeHTML('<div style="background: url(img/bg.png)">x</div>')).toBe('<div style="background: url(img/bg.png)">x</div>')
+    expect(sanitizeHTML('<div style="background: url(data:image/png;base64,iVBOR)">x</div>')).toBe(
+      '<div style="background: url(data:image/png;base64,iVBOR)">x</div>',
+    )
+  })
+
+  it('带 target 的链接强制补 rel=noopener（防 reverse tabnabbing）', () => {
+    expect(sanitizeHTML('<a href="https://example.com" target="_blank">新窗口</a>')).toBe(
+      '<a href="https://example.com" target="_blank" rel="noopener noreferrer">新窗口</a>',
+    )
+    // 无 target 不加 rel；攻击者自带 rel 也会被覆写为安全值
+    expect(sanitizeHTML('<a href="https://example.com" rel="opener" target="_blank">覆写</a>')).toBe(
+      '<a href="https://example.com" target="_blank" rel="noopener noreferrer">覆写</a>',
+    )
+    expect(sanitizeHTML('<a href="https://example.com">普通链接</a>')).toBe('<a href="https://example.com">普通链接</a>')
+  })
+
   it('保留安全 style', () => {
     expect(sanitizeHTML('<span style="color: red">红</span>')).toBe('<span style="color: red">红</span>')
   })

@@ -216,7 +216,7 @@ defineExpose({
   clearMarkers,
   renderMarkers,
   openInfoWindow: (content: string, position: [number, number]) => {
-    infoWindow?.setContent(content)
+    infoWindow?.setContent(sanitizeHTML(content))
     infoWindow?.open(mapInstance, position)
   },
   closeInfoWindow: () => {

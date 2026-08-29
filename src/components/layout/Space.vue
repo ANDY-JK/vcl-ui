@@ -3,6 +3,7 @@
 // 推荐直接使用 Flex 组件：<Flex direction="horizontal" gap="8px" />
 import { onMounted } from 'vue'
 import Flex from './Flex.vue'
+import { warnOnce } from '@/components/_internal/warnOnce'
 
 interface Props {
   /** 排列方向，默认 'horizontal' */
@@ -24,7 +25,7 @@ withDefaults(defineProps<Props>(), {
 
 onMounted(() => {
   if (import.meta.env.DEV) {
-    console.warn('[Space] 已废弃，请直接使用 <Flex direction="..." gap="..." /> 代替')
+    warnOnce('Space', '已废弃，请直接使用 <Flex direction="..." gap="..." /> 代替')
   }
 })
 </script>
