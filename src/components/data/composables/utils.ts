@@ -73,6 +73,43 @@ export function getCellText(value: any, col: Column, row: Record<string, any>, i
 /** 拼音匹配 — 委托给共享 usePinyinSearch 模块 */
 export { matchPinyin } from '@/components/_internal/usePinyinSearch'
 
+/** Column 标题：title 优先，label 别名兜底，key 最终兜底（主文件与区块子组件共用） */
+export function colTitle(col?: Column): string {
+  return col?.title || col?.label || col?.key || ''
+}
+
+/** 选项列取值颜色：匹配 options 内对象项的 color，未命中回退 inherit */
+export function optColor(col: Column, val: string): string {
+  if (!col.options) return 'inherit'
+  const opt = col.options.find((o) => (typeof o === 'string' ? o : o.value) === val)
+  return opt && typeof opt === 'object' && opt.color ? opt.color : 'inherit'
+}
+
+/** 默认图片域名白名单（调用方未传 imageDomains 时使用） */
+const _defaultImageDomains = [
+  'pravatar.cc',
+  'placeholder.com',
+  'picsum.photos',
+  'unsplash.com',
+  'via.placeholder',
+  'dummyimage.com',
+]
+
+/** 判断值是否为图片（dataURL 或以常见图片扩展名结尾，或来自知名图片 CDN）
+ *  imageDomains：外部传入的白名单（DataTable props.imageDomains），空则用默认清单 */
+export function isImageUrl(val: unknown, imageDomains?: string[]): boolean {
+  if (!val) return false
+  if (typeof val !== 'string') return false
+  if (val.startsWith('data:image/')) return true
+  if (/\.(png|jpe?g|gif|webp|svg|bmp|ico)(\?|#|$)/i.test(val)) return true
+  const domains = imageDomains?.length ? imageDomains : _defaultImageDomains
+  const pattern = new RegExp(domains.map((d) => d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i')
+  if (pattern.test(val)) return true
+  // 启发式 URL 路径匹配 — 可能误判，优先依赖域名白名单 + 扩展名
+  if (new RegExp('^https?://.+[/=](img|image|photo|avatar|pic|thumb)', 'i').test(val)) return true
+  return false
+}
+
 /** 菜单/浮层视口边界收敛：修正 left/top，确保不超出表格容器与视口（右键菜单共用）
  *  返回 above 标记：true 表示下方空间不足，调用方应改用 bottom 定位（向上弹出）
  *  委托给通用 computePointerPosition，保持 API 兼容 */

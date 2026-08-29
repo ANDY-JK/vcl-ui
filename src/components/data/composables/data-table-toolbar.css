@@ -1,0 +1,199 @@
+/* ==================== 滚动进度条（可交互伪滚动条） ==================== */
+.table-progress-track {
+  position: relative;
+  height: 6px;
+  background: var(--color-border-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  overflow: visible;
+}
+.table-progress-track:hover {
+  background: var(--color-border);
+}
+.table-progress-track:active {
+  cursor: grabbing;
+}
+.table-progress {
+  height: 100%;
+  background: var(--color-primary, #4f6ef7);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 8px rgba(79, 110, 247, 0.4);
+  min-width: 6px;
+  pointer-events: none;
+}
+
+/* 固定行锚点标记 */
+.table-progress-anchor {
+  position: absolute;
+  top: -3px;
+  width: 10px;
+  height: 12px;
+  background: var(--color-primary, #4f6ef7);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(79, 110, 247, 0.5);
+  transition: transform var(--transition-fast);
+  z-index: 1;
+}
+.table-progress-anchor:hover {
+  transform: translateX(-50%) scaleY(1.5);
+}
+
+/* ==================== 工具栏 sticky ==================== */
+.table-top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  background: var(--color-bg);
+  isolation: isolate;
+}
+.table-top-bar .table-progress-track {
+  margin: 0;
+}
+
+/* ==================== 工具栏 ==================== */
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 14px;
+  flex-wrap: wrap;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  min-height: 40px;
+}
+
+.toolbar-count {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.toolbar-count strong {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 3px var(--space-3);
+  font-size: 12px;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border: 1px solid rgba(79, 110, 247, 0.2);
+  border-radius: 999px;
+}
+
+.filter-chip-count {
+  color: var(--color-text-muted);
+}
+
+.filter-chip-close {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+.filter-chip-close:hover {
+  opacity: 1;
+}
+
+.toolbar-clear {
+  margin-left: auto;
+  padding: var(--space-1) 10px;
+  font-size: 12px;
+  color: var(--color-danger);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+.toolbar-clear:hover {
+  opacity: 0.8;
+}
+
+/* 清除按钮居中 */
+.toolbar-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* 功能按钮靠右 */
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+/* 全局搜索 */
+.global-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.global-search-input {
+  width: clamp(120px, 30vw, 180px);
+  padding: var(--space-1) 8px;
+  font-size: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.global-search-input:focus {
+  border-color: var(--color-primary);
+}
+.global-search-input::placeholder {
+  color: var(--color-text-muted);
+}
+.global-search-toggle {
+  display: flex;
+  align-items: center;
+  padding: var(--space-1);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.global-search-toggle:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.global-search-wrap.active .global-search-toggle {
+  color: var(--color-primary);
+}
+
+/* CSV 导出按钮 */
+.toolbar-export-btn {
+  display: flex;
+  align-items: center;
+  padding: var(--space-1);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.toolbar-export-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.toolbar-zoom-btn {
+  padding: var(--space-1) 8px;
+  font-size: 12px;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+  justify-content: center;
+}

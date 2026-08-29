@@ -25,6 +25,11 @@ import Toast from '@/components/feedback/Toast.vue'
 import { boostZTop } from '@/components/_internal/z-top'
 import { useToastNotify } from '@/components/_internal/useToastNotify'
 import ImagePreview from './ImagePreview.vue'
+import DataTableColumnSettings from './DataTableColumnSettings.vue'
+import DataTableBatchDialog from './DataTableBatchDialog.vue'
+import DataTablePagination from './DataTablePagination.vue'
+import DataTableToolbar from './DataTableToolbar.vue'
+import { provideDataTableContext, type ColumnSettingsPanelExpose, type BatchDialogExpose } from './composables/context'
 import type { Column, ColumnOption, Emits, RowAction, RowContextAction, TableStorage } from './composables/types'
 import { useTableCore } from './composables/useTableCore'
 import { useTableColumns } from './composables/useTableColumns'
@@ -33,7 +38,15 @@ import { useTableExtras } from './composables/useTableExtras'
 import { useTableEdit } from './composables/useTableEdit'
 import './composables/data-table-global.css'
 import { sanitizeHTML } from './composables/sanitize'
-import { clampFloatingPosition, isLayerFresh, markLayerOpen, matchPinyin } from './composables/utils'
+import {
+  clampFloatingPosition,
+  isLayerFresh,
+  markLayerOpen,
+  colTitle,
+  optColor,
+  isImageUrl as _isImageUrl,
+} from './composables/utils'
+import { captureTableCanvas } from './composables/canvas-screenshot'
 import { useTableTooltip } from './composables/useTableTooltip'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
@@ -243,9 +256,9 @@ function onCtxFixRightCascade() {
   closeContextMenu()
 }
 
-/** 右键菜单 — 取消固定 */
+/** 右键菜单 — 取消固定（列设置区块持有固定区域逻辑） */
 function onCtxUnfixColumn() {
-  onUnfixFromMenu(contextMenu.value.columnKey!)
+  colSettingsPanel.value?.unfixFromMenu(contextMenu.value.columnKey!)
   closeContextMenu()
 }
 
@@ -258,12 +271,11 @@ function onCtxShowAllColumns() {
 /** emptyText 回退：未传入时用 i18n */
 const effectiveEmptyText = computed(() => props.emptyText || t('table.noData'))
 
-/** Column 标题：title 优先，label 别名兜底，key 最终兜底 */
-function colTitle(col?: Column): string {
-  return col?.title || col?.label || col?.key || ''
-}
-
 const tableWrapRef = ref<HTMLElement | null>(null)
+/** 列设置面板区块实例（show/toggle/close/unfixFromMenu 经 defineExpose 暴露） */
+const colSettingsPanel = ref<ColumnSettingsPanelExpose | null>(null)
+/** 批量修改弹窗区块实例（show/open/close 经 defineExpose 暴露） */
+const batchDialog = ref<BatchDialogExpose | null>(null)
 let closeContextMenu: () => void = () => {}
 
 /** 右键菜单项点击：优先执行内联回调，否则 emit 事件，最后关闭菜单 */
@@ -373,15 +385,9 @@ const {
 )
 
 // 4. 杂项
-// 全局搜索（组件本地状态）
+// 全局搜索（组件本地状态；输入框与焦点在工具栏区块内，关键词归主文件驱动防抖过滤）
 const globalSearch = ref('')
 const showGlobalSearch = ref(false)
-const globalSearchRef = ref<HTMLInputElement | null>(null)
-function toggleGlobalSearch() {
-  showGlobalSearch.value = !showGlobalSearch.value
-  if (!showGlobalSearch.value) globalSearch.value = ''
-  else nextTick(() => globalSearchRef.value?.focus())
-}
 
 // 全局搜索 200ms 防抖 — v-model 即时更新但数据过滤延迟触发
 const searchTerm = ref('')
@@ -450,11 +456,8 @@ const displayTotalPages = computed(() => {
 // 行点击高亮（支持多选，再次点击取消）
 const _clickedRowKeys = ref<Set<string>>(new Set())
 
-// 密度切换
+// 密度切换（切换函数在工具栏区块内；引用归主文件，行高/表格类名多处消费）
 const _dense = ref(props.dense)
-function toggleDense() {
-  _dense.value = !_dense.value
-}
 
 // 缩放（Ctrl+滚轮 / Ctrl+±）
 const _zoomX = ref(1)
@@ -563,8 +566,8 @@ function onFullscreenKeydown(e: KeyboardEvent) {
       closeContextMenu()
       return
     }
-    if (_batchShow.value) {
-      _batchShow.value = false
+    if (batchDialog.value?.show) {
+      batchDialog.value.close()
       return
     }
     if (noteEditing.value) {
@@ -697,13 +700,13 @@ async function captureScreenshot() {
   if (_cellDetailModal.value.visible) _cellDetailModal.value.visible = false
   // 内容过多限制：避免几千行生成超大 canvas 卡死/黑屏（浏览器 canvas 高度上限约 16383px@2x）
   const shotEl = tableWrapRef.value?.querySelector('.table-scroll') as HTMLElement | null
-  const shotTable = shotEl?.querySelector('table.data-table')
+  const shotTable = shotEl?.querySelector('table.data-table') as HTMLTableElement | null
   const rowCount = shotTable?.querySelectorAll('tr').length ?? 0
   if (rowCount > props.screenshotMaxRows || (shotTable?.scrollHeight ?? 0) > 8000) {
     notify(t('table.tooManyRows', { n: rowCount }), 'warning')
     return
   }
-  const result = await captureTableCanvas()
+  const result = await captureTableCanvas(shotTable)
   if (!result) {
     notify(t('table.screenshotFail'), 'error')
     return
@@ -721,74 +724,6 @@ async function captureScreenshot() {
   }
 }
 
-/** Canvas 自绘表格截图：绕开 html2canvas 对 <table> 行高的渲染缺陷（行内空白/行高翻倍/底部裁剪） */
-async function captureTableCanvas(): Promise<{ dataUrl: string; blob: Blob; canvas: HTMLCanvasElement } | null> {
-  const el = tableWrapRef.value?.querySelector('.table-scroll') as HTMLElement | null
-  const table = el?.querySelector('table.data-table') as HTMLTableElement | null
-  if (!table) return null
-  const scale = 2
-  const width = Math.max(1, table.scrollWidth)
-  const height = Math.max(1, table.scrollHeight)
-  const canvas = document.createElement('canvas')
-  canvas.width = Math.round(width * scale)
-  canvas.height = Math.round(height * scale)
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return null
-  ctx.scale(scale, scale)
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, 0, width, height)
-
-  const rows = [...table.querySelectorAll('tr')]
-  let y = 0
-  for (const tr of rows) {
-    const cells = [...tr.querySelectorAll<HTMLElement>('th, td')]
-    const rowH = tr.getBoundingClientRect().height || 40
-    let x = 0
-    for (const cell of cells) {
-      const w = cell.getBoundingClientRect().width || 120
-      const cs = getComputedStyle(cell)
-      // 背景（行样式/斑马纹/表头底色直接来自计算样式）
-      ctx.fillStyle = cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' ? cs.backgroundColor : '#ffffff'
-      ctx.fillRect(x, y, w, rowH)
-      // 边框
-      ctx.strokeStyle = '#d8dee9'
-      ctx.lineWidth = 1
-      ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), Math.max(0, rowH - 1))
-      // 文本（支持最多 3 行）
-      const text = (cell.innerText || '').trim()
-      if (text) {
-        ctx.fillStyle = cs.color
-        ctx.font = '13px "Microsoft YaHei", "PingFang SC", sans-serif'
-        ctx.textAlign = (cs.textAlign || 'left') as CanvasTextAlign
-        ctx.textBaseline = 'middle'
-        const pad = 8
-        const maxW = Math.max(0, w - pad * 2)
-        const lines: string[] = text.split('\n').slice(0, 3)
-        const lh = Math.min(18, rowH / lines.length)
-        lines.forEach((line, i) => {
-          const tx = cs.textAlign === 'center' ? x + w / 2 : cs.textAlign === 'right' ? x + w - pad : x + pad
-          ctx.fillText(truncateCanvasText(ctx, line, maxW), tx, y + rowH / 2 + (i - (lines.length - 1) / 2) * lh)
-        })
-      }
-      x += w
-    }
-    y += rowH
-  }
-
-  const dataUrl = canvas.toDataURL('image/png')
-  const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'),
-  )
-  return { dataUrl, blob, canvas }
-}
-
-/** Canvas 文本截断（按像素宽度） */
-function truncateCanvasText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
-  if (maxW <= 0 || ctx.measureText(text).width <= maxW) return text
-  let t = text
-  while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1)
-  return t + '…'
-}
 function downloadScreenshotFromModal() {
   downloadScreenshot(_screenshotModal.value.dataUrl)
   notify(t('table.screenshotDownloaded'), 'success')
@@ -1244,16 +1179,6 @@ const {
   pagedData,
 })
 
-/** 清除筛选（同时清除持久化） */
-function handleClearFilters(): void {
-  clearAllFilters()
-  _clearPersisted('filter')
-}
-/** 清除排序（同时清除持久化） */
-function handleClearSort(): void {
-  clearSort()
-  _clearPersisted('sort')
-}
 closeContextMenu = _closeCtxMenu
 
 // 图片预览灯箱（单击打开，支持缩放拖拽）
@@ -1336,13 +1261,6 @@ function pickOption(val: string) {
   }
 }
 
-function optColor(col: Column, val: string): string {
-  if (!col.options) return 'inherit'
-  const opt = col.options.find((o) => (typeof o === 'string' ? o : o.value) === val)
-  return opt && typeof opt === 'object' && opt.color ? opt.color : 'inherit'
-}
-// 判断选项面板值是否为当前值
-
 /** 单元格单击：选项列弹出面板，否则走选择逻辑
  *  @patch 2026-07-15 Ctrl+单击 → 行高亮+进度条标记；普通单击 → 仅单元格选中 */
 function onCellClick(row: Record<string, any>, col: Column, event: MouseEvent) {
@@ -1413,218 +1331,6 @@ function onFilterKeyTrigger(col: Column, e: KeyboardEvent) {
   } as unknown as MouseEvent
   toggleFilter(col, fake)
 }
-
-// ==================== 列设置面板（显隐 / 顺序 / 固定） ====================
-const _colSettingsShow = ref(false)
-const _colSettingsAbove = ref(false)
-const _colSettingsStyle = ref<Record<string, string>>({})
-const colSettingsRef = ref<HTMLElement | null>(null)
-const _colSettingsWidth = 380
-/** 面板列列表：全部列（含隐藏列），按当前拖拽顺序 */
-const _settingsColumns = computed(() => {
-  const orderMap = new Map(_columnOrder.value.map((k, i) => [k, i]))
-  return [...props.columns].sort((a, b) => (orderMap.get(a.key) ?? 999) - (orderMap.get(b.key) ?? 999))
-})
-/** 列名搜索关键词 */
-const colKeyword = ref('')
-/** 过滤后的列列表（保留全量索引，固定/顺序判断不受过滤影响） */
-const _filteredSettingsColumns = computed(() => {
-  const kw = colKeyword.value.trim().toLowerCase()
-  return _settingsColumns.value
-    .map((col, i) => ({ col, i }))
-    .filter(({ col }) => {
-      if (!kw) return true
-      const title = colTitle(col)
-      return title.toLowerCase().includes(kw) || matchPinyin(title, kw)
-    })
-})
-function toggleColSettings(e?: MouseEvent) {
-  _colSettingsShow.value = !_colSettingsShow.value
-  if (!_colSettingsShow.value) return
-  markLayerOpen()
-  closeFilter()
-  const btn = (e?.currentTarget as HTMLElement | null) ?? null
-  const rect = btn?.getBoundingClientRect()
-  if (!rect) {
-    _colSettingsStyle.value = { top: '56px', right: '16px' }
-    return
-  }
-  // 用通用算法预估方向和位置
-  const result = computeFloatingPosition({
-    rect,
-    floatingW: _colSettingsWidth,
-    floatingH: 300,
-    offset: 4,
-    defaultDirection: 'down',
-  })
-  _colSettingsAbove.value = result.direction === 'up'
-  _colSettingsStyle.value =
-    result.direction === 'up'
-      ? { bottom: `${window.innerHeight - rect.top + 4}px`, left: `${result.left}px` }
-      : { top: `${rect.bottom + 4}px`, left: `${result.left}px` }
-  // 渲染后按实际高度修正方向
-  nextTick(() => {
-    const el = colSettingsRef.value
-    if (!el) return
-    const h = el.offsetHeight
-    const fitsBelow = rect.bottom + 4 + h <= window.innerHeight - 8
-    const spaceAbove = rect.top - 8
-    const spaceBelow = window.innerHeight - rect.bottom
-    if (!fitsBelow && spaceAbove > spaceBelow) {
-      _colSettingsAbove.value = true
-      _colSettingsStyle.value = { bottom: `${window.innerHeight - rect.top + 4}px`, left: `${result.left}px` }
-    }
-  })
-}
-function toggleColVisible(colKey: string) {
-  if (hiddenColumns.value.has(colKey)) {
-    hiddenColumns.value.delete(colKey)
-  } else {
-    const visibleCount = props.columns.length - hiddenColumns.value.size
-    if (visibleCount <= 1) return // 至少保留一列
-    hiddenColumns.value.add(colKey)
-  }
-  hiddenColumns.value = new Set(hiddenColumns.value)
-}
-/** 全部显示 / 全部隐藏（保留第一列） */
-function toggleAllColsVisible(show: boolean) {
-  if (show) {
-    hiddenColumns.value = new Set()
-  } else {
-    hiddenColumns.value = new Set(props.columns.map((c) => c.key).slice(1))
-  }
-}
-/** 当前是否全部列可见（驱动「全部隐藏/全部显示」切换按钮文案） */
-const allColumnsVisible = computed(() => hiddenColumns.value.size === 0)
-/** 是否已存在手动调整的列宽（驱动「重置列宽」按钮亮起/置灰） */
-const _userResizeTick = ref(0)
-watch(columnWidths, () => {
-  _userResizeTick.value++
-})
-const hasManualWidths = computed(() => {
-  void _userResizeTick.value
-  return _userResizedCols.value.size > 0
-})
-/** 重置列宽：清除手动调整的列宽与持久化存储，恢复 autoFit 自动列宽 */
-function resetColumnWidths() {
-  _userResizedCols.value.clear()
-  columnWidths.value = {}
-  _clearPersisted('colwidth')
-  applyAutoFit()
-  notify(t('table.colWidthReset'))
-}
-function moveCol(colKey: string, dir: -1 | 1) {
-  const keys = [..._columnOrder.value]
-  const idx = keys.indexOf(colKey)
-  const target = idx + dir
-  if (idx < 0 || target < 0 || target >= keys.length) return
-  keys.splice(idx, 1)
-  keys.splice(target, 0, colKey)
-  _columnOrder.value = keys
-}
-/** 面板列宽显示（与表头渲染一致的回退） */
-function colWidthPx(col: Column): number {
-  return Math.round(columnWidths.value[col.key] || Math.max(headerMinW(col), 60))
-}
-/** 面板列宽微调（步进 10px，下限表头最小宽），写入 columnWidths 自动持久化 */
-function adjustColWidth(colKey: string, delta: number) {
-  const col = props.columns.find((c) => c.key === colKey)
-  const minW = col ? Math.max(headerMinW(col), 30) : 30
-  const cur = columnWidths.value[colKey] || minW
-  columnWidths.value = { ...columnWidths.value, [colKey]: Math.max(minW, Math.round(cur + delta)) }
-  _userResizedCols.value.add(colKey)
-}
-/** 当前左侧连续固定列数（与右键菜单/表头右键状态同步） */
-const _leftFixedCount = computed(() => {
-  const keys = _settingsColumns.value.map((c) => c.key)
-  let n = 0
-  while (n < keys.length && dynamicFixedLeft.value.has(keys[n])) n++
-  return n
-})
-/** 当前右侧连续固定列数 */
-const _rightFixedCount = computed(() => {
-  const keys = _settingsColumns.value.map((c) => c.key)
-  let n = 0
-  while (n < keys.length && dynamicFixedRight.value.has(keys[keys.length - 1 - n])) n++
-  return n
-})
-/** 设置固定前 N 列（0 = 不固定） */
-function setLeftFixedCount(n: number) {
-  const keys = _settingsColumns.value.map((c) => c.key)
-  dynamicFixedLeft.value = new Set(n > 0 ? keys.slice(0, n) : [])
-}
-/** 设置固定后 N 列（0 = 不固定） */
-function setRightFixedCount(n: number) {
-  const keys = _settingsColumns.value.map((c) => c.key)
-  dynamicFixedRight.value = new Set(n > 0 ? keys.slice(keys.length - n) : [])
-}
-/** 每列固定按钮：左 = 该列及左侧所有列；右 = 该列及右侧所有列；无 = 从该列断开区域（保留外侧） */
-function setColFixed(col: Column, pos: 'left' | 'right' | null) {
-  if (pos === 'left') fixLeftCascade(col.key)
-  else if (pos === 'right') fixRightCascade(col.key)
-  else {
-    const keys = _settingsColumns.value.map((c) => c.key)
-    const idx = keys.indexOf(col.key)
-    if (idx < 0) return
-    const l = new Set(dynamicFixedLeft.value)
-    const r = new Set(dynamicFixedRight.value)
-    if (l.has(col.key)) {
-      // 左侧区域从该列断开：取消该列及其右侧的左侧固定
-      for (const k of keys.slice(idx)) l.delete(k)
-    }
-    if (r.has(col.key)) {
-      // 右侧区域从该列断开：取消该列及其左侧的右侧固定
-      for (const k of keys.slice(0, idx + 1)) r.delete(k)
-    }
-    dynamicFixedLeft.value = l
-    dynamicFixedRight.value = r
-  }
-}
-/** 固定快捷操作：全部固定左 / 全部固定右 / 取消全部固定 */
-function setAllFixed(side: 'left' | 'right' | null) {
-  const keys = _settingsColumns.value.map((c) => c.key)
-  if (side === 'left') {
-    dynamicFixedLeft.value = new Set(keys)
-    dynamicFixedRight.value = new Set()
-  } else if (side === 'right') {
-    dynamicFixedRight.value = new Set(keys)
-    dynamicFixedLeft.value = new Set()
-  } else {
-    dynamicFixedLeft.value = new Set()
-    dynamicFixedRight.value = new Set()
-  }
-}
-/** 全部固定左/右：当前所有列已动态固定到该侧时激活（驱动切换按钮） */
-const allFixedLeft = computed(() => {
-  const keys = visibleColumns.value.map((c) => c.key)
-  return keys.length > 0 && keys.every((k) => dynamicFixedLeft.value.has(k))
-})
-const allFixedRight = computed(() => {
-  const keys = visibleColumns.value.map((c) => c.key)
-  return keys.length > 0 && keys.every((k) => dynamicFixedRight.value.has(k))
-})
-/** 是否没有任何动态固定（驱动「取消固定」置灰；静态 fixed 由 props 决定，不受本按钮影响） */
-const nothingFixed = computed(() => dynamicFixedLeft.value.size === 0 && dynamicFixedRight.value.size === 0)
-/** 固定开关：激活时再点取消，未激活时全部固定到该侧 */
-function toggleAllFixed(side: 'left' | 'right') {
-  const active = side === 'left' ? allFixedLeft.value : allFixedRight.value
-  setAllFixed(active ? null : side)
-}
-/** 列头右键「取消固定」：从该列断开区域（保留外侧固定） */
-function onUnfixFromMenu(colKey: string) {
-  const keys = _settingsColumns.value.map((c) => c.key)
-  const idx = keys.indexOf(colKey)
-  if (idx < 0) return
-  if (dynamicFixedLeft.value.has(colKey)) setLeftFixedCount(Math.max(0, idx))
-  if (dynamicFixedRight.value.has(colKey)) setRightFixedCount(Math.max(0, keys.length - 1 - idx))
-}
-/** 面板固定区域摘要：固定前 N 列 / 固定后 M 列 */
-const _fixedSummary = computed(() => {
-  const parts: string[] = []
-  if (_leftFixedCount.value > 0) parts.push(t('table.fixedLeftCount', { n: _leftFixedCount.value }))
-  if (_rightFixedCount.value > 0) parts.push(t('table.fixedRightCount', { n: _rightFixedCount.value }))
-  return parts.length ? parts.join(t('table.fixedJoin')) : ''
-})
 
 // ==================== 右键菜单 / 选项面板键盘导航 ====================
 const contextMenuRef = ref<HTMLElement | null>(null)
@@ -1777,43 +1483,9 @@ function cellVal(row: Record<string, any>, colKey: string, metaVal: string): str
   return getCellValue(rk, colKey, metaVal)
 }
 
-/** 判断值是否为图片（dataURL 或以常见图片扩展名结尾，或来自知名图片 CDN） */
-const _defaultImageDomains = [
-  'pravatar.cc',
-  'placeholder.com',
-  'picsum.photos',
-  'unsplash.com',
-  'via.placeholder',
-  'dummyimage.com',
-]
+/** 图片判定（域名单归 props.imageDomains；纯函数在 composables/utils） */
 function isImageUrl(val: unknown): boolean {
-  if (!val) return false
-  if (typeof val !== 'string') return false
-  if (val.startsWith('data:image/')) return true
-  if (/\.(png|jpe?g|gif|webp|svg|bmp|ico)(\?|#|$)/i.test(val)) return true
-  const domains = props.imageDomains?.length ? props.imageDomains : _defaultImageDomains
-  const pattern = new RegExp(domains.map((d) => d.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'i')
-  if (pattern.test(val)) return true
-  // 启发式 URL 路径匹配 — 可能误判，优先依赖域名白名单 + 扩展名
-  if (new RegExp('^https?://.+[/=](img|image|photo|avatar|pic|thumb)', 'i').test(val)) return true
-  return false
-}
-
-// 11. 批量修改
-const _batchShow = ref(false)
-const _batchCol = ref('')
-const _batchValue = ref('')
-function openBatchEdit() {
-  if (_selectedKeys.value.length === 0) return
-  _batchCol.value = visibleColumns.value[0]?.key ?? ''
-  _batchValue.value = ''
-  _batchShow.value = true
-  nextTick(() => noteInputEl.value?.focus())
-}
-function confirmBatchEdit() {
-  if (!_batchCol.value || _batchShow.value === false) return
-  emit('batchChange', _batchCol.value, _batchValue.value, [..._selectedKeys.value])
-  _batchShow.value = false
+  return _isImageUrl(val, props.imageDomains)
 }
 
 // 12. 汇总行
@@ -1834,13 +1506,13 @@ function handleRowClick(row: Record<string, any>, idx: number) {
 const _onClick = (e: Event) => {
   onDocumentClick(e as MouseEvent, closeFilter)
   const t = e.target as HTMLElement
-  if (!t.closest('.dt-col-settings') && !t.closest('.col-settings-btn')) _colSettingsShow.value = false
+  if (!t.closest('.dt-col-settings') && !t.closest('.col-settings-btn')) colSettingsPanel.value?.close()
   if (!t.closest('.cell-has-options') && !t.closest('.opt-drop-panel')) closeOptDrop()
 }
 const _onKeydown = (e: Event) => {
   const ke = e as KeyboardEvent
-  if (ke.key === 'Escape' && _colSettingsShow.value) {
-    _colSettingsShow.value = false
+  if (ke.key === 'Escape' && colSettingsPanel.value?.show) {
+    colSettingsPanel.value.close()
     return
   }
   // 缩放快捷键：Ctrl+Plus/Minus/0（不拦截输入框内的操作）
@@ -1874,8 +1546,8 @@ const _onScroll = (e: Event) => {
   onScrollClose(e as Event, activeFilterKey, closeFilter)
   // 与筛选下拉一致：滚动时关闭轻量浮层（面板内部滚动不关闭）
   const t = e.target as HTMLElement | null
-  if (_colSettingsShow.value && !(t instanceof HTMLElement && t.closest('.dt-col-settings'))) {
-    _colSettingsShow.value = false
+  if (colSettingsPanel.value?.show && !(t instanceof HTMLElement && t.closest('.dt-col-settings'))) {
+    colSettingsPanel.value.close()
   }
   if (_optDrop.value && !(t instanceof HTMLElement && t.closest('.opt-drop-panel'))) closeOptDrop()
 }
@@ -2077,6 +1749,62 @@ function onFilterOptionEnter(e: MouseEvent) {
 function onFilterOptionLeave(e: MouseEvent) {
   ;(e.currentTarget as HTMLElement).removeAttribute('title')
 }
+
+// 区块子组件共享上下文（列设置/批量弹窗/分页/工具栏等区块 inject；
+// 引用与主文件同一份，行为零变化。置于 setup 末尾：所有被引用状态均已声明）
+provideDataTableContext({
+  hiddenColumns,
+  columnWidths,
+  columnOrder: _columnOrder,
+  userResizedCols: _userResizedCols,
+  dynamicFixedLeft,
+  dynamicFixedRight,
+  visibleColumns,
+  isColumnFixed,
+  fixLeftCascade,
+  fixRightCascade,
+  headerMinW,
+  clearPersisted: _clearPersisted,
+  applyAutoFit,
+  notify,
+  closeFilter,
+  selectedKeys: _selectedKeys,
+  noteInputEl,
+  setNoteInputEl,
+  currentPage: _currentPage,
+  displayPages,
+  setPage,
+  // ---- 工具栏 ----
+  activeFilters,
+  sortState,
+  globalSearch,
+  showGlobalSearch,
+  removeFilter,
+  clearAllFilters,
+  clearSort,
+  dense: _dense,
+  zoomX: _zoomX,
+  zoomY: _zoomY,
+  resetZoom,
+  exportCSV,
+  exportExcel,
+  isFullscreen: _isFullscreen,
+  toggleFullscreen,
+  captureScreenshot,
+  copyTableData,
+  isCardViewEffective,
+  toggleCardMode,
+  displayData,
+  displayTotal,
+  colSettingsPanel,
+  batchDialog,
+  scrollable: _scrollable,
+  scrollProgress: _scrollProgress,
+  cardViewHeight: _cardViewHeight,
+  onProgressMouseDown,
+  pinnedRowPcts: _pinnedRowPcts,
+  scrollToPinnedRow,
+})
 </script>
 
 <template>
@@ -2097,156 +1825,18 @@ function onFilterOptionLeave(e: MouseEvent) {
       <button class="base-btn btn-primary btn-md" @click="_internalError = null">{{ t('common.retry') }}</button>
     </div>
     <div v-else style="display: contents">
-      <!-- ========== 工具栏 ========== -->
-      <div class="table-top-bar">
-        <div class="table-toolbar">
-          <span class="toolbar-count">
-            <template v-if="activeFilters.length > 0 || globalSearch">
-              {{ t('table.filteredPrefix') }} <strong>{{ displayData.length }}</strong> /
-              {{ t('table.totalRows', { n: displayTotal }) }}
-            </template>
-            <template v-else> {{ t('table.totalRows', { n: displayTotal }) }} </template>
-          </span>
-          <template v-if="activeFilters.length > 0">
-            <span v-for="[key, s] in activeFilters" :key="key" class="filter-chip">
-              <!-- 列可能已被移除但持久化筛选残留：找不到列时回退显示 key，避免非空断言崩溃 -->
-              {{ colTitle(columns.find((c) => c.key === key)) || key }}
-              <span class="filter-chip-count">({{ s.selectedValues.length }})</span>
-              <IconSvg
-                type="x"
-                size="sm"
-                class="filter-chip-close"
-                :aria-label="t('table.removeFilter', { name: colTitle(columns.find((c) => c.key === key)) || key })"
-                @click="removeFilter(key)"
-              />
-            </span>
-          </template>
-          <!-- 清除操作居中 -->
-          <div class="toolbar-center">
-            <button v-if="activeFilters.length > 0" class="toolbar-clear" @click="handleClearFilters">
-              {{ t('table.clearFilters') }}
-            </button>
-            <button v-if="sortState.key" class="toolbar-clear" @click="handleClearSort">
-              {{ t('table.clearSort') }}
-            </button>
-          </div>
-          <!-- 功能按钮靠右 -->
-          <div class="toolbar-right">
-            <!-- 全局搜索 -->
-            <div class="global-search-wrap" :class="{ active: showGlobalSearch }">
-              <input
-                v-if="showGlobalSearch"
-                ref="globalSearchRef"
-                v-model="globalSearch"
-                type="text"
-                class="global-search-input"
-                :placeholder="t('table.searchAllCols')"
-                @keydown.escape="toggleGlobalSearch"
-              />
-              <button
-                class="global-search-toggle"
-                :title="showGlobalSearch ? t('table.closeSearch') : t('table.globalSearch')"
-                @click="toggleGlobalSearch"
-              >
-                <IconSvg :type="showGlobalSearch ? 'x' : 'search'" size="sm" />
-              </button>
-            </div>
-            <!-- 密度切换 -->
-            <button
-              v-if="!isCardViewEffective"
-              class="toolbar-export-btn"
-              :title="_dense ? t('table.defaultDensity') : t('table.compactMode')"
-              @click="toggleDense"
-            >
-              <IconSvg :type="_dense ? 'chevron-up' : 'list'" size="sm" />
-            </button>
-            <!-- 缩放指示器 -->
-            <button
-              class="toolbar-export-btn toolbar-zoom-btn"
-              :title="_zoomX !== 1 || _zoomY !== 1 ? t('table.zoomResetHint') : t('table.zoomHint')"
-              @click="resetZoom"
-            >
-              {{ Math.round(_zoomY * 100) }}%
-            </button>
-            <!-- CSV 导出 -->
-            <button v-if="exportable" class="toolbar-export-btn" :title="t('table.downloadCsv')" @click="exportCSV">
-              <IconSvg type="download" size="sm" />
-            </button>
-            <!-- Excel 导出 -->
-            <button
-              v-if="excelExportable"
-              class="toolbar-export-btn"
-              :title="t('table.downloadExcel')"
-              @click="exportExcel"
-            >
-              <IconSvg type="file-spreadsheet" size="sm" />
-            </button>
-            <!-- 全屏 -->
-            <button
-              class="toolbar-export-btn"
-              :title="_isFullscreen ? t('table.exitFullscreen') : t('table.fullscreenShow')"
-              @click="toggleFullscreen"
-            >
-              <IconSvg
-                :type="_isFullscreen ? 'full-screen-square-linear' : 'full-screen-linear'"
-                provider="solar"
-                size="sm"
-              />
-            </button>
-            <!-- 截图 -->
-            <button class="toolbar-export-btn" :title="t('table.screenshotExport')" @click="captureScreenshot">
-              <IconSvg type="camera" size="sm" />
-            </button>
-            <!-- 复制 -->
-            <button class="toolbar-export-btn" :title="t('table.copyTableData')" @click="copyTableData">
-              <IconSvg type="copy" size="sm" />
-            </button>
-            <!-- 视图切换 -->
-            <button
-              class="toolbar-export-btn"
-              :title="isCardViewEffective ? t('table.switchToList') : t('table.switchToCard')"
-              @click="toggleCardMode"
-            >
-              <IconSvg :type="isCardViewEffective ? 'table' : 'layout-grid'" size="sm" />
-            </button>
-            <!-- 列设置 -->
-            <button
-              v-if="colSettings"
-              class="toolbar-export-btn col-settings-btn"
-              :class="{ active: _colSettingsShow }"
-              :title="t('table.colSettings')"
-              @click.stop="toggleColSettings($event)"
-            >
-              <IconSvg type="settings" size="sm" />
-            </button>
-            <!-- 批量修改 -->
-            <button v-if="selectable && _selectedKeys.length > 0" class="toolbar-clear" @click="openBatchEdit">
-              {{ t('table.batchEdit', { n: _selectedKeys.length }) }}
-            </button>
-            <!-- 自定义工具栏按钮（使用方扩展：刷新/导入等） -->
-            <slot name="toolbar-actions" />
-          </div>
-        </div>
-
-        <!-- 滚动进度条：有高度约束 + 实际溢出时自动显示，无溢出则隐藏 -->
-        <div
-          v-if="_scrollable && (maxHeight || autoHeight || (isCardViewEffective && _cardViewHeight))"
-          class="table-progress-track"
-          @mousedown="onProgressMouseDown"
-        >
-          <div class="table-progress" :style="{ width: _scrollProgress + '%' }" />
-          <!-- 固定行锚点（支持多处标记） -->
-          <div
-            v-for="anchor in _pinnedRowPcts"
-            :key="anchor.key"
-            class="table-progress-anchor"
-            :style="{ left: anchor.pct + '%' }"
-            :title="t('table.jumpToPinned')"
-            @mousedown.stop
-            @click.stop="scrollToPinnedRow(anchor.key)"
-          />
-        </div>
-      </div>
+      <!-- ========== 工具栏（区块组件，含筛选 chip 行与滚动进度条；toolbar-actions 插槽转发） ========== -->
+      <DataTableToolbar
+        :columns="columns"
+        :exportable="exportable"
+        :excel-exportable="excelExportable"
+        :col-settings="colSettings"
+        :selectable="selectable"
+        :max-height="maxHeight"
+        :auto-height="autoHeight"
+      >
+        <template #toolbar-actions><slot name="toolbar-actions" /></template>
+      </DataTableToolbar>
 
       <div class="table-hscroll" :class="{ 'card-view-hidden': isCardViewEffective }">
         <div
@@ -2850,31 +2440,13 @@ function onFilterOptionLeave(e: MouseEvent) {
         />
       </div>
 
-      <!-- ========== 分页控件 ========== -->
-      <div v-if="!_isFullscreen && pageSize > 0 && displayTotalPages > 1" class="table-pagination">
-        <span class="pagination-status">
-          <template v-if="selectable && _selectedKeys.length > 0"
-            >{{ t('table.selected') }} <strong>{{ _selectedKeys.length }}</strong> {{ t('table.rows') }} - </template
-          >{{ t('table.pageInfo', { current: _currentPage, total: displayTotalPages }) }}
-        </span>
-        <button class="page-btn" :disabled="_currentPage <= 1" @click="setPage(_currentPage - 1)">
-          <IconSvg type="chevron-left" size="sm" />
-        </button>
-        <template v-for="p in displayPages" :key="p">
-          <button
-            v-if="p !== '...'"
-            class="page-btn"
-            :class="{ active: p === _currentPage }"
-            @click="setPage(p as number)"
-          >
-            {{ p }}
-          </button>
-          <span v-else class="page-ellipsis">...</span>
-        </template>
-        <button class="page-btn" :disabled="_currentPage >= displayTotalPages" @click="setPage(_currentPage + 1)">
-          <IconSvg type="chevron-right" size="sm" />
-        </button>
-      </div>
+      <!-- ========== 分页控件（区块组件） ========== -->
+      <DataTablePagination
+        :fullscreen="_isFullscreen"
+        :page-size="pageSize"
+        :total-pages="displayTotalPages"
+        :selectable="selectable"
+      />
 
       <!-- ========== 筛选下拉框（H5 Teleport 到 body，小程序直接渲染） ========== -->
       <Teleport to="body">
@@ -2976,126 +2548,8 @@ function onFilterOptionLeave(e: MouseEvent) {
         </div>
       </Teleport>
 
-      <!-- ========== 列设置面板 ========== -->
-      <Teleport to="body">
-        <div
-          v-if="_colSettingsShow"
-          ref="colSettingsRef"
-          class="dt-col-settings"
-          :class="{ 'dt-dropdown-above': _colSettingsAbove }"
-          :style="_colSettingsStyle"
-          @click.stop
-        >
-          <input v-model="colKeyword" class="dt-col-search" :placeholder="t('table.searchCols')" />
-          <div class="dt-col-quick-actions">
-            <button
-              :title="allColumnsVisible ? t('table.hideAllKeepFirst') : t('table.showAllCols')"
-              @click="allColumnsVisible ? toggleAllColsVisible(false) : toggleAllColsVisible(true)"
-            >
-              {{ allColumnsVisible ? t('table.hideAllCols') : t('table.showAllCols') }}
-            </button>
-            <button
-              class="dt-reset-width-btn"
-              :disabled="!hasManualWidths"
-              :title="t('table.resetColWidthsHint')"
-              @click="resetColumnWidths"
-            >
-              {{ t('table.resetColWidths') }}
-            </button>
-            <button
-              :class="{ active: allFixedLeft }"
-              :title="allFixedLeft ? t('table.unfixAllLeft') : t('table.fixAllLeft')"
-              @click="toggleAllFixed('left')"
-            >
-              {{ t('table.fixAllLeftShort') }}
-            </button>
-            <button
-              :class="{ active: allFixedRight }"
-              :title="allFixedRight ? t('table.unfixAllRight') : t('table.fixAllRight')"
-              @click="toggleAllFixed('right')"
-            >
-              {{ t('table.fixAllRightShort') }}
-            </button>
-            <button :disabled="nothingFixed" :title="t('table.clearAllFixed')" @click="setAllFixed(null)">
-              {{ t('table.unfixAll') }}
-            </button>
-          </div>
-          <div class="dt-col-list">
-            <div
-              v-for="{ col, i } in _filteredSettingsColumns"
-              :key="col.key"
-              class="dt-col-item"
-              :class="{
-                hidden: hiddenColumns.has(col.key),
-                'in-left-fixed': i < _leftFixedCount,
-                'in-right-fixed': i >= _settingsColumns.length - _rightFixedCount,
-              }"
-            >
-              <input
-                type="checkbox"
-                :checked="!hiddenColumns.has(col.key)"
-                :aria-label="t('table.showCol', { name: colTitle(col) })"
-                @change="toggleColVisible(col.key)"
-              />
-              <span class="dt-col-title" :title="colTitle(col)">{{ colTitle(col) }}</span>
-              <span class="dt-col-width">
-                <button
-                  :disabled="colWidthPx(col) <= Math.max(headerMinW(col), 30)"
-                  :title="t('table.narrower')"
-                  @click="adjustColWidth(col.key, -10)"
-                >
-                  −
-                </button>
-                <span :title="t('table.colWidthPx', { n: colWidthPx(col) })">{{ colWidthPx(col) }}</span>
-                <button :title="t('table.wider')" @click="adjustColWidth(col.key, 10)">+</button>
-              </span>
-              <span class="dt-col-ops">
-                <button :disabled="i === 0" :title="t('table.moveUp')" @click="moveCol(col.key, -1)">↑</button>
-                <button
-                  :disabled="i === _settingsColumns.length - 1"
-                  :title="t('table.moveDown')"
-                  @click="moveCol(col.key, 1)"
-                >
-                  ↓
-                </button>
-                <span class="dt-col-fixed-group" :class="{ disabled: hiddenColumns.has(col.key) }">
-                  <button
-                    :class="{ active: !isColumnFixed(col) }"
-                    :title="t('table.unfixedHint')"
-                    :disabled="hiddenColumns.has(col.key)"
-                    @click="setColFixed(col, null)"
-                  >
-                    {{ t('common.none') }}
-                  </button>
-                  <button
-                    :class="{ active: isColumnFixed(col) === 'left' }"
-                    :title="t('table.fixLeftHint')"
-                    :disabled="hiddenColumns.has(col.key)"
-                    @click="setColFixed(col, 'left')"
-                  >
-                    {{ t('table.leftShort') }}
-                  </button>
-                  <button
-                    :class="{ active: isColumnFixed(col) === 'right' }"
-                    :title="t('table.fixRightHint')"
-                    :disabled="hiddenColumns.has(col.key)"
-                    @click="setColFixed(col, 'right')"
-                  >
-                    {{ t('table.rightShort') }}
-                  </button>
-                </span>
-              </span>
-            </div>
-            <div v-if="!_filteredSettingsColumns.length" class="dt-col-no-result">{{ t('table.noMatchCols') }}</div>
-          </div>
-          <div class="dt-col-footer">
-            <span class="dt-col-footer-fixed"
-              >{{ t('table.fixedLabel') }}{{ _fixedSummary || t('table.unfixed') }}</span
-            >
-            <span class="dt-col-footer-hint">{{ t('table.fixedHint') }}</span>
-          </div>
-        </div>
-      </Teleport>
+      <!-- ========== 列设置面板（区块组件） ========== -->
+      <DataTableColumnSettings ref="colSettingsPanel" :columns="columns" />
 
       <!-- ========== 右键菜单（H5 Teleport，小程序直接渲染） ========== -->
       <Teleport to="body">
@@ -3288,42 +2742,12 @@ function onFilterOptionLeave(e: MouseEvent) {
             </div>
           </div>
 
-          <!-- 批量修改弹窗 -->
-          <div
-            v-if="selectable && _batchShow"
-            class="note-editor"
-            :style="{
-              position: 'fixed',
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%,-50%)',
-              zIndex: 'var(--z-tooltip, 3000)',
-            }"
-            role="dialog"
-            aria-modal="true"
-            @click.stop
-            @keydown.escape="_batchShow = false"
-          >
-            <div class="note-editor-title">{{ t('table.batchEditTitle', { n: _selectedKeys.length }) }}</div>
-            <select v-model="_batchCol" class="note-editor-input">
-              <option v-for="col in visibleColumns" :key="col.key" :value="col.key">
-                {{ colTitle(col) }}
-              </option>
-            </select>
-            <input
-              :ref="setNoteInputEl"
-              v-model="_batchValue"
-              class="note-editor-input"
-              :placeholder="t('table.newValuePlaceholder')"
-              @keydown.enter="confirmBatchEdit"
-            />
-            <div class="note-editor-actions">
-              <button class="dt-filter-btn dt-filter-btn-apply" @click="confirmBatchEdit">{{ t('common.ok') }}</button>
-              <button class="dt-filter-btn dt-filter-btn-reset" @click="_batchShow = false">
-                {{ t('common.cancel') }}
-              </button>
-            </div>
-          </div>
+          <!-- 批量修改弹窗（区块组件，batchChange 事件转发） -->
+          <DataTableBatchDialog
+            ref="batchDialog"
+            :selectable="selectable"
+            @batch-change="(ck, nv, keys) => emit('batchChange', ck, nv, keys)"
+          />
         </div>
       </Teleport>
 
