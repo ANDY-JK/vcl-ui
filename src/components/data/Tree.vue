@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // ⛔ 保护 — 树形控件，禁止：clamp() → px，递归渲染结构
 //    需我确认：TreeNode 接口扩展、勾选联动逻辑
-import { reactive, computed, inject, provide, watch, onMounted } from 'vue'
+import { ref, reactive, computed, inject, provide, watch, onMounted } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useTreeFlatten } from '@/components/_internal/useTreeFlatten'
 
@@ -57,9 +57,12 @@ interface TreeState {
   checkable: boolean
   selectable: boolean
   selectedKeyRef: { value: string | number | null }
+  /** 键盘导航焦点节点（roving tabindex） */
+  focusKey: { value: string | number | null }
   toggleExpand: (key: string | number) => void
   toggleCheck: (node: TreeNode, checked: boolean) => void
   handleNodeClick: (node: TreeNode) => void
+  handleKeydown: (e: KeyboardEvent, node: TreeNode) => void
 }
 
 const injected = inject<TreeState | null>(TREE_KEY, null)
@@ -141,6 +144,16 @@ if (isRoot) {
     refreshParentStates(props.data)
   })
 
+  // data 异步到达 / lazy 回填时重建勾选状态（此前仅 onMounted 执行一次，后到的 checked 永不生效）
+  watch(
+    () => props.data,
+    () => {
+      initCheckState(props.data)
+      refreshParentStates(props.data)
+    },
+    { deep: true },
+  )
+
   function updateNodeCheckState(node: TreeNode) {
     if (!node.children?.length) return
     const checkedCount = node.children.filter((c) => checkState.get(c.key) === true).length
@@ -214,6 +227,48 @@ if (isRoot) {
     emit('node-click', node)
   }
 
+  // ---- 键盘导航（WAI-ARIA tree 模式：roving tabindex + 方向键） ----
+  const focusKey = ref<string | number | null>(props.selectedKey ?? props.data[0]?.key ?? null)
+  function handleKeydown(e: KeyboardEvent, node: TreeNode): void {
+    const visible = treeFlatten.flatNodes.value
+    const idx = visible.findIndex((n) => n.node.key === node.key)
+    const move = (delta: number): void => {
+      e.preventDefault()
+      const next = visible[idx + delta]
+      if (next) {
+        focusKey.value = next.node.key
+        // 可选中模式：键盘移动即改变选中（与点击语义一致）
+        if (state.selectable) emit('update:selectedKey', next.node.key)
+        emit('node-click', next.node)
+      }
+    }
+    switch (e.key) {
+      case 'ArrowDown':
+        move(1)
+        break
+      case 'ArrowUp':
+        move(-1)
+        break
+      case 'ArrowRight':
+        if (node.children?.length) {
+          e.preventDefault()
+          if (!treeFlatten.expandKeys.value.has(node.key)) toggleExpand(node.key)
+        }
+        break
+      case 'ArrowLeft':
+        if (node.children?.length && treeFlatten.expandKeys.value.has(node.key)) {
+          e.preventDefault()
+          treeFlatten.toggleExpand(node.key)
+        }
+        break
+      case 'Enter':
+      case ' ':
+        e.preventDefault()
+        handleNodeClick(node)
+        break
+    }
+  }
+
   const selectedKeyRef = computed(() => props.selectedKey ?? null)
 
   state = {
@@ -225,9 +280,11 @@ if (isRoot) {
     checkable: props.checkable,
     selectable: props.selectable,
     selectedKeyRef,
+    focusKey,
     toggleExpand,
     toggleCheck,
     handleNodeClick,
+    handleKeydown,
   }
 
   provide(TREE_KEY, state)
@@ -289,14 +346,9 @@ const levelStyle = computed(() => {
         :aria-expanded="node.children?.length ? state.isExpanded(node.key) : undefined"
         :aria-selected="state.selectable ? state.selectedKeyRef.value === node.key : undefined"
         :aria-label="node.label"
-        :tabindex="
-          state.selectable && state.selectedKeyRef.value === node.key
-            ? 0
-            : !state.selectable && node.key === data[0]?.key
-              ? 0
-              : -1
-        "
+        :tabindex="state.focusKey.value === node.key ? 0 : -1"
         @click="state.handleNodeClick(node)"
+        @keydown="state.handleKeydown($event, node)"
       >
         <!-- 展开箭头（对齐 AccordionNav: 右指→下转） -->
         <span
@@ -304,7 +356,8 @@ const levelStyle = computed(() => {
           class="tree-arrow"
           :class="{ 'tree-arrow--expanded': isExpanded(node.key) }"
           @click.stop="state.toggleExpand(node.key)"
-        ><IconSvg type="chevron-right" size="sm" /></span>
+          ><IconSvg type="chevron-right" size="sm"
+        /></span>
         <span v-else class="tree-arrow tree-arrow--spacer" />
 
         <!-- 勾选框 -->

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // ProgressBar — 进度条 / 滑块（interactive 模式）
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 
 interface Props {
   percent?: number
@@ -52,7 +52,9 @@ const sliderPercent = computed(() => {
 
 const stops = computed(() => {
   if (!props.interactive || !props.showStops) return []
-  const count = Math.floor((props.max - props.min) / props.step) + 1
+  const range = props.max - props.min
+  if (range <= 0) return []
+  const count = Math.floor(range / props.step) + 1
   return Array.from({ length: Math.min(count, 50) }, (_, i) => ({
     value: props.min + i * props.step,
     percent: (i / (count - 1)) * 100,
@@ -84,6 +86,7 @@ function onPointerDown(e: PointerEvent) {
   dragging.value = true
   ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
   e.preventDefault()
+  bindWindowPointer()
   emit('update:modelValue', posToValue(e.clientX))
 }
 
@@ -91,7 +94,20 @@ function onTrackPointerDown(e: PointerEvent) {
   if (props.disabled) return
   dragging.value = true
   ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+  e.preventDefault()
+  bindWindowPointer()
   emit('update:modelValue', posToValue(e.clientX))
+}
+
+// 指针监听按需挂载：拖拽开始才挂 window 级 move/up，pointerup 即摘——
+// 避免常驻监听让页面每次指针移动都进回调
+function bindWindowPointer(): void {
+  window.addEventListener('pointermove', onPointerMove)
+  window.addEventListener('pointerup', onPointerUp)
+}
+function unbindWindowPointer(): void {
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('pointerup', onPointerUp)
 }
 
 function onPointerMove(e: PointerEvent) {
@@ -102,6 +118,7 @@ function onPointerMove(e: PointerEvent) {
 function onPointerUp() {
   if (dragging.value) emit('change', props.modelValue)
   dragging.value = false
+  unbindWindowPointer()
 }
 
 function onKeydown(e: KeyboardEvent) {
@@ -119,16 +136,7 @@ function onKeydown(e: KeyboardEvent) {
   emit('change', newVal)
 }
 
-onMounted(() => {
-  if (props.interactive) {
-    window.addEventListener('pointermove', onPointerMove)
-    window.addEventListener('pointerup', onPointerUp)
-  }
-})
-onUnmounted(() => {
-  window.removeEventListener('pointermove', onPointerMove)
-  window.removeEventListener('pointerup', onPointerUp)
-})
+onUnmounted(unbindWindowPointer)
 </script>
 
 <template>

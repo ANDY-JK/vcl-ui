@@ -321,6 +321,8 @@ export function useTableEdit(
 
   /** Delete/Backspace：清空选中格（矩形选区全清；只读/图片列跳过） */
   function clearSelection(e?: KeyboardEvent) {
+    // 非编辑模式下禁用清空（键盘 Delete 与右键菜单共用此入口）
+    if (!props.editable) return
     const colMap = new Map((props.columns ?? []).map((c) => [c.key, c]))
     const r = rangeSel.value
     if (r) {
@@ -506,6 +508,9 @@ export function useTableEdit(
     // 避免 capture 阶段误触表格导航（如菜单 Enter 进入编辑）
     const target = e.target as HTMLElement | null
     if (target?.closest?.('.dt-context-menu, .opt-drop-panel, .dt-filter-dropdown, .dt-col-settings')) return
+    // 普通表单输入框（工具栏全局搜索/列设置搜索等）内的按键交给原生光标，
+    // 避免选中单元格后方向键被表格劫持导致输入框光标无法移动
+    if (target?.closest?.('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return
     if (editingCell.value) return
     // 键盘导航：方向键移动选中格、Enter 进入编辑、Delete 清空（编辑输入框内已提前返回）
     if (props.keyboardNav !== false) {

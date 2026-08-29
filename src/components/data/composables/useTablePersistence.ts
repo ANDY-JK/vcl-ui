@@ -130,6 +130,8 @@ export function useTablePersistence(
   }
 
   // ---- 启用判断 ----
+  // persistence='none' 全局禁用；'auto' 下布局类始终生效，状态类（排序/筛选）在受控/服务端
+  // 模式下由各特性的 deps 逐一豁免（sortKey 受控 → 排序不持久化；filterMode='server' → 筛选不持久化）
   const _globalDisabled = opts.persistence === 'none'
   const _layoutActive = !_globalDisabled
   const _stateActive = !_globalDisabled
@@ -182,11 +184,12 @@ export function useTablePersistence(
   }
 
   // ---------- 排序持久化（state 类） ----------
+  // sortKey 受控（父组件管理排序）时不持久化/恢复内部 sortState，避免与父组件状态冲突
   let _sortRestored = false
   register<{ key: string; order: string; history?: Record<string, 'asc' | 'desc'> }>({
     key: 'sort',
     kind: 'state',
-    deps: () => !!opts.sortState && !!opts.sortHistory,
+    deps: () => !!opts.sortState && !!opts.sortHistory && !opts.sortKey,
     restore: (cached) => {
       if (_sortRestored && opts.sortState!.value.key) return // 已成功恢复且当前有排序，不覆盖
       if (cached?.key && columns.some((c) => c.key === cached.key)) {
@@ -205,10 +208,11 @@ export function useTablePersistence(
   })
 
   // ---------- 筛选持久化（state 类） ----------
+  // filterMode='server' 时筛选由服务端管理，不持久化内部 filterState
   register<Record<string, string[]>>({
     key: 'filter',
     kind: 'state',
-    deps: () => !!opts.filterState,
+    deps: () => !!opts.filterState && opts.filterMode !== 'server',
     restore: (cached) => {
       if (cached) {
         _cleanOldFormatKeys()

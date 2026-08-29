@@ -200,7 +200,7 @@ function onScrollCardView(e: Event) {
 
 /** 表头单元格点击 */
 function onHeaderCellClick(e: MouseEvent, col: Column) {
-  if (_resizeJustEnded) return
+  if (_resizeJustEnded.value) return
   if (e.ctrlKey && props.editable) toggleSelectColumn(col.key)
   else toggleSort(col)
 }
@@ -259,8 +259,8 @@ function onCtxShowAllColumns() {
 const effectiveEmptyText = computed(() => props.emptyText || t('table.noData'))
 
 /** Column 标题：title 优先，label 别名兜底，key 最终兜底 */
-function colTitle(col: Column): string {
-  return col.title || col.label || col.key
+function colTitle(col?: Column): string {
+  return col?.title || col?.label || col?.key || ''
 }
 
 const tableWrapRef = ref<HTMLElement | null>(null)
@@ -666,7 +666,14 @@ watch(_isFullscreen, async (v) => {
     }
     // 还原到原始父容器
     if (tableWrapRef.value && _fullscreenParent.value) {
-      _fullscreenParent.value.insertBefore(tableWrapRef.value, _fullscreenNext.value)
+      // 全屏期间父容器 DOM 可能变动（路由切换/虚拟列表重排）导致 nextSibling 快照失效：
+      // 快照节点已不在文档中时回退为 append（仍是原父容器内，位置次要于不丢节点）
+      const next = _fullscreenNext.value
+      if (next && next.parentNode === _fullscreenParent.value) {
+        _fullscreenParent.value.insertBefore(tableWrapRef.value, next)
+      } else {
+        _fullscreenParent.value.appendChild(tableWrapRef.value)
+      }
       _fullscreenParent.value = null
       _fullscreenNext.value = null
     }
@@ -2101,9 +2108,16 @@ function onFilterOptionLeave(e: MouseEvent) {
           </span>
           <template v-if="activeFilters.length > 0">
             <span v-for="[key, s] in activeFilters" :key="key" class="filter-chip">
-              {{ colTitle(columns.find((c) => c.key === key)!) || key }}
+              <!-- 列可能已被移除但持久化筛选残留：找不到列时回退显示 key，避免非空断言崩溃 -->
+              {{ colTitle(columns.find((c) => c.key === key)) || key }}
               <span class="filter-chip-count">({{ s.selectedValues.length }})</span>
-              <IconSvg type="x" size="sm" class="filter-chip-close" @click="removeFilter(key)" />
+              <IconSvg
+                type="x"
+                size="sm"
+                class="filter-chip-close"
+                :aria-label="`移除筛选：${colTitle(columns.find((c) => c.key === key)) || key}`"
+                @click="removeFilter(key)"
+              />
             </span>
           </template>
           <!-- 清除操作居中 -->
@@ -2601,11 +2615,11 @@ function onFilterOptionLeave(e: MouseEvent) {
                 <td v-if="_hasActions" class="td-actions" :class="{ 'col-fixed-right': _hasFixedRightCol }" @click.stop>
                   <button
                     v-for="act in rowActions!"
-                    v-show="!act.visible || act.visible(row, (isVirtual ? virtualStartIndex : 0) + idx)"
+                    v-show="!act.visible || act.visible(row, rowDisplayIndex(idx))"
                     :key="act.key"
                     :class="['row-action-btn', `row-action-${act.variant || 'default'}`]"
                     :title="act.label"
-                    @click="emit('rowAction', act.key, row, (isVirtual ? virtualStartIndex : 0) + idx)"
+                    @click="emit('rowAction', act.key, row, rowDisplayIndex(idx))"
                   >
                     <IconSvg v-if="act.icon" :type="act.icon" size="sm" />
                     {{ act.label }}

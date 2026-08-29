@@ -65,7 +65,8 @@ nextTick(() => updateMaxHeight())
 // 窗口 resize 时重新测量（内容可能因响应式布局变化）
 let resizeObserver: ResizeObserver | null = null
 onMounted(() => {
-  if (contentRef.value) {
+  // 旧 WebView/Safari 无 ResizeObserver：退化为仅 toggle/内容变化时测量（toggle 内已调 updateMaxHeight）
+  if (contentRef.value && typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => {
       if (_open.value) updateMaxHeight()
     })

@@ -2,24 +2,35 @@
 //    需我确认：导出 CSV 格式、右键菜单结构、namespace 存储隔离逻辑
 // ==================== 周边功能：搜索 / 导出 / 右键菜单 / 行选择 / 持久化 / 全局事件 ====================
 import { ref, computed, watch, nextTick, type Ref, type ComputedRef } from 'vue'
-import type { Column, ColumnFilterState, RowContextAction } from './types'
+import type { Column, ColumnFilterState, RowContextAction, TableStorage } from './types'
 import { getCellText, clampFloatingPosition, markLayerOpen } from './utils'
 import { useTablePersistence } from './useTablePersistence'
 import { downloadBlob } from '@/components/_internal/utils'
 
 export function useTableExtras(
   props: {
-    columns: Column[]; data: Record<string, any>[]
-    exportFileName?: string; exportable?: boolean; excelExportable?: boolean
+    columns: Column[]
+    data: Record<string, any>[]
+    exportFileName?: string
+    exportable?: boolean
+    excelExportable?: boolean
     /** 导出范围：'all' 筛选后全量（默认），'page' 仅当前页 */
     exportScope?: 'all' | 'page'
     onExport?: () => void
     // 行选择 + 行右键
-    rowKey?: string; selectedKeys?: string[]; selectable?: boolean
+    rowKey?: string
+    selectedKeys?: string[]
+    selectable?: boolean
     rowContextActions?: RowContextAction[]
     // 持久化
-    sortKey?: string; dense?: boolean; namespace?: string
-    persistence?: 'auto' | 'none'; searchMode?: 'client' | 'server'; filterMode?: 'client' | 'server'
+    sortKey?: string
+    dense?: boolean
+    namespace?: string
+    persistence?: 'auto' | 'none'
+    searchMode?: 'client' | 'server'
+    filterMode?: 'client' | 'server'
+    /** 外部存储适配器（不传用默认 localStorage） */
+    storage?: TableStorage
   },
   emit: (...args: unknown[]) => void,
   options: {
@@ -124,12 +135,15 @@ export function useTableExtras(
 
   // ==================== 右键菜单 ====================
   const contextMenu = ref<{
-    visible: boolean; x: number; y: number; above: boolean
+    visible: boolean
+    x: number
+    y: number
+    above: boolean
     columnKey: string | null
-    rowKey: string | null; row: Record<string, any> | null; rowIndex: number
-  }>(
-    { visible: false, x: 0, y: 0, above: false, columnKey: null, rowKey: null, row: null, rowIndex: -1 },
-  )
+    rowKey: string | null
+    row: Record<string, any> | null
+    rowIndex: number
+  }>({ visible: false, x: 0, y: 0, above: false, columnKey: null, rowKey: null, row: null, rowIndex: -1 })
   const contextMenuStyle = computed(() => {
     if (!contextMenu.value.visible) return { display: 'none' }
     const base = { position: 'fixed' as const, left: `${contextMenu.value.x}px`, zIndex: 'var(--z-dropdown, 2000)' }
@@ -167,7 +181,7 @@ export function useTableExtras(
     closeContextMenu()
     markLayerOpen()
     const rk = String(row[props.rowKey ?? 'seq'] ?? '')
-    const idx = displayData.value.findIndex(r => String(r[props.rowKey ?? 'seq'] ?? '') === rk)
+    const idx = displayData.value.findIndex((r) => String(r[props.rowKey ?? 'seq'] ?? '') === rk)
     contextMenu.value.rowKey = rk
     contextMenu.value.row = row
     contextMenu.value.rowIndex = idx
@@ -240,9 +254,12 @@ export function useTableExtras(
   // ==================== 行选择 ====================
   const _selectedKeys = ref<string[]>([...(props.selectedKeys ?? [])])
 
-  watch(() => props.selectedKeys, (keys) => {
-    if (keys && !arraysEqual(keys, _selectedKeys.value)) _selectedKeys.value = [...keys]
-  })
+  watch(
+    () => props.selectedKeys,
+    (keys) => {
+      if (keys && !arraysEqual(keys, _selectedKeys.value)) _selectedKeys.value = [...keys]
+    },
+  )
 
   const isAllSelected = computed(() => {
     const data = pagedData?.value ?? displayData.value
@@ -277,28 +294,53 @@ export function useTableExtras(
     _selectedKeys.value = keys
     emit('update:selectedKeys', keys)
     const rk = props.rowKey ?? 'seq'
-    emit('selectionChange', keys, props.data.filter((r) => keys.includes(String(r[rk] ?? ''))))
+    emit(
+      'selectionChange',
+      keys,
+      props.data.filter((r) => keys.includes(String(r[rk] ?? ''))),
+    )
   }
 
   // ==================== 持久化（提取至 useTablePersistence） ====================
-  const { _ns, _colKey, _clearPersisted, restoreColWidths, clearAllPersisted, flushWidths } = useTablePersistence(props.namespace, props.columns, {
-    sortState, sortHistory, sortKey: props.sortKey,
-    filterState,
-    _columnOrder,
-    columnWidths, _userResizedCols,
-    _dense, denseProp: props.dense,
-    dynamicFixedLeft, dynamicFixedRight,
-    hiddenColumns,
-    persistence: props.persistence,
-    searchMode: props.searchMode,
-    filterMode: props.filterMode,
-  })
+  const { _ns, _colKey, _clearPersisted, restoreColWidths, clearAllPersisted, flushWidths } = useTablePersistence(
+    props.namespace,
+    props.columns,
+    {
+      sortState,
+      sortHistory,
+      sortKey: props.sortKey,
+      filterState,
+      _columnOrder,
+      columnWidths,
+      _userResizedCols,
+      _dense,
+      denseProp: props.dense,
+      dynamicFixedLeft,
+      dynamicFixedRight,
+      hiddenColumns,
+      persistence: props.persistence,
+      searchMode: props.searchMode,
+      filterMode: props.filterMode,
+      storage: props.storage,
+    },
+  )
 
   // ==================== 全局事件管理 ====================
-  function onGlobalKeydown(e: KeyboardEvent, activeFilterKey: { value: string | null }, contextMenuRef: { value: { visible: boolean } }, closeFilter: () => void) {
+  function onGlobalKeydown(
+    e: KeyboardEvent,
+    activeFilterKey: { value: string | null },
+    contextMenuRef: { value: { visible: boolean } },
+    closeFilter: () => void,
+  ) {
     if (e.key === 'Escape') {
-      if (activeFilterKey.value) { closeFilter(); return }
-      if (contextMenuRef.value.visible) { closeContextMenu(); return }
+      if (activeFilterKey.value) {
+        closeFilter()
+        return
+      }
+      if (contextMenuRef.value.visible) {
+        closeContextMenu()
+        return
+      }
     }
   }
 
@@ -317,16 +359,29 @@ export function useTableExtras(
     exportCSV,
     exportExcel,
     // 右键菜单
-    contextMenu, contextMenuStyle, showContextMenu, showRowContextMenu, closeContextMenu,
-    hideCurrentColumn, showAllColumns,
+    contextMenu,
+    contextMenuStyle,
+    showContextMenu,
+    showRowContextMenu,
+    closeContextMenu,
+    hideCurrentColumn,
+    showAllColumns,
     // 键盘导航
-    filterFocusIndex, onFilterKeydown, scrollFocusedIntoView,
+    filterFocusIndex,
+    onFilterKeydown,
+    scrollFocusedIntoView,
     // 行选择
-    _selectedKeys, isAllSelected, toggleSelectAll, toggleRowSelect,
+    _selectedKeys,
+    isAllSelected,
+    toggleSelectAll,
+    toggleRowSelect,
     // 全局事件
-    onGlobalKeydown, onDocumentClick, onScrollClose,
+    onGlobalKeydown,
+    onDocumentClick,
+    onScrollClose,
     // 存储命名空间 + 列指纹（供外部拼装持久化 key）
-    _ns, _colKey,
+    _ns,
+    _colKey,
     // 显式清除持久化（供 clearAllFilters/clearSort 直接调用，不依赖 watch）
     _clearPersisted,
     // 列宽恢复（供 DataTable 在数据到达后调用）

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // ⛔ 保护 — 头像，禁止：clamp() 尺寸 → px，fallback 文字逻辑
 //    需我确认：shape 形状、size 尺寸挡位
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 interface Props {
   src?: string
@@ -35,6 +35,13 @@ const showImg = computed(() => !!props.src && !imgError.value)
 function onImgError() {
   imgError.value = true
 }
+// src 变更时重置失败态（避免换图后永远显示首字母）
+watch(
+  () => props.src,
+  () => {
+    imgError.value = false
+  },
+)
 </script>
 
 <template>

@@ -3,13 +3,17 @@ import { fileToBase64 } from '@/components/_internal/utils'
 
 let _measureCanvas: HTMLCanvasElement | null = null
 function _getMeasureCtx(): CanvasRenderingContext2D | null {
+  // SSR/无 DOM 环境：无 canvas 可用，measureTextWidth 走字数估算降级
+  if (typeof document === 'undefined') return null
   if (!_measureCanvas) _measureCanvas = document.createElement('canvas')
   return _measureCanvas.getContext('2d')
 }
 
 // 单例 DOM 测量元素，与 .th-title 样式对齐，用于表头最小宽度精确测量
 let _measureSpan: HTMLSpanElement | null = null
-function _getMeasureSpan(): HTMLSpanElement {
+function _getMeasureSpan(): HTMLSpanElement | null {
+  // SSR/无 DOM 环境：返回 null，measureDomTextWidth 走估算降级
+  if (typeof document === 'undefined' || typeof document.body === 'undefined') return null
   if (!_measureSpan) {
     _measureSpan = document.createElement('span')
     _measureSpan.style.cssText =
@@ -42,6 +46,8 @@ export function measureTextWidth(text: string, fontSize: number = 14, fontWeight
 export function measureDomTextWidth(text: string, fontSize: number = 14, fontWeight: number = 600): number {
   if (!text) return 0
   const span = _getMeasureSpan()
+  // 无 DOM 降级：按 canvas 估算或字数 × 0.6 系数
+  if (!span) return measureTextWidth(text, fontSize, fontWeight)
   span.style.fontSize = `${fontSize}px`
   span.style.fontWeight = String(fontWeight)
   span.textContent = text

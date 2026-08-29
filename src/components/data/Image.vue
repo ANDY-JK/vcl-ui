@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // ⛔ 保护 — 图片，禁止：lazy loading 逻辑删除，尺寸比例，fallback 占位
 //    需我确认：src fallback、aspect-ratio 默认值
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 
@@ -80,6 +80,15 @@ onUnmounted(() => {
   _observer?.disconnect()
 })
 
+// src 变更时重置加载/失败状态（避免换图后永远显示首字母/错误占位）
+watch(
+  () => props.src,
+  () => {
+    loaded.value = false
+    failed.value = false
+  },
+)
+
 const _w = computed(() => (props.width || props.size) + 'px')
 const _h = computed(() => (props.height || props.size) + 'px')
 const _rad = computed(() => (props.round ? '50%' : (props.radius ?? 4) + 'px'))
@@ -122,9 +131,9 @@ function onClick() {
       <span v-if="errorText" class="v-image-text">{{ errorText }}</span>
     </div>
 
-    <!-- 真实图片 -->
+    <!-- 真实图片（懒加载：进入视口前不绑定 src，避免提前发起请求） -->
     <img
-      v-show="inView"
+      v-if="inView"
       :src="src"
       :alt="alt"
       class="v-image-img"
