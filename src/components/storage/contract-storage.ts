@@ -14,9 +14,19 @@
 
 import { dbPut, dbGetAll, dbClear } from './indexedDB'
 import { useT } from '@/components/_internal/i18n'
+import {
+  SupabaseTransport,
+  sanitizeObjectKeyPart,
+  validateSupabaseConfig,
+  type SupabaseConfig,
+} from './supabase-transport'
 
 /** 模块级 t：用户可见错误消息按当前语言 */
 const t = useT()
+
+// 兼容再导出：实现已下沉 supabase-transport.ts（两套云端存储共用传输层），原路径不变
+export { sanitizeObjectKeyPart, validateSupabaseConfig }
+export type { SupabaseConfig }
 
 export interface StoreFile {
   name: string
@@ -92,27 +102,9 @@ export class IndexedDBBackend implements StorageBackend {
   }
 }
 
-// ===== Supabase Storage（REST 直连，零 SDK） =====
+// ===== Supabase Storage（REST 直连，零 SDK）——传输细节见 supabase-transport.ts =====
 
-export interface SupabaseConfig {
-  url: string
-  anonKey: string
-  bucket: string
-}
-
-/** 云端请求超时（毫秒），大图上传也不应无限等待 */
-const REQUEST_TIMEOUT_MS = 60_000
-
-function validateSupabaseConfig(cfg: SupabaseConfig): string | null {
-  if (!cfg || !cfg.url.trim()) return t('storage.supabaseUrlRequired')
-  if (!/^https?:\/\//.test(cfg.url.trim())) return t('storage.supabaseUrlFormat')
-  if (!cfg.anonKey.trim()) return t('storage.supabaseKeyRequired')
-  if (!cfg.bucket.trim()) return t('storage.supabaseBucketRequired')
-  return null
-}
-
-/**
- * 墓碑对象名前缀：删除门店时上传的空标记对象，让其他设备对账时知道「该门店已删除」。
+/** 墓碑对象名前缀：删除门店时上传的空标记对象，让其他设备对账时知道「该门店已删除」。
  * 没有墓碑，其他设备本地残留的真实字节会在 loadAll 对账时被当作「上传中断/失败」
  * 补传回云端——「PC 删了、手机刷新又传回去、图片复活」。
  * 名字带删除时间戳（{appleId}-__deleted__-{ts}）：对账时比较本地记录 ts 与墓碑 ts，
@@ -142,32 +134,6 @@ function dataUrlToBlob(dataUrl: string): Blob {
   return new Blob([bytes], { type: mime })
 }
 
-/**
- * 把任意文件名转成可作 Supabase 对象键的 ASCII 形式（导出供测试/复用）。
- * Supabase 对象键只接受 ASCII——含中文的对象名上传返回 400 InvalidKey（实测）。
- * 规则（按序）：
- * 1. 先分离扩展名（.jpg 等），扩展名本身也做 ASCII 清洗，非 ASCII 扩展名丢弃
- * 2. 主体剔除所有非 ASCII 字符、路径/URL 敏感字符（\ / : * ? " < > |）转 _
- * 3. 空白（含中间空格）转 _，首尾的 _ . - 清理
- * 4. 主体为空回退 file；主体超长截断到 60 字符（对象键过长同样有被后端拒绝的风险）
- */
-export function sanitizeObjectKeyPart(fileName: string): string {
-  const dot = fileName.lastIndexOf('.')
-  let ext = dot > 0 ? fileName.slice(dot) : ''
-  ext = ext.replace(/[^\x20-\x7E]+/g, '').replace(/\s+/g, '')
-  if (!/^\.[\w.]+$/.test(ext)) ext = ''
-  const bodySrc = dot > 0 ? fileName.slice(0, dot) : fileName
-  let body = bodySrc
-    .replace(/[^\x20-\x7E]+/g, '') // 中文等非 ASCII 剔除
-    .replace(/[\\/:*?"<>|]+/g, '_') // 路径/URL 敏感字符
-    .replace(/\s+/g, '_') // 空白（含中间空格）
-    .replace(/^[_.,-]+/, '')
-    .replace(/[_.,-]+$/, '')
-  if (!body) body = 'file'
-  body = body.slice(0, 60)
-  return body + ext
-}
-
 export class SupabaseBackend implements StorageBackend {
   readonly kind = 'supabase' as const
 
@@ -175,24 +141,12 @@ export class SupabaseBackend implements StorageBackend {
   private paths = new Map<number, string>()
   /** 已删除标记（墓碑）：appleId → 墓碑对象名与删除时间戳；loadAll 解析填充，删除时写入，重新上传时清理 */
   readonly tombstones = new Map<number, { name: string; ts: number }>()
+  /** REST 传输（超时/错误归类/分页/重试下沉 supabase-transport.ts，与 KV 适配器共用） */
+  private tr: SupabaseTransport
 
-  constructor(private cfg: SupabaseConfig) {
+  constructor(cfg: SupabaseConfig) {
     // 工厂级防御：即使调用方跳过 validateStorageConfig，空配置也在此拒绝
-    const err = validateSupabaseConfig(cfg)
-    if (err) throw new Error(err)
-  }
-
-  private get base() {
-    return `${this.cfg.url.replace(/\/+$/, '')}/storage/v1`
-  }
-
-  private headers(json = false): Record<string, string> {
-    const h: Record<string, string> = {
-      apikey: this.cfg.anonKey,
-      Authorization: `Bearer ${this.cfg.anonKey}`,
-    }
-    if (json) h['Content-Type'] = 'application/json'
-    return h
+    this.tr = new SupabaseTransport(cfg)
   }
 
   /**
@@ -210,93 +164,9 @@ export class SupabaseBackend implements StorageBackend {
     return `${appleId}-${TOMBSTONE_MARKER}-${ts}`
   }
 
-  private publicUrl(name: string): string {
-    return `${this.cfg.url.replace(/\/+$/, '')}/storage/v1/object/public/${this.cfg.bucket}/${encodeURIComponent(name)}`
-  }
-
-  /** 带超时的请求；错误按「bucket 不存在 / 网络」区分提示 */
-  private async request(path: string, init: RequestInit): Promise<Response> {
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS)
-    let resp: Response
-    try {
-      resp = await fetch(`${this.base}${path}`, { ...init, signal: ctrl.signal })
-    } catch (e) {
-      const aborted = (e as Error)?.name === 'AbortError'
-      const err = new Error(
-        aborted ? t('storage.cloudTimeout', { s: REQUEST_TIMEOUT_MS / 1000 }) : t('storage.cloudNetworkError'),
-      )
-      ;(err as Error & { cause?: unknown }).cause = e
-      throw err
-    } finally {
-      clearTimeout(timer)
-    }
-    if (!resp.ok) {
-      // Supabase 行为：bucket 不存在时 list 静默返回空、单对象操作返回 400 "Bucket not found"；
-      // 403 是 storage.objects 的 RLS 策略缺失
-      const hint =
-        resp.status === 400 || resp.status === 404
-          ? t('storage.bucketMissing', { bucket: this.cfg.bucket })
-          : resp.status === 403
-            ? t('storage.cloudPermissionDenied')
-            : t('storage.cloudHttpError', { status: resp.status })
-      throw new Error(`${hint}（${path}）`)
-    }
-    return resp
-  }
-
-  /** 删除对象并重试：对象刚写入时 Supabase 存在短暂不一致窗口，立即删除可能 400 */
-  private async deleteObjectWithRetry(name: string, attempts = 3): Promise<void> {
-    for (let i = 1; i <= attempts; i++) {
-      try {
-        await this.request(`/object/${this.cfg.bucket}/${encodeURIComponent(name)}`, {
-          method: 'DELETE',
-          headers: this.headers(),
-        })
-        return
-      } catch (e) {
-        if (i === attempts) throw e
-        await new Promise((r) => setTimeout(r, 500 * i))
-      }
-    }
-  }
-
-  /** 列出 bucket 根目录所有对象，返回 { name, size, mimetype, createdAt }[]（分页拉全，避免 1000 条上限静默截断） */
-  private async listObjects(): Promise<Array<{ name: string; size: number; mimetype: string; createdAt: number }>> {
-    const PAGE = 1000
-    const all: Array<{ name: string; size: number; mimetype: string; createdAt: number }> = []
-    let offset = 0
-    // Supabase 单页上限 1000：循环翻页直到返回不足一页
-    for (;;) {
-      const resp = await this.request(`/object/list/${this.cfg.bucket}`, {
-        method: 'POST',
-        headers: this.headers(true),
-        body: JSON.stringify({ prefix: '', limit: PAGE, offset, sortBy: { column: 'name', order: 'asc' } }),
-      })
-      const rows = (await resp.json()) as Array<{
-        name: string
-        created_at?: string
-        metadata?: { size?: number; mimetype?: string }
-      }>
-      for (const r of rows) {
-        if (r.name.endsWith('/')) continue
-        all.push({
-          name: r.name,
-          size: Number(r.metadata?.size ?? 0),
-          mimetype: r.metadata?.mimetype || 'application/octet-stream',
-          // 对象创建时间 ≈ 上传时间；缺失/非法回退 0（导出层对 0 显示为空）
-          createdAt: r.created_at ? new Date(r.created_at).getTime() : 0,
-        })
-      }
-      if (rows.length < PAGE) break
-      offset += PAGE
-    }
-    return all
-  }
-
   async loadAll(): Promise<Map<number, StoreUploadState>> {
     const map = new Map<number, StoreUploadState>()
-    const objects = await this.listObjects()
+    const objects = await this.tr.listObjects()
     // 第一遍：收集墓碑（appleId → 最新删除时间戳）。同一门店多个墓碑取最新
     const tbSeen = new Map<number, { name: string; ts: number }>()
     for (const obj of objects) {
@@ -322,7 +192,7 @@ export class SupabaseBackend implements StorageBackend {
       if (this.tombstones.has(appleId)) {
         const tb = this.tombstones.get(appleId)!
         this.tombstones.delete(appleId)
-        this.deleteObjectWithRetry(tb.name).catch(() => {})
+        this.tr.deleteObjectWithRetry(tb.name).catch(() => {})
         console.warn('[contract-storage] 删除后重新上传成功，清理残留墓碑:', appleId)
       }
       // bucket 被外部写入含裸 % 的对象名时 decodeURIComponent 会抛 URIError——
@@ -335,7 +205,7 @@ export class SupabaseBackend implements StorageBackend {
       }
       this.paths.set(appleId, obj.name)
       map.set(appleId, {
-        contract: { name, dataUrl: this.publicUrl(obj.name), size: obj.size, type: obj.mimetype },
+        contract: { name, dataUrl: this.tr.publicUrl(obj.name), size: obj.size, type: obj.mimetype },
         // 上传时间取对象创建时间（≈ 上传时刻）；缺失回退 0（导出层对 0 显示为空）
         ts: obj.createdAt,
       })
@@ -353,29 +223,25 @@ export class SupabaseBackend implements StorageBackend {
       // 从云端列出删除——否则删除静默跳过云端，下次加载又"复活"
       const old = this.paths.get(appleId)
       if (old) {
-        await this.deleteObjectWithRetry(old)
+        await this.tr.deleteObjectWithRetry(old)
         this.paths.delete(appleId)
       } else {
-        const objects = await this.listObjects()
+        const objects = await this.tr.listObjects()
         const targets = objects.filter((o) => {
           const m = o.name.match(/^(\d+)-/)
           return m && Number(m[1]) === appleId && parseTombstoneKey(o.name.slice(m[0].length)) === null
         })
-        for (const t of targets) await this.deleteObjectWithRetry(t.name)
+        for (const t of targets) await this.tr.deleteObjectWithRetry(t.name)
       }
       // 清旧墓碑（避免同名堆积），再写新墓碑。墓碑写失败 = 删除未向其他设备广播，
       // 必须抛错（不静默）——否则下次对账会把已删图片当上传中断补传回来
       const oldTb = this.tombstones.get(appleId)
       if (oldTb) {
-        await this.deleteObjectWithRetry(oldTb.name)
+        await this.tr.deleteObjectWithRetry(oldTb.name)
         this.tombstones.delete(appleId)
       }
       const ts = Date.now()
-      await this.request(`/object/${this.cfg.bucket}/${this.tombstoneName(appleId, ts)}`, {
-        method: 'POST',
-        headers: { ...this.headers(), 'Content-Type': 'text/plain', 'x-upsert': 'true' },
-        body: '',
-      })
+      await this.tr.putObject(this.tombstoneName(appleId, ts), '', 'text/plain')
       this.tombstones.set(appleId, { name: this.tombstoneName(appleId, ts), ts })
       return
     }
@@ -389,25 +255,21 @@ export class SupabaseBackend implements StorageBackend {
       } else {
         // URL 引用：源不可达（对象已删/死链）时禁止把 404 错误体当图片上传，否则云端存出损坏对象
         const resp = await fetch(f.dataUrl)
-        if (!resp.ok) throw new Error(`源图片不可用（HTTP ${resp.status}），已跳过上传`)
+        if (!resp.ok) throw new Error(t('storage.sourceImageUnavailable', { status: resp.status }))
         blob = await resp.blob()
       }
     } else {
       blob = f.dataUrl
     }
     // Content-Type 以文件真实 MIME 为准（blob.type）；"image/*" 这类泛 MIME 会被浏览器识别为具体类型
-    await this.request(`/object/${this.cfg.bucket}/${name}`, {
-      method: 'POST',
-      headers: { ...this.headers(), 'Content-Type': blob.type || 'application/octet-stream', 'x-upsert': 'true' },
-      body: blob,
-    })
+    await this.tr.putObject(name, blob, blob.type || 'application/octet-stream')
     this.paths.set(appleId, name)
     // 重新上传成功后清墓碑（先传后清：清墓碑失败不丢新图片——墓碑残留由 loadAll 的
     // 「图片优先」规则兜底，下次该门店删除/上传时也会清理）
     const oldTb = this.tombstones.get(appleId)
     if (oldTb) {
       try {
-        await this.deleteObjectWithRetry(oldTb.name)
+        await this.tr.deleteObjectWithRetry(oldTb.name)
         this.tombstones.delete(appleId)
       } catch (e) {
         console.warn('[contract-storage] 墓碑清理失败（图片已上传，下次对账自动清理）:', appleId, e)
@@ -416,17 +278,17 @@ export class SupabaseBackend implements StorageBackend {
   }
 
   async clearAll(): Promise<void> {
-    const objects = await this.listObjects()
+    const objects = await this.tr.listObjects()
     const failed: string[] = []
     for (const obj of objects) {
       try {
-        await this.deleteObjectWithRetry(obj.name)
+        await this.tr.deleteObjectWithRetry(obj.name)
       } catch (e) {
         failed.push(obj.name)
         console.warn('[contract-storage] 云端删除失败:', obj.name, e)
       }
     }
-    if (failed.length) throw new Error(`云端有 ${failed.length} 个对象删除失败，请重试`)
+    if (failed.length) throw new Error(t('storage.clearPartialFail', { n: failed.length }))
     this.paths.clear()
     this.tombstones.clear()
   }

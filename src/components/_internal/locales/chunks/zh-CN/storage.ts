@@ -16,5 +16,7 @@ export default {
     idbUnavailable: 'IndexedDB 不可用',
     idbUpgradeBlocked: '[IndexedDB] 数据库升级被阻塞，请关闭其他标签页后刷新',
     idbStoreBlocked: '[IndexedDB] 创建 store "{store}" 被阻塞，请关闭其他标签页后刷新',
+    sourceImageUnavailable: '源图片不可用（HTTP {status}），已跳过上传',
+    clearPartialFail: '云端有 {n} 个对象删除失败，请重试',
   },
 }

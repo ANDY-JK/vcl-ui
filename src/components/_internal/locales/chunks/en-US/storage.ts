@@ -18,5 +18,7 @@ export default {
     idbUnavailable: 'IndexedDB is unavailable',
     idbUpgradeBlocked: '[IndexedDB] Database upgrade blocked, close other tabs and refresh',
     idbStoreBlocked: '[IndexedDB] Creating store "{store}" blocked, close other tabs and refresh',
+    sourceImageUnavailable: 'Source image unavailable (HTTP {status}); upload skipped',
+    clearPartialFail: '{n} objects failed to delete in the cloud, please retry',
   },
 }

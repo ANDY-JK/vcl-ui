@@ -28,7 +28,9 @@ export interface StorageWriteOptions {
   cloud?: boolean
 }
 
-/** 通用云端 KV 适配器 —— 由调用方注入（如 Supabase KV 表 / 自建后端） */
+/** 通用云端 KV 适配器 —— 由调用方注入。
+ * 库内官方实现：`createSupabaseKVAdapter`（supabase-transport.ts，与文件后端共用 Supabase 传输层）；
+ * 自建后端（REST KV / 其他云）实现同款三方法即可注入。 */
 export interface CloudKVAdapter {
   get<T = unknown>(key: string): Promise<T | null>
   set<T = unknown>(key: string, value: T): Promise<void>

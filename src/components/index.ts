@@ -199,6 +199,9 @@ export type {
 // 统一存储门面 — 声明意图、自动路由 localStorage / IndexedDB / 云端
 export { storage, setCloudAdapter } from './storage/unified'
 export type { StorageWriteOptions, CloudKVAdapter } from './storage/unified'
+// Supabase 云端家族（共用传输层）— KV 适配器（CloudKVAdapter 官方实现）注入 setCloudAdapter 即用
+export { createSupabaseKVAdapter, SupabaseTransport, REQUEST_TIMEOUT_MS } from './storage/supabase-transport'
+export type { CloudObjectMeta } from './storage/supabase-transport'
 // 类型
 export type { CascaderOption } from './shared/types'
 

@@ -195,5 +195,43 @@ describe('M9 contract-storage 契约锁定', () => {
       expect(local.size).toBe(0)
       expect(cloud.size).toBe(0)
     })
+
+    it('上传同步失败触发 onSyncError 回调（本地成功但云端没传上，用户必须知情）', async () => {
+      const local = new FakeLocalBackend()
+      const cloud = new FakeCloudBackend()
+      const onSyncError = vi.fn()
+      const backend = new CompositeBackend(null, onSyncError, { local, cloud })
+      cloud.failNext = true
+      await backend.saveRecord(9, blobState) // 上传为后台同步，不 reject
+      await vi.waitFor(() => expect(onSyncError).toHaveBeenCalledTimes(1))
+      expect(onSyncError.mock.calls[0][0]).toBe(9)
+      expect(local.get(9)?.contract?.name).toBe('a.png') // 本地已落盘
+    })
+
+    it('同门店 上传→删除 排队：删除等在飞上传完成后再执行（防删后复活）', async () => {
+      const local = new FakeLocalBackend()
+      const cloud = new FakeCloudBackend()
+      const backend = makeBackend(local, cloud)
+      // 慢上传：记录云端 saveRecord 调用顺序
+      const calls: string[] = []
+      let releaseUpload: (() => void) | null = null
+      const gate = new Promise<void>((r) => { releaseUpload = r })
+      vi.spyOn(cloud, 'saveRecord').mockImplementation(async (id, state) => {
+        if (state.contract) {
+          calls.push('upload')
+          await gate // 上传卡在途中
+          return Object.getPrototypeOf(cloud).saveRecord.call(cloud, id, state)
+        }
+        calls.push('delete')
+        await Object.getPrototypeOf(cloud).saveRecord.call(cloud, id, state)
+      })
+      await backend.saveRecord(10, blobState) // 触发后台上传（被 gate 卡住）
+      const del = backend.saveRecord(10, { contract: undefined, ts: 300 }) // 删除应等上传完成
+      await Promise.resolve()
+      releaseUpload!()
+      await del
+      expect(calls).toEqual(['upload', 'delete']) // 顺序锁定：先传完再删
+      expect(cloud.has(10)).toBe(false)
+    })
   })
 })
