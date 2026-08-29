@@ -97,6 +97,10 @@ const demoMap: Record<string, any> = {
     loader: () => import('./form/FormBuilderDemo.vue'),
     errorComponent: ErrorFallback,
   }),
+  'form-renderer': defineAsyncComponent({
+    loader: () => import('./form/FormRendererDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
   storage: defineAsyncComponent({ loader: () => import('./map/StorageDemo.vue'), errorComponent: ErrorFallback }),
 }
 

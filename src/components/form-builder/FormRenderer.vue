@@ -227,14 +227,75 @@ onMounted(() => {
   if (props.field.type === 'signature') loadSignatureImage()
 })
 
-/** 富文本编辑器 ref */
-const richtextContent = computed({
-  get: () => (props.modelValue as string) ?? '',
-  set: (v: string) => emit('update:modelValue', v),
-})
-const richtextExec = ref(false)
+/** 富文本当前值（只读）。DOM 由下方 watch 单向同步，写入一律经 richtextSyncFromDom emit */
+const richtextContent = computed(() => (props.modelValue as string) ?? '')
 /** 当前字段的富文本编辑器 DOM（template ref，实例隔离，替代全局 querySelector） */
 const richtextEl = ref<HTMLElement | null>(null)
+/** IME 合成中标记：合成期间不 emit，避免 DOM 回写打断中文输入法 */
+const richtextComposing = ref(false)
+/** 上次 emit 的消毒结果：区分「自身 emit 的回声」与「外部赋值」，回声不回写 DOM（保光标与合成文本） */
+let richtextLastEmitted = ''
+
+// DOM 回写唯一入口：外部赋值（值 ≠ 上次 emit）才重设 innerHTML；响应式 HTML 绑定（已弃用）会在每次按键后重置
+// DOM 打断 IME 合成，故弃用（审计 §19 富文本专项）
+watch(
+  [richtextEl, richtextContent],
+  ([el, val]) => {
+    if (!el) return
+    if (el.innerHTML === val) {
+      richtextLastEmitted = val
+      return
+    }
+    if (val === richtextLastEmitted) return
+    el.innerHTML = val
+    richtextLastEmitted = val
+  },
+  { flush: 'post' },
+)
+
+/** 从 DOM 取消毒后内容 emit 给父层（写入 modelValue 的唯一出口） */
+function richtextSyncFromDom(): void {
+  const el = richtextEl.value
+  if (!el) return
+  const html = sanitizeHTML(el.innerHTML)
+  richtextLastEmitted = html
+  emit('update:modelValue', html)
+}
+
+function onRichtextInput(): void {
+  if (richtextComposing.value) return
+  richtextSyncFromDom()
+}
+
+function onRichtextCompositionStart(): void {
+  richtextComposing.value = true
+}
+
+function onRichtextCompositionEnd(): void {
+  richtextComposing.value = false
+  richtextSyncFromDom()
+}
+
+/** 粘贴消毒：富文本剪贴板先过白名单再插入（默认插入的是原始 HTML，事件属性在随后消毒前就会触发） */
+function onRichtextPaste(e: ClipboardEvent): void {
+  const raw = e.clipboardData?.getData('text/html')
+  if (!raw) return
+  e.preventDefault()
+  const clean = sanitizeHTML(raw)
+  const sel = window.getSelection()
+  const el = richtextEl.value
+  if (sel && sel.rangeCount > 0 && el?.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+    const range = sel.getRangeAt(0)
+    range.deleteContents()
+    range.insertNode(range.createContextualFragment(clean))
+    range.collapse(false)
+    sel.removeAllRanges()
+    sel.addRange(range)
+  } else {
+    el?.insertAdjacentHTML('beforeend', clean)
+  }
+  richtextSyncFromDom()
+}
 
 function execRichtext(cmd: string, val?: string): void {
   const el = richtextEl.value
@@ -247,9 +308,8 @@ function execRichtext(cmd: string, val?: string): void {
       return
     }
     document.execCommand(cmd, false, val)
-    richtextExec.value = !richtextExec.value
-    // 手动 emit（execCommand 不触发 input 事件）
-    emit('update:modelValue', sanitizeHTML(el.innerHTML))
+    // 手动同步（execCommand 不触发 input 事件）
+    richtextSyncFromDom()
   } catch (e) {
     warnOnce('richtext-execcommand', '[FormRenderer] 富文本命令执行失败: ' + String(e))
   }
@@ -556,8 +616,10 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
             ref="richtextEl"
             class="fb-richtext-body"
             contenteditable="true"
-            @input="emit('update:modelValue', sanitizeHTML(($event.target as HTMLElement).innerHTML))"
-            v-html="sanitizeHTML(richtextContent)"
+            @input="onRichtextInput"
+            @compositionstart="onRichtextCompositionStart"
+            @compositionend="onRichtextCompositionEnd"
+            @paste="onRichtextPaste"
           />
         </div>
         <FieldError :message="error ?? ''" />

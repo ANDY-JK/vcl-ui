@@ -160,6 +160,7 @@ export const navTree: NavNode[] = [
       { label: 'navData.routePlanner', icon: 'route', route: '/route-planner' },
       { label: 'navData.contractCollection', icon: 'file-text', route: '/contract-collection' },
       { label: 'navData.formDesigner', icon: 'layout-template', route: '/form-builder' },
+      { label: 'navData.formRenderer', icon: 'file-text', route: '/form-renderer' },
     ],
   },
 ]

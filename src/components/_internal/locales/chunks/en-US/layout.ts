@@ -65,6 +65,7 @@ export default {
     routePlanner: 'RoutePlanner',
     contractCollection: 'ContractCollection',
     formDesigner: 'FormDesigner (low-code forms)',
+    formRenderer: 'FormRenderer (rich-text field)',
   },
 
   miniLayout: {

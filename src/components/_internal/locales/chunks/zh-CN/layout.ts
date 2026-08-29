@@ -65,6 +65,7 @@ export default {
     routePlanner: 'RoutePlanner 路线规划',
     contractCollection: 'ContractCollection 合同收集',
     formDesigner: 'FormDesigner 低代码表单',
+    formRenderer: 'FormRenderer 字段渲染器',
   },
 
   miniLayout: {
