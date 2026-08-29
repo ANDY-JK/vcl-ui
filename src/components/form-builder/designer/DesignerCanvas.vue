@@ -1,3 +1,9 @@
+<script lang="ts">
+import { useT } from '@/components/_internal/i18n'
+/** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
+const t = useT()
+</script>
+
 <script setup lang="ts">
 /**
  * 画布区 — 设计器中栏 (v3)
@@ -36,10 +42,10 @@ const props = defineProps({
   selectedIds: { type: Array as PropType<string[]>, default: () => [] },
   /** 设备模式 */
   device: { type: String as PropType<'desktop' | 'tablet' | 'mobile'>, default: 'desktop' },
-  /** 表单标题 */
-  formTitle: { type: String, default: '表单标题' },
+  /** 表单标题（函数默认值：按实例创建时刻的语言翻译） */
+  formTitle: { type: String, default: () => t('fbd.formTitle') },
   /** 表单描述 */
-  formDescription: { type: String, default: '表单描述' },
+  formDescription: { type: String, default: () => t('fbd.formDesc') },
   /** 面包屑路径（从根到选中节点） */
   breadcrumbPath: { type: Array as PropType<DesignerNode[]>, default: () => [] },
 })
@@ -99,19 +105,21 @@ function isSelected(id: string): boolean {
 function tabSlots(node: DesignerNode): { label: string; name: string }[] {
   return node.containerConfig?.tabs?.length
     ? node.containerConfig.tabs
-    : [{ label: node.label || '标签页 1', name: 'tab1' }]
+    : [{ label: node.label || t('fb.tabN', { n: 1 }), name: 'tab1' }]
 }
 
 /** 取 collapse 容器槽位列表 */
 function collapseSlots(node: DesignerNode): { title: string; expanded: boolean }[] {
   return node.containerConfig?.collapseItems?.length
     ? node.containerConfig.collapseItems
-    : [{ title: node.label || '折叠项 1', expanded: true }]
+    : [{ title: node.label || t('fb.collapseItemN', { n: 1 }), expanded: true }]
 }
 
 /** 取 steps 容器槽位列表 */
 function stepSlots(node: DesignerNode): { title: string }[] {
-  return node.containerConfig?.steps?.length ? node.containerConfig.steps : [{ title: node.label || '步骤 1' }]
+  return node.containerConfig?.steps?.length
+    ? node.containerConfig.steps
+    : [{ title: node.label || t('fb.stepN', { n: 1 }) }]
 }
 
 /** 取容器某槽位下的子字段（按 containerSlot 匹配，缺省按 0） */
@@ -207,7 +215,7 @@ function addTabTo(node: DesignerNode): void {
   let n = tabs.length + 1
   while (tabs.some((t) => t.name === 'tab' + n)) n++
   const name = 'tab' + n
-  const next = [...tabs, { label: `标签页 ${n}`, name }]
+  const next = [...tabs, { label: t('fb.tabN', { n }), name }]
   emit('updateContainer', node.id, { ...node.containerConfig, tabs: next })
   localActiveTab.value = { ...localActiveTab.value, [node.id]: name }
 }
@@ -410,7 +418,7 @@ const deviceClass = computed(() => `device-${props.device}`)
     <!-- 画布工具条 -->
     <div class="ldc-canvas-toolbar">
       <div class="ldc-crumb">
-        <span class="ldc-crumb-item ldc-crumb-root">表单根</span>
+        <span class="ldc-crumb-item ldc-crumb-root">{{ t('fbt.canvasRoot') }}</span>
         <template v-for="(node, i) in breadcrumbPath" :key="node.id">
           <span class="ldc-crumb-sep">/</span>
           <span
@@ -421,7 +429,7 @@ const deviceClass = computed(() => `device-${props.device}`)
           >
         </template>
       </div>
-      <span class="ldc-canvas-tip">提示：拖拽组件到画布或容器内</span>
+      <span class="ldc-canvas-tip">{{ t('fbt.canvasTip') }}</span>
     </div>
 
     <!-- 画布内容区 -->
@@ -437,8 +445,8 @@ const deviceClass = computed(() => `device-${props.device}`)
         <div class="ldc-empty-icon">
           <IconSvg type="mouse-pointer-click" size="xl" />
         </div>
-        <p class="ldc-empty-title">从左侧点击或拖拽添加字段</p>
-        <p class="ldc-empty-hint">支持布局容器嵌套，所见即所得</p>
+        <p class="ldc-empty-title">{{ t('fbt.emptyTitle') }}</p>
+        <p class="ldc-empty-hint">{{ t('fbt.emptyHint') }}</p>
       </div>
 
       <!-- 节点列表 -->
@@ -459,16 +467,16 @@ const deviceClass = computed(() => `device-${props.device}`)
               <span class="ldc-container-label">{{ node.label }}</span>
               <span class="ldc-container-badge">{{ getTypeLabel(node.type) }}</span>
               <span class="ldc-container-actions" @click.stop>
-                <button title="上移" @click="emit('move', node.id, -1)">
+                <button :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
                   <IconSvg type="chevron-up" size="xs" />
                 </button>
-                <button title="下移" @click="emit('move', node.id, 1)">
+                <button :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
                   <IconSvg type="chevron-down" size="xs" />
                 </button>
-                <button title="复制" @click="emit('duplicate', node.id)">
+                <button :title="t('common.copy')" @click="emit('duplicate', node.id)">
                   <IconSvg type="copy" size="xs" />
                 </button>
-                <button class="ldc-del" title="删除" @click="emit('remove', node.id)">
+                <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
                   <IconSvg type="trash-2" size="xs" />
                 </button>
               </span>
@@ -491,7 +499,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                     @keydown.space.prevent="setActiveTab(node, tab.name)"
                   >
                     {{ tab.label }}
-                    <span class="ldc-tab-count" :title="`${childrenInSlot(node, ti).length} 个字段`">{{
+                    <span class="ldc-tab-count" :title="t('fbd.fieldsCount', { n: childrenInSlot(node, ti).length })">{{
                       childrenInSlot(node, ti).length
                     }}</span>
                   </div>
@@ -499,11 +507,11 @@ const deviceClass = computed(() => `device-${props.device}`)
                     class="ldc-tab ldc-tab-add"
                     role="button"
                     tabindex="0"
-                    title="添加标签页"
+                    :title="t('fbt.addTabTitle')"
                     @click="addTabTo(node)"
                     @keydown.enter.prevent="addTabTo(node)"
                   >
-                    + 添加
+                    {{ t('fbt.addBtn') }}
                   </div>
                 </div>
                 <div class="ldc-tabs-body">
@@ -528,9 +536,9 @@ const deviceClass = computed(() => `device-${props.device}`)
                         />
                       </div>
                     </template>
-                    <div v-else class="ldc-container-empty">拖拽字段到此标签页</div>
+                    <div v-else class="ldc-container-empty">{{ t('fbt.dropToTab') }}</div>
                   </div>
-                  <div v-else class="ldc-container-empty">先在右侧属性面板配置标签页</div>
+                  <div v-else class="ldc-container-empty">{{ t('fbt.configTabsFirst') }}</div>
                 </div>
               </template>
 
@@ -558,9 +566,11 @@ const deviceClass = computed(() => `device-${props.device}`)
                         class="ldc-collapse-arrow"
                       />
                       <span class="ldc-collapse-title">{{ item.title }}</span>
-                      <span class="ldc-tab-count" :title="`${childrenInSlot(node, ci).length} 个字段`">{{
-                        childrenInSlot(node, ci).length
-                      }}</span>
+                      <span
+                        class="ldc-tab-count"
+                        :title="t('fbd.fieldsCount', { n: childrenInSlot(node, ci).length })"
+                        >{{ childrenInSlot(node, ci).length }}</span
+                      >
                     </div>
                     <div
                       v-show="isCollapseOpen(node, ci)"
@@ -578,7 +588,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                           />
                         </div>
                       </template>
-                      <div v-else class="ldc-container-empty">拖拽字段到此折叠项</div>
+                      <div v-else class="ldc-container-empty">{{ t('fbt.dropToCollapse') }}</div>
                     </div>
                   </div>
                 </div>
@@ -602,9 +612,11 @@ const deviceClass = computed(() => `device-${props.device}`)
                     >
                       <span class="ldc-step-num">{{ si < activeStepIndex(node) ? '✓' : si + 1 }}</span>
                       <span class="ldc-step-btn-label">{{ step.title }}</span>
-                      <span class="ldc-tab-count" :title="`${childrenInSlot(node, si).length} 个字段`">{{
-                        childrenInSlot(node, si).length
-                      }}</span>
+                      <span
+                        class="ldc-tab-count"
+                        :title="t('fbd.fieldsCount', { n: childrenInSlot(node, si).length })"
+                        >{{ childrenInSlot(node, si).length }}</span
+                      >
                     </div>
                   </div>
                   <!-- 步骤迷你导航（贴近运行时 FormBuilder 的上一步/下一步） -->
@@ -614,7 +626,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                       :disabled="activeStepIndex(node) === 0"
                       @click="setActiveStep(node, activeStepIndex(node) - 1)"
                     >
-                      <IconSvg type="chevron-left" size="xs" /> 上一步
+                      <IconSvg type="chevron-left" size="xs" /> {{ t('formBuilder.prevStep') }}
                     </button>
                     <span class="ldc-steps-indicator"
                       >{{ activeStepIndex(node) + 1 }} / {{ stepSlots(node).length }}</span
@@ -624,7 +636,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                       :disabled="activeStepIndex(node) >= stepSlots(node).length - 1"
                       @click="setActiveStep(node, activeStepIndex(node) + 1)"
                     >
-                      下一步 <IconSvg type="chevron-right" size="xs" />
+                      {{ t('formBuilder.nextStep') }} <IconSvg type="chevron-right" size="xs" />
                     </button>
                   </div>
                   <div
@@ -648,9 +660,9 @@ const deviceClass = computed(() => `device-${props.device}`)
                         />
                       </div>
                     </template>
-                    <div v-else class="ldc-container-empty">拖拽字段到此步骤</div>
+                    <div v-else class="ldc-container-empty">{{ t('fbt.dropToStep') }}</div>
                   </div>
-                  <div v-else class="ldc-container-empty">先在右侧属性面板配置步骤</div>
+                  <div v-else class="ldc-container-empty">{{ t('fbt.configStepsFirst') }}</div>
                 </div>
               </template>
 
@@ -681,7 +693,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                       </div>
                     </div>
                   </template>
-                  <div v-else class="ldc-container-empty">拖拽字段到此栅格</div>
+                  <div v-else class="ldc-container-empty">{{ t('fbt.dropToGrid') }}</div>
                 </div>
               </template>
 
@@ -706,16 +718,16 @@ const deviceClass = computed(() => `device-${props.device}`)
                         <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
                         <span class="ldc-card-key">{{ child.key }}</span>
                         <span class="ldc-card-actions" @click.stop>
-                          <button title="上移" @click="emit('move', child.id, -1)">
+                          <button :title="t('fbt.moveUp')" @click="emit('move', child.id, -1)">
                             <IconSvg type="chevron-up" size="xs" />
                           </button>
-                          <button title="下移" @click="emit('move', child.id, 1)">
+                          <button :title="t('fbt.moveDown')" @click="emit('move', child.id, 1)">
                             <IconSvg type="chevron-down" size="xs" />
                           </button>
-                          <button title="复制" @click="emit('duplicate', child.id)">
+                          <button :title="t('common.copy')" @click="emit('duplicate', child.id)">
                             <IconSvg type="copy" size="xs" />
                           </button>
-                          <button class="ldc-del" title="删除" @click="emit('remove', child.id)">
+                          <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', child.id)">
                             <IconSvg type="trash-2" size="xs" />
                           </button>
                         </span>
@@ -731,7 +743,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                     </div>
                   </div>
                 </template>
-                <div v-else class="ldc-container-empty">拖拽字段到此容器</div>
+                <div v-else class="ldc-container-empty">{{ t('fbt.dropToCard') }}</div>
               </template>
             </div>
           </div>
@@ -743,7 +755,7 @@ const deviceClass = computed(() => `device-${props.device}`)
             :class="{ selected: isSelected(node.id), dragging: sortDragId === node.id }"
             draggable="true"
             role="listitem"
-            :aria-label="`字段 ${node.label}（可拖拽排序）`"
+            :aria-label="t('fbt.fieldAria', { label: node.label })"
             @click="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
             @dragstart="onNodeDragStart($event, node)"
             @dragover="onNodeDragOver($event, node)"
@@ -751,7 +763,7 @@ const deviceClass = computed(() => `device-${props.device}`)
             @dragend="onNodeDragEnd"
           >
             <div class="ldc-card-head">
-              <span class="ldc-drag-handle" title="拖拽排序">
+              <span class="ldc-drag-handle" :title="t('fbt.dragSort')">
                 <IconSvg type="grip-vertical" size="sm" />
               </span>
               <span class="ldc-card-label">{{ node.label }}</span>
@@ -759,16 +771,16 @@ const deviceClass = computed(() => `device-${props.device}`)
               <span class="ldc-card-type-badge">{{ getTypeLabel(node.type) }}</span>
               <span class="ldc-card-key">{{ node.key }}</span>
               <span class="ldc-card-actions" @click.stop>
-                <button title="上移" @click="emit('move', node.id, -1)">
+                <button :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
                   <IconSvg type="chevron-up" size="xs" />
                 </button>
-                <button title="下移" @click="emit('move', node.id, 1)">
+                <button :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
                   <IconSvg type="chevron-down" size="xs" />
                 </button>
-                <button title="复制" @click="emit('duplicate', node.id)">
+                <button :title="t('common.copy')" @click="emit('duplicate', node.id)">
                   <IconSvg type="copy" size="xs" />
                 </button>
-                <button class="ldc-del" title="删除" @click="emit('remove', node.id)">
+                <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
                   <IconSvg type="trash-2" size="xs" />
                 </button>
               </span>

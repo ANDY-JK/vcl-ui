@@ -120,7 +120,7 @@ const matrixCols = computed(() => {
 
 /** 证件类型列表 */
 const idcardTypes = computed(() => {
-  const raw = (props.field.props?.idcardTypes as string) ?? '身份证'
+  const raw = (props.field.props?.idcardTypes as string) ?? t('fb.idType1')
   return raw.split('\n').filter(Boolean)
 })
 
@@ -410,6 +410,8 @@ const styleVars = computed<Record<string, string>>(() => {
   if (sc.borderColor) vars['--fb-field-border'] = sc.borderColor
   if (sc.focusBorderColor) vars['--fb-field-focus-border'] = sc.focusBorderColor
   if (sc.controlWidth && sc.controlWidth !== '100%') vars['--fb-control-width'] = sc.controlWidth
+  // 富文本空态占位文案（CSS content 无法直接接 t()，经 CSS 变量下发）
+  vars['--fb-rt-placeholder'] = JSON.stringify(t('formBuilder.inputContent'))
   return vars
 })
 
@@ -956,7 +958,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   outline: none;
 }
 .fb-richtext-body:empty::before {
-  content: '输入内容...';
+  content: var(--fb-rt-placeholder);
   color: var(--color-text-muted, #94a3b8);
 }
 

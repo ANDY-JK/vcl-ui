@@ -6,101 +6,109 @@
  *
  * 门店列表数据不在此定义（那是业务数据，由调用方通过 v-model 注入）。
  * 这里只定义表单字段结构。
+ *
+ * 函数化：模块求值早于 setLocale，文案在调用时刻按当前语言翻译
  */
 
 import type { FormSchema } from '../types'
 import { validators } from '../useFormValidator'
+import { useT } from '@/components/_internal/i18n'
 
-export const contractCollectionSchema: FormSchema = {
-  title: '门店合同收集',
-  description: '分批收集苹果专柜租赁协议，支持拍照上传与云端同步',
-  layout: 'single',
-  fields: [
-    {
-      key: 'appleId',
-      label: 'Apple ID',
-      type: 'number',
-      required: true,
-      placeholder: '请输入 Apple ID',
-      props: { stepper: false },
-    },
-    {
-      key: 'name',
-      label: '授权门店名称',
-      type: 'text',
-      required: true,
-      placeholder: '如：汇荣达汨罗市长乐镇姚献忠手机店',
-      span: 24,
-    },
-    {
-      key: 'license',
-      label: '营业执照名称',
-      type: 'text',
-      required: true,
-      placeholder: '营业执照上的名称',
-    },
-    {
-      key: 'address',
-      label: '营业执照地址',
-      type: 'textarea',
-      required: true,
-      placeholder: '营业执照注册地址',
-      span: 24,
-      props: { rows: 2 },
-    },
-    {
-      key: 'phone',
-      label: '联系电话',
-      type: 'tel',
-      placeholder: '手机号码',
-      rules: [validators.phone()],
-    },
-    {
-      key: 'startDate',
-      label: '开始日期',
-      type: 'date',
-      placeholder: '选择开始日期',
-      props: { format: 'YYYY-MM-DD' },
-    },
-    {
-      key: 'category',
-      label: '门店分类',
-      type: 'select',
-      required: true,
-      placeholder: '选择分类',
-      options: [
-        { value: '汇荣达', label: '汇荣达' },
-        { value: '立炎卓', label: '立炎卓' },
-      ],
-    },
-    {
-      key: 'hasContract',
-      label: '是否已签合同',
-      type: 'switch',
-      default: false,
-    },
-    {
-      key: 'contractPhoto',
-      label: '柜机协议照片',
-      type: 'image-upload',
-      required: true,
-      hint: '请拍照上传柜机协议，支持拍照和相册选择',
-      visibleWhen: { field: 'hasContract', equals: true },
-      props: {
-        variant: 'card',
-        accept: 'image/*',
-        maxSize: 10,
-        mobileMenu: true,
-        compress: true,
+/** 模块级 t：纯 .ts 文件，各函数直接用 */
+const t = useT()
+
+export function contractCollectionSchema(): FormSchema {
+  return {
+    title: t('fbPre.ctTitle'),
+    description: t('fbPre.ctDesc'),
+    layout: 'single',
+    fields: [
+      {
+        key: 'appleId',
+        label: 'Apple ID',
+        type: 'number',
+        required: true,
+        placeholder: t('fbPre.ctAppleIdPh'),
+        props: { stepper: false },
       },
-    },
-    {
-      key: 'remark',
-      label: '备注',
-      type: 'textarea',
-      placeholder: '其他需要说明的信息',
-      span: 24,
-      props: { rows: 3 },
-    },
-  ],
+      {
+        key: 'name',
+        label: t('fbPre.ctStoreName'),
+        type: 'text',
+        required: true,
+        placeholder: t('fbPre.ctStoreNamePh'),
+        span: 24,
+      },
+      {
+        key: 'license',
+        label: t('fbPre.ctLicenseName'),
+        type: 'text',
+        required: true,
+        placeholder: t('fbPre.ctLicenseNamePh'),
+      },
+      {
+        key: 'address',
+        label: t('fbPre.ctLicenseAddr'),
+        type: 'textarea',
+        required: true,
+        placeholder: t('fbPre.ctLicenseAddrPh'),
+        span: 24,
+        props: { rows: 2 },
+      },
+      {
+        key: 'phone',
+        label: t('fbPre.ctPhone'),
+        type: 'tel',
+        placeholder: t('fbPre.ctPhonePh'),
+        rules: [validators.phone()],
+      },
+      {
+        key: 'startDate',
+        label: t('fbPre.ctStartDate'),
+        type: 'date',
+        placeholder: t('fbPre.ctStartDatePh'),
+        props: { format: 'YYYY-MM-DD' },
+      },
+      {
+        key: 'category',
+        label: t('fbPre.ctCategory'),
+        type: 'select',
+        required: true,
+        placeholder: t('fbPre.ctCategoryPh'),
+        options: [
+          { value: '汇荣达', label: '汇荣达' },
+          { value: '立炎卓', label: '立炎卓' },
+        ],
+      },
+      {
+        key: 'hasContract',
+        label: t('fbPre.ctHasContract'),
+        type: 'switch',
+        default: false,
+      },
+      {
+        key: 'contractPhoto',
+        label: t('fbPre.ctContractPhoto'),
+        type: 'image-upload',
+        required: true,
+        hint: t('fbPre.ctContractPhotoHint'),
+        visibleWhen: { field: 'hasContract', equals: true },
+        props: {
+          variant: 'card',
+          accept: 'image/*',
+          maxSize: 10,
+          mobileMenu: true,
+          compress: true,
+        },
+      },
+      {
+        key: 'remark',
+        label: t('fbPre.regRemark'),
+        type: 'textarea',
+        placeholder: t('fbPre.ctRemarkPh'),
+        span: 24,
+        props: { rows: 3 },
+      },
+    ],
+  }
 }

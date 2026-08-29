@@ -16,6 +16,7 @@ import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
 import IconPicker from '@/components/form/IconPicker.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
 import {
   getTypeLabel,
   getTypeIcon,
@@ -25,6 +26,8 @@ import {
   type DesignerNode,
 } from './types'
 import { getFieldDefaults, getComponentCategory } from '../fieldRegistry'
+
+const t = useT()
 
 const props = defineProps<{
   node: DesignerNode
@@ -44,18 +47,19 @@ const emit = defineEmits<{
 type PropTab = 'basic' | 'validation' | 'style' | 'event' | 'data'
 const activeTab = ref<PropTab>('basic')
 
-const tabs: { id: PropTab; label: string }[] = [
-  { id: 'basic', label: '基本' },
-  { id: 'validation', label: '校验' },
-  { id: 'style', label: '样式' },
-  { id: 'event', label: '事件' },
-  { id: 'data', label: '数据' },
-]
+/** 属性分页 tab（computed：语言切换时重算） */
+const tabs = computed<{ id: PropTab; label: string }[]>(() => [
+  { id: 'basic', label: t('fbp.tabBasic') },
+  { id: 'validation', label: t('fbp.tabValidation') },
+  { id: 'style', label: t('fbp.tabStyle') },
+  { id: 'event', label: t('fbp.tabEvent') },
+  { id: 'data', label: t('fbp.tabData') },
+])
 
 /** 容器节点只显示基本属性页 */
 const availableTabs = computed(() => {
-  if (isContainerNode(props.node)) return [{ id: 'basic' as PropTab, label: '基本' }]
-  return tabs
+  if (isContainerNode(props.node)) return [{ id: 'basic' as PropTab, label: t('fbp.tabBasic') }]
+  return tabs.value
 })
 
 // ════════════════════════════════════════
@@ -64,13 +68,13 @@ const availableTabs = computed(() => {
 
 const isContainer = computed(() => isContainerNode(props.node))
 
-/** span 下拉选项 */
-const spanOptions = [
-  { value: 24, label: '整行 (24)' },
-  { value: 12, label: '半行 (12)' },
-  { value: 8, label: '三分之一 (8)' },
-  { value: 6, label: '四分之一 (6)' },
-]
+/** span 下拉选项（computed：语言切换时重算） */
+const spanOptions = computed(() => [
+  { value: 24, label: t('fbp.spanFull') },
+  { value: 12, label: t('fbp.spanHalf') },
+  { value: 8, label: t('fbp.spanThird') },
+  { value: 6, label: t('fbp.spanQuarter') },
+])
 
 /** Input 值转换 */
 function onInputEmit(key: keyof DesignerNode, v: unknown): void {
@@ -109,13 +113,31 @@ const visibleWhenFieldOptions = computed(() => {
 const builtinValidations = computed(() => {
   const v = props.node.validation
   return [
-    { name: '最小长度', value: v?.minLength, key: 'minLength', type: 'number' },
-    { name: '最大长度', value: v?.maxLength, key: 'maxLength', type: 'number' },
-    { name: '正则表达式', value: v?.pattern, key: 'pattern', type: 'text' },
-    { name: '手机号格式', value: v?.builtinType === 'phone', key: 'builtinType', type: 'toggle', toggleValue: 'phone' },
-    { name: '邮箱格式', value: v?.builtinType === 'email', key: 'builtinType', type: 'toggle', toggleValue: 'email' },
-    { name: '身份证号', value: v?.builtinType === 'idcard', key: 'builtinType', type: 'toggle', toggleValue: 'idcard' },
-    { name: 'URL 格式', value: v?.builtinType === 'url', key: 'builtinType', type: 'toggle', toggleValue: 'url' },
+    { name: t('fbp.valMinLen'), value: v?.minLength, key: 'minLength', type: 'number' },
+    { name: t('fbp.valMaxLen'), value: v?.maxLength, key: 'maxLength', type: 'number' },
+    { name: t('fbp.valPattern'), value: v?.pattern, key: 'pattern', type: 'text' },
+    {
+      name: t('fbp.valPhone'),
+      value: v?.builtinType === 'phone',
+      key: 'builtinType',
+      type: 'toggle',
+      toggleValue: 'phone',
+    },
+    {
+      name: t('fbp.valEmail'),
+      value: v?.builtinType === 'email',
+      key: 'builtinType',
+      type: 'toggle',
+      toggleValue: 'email',
+    },
+    {
+      name: t('fbp.valIdcard'),
+      value: v?.builtinType === 'idcard',
+      key: 'builtinType',
+      type: 'toggle',
+      toggleValue: 'idcard',
+    },
+    { name: t('fbp.valUrl'), value: v?.builtinType === 'url', key: 'builtinType', type: 'toggle', toggleValue: 'url' },
   ]
 })
 
@@ -135,19 +157,19 @@ const isTextInput = computed(() => getComponentCategory(props.node.type) === 'in
 
 /** 联动公式的 placeholder 文本 */
 const linkageFormulaPlaceholder = computed(() => {
-  const t = props.node.eventConfig?.linkageType
-  if (t === 'followValue') return '如：{{price}} * {{quantity}}'
-  if (t === 'showHide') return '如：{{type}} == "A"'
-  if (t === 'followOptions') return '如：{{category}}'
+  const lt = props.node.eventConfig?.linkageType
+  if (lt === 'followValue') return t('fbp.formulaHintValue')
+  if (lt === 'showHide') return t('fbp.formulaHintShowHide')
+  if (lt === 'followOptions') return t('fbp.formulaHintOptions')
   return ''
 })
 
 /** 联动帮助提示文本 */
 const linkageHelpText = computed(() => {
-  const t = props.node.eventConfig?.linkageType
-  if (t === 'followValue') return '值跟随：当依赖字段变化时，自动计算本字段值。用 {{字段名}} 引用其他字段值。'
-  if (t === 'showHide') return '显隐联动：公式为条件表达式，如 {{status}} == "active"，条件为真时显示目标字段。'
-  if (t === 'followOptions') return '选项跟随：根据依赖字段值自动过滤本字段选项。'
+  const lt = props.node.eventConfig?.linkageType
+  if (lt === 'followValue') return t('fbp.linkageHelpValue')
+  if (lt === 'showHide') return t('fbp.linkageHelpShowHide')
+  if (lt === 'followOptions') return t('fbp.linkageHelpOptions')
   return ''
 })
 </script>
@@ -158,7 +180,7 @@ const linkageHelpText = computed(() => {
       <!-- 字段头部 -->
       <div class="ldp-props-header">
         <IconSvg :type="isContainer ? 'layout-template' : 'settings-2'" size="sm" />
-        <span>属性配置</span>
+        <span>{{ t('fbp.propsConfig') }}</span>
         <span class="ldp-props-type-badge">{{ getTypeLabel(node.type) }}</span>
       </div>
 
@@ -182,17 +204,17 @@ const linkageHelpText = computed(() => {
 
       <!-- ═══ 基本属性页 ═══ -->
       <div v-show="activeTab === 'basic'" class="ldp-prop-page">
-        <div class="ldp-section-title">基本属性</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionBasic') }}</div>
 
         <div class="ldp-prop">
-          <label>标签名称</label>
-          <Input :model-value="node.label" placeholder="显示名称" @update:model-value="onLabelInput" />
+          <label>{{ t('fbp.labelName') }}</label>
+          <Input :model-value="node.label" :placeholder="t('fbp.labelNamePh')" @update:model-value="onLabelInput" />
         </div>
 
         <!-- 容器节点专属 -->
         <template v-if="isContainer">
           <div class="ldp-prop">
-            <label>容器类型</label>
+            <label>{{ t('fbp.containerType') }}</label>
             <div class="ldp-type-readonly">
               <IconSvg type="layout-template" size="xs" />
               {{ getTypeLabel(node.type) }}
@@ -201,15 +223,15 @@ const linkageHelpText = computed(() => {
 
           <!-- grid 容器：列数 -->
           <template v-if="node.type === 'grid'">
-            <div class="ldp-section-title">栅格设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionGrid') }}</div>
             <div class="ldp-prop">
-              <label>列数</label>
+              <label>{{ t('fbp.columns') }}</label>
               <Select
                 :model-value="node.containerConfig?.columns ?? 2"
                 :options="[
-                  { value: 2, label: '2 列' },
-                  { value: 3, label: '3 列' },
-                  { value: 4, label: '4 列' },
+                  { value: 2, label: t('fbp.col2') },
+                  { value: 3, label: t('fbp.col3') },
+                  { value: 4, label: t('fbp.col4') },
                 ]"
                 @update:model-value="
                   emit('update', { containerConfig: { ...node.containerConfig, columns: Number($event) } })
@@ -220,14 +242,13 @@ const linkageHelpText = computed(() => {
 
           <!-- tabs 容器：标签页列表 -->
           <template v-if="node.type === 'tabs'">
-            <div class="ldp-section-title">标签页配置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionTabs') }}</div>
             <div class="ldp-prop">
-              <label>标签页列表（每行一个）</label>
+              <label>{{ t('fbp.tabsList') }}</label>
               <textarea
                 class="ldp-options-editor"
                 :value="(node.containerConfig?.tabs ?? []).map((t) => t.label).join('\n')"
-                placeholder="标签页 1
-标签页 2"
+                :placeholder="t('fbp.tabsPh')"
                 rows="4"
                 @input="
                   emit('update', {
@@ -246,14 +267,13 @@ const linkageHelpText = computed(() => {
 
           <!-- collapse 容器：折叠项列表 -->
           <template v-if="node.type === 'collapse'">
-            <div class="ldp-section-title">折叠项配置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionCollapse') }}</div>
             <div class="ldp-prop">
-              <label>折叠项标题（每行一个）</label>
+              <label>{{ t('fbp.collapseList') }}</label>
               <textarea
                 class="ldp-options-editor"
                 :value="(node.containerConfig?.collapseItems ?? []).map((c) => c.title).join('\n')"
-                placeholder="折叠项 1
-折叠项 2"
+                :placeholder="t('fbp.collapsePh')"
                 rows="4"
                 @input="
                   emit('update', {
@@ -272,15 +292,13 @@ const linkageHelpText = computed(() => {
 
           <!-- steps 容器：步骤列表 -->
           <template v-if="node.type === 'steps'">
-            <div class="ldp-section-title">步骤配置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionSteps') }}</div>
             <div class="ldp-prop">
-              <label>步骤标题（每行一个）</label>
+              <label>{{ t('fbp.stepsList') }}</label>
               <textarea
                 class="ldp-options-editor"
                 :value="(node.containerConfig?.steps ?? []).map((s) => s.title).join('\n')"
-                placeholder="步骤 1
-步骤 2
-步骤 3"
+                :placeholder="t('fbp.stepsPh')"
                 rows="4"
                 @input="
                   emit('update', {
@@ -301,16 +319,16 @@ const linkageHelpText = computed(() => {
         <!-- 字段节点专属属性 -->
         <template v-else>
           <div class="ldp-prop">
-            <label>字段 Key</label>
+            <label>{{ t('fbp.fieldKey') }}</label>
             <Input
               :model-value="node.key ?? ''"
-              placeholder="数据绑定标识"
+              :placeholder="t('fbp.fieldKeyPh')"
               @update:model-value="emit('update', { key: $event === null ? '' : String($event) })"
             />
           </div>
 
           <div class="ldp-prop ldp-prop-readonly">
-            <label>字段类型</label>
+            <label>{{ t('fbp.fieldType') }}</label>
             <div class="ldp-type-readonly">
               <IconSvg :type="getTypeIcon(node.type)" size="xs" />
               {{ getTypeLabel(node.type) }}
@@ -318,7 +336,7 @@ const linkageHelpText = computed(() => {
           </div>
 
           <div class="ldp-prop">
-            <label>栅格宽度</label>
+            <label>{{ t('fbp.spanWidth') }}</label>
             <Select
               :model-value="node.span ?? 24"
               :options="spanOptions"
@@ -327,7 +345,7 @@ const linkageHelpText = computed(() => {
           </div>
 
           <div class="ldp-prop ldp-prop-switch">
-            <label>必填</label>
+            <label>{{ t('fbp.required') }}</label>
             <Group
               type="switch"
               :model-value="!!node.required"
@@ -336,7 +354,7 @@ const linkageHelpText = computed(() => {
           </div>
 
           <div class="ldp-prop ldp-prop-switch">
-            <label>禁用</label>
+            <label>{{ t('fbp.disabled') }}</label>
             <Group
               type="switch"
               :model-value="!!node.disabled"
@@ -345,7 +363,7 @@ const linkageHelpText = computed(() => {
           </div>
 
           <div class="ldp-prop ldp-prop-switch">
-            <label>只读</label>
+            <label>{{ t('fbp.readonly') }}</label>
             <Group
               type="switch"
               :model-value="!!node.readonly"
@@ -355,30 +373,30 @@ const linkageHelpText = computed(() => {
 
           <!-- 占位符 -->
           <template v-if="hasProp('placeholder')">
-            <div class="ldp-section-title">显示设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionDisplay') }}</div>
             <div class="ldp-prop">
-              <label>占位符</label>
+              <label>{{ t('fbp.placeholder') }}</label>
               <Input
                 :model-value="node.placeholder ?? ''"
-                placeholder="输入框内的提示文字"
+                :placeholder="t('fbp.placeholderPh')"
                 @update:model-value="onInputEmit('placeholder', $event)"
               />
             </div>
             <!-- 前缀图标 / 后缀文字（文本输入类字段） -->
             <template v-if="isTextInput">
               <div class="ldp-prop">
-                <label>前缀图标</label>
+                <label>{{ t('fbp.prefixIcon') }}</label>
                 <div class="ldp-prop-inline">
                   <IconPicker
                     :model-value="node.icon ?? ''"
-                    placeholder="输入框左侧图标（可选）"
+                    :placeholder="t('fbp.prefixIconPh')"
                     @update:model-value="emit('update', { icon: String($event ?? '') })"
                   />
                   <button
                     v-if="node.icon"
                     type="button"
                     class="ldp-icon-clear"
-                    title="清除图标"
+                    :title="t('fbp.clearIcon')"
                     @click="emit('update', { icon: '' })"
                   >
                     <IconSvg type="x" size="xs" />
@@ -386,10 +404,10 @@ const linkageHelpText = computed(() => {
                 </div>
               </div>
               <div class="ldp-prop">
-                <label>后缀文字</label>
+                <label>{{ t('fbp.suffixText') }}</label>
                 <Input
                   :model-value="node.suffixText ?? ''"
-                  placeholder="输入框右侧固定文字，如单位"
+                  :placeholder="t('fbp.suffixTextPh')"
                   @update:model-value="onInputEmit('suffixText', $event)"
                 />
               </div>
@@ -399,10 +417,10 @@ const linkageHelpText = computed(() => {
           <!-- 提示文字 -->
           <template v-if="hasHint">
             <div class="ldp-prop">
-              <label>提示文字</label>
+              <label>{{ t('fbp.hint') }}</label>
               <Input
                 :model-value="node.hint ?? ''"
-                placeholder="显示在控件下方的帮助信息"
+                :placeholder="t('fbp.hintPh')"
                 @update:model-value="onInputEmit('hint', $event)"
               />
             </div>
@@ -410,9 +428,9 @@ const linkageHelpText = computed(() => {
 
           <!-- 默认值 -->
           <template v-if="['text', 'textarea'].includes(node.type)">
-            <div class="ldp-section-title">默认值</div>
+            <div class="ldp-section-title">{{ t('fbp.defaultValue') }}</div>
             <div class="ldp-prop">
-              <label>默认值</label>
+              <label>{{ t('fbp.defaultValue') }}</label>
               <Input
                 :model-value="(node.defaultValue as string) ?? ''"
                 @update:model-value="onInputEmit('defaultValue', $event)"
@@ -421,9 +439,9 @@ const linkageHelpText = computed(() => {
           </template>
 
           <template v-if="node.type === 'number'">
-            <div class="ldp-section-title">默认值</div>
+            <div class="ldp-section-title">{{ t('fbp.defaultValue') }}</div>
             <div class="ldp-prop">
-              <label>默认值</label>
+              <label>{{ t('fbp.defaultValue') }}</label>
               <Input
                 type="number"
                 :model-value="(node.defaultValue as number) ?? 0"
@@ -433,9 +451,9 @@ const linkageHelpText = computed(() => {
           </template>
 
           <template v-if="node.type === 'switch'">
-            <div class="ldp-section-title">默认值</div>
+            <div class="ldp-section-title">{{ t('fbp.defaultValue') }}</div>
             <div class="ldp-prop ldp-prop-switch">
-              <label>默认开启</label>
+              <label>{{ t('fbp.defaultOn') }}</label>
               <Group
                 type="switch"
                 :model-value="!!node.defaultValue"
@@ -446,50 +464,50 @@ const linkageHelpText = computed(() => {
 
           <!-- 选项编辑 -->
           <template v-if="hasOptions">
-            <div class="ldp-section-title">选项列表</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionOptions') }}</div>
             <div class="ldp-prop">
-              <label>选项（每行一个）</label>
+              <label>{{ t('fbp.optionsList') }}</label>
               <textarea
                 class="ldp-options-editor"
                 :value="(node.options || []).join('\n')"
-                placeholder="选项1&#10;选项2&#10;选项3"
+                :placeholder="t('fbp.optionsPh')"
                 rows="5"
                 @input="
                   emit('update', { options: ($event.target as HTMLTextAreaElement).value.split('\n').filter(Boolean) })
                 "
               />
-              <span class="ldp-option-count">{{ (node.options || []).length }} 个选项</span>
+              <span class="ldp-option-count">{{ t('fbp.optionCount', { n: (node.options || []).length }) }}</span>
             </div>
           </template>
 
           <!-- 数字属性 -->
           <template v-if="['number', 'slider'].includes(node.type)">
-            <div class="ldp-section-title">数值范围</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionRange') }}</div>
             <div class="ldp-prop-row">
               <div class="ldp-prop">
-                <label>最小值</label>
+                <label>{{ t('fbp.min') }}</label>
                 <Input type="number" :model-value="node.min ?? 0" @update:model-value="onNumberEmit('min', $event)" />
               </div>
               <div class="ldp-prop">
-                <label>最大值</label>
+                <label>{{ t('fbp.max') }}</label>
                 <Input type="number" :model-value="node.max ?? 100" @update:model-value="onNumberEmit('max', $event)" />
               </div>
             </div>
             <div class="ldp-prop">
-              <label>步进</label>
+              <label>{{ t('fbp.step') }}</label>
               <Input type="number" :model-value="node.step ?? 1" @update:model-value="onNumberEmit('step', $event)" />
             </div>
           </template>
 
           <!-- 最大长度（text） -->
           <template v-if="node.type === 'text'">
-            <div class="ldp-section-title">输入限制</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionLimit') }}</div>
             <div class="ldp-prop">
-              <label>最大长度</label>
+              <label>{{ t('fbp.valMaxLen') }}</label>
               <Input
                 type="number"
                 :model-value="node.maxLength ?? 0"
-                placeholder="0 = 不限制"
+                :placeholder="t('fbp.maxLengthPh')"
                 @update:model-value="onNumberEmit('maxLength', $event)"
               />
             </div>
@@ -497,19 +515,19 @@ const linkageHelpText = computed(() => {
 
           <!-- textarea 行数 -->
           <template v-if="node.type === 'textarea'">
-            <div class="ldp-section-title">文本域设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionTextarea') }}</div>
             <div class="ldp-prop">
-              <label>行数</label>
+              <label>{{ t('fbp.rows') }}</label>
               <Input type="number" :model-value="node.rows ?? 3" @update:model-value="onNumberEmit('rows', $event)" />
             </div>
           </template>
 
           <!-- 评分属性 -->
           <template v-if="node.type === 'rate'">
-            <div class="ldp-section-title">评分设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionRate') }}</div>
             <div class="ldp-prop-row">
               <div class="ldp-prop">
-                <label>星星数</label>
+                <label>{{ t('fbp.stars') }}</label>
                 <Input
                   type="number"
                   :model-value="node.rateMax ?? 5"
@@ -517,7 +535,7 @@ const linkageHelpText = computed(() => {
                 />
               </div>
               <div class="ldp-prop ldp-prop-switch">
-                <label>允许半星</label>
+                <label>{{ t('fbp.allowHalf') }}</label>
                 <Group
                   type="switch"
                   :model-value="!!node.rateAllowHalf"
@@ -529,13 +547,13 @@ const linkageHelpText = computed(() => {
 
           <!-- 级联选项 -->
           <template v-if="node.type === 'cascader'">
-            <div class="ldp-section-title">级联配置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionCascader') }}</div>
             <div class="ldp-prop">
-              <label>层级选项（JSON）</label>
+              <label>{{ t('fbp.cascaderOptions') }}</label>
               <textarea
                 class="ldp-options-editor"
                 :value="node.cascaderOptions"
-                placeholder='[{"label":"一级","value":"1","children":[...]}]'
+                :placeholder="t('fbp.cascaderPh')"
                 rows="6"
                 @input="emit('update', { cascaderOptions: ($event.target as HTMLTextAreaElement).value })"
               />
@@ -544,26 +562,24 @@ const linkageHelpText = computed(() => {
                   :type="!!parseCascaderOptions(node.cascaderOptions) ? 'circle-check' : 'alert-circle'"
                   size="xs"
                 />
-                {{
-                  parseCascaderOptions(node.cascaderOptions) ? 'JSON 格式正确' : '需为 {label,value,children}[] 数组'
-                }}
+                {{ parseCascaderOptions(node.cascaderOptions) ? t('fbp.jsonOk') : t('fbp.jsonBad') }}
               </span>
             </div>
           </template>
 
           <!-- 上传属性 -->
           <template v-if="node.type === 'upload'">
-            <div class="ldp-section-title">上传设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionUpload') }}</div>
             <div class="ldp-prop">
-              <label>接受的文件类型</label>
+              <label>{{ t('fbp.accept') }}</label>
               <Input
                 :model-value="node.accept ?? 'image/*'"
-                placeholder="如 image/*,.pdf"
+                :placeholder="t('fbp.acceptPh')"
                 @update:model-value="onInputEmit('accept', $event)"
               />
             </div>
             <div class="ldp-prop ldp-prop-switch">
-              <label>允许多文件</label>
+              <label>{{ t('fbp.multiple') }}</label>
               <Group
                 type="switch"
                 :model-value="node.multiple !== false"
@@ -571,7 +587,7 @@ const linkageHelpText = computed(() => {
               />
             </div>
             <div class="ldp-prop">
-              <label>最大文件大小 (MB)</label>
+              <label>{{ t('fbp.maxSize') }}</label>
               <Input
                 type="number"
                 :model-value="node.maxSize ?? 10"
@@ -583,32 +599,32 @@ const linkageHelpText = computed(() => {
           <!-- ═══ v3 高级字段专属属性 ═══ -->
           <!-- 子表单：列定义 -->
           <template v-if="node.type === 'subform'">
-            <div class="ldp-section-title">子表单设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionSubform') }}</div>
             <div class="ldp-prop">
-              <label>列定义（每行一个，格式：标签|key|类型）</label>
+              <label>{{ t('fbp.subformColumns') }}</label>
               <textarea
                 class="ldp-options-editor"
                 :value="node.subformColumns ?? ''"
-                placeholder="姓名|name|text&#10;电话|phone|number"
+                :placeholder="t('fbp.subformColumnsPh')"
                 rows="4"
                 @input="emit('update', { subformColumns: ($event.target as HTMLTextAreaElement).value })"
               />
-              <span class="ldp-prop-hint">类型支持：text / number / select</span>
+              <span class="ldp-prop-hint">{{ t('fbp.subformTypeHint') }}</span>
             </div>
           </template>
 
           <!-- 关联选择：实体类型 -->
           <template v-if="node.type === 'relate'">
-            <div class="ldp-section-title">关联设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionRelate') }}</div>
             <div class="ldp-prop">
-              <label>关联实体类型</label>
+              <label>{{ t('fbp.relateEntity') }}</label>
               <Select
                 :model-value="node.relateEntityType ?? 'user'"
                 :options="[
-                  { value: 'user', label: '用户' },
-                  { value: 'dept', label: '部门' },
-                  { value: 'role', label: '角色' },
-                  { value: 'custom', label: '自定义' },
+                  { value: 'user', label: t('fbp.entityUser') },
+                  { value: 'dept', label: t('fbp.entityDept') },
+                  { value: 'role', label: t('fbp.entityRole') },
+                  { value: 'custom', label: t('fbp.entityCustom') },
                 ]"
                 @update:model-value="
                   emit('update', { relateEntityType: $event as 'user' | 'dept' | 'role' | 'custom' })
@@ -619,14 +635,14 @@ const linkageHelpText = computed(() => {
 
           <!-- 富文本：工具栏模式 -->
           <template v-if="node.type === 'richtext'">
-            <div class="ldp-section-title">富文本设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionRichtext') }}</div>
             <div class="ldp-prop">
-              <label>工具栏模式</label>
+              <label>{{ t('fbp.toolbarMode') }}</label>
               <Select
                 :model-value="node.richtextToolbar ?? 'simple'"
                 :options="[
-                  { value: 'simple', label: '简洁（加粗/斜体/下划线/列表）' },
-                  { value: 'full', label: '完整（含标题/颜色/对齐）' },
+                  { value: 'simple', label: t('fbp.toolbarSimple') },
+                  { value: 'full', label: t('fbp.toolbarFull') },
                 ]"
                 @update:model-value="emit('update', { richtextToolbar: $event as 'simple' | 'full' })"
               />
@@ -635,9 +651,9 @@ const linkageHelpText = computed(() => {
 
           <!-- 地址选择：详细地址 -->
           <template v-if="node.type === 'address'">
-            <div class="ldp-section-title">地址设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionAddress') }}</div>
             <div class="ldp-prop ldp-prop-switch">
-              <label>显示详细地址</label>
+              <label>{{ t('fbp.addressDetail') }}</label>
               <Group
                 type="switch"
                 :model-value="!!node.addressDetail"
@@ -648,39 +664,39 @@ const linkageHelpText = computed(() => {
 
           <!-- 证件号码：类型列表 -->
           <template v-if="node.type === 'idcard'">
-            <div class="ldp-section-title">证件设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionIdcard') }}</div>
             <div class="ldp-prop">
-              <label>证件类型（每行一个）</label>
+              <label>{{ t('fbp.idcardTypes') }}</label>
               <textarea
                 class="ldp-options-editor"
-                :value="node.idcardTypes ?? '身份证'"
-                placeholder="身份证&#10;护照&#10;军官证"
+                :value="node.idcardTypes ?? t('fb.idType1')"
+                :placeholder="t('fbp.idcardTypesPh')"
                 rows="4"
                 @input="emit('update', { idcardTypes: ($event.target as HTMLTextAreaElement).value })"
               />
-              <span class="ldp-prop-hint">用户可选择多种证件类型</span>
+              <span class="ldp-prop-hint">{{ t('fbp.idcardHint') }}</span>
             </div>
           </template>
 
           <!-- 评分矩阵：行/列标题 -->
           <template v-if="node.type === 'matrix'">
-            <div class="ldp-section-title">矩阵设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionMatrix') }}</div>
             <div class="ldp-prop">
-              <label>行标题（每行一个）</label>
+              <label>{{ t('fbp.matrixRows') }}</label>
               <textarea
                 class="ldp-options-editor"
                 :value="node.matrixRows ?? ''"
-                placeholder="服务态度&#10;专业能力&#10;响应速度"
+                :placeholder="t('fbp.matrixRowsPh')"
                 rows="4"
                 @input="emit('update', { matrixRows: ($event.target as HTMLTextAreaElement).value })"
               />
             </div>
             <div class="ldp-prop">
-              <label>列标题（每行一个）</label>
+              <label>{{ t('fbp.matrixCols') }}</label>
               <textarea
                 class="ldp-options-editor"
                 :value="node.matrixCols ?? ''"
-                placeholder="满意&#10;一般&#10;不满意"
+                :placeholder="t('fbp.matrixColsPh')"
                 rows="4"
                 @input="emit('update', { matrixCols: ($event.target as HTMLTextAreaElement).value })"
               />
@@ -689,24 +705,24 @@ const linkageHelpText = computed(() => {
 
           <!-- 流水号：前缀/日期格式 -->
           <template v-if="node.type === 'serial'">
-            <div class="ldp-section-title">流水号设置</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionSerial') }}</div>
             <div class="ldp-prop">
-              <label>前缀</label>
+              <label>{{ t('fbp.prefix') }}</label>
               <Input
                 :model-value="node.serialPrefix ?? ''"
-                placeholder="如 NO / INV / 2024"
+                :placeholder="t('fbp.serialPrefixPh')"
                 @update:model-value="emit('update', { serialPrefix: String($event ?? '') })"
               />
             </div>
             <div class="ldp-prop">
-              <label>日期格式</label>
+              <label>{{ t('fbp.dateFormat') }}</label>
               <Select
                 :model-value="node.serialDateFormat ?? 'YYYYMMDD'"
                 :options="[
-                  { value: 'YYYYMMDD', label: '年月日 (20240101)' },
-                  { value: 'YYYY', label: '年仅 (2024)' },
-                  { value: 'YYYYMM', label: '年月 (202401)' },
-                  { value: 'NONE', label: '无日期' },
+                  { value: 'YYYYMMDD', label: t('fbp.dateYMD') },
+                  { value: 'YYYY', label: t('fbp.dateY') },
+                  { value: 'YYYYMM', label: t('fbp.dateYM') },
+                  { value: 'NONE', label: t('fbp.dateNone') },
                 ]"
                 @update:model-value="emit('update', { serialDateFormat: String($event ?? 'YYYYMMDD') })"
               />
@@ -715,13 +731,13 @@ const linkageHelpText = computed(() => {
 
           <!-- 条件显示 -->
           <template v-if="node.type !== 'divider' && node.type !== 'title'">
-            <div class="ldp-section-title">条件显示</div>
+            <div class="ldp-section-title">{{ t('fbp.sectionVisible') }}</div>
             <div class="ldp-prop">
-              <label>触发字段</label>
+              <label>{{ t('fbp.triggerField') }}</label>
               <Select
                 :model-value="node.visibleWhenField ?? ''"
                 :options="visibleWhenFieldOptions"
-                placeholder="选择触发字段（留空 = 始终显示）"
+                :placeholder="t('fbp.triggerFieldPh')"
                 @update:model-value="
                   emit('update', { visibleWhenField: $event === null ? '' : String($event) || undefined })
                 "
@@ -729,15 +745,15 @@ const linkageHelpText = computed(() => {
             </div>
             <template v-if="node.visibleWhenField">
               <div class="ldp-prop">
-                <label>匹配值</label>
+                <label>{{ t('fbp.matchValue') }}</label>
                 <Input
                   :model-value="node.visibleWhenValue ?? ''"
-                  placeholder="如 true / 1 / 某选项值"
+                  :placeholder="t('fbp.matchValuePh')"
                   @update:model-value="onInputEmit('visibleWhenValue', $event)"
                 />
               </div>
               <div class="ldp-prop ldp-prop-switch">
-                <label>反向匹配</label>
+                <label>{{ t('fbp.notMatch') }}</label>
                 <Group
                   type="switch"
                   :model-value="!!node.visibleWhenNot"
@@ -751,9 +767,9 @@ const linkageHelpText = computed(() => {
 
       <!-- ═══ 校验规则页 ═══ -->
       <div v-show="activeTab === 'validation' && !isContainer" class="ldp-prop-page">
-        <div class="ldp-section-title">必填校验</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionRequired') }}</div>
         <div class="ldp-prop ldp-prop-switch">
-          <label>必填字段</label>
+          <label>{{ t('fbp.requiredField') }}</label>
           <Group
             type="switch"
             :model-value="!!node.required"
@@ -761,48 +777,48 @@ const linkageHelpText = computed(() => {
           />
         </div>
         <div class="ldp-prop">
-          <label>必填提示语</label>
+          <label>{{ t('fbp.requiredMessage') }}</label>
           <Input
             :model-value="node.validation?.requiredMessage ?? ''"
-            placeholder="如：此字段不能为空"
+            :placeholder="t('fbp.requiredMessagePh')"
             @update:model-value="
               emit('update', { validation: { ...node.validation, requiredMessage: String($event ?? '') } })
             "
           />
         </div>
 
-        <div class="ldp-section-title">内置校验规则</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionBuiltin') }}</div>
         <div v-for="rule in builtinValidations" :key="rule.key" class="ldp-validation-rule">
           <span class="ldp-rule-icon" :class="{ on: !!rule.value }">
             <IconSvg :type="rule.value ? 'circle-check' : 'circle'" size="xs" />
           </span>
           <span class="ldp-rule-name">{{ rule.name }}</span>
           <span class="ldp-rule-status" :class="rule.value ? 'on' : 'off'">
-            {{ rule.value ? '已启用' : '未启用' }}
+            {{ rule.value ? t('fbp.enabled') : t('fbp.disabledState') }}
           </span>
         </div>
 
-        <div class="ldp-section-title">自定义校验</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionCustom') }}</div>
         <div class="ldp-prop">
-          <label>正则表达式</label>
+          <label>{{ t('fbp.valPattern') }}</label>
           <Input
             :model-value="node.validation?.pattern ?? ''"
-            placeholder="如：^[\u4e00-\u9fa5]+$"
+            :placeholder="t('fbp.patternPh')"
             @update:model-value="emit('update', { validation: { ...node.validation, pattern: String($event ?? '') } })"
           />
         </div>
         <div class="ldp-prop">
-          <label>校验提示语</label>
+          <label>{{ t('fbp.patternMessage') }}</label>
           <Input
             :model-value="node.validation?.patternMessage ?? ''"
-            placeholder="校验失败时显示的提示"
+            :placeholder="t('fbp.patternMessagePh')"
             @update:model-value="
               emit('update', { validation: { ...node.validation, patternMessage: String($event ?? '') } })
             "
           />
         </div>
         <div class="ldp-prop ldp-prop-switch">
-          <label>去除空格</label>
+          <label>{{ t('fbp.trim') }}</label>
           <Group
             type="switch"
             :model-value="!!node.validation?.trim"
@@ -810,7 +826,7 @@ const linkageHelpText = computed(() => {
           />
         </div>
         <div class="ldp-prop ldp-prop-switch">
-          <label>唯一校验</label>
+          <label>{{ t('fbp.unique') }}</label>
           <Group
             type="switch"
             :model-value="!!node.validation?.unique"
@@ -818,7 +834,7 @@ const linkageHelpText = computed(() => {
           />
         </div>
         <div class="ldp-prop ldp-prop-switch">
-          <label>实时校验</label>
+          <label>{{ t('fbp.realtime') }}</label>
           <Group
             type="switch"
             :model-value="!!node.validation?.realtime"
@@ -829,75 +845,75 @@ const linkageHelpText = computed(() => {
 
       <!-- ═══ 样式设置页 ═══ -->
       <div v-show="activeTab === 'style' && !isContainer" class="ldp-prop-page">
-        <div class="ldp-section-title">标签设置</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionLabel') }}</div>
         <div class="ldp-prop">
-          <label>标签宽度</label>
+          <label>{{ t('fbp.labelWidth') }}</label>
           <Select
             :model-value="node.styleConfig?.labelWidth ?? 'default'"
             :options="[
-              { value: 'default', label: '默认 (100px)' },
+              { value: 'default', label: t('fbp.labelWidthDefault') },
               { value: '80px', label: '80px' },
               { value: '120px', label: '120px' },
-              { value: 'auto', label: '自动' },
+              { value: 'auto', label: t('fbp.auto') },
             ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, labelWidth: $event as any } })"
           />
         </div>
         <div class="ldp-prop">
-          <label>标签位置</label>
+          <label>{{ t('fbp.labelPosition') }}</label>
           <Select
             :model-value="node.styleConfig?.labelPosition ?? 'left'"
             :options="[
-              { value: 'left', label: '左侧' },
-              { value: 'top', label: '上方' },
-              { value: 'hidden', label: '隐藏' },
+              { value: 'left', label: t('fbp.posLeft') },
+              { value: 'top', label: t('fbp.posTop') },
+              { value: 'hidden', label: t('fbp.posHidden') },
             ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, labelPosition: $event as any } })"
           />
         </div>
 
-        <div class="ldp-section-title">控件样式</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionControl') }}</div>
         <div class="ldp-prop">
-          <label>控件宽度</label>
+          <label>{{ t('fbp.controlWidth') }}</label>
           <Select
             :model-value="node.styleConfig?.controlWidth ?? '100%'"
             :options="[
               { value: '100%', label: '100%' },
               { value: '50%', label: '50%' },
-              { value: 'auto', label: '自适应' },
+              { value: 'auto', label: t('fbp.fit') },
             ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, controlWidth: $event as any } })"
           />
         </div>
         <div class="ldp-prop">
-          <label>控件尺寸</label>
+          <label>{{ t('fbp.controlSize') }}</label>
           <Select
             :model-value="node.styleConfig?.size ?? 'default'"
             :options="[
-              { value: 'small', label: '小' },
-              { value: 'default', label: '默认' },
-              { value: 'large', label: '大' },
+              { value: 'small', label: t('fbp.sizeSmall') },
+              { value: 'default', label: t('fbp.sizeDefault') },
+              { value: 'large', label: t('fbp.sizeLarge') },
             ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, size: $event as any } })"
           />
         </div>
         <div class="ldp-prop">
-          <label>圆角风格</label>
+          <label>{{ t('fbp.radius') }}</label>
           <Select
             :model-value="node.styleConfig?.radius ?? 'default'"
             :options="[
-              { value: 'default', label: '默认 (6px)' },
-              { value: '0px', label: '直角 (0px)' },
-              { value: '12px', label: '大圆角 (12px)' },
-              { value: '20px', label: '胶囊 (20px)' },
+              { value: 'default', label: t('fbp.radiusDefault') },
+              { value: '0px', label: t('fbp.radius0') },
+              { value: '12px', label: t('fbp.radius12') },
+              { value: '20px', label: t('fbp.radius20') },
             ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, radius: $event as any } })"
           />
         </div>
 
-        <div class="ldp-section-title">颜色定制</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionColor') }}</div>
         <div class="ldp-prop">
-          <label>边框颜色</label>
+          <label>{{ t('fbp.borderColor') }}</label>
           <div class="ldp-color-row">
             <input
               type="color"
@@ -919,7 +935,7 @@ const linkageHelpText = computed(() => {
           </div>
         </div>
         <div class="ldp-prop">
-          <label>聚焦边框色</label>
+          <label>{{ t('fbp.focusBorderColor') }}</label>
           <div class="ldp-color-row">
             <input
               type="color"
@@ -941,23 +957,23 @@ const linkageHelpText = computed(() => {
           </div>
         </div>
 
-        <div class="ldp-section-title">自定义样式</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionCustomStyle') }}</div>
         <div class="ldp-prop">
-          <label>自定义类名</label>
+          <label>{{ t('fbp.customClass') }}</label>
           <Input
             :model-value="node.styleConfig?.customClass ?? ''"
-            placeholder="如：my-custom-field"
+            :placeholder="t('fbp.customClassPh')"
             @update:model-value="
               emit('update', { styleConfig: { ...node.styleConfig, customClass: String($event ?? '') } })
             "
           />
         </div>
         <div class="ldp-prop">
-          <label>自定义样式（CSS）</label>
+          <label>{{ t('fbp.customCss') }}</label>
           <textarea
             class="ldp-options-editor"
             :value="node.styleConfig?.customCss ?? ''"
-            placeholder="/* 在此输入自定义 CSS */\n.my-field input { font-size: 16px; }"
+            :placeholder="t('fbp.customCssPh')"
             rows="3"
             @input="
               emit('update', {
@@ -970,13 +986,13 @@ const linkageHelpText = computed(() => {
 
       <!-- ═══ 事件配置页 ═══ -->
       <div v-show="activeTab === 'event' && !isContainer" class="ldp-prop-page">
-        <div class="ldp-section-title">字段事件</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionEvent') }}</div>
 
         <!-- onChange -->
         <div class="ldp-event-card">
           <div class="ldp-event-head">
             <IconSvg type="square-pen" size="xs" class="ldp-event-icon" />
-            <span class="ldp-event-label">值变化 (onChange)</span>
+            <span class="ldp-event-label">{{ t('fbp.eventChange') }}</span>
             <div class="ldp-event-toggle">
               <Group
                 type="switch"
@@ -1001,12 +1017,12 @@ const linkageHelpText = computed(() => {
             <Select
               :model-value="node.eventConfig?.onChange?.action ?? ''"
               :options="[
-                { value: '', label: '— 选择动作 —' },
-                { value: 'linkField', label: '联动其他字段' },
-                { value: 'callApi', label: '调用 API' },
-                { value: 'showTip', label: '显示提示' },
-                { value: 'setValue', label: '设置字段值' },
-                { value: 'toggleVisible', label: '显示/隐藏字段' },
+                { value: '', label: t('fbp.chooseAction') },
+                { value: 'linkField', label: t('fbp.actLinkField') },
+                { value: 'callApi', label: t('fbp.actCallApi') },
+                { value: 'showTip', label: t('fbp.actShowTip') },
+                { value: 'setValue', label: t('fbp.actSetValue') },
+                { value: 'toggleVisible', label: t('fbp.actToggleVisible') },
               ]"
               @update:model-value="
                 emit('update', {
@@ -1031,11 +1047,11 @@ const linkageHelpText = computed(() => {
               class="ldp-prop"
               style="padding: 0; border: none; margin-top: 8px"
             >
-              <label>目标字段</label>
+              <label>{{ t('fbp.targetField') }}</label>
               <Select
                 :model-value="node.eventConfig?.onChange?.targetField ?? ''"
                 :options="visibleWhenFieldOptions"
-                placeholder="选择目标字段"
+                :placeholder="t('fbp.targetFieldPh')"
                 @update:model-value="
                   emit('update', {
                     eventConfig: {
@@ -1056,7 +1072,7 @@ const linkageHelpText = computed(() => {
               class="ldp-prop"
               style="padding: 0; border: none; margin-top: 8px"
             >
-              <label>接口地址</label>
+              <label>{{ t('fbp.apiUrl') }}</label>
               <Input
                 :model-value="node.eventConfig?.onChange?.apiUrl ?? ''"
                 placeholder="https://api.example.com/xxx"
@@ -1081,7 +1097,7 @@ const linkageHelpText = computed(() => {
         <div class="ldp-event-card">
           <div class="ldp-event-head">
             <IconSvg type="sun" size="xs" class="ldp-event-icon" />
-            <span class="ldp-event-label">获得焦点 (onFocus)</span>
+            <span class="ldp-event-label">{{ t('fbp.eventFocus') }}</span>
             <div class="ldp-event-toggle">
               <Group
                 type="switch"
@@ -1103,7 +1119,7 @@ const linkageHelpText = computed(() => {
         <div class="ldp-event-card">
           <div class="ldp-event-head">
             <IconSvg type="moon" size="xs" class="ldp-event-icon" />
-            <span class="ldp-event-label">失去焦点 (onBlur)</span>
+            <span class="ldp-event-label">{{ t('fbp.eventBlur') }}</span>
             <div class="ldp-event-toggle">
               <Group
                 type="switch"
@@ -1123,10 +1139,10 @@ const linkageHelpText = computed(() => {
             <Select
               :model-value="node.eventConfig?.onBlur?.action ?? ''"
               :options="[
-                { value: '', label: '— 选择动作 —' },
-                { value: 'autoValidate', label: '自动校验' },
-                { value: 'format', label: '格式化值' },
-                { value: 'submit', label: '提交数据' },
+                { value: '', label: t('fbp.chooseAction') },
+                { value: 'autoValidate', label: t('fbp.actAutoValidate') },
+                { value: 'format', label: t('fbp.actFormat') },
+                { value: 'submit', label: t('fbp.actSubmit') },
               ]"
               @update:model-value="
                 emit('update', {
@@ -1140,16 +1156,16 @@ const linkageHelpText = computed(() => {
           </div>
         </div>
 
-        <div class="ldp-section-title">字段联动</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionLinkage') }}</div>
         <div class="ldp-prop">
-          <label>联动类型</label>
+          <label>{{ t('fbp.linkageType') }}</label>
           <Select
             :model-value="node.eventConfig?.linkageType ?? 'none'"
             :options="[
-              { value: 'none', label: '无联动' },
-              { value: 'followValue', label: '值跟随' },
-              { value: 'followOptions', label: '选项跟随' },
-              { value: 'showHide', label: '显隐联动' },
+              { value: 'none', label: t('fbp.linkageNone') },
+              { value: 'followValue', label: t('fbp.linkageFollowValue') },
+              { value: 'followOptions', label: t('fbp.linkageFollowOptions') },
+              { value: 'showHide', label: t('fbp.linkageShowHide') },
             ]"
             @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, linkageType: $event as any } })"
           />
@@ -1157,11 +1173,11 @@ const linkageHelpText = computed(() => {
         <template v-if="node.eventConfig?.linkageType && node.eventConfig.linkageType !== 'none'">
           <!-- 显隐联动：选择控制的目标字段 -->
           <div v-if="node.eventConfig.linkageType === 'showHide'" class="ldp-prop">
-            <label>目标字段</label>
+            <label>{{ t('fbp.targetField') }}</label>
             <Select
               :model-value="node.eventConfig?.onChange?.targetField ?? ''"
               :options="visibleWhenFieldOptions"
-              placeholder="选择要控制显隐的字段"
+              :placeholder="t('fbp.showHideFieldPh')"
               @update:model-value="
                 emit('update', {
                   eventConfig: {
@@ -1179,7 +1195,7 @@ const linkageHelpText = computed(() => {
 
           <!-- 联动公式 -->
           <div class="ldp-prop">
-            <label>联动公式</label>
+            <label>{{ t('fbp.linkageFormula') }}</label>
             <Input
               :model-value="node.eventConfig?.linkageFormula ?? ''"
               :placeholder="linkageFormulaPlaceholder"
@@ -1199,28 +1215,28 @@ const linkageHelpText = computed(() => {
 
       <!-- ═══ 数据源页 ═══ -->
       <div v-show="activeTab === 'data' && !isContainer" class="ldp-prop-page">
-        <div class="ldp-section-title">默认值</div>
+        <div class="ldp-section-title">{{ t('fbp.defaultValue') }}</div>
         <div class="ldp-prop">
-          <label>默认值类型</label>
+          <label>{{ t('fbp.defaultType') }}</label>
           <Select
             :model-value="node.dataConfig?.defaultType ?? 'none'"
             :options="[
-              { value: 'none', label: '无' },
-              { value: 'fixed', label: '固定值' },
-              { value: 'formula', label: '公式' },
-              { value: 'api', label: 'API 获取' },
-              { value: 'currentUser', label: '当前用户' },
-              { value: 'currentTime', label: '当前时间' },
+              { value: 'none', label: t('fbp.none') },
+              { value: 'fixed', label: t('fbp.fixed') },
+              { value: 'formula', label: t('fbp.formula') },
+              { value: 'api', label: t('fbp.apiFetch') },
+              { value: 'currentUser', label: t('fbp.currentUser') },
+              { value: 'currentTime', label: t('fbp.currentTime') },
             ]"
             @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, defaultType: $event as any } })"
           />
         </div>
         <template v-if="node.dataConfig?.defaultType === 'formula'">
           <div class="ldp-prop">
-            <label>默认值公式</label>
+            <label>{{ t('fbp.defaultFormula') }}</label>
             <Input
               :model-value="node.dataConfig?.defaultFormula ?? ''"
-              placeholder="如：{{phone}} + {{name}}"
+              :placeholder="t('fbp.defaultFormulaPh')"
               @update:model-value="
                 emit('update', { dataConfig: { ...node.dataConfig, defaultFormula: String($event ?? '') } })
               "
@@ -1228,31 +1244,31 @@ const linkageHelpText = computed(() => {
           </div>
         </template>
 
-        <div class="ldp-section-title">远程数据源</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionRemote') }}</div>
         <div class="ldp-datasource-card">
           <div class="ldp-prop" style="padding: 0; border: none">
-            <label>数据源类型</label>
+            <label>{{ t('fbp.sourceType') }}</label>
             <Select
               :model-value="node.dataConfig?.sourceType ?? 'none'"
               :options="[
-                { value: 'none', label: '无（静态数据）' },
-                { value: 'api', label: 'API 接口' },
-                { value: 'database', label: '数据库表' },
-                { value: 'userList', label: '关联用户列表' },
-                { value: 'deptList', label: '关联部门列表' },
+                { value: 'none', label: t('fbp.srcNone') },
+                { value: 'api', label: t('fbp.srcApi') },
+                { value: 'database', label: t('fbp.srcDatabase') },
+                { value: 'userList', label: t('fbp.srcUserList') },
+                { value: 'deptList', label: t('fbp.srcDeptList') },
               ]"
               @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, sourceType: $event as any } })"
             />
           </div>
           <template v-if="node.dataConfig?.sourceType === 'api'">
             <div class="ldp-prop" style="padding: 0; border: none; margin-top: 8px">
-              <label>接口地址</label>
+              <label>{{ t('fbp.apiUrl') }}</label>
             </div>
             <div class="ldp-datasource-url">
               <input
                 class="ldp-datasource-input"
                 :value="node.dataConfig?.apiUrl ?? ''"
-                placeholder="接口地址，如 https://api.example.com/data"
+                :placeholder="t('fbp.apiUrlPh')"
                 @input="
                   emit('update', {
                     dataConfig: { ...node.dataConfig, apiUrl: ($event.target as HTMLInputElement).value },
@@ -1261,18 +1277,18 @@ const linkageHelpText = computed(() => {
               />
             </div>
             <div class="ldp-prop" style="padding: 0; border: none; margin-top: 8px">
-              <label>数据映射</label>
+              <label>{{ t('fbp.dataMapping') }}</label>
               <div style="display: flex; gap: 6px">
                 <Input
                   :model-value="node.dataConfig?.labelField ?? ''"
-                  placeholder="显示字段名"
+                  :placeholder="t('fbp.labelFieldPh')"
                   @update:model-value="
                     emit('update', { dataConfig: { ...node.dataConfig, labelField: String($event ?? '') } })
                   "
                 />
                 <Input
                   :model-value="node.dataConfig?.valueField ?? ''"
-                  placeholder="值字段名"
+                  :placeholder="t('fbp.valueFieldPh')"
                   @update:model-value="
                     emit('update', { dataConfig: { ...node.dataConfig, valueField: String($event ?? '') } })
                   "
@@ -1282,26 +1298,26 @@ const linkageHelpText = computed(() => {
           </template>
         </div>
 
-        <div class="ldp-section-title">数据联动</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionDataLinkage') }}</div>
         <div class="ldp-prop">
-          <label>联动数据源</label>
+          <label>{{ t('fbp.linkageSource') }}</label>
           <Select
             :model-value="node.dataConfig?.linkageSource ?? 'none'"
             :options="[
-              { value: 'none', label: '无' },
-              { value: 'userList', label: '关联用户列表' },
-              { value: 'deptList', label: '关联部门列表' },
-              { value: 'roleList', label: '关联角色列表' },
+              { value: 'none', label: t('fbp.none') },
+              { value: 'userList', label: t('fbp.srcUserList') },
+              { value: 'deptList', label: t('fbp.srcDeptList') },
+              { value: 'roleList', label: t('fbp.srcRoleList') },
             ]"
             @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, linkageSource: $event as any } })"
           />
         </div>
         <div v-if="node.dataConfig?.linkageSource && node.dataConfig.linkageSource !== 'none'" class="ldp-prop">
-          <label>联动条件字段</label>
+          <label>{{ t('fbp.linkageField') }}</label>
           <Select
             :model-value="node.dataConfig?.linkageField ?? ''"
             :options="visibleWhenFieldOptions"
-            placeholder="— 无 —"
+            :placeholder="t('fbp.noneDash')"
             @update:model-value="
               emit('update', {
                 dataConfig: { ...node.dataConfig, linkageField: $event === null ? '' : String($event ?? '') },
@@ -1310,9 +1326,9 @@ const linkageHelpText = computed(() => {
           />
         </div>
 
-        <div class="ldp-section-title">数据持久化</div>
+        <div class="ldp-section-title">{{ t('fbp.sectionPersist') }}</div>
         <div class="ldp-prop ldp-prop-switch">
-          <label>缓存数据</label>
+          <label>{{ t('fbp.cacheData') }}</label>
           <Group
             type="switch"
             :model-value="!!node.dataConfig?.cacheData"
@@ -1320,7 +1336,7 @@ const linkageHelpText = computed(() => {
           />
         </div>
         <div class="ldp-prop ldp-prop-switch">
-          <label>提交后清空</label>
+          <label>{{ t('fbp.clearAfterSubmit') }}</label>
           <Group
             type="switch"
             :model-value="!!node.dataConfig?.clearAfterSubmit"
@@ -1335,7 +1351,7 @@ const linkageHelpText = computed(() => {
       <div class="ldp-props-empty-icon">
         <IconSvg type="mouse-pointer-click" size="xl" />
       </div>
-      <p>选中节点后<br />编辑属性</p>
+      <p>{{ t('fbd.emptySelectA') }}<br />{{ t('fbd.emptySelectB') }}</p>
     </div>
   </aside>
 </template>

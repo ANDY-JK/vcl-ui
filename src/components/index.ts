@@ -151,7 +151,7 @@ export {
 export type { FieldRegistration } from './form-builder/fieldRegistry'
 export { contractCollectionSchema, inspectionSchema, registrationSchema } from './form-builder/presets'
 export {
-  FIELD_TYPES,
+  getFieldTypes,
   createField,
   toFormSchema,
   parseCascaderOptions,

@@ -2,169 +2,177 @@
  * 预置 Schema：用户登记表单
  *
  * 展示 grid 布局 + 多种表单组件 + 校验规则组合
+ *
+ * 函数化：模块求值早于 setLocale，文案在调用时刻按当前语言翻译
  */
 
 import type { FormSchema } from '../types'
 import { validators } from '../useFormValidator'
+import { useT } from '@/components/_internal/i18n'
 
-export const registrationSchema: FormSchema = {
-  title: '用户信息登记',
-  description: 'Grid 布局示例 — 双列表单，实时校验',
-  layout: 'grid',
-  columns: 2,
-  submitText: '提交登记',
-  validateOnChange: true,
-  fields: [
-    {
-      key: 'name',
-      label: '姓名',
-      type: 'text',
-      required: true,
-      placeholder: '真实姓名',
-      rules: [validators.minLen(2, '姓名')],
-      group: '基本信息',
-    },
-    {
-      key: 'gender',
-      label: '性别',
-      type: 'radio',
-      props: { direction: 'horizontal' },
-      options: [
-        { value: 'male', label: '男' },
-        { value: 'female', label: '女' },
-      ],
-      group: '基本信息',
-    },
-    {
-      key: 'phone',
-      label: '手机号',
-      type: 'tel',
-      required: true,
-      placeholder: '11 位手机号',
-      rules: [validators.phone()],
-      group: '基本信息',
-    },
-    {
-      key: 'email',
-      label: '邮箱',
-      type: 'email',
-      placeholder: 'example@domain.com',
-      rules: [validators.email()],
-      group: '基本信息',
-    },
-    {
-      key: 'birthday',
-      label: '出生日期',
-      type: 'date',
-      props: { format: 'YYYY-MM-DD' },
-      group: '基本信息',
-    },
-    {
-      key: 'idCard',
-      label: '身份证号',
-      type: 'text',
-      placeholder: '18 位身份证号',
-      rules: [validators.idCard()],
-      group: '基本信息',
-    },
-    {
-      key: 'province',
-      label: '所在地区',
-      type: 'cascader',
-      placeholder: '选择省/市/区',
-      cascaderOptions: [
-        {
-          value: 'hunan',
-          label: '湖南省',
-          children: [
-            {
-              value: 'changsha',
-              label: '长沙市',
-              children: [
-                { value: 'yuelu', label: '岳麓区' },
-                { value: 'kaifu', label: '开福区' },
-                { value: 'tianxin', label: '天心区' },
-              ],
-            },
-            {
-              value: 'yueyang',
-              label: '岳阳市',
-              children: [
-                { value: 'yueyanglou', label: '岳阳楼区' },
-                { value: 'yunxi', label: '云溪区' },
-              ],
-            },
-          ],
-        },
-        {
-          value: 'guangdong',
-          label: '广东省',
-          children: [
-            {
-              value: 'guangzhou',
-              label: '广州市',
-              children: [
-                { value: 'tianhe', label: '天河区' },
-                { value: 'yuexiu', label: '越秀区' },
-              ],
-            },
-          ],
-        },
-      ],
-      group: '联系地址',
-    },
-    {
-      key: 'address',
-      label: '详细地址',
-      type: 'text',
-      placeholder: '街道门牌号',
-      span: 24,
-      group: '联系地址',
-    },
-    {
-      key: 'hobbies',
-      label: '兴趣爱好',
-      type: 'checkbox',
-      props: { direction: 'horizontal' },
-      options: [
-        { value: 'reading', label: '阅读' },
-        { value: 'sports', label: '运动' },
-        { value: 'music', label: '音乐' },
-        { value: 'travel', label: '旅行' },
-        { value: 'coding', label: '编程' },
-      ],
-      span: 24,
-      group: '补充信息',
-    },
-    {
-      key: 'subscribe',
-      label: '订阅通知',
-      type: 'switch',
-      default: true,
-      group: '补充信息',
-    },
-    {
-      key: 'channel',
-      label: '通知方式',
-      type: 'checkbox',
-      visibleWhen: { field: 'subscribe', equals: true },
-      options: [
-        { value: 'sms', label: '短信' },
-        { value: 'email', label: '邮件' },
-        { value: 'push', label: 'App 推送' },
-      ],
-      span: 24,
-      group: '补充信息',
-    },
-    {
-      key: 'remark',
-      label: '备注',
-      type: 'textarea',
-      placeholder: '其他需要说明的信息（可选）',
-      span: 24,
-      props: { rows: 3 },
-      rules: [validators.maxLen(200, '备注')],
-      group: '补充信息',
-    },
-  ],
+/** 模块级 t：纯 .ts 文件，各函数直接用 */
+const t = useT()
+
+export function registrationSchema(): FormSchema {
+  return {
+    title: t('fbPre.regTitle'),
+    description: t('fbPre.regDesc'),
+    layout: 'grid',
+    columns: 2,
+    submitText: t('fbPre.regSubmit'),
+    validateOnChange: true,
+    fields: [
+      {
+        key: 'name',
+        label: t('fb.sampleName'),
+        type: 'text',
+        required: true,
+        placeholder: t('fbPre.regNamePh'),
+        rules: [validators.minLen(2, t('fb.sampleName'))],
+        group: t('fbPre.groupBasic'),
+      },
+      {
+        key: 'gender',
+        label: t('fbPre.regGender'),
+        type: 'radio',
+        props: { direction: 'horizontal' },
+        options: [
+          { value: 'male', label: t('fbPre.regMale') },
+          { value: 'female', label: t('fbPre.regFemale') },
+        ],
+        group: t('fbPre.groupBasic'),
+      },
+      {
+        key: 'phone',
+        label: t('fbPre.regPhone'),
+        type: 'tel',
+        required: true,
+        placeholder: t('fbPre.regPhonePh'),
+        rules: [validators.phone()],
+        group: t('fbPre.groupBasic'),
+      },
+      {
+        key: 'email',
+        label: t('fbPre.regEmail'),
+        type: 'email',
+        placeholder: 'example@domain.com',
+        rules: [validators.email()],
+        group: t('fbPre.groupBasic'),
+      },
+      {
+        key: 'birthday',
+        label: t('fbPre.regBirthday'),
+        type: 'date',
+        props: { format: 'YYYY-MM-DD' },
+        group: t('fbPre.groupBasic'),
+      },
+      {
+        key: 'idCard',
+        label: t('fbPre.regIdCard'),
+        type: 'text',
+        placeholder: t('fbPre.regIdCardPh'),
+        rules: [validators.idCard()],
+        group: t('fbPre.groupBasic'),
+      },
+      {
+        key: 'province',
+        label: t('fbPre.regRegion'),
+        type: 'cascader',
+        placeholder: t('fbPre.regRegionPh'),
+        cascaderOptions: [
+          {
+            value: 'hunan',
+            label: '湖南省',
+            children: [
+              {
+                value: 'changsha',
+                label: '长沙市',
+                children: [
+                  { value: 'yuelu', label: '岳麓区' },
+                  { value: 'kaifu', label: '开福区' },
+                  { value: 'tianxin', label: '天心区' },
+                ],
+              },
+              {
+                value: 'yueyang',
+                label: '岳阳市',
+                children: [
+                  { value: 'yueyanglou', label: '岳阳楼区' },
+                  { value: 'yunxi', label: '云溪区' },
+                ],
+              },
+            ],
+          },
+          {
+            value: 'guangdong',
+            label: '广东省',
+            children: [
+              {
+                value: 'guangzhou',
+                label: '广州市',
+                children: [
+                  { value: 'tianhe', label: '天河区' },
+                  { value: 'yuexiu', label: '越秀区' },
+                ],
+              },
+            ],
+          },
+        ],
+        group: t('fbPre.groupAddress'),
+      },
+      {
+        key: 'address',
+        label: t('formBuilder.addressPlaceholder'),
+        type: 'text',
+        placeholder: t('fbPre.regAddressPh'),
+        span: 24,
+        group: t('fbPre.groupAddress'),
+      },
+      {
+        key: 'hobbies',
+        label: t('fbPre.regHobbies'),
+        type: 'checkbox',
+        props: { direction: 'horizontal' },
+        options: [
+          { value: 'reading', label: t('fbPre.regOptReading') },
+          { value: 'sports', label: t('fbPre.regOptSports') },
+          { value: 'music', label: t('fbPre.regOptMusic') },
+          { value: 'travel', label: t('fbPre.regOptTravel') },
+          { value: 'coding', label: t('fbPre.regOptCoding') },
+        ],
+        span: 24,
+        group: t('fbPre.groupExtra'),
+      },
+      {
+        key: 'subscribe',
+        label: t('fbPre.regSubscribe'),
+        type: 'switch',
+        default: true,
+        group: t('fbPre.groupExtra'),
+      },
+      {
+        key: 'channel',
+        label: t('fbPre.regChannel'),
+        type: 'checkbox',
+        visibleWhen: { field: 'subscribe', equals: true },
+        options: [
+          { value: 'sms', label: t('fbPre.regOptSms') },
+          { value: 'email', label: t('fbPre.regOptEmail') },
+          { value: 'push', label: t('fbPre.regOptPush') },
+        ],
+        span: 24,
+        group: t('fbPre.groupExtra'),
+      },
+      {
+        key: 'remark',
+        label: t('fbPre.regRemark'),
+        type: 'textarea',
+        placeholder: t('fbPre.regRemarkPh'),
+        span: 24,
+        props: { rows: 3 },
+        rules: [validators.maxLen(200, t('fbPre.regRemark'))],
+        group: t('fbPre.groupExtra'),
+      },
+    ],
+  }
 }

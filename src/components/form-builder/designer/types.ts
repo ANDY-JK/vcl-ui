@@ -14,6 +14,7 @@
 import type { FormSchema, FormField, FieldType, FieldContainer, FieldContainerType } from '../types'
 import type { Option, CascaderOption } from '@/components/shared/types'
 import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl, uuid } from '@/components/_internal/utils'
+import { useT } from '@/components/_internal/i18n'
 import { extractFields } from '../expression-evaluator'
 import {
   getFieldMeta,
@@ -21,6 +22,9 @@ import {
   getTypeLabel as fbGetTypeLabel,
   getTypeIcon as fbGetTypeIcon,
 } from '../fieldRegistry'
+
+/** 模块级 t：FIELD_TYPES 派生与节点默认标签按当前语言 */
+const t = useT()
 
 /**
  * 从联动公式中提取依赖字段 key（extractFields 的语义别名，兼容旧命名）
@@ -400,16 +404,19 @@ export interface FieldTypeMeta {
 /** 节点类型注册表：设计器左侧面板数据源 */
 /**
  * 节点类型注册表 — 从 fieldRegistry 派生（单一事实源）
- * 新增/修改字段类型只需改 fieldRegistry，此处自动同步
+ * 新增/修改字段类型只需改 fieldRegistry，此处自动同步。
+ * label/group 在调用时翻译（fieldRegistry 存 i18n key），函数形式保证响应语言切换。
  */
-export const FIELD_TYPES: FieldTypeMeta[] = getFieldMeta().map((r) => ({
-  type: r.type as DesignerNodeType,
-  label: r.label,
-  icon: r.icon,
-  group: r.group as FieldTypeMeta['group'],
-  isContainer: r.isContainer,
-  defaults: r.defaults as Partial<DesignerNode>,
-}))
+export function getFieldTypes(): FieldTypeMeta[] {
+  return getFieldMeta().map((r) => ({
+    type: r.type as DesignerNodeType,
+    label: t(r.label),
+    icon: r.icon,
+    group: t(r.group) as FieldTypeMeta['group'],
+    isContainer: r.isContainer,
+    defaults: (typeof r.defaults === 'function' ? r.defaults() : r.defaults) as Partial<DesignerNode>,
+  }))
+}
 
 // ════════════════════════════════════════
 // 工具函数
@@ -437,7 +444,7 @@ export function collectStorageKey(fields: { key?: string; type: string }[]): str
 /** 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） */
 export function createField(type: DesignerNodeType, index: number): DesignerNode {
   const defaults = getFieldDefaults(type)
-  const meta = FIELD_TYPES.find((t) => t.type === type)
+  const meta = getFieldTypes().find((m) => m.type === type)
   const node: DesignerNode = {
     id: genFieldId(),
     type,
@@ -932,25 +939,29 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
     if (val) {
       const rules: ((v: string) => string | undefined)[] = []
       if (val.minLength !== undefined && val.minLength > 0) {
-        rules.push((v: string) => (v.length < val.minLength! ? `至少 ${val.minLength} 个字符` : undefined))
+        rules.push((v: string) =>
+          v.length < val.minLength! ? t('formBuilder.lenMinMsg', { len: val.minLength }) : undefined,
+        )
       }
       if (val.maxLength !== undefined && val.maxLength > 0) {
-        rules.push((v: string) => (v.length > val.maxLength! ? `最多 ${val.maxLength} 个字符` : undefined))
+        rules.push((v: string) =>
+          v.length > val.maxLength! ? t('formBuilder.lenMaxMsg', { len: val.maxLength }) : undefined,
+        )
       }
       if (val.pattern) {
         try {
           const re = new RegExp(val.pattern)
-          rules.push((v: string) => (!re.test(v) ? val.patternMessage || '格式不正确' : undefined))
+          rules.push((v: string) => (!re.test(v) ? val.patternMessage || t('formBuilder.patternInvalid') : undefined))
         } catch {
           /* 无效正则跳过 */
         }
       }
       if (val.builtinType) {
         const builtinValidators: Record<string, { check: (v: string) => boolean; msg: string }> = {
-          phone: { check: isValidPhone, msg: '请输入正确的手机号' },
-          email: { check: isValidEmail, msg: '请输入正确的邮箱' },
-          idcard: { check: isValidIdCard, msg: '请输入正确的身份证号' },
-          url: { check: isValidUrl, msg: '请输入正确的 URL' },
+          phone: { check: isValidPhone, msg: t('formBuilder.phoneInvalid') },
+          email: { check: isValidEmail, msg: t('formBuilder.emailInvalidShort') },
+          idcard: { check: isValidIdCard, msg: t('formBuilder.idCardInvalid') },
+          url: { check: isValidUrl, msg: t('formBuilder.urlInvalidShort') },
         }
         const p = builtinValidators[val.builtinType]
         if (p) rules.push((v: string) => (!p.check(v) ? p.msg : undefined))

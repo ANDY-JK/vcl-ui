@@ -12,10 +12,14 @@
 
 import { computed, type Ref } from 'vue'
 import type { FormSchema, FormField, FormData } from './types'
+import { useT } from '@/components/_internal/i18n'
 // 从注册表重导出，保持向后兼容
 export { getComponentCategory, isLayoutField } from './fieldRegistry'
 export type { ComponentCategory } from './fieldRegistry'
 import { isLayoutField, getComponentCategory } from './fieldRegistry'
+
+/** 模块级 t：纯 .ts 文件，各函数直接用 */
+const t = useT()
 
 // ════════════════════════════════════════
 // Schema 归一化
@@ -24,15 +28,17 @@ import { isLayoutField, getComponentCategory } from './fieldRegistry'
 /** Schema 版本常量 */
 export const SCHEMA_VERSION = 2
 
-/** 默认 Schema 配置 */
-const DEFAULT_SCHEMA: Partial<FormSchema> = {
-  schemaVersion: SCHEMA_VERSION,
-  layout: 'single',
-  columns: 2,
-  submitText: '提交',
-  resetText: '重置',
-  hideActions: false,
-  validateOnChange: false,
+/** 默认 Schema 配置（工厂形式：文案在调用时刻按当前语言翻译，避免模块求值早于 setLocale） */
+function defaultSchema(): Partial<FormSchema> {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    layout: 'single',
+    columns: 2,
+    submitText: t('common.submit'),
+    resetText: t('common.reset'),
+    hideActions: false,
+    validateOnChange: false,
+  }
 }
 
 /** 字段默认宽度（按布局模式） */
@@ -42,11 +48,16 @@ const DEFAULT_SPAN_GRID = 12 // 2 列 grid → 每列 12
 /**
  * 归一化 Schema：合并默认值，填充缺失字段
  */
-export function normalizeSchema(schema: FormSchema): Required<
+export function normalizeSchema(
+  schema: FormSchema,
+): Required<
   Pick<FormSchema, 'fields' | 'layout' | 'columns' | 'submitText' | 'resetText' | 'hideActions' | 'validateOnChange'>
 > &
-  Pick<FormSchema, 'title' | 'description' | 'steps' | 'submitMode' | 'clearAfterSubmit' | 'labelPosition' | 'labelWidth'> {
-  const merged = { ...DEFAULT_SCHEMA, ...schema }
+  Pick<
+    FormSchema,
+    'title' | 'description' | 'steps' | 'submitMode' | 'clearAfterSubmit' | 'labelPosition' | 'labelWidth'
+  > {
+  const merged = { ...defaultSchema(), ...schema }
   // fields 确保非空数组
   if (!merged.fields || merged.fields.length === 0) {
     merged.fields = []
@@ -57,9 +68,9 @@ export function normalizeSchema(schema: FormSchema): Required<
       merged.steps = []
     } else {
       merged.steps = merged.steps
-        .filter(s => s && typeof s === 'object')
-        .map(s => ({
-          title: String(s.title ?? '未命名步骤'),
+        .filter((s) => s && typeof s === 'object')
+        .map((s) => ({
+          title: String(s.title ?? t('fbd.untitledStep')),
           fields: Array.isArray(s.fields) ? s.fields.map(String) : [],
         }))
       // 空步骤数组视为未设置
@@ -69,7 +80,10 @@ export function normalizeSchema(schema: FormSchema): Required<
   return merged as Required<
     Pick<FormSchema, 'fields' | 'layout' | 'columns' | 'submitText' | 'resetText' | 'hideActions' | 'validateOnChange'>
   > &
-    Pick<FormSchema, 'title' | 'description' | 'steps' | 'submitMode' | 'clearAfterSubmit' | 'labelPosition' | 'labelWidth'>
+    Pick<
+      FormSchema,
+      'title' | 'description' | 'steps' | 'submitMode' | 'clearAfterSubmit' | 'labelPosition' | 'labelWidth'
+    >
 }
 
 // ════════════════════════════════════════

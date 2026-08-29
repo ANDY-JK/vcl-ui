@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createLocalFormStore } from '@/components/form-builder/designer/store'
 import {
-  collectStorageKey, createField, FIELD_TYPES, FIELD_NODE_TYPES,
+  collectStorageKey, createField, getFieldTypes, FIELD_NODE_TYPES,
 } from '@/components/form-builder/designer/types'
 import type { FormDesign, DesignerNode } from '@/components/form-builder/designer/types'
 import Toast from '@/components/feedback/Toast.vue'
@@ -103,7 +103,7 @@ describe('H8: 字段类型注册表与设计器元数据对齐', () => {
       expect(node.key).toBe('field1')
     }
     // FIELD_TYPES 覆盖全部扩展类型
-    const ftTypes = FIELD_TYPES.map((t: { type: string }) => t.type)
+    const ftTypes = getFieldTypes().map((t: { type: string }) => t.type)
     for (const type of extendedTypes) {
       expect(ftTypes).toContain(type)
     }

@@ -4,9 +4,14 @@
  * 所有字段类型的「渲染组件 / 分类 / 原子 type / 布局标记 / 面板显示（label/icon/group）/ 创建默认值」都在此注册。
  * 设计器的 FIELD_TYPES、createField、getTypeLabel/getTypeIcon 均由本注册表派生，新增类型只需在此注册一处。
  *
+ * i18n 约定：
+ * - label / group 存 formBuilder 域的 i18n key，getTypeLabel / getFieldTypes 在调用时翻译（响应语言切换）
+ * - defaults 支持对象或 thunk：thunk 在 createField 调用时求值，占位文案按创建时刻语言本地化
+ * - 外部 registerField 可直接传原始文案（t() 对未注册 key 原样返回，行为兼容）
+ *
  * 注意：
  * - 容器类型（card/grid/tabs/collapse/steps）也注册在此，isContainer=true，无真实渲染组件（component 用占位）
- * - defaults 用宽松类型，避免对 designer/types 的依赖（设计器侧派生时再断言为具体节点类型）
+ * - thunk 内的 t 取自模块级 useT()，测试环境同样可用
  */
 
 import type { Component } from 'vue'
@@ -16,6 +21,10 @@ import Group from '@/components/form/Group.vue'
 import Upload from '@/components/form/Upload.vue'
 import CameraCapture from '@/components/form/CameraCapture.vue'
 import Divider from '@/components/data/Divider.vue'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：label/group 翻译与 defaults thunk 求值均走当前语言 */
+const t = useT()
 
 // ════════════════════════════════════════
 // 类型定义
@@ -30,8 +39,8 @@ export type ComponentCategory = 'input' | 'select' | 'group' | 'upload' | 'camer
  * 每种类型对应一条注册记录，包含：
  * - 渲染用组件 + 组件分类 + 原子组件 type prop（渲染链路）
  * - 是否纯布局元素 / 是否容器节点（布局语义）
- * - 面板显示元数据：label / icon / group（设计器面板）
- * - 创建默认值：defaults（createField 用）
+ * - 面板显示元数据：label / icon / group（设计器面板）—— label/group 为 i18n key
+ * - 创建默认值：defaults（createField 用，支持对象或 thunk）
  */
 export interface FieldRegistration {
   /** 字段类型（内置为字符串字面量，外部可注册自定义类型） */
@@ -44,14 +53,14 @@ export interface FieldRegistration {
   componentType: string
   /** 是否纯布局元素（divider/title，无数据值） */
   isLayout: boolean
-  /** 面板显示名（设计器左侧面板） */
+  /** 面板显示名的 i18n key（formBuilder 域，设计器面板） */
   label: string
   /** 面板图标（solar/lucide 图标名） */
   icon: string
-  /** 面板分组（基础/选择/高级/高级字段/布局容器/布局） */
+  /** 面板分组的 i18n key（formBuilder 域） */
   group: string
-  /** 创建节点时的默认属性（宽松类型，设计器侧断言为具体节点类型） */
-  defaults?: Record<string, unknown>
+  /** 创建节点时的默认属性（宽松类型；thunk 形式在创建时刻求值以本地化文案） */
+  defaults?: Record<string, unknown> | (() => Record<string, unknown>)
   /** 是否容器节点（card/grid/tabs/collapse/steps） */
   isContainer?: boolean
 }
@@ -66,61 +75,482 @@ export interface FieldRegistration {
  */
 const REGISTRY: Record<string, FieldRegistration> = {
   // ── Input 系列 ──
-  text:      { type: 'text',      category: 'input',   component: Input,    componentType: 'text',     isLayout: false, label: '单行输入', icon: 'square-pen', group: '基础', defaults: { placeholder: '请输入', span: 24 } },
-  textarea:  { type: 'textarea',  category: 'input',   component: Input,    componentType: 'textarea', isLayout: false, label: '多行文本', icon: 'align-left', group: '基础', defaults: { placeholder: '请输入', rows: 3, span: 24 } },
-  number:    { type: 'number',    category: 'input',   component: Input,    componentType: 'number',   isLayout: false, label: '数字输入', icon: 'hash', group: '基础', defaults: { placeholder: '请输入', min: 0, max: 100, step: 1, span: 12 } },
-  password:  { type: 'password',  category: 'input',   component: Input,    componentType: 'password', isLayout: false, label: '密码输入', icon: 'lock', group: '基础', defaults: { placeholder: '请输入密码', span: 12 } },
-  tel:       { type: 'tel',       category: 'input',   component: Input,    componentType: 'tel',      isLayout: false, label: '电话号码', icon: 'phone', group: '基础', defaults: { placeholder: '请输入电话', span: 12 } },
-  email:     { type: 'email',     category: 'input',   component: Input,    componentType: 'email',    isLayout: false, label: '邮箱输入', icon: 'mail', group: '基础', defaults: { placeholder: '请输入邮箱', span: 12 } },
-  url:       { type: 'url',       category: 'input',   component: Input,    componentType: 'url',      isLayout: false, label: '链接输入', icon: 'link', group: '基础', defaults: { placeholder: '请输入链接', span: 24 } },
-  search:    { type: 'search',    category: 'input',   component: Input,    componentType: 'search',   isLayout: false, label: '搜索输入', icon: 'search', group: '基础', defaults: { placeholder: '请输入搜索词', span: 12 } },
+  text: {
+    type: 'text',
+    category: 'input',
+    component: Input,
+    componentType: 'text',
+    isLayout: false,
+    label: 'fbType.text',
+    icon: 'square-pen',
+    group: 'fbGroup.basic',
+    defaults: () => ({ placeholder: t('fb.textPlaceholder'), span: 24 }),
+  },
+  textarea: {
+    type: 'textarea',
+    category: 'input',
+    component: Input,
+    componentType: 'textarea',
+    isLayout: false,
+    label: 'fbType.textarea',
+    icon: 'align-left',
+    group: 'fbGroup.basic',
+    defaults: () => ({ placeholder: t('fb.textPlaceholder'), rows: 3, span: 24 }),
+  },
+  number: {
+    type: 'number',
+    category: 'input',
+    component: Input,
+    componentType: 'number',
+    isLayout: false,
+    label: 'fbType.number',
+    icon: 'hash',
+    group: 'fbGroup.basic',
+    defaults: () => ({ placeholder: t('fb.textPlaceholder'), min: 0, max: 100, step: 1, span: 12 }),
+  },
+  password: {
+    type: 'password',
+    category: 'input',
+    component: Input,
+    componentType: 'password',
+    isLayout: false,
+    label: 'fbType.password',
+    icon: 'lock',
+    group: 'fbGroup.basic',
+    defaults: () => ({ placeholder: t('fb.pwdPlaceholder'), span: 12 }),
+  },
+  tel: {
+    type: 'tel',
+    category: 'input',
+    component: Input,
+    componentType: 'tel',
+    isLayout: false,
+    label: 'fbType.tel',
+    icon: 'phone',
+    group: 'fbGroup.basic',
+    defaults: () => ({ placeholder: t('fb.telPlaceholder'), span: 12 }),
+  },
+  email: {
+    type: 'email',
+    category: 'input',
+    component: Input,
+    componentType: 'email',
+    isLayout: false,
+    label: 'fbType.email',
+    icon: 'mail',
+    group: 'fbGroup.basic',
+    defaults: () => ({ placeholder: t('fb.emailPlaceholder'), span: 12 }),
+  },
+  url: {
+    type: 'url',
+    category: 'input',
+    component: Input,
+    componentType: 'url',
+    isLayout: false,
+    label: 'fbType.url',
+    icon: 'link',
+    group: 'fbGroup.basic',
+    defaults: () => ({ placeholder: t('fb.urlPlaceholder'), span: 24 }),
+  },
+  search: {
+    type: 'search',
+    category: 'input',
+    component: Input,
+    componentType: 'search',
+    isLayout: false,
+    label: 'fbType.search',
+    icon: 'search',
+    group: 'fbGroup.basic',
+    defaults: () => ({ placeholder: t('fb.searchPlaceholder'), span: 12 }),
+  },
 
   // ── Select 系列 ──
-  select:       { type: 'select',       category: 'select', component: Select, componentType: 'select',       isLayout: false, label: '下拉选择', icon: 'chevron-down', group: '选择', defaults: { options: ['选项1', '选项2'], placeholder: '请选择', span: 12 } },
-  combobox:     { type: 'combobox',     category: 'select', component: Select, componentType: 'combobox',     isLayout: false, label: '可输入选择', icon: 'chevrons-down-up', group: '选择', defaults: { options: ['选项1', '选项2'], placeholder: '请选择或输入', span: 12 } },
-  cascader:     { type: 'cascader',     category: 'select', component: Select, componentType: 'cascader',     isLayout: false, label: '级联选择', icon: 'chevrons-down-up', group: '选择', defaults: { placeholder: '请选择', span: 24, cascaderOptions: '[{"label":"一级","value":"1","children":[{"label":"二级","value":"1-1"}]}]' } },
-  'tree-select': { type: 'tree-select', category: 'select', component: Select, componentType: 'tree-select', isLayout: false, label: '树选择', icon: 'chevron-down', group: '选择', defaults: { placeholder: '请选择', span: 12 } },
-  date:         { type: 'date',         category: 'select', component: Select, componentType: 'date',         isLayout: false, label: '日期选择', icon: 'calendar', group: '高级', defaults: { placeholder: '请选择日期', span: 12 } },
-  'date-range': { type: 'date-range',  category: 'select', component: Select, componentType: 'date-range',  isLayout: false, label: '日期范围', icon: 'calendar', group: '高级', defaults: { placeholder: '请选择日期范围', span: 24 } },
-  time:         { type: 'time',         category: 'select', component: Select, componentType: 'time',         isLayout: false, label: '时间选择', icon: 'clock', group: '高级', defaults: { placeholder: '请选择时间', span: 12 } },
+  select: {
+    type: 'select',
+    category: 'select',
+    component: Select,
+    componentType: 'select',
+    isLayout: false,
+    label: 'fbType.select',
+    icon: 'chevron-down',
+    group: 'fbGroup.select',
+    defaults: () => ({ options: [t('fb.option1'), t('fb.option2')], placeholder: t('form.pleaseSelect'), span: 12 }),
+  },
+  combobox: {
+    type: 'combobox',
+    category: 'select',
+    component: Select,
+    componentType: 'combobox',
+    isLayout: false,
+    label: 'fbType.combobox',
+    icon: 'chevrons-down-up',
+    group: 'fbGroup.select',
+    defaults: () => ({ options: [t('fb.option1'), t('fb.option2')], placeholder: t('fb.selectOrInput'), span: 12 }),
+  },
+  cascader: {
+    type: 'cascader',
+    category: 'select',
+    component: Select,
+    componentType: 'cascader',
+    isLayout: false,
+    label: 'fbType.cascader',
+    icon: 'chevrons-down-up',
+    group: 'fbGroup.select',
+    defaults: () => ({
+      placeholder: t('form.pleaseSelect'),
+      span: 24,
+      cascaderOptions: JSON.stringify([
+        { label: t('fb.level1'), value: '1', children: [{ label: t('fb.level2'), value: '1-1' }] },
+      ]),
+    }),
+  },
+  'tree-select': {
+    type: 'tree-select',
+    category: 'select',
+    component: Select,
+    componentType: 'tree-select',
+    isLayout: false,
+    label: 'fbType.treeSelect',
+    icon: 'chevron-down',
+    group: 'fbGroup.select',
+    defaults: () => ({ placeholder: t('form.pleaseSelect'), span: 12 }),
+  },
+  date: {
+    type: 'date',
+    category: 'select',
+    component: Select,
+    componentType: 'date',
+    isLayout: false,
+    label: 'fbType.date',
+    icon: 'calendar',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ placeholder: t('form.selectDate'), span: 12 }),
+  },
+  'date-range': {
+    type: 'date-range',
+    category: 'select',
+    component: Select,
+    componentType: 'date-range',
+    isLayout: false,
+    label: 'fbType.dateRange',
+    icon: 'calendar',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ placeholder: t('fb.selectDateRange'), span: 24 }),
+  },
+  time: {
+    type: 'time',
+    category: 'select',
+    component: Select,
+    componentType: 'time',
+    isLayout: false,
+    label: 'fbType.time',
+    icon: 'clock',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ placeholder: t('form.selectTime'), span: 12 }),
+  },
 
   // ── Group 系列 ──
-  radio:    { type: 'radio',    category: 'group', component: Group, componentType: 'radio',    isLayout: false, label: '单选按钮', icon: 'circle-check', group: '选择', defaults: { options: ['选项A', '选项B'], span: 12 } },
-  checkbox: { type: 'checkbox', category: 'group', component: Group, componentType: 'checkbox', isLayout: false, label: '复选按钮', icon: 'check-square', group: '选择', defaults: { options: ['选项A', '选项B'], span: 12 } },
-  switch:   { type: 'switch',   category: 'group', component: Group, componentType: 'switch',   isLayout: false, label: '开关', icon: 'toggle-left', group: '高级', defaults: { span: 12 } },
-  rate:     { type: 'rate',     category: 'group', component: Group, componentType: 'rate',     isLayout: false, label: '评分', icon: 'star', group: '高级', defaults: { rateMax: 5, span: 12 } },
-  slider:   { type: 'slider',   category: 'group', component: Group, componentType: 'slider',   isLayout: false, label: '滑块', icon: 'sliders-horizontal', group: '高级', defaults: { min: 0, max: 100, step: 1, span: 24 } },
+  radio: {
+    type: 'radio',
+    category: 'group',
+    component: Group,
+    componentType: 'radio',
+    isLayout: false,
+    label: 'fbType.radio',
+    icon: 'circle-check',
+    group: 'fbGroup.select',
+    defaults: () => ({ options: [t('fb.optionA'), t('fb.optionB')], span: 12 }),
+  },
+  checkbox: {
+    type: 'checkbox',
+    category: 'group',
+    component: Group,
+    componentType: 'checkbox',
+    isLayout: false,
+    label: 'fbType.checkbox',
+    icon: 'check-square',
+    group: 'fbGroup.select',
+    defaults: () => ({ options: [t('fb.optionA'), t('fb.optionB')], span: 12 }),
+  },
+  switch: {
+    type: 'switch',
+    category: 'group',
+    component: Group,
+    componentType: 'switch',
+    isLayout: false,
+    label: 'fbType.switch',
+    icon: 'toggle-left',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ span: 12 }),
+  },
+  rate: {
+    type: 'rate',
+    category: 'group',
+    component: Group,
+    componentType: 'rate',
+    isLayout: false,
+    label: 'fbType.rate',
+    icon: 'star',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ rateMax: 5, span: 12 }),
+  },
+  slider: {
+    type: 'slider',
+    category: 'group',
+    component: Group,
+    componentType: 'slider',
+    isLayout: false,
+    label: 'fbType.slider',
+    icon: 'sliders-horizontal',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ min: 0, max: 100, step: 1, span: 24 }),
+  },
 
   // ── Upload / Camera ──
-  upload:        { type: 'upload',        category: 'upload', component: Upload,       componentType: 'upload',        isLayout: false, label: '文件上传', icon: 'upload', group: '高级', defaults: { span: 24, accept: 'image/*', multiple: true, maxSize: 10 } },
-  'image-upload': { type: 'image-upload', category: 'upload', component: Upload,       componentType: 'image-upload', isLayout: false, label: '图片上传', icon: 'upload', group: '高级', defaults: { span: 24, accept: 'image/*', multiple: true, maxSize: 10 } },
-  camera:        { type: 'camera',        category: 'camera', component: CameraCapture, componentType: 'camera',        isLayout: false, label: '拍照', icon: 'camera', group: '高级', defaults: { span: 24 } },
+  upload: {
+    type: 'upload',
+    category: 'upload',
+    component: Upload,
+    componentType: 'upload',
+    isLayout: false,
+    label: 'fbType.upload',
+    icon: 'upload',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ span: 24, accept: 'image/*', multiple: true, maxSize: 10 }),
+  },
+  'image-upload': {
+    type: 'image-upload',
+    category: 'upload',
+    component: Upload,
+    componentType: 'image-upload',
+    isLayout: false,
+    label: 'fbType.imageUpload',
+    icon: 'upload',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ span: 24, accept: 'image/*', multiple: true, maxSize: 10 }),
+  },
+  camera: {
+    type: 'camera',
+    category: 'camera',
+    component: CameraCapture,
+    componentType: 'camera',
+    isLayout: false,
+    label: 'fbType.camera',
+    icon: 'camera',
+    group: 'fbGroup.advanced',
+    defaults: () => ({ span: 24 }),
+  },
 
   // ── 纯布局 ──
-  divider: { type: 'divider', category: 'layout', component: Divider, componentType: 'divider', isLayout: true, label: '分割线', icon: 'minus', group: '布局', defaults: { span: 24 } },
-  title:   { type: 'title',   category: 'layout', component: Divider, componentType: 'title',   isLayout: true, label: '标题文字', icon: 'type', group: '布局', defaults: { span: 24 } },
+  divider: {
+    type: 'divider',
+    category: 'layout',
+    component: Divider,
+    componentType: 'divider',
+    isLayout: true,
+    label: 'fbType.divider',
+    icon: 'minus',
+    group: 'fbGroup.layout',
+    defaults: () => ({ span: 24 }),
+  },
+  title: {
+    type: 'title',
+    category: 'layout',
+    component: Divider,
+    componentType: 'title',
+    isLayout: true,
+    label: 'fbType.title',
+    icon: 'type',
+    group: 'fbGroup.layout',
+    defaults: () => ({ span: 24 }),
+  },
 
   // ── v3 高级字段（复用 Input 组件做 fallback，实际由 FormRenderer 的 advanced 分支渲染） ──
-  subform:   { type: 'subform',   category: 'advanced', component: Input, componentType: 'subform',   isLayout: false, label: '子表单', icon: 'table', group: '高级字段', defaults: { span: 24, placeholder: '可添加多行', subformColumns: '姓名|name|text\n电话|phone|number' } },
-  relate:    { type: 'relate',    category: 'advanced', component: Input, componentType: 'relate',    isLayout: false, label: '关联选择', icon: 'link', group: '高级字段', defaults: { span: 24, placeholder: '点击选择关联数据', relateEntityType: 'user' } },
-  richtext:  { type: 'richtext',  category: 'advanced', component: Input, componentType: 'richtext',  isLayout: false, label: '富文本', icon: 'type', group: '高级字段', defaults: { span: 24, richtextToolbar: 'simple' } },
-  signature: { type: 'signature', category: 'advanced', component: Input, componentType: 'signature', isLayout: false, label: '电子签名', icon: 'pen-tool', group: '高级字段', defaults: { span: 24 } },
-  address:   { type: 'address',   category: 'advanced', component: Input, componentType: 'address',   isLayout: false, label: '地址选择', icon: 'map-pin', group: '高级字段', defaults: { span: 24, addressDetail: true } },
-  idcard:    { type: 'idcard',    category: 'advanced', component: Input, componentType: 'idcard',    isLayout: false, label: '证件号码', icon: 'credit-card', group: '高级字段', defaults: { span: 24, idcardTypes: '身份证\n护照\n军官证' } },
-  matrix:    { type: 'matrix',    category: 'advanced', component: Input, componentType: 'matrix',    isLayout: false, label: '评分矩阵', icon: 'grid-3x3', group: '高级字段', defaults: { span: 24, matrixRows: '服务态度\n专业能力\n响应速度', matrixCols: '满意\n一般\n不满意' } },
-  serial:    { type: 'serial',    category: 'advanced', component: Input, componentType: 'serial',    isLayout: false, label: '流水号', icon: 'bar-chart', group: '高级字段', defaults: { span: 12, serialPrefix: 'NO', serialDateFormat: 'YYYYMMDD' } },
+  subform: {
+    type: 'subform',
+    category: 'advanced',
+    component: Input,
+    componentType: 'subform',
+    isLayout: false,
+    label: 'fbType.subform',
+    icon: 'table',
+    group: 'fbGroup.advancedFields',
+    defaults: () => ({
+      span: 24,
+      placeholder: t('fb.multiRowHint'),
+      subformColumns: `${t('fb.sampleName')}|name|text\n${t('fb.samplePhone')}|phone|number`,
+    }),
+  },
+  relate: {
+    type: 'relate',
+    category: 'advanced',
+    component: Input,
+    componentType: 'relate',
+    isLayout: false,
+    label: 'fbType.relate',
+    icon: 'link',
+    group: 'fbGroup.advancedFields',
+    defaults: () => ({ span: 24, placeholder: t('formBuilder.clickSelect'), relateEntityType: 'user' }),
+  },
+  richtext: {
+    type: 'richtext',
+    category: 'advanced',
+    component: Input,
+    componentType: 'richtext',
+    isLayout: false,
+    label: 'fbType.richtext',
+    icon: 'type',
+    group: 'fbGroup.advancedFields',
+    defaults: () => ({ span: 24, richtextToolbar: 'simple' }),
+  },
+  signature: {
+    type: 'signature',
+    category: 'advanced',
+    component: Input,
+    componentType: 'signature',
+    isLayout: false,
+    label: 'fbType.signature',
+    icon: 'pen-tool',
+    group: 'fbGroup.advancedFields',
+    defaults: () => ({ span: 24 }),
+  },
+  address: {
+    type: 'address',
+    category: 'advanced',
+    component: Input,
+    componentType: 'address',
+    isLayout: false,
+    label: 'fbType.address',
+    icon: 'map-pin',
+    group: 'fbGroup.advancedFields',
+    defaults: () => ({ span: 24, addressDetail: true }),
+  },
+  idcard: {
+    type: 'idcard',
+    category: 'advanced',
+    component: Input,
+    componentType: 'idcard',
+    isLayout: false,
+    label: 'fbType.idcard',
+    icon: 'credit-card',
+    group: 'fbGroup.advancedFields',
+    defaults: () => ({ span: 24, idcardTypes: `${t('fb.idType1')}\n${t('fb.idType2')}\n${t('fb.idType3')}` }),
+  },
+  matrix: {
+    type: 'matrix',
+    category: 'advanced',
+    component: Input,
+    componentType: 'matrix',
+    isLayout: false,
+    label: 'fbType.matrix',
+    icon: 'grid-3x3',
+    group: 'fbGroup.advancedFields',
+    defaults: () => ({
+      span: 24,
+      matrixRows: `${t('fb.matrixR1')}\n${t('fb.matrixR2')}\n${t('fb.matrixR3')}`,
+      matrixCols: `${t('fb.matrixC1')}\n${t('fb.matrixC2')}\n${t('fb.matrixC3')}`,
+    }),
+  },
+  serial: {
+    type: 'serial',
+    category: 'advanced',
+    component: Input,
+    componentType: 'serial',
+    isLayout: false,
+    label: 'fbType.serial',
+    icon: 'bar-chart',
+    group: 'fbGroup.advancedFields',
+    defaults: () => ({ span: 12, serialPrefix: 'NO', serialDateFormat: 'YYYYMMDD' }),
+  },
 
   // ── 布局容器 (v3) ──
-  card:     { type: 'card',     category: 'layout', component: Divider, componentType: 'card',     isLayout: false, isContainer: true, label: '分组卡片', icon: 'layout-template', group: '布局容器', defaults: { isContainer: true, containerConfig: {} } },
-  grid:     { type: 'grid',     category: 'layout', component: Divider, componentType: 'grid',     isLayout: false, isContainer: true, label: '栅格行', icon: 'grid-2x2', group: '布局容器', defaults: { isContainer: true, containerConfig: { columns: 2 } } },
-  tabs:     { type: 'tabs',     category: 'layout', component: Divider, componentType: 'tabs',     isLayout: false, isContainer: true, label: '标签页', icon: 'panel-top', group: '布局容器', defaults: { isContainer: true, containerConfig: { tabs: [{ label: '标签页 1', name: 'tab1' }], activeTab: 'tab1' } } },
-  collapse: { type: 'collapse', category: 'layout', component: Divider, componentType: 'collapse', isLayout: false, isContainer: true, label: '折叠面板', icon: 'chevron-down', group: '布局容器', defaults: { isContainer: true, containerConfig: { collapseItems: [{ title: '折叠项 1', expanded: true }], activeCollapse: 0 } } },
-  steps:    { type: 'steps',    category: 'layout', component: Divider, componentType: 'steps',    isLayout: false, isContainer: true, label: '步骤条', icon: 'clock', group: '布局容器', defaults: { isContainer: true, containerConfig: { steps: [{ title: '步骤 1' }, { title: '步骤 2' }], activeStep: 0 } } },
+  card: {
+    type: 'card',
+    category: 'layout',
+    component: Divider,
+    componentType: 'card',
+    isLayout: false,
+    isContainer: true,
+    label: 'fbType.card',
+    icon: 'layout-template',
+    group: 'fbGroup.layoutContainer',
+    defaults: () => ({ isContainer: true, containerConfig: {} }),
+  },
+  grid: {
+    type: 'grid',
+    category: 'layout',
+    component: Divider,
+    componentType: 'grid',
+    isLayout: false,
+    isContainer: true,
+    label: 'fbType.grid',
+    icon: 'grid-2x2',
+    group: 'fbGroup.layoutContainer',
+    defaults: () => ({ isContainer: true, containerConfig: { columns: 2 } }),
+  },
+  tabs: {
+    type: 'tabs',
+    category: 'layout',
+    component: Divider,
+    componentType: 'tabs',
+    isLayout: false,
+    isContainer: true,
+    label: 'fbType.tabs',
+    icon: 'panel-top',
+    group: 'fbGroup.layoutContainer',
+    defaults: () => ({
+      isContainer: true,
+      containerConfig: { tabs: [{ label: t('fb.tabN', { n: 1 }), name: 'tab1' }], activeTab: 'tab1' },
+    }),
+  },
+  collapse: {
+    type: 'collapse',
+    category: 'layout',
+    component: Divider,
+    componentType: 'collapse',
+    isLayout: false,
+    isContainer: true,
+    label: 'fbType.collapse',
+    icon: 'chevron-down',
+    group: 'fbGroup.layoutContainer',
+    defaults: () => ({
+      isContainer: true,
+      containerConfig: {
+        collapseItems: [{ title: t('fb.collapseItemN', { n: 1 }), expanded: true }],
+        activeCollapse: 0,
+      },
+    }),
+  },
+  steps: {
+    type: 'steps',
+    category: 'layout',
+    component: Divider,
+    componentType: 'steps',
+    isLayout: false,
+    isContainer: true,
+    label: 'fbType.steps',
+    icon: 'clock',
+    group: 'fbGroup.layoutContainer',
+    defaults: () => ({
+      isContainer: true,
+      containerConfig: {
+        steps: [{ title: t('fb.stepN', { n: 1 }) }, { title: t('fb.stepN', { n: 2 }) }],
+        activeStep: 0,
+      },
+    }),
+  },
 }
 
 // ════════════════════════════════════════
 // 查询 API
 // ════════════════════════════════════════
+
+/** 求值 defaults（对象原样返回；thunk 调用取当前语言文案） */
+function resolveDefaults(reg?: FieldRegistration): Record<string, unknown> {
+  const d = reg?.defaults
+  if (!d) return {}
+  return typeof d === 'function' ? d() : d
+}
 
 /** 获取字段类型的注册信息（未注册回退 text） */
 export function getFieldRegistration(type: string): FieldRegistration {
@@ -152,9 +582,9 @@ export function getFieldComponent(type: string): Component {
   return REGISTRY[type]?.component ?? Input
 }
 
-/** 获取面板显示名（设计器面板/大纲树用） */
+/** 获取面板显示名（调用时翻译；自定义注册传原始文案时 t() 原样返回） */
 export function getTypeLabel(type: string): string {
-  return REGISTRY[type]?.label ?? type
+  return t(getFieldRegistration(type).label)
 }
 
 /** 获取面板图标（设计器面板/大纲树用） */
@@ -162,9 +592,9 @@ export function getTypeIcon(type: string): string {
   return REGISTRY[type]?.icon ?? 'circle'
 }
 
-/** 获取创建节点默认属性 */
+/** 获取创建节点默认属性（thunk 在此求值 → 文案按创建时刻语言） */
 export function getFieldDefaults(type: string): Record<string, unknown> {
-  return REGISTRY[type]?.defaults ?? {}
+  return resolveDefaults(getFieldRegistration(type))
 }
 
 /** 获取所有已注册的字段类型列表 */
@@ -172,7 +602,7 @@ export function getRegisteredTypes(): string[] {
   return Object.keys(REGISTRY)
 }
 
-/** 获取全部注册记录（含容器），供设计器派生 FIELD_TYPES */
+/** 获取全部注册记录（含容器），供设计器派生 FIELD_TYPES（label/group 为 i18n key，由消费方翻译） */
 export function getFieldMeta(): FieldRegistration[] {
   return Object.values(REGISTRY)
 }
@@ -195,7 +625,7 @@ export function getFieldMeta(): FieldRegistration[] {
  *   component: MyRichText,
  *   componentType: 'rich-text',
  *   isLayout: false,
- *   label: '自定义富文本',
+ *   label: '自定义富文本',   // 原始文案或 i18n key 均可
  *   icon: 'type',
  *   group: '高级字段',
  * })
@@ -225,13 +655,40 @@ export function unregisterField(type: string): void {
 
 /** 内置类型集合（不允许注销） */
 const BUILTIN_TYPES = new Set<string>([
-  'text', 'textarea', 'number', 'password', 'tel', 'email', 'url', 'search',
-  'select', 'combobox', 'cascader', 'tree-select', 'date', 'date-range', 'time',
-  'radio', 'checkbox', 'switch', 'rate', 'slider',
-  'upload', 'image-upload', 'camera',
-  'divider', 'title',
+  'text',
+  'textarea',
+  'number',
+  'password',
+  'tel',
+  'email',
+  'url',
+  'search',
+  'select',
+  'combobox',
+  'cascader',
+  'tree-select',
+  'date',
+  'date-range',
+  'time',
+  'radio',
+  'checkbox',
+  'switch',
+  'rate',
+  'slider',
+  'upload',
+  'image-upload',
+  'camera',
+  'divider',
+  'title',
   // v3 高级字段
-  'subform', 'relate', 'richtext', 'signature', 'address', 'idcard', 'matrix', 'serial',
+  'subform',
+  'relate',
+  'richtext',
+  'signature',
+  'address',
+  'idcard',
+  'matrix',
+  'serial',
 ])
 
 /** 判断字段类型是否已注册 */

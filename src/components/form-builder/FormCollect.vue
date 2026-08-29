@@ -79,7 +79,7 @@ const rootEl = ref<HTMLElement | null>(null)
 function formatValue(v: unknown): string {
   if (v === null || v === undefined) return '-'
   if (Array.isArray(v)) return v.join(', ')
-  if (typeof v === 'boolean') return v ? '是' : '否'
+  if (typeof v === 'boolean') return v ? t('common.yes') : t('common.no')
   if (typeof v === 'object') return JSON.stringify(v)
   return String(v)
 }
@@ -118,10 +118,10 @@ const todayCount = computed(() => {
 
 /** 统计卡片数据 */
 const stats = computed(() => [
-  { label: '总记录', value: records.value.length, icon: 'database', color: '#3b82f6' },
-  { label: '今日', value: todayCount.value, icon: 'calendar', color: '#10b981' },
+  { label: t('fbd.statTotal'), value: records.value.length, icon: 'database', color: '#3b82f6' },
+  { label: t('fbd.statToday'), value: todayCount.value, icon: 'calendar', color: '#10b981' },
   {
-    label: '字段数',
+    label: t('fbd.statFields'),
     value: props.fields.filter((f) => !isLayoutField(f.type)).length,
     icon: 'layout-grid',
     color: '#8b5cf6',
@@ -261,14 +261,14 @@ async function exportExcel(): Promise<void> {
       props.exportColumns ??
       props.fields.filter((f) => !isLayoutField(f.type)).map((f) => ({ key: f.key ?? f.id, label: f.label }))
     const rows = records.value.map((r) => {
-      const row: Record<string, unknown> = { 提交时间: r.time }
+      const row: Record<string, unknown> = { [t('fbd.submittedAt')]: r.time }
       for (const h of headers) {
         const val = r.data[h.key]
         // 数组类型（如 checkbox/upload）转为逗号分隔字符串
         if (Array.isArray(val)) {
           row[h.label] = val.join(', ')
         } else if (typeof val === 'boolean') {
-          row[h.label] = val ? '是' : '否'
+          row[h.label] = val ? t('common.yes') : t('common.no')
         } else if (val === null || val === undefined) {
           row[h.label] = ''
         } else {
@@ -279,15 +279,15 @@ async function exportExcel(): Promise<void> {
     })
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '收集数据')
-    const title = props.exportFileName || props.meta.title || '表单收集'
-    XLSX.writeFile(wb, `${title}-${records.value.length}条.xlsx`)
+    XLSX.utils.book_append_sheet(wb, ws, t('fbd.sheetName'))
+    const title = props.exportFileName || props.meta.title || t('fbd.defaultFileName')
+    XLSX.writeFile(wb, `${title}-${records.value.length}${t('fbd.countSuffix')}.xlsx`)
     okMsg.value = t('formBuilder.exportDone')
     setTimeout(() => {
       okMsg.value = ''
     }, 3000)
   } catch (e) {
-    errorMsg.value = t('formBuilder.exportFail') + '：' + (e instanceof Error ? e.message : String(e))
+    errorMsg.value = t('fbd.exportFailMsg', { err: e instanceof Error ? e.message : String(e) })
   } finally {
     exporting.value = false
   }
@@ -302,14 +302,14 @@ async function exportExcel(): Promise<void> {
         <IconSvg type="file-text" size="md" />
       </div>
       <div>
-        <h3 class="ldc-title">{{ meta.title || '未命名表单' }}</h3>
+        <h3 class="ldc-title">{{ meta.title || t('fbd.untitled') }}</h3>
         <p v-if="meta.description" class="ldc-desc">{{ meta.description }}</p>
       </div>
       <div class="ldc-meta-badge">
-        <span>{{ fields.filter((f) => !isLayoutField(f.type)).length }} 个字段</span>
+        <span>{{ t('fbd.fieldsCount', { n: fields.filter((f) => !isLayoutField(f.type)).length }) }}</span>
         <span class="ldc-dot">·</span>
-        <span v-if="requiredCount">必填 {{ requiredCount }} 项</span>
-        <span v-else>无必填项</span>
+        <span v-if="requiredCount">{{ t('fbd.requiredCount', { n: requiredCount }) }}</span>
+        <span v-else>{{ t('fbd.noRequired') }}</span>
       </div>
     </div>
 
@@ -349,15 +349,15 @@ async function exportExcel(): Promise<void> {
     <div class="ldc-actions">
       <Button variant="outline" size="sm" :loading="exporting" :disabled="!records.length" @click="exportExcel">
         <IconSvg type="download" size="xs" />
-        导出 Excel
+        {{ t('fbd.exportExcel') }}
       </Button>
       <Button variant="ghost" size="sm" @click="showRecords = !showRecords">
-        已收集 {{ records.length }} 条
+        {{ t('formBuilder.collected') }} {{ records.length }} {{ t('formBuilder.records') }}
         <IconSvg :type="showRecords ? 'chevron-up' : 'chevron-down'" size="xs" />
       </Button>
       <Button v-if="records.length" variant="ghost" size="sm" class="ldc-danger-btn" @click="clearRecords">
         <IconSvg type="trash-2" size="xs" />
-        清空
+        {{ t('fbd.clear') }}
       </Button>
     </div>
 
@@ -367,14 +367,14 @@ async function exportExcel(): Promise<void> {
         <!-- 搜索框 -->
         <div v-if="records.length > 3" class="ldc-search">
           <IconSvg type="search" size="sm" />
-          <input v-model="searchQuery" class="ldc-search-input" placeholder="搜索记录（时间或数据值）..." />
+          <input v-model="searchQuery" class="ldc-search-input" :placeholder="t('fbd.searchRecordsPh')" />
           <button v-if="searchQuery" class="ldc-search-clear" @click="searchQuery = ''">
             <IconSvg type="x" size="xs" />
           </button>
         </div>
         <div v-if="!filteredRecords.length" class="ldc-empty">
           <IconSvg :type="searchQuery ? 'search-x' : 'inbox'" size="lg" />
-          <span>{{ searchQuery ? '未找到匹配的记录' : '暂无收集记录' }}</span>
+          <span>{{ searchQuery ? t('fbd.noMatchRecords') : t('fbd.noCollectRecords') }}</span>
         </div>
         <div v-for="r in pagedRecords" :key="r.id" class="ldc-record">
           <div class="ldc-record-head">
@@ -384,7 +384,7 @@ async function exportExcel(): Promise<void> {
             </span>
             <div class="ldc-record-btns">
               <Button variant="ghost" size="sm" @click="detail = detail?.id === r.id ? null : r">
-                {{ detail?.id === r.id ? '收起' : '详情' }}
+                {{ detail?.id === r.id ? t('formBuilder.collapse') : t('formBuilder.detail') }}
               </Button>
               <Button variant="ghost" size="sm" class="ldc-del-btn" @click="removeRecord(r.id)">
                 <IconSvg type="trash-2" size="xs" />
@@ -399,7 +399,7 @@ async function exportExcel(): Promise<void> {
               </div>
               <button class="ldc-detail-reuse" @click="fillFormFromRecord(r)">
                 <IconSvg type="copy" size="xs" />
-                复用此数据
+                {{ t('fbd.reuseData') }}
               </button>
             </div>
           </Transition>
@@ -418,7 +418,7 @@ async function exportExcel(): Promise<void> {
           <button class="ldc-page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
             <IconSvg type="chevron-right" size="xs" />
           </button>
-          <span class="ldc-page-info">{{ filteredRecords.length }} 条 / {{ totalPages }} 页</span>
+          <span class="ldc-page-info">{{ t('fbd.pageInfo', { n: filteredRecords.length, p: totalPages }) }}</span>
         </div>
       </div>
     </Transition>
@@ -426,9 +426,9 @@ async function exportExcel(): Promise<void> {
     <!-- 确认弹窗 -->
     <ConfirmModal
       :visible="confirmVisible"
-      title="清空收集记录"
+      :title="t('formBuilder.clearRecordsTitle')"
       :message="confirmMessage"
-      confirm-text="清空"
+      :confirm-text="t('fbd.clear')"
       variant="danger"
       @update:visible="confirmVisible = $event"
       @confirm="onConfirmClear"

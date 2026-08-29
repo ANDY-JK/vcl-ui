@@ -9,109 +9,190 @@
  * - steps 容器（步骤条）
  *
  * 字段通过 containerSlot 归属到 tabs/collapse/steps 的具体槽位。
+ *
+ * 函数化：模块求值早于 setLocale，文案在调用时刻按当前语言翻译
  */
 
 import type { DesignerNode, FormMeta } from '../designer/types'
+import { useT } from '@/components/_internal/i18n'
 
-export const containerDemoNodes: DesignerNode[] = [
-  // ── grid 容器：基本信息（2 列） ──
-  {
-    id: 'c-grid-basic',
-    type: 'grid',
-    label: '基本信息',
-    isContainer: true,
-    containerConfig: { columns: 2 },
-    children: [
-      { id: 'f-name', type: 'text', label: '姓名', key: 'name', required: true, placeholder: '真实姓名', span: 12 },
-      { id: 'f-phone', type: 'text', label: '手机号', key: 'phone', required: true, placeholder: '11 位手机号', span: 12 },
-      { id: 'f-email', type: 'text', label: '邮箱', key: 'email', placeholder: 'example@domain.com', span: 12 },
-      { id: 'f-gender', type: 'radio', label: '性别', key: 'gender', options: ['男', '女'], span: 12 },
-    ],
-  },
+/** 模块级 t：纯 .ts 文件，各函数直接用 */
+const t = useT()
 
-  // ── tabs 容器：信息分页（2 个标签页） ──
-  {
-    id: 'c-tabs-info',
-    type: 'tabs',
-    label: '信息分页',
-    isContainer: true,
-    containerConfig: {
-      tabs: [
-        { label: '个人资料', name: 'profile' },
-        { label: '工作信息', name: 'work' },
+export function containerDemoNodes(): DesignerNode[] {
+  return [
+    // ── grid 容器：基本信息（2 列） ──
+    {
+      id: 'c-grid-basic',
+      type: 'grid',
+      label: t('fbPre.groupBasic'),
+      isContainer: true,
+      containerConfig: { columns: 2 },
+      children: [
+        {
+          id: 'f-name',
+          type: 'text',
+          label: t('fb.sampleName'),
+          key: 'name',
+          required: true,
+          placeholder: t('fbPre.regNamePh'),
+          span: 12,
+        },
+        {
+          id: 'f-phone',
+          type: 'text',
+          label: t('fbPre.regPhone'),
+          key: 'phone',
+          required: true,
+          placeholder: t('fbPre.regPhonePh'),
+          span: 12,
+        },
+        {
+          id: 'f-email',
+          type: 'text',
+          label: t('fbPre.regEmail'),
+          key: 'email',
+          placeholder: 'example@domain.com',
+          span: 12,
+        },
+        {
+          id: 'f-gender',
+          type: 'radio',
+          label: t('fbPre.regGender'),
+          key: 'gender',
+          options: [t('fbPre.regMale'), t('fbPre.regFemale')],
+          span: 12,
+        },
       ],
-      activeTab: 'profile',
     },
-    children: [
-      { id: 'f-birth', type: 'date', label: '出生日期', key: 'birthday', placeholder: '选择日期', containerSlot: 0 },
-      { id: 'f-address', type: 'text', label: '详细地址', key: 'address', placeholder: '街道门牌号', containerSlot: 0 },
-      { id: 'f-company', type: 'text', label: '公司名称', key: 'company', placeholder: '所在公司', containerSlot: 1 },
-      { id: 'f-title', type: 'text', label: '职位', key: 'jobTitle', placeholder: '当前职位', containerSlot: 1 },
-    ],
-  },
 
-  // ── collapse 容器：更多信息（2 个折叠项） ──
-  {
-    id: 'c-collapse-more',
-    type: 'collapse',
-    label: '更多信息',
-    isContainer: true,
-    containerConfig: {
-      collapseItems: [
-        { title: '兴趣爱好', expanded: true },
-        { title: '补充说明', expanded: false },
+    // ── tabs 容器：信息分页（2 个标签页） ──
+    {
+      id: 'c-tabs-info',
+      type: 'tabs',
+      label: t('fbPre.cdTabsInfo'),
+      isContainer: true,
+      containerConfig: {
+        tabs: [
+          { label: t('fbPre.cdTabProfile'), name: 'profile' },
+          { label: t('fbPre.cdTabWork'), name: 'work' },
+        ],
+        activeTab: 'profile',
+      },
+      children: [
+        {
+          id: 'f-birth',
+          type: 'date',
+          label: t('fbPre.regBirthday'),
+          key: 'birthday',
+          placeholder: t('fbPre.cdDatePh'),
+          containerSlot: 0,
+        },
+        {
+          id: 'f-address',
+          type: 'text',
+          label: t('formBuilder.addressPlaceholder'),
+          key: 'address',
+          placeholder: t('fbPre.regAddressPh'),
+          containerSlot: 0,
+        },
+        {
+          id: 'f-company',
+          type: 'text',
+          label: t('fbPre.cdCompany'),
+          key: 'company',
+          placeholder: t('fbPre.cdCompanyPh'),
+          containerSlot: 1,
+        },
+        {
+          id: 'f-title',
+          type: 'text',
+          label: t('fbPre.cdJobTitle'),
+          key: 'jobTitle',
+          placeholder: t('fbPre.cdJobTitlePh'),
+          containerSlot: 1,
+        },
       ],
-      activeCollapse: 0,
     },
-    children: [
-      {
-        id: 'f-hobbies',
-        type: 'checkbox',
-        label: '兴趣爱好',
-        key: 'hobbies',
-        options: ['阅读', '运动', '音乐', '旅行', '编程'],
-        containerSlot: 0,
-      },
-      {
-        id: 'f-remark',
-        type: 'textarea',
-        label: '备注',
-        key: 'remark',
-        placeholder: '其他需要说明的信息（可选）',
-        rows: 3,
-        containerSlot: 1,
-      },
-    ],
-  },
 
-  // ── steps 容器：审批流程（2 个步骤） ──
-  {
-    id: 'c-steps-flow',
-    type: 'steps',
-    label: '审批流程',
-    isContainer: true,
-    containerConfig: {
-      steps: [{ title: '申请人信息' }, { title: '审批人信息' }],
-      activeStep: 0,
+    // ── collapse 容器：更多信息（2 个折叠项） ──
+    {
+      id: 'c-collapse-more',
+      type: 'collapse',
+      label: t('fbPre.cdCollapseMore'),
+      isContainer: true,
+      containerConfig: {
+        collapseItems: [
+          { title: t('fbPre.regHobbies'), expanded: true },
+          { title: t('fbPre.cdSupplement'), expanded: false },
+        ],
+        activeCollapse: 0,
+      },
+      children: [
+        {
+          id: 'f-hobbies',
+          type: 'checkbox',
+          label: t('fbPre.regHobbies'),
+          key: 'hobbies',
+          options: [
+            t('fbPre.regOptReading'),
+            t('fbPre.regOptSports'),
+            t('fbPre.regOptMusic'),
+            t('fbPre.regOptTravel'),
+            t('fbPre.regOptCoding'),
+          ],
+          containerSlot: 0,
+        },
+        {
+          id: 'f-remark',
+          type: 'textarea',
+          label: t('fbPre.regRemark'),
+          key: 'remark',
+          placeholder: t('fbPre.regRemarkPh'),
+          rows: 3,
+          containerSlot: 1,
+        },
+      ],
     },
-    children: [
-      { id: 'f-applicant', type: 'text', label: '申请人', key: 'applicant', placeholder: '申请人姓名', containerSlot: 0 },
-      {
-        id: 'f-approver',
-        type: 'select',
-        label: '审批人',
-        key: 'approver',
-        placeholder: '选择审批人',
-        options: ['张经理', '李主管', '王总监'],
-        containerSlot: 1,
-      },
-    ],
-  },
-]
 
-export const containerDemoMeta: FormMeta = {
-  title: '容器布局示例',
-  description: '演示 grid / tabs / collapse / steps 四种容器嵌套',
-  submitText: '提交',
-  resetText: '重置',
+    // ── steps 容器：审批流程（2 个步骤） ──
+    {
+      id: 'c-steps-flow',
+      type: 'steps',
+      label: t('fbPre.cdStepsFlow'),
+      isContainer: true,
+      containerConfig: {
+        steps: [{ title: t('fbPre.cdStepApplicant') }, { title: t('fbPre.cdStepApprover') }],
+        activeStep: 0,
+      },
+      children: [
+        {
+          id: 'f-applicant',
+          type: 'text',
+          label: t('fbPre.cdApplicant'),
+          key: 'applicant',
+          placeholder: t('fbPre.cdApplicantPh'),
+          containerSlot: 0,
+        },
+        {
+          id: 'f-approver',
+          type: 'select',
+          label: t('fbPre.cdApprover'),
+          key: 'approver',
+          placeholder: t('fbPre.cdApproverPh'),
+          options: [t('fbPre.cdOptMgrZhang'), t('fbPre.cdOptSupLi'), t('fbPre.cdOptDirWang')],
+          containerSlot: 1,
+        },
+      ],
+    },
+  ]
+}
+
+export function containerDemoMeta(): FormMeta {
+  return {
+    title: t('fbPre.cdMetaTitle'),
+    description: t('fbPre.cdMetaDesc'),
+    submitText: t('common.submit'),
+    resetText: t('common.reset'),
+  }
 }

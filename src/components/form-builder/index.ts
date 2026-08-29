@@ -24,21 +24,51 @@ export { useFormValidator, validateField, validateAll, validators } from './useF
 export { useFormStorage } from './useFormStorage'
 
 // ── 字段注册表 ──
-export { getFieldRegistration, getComponentCategory, isLayoutField, getComponentType, getFieldComponent, getRegisteredTypes, registerField, isFieldRegistered } from './fieldRegistry'
+export {
+  getFieldRegistration,
+  getComponentCategory,
+  isLayoutField,
+  getComponentType,
+  getFieldComponent,
+  getRegisteredTypes,
+  registerField,
+  isFieldRegistered,
+} from './fieldRegistry'
 export type { FieldRegistration } from './fieldRegistry'
 
 // ── 预置 Schema 模板 ──
-export { contractCollectionSchema, inspectionSchema, registrationSchema, containerDemoNodes, containerDemoMeta } from './presets'
+export {
+  contractCollectionSchema,
+  inspectionSchema,
+  registrationSchema,
+  containerDemoNodes,
+  containerDemoMeta,
+} from './presets'
 
 // ── 设计器类型与工具 ──
 export {
-  FIELD_TYPES, createField, genFieldId, genRecordId, collectStorageKey,
-  toFormSchema, parseCascaderOptions, getTypeLabel,
+  getFieldTypes,
+  createField,
+  genFieldId,
+  genRecordId,
+  collectStorageKey,
+  toFormSchema,
+  parseCascaderOptions,
+  getTypeLabel,
   // v3 新增树操作工具
-  flattenNodes, findNode, findParent, updateNodeInTree,
-  removeNodeFromTree, insertNode, insertChildNode, moveNodeInTree,
-  isContainerNode, isFieldNode, migrateFieldsToNodes,
-  CONTAINER_TYPES, FIELD_NODE_TYPES,
+  flattenNodes,
+  findNode,
+  findParent,
+  updateNodeInTree,
+  removeNodeFromTree,
+  insertNode,
+  insertChildNode,
+  moveNodeInTree,
+  isContainerNode,
+  isFieldNode,
+  migrateFieldsToNodes,
+  CONTAINER_TYPES,
+  FIELD_NODE_TYPES,
 } from './designer/types'
 export { createLocalFormStore } from './designer/store'
 export type { FormStore, FormMetaItem } from './designer/store'

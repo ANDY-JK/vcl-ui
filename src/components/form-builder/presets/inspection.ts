@@ -2,127 +2,135 @@
  * 预置 Schema：设备巡检表单
  *
  * 展示 FormBuilder 的多步骤（steps）模式 + 字段联动 + 分组 + 多种字段类型
+ *
+ * 函数化：模块求值早于 setLocale，文案在调用时刻按当前语言翻译
  */
 
 import type { FormSchema } from '../types'
 import { validators } from '../useFormValidator'
+import { useT } from '@/components/_internal/i18n'
 
-export const inspectionSchema: FormSchema = {
-  title: '设备巡检登记',
-  description: '多步骤巡检流程：基本信息 → 设备状态 → 现场记录',
-  layout: 'steps',
-  submitText: '提交巡检报告',
-  steps: [
-    { title: '基本信息', fields: ['inspector', 'date', 'site', 'shift'] },
-    { title: '设备状态', fields: ['deviceName', 'deviceStatus', 'issues', 'severity'] },
-    { title: '现场记录', fields: ['photos', 'remark'] },
-  ],
-  fields: [
-    // ─── 步骤1：基本信息 ───
-    {
-      key: 'inspector',
-      label: '巡检人',
-      type: 'text',
-      required: true,
-      placeholder: '请输入巡检人姓名',
-      group: '基本信息',
-    },
-    {
-      key: 'date',
-      label: '巡检日期',
-      type: 'date',
-      required: true,
-      props: { format: 'YYYY-MM-DD' },
-      group: '基本信息',
-    },
-    {
-      key: 'site',
-      label: '巡检站点',
-      type: 'select',
-      required: true,
-      placeholder: '选择站点',
-      options: [
-        { value: 'site-a', label: 'A 区机房' },
-        { value: 'site-b', label: 'B 区机房' },
-        { value: 'site-c', label: 'C 区机房' },
-      ],
-      group: '基本信息',
-    },
-    {
-      key: 'shift',
-      label: '班次',
-      type: 'radio',
-      required: true,
-      props: { direction: 'horizontal' },
-      options: [
-        { value: 'morning', label: '白班' },
-        { value: 'evening', label: '夜班' },
-      ],
-      group: '基本信息',
-    },
+/** 模块级 t：纯 .ts 文件，各函数直接用 */
+const t = useT()
 
-    // ─── 步骤2：设备状态 ───
-    {
-      key: 'deviceName',
-      label: '设备名称',
-      type: 'text',
-      required: true,
-      placeholder: '设备编号或名称',
-      group: '设备状态',
-    },
-    {
-      key: 'deviceStatus',
-      label: '设备运行状态',
-      type: 'select',
-      required: true,
-      options: [
-        { value: 'normal', label: '✓ 正常运行' },
-        { value: 'warning', label: '⚠ 异常但可运行' },
-        { value: 'down', label: '✗ 停机故障' },
-      ],
-      group: '设备状态',
-    },
-    {
-      key: 'issues',
-      label: '是否存在异常',
-      type: 'switch',
-      default: false,
-      group: '设备状态',
-    },
-    {
-      key: 'severity',
-      label: '严重程度',
-      type: 'rate',
-      visibleWhen: { field: 'issues', equals: true },
-      props: { rateMax: 5, allowHalf: true },
-      group: '设备状态',
-    },
-
-    // ─── 步骤3：现场记录 ───
-    {
-      key: 'photos',
-      label: '现场照片',
-      type: 'image-upload',
-      required: true,
-      hint: '至少上传 1 张现场照片',
-      props: {
-        variant: 'card',
-        accept: 'image/*',
-        multiple: true,
-        maxSize: 10,
-        mobileMenu: true,
-        compress: true,
+export function inspectionSchema(): FormSchema {
+  return {
+    title: t('fbPre.inspTitle'),
+    description: t('fbPre.inspDesc'),
+    layout: 'steps',
+    submitText: t('fbPre.inspSubmit'),
+    steps: [
+      { title: t('fbPre.groupBasic'), fields: ['inspector', 'date', 'site', 'shift'] },
+      { title: t('fbPre.inspStepDevice'), fields: ['deviceName', 'deviceStatus', 'issues', 'severity'] },
+      { title: t('fbPre.inspStepSite'), fields: ['photos', 'remark'] },
+    ],
+    fields: [
+      // ─── 步骤1：基本信息 ───
+      {
+        key: 'inspector',
+        label: t('fbPre.inspInspector'),
+        type: 'text',
+        required: true,
+        placeholder: t('fbPre.inspInspectorPh'),
+        group: t('fbPre.groupBasic'),
       },
-      group: '现场记录',
-    },
-    {
-      key: 'remark',
-      label: '巡检备注',
-      type: 'textarea',
-      placeholder: '描述巡检发现的问题、处理措施等',
-      props: { rows: 4 },
-      rules: [validators.maxLen(500, '备注')],
-      group: '现场记录',
-    },
-  ],
+      {
+        key: 'date',
+        label: t('fbPre.inspDate'),
+        type: 'date',
+        required: true,
+        props: { format: 'YYYY-MM-DD' },
+        group: t('fbPre.groupBasic'),
+      },
+      {
+        key: 'site',
+        label: t('fbPre.inspSite'),
+        type: 'select',
+        required: true,
+        placeholder: t('fbPre.inspSitePh'),
+        options: [
+          { value: 'site-a', label: t('fbPre.inspSiteA') },
+          { value: 'site-b', label: t('fbPre.inspSiteB') },
+          { value: 'site-c', label: t('fbPre.inspSiteC') },
+        ],
+        group: t('fbPre.groupBasic'),
+      },
+      {
+        key: 'shift',
+        label: t('fbPre.inspShift'),
+        type: 'radio',
+        required: true,
+        props: { direction: 'horizontal' },
+        options: [
+          { value: 'morning', label: t('fbPre.inspDay') },
+          { value: 'evening', label: t('fbPre.inspNight') },
+        ],
+        group: t('fbPre.groupBasic'),
+      },
+
+      // ─── 步骤2：设备状态 ───
+      {
+        key: 'deviceName',
+        label: t('fbPre.inspDeviceName'),
+        type: 'text',
+        required: true,
+        placeholder: t('fbPre.inspDeviceNamePh'),
+        group: t('fbPre.inspStepDevice'),
+      },
+      {
+        key: 'deviceStatus',
+        label: t('fbPre.inspStatus'),
+        type: 'select',
+        required: true,
+        options: [
+          { value: 'normal', label: t('fbPre.inspStatusNormal') },
+          { value: 'warning', label: t('fbPre.inspStatusWarning') },
+          { value: 'down', label: t('fbPre.inspStatusDown') },
+        ],
+        group: t('fbPre.inspStepDevice'),
+      },
+      {
+        key: 'issues',
+        label: t('fbPre.inspIssues'),
+        type: 'switch',
+        default: false,
+        group: t('fbPre.inspStepDevice'),
+      },
+      {
+        key: 'severity',
+        label: t('fbPre.inspSeverity'),
+        type: 'rate',
+        visibleWhen: { field: 'issues', equals: true },
+        props: { rateMax: 5, allowHalf: true },
+        group: t('fbPre.inspStepDevice'),
+      },
+
+      // ─── 步骤3：现场记录 ───
+      {
+        key: 'photos',
+        label: t('fbPre.inspPhotos'),
+        type: 'image-upload',
+        required: true,
+        hint: t('fbPre.inspPhotosHint'),
+        props: {
+          variant: 'card',
+          accept: 'image/*',
+          multiple: true,
+          maxSize: 10,
+          mobileMenu: true,
+          compress: true,
+        },
+        group: t('fbPre.inspStepSite'),
+      },
+      {
+        key: 'remark',
+        label: t('fbPre.inspRemark'),
+        type: 'textarea',
+        placeholder: t('fbPre.inspRemarkPh'),
+        props: { rows: 4 },
+        rules: [validators.maxLen(500, t('fbPre.regRemark'))],
+        group: t('fbPre.inspStepSite'),
+      },
+    ],
+  }
 }

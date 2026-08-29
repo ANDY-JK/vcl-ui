@@ -12,7 +12,10 @@
  */
 import { computed, ref, watch, type PropType } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
 import { isContainerNode, getTypeIcon, type DesignerNode, type DesignerNodeType } from './types'
+
+const t = useT()
 
 const props = defineProps({
   nodes: { type: Array as PropType<DesignerNode[]>, default: () => [] },
@@ -119,42 +122,42 @@ function toggleExpand(id: string, e: Event): void {
   expandedMap.value[id] = !expandedMap.value[id]
 }
 
-/** 树节点类型简称（中文） */
+/** 树节点类型简称（按当前语言翻译） */
 function typeShort(type: string): string {
   const map: Record<string, string> = {
-    text: '文本',
-    textarea: '多行',
-    number: '数字',
-    select: '下拉',
-    radio: '单选',
-    checkbox: '多选',
-    cascader: '级联',
-    switch: '开关',
-    date: '日期',
-    time: '时间',
-    rate: '评分',
-    slider: '滑块',
-    upload: '上传',
-    password: '密码',
-    tel: '电话',
-    email: '邮箱',
-    url: '链接',
-    search: '搜索',
-    subform: '子表',
-    relate: '关联',
-    richtext: '富文本',
-    signature: '签名',
-    address: '地址',
-    idcard: '证件',
-    matrix: '矩阵',
-    serial: '流水',
-    divider: '分割',
-    title: '标题',
-    card: '卡片',
-    grid: '栅格',
-    tabs: '标签',
-    collapse: '折叠',
-    steps: '步骤',
+    text: t('fbt.shortText'),
+    textarea: t('fbt.shortTextarea'),
+    number: t('fbt.shortNumber'),
+    select: t('fbt.shortSelect'),
+    radio: t('fbt.shortRadio'),
+    checkbox: t('fbt.shortCheckbox'),
+    cascader: t('fbt.shortCascader'),
+    switch: t('fbt.shortSwitch'),
+    date: t('fbt.shortDate'),
+    time: t('fbt.shortTime'),
+    rate: t('fbt.shortRate'),
+    slider: t('fbt.shortSlider'),
+    upload: t('fbt.shortUpload'),
+    password: t('fbt.shortPassword'),
+    tel: t('fbt.shortTel'),
+    email: t('fbt.shortEmail'),
+    url: t('fbt.shortUrl'),
+    search: t('fbt.shortSearch'),
+    subform: t('fbt.shortSubform'),
+    relate: t('fbt.shortRelate'),
+    richtext: t('fbt.shortRichtext'),
+    signature: t('fbt.shortSignature'),
+    address: t('fbt.shortAddress'),
+    idcard: t('fbt.shortIdcard'),
+    matrix: t('fbt.shortMatrix'),
+    serial: t('fbt.shortSerial'),
+    divider: t('fbt.shortDivider'),
+    title: t('fbt.shortTitle'),
+    card: t('fbt.shortCard'),
+    grid: t('fbt.shortGrid'),
+    tabs: t('fbt.shortTabs'),
+    collapse: t('fbt.shortCollapse'),
+    steps: t('fbt.shortSteps'),
   }
   return map[type] ?? type
 }
@@ -225,17 +228,17 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
   <aside class="ldo-panel">
     <div class="ldo-header">
       <IconSvg type="list-tree" size="sm" />
-      <span>表单大纲</span>
+      <span>{{ t('fbt.formOutline') }}</span>
     </div>
     <!-- 搜索框 -->
     <div class="ldo-search">
       <IconSvg type="search" size="xs" />
-      <input v-model="searchQuery" class="ldo-search-input" placeholder="搜索节点..." />
+      <input v-model="searchQuery" class="ldo-search-input" :placeholder="t('fbt.searchNodesPh')" />
     </div>
     <!-- 树 -->
     <div class="ldo-tree">
       <div v-if="!flatTree.length" class="ldo-empty">
-        <span>暂无节点</span>
+        <span>{{ t('fbt.noNodes') }}</span>
       </div>
       <div
         v-for="item in flatTree"
@@ -275,7 +278,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
         <span class="ldo-tree-label">{{ item.node.label }}</span>
         <span class="ldo-tree-type">{{ typeShort(item.node.type) }}</span>
         <span class="ldo-tree-actions" @click.stop>
-          <button class="ldo-del-btn" title="删除" @click="emit('remove', item.node.id)">
+          <button class="ldo-del-btn" :title="t('common.delete')" @click="emit('remove', item.node.id)">
             <IconSvg type="trash-2" size="xs" />
           </button>
         </span>

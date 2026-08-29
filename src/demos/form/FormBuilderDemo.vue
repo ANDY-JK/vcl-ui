@@ -10,7 +10,13 @@
 import { ref, computed } from 'vue'
 import { FormDesigner, FormCollect, FormBuilder, toFormSchema } from '@/components/form-builder'
 import type { DesignerField, DesignerNode, FormMeta } from '@/components/form-builder'
-import { registrationSchema, inspectionSchema, contractCollectionSchema, containerDemoNodes, containerDemoMeta } from '@/components/form-builder'
+import {
+  registrationSchema,
+  inspectionSchema,
+  contractCollectionSchema,
+  containerDemoNodes,
+  containerDemoMeta,
+} from '@/components/form-builder'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
 // ════════════════════════════════════════
@@ -40,7 +46,7 @@ const previewData = ref<Record<string, unknown>>({})
 /** 预览用 Schema（从设计数据转换） */
 const previewSchema = computed(() => toFormSchema(fields.value, meta.value))
 
-// 预置模板列表（schema 为平铺 FormSchema；nodes 为含嵌套容器的 DesignerNode 树）
+// 预置模板列表（schema 为平铺 FormSchema 工厂；nodes 为含嵌套容器的 DesignerNode 树工厂 — 调用时按当前语言翻译）
 const presets = [
   { key: 'registration', label: '用户登记', icon: 'user', schema: registrationSchema },
   { key: 'inspection', label: '设备巡检', icon: 'clipboard-check', schema: inspectionSchema },
@@ -53,18 +59,18 @@ const activePreset = ref<string>('')
 
 /** 加载预置模板 */
 function loadPreset(key: string): void {
-  const preset = presets.find(p => p.key === key)
+  const preset = presets.find((p) => p.key === key)
   if (!preset) return
   activePreset.value = key
 
-  // nodes 形态：直接使用含嵌套容器的节点树
+  // nodes 形态：直接使用含嵌套容器的节点树（presets 已函数化，调用时取值）
   if ('nodes' in preset && preset.nodes) {
-    fields.value = preset.nodes as DesignerNode[]
-    meta.value = { ...(preset.meta as FormMeta) }
+    fields.value = preset.nodes() as DesignerNode[]
+    meta.value = { ...(preset.meta() as FormMeta) }
     return
   }
 
-  const s = (preset as { schema: typeof registrationSchema }).schema
+  const s = (preset as { schema: typeof registrationSchema }).schema()
   // 将 FormSchema 反向映射为 DesignerField[]
   fields.value = s.fields.map((f, i): DesignerField => ({
     id: 'pf' + (i + 1),
@@ -77,7 +83,7 @@ function loadPreset(key: string): void {
     hint: f.hint,
     span: f.span,
     group: f.group,
-    options: f.options?.map(o => String(o.value)),
+    options: f.options?.map((o) => String(o.value)),
     defaultValue: f.default,
     min: f.props?.min as number | undefined,
     max: f.props?.max as number | undefined,
@@ -145,11 +151,7 @@ function loadPreset(key: string): void {
     <!-- 内容区 -->
     <!-- 设计 -->
     <div v-if="activeTab === 'design'">
-      <FormDesigner
-        v-model:fields="fields"
-        v-model:meta="meta"
-        height="620px"
-      />
+      <FormDesigner v-model:fields="fields" v-model:meta="meta" height="620px" />
     </div>
 
     <!-- 预览 -->
@@ -160,13 +162,7 @@ function loadPreset(key: string): void {
         </div>
         <p>请先在「设计」中添加字段</p>
       </div>
-      <FormBuilder
-        v-else
-        v-model="previewData"
-        :schema="previewSchema"
-        readonly
-        @submit="previewData = {}"
-      />
+      <FormBuilder v-else v-model="previewData" :schema="previewSchema" readonly @submit="previewData = {}" />
     </div>
 
     <!-- 收集 -->
@@ -177,11 +173,7 @@ function loadPreset(key: string): void {
         </div>
         <p>请先在「设计」中添加字段</p>
       </div>
-      <FormCollect
-        v-else
-        :fields="fields"
-        :meta="meta"
-      />
+      <FormCollect v-else :fields="fields" :meta="meta" />
     </div>
   </div>
 </template>
@@ -203,7 +195,7 @@ function loadPreset(key: string): void {
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: var(--radius-lg, 12px);
   margin-bottom: 20px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .lc-demo-tab {
   display: inline-flex;
@@ -228,7 +220,7 @@ function loadPreset(key: string): void {
   background: linear-gradient(135deg, #4f6ef7 0%, #3b5de5 100%);
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 3px 10px rgba(79,110,247,0.25);
+  box-shadow: 0 3px 10px rgba(79, 110, 247, 0.25);
 }
 .lc-demo-tabs-right {
   margin-left: auto;

@@ -9,6 +9,10 @@ import type { FormDesign, CollectRecord } from './types'
 import { collectStorageKey } from './types'
 import { formatDateTimeZh } from '@/components/form/utils/date-utils'
 import { uuid } from '@/components/_internal/utils'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：纯 .ts 文件，各函数直接用 */
+const t = useT()
 
 /** 已保存的表单元信息（列表展示用） */
 export interface FormMetaItem {
@@ -90,7 +94,7 @@ export function createLocalFormStore(): FormStore {
       let item: FormMetaItem
       if (id) {
         const found = index.find((x) => x.id === id)
-        if (!found) throw new Error(`表单不存在: ${id}`)
+        if (!found) throw new Error(t('fbd.formNotFound', { id }))
         item = found
         item.name = name ?? item.name
         item.updatedAt = now
@@ -100,7 +104,7 @@ export function createLocalFormStore(): FormStore {
         const allFields = design.nodes ?? design.fields ?? []
         item = {
           id: genId(),
-          name: name || design.meta.title || '未命名表单',
+          name: name || design.meta.title || t('fbd.untitled'),
           updatedAt: now,
           collectKey: collectStorageKey(allFields),
         }

@@ -494,7 +494,7 @@ function onCanvasKeydown(e: KeyboardEvent): void {
 
 function exportJson(): void {
   if (!currentNodes.value.length) {
-    showTip('没有可导出的字段')
+    showTip(t('formBuilder.noExportableFields'))
     return
   }
   const design: FormDesign = { schemaVersion: FORM_DESIGN_VERSION, meta: props.meta, nodes: currentNodes.value }
@@ -502,7 +502,7 @@ function exportJson(): void {
   const blob = new Blob([json], { type: 'application/json' })
   downloadBlob(blob, 'form-design.json')
   void copyText(json)
-  showTip('已导出 JSON（下载 + 复制到剪贴板）')
+  showTip(t('fbd.exportedTip'))
 }
 
 const importText = ref('')
@@ -525,7 +525,7 @@ function onImportDrop(e: DragEvent): void {
   const file = e.dataTransfer?.files?.[0]
   if (!file) return
   if (!file.name.endsWith('.json')) {
-    importError.value = '请上传 .json 格式的文件'
+    importError.value = t('fbd.jsonFileRequired')
     return
   }
   const reader = new FileReader()
@@ -534,7 +534,7 @@ function onImportDrop(e: DragEvent): void {
     applyImport()
   }
   reader.onerror = () => {
-    importError.value = '文件读取失败'
+    importError.value = t('fbd.fileReadFail')
   }
   reader.readAsText(file)
 }
@@ -549,7 +549,7 @@ function onImportFileSelect(e: Event): void {
     applyImport()
   }
   reader.onerror = () => {
-    importError.value = '文件读取失败'
+    importError.value = t('fbd.fileReadFail')
   }
   reader.readAsText(file)
 }
@@ -592,7 +592,7 @@ function applyImport(): void {
         id: typeof n.id === 'string' ? n.id : 'n' + Date.now().toString(36) + i,
       }))
     } else {
-      throw new Error('顶层必须是数组或 {meta, nodes/fields} 对象')
+      throw new Error(t('fbd.importStructureErr'))
     }
 
     snapshot()
@@ -601,9 +601,9 @@ function applyImport(): void {
     showImport.value = false
     importText.value = ''
     importError.value = ''
-    showTip(`已导入 ${nodes.length} 个节点`)
+    showTip(t('fbd.importedNodes', { n: nodes.length }))
   } catch (e) {
-    importError.value = 'JSON 解析失败：' + (e instanceof Error ? e.message : String(e))
+    importError.value = t('fbd.importParseFail', { err: e instanceof Error ? e.message : String(e) })
   }
 }
 
@@ -622,7 +622,7 @@ const schemaJson = computed(() => {
 /** 复制 Schema JSON 到剪贴板 */
 function copySchema(): void {
   void copyText(schemaJson.value)
-  showTip('已复制到剪贴板')
+  showTip(t('fbd.copiedToClipboard'))
 }
 
 watch(activeTab, (v) => {
@@ -667,18 +667,18 @@ const selectedPath = computed(() => {
     <div class="ld-toolbar">
       <span class="ld-title">
         <IconSvg type="layout-template" size="sm" />
-        表单设计器
+        {{ t('fbd.formDesigner') }}
       </span>
-      <span class="ld-count">{{ nodeCount }} 个节点 · {{ containerCount }} 个容器</span>
-      <span v-if="isMultiSelect" class="ld-tip">{{ selectedIds.size }} 项已选中（Delete 批量删除）</span>
+      <span class="ld-count">{{ t('fbd.nodesContainers', { n: nodeCount, c: containerCount }) }}</span>
+      <span v-if="isMultiSelect" class="ld-tip">{{ t('fbd.selectedCount', { n: selectedIds.size }) }}</span>
       <span v-if="tip" class="ld-tip">{{ tip }}</span>
       <div class="ld-toolbar-actions">
         <!-- 撤销/重做 -->
-        <button class="ld-btn" :disabled="!canUndo" title="撤销 Ctrl+Z" @click="undo">
-          <IconSvg type="undo-2" size="xs" /> 撤销
+        <button class="ld-btn" :disabled="!canUndo" :title="t('fbd.undoTitle')" @click="undo">
+          <IconSvg type="undo-2" size="xs" /> {{ t('fbd.undo') }}
         </button>
-        <button class="ld-btn" :disabled="!canRedo" title="重做 Ctrl+Shift+Z" @click="redo">
-          <IconSvg type="redo-2" size="xs" /> 重做
+        <button class="ld-btn" :disabled="!canRedo" :title="t('fbd.redoTitle')" @click="redo">
+          <IconSvg type="redo-2" size="xs" /> {{ t('fbd.redo') }}
         </button>
         <span class="ld-sep" />
         <!-- 设备切换 -->
@@ -686,7 +686,7 @@ const selectedPath = computed(() => {
           <button
             class="ld-device-btn"
             :class="{ active: device === 'desktop' }"
-            title="桌面端"
+            :title="t('fbd.deviceDesktop')"
             @click="device = 'desktop'"
           >
             <IconSvg type="monitor" size="xs" />
@@ -694,7 +694,7 @@ const selectedPath = computed(() => {
           <button
             class="ld-device-btn"
             :class="{ active: device === 'tablet' }"
-            title="平板"
+            :title="t('fbd.deviceTablet')"
             @click="device = 'tablet'"
           >
             <IconSvg type="tablet" size="xs" />
@@ -702,7 +702,7 @@ const selectedPath = computed(() => {
           <button
             class="ld-device-btn"
             :class="{ active: device === 'mobile' }"
-            title="手机端"
+            :title="t('fbd.deviceMobile')"
             @click="device = 'mobile'"
           >
             <IconSvg type="smartphone" size="xs" />
@@ -710,41 +710,55 @@ const selectedPath = computed(() => {
         </div>
         <span class="ld-sep" />
         <!-- 标签页切换 -->
-        <button class="ld-btn" :class="{ active: activeTab === 'design' }" @click="activeTab = 'design'">设计</button>
-        <button class="ld-btn" :class="{ active: activeTab === 'preview' }" @click="activeTab = 'preview'">预览</button>
-        <button class="ld-btn" :class="{ active: activeTab === 'outline' }" @click="activeTab = 'outline'">大纲</button>
-        <button class="ld-btn" :class="{ active: activeTab === 'schema' }" @click="activeTab = 'schema'">代码</button>
+        <button class="ld-btn" :class="{ active: activeTab === 'design' }" @click="activeTab = 'design'">
+          {{ t('fbd.tabDesign') }}
+        </button>
+        <button class="ld-btn" :class="{ active: activeTab === 'preview' }" @click="activeTab = 'preview'">
+          {{ t('fbd.tabPreview') }}
+        </button>
+        <button class="ld-btn" :class="{ active: activeTab === 'outline' }" @click="activeTab = 'outline'">
+          {{ t('fbd.tabOutline') }}
+        </button>
+        <button class="ld-btn" :class="{ active: activeTab === 'schema' }" @click="activeTab = 'schema'">
+          {{ t('fbd.tabCode') }}
+        </button>
         <span class="ld-sep" />
-        <button class="ld-btn" :class="{ active: showSettings }" @click="showSettings = !showSettings">表单设置</button>
+        <button class="ld-btn" :class="{ active: showSettings }" @click="showSettings = !showSettings">
+          {{ t('fbd.formSettings') }}
+        </button>
         <span class="ld-sep" />
-        <button class="ld-btn" @click="exportJson"><IconSvg type="download" size="xs" /> 导出</button>
-        <button class="ld-btn" @click="showImport = !showImport"><IconSvg type="upload" size="xs" /> 导入</button>
-        <button class="ld-btn ld-danger" @click="clearAll"><IconSvg type="trash-2" size="xs" /> 清空</button>
+        <button class="ld-btn" @click="exportJson"><IconSvg type="download" size="xs" /> {{ t('fbd.export') }}</button>
+        <button class="ld-btn" @click="showImport = !showImport">
+          <IconSvg type="upload" size="xs" /> {{ t('fbd.import') }}
+        </button>
+        <button class="ld-btn ld-danger" @click="clearAll">
+          <IconSvg type="trash-2" size="xs" /> {{ t('fbd.clear') }}
+        </button>
       </div>
     </div>
 
     <!-- 表单设置 -->
     <div v-if="showSettings" class="ld-settings">
       <div class="ld-settings-row wide">
-        <label>表单标题</label>
+        <label>{{ t('fbd.formTitle') }}</label>
         <input
           class="ld-settings-textarea"
           :value="meta.title ?? ''"
-          placeholder="例如：客户满意度调查"
+          :placeholder="t('fbd.formTitlePh')"
           @input="patchMeta({ title: ($event.target as HTMLInputElement).value })"
         />
       </div>
       <div class="ld-settings-row wide">
-        <label>表单描述</label>
+        <label>{{ t('fbd.formDesc') }}</label>
         <input
           class="ld-settings-textarea"
           :value="meta.description ?? ''"
-          placeholder="填写说明文字（可选）"
+          :placeholder="t('fbd.formDescPh')"
           @input="patchMeta({ description: ($event.target as HTMLInputElement).value })"
         />
       </div>
       <div class="ld-settings-row" style="max-width: 200px">
-        <label>布局模式</label>
+        <label>{{ t('fbd.layoutMode') }}</label>
         <div class="ld-layout-preview">
           <div
             class="ld-layout-thumb"
@@ -756,7 +770,7 @@ const selectedPath = computed(() => {
               <div></div>
               <div></div>
             </div>
-            <span>单列</span>
+            <span>{{ t('fbd.layoutSingle') }}</span>
           </div>
           <div
             class="ld-layout-thumb"
@@ -769,7 +783,7 @@ const selectedPath = computed(() => {
               <div></div>
               <div></div>
             </div>
-            <span>栅格</span>
+            <span>{{ t('fbd.layoutGrid') }}</span>
           </div>
           <div
             class="ld-layout-thumb"
@@ -781,28 +795,28 @@ const selectedPath = computed(() => {
               <div></div>
               <div></div>
             </div>
-            <span>分步</span>
+            <span>{{ t('fbd.layoutSteps') }}</span>
           </div>
         </div>
       </div>
       <div class="ld-settings-row" style="max-width: 200px">
-        <label>提交按钮文案</label>
+        <label>{{ t('fbd.submitBtnText') }}</label>
         <input
           class="ld-settings-textarea"
-          :value="meta.submitText ?? '提交'"
-          placeholder="提交"
+          :value="meta.submitText ?? t('common.submit')"
+          :placeholder="t('common.submit')"
           @input="patchMeta({ submitText: ($event.target as HTMLInputElement).value })"
         />
       </div>
       <div class="ld-settings-row" style="max-width: 160px">
-        <label>实时校验</label>
+        <label>{{ t('fbd.realtimeValidate') }}</label>
         <select
           class="ld-settings-textarea"
           :value="meta.validateOnChange ? '1' : '0'"
           @change="patchMeta({ validateOnChange: ($event.target as HTMLSelectElement).value === '1' })"
         >
-          <option value="0">仅提交时</option>
-          <option value="1">输入时校验</option>
+          <option value="0">{{ t('fbd.validateOnSubmitOnly') }}</option>
+          <option value="1">{{ t('fbd.validateOnInput') }}</option>
         </select>
       </div>
     </div>
@@ -810,7 +824,7 @@ const selectedPath = computed(() => {
     <!-- 高级表单设置 -->
     <div v-if="showSettings" class="ld-settings ld-settings-advanced">
       <div class="ld-settings-row" style="max-width: 140px">
-        <label>标签位置</label>
+        <label>{{ t('fbp.labelPosition') }}</label>
         <select
           class="ld-settings-textarea"
           :value="meta.labelPosition ?? 'left'"
@@ -818,13 +832,13 @@ const selectedPath = computed(() => {
             patchMeta({ labelPosition: ($event.target as HTMLSelectElement).value as 'left' | 'top' | 'hidden' })
           "
         >
-          <option value="left">左侧</option>
-          <option value="top">上方</option>
-          <option value="hidden">隐藏</option>
+          <option value="left">{{ t('fbp.posLeft') }}</option>
+          <option value="top">{{ t('fbp.posTop') }}</option>
+          <option value="hidden">{{ t('fbp.posHidden') }}</option>
         </select>
       </div>
       <div class="ld-settings-row" style="max-width: 140px">
-        <label>标签宽度</label>
+        <label>{{ t('fbp.labelWidth') }}</label>
         <select
           class="ld-settings-textarea"
           :value="meta.labelWidth ?? 'default'"
@@ -834,23 +848,23 @@ const selectedPath = computed(() => {
             })
           "
         >
-          <option value="default">默认 (100px)</option>
+          <option value="default">{{ t('fbp.labelWidthDefault') }}</option>
           <option value="80px">80px</option>
           <option value="120px">120px</option>
-          <option value="auto">自动</option>
+          <option value="auto">{{ t('fbp.auto') }}</option>
         </select>
       </div>
       <div class="ld-settings-row" style="max-width: 140px">
-        <label>重置按钮文案</label>
+        <label>{{ t('fbd.resetBtnText') }}</label>
         <input
           class="ld-settings-textarea"
-          :value="meta.resetText ?? '重置'"
-          placeholder="重置"
+          :value="meta.resetText ?? t('common.reset')"
+          :placeholder="t('common.reset')"
           @input="patchMeta({ resetText: ($event.target as HTMLInputElement).value })"
         />
       </div>
       <div class="ld-settings-row" style="max-width: 140px">
-        <label>提交模式</label>
+        <label>{{ t('fbd.submitMode') }}</label>
         <select
           class="ld-settings-textarea"
           :value="meta.submitMode ?? 'once'"
@@ -858,13 +872,13 @@ const selectedPath = computed(() => {
             patchMeta({ submitMode: ($event.target as HTMLSelectElement).value as 'once' | 'multiple' | 'unique' })
           "
         >
-          <option value="once">一次性</option>
-          <option value="multiple">可多次</option>
-          <option value="unique">仅一次</option>
+          <option value="once">{{ t('fbd.modeOnce') }}</option>
+          <option value="multiple">{{ t('fbd.modeMultiple') }}</option>
+          <option value="unique">{{ t('fbd.modeUnique') }}</option>
         </select>
       </div>
       <div class="ld-settings-switch-row">
-        <label>隐藏底部按钮</label>
+        <label>{{ t('fbd.hideActions') }}</label>
         <Group
           type="switch"
           :model-value="!!meta.hideActions"
@@ -872,7 +886,7 @@ const selectedPath = computed(() => {
         />
       </div>
       <div class="ld-settings-switch-row">
-        <label>提交后清空</label>
+        <label>{{ t('fbp.clearAfterSubmit') }}</label>
         <Group
           type="switch"
           :model-value="!!meta.clearAfterSubmit"
@@ -891,17 +905,17 @@ const selectedPath = computed(() => {
         @drop="onImportDrop"
       >
         <IconSvg type="upload" size="md" />
-        <span>拖放 .json 文件到此处</span>
+        <span>{{ t('fbd.dropJsonHere') }}</span>
         <label class="ld-import-file-label">
-          或点击选择文件
+          {{ t('fbd.orPickFile') }}
           <input type="file" accept=".json" hidden @change="onImportFileSelect" />
         </label>
       </div>
-      <textarea v-model="importText" rows="5" placeholder="或粘贴表单设计 JSON（{meta,nodes} 或数组格式）..." />
+      <textarea v-model="importText" rows="5" :placeholder="t('fbd.pasteJsonPh')" />
       <div class="ld-import-actions">
         <span v-if="importError" class="ld-import-error">{{ importError }}</span>
-        <button class="ld-btn" @click="applyImport">应用导入</button>
-        <button class="ld-btn" @click="closeImport">取消</button>
+        <button class="ld-btn" @click="applyImport">{{ t('fbd.applyImport') }}</button>
+        <button class="ld-btn" @click="closeImport">{{ t('common.cancel') }}</button>
       </div>
     </div>
 
@@ -926,8 +940,8 @@ const selectedPath = computed(() => {
           :selected-id="selectedId"
           :selected-ids="[...selectedIds]"
           :device="device"
-          :form-title="meta.title ?? '表单标题'"
-          :form-description="meta.description ?? '表单描述'"
+          :form-title="meta.title ?? t('fbd.formTitle')"
+          :form-description="meta.description ?? t('fbd.formDesc')"
           :breadcrumb-path="selectedPath"
           @select="handleSelect"
           @add="addNode"
@@ -953,7 +967,7 @@ const selectedPath = computed(() => {
       />
       <aside v-else class="ldp-props">
         <div class="ldp-props-empty">
-          <span>选中节点后编辑属性</span>
+          <span>{{ t('fbd.emptySelectTip') }}</span>
         </div>
       </aside>
     </div>
@@ -968,7 +982,7 @@ const selectedPath = computed(() => {
         <FormBuilder
           v-model="previewData"
           :schema="previewSchema"
-          @submit="showTip('预览数据：' + JSON.stringify($event))"
+          @submit="showTip(t('fbd.previewData', { data: JSON.stringify($event) }))"
         />
       </div>
     </div>
@@ -982,13 +996,13 @@ const selectedPath = computed(() => {
       <div class="ld-outline-full">
         <div class="ld-outline-full-header">
           <div>
-            <h3 class="ld-outline-full-title">{{ meta.title ?? '表单标题' }} — 结构树</h3>
-            <p class="ld-outline-full-hint">拖拽节点可调整顺序 · 点击节点可跳转到设计器</p>
+            <h3 class="ld-outline-full-title">{{ meta.title ?? t('fbd.formTitle') }} — {{ t('fbd.structureTree') }}</h3>
+            <p class="ld-outline-full-hint">{{ t('fbd.outlineHint') }}</p>
           </div>
           <div class="ld-outline-full-stats">
-            <span>{{ nodeCount }} 个节点</span>
+            <span>{{ t('fbd.nodesCount', { n: nodeCount }) }}</span>
             <span class="ld-outline-full-dot">·</span>
-            <span>{{ containerCount }} 个容器</span>
+            <span>{{ t('fbd.containersCount', { c: containerCount }) }}</span>
           </div>
         </div>
         <div class="ld-outline-full-body">
@@ -1009,10 +1023,10 @@ const selectedPath = computed(() => {
         <div class="ld-code-toolbar">
           <span class="ld-code-title">
             <IconSvg type="code" size="sm" />
-            设计代码 (JSON)
+            {{ t('fbd.designCodeJson') }}
           </span>
           <div class="ld-code-actions">
-            <button class="ld-btn" @click="copySchema"><IconSvg type="copy" size="xs" /> 复制</button>
+            <button class="ld-btn" @click="copySchema"><IconSvg type="copy" size="xs" /> {{ t('common.copy') }}</button>
           </div>
         </div>
         <div class="ld-code-body">
@@ -1027,7 +1041,7 @@ const selectedPath = computed(() => {
     :visible="clearAllVisible"
     :title="t('formBuilder.clearFieldsTitle')"
     :message="t('formBuilder.clearFieldsMsg')"
-    confirm-text="清空"
+    :confirm-text="t('fbd.clear')"
     variant="danger"
     @update:visible="clearAllVisible = $event"
     @confirm="onConfirmClearAll"
@@ -1038,7 +1052,7 @@ const selectedPath = computed(() => {
     :visible="!!pendingRemoveId"
     :title="t('formBuilder.removeContainerTitle')"
     :message="t('formBuilder.removeContainerMsg', { label: pendingRemoveLabel })"
-    confirm-text="删除"
+    :confirm-text="t('common.delete')"
     variant="warning"
     @update:visible="pendingRemoveId = null"
     @confirm="onConfirmRemove"
@@ -1049,7 +1063,7 @@ const selectedPath = computed(() => {
     :visible="pendingRemoveIds.length > 0"
     :title="t('formBuilder.batchRemoveTitle')"
     :message="t('formBuilder.batchRemoveMsg', { count: pendingRemoveIds.length })"
-    confirm-text="删除"
+    :confirm-text="t('common.delete')"
     variant="danger"
     @update:visible="pendingRemoveIds = []"
     @confirm="onConfirmRemoveBatch"
