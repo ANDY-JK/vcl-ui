@@ -2,6 +2,10 @@
  * 坐标解析编排 — 响应式包装三级坐标解析
  */
 import { ref } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：错误消息与点位名按当前语言 */
+const t = useT()
 import { batchResolveCoordinates } from '@/components/route-planner/utils'
 import type { Store } from '@/components/route-planner/types'
 
@@ -29,12 +33,12 @@ export function useCoordinateResolver() {
       })
 
       // 最终统计
-      progress.value.success = results.filter(s => s.coordSource !== 'none').length
-      progress.value.fail = results.filter(s => s.coordSource === 'none').length
+      progress.value.success = results.filter((s) => s.coordSource !== 'none').length
+      progress.value.fail = results.filter((s) => s.coordSource === 'none').length
 
       return results
     } catch (e) {
-      error.value = e instanceof Error ? e.message : '坐标解析失败'
+      error.value = e instanceof Error ? e.message : t('routePlanner.coordParseFailed')
       return []
     } finally {
       processing.value = false
@@ -68,4 +72,3 @@ export function useCoordinateResolver() {
     reset,
   }
 }
-

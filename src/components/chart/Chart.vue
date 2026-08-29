@@ -1,3 +1,10 @@
+<script lang="ts">
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：emptyText 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
+const t = useT()
+</script>
+
 <script setup lang="ts">
 // ⛔ 保护 — 图表封装，禁止：clamp() → px，ECharts 初始化逻辑，resize 监听删除
 //    需我确认：ChartType 类型扩展、color palette 默认值
@@ -10,9 +17,6 @@ import { ensureWordCloud } from './utils/echarts-setup'
 import { DEFAULT_COLORS } from './options/common'
 import type { ChartProps, ChartData, BuildParams, ChartSeriesItem } from './utils/types'
 import { toSize } from './utils/chart-utils'
-import { useT } from '@/components/_internal/i18n'
-
-const t = useT()
 
 const props = withDefaults(defineProps<ChartProps>(), {
   type: undefined,
@@ -25,7 +29,7 @@ const props = withDefaults(defineProps<ChartProps>(), {
   darkMode: false,
   colors: () => [],
   loading: false,
-  emptyText: '暂无数据',
+  emptyText: () => t('common.empty'),
   title: '',
   showLegend: true,
   showTooltip: true,

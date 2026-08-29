@@ -16,6 +16,10 @@
  * - 分天限制：每天最多8家、驾驶≤6小时、单段≤100km
  */
 import { calcDistance as calculateDistance } from '@/components/amap'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：图表文案按当前语言 */
+const t = useT()
 import type { Store, DayPlan, RoutePlan, RouteOptions } from '@/components/route-planner/types'
 
 /** 默认配置（RouteResult 等展示层复用估算参数，禁止单侧改魔数） */
@@ -128,7 +132,7 @@ export async function enrichAccommodations(plan: RoutePlan): Promise<RoutePlan> 
 
     if (locationName && lastStore?.latitude != null && lastStore?.longitude != null) {
       day.accommodation = {
-        name: `${locationName}附近`,
+        name: t('routePlanner.nearbySuffix', { name: locationName }),
         address: lastStore.address || `${locationName}`,
         lat: lastStore.latitude,
         lon: lastStore.longitude,

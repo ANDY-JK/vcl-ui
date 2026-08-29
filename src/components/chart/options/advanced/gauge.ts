@@ -2,9 +2,13 @@
 import type { EChartsOption } from 'echarts'
 import type { BuildParams } from '../../utils/types'
 import { textColor, mutedColor } from '../common'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：builder 生成的图表文案按当前语言 */
+const t = useT()
 
 export function buildGauge(p: BuildParams): EChartsOption {
-  const gData = p.data.gaugeData || [{ value: 50, name: '指标' }]
+  const gData = p.data.gaugeData || [{ value: 50, name: t('chart.gaugeDefault') }]
   return {
     backgroundColor: 'transparent' as const,
     title: p.title

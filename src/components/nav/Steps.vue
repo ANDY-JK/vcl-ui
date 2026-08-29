@@ -1,10 +1,18 @@
+<script lang="ts">
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t（本文件 script setup 内有 type 导出，value 声明须置于普通 script 块） */
+const t = useT()
+
+/** Step 类型由此块导出（双 script 块共享作用域；script setup 内不再重复导出） */
+export type { Step } from './types'
+</script>
+
 <script setup lang="ts">
 // ⛔ 保护 — 步骤条，禁止：clamp() → px，Step 接口，连线样式
 //    需我确认：direction 方向、current 状态管理
 import IconSvg from '@/components/basic/IconSvg.vue'
 import type { Step } from './types'
-
-export type { Step }
 
 interface Props {
   steps: Step[]
@@ -44,7 +52,7 @@ function onStepClick(idx: number, step: Step) {
       :role="clickable ? 'button' : undefined"
       :tabindex="clickable ? 0 : undefined"
       :aria-current="idx === current ? 'step' : undefined"
-      :aria-label="`步骤 ${idx + 1}: ${step.label}`"
+      :aria-label="t('steps.stepLabel', { n: idx + 1, label: step.label })"
       @click="clickable && onStepClick(idx, step)"
       @keydown.enter.prevent="clickable && onStepClick(idx, step)"
       @keydown.space.prevent="clickable && onStepClick(idx, step)"

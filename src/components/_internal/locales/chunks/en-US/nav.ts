@@ -9,5 +9,13 @@ export default {
     page: 'Page',
     jumpTo: 'Go to',
     perPage: '/ page',
+    navLabel: 'Pagination',
+    prevPage: 'Previous page',
+    nextPage: 'Next page',
+    jumpPage: 'Jump to page',
+  },
+
+  steps: {
+    stepLabel: 'Step {n}: {label}',
   },
 }

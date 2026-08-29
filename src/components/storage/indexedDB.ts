@@ -12,6 +12,10 @@
  */
 
 import { warnOnce } from '@/components/_internal/warnOnce'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：用户可见错误消息按当前语言 */
+const t = useT()
 
 // ======================== 类型 ========================
 
@@ -55,7 +59,7 @@ function openDB(): Promise<IDBDatabase> {
       _dbPromise = null
       reject(err)
     }
-    if (typeof indexedDB === 'undefined') return fail(new Error('IndexedDB 不可用'))
+    if (typeof indexedDB === 'undefined') return fail(new Error(t('storage.idbUnavailable')))
     // 打开当前已存在版本（不写死版本号）：ensureStore 会按需把库升级到更高版本，
     // 若此处写死低版本号，升级后再打开必触发 VersionError。
     const req = indexedDB.open(DB_NAME)
@@ -87,7 +91,7 @@ function openDB(): Promise<IDBDatabase> {
       warnOnce('indexedDB', '打开数据库失败: ' + String(req.error))
       fail(req.error)
     }
-    req.onblocked = () => fail(new Error('[IndexedDB] 数据库升级被阻塞，请关闭其他标签页后刷新'))
+    req.onblocked = () => fail(new Error(t('storage.idbUpgradeBlocked')))
   })
   return _dbPromise
 }
@@ -133,7 +137,7 @@ async function ensureStore(store: string): Promise<void> {
         resolve()
       }
       req.onerror = () => reject(req.error)
-      req.onblocked = () => reject(new Error(`[IndexedDB] 创建 store "${store}" 被阻塞，请关闭其他标签页后刷新`))
+      req.onblocked = () => reject(new Error(t('storage.idbStoreBlocked', { store })))
     })
   } finally {
     resolveLock!()

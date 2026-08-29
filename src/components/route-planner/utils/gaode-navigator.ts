@@ -10,6 +10,10 @@ export { detectPlatform, buildNavLink } from '@/components/amap'
 export type { NavLink, NavPoint } from '@/components/amap'
 
 import { buildNavLink } from '@/components/amap'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：错误消息与点位名按当前语言 */
+const t = useT()
 import type { NavLink, NavPoint } from '@/components/amap'
 import type { DayPlan } from '@/components/route-planner/types'
 
@@ -29,21 +33,33 @@ export function buildDayNavLink(
   const points: NavPoint[] = []
 
   if (startPoint && startPoint.lat && startPoint.lon) {
-    points.push({ lon: startPoint.lon, lat: startPoint.lat, name: startPoint.name || '起点' })
+    points.push({ lon: startPoint.lon, lat: startPoint.lat, name: startPoint.name || t('routePlanner.pointStart') })
   } else if (prevAccommodation && prevAccommodation.lat && prevAccommodation.lon) {
-    points.push({ lon: prevAccommodation.lon, lat: prevAccommodation.lat, name: prevAccommodation.name || '住宿点' })
+    points.push({
+      lon: prevAccommodation.lon,
+      lat: prevAccommodation.lat,
+      name: prevAccommodation.name || t('routePlanner.pointAccommodation'),
+    })
   }
 
   for (const s of day.stores) {
     if (s.longitude != null && s.latitude != null) {
-      points.push({ lon: s.longitude, lat: s.latitude, name: s.name || '门店' })
+      points.push({ lon: s.longitude, lat: s.latitude, name: s.name || t('routePlanner.pointStore') })
     }
   }
 
   if (isLastDay && startPoint) {
-    points.push({ lon: startPoint.lon, lat: startPoint.lat, name: startPoint.name || '起点（回程）' })
+    points.push({
+      lon: startPoint.lon,
+      lat: startPoint.lat,
+      name: startPoint.name || t('routePlanner.pointStartReturn'),
+    })
   } else if (day.accommodation) {
-    points.push({ lon: day.accommodation.lon, lat: day.accommodation.lat, name: day.accommodation.name || '住宿' })
+    points.push({
+      lon: day.accommodation.lon,
+      lat: day.accommodation.lat,
+      name: day.accommodation.name || t('routePlanner.pointAccommodationShort'),
+    })
   }
 
   if (points.length < 2) return null
@@ -68,12 +84,16 @@ export function buildStoreLegNavLinks(
 
   for (const s of day.stores) {
     if (s.longitude != null && s.latitude != null) {
-      allPoints.push({ lon: s.longitude, lat: s.latitude, name: s.name || '门店' })
+      allPoints.push({ lon: s.longitude, lat: s.latitude, name: s.name || t('routePlanner.pointStore') })
     }
   }
 
   if (!isLastDay && day.accommodation) {
-    allPoints.push({ lon: day.accommodation.lon, lat: day.accommodation.lat, name: day.accommodation.name || '住宿' })
+    allPoints.push({
+      lon: day.accommodation.lon,
+      lat: day.accommodation.lat,
+      name: day.accommodation.name || t('routePlanner.pointAccommodationShort'),
+    })
   }
 
   for (let i = 0; i < allPoints.length - 1; i++) {
@@ -83,7 +103,11 @@ export function buildStoreLegNavLinks(
   if (isLastDay && startPoint && allPoints.length > 0) {
     const lastPoint = allPoints[allPoints.length - 1]
     links.push(
-      buildNavLink(lastPoint, { lon: startPoint.lon, lat: startPoint.lat, name: startPoint.name || '起点（回程）' }),
+      buildNavLink(lastPoint, {
+        lon: startPoint.lon,
+        lat: startPoint.lat,
+        name: startPoint.name || t('routePlanner.pointStartReturn'),
+      }),
     )
   }
 

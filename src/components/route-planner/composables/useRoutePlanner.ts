@@ -3,9 +3,16 @@
  * 支持：生成规划、获取驾车数据、重新规划
  */
 import { ref } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：错误消息与点位名按当前语言 */
+const t = useT()
 import {
-  planRoute, enrichAccommodations, enrichWithDrivingRoutes,
-  buildAllNavLinks, replanFrom,
+  planRoute,
+  enrichAccommodations,
+  enrichWithDrivingRoutes,
+  buildAllNavLinks,
+  replanFrom,
 } from '@/components/route-planner/utils'
 import type { RoutePlan, RouteOptions, Store } from '@/components/route-planner/types'
 
@@ -36,7 +43,7 @@ export function useRoutePlanner() {
 
       return result
     } catch (e) {
-      error.value = e instanceof Error ? e.message : '路线规划失败'
+      error.value = e instanceof Error ? e.message : t('routePlanner.planFailed')
       return null
     } finally {
       loading.value = false
@@ -90,7 +97,7 @@ export function useRoutePlanner() {
 
       return newPlan
     } catch (e) {
-      error.value = e instanceof Error ? e.message : '重新规划失败'
+      error.value = e instanceof Error ? e.message : t('routePlanner.replanFailed')
       return null
     } finally {
       loading.value = false

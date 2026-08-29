@@ -2,6 +2,10 @@
 import type { EChartsOption } from 'echarts'
 import type { BuildParams } from '../../utils/types'
 import { buildCommonChrome, mutedColor, buildMarkLine, buildMarkArea, buildXAxis, buildYAxis } from '../common'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：图表文案按当前语言 */
+const t = useT()
 
 export function buildBar(p: BuildParams): EChartsOption {
   const common = buildCommonChrome(p)
@@ -19,7 +23,7 @@ export function buildBar(p: BuildParams): EChartsOption {
     yAxis: isHorizontal ? { ...x, type: 'value', name: p.yAxis?.title } : y,
     series: p.series.map((s, i) => ({
       type: 'bar' as const,
-      name: s.name || `系列${i + 1}`,
+      name: s.name || t('chart.seriesFallback', { n: i + 1 }),
       data: (s.data ?? []) as (number | string)[],
       barMaxWidth: s.barMaxWidth ?? 48,
       itemStyle: s.color ? { color: s.color } : undefined,

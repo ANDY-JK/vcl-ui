@@ -9,6 +9,18 @@ export default {
     warning: 'Warning',
     info: 'Info',
     logout: 'Logout',
+    closeNotification: 'Close notification',
+  },
+
+  drawer: {
+    panel: 'Drawer panel',
+    close: 'Close drawer',
+  },
+
+  confirmModal: {
+    title: 'Confirm action',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
   },
 
   errorBoundary: {

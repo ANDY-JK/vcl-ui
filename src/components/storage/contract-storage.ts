@@ -13,6 +13,10 @@
  */
 
 import { dbPut, dbGetAll, dbClear } from './indexedDB'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：用户可见错误消息按当前语言 */
+const t = useT()
 
 export interface StoreFile {
   name: string
@@ -100,10 +104,10 @@ export interface SupabaseConfig {
 const REQUEST_TIMEOUT_MS = 60_000
 
 function validateSupabaseConfig(cfg: SupabaseConfig): string | null {
-  if (!cfg || !cfg.url.trim()) return '请填写 Supabase 项目 URL'
-  if (!/^https?:\/\//.test(cfg.url.trim())) return 'Supabase URL 需以 http(s):// 开头'
-  if (!cfg.anonKey.trim()) return '请填写 anon public key'
-  if (!cfg.bucket.trim()) return '请填写 Storage bucket 名称'
+  if (!cfg || !cfg.url.trim()) return t('storage.supabaseUrlRequired')
+  if (!/^https?:\/\//.test(cfg.url.trim())) return t('storage.supabaseUrlFormat')
+  if (!cfg.anonKey.trim()) return t('storage.supabaseKeyRequired')
+  if (!cfg.bucket.trim()) return t('storage.supabaseBucketRequired')
   return null
 }
 
@@ -220,7 +224,7 @@ export class SupabaseBackend implements StorageBackend {
     } catch (e) {
       const aborted = (e as Error)?.name === 'AbortError'
       const err = new Error(
-        aborted ? `云端请求超时（${REQUEST_TIMEOUT_MS / 1000}s），请检查网络后重试` : '云端网络异常，请检查网络连接',
+        aborted ? t('storage.cloudTimeout', { s: REQUEST_TIMEOUT_MS / 1000 }) : t('storage.cloudNetworkError'),
       )
       ;(err as Error & { cause?: unknown }).cause = e
       throw err
@@ -232,10 +236,10 @@ export class SupabaseBackend implements StorageBackend {
       // 403 是 storage.objects 的 RLS 策略缺失
       const hint =
         resp.status === 400 || resp.status === 404
-          ? `bucket「${this.cfg.bucket}」不存在或无权访问，请在 Supabase 控制台创建 public bucket`
+          ? t('storage.bucketMissing', { bucket: this.cfg.bucket })
           : resp.status === 403
-            ? '云端权限不足，请检查 storage.objects 的 RLS 策略（见 notes/supabase-storage-setup.md）'
-            : `云端返回 HTTP ${resp.status}`
+            ? t('storage.cloudPermissionDenied')
+            : t('storage.cloudHttpError', { status: resp.status })
       throw new Error(`${hint}（${path}）`)
     }
     return resp

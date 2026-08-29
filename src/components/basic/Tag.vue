@@ -4,6 +4,9 @@
 // 合并说明：原 Badge.vue 已合并到 Tag，Badge 的 count/sup/color/offset/showZero/hidden 全部吸收
 import { computed, useSlots } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface Props {
   /** 文字内容（内联模式） */
@@ -112,8 +115,9 @@ const supStyle = computed(() => {
       :class="{ 'tag-dot': dot }"
       :style="supStyle"
       role="status"
-      :aria-label="dot ? '提示' : displayText"
-    >{{ displayText }}</span>
+      :aria-label="dot ? t('basic.tagHint') : displayText"
+      >{{ displayText }}</span
+    >
   </span>
 
   <!-- 内联标签模式 -->

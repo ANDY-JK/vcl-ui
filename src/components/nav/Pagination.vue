@@ -58,12 +58,12 @@ function onJumperKeyup(e: KeyboardEvent) {
 </script>
 
 <template>
-  <nav class="pagination" role="navigation" aria-label="分页导航">
+  <nav class="pagination" role="navigation" :aria-label="t('pagination.navLabel')">
     <button
       type="button"
       class="page-btn"
       :disabled="modelValue <= 1"
-      aria-label="上一页"
+      :aria-label="t('pagination.prevPage')"
       @click="goTo(modelValue - 1)"
     >
       <IconSvg type="chevron-left" size="sm" />
@@ -87,7 +87,7 @@ function onJumperKeyup(e: KeyboardEvent) {
       type="button"
       class="page-btn"
       :disabled="modelValue >= totalPages"
-      aria-label="下一页"
+      :aria-label="t('pagination.nextPage')"
       @click="goTo(modelValue + 1)"
     >
       <IconSvg type="chevron-right" size="sm" />
@@ -100,7 +100,7 @@ function onJumperKeyup(e: KeyboardEvent) {
         class="jumper-input"
         min="1"
         :max="totalPages"
-        aria-label="跳转页码"
+        :aria-label="t('pagination.jumpPage')"
         @keyup="onJumperKeyup"
       />
     </span>

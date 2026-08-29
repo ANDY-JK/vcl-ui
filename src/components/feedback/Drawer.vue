@@ -6,6 +6,9 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { registerModal } from '@/components/_internal/useModalManager'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useEscClose } from '@/components/_internal/useEscClose'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface Props {
   visible: boolean
@@ -131,7 +134,7 @@ onUnmounted(unmountEsc)
           :style="isVertical ? { width: normalizedWidth } : { height: normalizedHeight }"
           role="dialog"
           aria-modal="true"
-          :aria-label="title || '抽屉面板'"
+          :aria-label="title || t('drawer.panel')"
           @click.stop
         >
           <div class="drawer-header">
@@ -140,7 +143,7 @@ onUnmounted(unmountEsc)
                 {{ title }}
               </h4>
             </slot>
-            <button v-if="closable" class="drawer-close" aria-label="关闭抽屉" @click="close">
+            <button v-if="closable" class="drawer-close" :aria-label="t('drawer.close')" @click="close">
               <IconSvg type="x" size="md" />
             </button>
           </div>

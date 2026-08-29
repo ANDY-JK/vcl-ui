@@ -4,6 +4,19 @@
  */
 export default {
   routePlanner: {
+    planFailed: 'Route planning failed',
+    replanFailed: 'Re-planning failed',
+    coordParseFailed: 'Coordinate parsing failed',
+    coordResolveFailed: 'Cannot resolve coordinates: {name}',
+    unknown: 'Unknown',
+    pointStart: 'Start',
+    pointStartReturn: 'Start (return)',
+    pointAccommodation: 'Accommodation',
+    pointAccommodationShort: 'Stay',
+    pointStore: 'Store',
+    startEndPoint: 'Start/End',
+    unnamedArea: 'Unnamed area {n}',
+    nearbySuffix: 'Near {name}',
     title: 'Route Planner',
     addStore: 'Add Store',
     storeName: 'Store Name',

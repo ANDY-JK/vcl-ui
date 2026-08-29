@@ -9,6 +9,10 @@
 
 // re-export 统一 Key 管理
 export { setAmapKey } from '@/components/amap'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：错误消息与点位名按当前语言 */
+const t = useT()
 
 import { keywordSearch, isValidLatLon } from '@/components/amap'
 import type { Store, CoordResult, CoordSource, ProgressCallback } from '@/components/route-planner/types'
@@ -75,7 +79,9 @@ export async function resolveCoordinate(store: Partial<Store>): Promise<CoordRes
   }
 
   // 全部失败
-  throw new Error(`无法解析坐标: ${store.name || store.address || '未知门店'}`)
+  throw new Error(
+    t('routePlanner.coordResolveFailed', { name: store.name || store.address || t('routePlanner.unknownStore') }),
+  )
 }
 
 /**

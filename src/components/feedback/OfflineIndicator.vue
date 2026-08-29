@@ -34,7 +34,7 @@ onUnmounted(() => {
     <div v-if="offline && !dismissed" class="offline-bar" role="alert" aria-live="assertive">
       <IconSvg type="wifi-off" size="sm" color="white" />
       <span>{{ t('offline.disconnected') }}</span>
-      <button class="offline-dismiss" aria-label="关闭" @click="dismissed = true">
+      <button class="offline-dismiss" :aria-label="t('common.close')" @click="dismissed = true">
         <IconSvg type="x" size="sm" color="white" />
       </button>
     </div>

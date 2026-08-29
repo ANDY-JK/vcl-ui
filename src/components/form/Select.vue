@@ -1,3 +1,10 @@
+<script lang="ts">
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
+const t = useT()
+</script>
+
 <script setup lang="ts">
 /**
  * Select 统一选择器 — 重写版
@@ -18,7 +25,6 @@ import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
 import { useTreeFlatten, type FlattenNode } from '@/components/_internal/useTreeFlatten'
-import { useT } from '@/components/_internal/i18n'
 import { parseDate } from './utils/date-utils'
 import DatePanel from './date-panel/DatePanel.vue'
 import TimeColumns from './date-panel/TimeColumns.vue'
@@ -62,17 +68,17 @@ const props = withDefaults(defineProps<Props>(), {
   multiple: false,
   options: () => [],
   items: () => [],
-  placeholder: '请选择',
+  placeholder: () => t('form.pleaseSelect'),
   searchable: true,
   pinyinEnabled: true,
   isLoading: false,
-  emptyText: '暂无匹配项',
+  emptyText: () => t('form.noMatch'),
   allowCreate: true,
   clearOnFocus: false,
   format: 'YYYY-MM-DD',
   dateMin: '',
   dateMax: '',
-  rangePlaceholder: () => ['开始日期', '结束日期'] as [string, string],
+  rangePlaceholder: () => [t('form.startDate'), t('form.endDate')] as [string, string],
   timeStep: 1,
   clearable: false,
 })
@@ -94,7 +100,6 @@ const emit = defineEmits<{
 const selectInputId = useId()
 /** 下拉面板唯一 id：同页多个 Select 实例时 aria-controls/面板 id 各自独立，避免重复 id 导致关联错乱 */
 const dropdownId = useId()
-const t = useT()
 const isSelect = computed(() => props.type === 'select')
 const isCombobox = computed(() => props.type === 'combobox')
 const isMenu = computed(() => props.type === 'menu' && !!props.items)

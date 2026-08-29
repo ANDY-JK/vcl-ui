@@ -2,6 +2,9 @@ import { ref, onUnmounted } from 'vue'
 import { readBarcodes, type ReadResult } from 'zxing-wasm/reader'
 import { useT } from '@/components/_internal/i18n'
 
+/** 模块级 t：供各函数直接取当前语言文案 */
+const t = useT()
+
 /** 截图区域（占画面比例，0-1） */
 export interface CaptureRegion {
   left: number
@@ -36,7 +39,6 @@ export interface BarcodeScannerOptions {
 /** 将浏览器摄像头英文错误映射为用户可读中文（复用 form.cameraErr* 词条，与 CameraCapture 一致） */
 function cameraErrorToChinese(err: any): string {
   const raw: string = err?.message || err?.name || ''
-  const t = useT()
   // 精确命中
   if (raw.includes('Requested device not found')) return t('form.cameraErrDeviceNotFound')
   if (raw.includes('Permission denied') || raw.includes('NotAllowedError')) return t('form.cameraErrNotAllowed')
@@ -131,7 +133,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
         audio: false,
       })
       if (!videoRef.value) {
-        error.value = '视频元素未挂载'
+        error.value = t('form.videoNotMounted')
         _starting = false
         stopTracks()
         return
@@ -147,7 +149,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     } catch (e: any) {
       _starting = false
       stopTracks() // play() 抛错等场景：释放已获取的摄像头流，避免持续占用
-      error.value = cameraErrorToChinese(e) || '摄像头启动失败'
+      error.value = cameraErrorToChinese(e) || t('form.cameraStartFailed')
       scanning.value = false
     }
   }
@@ -291,10 +293,10 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
           resolve(results.map((r) => r.text).filter(ok))
         } catch (e) {
           console.error('scanPhoto error:', e)
-          reject(new Error('未识别'))
+          reject(new Error(t('form.scanNotRecognized')))
         }
       }
-      img.onerror = () => reject(new Error('图片加载失败'))
+      img.onerror = () => reject(new Error(t('form.imageLoadFailed')))
       img.src = url
     })
   }

@@ -2,6 +2,10 @@
  * 门店数据管理 — CRUD + localStorage 持久化
  */
 import { ref, computed, watch } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：错误消息与点位名按当前语言 */
+const t = useT()
 import { isValidLatLon } from '@/components/amap'
 import type { Store } from '@/components/route-planner/types'
 
@@ -56,7 +60,7 @@ export function useStoreData() {
   const cityStats = computed(() => {
     const map = new Map<string, number>()
     for (const s of validStores.value) {
-      const city = s.city || '未知'
+      const city = s.city || t('routePlanner.unknown')
       map.set(city, (map.get(city) || 0) + 1)
     }
     return [...map.entries()].sort((a, b) => b[1] - a[1])

@@ -11,18 +11,8 @@ let nextId = 1
  * 全部 Toast 实例卸载才 delete window.__toast，避免多实例场景任一卸载导致悬空。
  */
 let _liveToastInstances = 0
-</script>
 
-<script setup lang="ts">
-// ⛔ 保护 — Toast 通知系统，禁止：clamp() → px，动画时序；z-index 层级 = var(--z-top, 9999)（最高优先级通知，ImagePreview 内嵌时临时提升至 10001）
-//    需我确认：ToastItem 接口增删、position 定位逻辑
-//    注意：ToastItem / ToastAPI / TOAST_KEY / useToast 已抽到 toast-context.ts，
-//          因为 <script setup> 不能包含 ES module exports
-import { ref, computed, provide, onUnmounted } from 'vue'
-import IconSvg from '@/components/basic/IconSvg.vue'
-import { TOAST_KEY } from './composables/toast-context'
-import type { ToastItem } from './composables/toast-context'
-
+/** Props 声明在普通 <script> 块：script setup 内 value 声明之后再出现 type 导出会触发 vue-tsc TS1184 */
 export interface Props {
   /** 'toast' 全局弹幕 | 'inline' 内联提示条（替代 Alert） */
   variant?: 'toast' | 'inline'
@@ -33,6 +23,21 @@ export interface Props {
   showIcon?: boolean
   position?: 'top' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 }
+</script>
+
+<script setup lang="ts">
+// ⛔ 保护 — Toast 通知系统，禁止：clamp() → px，动画时序；z-index 层级 = var(--z-top, 9999)（最高优先级通知，ImagePreview 内嵌时临时提升至 10001）
+//    需我确认：ToastItem 接口增删、position 定位逻辑
+//    注意：ToastItem / ToastAPI / TOAST_KEY / useToast 已抽到 toast-context.ts，
+//          因为 <script setup> 不能包含 ES module exports
+import { ref, computed, provide, onUnmounted } from 'vue'
+import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
+import { TOAST_KEY } from './composables/toast-context'
+import type { ToastItem } from './composables/toast-context'
+
+// 模板 v-for 中 t 已被 toast 项占用，翻译函数用别名 tt
+const tt = useT()
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'toast',
@@ -225,7 +230,12 @@ defineExpose({
           >
             {{ t.actionText || t.undoText }}
           </button>
-          <button v-if="t.closable" class="toast-close" aria-label="关闭通知" @click="removeToast(t.id)">
+          <button
+            v-if="t.closable"
+            class="toast-close"
+            :aria-label="tt('toast.closeNotification')"
+            @click="removeToast(t.id)"
+          >
             <IconSvg type="x" size="sm" color="white" />
           </button>
         </div>

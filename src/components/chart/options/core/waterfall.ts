@@ -2,6 +2,10 @@
 import type { EChartsOption } from 'echarts'
 import type { BuildParams } from '../../utils/types'
 import { buildCommonChrome, buildXAxis, buildYAxis } from '../common'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：builder 生成的图表文案按当前语言 */
+const t = useT()
 
 export function buildWaterfall(p: BuildParams): EChartsOption {
   const common = buildCommonChrome(p)
@@ -36,7 +40,7 @@ export function buildWaterfall(p: BuildParams): EChartsOption {
     series: [
       {
         type: 'bar' as const,
-        name: '基底',
+        name: t('chart.waterfallBase'),
         data: base as (number | string)[],
         stack: 'wf',
         itemStyle: { color: 'transparent' },
@@ -44,7 +48,7 @@ export function buildWaterfall(p: BuildParams): EChartsOption {
       },
       {
         type: 'bar' as const,
-        name: p.series[0]?.name || '数值',
+        name: p.series[0]?.name || t('chart.waterfallValue'),
         data: values.map((v, i) => ({ value: v, itemStyle: { color: pos[i] ? '#22AD5F' : '#E54545' } })),
         stack: 'wf',
         barMaxWidth: 48,

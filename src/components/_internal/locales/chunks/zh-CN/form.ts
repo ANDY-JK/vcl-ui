@@ -54,6 +54,10 @@ export default {
     cameraErrSecurity: '摄像头访问被安全策略阻止（请使用 HTTPS 或 localhost）',
     cameraErrDeviceNotFound: '未找到摄像头设备，请连接摄像头后重试',
     cameraErrFallback: '相机启动失败，请重试',
+    videoNotMounted: '视频元素未挂载',
+    cameraStartFailed: '摄像头启动失败',
+    scanNotRecognized: '未识别',
+    imageLoadFailed: '图片加载失败',
     // Upload
     compressFailed: '压缩失败',
     typeNotSupported: '文件 "{name}" 类型不支持（仅支持 {accept}）',

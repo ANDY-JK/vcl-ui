@@ -3,6 +3,9 @@
 //    需我确认：新增 variant、loading 状态行为
 import { ref, onErrorCaptured } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 const _e = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
   console.error('[Button] 异常:', e.message)
@@ -34,7 +37,7 @@ const emit = defineEmits<{ click: [e: MouseEvent] }>()
 </script>
 
 <template>
-  <span v-if="_e" style="color: var(--color-danger); font-size: 12px">⚠ 按钮异常</span>
+  <span v-if="_e" style="color: var(--color-danger); font-size: 12px">⚠ {{ t('basic.buttonError') }}</span>
   <button
     v-else
     type="button"

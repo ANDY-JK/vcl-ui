@@ -9,6 +9,18 @@ export default {
     warning: '警告',
     info: '提示',
     logout: '退出登录',
+    closeNotification: '关闭通知',
+  },
+
+  drawer: {
+    panel: '抽屉面板',
+    close: '关闭抽屉',
+  },
+
+  confirmModal: {
+    title: '确认操作',
+    confirm: '确定',
+    cancel: '取消',
   },
 
   errorBoundary: {

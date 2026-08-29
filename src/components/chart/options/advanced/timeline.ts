@@ -6,6 +6,10 @@ import type { EChartsOption } from 'echarts'
 import type { BuildParams } from '../../utils/types'
 import { buildBar } from '../core/bar'
 import { textColor } from '../common'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：builder 生成的图表文案按当前语言 */
+const t = useT()
 
 export function buildTimeline(p: BuildParams): EChartsOption {
   const timePoints: Array<{ time: string; categories: string[]; series: Record<string, unknown>[] }> =
@@ -41,7 +45,7 @@ export function buildTimeline(p: BuildParams): EChartsOption {
     legend: { show: false, data: timePoints.map((tp) => tp.time) },
     title: p.title
       ? {
-          text: p.title + '（时间轴视图）',
+          text: t('chart.timelineSuffix', { title: p.title }),
           left: 'center',
           top: 4,
           textStyle: { fontSize: 14, color: textColor(p), fontWeight: 600 },

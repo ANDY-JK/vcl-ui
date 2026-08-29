@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import Chart from '@/components/chart/Chart.vue'
+import { useT } from '@/components/_internal/i18n'
 import type { Column } from '@/components/data/composables/types'
 import type { ChartProps } from './utils/types'
 
 // DataTable 动态加载：chart 域不再静态依赖 data 域（M15），
 // 表格部分独立成 chunk，仅 showTable 为 true 时才拉取
 const DataTable = defineAsyncComponent(() => import('@/components/data/DataTable.vue'))
+
+const t = useT()
 
 // Props 逐一声明以保留 IDE 类型提示，未用 $attrs 透传
 const props = withDefaults(
@@ -143,10 +146,10 @@ function onChartReady(inst: any) {
       </slot>
       <div class="ct-toggles">
         <button class="ct-toggle" :class="{ off: !showLegendLocal }" @click="showLegendLocal = !showLegendLocal">
-          🏷️{{ showLegendLocal ? '图例' : '关' }}
+          🏷️{{ showLegendLocal ? t('chart.legend') : t('chart.off') }}
         </button>
         <button class="ct-toggle" :class="{ off: !showTableLocal }" @click="showTableLocal = !showTableLocal">
-          📋{{ showTableLocal ? '表格' : '关' }}
+          📋{{ showTableLocal ? t('chart.table') : t('chart.off') }}
         </button>
       </div>
     </div>

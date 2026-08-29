@@ -2,9 +2,13 @@
 import type { EChartsOption } from 'echarts'
 import type { BuildParams } from '../../utils/types'
 import { textColor } from '../common'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：builder 生成的图表文案按当前语言 */
+const t = useT()
 
 export function buildTree(p: BuildParams): EChartsOption {
-  const tData = p.data.treeData || p.series[0]?.data || [{ name: '根节点', children: [] }]
+  const tData = p.data.treeData || p.series[0]?.data || [{ name: t('chart.treeRoot'), children: [] }]
   return {
     backgroundColor: 'transparent' as const,
     title: p.title

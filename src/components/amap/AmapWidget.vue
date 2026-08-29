@@ -20,7 +20,10 @@ import '@vuemap/vue-amap/dist/style.css'
 import { getAmapJsKey, getAmapSecurityCode } from './amap-key'
 import { amapLoader } from './amap-loader'
 import { sanitizeHTML } from '@/components/data/composables/sanitize'
+import { useT } from '@/components/_internal/i18n'
 import type { MarkerItem } from './types'
+
+const t = useT()
 
 // ════════════════════════════════════════
 // Props & Emits
@@ -228,7 +231,7 @@ defineExpose({
     :class="customClass"
     style="width: 100%; height: 100%; min-height: 300px; position: relative"
     role="region"
-    :aria-label="`地图（${markers.length} 个标记）`"
+    :aria-label="t('amap.mapWithMarkers', { n: markers.length })"
   >
     <ElAmap :center="center" :zoom="zoom" :map-style="mapStyle" @init="onMapInit" />
   </div>

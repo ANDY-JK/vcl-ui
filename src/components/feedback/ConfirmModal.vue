@@ -1,3 +1,10 @@
+<script lang="ts">
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
+const t = useT()
+</script>
+
 <script setup lang="ts">
 import { computed } from 'vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
@@ -15,9 +22,9 @@ const props = withDefaults(
     closable?: boolean
   }>(),
   {
-    title: '确认操作',
-    confirmText: '确定',
-    cancelText: '取消',
+    title: () => t('confirmModal.title'),
+    confirmText: () => t('confirmModal.confirm'),
+    cancelText: () => t('confirmModal.cancel'),
     variant: 'danger',
     loading: false,
     closable: true,

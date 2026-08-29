@@ -4,6 +4,10 @@
  * 第1行=表头 第2行=起点/终点 第3行起=门店数据
  */
 import { isValidLatLon, normalizeChinaLatLon } from '@/components/amap'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：错误消息与点位名按当前语言 */
+const t = useT()
 import { parseRegion } from '@/components/_internal/utils'
 import type { Store, ImportResult } from '@/components/route-planner/types'
 
@@ -80,7 +84,7 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
   // 第2行 = 起点/终点
   const startRow = rows[1] as (string | number | undefined)[]
   const startAddr = getStr(startRow, colMap.get('address')) || getStr(startRow, colMap.get('fullAddr'))
-  const startPoint = startAddr ? { name: '起点/终点', address: startAddr } : null
+  const startPoint = startAddr ? { name: t('routePlanner.startEndPoint'), address: startAddr } : null
 
   // 第3行起 = 门店数据
   // 先跑一遍去重：相同坐标的只保留第一家，其余清空走地理编码
@@ -120,7 +124,7 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
 
     // 乡镇标记：无门店名 + 无详细地址 → 用最后一节（镇/乡/街道名）作为显示名
     const isMarker = !name && !address
-    const displayName = name || parsed.town || `未命名区域_${i}`
+    const displayName = name || parsed.town || t('routePlanner.unnamedArea', { n: i })
 
     let latitude = getNum(row, colMap.get('latitude'))
     let longitude = getNum(row, colMap.get('longitude'))

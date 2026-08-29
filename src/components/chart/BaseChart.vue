@@ -77,9 +77,9 @@ function buildToolbox(): import('echarts').ToolboxComponentOption | undefined {
   if (props.toolbar === false) return undefined
   const buttons = props.toolbar || ['saveAsImage', 'zoom']
   const feature: NonNullable<import('echarts').ToolboxComponentOption['feature']> = {}
-  if (buttons.includes('saveAsImage')) feature.saveAsImage = { title: '保存图片' }
-  if (buttons.includes('zoom')) feature.dataZoom = { title: { zoom: '区域缩放', back: '还原' } }
-  if (buttons.includes('dataView')) feature.dataView = { title: '数据视图', readOnly: true }
+  if (buttons.includes('saveAsImage')) feature.saveAsImage = { title: t('chart.saveImage') }
+  if (buttons.includes('zoom')) feature.dataZoom = { title: { zoom: t('chart.zoomRegion'), back: t('chart.zoomBack') } }
+  if (buttons.includes('dataView')) feature.dataView = { title: t('chart.dataView'), readOnly: true }
   return { show: true, right: 4, top: 4, feature }
 }
 

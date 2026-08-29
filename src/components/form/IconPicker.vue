@@ -1,3 +1,10 @@
+<script lang="ts">
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
+const t = useT()
+</script>
+
 <script setup lang="ts">
 // ⛔ 保护 — 图标选择器，禁止：clamp() → px，搜索过滤逻辑删除，图标列表导入
 //    需我确认：lucide 图标源、分页大小
@@ -8,9 +15,6 @@ import { SOLAR_ICONS } from '@/components/_internal/solar-icons'
 import lucideIconNames from '@/components/_internal/lucide-icons.json'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
-import { useT } from '@/components/_internal/i18n'
-
-const t = useT()
 
 /** Lucide 全量图标名（kebab-case），从预构建 JSON 加载，避免运行时 Object.keys + map 1500+ 项 */
 const allIcons = lucideIconNames as string[]
@@ -31,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: 'star',
   color: '#6366F1',
   bgColor: '#EAECF0',
-  placeholder: '选择图标',
+  placeholder: () => t('form.selectIcon'),
   provider: 'lucide',
   presetColors: () => ['#6366F1', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'],
 })

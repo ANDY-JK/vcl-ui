@@ -54,6 +54,10 @@ export default {
     cameraErrSecurity: 'Camera access blocked by security policy (use HTTPS or localhost)',
     cameraErrDeviceNotFound: 'No camera device found, please connect one and retry',
     cameraErrFallback: 'Camera failed to start, please retry',
+    videoNotMounted: 'Video element not mounted',
+    cameraStartFailed: 'Failed to start camera',
+    scanNotRecognized: 'Not recognized',
+    imageLoadFailed: 'Failed to load image',
     // Upload
     compressFailed: 'Compression failed',
     typeNotSupported: 'File "{name}" type not supported (only {accept})',

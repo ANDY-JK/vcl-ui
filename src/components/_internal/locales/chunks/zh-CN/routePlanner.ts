@@ -4,6 +4,19 @@
  */
 export default {
   routePlanner: {
+    planFailed: '路线规划失败',
+    replanFailed: '重新规划失败',
+    coordParseFailed: '坐标解析失败',
+    coordResolveFailed: '无法解析坐标: {name}',
+    unknown: '未知',
+    pointStart: '起点',
+    pointStartReturn: '起点（回程）',
+    pointAccommodation: '住宿点',
+    pointAccommodationShort: '住宿',
+    pointStore: '门店',
+    startEndPoint: '起点/终点',
+    unnamedArea: '未命名区域_{n}',
+    nearbySuffix: '{name}附近',
     title: '路线规划',
     addStore: '添加门店',
     storeName: '门店名称',

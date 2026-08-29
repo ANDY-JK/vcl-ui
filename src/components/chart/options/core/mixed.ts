@@ -2,6 +2,10 @@
 import type { EChartsOption } from 'echarts'
 import type { BuildParams } from '../../utils/types'
 import { buildCommonChrome, buildXAxis, buildYAxis } from '../common'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：图表文案按当前语言 */
+const t = useT()
 
 export function buildMixed(p: BuildParams): EChartsOption {
   const common = buildCommonChrome(p)
@@ -14,7 +18,7 @@ export function buildMixed(p: BuildParams): EChartsOption {
       const isLine = (s.type || 'bar') === 'line' || (s.type || 'bar') === 'area'
       return {
         type: (isLine ? 'line' : 'bar') as 'line' | 'bar',
-        name: s.name || `系列${i + 1}`,
+        name: s.name || t('chart.seriesFallback', { n: i + 1 }),
         data: (s.data ?? []) as (number | string)[],
         yAxisIndex: isLine ? 1 : 0,
         smooth: p.smooth,

@@ -9,5 +9,13 @@ export default {
     page: '页',
     jumpTo: '跳至',
     perPage: '条/页',
+    navLabel: '分页导航',
+    prevPage: '上一页',
+    nextPage: '下一页',
+    jumpPage: '跳转页码',
+  },
+
+  steps: {
+    stepLabel: '步骤 {n}: {label}',
   },
 }

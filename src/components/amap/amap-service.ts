@@ -16,6 +16,10 @@
  *   - 导航深度链接：buildNavLink / detectPlatform
  */
 import { getAmapRestKey } from './amap-key'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：服务层错误消息按当前语言生成 */
+const t = useT()
 
 // ════════════════════════════════════════
 // 通用类型
@@ -394,7 +398,7 @@ export async function getDrivingRoute(
   waypoints: [number, number][] = [],
 ): Promise<DrivingRouteResult> {
   const key = getAmapRestKey()
-  if (!key) throw new Error('驾车路线查询失败: 未设置高德 API Key')
+  if (!key) throw new Error(t('amap.driveRouteNoKey'))
 
   const params = new URLSearchParams({
     key,
@@ -426,7 +430,7 @@ export async function getDrivingRoute(
     }
 
     if (data.infocode !== '10000' || !data.route?.paths?.length) {
-      throw new Error(`驾车路线查询失败: ${data.infocode}`)
+      throw new Error(`${t('amap.driveRouteFailed')}: ${data.infocode}`)
     }
 
     const path = data.route.paths[0]
@@ -449,8 +453,8 @@ export async function getDrivingRoute(
       traffic_lights: path.traffic_lights ? parseInt(path.traffic_lights) : undefined,
     }
   } catch (e) {
-    if (e instanceof Error && e.message.startsWith('驾车路线查询失败')) throw e
-    throw new Error('驾车路线查询失败: 网络错误', { cause: e })
+    if (e instanceof Error && e.message.startsWith(t('amap.driveRouteFailed'))) throw e
+    throw new Error(t('amap.driveRouteNetwork'), { cause: e })
   }
 }
 
@@ -504,7 +508,7 @@ export async function geocodeCalc(params: {
 
   await performQuery(`${storeName} ${address}`, 'none')
 
-  if (validResults.length === 0) throw new Error('查询结果无效，请检查地址或门店名称')
+  if (validResults.length === 0) throw new Error(t('amap.invalidRouteResults'))
 
   const best = validResults.reduce((prev, curr) => (prev.distance < curr.distance ? prev : curr))
   return {
