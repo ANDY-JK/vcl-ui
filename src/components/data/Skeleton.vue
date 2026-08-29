@@ -2,6 +2,9 @@
 // ⛔ 保护 — 骨架屏，禁止：流光动画时序、行高/头像比例改动
 //    需我确认：loading 独立控制粒度、圆角形态扩展
 import { computed } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 type AvatarSize = boolean | number | string
 
@@ -60,7 +63,7 @@ const rowList = computed(() => {
     :class="{ 'skel-animated': animated }"
     :style="blockStyle"
     role="status"
-    aria-label="加载中"
+    :aria-label="t('skeleton.loading')"
   >
     <span v-if="avatarSize" class="skel-avatar" :style="{ width: avatarSize, height: avatarSize }" />
     <div class="skel-body">

@@ -6,6 +6,10 @@ import type { Column, ColumnFilterState, RowContextAction, TableStorage } from '
 import { getCellText, clampFloatingPosition, markLayerOpen } from './utils'
 import { useTablePersistence } from './useTablePersistence'
 import { downloadBlob } from '@/components/_internal/utils'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：纯 .ts composable 直接用（模式 3） */
+const t = useT()
 
 export function useTableExtras(
   props: {
@@ -129,7 +133,7 @@ export function useTableExtras(
     // 表头 + 内容列宽自适应（中文按 2 字符宽估算）
     ws['!cols'] = cols.map((c) => ({ wch: Math.max(Math.ceil(c.title.length * 2) + 2, 12) }))
     const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, '数据')
+    XLSX.utils.book_append_sheet(wb, ws, t('table.sheetData'))
     XLSX.writeFile(wb, `${props.exportFileName || 'export'}.xlsx`)
   }
 

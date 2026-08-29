@@ -700,21 +700,21 @@ async function captureScreenshot() {
   const shotTable = shotEl?.querySelector('table.data-table')
   const rowCount = shotTable?.querySelectorAll('tr').length ?? 0
   if (rowCount > props.screenshotMaxRows || (shotTable?.scrollHeight ?? 0) > 8000) {
-    notify(`内容过多（${rowCount} 行），请先筛选或分页后再截图`, 'warning')
+    notify(t('table.tooManyRows', { n: rowCount }), 'warning')
     return
   }
   const result = await captureTableCanvas()
   if (!result) {
-    notify('截图失败，请重试', 'error')
+    notify(t('table.screenshotFail'), 'error')
     return
   }
 
   if (props.shotMode === 'download') {
     downloadScreenshot(result.dataUrl)
-    notify('截图已下载', 'success')
+    notify(t('table.screenshotDownloaded'), 'success')
   } else if (props.shotMode === 'copy') {
     const ok = await copyScreenshotToClipboard(result.blob, result.dataUrl)
-    notify(ok ? '截图已复制' : '复制失败（当前环境可能不支持图片复制），请使用「下载 PNG」', ok ? 'success' : 'error')
+    notify(ok ? t('table.screenshotCopied') : t('table.screenshotCopyFail'), ok ? 'success' : 'error')
   } else {
     // preview 模式：弹窗预览
     _screenshotModal.value = { visible: true, dataUrl: result.dataUrl, blob: result.blob }
@@ -791,14 +791,14 @@ function truncateCanvasText(ctx: CanvasRenderingContext2D, text: string, maxW: n
 }
 function downloadScreenshotFromModal() {
   downloadScreenshot(_screenshotModal.value.dataUrl)
-  notify('截图已下载', 'success')
+  notify(t('table.screenshotDownloaded'), 'success')
   _screenshotModal.value.visible = false
 }
 async function copyScreenshotFromModal() {
   const ok = _screenshotModal.value.blob
     ? await copyScreenshotToClipboard(_screenshotModal.value.blob, _screenshotModal.value.dataUrl)
     : false
-  notify(ok ? '截图已复制' : '复制失败（当前环境可能不支持图片复制），请使用「下载 PNG」', ok ? 'success' : 'error')
+  notify(ok ? t('table.screenshotCopied') : t('table.screenshotCopyFail'), ok ? 'success' : 'error')
   _screenshotModal.value.visible = false
 }
 
@@ -819,7 +819,7 @@ function copyTableData() {
       .join('\t')
   })
   copyText(header + '\n' + rows.join('\n'))
-  notify('已复制表格数据')
+  notify(t('table.tableDataCopied'))
 }
 
 // 视图模式切换（手动覆盖响应式断点）
@@ -1010,7 +1010,7 @@ const {
         td?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
       })
     },
-    onCopied: () => notify('已复制到剪贴板'),
+    onCopied: () => notify(t('imagePreview.copyOk')),
   },
 )
 watch(
@@ -1511,7 +1511,7 @@ function resetColumnWidths() {
   columnWidths.value = {}
   _clearPersisted('colwidth')
   applyAutoFit()
-  notify('已重置列宽，恢复自动列宽')
+  notify(t('table.colWidthReset'))
 }
 function moveCol(colKey: string, dir: -1 | 1) {
   const keys = [..._columnOrder.value]
@@ -1621,9 +1621,9 @@ function onUnfixFromMenu(colKey: string) {
 /** 面板固定区域摘要：固定前 N 列 / 固定后 M 列 */
 const _fixedSummary = computed(() => {
   const parts: string[] = []
-  if (_leftFixedCount.value > 0) parts.push(`左侧 ${_leftFixedCount.value} 列`)
-  if (_rightFixedCount.value > 0) parts.push(`右侧 ${_rightFixedCount.value} 列`)
-  return parts.length ? parts.join('，') : ''
+  if (_leftFixedCount.value > 0) parts.push(t('table.fixedLeftCount', { n: _leftFixedCount.value }))
+  if (_rightFixedCount.value > 0) parts.push(t('table.fixedRightCount', { n: _rightFixedCount.value }))
+  return parts.length ? parts.join(t('table.fixedJoin')) : ''
 })
 
 // ==================== 右键菜单 / 选项面板键盘导航 ====================
@@ -2090,11 +2090,11 @@ function onFilterOptionLeave(e: MouseEvent) {
   >
     <!-- 内部异常兜底 — 组件内部异常不导致页面崩溃 -->
     <div v-if="_internalError" style="padding: 40px 20px; text-align: center">
-      <h3 style="color: var(--color-danger); margin-bottom: 8px">表格渲染异常</h3>
+      <h3 style="color: var(--color-danger); margin-bottom: 8px">{{ t('table.renderError') }}</h3>
       <p style="color: var(--color-text-muted); font-size: 13px; margin-bottom: 16px">
         {{ _internalError.message }}
       </p>
-      <button class="base-btn btn-primary btn-md" @click="_internalError = null">重试</button>
+      <button class="base-btn btn-primary btn-md" @click="_internalError = null">{{ t('common.retry') }}</button>
     </div>
     <div v-else style="display: contents">
       <!-- ========== 工具栏 ========== -->
@@ -2102,9 +2102,10 @@ function onFilterOptionLeave(e: MouseEvent) {
         <div class="table-toolbar">
           <span class="toolbar-count">
             <template v-if="activeFilters.length > 0 || globalSearch">
-              已筛选 <strong>{{ displayData.length }}</strong> / 共 {{ displayTotal }} 行
+              {{ t('table.filteredPrefix') }} <strong>{{ displayData.length }}</strong> /
+              {{ t('table.totalRows', { n: displayTotal }) }}
             </template>
-            <template v-else> 共 {{ displayTotal }} 行 </template>
+            <template v-else> {{ t('table.totalRows', { n: displayTotal }) }} </template>
           </span>
           <template v-if="activeFilters.length > 0">
             <span v-for="[key, s] in activeFilters" :key="key" class="filter-chip">
@@ -2115,15 +2116,19 @@ function onFilterOptionLeave(e: MouseEvent) {
                 type="x"
                 size="sm"
                 class="filter-chip-close"
-                :aria-label="`移除筛选：${colTitle(columns.find((c) => c.key === key)) || key}`"
+                :aria-label="t('table.removeFilter', { name: colTitle(columns.find((c) => c.key === key)) || key })"
                 @click="removeFilter(key)"
               />
             </span>
           </template>
           <!-- 清除操作居中 -->
           <div class="toolbar-center">
-            <button v-if="activeFilters.length > 0" class="toolbar-clear" @click="handleClearFilters">清除筛选</button>
-            <button v-if="sortState.key" class="toolbar-clear" @click="handleClearSort">清除排序</button>
+            <button v-if="activeFilters.length > 0" class="toolbar-clear" @click="handleClearFilters">
+              {{ t('table.clearFilters') }}
+            </button>
+            <button v-if="sortState.key" class="toolbar-clear" @click="handleClearSort">
+              {{ t('table.clearSort') }}
+            </button>
           </div>
           <!-- 功能按钮靠右 -->
           <div class="toolbar-right">
@@ -2135,12 +2140,12 @@ function onFilterOptionLeave(e: MouseEvent) {
                 v-model="globalSearch"
                 type="text"
                 class="global-search-input"
-                placeholder="搜索所有列..."
+                :placeholder="t('table.searchAllCols')"
                 @keydown.escape="toggleGlobalSearch"
               />
               <button
                 class="global-search-toggle"
-                :title="showGlobalSearch ? '关闭搜索' : '全局搜索'"
+                :title="showGlobalSearch ? t('table.closeSearch') : t('table.globalSearch')"
                 @click="toggleGlobalSearch"
               >
                 <IconSvg :type="showGlobalSearch ? 'x' : 'search'" size="sm" />
@@ -2150,7 +2155,7 @@ function onFilterOptionLeave(e: MouseEvent) {
             <button
               v-if="!isCardViewEffective"
               class="toolbar-export-btn"
-              :title="_dense ? '默认密度' : '紧凑模式'"
+              :title="_dense ? t('table.defaultDensity') : t('table.compactMode')"
               @click="toggleDense"
             >
               <IconSvg :type="_dense ? 'chevron-up' : 'list'" size="sm" />
@@ -2158,23 +2163,28 @@ function onFilterOptionLeave(e: MouseEvent) {
             <!-- 缩放指示器 -->
             <button
               class="toolbar-export-btn toolbar-zoom-btn"
-              :title="_zoomX !== 1 || _zoomY !== 1 ? '点击重置缩放 (Ctrl+0)' : 'Ctrl+滚轮 / Ctrl± 缩放'"
+              :title="_zoomX !== 1 || _zoomY !== 1 ? t('table.zoomResetHint') : t('table.zoomHint')"
               @click="resetZoom"
             >
               {{ Math.round(_zoomY * 100) }}%
             </button>
             <!-- CSV 导出 -->
-            <button v-if="exportable" class="toolbar-export-btn" title="下载 CSV" @click="exportCSV">
+            <button v-if="exportable" class="toolbar-export-btn" :title="t('table.downloadCsv')" @click="exportCSV">
               <IconSvg type="download" size="sm" />
             </button>
             <!-- Excel 导出 -->
-            <button v-if="excelExportable" class="toolbar-export-btn" title="下载 Excel" @click="exportExcel">
+            <button
+              v-if="excelExportable"
+              class="toolbar-export-btn"
+              :title="t('table.downloadExcel')"
+              @click="exportExcel"
+            >
               <IconSvg type="file-spreadsheet" size="sm" />
             </button>
             <!-- 全屏 -->
             <button
               class="toolbar-export-btn"
-              :title="_isFullscreen ? '退出全屏' : '全屏显示'"
+              :title="_isFullscreen ? t('table.exitFullscreen') : t('table.fullscreenShow')"
               @click="toggleFullscreen"
             >
               <IconSvg
@@ -2184,17 +2194,17 @@ function onFilterOptionLeave(e: MouseEvent) {
               />
             </button>
             <!-- 截图 -->
-            <button class="toolbar-export-btn" title="截图导出" @click="captureScreenshot">
+            <button class="toolbar-export-btn" :title="t('table.screenshotExport')" @click="captureScreenshot">
               <IconSvg type="camera" size="sm" />
             </button>
             <!-- 复制 -->
-            <button class="toolbar-export-btn" title="复制表格数据" @click="copyTableData">
+            <button class="toolbar-export-btn" :title="t('table.copyTableData')" @click="copyTableData">
               <IconSvg type="copy" size="sm" />
             </button>
             <!-- 视图切换 -->
             <button
               class="toolbar-export-btn"
-              :title="isCardViewEffective ? '切换为列表模式' : '切换为卡片模式'"
+              :title="isCardViewEffective ? t('table.switchToList') : t('table.switchToCard')"
               @click="toggleCardMode"
             >
               <IconSvg :type="isCardViewEffective ? 'table' : 'layout-grid'" size="sm" />
@@ -2204,14 +2214,14 @@ function onFilterOptionLeave(e: MouseEvent) {
               v-if="colSettings"
               class="toolbar-export-btn col-settings-btn"
               :class="{ active: _colSettingsShow }"
-              title="列设置"
+              :title="t('table.colSettings')"
               @click.stop="toggleColSettings($event)"
             >
               <IconSvg type="settings" size="sm" />
             </button>
             <!-- 批量修改 -->
             <button v-if="selectable && _selectedKeys.length > 0" class="toolbar-clear" @click="openBatchEdit">
-              批量修改 ({{ _selectedKeys.length }})
+              {{ t('table.batchEdit', { n: _selectedKeys.length }) }}
             </button>
             <!-- 自定义工具栏按钮（使用方扩展：刷新/导入等） -->
             <slot name="toolbar-actions" />
@@ -2231,7 +2241,7 @@ function onFilterOptionLeave(e: MouseEvent) {
             :key="anchor.key"
             class="table-progress-anchor"
             :style="{ left: anchor.pct + '%' }"
-            :title="'点击跳回标记行'"
+            :title="t('table.jumpToPinned')"
             @mousedown.stop
             @click.stop="scrollToPinnedRow(anchor.key)"
           />
@@ -2257,7 +2267,7 @@ function onFilterOptionLeave(e: MouseEvent) {
               '--dt-zoom-x': _zoomX,
             }"
             :aria-busy="isLoading"
-            aria-label="数据表格"
+            :aria-label="t('table.dataGridLabel')"
           >
             <!-- ========== 表头 ========== -->
             <thead>
@@ -2312,7 +2322,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                       <span class="th-title">{{ colTitle(col) }}</span>
                     </slot>
                     <span v-if="col.sortable !== false || col.filterable !== false" class="th-actions">
-                      <span v-if="col.sortable !== false" class="sort-arrows" aria-label="排序">
+                      <span v-if="col.sortable !== false" class="sort-arrows" :aria-label="t('table.sort')">
                         <IconSvg
                           type="chevron-up"
                           size="sm"
@@ -2336,7 +2346,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                         }"
                         tabindex="0"
                         role="button"
-                        aria-label="筛选"
+                        :aria-label="t('table.filter')"
                         @click.stop="toggleFilter(col, $event)"
                         @keydown.enter.prevent.stop="onFilterKeyTrigger(col, $event)"
                         @keydown.space.prevent.stop="onFilterKeyTrigger(col, $event)"
@@ -2361,7 +2371,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                   :class="{ 'col-fixed-right': _hasFixedRightCol }"
                   :style="{ width: _actionColWidth * _zoomX + 'px', minWidth: 60 * _zoomX + 'px', textAlign: 'center' }"
                 >
-                  操作
+                  {{ t('table.actions') }}
                 </th>
               </tr>
             </thead>
@@ -2403,9 +2413,9 @@ function onFilterOptionLeave(e: MouseEvent) {
                       :status="activeFilters.length || globalSearch ? 'info' : 'empty'"
                       :title="
                         globalSearch
-                          ? '搜索无结果，尝试其他关键词'
+                          ? t('table.searchNoResultHint')
                           : activeFilters.length
-                            ? '筛选结果为空，尝试调整筛选条件'
+                            ? t('table.filterNoResultHint')
                             : effectiveEmptyText
                       "
                       description=""
@@ -2592,7 +2602,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                           (rowMetaMap.get(row)?.texts[col.key]?.length || 0) > 50
                         "
                         class="cell-expand-icon"
-                        title="点击查看完整内容"
+                        :title="t('table.viewFullContent')"
                         @click.stop="openCellDetail(colTitle(col), rowMetaMap.get(row)?.texts[col.key] ?? '')"
                       >
                         <IconSvg type="external-link" size="sm" />
@@ -2607,7 +2617,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                   <span
                     v-if="noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key)"
                     class="cell-note-dot"
-                    title="点击编辑备注"
+                    :title="t('table.editNote')"
                     @click.stop="startNoteEdit($event, rowMetaMap.get(row)?.key ?? '', col.key)"
                   />
                 </td>
@@ -2804,7 +2814,7 @@ function onFilterOptionLeave(e: MouseEvent) {
               <span
                 v-if="noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key)"
                 class="cell-note-dot card-note-dot"
-                title="点击编辑备注"
+                :title="t('table.editNote')"
                 @click.stop="startNoteEdit($event, rowMetaMap.get(row)?.key ?? '', col.key)"
               />
             </div>
@@ -2830,7 +2840,13 @@ function onFilterOptionLeave(e: MouseEvent) {
       <div v-if="isCardViewEffective && !isLoading && !_cardVisibleData.length" class="card-view-empty">
         <Result
           :status="activeFilters.length || globalSearch ? 'info' : 'empty'"
-          :title="globalSearch ? '搜索无结果' : activeFilters.length ? '筛选结果为空' : effectiveEmptyText"
+          :title="
+            globalSearch
+              ? t('table.searchNoResult')
+              : activeFilters.length
+                ? t('table.filterNoResult')
+                : effectiveEmptyText
+          "
         />
       </div>
 
@@ -2838,8 +2854,8 @@ function onFilterOptionLeave(e: MouseEvent) {
       <div v-if="!_isFullscreen && pageSize > 0 && displayTotalPages > 1" class="table-pagination">
         <span class="pagination-status">
           <template v-if="selectable && _selectedKeys.length > 0"
-            >已选 <strong>{{ _selectedKeys.length }}</strong> 行 - </template
-          >第 {{ _currentPage }} / {{ displayTotalPages }} 页
+            >{{ t('table.selected') }} <strong>{{ _selectedKeys.length }}</strong> {{ t('table.rows') }} - </template
+          >{{ t('table.pageInfo', { current: _currentPage, total: displayTotalPages }) }}
         </span>
         <button class="page-btn" :disabled="_currentPage <= 1" @click="setPage(_currentPage - 1)">
           <IconSvg type="chevron-left" size="sm" />
@@ -2878,19 +2894,19 @@ function onFilterOptionLeave(e: MouseEvent) {
               v-model="filterDraft.searchText"
               type="text"
               class="dt-filter-search"
-              :placeholder="props.pinyinSearch ? '拼音/中文搜索...' : '搜索...'"
+              :placeholder="props.pinyinSearch ? t('table.pinyinSearchPlaceholder') : t('table.searchPlaceholder')"
               @click.stop
             />
 
             <!-- 选项排序 -->
             <div class="dt-filter-option-sort">
-              <span class="dt-filter-option-sort-label">排序：</span>
+              <span class="dt-filter-option-sort-label">{{ t('table.sortLabel') }}</span>
               <button
                 class="dt-filter-option-sort-btn"
                 :class="{ active: optionSort === 'name' || optionSort === 'name-desc' }"
                 @click="optionSort = optionSort === 'name' ? 'name-desc' : 'name'"
               >
-                名称
+                {{ t('table.byName') }}
                 <span class="dt-filter-option-sort-arrow">{{
                   optionSort === 'name' ? '↑' : optionSort === 'name-desc' ? '↓' : '↕'
                 }}</span>
@@ -2900,7 +2916,7 @@ function onFilterOptionLeave(e: MouseEvent) {
                 :class="{ active: optionSort === 'count' || optionSort === 'count-desc' }"
                 @click="optionSort = optionSort === 'count' ? 'count-desc' : 'count'"
               >
-                数量
+                {{ t('table.byCount') }}
                 <span class="dt-filter-option-sort-arrow">{{
                   optionSort === 'count' ? '↑' : optionSort === 'count-desc' ? '↓' : '↕'
                 }}</span>
@@ -2910,11 +2926,17 @@ function onFilterOptionLeave(e: MouseEvent) {
             <!-- 快捷操作 -->
             <div class="dt-filter-quick-actions">
               <button class="dt-filter-quick-btn" @click="filterQuickAction('all')">
-                全选 <span class="dt-filter-quick-count">({{ filteredOptions.length }})</span>
+                {{ t('table.selectAll') }} <span class="dt-filter-quick-count">({{ filteredOptions.length }})</span>
               </button>
-              <button class="dt-filter-quick-btn" @click="filterQuickAction('none')">反选</button>
-              <button class="dt-filter-quick-btn" @click="filterQuickAction('duplicates')">重复项</button>
-              <button class="dt-filter-quick-btn" @click="filterQuickAction('unique')">唯一项</button>
+              <button class="dt-filter-quick-btn" @click="filterQuickAction('none')">
+                {{ t('table.invertSelection') }}
+              </button>
+              <button class="dt-filter-quick-btn" @click="filterQuickAction('duplicates')">
+                {{ t('table.duplicates') }}
+              </button>
+              <button class="dt-filter-quick-btn" @click="filterQuickAction('unique')">
+                {{ t('table.uniqueOnly') }}
+              </button>
             </div>
 
             <!-- 选项列表 -->
@@ -2933,11 +2955,11 @@ function onFilterOptionLeave(e: MouseEvent) {
                   class="dt-filter-option-text"
                   @mouseenter="onFilterOptionEnter"
                   @mouseleave="onFilterOptionLeave"
-                  >{{ opt.label || opt.value || '空白' }}</span
+                  >{{ opt.label || opt.value || t('table.blank') }}</span
                 >
                 <span class="dt-filter-option-count">{{ opt.count }}</span>
               </div>
-              <div v-if="filteredOptions.length === 0" class="dt-filter-no-result">无匹配结果</div>
+              <div v-if="filteredOptions.length === 0" class="dt-filter-no-result">{{ t('table.noMatchResult') }}</div>
             </div>
 
             <!-- 滚动进度条：贴列表底部，可滚动时显示 -->
@@ -2947,8 +2969,8 @@ function onFilterOptionLeave(e: MouseEvent) {
 
             <!-- 操作按钮 -->
             <div class="dt-filter-actions">
-              <button class="dt-filter-btn dt-filter-btn-apply" @click="applyFilter">应用</button>
-              <button class="dt-filter-btn dt-filter-btn-reset" @click="resetFilter">重置</button>
+              <button class="dt-filter-btn dt-filter-btn-apply" @click="applyFilter">{{ t('table.apply') }}</button>
+              <button class="dt-filter-btn dt-filter-btn-reset" @click="resetFilter">{{ t('table.reset') }}</button>
             </div>
           </template>
         </div>
@@ -2964,37 +2986,39 @@ function onFilterOptionLeave(e: MouseEvent) {
           :style="_colSettingsStyle"
           @click.stop
         >
-          <input v-model="colKeyword" class="dt-col-search" placeholder="搜索列名..." />
+          <input v-model="colKeyword" class="dt-col-search" :placeholder="t('table.searchCols')" />
           <div class="dt-col-quick-actions">
             <button
-              :title="allColumnsVisible ? '全部隐藏（保留第一列）' : '全部显示'"
+              :title="allColumnsVisible ? t('table.hideAllKeepFirst') : t('table.showAllCols')"
               @click="allColumnsVisible ? toggleAllColsVisible(false) : toggleAllColsVisible(true)"
             >
-              {{ allColumnsVisible ? '全部隐藏' : '全部显示' }}
+              {{ allColumnsVisible ? t('table.hideAllCols') : t('table.showAllCols') }}
             </button>
             <button
               class="dt-reset-width-btn"
               :disabled="!hasManualWidths"
-              title="清除手动调整的列宽存储，恢复自动列宽"
+              :title="t('table.resetColWidthsHint')"
               @click="resetColumnWidths"
             >
-              重置列宽
+              {{ t('table.resetColWidths') }}
             </button>
             <button
               :class="{ active: allFixedLeft }"
-              :title="allFixedLeft ? '取消全部固定左' : '全部列固定到左侧'"
+              :title="allFixedLeft ? t('table.unfixAllLeft') : t('table.fixAllLeft')"
               @click="toggleAllFixed('left')"
             >
-              全部固定左
+              {{ t('table.fixAllLeftShort') }}
             </button>
             <button
               :class="{ active: allFixedRight }"
-              :title="allFixedRight ? '取消全部固定右' : '全部列固定到右侧'"
+              :title="allFixedRight ? t('table.unfixAllRight') : t('table.fixAllRight')"
               @click="toggleAllFixed('right')"
             >
-              全部固定右
+              {{ t('table.fixAllRightShort') }}
             </button>
-            <button :disabled="nothingFixed" title="清除全部固定" @click="setAllFixed(null)">取消固定</button>
+            <button :disabled="nothingFixed" :title="t('table.clearAllFixed')" @click="setAllFixed(null)">
+              {{ t('table.unfixAll') }}
+            </button>
           </div>
           <div class="dt-col-list">
             <div
@@ -3010,59 +3034,65 @@ function onFilterOptionLeave(e: MouseEvent) {
               <input
                 type="checkbox"
                 :checked="!hiddenColumns.has(col.key)"
-                :aria-label="`显示 ${colTitle(col)}`"
+                :aria-label="t('table.showCol', { name: colTitle(col) })"
                 @change="toggleColVisible(col.key)"
               />
               <span class="dt-col-title" :title="colTitle(col)">{{ colTitle(col) }}</span>
               <span class="dt-col-width">
                 <button
                   :disabled="colWidthPx(col) <= Math.max(headerMinW(col), 30)"
-                  title="变窄 10px"
+                  :title="t('table.narrower')"
                   @click="adjustColWidth(col.key, -10)"
                 >
                   −
                 </button>
-                <span :title="`列宽 ${colWidthPx(col)}px`">{{ colWidthPx(col) }}</span>
-                <button title="加宽 10px" @click="adjustColWidth(col.key, 10)">+</button>
+                <span :title="t('table.colWidthPx', { n: colWidthPx(col) })">{{ colWidthPx(col) }}</span>
+                <button :title="t('table.wider')" @click="adjustColWidth(col.key, 10)">+</button>
               </span>
               <span class="dt-col-ops">
-                <button :disabled="i === 0" title="上移" @click="moveCol(col.key, -1)">↑</button>
-                <button :disabled="i === _settingsColumns.length - 1" title="下移" @click="moveCol(col.key, 1)">
+                <button :disabled="i === 0" :title="t('table.moveUp')" @click="moveCol(col.key, -1)">↑</button>
+                <button
+                  :disabled="i === _settingsColumns.length - 1"
+                  :title="t('table.moveDown')"
+                  @click="moveCol(col.key, 1)"
+                >
                   ↓
                 </button>
                 <span class="dt-col-fixed-group" :class="{ disabled: hiddenColumns.has(col.key) }">
                   <button
                     :class="{ active: !isColumnFixed(col) }"
-                    title="不固定（从该列断开，外侧保留）"
+                    :title="t('table.unfixedHint')"
                     :disabled="hiddenColumns.has(col.key)"
                     @click="setColFixed(col, null)"
                   >
-                    无
+                    {{ t('common.none') }}
                   </button>
                   <button
                     :class="{ active: isColumnFixed(col) === 'left' }"
-                    title="固定左：该列及左侧所有列一起固定"
+                    :title="t('table.fixLeftHint')"
                     :disabled="hiddenColumns.has(col.key)"
                     @click="setColFixed(col, 'left')"
                   >
-                    左
+                    {{ t('table.leftShort') }}
                   </button>
                   <button
                     :class="{ active: isColumnFixed(col) === 'right' }"
-                    title="固定右：该列及右侧所有列一起固定"
+                    :title="t('table.fixRightHint')"
                     :disabled="hiddenColumns.has(col.key)"
                     @click="setColFixed(col, 'right')"
                   >
-                    右
+                    {{ t('table.rightShort') }}
                   </button>
                 </span>
               </span>
             </div>
-            <div v-if="!_filteredSettingsColumns.length" class="dt-col-no-result">无匹配列</div>
+            <div v-if="!_filteredSettingsColumns.length" class="dt-col-no-result">{{ t('table.noMatchCols') }}</div>
           </div>
           <div class="dt-col-footer">
-            <span class="dt-col-footer-fixed">固定：{{ _fixedSummary || '未固定' }}</span>
-            <span class="dt-col-footer-hint">左 = 该列及左侧；右 = 该列及右侧；无 = 断开</span>
+            <span class="dt-col-footer-fixed"
+              >{{ t('table.fixedLabel') }}{{ _fixedSummary || t('table.unfixed') }}</span
+            >
+            <span class="dt-col-footer-hint">{{ t('table.fixedHint') }}</span>
           </div>
         </div>
       </Teleport>
@@ -3096,9 +3126,9 @@ function onFilterOptionLeave(e: MouseEvent) {
           </template>
           <!-- 单元格右键菜单：复制 / 粘贴 / 清空 -->
           <template v-if="contextMenu.rowKey && contextMenu.columnKey">
-            <div class="dt-context-item" role="menuitem" @click="onContextCopyCell">复制</div>
-            <div class="dt-context-item" role="menuitem" @click="onContextPasteCell">粘贴</div>
-            <div class="dt-context-item" role="menuitem" @click="onContextClearCell">清空</div>
+            <div class="dt-context-item" role="menuitem" @click="onContextCopyCell">{{ t('common.copy') }}</div>
+            <div class="dt-context-item" role="menuitem" @click="onContextPasteCell">{{ t('table.paste') }}</div>
+            <div class="dt-context-item" role="menuitem" @click="onContextClearCell">{{ t('table.clearCell') }}</div>
             <div class="dt-context-divider" />
           </template>
           <template v-if="contextMenu.columnKey && !contextMenu.rowKey">
@@ -3108,18 +3138,22 @@ function onFilterOptionLeave(e: MouseEvent) {
               role="menuitem"
               @click="onCtxHideColumn"
             >
-              隐藏该列
+              {{ t('table.hideCol') }}
             </div>
             <div class="dt-context-divider" />
-            <div class="dt-context-item" role="menuitem" @click="onCtxFixLeftCascade">固定到左侧（含之前所有列）</div>
-            <div class="dt-context-item" role="menuitem" @click="onCtxFixRightCascade">固定到右侧（含之后所有列）</div>
+            <div class="dt-context-item" role="menuitem" @click="onCtxFixLeftCascade">
+              {{ t('table.fixLeftCascade') }}
+            </div>
+            <div class="dt-context-item" role="menuitem" @click="onCtxFixRightCascade">
+              {{ t('table.fixRightCascade') }}
+            </div>
             <div
               v-if="isColumnFixed(visibleColumns.find((c) => c.key === contextMenu.columnKey)!)"
               class="dt-context-item"
               role="menuitem"
               @click="onCtxUnfixColumn"
             >
-              取消固定
+              {{ t('table.unfixAll') }}
             </div>
             <div class="dt-context-divider" />
             <div
@@ -3128,7 +3162,7 @@ function onFilterOptionLeave(e: MouseEvent) {
               role="menuitem"
               @click="onCtxShowAllColumns"
             >
-              显示全部
+              {{ t('table.showAllMenu') }}
             </div>
           </template>
         </div>
@@ -3176,7 +3210,8 @@ function onFilterOptionLeave(e: MouseEvent) {
               zIndex: 'var(--z-tooltip, 3000)',
             }"
           >
-            <span class="original-tooltip-label">原始值：</span>{{ originalTooltip.text }}
+            <span class="original-tooltip-label">{{ t('table.originalValue') }}</span
+            >{{ originalTooltip.text }}
           </div>
 
           <!-- 备注编辑弹窗 -->
@@ -3194,17 +3229,17 @@ function onFilterOptionLeave(e: MouseEvent) {
             aria-modal="true"
             @click.stop
           >
-            <div class="note-editor-title">编辑备注</div>
+            <div class="note-editor-title">{{ t('table.noteEditorTitle') }}</div>
             <input
               :ref="setNoteInputEl"
               v-model="noteDraft"
               class="note-editor-input"
-              placeholder="输入备注内容..."
+              :placeholder="t('table.notePlaceholder')"
               @keydown="onNoteKeydown"
             />
             <div class="note-editor-actions">
-              <button class="dt-filter-btn dt-filter-btn-apply" @click="commitNote">确定</button>
-              <button class="dt-filter-btn dt-filter-btn-reset" @click="cancelNote">取消</button>
+              <button class="dt-filter-btn dt-filter-btn-apply" @click="commitNote">{{ t('common.ok') }}</button>
+              <button class="dt-filter-btn dt-filter-btn-reset" @click="cancelNote">{{ t('common.cancel') }}</button>
             </div>
           </div>
 
@@ -3269,7 +3304,7 @@ function onFilterOptionLeave(e: MouseEvent) {
             @click.stop
             @keydown.escape="_batchShow = false"
           >
-            <div class="note-editor-title">批量修改 — 已选 {{ _selectedKeys.length }} 行</div>
+            <div class="note-editor-title">{{ t('table.batchEditTitle', { n: _selectedKeys.length }) }}</div>
             <select v-model="_batchCol" class="note-editor-input">
               <option v-for="col in visibleColumns" :key="col.key" :value="col.key">
                 {{ colTitle(col) }}
@@ -3279,12 +3314,14 @@ function onFilterOptionLeave(e: MouseEvent) {
               :ref="setNoteInputEl"
               v-model="_batchValue"
               class="note-editor-input"
-              placeholder="输入新值..."
+              :placeholder="t('table.newValuePlaceholder')"
               @keydown.enter="confirmBatchEdit"
             />
             <div class="note-editor-actions">
-              <button class="dt-filter-btn dt-filter-btn-apply" @click="confirmBatchEdit">确定</button>
-              <button class="dt-filter-btn dt-filter-btn-reset" @click="_batchShow = false">取消</button>
+              <button class="dt-filter-btn dt-filter-btn-apply" @click="confirmBatchEdit">{{ t('common.ok') }}</button>
+              <button class="dt-filter-btn dt-filter-btn-reset" @click="_batchShow = false">
+                {{ t('common.cancel') }}
+              </button>
             </div>
           </div>
         </div>
@@ -3310,10 +3347,10 @@ function onFilterOptionLeave(e: MouseEvent) {
       >
         <template #actions>
           <button class="lightbox-action" @click.stop="downloadScreenshotFromModal">
-            <IconSvg type="download" size="sm" /> 下载 PNG
+            <IconSvg type="download" size="sm" /> {{ t('table.downloadPng') }}
           </button>
           <button class="lightbox-action" @click.stop="copyScreenshotFromModal">
-            <IconSvg type="copy" size="sm" /> 复制图片
+            <IconSvg type="copy" size="sm" /> {{ t('table.copyImage') }}
           </button>
         </template>
       </ImagePreview>

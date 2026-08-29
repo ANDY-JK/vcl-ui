@@ -4,6 +4,9 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = withDefaults(
   defineProps<{
@@ -116,7 +119,7 @@ function onClick() {
     :style="{ width: _w, height: _h, borderRadius: _rad }"
     :class="{ loaded, failed, clickable: preview && loaded }"
     role="img"
-    :aria-label="alt || '图片'"
+    :aria-label="alt || t('image.label')"
     @click="onClick"
   >
     <!-- 加载占位 -->

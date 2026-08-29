@@ -5,6 +5,10 @@ import { ref, computed, watch, nextTick } from 'vue'
 import type { Column, ColumnFilterState, FilterOption, OptionSort } from './types'
 import { matchPinyin, measureTextWidth, markLayerOpen } from './utils'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
+import { useT } from '@/components/_internal/i18n'
+
+/** 模块级 t：纯 .ts composable 直接用（模式 3） */
+const t = useT()
 
 export function useTableFilter(
   props: { columns: Column[]; data: Record<string, any>[]; pinyinSearch?: boolean },
@@ -79,11 +83,16 @@ export function useTableFilter(
       if (
         otherFilters.length > 0 &&
         !otherFilters.every(([key, s]) => s.selectedValues.includes(String(row[key] ?? '')))
-      ) continue
+      )
+        continue
       const val = String(row[colKey] ?? '')
       counts.set(val, (counts.get(val) || 0) + 1)
       if (hasRender && !labels.has(val)) {
-        try { labels.set(val, col!.render!(row[colKey], row, 0)) } catch { console.warn('[DataTable] render 异常，放弃 label:', colKey) }
+        try {
+          labels.set(val, col!.render!(row[colKey], row, 0))
+        } catch {
+          console.warn('[DataTable] render 异常，放弃 label:', colKey)
+        }
       }
     }
     return Array.from(counts.entries())
@@ -101,11 +110,13 @@ export function useTableFilter(
     const draft = filterDraft.value
     let list = activeFilterOptions.value
     if (draft && draft.searchText) {
-      list = list.filter((opt) => matchPinyin(opt.value, draft.searchText) || (!!opt.label && matchPinyin(opt.label!, draft.searchText)))
+      list = list.filter(
+        (opt) => matchPinyin(opt.value, draft.searchText) || (!!opt.label && matchPinyin(opt.label!, draft.searchText)),
+      )
     }
     const s = optionSort.value
     if (s === 'count' || s === 'count-desc') {
-      list = [...list].sort((a, b) => s === 'count' ? a.count - b.count : b.count - a.count)
+      list = [...list].sort((a, b) => (s === 'count' ? a.count - b.count : b.count - a.count))
     } else {
       list = [...list].sort((a, b) =>
         s === 'name-desc'
@@ -119,7 +130,10 @@ export function useTableFilter(
   watch(filteredOptions, () => {
     nextTick(() => {
       const el = filterOptionsRef.value
-      if (el) { filterOptionsScrollH.value = el.scrollHeight; filterOptionsClientH.value = el.clientHeight }
+      if (el) {
+        filterOptionsScrollH.value = el.scrollHeight
+        filterOptionsClientH.value = el.clientHeight
+      }
     })
   })
 
@@ -131,7 +145,9 @@ export function useTableFilter(
     const visibleOpts = filteredOptions.value
     const visibleValues = visibleOpts.map((o) => o.value)
     switch (action) {
-      case 'all': draft.selectedValues = [...visibleValues]; break
+      case 'all':
+        draft.selectedValues = [...visibleValues]
+        break
       case 'none': {
         // toggle 每个可见值，保留搜索范围外的已选状态不丢失
         const selectedSet = new Set(draft.selectedValues)
@@ -143,9 +159,11 @@ export function useTableFilter(
         break
       }
       case 'duplicates':
-        draft.selectedValues = visibleOpts.filter((o) => o.count > 1).map((o) => o.value); break
+        draft.selectedValues = visibleOpts.filter((o) => o.count > 1).map((o) => o.value)
+        break
       case 'unique':
-        draft.selectedValues = visibleOpts.filter((o) => o.count === 1).map((o) => o.value); break
+        draft.selectedValues = visibleOpts.filter((o) => o.count === 1).map((o) => o.value)
+        break
     }
   }
 
@@ -200,11 +218,17 @@ export function useTableFilter(
   }
 
   // ==================== 筛选下拉定位 ====================
-  const FILTER_BTN_TEXTS = ['全选 (88)', '反选', '重复项', '唯一项']
+  // 快捷按钮文案键化：key + 宽度测算用的计数后缀（调用处翻译，跟随当前语言）
+  const FILTER_BTN_KEYS = [
+    ['table.selectAll', ' (88)'],
+    ['table.invertSelection', ''],
+    ['table.duplicates', ''],
+    ['table.uniqueOnly', ''],
+  ] as const
   /* 以 4 个快捷按钮为基准计算下拉框最小宽度，保证完整显示 */
   function calcFilterDdWidth(): number {
     let textW = 0
-    for (const t of FILTER_BTN_TEXTS) textW += measureTextWidth(t, 12)
+    for (const [key, suffix] of FILTER_BTN_KEYS) textW += measureTextWidth(t(key) + suffix, 12)
     // 4 个按钮：padding(10*2) + border(1*2) = 每个按钮 22px 额外 + 4px gap * 3
     const btnsExtra = 4 * (10 * 2 + 1 * 2) + 4 * 3
     // 下拉框内边距 8*2 = 16
@@ -242,15 +266,33 @@ export function useTableFilter(
     const maxH = preferAbove ? Math.min(360, rect.top - 8) : Math.min(360, vh - rect.bottom - 12)
 
     filterDropdownStyle.value = preferAbove
-      ? { position: 'fixed', bottom: `${vh - rect.top + 4}px`, left: `${result.left}px`, width: `${ddW}px`, maxHeight: `${maxH}px`, zIndex: 'var(--z-dropdown, 2000)', top: 'auto' }
-      : { position: 'fixed', top: `${rect.bottom + 4}px`, left: `${result.left}px`, width: `${ddW}px`, maxHeight: `${maxH}px`, zIndex: 'var(--z-dropdown, 2000)' }
+      ? {
+          position: 'fixed',
+          bottom: `${vh - rect.top + 4}px`,
+          left: `${result.left}px`,
+          width: `${ddW}px`,
+          maxHeight: `${maxH}px`,
+          zIndex: 'var(--z-dropdown, 2000)',
+          top: 'auto',
+        }
+      : {
+          position: 'fixed',
+          top: `${rect.bottom + 4}px`,
+          left: `${result.left}px`,
+          width: `${ddW}px`,
+          maxHeight: `${maxH}px`,
+          zIndex: 'var(--z-dropdown, 2000)',
+        }
   }
 
   // ==================== 打开 / 关闭筛选 ====================
   let _filterTriggerEl: HTMLElement | null = null
   function toggleFilter(col: Column, event: MouseEvent) {
     event.stopPropagation()
-    if (activeFilterKey.value === col.key) { closeFilter(); return }
+    if (activeFilterKey.value === col.key) {
+      closeFilter()
+      return
+    }
     for (const cb of _closeCallbacks) cb()
     closeContextMenu()
     _filterTriggerEl = event.currentTarget as HTMLElement
@@ -277,54 +319,79 @@ export function useTableFilter(
   if (externalFilters) {
     /** 追踪外部是否曾有过非空筛选值，用于区分"初始空"与"显式清空" */
     let _hadExternalData = false
-    watch(externalFilters, (ext) => {
-      if (!ext) {
-        // 外部清空筛选 → 同步清空内部状态
-        if (Object.keys(filterState.value).length > 0) filterState.value = {}
-        return
-      }
-      // 比较当前内部状态与外部状态是否一致（浅比 keys + values）
-      const currentKeys = Object.keys(filterState.value)
-      const extKeys = Object.keys(ext)
-      // 外部为空对象 {}：若是初始态（未曾有过数据）→ 保留内部（可能来自持久化恢复）；若曾有过数据（显式清空）→ 同步清空
-      if (extKeys.length === 0) {
-        if (_hadExternalData) {
-          if (currentKeys.length > 0) filterState.value = {}
+    watch(
+      externalFilters,
+      (ext) => {
+        if (!ext) {
+          // 外部清空筛选 → 同步清空内部状态
+          if (Object.keys(filterState.value).length > 0) filterState.value = {}
+          return
         }
-        return
-      }
-      _hadExternalData = true
-      if (currentKeys.length === extKeys.length && extKeys.length === 0) return
-      let same = currentKeys.length === extKeys.length
-      if (same) {
-        for (const ek of extKeys) {
-          const cur = filterState.value[ek]
-          const extVals = ext[ek]
-          if (!cur || cur.selectedValues.length !== extVals.length ||
-              !extVals.every((v, i) => v === cur.selectedValues[i])) {
-            same = false; break
+        // 比较当前内部状态与外部状态是否一致（浅比 keys + values）
+        const currentKeys = Object.keys(filterState.value)
+        const extKeys = Object.keys(ext)
+        // 外部为空对象 {}：若是初始态（未曾有过数据）→ 保留内部（可能来自持久化恢复）；若曾有过数据（显式清空）→ 同步清空
+        if (extKeys.length === 0) {
+          if (_hadExternalData) {
+            if (currentKeys.length > 0) filterState.value = {}
+          }
+          return
+        }
+        _hadExternalData = true
+        if (currentKeys.length === extKeys.length && extKeys.length === 0) return
+        let same = currentKeys.length === extKeys.length
+        if (same) {
+          for (const ek of extKeys) {
+            const cur = filterState.value[ek]
+            const extVals = ext[ek]
+            if (
+              !cur ||
+              cur.selectedValues.length !== extVals.length ||
+              !extVals.every((v, i) => v === cur.selectedValues[i])
+            ) {
+              same = false
+              break
+            }
           }
         }
-      }
-      if (same) return // 值未变化，跳过以避免循环
-      const next: Record<string, ColumnFilterState> = {}
-      for (const [key, vals] of Object.entries(ext)) {
-        if (vals.length > 0) next[key] = { searchText: '', selectedValues: [...vals] }
-      }
-      filterState.value = next
-    }, { deep: true })
+        if (same) return // 值未变化，跳过以避免循环
+        const next: Record<string, ColumnFilterState> = {}
+        for (const [key, vals] of Object.entries(ext)) {
+          if (vals.length > 0) next[key] = { searchText: '', selectedValues: [...vals] }
+        }
+        filterState.value = next
+      },
+      { deep: true },
+    )
   }
 
   return {
-    filterState, filterDraft, activeFilterKey, filterDropdownStyle, filterDropdownAbove,
-    optionSort, filterSearchRef, filterOptionsRef,
-    filterOptionsScrollTop, filterOptionsScrollH, filterOptionsClientH,
-    filterOptionsScrollable, filterOptionsScrollPct, onFilterOptionsScroll,
-    isFilterActive, initFilterDraft,
-    activeFilterOptions, filteredOptions,
-    filterQuickAction, toggleFilterValue, applyFilter, resetFilter,
-    removeFilter, clearAllFilters,
-    toggleFilter, closeFilter,
+    filterState,
+    filterDraft,
+    activeFilterKey,
+    filterDropdownStyle,
+    filterDropdownAbove,
+    optionSort,
+    filterSearchRef,
+    filterOptionsRef,
+    filterOptionsScrollTop,
+    filterOptionsScrollH,
+    filterOptionsClientH,
+    filterOptionsScrollable,
+    filterOptionsScrollPct,
+    onFilterOptionsScroll,
+    isFilterActive,
+    initFilterDraft,
+    activeFilterOptions,
+    filteredOptions,
+    filterQuickAction,
+    toggleFilterValue,
+    applyFilter,
+    resetFilter,
+    removeFilter,
+    clearAllFilters,
+    toggleFilter,
+    closeFilter,
     _closeCallbacks,
   }
 }

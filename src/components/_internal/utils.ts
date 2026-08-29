@@ -8,6 +8,13 @@
  * - 深拷贝：null / undefined / 原始值原样返回
  */
 import { isBrowser } from './ssr-guard'
+import { useT } from './i18n'
+
+/**
+ * 模块级翻译函数（模式 3）— 用于 Error 消息 / 相对时间等 UI 可见文案。
+ * 命名 _t：本文件多处局部变量名为 t（如 formatRelativeTime 的 Date），避免遮蔽。
+ */
+const _t = useT()
 
 // ════════════════════════════════════════
 // 基础：安全转字符串
@@ -119,10 +126,7 @@ export function parseRegion(input?: unknown): Region {
 export const parseAddress = parseRegion
 
 /** 拼接区域名（省市区，可选乡镇/详细地址） */
-export function formatRegion(
-  region: Region | string,
-  opts?: { withTown?: boolean; withDetail?: boolean },
-): string {
+export function formatRegion(region: Region | string, opts?: { withTown?: boolean; withDetail?: boolean }): string {
   const r = typeof region === 'string' ? parseRegion(region) : region
   const parts: string[] = []
   if (r.province) parts.push(r.province)
@@ -207,10 +211,7 @@ export function deepClone<T>(value: T): T {
 // ════════════════════════════════════════
 
 /** 千分位 + 可选小数位数。非法数值原样返回字符串。 */
-export function formatNumber(
-  n: number | string,
-  opts?: { decimals?: number; separator?: string },
-): string {
+export function formatNumber(n: number | string, opts?: { decimals?: number; separator?: string }): string {
   const value = typeof n === 'string' ? Number(n) : n
   if (!isFinite(value)) return String(n)
   const { decimals, separator = ',' } = opts ?? {}
@@ -389,12 +390,12 @@ export function uuid(prefix = ''): string {
 export function fileToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     if (typeof FileReader === 'undefined') {
-      reject(new Error('FileReader 不可用'))
+      reject(new Error(_t('utils.fileReaderUnavailable')))
       return
     }
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result as string)
-    reader.onerror = () => reject(reader.error ?? new Error('读取文件失败'))
+    reader.onerror = () => reject(reader.error ?? new Error(_t('utils.readFileFail')))
     reader.readAsDataURL(blob)
   })
 }
@@ -536,11 +537,11 @@ export function formatRelativeTime(time: Date | number | string, now: Date | num
   const day = 24 * hour
 
   if (diff < 0) return formatAbsDate(t, n)
-  if (diff < minute) return '刚刚'
-  if (diff < hour) return `${Math.floor(diff / minute)}分钟前`
-  if (diff < day) return `${Math.floor(diff / hour)}小时前`
-  if (isSameDay(t, new Date(n.getTime() - day))) return '昨天'
-  if (diff < 30 * day) return `${Math.floor(diff / day)}天前`
+  if (diff < minute) return _t('utils.justNow')
+  if (diff < hour) return _t('utils.minutesAgo', { n: Math.floor(diff / minute) })
+  if (diff < day) return _t('utils.hoursAgo', { n: Math.floor(diff / hour) })
+  if (isSameDay(t, new Date(n.getTime() - day))) return _t('utils.yesterday')
+  if (diff < 30 * day) return _t('utils.daysAgo', { n: Math.floor(diff / day) })
   return formatAbsDate(t, n)
 }
 
@@ -608,7 +609,11 @@ function isValidHex(hex: string): boolean {
 /** HEX（#RGB 或 #RRGGBB）→ { r, g, b }，非法返回 null。 */
 export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   let h = hex.trim().replace(/^#/, '')
-  if (h.length === 3) h = h.split('').map((c) => c + c).join('')
+  if (h.length === 3)
+    h = h
+      .split('')
+      .map((c) => c + c)
+      .join('')
   if (!/^[0-9a-fA-F]{6}$/.test(h)) return null
   return {
     r: parseInt(h.slice(0, 2), 16),

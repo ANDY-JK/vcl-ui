@@ -1,3 +1,9 @@
+<script lang="ts">
+import { useT } from '@/components/_internal/i18n'
+/** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
+const t = useT()
+</script>
+
 <script setup lang="ts">
 // ⛔ 保护 — 布局骨架，禁止：clamp() → px，侧边栏结构/宽度 → 硬编码，slot 层级修改
 //    需我确认：navItems 结构、logo/mini 模式切换、进度条行为
@@ -6,11 +12,8 @@ import { RouterView, useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import AccordionNav from './AccordionNav.vue'
 import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
-import { getPrevNext, getCategory, type NavNode } from './utils/navData'
+import { getPrevNext, getCategory, navLabel, type NavNode } from './utils/navData'
 import { useThrottleFn } from '@/components/_internal/useDebounce'
-import { useT } from '@/components/_internal/i18n'
-
-const t = useT()
 
 const props = withDefaults(
   defineProps<{
@@ -19,7 +22,7 @@ const props = withDefaults(
     username?: string
   }>(),
   {
-    logoText: 'Vue 组件库',
+    logoText: () => t('appLayout.logoText'),
     username: '',
   },
 )
@@ -225,7 +228,7 @@ function onProgressMouseUp() {
         <span class="topbar-prompt">~</span>
         <span class="topbar-category">{{ categoryName }}</span>
         <span class="topbar-sep">/</span>
-        <span class="topbar-title">{{ nav.current?.label || '' }}</span>
+        <span class="topbar-title">{{ nav.current ? navLabel(nav.current.label) : '' }}</span>
 
         <div class="topbar-spacer" />
         <div class="topbar-tools">
@@ -271,7 +274,7 @@ function onProgressMouseUp() {
 
       <div class="content-bottombar">
         <button v-if="nav.prev" class="nav-btn" @click="goDemo(nav.prev.route!)">
-          <IconSvg type="arrow-left" size="sm" /><span class="toolbar-label">{{ nav.prev.label }}</span>
+          <IconSvg type="arrow-left" size="sm" /><span class="toolbar-label">{{ navLabel(nav.prev.label) }}</span>
         </button>
         <span v-else class="nav-btn is-empty" />
 
@@ -283,7 +286,7 @@ function onProgressMouseUp() {
         </div>
 
         <button v-if="nav.next" class="nav-btn" @click="goDemo(nav.next.route!)">
-          <span class="toolbar-label">{{ nav.next.label }}</span
+          <span class="toolbar-label">{{ navLabel(nav.next.label) }}</span
           ><IconSvg type="arrow-right" size="sm" />
         </button>
         <span v-else class="nav-btn is-empty" />

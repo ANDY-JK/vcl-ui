@@ -4,7 +4,7 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import type { NavNode } from './utils/navData'
+import { navLabel, type NavNode } from './utils/navData'
 
 defineOptions({ name: 'NavItem' })
 
@@ -86,14 +86,8 @@ const navItemClass = computed(() => {
 
 <template>
   <!-- 有子节点：渲染为可折叠分组 -->
-  <button
-    v-if="isGroup"
-    v-show="!collapsed"
-    :class="navItemClass"
-    :style="levelStyle"
-    @click="onClick"
-  >
-    <span class="nav-level-label">{{ node.label }}</span>
+  <button v-if="isGroup" v-show="!collapsed" :class="navItemClass" :style="levelStyle" @click="onClick">
+    <span class="nav-level-label">{{ navLabel(node.label) }}</span>
     <span class="nav-arrow">▾</span>
   </button>
 
@@ -102,11 +96,11 @@ const navItemClass = computed(() => {
     v-else
     :class="navItemClass"
     :style="levelStyle"
-    :title="collapsed ? node.label : undefined"
+    :title="collapsed ? navLabel(node.label) : undefined"
     @click="onClick"
   >
     <IconSvg :type="node.icon || 'square'" size="sm" color="currentColor" />
-    <span v-show="!collapsed" class="nav-level-text">{{ node.label }}</span>
+    <span v-show="!collapsed" class="nav-level-text">{{ navLabel(node.label) }}</span>
   </button>
 
   <!-- 递归渲染子节点 -->

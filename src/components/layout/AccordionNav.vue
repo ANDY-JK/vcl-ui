@@ -4,7 +4,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { navTree, type NavNode } from './utils/navData'
+import { navTree, navLabel, type NavNode } from './utils/navData'
 import NavItem from './NavItem.vue'
 
 const props = defineProps<{ collapsed?: boolean; items?: NavNode[] }>()
@@ -59,11 +59,11 @@ const activeRoute = computed(() => route.path)
         v-if="!node.children"
         class="nav-leaf-root"
         :class="{ active: node.route && activeRoute === node.route }"
-        :title="collapsed ? node.label : undefined"
+        :title="collapsed ? navLabel(node.label) : undefined"
         @click="node.route && $router.push(node.route)"
       >
         <IconSvg :type="node.icon || 'square'" size="sm" color="currentColor" />
-        <span v-show="!collapsed" class="nav-leaf-label">{{ node.label }}</span>
+        <span v-show="!collapsed" class="nav-leaf-label">{{ navLabel(node.label) }}</span>
       </button>
 
       <!-- 递归渲染分组（有 children 的节点交给 NavItem 递归处理） -->
