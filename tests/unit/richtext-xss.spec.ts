@@ -12,6 +12,11 @@ import FormRenderer from '@/components/form-builder/FormRenderer.vue'
 import { sanitizeHTML } from '@/components/data/composables/sanitize'
 
 const rendererSrc = readFileSync(resolve(import.meta.dirname, '../../src/components/form-builder/FormRenderer.vue'), 'utf-8')
+// v3.1 拆分后富文本逻辑迁至 renderer/RendererRichtext.vue（源码锁定向导随迁；挂载行为测试仍走 FormRenderer 集成路径）
+const richtextSrc = readFileSync(
+  resolve(import.meta.dirname, '../../src/components/form-builder/renderer/RendererRichtext.vue'),
+  'utf-8',
+)
 
 function mountRichtext(modelValue = '<p>正文</p>') {
   return mount(FormRenderer, {
@@ -24,23 +29,28 @@ function mountRichtext(modelValue = '<p>正文</p>') {
 }
 
 describe('富文本源码锁定（防回退到 v-html 反模式）', () => {
-  it('FormRenderer 全文件零 v-html（v-html 响应式绑定 = IME 打断根因）', () => {
+  it('FormRenderer 与 RendererRichtext 全文件零 v-html（v-html 响应式绑定 = IME 打断根因）', () => {
     expect(rendererSrc).not.toContain('v-html')
+    expect(richtextSrc).not.toContain('v-html')
   })
 
   it('IME 合成保护：合成期间 input 不 emit，合成结束才同步', () => {
-    expect(rendererSrc).toMatch(/function onRichtextInput[\s\S]*?if \(richtextComposing\.value\) return/)
-    expect(rendererSrc).toMatch(/function onRichtextCompositionEnd[\s\S]*?richtextComposing\.value = false[\s\S]*?richtextSyncFromDom\(\)/)
+    expect(richtextSrc).toMatch(/function onRichtextInput[\s\S]*?if \(richtextComposing\.value\) return/)
+    expect(richtextSrc).toMatch(
+      /function onRichtextCompositionEnd[\s\S]*?richtextComposing\.value = false[\s\S]*?richtextSyncFromDom\(\)/,
+    )
   })
 
   it('写入唯一出口 richtextSyncFromDom 必须消毒', () => {
-    expect(rendererSrc).toMatch(/function richtextSyncFromDom[\s\S]*?const html = sanitizeHTML\(el\.innerHTML\)/)
+    expect(richtextSrc).toMatch(/function richtextSyncFromDom[\s\S]*?const html = sanitizeHTML\(el\.innerHTML\)/)
     // 回声守卫：自身 emit 的值不回写 DOM
-    expect(rendererSrc).toMatch(/if \(val === richtextLastEmitted\) return/)
+    expect(richtextSrc).toMatch(/if \(val === richtextLastEmitted\) return/)
   })
 
   it('粘贴路径：preventDefault + 插入前消毒', () => {
-    expect(rendererSrc).toMatch(/function onRichtextPaste[\s\S]*?e\.preventDefault\(\)[\s\S]*?const clean = sanitizeHTML\(raw\)/)
+    expect(richtextSrc).toMatch(
+      /function onRichtextPaste[\s\S]*?e\.preventDefault\(\)[\s\S]*?const clean = sanitizeHTML\(raw\)/,
+    )
   })
 
   it('sanitizeHTML 剥离富文本 XSS payload', () => {
