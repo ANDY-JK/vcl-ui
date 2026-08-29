@@ -97,12 +97,10 @@ const formData = ref<FormData>({})
 /** 字段列表（从 normalized 中提取 fields，供联动引擎使用） */
 const normalizedFields = computed(() => normalized.value.fields)
 
-const {
-  getFieldOptions,
-  initDataSources,
-  setupWatchers,
-  isFieldVisibleWithLinkage,
-} = useFormLinkage(normalizedFields, formData)
+const { getFieldOptions, initDataSources, setupWatchers, isFieldVisibleWithLinkage } = useFormLinkage(
+  normalizedFields,
+  formData,
+)
 
 /** 是否已完成首帧同步 */
 let initialized = false
@@ -137,7 +135,11 @@ watch(
 // 校验
 // ════════════════════════════════════════
 
-const { errors, validate, validateOne, clearErrors } = useFormValidator(schemaRef, formData)
+const { errors, validate, validateOne, clearErrors } = useFormValidator(schemaRef, formData, {
+  // 校验可见性使用联动感知版本：被 showHide/事件隐藏的字段跳过校验，
+  // 避免“隐藏的必填字段卡死提交”且错误定位失效
+  isFieldVisible: isFieldVisibleWithLinkage,
+})
 
 // 数据变化时处理：emit + 实时校验 + 草稿保存（合并 watcher 减少深度遍历）
 watch(
@@ -308,7 +310,9 @@ function handleSubmit(): void {
   // 3 秒后自动重置 submitting，防止父组件未处理时永远 loading
   // 父组件可通过调用 expose 的 stopSubmit() 立即停止
   if (submitTimer) clearTimeout(submitTimer)
-  submitTimer = setTimeout(() => { submitting.value = false }, 3000)
+  submitTimer = setTimeout(() => {
+    submitting.value = false
+  }, 3000)
 }
 
 let submitTimer: ReturnType<typeof setTimeout> | null = null
@@ -317,13 +321,19 @@ const hasSubmitted = ref(false)
 
 /** 停止提交 loading 状态 — 供父组件通过 ref 调用 */
 function stopSubmit(): void {
-  if (submitTimer) { clearTimeout(submitTimer); submitTimer = null }
+  if (submitTimer) {
+    clearTimeout(submitTimer)
+    submitTimer = null
+  }
   submitting.value = false
 }
 
 /** 设置提交 loading 状态 — 供父组件通过 ref 调用 */
 function setSubmitting(v: boolean): void {
-  if (submitTimer) { clearTimeout(submitTimer); submitTimer = null }
+  if (submitTimer) {
+    clearTimeout(submitTimer)
+    submitTimer = null
+  }
   submitting.value = v
 }
 
@@ -444,7 +454,13 @@ function handleFieldChange(field: FormField, trigger: 'change' | 'blur'): void {
           return resp.json().catch(() => ({}))
         })
         .then(() => toastRef.value?.show(t('formBuilder.eventApiDone', { field: field.label }), 'success', 1500))
-        .catch((err) => toastRef.value?.show(t('formBuilder.eventApiFail', { field: field.label, err: String(err?.message ?? err) }), 'error', 2500))
+        .catch((err) =>
+          toastRef.value?.show(
+            t('formBuilder.eventApiFail', { field: field.label, err: String(err?.message ?? err) }),
+            'error',
+            2500,
+          ),
+        )
       break
     }
     case 'linkField': {
@@ -510,7 +526,15 @@ const renderSections = computed<RenderSection[]>(() => {
     }
     const key = c ? `c:${c.id ?? ''}` : `g:${f.group ?? ''}`
     if (!cur || key !== curKey) {
-      cur = { id: 's' + sections.length, title, isGrid, columns, defaultSpan: spanDefault, container: c ?? undefined, fields: [] }
+      cur = {
+        id: 's' + sections.length,
+        title,
+        isGrid,
+        columns,
+        defaultSpan: spanDefault,
+        container: c ?? undefined,
+        fields: [],
+      }
       sections.push(cur)
       curKey = key
     }
@@ -584,9 +608,11 @@ const isLastStep = computed(() => currentStep.value === totalSteps.value - 1)
 /** 每步的字段完成度（已填/总数） */
 const stepCompletion = computed(() => {
   if (normalized.value.layout !== 'steps' || !normalized.value.steps) return []
-  return normalized.value.steps.map(step => {
-    const fields = normalized.value.fields.filter(f => step.fields.includes(f.key) && isFieldVisibleWithLinkage(f, formData.value))
-    const filled = fields.filter(f => {
+  return normalized.value.steps.map((step) => {
+    const fields = normalized.value.fields.filter(
+      (f) => step.fields.includes(f.key) && isFieldVisibleWithLinkage(f, formData.value),
+    )
+    const filled = fields.filter((f) => {
       const v = formData.value[f.key]
       return v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)
     }).length
@@ -606,11 +632,7 @@ const stepCompletion = computed(() => {
     </Transition>
 
     <!-- 步骤导航 -->
-    <Steps
-      v-if="showSteps"
-      :steps="normalized.steps?.map((s) => ({ label: s.title })) ?? []"
-      :current="currentStep"
-    />
+    <Steps v-if="showSteps" :steps="normalized.steps?.map((s) => ({ label: s.title })) ?? []" :current="currentStep" />
 
     <!-- 表单主体 -->
     <form class="fb-form" @submit.prevent="handleSubmit">
@@ -626,7 +648,7 @@ const stepCompletion = computed(() => {
           >
             <Tabs
               :model-value="activeTabOf(section)"
-              :items="(section.container.tabs ?? []).map(t => ({ label: t.label, value: t.name }))"
+              :items="(section.container.tabs ?? []).map((t) => ({ label: t.label, value: t.name }))"
               @update:model-value="tabStates[section.container!.id ?? ''] = String($event)"
             />
             <div class="fb-fields">
@@ -651,7 +673,7 @@ const stepCompletion = computed(() => {
             :no-body-padding="false"
           >
             <Collapse
-              v-for="(item, ci) in (section.container.collapseItems ?? [])"
+              v-for="(item, ci) in section.container.collapseItems ?? []"
               :key="ci"
               :title="item.title"
               :open="collapseOpen(section, ci)"
@@ -678,10 +700,10 @@ const stepCompletion = computed(() => {
             :no-body-padding="false"
           >
             <Steps
-              :steps="(section.container.steps ?? []).map(s => ({ label: s.title }))"
+              :steps="(section.container.steps ?? []).map((s) => ({ label: s.title }))"
               :current="stepIndexOf(section)"
               clickable
-              @step-click="(i: number) => stepStates[section.container!.id ?? ''] = i"
+              @step-click="(i: number) => (stepStates[section.container!.id ?? ''] = i)"
             />
             <div class="fb-fields">
               <FieldList
@@ -698,12 +720,7 @@ const stepCompletion = computed(() => {
           </Card>
 
           <!-- card / grid / 普通分组：原卡片 + 网格渲染 -->
-          <Card
-            v-else
-            class="fb-group-card"
-            :title="section.title || undefined"
-            :no-body-padding="false"
-          >
+          <Card v-else class="fb-group-card" :title="section.title || undefined" :no-body-padding="false">
             <div
               class="fb-fields"
               :class="{ 'fb-grid': section.isGrid }"
@@ -727,11 +744,7 @@ const stepCompletion = computed(() => {
       <!-- steps 模式：渲染当前步骤字段 -->
       <template v-else>
         <div class="fb-fields fb-fields-step">
-          <div
-            v-for="field in renderFields"
-            :key="field.key"
-            class="fb-field"
-          >
+          <div v-for="field in renderFields" :key="field.key" class="fb-field">
             <FormRenderer
               v-model="formData[field.key]"
               :field="field"
@@ -750,39 +763,27 @@ const stepCompletion = computed(() => {
         <template v-if="showSteps">
           <div class="fb-step-indicator">
             <div class="fb-step-progress">
-              <div class="fb-step-progress-bar" :style="{ width: ((currentStep + 1) / totalSteps * 100) + '%' }" />
+              <div class="fb-step-progress-bar" :style="{ width: ((currentStep + 1) / totalSteps) * 100 + '%' }" />
             </div>
             <span class="fb-step-text">
               <span class="fb-step-current">{{ currentStep + 1 }}</span>
               <span class="fb-step-sep">/</span>
               <span class="fb-step-total">{{ totalSteps }}</span>
-              <span v-if="normalized.steps?.[currentStep]?.title" class="fb-step-title">{{ normalized.steps[currentStep].title }}</span>
+              <span v-if="normalized.steps?.[currentStep]?.title" class="fb-step-title">{{
+                normalized.steps[currentStep].title
+              }}</span>
               <span v-if="stepCompletion[currentStep]" class="fb-step-completion">
                 ({{ stepCompletion[currentStep].filled }}/{{ stepCompletion[currentStep].total }})
               </span>
             </span>
           </div>
-          <Button
-            v-if="currentStep > 0"
-            variant="outline"
-            @click="prevStep"
-          >
+          <Button v-if="currentStep > 0" variant="outline" @click="prevStep">
             {{ t('formBuilder.prevStep') }}
           </Button>
-          <Button
-            v-if="!isLastStep"
-            variant="primary"
-            @click="nextStep"
-          >
+          <Button v-if="!isLastStep" variant="primary" @click="nextStep">
             {{ t('formBuilder.nextStep') }}
           </Button>
-          <Button
-            v-if="isLastStep"
-            variant="primary"
-            :loading="submitting"
-            :disabled="disabled"
-            type="submit"
-          >
+          <Button v-if="isLastStep" variant="primary" :loading="submitting" :disabled="disabled" type="submit">
             {{ normalized.submitText }}
           </Button>
           <Button variant="ghost" @click="handleReset">
@@ -817,10 +818,14 @@ const stepCompletion = computed(() => {
   margin-bottom: 20px;
 }
 .fb-header-fade-enter-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 .fb-header-fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 .fb-header-fade-enter-from {
   opacity: 0;
@@ -896,8 +901,14 @@ const stepCompletion = computed(() => {
   animation: fb-step-fade-in 0.3s ease;
 }
 @keyframes fb-step-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 步骤指示器 */

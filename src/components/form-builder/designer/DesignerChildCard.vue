@@ -20,10 +20,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div
-    class="ldc-card"
-    @click="emit('select', child.id)"
-  >
+  <div class="ldc-card" @click.stop="emit('select', child.id)">
     <div class="ldc-card-head">
       <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
       <span class="ldc-card-label">{{ child.label }}</span>

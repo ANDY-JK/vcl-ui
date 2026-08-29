@@ -94,20 +94,24 @@ function onDragEnd(): void {
 const expandedMap = ref<Record<string, boolean>>({})
 
 /** 默认展开所有容器 */
-watch(() => props.nodes, (newNodes) => {
-  function setExpanded(list: DesignerNode[]): void {
-    for (const n of list) {
-      if (isContainerNode(n) && n.children?.length) {
-        // 仅在未设置过时初始化为展开
-        if (expandedMap.value[n.id] === undefined) {
-          expandedMap.value[n.id] = true
+watch(
+  () => props.nodes,
+  (newNodes) => {
+    function setExpanded(list: DesignerNode[]): void {
+      for (const n of list) {
+        if (isContainerNode(n) && n.children?.length) {
+          // 仅在未设置过时初始化为展开
+          if (expandedMap.value[n.id] === undefined) {
+            expandedMap.value[n.id] = true
+          }
+          setExpanded(n.children)
         }
-        setExpanded(n.children)
       }
     }
-  }
-  setExpanded(newNodes)
-}, { immediate: true, deep: true })
+    setExpanded(newNodes)
+  },
+  { immediate: true, deep: true },
+)
 
 /** 切换展开/折叠 */
 function toggleExpand(id: string, e: Event): void {
@@ -118,17 +122,39 @@ function toggleExpand(id: string, e: Event): void {
 /** 树节点类型简称（中文） */
 function typeShort(type: string): string {
   const map: Record<string, string> = {
-    text: '文本', textarea: '多行', number: '数字',
-    select: '下拉', radio: '单选', checkbox: '多选',
-    cascader: '级联', switch: '开关', date: '日期', time: '时间',
-    rate: '评分', slider: '滑块', upload: '上传',
-    password: '密码', tel: '电话', email: '邮箱', url: '链接', search: '搜索',
-    subform: '子表', relate: '关联', richtext: '富文本',
-    signature: '签名', address: '地址', idcard: '证件',
-    matrix: '矩阵', serial: '流水',
-    divider: '分割', title: '标题',
-    card: '卡片', grid: '栅格', tabs: '标签',
-    collapse: '折叠', steps: '步骤',
+    text: '文本',
+    textarea: '多行',
+    number: '数字',
+    select: '下拉',
+    radio: '单选',
+    checkbox: '多选',
+    cascader: '级联',
+    switch: '开关',
+    date: '日期',
+    time: '时间',
+    rate: '评分',
+    slider: '滑块',
+    upload: '上传',
+    password: '密码',
+    tel: '电话',
+    email: '邮箱',
+    url: '链接',
+    search: '搜索',
+    subform: '子表',
+    relate: '关联',
+    richtext: '富文本',
+    signature: '签名',
+    address: '地址',
+    idcard: '证件',
+    matrix: '矩阵',
+    serial: '流水',
+    divider: '分割',
+    title: '标题',
+    card: '卡片',
+    grid: '栅格',
+    tabs: '标签',
+    collapse: '折叠',
+    steps: '步骤',
   }
   return map[type] ?? type
 }
@@ -204,11 +230,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
     <!-- 搜索框 -->
     <div class="ldo-search">
       <IconSvg type="search" size="xs" />
-      <input
-        v-model="searchQuery"
-        class="ldo-search-input"
-        placeholder="搜索节点..."
-      >
+      <input v-model="searchQuery" class="ldo-search-input" placeholder="搜索节点..." />
     </div>
     <!-- 树 -->
     <div class="ldo-tree">
@@ -243,15 +265,8 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
         @dragend="onDragEnd"
       >
         <!-- 展开/折叠箭头 -->
-        <span
-          v-if="item.hasChildren"
-          class="ldo-expand-toggle"
-          @click="toggleExpand(item.node.id, $event)"
-        >
-          <IconSvg
-            :type="item.isExpanded ? 'chevron-down' : 'chevron-right'"
-            size="xs"
-          />
+        <span v-if="item.hasChildren" class="ldo-expand-toggle" @click="toggleExpand(item.node.id, $event)">
+          <IconSvg :type="item.isExpanded ? 'chevron-down' : 'chevron-right'" size="xs" />
         </span>
         <!-- 无子节点时占位 -->
         <span v-else class="ldo-expand-placeholder" />
@@ -260,7 +275,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
         <span class="ldo-tree-label">{{ item.node.label }}</span>
         <span class="ldo-tree-type">{{ typeShort(item.node.type) }}</span>
         <span class="ldo-tree-actions" @click.stop>
-          <button class="ldo-del-btn" @click="emit('remove', item.node.id)" title="删除">
+          <button class="ldo-del-btn" title="删除" @click="emit('remove', item.node.id)">
             <IconSvg type="trash-2" size="xs" />
           </button>
         </span>
@@ -283,7 +298,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
   transition: background 0.15s;
 }
 .ldo-expand-toggle:hover {
-  background: var(--color-bg-hover, rgba(0,0,0,0.06));
+  background: var(--color-bg-hover, rgba(0, 0, 0, 0.06));
 }
 /* 无子节点时的占位（保持对齐） */
 .ldo-expand-placeholder {

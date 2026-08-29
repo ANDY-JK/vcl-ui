@@ -22,35 +22,42 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import Button from '@/components/basic/Button.vue'
 import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import {
-  toFormSchema, collectStorageKey, genRecordId,
-  type DesignerField, type FormMeta, type CollectRecord,
+  toFormSchema,
+  collectStorageKey,
+  genRecordId,
+  type DesignerField,
+  type FormMeta,
+  type CollectRecord,
 } from './designer/types'
 import { createLocalFormStore, type FormStore } from './designer/store'
 import { isLayoutField } from './fieldRegistry'
 
 const t = useT()
 
-const props = withDefaults(defineProps<{
-  /** 设计器产出的字段配置 */
-  fields: DesignerField[]
-  /** 表单元信息 */
-  meta?: FormMeta
-  /** 收集数据存储 key（默认按字段结构自动生成） */
-  storageKey?: string
-  /** 存储实现（默认 localStorage；接入 SaaS 时注入 API 实现） */
-  store?: FormStore
-  /**
-   * 导出 Excel 时的列配置
-   * 不传则按 fields 顺序 + field.label 自动生成列
-   * 传入则按指定顺序和列名导出
-   */
-  exportColumns?: { key: string; label: string }[]
-  /** 导出 Excel 的自定义文件名（不含扩展名，默认用表单标题） */
-  exportFileName?: string
-}>(), {
-  meta: () => ({}),
-  store: () => createLocalFormStore(),
-})
+const props = withDefaults(
+  defineProps<{
+    /** 设计器产出的字段配置 */
+    fields: DesignerField[]
+    /** 表单元信息 */
+    meta?: FormMeta
+    /** 收集数据存储 key（默认按字段结构自动生成） */
+    storageKey?: string
+    /** 存储实现（默认 localStorage；接入 SaaS 时注入 API 实现） */
+    store?: FormStore
+    /**
+     * 导出 Excel 时的列配置
+     * 不传则按 fields 顺序 + field.label 自动生成列
+     * 传入则按指定顺序和列名导出
+     */
+    exportColumns?: { key: string; label: string }[]
+    /** 导出 Excel 的自定义文件名（不含扩展名，默认用表单标题） */
+    exportFileName?: string
+  }>(),
+  {
+    meta: () => ({}),
+    store: () => createLocalFormStore(),
+  },
+)
 
 const emit = defineEmits<{
   submit: [data: Record<string, unknown>, record: CollectRecord]
@@ -78,10 +85,10 @@ function formatValue(v: unknown): string {
 }
 
 /** 详情表头（复用导出列配置） */
-const detailHeaders = computed(() =>
-  props.exportColumns ?? props.fields
-    .filter(f => !isLayoutField(f.type))
-    .map(f => ({ key: f.key ?? f.id, label: f.label })),
+const detailHeaders = computed(
+  () =>
+    props.exportColumns ??
+    props.fields.filter((f) => !isLayoutField(f.type)).map((f) => ({ key: f.key ?? f.id, label: f.label })),
 )
 
 /** 异步兼容的记录刷新 */
@@ -90,17 +97,22 @@ async function refreshRecords(): Promise<void> {
   records.value = Array.isArray(result) ? result : []
 }
 
-onMounted(() => { refreshRecords() })
+onMounted(() => {
+  refreshRecords()
+})
 
 const formSchema = computed(() => toFormSchema(props.fields, props.meta))
-const requiredCount = computed(() => props.fields.filter(f => f.required).length)
+const requiredCount = computed(() => props.fields.filter((f) => f.required).length)
 
 /** 今日记录数 */
 const todayCount = computed(() => {
   const today = formatDateZh()
-  return records.value.filter(r => {
-    try { return formatDateZh(new Date(r.time)) === today }
-    catch { return false }
+  return records.value.filter((r) => {
+    try {
+      return formatDateZh(new Date(r.time)) === today
+    } catch {
+      return false
+    }
   }).length
 })
 
@@ -108,7 +120,12 @@ const todayCount = computed(() => {
 const stats = computed(() => [
   { label: '总记录', value: records.value.length, icon: 'database', color: '#3b82f6' },
   { label: '今日', value: todayCount.value, icon: 'calendar', color: '#10b981' },
-  { label: '字段数', value: props.fields.filter(f => !isLayoutField(f.type)).length, icon: 'layout-grid', color: '#8b5cf6' },
+  {
+    label: '字段数',
+    value: props.fields.filter((f) => !isLayoutField(f.type)).length,
+    icon: 'layout-grid',
+    color: '#8b5cf6',
+  },
 ])
 
 // ════════════════════════════════════════
@@ -132,7 +149,9 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
     const el = rootEl.value?.querySelector('.ldc-feedback.ldc-ok')
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   })
-  setTimeout(() => { okMsg.value = '' }, 3000)
+  setTimeout(() => {
+    okMsg.value = ''
+  }, 3000)
 }
 
 // ════════════════════════════════════════
@@ -146,7 +165,7 @@ const searchQuery = ref('')
 const filteredRecords = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   if (!q) return records.value
-  return records.value.filter(r => {
+  return records.value.filter((r) => {
     // 匹配时间
     if (r.time.toLowerCase().includes(q)) return true
     // 匹配数据值
@@ -156,7 +175,10 @@ const filteredRecords = computed(() => {
 })
 
 // 搜索时收起详情并重置页码
-watch(searchQuery, () => { detail.value = null; currentPage.value = 1 })
+watch(searchQuery, () => {
+  detail.value = null
+  currentPage.value = 1
+})
 
 // ════════════════════════════════════════
 // 分页
@@ -235,11 +257,11 @@ async function exportExcel(): Promise<void> {
   try {
     const XLSX = await import('xlsx')
     // 优先使用自定义列配置，否则按 fields 自动生成
-    const headers: { key: string; label: string }[] = props.exportColumns ?? props.fields
-      .filter(f => !isLayoutField(f.type))
-      .map(f => ({ key: f.key ?? f.id, label: f.label }))
-    const rows = records.value.map(r => {
-      const row: Record<string, unknown> = { '提交时间': r.time }
+    const headers: { key: string; label: string }[] =
+      props.exportColumns ??
+      props.fields.filter((f) => !isLayoutField(f.type)).map((f) => ({ key: f.key ?? f.id, label: f.label }))
+    const rows = records.value.map((r) => {
+      const row: Record<string, unknown> = { 提交时间: r.time }
       for (const h of headers) {
         const val = r.data[h.key]
         // 数组类型（如 checkbox/upload）转为逗号分隔字符串
@@ -261,7 +283,9 @@ async function exportExcel(): Promise<void> {
     const title = props.exportFileName || props.meta.title || '表单收集'
     XLSX.writeFile(wb, `${title}-${records.value.length}条.xlsx`)
     okMsg.value = t('formBuilder.exportDone')
-    setTimeout(() => { okMsg.value = '' }, 3000)
+    setTimeout(() => {
+      okMsg.value = ''
+    }, 3000)
   } catch (e) {
     errorMsg.value = t('formBuilder.exportFail') + '：' + (e instanceof Error ? e.message : String(e))
   } finally {
@@ -274,7 +298,7 @@ async function exportExcel(): Promise<void> {
   <div ref="rootEl" class="ldc">
     <!-- 表单头 -->
     <div class="ldc-head">
-      <div class="ldc-head-icon" v-if="meta.title">
+      <div v-if="meta.title" class="ldc-head-icon">
         <IconSvg type="file-text" size="md" />
       </div>
       <div>
@@ -282,7 +306,7 @@ async function exportExcel(): Promise<void> {
         <p v-if="meta.description" class="ldc-desc">{{ meta.description }}</p>
       </div>
       <div class="ldc-meta-badge">
-        <span>{{ fields.filter(f => !isLayoutField(f.type)).length }} 个字段</span>
+        <span>{{ fields.filter((f) => !isLayoutField(f.type)).length }} 个字段</span>
         <span class="ldc-dot">·</span>
         <span v-if="requiredCount">必填 {{ requiredCount }} 项</span>
         <span v-else>无必填项</span>
@@ -291,11 +315,7 @@ async function exportExcel(): Promise<void> {
 
     <!-- 填写区 -->
     <div class="ldc-form-wrap">
-      <FormBuilder
-        v-model="formData"
-        :schema="formSchema"
-        @submit="handleSubmit"
-      />
+      <FormBuilder v-model="formData" :schema="formSchema" @submit="handleSubmit" />
     </div>
 
     <!-- 反馈 -->
@@ -327,31 +347,15 @@ async function exportExcel(): Promise<void> {
 
     <!-- 操作栏 -->
     <div class="ldc-actions">
-      <Button
-        variant="outline"
-        size="sm"
-        :loading="exporting"
-        :disabled="!records.length"
-        @click="exportExcel"
-      >
+      <Button variant="outline" size="sm" :loading="exporting" :disabled="!records.length" @click="exportExcel">
         <IconSvg type="download" size="xs" />
         导出 Excel
       </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        @click="showRecords = !showRecords"
-      >
+      <Button variant="ghost" size="sm" @click="showRecords = !showRecords">
         已收集 {{ records.length }} 条
         <IconSvg :type="showRecords ? 'chevron-up' : 'chevron-down'" size="xs" />
       </Button>
-      <Button
-        v-if="records.length"
-        variant="ghost"
-        size="sm"
-        class="ldc-danger-btn"
-        @click="clearRecords"
-      >
+      <Button v-if="records.length" variant="ghost" size="sm" class="ldc-danger-btn" @click="clearRecords">
         <IconSvg type="trash-2" size="xs" />
         清空
       </Button>
@@ -363,11 +367,7 @@ async function exportExcel(): Promise<void> {
         <!-- 搜索框 -->
         <div v-if="records.length > 3" class="ldc-search">
           <IconSvg type="search" size="sm" />
-          <input
-            v-model="searchQuery"
-            class="ldc-search-input"
-            placeholder="搜索记录（时间或数据值）..."
-          >
+          <input v-model="searchQuery" class="ldc-search-input" placeholder="搜索记录（时间或数据值）..." />
           <button v-if="searchQuery" class="ldc-search-clear" @click="searchQuery = ''">
             <IconSvg type="x" size="xs" />
           </button>
@@ -383,24 +383,15 @@ async function exportExcel(): Promise<void> {
               {{ r.time }}
             </span>
             <div class="ldc-record-btns">
-              <Button
-                variant="ghost"
-                size="sm"
-                @click="detail = detail?.id === r.id ? null : r"
-              >
+              <Button variant="ghost" size="sm" @click="detail = detail?.id === r.id ? null : r">
                 {{ detail?.id === r.id ? '收起' : '详情' }}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                class="ldc-del-btn"
-                @click="removeRecord(r.id)"
-              >
+              <Button variant="ghost" size="sm" class="ldc-del-btn" @click="removeRecord(r.id)">
                 <IconSvg type="trash-2" size="xs" />
               </Button>
             </div>
           </div>
-            <Transition name="ldc-expand-inner">
+          <Transition name="ldc-expand-inner">
             <div v-if="detail?.id === r.id" class="ldc-detail">
               <div v-for="h in detailHeaders" :key="h.key" class="ldc-detail-row">
                 <span class="ldc-detail-key">{{ h.label }}</span>
@@ -411,7 +402,7 @@ async function exportExcel(): Promise<void> {
                 复用此数据
               </button>
             </div>
-            </Transition>
+          </Transition>
         </div>
         <!-- 分页控件 -->
         <div v-if="totalPages > 1" class="ldc-pagination">
@@ -420,12 +411,9 @@ async function exportExcel(): Promise<void> {
           </button>
           <template v-for="(p, i) in pageButtons" :key="i">
             <span v-if="p === -1" class="ldc-page-ellipsis">…</span>
-            <button
-              v-else
-              class="ldc-page-btn"
-              :class="{ active: p === currentPage }"
-              @click="currentPage = p"
-            >{{ p }}</button>
+            <button v-else class="ldc-page-btn" :class="{ active: p === currentPage }" @click="currentPage = p">
+              {{ p }}
+            </button>
           </template>
           <button class="ldc-page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
             <IconSvg type="chevron-right" size="xs" />
@@ -501,7 +489,9 @@ async function exportExcel(): Promise<void> {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.ldc-dot { margin: 0 4px; }
+.ldc-dot {
+  margin: 0 4px;
+}
 
 /* ── 表单区域 ── */
 .ldc-form-wrap {
@@ -655,7 +645,7 @@ async function exportExcel(): Promise<void> {
 }
 .ldc-record:hover {
   background: #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .ldc-record-head {
   display: flex;

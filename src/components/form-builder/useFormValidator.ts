@@ -50,6 +50,9 @@ function isEmptyValue(_field: FormField, v: unknown): boolean {
 // 单字段校验
 // ════════════════════════════════════════
 
+/** 可见性判定签名：默认仅按 visibleWhen；FormBuilder 会传入联动感知版本（showHide/事件隐藏） */
+export type FieldVisibleFn = (field: FormField, data: FormData) => boolean
+
 /**
  * 校验单个字段
  *
@@ -57,14 +60,21 @@ function isEmptyValue(_field: FormField, v: unknown): boolean {
  * 不可见字段跳过校验（hidden = valid）
  *
  * @param requiredOnly 仅校验必填（跳过 rules），用于步骤间快速校验
+ * @param isVisible 可见性判定（默认 isFieldVisible；联动场景传 isFieldVisibleWithLinkage）
  * @returns 错误信息（空字符串 = 通过）
  */
-export function validateField(field: FormField, value: unknown, data: FormData, requiredOnly = false): string {
+export function validateField(
+  field: FormField,
+  value: unknown,
+  data: FormData,
+  requiredOnly = false,
+  isVisible: FieldVisibleFn = isFieldVisible,
+): string {
   // 纯布局字段不参与校验
   if (isLayoutField(field.type)) return ''
 
   // 不可见字段跳过
-  if (!isFieldVisible(field, data)) return ''
+  if (!isVisible(field, data)) return ''
 
   // required 空值检查
   if (field.required && isEmptyValue(field, value)) {
@@ -82,9 +92,10 @@ export function validateField(field: FormField, value: unknown, data: FormData, 
       // 上下文签名：(v: unknown, data: FormData) => string | undefined
       // 简单签名：(v: string) => string | undefined
       // 用函数.length 判断：>=2 的传入上下文
-      const err = rule.length >= 2
-        ? (rule as (v: unknown, data: FormData) => string | undefined)(rawVal, data)
-        : (rule as (v: string) => string | undefined)(strVal)
+      const err =
+        rule.length >= 2
+          ? (rule as (v: unknown, data: FormData) => string | undefined)(rawVal, data)
+          : (rule as (v: string) => string | undefined)(strVal)
       if (err) return err
     }
   }
@@ -106,13 +117,14 @@ export function validateAll(
   fields: FormField[],
   data: FormData,
   requiredOnly = false,
+  isVisible: FieldVisibleFn = isFieldVisible,
 ): { errors: FormErrors; isValid: boolean; firstErrorKey: string | null } {
   const errors: FormErrors = {}
   let firstErrorKey: string | null = null
 
   for (const field of fields) {
     if (isLayoutField(field.type)) continue
-    const err = validateField(field, data[field.key], data, requiredOnly)
+    const err = validateField(field, data[field.key], data, requiredOnly, isVisible)
     if (err) {
       errors[field.key] = err
       if (firstErrorKey === null) firstErrorKey = field.key
@@ -134,33 +146,27 @@ export function validateAll(
 export const validators = {
   /** 最小长度 */
   minLen(len: number, label = t('formBuilder.thisField')) {
-    return (v: string) =>
-      v.length < len ? t('formBuilder.minLen', { label, len }) : undefined
+    return (v: string) => (v.length < len ? t('formBuilder.minLen', { label, len }) : undefined)
   },
   /** 最大长度 */
   maxLen(len: number, label = t('formBuilder.thisField')) {
-    return (v: string) =>
-      v.length > len ? t('formBuilder.maxLen', { label, len }) : undefined
+    return (v: string) => (v.length > len ? t('formBuilder.maxLen', { label, len }) : undefined)
   },
   /** 手机号格式 */
   phone() {
-    return (v: string) =>
-      v && !isValidPhone(v) ? t('formBuilder.phoneInvalid') : undefined
+    return (v: string) => (v && !isValidPhone(v) ? t('formBuilder.phoneInvalid') : undefined)
   },
   /** 邮箱格式 */
   email() {
-    return (v: string) =>
-      v && !isValidEmail(v) ? t('formBuilder.emailInvalid') : undefined
+    return (v: string) => (v && !isValidEmail(v) ? t('formBuilder.emailInvalid') : undefined)
   },
   /** 身份证号 */
   idCard() {
-    return (v: string) =>
-      v && !isValidIdCard(v) ? t('formBuilder.idCardInvalid') : undefined
+    return (v: string) => (v && !isValidIdCard(v) ? t('formBuilder.idCardInvalid') : undefined)
   },
   /** URL 格式 */
   url() {
-    return (v: string) =>
-      v && !isValidUrl(v) ? t('formBuilder.urlInvalid') : undefined
+    return (v: string) => (v && !isValidUrl(v) ? t('formBuilder.urlInvalid') : undefined)
   },
   /** 正则匹配 */
   pattern(regex: RegExp, msg: string) {
@@ -209,7 +215,12 @@ export const validators = {
  *
  * 提供 errors 响应式状态 + validate / validateOne / clearErrors 方法
  */
-export function useFormValidator(schemaRef: Ref<FormSchema>, dataRef: Ref<FormData>) {
+export function useFormValidator(
+  schemaRef: Ref<FormSchema>,
+  dataRef: Ref<FormData>,
+  options?: { isFieldVisible?: FieldVisibleFn },
+) {
+  const isVisible = options?.isFieldVisible ?? isFieldVisible
   const errors = ref<FormErrors>({})
 
   /** 校验单个字段并写入 errors */
@@ -217,7 +228,7 @@ export function useFormValidator(schemaRef: Ref<FormSchema>, dataRef: Ref<FormDa
     const schema = schemaRef.value
     const field = schema.fields.find((f) => f.key === key)
     if (!field) return true
-    const err = validateField(field, dataRef.value[key], dataRef.value)
+    const err = validateField(field, dataRef.value[key], dataRef.value, false, isVisible)
     if (err) {
       errors.value[key] = err
     } else {
@@ -230,7 +241,7 @@ export function useFormValidator(schemaRef: Ref<FormSchema>, dataRef: Ref<FormDa
 
   /** 校验全部字段 */
   function validate(): boolean {
-    const result = validateAll(schemaRef.value.fields, dataRef.value)
+    const result = validateAll(schemaRef.value.fields, dataRef.value, false, isVisible)
     errors.value = result.errors
     return result.isValid
   }

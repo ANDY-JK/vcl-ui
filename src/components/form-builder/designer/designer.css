@@ -20,8 +20,8 @@
   overflow: hidden;
   background: #fff;
   box-shadow:
-    0 8px 24px rgba(0,0,0,0.08),
-    0 1px 3px rgba(0,0,0,0.04);
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 /* ================================
@@ -63,8 +63,14 @@
   animation: tip-in 0.2s ease-out;
 }
 @keyframes tip-in {
-  from { opacity: 0; transform: translateY(-4px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .ld-toolbar-actions {
   margin-left: auto;
@@ -163,7 +169,7 @@
 .ld-settings-textarea:focus {
   outline: none;
   border-color: var(--color-primary, #4f6ef7);
-  box-shadow: 0 0 0 3px rgba(79,110,247,0.08);
+  box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.08);
 }
 
 /* 布局缩略图预览 */
@@ -241,9 +247,15 @@
   border-radius: 2px;
   opacity: 0.4;
 }
-.ld-thumb-steps > div:nth-child(1) { opacity: 0.7; }
-.ld-thumb-steps > div:nth-child(2) { opacity: 0.5; }
-.ld-thumb-steps > div:nth-child(3) { opacity: 0.3; }
+.ld-thumb-steps > div:nth-child(1) {
+  opacity: 0.7;
+}
+.ld-thumb-steps > div:nth-child(2) {
+  opacity: 0.5;
+}
+.ld-thumb-steps > div:nth-child(3) {
+  opacity: 0.3;
+}
 
 /* ================================
    导入面板
@@ -429,7 +441,7 @@
 .ldp-field-item:hover {
   border-color: var(--color-primary, #4f6ef7);
   color: var(--color-primary, #4f6ef7);
-  box-shadow: 0 2px 8px rgba(79,110,247,0.08);
+  box-shadow: 0 2px 8px rgba(79, 110, 247, 0.08);
   background: #fff;
 }
 .ldp-field-item:active {
@@ -508,7 +520,9 @@
   animation: dash-spin 1.5s linear infinite;
 }
 @keyframes dash-spin {
-  to { stroke-dashoffset: -8; }
+  to {
+    stroke-dashoffset: -8;
+  }
 }
 
 /* 空状态 */
@@ -594,8 +608,13 @@
   border-radius: 1px;
 }
 @keyframes pulse-h {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* 行头部工具条 */
@@ -649,7 +668,9 @@
   color: var(--color-text-secondary, #475569);
   background: var(--color-bg-alt, #f1f5f9);
 }
-.ldc-drag-handle:active { cursor: grabbing; }
+.ldc-drag-handle:active {
+  cursor: grabbing;
+}
 
 .ldc-card-label {
   font-size: 13px;
@@ -757,8 +778,12 @@
 }
 
 /* 穿透控制内部组件 */
-.ldc-card-body :deep(.input-field) { /* Input 正常显示 */ }
-.ldc-card-body :deep(.fb-renderer) > * { /* FormRenderer 自然展示 */ }
+.ldc-card-body :deep(.input-field) {
+  /* Input 正常显示 */
+}
+.ldc-card-body :deep(.fb-renderer) > * {
+  /* FormRenderer 自然展示 */
+}
 .ldc-card-body :deep(.fb-title) {
   margin: 0;
   padding-bottom: 6px;
@@ -901,6 +926,35 @@
   padding: 9px 14px;
   border-bottom: 1px solid var(--color-border-light, #f3f4f6);
 }
+/* 属性行内联布局（图标选择器 + 清除按钮） */
+.ldp-prop-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.ldp-prop-inline > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+.ldp-icon-clear {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-bg, #fff);
+  color: var(--color-text-muted, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ldp-icon-clear:hover {
+  border-color: var(--color-danger, #ef4444);
+  color: var(--color-danger, #ef4444);
+}
 .ldp-prop-row > .ldp-prop {
   padding: 0;
   border: none;
@@ -926,7 +980,7 @@
 .ldp-options-editor:focus {
   outline: none;
   border-color: var(--color-primary, #3b82f6);
-  box-shadow: 0 0 0 2px rgba(59,130,246,0.08);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.08);
 }
 .ldp-option-count {
   font-size: 10px;
@@ -1490,6 +1544,8 @@
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
 }
 .ldc-tab {
+  display: inline-flex;
+  align-items: center;
   padding: 5px 14px;
   font-size: 12px;
   font-weight: 600;
@@ -1498,6 +1554,11 @@
   cursor: pointer;
   transition: all 0.15s;
   border: 1px solid transparent;
+  user-select: none;
+}
+.ldc-tab:focus-visible {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: 1px;
 }
 .ldc-tab:hover {
   background: var(--color-bg-soft, #f1f5f9);
@@ -1538,6 +1599,175 @@
 .ldc-collapse-list,
 .ldc-steps-list {
   padding: 12px;
+}
+
+/* ── 容器交互元素（tabs 计数 / collapse 折叠头 / steps 步骤头） ── */
+/* 槽位字段计数徽章：让用户在切换/折叠后仍知道各槽位内容量 */
+.ldc-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 14px;
+  padding: 0 4px;
+  margin-left: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-text-muted, #94a3b8);
+  background: var(--color-bg-soft, #f1f5f9);
+  border-radius: 7px;
+}
+.ldc-tab.active .ldc-tab-count,
+.ldc-step-btn.active .ldc-tab-count {
+  color: var(--color-primary, #3b82f6);
+  background: var(--color-primary-light, #eef1ff);
+}
+
+/* collapse 折叠项：可点击标题 + 展开箭头 */
+.ldc-collapse-item {
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  border-radius: var(--radius-sm, 6px);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.ldc-collapse-item:last-child {
+  margin-bottom: 0;
+}
+.ldc-collapse-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--color-bg-alt, #fafbfc);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.ldc-collapse-head:hover {
+  background: var(--color-bg-soft, #f1f5f9);
+}
+.ldc-collapse-head:focus-visible {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: -2px;
+}
+.ldc-collapse-arrow {
+  flex-shrink: 0;
+  color: var(--color-text-muted, #94a3b8);
+  transition: transform 0.2s ease;
+}
+.ldc-collapse-title {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text, #1e293b);
+}
+.ldc-collapse-item.open .ldc-collapse-head {
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+}
+.ldc-collapse-item .ldc-slot-body {
+  margin-bottom: 0;
+  border-radius: 0;
+}
+
+/* steps 步骤头：可点击切换当前步骤 */
+.ldc-steps-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.ldc-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
+  background: var(--color-bg-alt, #fafbfc);
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ldc-step-btn:hover {
+  border-color: var(--color-border, #e5e7eb);
+  color: var(--color-text, #1e293b);
+}
+.ldc-step-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: 1px;
+}
+.ldc-step-btn.done {
+  color: var(--color-primary, #3b82f6);
+  border-color: var(--color-primary-light, #dbeafe);
+}
+.ldc-step-btn.active {
+  color: var(--color-primary, #3b82f6);
+  background: var(--color-primary-light, #eef1ff);
+  border-color: var(--color-primary, #3b82f6);
+}
+.ldc-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 50%;
+  background: var(--color-bg-soft, #e2e8f0);
+  color: var(--color-text-secondary, #64748b);
+  flex-shrink: 0;
+}
+.ldc-step-btn.done .ldc-step-num,
+.ldc-step-btn.active .ldc-step-num {
+  background: var(--color-primary, #3b82f6);
+  color: #fff;
+}
+.ldc-step-btn-label {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* steps 迷你导航（上一步/下一步，贴近运行时交互） */
+.ldc-steps-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.ldc-steps-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #64748b);
+  background: var(--color-bg, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ldc-steps-nav button:hover:not(:disabled) {
+  border-color: var(--color-primary, #3b82f6);
+  color: var(--color-primary, #3b82f6);
+}
+.ldc-steps-nav button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ldc-steps-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted, #94a3b8);
+  margin: 0 auto;
 }
 
 /* ── grid 容器 ── */
@@ -1776,7 +2006,9 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
-.ld-outline-full-dot { margin: 0 4px; }
+.ld-outline-full-dot {
+  margin: 0 4px;
+}
 .ld-outline-full-body {
   padding: 12px;
 }

@@ -13,7 +13,8 @@
  * - advanced 分支：渲染 subform/relate/richtext/signature/address/idcard/matrix/serial
  */
 
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch, nextTick } from 'vue'
+import { warnOnce } from '@/components/_internal/warnOnce'
 import Input from '@/components/form/Input.vue'
 import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
@@ -85,10 +86,17 @@ const uploadValue = computed({
 /** 子表单解析列定义 */
 const subformCols = computed(() => {
   const raw = (props.field.props?.subformColumns as string) ?? ''
-  return raw.split('\n').filter(Boolean).map(line => {
-    const [label, key, type] = line.split('|')
-    return { label: label?.trim() || t('formBuilder.column'), key: key?.trim() || 'col', type: type?.trim() || 'text' }
-  })
+  return raw
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const [label, key, type] = line.split('|')
+      return {
+        label: label?.trim() || t('formBuilder.column'),
+        key: key?.trim() || 'col',
+        type: type?.trim() || 'text',
+      }
+    })
 })
 
 /** 子表单行数据 */
@@ -120,12 +128,23 @@ const idcardTypes = computed(() => {
 const idcardTypeIndex = ref(0)
 
 /** 地址省市数据 */
-const addressProvinces = ['北京市', '上海市', '广东省', '浙江省', '江苏省', '山东省', '四川省', '湖北省', '湖南省', '福建省']
+const addressProvinces = [
+  '北京市',
+  '上海市',
+  '广东省',
+  '浙江省',
+  '江苏省',
+  '山东省',
+  '四川省',
+  '湖北省',
+  '湖南省',
+  '福建省',
+]
 const addressCities: Record<string, string[]> = {
-  '北京市': ['东城区', '西城区', '朝阳区', '海淀区'],
-  '上海市': ['黄浦区', '徐汇区', '长宁区', '浦东新区'],
-  '广东省': ['广州市', '深圳市', '东莞市', '佛山市'],
-  '浙江省': ['杭州市', '宁波市', '温州市', '绍兴市'],
+  北京市: ['东城区', '西城区', '朝阳区', '海淀区'],
+  上海市: ['黄浦区', '徐汇区', '长宁区', '浦东新区'],
+  广东省: ['广州市', '深圳市', '东莞市', '佛山市'],
+  浙江省: ['杭州市', '宁波市', '温州市', '绍兴市'],
 }
 const addressCitiesForProvince = computed(() => addressCities[addressProvince.value] ?? [])
 const addressProvince = ref('')
@@ -221,20 +240,55 @@ function execRichtext(cmd: string, val?: string): void {
   const el = richtextEl.value
   if (!el) return
   el.focus()
-  document.execCommand(cmd, false, val)
-  richtextExec.value = !richtextExec.value
-  // 手动 emit（execCommand 不触发 input 事件）
-  emit('update:modelValue', sanitizeHTML(el.innerHTML))
+  // execCommand 已被标准废弃，新浏览器可能移除：失效时只告警一次，不让工具栏点击抛错
+  try {
+    if (typeof document.execCommand !== 'function') {
+      warnOnce('richtext-execcommand', '[FormRenderer] document.execCommand 不可用，富文本工具栏在此环境已失效')
+      return
+    }
+    document.execCommand(cmd, false, val)
+    richtextExec.value = !richtextExec.value
+    // 手动 emit（execCommand 不触发 input 事件）
+    emit('update:modelValue', sanitizeHTML(el.innerHTML))
+  } catch (e) {
+    warnOnce('richtext-execcommand', '[FormRenderer] 富文本命令执行失败: ' + String(e))
+  }
 }
 
-/** 流水号显示值 */
-const serialValue = computed(() => {
+/** 流水号：挂载时一次性生成并回写 modelValue（避免每次渲染漂移、提交为空） */
+const serialValue = ref('')
+function generateSerial(): string {
   const prefix = (props.field.props?.serialPrefix as string) ?? ''
   const fmt = (props.field.props?.serialDateFormat as string) ?? 'YYYYMMDD'
   const dateStr = formatDate(new Date(), fmt)
   const seq = String(Math.floor(Math.random() * 10000)).padStart(4, '0')
   return `${prefix}${dateStr}${seq}`
-})
+}
+watch(
+  () => props.field.key,
+  () => {
+    // 字段切换时重置，等待 onMounted/watch 触发重新生成
+    serialValue.value = ''
+    nextTick(() => {
+      if (props.field.type === 'serial' && !props.modelValue) {
+        serialValue.value = generateSerial()
+        emit('update:modelValue', serialValue.value)
+      } else if (props.field.type === 'serial') {
+        serialValue.value = String(props.modelValue ?? '')
+      }
+    })
+  },
+  { immediate: true },
+)
+// 挂载后（草稿回显等场景）modelValue 首次到达时同步显示
+watch(
+  () => props.modelValue,
+  (val) => {
+    if (props.field.type === 'serial' && val && !serialValue.value) {
+      serialValue.value = String(val)
+    }
+  },
+)
 
 /** 更新子表单单元格值 */
 function updateSubformCell(rowIndex: number, colKey: string, value: unknown): void {
@@ -272,7 +326,8 @@ const resolvedOptions = computed<Option[]>(() => {
 
 /** Select 组件 props */
 const selectProps = computed(() => ({
-  type: resolvedComponentType.value as 'select' | 'combobox' | 'cascader' | 'tree-select' | 'date' | 'date-range' | 'time',
+  type: resolvedComponentType.value as
+    'select' | 'combobox' | 'cascader' | 'tree-select' | 'date' | 'date-range' | 'time',
   label: props.field.label,
   placeholder: props.field.placeholder,
   options: resolvedOptions.value,
@@ -334,9 +389,12 @@ const styleConfig = computed<StyleConfig>(() => {
 /** 原子组件尺寸映射：small→sm / default→md / large→lg */
 const styleSize = computed<'sm' | 'md' | 'lg' | undefined>(() => {
   switch (styleConfig.value.size) {
-    case 'small': return 'sm'
-    case 'large': return 'lg'
-    default: return 'md'
+    case 'small':
+      return 'sm'
+    case 'large':
+      return 'lg'
+    default:
+      return 'md'
   }
 })
 
@@ -375,21 +433,13 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 
     <!-- ═══ Input 系列 ═══ -->
     <template v-else-if="category === 'input'">
-      <Input
-        v-model="inputValue"
-        v-bind="inputProps"
-        @change="emit('change')"
-      />
+      <Input v-model="inputValue" v-bind="inputProps" @change="emit('change')" />
       <FieldError :message="error ?? ''" />
     </template>
 
     <!-- ═══ Select 系列 ═══ -->
     <template v-else-if="category === 'select'">
-      <Select
-        v-model="inputValue"
-        v-bind="selectProps"
-        @change="emit('change')"
-      />
+      <Select v-model="inputValue" v-bind="selectProps" @change="emit('change')" />
       <FieldError :message="error ?? ''" />
     </template>
 
@@ -400,11 +450,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           {{ field.label }}
           <span v-if="field.required" class="fb-required">*</span>
         </label>
-        <Group
-          v-model="groupValue"
-          v-bind="groupProps"
-          @change="emit('change')"
-        />
+        <Group v-model="groupValue" v-bind="groupProps" @change="emit('change')" />
         <FieldError :message="error ?? ''" />
       </div>
     </template>
@@ -416,10 +462,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           {{ field.label }}
           <span v-if="field.required" class="fb-required">*</span>
         </label>
-        <Upload
-          v-model="uploadValue"
-          v-bind="uploadProps"
-        />
+        <Upload v-model="uploadValue" v-bind="uploadProps" />
         <FieldError :message="error ?? ''" />
         <p v-if="field.hint" class="fb-hint">{{ field.hint }}</p>
       </div>
@@ -447,7 +490,9 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         </label>
         <div class="fb-subform">
           <div class="fb-subform-head">
-            <span class="fb-subform-title">{{ t('formBuilder.subformHead', { cols: subformCols.length, rows: subformRows.length }) }}</span>
+            <span class="fb-subform-title">{{
+              t('formBuilder.subformHead', { cols: subformCols.length, rows: subformRows.length })
+            }}</span>
             <button class="fb-subform-add" type="button" @click="emit('update:modelValue', [...subformRows, {}])">
               {{ t('formBuilder.addRow') }}
             </button>
@@ -460,9 +505,18 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
                   :value="row[col.key] ?? ''"
                   :placeholder="col.label"
                   @input="updateSubformCell(ri, col.key, ($event.target as HTMLInputElement).value)"
-                >
+                />
               </div>
-              <button class="fb-subform-del" type="button" @click="emit('update:modelValue', subformRows.filter((_, i) => i !== ri))">
+              <button
+                class="fb-subform-del"
+                type="button"
+                @click="
+                  emit(
+                    'update:modelValue',
+                    subformRows.filter((_, i) => i !== ri),
+                  )
+                "
+              >
                 ×
               </button>
             </div>
@@ -474,10 +528,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 
       <!-- 关联选择 -->
       <div v-else-if="field.type === 'relate'" class="fb-advanced-field">
-        <Select
-          v-model="inputValue"
-          v-bind="relateProps"
-        />
+        <Select v-model="inputValue" v-bind="relateProps" />
         <FieldError :message="error ?? ''" />
       </div>
 
@@ -539,11 +590,19 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           <span v-if="field.required" class="fb-required">*</span>
         </label>
         <div class="fb-address">
-          <select v-model="addressProvince" class="fb-address-select" @change="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)">
+          <select
+            v-model="addressProvince"
+            class="fb-address-select"
+            @change="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)"
+          >
             <option value="">{{ t('formBuilder.selectProvince') }}</option>
             <option v-for="p in addressProvinces" :key="p" :value="p">{{ p }}</option>
           </select>
-          <select v-model="addressCity" class="fb-address-select" @change="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)">
+          <select
+            v-model="addressCity"
+            class="fb-address-select"
+            @change="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)"
+          >
             <option value="">{{ t('formBuilder.selectCity') }}</option>
             <option v-for="c in addressCitiesForProvince" :key="c" :value="c">{{ c }}</option>
           </select>
@@ -552,14 +611,14 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
             class="fb-address-input"
             :placeholder="t('formBuilder.districtPlaceholder')"
             @input="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)"
-          >
+          />
           <input
             v-if="field.props?.addressDetail"
             v-model="addressDetailText"
             class="fb-address-input fb-address-detail"
             :placeholder="t('formBuilder.addressPlaceholder')"
             @input="emit('update:modelValue', addressProvince + addressCity + addressDistrict + addressDetailText)"
-          >
+          />
         </div>
         <FieldError :message="error ?? ''" />
       </div>
@@ -571,18 +630,15 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           <span v-if="field.required" class="fb-required">*</span>
         </label>
         <div class="fb-idcard">
-          <select
-            v-model="idcardTypeIndex"
-            class="fb-idcard-type"
-          >
+          <select v-model="idcardTypeIndex" class="fb-idcard-type">
             <option v-for="(item, i) in idcardTypes" :key="i" :value="i">{{ item }}</option>
           </select>
           <input
             class="fb-idcard-input"
-            :value="modelValue as string ?? ''"
+            :value="(modelValue as string) ?? ''"
             :placeholder="idcardTypes[idcardTypeIndex] || t('formBuilder.idNumber')"
             @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-          >
+          />
         </div>
         <FieldError :message="error ?? ''" />
       </div>
@@ -606,7 +662,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
                 :name="`matrix-${field.key}-${ri}`"
                 :value="col"
                 @change="emit('update:modelValue', { ...((modelValue as Record<string, string>) ?? {}), [row]: col })"
-              >
+              />
             </div>
           </div>
         </div>
@@ -629,10 +685,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
       <!-- 未知高级字段 fallback -->
       <div v-else class="fb-advanced-field">
         <label v-if="field.label" class="fb-adv-label">{{ field.label }}</label>
-        <Input
-          v-model="inputValue"
-          v-bind="inputProps"
-        />
+        <Input v-model="inputValue" v-bind="inputProps" />
         <FieldError :message="error ?? ''" />
       </div>
     </template>
@@ -1020,7 +1073,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   justify-content: flex-start;
   color: var(--color-text, #1e293b);
 }
-.fb-matrix-cell input[type="radio"] {
+.fb-matrix-cell input[type='radio'] {
   width: 16px;
   height: 16px;
   cursor: pointer;

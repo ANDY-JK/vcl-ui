@@ -15,7 +15,12 @@ import type { FormSchema, FormField, FieldType, FieldContainer, FieldContainerTy
 import type { Option, CascaderOption } from '@/components/shared/types'
 import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl, uuid } from '@/components/_internal/utils'
 import { extractFields } from '../expression-evaluator'
-import { getFieldMeta, getFieldDefaults, getTypeLabel as fbGetTypeLabel, getTypeIcon as fbGetTypeIcon } from '../fieldRegistry'
+import {
+  getFieldMeta,
+  getFieldDefaults,
+  getTypeLabel as fbGetTypeLabel,
+  getTypeIcon as fbGetTypeIcon,
+} from '../fieldRegistry'
 
 /**
  * 从联动公式中提取依赖字段 key（extractFields 的语义别名，兼容旧命名）
@@ -39,29 +44,48 @@ export type DesignerNodeType = DesignerFieldType | DesignerContainerType
 /** 字段节点类型（原有 + v3 新增高级字段 + 扩展输入/选择变体） */
 export type DesignerFieldType =
   // ── 基础 ──
-  | 'text' | 'textarea' | 'number'
-  | 'password' | 'tel' | 'email' | 'url' | 'search'
-  | 'select' | 'combobox' | 'tree-select' | 'radio' | 'checkbox' | 'cascader'
-  | 'switch' | 'date' | 'date-range' | 'time' | 'rate' | 'slider'
-  | 'upload' | 'image-upload' | 'camera'
-  | 'divider' | 'title'
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'password'
+  | 'tel'
+  | 'email'
+  | 'url'
+  | 'search'
+  | 'select'
+  | 'combobox'
+  | 'tree-select'
+  | 'radio'
+  | 'checkbox'
+  | 'cascader'
+  | 'switch'
+  | 'date'
+  | 'date-range'
+  | 'time'
+  | 'rate'
+  | 'slider'
+  | 'upload'
+  | 'image-upload'
+  | 'camera'
+  | 'divider'
+  | 'title'
   // ── v3 高级字段 ──
-  | 'subform'      // 子表单（可添加多行）
-  | 'relate'       // 关联选择（关联用户/部门等）
-  | 'richtext'     // 富文本
-  | 'signature'    // 电子签名
-  | 'address'      // 地址选择（省市区联动）
-  | 'idcard'       // 证件号码（类型+号码）
-  | 'matrix'       // 评分矩阵
-  | 'serial'       // 流水号（自动生成）
+  | 'subform' // 子表单（可添加多行）
+  | 'relate' // 关联选择（关联用户/部门等）
+  | 'richtext' // 富文本
+  | 'signature' // 电子签名
+  | 'address' // 地址选择（省市区联动）
+  | 'idcard' // 证件号码（类型+号码）
+  | 'matrix' // 评分矩阵
+  | 'serial' // 流水号（自动生成）
 
 /** 容器节点类型 */
 export type DesignerContainerType =
-  | 'card'      // 分组卡片
-  | 'grid'      // 栅格行（多列布局）
-  | 'tabs'      // 标签页容器
-  | 'collapse'  // 折叠面板容器
-  | 'steps'     // 步骤条容器
+  | 'card' // 分组卡片
+  | 'grid' // 栅格行（多列布局）
+  | 'tabs' // 标签页容器
+  | 'collapse' // 折叠面板容器
+  | 'steps' // 步骤条容器
 
 // ════════════════════════════════════════
 // 树形节点定义
@@ -88,6 +112,10 @@ export interface DesignerNode {
   required?: boolean
   /** 占位文本 */
   placeholder?: string
+  /** 前缀图标（lucide 图标名，输入类字段显示在输入框左侧） */
+  icon?: string
+  /** 后缀文字（输入框内右侧固定显示，如单位 "元" / "kg"） */
+  suffixText?: string
   /** 默认值 */
   defaultValue?: unknown
   /** 是否禁用 */
@@ -390,7 +418,7 @@ export const FIELD_TYPES: FieldTypeMeta[] = getFieldMeta().map((r) => ({
 let _fid = 0
 /** 生成节点实例 id */
 export function genFieldId(): string {
-  return 'n' + (++_fid) + '_' + Date.now().toString(36)
+  return 'n' + ++_fid + '_' + Date.now().toString(36)
 }
 
 /** 生成收集记录 id */
@@ -400,7 +428,7 @@ export function genRecordId(): string {
 
 /** 收集记录存储 key：基于字段结构指纹 */
 export function collectStorageKey(fields: { key?: string; type: string }[]): string {
-  const seed = fields.map(f => `${f.key ?? ''}:${f.type}`).join('|')
+  const seed = fields.map((f) => `${f.key ?? ''}:${f.type}`).join('|')
   let h = 0
   for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0
   return 'fd_collect_' + Math.abs(h).toString(36)
@@ -409,7 +437,7 @@ export function collectStorageKey(fields: { key?: string; type: string }[]): str
 /** 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） */
 export function createField(type: DesignerNodeType, index: number): DesignerNode {
   const defaults = getFieldDefaults(type)
-  const meta = FIELD_TYPES.find(t => t.type === type)
+  const meta = FIELD_TYPES.find((t) => t.type === type)
   const node: DesignerNode = {
     id: genFieldId(),
     type,
@@ -442,12 +470,39 @@ export const CONTAINER_TYPES: DesignerContainerType[] = ['card', 'grid', 'tabs',
 
 /** 获取所有字段类型（非容器） */
 export const FIELD_NODE_TYPES: DesignerFieldType[] = [
-  'text', 'textarea', 'number', 'password', 'tel', 'email', 'url', 'search',
-  'select', 'combobox', 'tree-select', 'radio', 'checkbox', 'cascader',
-  'switch', 'date', 'date-range', 'time', 'rate', 'slider',
-  'upload', 'image-upload', 'camera',
-  'divider', 'title',
-  'subform', 'relate', 'richtext', 'signature', 'address', 'idcard', 'matrix', 'serial',
+  'text',
+  'textarea',
+  'number',
+  'password',
+  'tel',
+  'email',
+  'url',
+  'search',
+  'select',
+  'combobox',
+  'tree-select',
+  'radio',
+  'checkbox',
+  'cascader',
+  'switch',
+  'date',
+  'date-range',
+  'time',
+  'rate',
+  'slider',
+  'upload',
+  'image-upload',
+  'camera',
+  'divider',
+  'title',
+  'subform',
+  'relate',
+  'richtext',
+  'signature',
+  'address',
+  'idcard',
+  'matrix',
+  'serial',
 ]
 
 /** 解析 cascader JSON 文本；失败返回 null */
@@ -585,7 +640,7 @@ function moveNodeRelativeInTree(
   }
 
   // 递归：找到包含 targetParent.parent 的容器并替换
-  return nodes.map(node => {
+  return nodes.map((node) => {
     if (node.children === targetParent.parent) {
       return { ...node, children: insertNode(targetParent.parent, sourceNode, insertIdx) }
     }
@@ -600,7 +655,7 @@ function moveNodeRelativeInTree(
  * 不可变更新：替换节点树中指定 id 的节点
  */
 export function updateNodeInTree(nodes: DesignerNode[], id: string, patch: Partial<DesignerNode>): DesignerNode[] {
-  return nodes.map(node => {
+  return nodes.map((node) => {
     if (node.id === id) {
       return { ...node, ...patch }
     }
@@ -616,8 +671,8 @@ export function updateNodeInTree(nodes: DesignerNode[], id: string, patch: Parti
  */
 export function removeNodeFromTree(nodes: DesignerNode[], id: string): DesignerNode[] {
   return nodes
-    .filter(node => node.id !== id)
-    .map(node => {
+    .filter((node) => node.id !== id)
+    .map((node) => {
       if (node.children?.length) {
         return { ...node, children: removeNodeFromTree(node.children, id) }
       }
@@ -644,8 +699,13 @@ export function insertNode(nodes: DesignerNode[], node: DesignerNode, index: num
 /**
  * 不可变更新：在容器节点的 children 中插入子节点
  */
-export function insertChildNode(nodes: DesignerNode[], containerId: string, child: DesignerNode, index: number = -1): DesignerNode[] {
-  return nodes.map(node => {
+export function insertChildNode(
+  nodes: DesignerNode[],
+  containerId: string,
+  child: DesignerNode,
+  index: number = -1,
+): DesignerNode[] {
+  return nodes.map((node) => {
     if (node.id === containerId && node.children !== undefined) {
       return { ...node, children: insertNode(node.children, child, index) }
     }
@@ -659,7 +719,12 @@ export function insertChildNode(nodes: DesignerNode[], containerId: string, chil
 /**
  * 不可变更新：移动节点（从原位置移到新位置）
  */
-export function moveNodeInTree(nodes: DesignerNode[], fromId: string, toParentId: string | null, toIndex: number): DesignerNode[] {
+export function moveNodeInTree(
+  nodes: DesignerNode[],
+  fromId: string,
+  toParentId: string | null,
+  toIndex: number,
+): DesignerNode[] {
   // 1. 找到并移除原节点
   const movingNode = findNode(nodes, fromId)
   if (!movingNode) return nodes
@@ -703,9 +768,7 @@ function flattenWithContainer(
       flattenWithContainer(node.children ?? [], ctx, out)
     } else {
       // 字段携带其 containerSlot（父容器 tabs/collapse/steps 槽位）
-      const c = container && node.containerSlot !== undefined
-        ? { ...container, slot: node.containerSlot }
-        : container
+      const c = container && node.containerSlot !== undefined ? { ...container, slot: node.containerSlot } : container
       out.push({ node, container: c })
     }
   }
@@ -749,7 +812,7 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
 
     // 选项类型
     if (f.options?.length) {
-      base.options = f.options.map(o => ({ value: o, label: o }) as Option)
+      base.options = f.options.map((o) => ({ value: o, label: o }) as Option)
     }
 
     // 数字属性
@@ -759,6 +822,10 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
 
     // text 属性
     if (f.maxLength !== undefined) base.props = { ...base.props, maxlength: f.maxLength }
+
+    // 前缀图标 / 后缀文字（输入类字段）
+    if (f.icon) base.props = { ...base.props, icon: f.icon }
+    if (f.suffixText) base.props = { ...base.props, suffix: f.suffixText }
 
     // textarea 行数
     if (f.rows !== undefined) base.props = { ...base.props, rows: f.rows }
@@ -865,16 +932,18 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
     if (val) {
       const rules: ((v: string) => string | undefined)[] = []
       if (val.minLength !== undefined && val.minLength > 0) {
-        rules.push((v: string) => v.length < val.minLength! ? `至少 ${val.minLength} 个字符` : undefined)
+        rules.push((v: string) => (v.length < val.minLength! ? `至少 ${val.minLength} 个字符` : undefined))
       }
       if (val.maxLength !== undefined && val.maxLength > 0) {
-        rules.push((v: string) => v.length > val.maxLength! ? `最多 ${val.maxLength} 个字符` : undefined)
+        rules.push((v: string) => (v.length > val.maxLength! ? `最多 ${val.maxLength} 个字符` : undefined))
       }
       if (val.pattern) {
         try {
           const re = new RegExp(val.pattern)
-          rules.push((v: string) => !re.test(v) ? (val.patternMessage || '格式不正确') : undefined)
-        } catch { /* 无效正则跳过 */ }
+          rules.push((v: string) => (!re.test(v) ? val.patternMessage || '格式不正确' : undefined))
+        } catch {
+          /* 无效正则跳过 */
+        }
       }
       if (val.builtinType) {
         const builtinValidators: Record<string, { check: (v: string) => boolean; msg: string }> = {
@@ -884,7 +953,7 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
           url: { check: isValidUrl, msg: '请输入正确的 URL' },
         }
         const p = builtinValidators[val.builtinType]
-        if (p) rules.push((v: string) => !p.check(v) ? p.msg : undefined)
+        if (p) rules.push((v: string) => (!p.check(v) ? p.msg : undefined))
       }
       if (val.trim) {
         // trim 规则在 FormBuilder 层处理，这里不需要加 rule
@@ -930,9 +999,9 @@ export function getTypeIcon(type: DesignerNodeType): string {
  */
 export function migrateFieldsToNodes(fields: DesignerNode[]): DesignerNode[] {
   // 如果已经是节点树格式（含 isContainer 或 children），直接返回
-  if (fields.some(f => f.isContainer || f.children?.length)) {
+  if (fields.some((f) => f.isContainer || f.children?.length)) {
     return fields
   }
   // 旧版平铺字段直接作为根级节点
-  return fields.map(f => ({ ...f }))
+  return fields.map((f) => ({ ...f }))
 }

@@ -14,9 +14,14 @@ import { computed, ref } from 'vue'
 import Input from '@/components/form/Input.vue'
 import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
+import IconPicker from '@/components/form/IconPicker.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import {
-  getTypeLabel, getTypeIcon, parseCascaderOptions, isContainerNode, flattenNodes,
+  getTypeLabel,
+  getTypeIcon,
+  parseCascaderOptions,
+  isContainerNode,
+  flattenNodes,
   type DesignerNode,
 } from './types'
 import { getFieldDefaults, getComponentCategory } from '../fieldRegistry'
@@ -89,9 +94,9 @@ const visibleWhenFieldOptions = computed(() => {
   const all = flattenNodes(props.allNodes ?? [])
   const myKey = props.node.key
   return all
-    .filter(n => n.id !== props.node.id && !isContainerNode(n))
-    .filter(n => n.key && n.key !== myKey)
-    .map(n => ({ value: n.key!, label: `${n.label} (${n.key})` }))
+    .filter((n) => n.id !== props.node.id && !isContainerNode(n))
+    .filter((n) => n.key && n.key !== myKey)
+    .map((n) => ({ value: n.key!, label: `${n.label} (${n.key})` }))
 })
 
 /** 内置校验规则列表 */
@@ -118,6 +123,9 @@ function hasProp(key: string): boolean {
 
 /** 判断字段类型是否支持提示文字（input/select/upload 类字段） */
 const hasHint = computed(() => ['input', 'select', 'upload'].includes(getComponentCategory(props.node.type)))
+
+/** 判断字段类型是否支持前缀图标/后缀文字（Input 文本输入分支，不含 textarea） */
+const isTextInput = computed(() => getComponentCategory(props.node.type) === 'input' && props.node.type !== 'textarea')
 
 /** 联动公式的 placeholder 文本 */
 const linkageFormulaPlaceholder = computed(() => {
@@ -161,7 +169,9 @@ const linkageHelpText = computed(() => {
           @click="activeTab = tab.id"
           @keydown.enter.prevent="activeTab = tab.id"
           @keydown.space.prevent="activeTab = tab.id"
-        >{{ tab.label }}</div>
+        >
+          {{ tab.label }}
+        </div>
       </div>
 
       <!-- ═══ 基本属性页 ═══ -->
@@ -173,7 +183,10 @@ const linkageHelpText = computed(() => {
           <Input
             :model-value="node.label"
             placeholder="显示名称"
-            @update:model-value="onInputEmit('label', $event); emit('name-change', String($event ?? ''))"
+            @update:model-value="
+              onInputEmit('label', $event)
+              emit('name-change', String($event ?? ''))
+            "
           />
         </div>
 
@@ -194,8 +207,14 @@ const linkageHelpText = computed(() => {
               <label>列数</label>
               <Select
                 :model-value="node.containerConfig?.columns ?? 2"
-                :options="[{ value: 2, label: '2 列' }, { value: 3, label: '3 列' }, { value: 4, label: '4 列' }]"
-                @update:model-value="emit('update', { containerConfig: { ...node.containerConfig, columns: Number($event) } })"
+                :options="[
+                  { value: 2, label: '2 列' },
+                  { value: 3, label: '3 列' },
+                  { value: 4, label: '4 列' },
+                ]"
+                @update:model-value="
+                  emit('update', { containerConfig: { ...node.containerConfig, columns: Number($event) } })
+                "
               />
             </div>
           </template>
@@ -207,11 +226,21 @@ const linkageHelpText = computed(() => {
               <label>标签页列表（每行一个）</label>
               <textarea
                 class="ldp-options-editor"
-                :value="(node.containerConfig?.tabs ?? []).map(t => t.label).join('\n')"
+                :value="(node.containerConfig?.tabs ?? []).map((t) => t.label).join('\n')"
                 placeholder="标签页 1
 标签页 2"
                 rows="4"
-                @input="emit('update', { containerConfig: { ...node.containerConfig, tabs: ($event.target as HTMLTextAreaElement).value.split('\n').filter(Boolean).map((label, i) => ({ label, name: 'tab' + (i + 1) })) } })"
+                @input="
+                  emit('update', {
+                    containerConfig: {
+                      ...node.containerConfig,
+                      tabs: ($event.target as HTMLTextAreaElement).value
+                        .split('\n')
+                        .filter(Boolean)
+                        .map((label, i) => ({ label, name: 'tab' + (i + 1) })),
+                    },
+                  })
+                "
               />
             </div>
           </template>
@@ -223,11 +252,21 @@ const linkageHelpText = computed(() => {
               <label>折叠项标题（每行一个）</label>
               <textarea
                 class="ldp-options-editor"
-                :value="(node.containerConfig?.collapseItems ?? []).map(c => c.title).join('\n')"
+                :value="(node.containerConfig?.collapseItems ?? []).map((c) => c.title).join('\n')"
                 placeholder="折叠项 1
 折叠项 2"
                 rows="4"
-                @input="emit('update', { containerConfig: { ...node.containerConfig, collapseItems: ($event.target as HTMLTextAreaElement).value.split('\n').filter(Boolean).map(title => ({ title, expanded: true })) } })"
+                @input="
+                  emit('update', {
+                    containerConfig: {
+                      ...node.containerConfig,
+                      collapseItems: ($event.target as HTMLTextAreaElement).value
+                        .split('\n')
+                        .filter(Boolean)
+                        .map((title) => ({ title, expanded: true })),
+                    },
+                  })
+                "
               />
             </div>
           </template>
@@ -239,12 +278,22 @@ const linkageHelpText = computed(() => {
               <label>步骤标题（每行一个）</label>
               <textarea
                 class="ldp-options-editor"
-                :value="(node.containerConfig?.steps ?? []).map(s => s.title).join('\n')"
+                :value="(node.containerConfig?.steps ?? []).map((s) => s.title).join('\n')"
                 placeholder="步骤 1
 步骤 2
 步骤 3"
                 rows="4"
-                @input="emit('update', { containerConfig: { ...node.containerConfig, steps: ($event.target as HTMLTextAreaElement).value.split('\n').filter(Boolean).map(title => ({ title })) } })"
+                @input="
+                  emit('update', {
+                    containerConfig: {
+                      ...node.containerConfig,
+                      steps: ($event.target as HTMLTextAreaElement).value
+                        .split('\n')
+                        .filter(Boolean)
+                        .map((title) => ({ title })),
+                    },
+                  })
+                "
               />
             </div>
           </template>
@@ -316,6 +365,36 @@ const linkageHelpText = computed(() => {
                 @update:model-value="onInputEmit('placeholder', $event)"
               />
             </div>
+            <!-- 前缀图标 / 后缀文字（文本输入类字段） -->
+            <template v-if="isTextInput">
+              <div class="ldp-prop">
+                <label>前缀图标</label>
+                <div class="ldp-prop-inline">
+                  <IconPicker
+                    :model-value="node.icon ?? ''"
+                    placeholder="输入框左侧图标（可选）"
+                    @update:model-value="emit('update', { icon: String($event ?? '') })"
+                  />
+                  <button
+                    v-if="node.icon"
+                    type="button"
+                    class="ldp-icon-clear"
+                    title="清除图标"
+                    @click="emit('update', { icon: '' })"
+                  >
+                    <IconSvg type="x" size="xs" />
+                  </button>
+                </div>
+              </div>
+              <div class="ldp-prop">
+                <label>后缀文字</label>
+                <Input
+                  :model-value="node.suffixText ?? ''"
+                  placeholder="输入框右侧固定文字，如单位"
+                  @update:model-value="onInputEmit('suffixText', $event)"
+                />
+              </div>
+            </template>
           </template>
 
           <!-- 提示文字 -->
@@ -375,8 +454,10 @@ const linkageHelpText = computed(() => {
                 class="ldp-options-editor"
                 :value="(node.options || []).join('\n')"
                 placeholder="选项1&#10;选项2&#10;选项3"
-                @input="emit('update', { options: ($event.target as HTMLTextAreaElement).value.split('\n').filter(Boolean) })"
                 rows="5"
+                @input="
+                  emit('update', { options: ($event.target as HTMLTextAreaElement).value.split('\n').filter(Boolean) })
+                "
               />
               <span class="ldp-option-count">{{ (node.options || []).length }} 个选项</span>
             </div>
@@ -406,7 +487,12 @@ const linkageHelpText = computed(() => {
             <div class="ldp-section-title">输入限制</div>
             <div class="ldp-prop">
               <label>最大长度</label>
-              <Input type="number" :model-value="node.maxLength ?? 0" placeholder="0 = 不限制" @update:model-value="onNumberEmit('maxLength', $event)" />
+              <Input
+                type="number"
+                :model-value="node.maxLength ?? 0"
+                placeholder="0 = 不限制"
+                @update:model-value="onNumberEmit('maxLength', $event)"
+              />
             </div>
           </template>
 
@@ -425,11 +511,19 @@ const linkageHelpText = computed(() => {
             <div class="ldp-prop-row">
               <div class="ldp-prop">
                 <label>星星数</label>
-                <Input type="number" :model-value="node.rateMax ?? 5" @update:model-value="onNumberEmit('rateMax', $event)" />
+                <Input
+                  type="number"
+                  :model-value="node.rateMax ?? 5"
+                  @update:model-value="onNumberEmit('rateMax', $event)"
+                />
               </div>
               <div class="ldp-prop ldp-prop-switch">
                 <label>允许半星</label>
-                <Group type="switch" :model-value="!!node.rateAllowHalf" @update:model-value="onGroupEmit('rateAllowHalf', $event)" />
+                <Group
+                  type="switch"
+                  :model-value="!!node.rateAllowHalf"
+                  @update:model-value="onGroupEmit('rateAllowHalf', $event)"
+                />
               </div>
             </div>
           </template>
@@ -443,12 +537,17 @@ const linkageHelpText = computed(() => {
                 class="ldp-options-editor"
                 :value="node.cascaderOptions"
                 placeholder='[{"label":"一级","value":"1","children":[...]}]'
-                @input="emit('update', { cascaderOptions: ($event.target as HTMLTextAreaElement).value })"
                 rows="6"
+                @input="emit('update', { cascaderOptions: ($event.target as HTMLTextAreaElement).value })"
               />
               <span class="ldp-prop-hint" :class="{ 'ldp-prop-ok': !!parseCascaderOptions(node.cascaderOptions) }">
-                <IconSvg :type="!!parseCascaderOptions(node.cascaderOptions) ? 'circle-check' : 'alert-circle'" size="xs" />
-                {{ parseCascaderOptions(node.cascaderOptions) ? 'JSON 格式正确' : '需为 {label,value,children}[] 数组' }}
+                <IconSvg
+                  :type="!!parseCascaderOptions(node.cascaderOptions) ? 'circle-check' : 'alert-circle'"
+                  size="xs"
+                />
+                {{
+                  parseCascaderOptions(node.cascaderOptions) ? 'JSON 格式正确' : '需为 {label,value,children}[] 数组'
+                }}
               </span>
             </div>
           </template>
@@ -458,15 +557,27 @@ const linkageHelpText = computed(() => {
             <div class="ldp-section-title">上传设置</div>
             <div class="ldp-prop">
               <label>接受的文件类型</label>
-              <Input :model-value="node.accept ?? 'image/*'" placeholder="如 image/*,.pdf" @update:model-value="onInputEmit('accept', $event)" />
+              <Input
+                :model-value="node.accept ?? 'image/*'"
+                placeholder="如 image/*,.pdf"
+                @update:model-value="onInputEmit('accept', $event)"
+              />
             </div>
             <div class="ldp-prop ldp-prop-switch">
               <label>允许多文件</label>
-              <Group type="switch" :model-value="node.multiple !== false" @update:model-value="onGroupEmit('multiple', $event)" />
+              <Group
+                type="switch"
+                :model-value="node.multiple !== false"
+                @update:model-value="onGroupEmit('multiple', $event)"
+              />
             </div>
             <div class="ldp-prop">
               <label>最大文件大小 (MB)</label>
-              <Input type="number" :model-value="node.maxSize ?? 10" @update:model-value="onNumberEmit('maxSize', $event)" />
+              <Input
+                type="number"
+                :model-value="node.maxSize ?? 10"
+                @update:model-value="onNumberEmit('maxSize', $event)"
+              />
             </div>
           </template>
 
@@ -494,8 +605,15 @@ const linkageHelpText = computed(() => {
               <label>关联实体类型</label>
               <Select
                 :model-value="node.relateEntityType ?? 'user'"
-                :options="[{ value: 'user', label: '用户' }, { value: 'dept', label: '部门' }, { value: 'role', label: '角色' }, { value: 'custom', label: '自定义' }]"
-                @update:model-value="emit('update', { relateEntityType: $event as 'user' | 'dept' | 'role' | 'custom' })"
+                :options="[
+                  { value: 'user', label: '用户' },
+                  { value: 'dept', label: '部门' },
+                  { value: 'role', label: '角色' },
+                  { value: 'custom', label: '自定义' },
+                ]"
+                @update:model-value="
+                  emit('update', { relateEntityType: $event as 'user' | 'dept' | 'role' | 'custom' })
+                "
               />
             </div>
           </template>
@@ -507,7 +625,10 @@ const linkageHelpText = computed(() => {
               <label>工具栏模式</label>
               <Select
                 :model-value="node.richtextToolbar ?? 'simple'"
-                :options="[{ value: 'simple', label: '简洁（加粗/斜体/下划线/列表）' }, { value: 'full', label: '完整（含标题/颜色/对齐）' }]"
+                :options="[
+                  { value: 'simple', label: '简洁（加粗/斜体/下划线/列表）' },
+                  { value: 'full', label: '完整（含标题/颜色/对齐）' },
+                ]"
                 @update:model-value="emit('update', { richtextToolbar: $event as 'simple' | 'full' })"
               />
             </div>
@@ -518,7 +639,11 @@ const linkageHelpText = computed(() => {
             <div class="ldp-section-title">地址设置</div>
             <div class="ldp-prop ldp-prop-switch">
               <label>显示详细地址</label>
-              <Group type="switch" :model-value="!!node.addressDetail" @update:model-value="emit('update', { addressDetail: !!$event })" />
+              <Group
+                type="switch"
+                :model-value="!!node.addressDetail"
+                @update:model-value="emit('update', { addressDetail: !!$event })"
+              />
             </div>
           </template>
 
@@ -578,7 +703,12 @@ const linkageHelpText = computed(() => {
               <label>日期格式</label>
               <Select
                 :model-value="node.serialDateFormat ?? 'YYYYMMDD'"
-                :options="[{ value: 'YYYYMMDD', label: '年月日 (20240101)' }, { value: 'YYYY', label: '年仅 (2024)' }, { value: 'YYYYMM', label: '年月 (202401)' }, { value: 'NONE', label: '无日期' }]"
+                :options="[
+                  { value: 'YYYYMMDD', label: '年月日 (20240101)' },
+                  { value: 'YYYY', label: '年仅 (2024)' },
+                  { value: 'YYYYMM', label: '年月 (202401)' },
+                  { value: 'NONE', label: '无日期' },
+                ]"
                 @update:model-value="emit('update', { serialDateFormat: String($event ?? 'YYYYMMDD') })"
               />
             </div>
@@ -593,17 +723,27 @@ const linkageHelpText = computed(() => {
                 :model-value="node.visibleWhenField ?? ''"
                 :options="visibleWhenFieldOptions"
                 placeholder="选择触发字段（留空 = 始终显示）"
-                @update:model-value="emit('update', { visibleWhenField: $event === null ? '' : String($event) || undefined })"
+                @update:model-value="
+                  emit('update', { visibleWhenField: $event === null ? '' : String($event) || undefined })
+                "
               />
             </div>
             <template v-if="node.visibleWhenField">
               <div class="ldp-prop">
                 <label>匹配值</label>
-                <Input :model-value="node.visibleWhenValue ?? ''" placeholder="如 true / 1 / 某选项值" @update:model-value="onInputEmit('visibleWhenValue', $event)" />
+                <Input
+                  :model-value="node.visibleWhenValue ?? ''"
+                  placeholder="如 true / 1 / 某选项值"
+                  @update:model-value="onInputEmit('visibleWhenValue', $event)"
+                />
               </div>
               <div class="ldp-prop ldp-prop-switch">
                 <label>反向匹配</label>
-                <Group type="switch" :model-value="!!node.visibleWhenNot" @update:model-value="onGroupEmit('visibleWhenNot', $event)" />
+                <Group
+                  type="switch"
+                  :model-value="!!node.visibleWhenNot"
+                  @update:model-value="onGroupEmit('visibleWhenNot', $event)"
+                />
               </div>
             </template>
           </template>
@@ -615,23 +755,25 @@ const linkageHelpText = computed(() => {
         <div class="ldp-section-title">必填校验</div>
         <div class="ldp-prop ldp-prop-switch">
           <label>必填字段</label>
-          <Group type="switch" :model-value="!!node.required" @update:model-value="emit('update', { required: !!$event })" />
+          <Group
+            type="switch"
+            :model-value="!!node.required"
+            @update:model-value="emit('update', { required: !!$event })"
+          />
         </div>
         <div class="ldp-prop">
           <label>必填提示语</label>
           <Input
             :model-value="node.validation?.requiredMessage ?? ''"
             placeholder="如：此字段不能为空"
-            @update:model-value="emit('update', { validation: { ...node.validation, requiredMessage: String($event ?? '') } })"
+            @update:model-value="
+              emit('update', { validation: { ...node.validation, requiredMessage: String($event ?? '') } })
+            "
           />
         </div>
 
         <div class="ldp-section-title">内置校验规则</div>
-        <div
-          v-for="rule in builtinValidations"
-          :key="rule.key"
-          class="ldp-validation-rule"
-        >
+        <div v-for="rule in builtinValidations" :key="rule.key" class="ldp-validation-rule">
           <span class="ldp-rule-icon" :class="{ on: !!rule.value }">
             <IconSvg :type="rule.value ? 'circle-check' : 'circle'" size="xs" />
           </span>
@@ -655,20 +797,34 @@ const linkageHelpText = computed(() => {
           <Input
             :model-value="node.validation?.patternMessage ?? ''"
             placeholder="校验失败时显示的提示"
-            @update:model-value="emit('update', { validation: { ...node.validation, patternMessage: String($event ?? '') } })"
+            @update:model-value="
+              emit('update', { validation: { ...node.validation, patternMessage: String($event ?? '') } })
+            "
           />
         </div>
         <div class="ldp-prop ldp-prop-switch">
           <label>去除空格</label>
-          <Group type="switch" :model-value="!!node.validation?.trim" @update:model-value="emit('update', { validation: { ...node.validation, trim: !!$event } })" />
+          <Group
+            type="switch"
+            :model-value="!!node.validation?.trim"
+            @update:model-value="emit('update', { validation: { ...node.validation, trim: !!$event } })"
+          />
         </div>
         <div class="ldp-prop ldp-prop-switch">
           <label>唯一校验</label>
-          <Group type="switch" :model-value="!!node.validation?.unique" @update:model-value="emit('update', { validation: { ...node.validation, unique: !!$event } })" />
+          <Group
+            type="switch"
+            :model-value="!!node.validation?.unique"
+            @update:model-value="emit('update', { validation: { ...node.validation, unique: !!$event } })"
+          />
         </div>
         <div class="ldp-prop ldp-prop-switch">
           <label>实时校验</label>
-          <Group type="switch" :model-value="!!node.validation?.realtime" @update:model-value="emit('update', { validation: { ...node.validation, realtime: !!$event } })" />
+          <Group
+            type="switch"
+            :model-value="!!node.validation?.realtime"
+            @update:model-value="emit('update', { validation: { ...node.validation, realtime: !!$event } })"
+          />
         </div>
       </div>
 
@@ -679,7 +835,12 @@ const linkageHelpText = computed(() => {
           <label>标签宽度</label>
           <Select
             :model-value="node.styleConfig?.labelWidth ?? 'default'"
-            :options="[{ value: 'default', label: '默认 (100px)' }, { value: '80px', label: '80px' }, { value: '120px', label: '120px' }, { value: 'auto', label: '自动' }]"
+            :options="[
+              { value: 'default', label: '默认 (100px)' },
+              { value: '80px', label: '80px' },
+              { value: '120px', label: '120px' },
+              { value: 'auto', label: '自动' },
+            ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, labelWidth: $event as any } })"
           />
         </div>
@@ -687,7 +848,11 @@ const linkageHelpText = computed(() => {
           <label>标签位置</label>
           <Select
             :model-value="node.styleConfig?.labelPosition ?? 'left'"
-            :options="[{ value: 'left', label: '左侧' }, { value: 'top', label: '上方' }, { value: 'hidden', label: '隐藏' }]"
+            :options="[
+              { value: 'left', label: '左侧' },
+              { value: 'top', label: '上方' },
+              { value: 'hidden', label: '隐藏' },
+            ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, labelPosition: $event as any } })"
           />
         </div>
@@ -697,7 +862,11 @@ const linkageHelpText = computed(() => {
           <label>控件宽度</label>
           <Select
             :model-value="node.styleConfig?.controlWidth ?? '100%'"
-            :options="[{ value: '100%', label: '100%' }, { value: '50%', label: '50%' }, { value: 'auto', label: '自适应' }]"
+            :options="[
+              { value: '100%', label: '100%' },
+              { value: '50%', label: '50%' },
+              { value: 'auto', label: '自适应' },
+            ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, controlWidth: $event as any } })"
           />
         </div>
@@ -705,7 +874,11 @@ const linkageHelpText = computed(() => {
           <label>控件尺寸</label>
           <Select
             :model-value="node.styleConfig?.size ?? 'default'"
-            :options="[{ value: 'small', label: '小' }, { value: 'default', label: '默认' }, { value: 'large', label: '大' }]"
+            :options="[
+              { value: 'small', label: '小' },
+              { value: 'default', label: '默认' },
+              { value: 'large', label: '大' },
+            ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, size: $event as any } })"
           />
         </div>
@@ -713,7 +886,12 @@ const linkageHelpText = computed(() => {
           <label>圆角风格</label>
           <Select
             :model-value="node.styleConfig?.radius ?? 'default'"
-            :options="[{ value: 'default', label: '默认 (6px)' }, { value: '0px', label: '直角 (0px)' }, { value: '12px', label: '大圆角 (12px)' }, { value: '20px', label: '胶囊 (20px)' }]"
+            :options="[
+              { value: 'default', label: '默认 (6px)' },
+              { value: '0px', label: '直角 (0px)' },
+              { value: '12px', label: '大圆角 (12px)' },
+              { value: '20px', label: '胶囊 (20px)' },
+            ]"
             @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, radius: $event as any } })"
           />
         </div>
@@ -726,12 +904,18 @@ const linkageHelpText = computed(() => {
               type="color"
               class="ldp-color-picker"
               :value="node.styleConfig?.borderColor ?? '#e2e8f0'"
-              @input="emit('update', { styleConfig: { ...node.styleConfig, borderColor: ($event.target as HTMLInputElement).value } })"
+              @input="
+                emit('update', {
+                  styleConfig: { ...node.styleConfig, borderColor: ($event.target as HTMLInputElement).value },
+                })
+              "
             />
             <Input
               :model-value="node.styleConfig?.borderColor ?? '#e2e8f0'"
               placeholder="#e2e8f0"
-              @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, borderColor: String($event ?? '') } })"
+              @update:model-value="
+                emit('update', { styleConfig: { ...node.styleConfig, borderColor: String($event ?? '') } })
+              "
             />
           </div>
         </div>
@@ -742,12 +926,18 @@ const linkageHelpText = computed(() => {
               type="color"
               class="ldp-color-picker"
               :value="node.styleConfig?.focusBorderColor ?? '#4f6ef7'"
-              @input="emit('update', { styleConfig: { ...node.styleConfig, focusBorderColor: ($event.target as HTMLInputElement).value } })"
+              @input="
+                emit('update', {
+                  styleConfig: { ...node.styleConfig, focusBorderColor: ($event.target as HTMLInputElement).value },
+                })
+              "
             />
             <Input
               :model-value="node.styleConfig?.focusBorderColor ?? '#4f6ef7'"
               placeholder="#4f6ef7"
-              @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, focusBorderColor: String($event ?? '') } })"
+              @update:model-value="
+                emit('update', { styleConfig: { ...node.styleConfig, focusBorderColor: String($event ?? '') } })
+              "
             />
           </div>
         </div>
@@ -758,7 +948,9 @@ const linkageHelpText = computed(() => {
           <Input
             :model-value="node.styleConfig?.customClass ?? ''"
             placeholder="如：my-custom-field"
-            @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, customClass: String($event ?? '') } })"
+            @update:model-value="
+              emit('update', { styleConfig: { ...node.styleConfig, customClass: String($event ?? '') } })
+            "
           />
         </div>
         <div class="ldp-prop">
@@ -768,7 +960,11 @@ const linkageHelpText = computed(() => {
             :value="node.styleConfig?.customCss ?? ''"
             placeholder="/* 在此输入自定义 CSS */\n.my-field input { font-size: 16px; }"
             rows="3"
-            @input="emit('update', { styleConfig: { ...node.styleConfig, customCss: ($event.target as HTMLTextAreaElement).value } })"
+            @input="
+              emit('update', {
+                styleConfig: { ...node.styleConfig, customCss: ($event.target as HTMLTextAreaElement).value },
+              })
+            "
           />
         </div>
       </div>
@@ -786,33 +982,97 @@ const linkageHelpText = computed(() => {
               <Group
                 type="switch"
                 :model-value="!!node.eventConfig?.onChange?.enabled"
-                @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: !!$event, action: node.eventConfig?.onChange?.action, targetField: node.eventConfig?.onChange?.targetField } } })"
+                @update:model-value="
+                  emit('update', {
+                    eventConfig: {
+                      ...node.eventConfig,
+                      onChange: {
+                        enabled: !!$event,
+                        action: node.eventConfig?.onChange?.action,
+                        targetField: node.eventConfig?.onChange?.targetField,
+                        apiUrl: node.eventConfig?.onChange?.apiUrl,
+                      },
+                    },
+                  })
+                "
               />
             </div>
           </div>
           <div v-if="node.eventConfig?.onChange?.enabled" class="ldp-event-body">
             <Select
               :model-value="node.eventConfig?.onChange?.action ?? ''"
-              :options="[{ value: '', label: '— 选择动作 —' }, { value: 'linkField', label: '联动其他字段' }, { value: 'callApi', label: '调用 API' }, { value: 'showTip', label: '显示提示' }, { value: 'setValue', label: '设置字段值' }, { value: 'toggleVisible', label: '显示/隐藏字段' }]"
-              @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: true, action: String($event ?? ''), targetField: node.eventConfig?.onChange?.targetField } } })"
+              :options="[
+                { value: '', label: '— 选择动作 —' },
+                { value: 'linkField', label: '联动其他字段' },
+                { value: 'callApi', label: '调用 API' },
+                { value: 'showTip', label: '显示提示' },
+                { value: 'setValue', label: '设置字段值' },
+                { value: 'toggleVisible', label: '显示/隐藏字段' },
+              ]"
+              @update:model-value="
+                emit('update', {
+                  eventConfig: {
+                    ...node.eventConfig,
+                    onChange: {
+                      enabled: true,
+                      action: String($event ?? ''),
+                      targetField: node.eventConfig?.onChange?.targetField,
+                      apiUrl: node.eventConfig?.onChange?.apiUrl,
+                    },
+                  },
+                })
+              "
             />
             <!-- setValue / toggleVisible 需要目标字段 -->
-            <div v-if="node.eventConfig?.onChange?.action === 'setValue' || node.eventConfig?.onChange?.action === 'toggleVisible'" class="ldp-prop" style="padding: 0; border: none; margin-top: 8px;">
+            <div
+              v-if="
+                node.eventConfig?.onChange?.action === 'setValue' ||
+                node.eventConfig?.onChange?.action === 'toggleVisible'
+              "
+              class="ldp-prop"
+              style="padding: 0; border: none; margin-top: 8px"
+            >
               <label>目标字段</label>
               <Select
                 :model-value="node.eventConfig?.onChange?.targetField ?? ''"
                 :options="visibleWhenFieldOptions"
                 placeholder="选择目标字段"
-                @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: true, action: node.eventConfig?.onChange?.action, targetField: $event === null ? '' : String($event ?? '') } } })"
+                @update:model-value="
+                  emit('update', {
+                    eventConfig: {
+                      ...node.eventConfig,
+                      onChange: {
+                        ...node.eventConfig?.onChange,
+                        enabled: true,
+                        targetField: $event === null ? '' : String($event ?? ''),
+                      },
+                    },
+                  })
+                "
               />
             </div>
             <!-- callApi 需要接口地址 -->
-            <div v-if="node.eventConfig?.onChange?.action === 'callApi'" class="ldp-prop" style="padding: 0; border: none; margin-top: 8px;">
+            <div
+              v-if="node.eventConfig?.onChange?.action === 'callApi'"
+              class="ldp-prop"
+              style="padding: 0; border: none; margin-top: 8px"
+            >
               <label>接口地址</label>
               <Input
                 :model-value="node.eventConfig?.onChange?.apiUrl ?? ''"
                 placeholder="https://api.example.com/xxx"
-                @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: true, action: 'callApi', apiUrl: $event === null ? '' : String($event ?? '') } } })"
+                @update:model-value="
+                  emit('update', {
+                    eventConfig: {
+                      ...node.eventConfig,
+                      onChange: {
+                        enabled: true,
+                        action: 'callApi',
+                        apiUrl: $event === null ? '' : String($event ?? ''),
+                      },
+                    },
+                  })
+                "
               />
             </div>
           </div>
@@ -827,7 +1087,14 @@ const linkageHelpText = computed(() => {
               <Group
                 type="switch"
                 :model-value="!!node.eventConfig?.onFocus?.enabled"
-                @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onFocus: { enabled: !!$event, action: node.eventConfig?.onFocus?.action } } })"
+                @update:model-value="
+                  emit('update', {
+                    eventConfig: {
+                      ...node.eventConfig,
+                      onFocus: { enabled: !!$event, action: node.eventConfig?.onFocus?.action },
+                    },
+                  })
+                "
               />
             </div>
           </div>
@@ -842,15 +1109,34 @@ const linkageHelpText = computed(() => {
               <Group
                 type="switch"
                 :model-value="!!node.eventConfig?.onBlur?.enabled"
-                @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onBlur: { enabled: !!$event, action: node.eventConfig?.onBlur?.action } } })"
+                @update:model-value="
+                  emit('update', {
+                    eventConfig: {
+                      ...node.eventConfig,
+                      onBlur: { enabled: !!$event, action: node.eventConfig?.onBlur?.action },
+                    },
+                  })
+                "
               />
             </div>
           </div>
           <div v-if="node.eventConfig?.onBlur?.enabled" class="ldp-event-body">
             <Select
               :model-value="node.eventConfig?.onBlur?.action ?? ''"
-              :options="[{ value: '', label: '— 选择动作 —' }, { value: 'autoValidate', label: '自动校验' }, { value: 'format', label: '格式化值' }, { value: 'submit', label: '提交数据' }]"
-              @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onBlur: { enabled: true, action: String($event ?? '') } } })"
+              :options="[
+                { value: '', label: '— 选择动作 —' },
+                { value: 'autoValidate', label: '自动校验' },
+                { value: 'format', label: '格式化值' },
+                { value: 'submit', label: '提交数据' },
+              ]"
+              @update:model-value="
+                emit('update', {
+                  eventConfig: {
+                    ...node.eventConfig,
+                    onBlur: { ...node.eventConfig?.onBlur, enabled: true, action: String($event ?? '') },
+                  },
+                })
+              "
             />
           </div>
         </div>
@@ -860,7 +1146,12 @@ const linkageHelpText = computed(() => {
           <label>联动类型</label>
           <Select
             :model-value="node.eventConfig?.linkageType ?? 'none'"
-            :options="[{ value: 'none', label: '无联动' }, { value: 'followValue', label: '值跟随' }, { value: 'followOptions', label: '选项跟随' }, { value: 'showHide', label: '显隐联动' }]"
+            :options="[
+              { value: 'none', label: '无联动' },
+              { value: 'followValue', label: '值跟随' },
+              { value: 'followOptions', label: '选项跟随' },
+              { value: 'showHide', label: '显隐联动' },
+            ]"
             @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, linkageType: $event as any } })"
           />
         </div>
@@ -872,7 +1163,18 @@ const linkageHelpText = computed(() => {
               :model-value="node.eventConfig?.onChange?.targetField ?? ''"
               :options="visibleWhenFieldOptions"
               placeholder="选择要控制显隐的字段"
-              @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, onChange: { enabled: true, action: 'toggleVisible', targetField: $event === null ? '' : String($event ?? '') } } })"
+              @update:model-value="
+                emit('update', {
+                  eventConfig: {
+                    ...node.eventConfig,
+                    onChange: {
+                      enabled: true,
+                      action: 'toggleVisible',
+                      targetField: $event === null ? '' : String($event ?? ''),
+                    },
+                  },
+                })
+              "
             />
           </div>
 
@@ -882,7 +1184,9 @@ const linkageHelpText = computed(() => {
             <Input
               :model-value="node.eventConfig?.linkageFormula ?? ''"
               :placeholder="linkageFormulaPlaceholder"
-              @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, linkageFormula: String($event ?? '') } })"
+              @update:model-value="
+                emit('update', { eventConfig: { ...node.eventConfig, linkageFormula: String($event ?? '') } })
+              "
             />
           </div>
 
@@ -901,7 +1205,14 @@ const linkageHelpText = computed(() => {
           <label>默认值类型</label>
           <Select
             :model-value="node.dataConfig?.defaultType ?? 'none'"
-            :options="[{ value: 'none', label: '无' }, { value: 'fixed', label: '固定值' }, { value: 'formula', label: '公式' }, { value: 'api', label: 'API 获取' }, { value: 'currentUser', label: '当前用户' }, { value: 'currentTime', label: '当前时间' }]"
+            :options="[
+              { value: 'none', label: '无' },
+              { value: 'fixed', label: '固定值' },
+              { value: 'formula', label: '公式' },
+              { value: 'api', label: 'API 获取' },
+              { value: 'currentUser', label: '当前用户' },
+              { value: 'currentTime', label: '当前时间' },
+            ]"
             @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, defaultType: $event as any } })"
           />
         </div>
@@ -911,23 +1222,31 @@ const linkageHelpText = computed(() => {
             <Input
               :model-value="node.dataConfig?.defaultFormula ?? ''"
               placeholder="如：{{phone}} + {{name}}"
-              @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, defaultFormula: String($event ?? '') } })"
+              @update:model-value="
+                emit('update', { dataConfig: { ...node.dataConfig, defaultFormula: String($event ?? '') } })
+              "
             />
           </div>
         </template>
 
         <div class="ldp-section-title">远程数据源</div>
         <div class="ldp-datasource-card">
-          <div class="ldp-prop" style="padding: 0; border: none;">
+          <div class="ldp-prop" style="padding: 0; border: none">
             <label>数据源类型</label>
             <Select
               :model-value="node.dataConfig?.sourceType ?? 'none'"
-              :options="[{ value: 'none', label: '无（静态数据）' }, { value: 'api', label: 'API 接口' }, { value: 'database', label: '数据库表' }, { value: 'userList', label: '关联用户列表' }, { value: 'deptList', label: '关联部门列表' }]"
+              :options="[
+                { value: 'none', label: '无（静态数据）' },
+                { value: 'api', label: 'API 接口' },
+                { value: 'database', label: '数据库表' },
+                { value: 'userList', label: '关联用户列表' },
+                { value: 'deptList', label: '关联部门列表' },
+              ]"
               @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, sourceType: $event as any } })"
             />
           </div>
           <template v-if="node.dataConfig?.sourceType === 'api'">
-            <div class="ldp-prop" style="padding: 0; border: none; margin-top: 8px;">
+            <div class="ldp-prop" style="padding: 0; border: none; margin-top: 8px">
               <label>接口地址</label>
             </div>
             <div class="ldp-datasource-url">
@@ -935,14 +1254,30 @@ const linkageHelpText = computed(() => {
                 class="ldp-datasource-input"
                 :value="node.dataConfig?.apiUrl ?? ''"
                 placeholder="接口地址，如 https://api.example.com/data"
-                @input="emit('update', { dataConfig: { ...node.dataConfig, apiUrl: ($event.target as HTMLInputElement).value } })"
+                @input="
+                  emit('update', {
+                    dataConfig: { ...node.dataConfig, apiUrl: ($event.target as HTMLInputElement).value },
+                  })
+                "
               />
             </div>
-            <div class="ldp-prop" style="padding: 0; border: none; margin-top: 8px;">
+            <div class="ldp-prop" style="padding: 0; border: none; margin-top: 8px">
               <label>数据映射</label>
-              <div style="display: flex; gap: 6px;">
-                <Input :model-value="node.dataConfig?.labelField ?? ''" placeholder="显示字段名" @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, labelField: String($event ?? '') } })" />
-                <Input :model-value="node.dataConfig?.valueField ?? ''" placeholder="值字段名" @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, valueField: String($event ?? '') } })" />
+              <div style="display: flex; gap: 6px">
+                <Input
+                  :model-value="node.dataConfig?.labelField ?? ''"
+                  placeholder="显示字段名"
+                  @update:model-value="
+                    emit('update', { dataConfig: { ...node.dataConfig, labelField: String($event ?? '') } })
+                  "
+                />
+                <Input
+                  :model-value="node.dataConfig?.valueField ?? ''"
+                  placeholder="值字段名"
+                  @update:model-value="
+                    emit('update', { dataConfig: { ...node.dataConfig, valueField: String($event ?? '') } })
+                  "
+                />
               </div>
             </div>
           </template>
@@ -953,7 +1288,12 @@ const linkageHelpText = computed(() => {
           <label>联动数据源</label>
           <Select
             :model-value="node.dataConfig?.linkageSource ?? 'none'"
-            :options="[{ value: 'none', label: '无' }, { value: 'userList', label: '关联用户列表' }, { value: 'deptList', label: '关联部门列表' }, { value: 'roleList', label: '关联角色列表' }]"
+            :options="[
+              { value: 'none', label: '无' },
+              { value: 'userList', label: '关联用户列表' },
+              { value: 'deptList', label: '关联部门列表' },
+              { value: 'roleList', label: '关联角色列表' },
+            ]"
             @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, linkageSource: $event as any } })"
           />
         </div>
@@ -963,7 +1303,11 @@ const linkageHelpText = computed(() => {
             :model-value="node.dataConfig?.linkageField ?? ''"
             :options="visibleWhenFieldOptions"
             placeholder="— 无 —"
-            @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, linkageField: $event === null ? '' : String($event ?? '') } })"
+            @update:model-value="
+              emit('update', {
+                dataConfig: { ...node.dataConfig, linkageField: $event === null ? '' : String($event ?? '') },
+              })
+            "
           />
         </div>
 
@@ -992,7 +1336,7 @@ const linkageHelpText = computed(() => {
       <div class="ldp-props-empty-icon">
         <IconSvg type="mouse-pointer-click" size="xl" />
       </div>
-      <p>选中节点后<br/>编辑属性</p>
+      <p>选中节点后<br />编辑属性</p>
     </div>
   </aside>
 </template>

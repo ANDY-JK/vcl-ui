@@ -49,7 +49,7 @@ const FORMS_KEY = 'fd_forms_index'
 function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key)
-    return raw ? JSON.parse(raw) as T : fallback
+    return raw ? (JSON.parse(raw) as T) : fallback
   } catch {
     return fallback
   }
@@ -89,7 +89,7 @@ export function createLocalFormStore(): FormStore {
       const now = formatDateTimeZh()
       let item: FormMetaItem
       if (id) {
-        const found = index.find(x => x.id === id)
+        const found = index.find((x) => x.id === id)
         if (!found) throw new Error(`表单不存在: ${id}`)
         item = found
         item.name = name ?? item.name
@@ -113,7 +113,7 @@ export function createLocalFormStore(): FormStore {
 
     renameForm(id, name) {
       const index = listForms()
-      const item = index.find(x => x.id === id)
+      const item = index.find((x) => x.id === id)
       if (!item) return
       item.name = name
       saveIndex(index)
@@ -121,7 +121,7 @@ export function createLocalFormStore(): FormStore {
 
     deleteForm(id) {
       const index = listForms()
-      const itemIndex = index.findIndex(x => x.id === id)
+      const itemIndex = index.findIndex((x) => x.id === id)
       if (itemIndex === -1) return
       const item = index[itemIndex]
       index.splice(itemIndex, 1)
@@ -137,11 +137,17 @@ export function createLocalFormStore(): FormStore {
     appendRecord(storageKey, record) {
       const list = this.loadRecords(storageKey)
       list.unshift(record)
-      write(storageKey, list)
+      // 数量上限：收集型表单长跑会无限累积撑爆 localStorage 配额，
+      // 超限淘汰最旧记录（配额满的表现是"新记录永远写不进去"，比丢旧记录更糟）
+      const MAX_RECORDS = 500
+      write(storageKey, list.length > MAX_RECORDS ? list.slice(0, MAX_RECORDS) : list)
     },
 
     removeRecord(storageKey, recordId) {
-      write(storageKey, this.loadRecords(storageKey).filter(r => r.id !== recordId))
+      write(
+        storageKey,
+        this.loadRecords(storageKey).filter((r) => r.id !== recordId),
+      )
     },
 
     clearRecords(storageKey) {
