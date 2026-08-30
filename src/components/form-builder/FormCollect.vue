@@ -31,6 +31,7 @@ import {
 } from './designer/types'
 import { getActiveFormStore, type FormStore } from './designer/store'
 import { isLayoutField } from './fieldRegistry'
+import { buildHeaderMap, parseCsvRecords, parseJsonRecords, normalizeRecords, dedupeRecords } from './importRecords'
 
 const t = useT()
 
@@ -293,6 +294,137 @@ async function exportExcel(): Promise<void> {
     exporting.value = false
   }
 }
+
+// ════════════════════════════════════════
+// 批量导入（P1-8：JSON / CSV / Excel）
+// ════════════════════════════════════════
+const importing = ref(false)
+const importVisible = ref(false)
+const importError = ref('')
+/** 预览：待导入记录（归一化后） */
+const importPreview = ref<Record<string, unknown>[]>([])
+const importSkipped = ref(0)
+const importInvalid = ref(0)
+const importFileName = ref('')
+
+/** 导入字段定义（取非布局字段的 key/label/type） */
+const importFields = computed(() =>
+  props.fields.filter((f) => !isLayoutField(f.type)).map((f) => ({ key: f.key ?? f.id, label: f.label, type: f.type })),
+)
+
+/** 预览弹窗表头（导入列） */
+const importHeaders = computed(() => {
+  if (!importPreview.value.length) return []
+  return Object.keys(importPreview.value[0]).map((k) => {
+    const f = importFields.value.find((x) => x.key === k)
+    return { key: k, label: f?.label || k }
+  })
+})
+
+/** 导入预览汇总文案 */
+const importSummaryText = computed(() => {
+  const parts = [
+    t('fbd.importSummary', {
+      n: importPreview.value.length,
+      skipped: importSkipped.value,
+      invalid: importInvalid.value,
+    }),
+  ]
+  if (importPreview.value.length) {
+    const first = importPreview.value[0]
+    const keys = Object.keys(first).slice(0, 3)
+    parts.push(
+      keys
+        .map((k) => `${importHeaders.value.find((h) => h.key === k)?.label ?? k}: ${formatValue(first[k])}`)
+        .join(' · '),
+    )
+  }
+  return parts.join('\n')
+})
+
+/** 解析文件 → 归一化 + 去重 → 打开预览 */
+async function onImportFile(e: Event): Promise<void> {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  target.value = '' // 允许重复选择同一文件
+  if (!file) return
+  importing.value = true
+  importError.value = ''
+  try {
+    const name = file.name.toLowerCase()
+    const rows = await readFileToRows(file, name)
+    const headerMap = buildHeaderMap(importFields.value)
+    const { records: parsedRecs, invalid } = normalizeRecords(rows, headerMap, importFields.value)
+    if (!parsedRecs.length) {
+      importError.value = t('fbd.importEmpty')
+      importVisible.value = false
+      return
+    }
+    const { toImport, skipped } = dedupeRecords(parsedRecs, records.value)
+    importPreview.value = toImport
+    importSkipped.value = skipped
+    importInvalid.value = invalid
+    importFileName.value = file.name
+    importVisible.value = true
+  } catch (e) {
+    importError.value = t('fbd.importParseFail', { err: e instanceof Error ? e.message : String(e) })
+    importVisible.value = false
+  } finally {
+    importing.value = false
+  }
+}
+
+/** 文件 → 二维行（JSON 转为 {label/key} 对象行） */
+async function readFileToRows(file: File, name: string): Promise<string[][]> {
+  const text = await file.text()
+  if (name.endsWith('.json')) {
+    const recs = parseJsonRecords(text)
+    // JSON 记录：表头取字段 key/label 并集，值为 String（cleanCell 再按类型清洗）
+    const keys = Array.from(new Set(recs.flatMap((r) => Object.keys(r))))
+    const headerMap = buildHeaderMap(importFields.value)
+    const keyToHeader: Record<string, string> = {}
+    for (const k of keys) keyToHeader[k] = headerMap[k] ?? k
+    const rows: string[][] = [keys.map((k) => keyToHeader[k])]
+    for (const rec of recs) rows.push(keys.map((k) => (rec[k] === undefined ? '' : String(rec[k]))))
+    return rows
+  }
+  if (name.endsWith('.csv')) return parseCsvRecords(text)
+  // Excel（.xlsx/.xls）：动态加载 xlsx 库
+  const XLSX = await import('xlsx')
+  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
+  const ws = wb.Sheets[wb.SheetNames[0]]
+  if (!ws) return []
+  return XLSX.utils.sheet_to_json<string[]>(ws, { header: 1, raw: false }) as string[][]
+}
+
+/** 确认导入：批量写入存储 */
+async function confirmImport(): Promise<void> {
+  const list = importPreview.value
+  if (!list.length) return
+  importing.value = true
+  importError.value = ''
+  try {
+    // 复用 appendRecord 逐条写入（本地/云端实现内建数量上限保护）
+    for (const data of list) {
+      await props.store.appendRecord(storageKey.value, {
+        id: genRecordId(),
+        time: formatDateTimeZh(),
+        data: { ...data },
+      })
+    }
+    await refreshRecords()
+    importVisible.value = false
+    importPreview.value = []
+    okMsg.value = t('fbd.importDone', { n: list.length })
+    setTimeout(() => {
+      okMsg.value = ''
+    }, 3000)
+  } catch (e) {
+    importError.value = t('fbd.importFailMsg', { err: e instanceof Error ? e.message : String(e) })
+  } finally {
+    importing.value = false
+  }
+}
 </script>
 
 <template>
@@ -352,6 +484,17 @@ async function exportExcel(): Promise<void> {
         <IconSvg type="download" size="xs" />
         {{ t('fbd.exportExcel') }}
       </Button>
+      <label class="ldc-import-btn">
+        <IconSvg type="upload" size="xs" />
+        {{ t('fbd.importRecords') }}
+        <input
+          type="file"
+          accept=".json,.csv,.xlsx,.xls"
+          class="ldc-import-input"
+          :disabled="importing"
+          @change="onImportFile"
+        />
+      </label>
       <Button variant="ghost" size="sm" @click="showRecords = !showRecords">
         {{ t('formBuilder.collected') }} {{ records.length }} {{ t('formBuilder.records') }}
         <IconSvg :type="showRecords ? 'chevron-up' : 'chevron-down'" size="xs" />
@@ -423,6 +566,18 @@ async function exportExcel(): Promise<void> {
         </div>
       </div>
     </Transition>
+
+    <!-- 导入预览弹窗 -->
+    <ConfirmModal
+      :visible="importVisible"
+      :title="t('fbd.importPreviewTitle')"
+      :message="importSummaryText"
+      :confirm-text="t('fbd.importConfirm')"
+      :loading="importing"
+      variant="primary"
+      @update:visible="importVisible = $event"
+      @confirm="confirmImport"
+    />
 
     <!-- 确认弹窗 -->
     <ConfirmModal
@@ -579,6 +734,29 @@ async function exportExcel(): Promise<void> {
 }
 .ldc-danger-btn:hover {
   background: #fef2f2 !important;
+}
+
+/* 导入按钮（label 包装 file input） */
+.ldc-import-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--color-bg, #fff);
+  color: var(--color-text-secondary, #64748b);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ldc-import-btn:hover {
+  border-color: var(--color-primary, #3b82f6);
+  color: var(--color-primary, #3b82f6);
+}
+.ldc-import-input {
+  display: none;
 }
 
 /* ── 收集记录 ── */

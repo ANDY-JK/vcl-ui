@@ -1,0 +1,224 @@
+/**
+ * 收集记录批量导入 — 解析/归一化/去重纯函数（P1-8）
+ *
+ * 数据流：文件（JSON/CSV/Excel）→ 原始行 → normalizeRecords 归一化为
+ * {key: value} 记录 → dedupeRecords 内容指纹去重 → 批量写入存储。
+ *
+ * 职责边界：
+ * - 纯函数、无 DOM/文件 IO，可单测锁定行为
+ * - 表头反查：CSV/Excel 表头（通常是字段 label）映射回 field.key
+ * - 值清洗：数组字段（checkbox/upload/date-range）按逗号/分号拆数组，
+ *   number 字段转数字，未知列丢弃
+ * - 去重指纹：data 按 key 排序后 JSON 序列化，与已有记录及批内去重
+ */
+
+import type { CollectRecord } from './designer/types'
+
+/** 导入字段的最小描述（FormCollect 的 DesignerField 子集） */
+export interface ImportField {
+  key?: string
+  label?: string
+  type?: string
+}
+
+/** 归一化后的一条记录（仅含已知字段） */
+export interface NormalizedRecord {
+  data: Record<string, unknown>
+}
+
+/** 去重结果 */
+export interface DedupeResult {
+  /** 待导入记录（已含 data） */
+  toImport: Record<string, unknown>[]
+  /** 重复跳过条数 */
+  skipped: number
+}
+
+/** 数组类字段类型：CSV 值按分隔符拆分为数组 */
+const ARRAY_FIELD_TYPES = new Set(['checkbox', 'upload', 'image-upload', 'camera', 'date-range'])
+
+/** 值拆分分隔符：英文逗号 / 中文逗号 / 分号 / 竖线 */
+const ARRAY_SPLIT_RE = /[,，;；|]+/
+
+// ════════════════════════════════════════
+// 表头映射
+// ════════════════════════════════════════
+
+/**
+ * 构建「表头文本 → field.key」映射
+ *
+ * 表头既支持字段 label（中文，导出格式）也支持字段 key 本身。
+ * 同 label 冲突时后者覆盖（罕见，取最后一个）。
+ */
+export function buildHeaderMap(fields: ImportField[]): Record<string, string> {
+  const map: Record<string, string> = {}
+  for (const f of fields) {
+    if (!f.key) continue
+    if (f.label) map[f.label] = f.key
+    map[f.key] = f.key
+  }
+  return map
+}
+
+// ════════════════════════════════════════
+// 解析
+// ════════════════════════════════════════
+
+/**
+ * 解析 CSV 文本为二维数组
+ *
+ * 支持引号转义（字段内含逗号/引号/换行）、空行忽略。
+ */
+export function parseCsvRecords(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let cell = ''
+  let inQuotes = false
+  const src = text.replace(/\r\n/g, '\n')
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i]
+    if (inQuotes) {
+      if (ch === '"') {
+        if (src[i + 1] === '"') {
+          cell += '"'
+          i++
+        } else {
+          inQuotes = false
+        }
+      } else {
+        cell += ch
+      }
+    } else if (ch === '"') {
+      inQuotes = true
+    } else if (ch === ',') {
+      row.push(cell)
+      cell = ''
+    } else if (ch === '\n') {
+      row.push(cell)
+      if (row.some((c) => c.trim() !== '')) rows.push(row)
+      row = []
+      cell = ''
+    } else {
+      cell += ch
+    }
+  }
+  // 末尾行（无换行结尾）
+  row.push(cell)
+  if (row.some((c) => c.trim() !== '')) rows.push(row)
+  return rows
+}
+
+/**
+ * 解析 JSON 文本为记录数组
+ *
+ * 支持两种形态：
+ * - `[{ "key": value }]`（field key 直接作键）
+ * - `[{ "字段label": value }]`（导出/手工格式，由 normalize 反查 key）
+ */
+export function parseJsonRecords(text: string): Record<string, unknown>[] {
+  const data = JSON.parse(text)
+  if (!Array.isArray(data)) throw new Error('JSON 根节点必须是数组')
+  return data as Record<string, unknown>[]
+}
+
+// ════════════════════════════════════════
+// 归一化
+// ════════════════════════════════════════
+
+/** 判断字段是否为数组类（值按分隔符拆分） */
+function isArrayField(fields: ImportField[], key: string): boolean {
+  const f = fields.find((x) => x.key === key)
+  return !!f && ARRAY_FIELD_TYPES.has(f.type ?? '')
+}
+
+/** 清洗单个单元格值：按字段类型转数组/数字，未知类型保留字符串 */
+function cleanCell(key: string, raw: unknown, fields: ImportField[]): unknown {
+  if (raw === null || raw === undefined) return ''
+  if (typeof raw === 'number' || typeof raw === 'boolean') return raw
+  const str = String(raw).trim()
+  if (isArrayField(fields, key)) {
+    if (str === '') return []
+    return str
+      .split(ARRAY_SPLIT_RE)
+      .map((s) => s.trim())
+      .filter(Boolean)
+  }
+  const f = fields.find((x) => x.key === key)
+  if (f?.type === 'number' && str !== '') {
+    const n = Number(str)
+    return isNaN(n) ? str : n
+  }
+  return str
+}
+
+/**
+ * 归一化原始行为 {key: value} 记录
+ *
+ * - 表头行（第一行）→ 通过 headerMap 反查 field.key，未知列丢弃
+ * - 数据行 → 只保留已知字段，值按字段类型清洗
+ * - 全部已知字段为空的行视为无效（不计入）
+ *
+ * @param rows 二维数组（第一行为表头）
+ * @param headerMap buildHeaderMap 产物
+ * @param fields 字段定义（用于类型清洗）
+ * @returns { records, invalid }
+ */
+export function normalizeRecords(
+  rows: string[][],
+  headerMap: Record<string, string>,
+  fields: ImportField[],
+): { records: Record<string, unknown>[]; invalid: number } {
+  if (rows.length < 2) return { records: [], invalid: 0 }
+  const header = rows[0]
+  // 表头 → 字段 key（按列序）
+  const colKeys: (string | null)[] = header.map((h) => headerMap[h.trim()] ?? null)
+  const records: Record<string, unknown>[] = []
+  let invalid = 0
+
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r]
+    const rec: Record<string, unknown> = {}
+    let hasKnown = false
+    for (let c = 0; c < colKeys.length; c++) {
+      const key = colKeys[c]
+      if (!key) continue
+      const val = row[c] ?? ''
+      if (val !== '') hasKnown = true
+      rec[key] = cleanCell(key, val, fields)
+    }
+    if (hasKnown) records.push(rec)
+    else invalid++
+  }
+  return { records, invalid }
+}
+
+// ════════════════════════════════════════
+// 去重
+// ════════════════════════════════════════
+
+/** 内容指纹：data 按 key 排序后 JSON 序列化（键顺序无关） */
+function fingerprint(data: Record<string, unknown>): string {
+  return JSON.stringify(Object.entries(data).sort((a, b) => (a[0] < b[0] ? -1 : 1)))
+}
+
+/**
+ * 内容指纹去重
+ *
+ * 与已有记录重复（全部字段值相同）及批内重复都跳过。
+ * 收集记录无天然唯一键，内容指纹是防重复导入同一批数据的最简可靠策略。
+ */
+export function dedupeRecords(records: Record<string, unknown>[], existing: CollectRecord[]): DedupeResult {
+  const seen = new Set(existing.map((r) => fingerprint(r.data)))
+  const toImport: Record<string, unknown>[] = []
+  let skipped = 0
+  for (const rec of records) {
+    const fp = fingerprint(rec)
+    if (seen.has(fp)) {
+      skipped++
+    } else {
+      seen.add(fp)
+      toImport.push(rec)
+    }
+  }
+  return { toImport, skipped }
+}
