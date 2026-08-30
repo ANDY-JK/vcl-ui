@@ -364,6 +364,17 @@ const REGISTRY: Record<string, FieldRegistration> = {
     group: 'fbGroup.layout',
     defaults: () => ({ span: 24 }),
   },
+  paragraph: {
+    type: 'paragraph',
+    category: 'layout',
+    component: Divider,
+    componentType: 'paragraph',
+    isLayout: true,
+    label: 'fbType.paragraph',
+    icon: 'text',
+    group: 'fbGroup.layout',
+    defaults: () => ({ span: 24 }),
+  },
 
   // ── v3 高级字段（复用 Input 组件做 fallback，实际由 FormRenderer 的 advanced 分支渲染） ──
   subform: {
@@ -487,6 +498,18 @@ const REGISTRY: Record<string, FieldRegistration> = {
     icon: 'grid-2x2',
     group: 'fbGroup.layoutContainer',
     defaults: () => ({ isContainer: true, containerConfig: { columns: 2 } }),
+  },
+  flex: {
+    type: 'flex',
+    category: 'layout',
+    component: Divider,
+    componentType: 'flex',
+    isLayout: false,
+    isContainer: true,
+    label: 'fbType.flex',
+    icon: 'move-horizontal',
+    group: 'fbGroup.layoutContainer',
+    defaults: () => ({ isContainer: true, containerConfig: { gap: 12, wrap: true, justify: 'start' } }),
   },
   tabs: {
     type: 'tabs',
@@ -680,6 +703,7 @@ const BUILTIN_TYPES = new Set<string>([
   'camera',
   'divider',
   'title',
+  'paragraph',
   // v3 高级字段
   'subform',
   'relate',

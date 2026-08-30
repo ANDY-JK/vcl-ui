@@ -206,18 +206,18 @@ export interface FormField {
   disabled?: boolean
   /** 是否只读 */
   readonly?: boolean
-/**
-* 校验规则
-*
-* 支持两种签名：
-* 1. 简单签名（与 Input 组件兼容）：(v: string) => string | undefined
-* 2. 上下文签名（可跨字段校验）：(v: unknown, data: FormData) => string | undefined
-*
-* 返回字符串 = 错误信息；返回 undefined = 通过
-*/
-rules?: ValidationRule[]
-/** 选项列表（select/radio/checkbox/cascader/tree-select 用） */
-options?: Option[]
+  /**
+   * 校验规则
+   *
+   * 支持两种签名：
+   * 1. 简单签名（与 Input 组件兼容）：(v: string) => string | undefined
+   * 2. 上下文签名（可跨字段校验）：(v: unknown, data: FormData) => string | undefined
+   *
+   * 返回字符串 = 错误信息；返回 undefined = 通过
+   */
+  rules?: ValidationRule[]
+  /** 选项列表（select/radio/checkbox/cascader/tree-select 用） */
+  options?: Option[]
   /** 级联选项（cascader 模式专用） */
   cascaderOptions?: import('@/components/shared/types').CascaderOption[]
   /** 布局宽度（1-24 栅格，默认 24 = 整行） */
@@ -266,8 +266,8 @@ options?: Option[]
 /** 布局模式 */
 export type FormLayout = 'single' | 'grid' | 'steps'
 
-/** 设计器容器类型（card/grid/tabs/collapse/steps） */
-export type FieldContainerType = 'card' | 'grid' | 'tabs' | 'collapse' | 'steps'
+/** 设计器容器类型（card/grid/flex/tabs/collapse/steps） */
+export type FieldContainerType = 'card' | 'grid' | 'flex' | 'tabs' | 'collapse' | 'steps'
 
 /**
  * 字段的容器归属（toFormSchema 从设计器树填充）
@@ -285,6 +285,12 @@ export interface FieldContainer {
   id?: string
   /** grid 栅格列数 */
   columns?: number
+  /** flex 横排行：子字段间距 px（默认 12） */
+  gap?: number
+  /** flex 横排行：是否允许换行（默认 true） */
+  wrap?: boolean
+  /** flex 横排行：主轴对齐（默认 start） */
+  justify?: 'start' | 'center' | 'space-between'
   /** tabs 标签页定义（type=tabs） */
   tabs?: { label: string; name: string }[]
   /** collapse 折叠项定义（type=collapse） */
@@ -388,9 +394,7 @@ export type FormErrors = Record<string, string>
  *
  * 校验引擎会自动适配：如果函数.length >= 2 则传入 FormData 上下文
  */
-export type ValidationRule =
-  | ((v: string) => string | undefined)
-  | ((v: unknown, data: FormData) => string | undefined)
+export type ValidationRule = ((v: string) => string | undefined) | ((v: unknown, data: FormData) => string | undefined)
 
 /** 表单值类型联合（供外部类型推导） */
 export type FieldValue =

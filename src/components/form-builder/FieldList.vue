@@ -24,19 +24,25 @@ const emit = defineEmits<{
   'update:field': [key: string, value: unknown]
 }>()
 
-/** 计算字段在网格里的跨列 span */
-function spanOf(field: FormField): number {
-  return Math.max(1, Math.min(field.span || props.section.defaultSpan, props.section.columns))
+/**
+ * 字段包装样式（span 统一为 24 全域语义：12 = 半宽，与 PropsPanel/flex 一致）：
+ * - 网格 section：--fb-span 下发折算后的跨列数（span/24×列数，2 列 span 12 → 1 格）
+ * - flex section：--fb-span 保持 24 全域，追加 --fb-basis（span 折算宽度占比，
+ *   消费在 FormBuilder 的 .fb-flex :deep(.fb-field)；FieldList 是多根片段，
+ *   不继承父组件 scope id，父级 scoped 选择器选不中这里的 .fb-field）
+ */
+function fieldStyle(field: FormField): Record<string, string | number> {
+  const raw = Math.min(Math.max(1, field.span || props.section.defaultSpan), 24)
+  if (props.section.container?.type === 'flex') {
+    return { '--fb-span': raw, '--fb-basis': `${(raw / 24) * 100}%` }
+  }
+  const cells = Math.max(1, Math.min(props.section.columns, Math.round((raw / 24) * props.section.columns)))
+  return { '--fb-span': cells }
 }
 </script>
 
 <template>
-  <div
-    v-for="field in fields"
-    :key="field.key"
-    class="fb-field"
-    :style="{ '--fb-span': spanOf(field) }"
-  >
+  <div v-for="field in fields" :key="field.key" class="fb-field" :style="fieldStyle(field)">
     <FormRenderer
       :model-value="formData[field.key]"
       :field="field"

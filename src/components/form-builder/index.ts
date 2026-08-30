@@ -70,8 +70,22 @@ export {
   CONTAINER_TYPES,
   FIELD_NODE_TYPES,
 } from './designer/types'
-export { createLocalFormStore } from './designer/store'
-export type { FormStore, FormMetaItem } from './designer/store'
+export {
+  createLocalFormStore,
+  createCloudFormStore,
+  createFormStore,
+  getActiveFormStore,
+  setActiveFormStore,
+  loadStoreMode,
+  saveStoreMode,
+  loadCloudConfig,
+  saveCloudConfig,
+  envCloudConfig,
+} from './designer/store'
+export type { FormStore, FormMetaItem, FormStoreMode, FormCloudConfig } from './designer/store'
+export { useFormManager } from './designer/useFormManager'
+export type { FormManager } from './designer/useFormManager'
+export { encodeShareCode, decodeShareCode, SHARE_CODE_PREFIX } from './designer/share'
 
 // ── 类型 ──
 export type {

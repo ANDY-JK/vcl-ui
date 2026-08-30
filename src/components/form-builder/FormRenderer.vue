@@ -220,6 +220,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
       <h4 v-else-if="field.type === 'title'" class="fb-title">
         {{ field.label }}
       </h4>
+      <p v-else-if="field.type === 'paragraph'" class="fb-paragraph">{{ field.label }}</p>
     </template>
 
     <!-- ═══ Input 系列 ═══ -->
@@ -415,6 +416,16 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   font-weight: 600;
   color: var(--color-text, #1e293b);
   border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+/* 说明文字字段 */
+.fb-paragraph {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text-secondary, #64748b);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Group 字段 */

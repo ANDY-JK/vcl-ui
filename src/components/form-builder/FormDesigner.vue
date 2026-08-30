@@ -1,59 +1,55 @@
 <script setup lang="ts">
 /**
- * FormDesigner — 低代码表单设计器 (v3)
+ * FormDesigner — 可视化表单设计器
  *
- * v3 核心变化：
- * 1. 四栏布局：字段面板 + 大纲树 + 画布 + 属性面板
- * 2. 设备切换：桌面/平板/手机三种画布宽度
- * 3. 撤销/重做：基于不可变更新栈的 undo/redo
- * 4. 高级表单设置：标签位置、标签宽度、提交模式、提交后清空
- * 5. 标签页切换：设计 / 预览 / Schema 代码查看
- * 6. 容器嵌套：支持 card/grid/tabs/collapse/steps 容器
- *
- * 布局：
  * ┌─────────┬──────────┬──────────────┬─────────┐
  * │ 字段面板 │ 大纲树   │   画布区域    │ 属性面板 │
  * │ (左)    │ (左2)   │  设计/预览    │  (右)   │
  * └─────────┴──────────┴──────────────┴─────────┘
+ *
+ * 超长逻辑已按块外移（超 800 行约束整改）：
+ * - useDesignerOps：撤销/重做 + 节点增删改/剪贴板/排序
+ * - useFormIO：JSON 导入导出 + 分享码识别
+ * - useFormManager：保存 / 我的表单 / 存储方式 / 分享码生成
+ * - DesignerSettings：表单设置面板（含存储配置 UI）
+ * - SavedFormsDrawer：我的表单抽屉
  */
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, provide, onUnmounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
-import { downloadBlob, deepClone, uuid } from '@/components/_internal/utils'
 import { copyText } from '@/components/_internal/useCopy'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import Button from '@/components/basic/Button.vue'
 import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
-import Group from '@/components/form/Group.vue'
+import ModalBox from '@/components/layout/ModalBox.vue'
 import FormBuilder from './FormBuilder.vue'
 import DesignerPanel from './designer/DesignerPanel.vue'
 import DesignerCanvas from './designer/DesignerCanvas.vue'
+import DesignerSettings from './designer/DesignerSettings.vue'
 import PropsPanel from './designer/PropsPanel.vue'
 import OutlineTree from './designer/OutlineTree.vue'
 import {
-  createField,
-  toFormSchema,
-  flattenNodes,
   findNode,
-  updateNodeInTree,
-  removeNodeFromTree,
-  insertNode,
-  insertChildNode,
+  flattenNodes,
   isContainerNode,
   getNodePath,
-  moveNodeRelative,
-  findParent,
+  toFormSchema,
   FORM_DESIGN_VERSION,
   type DesignerNode,
-  type DesignerNodeType,
-  type DesignerContainerConfig,
   type FormMeta,
   type FormDesign,
 } from './designer/types'
+import { type FormStore, type FormMetaItem } from './designer/store'
+import { useFormManager } from './designer/useFormManager'
+import { useDesignerOps } from './designer/useDesignerOps'
+import { useFormIO } from './designer/useFormIO'
+import { FORM_MANAGER_KEY } from './designer/context'
+import SavedFormsDrawer from './designer/SavedFormsDrawer.vue'
 
 const t = useT()
 
 const props = withDefaults(
   defineProps<{
-    /** 设计数据（v-model:nodes，v3 用 nodes 代替 fields） */
+    /** 设计节点树（v-model:nodes） */
     nodes?: DesignerNode[]
     /** @deprecated v2 兼容，会自动转换为 nodes */
     fields?: DesignerNode[]
@@ -61,12 +57,15 @@ const props = withDefaults(
     meta?: FormMeta
     /** 画布高度 */
     height?: string
+    /** 宿主注入的存储实现（注入后「存储方式」切换 UI 隐藏，保存/列表/收集全部走此实现） */
+    store?: FormStore
   }>(),
   {
     nodes: () => [],
     fields: () => [],
     meta: () => ({}),
     height: '600px',
+    store: undefined,
   },
 )
 
@@ -74,6 +73,8 @@ const emit = defineEmits<{
   'update:nodes': [nodes: DesignerNode[]]
   'update:fields': [fields: DesignerNode[]]
   'update:meta': [meta: FormMeta]
+  /** 保存成功（新建或覆盖）后通知宿主，携带存储层返回的表单元信息 */
+  saved: [item: FormMetaItem]
 }>()
 
 // ════════════════════════════════════════
@@ -157,84 +158,126 @@ onUnmounted(() => {
 })
 
 // ════════════════════════════════════════
-// 撤销/重做
+// 节点操作与历史（撤销/重做 + 增删改 + 剪贴板）— 逻辑在 useDesignerOps
 // ════════════════════════════════════════
 
-const undoStack = ref<DesignerNode[][]>([])
-const redoStack = ref<DesignerNode[][]>([])
-const canUndo = computed(() => undoStack.value.length > 0)
-const canRedo = computed(() => redoStack.value.length > 0)
-
-/** 当前正在做「属性编辑」的字段 id（用于把连续属性编辑合并为一个撤销单元） */
-let editingPropId: string | null = null
-
-/** 记录快照（每次操作前调用） */
-function snapshot(): void {
-  undoStack.value.push(deepClone(currentNodes.value))
-  if (undoStack.value.length > 50) undoStack.value.shift()
-  redoStack.value = []
-  // 结构操作打断了属性编辑的连续性，重置跟踪，下次属性编辑重新快照
-  editingPropId = null
-}
-
-function undo(): void {
-  if (!undoStack.value.length) return
-  redoStack.value.push(deepClone(currentNodes.value))
-  const prev = undoStack.value.pop()!
-  patchNodes(prev)
-}
-
-function redo(): void {
-  if (!redoStack.value.length) return
-  undoStack.value.push(deepClone(currentNodes.value))
-  const next = redoStack.value.pop()!
-  patchNodes(next)
-}
+const {
+  canUndo,
+  canRedo,
+  snapshot,
+  undo,
+  redo,
+  addNode,
+  insertAt,
+  insertIntoContainer,
+  assignSlot,
+  doRemoveNodes,
+  duplicateNode,
+  copyNode,
+  pasteNode,
+  moveNode,
+  reorderNode,
+  sortNode,
+  updateContainerConfig,
+  updateNode,
+  onLabelChange,
+} = useDesignerOps({
+  nodes: () => currentNodes.value,
+  patch: patchNodes,
+  selectedId,
+  selectedIds,
+  showTip,
+})
 
 // ════════════════════════════════════════
-// 节点操作（不可变更新 + 快照）
+// 表单管理（保存 / 我的表单 / 存储 / 分享）— 逻辑在 useFormManager
 // ════════════════════════════════════════
 
-/** 生成不与现有节点冲突的字段 key 序号（避免删除中间节点后 fieldN 撞 key 串数据） */
-function nextFieldSeq(): number {
-  const used = new Set(flattenNodes(currentNodes.value).map((n) => n.key))
-  let i = used.size + 1
-  while (used.has(`field${i}`)) i++
-  return i
-}
+const manager = useFormManager({
+  nodes: () => currentNodes.value,
+  meta: () => props.meta,
+  updateMeta: (m) => emit('update:meta', m),
+  applyNodes: (list) => patchNodes(list),
+  snapshot,
+  injectedStore: () => props.store,
+  showTip,
+  onFormOpened: () => {
+    activeTab.value = 'design'
+  },
+  onSaved: (item) => emit('saved', item),
+})
 
-function addNode(type: DesignerNodeType): void {
-  snapshot()
-  const f = createField(type, nextFieldSeq())
-  patchNodes([...currentNodes.value, f])
-  selectedId.value = f.id
-}
+/** 表单管理实例共享给设置面板与我的表单抽屉（reactive 按引用共享，非 prop 单向流） */
+provide(FORM_MANAGER_KEY, manager)
 
-function insertAt(type: DesignerNodeType, index: number): void {
-  snapshot()
-  const f = createField(type, nextFieldSeq())
-  patchNodes(insertNode(currentNodes.value, f, index))
-  selectedId.value = f.id
-}
+// ── 保存弹窗（本地状态：名称输入 + 开关；写入走 manager.saveForm） ──
+const saveVisible = ref(false)
+const saveName = ref('')
 
-function insertIntoContainer(type: DesignerNodeType, containerId: string, index: number, slot?: number): void {
-  snapshot()
-  const f = createField(type, nextFieldSeq())
-  // tabs/collapse/steps 容器：记录字段所在槽位（第几个 tab/折叠项/步骤）
-  if (slot !== undefined && slot >= 0) f.containerSlot = slot
-  const updated = insertChildNode(currentNodes.value, containerId, f, index)
-  if (updated !== currentNodes.value) {
-    patchNodes(updated)
-    selectedId.value = f.id
+function openSave(): void {
+  if (!currentNodes.value.length) {
+    showTip(t('fbd.nothingToSave'))
+    return
   }
+  saveName.value = props.meta.title ?? ''
+  saveVisible.value = true
 }
 
-/** 把字段移动到 tabs/collapse/steps 容器的指定槽位 */
-function assignSlot(sourceId: string, slot: number): void {
-  snapshot()
-  const updated = updateNodeInTree(currentNodes.value, sourceId, { containerSlot: slot })
-  patchNodes(updated)
+async function onConfirmSave(): Promise<void> {
+  const item = await manager.saveForm(saveName.value)
+  if (item) saveVisible.value = false
 }
+
+// ── 分享弹窗 ──
+const shareVisible = ref(false)
+const shareCode = ref('')
+
+function openShare(): void {
+  const code = manager.buildShareCode()
+  if (!code) {
+    showTip(t('fbd.nothingToSave'))
+    return
+  }
+  shareCode.value = code
+  shareVisible.value = true
+}
+
+async function copyShare(): Promise<void> {
+  const ok = await copyText(shareCode.value)
+  showTip(ok ? t('fbd.shareCopied') : t('fbd.copyFail'))
+}
+
+// ════════════════════════════════════════
+// 导入/导出 — 逻辑在 useFormIO
+// ════════════════════════════════════════
+
+const {
+  exportJson,
+  importText,
+  showImport,
+  importError,
+  importDragOver,
+  closeImport,
+  onImportDrop,
+  onImportFileSelect,
+  applyImport,
+} = useFormIO({
+  nodes: () => currentNodes.value,
+  meta: () => props.meta,
+  patch: patchNodes,
+  snapshot,
+  updateMeta: (m) => emit('update:meta', m),
+  showTip,
+})
+
+function selectFromOutline(id: string) {
+  handleSelect(id)
+  activeTab.value = 'design'
+}
+
+// ════════════════════════════════════════
+// 删除确认流（容器带子节点 / 多选删除需确认）
+// ════════════════════════════════════════
 
 /** 待删除节点 id（容器带子节点时需确认） */
 const pendingRemoveId = ref<string | null>(null)
@@ -266,188 +309,20 @@ function removeNode(id: string): void {
     pendingRemoveLabel.value = node.label
     return
   }
-  doRemoveNode(id)
-}
-
-function doRemoveNode(id: string): void {
   doRemoveNodes([id])
-}
-
-/** 批量删除多个节点（单次快照） */
-function doRemoveNodes(ids: string[]): void {
-  snapshot()
-  let next = currentNodes.value
-  for (const id of ids) {
-    next = removeNodeFromTree(next, id)
-  }
-  patchNodes(next)
-  if (selectedId.value && ids.includes(selectedId.value)) selectedId.value = null
-  selectedIds.value = new Set()
 }
 
 function onConfirmRemove(): void {
   const id = pendingRemoveId.value
   pendingRemoveId.value = null
   pendingRemoveLabel.value = ''
-  if (id) doRemoveNode(id)
+  if (id) doRemoveNodes([id])
 }
 
 function onConfirmRemoveBatch(): void {
   const ids = pendingRemoveIds.value
   pendingRemoveIds.value = []
   if (ids.length) doRemoveNodes(ids)
-}
-
-function duplicateNode(id: string): void {
-  snapshot()
-  const node = findNode(currentNodes.value, id)
-  if (!node) return
-  const copy = cloneNode(node)
-  // 找到原节点位置，插入到后面
-  const flat = flattenNodes(currentNodes.value)
-  const idx = flat.findIndex((f) => f.id === id)
-  if (idx >= 0) {
-    patchNodes(insertNode(currentNodes.value, copy, idx + 1))
-  } else {
-    patchNodes([...currentNodes.value, copy])
-  }
-  selectedId.value = copy.id
-}
-
-// ════════════════════════════════════════
-// 复制/粘贴（Ctrl+C / Ctrl+V 跨会话剪贴板）
-// ════════════════════════════════════════
-
-/** 被复制的节点（深拷贝，避免后续编辑污染剪贴板内容） */
-let clipboardNode: DesignerNode | null = null
-
-/** 深拷贝节点并生成新 id（key 加 _copy 后缀避免重复） */
-function cloneNode(node: DesignerNode): DesignerNode {
-  const copy: DesignerNode = deepClone(node)
-  copy.id = uuid('n')
-  if (node.key) copy.key = node.key + '_copy'
-  // 递归重生成子节点 id，避免与新节点 id 冲突
-  if (copy.children?.length) {
-    const rekey = (list: DesignerNode[]): void => {
-      for (const child of list) {
-        child.id = uuid('n')
-        if (child.children?.length) rekey(child.children)
-      }
-    }
-    rekey(copy.children)
-  }
-  return copy
-}
-
-/** 复制选中节点到剪贴板 */
-function copyNode(id: string): void {
-  const node = findNode(currentNodes.value, id)
-  if (!node) return
-  clipboardNode = deepClone(node)
-  showTip(t('formBuilder.copied'))
-}
-
-/** 粘贴剪贴板节点到选中节点之后（同父级） */
-function pasteNode(id: string): void {
-  if (!clipboardNode) {
-    showTip(t('formBuilder.nothingToPaste'))
-    return
-  }
-  snapshot()
-  const copy = cloneNode(clipboardNode)
-  // 找到选中节点的父级和索引，插入到其后
-  const loc = findParent(currentNodes.value, id)
-  if (!loc) {
-    patchNodes([...currentNodes.value, copy])
-  } else {
-    const siblings = [...loc.parent]
-    siblings.splice(loc.index + 1, 0, copy)
-    if (loc.parent === currentNodes.value) {
-      patchNodes(siblings)
-    } else {
-      const rebuild = (list: DesignerNode[]): DesignerNode[] =>
-        list.map((n) => {
-          if (n.children === loc.parent) return { ...n, children: siblings }
-          if (n.children?.length) return { ...n, children: rebuild(n.children) }
-          return n
-        })
-      patchNodes(rebuild(currentNodes.value))
-    }
-  }
-  selectedId.value = copy.id
-}
-
-function moveNode(id: string, dir: -1 | 1): void {
-  snapshot()
-  // 定位节点所在层级，在其父级（根级或某容器 children）内交换
-  const loc = findParent(currentNodes.value, id)
-  if (!loc) return
-  const i = loc.index
-  const j = i + dir
-  if (j < 0 || j >= loc.parent.length) return
-  const siblings = [...loc.parent]
-  ;[siblings[i], siblings[j]] = [siblings[j], siblings[i]]
-  // 根级直接 patch；容器内需重建树
-  if (loc.parent === currentNodes.value) {
-    patchNodes(siblings)
-  } else {
-    const rebuild = (list: DesignerNode[]): DesignerNode[] =>
-      list.map((n) => {
-        if (n.children === loc.parent) return { ...n, children: siblings }
-        if (n.children?.length) return { ...n, children: rebuild(n.children) }
-        return n
-      })
-    patchNodes(rebuild(currentNodes.value))
-  }
-}
-
-function reorderNode(from: number, to: number): void {
-  snapshot()
-  const list = [...currentNodes.value]
-  const [moved] = list.splice(from, 1)
-  list.splice(to, 0, moved!)
-  patchNodes(list)
-}
-
-/**
- * 拖拽排序：跨容器移动节点
- *
- * slot：拖入 tabs/collapse/steps 容器内部时，把节点归入当前激活的槽位
- * （画布容器交互化后只展示激活槽位，落点必须与之保持一致）。
- */
-function sortNode(sourceId: string, targetId: string, position: 'before' | 'after' | 'inside', slot?: number): void {
-  snapshot()
-  let updated = moveNodeRelative(currentNodes.value, sourceId, targetId, position)
-  if (slot !== undefined && slot >= 0 && position === 'inside') {
-    updated = updateNodeInTree(updated, sourceId, { containerSlot: slot })
-  }
-  patchNodes(updated)
-}
-
-/** 更新容器配置（画布「+ 添加」标签页等操作，进撤销栈） */
-function updateContainerConfig(id: string, config: DesignerContainerConfig): void {
-  snapshot()
-  patchNodes(updateNodeInTree(currentNodes.value, id, { containerConfig: config }))
-}
-
-function updateNode(id: string, patchObj: Partial<DesignerNode>): void {
-  // 属性编辑进撤销栈：对同一字段的连续编辑合并为一个撤销单元（首次编辑时快照一次）
-  if (editingPropId !== id) {
-    snapshot()
-    editingPropId = id
-  }
-  patchNodes(updateNodeInTree(currentNodes.value, id, patchObj))
-}
-
-function onLabelChange(id: string, label: string): void {
-  const node = findNode(currentNodes.value, id)
-  if (!node) return
-  const autoKey = /^field\d+$/.test(node.key ?? '') || !node.key
-  updateNode(id, { label, ...(autoKey ? { key: label.trim() || node.key } : {}) })
-}
-
-function patchMeta(p: Partial<FormMeta>): void {
-  emit('update:meta', { ...props.meta, ...p })
 }
 
 // ════════════════════════════════════════
@@ -489,125 +364,6 @@ function onCanvasKeydown(e: KeyboardEvent): void {
 }
 
 // ════════════════════════════════════════
-// 导入/导出
-// ════════════════════════════════════════
-
-function exportJson(): void {
-  if (!currentNodes.value.length) {
-    showTip(t('formBuilder.noExportableFields'))
-    return
-  }
-  const design: FormDesign = { schemaVersion: FORM_DESIGN_VERSION, meta: props.meta, nodes: currentNodes.value }
-  const json = JSON.stringify(design, null, 2)
-  const blob = new Blob([json], { type: 'application/json' })
-  downloadBlob(blob, 'form-design.json')
-  void copyText(json)
-  showTip(t('fbd.exportedTip'))
-}
-
-const importText = ref('')
-const showImport = ref(false)
-const importError = ref('')
-// 事件处理用命名函数：模板内联多语句 handler 会被 prettier(semi:false) 去分号重排，导致 Vue 表达式解析失败
-function closeImport() {
-  showImport.value = false
-  importError.value = ''
-}
-function selectFromOutline(id: string) {
-  handleSelect(id)
-  activeTab.value = 'design'
-}
-const importDragOver = ref(false)
-
-function onImportDrop(e: DragEvent): void {
-  e.preventDefault()
-  importDragOver.value = false
-  const file = e.dataTransfer?.files?.[0]
-  if (!file) return
-  if (!file.name.endsWith('.json')) {
-    importError.value = t('fbd.jsonFileRequired')
-    return
-  }
-  const reader = new FileReader()
-  reader.onload = () => {
-    importText.value = String(reader.result ?? '')
-    applyImport()
-  }
-  reader.onerror = () => {
-    importError.value = t('fbd.fileReadFail')
-  }
-  reader.readAsText(file)
-}
-
-function onImportFileSelect(e: Event): void {
-  const target = e.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    importText.value = String(reader.result ?? '')
-    applyImport()
-  }
-  reader.onerror = () => {
-    importError.value = t('fbd.fileReadFail')
-  }
-  reader.readAsText(file)
-}
-
-function applyImport(): void {
-  try {
-    const data = JSON.parse(importText.value)
-    let meta: FormMeta = {}
-    let nodes: DesignerNode[] = []
-
-    if (data && !Array.isArray(data) && typeof data === 'object') {
-      // v3 格式：{ meta, nodes }
-      if (Array.isArray(data.nodes)) {
-        nodes = data.nodes.map((n: DesignerNode, i: number) => ({
-          ...n,
-          id: typeof n.id === 'string' ? n.id : 'n' + Date.now().toString(36) + i,
-        }))
-      }
-      // v2 兼容：{ meta, fields }
-      else if (Array.isArray(data.fields)) {
-        nodes = data.fields.map((f: DesignerNode, i: number) => ({
-          ...f,
-          id: typeof f.id === 'string' ? f.id : 'n' + Date.now().toString(36) + i,
-        }))
-      }
-      meta = data.meta && typeof data.meta === 'object' ? data.meta : {}
-
-      // v1 兼容：FormSchema 格式（含 title/fields 等顶层属性）
-      if (data.title !== undefined) meta.title = String(data.title)
-      if (data.description !== undefined) meta.description = String(data.description)
-      if (data.submitText !== undefined) meta.submitText = String(data.submitText)
-      if (data.resetText !== undefined) meta.resetText = String(data.resetText)
-      if (data.layout !== undefined) meta.layout = data.layout
-      if (data.columns !== undefined) meta.columns = Number(data.columns)
-      if (data.hideActions !== undefined) meta.hideActions = !!data.hideActions
-      if (data.validateOnChange !== undefined) meta.validateOnChange = !!data.validateOnChange
-    } else if (Array.isArray(data)) {
-      nodes = data.map((n: DesignerNode, i: number) => ({
-        ...n,
-        id: typeof n.id === 'string' ? n.id : 'n' + Date.now().toString(36) + i,
-      }))
-    } else {
-      throw new Error(t('fbd.importStructureErr'))
-    }
-
-    snapshot()
-    patchNodes(nodes)
-    emit('update:meta', meta)
-    showImport.value = false
-    importText.value = ''
-    importError.value = ''
-    showTip(t('fbd.importedNodes', { n: nodes.length }))
-  } catch (e) {
-    importError.value = t('fbd.importParseFail', { err: e instanceof Error ? e.message : String(e) })
-  }
-}
-
-// ════════════════════════════════════════
 // 预览 & Schema 查看
 // ════════════════════════════════════════
 
@@ -645,6 +401,10 @@ function onConfirmClearAll(): void {
   snapshot()
   patchNodes([])
   clearSelection()
+}
+
+function patchMeta(p: Partial<FormMeta>): void {
+  emit('update:meta', { ...props.meta, ...p })
 }
 
 // ════════════════════════════════════════
@@ -727,6 +487,14 @@ const selectedPath = computed(() => {
           {{ t('fbd.formSettings') }}
         </button>
         <span class="ld-sep" />
+        <button class="ld-btn" :disabled="manager.saving" @click="openSave">
+          <IconSvg type="save" size="xs" /> {{ t('fbd.save') }}
+        </button>
+        <button class="ld-btn" @click="manager.openForms">
+          <IconSvg type="folder-open" size="xs" /> {{ t('fbd.myForms') }}
+        </button>
+        <button class="ld-btn" @click="openShare"><IconSvg type="share-2" size="xs" /> {{ t('fbd.share') }}</button>
+        <span class="ld-sep" />
         <button class="ld-btn" @click="exportJson"><IconSvg type="download" size="xs" /> {{ t('fbd.export') }}</button>
         <button class="ld-btn" @click="showImport = !showImport">
           <IconSvg type="upload" size="xs" /> {{ t('fbd.import') }}
@@ -737,163 +505,8 @@ const selectedPath = computed(() => {
       </div>
     </div>
 
-    <!-- 表单设置 -->
-    <div v-if="showSettings" class="ld-settings">
-      <div class="ld-settings-row wide">
-        <label>{{ t('fbd.formTitle') }}</label>
-        <input
-          class="ld-settings-textarea"
-          :value="meta.title ?? ''"
-          :placeholder="t('fbd.formTitlePh')"
-          @input="patchMeta({ title: ($event.target as HTMLInputElement).value })"
-        />
-      </div>
-      <div class="ld-settings-row wide">
-        <label>{{ t('fbd.formDesc') }}</label>
-        <input
-          class="ld-settings-textarea"
-          :value="meta.description ?? ''"
-          :placeholder="t('fbd.formDescPh')"
-          @input="patchMeta({ description: ($event.target as HTMLInputElement).value })"
-        />
-      </div>
-      <div class="ld-settings-row" style="max-width: 200px">
-        <label>{{ t('fbd.layoutMode') }}</label>
-        <div class="ld-layout-preview">
-          <div
-            class="ld-layout-thumb"
-            :class="{ active: (meta.layout ?? 'single') === 'single' }"
-            @click="patchMeta({ layout: 'single' })"
-          >
-            <div class="ld-thumb-bars">
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-            <span>{{ t('fbd.layoutSingle') }}</span>
-          </div>
-          <div
-            class="ld-layout-thumb"
-            :class="{ active: meta.layout === 'grid' }"
-            @click="patchMeta({ layout: 'grid' })"
-          >
-            <div class="ld-thumb-grid">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-            <span>{{ t('fbd.layoutGrid') }}</span>
-          </div>
-          <div
-            class="ld-layout-thumb"
-            :class="{ active: meta.layout === 'steps' }"
-            @click="patchMeta({ layout: 'steps' })"
-          >
-            <div class="ld-thumb-steps">
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
-            <span>{{ t('fbd.layoutSteps') }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="ld-settings-row" style="max-width: 200px">
-        <label>{{ t('fbd.submitBtnText') }}</label>
-        <input
-          class="ld-settings-textarea"
-          :value="meta.submitText ?? t('common.submit')"
-          :placeholder="t('common.submit')"
-          @input="patchMeta({ submitText: ($event.target as HTMLInputElement).value })"
-        />
-      </div>
-      <div class="ld-settings-row" style="max-width: 160px">
-        <label>{{ t('fbd.realtimeValidate') }}</label>
-        <select
-          class="ld-settings-textarea"
-          :value="meta.validateOnChange ? '1' : '0'"
-          @change="patchMeta({ validateOnChange: ($event.target as HTMLSelectElement).value === '1' })"
-        >
-          <option value="0">{{ t('fbd.validateOnSubmitOnly') }}</option>
-          <option value="1">{{ t('fbd.validateOnInput') }}</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- 高级表单设置 -->
-    <div v-if="showSettings" class="ld-settings ld-settings-advanced">
-      <div class="ld-settings-row" style="max-width: 140px">
-        <label>{{ t('fbp.labelPosition') }}</label>
-        <select
-          class="ld-settings-textarea"
-          :value="meta.labelPosition ?? 'left'"
-          @change="
-            patchMeta({ labelPosition: ($event.target as HTMLSelectElement).value as 'left' | 'top' | 'hidden' })
-          "
-        >
-          <option value="left">{{ t('fbp.posLeft') }}</option>
-          <option value="top">{{ t('fbp.posTop') }}</option>
-          <option value="hidden">{{ t('fbp.posHidden') }}</option>
-        </select>
-      </div>
-      <div class="ld-settings-row" style="max-width: 140px">
-        <label>{{ t('fbp.labelWidth') }}</label>
-        <select
-          class="ld-settings-textarea"
-          :value="meta.labelWidth ?? 'default'"
-          @change="
-            patchMeta({
-              labelWidth: ($event.target as HTMLSelectElement).value as 'default' | '80px' | '120px' | 'auto',
-            })
-          "
-        >
-          <option value="default">{{ t('fbp.labelWidthDefault') }}</option>
-          <option value="80px">80px</option>
-          <option value="120px">120px</option>
-          <option value="auto">{{ t('fbp.auto') }}</option>
-        </select>
-      </div>
-      <div class="ld-settings-row" style="max-width: 140px">
-        <label>{{ t('fbd.resetBtnText') }}</label>
-        <input
-          class="ld-settings-textarea"
-          :value="meta.resetText ?? t('common.reset')"
-          :placeholder="t('common.reset')"
-          @input="patchMeta({ resetText: ($event.target as HTMLInputElement).value })"
-        />
-      </div>
-      <div class="ld-settings-row" style="max-width: 140px">
-        <label>{{ t('fbd.submitMode') }}</label>
-        <select
-          class="ld-settings-textarea"
-          :value="meta.submitMode ?? 'once'"
-          @change="
-            patchMeta({ submitMode: ($event.target as HTMLSelectElement).value as 'once' | 'multiple' | 'unique' })
-          "
-        >
-          <option value="once">{{ t('fbd.modeOnce') }}</option>
-          <option value="multiple">{{ t('fbd.modeMultiple') }}</option>
-          <option value="unique">{{ t('fbd.modeUnique') }}</option>
-        </select>
-      </div>
-      <div class="ld-settings-switch-row">
-        <label>{{ t('fbd.hideActions') }}</label>
-        <Group
-          type="switch"
-          :model-value="!!meta.hideActions"
-          @update:model-value="patchMeta({ hideActions: !!$event })"
-        />
-      </div>
-      <div class="ld-settings-switch-row">
-        <label>{{ t('fbp.clearAfterSubmit') }}</label>
-        <Group
-          type="switch"
-          :model-value="!!meta.clearAfterSubmit"
-          @update:model-value="patchMeta({ clearAfterSubmit: !!$event })"
-        />
-      </div>
-    </div>
+    <!-- 表单设置面板（基础 + 高级 + 数据存储） -->
+    <DesignerSettings v-if="showSettings" :meta="meta" @patch-meta="patchMeta" />
 
     <!-- 导入面板 -->
     <div v-if="showImport" class="ld-import">
@@ -1068,6 +681,59 @@ const selectedPath = computed(() => {
     @update:visible="pendingRemoveIds = []"
     @confirm="onConfirmRemoveBatch"
   />
+
+  <!-- 保存表单弹窗 -->
+  <ModalBox
+    :visible="saveVisible"
+    :title="t('fbd.saveTitle')"
+    modal-type="default"
+    @update:visible="saveVisible = $event"
+  >
+    <div class="ld-save-form">
+      <label class="ld-save-label">{{ t('fbd.saveNameLabel') }}</label>
+      <input
+        v-model="saveName"
+        class="ld-save-input"
+        :placeholder="t('fbd.saveNamePh')"
+        @keydown.enter.prevent="onConfirmSave"
+      />
+    </div>
+    <template #footer>
+      <Button :text="t('common.cancel')" variant="secondary" @click="saveVisible = false" />
+      <Button
+        :text="manager.saving ? t('fbd.saving') : t('fbd.save')"
+        variant="primary"
+        :loading="manager.saving"
+        :disabled="manager.saving"
+        @click="onConfirmSave"
+      />
+    </template>
+  </ModalBox>
+
+  <!-- 分享表单弹窗 -->
+  <ModalBox
+    :visible="shareVisible"
+    :title="t('fbd.shareTitle')"
+    modal-type="default"
+    @update:visible="shareVisible = $event"
+  >
+    <div class="ld-share">
+      <p class="ld-share-hint">{{ t('fbd.shareCodeHint') }}</p>
+      <textarea
+        class="ld-share-code"
+        readonly
+        rows="5"
+        :value="shareCode"
+        @focus="($event.target as HTMLTextAreaElement).select()"
+      />
+      <div class="ld-share-actions">
+        <Button :text="t('common.copy')" variant="primary" :icon="'copy'" @click="copyShare" />
+      </div>
+    </div>
+  </ModalBox>
+
+  <!-- 我的表单抽屉（列表 / 重命名 / 删除 / 覆盖打开确认） -->
+  <SavedFormsDrawer />
 </template>
 
 <style src="./designer/designer.css"></style>

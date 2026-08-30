@@ -160,8 +160,22 @@ export {
   genFieldId,
   genRecordId,
 } from './form-builder/designer/types'
-export { createLocalFormStore } from './form-builder/designer/store'
-export type { FormStore, FormMetaItem } from './form-builder/designer/store'
+export {
+  createLocalFormStore,
+  createCloudFormStore,
+  createFormStore,
+  getActiveFormStore,
+  setActiveFormStore,
+  loadStoreMode,
+  saveStoreMode,
+  loadCloudConfig,
+  saveCloudConfig,
+  envCloudConfig,
+} from './form-builder/designer/store'
+export type { FormStore, FormMetaItem, FormStoreMode, FormCloudConfig } from './form-builder/designer/store'
+export { encodeShareCode, decodeShareCode, SHARE_CODE_PREFIX } from './form-builder/designer/share'
+export { useFormManager } from './form-builder/designer/useFormManager'
+export type { FormManager } from './form-builder/designer/useFormManager'
 export type {
   FieldType,
   FormField,

@@ -20,46 +20,46 @@ describe('H9: 收集记录存储 key 唯一化', () => {
     nodes: [makeNode('text', 'name'), makeNode('number', 'age')],
   }
 
-  it('saveForm 生成的 collectKey 与 collectStorageKey 一致（单一算法）', () => {
+  it('saveForm 生成的 collectKey 与 collectStorageKey 一致（单一算法）', async () => {
     const store = createLocalFormStore()
-    const item = store.saveForm(null, design)
+    const item = await store.saveForm(null, design)
     expect(item.collectKey).toBe(collectStorageKey(design.nodes!))
     // 带 fd_collect_ 前缀，与 FormCollect 传入 store 的 storageKey 同语义
     expect(item.collectKey).toMatch(/^fd_collect_/)
   })
 
-  it('appendRecord 写入空间与 collectStorageKey 一致（无双重前缀）', () => {
+  it('appendRecord 写入空间与 collectStorageKey 一致（无双重前缀）', async () => {
     const store = createLocalFormStore()
-    const item = store.saveForm(null, design)
+    const item = await store.saveForm(null, design)
     const key = collectStorageKey(design.nodes!)
-    store.appendRecord(key, { id: 'r1', time: '2026-08-24 10:00', data: { name: '张三' } } as never)
+    await store.appendRecord(key, { id: 'r1', time: '2026-08-24 10:00', data: { name: '张三' } } as never)
 
-    const saved = store.loadRecords(key)
+    const saved = await store.loadRecords(key)
     expect(saved).toHaveLength(1)
     // 同 key 读回，证明写读同一空间
-    expect(store.loadRecords(item.collectKey)).toHaveLength(1)
+    expect(await store.loadRecords(item.collectKey)).toHaveLength(1)
     // 双重前缀空间应为空（旧 bug 会写到 fd_collect_fd_collect_xxx）
-    expect(store.loadRecords(`fd_collect_${key}`)).toHaveLength(0)
+    expect(await store.loadRecords(`fd_collect_${key}`)).toHaveLength(0)
   })
 
-  it('缺 key 的字段仍能读回（f.key ?? "" 统一处理）', () => {
+  it('缺 key 的字段仍能读回（f.key ?? "" 统一处理）', async () => {
     const design2: FormDesign = {
       meta: { title: '测试' },
       nodes: [makeNode('text'), makeNode('title')],
     }
     const store = createLocalFormStore()
-    const item = store.saveForm(null, design2)
+    const item = await store.saveForm(null, design2)
     expect(item.collectKey).toBe(collectStorageKey(design2.nodes!))
-    store.appendRecord(item.collectKey, { id: 'r1', time: 't', data: {} } as never)
-    expect(store.loadRecords(item.collectKey)).toHaveLength(1)
+    await store.appendRecord(item.collectKey, { id: 'r1', time: 't', data: {} } as never)
+    expect(await store.loadRecords(item.collectKey)).toHaveLength(1)
   })
 
-  it('删除表单连带删除收集记录', () => {
+  it('删除表单连带删除收集记录', async () => {
     const store = createLocalFormStore()
-    const item = store.saveForm(null, design)
-    store.appendRecord(item.collectKey, { id: 'r1', time: 't', data: {} } as never)
-    store.deleteForm(item.id)
-    expect(store.loadRecords(item.collectKey)).toHaveLength(0)
+    const item = await store.saveForm(null, design)
+    await store.appendRecord(item.collectKey, { id: 'r1', time: 't', data: {} } as never)
+    await store.deleteForm(item.id)
+    expect(await store.loadRecords(item.collectKey)).toHaveLength(0)
   })
 })
 

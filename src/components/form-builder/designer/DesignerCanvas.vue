@@ -697,6 +697,54 @@ const deviceClass = computed(() => `device-${props.device}`)
                 </div>
               </template>
 
+              <!-- flex 横排容器：子字段并排，按 span 折算占比（与运行时 .fb-flex 行为一致） -->
+              <template v-else-if="node.type === 'flex'">
+                <div
+                  class="ldc-flex-row"
+                  :style="{
+                    '--flex-gap': (node.containerConfig?.gap ?? 12) + 'px',
+                    '--flex-wrap': node.containerConfig?.wrap === false ? 'nowrap' : 'wrap',
+                    '--flex-justify':
+                      node.containerConfig?.justify === 'center'
+                        ? 'center'
+                        : node.containerConfig?.justify === 'space-between'
+                          ? 'space-between'
+                          : 'flex-start',
+                  }"
+                >
+                  <template v-if="node.children?.length">
+                    <div
+                      v-for="child in node.children"
+                      :key="child.id"
+                      class="ldc-flex-col"
+                      :style="{ '--flex-basis': (Math.min(Math.max(child.span ?? 24, 1), 24) / 24) * 100 + '%' }"
+                    >
+                      <div
+                        class="ldc-card"
+                        :class="{ selected: child.id === selectedId }"
+                        @click.stop="emit('select', child.id)"
+                      >
+                        <div class="ldc-card-head">
+                          <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
+                          <span class="ldc-card-label">{{ child.label }}</span>
+                          <span v-if="child.required" class="ldc-required-mark">*</span>
+                          <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
+                        </div>
+                        <div class="ldc-card-body">
+                          <FormRenderer
+                            v-if="findFieldByKey(child.key ?? child.id)"
+                            :field="findFieldByKey(child.key ?? child.id)!"
+                            :model-value="previewData[child.key ?? child.id]"
+                            disabled
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                  <div v-else class="ldc-container-empty">{{ t('fbt.dropToFlex') }}</div>
+                </div>
+              </template>
+
               <!-- card 容器：子节点平铺 -->
               <template v-else>
                 <template v-if="node.children?.length">

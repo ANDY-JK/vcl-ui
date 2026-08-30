@@ -7,6 +7,7 @@
  * - tabs 容器（标签页分页）
  * - collapse 容器（折叠面板）
  * - steps 容器（步骤条）
+ * - flex 容器（横排行）+ paragraph 说明文字
  *
  * 字段通过 containerSlot 归属到 tabs/collapse/steps 的具体槽位。
  *
@@ -182,6 +183,47 @@ export function containerDemoNodes(): DesignerNode[] {
           placeholder: t('fbPre.cdApproverPh'),
           options: [t('fbPre.cdOptMgrZhang'), t('fbPre.cdOptSupLi'), t('fbPre.cdOptDirWang')],
           containerSlot: 1,
+        },
+      ],
+    },
+
+    // ── paragraph 说明文字 ──
+    {
+      id: 'f-notice',
+      type: 'paragraph',
+      label: t('fbPre.cdParagraph'),
+      span: 24,
+    },
+
+    // ── flex 横排容器：三个字段并排（1/4、1/4、1/2 占比） ──
+    {
+      id: 'c-flex-contact',
+      type: 'flex',
+      label: t('fbPre.cdFlexTitle'),
+      isContainer: true,
+      containerConfig: { gap: 12, wrap: true, justify: 'start' },
+      children: [
+        {
+          id: 'f-qq',
+          type: 'text',
+          label: t('fbPre.cdQq'),
+          key: 'qq',
+          span: 6,
+        },
+        {
+          id: 'f-wechat',
+          type: 'text',
+          label: t('fbPre.cdWechat'),
+          key: 'wechat',
+          span: 6,
+        },
+        {
+          id: 'f-emergency',
+          type: 'tel',
+          label: t('fbPre.cdEmergency'),
+          key: 'emergency',
+          placeholder: t('fbPre.regPhonePh'),
+          span: 12,
         },
       ],
     },

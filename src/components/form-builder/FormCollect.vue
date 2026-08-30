@@ -29,7 +29,7 @@ import {
   type FormMeta,
   type CollectRecord,
 } from './designer/types'
-import { createLocalFormStore, type FormStore } from './designer/store'
+import { getActiveFormStore, type FormStore } from './designer/store'
 import { isLayoutField } from './fieldRegistry'
 
 const t = useT()
@@ -42,7 +42,7 @@ const props = withDefaults(
     meta?: FormMeta
     /** 收集数据存储 key（默认按字段结构自动生成） */
     storageKey?: string
-    /** 存储实现（默认 localStorage；接入 SaaS 时注入 API 实现） */
+    /** 存储实现（默认全局活动 store；设计器切换本地/云端后自动跟随，接入 SaaS 时注入 API 实现） */
     store?: FormStore
     /**
      * 导出 Excel 时的列配置
@@ -55,7 +55,8 @@ const props = withDefaults(
   }>(),
   {
     meta: () => ({}),
-    store: () => createLocalFormStore(),
+    // 默认走全局活动 store：设计器「存储方式」切到云端后，收集端自动跟随（同一份表单数据）
+    store: () => getActiveFormStore(),
   },
 )
 

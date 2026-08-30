@@ -208,7 +208,21 @@ const linkageHelpText = computed(() => {
 
         <div class="ldp-prop">
           <label>{{ t('fbp.labelName') }}</label>
-          <Input :model-value="node.label" :placeholder="t('fbp.labelNamePh')" @update:model-value="onLabelInput" />
+          <!-- paragraph：说明文字为多行内容，用 textarea 编辑 label -->
+          <textarea
+            v-if="node.type === 'paragraph'"
+            class="ldp-options-editor"
+            :value="node.label"
+            rows="3"
+            :placeholder="t('fbp.paragraphPh')"
+            @input="onLabelInput(($event.target as HTMLTextAreaElement).value)"
+          />
+          <Input
+            v-else
+            :model-value="node.label"
+            :placeholder="t('fbp.labelNamePh')"
+            @update:model-value="onLabelInput"
+          />
         </div>
 
         <!-- 容器节点专属 -->
@@ -235,6 +249,54 @@ const linkageHelpText = computed(() => {
                 ]"
                 @update:model-value="
                   emit('update', { containerConfig: { ...node.containerConfig, columns: Number($event) } })
+                "
+              />
+            </div>
+          </template>
+
+          <!-- flex 容器：间距/换行/对齐 -->
+          <template v-if="node.type === 'flex'">
+            <div class="ldp-section-title">{{ t('fbp.sectionFlex') }}</div>
+            <div class="ldp-prop">
+              <label>{{ t('fbp.flexGap') }}</label>
+              <Select
+                :model-value="node.containerConfig?.gap ?? 12"
+                :options="[
+                  { value: 4, label: '4px' },
+                  { value: 8, label: '8px' },
+                  { value: 12, label: '12px' },
+                  { value: 16, label: '16px' },
+                  { value: 24, label: '24px' },
+                ]"
+                @update:model-value="
+                  emit('update', { containerConfig: { ...node.containerConfig, gap: Number($event) } })
+                "
+              />
+            </div>
+            <div class="ldp-prop ldp-prop-switch">
+              <label>{{ t('fbp.flexWrap') }}</label>
+              <Group
+                type="switch"
+                :model-value="node.containerConfig?.wrap !== false"
+                @update:model-value="emit('update', { containerConfig: { ...node.containerConfig, wrap: !!$event } })"
+              />
+            </div>
+            <div class="ldp-prop">
+              <label>{{ t('fbp.flexJustify') }}</label>
+              <Select
+                :model-value="node.containerConfig?.justify ?? 'start'"
+                :options="[
+                  { value: 'start', label: t('fbp.justifyStart') },
+                  { value: 'center', label: t('fbp.justifyCenter') },
+                  { value: 'space-between', label: t('fbp.justifyBetween') },
+                ]"
+                @update:model-value="
+                  emit('update', {
+                    containerConfig: {
+                      ...node.containerConfig,
+                      justify: String($event) as 'start' | 'center' | 'space-between',
+                    },
+                  })
                 "
               />
             </div>

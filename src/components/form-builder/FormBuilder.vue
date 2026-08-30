@@ -30,7 +30,7 @@ import Tabs from '@/components/nav/Tabs.vue'
 import Collapse from '@/components/data/Collapse.vue'
 import Card from '@/components/data/Card.vue'
 import Toast from '@/components/feedback/Toast.vue'
-import type { FormSchema, FormData, FormField, FormErrors, RenderSection } from './types'
+import type { FormSchema, FormData, FormField, FormErrors, RenderSection, FieldContainer } from './types'
 
 const t = useT()
 
@@ -518,6 +518,11 @@ const renderSections = computed<RenderSection[]>(() => {
       columns = c.columns ?? 2
       // grid 容器内字段默认均分列宽
       spanDefault = isGrid ? Math.max(1, Math.floor(24 / columns)) : 24
+      // flex 容器：span 直接折算宽度占比（spanOf 需 24 全域，避免被列数钳制）
+      if (c.type === 'flex') {
+        columns = 24
+        spanDefault = 24
+      }
     } else {
       title = f.group ?? null
       isGrid = normalized.value.layout === 'grid'
@@ -554,8 +559,18 @@ const collapseStates = ref<Record<string, boolean>>({})
 /** steps 容器：当前步骤下标 */
 const stepStates = ref<Record<string, number>>({})
 
-/** 取 tabs 容器当前激活 tab 名（缺省第一个） */
-function activeTabOf(section: RenderSection): string {
+/** flex 容器：容器配置 → CSS 变量（换行/对齐/间距） */
+function flexStyle(c: FieldContainer): Record<string, string> {
+  const s: Record<string, string> = {
+    '--fb-flex-wrap': c.wrap === false ? 'nowrap' : 'wrap',
+    '--fb-flex-justify':
+      c.justify === 'center' ? 'center' : c.justify === 'space-between' ? 'space-between' : 'flex-start',
+  }
+  if (c.gap !== undefined) s['--fb-flex-gap'] = `${Math.max(0, Number(c.gap) || 0)}px`
+  return s
+}
+
+/** tabs 容器：当前激活 tab 名（缺省第一个） */ function activeTabOf(section: RenderSection): string {
   const id = section.container?.id ?? ''
   const tabs = section.container?.tabs ?? []
   if (tabStates.value[id] !== undefined) return tabStates.value[id]
@@ -719,12 +734,18 @@ const stepCompletion = computed(() => {
             </div>
           </Card>
 
-          <!-- card / grid / 普通分组：原卡片 + 网格渲染 -->
+          <!-- card / grid / flex / 普通分组：原卡片 + 网格/横排渲染 -->
           <Card v-else class="fb-group-card" :title="section.title || undefined" :no-body-padding="false">
             <div
               class="fb-fields"
-              :class="{ 'fb-grid': section.isGrid }"
-              :style="section.isGrid ? { '--fb-cols': Math.max(1, section.columns) } : {}"
+              :class="{ 'fb-grid': section.isGrid, 'fb-flex': section.container?.type === 'flex' }"
+              :style="
+                section.isGrid
+                  ? { '--fb-cols': Math.max(1, section.columns) }
+                  : section.container?.type === 'flex'
+                    ? flexStyle(section.container)
+                    : {}
+              "
             >
               <FieldList
                 :fields="section.fields"
@@ -873,12 +894,25 @@ const stepCompletion = computed(() => {
   grid-template-columns: repeat(var(--fb-cols, 2), 1fr);
   gap: 12px 16px;
 }
-.fb-field {
+/* .fb-field 由 FieldList（多根片段）渲染，不继承本组件 scope id，必须 :deep 穿透 */
+.fb-fields :deep(.fb-field) {
   min-width: 0;
 }
-/* grid 模式下按 span 跨列 */
-.fb-grid .fb-field {
-  grid-column: span min(var(--fb-span, 12), var(--fb-cols, 2));
+/* grid 模式下按 span 跨列（--fb-span 已由 FieldList 折算为格数） */
+.fb-grid :deep(.fb-field) {
+  grid-column: span var(--fb-span, 1);
+}
+
+/* flex 横排布局：字段并排，按 span 折算占比（span 12 = 50%），可换行/对齐/间距 */
+.fb-flex {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: var(--fb-flex-wrap, wrap);
+  justify-content: var(--fb-flex-justify, flex-start);
+  gap: var(--fb-flex-gap, 12px);
+}
+.fb-flex :deep(.fb-field) {
+  flex: 0 1 var(--fb-basis, 100%);
 }
 
 /* 移动端响应式：单列布局 */
@@ -886,7 +920,7 @@ const stepCompletion = computed(() => {
   .fb-grid {
     grid-template-columns: 1fr;
   }
-  .fb-grid .fb-field {
+  .fb-grid :deep(.fb-field) {
     grid-column: span 1;
   }
 }

@@ -73,6 +73,7 @@ export type DesignerFieldType =
   | 'camera'
   | 'divider'
   | 'title'
+  | 'paragraph'
   // ── v3 高级字段 ──
   | 'subform' // 子表单（可添加多行）
   | 'relate' // 关联选择（关联用户/部门等）
@@ -87,6 +88,7 @@ export type DesignerFieldType =
 export type DesignerContainerType =
   | 'card' // 分组卡片
   | 'grid' // 栅格行（多列布局）
+  | 'flex' // 横排行（字段并排，按 span 定占比）
   | 'tabs' // 标签页容器
   | 'collapse' // 折叠面板容器
   | 'steps' // 步骤条容器
@@ -308,6 +310,14 @@ export interface DesignerContainerConfig {
   /** 栅格列数（grid 用） */
   columns?: number
 
+  // ── flex 横排行 ──
+  /** 子字段间距 px（flex 用，默认 12） */
+  gap?: number
+  /** 是否允许换行（flex 用，默认 true） */
+  wrap?: boolean
+  /** 主轴对齐（flex 用，默认 start） */
+  justify?: 'start' | 'center' | 'space-between'
+
   // ── tabs 标签页 ──
   /** 标签页定义（tabs 用） */
   tabs?: { label: string; name: string }[]
@@ -464,7 +474,7 @@ export function createField(type: DesignerNodeType, index: number): DesignerNode
 
 /** 判断节点是否为容器节点 */
 export function isContainerNode(node: DesignerNode): boolean {
-  return !!node.isContainer || ['card', 'grid', 'tabs', 'collapse', 'steps'].includes(node.type)
+  return !!node.isContainer || ['card', 'grid', 'flex', 'tabs', 'collapse', 'steps'].includes(node.type)
 }
 
 /** 判断节点是否为字段节点（非容器） */
@@ -473,7 +483,7 @@ export function isFieldNode(node: DesignerNode): boolean {
 }
 
 /** 获取所有容器类型 */
-export const CONTAINER_TYPES: DesignerContainerType[] = ['card', 'grid', 'tabs', 'collapse', 'steps']
+export const CONTAINER_TYPES: DesignerContainerType[] = ['card', 'grid', 'flex', 'tabs', 'collapse', 'steps']
 
 /** 获取所有字段类型（非容器） */
 export const FIELD_NODE_TYPES: DesignerFieldType[] = [
@@ -502,6 +512,7 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'camera',
   'divider',
   'title',
+  'paragraph',
   'subform',
   'relate',
   'richtext',
@@ -769,6 +780,11 @@ function flattenWithContainer(
       const cfg = node.containerConfig
       const ctx: FieldContainer = { type: node.type as FieldContainerType, label: node.label, id: node.id }
       if (node.type === 'grid' && cfg?.columns) ctx.columns = cfg.columns
+      if (node.type === 'flex') {
+        if (cfg?.gap !== undefined) ctx.gap = cfg.gap
+        if (cfg?.wrap !== undefined) ctx.wrap = cfg.wrap
+        if (cfg?.justify !== undefined) ctx.justify = cfg.justify
+      }
       if (node.type === 'tabs' && cfg?.tabs?.length) ctx.tabs = cfg.tabs
       if (node.type === 'collapse' && cfg?.collapseItems?.length) ctx.collapseItems = cfg.collapseItems
       if (node.type === 'steps' && cfg?.steps?.length) ctx.steps = cfg.steps
@@ -796,8 +812,8 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
   const formFields: FormField[] = []
 
   for (const { node: f, container } of pairs) {
-    // 跳过无 key 的字段（divider/title 除外）
-    if (!f.key && f.type !== 'divider' && f.type !== 'title') continue
+    // 跳过无 key 的字段（divider/title/paragraph 纯布局元素除外）
+    if (!f.key && f.type !== 'divider' && f.type !== 'title' && f.type !== 'paragraph') continue
 
     const base: FormField = {
       key: f.key ?? f.id,

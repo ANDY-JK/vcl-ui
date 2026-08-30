@@ -1783,6 +1783,24 @@
   min-width: 0;
 }
 
+/* ── flex 横排容器（与运行时 .fb-flex 行为一致：gap/换行/对齐可配，子项按 span 占比） ── */
+.ldc-flex-row {
+  display: flex;
+  flex-wrap: var(--flex-wrap, wrap);
+  justify-content: var(--flex-justify, flex-start);
+  gap: var(--flex-gap, 12px);
+  padding: 12px;
+  min-height: 60px;
+  position: relative;
+}
+.ldc-flex-col {
+  flex: 0 1 var(--flex-basis, 100%);
+  min-width: 0;
+}
+.ldc-flex-col .ldc-card {
+  height: 100%;
+}
+
 /* ── 节点包装 ── */
 .ldc-node-wrapper {
   position: relative;
