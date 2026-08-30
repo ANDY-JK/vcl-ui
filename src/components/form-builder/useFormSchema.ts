@@ -13,6 +13,7 @@
 import { computed, type Ref } from 'vue'
 import type { FormSchema, FormField, FormData } from './types'
 import { useT } from '@/components/_internal/i18n'
+import { evaluateFormula } from './expression-evaluator'
 // 从注册表重导出，保持向后兼容
 export { getComponentCategory, isLayoutField } from './fieldRegistry'
 export type { ComponentCategory } from './fieldRegistry'
@@ -116,19 +117,57 @@ function getEmptyValue(field: FormField): unknown {
 }
 
 /**
+ * 当前用户上下文（动态默认值 currentUser 用；宿主可注入真实用户信息）
+ */
+export interface UserContext {
+  name?: string
+  [key: string]: unknown
+}
+
+/**
  * 从 Schema 的 fields 提取默认值，生成初始 form data
  *
- * - 有 field.default 用 default
- * - 无 default 用类型对应空值
+ * - 有 field.default（静态）用 default
+ * - defaultMeta.currentTime → 当前时间字符串
+ * - defaultMeta.currentUser → userContext.name（未注入时占位 'currentUser'）
+ * - defaultMeta.formula → evaluateFormula（{{field}} 引用同表单字段）
+ * - 无则用类型对应空值
  * - 纯布局字段（divider/title）不参与数据
  */
-export function createInitialData(fields: FormField[]): FormData {
+export function createInitialData(fields: FormField[], opts: { userContext?: UserContext } = {}): FormData {
   const data: FormData = {}
+  const user = opts.userContext ?? {}
+
   for (const field of fields) {
     if (isLayoutField(field.type)) continue
+
+    // 动态默认值优先（设计器 dataConfig.defaultType 映射而来）
+    const dm = field.defaultMeta
+    if (dm && field.default === undefined) {
+      if (dm.type === 'currentTime') {
+        data[field.key] = formatCurrentTime()
+        continue
+      }
+      if (dm.type === 'currentUser') {
+        data[field.key] = user.name ?? 'currentUser'
+        continue
+      }
+      if (dm.type === 'formula' && dm.formula) {
+        data[field.key] = evaluateFormula(dm.formula, data)
+        continue
+      }
+    }
+
     data[field.key] = field.default !== undefined ? field.default : getEmptyValue(field)
   }
   return data
+}
+
+/** 当前时间（YYYY-MM-DD HH:mm，本地时区） */
+function formatCurrentTime(): string {
+  const d = new Date()
+  const p = (n: number): string => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
 }
 
 // ════════════════════════════════════════
@@ -158,7 +197,7 @@ export function isFieldVisible(field: FormField, data: FormData): boolean {
  *
  * 提供响应式的归一化 Schema、初始数据、字段分组、步骤分组
  */
-export function useFormSchema(schemaRef: Ref<FormSchema>) {
+export function useFormSchema(schemaRef: Ref<FormSchema>, userContext?: Ref<UserContext>) {
   /** 归一化后的 Schema */
   const normalized = computed(() => normalizeSchema(schemaRef.value))
 
@@ -182,8 +221,8 @@ export function useFormSchema(schemaRef: Ref<FormSchema>) {
     return groups
   })
 
-  /** 初始数据（Schema 不变时缓存） */
-  const initialData = computed(() => createInitialData(normalized.value.fields))
+  /** 初始数据（Schema 不变时缓存；动态默认值用 userContext） */
+  const initialData = computed(() => createInitialData(normalized.value.fields, { userContext: userContext?.value }))
 
   /** 栅格 span 默认值（按布局模式） */
   const defaultSpan = computed(() => {

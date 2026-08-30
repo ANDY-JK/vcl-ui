@@ -229,6 +229,17 @@ export interface FormField {
   /** 字段所属容器（设计器容器嵌套时由 toFormSchema 填充） */
   container?: FieldContainer
   /**
+   * 动态默认值（设计器 dataConfig.defaultType 映射）
+   * - currentTime: 初始化填当前时间
+   * - currentUser: 初始化填当前用户（取 FormBuilder userContext）
+   * - formula:     用公式求值（{{field}} 引用同表单其它字段）
+   */
+  defaultMeta?: {
+    type: 'currentTime' | 'currentUser' | 'formula'
+    /** formula 表达式（type=formula 时有效） */
+    formula?: string
+  }
+  /**
    * 字段联动配置
    *
    * 配置当前字段如何响应其他字段值的变化。

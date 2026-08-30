@@ -828,9 +828,15 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       group: f.group,
     }
 
-    // 默认值
+    // 默认值：静态 defaultValue 直接映射；动态 defaultMeta 由 dataConfig.defaultType 映射
     if (f.defaultValue !== undefined) {
       base.default = f.defaultValue
+    }
+    const dt = f.dataConfig?.defaultType
+    if (dt === 'currentTime' || dt === 'currentUser') {
+      base.defaultMeta = { type: dt }
+    } else if (dt === 'formula' && f.dataConfig?.defaultFormula) {
+      base.defaultMeta = { type: 'formula', formula: f.dataConfig.defaultFormula }
     }
 
     // 选项类型

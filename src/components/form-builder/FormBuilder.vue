@@ -49,6 +49,8 @@ interface Props {
   readonly?: boolean
   /** 是否禁用全部字段 */
   disabled?: boolean
+  /** 当前用户上下文（动态默认值 currentUser 用；宿主注入真实用户信息） */
+  userContext?: Record<string, unknown>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -56,6 +58,7 @@ const props = withDefaults(defineProps<Props>(), {
   storageKey: '',
   readonly: false,
   disabled: false,
+  userContext: () => ({}),
 })
 
 const emit = defineEmits<{
@@ -75,7 +78,8 @@ const emit = defineEmits<{
 // ════════════════════════════════════════
 
 const schemaRef = computed(() => props.schema)
-const { normalized, initialData, defaultSpan } = useFormSchema(schemaRef)
+const userContextRef = computed(() => props.userContext)
+const { normalized, initialData, defaultSpan } = useFormSchema(schemaRef, userContextRef)
 
 // ════════════════════════════════════════
 // 表单数据（必须在联动引擎之前声明，避免 TDZ）
