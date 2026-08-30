@@ -7,7 +7,7 @@
  * 2. 预览：实时渲染表单
  * 3. 收集：数据收集 + 记录管理 + Excel 导出
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { FormDesigner, FormCollect, FormBuilder, toFormSchema } from '@/components/form-builder'
 import type { DesignerField, DesignerNode, FormMeta } from '@/components/form-builder'
 import {
@@ -42,6 +42,45 @@ const meta = ref<FormMeta>({
 
 // 预览数据
 const previewData = ref<Record<string, unknown>>({})
+
+// ════════════════════════════════════════
+// 设计器高度 — 单屏自适应（不滚动）
+// 可用高 = .content-body 可视高 − 固定开销(顶部 28 + 标签栏 66 + 底部 60 + 兜底 3 = 157)
+//          − 工具栏实际高（一行 51 / 换行 83，量取避免估算）
+// ════════════════════════════════════════
+const bodyClientH = ref(0)
+const toolbarH = ref(83)
+let bodyObserver: ResizeObserver | null = null
+let toolbarObserver: ResizeObserver | null = null
+
+const measureBody = () => {
+  const el = document.querySelector('.content-body')
+  if (el) bodyClientH.value = el.clientHeight
+}
+const measureToolbar = () => {
+  const el = document.querySelector('.ld-toolbar')
+  if (el) toolbarH.value = el.getBoundingClientRect().height
+}
+
+onMounted(() => {
+  measureBody()
+  bodyObserver = new ResizeObserver(measureBody)
+  const body = document.querySelector('.content-body')
+  if (body) bodyObserver.observe(body)
+
+  measureToolbar()
+  const toolbar = document.querySelector('.ld-toolbar')
+  if (toolbar) toolbarObserver = new ResizeObserver(measureToolbar)
+  toolbarObserver?.observe(toolbar!)
+
+  window.addEventListener('resize', measureBody)
+})
+onUnmounted(() => {
+  bodyObserver?.disconnect()
+  toolbarObserver?.disconnect()
+  window.removeEventListener('resize', measureBody)
+})
+const designHeight = computed(() => `${Math.max(bodyClientH.value - 157 - toolbarH.value, 355)}px`)
 
 /** 预览用 Schema（从设计数据转换） */
 const previewSchema = computed(() => toFormSchema(fields.value, meta.value))
@@ -151,7 +190,7 @@ function loadPreset(key: string): void {
     <!-- 内容区 -->
     <!-- 设计 -->
     <div v-if="activeTab === 'design'">
-      <FormDesigner v-model:fields="fields" v-model:meta="meta" height="620px" />
+      <FormDesigner v-model:fields="fields" v-model:meta="meta" :height="designHeight" />
     </div>
 
     <!-- 预览 -->
@@ -181,8 +220,6 @@ function loadPreset(key: string): void {
 <style scoped>
 .lc-demo {
   padding: 20px;
-  max-width: 1480px;
-  margin: 0 auto;
 }
 
 /* ── 标签栏 — 对齐原型 ── */
@@ -282,13 +319,9 @@ function loadPreset(key: string): void {
   color: var(--color-primary, #4f6ef7);
 }
 
-/* ── 内容区 ── */
+/* ── 内容区 — 满宽，与其它 demo 页一致 ── */
 .lc-demo-preview {
-  max-width: 640px;
-  margin: 0 auto;
-  height: 620px;
-  overflow-y: auto;
-  padding-right: 4px;
+  width: 100%;
 }
 .lc-demo-placeholder {
   display: flex;
