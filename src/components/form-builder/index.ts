@@ -18,6 +18,9 @@ export { default as FieldError } from './FieldError.vue'
 // ── 数据收集 ──
 export { default as FormCollect } from './FormCollect.vue'
 
+// ── 表单发布填写端（#/form/:code 路由指向此组件） ──
+export { default as FormShareView } from './FormShareView.vue'
+
 // ── composable ──
 export { useFormSchema, isFieldVisible, createInitialData, normalizeSchema, SCHEMA_VERSION } from './useFormSchema'
 export { useFormValidator, validateField, validateAll, validators } from './useFormValidator'

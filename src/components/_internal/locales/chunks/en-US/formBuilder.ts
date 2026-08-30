@@ -424,9 +424,18 @@ export default {
     shareTitle: 'Share Form',
     shareCodeHint:
       'Copy the share code and send it to others; they can restore the form by pasting it under "Import" (not encrypted — do not share sensitive forms)',
+    shareLinkHint: "Publish link: recipients can open and fill it in; data is collected into this form's records",
+    shareLinkCopy: 'Copy publish link',
+    shareLinkCopied: 'Publish link copied',
     shareCopied: 'Share code copied',
     copyFail: 'Copy failed',
     shareCodeInvalid: 'Invalid or corrupted share code',
+    // FormShareView publish endpoint
+    formExpired: 'Form not found or invalid link',
+    formExpiredHint: 'Check the link or contact the form publisher',
+    submitOk: 'Submitted successfully',
+    submitOkHint: 'Thank you for your participation!',
+    fillAgain: 'Fill in another',
     emptySelectA: 'Select a node',
     emptySelectB: 'to edit properties',
     emptySelectTip: 'Select a node to edit its properties',

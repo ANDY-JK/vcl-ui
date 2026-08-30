@@ -247,6 +247,16 @@ async function copyShare(): Promise<void> {
   showTip(ok ? t('fbd.shareCopied') : t('fbd.copyFail'))
 }
 
+/** 发布链接：宿主应用需注册 `#/form/:code` 路由指向 FormShareView */
+function buildShareUrl(): string {
+  return `${location.origin}${location.pathname}#/form/${shareCode.value}`
+}
+
+async function copyShareLink(): Promise<void> {
+  const ok = await copyText(buildShareUrl())
+  showTip(ok ? t('fbd.shareLinkCopied') : t('fbd.copyFail'))
+}
+
 // ════════════════════════════════════════
 // 导入/导出 — 逻辑在 useFormIO
 // ════════════════════════════════════════
@@ -727,7 +737,13 @@ const selectedPath = computed(() => {
         @focus="($event.target as HTMLTextAreaElement).select()"
       />
       <div class="ld-share-actions">
-        <Button :text="t('common.copy')" variant="primary" :icon="'copy'" @click="copyShare" />
+        <Button :text="t('common.copy')" variant="secondary" :icon="'copy'" @click="copyShare" />
+      </div>
+      <div class="ld-share-publish">
+        <p class="ld-share-hint">{{ t('fbd.shareLinkHint') }}</p>
+        <div class="ld-share-actions">
+          <Button :text="t('fbd.shareLinkCopy')" variant="primary" :icon="'link'" @click="copyShareLink" />
+        </div>
       </div>
     </div>
   </ModalBox>
