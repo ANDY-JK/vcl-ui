@@ -43,7 +43,60 @@ function isEmptyValue(_field: FormField, v: unknown): boolean {
   if (typeof v === 'number') return false // 0 是合法值
   if (typeof v === 'boolean') return false // false 是合法值
   if (Array.isArray(v)) return v.length === 0
+  // 对象（matrix 评分映射等）：空对象视为空值（required 语义 = 至少选中一项）
+  if (typeof v === 'object') return Object.keys(v as Record<string, unknown>).length === 0
   return false
+}
+
+/** 去除 HTML 标签与实体，得到纯文本（richtext 字符数校验用） */
+function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+}
+
+/**
+ * 高级字段专项校验（P1-7）
+ *
+ * 通过 field.props 承载配置，与通用 rules 并行：
+ * - richtext:  props.richtextMinChars → 去标签后字符数下限
+ * - matrix:    props.matrixMinRows → 已评分行数下限
+ * - signature: props.signatureRequired → 必须已签名（dataURL 非空）
+ * - serial:    只读流水号，挂载时自动生成，不参与必填校验
+ */
+function validateAdvanced(field: FormField, value: unknown): string {
+  switch (field.type) {
+    case 'richtext': {
+      const min = Number(field.props?.richtextMinChars ?? 0)
+      if (min > 0) {
+        const text = htmlToPlainText(typeof value === 'string' ? value : '')
+        if (text.trim().length < min) return t('formBuilder.richtextMinChars', { len: min })
+      }
+      break
+    }
+    case 'matrix': {
+      const min = Number(field.props?.matrixMinRows ?? 0)
+      if (min > 0) {
+        const rows = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {}
+        if (Object.keys(rows).length < min) return t('formBuilder.matrixMinRows', { n: min })
+      }
+      break
+    }
+    case 'signature': {
+      if (field.props?.signatureRequired && isEmptyValue(field, value)) {
+        return t('formBuilder.signatureRequired')
+      }
+      break
+    }
+    default:
+      break
+  }
+  return ''
 }
 
 // ════════════════════════════════════════
@@ -76,13 +129,26 @@ export function validateField(
   // 不可见字段跳过
   if (!isVisible(field, data)) return ''
 
+  // serial 流水号只读自动生成：挂载时回写，不参与必填校验（required 标记不拦截提交）
+  if (field.type === 'serial') return ''
+
   // required 空值检查
   if (field.required && isEmptyValue(field, value)) {
     return t('formBuilder.fieldRequired', { label: field.label })
   }
 
-  // requiredOnly 模式跳过 rules
+  // richtext required：仅含标签无文本（如 <p><br></p>）视为空值
+  if (field.required && field.type === 'richtext') {
+    const text = htmlToPlainText(typeof value === 'string' ? value : '')
+    if (text.trim() === '') return t('formBuilder.fieldRequired', { label: field.label })
+  }
+
+  // requiredOnly 模式跳过 rules 与专项校验
   if (requiredOnly) return ''
+
+  // 高级字段专项校验（richtext 最小字数 / matrix 必填行数 / signature 必签）
+  const advErr = validateAdvanced(field, value)
+  if (advErr) return advErr
 
   // rules 规则数组（支持简单签名和上下文签名两种）
   if (field.rules && field.rules.length > 0) {

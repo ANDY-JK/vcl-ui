@@ -69,6 +69,10 @@ export default {
     patternInvalid: '格式不正确',
     emailInvalidShort: '请输入正确的邮箱',
     urlInvalidShort: '请输入正确的 URL',
+    // P1-7 高级字段专项校验消息
+    richtextMinChars: '请输入至少 {len} 个字符',
+    matrixMinRows: '请至少评分 {n} 行',
+    signatureRequired: '请完成签名',
   },
 
   // ═══ 属性面板（PropsPanel） ═══
@@ -160,6 +164,10 @@ export default {
     valEmail: '邮箱格式',
     valIdcard: '身份证号',
     valUrl: 'URL 格式',
+    // P1-7 高级字段专项校验配置（校验页）
+    richtextMinChars: '富文本最小字数',
+    matrixMinRows: '矩阵必填行数',
+    signatureRequired: '必填（需签名）',
     sectionSubform: '子表单设置',
     subformColumns: '列定义（每行一个，格式：标签|key|类型）',
     subformColumnsPh: '姓名|name|text\n电话|phone|number',
@@ -207,6 +215,7 @@ export default {
     enabled: '已启用',
     disabledState: '未启用',
     sectionCustom: '自定义校验',
+    sectionAdvanced: '高级校验',
     patternPh: '如：^[\\u4e00-\\u9fa5]+$',
     patternMessage: '校验提示语',
     patternMessagePh: '校验失败时显示的提示',

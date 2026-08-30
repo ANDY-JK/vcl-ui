@@ -230,6 +230,13 @@ export interface DesignerValidation {
   unique?: boolean
   /** 实时校验 */
   realtime?: boolean
+  // ── P1-7 高级字段专项校验 ──
+  /** richtext 最小字数（去标签后） */
+  richtextMinChars?: number
+  /** matrix 必填行数（已评分行数下限） */
+  matrixMinRows?: number
+  /** signature 必签（未签名视为空） */
+  signatureRequired?: boolean
 }
 
 /** 样式配置 */
@@ -992,6 +999,17 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
         // trim 规则在 FormBuilder 层处理，这里不需要加 rule
       }
       if (rules.length) base.rules = rules
+
+      // P1-7 高级字段专项校验配置（引擎侧由 validateAdvanced 读取 props）
+      if (val.richtextMinChars !== undefined && val.richtextMinChars > 0) {
+        base.props = { ...base.props, richtextMinChars: val.richtextMinChars }
+      }
+      if (val.matrixMinRows !== undefined && val.matrixMinRows > 0) {
+        base.props = { ...base.props, matrixMinRows: val.matrixMinRows }
+      }
+      if (val.signatureRequired) {
+        base.props = { ...base.props, signatureRequired: true }
+      }
     }
 
     if (container) base.container = container

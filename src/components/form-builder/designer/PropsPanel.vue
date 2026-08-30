@@ -903,6 +903,53 @@ const linkageHelpText = computed(() => {
             @update:model-value="emit('update', { validation: { ...node.validation, realtime: !!$event } })"
           />
         </div>
+
+        <!-- P1-7 高级字段专项校验（按字段类型显示对应配置） -->
+        <template v-if="node.type === 'richtext'">
+          <div class="ldp-section-title">{{ t('fbp.sectionAdvanced') }}</div>
+          <div class="ldp-prop">
+            <label>{{ t('fbp.richtextMinChars') }}</label>
+            <Input
+              type="number"
+              :model-value="node.validation?.richtextMinChars ?? ''"
+              placeholder="0"
+              @update:model-value="
+                emit('update', {
+                  validation: { ...node.validation, richtextMinChars: Number($event) > 0 ? Number($event) : undefined },
+                })
+              "
+            />
+          </div>
+        </template>
+
+        <template v-if="node.type === 'matrix'">
+          <div class="ldp-section-title">{{ t('fbp.sectionAdvanced') }}</div>
+          <div class="ldp-prop">
+            <label>{{ t('fbp.matrixMinRows') }}</label>
+            <Input
+              type="number"
+              :model-value="node.validation?.matrixMinRows ?? ''"
+              placeholder="0"
+              @update:model-value="
+                emit('update', {
+                  validation: { ...node.validation, matrixMinRows: Number($event) > 0 ? Number($event) : undefined },
+                })
+              "
+            />
+          </div>
+        </template>
+
+        <template v-if="node.type === 'signature'">
+          <div class="ldp-section-title">{{ t('fbp.sectionAdvanced') }}</div>
+          <div class="ldp-prop ldp-prop-switch">
+            <label>{{ t('fbp.signatureRequired') }}</label>
+            <Group
+              type="switch"
+              :model-value="!!node.validation?.signatureRequired"
+              @update:model-value="emit('update', { validation: { ...node.validation, signatureRequired: !!$event } })"
+            />
+          </div>
+        </template>
       </div>
 
       <!-- ═══ 样式设置页 ═══ -->
@@ -1100,7 +1147,6 @@ const linkageHelpText = computed(() => {
                 })
               "
             />
-            <!-- setValue / toggleVisible 需要目标字段 -->
             <div
               v-if="
                 node.eventConfig?.onChange?.action === 'setValue' ||

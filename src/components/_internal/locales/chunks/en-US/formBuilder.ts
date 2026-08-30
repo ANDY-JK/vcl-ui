@@ -69,6 +69,10 @@ export default {
     patternInvalid: 'Invalid format',
     emailInvalidShort: 'Please enter a valid email',
     urlInvalidShort: 'Please enter a valid URL',
+    // P1-7 advanced field validation messages
+    richtextMinChars: 'Please enter at least {len} characters',
+    matrixMinRows: 'Please rate at least {n} rows',
+    signatureRequired: 'Please complete the signature',
   },
 
   // ═══ 属性面板（PropsPanel） ═══
@@ -160,6 +164,10 @@ export default {
     valEmail: 'Email format',
     valIdcard: 'ID number',
     valUrl: 'URL format',
+    // P1-7 advanced field validation config (validation tab)
+    richtextMinChars: 'Min chars (rich text)',
+    matrixMinRows: 'Min rated rows (matrix)',
+    signatureRequired: 'Required (signature)',
     sectionSubform: 'Subform settings',
     subformColumns: 'Column definitions (one per line, format: label|key|type)',
     subformColumnsPh: 'Name|name|text\nPhone|phone|number',
@@ -207,6 +215,7 @@ export default {
     enabled: 'Enabled',
     disabledState: 'Not enabled',
     sectionCustom: 'Custom validation',
+    sectionAdvanced: 'Advanced validation',
     patternPh: 'e.g. ^[\\u4e00-\\u9fa5]+$',
     patternMessage: 'Validation message',
     patternMessagePh: 'Message shown when validation fails',
