@@ -1770,16 +1770,17 @@
   margin: 0 auto;
 }
 
-/* ── grid 容器 ── */
+/* ── grid 容器：子列按 span 折算格数跨列（与运行时 .fb-grid 一致） ── */
 .ldc-grid-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols, 2), 1fr);
   gap: 12px;
   padding: 12px;
   min-height: 60px;
   position: relative;
 }
 .ldc-grid-col {
-  flex: 1;
+  grid-column: span var(--col-span, 1);
   min-width: 0;
 }
 

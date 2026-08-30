@@ -209,6 +209,16 @@ function setActiveStep(node: DesignerNode, index: number): void {
   localActiveStep.value = { ...localActiveStep.value, [node.id]: next }
 }
 
+/**
+ * grid 子列跨列数：span 24 全域折算为格数（与运行时 FieldList 同语义）
+ * 例：2 列容器 span 12 → 1 格（半行）；span 24 → 2 格（整行）；4 列容器 span 6 → 1 格
+ */
+function gridColSpan(node: DesignerNode, child: DesignerNode): number {
+  const columns = Math.max(1, node.containerConfig?.columns ?? 2)
+  const raw = Math.min(Math.max(1, child.span ?? 24), 24)
+  return Math.max(1, Math.min(columns, Math.round((raw / 24) * columns)))
+}
+
 /** tabs 容器「+ 添加」：追加新标签页并激活（name 防重复） */
 function addTabTo(node: DesignerNode): void {
   const tabs = tabSlots(node)
@@ -670,7 +680,12 @@ const deviceClass = computed(() => `device-${props.device}`)
               <template v-else-if="node.type === 'grid'">
                 <div class="ldc-grid-row" :style="{ '--grid-cols': node.containerConfig?.columns ?? 2 }">
                   <template v-if="node.children?.length">
-                    <div v-for="child in node.children" :key="child.id" class="ldc-grid-col">
+                    <div
+                      v-for="child in node.children"
+                      :key="child.id"
+                      class="ldc-grid-col"
+                      :style="{ '--col-span': gridColSpan(node, child) }"
+                    >
                       <div
                         class="ldc-card"
                         :class="{ selected: child.id === selectedId }"
