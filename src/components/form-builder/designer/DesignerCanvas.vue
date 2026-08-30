@@ -388,11 +388,13 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
   } else {
     const type = e.dataTransfer?.getData('application/x-field-type') || e.dataTransfer?.getData('text/plain')
     if (type) {
-      // 如果拖到容器上，插入到容器内（tabs/collapse/steps 落到当前激活槽位）
+      // 面板字段拖入：容器 → 插入容器内（落到当前激活槽位）；普通字段 → 按鼠标 Y 分半 before/after
       if (isContainerNode(node)) {
         emit('insertIntoContainer', type as DesignerNodeType, node.id, -1, activeSlotOf(node))
       } else {
-        emit('insertAt', type as DesignerNodeType, -1)
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+        const index = props.nodes.findIndex((n) => n.id === node.id)
+        emit('insertAt', type as DesignerNodeType, e.clientY < rect.top + rect.height / 2 ? index : index + 1)
       }
     }
   }
