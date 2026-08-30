@@ -13,11 +13,20 @@ import Drawer from '@/components/feedback/Drawer.vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
 import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import { FORM_MANAGER_KEY } from './context'
+import FormDataSummary from './FormDataSummary.vue'
+import type { FormMetaItem } from './store'
 
 const t = useT()
 
 /** 表单管理实例：父级 provide 注入（共享 reactive 状态，非 prop 单向流） */
 const manager = inject(FORM_MANAGER_KEY)!
+
+// ── 数据汇总弹窗状态 ──
+const summaryTarget = ref<FormMetaItem | null>(null)
+
+function openSummary(item: FormMetaItem): void {
+  summaryTarget.value = item
+}
 
 // ── 重命名弹窗本地状态 ──
 const renameVisible = ref(false)
@@ -93,6 +102,9 @@ function onConfirmLoad(): void {
             <button class="ld-btn" :title="t('fbd.openForm')" @click="manager.requestOpenForm(item)">
               <IconSvg type="folder-open" size="xs" /> {{ t('fbd.openForm') }}
             </button>
+            <button class="ld-btn" :title="t('fbd.viewData')" @click="openSummary(item)">
+              <IconSvg type="database" size="xs" /> {{ t('fbd.viewData') }}
+            </button>
             <button class="ld-btn" :title="t('fbd.rename')" @click="openRename(item.id, item.name)">
               <IconSvg type="pencil" size="xs" /> {{ t('fbd.rename') }}
             </button>
@@ -154,4 +166,7 @@ function onConfirmLoad(): void {
     @update:visible="manager.pendingLoad = null"
     @confirm="onConfirmLoad"
   />
+
+  <!-- 数据汇总弹窗 -->
+  <FormDataSummary :visible="!!summaryTarget" :item="summaryTarget" @update:visible="summaryTarget = null" />
 </template>

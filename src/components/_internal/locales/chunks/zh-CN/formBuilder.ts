@@ -446,6 +446,11 @@ export default {
     statTotal: '总记录',
     statToday: '今日',
     statFields: '字段数',
+    // FormDataSummary 数据汇总弹窗
+    formDataTitle: '「{name}」数据',
+    latestSubmit: '最新提交',
+    exportCsv: '导出 CSV',
+    viewData: '数据',
     submittedAt: '提交时间',
     sheetName: '收集数据',
     defaultFileName: '表单收集',

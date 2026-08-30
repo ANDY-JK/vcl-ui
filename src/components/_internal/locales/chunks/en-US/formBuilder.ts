@@ -449,6 +449,11 @@ export default {
     statTotal: 'Total records',
     statToday: 'Today',
     statFields: 'Fields',
+    // FormDataSummary summary dialog
+    formDataTitle: '"{name}" data',
+    latestSubmit: 'Latest',
+    exportCsv: 'Export CSV',
+    viewData: 'Data',
     submittedAt: 'Submitted at',
     sheetName: 'Collected data',
     defaultFileName: 'Form collection',
