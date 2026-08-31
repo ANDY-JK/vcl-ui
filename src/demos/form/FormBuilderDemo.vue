@@ -122,7 +122,10 @@ function loadPreset(key: string): void {
     hint: f.hint,
     span: f.span,
     group: f.group,
-    options: f.options?.map((o) => String(o.value)),
+    // 选项取 label：设计器 options 语义为「显示文本 = 值」，
+    // schema 的 Option[] 可能 value/label 分离（如 gender: value='male' label='男'），
+    // 只取 value 会把英文编码当标签显示，取 label 保证画布/预览显示用户可见文案
+    options: f.options?.map((o) => o.label ?? String(o.value)),
     defaultValue: f.default,
     min: f.props?.min as number | undefined,
     max: f.props?.max as number | undefined,

@@ -76,6 +76,10 @@
       "types": "./src/components/wc/index.ts",
       "import": "./src/components/wc/index.ts"
     },
+    "./i18n": {
+      "types": "./src/components/_internal/i18n.ts",
+      "import": "./src/components/_internal/i18n.ts"
+    },
     "./dist/*": "./dist/*",
     "./src/*": "./src/*",
     "./package.json": "./package.json"

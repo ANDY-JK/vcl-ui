@@ -224,7 +224,7 @@ export { useTheme } from './_internal/useTheme'
 export type { ThemeMode } from './_internal/useTheme'
 
 // 国际化
-export { i18n, setLocale, getLocale, useT, useTm, useI18n } from './_internal/i18n'
+export { i18n, setLocale, getLocale, useT, useTm, useI18n, registerMessages } from './_internal/i18n'
 export type { Locale } from './_internal/i18n'
 
 // 通用工具函数 — 校验 / 行政区划 / 下载 / 深拷贝 / 数字金额 / 字符串 / 随机ID / 文件转换
