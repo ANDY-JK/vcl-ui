@@ -41,6 +41,10 @@ export {
 } from './fieldRegistry'
 export type { FieldRegistration } from './fieldRegistry'
 
+// ── DynamicForm 兼容适配（旧版配置 → schema） ──
+export { toDynamicFormSchema } from './dynamic-form-adapter'
+export type { DynamicFieldConfig, DynamicUploadConfig, DynamicFormConfig } from './dynamic-form-adapter'
+
 // ── 预置 Schema 模板 ──
 export {
   contractCollectionSchema,
