@@ -260,9 +260,22 @@ export function storeReportSchema(): FormSchema {
   return {
     title: t('fbPre.srTitle'),
     description: t('fbPre.srDesc'),
-    layout: 'single',
+    // grid 布局：字段多列紧凑排布（对标旧版 DynamicForm auto-fill 栅格）
+    layout: 'grid',
+    columns: 2,
     submitText: t('fbPre.srSubmit'),
     validateOnChange: true,
+    // 表单级 API 链路（旧版 DynamicForm 三模式承接）：
+    // - edit（默认） 编辑提交
+    // - review       审核模式：全字段可编辑 + 变更防抖自动保存到 saveUrl
+    // - view         只读展示 + 挂载时 GET 加载
+    // 接入方把 apiUrl/saveUrl 换成真实接口即可；不配则退回纯前端表单（无 API 交互）
+    submitConfig: {
+      mode: 'edit',
+      apiUrl: '/api/store-report',
+      saveUrl: '/api/store-report',
+      reviewAutoSave: 3000,
+    },
     fields,
   }
 }
