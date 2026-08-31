@@ -730,6 +730,10 @@ export default {
     dySign: '签名',
     dySignHint: '请手写签名',
     dyRichtext: '详细说明',
+    // store-report（门店提报，承接旧版 DynamicForm）
+    srTitle: '门店提报',
+    srDesc: '门店提报信息登记：48 个字段（含公式/条件显隐/经纬度校验）+ 26 个照片上传位（OTC/O2O 分组）',
+    srSubmit: '提交提报',
     // review-form
     rvTitle: '审批流程表单',
     rvDesc: '多步骤审批：申请信息 → 审核意见 → 附件确认',

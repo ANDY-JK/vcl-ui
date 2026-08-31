@@ -53,6 +53,7 @@ export {
   reviewFormSchema,
   storeCollectionSchema,
   dynamicFormSchema,
+  storeReportSchema,
 } from './presets'
 
 // ── 设计器类型与工具 ──

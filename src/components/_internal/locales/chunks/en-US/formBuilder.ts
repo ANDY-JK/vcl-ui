@@ -735,6 +735,11 @@ export default {
     dySign: 'Signature',
     dySignHint: 'Sign by hand',
     dyRichtext: 'Details',
+    // store-report (store report, successor of old DynamicForm)
+    srTitle: 'Store Report',
+    srDesc:
+      'Store report: 48 fields (formulas/conditional visibility/lat-lng validation) + 26 photo upload slots (OTC/O2O groups)',
+    srSubmit: 'Submit report',
     // review-form
     rvTitle: 'Approval Workflow Form',
     rvDesc: 'Multi-step approval: application info → review opinion → attachments',
