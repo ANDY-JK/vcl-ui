@@ -72,6 +72,8 @@ function toFormField(f: DynamicFieldConfig): FormField {
     placeholder: f.placeholder,
     readonly: f.readonly,
     group: f.group,
+    // 默认 span 12（grid 布局下占半行，字段多列紧凑排布，对标旧版 auto-fill 栅格）；
+    // 长内容字段整行
     span: f.span ?? (f.type === 'textarea' ? 24 : 12),
     hint: f.hint,
     props: f.props,
@@ -141,7 +143,9 @@ export function toDynamicFormSchema(cfg: DynamicFormConfig): FormSchema {
     title: cfg.title,
     description: cfg.description,
     submitText: cfg.submitText,
-    layout: 'single',
+    // grid 布局：字段按 span 多列排布（对标旧版 auto-fill 栅格，不是一条一条单列）
+    layout: 'grid',
+    columns: 2,
     validateOnChange: true,
     fields,
   }
