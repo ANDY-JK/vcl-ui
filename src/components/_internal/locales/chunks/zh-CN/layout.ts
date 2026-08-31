@@ -24,6 +24,8 @@ export default {
     collapse: 'Collapse 折叠面板',
     tree: 'Tree 树形',
     image: 'Image 图片（含头像+预览）',
+    skeleton: 'Skeleton 骨架屏',
+    avatar: 'Avatar 头像',
     // 二级条目 — 表单输入
     input: 'Input 输入（text/number/textarea/search）',
     select: 'Select 选择器（select/combobox/date/time/cascader/tree/menu）',
@@ -44,6 +46,8 @@ export default {
     popover: 'Popover 气泡',
     errorBoundary: 'ErrorBoundary 错误边界+状态',
     beepVoice: 'BeepVoice 蜂鸣/语音/通知',
+    confirmModal: 'ConfirmModal 确认弹窗',
+    state: 'State 离线/只读状态',
     // 二级条目 — 基础元素
     button: 'Button 按钮',
     tag: 'Tag 标签+徽标',

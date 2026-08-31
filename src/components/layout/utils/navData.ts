@@ -52,6 +52,8 @@ export const navTree: NavNode[] = [
       { label: 'navData.collapse', icon: 'panel-left', route: '/collapse' },
       { label: 'navData.tree', icon: 'list', route: '/tree' },
       { label: 'navData.image', icon: 'image', route: '/image' },
+      { label: 'navData.skeleton', icon: 'loader-circle', route: '/skeleton' },
+      { label: 'navData.avatar', icon: 'user', route: '/avatar' },
     ],
   },
 
@@ -103,6 +105,8 @@ export const navTree: NavNode[] = [
       { label: 'navData.popover', icon: 'package', route: '/popover' },
       { label: 'navData.errorBoundary', icon: 'shield', route: '/error-boundary' },
       { label: 'navData.beepVoice', icon: 'volume-high', route: '/beep-voice' },
+      { label: 'navData.confirmModal', icon: 'message-circle', route: '/confirm-modal' },
+      { label: 'navData.state', icon: 'wifi-off', route: '/state' },
     ],
   },
 

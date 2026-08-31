@@ -24,6 +24,8 @@ export default {
     collapse: 'Collapse',
     tree: 'Tree',
     image: 'Image (avatar + preview)',
+    skeleton: 'Skeleton',
+    avatar: 'Avatar',
     // Items — Form Inputs
     input: 'Input (text/number/textarea/search)',
     select: 'Select (select/combobox/date/time/cascader/tree/menu)',
@@ -44,6 +46,8 @@ export default {
     popover: 'Popover',
     errorBoundary: 'ErrorBoundary (boundary + states)',
     beepVoice: 'BeepVoice (beep/voice/notify)',
+    confirmModal: 'ConfirmModal',
+    state: 'State (offline/readonly)',
     // Items — Basic Elements
     button: 'Button',
     tag: 'Tag (tag + badge)',

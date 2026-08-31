@@ -163,6 +163,17 @@ const REGISTRY: Record<string, FieldRegistration> = {
     group: 'fbGroup.basic',
     defaults: () => ({ placeholder: t('fb.searchPlaceholder'), span: 12 }),
   },
+  color: {
+    type: 'color',
+    category: 'input',
+    component: Input,
+    componentType: 'color',
+    isLayout: false,
+    label: 'fbType.color',
+    icon: 'palette',
+    group: 'fbGroup.basic',
+    defaults: () => ({ span: 12 }),
+  },
 
   // ── Select 系列 ──
   select: {

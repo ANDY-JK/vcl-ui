@@ -96,7 +96,8 @@ const extraProps = computed(() => props.field.props ?? {})
 
 /** Input 组件 props */
 const inputProps = computed(() => ({
-  type: resolvedComponentType.value as 'text' | 'textarea' | 'number' | 'password' | 'tel' | 'email' | 'url' | 'search',
+  type: resolvedComponentType.value as
+    'text' | 'textarea' | 'number' | 'password' | 'tel' | 'email' | 'url' | 'search' | 'color',
   label: props.field.label,
   placeholder: props.field.placeholder,
   hint: props.field.hint,

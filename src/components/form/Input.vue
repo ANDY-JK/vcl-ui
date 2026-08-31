@@ -23,8 +23,8 @@ const inputId = useId()
    Props — 统一接口
    ════════════════════════════════════════ */
 interface Props {
-  /** 统一类型：text | password | email | tel | number | textarea | search | url */
-  type?: 'text' | 'password' | 'email' | 'tel' | 'number' | 'textarea' | 'search' | 'url'
+  /** 统一类型：text | password | email | tel | number | textarea | search | url | color */
+  type?: 'text' | 'password' | 'email' | 'tel' | 'number' | 'textarea' | 'search' | 'url' | 'color'
   modelValue: string | number | null
   label?: string
   icon?: string
@@ -91,6 +91,7 @@ const emit = defineEmits<{
 const isNumber = computed(() => props.type === 'number')
 const isStepper = computed(() => isNumber.value && props.stepper)
 const isTextarea = computed(() => props.type === 'textarea')
+const isColor = computed(() => props.type === 'color')
 
 /* ════════════════════════════════════════
    通用状态
@@ -546,6 +547,34 @@ const floatingRaised = computed(() => {
     </div>
 
     <!-- ════════════════════════════════════════
+         Color 取色模式（原生 color 输入 + 色值显示）
+         ════════════════════════════════════════ -->
+    <div v-else-if="isColor" class="fl-container">
+      <div class="fl-wrap" :class="{ focused: focused && !errorMsg, 'has-error': !!errorMsg, disabled }">
+        <input
+          :id="inputId"
+          ref="floatInputRef"
+          type="color"
+          class="f-color"
+          :value="String(modelValue ?? '#000000')"
+          :disabled="disabled"
+          :name="name"
+          @input="onInput"
+          @focus="onFocus"
+          @blur="onBlur"
+        />
+        <span class="f-color-hex">{{ String(modelValue ?? '') || '—' }}</span>
+        <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
+      </div>
+      <p v-if="errorMsg" class="fl-error">
+        {{ errorMsg }}
+      </p>
+      <p v-else-if="hint" class="fl-hint">
+        {{ hint }}
+      </p>
+    </div>
+
+    <!-- ════════════════════════════════════════
          标准文本输入（text/password/email/tel/search/url）
          ════════════════════════════════════════ -->
     <div v-else class="fl-container">
@@ -762,6 +791,39 @@ const floatingRaised = computed(() => {
   font-family: inherit;
   color: var(--color-text);
   line-height: 1.5;
+}
+
+/* color 取色：色块 + 色值文本 */
+.f-color {
+  flex-shrink: 0;
+  width: var(--ctrl-height, clamp(36px, 5vw, 40px));
+  height: var(--ctrl-height, clamp(36px, 5vw, 40px));
+  padding: 4px;
+  margin-left: clamp(var(--space-1), 1vw, 8px);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+}
+.f-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.f-color::-webkit-color-swatch {
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+}
+.f-color:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.f-color-hex {
+  flex: 1;
+  min-width: 0;
+  padding: 0 clamp(var(--space-1), 1vw, 8px);
+  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
 }
 
 /* 密码显示/隐藏按钮 — 始终显示，保持右侧布局统一 */

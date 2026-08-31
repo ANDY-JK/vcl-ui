@@ -47,6 +47,8 @@ const demoMap: Record<string, any> = {
   collapse: defineAsyncComponent({ loader: () => import('./data/CollapseDemo.vue'), errorComponent: ErrorFallback }),
   image: defineAsyncComponent({ loader: () => import('./data/ImageDemo.vue'), errorComponent: ErrorFallback }),
   tree: defineAsyncComponent({ loader: () => import('./data/TreeDemo.vue'), errorComponent: ErrorFallback }),
+  skeleton: defineAsyncComponent({ loader: () => import('./data/SkeletonDemo.vue'), errorComponent: ErrorFallback }),
+  avatar: defineAsyncComponent({ loader: () => import('./data/AvatarDemo.vue'), errorComponent: ErrorFallback }),
 
   // 反馈组件
   toast: defineAsyncComponent({ loader: () => import('./feedback/ToastDemo.vue'), errorComponent: ErrorFallback }),
@@ -62,6 +64,11 @@ const demoMap: Record<string, any> = {
     loader: () => import('./feedback/BeepVoiceDemo.vue'),
     errorComponent: ErrorFallback,
   }),
+  'confirm-modal': defineAsyncComponent({
+    loader: () => import('./feedback/ConfirmModalDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
+  state: defineAsyncComponent({ loader: () => import('./feedback/StateDemo.vue'), errorComponent: ErrorFallback }),
 
   // 图表
   chart: defineAsyncComponent({ loader: () => import('./chart/ChartDemo.vue'), errorComponent: ErrorFallback }),
@@ -91,6 +98,18 @@ const demoMap: Record<string, any> = {
   }),
   'contract-collection': defineAsyncComponent({
     loader: () => import('./map/ContractCollectionDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
+  'rebate-target-collect': defineAsyncComponent({
+    loader: () => import('./map/RebateTargetCollectDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
+  'shelf-target-collect': defineAsyncComponent({
+    loader: () => import('./map/ShelfTargetCollectDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
+  'contract-target-collect': defineAsyncComponent({
+    loader: () => import('./map/ContractTargetCollectDemo.vue'),
     errorComponent: ErrorFallback,
   }),
   'form-builder': defineAsyncComponent({
