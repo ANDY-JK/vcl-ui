@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Card from '@/components/data/Card.vue'
+import { useBarcodeScanner, CameraCapture, beepSuccess } from '@/components/index'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,23 +25,106 @@ const current = computed(
 const mode = ref<'scan' | 'input' | 'result'>('scan')
 const manualCode = ref('')
 const scanResult = ref<any>(null)
-const scanning = ref(false)
 
-function simulateScan() {
-  scanning.value = true
-  // 模拟扫码延迟
-  setTimeout(() => {
-    scanning.value = false
+// ---- 真实扫码 ----
+const {
+  videoRef: scanVideoRef,
+  canvasRef: scanCanvasRef,
+  scanning: scanActive,
+  error: scanError,
+  start: startScan,
+  stop: stopScan,
+  scanPhoto,
+} = useBarcodeScanner({
+  onScan: (code) => {
+    beepSuccess()
+    // 模拟查询到商品信息
     mode.value = 'result'
     scanResult.value = {
-      code: 'SKU-1001',
-      name: '无线鼠标 Pro',
-      category: '电子产品',
-      stock: 342,
-      location: 'A区-3排-12号',
-      price: 89,
+      code,
+      name: '扫描商品',
+      category: '待录入',
+      stock: 0,
+      location: '待录入',
+      price: 0,
     }
-  }, 1500)
+    stopScan()
+  },
+})
+
+// 页面可见时启动扫码，离开时停止
+watch(
+  mode,
+  async (v) => {
+    if (v === 'scan') {
+      await nextTick()
+      startScan()
+    } else {
+      stopScan()
+    }
+  },
+  { immediate: true },
+)
+
+// ---- 拍照识别 ----
+const photoInput = ref<HTMLInputElement | null>(null)
+const photoScanning = ref(false)
+async function onPhoto(e: Event) {
+  const f = (e.target as HTMLInputElement).files?.[0]
+  if (!f) return
+  photoScanning.value = true
+  try {
+    const res = await scanPhoto(f)
+    if (res.length) {
+      const code = res[0]
+      mode.value = 'result'
+      scanResult.value = {
+        code,
+        name: '拍照识别商品',
+        category: '待录入',
+        stock: 0,
+        location: '待录入',
+        price: 0,
+      }
+    } else {
+      scanResult.value = null
+      mode.value = 'scan'
+      showAlert('未识别到条码，请重试')
+    }
+  } catch {
+    showAlert('图片识别失败')
+  } finally {
+    photoScanning.value = false
+    ;(e.target as HTMLInputElement).value = ''
+  }
+}
+
+// ---- CameraCapture 页面内拍照 ----
+const cameraVisible = ref(false)
+function onCamCapture(file: File) {
+  cameraVisible.value = false
+  photoScanning.value = true
+  scanPhoto(file)
+    .then((res) => {
+      if (res.length) {
+        const code = res[0]
+        mode.value = 'result'
+        scanResult.value = {
+          code,
+          name: '拍照识别商品',
+          category: '待录入',
+          stock: 0,
+          location: '待录入',
+          price: 0,
+        }
+      } else {
+        showAlert('未识别到条码，请重试')
+      }
+    })
+    .catch(() => showAlert('图片识别失败'))
+    .finally(() => {
+      photoScanning.value = false
+    })
 }
 
 function manualSubmit() {
@@ -48,11 +132,11 @@ function manualSubmit() {
   mode.value = 'result'
   scanResult.value = {
     code: manualCode.value.trim(),
-    name: '机械键盘 K8',
-    category: '电子产品',
-    stock: 128,
-    location: 'B区-1排-5号',
-    price: 459,
+    name: '手动输入商品',
+    category: '待录入',
+    stock: 0,
+    location: '待录入',
+    price: 0,
   }
 }
 
@@ -63,9 +147,12 @@ function reset() {
 }
 
 function confirm() {
-  // TODO: 提交扫码结果
   reset()
   router.back()
+}
+
+function showAlert(msg: string) {
+  alert(msg)
 }
 </script>
 
@@ -88,18 +175,46 @@ function confirm() {
 
     <!-- 扫码模式 -->
     <div v-if="mode === 'scan'" class="scan-area">
-      <div class="scanner-frame" :class="{ scanning }" @click="simulateScan">
-        <div class="scanner-inner">
-          <IconSvg v-if="!scanning" type="search" size="lg" color="var(--color-text-muted)" />
-          <div v-else class="scan-line" />
+      <!-- 真实摄像头扫码区 -->
+      <div class="scanner-frame" :class="{ scanning: scanActive }">
+        <div v-if="!scanActive && !scanError" class="scan-idle">
+          <span class="spinner" />
+          <span>启动摄像头...</span>
         </div>
-        <p class="scanner-tip">
-          {{ scanning ? '识别中...' : '点击扫码区域模拟扫描' }}
-        </p>
+        <div v-show="scanActive" class="scan-live">
+          <video ref="scanVideoRef" class="scan-video" autoplay playsinline muted />
+          <span class="mask top" /><span class="mask bot" /><span class="mask left" /><span class="mask right" />
+          <span class="cnr tl" /><span class="cnr tr" /><span class="cnr bl" /><span class="cnr br" />
+          <span class="beam" />
+          <span class="scanning-txt">扫描中</span>
+        </div>
+        <canvas ref="scanCanvasRef" style="display: none" />
+        <div v-if="scanError" class="scan-err">
+          <p>{{ scanError }}</p>
+          <button @click="startScan()">重试</button>
+        </div>
       </div>
 
       <div class="or-divider">
         <span>或</span>
+      </div>
+
+      <!-- 拍照识别 -->
+      <div class="photo-section">
+        <button class="photo-btn" :disabled="photoScanning" @click="cameraVisible = true">
+          <IconSvg v-if="!photoScanning" type="camera" size="sm" />
+          <span v-if="photoScanning" class="spinner sm" />
+          {{ photoScanning ? '识别中...' : '拍照识别' }}
+        </button>
+        <button class="photo-btn outline" @click="photoInput?.click()">
+          <IconSvg type="image" size="sm" />
+          从相册选
+        </button>
+        <input ref="photoInput" type="file" accept="image/*" style="display: none" @change="onPhoto" />
+      </div>
+
+      <div class="or-divider">
+        <span>或手动输入</span>
       </div>
 
       <div class="manual-section">
@@ -157,6 +272,9 @@ function confirm() {
         <button class="r-btn primary" @click="confirm">确认{{ current.label }}</button>
       </div>
     </div>
+
+    <!-- CameraCapture 页面内拍照组件 -->
+    <CameraCapture v-model="cameraVisible" @capture="onCamCapture" @error="showAlert" />
   </div>
 </template>
 
@@ -199,57 +317,161 @@ function confirm() {
   text-align: center;
 }
 .scanner-frame {
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  aspect-ratio: 4/3;
+  max-width: 320px;
   margin: 20px auto;
-  border: 2px dashed var(--color-border);
+  border: 2px solid var(--color-border);
   border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 200ms;
-  position: relative;
   overflow: hidden;
-}
-.scanner-frame:hover {
-  border-color: var(--color-primary);
+  position: relative;
+  background: #000;
+  transition: border-color 200ms;
 }
 .scanner-frame.scanning {
   border-color: var(--color-primary);
-  border-style: solid;
-}
-.scanner-tip {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  margin-top: 12px;
 }
 
-.scanner-inner {
-  position: relative;
-  width: 64px;
-  height: 64px;
+.scan-idle {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 8px;
   justify-content: center;
+  height: 100%;
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
-.scan-line {
+.scan-live {
   position: absolute;
+  inset: 0;
+}
+.scan-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.scan-err {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-warning);
+  font-size: 12px;
+  padding: 12px;
+  text-align: center;
+}
+.scan-err button {
+  padding: 4px 12px;
+  border: 1px solid var(--color-warning);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-warning);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* 扫描遮罩和边框 */
+.mask {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 1;
+}
+.mask.top {
+  top: 0;
   left: 0;
   right: 0;
+  height: 35%;
+}
+.mask.bot {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+}
+.mask.left {
+  top: 35%;
+  left: 0;
+  width: 17.5%;
+  bottom: 35%;
+}
+.mask.right {
+  top: 35%;
+  right: 0;
+  width: 17.5%;
+  bottom: 35%;
+}
+.cnr {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--color-primary);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 2;
+}
+.cnr.tl {
+  top: calc(35% + 8px);
+  left: calc(17.5% + 8px);
+  border-width: 2px 0 0 2px;
+  border-radius: 3px 0 0 0;
+}
+.cnr.tr {
+  top: calc(35% + 8px);
+  right: calc(17.5% + 8px);
+  border-width: 2px 2px 0 0;
+  border-radius: 0 3px 0 0;
+}
+.cnr.bl {
+  bottom: calc(35% + 8px);
+  left: calc(17.5% + 8px);
+  border-width: 0 0 2px 2px;
+  border-radius: 0 0 0 3px;
+}
+.cnr.br {
+  bottom: calc(35% + 8px);
+  right: calc(17.5% + 8px);
+  border-width: 0 2px 2px 0;
+  border-radius: 0 0 3px 0;
+}
+.beam {
+  position: absolute;
+  left: 17.5%;
+  right: 17.5%;
   height: 2px;
   background: var(--color-primary);
-  animation: scanAnim 1.2s ease-in-out infinite;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+  animation: beam-sweep 2s ease-in-out infinite;
+  box-shadow: 0 0 4px var(--color-primary);
+  top: 35%;
 }
-@keyframes scanAnim {
-  0%,
-  100% {
-    top: 0;
+@keyframes beam-sweep {
+  0% {
+    top: 35%;
   }
   50% {
-    top: 100%;
+    top: 65%;
   }
+  100% {
+    top: 35%;
+  }
+}
+.scanning-txt {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #22c55e;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 2px 8px;
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 .or-divider {
@@ -268,6 +490,37 @@ function confirm() {
   background: var(--color-border-light);
 }
 
+.photo-section {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.photo-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.photo-btn:active {
+  transform: scale(0.97);
+}
+.photo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.photo-btn.outline {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
 .input-row {
   display: flex;
   gap: 8px;
@@ -281,6 +534,7 @@ function confirm() {
   outline: none;
   color: var(--color-text);
   font-family: inherit;
+  background: var(--color-surface);
 }
 .code-input:focus {
   border-color: var(--color-primary);
@@ -363,5 +617,25 @@ function confirm() {
   border: none;
   background: var(--color-primary);
   color: #fff;
+}
+
+/* spinner */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-border-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.spinner.sm {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
