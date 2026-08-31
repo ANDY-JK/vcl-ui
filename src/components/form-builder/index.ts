@@ -51,6 +51,8 @@ export {
   rebateLetterSchema,
   shelfCollectionSchema,
   reviewFormSchema,
+  storeCollectionSchema,
+  dynamicFormSchema,
 } from './presets'
 
 // ── 设计器类型与工具 ──

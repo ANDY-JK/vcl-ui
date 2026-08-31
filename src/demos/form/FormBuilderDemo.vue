@@ -13,12 +13,11 @@ import type { DesignerField, DesignerNode, FormMeta } from '@/components/form-bu
 import {
   registrationSchema,
   inspectionSchema,
-  contractCollectionSchema,
   containerDemoNodes,
   containerDemoMeta,
-  rebateLetterSchema,
-  shelfCollectionSchema,
+  storeCollectionSchema,
   reviewFormSchema,
+  dynamicFormSchema,
 } from '@/components/form-builder'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
@@ -92,9 +91,8 @@ const previewSchema = computed(() => toFormSchema(fields.value, meta.value))
 const presets = [
   { key: 'registration', label: '用户登记', icon: 'user', schema: registrationSchema },
   { key: 'inspection', label: '设备巡检', icon: 'clipboard-check', schema: inspectionSchema },
-  { key: 'contract', label: '合同收集', icon: 'file-text', schema: contractCollectionSchema },
-  { key: 'rebate', label: '返利函收集', icon: 'file-text', schema: rebateLetterSchema },
-  { key: 'shelf', label: '陈列收集', icon: 'image', schema: shelfCollectionSchema },
+  { key: 'dynamic', label: '动态表单', icon: 'sparkles', schema: dynamicFormSchema },
+  { key: 'store', label: '门店收集', icon: 'file-text', schema: storeCollectionSchema },
   { key: 'review', label: '审批流程', icon: 'clipboard-check', schema: reviewFormSchema },
   { key: 'container', label: '容器布局', icon: 'layout-template', nodes: containerDemoNodes, meta: containerDemoMeta },
 ] as const
