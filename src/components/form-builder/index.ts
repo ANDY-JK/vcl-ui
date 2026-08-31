@@ -17,6 +17,8 @@ export { default as FieldError } from './FieldError.vue'
 
 // ── 数据收集 ──
 export { default as FormCollect } from './FormCollect.vue'
+export { default as FormTargetCollect } from './FormTargetCollect.vue'
+export type { TargetItem } from './FormTargetCollect.vue'
 
 // ── 表单发布填写端（#/form/:code 路由指向此组件） ──
 export { default as FormShareView } from './FormShareView.vue'
@@ -46,6 +48,9 @@ export {
   registrationSchema,
   containerDemoNodes,
   containerDemoMeta,
+  rebateLetterSchema,
+  shelfCollectionSchema,
+  reviewFormSchema,
 } from './presets'
 
 // ── 设计器类型与工具 ──

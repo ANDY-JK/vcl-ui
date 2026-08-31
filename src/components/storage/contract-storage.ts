@@ -35,17 +35,60 @@ export interface StoreFile {
   size: number
   type: string
 }
+
+/**
+ * 一个目标（门店）的收集状态。
+ *
+ * - slots：多照片位（slotKey → 文件）。slotKey 由 FormSchema 的照片位字段 key 推导
+ *   （返利函 rebatePhoto、陈列 frontPhoto/backPhoto、柜机协议 contractPhoto）。
+ * - contract：单文件位兼容别名（= slots['contract']）。旧代码/旧数据读 contract，
+ *   新代码写 slots；存储层对 contract 位双向镜像，保证旧消费方零改动。
+ */
 export interface StoreUploadState {
+  /** 单文件位兼容别名（= slots['contract']，旧数据格式） */
   contract?: StoreFile
+  /** 多照片位：slotKey → 文件 */
+  slots?: Record<string, StoreFile>
   ts: number
+}
+
+/** 读某照片位的文件（兼容：'contract' 位回退到旧 contract 字段） */
+export function getSlotFile(state: StoreUploadState | undefined, slotKey: string): StoreFile | undefined {
+  if (!state) return undefined
+  return state.slots?.[slotKey] ?? (slotKey === 'contract' ? state.contract : undefined)
+}
+
+/** 全部照片位是否都已收齐 */
+export function allSlotsFilled(state: StoreUploadState | undefined, slotKeys: string[]): boolean {
+  if (!state || slotKeys.length === 0) return false
+  return slotKeys.every((k) => !!getSlotFile(state, k))
+}
+
+/** 设置某照片位文件（file 为空 = 删除该位）；返回新 state（immutable） */
+export function setSlotFile(
+  state: StoreUploadState | undefined,
+  slotKey: string,
+  file: StoreFile | undefined,
+): StoreUploadState {
+  const base = state ? { ...state, slots: { ...(state.slots ?? {}) } } : { slots: {}, ts: Date.now() }
+  const slots = base.slots!
+  if (file) slots[slotKey] = file
+  else delete slots[slotKey]
+  // contract 位镜像到旧字段（兼容旧消费方/旧数据）
+  if (slotKey === 'contract') base.contract = slots.contract ? { ...slots.contract } : undefined
+  base.ts = Date.now()
+  return base
 }
 
 export interface StorageBackend {
   readonly kind: 'local' | 'supabase'
-  /** 加载全部记录，返回 appleId → 上传状态 */
-  loadAll(): Promise<Map<number, StoreUploadState>>
-  /** 保存/更新某门店记录（contract 为空表示该门店文件被删除） */
-  saveRecord(appleId: number, state: StoreUploadState): Promise<void>
+  /**
+   * 加载全部记录，返回 targetId → 上传状态
+   * @param slotKeys 本任务的照片位 key 集合（云端对象名解析需要；无则全按单文件位处理）
+   */
+  loadAll(slotKeys?: string[]): Promise<Map<number, StoreUploadState>>
+  /** 保存/更新某目标记录（state 中对应 slot 为空表示该目标该位被删除） */
+  saveRecord(targetId: number, state: StoreUploadState): Promise<void>
   /** 清空全部记录 */
   clearAll(): Promise<void>
 }
@@ -63,6 +106,7 @@ const STORE_NAME = 'uploads'
  */
 interface LocalRecord {
   contract?: StoreFile
+  slots?: Record<string, StoreFile>
   ts: number
   appleId: number
 }
@@ -70,13 +114,19 @@ interface LocalRecord {
 export class IndexedDBBackend implements StorageBackend {
   readonly kind = 'local' as const
 
-  async loadAll(): Promise<Map<number, StoreUploadState>> {
+  async loadAll(_slotKeys?: string[]): Promise<Map<number, StoreUploadState>> {
     const map = new Map<number, StoreUploadState>()
     try {
       const rows = await dbGetAll<LocalRecord>(STORE_NAME)
       for (const row of rows) {
         // appleId 为 0 是合法值（不能走 truthy 判断，否则 0 号记录被静默丢弃）
-        if (row && typeof row.appleId === 'number') map.set(row.appleId, { contract: row.contract, ts: row.ts })
+        if (row && typeof row.appleId === 'number') {
+          map.set(row.appleId, {
+            contract: row.contract ? { ...row.contract } : undefined,
+            slots: row.slots ? { ...row.slots } : undefined,
+            ts: row.ts,
+          })
+        }
       }
     } catch (e) {
       console.warn('[contract-storage] IndexedDB 加载失败:', e)
@@ -87,7 +137,12 @@ export class IndexedDBBackend implements StorageBackend {
   async saveRecord(appleId: number, state: StoreUploadState): Promise<void> {
     // 复用统一层 dbPut；失败不阻塞 UI（保持原语义）
     try {
-      await dbPut(STORE_NAME, String(appleId), { contract: state.contract, ts: state.ts, appleId })
+      await dbPut(STORE_NAME, String(appleId), {
+        contract: state.contract ? { ...state.contract } : undefined,
+        slots: state.slots ? { ...state.slots } : undefined,
+        ts: state.ts,
+        appleId,
+      })
     } catch (e) {
       console.warn('[contract-storage] IndexedDB 保存失败:', appleId, e)
     }
@@ -137,8 +192,8 @@ function dataUrlToBlob(dataUrl: string): Blob {
 export class SupabaseBackend implements StorageBackend {
   readonly kind = 'supabase' as const
 
-  /** appleId → 云端对象名（含路径），上传/加载时维护，删除时据此定位 */
-  private paths = new Map<number, string>()
+  /** appleId → slotKey → 云端对象名（含路径），上传/加载时维护，删除时据此定位 */
+  private paths = new Map<number, Map<string, string>>()
   /** 已删除标记（墓碑）：appleId → 墓碑对象名与删除时间戳；loadAll 解析填充，删除时写入，重新上传时清理 */
   readonly tombstones = new Map<number, { name: string; ts: number }>()
   /** REST 传输（超时/错误归类/分页/重试下沉 supabase-transport.ts，与 KV 适配器共用） */
@@ -150,21 +205,24 @@ export class SupabaseBackend implements StorageBackend {
   }
 
   /**
-   * 对象名：{appleId}-{ASCII 化文件名}。
+   * 对象名：
+   * - 单文件位（contract）：{appleId}-{ASCII 化文件名}（旧格式，向后兼容）
+   * - 多照片位：{appleId}-{slotKey}-{ASCII 化文件名}
    * Supabase 对象键只接受 ASCII——含中文等非 ASCII 字符的对象名上传返回
    * 400 InvalidKey（实测：「拍照-…」这类文件名上传必失败）。文件名本身无业务
    * 含义（仅展示），对象键用 sanitizeObjectKeyPart 的 ASCII 形式（保留数字与扩展名），
    * 列表解析/展示名字都基于该键。
    */
-  private objectName(appleId: number, fileName: string): string {
-    return `${appleId}-${sanitizeObjectKeyPart(fileName)}`
+  private objectName(appleId: number, slotKey: string, fileName: string): string {
+    const ascii = sanitizeObjectKeyPart(fileName)
+    return slotKey === 'contract' || !slotKey ? `${appleId}-${ascii}` : `${appleId}-${slotKey}-${ascii}`
   }
 
   private tombstoneName(appleId: number, ts: number): string {
     return `${appleId}-${TOMBSTONE_MARKER}-${ts}`
   }
 
-  async loadAll(): Promise<Map<number, StoreUploadState>> {
+  async loadAll(slotKeys: string[] = ['contract']): Promise<Map<number, StoreUploadState>> {
     const map = new Map<number, StoreUploadState>()
     const objects = await this.tr.listObjects()
     // 第一遍：收集墓碑（appleId → 最新删除时间戳）。同一门店多个墓碑取最新
@@ -183,12 +241,26 @@ export class SupabaseBackend implements StorageBackend {
     // 的成果（墓碑没清干净的场景），墓碑标记作废并异步清理残留对象
     this.tombstones.clear()
     for (const [id, tb] of tbSeen) this.tombstones.set(id, tb)
+    // 兼容旧数据：历史对象名 {appleId}-{ascii} 没有 slot 段 → 归入默认位 'contract'
+    const DEFAULT_SLOT = 'contract'
+    const slotSet = new Set(slotKeys.length ? slotKeys : [DEFAULT_SLOT])
     for (const obj of objects) {
       const m = obj.name.match(/^(\d+)-/)
       if (!m) continue
       const appleId = Number(m[1])
       const key = obj.name.slice(m[0].length)
       if (parseTombstoneKey(key) !== null) continue
+      // 解析 slotKey：对象名 {appleId}-{slotKey}-{ascii}；slotKey 不在本任务照片位集合则按旧格式整体当文件名（归默认位）
+      let slotKey = DEFAULT_SLOT
+      let rest = key
+      const firstDash = key.indexOf('-')
+      if (firstDash > 0) {
+        const maybeSlot = key.slice(0, firstDash)
+        if (slotSet.has(maybeSlot)) {
+          slotKey = maybeSlot
+          rest = key.slice(firstDash + 1)
+        }
+      }
       if (this.tombstones.has(appleId)) {
         const tb = this.tombstones.get(appleId)!
         this.tombstones.delete(appleId)
@@ -197,33 +269,40 @@ export class SupabaseBackend implements StorageBackend {
       }
       // bucket 被外部写入含裸 % 的对象名时 decodeURIComponent 会抛 URIError——
       // 跳过该条并告警，不让单个污染对象崩掉整次 loadAll
-      let name = key
+      let name = rest
       try {
-        name = decodeURIComponent(key)
+        name = decodeURIComponent(rest)
       } catch {
         console.warn('[contract-storage] 对象名 URI 解码失败，跳过:', obj.name)
       }
-      this.paths.set(appleId, obj.name)
-      map.set(appleId, {
-        contract: { name, dataUrl: this.tr.publicUrl(obj.name), size: obj.size, type: obj.mimetype },
-        // 上传时间取对象创建时间（≈ 上传时刻）；缺失回退 0（导出层对 0 显示为空）
-        ts: obj.createdAt,
-      })
+      if (!this.paths.get(appleId)) this.paths.set(appleId, new Map())
+      this.paths.get(appleId)!.set(slotKey, obj.name)
+      const prev = map.get(appleId)
+      const file = { name, dataUrl: this.tr.publicUrl(obj.name), size: obj.size, type: obj.mimetype }
+      if (prev) {
+        // 同目标多照片位：合并到 slots
+        prev.slots = { ...(prev.slots ?? {}), [slotKey]: file }
+      } else {
+        map.set(appleId, {
+          contract: slotKey === DEFAULT_SLOT ? file : undefined,
+          slots: { [slotKey]: file },
+          // 上传时间取对象创建时间（≈ 上传时刻）；缺失回退 0（导出层对 0 显示为空）
+          ts: obj.createdAt,
+        })
+      }
     }
     return map
   }
 
   async saveRecord(appleId: number, state: StoreUploadState): Promise<void> {
-    // 文件被删除：删云端对象 + 上传带时间戳的墓碑标记，让其他设备对账时知道
-    // 「该门店已删除、本地残留不得补传」（否则 PC 删了，手机本地字节刷新时被当作
-    // 上传中断补传回来，图片"复活"）。墓碑带删除时间：删除后重新拍的新照片
-    // （本地 ts 更新）对账时不会被误清。
-    if (!state.contract) {
+    const slots = state.slots ?? (state.contract ? { contract: state.contract } : undefined)
+    // 全部照片位都删了：删云端全部对象 + 上传墓碑（删除广播，防其他设备补传复活）
+    if (!slots || Object.keys(slots).length === 0) {
       // 优先用已知对象名；映射缺失（跨设备上传/页面刷新后路径丢失）时按 appleId 前缀
       // 从云端列出删除——否则删除静默跳过云端，下次加载又"复活"
-      const old = this.paths.get(appleId)
-      if (old) {
-        await this.tr.deleteObjectWithRetry(old)
+      const known = this.paths.get(appleId)
+      if (known && known.size > 0) {
+        for (const name of known.values()) await this.tr.deleteObjectWithRetry(name)
         this.paths.delete(appleId)
       } else {
         const objects = await this.tr.listObjects()
@@ -245,25 +324,28 @@ export class SupabaseBackend implements StorageBackend {
       this.tombstones.set(appleId, { name: this.tombstoneName(appleId, ts), ts })
       return
     }
-    // 上传/覆盖文件
-    const f = state.contract
-    const name = this.objectName(appleId, f.name)
-    let blob: Blob
-    if (typeof f.dataUrl === 'string') {
-      if (f.dataUrl.startsWith('data:')) {
-        blob = dataUrlToBlob(f.dataUrl)
+    // 上传/覆盖文件（逐个照片位）
+    if (!this.paths.get(appleId)) this.paths.set(appleId, new Map())
+    const pathMap = this.paths.get(appleId)!
+    for (const [slotKey, f] of Object.entries(slots)) {
+      const name = this.objectName(appleId, slotKey, f.name)
+      let blob: Blob
+      if (typeof f.dataUrl === 'string') {
+        if (f.dataUrl.startsWith('data:')) {
+          blob = dataUrlToBlob(f.dataUrl)
+        } else {
+          // URL 引用：源不可达（对象已删/死链）时禁止把 404 错误体当图片上传，否则云端存出损坏对象
+          const resp = await fetch(f.dataUrl)
+          if (!resp.ok) throw new Error(t('storage.sourceImageUnavailable', { status: resp.status }))
+          blob = await resp.blob()
+        }
       } else {
-        // URL 引用：源不可达（对象已删/死链）时禁止把 404 错误体当图片上传，否则云端存出损坏对象
-        const resp = await fetch(f.dataUrl)
-        if (!resp.ok) throw new Error(t('storage.sourceImageUnavailable', { status: resp.status }))
-        blob = await resp.blob()
+        blob = f.dataUrl
       }
-    } else {
-      blob = f.dataUrl
+      // Content-Type 以文件真实 MIME 为准（blob.type）；"image/*" 这类泛 MIME 会被浏览器识别为具体类型
+      await this.tr.putObject(name, blob, blob.type || 'application/octet-stream')
+      pathMap.set(slotKey, name)
     }
-    // Content-Type 以文件真实 MIME 为准（blob.type）；"image/*" 这类泛 MIME 会被浏览器识别为具体类型
-    await this.tr.putObject(name, blob, blob.type || 'application/octet-stream')
-    this.paths.set(appleId, name)
     // 重新上传成功后清墓碑（先传后清：清墓碑失败不丢新图片——墓碑残留由 loadAll 的
     // 「图片优先」规则兜底，下次该门店删除/上传时也会清理）
     const oldTb = this.tombstones.get(appleId)
@@ -311,7 +393,7 @@ function isUrlRef(dataUrl: string | Blob | undefined): boolean {
 interface CloudBackend {
   /** appleId → 墓碑对象名与删除时间戳（对账据此区分删除残留与删除后新拍的照片） */
   readonly tombstones: Map<number, { name: string; ts: number }>
-  loadAll(): Promise<Map<number, StoreUploadState>>
+  loadAll(slotKeys?: string[]): Promise<Map<number, StoreUploadState>>
   saveRecord(appleId: number, state: StoreUploadState): Promise<void>
   clearAll(): Promise<void>
 }
@@ -364,13 +446,13 @@ export class CompositeBackend implements StorageBackend {
     if (all.length) await Promise.all(all)
   }
 
-  async loadAll(): Promise<Map<number, StoreUploadState>> {
-    const localMap = await this.local.loadAll()
+  async loadAll(slotKeys: string[] = ['contract']): Promise<Map<number, StoreUploadState>> {
+    const localMap = await this.local.loadAll(slotKeys)
     if (!this.cloud) return localMap
     // 云端失败不阻断本地恢复（真机相机返回刷新后本地数据优先可用），错误留日志
     let cloudMap: Map<number, StoreUploadState>
     try {
-      cloudMap = await this.cloud.loadAll()
+      cloudMap = await this.cloud.loadAll(slotKeys)
     } catch (e) {
       console.warn('[contract-storage] 云端对账失败，仅恢复本地:', e)
       return localMap
@@ -382,7 +464,7 @@ export class CompositeBackend implements StorageBackend {
     // 云端覆盖仅当本地缺该记录（跨设备新同步来的数据）。
     for (const [id, state] of cloudMap) {
       const localState = localMap.get(id)
-      const localHasBytes = !!localState?.contract && !isUrlRef(localState.contract.dataUrl)
+      const localHasBytes = !!localState?.slots && Object.values(localState.slots).some((f) => !isUrlRef(f.dataUrl))
       if (localHasBytes) continue
       localMap.set(id, state)
       // 云端数据回写本地缓存（保留云端 URL 引用；下次打开仍可读到）
@@ -391,8 +473,9 @@ export class CompositeBackend implements StorageBackend {
     // 清理本地死链：本地存的是云端 URL 引用（非真实字节）而云端已无该对象 → 引用失效，
     // 继续保留页面会显示损坏图；删掉让用户重新上传。
     for (const [id, state] of localMap) {
-      if (state.contract && isUrlRef(state.contract.dataUrl) && !cloudMap.has(id)) {
-        this.local.saveRecord(id, { contract: undefined, ts: state.ts }).catch(() => {})
+      const hasRef = state.slots && Object.values(state.slots).some((f) => isUrlRef(f.dataUrl))
+      if (hasRef && !cloudMap.has(id)) {
+        this.local.saveRecord(id, { slots: {}, ts: state.ts }).catch(() => {})
         localMap.delete(id)
         console.warn('[contract-storage] 清理失效的云端引用:', id)
       }
@@ -404,7 +487,7 @@ export class CompositeBackend implements StorageBackend {
       if (!localMap.has(id)) continue
       const localTs = localMap.get(id)?.ts ?? 0
       if (localTs > tbTs) continue
-      this.local.saveRecord(id, { contract: undefined, ts: Date.now() }).catch(() => {})
+      this.local.saveRecord(id, { slots: {}, ts: Date.now() }).catch(() => {})
       localMap.delete(id)
       console.warn('[contract-storage] 清理已删除门店的本地残留:', id)
     }
@@ -412,7 +495,7 @@ export class CompositeBackend implements StorageBackend {
     // 后台补传不阻塞；墓碑门店且本地数据不新（删除残留）跳过——那是其他设备主动删的，不能补。
     // 墓碑门店但本地数据更新（删除后重拍）则照常补传，SupabaseBackend 上传时会顺手清墓碑
     for (const [id, state] of localMap) {
-      const hasBytes = state.contract && !isUrlRef(state.contract.dataUrl)
+      const hasBytes = !!state.slots && Object.values(state.slots).some((f) => !isUrlRef(f.dataUrl))
       if (!hasBytes) continue // URL 引用不可补传（源对象已删则无处取）
       if (!cloudMap.has(id)) {
         const tbTs = this.tombstones.get(id)
@@ -430,9 +513,10 @@ export class CompositeBackend implements StorageBackend {
     // 本地先落盘（await，快速），页面刷新/进程被杀前数据已保住
     await this.local.saveRecord(appleId, state)
     if (!this.cloud) return
+    const hasAny = !!state.slots && Object.keys(state.slots).length > 0
     // 删除场景：先等该门店在飞的上传完成（对象已存在），再删云端，避免「删了又复活」。
     // 删除失败必须向上抛（不吞）：否则本地已置空、云端还在，下次加载云端覆盖回来 = 删掉又复活。
-    if (!state.contract) {
+    if (!hasAny) {
       await this.waitPending(appleId)
       const p = this.cloud.saveRecord(appleId, state).catch((e) => {
         console.warn('[contract-storage] 云端删除失败:', e)

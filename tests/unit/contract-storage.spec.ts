@@ -25,12 +25,20 @@ class FakeLocalBackend implements StorageBackend {
     // 模拟真实 IndexedDB「读回」语义——调用方修改返回的 Map 不回流底层
     const copy = new Map<number, StoreUploadState>()
     for (const [id, state] of this.rows) {
-      copy.set(id, { contract: state.contract ? { ...state.contract } : undefined, ts: state.ts })
+      copy.set(id, {
+        contract: state.contract ? { ...state.contract } : undefined,
+        slots: state.slots ? { ...state.slots } : undefined,
+        ts: state.ts,
+      })
     }
     return copy
   }
   async saveRecord(appleId: number, state: StoreUploadState) {
-    this.rows.set(appleId, { contract: state.contract ? { ...state.contract } : undefined, ts: state.ts })
+    this.rows.set(appleId, {
+      contract: state.contract ? { ...state.contract } : undefined,
+      slots: state.slots ? { ...state.slots } : undefined,
+      ts: state.ts,
+    })
   }
   async clearAll() { this.rows.clear() }
   get size() { return this.rows.size }
@@ -54,7 +62,8 @@ class FakeCloudBackend {
   }
   async saveRecord(appleId: number, state: StoreUploadState) {
     if (this.failNext) throw new Error('cloud down')
-    if (state.contract) this.objects.set(appleId, state)
+    const hasAny = !!state.slots && Object.keys(state.slots).length > 0
+    if (hasAny) this.objects.set(appleId, state)
     else this.objects.delete(appleId)
   }
   async clearAll() { this.objects.clear() }
@@ -72,8 +81,16 @@ function makeBackend(local?: FakeLocalBackend, cloud?: FakeCloudBackend | null) 
 }
 
 const blob = new Blob(['fake-image'], { type: 'image/png' })
-const urlState: StoreUploadState = { contract: { name: 'a.png', dataUrl: 'https://cdn.example.com/a.png', size: 10, type: 'image/png' }, ts: 100 }
-const blobState: StoreUploadState = { contract: { name: 'a.png', dataUrl: blob, size: 10, type: 'image/png' }, ts: 100 }
+const urlState: StoreUploadState = {
+  contract: { name: 'a.png', dataUrl: 'https://cdn.example.com/a.png', size: 10, type: 'image/png' },
+  slots: { contract: { name: 'a.png', dataUrl: 'https://cdn.example.com/a.png', size: 10, type: 'image/png' } },
+  ts: 100,
+}
+const blobState: StoreUploadState = {
+  contract: { name: 'a.png', dataUrl: blob, size: 10, type: 'image/png' },
+  slots: { contract: { name: 'a.png', dataUrl: blob, size: 10, type: 'image/png' } },
+  ts: 100,
+}
 
 describe('M9 contract-storage 契约锁定', () => {
   beforeEach(() => {})
@@ -158,7 +175,11 @@ describe('M9 contract-storage 契约锁定', () => {
       const local = new FakeLocalBackend()
       const cloud = new FakeCloudBackend()
       const backend = makeBackend(local, cloud)
-      await local.saveRecord(5, { contract: { name: 'a.png', dataUrl: blob, size: 10, type: 'image/png' }, ts: 900 })
+      await local.saveRecord(5, {
+        contract: { name: 'a.png', dataUrl: blob, size: 10, type: 'image/png' },
+        slots: { contract: { name: 'a.png', dataUrl: blob, size: 10, type: 'image/png' } },
+        ts: 900,
+      })
       cloud.tombstones.set(5, { name: '5-__deleted__-500', ts: 500 }) // 删除时间早于本地 ts
       const map = await backend.loadAll()
       expect(map.has(5)).toBe(true) // 保留
@@ -173,7 +194,7 @@ describe('M9 contract-storage 契约锁定', () => {
       const backend = makeBackend(local, cloud)
       await backend.saveRecord(6, blobState)
       cloud.failNext = true
-      await expect(backend.saveRecord(6, { contract: undefined, ts: 200 })).rejects.toThrow()
+      await expect(backend.saveRecord(6, { slots: {}, ts: 200 })).rejects.toThrow()
     })
 
     it('云 loadAll 失败时降级为纯本地恢复（不阻断）', async () => {
@@ -217,7 +238,7 @@ describe('M9 contract-storage 契约锁定', () => {
       let releaseUpload: (() => void) | null = null
       const gate = new Promise<void>((r) => { releaseUpload = r })
       vi.spyOn(cloud, 'saveRecord').mockImplementation(async (id, state) => {
-        if (state.contract) {
+        if (state.slots && Object.keys(state.slots).length > 0) {
           calls.push('upload')
           await gate // 上传卡在途中
           return Object.getPrototypeOf(cloud).saveRecord.call(cloud, id, state)

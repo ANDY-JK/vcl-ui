@@ -1,0 +1,630 @@
+<script setup lang="ts">
+/**
+ * FormTargetCollect — 目标收集（按门店等目标聚合上传）
+ *
+ * 与 FormBuilder（单页表单）/ FormCollect（平铺记录）不同：
+ * 本组件以「目标清单」为维度，每个目标（门店）一行，含 N 个照片位上传 + 状态。
+ * 照片位由 FormSchema 的 image-upload/upload/camera 字段自动推导（field.key = slotKey）。
+ *
+ * 典型业务：返利函收集（1 位）、门店陈列收集（正面/反面 2 位）、柜机协议收集（1 位）。
+ * 一套组件 + 各自 schema/目标数据 = 三个业务。
+ *
+ * 存储复用 contract-storage 聚合后端（IndexedDB 本地 + Supabase 云端，按 targetId 聚合、
+ * 墓碑/对账防删复活、真机拍照本地先落盘）。
+ */
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick, toRaw } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+import Upload from '@/components/form/Upload.vue'
+import Input from '@/components/form/Input.vue'
+import Button from '@/components/basic/Button.vue'
+import Toast from '@/components/feedback/Toast.vue'
+import ImagePreview from '@/components/data/ImagePreview.vue'
+import type { UploadFile } from '@/components/form/Upload.vue'
+import type { FormSchema, FormField } from './types'
+import {
+  createBackend,
+  validateStorageConfig,
+  getSlotFile,
+  setSlotFile,
+  allSlotsFilled,
+} from '@/components/storage/contract-storage'
+import type { StorageBackend, StorageConfig, StoreUploadState, StoreFile } from '@/components/storage/contract-storage'
+import JSZip from 'jszip'
+
+const t = useT()
+const toastRef = ref<InstanceType<typeof Toast>>()
+const toast = (msg: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') =>
+  toastRef.value?.show(msg, type, 2000)
+
+// ════════════════════════════════════════
+// Props
+// ════════════════════════════════════════
+
+export interface TargetItem {
+  /** 目标唯一 id（门店 Apple ID 等），存储键 */
+  id: number
+  /** 展示字段（门店名称/执照名/地址/电话…），渲染到表格行 */
+  [key: string]: unknown
+}
+
+interface Props {
+  /** 表单 Schema（照片位字段 + 可选填字段；非照片位字段仅作展示/说明） */
+  schema: FormSchema
+  /** 目标清单（门店们），来源由宿主给（静态/API/Excel） */
+  targets: TargetItem[]
+  /** 存储配置（本地/云端），缺省纯本地 */
+  storageConfig?: StorageConfig
+  /** 只读模式（查看收集结果，禁上传） */
+  readonly?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  storageConfig: undefined,
+  readonly: false,
+})
+
+const emit = defineEmits<{
+  /** 某目标某照片位上传/删除后触发 */
+  change: [targetId: number, slotKey: string, file: StoreFile | undefined]
+}>()
+
+// ════════════════════════════════════════
+// 从 schema 推导照片位
+// ════════════════════════════════════════
+
+/** 照片位字段类型（upload 家族） */
+const PHOTO_TYPES = new Set(['upload', 'image-upload', 'camera'])
+
+/** 照片位字段列表（按 schema 字段顺序） */
+const slotFields = computed<FormField[]>(() => props.schema.fields.filter((f) => PHOTO_TYPES.has(f.type)))
+/** slotKey 列表 */
+const slotKeys = computed<string[]>(() => slotFields.value.map((f) => f.key))
+/** 目标 id → 目标 */
+const targetMap = computed(() => new Map(props.targets.map((x) => [x.id, x])))
+
+/** 表格展示列：targets[0] 的前几个标量字段 + id 优先 */
+const displayKeys = computed<string[]>(() => {
+  const first = props.targets[0]
+  if (!first) return ['id']
+  return Object.keys(first)
+    .filter((k) => k !== 'id')
+    .slice(0, 3)
+})
+
+// ════════════════════════════════════════
+// 存储
+// ════════════════════════════════════════
+
+const CONFIG_KEY = 'form-target-collect-storage-config'
+const cfg = ref<StorageConfig>(props.storageConfig ?? loadConfig())
+const showStoragePanel = ref(false)
+const saving = ref(false)
+let backendInstance: StorageBackend | null = null
+
+function loadConfig(): StorageConfig {
+  const defaultSupabase = {
+    url: import.meta.env.VITE_SUPABASE_URL ?? '',
+    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
+    bucket: import.meta.env.VITE_SUPABASE_BUCKET ?? '',
+  }
+  try {
+    const raw = localStorage.getItem(CONFIG_KEY)
+    if (raw) {
+      const c = JSON.parse(raw) as StorageConfig
+      if (c && (c.backend === 'local' || (c.backend === 'supabase' && !validateStorageConfig(c)))) return c
+    }
+  } catch {
+    /* 损坏配置回退默认 */
+  }
+  const hasSupabase = Boolean(defaultSupabase.url && defaultSupabase.anonKey && defaultSupabase.bucket)
+  return hasSupabase
+    ? { backend: 'supabase', ...defaultSupabase }
+    : { backend: 'local', url: '', anonKey: '', bucket: '' }
+}
+
+function persistConfig(): void {
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg.value))
+}
+
+function applyBackend(): StorageBackend {
+  if (!backendInstance) {
+    backendInstance = createBackend(toRaw(cfg.value), (id, e) => {
+      toast(t('fbTarget.syncFail', { id: String(id), err: (e as Error)?.message || String(e) }), 'error')
+    })
+  }
+  return backendInstance
+}
+
+function resetBackend(): void {
+  backendInstance = null
+}
+
+/** 上传状态：targetId → StoreUploadState */
+const uploadMap = reactive(new Map<number, StoreUploadState>())
+
+async function reloadFromBackend(): Promise<void> {
+  const backend = applyBackend()
+  try {
+    const map = await backend.loadAll(slotKeys.value)
+    uploadMap.clear()
+    for (const [id, state] of map) uploadMap.set(id, state)
+  } catch (e) {
+    console.warn('[FormTargetCollect] 存储加载失败:', e)
+    toast(backend.kind === 'supabase' ? t('fbTarget.loadCloudFail') : t('fbTarget.loadLocalFail'), 'error')
+  }
+}
+
+async function saveToBackend(targetId: number): Promise<void> {
+  const raw = toRaw(uploadMap.get(targetId))
+  try {
+    await applyBackend().saveRecord(targetId, raw ?? { slots: {}, ts: Date.now() })
+  } catch (e) {
+    console.warn('[FormTargetCollect] 存储保存失败:', targetId, e)
+    toast(t('fbTarget.saveFail'), 'error')
+  }
+}
+
+async function saveStorageConfig(): Promise<void> {
+  const err = validateStorageConfig(cfg.value)
+  if (err) {
+    toast(err, 'error')
+    return
+  }
+  saving.value = true
+  try {
+    persistConfig()
+    resetBackend()
+    await reloadFromBackend()
+    showStoragePanel.value = false
+    toast(cfg.value.backend === 'supabase' ? t('fbTarget.switchCloud') : t('fbTarget.switchLocal'), 'success')
+  } finally {
+    saving.value = false
+  }
+}
+
+async function clearAll(): Promise<void> {
+  try {
+    await applyBackend().clearAll()
+    uploadMap.clear()
+    toast(t('fbTarget.cleared'), 'success')
+  } catch (e) {
+    console.warn('[FormTargetCollect] 清空失败:', e)
+    toast(t('fbTarget.clearFail'), 'error')
+  }
+}
+
+// ════════════════════════════════════════
+// 上传
+// ════════════════════════════════════════
+
+/** 某目标某照片位的 UploadFile[]（供 Upload v-model） */
+function getUploadFiles(targetId: number, slotKey: string): UploadFile[] {
+  const f = getSlotFile(uploadMap.get(targetId), slotKey)
+  if (!f) return []
+  const url = typeof f.dataUrl === 'string' ? f.dataUrl : URL.createObjectURL(f.dataUrl)
+  return [{ id: targetId, name: f.name, size: f.size, progress: 100, status: 'done', url }]
+}
+
+/** 自定义上传：直接返回即时 blob URL 供预览（真机拍照落盘走 onUpload） */
+const customRequest = (file: File): Promise<{ url: string }> => Promise.resolve({ url: URL.createObjectURL(file) })
+
+async function onUpload(targetId: number, slotKey: string, files: UploadFile[]): Promise<void> {
+  const f = files[0]
+  const cur = uploadMap.get(targetId)
+  if (f && f.url && f.status === 'done') {
+    const file: StoreFile = {
+      name: f.name,
+      dataUrl: f.raw ?? f.url,
+      size: f.size,
+      type: (f as UploadFile & { type?: string }).type || 'image/*',
+    }
+    uploadMap.set(targetId, setSlotFile(cur, slotKey, file))
+    await saveToBackend(targetId)
+    emit('change', targetId, slotKey, file)
+    toast(t('fbTarget.saved'), 'success')
+  } else if (files.length === 0) {
+    uploadMap.set(targetId, setSlotFile(cur, slotKey, undefined))
+    await saveToBackend(targetId)
+    emit('change', targetId, slotKey, undefined)
+  }
+}
+
+// ════════════════════════════════════════
+// 搜索 / 统计
+// ════════════════════════════════════════
+
+const SEARCH_KEY = 'form-target-collect-search'
+const keyword = ref(localStorage.getItem(SEARCH_KEY) || '')
+watch(keyword, (v) => {
+  try {
+    localStorage.setItem(SEARCH_KEY, v)
+  } catch {
+    /* 忽略 */
+  }
+})
+
+const filteredTargets = computed(() => {
+  const kw = keyword.value.trim().toLowerCase()
+  if (!kw) return props.targets
+  return props.targets.filter((s) => Object.values(s).some((v) => String(v).toLowerCase().includes(kw)))
+})
+
+/** 完成统计：全部照片位齐 = 完成 */
+const doneCount = computed(() => {
+  let done = 0
+  for (const tg of props.targets) {
+    if (allSlotsFilled(uploadMap.get(tg.id), slotKeys.value)) done++
+  }
+  return done
+})
+
+// ════════════════════════════════════════
+// 图片预览
+// ════════════════════════════════════════
+
+const previewUrl = ref('')
+const previewVisible = ref(false)
+function openPreview(url: string): void {
+  if (!url) return
+  previewUrl.value = url
+  previewVisible.value = true
+}
+
+// ════════════════════════════════════════
+// 导出 ZIP
+// ════════════════════════════════════════
+
+const exporting = ref(false)
+
+function formatTs(ts: number): string {
+  if (!ts) return ''
+  const d = new Date(ts)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+async function exportZip(): Promise<void> {
+  const zip = new JSZip()
+  let fileCount = 0
+
+  // 1) 上传文件：按 {targetId}/{slotKey}-{文件名} 分目录
+  for (const [idStr, state] of uploadMap) {
+    const targetId = Number(idStr)
+    const target = targetMap.value.get(targetId)
+    const label = String(target?.name ?? target?.id ?? targetId).replace(/[\\/:*?"<>|\s]+/g, '_')
+    const dir = `${targetId}-${label}`
+    for (const f of slotFields.value) {
+      const file = getSlotFile(state, f.key)
+      if (!file) continue
+      const mime =
+        typeof file.dataUrl === 'string'
+          ? file.dataUrl.match(/^data:(image\/\w+);/)?.[1] || 'image/png'
+          : file.dataUrl.type || 'image/png'
+      const ext = mime.split('/')[1] || 'png'
+      const safeName = file.name.replace(/[\\/:*?"<>|]+/g, '_')
+      const zipPath = `${dir}/${f.key}-${safeName || `upload.${ext}`}`
+      try {
+        let blob: Blob
+        if (typeof file.dataUrl === 'string') {
+          const resp = await fetch(file.dataUrl)
+          if (!resp.ok) {
+            console.warn('[FormTargetCollect] 跳过失效引用:', zipPath)
+            continue
+          }
+          blob = await resp.blob()
+        } else {
+          blob = file.dataUrl
+        }
+        zip.file(zipPath, blob)
+        fileCount++
+      } catch {
+        console.warn('[FormTargetCollect] 跳过损坏文件:', zipPath)
+      }
+    }
+  }
+
+  // 2) 汇总 Excel
+  const rows = props.targets.map((s) => {
+    const up = uploadMap.get(s.id)
+    const row: Record<string, string | number> = { 目标ID: s.id }
+    for (const k of displayKeys.value) row[String(k)] = String(s[k] ?? '')
+    for (const f of slotFields.value) {
+      row[f.label] = getSlotFile(up, f.key) ? '✓ 已上传' : '✗ 未上传'
+    }
+    row['最后上传'] = up?.ts ? formatTs(up.ts) : ''
+    return row
+  })
+  const XLSX = await import('xlsx')
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, props.schema.title || '目标收集')
+  zip.file('汇总.xlsx', XLSX.write(wb, { type: 'array', bookType: 'xlsx' }))
+
+  if (fileCount === 0) {
+    toast(t('fbTarget.noFileExport'), 'warning')
+    return
+  }
+
+  exporting.value = true
+  try {
+    const blob = await zip.generateAsync({ type: 'blob' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `${props.schema.title || '目标收集'}_${new Date().toISOString().slice(0, 10)}.zip`
+    a.click()
+    URL.revokeObjectURL(a.href)
+    toast(`${t('fbTarget.exported')} ${fileCount}`, 'success')
+  } finally {
+    exporting.value = false
+  }
+}
+
+// ════════════════════════════════════════
+// 生命周期
+// ════════════════════════════════════════
+
+onMounted(async () => {
+  await reloadFromBackend()
+  await nextTick()
+  // 滚动恢复（真机拍照返回整页重建后回到原位）
+  const wrap = document.querySelector('.ftc-wrap')
+  if (wrap) {
+    const el = wrap.closest('.content-body') as HTMLElement | null
+    if (el) {
+      try {
+        const top = Number(localStorage.getItem('ftc-scroll')) || 0
+        if (top) el.scrollTop = top
+      } catch {
+        /* 忽略 */
+      }
+    }
+  }
+})
+onUnmounted(() => {
+  /* 无全局监听 */
+})
+</script>
+
+<template>
+  <div class="ftc-wrap">
+    <!-- 工具栏 -->
+    <div class="ftc-toolbar">
+      <h2 class="ftc-title">{{ schema.title || t('fbTarget.title') }}</h2>
+      <Input v-model="keyword" :placeholder="t('fbTarget.searchPh')" class="ftc-search" />
+      <span class="ftc-stat" :class="{ done: doneCount > 0 }">
+        {{ doneCount }}/{{ targets.length }} {{ t('fbTarget.done') }}
+      </span>
+      <Button size="sm" variant="primary" :loading="exporting" @click="exportZip">
+        {{ t('fbTarget.export') }}
+      </Button>
+      <Button size="sm" variant="outline" @click="showStoragePanel = !showStoragePanel">
+        {{ cfg.backend === 'supabase' ? '☁ ' + t('fbTarget.cloud') : '💾 ' + t('fbTarget.local') }}
+      </Button>
+      <Button size="sm" variant="ghost" @click="clearAll">{{ t('fbTarget.clear') }}</Button>
+    </div>
+
+    <!-- 存储面板 -->
+    <div v-if="showStoragePanel" class="ftc-storage-panel">
+      <div class="ftc-storage-row">
+        <span class="ftc-storage-label">{{ t('fbTarget.backend') }}</span>
+        <label class="ftc-storage-option">
+          <input v-model="cfg.backend" type="radio" value="local" /> {{ t('fbTarget.localDesc') }}
+        </label>
+        <label class="ftc-storage-option">
+          <input v-model="cfg.backend" type="radio" value="supabase" /> {{ t('fbTarget.cloudDesc') }}
+        </label>
+      </div>
+      <template v-if="cfg.backend === 'supabase'">
+        <div class="ftc-storage-row">
+          <span class="ftc-storage-label">URL</span>
+          <Input v-model="cfg.url" placeholder="https://xxxx.supabase.co" class="ftc-storage-input" />
+        </div>
+        <div class="ftc-storage-row">
+          <span class="ftc-storage-label">anon key</span>
+          <Input v-model="cfg.anonKey" placeholder="eyJhbGciOi..." class="ftc-storage-input" />
+        </div>
+        <div class="ftc-storage-row">
+          <span class="ftc-storage-label">bucket</span>
+          <Input v-model="cfg.bucket" placeholder="contracts" class="ftc-storage-input" />
+        </div>
+      </template>
+      <div class="ftc-storage-actions">
+        <Button size="sm" variant="primary" :loading="saving" @click="saveStorageConfig">
+          {{ t('fbTarget.saveSwitch') }}
+        </Button>
+        <Button size="sm" variant="ghost" @click="showStoragePanel = false">{{ t('common.cancel') }}</Button>
+      </div>
+    </div>
+
+    <!-- 目标表格 -->
+    <div class="ftc-table-wrap">
+      <table class="ftc-table">
+        <thead>
+          <tr>
+            <th style="width: 90px">ID</th>
+            <th v-for="k in displayKeys" :key="k">{{ k }}</th>
+            <th v-for="f in slotFields" :key="f.key">{{ f.label }}</th>
+            <th style="width: 60px">{{ t('fbTarget.status') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="s in filteredTargets" :key="s.id" class="ftc-row">
+            <td class="ftc-td-id">{{ s.id }}</td>
+            <td v-for="k in displayKeys" :key="k" class="ftc-td-val">{{ s[k] }}</td>
+            <td v-for="f in slotFields" :key="f.key" class="ftc-td-upload">
+              <Upload
+                variant="card"
+                mobile-menu
+                :label="getSlotFile(uploadMap.get(s.id), f.key) ? '' : f.label || f.key"
+                :model-value="getUploadFiles(s.id, f.key)"
+                accept="image/*"
+                :disabled="readonly"
+                :custom-request="customRequest"
+                @error="toast($event, 'error')"
+                @preview="openPreview"
+                @update:model-value="(files: UploadFile[]) => onUpload(s.id, f.key, files)"
+              />
+            </td>
+            <td class="ftc-td-status">
+              <span v-if="allSlotsFilled(uploadMap.get(s.id), slotKeys)" class="ftc-status-done"
+                >✓ {{ t('fbTarget.doneShort') }}</span
+              >
+              <span v-else class="ftc-status-none">-</span>
+            </td>
+          </tr>
+          <tr v-if="filteredTargets.length === 0">
+            <td :colspan="displayKeys.length + slotFields.length + 2" class="ftc-empty">
+              {{ t('fbTarget.noMatch') }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <Toast ref="toastRef" variant="toast" position="top" />
+    <ImagePreview v-if="previewVisible" :src="previewUrl" @close="previewVisible = false" />
+  </div>
+</template>
+
+<style scoped>
+.ftc-wrap {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.ftc-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.ftc-title {
+  margin: 0;
+  font-size: 16px;
+  white-space: nowrap;
+}
+.ftc-search {
+  flex: 1;
+  min-width: 200px;
+}
+.ftc-stat {
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+.ftc-stat.done {
+  background: #d1fae5;
+  color: #065f46;
+}
+.ftc-storage-panel {
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ftc-storage-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ftc-storage-label {
+  width: 90px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+.ftc-storage-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ftc-storage-input {
+  flex: 1;
+}
+.ftc-storage-actions {
+  display: flex;
+  gap: 8px;
+}
+.ftc-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+.ftc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: var(--color-bg, #fff);
+}
+.ftc-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface, #f8fafc);
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap;
+}
+.ftc-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+.ftc-row:hover {
+  background: var(--color-bg-alt, #f8fafc);
+}
+.ftc-td-id {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ftc-td-val {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ftc-td-upload {
+  width: 90px;
+  padding: 4px !important;
+}
+.ftc-td-upload :deep(.card-wrap) {
+  width: 80px !important;
+  height: 80px !important;
+}
+.ftc-td-upload :deep(.card-label) {
+  font-size: 10px !important;
+}
+.ftc-td-status {
+  text-align: center;
+  white-space: nowrap;
+}
+.ftc-status-done {
+  color: #059669;
+  font-weight: 600;
+}
+.ftc-status-none {
+  color: #cbd5e1;
+}
+.ftc-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-muted);
+}
+</style>
