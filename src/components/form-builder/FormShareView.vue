@@ -19,6 +19,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { formatDateTimeZh } from '@/components/form/utils/date-utils'
 import FormBuilder from './FormBuilder.vue'
+import FormTargetCollect from './FormTargetCollect.vue'
 import Result from '@/components/feedback/Result.vue'
 import Button from '@/components/basic/Button.vue'
 import { toFormSchema, collectStorageKey, genRecordId, type FormDesign, type CollectRecord } from './designer/types'
@@ -69,6 +70,10 @@ const nodes = computed(() => parsed.value?.nodes ?? parsed.value?.fields ?? [])
 const formSchema = computed(() =>
   parsed.value ? toFormSchema(parsed.value.nodes ?? parsed.value.fields ?? [], parsed.value.meta ?? {}) : null,
 )
+/** 目标收集模式：meta.collectType === 'target' */
+const isTargetCollect = computed(() => parsed.value?.meta?.collectType === 'target' && !!formSchema.value)
+/** 目标清单（目标收集模式用；缺省空数组由组件降级处理） */
+const targets = computed(() => parsed.value?.meta?.targets ?? [])
 /** 收集记录存储 key（与 FormCollect 同算法：按字段结构指纹） */
 const collectKey = computed(() => (parsed.value ? collectStorageKey(nodes.value) : ''))
 const activeStore = computed<FormStore>(() => props.store ?? getActiveFormStore())
@@ -127,10 +132,19 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
     <!-- 填写表单 -->
     <div v-else class="fsv-form">
       <template v-if="formSchema">
-        <h2 v-if="title || formSchema.title" class="fsv-title">{{ title || formSchema.title }}</h2>
-        <p v-if="formSchema.description" class="fsv-desc">{{ formSchema.description }}</p>
-        <p v-if="error" class="fsv-error" role="alert">{{ error }}</p>
-        <FormBuilder v-model="formData" :schema="formSchema" @submit="handleSubmit" />
+        <!-- 目标收集模式：按目标清单渲染表格 + 每行照片位上传 + 状态/导出 -->
+        <template v-if="isTargetCollect">
+          <h2 v-if="title || formSchema.title" class="fsv-title">{{ title || formSchema.title }}</h2>
+          <p v-if="formSchema.description" class="fsv-desc">{{ formSchema.description }}</p>
+          <FormTargetCollect :schema="formSchema" :targets="targets" />
+        </template>
+        <!-- 单页表单模式：填写 → 提交 → 收集记录 -->
+        <template v-else>
+          <h2 v-if="title || formSchema.title" class="fsv-title">{{ title || formSchema.title }}</h2>
+          <p v-if="formSchema.description" class="fsv-desc">{{ formSchema.description }}</p>
+          <p v-if="error" class="fsv-error" role="alert">{{ error }}</p>
+          <FormBuilder v-model="formData" :schema="formSchema" @submit="handleSubmit" />
+        </template>
       </template>
     </div>
   </div>

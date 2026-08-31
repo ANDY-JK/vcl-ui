@@ -6,7 +6,7 @@
  * - 样式沿用全局 designer.css（ld-settings-* 类），本组件不带 scoped 样式
  * - 云端配置 UI 数据全部来自 useFormManager 实例（reactive 对象自动解包）
  */
-import { inject } from 'vue'
+import { inject, computed } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import Group from '@/components/form/Group.vue'
 import type { FormMeta } from './types'
@@ -14,7 +14,7 @@ import { FORM_MANAGER_KEY } from './context'
 
 const t = useT()
 
-defineProps<{
+const props = defineProps<{
   meta: FormMeta
 }>()
 
@@ -24,6 +24,22 @@ const manager = inject(FORM_MANAGER_KEY)!
 const emit = defineEmits<{
   'patch-meta': [patch: Partial<FormMeta>]
 }>()
+
+/** 目标清单 JSON 文本（textarea 绑定值；无效 JSON 时回显原文本） */
+const targetListText = computed(() => {
+  const arr = (props.meta.targets ?? []) as Array<Record<string, unknown>>
+  return arr.length ? JSON.stringify(arr, null, 2) : ''
+})
+
+function onTargetListInput(e: Event): void {
+  const raw = (e.target as HTMLTextAreaElement).value
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) emit('patch-meta', { targets: parsed })
+  } catch {
+    /* 无效 JSON 不提交（保留原 targets，避免误清） */
+  }
+}
 </script>
 
 <template>
@@ -89,6 +105,36 @@ const emit = defineEmits<{
         </div>
       </div>
     </div>
+    <div class="ld-settings-row" style="max-width: 200px">
+      <label>{{ t('fbd.collectType') }}</label>
+      <select
+        class="ld-settings-textarea"
+        :value="meta.collectType ?? 'single'"
+        @change="
+          emit('patch-meta', {
+            collectType: ($event.target as HTMLSelectElement).value === 'target' ? 'target' : 'single',
+          })
+        "
+      >
+        <option value="single">{{ t('fbd.collectSingle') }}</option>
+        <option value="target">{{ t('fbd.collectTarget') }}</option>
+      </select>
+    </div>
+    <!-- 目标收集模式：目标清单 JSON 配置 -->
+    <template v-if="meta.collectType === 'target'">
+      <div class="ld-settings-row wide">
+        <label>{{ t('fbd.targetList') }}</label>
+        <textarea
+          class="ld-settings-textarea"
+          rows="6"
+          :value="targetListText"
+          :placeholder="t('fbd.targetListPh')"
+          spellcheck="false"
+          @input="onTargetListInput"
+        />
+        <span class="ld-settings-hint">{{ t('fbd.targetListHint') }}</span>
+      </div>
+    </template>
     <div class="ld-settings-row" style="max-width: 200px">
       <label>{{ t('fbd.submitBtnText') }}</label>
       <input

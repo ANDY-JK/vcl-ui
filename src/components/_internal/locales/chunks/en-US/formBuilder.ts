@@ -409,6 +409,13 @@ export default {
     layoutSingle: 'Single column',
     layoutGrid: 'Grid',
     layoutSteps: 'Steps',
+    collectType: 'Collection type',
+    collectSingle: 'Single form (fill & submit one record)',
+    collectTarget: 'Target collection (aggregate uploads by store list)',
+    targetList: 'Target list (JSON)',
+    targetListPh: '[{"id": 3496644, "name": "Store A", "license": "License A", "address": "Address A"}]',
+    targetListHint:
+      'Each item: id (required) + display fields (name/license/address…). Published page renders the target table from this list.',
     submitBtnText: 'Submit button text',
     realtimeValidate: 'Realtime validation',
     validateOnSubmitOnly: 'On submit only',

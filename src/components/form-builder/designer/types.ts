@@ -381,6 +381,11 @@ export interface FormMeta {
   submitMode?: 'once' | 'multiple' | 'unique'
   /** 提交后清空 */
   clearAfterSubmit?: boolean
+  // ── 目标收集模式（FormTargetCollect） ──
+  /** 收集类型：single=单页表单（默认）；target=目标收集（按门店清单聚合上传） */
+  collectType?: 'single' | 'target'
+  /** 目标清单（collectType=target 时有效）：发布端渲染目标收集表格 */
+  targets?: Array<{ id: number; name: string; license?: string; address?: string; [key: string]: unknown }>
 }
 
 /** 设计器数据格式版本（FormDesign.schemaVersion）。导入时兼容性检测依赖此值，改版本号需同步迁移逻辑 */
