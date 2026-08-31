@@ -71,6 +71,8 @@ const emit = defineEmits<{
   validate: [isValid: boolean]
   /** 重置 */
   reset: []
+  /** 远程数据加载完成（submitConfig.apiUrl GET 回填后，返回原始响应数据） */
+  loaded: [raw: Record<string, unknown>]
 }>()
 
 // ════════════════════════════════════════
@@ -80,6 +82,12 @@ const emit = defineEmits<{
 const schemaRef = computed(() => props.schema)
 const userContextRef = computed(() => props.userContext)
 const { normalized, initialData, defaultSpan } = useFormSchema(schemaRef, userContextRef)
+
+/** 表单级 API 提交配置（submitConfig） */
+const submitConfig = computed(() => normalized.value.submitConfig)
+
+/** 只读状态：props.readonly 或 submitConfig.mode='view'（全字段只读展示） */
+const effectiveReadonly = computed(() => props.readonly || submitConfig.value?.mode === 'view')
 
 // ════════════════════════════════════════
 // 表单数据（必须在联动引擎之前声明，避免 TDZ）
@@ -173,6 +181,28 @@ watch(
         saveDraft(props.storageKey, formData.value).catch(() => {})
       }, 1000)
     }
+
+    // 审核模式自动保存（submitConfig.mode='review' + saveUrl，防抖 reviewAutoSave ms）
+    const rc = submitConfig.value
+    if (rc?.mode === 'review' && rc.saveUrl && rc.reviewAutoSave !== 0) {
+      if (autoSaveTimer) clearTimeout(autoSaveTimer)
+      const ver = ++autoSaveVersion
+      autoSaveTimer = setTimeout(async () => {
+        if (ver !== autoSaveVersion) return
+        try {
+          const resp = await fetch(rc.saveUrl!, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...formData.value, ...(rc.params ?? {}) }),
+          })
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+          // 成功静默（避免每 3 秒打断），失败才提示
+        } catch {
+          if (ver !== autoSaveVersion) return
+          toastRef.value?.show(t('formBuilder.autoSaveFail'), 'error', 2500)
+        }
+      }, rc.reviewAutoSave ?? 3000)
+    }
   },
   { deep: true },
 )
@@ -203,6 +233,12 @@ onMounted(async () => {
   // 初始化无联动条件的 API 数据源
   await initDataSources()
 
+  // submitConfig：GET 加载数据（apiUrl）→ 回填字段值
+  const rc = submitConfig.value
+  if (rc?.apiUrl && rc.mode !== 'edit') {
+    await loadRemoteData()
+  }
+
   if (props.storageKey) {
     const draft = await loadDraft(props.storageKey)
     if (draft) {
@@ -212,8 +248,43 @@ onMounted(async () => {
   }
 })
 
+/**
+ * 远程数据加载（submitConfig.apiUrl）：GET 拉取 → 按字段 key 回填
+ * 响应取 json.data ?? json，仅回填 schema 内字段；成功 emit 'loaded'
+ */
+async function loadRemoteData(): Promise<void> {
+  const rc = submitConfig.value
+  if (!rc?.apiUrl) return
+  try {
+    const url = new URL(rc.apiUrl, window.location.origin)
+    for (const [k, v] of Object.entries(rc.params ?? {})) url.searchParams.set(k, String(v))
+    const resp = await fetch(url.toString())
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+    const json = (await resp.json()) as Record<string, unknown>
+    const raw = (json && typeof json === 'object' && 'data' in json && json.data) || json
+    const source = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
+    const next: FormData = { ...formData.value }
+    let changed = false
+    for (const field of normalized.value.fields) {
+      const v = source[field.key]
+      if (v !== undefined && v !== null) {
+        next[field.key] = v
+        changed = true
+      }
+    }
+    if (changed) formData.value = next
+    emit('loaded', source)
+  } catch (e) {
+    toastRef.value?.show(t('formBuilder.loadFail', { err: String(e instanceof Error ? e.message : e) }), 'error', 2500)
+  }
+}
+
 // 草稿保存 timer（在上方 formData watcher 中使用）
 let saveTimer: ReturnType<typeof setTimeout> | null = null
+/** 审核模式自动保存 timer（submitConfig.mode='review'） */
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+/** 自动保存版本号（防抖期间旧请求结果不覆盖新状态） */
+let autoSaveVersion = 0
 
 // ════════════════════════════════════════
 // 步骤模式（steps）
@@ -293,8 +364,38 @@ function handleSubmit(): void {
   }
 
   submitting.value = true
-  emit('submit', submitData)
 
+  // 提交链路：配置了 saveUrl → 先 POST 提交，成功后 emit submit 并提示
+  const rc = submitConfig.value
+  if (rc?.saveUrl) {
+    fetch(rc.saveUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...submitData, ...(rc.params ?? {}) }),
+    })
+      .then((resp) => {
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+        // view 模式只读不提示（页面级查看场景）；edit/review 提示成功
+        if (submitConfig.value?.mode !== 'view') {
+          toastRef.value?.show(t('formBuilder.submitSuccess'), 'success', 2000)
+        }
+        emit('submit', submitData)
+        finishSubmit()
+      })
+      .catch((e) => {
+        toastRef.value?.show(t('formBuilder.submitFail', { err: String(e?.message ?? e) }), 'error', 2500)
+        stopSubmit()
+      })
+    return
+  }
+
+  // 无 saveUrl：直接 emit submit，由外部处理（原有行为）
+  emit('submit', submitData)
+  finishSubmit()
+}
+
+/** 提交成功后的收尾（禁用再次提交 / 清空 / 清除草稿 / 自动复位 loading） */
+function finishSubmit(): void {
   // 提交模式：once/unique 模式下提交后禁用再次提交（multiple 允许多次）
   if (normalized.value.submitMode !== 'multiple') {
     hasSubmitted.value = true
@@ -343,6 +444,7 @@ function setSubmitting(v: boolean): void {
 
 onUnmounted(() => {
   if (submitTimer) clearTimeout(submitTimer)
+  if (autoSaveTimer) clearTimeout(autoSaveTimer)
 })
 
 /**
@@ -618,8 +720,8 @@ function fieldsInStep(section: RenderSection, index: number): FormField[] {
 /** 是否显示步骤导航 */
 const showSteps = computed(() => normalized.value.layout === 'steps' && totalSteps.value > 0)
 
-/** 是否显示底部操作按钮 */
-const showActions = computed(() => !normalized.value.hideActions)
+/** 是否显示底部操作按钮（view 模式只读展示，隐藏提交/重置） */
+const showActions = computed(() => !normalized.value.hideActions && submitConfig.value?.mode !== 'view')
 
 /** 是否是最后一步 */
 const isLastStep = computed(() => currentStep.value === totalSteps.value - 1)
@@ -676,7 +778,7 @@ const stepCompletion = computed(() => {
                 :section="section"
                 :form-data="formData"
                 :errors="errors"
-                :disabled="disabled || readonly"
+                :disabled="disabled || effectiveReadonly"
                 :get-options="getFieldOptions"
                 @update:field="onFieldUpdate"
                 @change="(f: FormField) => handleFieldChange(f, 'change')"
@@ -703,7 +805,7 @@ const stepCompletion = computed(() => {
                 :section="section"
                 :form-data="formData"
                 :errors="errors"
-                :disabled="disabled || readonly"
+                :disabled="disabled || effectiveReadonly"
                 :get-options="getFieldOptions"
                 @update:field="onFieldUpdate"
                 @change="(f: FormField) => handleFieldChange(f, 'change')"
@@ -730,7 +832,7 @@ const stepCompletion = computed(() => {
                 :section="section"
                 :form-data="formData"
                 :errors="errors"
-                :disabled="disabled || readonly"
+                :disabled="disabled || effectiveReadonly"
                 :get-options="getFieldOptions"
                 @update:field="onFieldUpdate"
                 @change="(f: FormField) => handleFieldChange(f, 'change')"
@@ -756,7 +858,7 @@ const stepCompletion = computed(() => {
                 :section="section"
                 :form-data="formData"
                 :errors="errors"
-                :disabled="disabled || readonly"
+                :disabled="disabled || effectiveReadonly"
                 :get-options="getFieldOptions"
                 @update:field="onFieldUpdate"
                 @change="(f: FormField) => handleFieldChange(f, 'change')"

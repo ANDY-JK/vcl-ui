@@ -34,6 +34,7 @@ export type FieldType =
   | 'email'
   | 'url'
   | 'search'
+  | 'color'
   // → Select
   | 'select'
   | 'combobox'
@@ -337,6 +338,30 @@ export interface FormStep {
 }
 
 /**
+ * 表单级 API 提交配置（DynamicForm 审核/提交链路承接）
+ *
+ * 对应旧版 DynamicForm 的 mode='review' 审核模式 + apiUrl/saveUrl 链路：
+ * - mode='view'   全字段只读 + 挂载时 GET 加载（apiUrl）
+ * - mode='review' 全字段可编辑 + GET 加载 + 变更防抖自动保存（reviewAutoSave → saveUrl）
+ * - 缺省（edit）   普通提交：提交按钮 POST（saveUrl）或由外部 @submit 处理
+ *
+ * 数据回填：GET 响应取 json.data ?? json，按字段 key 回填；仅 schema 内字段生效。
+ * 提交体：{ ...表单可见字段, ...params }（params 用于附加固定参数如表单 id）。
+ */
+export interface FormSubmitConfig {
+  /** 表单模式（缺省 edit = 普通提交） */
+  mode?: 'edit' | 'review' | 'view'
+  /** 数据加载地址：挂载时 GET 加载，回填字段值（view/review 模式自动调） */
+  apiUrl?: string
+  /** 数据提交地址：提交按钮 POST / review 模式防抖自动保存 */
+  saveUrl?: string
+  /** 审核模式自动保存防抖 ms（默认 3000，0 禁用） */
+  reviewAutoSave?: number
+  /** 请求附加参数（GET 作为 query / POST 并入 body） */
+  params?: Record<string, string | number>
+}
+
+/**
  * 表单 Schema — 完整的表单结构描述
  *
  * @example
@@ -378,6 +403,8 @@ export interface FormSchema {
   validateOnChange?: boolean
   /** 提交模式（默认 once） */
   submitMode?: 'once' | 'multiple' | 'unique'
+  /** 表单级 API 提交配置（加载/自动保存/提交链路，缺省无 API 交互） */
+  submitConfig?: FormSubmitConfig
   /** 提交成功后清空表单（默认 false） */
   clearAfterSubmit?: boolean
   /** 标签位置 */

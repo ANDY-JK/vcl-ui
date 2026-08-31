@@ -56,7 +56,14 @@ export function normalizeSchema(
 > &
   Pick<
     FormSchema,
-    'title' | 'description' | 'steps' | 'submitMode' | 'clearAfterSubmit' | 'labelPosition' | 'labelWidth'
+    | 'title'
+    | 'description'
+    | 'steps'
+    | 'submitMode'
+    | 'clearAfterSubmit'
+    | 'labelPosition'
+    | 'labelWidth'
+    | 'submitConfig'
   > {
   const merged = { ...defaultSchema(), ...schema }
   // fields 确保非空数组
@@ -83,7 +90,14 @@ export function normalizeSchema(
   > &
     Pick<
       FormSchema,
-      'title' | 'description' | 'steps' | 'submitMode' | 'clearAfterSubmit' | 'labelPosition' | 'labelWidth'
+      | 'title'
+      | 'description'
+      | 'steps'
+      | 'submitMode'
+      | 'clearAfterSubmit'
+      | 'labelPosition'
+      | 'labelWidth'
+      | 'submitConfig'
     >
 }
 
