@@ -695,8 +695,6 @@ const deviceClass = computed(() => `device-${props.device}`)
                       >
                         <div class="ldc-card-head">
                           <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
-                          <span class="ldc-card-label">{{ child.label }}</span>
-                          <span v-if="child.required" class="ldc-required-mark">*</span>
                           <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
                         </div>
                         <div class="ldc-card-body">
@@ -704,7 +702,6 @@ const deviceClass = computed(() => `device-${props.device}`)
                             v-if="findFieldByKey(child.key ?? child.id)"
                             :field="findFieldByKey(child.key ?? child.id)!"
                             :model-value="previewData[child.key ?? child.id]"
-                            disabled
                           />
                         </div>
                       </div>
@@ -743,8 +740,6 @@ const deviceClass = computed(() => `device-${props.device}`)
                       >
                         <div class="ldc-card-head">
                           <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
-                          <span class="ldc-card-label">{{ child.label }}</span>
-                          <span v-if="child.required" class="ldc-required-mark">*</span>
                           <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
                         </div>
                         <div class="ldc-card-body">
@@ -752,7 +747,6 @@ const deviceClass = computed(() => `device-${props.device}`)
                             v-if="findFieldByKey(child.key ?? child.id)"
                             :field="findFieldByKey(child.key ?? child.id)!"
                             :model-value="previewData[child.key ?? child.id]"
-                            disabled
                           />
                         </div>
                       </div>
@@ -778,8 +772,6 @@ const deviceClass = computed(() => `device-${props.device}`)
                     >
                       <div class="ldc-card-head">
                         <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
-                        <span class="ldc-card-label">{{ child.label }}</span>
-                        <span v-if="child.required" class="ldc-required-mark">*</span>
                         <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
                         <span class="ldc-card-key">{{ child.key }}</span>
                         <span class="ldc-card-actions" @click.stop>
@@ -802,7 +794,6 @@ const deviceClass = computed(() => `device-${props.device}`)
                           v-if="findFieldByKey(child.key ?? child.id)"
                           :field="findFieldByKey(child.key ?? child.id)!"
                           :model-value="previewData[child.key ?? child.id]"
-                          disabled
                         />
                       </div>
                     </div>
@@ -831,8 +822,6 @@ const deviceClass = computed(() => `device-${props.device}`)
               <span class="ldc-drag-handle" :title="t('fbt.dragSort')">
                 <IconSvg type="grip-vertical" size="sm" />
               </span>
-              <span class="ldc-card-label">{{ node.label }}</span>
-              <span v-if="node.required" class="ldc-required-mark">*</span>
               <span class="ldc-card-type-badge">{{ getTypeLabel(node.type) }}</span>
               <span class="ldc-card-key">{{ node.key }}</span>
               <span class="ldc-card-actions" @click.stop>
@@ -855,7 +844,6 @@ const deviceClass = computed(() => `device-${props.device}`)
                 v-if="findFieldByKey(node.key ?? node.id)"
                 :field="findFieldByKey(node.key ?? node.id)!"
                 :model-value="previewData[node.key ?? node.id]"
-                disabled
               />
             </div>
           </div>

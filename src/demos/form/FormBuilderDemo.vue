@@ -102,6 +102,43 @@ const presets = [
 // 当前选中的预置模板
 const activePreset = ref<string>('')
 
+// ════════════════════════════════════════
+// 模板悬浮预览 — hover 弹出真实渲染，免盲选（所见即所选）
+// ════════════════════════════════════════
+const previewTemplate = ref<string | null>(null)
+let hoverTimer: ReturnType<typeof setTimeout> | null = null
+
+function clearHoverTimer(): void {
+  if (hoverTimer) clearTimeout(hoverTimer)
+  hoverTimer = null
+}
+/** 移入模板按钮：250ms 后打开预览（快速划过不闪弹） */
+function onPresetEnter(key: string): void {
+  clearHoverTimer()
+  hoverTimer = setTimeout(() => {
+    previewTemplate.value = key
+  }, 250)
+}
+/** 移出：留 180ms 缓冲让鼠标滑进预览卡，进卡即取消关闭 */
+function schedulePreviewClose(): void {
+  clearHoverTimer()
+  hoverTimer = setTimeout(() => {
+    previewTemplate.value = null
+  }, 180)
+}
+function cancelPreviewClose(): void {
+  clearHoverTimer()
+}
+
+const previewTemplateLabel = computed(() => presets.find((x) => x.key === previewTemplate.value)?.label ?? '')
+const previewTemplateSchema = computed(() => {
+  const p = presets.find((x) => x.key === previewTemplate.value)
+  if (!p) return null
+  // nodes 形态（容器布局模板）→ 转真实 schema 渲染
+  if ('nodes' in p && p.nodes) return toFormSchema(p.nodes() as DesignerNode[], p.meta() as FormMeta)
+  return (p as { schema: typeof registrationSchema }).schema()
+})
+
 /** 加载预置模板 */
 function loadPreset(key: string): void {
   const preset = presets.find((p) => p.key === key)
@@ -181,13 +218,14 @@ function loadPreset(key: string): void {
           <IconSvg type="sparkles" size="xs" />
           加载示例
         </button>
-        <div v-else class="lc-demo-presets">
+        <div v-else class="lc-demo-presets" @mouseleave="schedulePreviewClose">
           <button
             v-for="p in presets"
             :key="p.key"
             class="lc-demo-preset-btn"
             :class="{ active: activePreset === p.key }"
             @click="loadPreset(p.key)"
+            @mouseenter="onPresetEnter(p.key)"
           >
             <IconSvg :type="p.icon" size="xs" />
             {{ p.label }}
@@ -195,6 +233,31 @@ function loadPreset(key: string): void {
         </div>
       </div>
     </div>
+
+    <!-- 模板悬浮预览：hover 模板按钮后弹出真实渲染（可交互试填） -->
+    <Transition name="lc-fade">
+      <div
+        v-if="previewTemplateSchema"
+        class="lc-preset-preview"
+        role="dialog"
+        :aria-label="`${previewTemplateLabel} 预览`"
+        @mouseenter="cancelPreviewClose"
+        @mouseleave="schedulePreviewClose"
+      >
+        <div class="lc-preset-preview-head">
+          <span>
+            <IconSvg type="eye" size="xs" />
+            {{ previewTemplateLabel }} · 预览
+          </span>
+          <button class="lc-preset-preview-close" aria-label="关闭预览" @click="previewTemplate = null">
+            <IconSvg type="x" size="xs" />
+          </button>
+        </div>
+        <div class="lc-preset-preview-body">
+          <FormBuilder :schema="previewTemplateSchema" />
+        </div>
+      </div>
+    </Transition>
 
     <!-- 内容区 -->
     <!-- 设计 -->
@@ -228,6 +291,7 @@ function loadPreset(key: string): void {
 
 <style scoped>
 .lc-demo {
+  position: relative;
   padding: 20px;
 }
 
@@ -354,5 +418,71 @@ function loadPreset(key: string): void {
   margin: 0;
   font-size: 13.5px;
   color: var(--color-text-secondary, #6b7280);
+}
+
+/* ── 模板悬浮预览 ── */
+.lc-preset-preview {
+  position: absolute;
+  top: 54px;
+  right: 16px;
+  z-index: 80;
+  width: 640px;
+  max-width: calc(100vw - 48px);
+  max-height: min(72vh, 680px);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+.lc-preset-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--color-bg-alt, #f8fafc);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+}
+.lc-preset-preview-head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lc-preset-preview-close {
+  display: flex;
+  padding: 3px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--color-text-muted, #9ca3af);
+  transition: all 0.12s;
+}
+.lc-preset-preview-close:hover {
+  color: var(--color-text, #1e293b);
+  background: var(--color-bg, #f1f5f9);
+}
+.lc-preset-preview-body {
+  overflow-y: auto;
+  padding: 18px 20px;
+}
+/* 悬浮进出场 */
+.lc-fade-enter-active,
+.lc-fade-leave-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+.lc-fade-enter-from,
+.lc-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

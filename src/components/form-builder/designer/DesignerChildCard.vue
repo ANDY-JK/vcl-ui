@@ -23,8 +23,6 @@ const emit = defineEmits<{
   <div class="ldc-card" @click.stop="emit('select', child.id)">
     <div class="ldc-card-head">
       <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
-      <span class="ldc-card-label">{{ child.label }}</span>
-      <span v-if="child.required" class="ldc-required-mark">*</span>
       <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
       <span class="ldc-card-key">{{ child.key }}</span>
     </div>
@@ -33,7 +31,6 @@ const emit = defineEmits<{
         v-if="findField(child.key ?? child.id)"
         :field="findField(child.key ?? child.id)!"
         :model-value="previewData[child.key ?? child.id]"
-        disabled
       />
     </div>
   </div>
