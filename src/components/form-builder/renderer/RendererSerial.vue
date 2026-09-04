@@ -23,7 +23,8 @@ function generateSerial(): string {
   const prefix = (props.field.props?.serialPrefix as string) ?? ''
   const fmt = (props.field.props?.serialDateFormat as string) ?? 'YYYYMMDD'
   const dateStr = formatDate(new Date(), fmt)
-  const seq = String(Math.floor(Math.random() * 10000)).padStart(4, '0')
+  // 8 位随机 hex：同日同前缀碰撞概率 1/43 亿（旧 4 位十进制为 1/10000，并发生成可重复）
+  const seq = Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
   return `${prefix}${dateStr}${seq}`
 }
 watch(

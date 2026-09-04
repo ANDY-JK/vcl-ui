@@ -86,13 +86,13 @@ describe('matrix 评分矩阵', () => {
 })
 
 describe('serial 流水号', () => {
-  it('挂载且无值 → 一次性生成并回写（prefix+日期+4位序号）', async () => {
+  it('挂载且无值 → 一次性生成并回写（prefix+日期+8位随机hex）', async () => {
     const wrapper = mountField('serial', { serialPrefix: 'HT', serialDateFormat: 'YYYYMMDD' })
     await nextTick()
     const emitted = wrapper.emitted('update:modelValue')
     expect(emitted).toHaveLength(1)
     const val = emitted![0]![0] as string
-    expect(val).toMatch(/^HT\d{8}\d{4}$/)
+    expect(val).toMatch(/^HT\d{8}[0-9a-f]{8}$/)
     expect(wrapper.find('.fb-serial-value').text()).toBe(val)
   })
 

@@ -53,14 +53,16 @@ function tokenize(src: string): Tok[] {
       i = j
       continue
     }
-    // 字符串字面量（单/双引号，支持转义）
+    // 字符串字面量（单/双引号，支持转义：\" \' \\ \n \t \r）
     if (ch === '"' || ch === "'") {
       const quote = ch
       let j = i + 1
       let val = ''
       while (j < n && src[j] !== quote) {
         if (src[j] === '\\' && j + 1 < n) {
-          val += src[j + 1]
+          const next = src[j + 1]
+          // 标准转义解释；其余（含 \\）取字面下一字符
+          val += next === 'n' ? '\n' : next === 't' ? '\t' : next === 'r' ? '\r' : next
           j += 2
           continue
         }
@@ -237,7 +239,18 @@ class ExprParser {
   private parsePrimary(): unknown {
     const t = this.tokens[this.pos++]
     if (!t) throw new Error('unexpected end')
-    if (t.kind === 'num' || t.kind === 'str' || t.kind === 'bool') return t.value
+    if (t.kind === 'num' || t.kind === 'str' || t.kind === 'bool') {
+      // 相邻字符串字面量拼接：{{a}}{{b}} 替换后产生 "x""y" 形态，拼接为一个字符串
+      if (t.kind === 'str') {
+        let val = t.value
+        while (this.peek()?.kind === 'str') {
+          val += (this.peek() as { kind: 'str'; value: string }).value
+          this.pos++
+        }
+        return val
+      }
+      return t.value
+    }
     if (t.kind === 'null') return null
     if (t.kind === 'op' && t.value === '(') {
       const v = this.parseOr()
@@ -290,27 +303,30 @@ export function evaluateFormula(formula: string, data: FormData): unknown {
       replacement = '""'
     } else if (typeof val === 'string') {
       // 如果是纯数字字符串，直接替换为数字（用于算术）
-      // 否则用引号包裹（用于字符串拼接和条件比较）
+      // 否则用 JSON.stringify 包裹——任意值（含反斜杠/引号/换行）都成为合法字符串字面量，
+      // tokenize 不会因转义失衡抛错（旧实现手拼转义，值以 \ 结尾时求值失败走兜底）
       if (val !== '' && !isNaN(Number(val))) {
         replacement = val
       } else {
-        replacement = `"${val.replace(/"/g, '\\"')}"`
+        replacement = JSON.stringify(val)
       }
     } else if (typeof val === 'boolean') {
       replacement = String(val)
     } else if (typeof val === 'number') {
       replacement = String(val)
     } else {
-      replacement = `"${String(val).replace(/"/g, '\\"')}"`
+      replacement = JSON.stringify(String(val))
     }
-    // 替换所有 {{fieldName}} 出现
+    // 替换所有 {{fieldName}} 出现（key 是 \w+，无需转义正则）
     expr = expr.replace(new RegExp(`\\{\\{${f}\\}\\}`, 'g'), replacement)
   }
 
   try {
     return safeEvaluate(expr)
   } catch {
-    // 求值失败：退化为纯字符串拼接（去掉引号）
-    return expr.replace(/"/g, '')
+    // 求值失败：降级为不可见条件不成立——返回空字符串（falsy），
+    // 避免兜底产出 truthy 值使 showHide 恒真；纯拼接公式已由 parsePrimary
+    // 的相邻字符串合并原生支持，正常不会走到这里
+    return ''
   }
 }

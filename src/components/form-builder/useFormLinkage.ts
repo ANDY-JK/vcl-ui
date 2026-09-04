@@ -61,6 +61,24 @@ export function useFormLinkage(fields: ComputedRef<FormField[]> | Ref<FormField[
     linkageFields.value = allFields.filter((f) => f.linkage && f.linkage.type !== 'none' && f.linkage.formula)
     dataSourceFields.value = allFields.filter((f) => f.dataSource && f.dataSource.type !== 'none')
     cascadeFields.value = allFields.filter((f) => f.optionsFrom && f.optionsMap)
+
+    // 选项来源互斥检测：optionsMap 级联 / followOptions 联动 / dataSource.api 都写
+    // dynamicOptions，同字段多来源时结果取决于执行顺序（后写覆盖）。设计上互斥，
+    // 同时出现视为配置冲突，dev 下提示修正
+    if (import.meta.env.DEV) {
+      for (const f of allFields) {
+        const sources: string[] = []
+        if (f.optionsFrom && f.optionsMap) sources.push('optionsMap')
+        if (f.linkage?.type === 'followOptions' && f.linkage.formula) sources.push('followOptions')
+        if (f.dataSource?.type === 'api' && f.dataSource.apiUrl) sources.push('dataSource.api')
+        if (sources.length > 1) {
+          console.warn(
+            `[FormLinkage] 字段 "${f.key}" 同时配置了多个选项来源（${sources.join(' + ')}），` +
+              '仅一个会生效（按求值顺序覆盖），请只保留一个。',
+          )
+        }
+      }
+    }
   }
 
   /**

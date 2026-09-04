@@ -119,4 +119,25 @@ describe('evaluateFormula · 字段占位符替换', () => {
     expect(result).not.toBeUndefined()
     expect(typeof result).toBe('string')
   })
+
+  it('值含反斜杠（含以 \\ 结尾）不破坏求值——条件比较原样参与', () => {
+    // 旧实现手拼转义：值 "a\" 产生 "a"" → tokenize 抛错走兜底 → truthy 字符串 showHide 恒真
+    // 匹配含反斜杠的值：公式字面量用双引号 + \\ 转义（JSON.stringify 替换值同形态）
+    expect(evaluateFormula('{{x}} == "a\\\\"', { x: 'a\\' })).toBe(true)
+    expect(evaluateFormula('{{x}} == "a\\\\"', { x: 'b\\' })).toBe(false)
+    expect(evaluateFormula('{{x}}', { x: 'a\\' })).toBe('a\\')
+  })
+
+  it('值含引号/换行时条件比较不受影响', () => {
+    expect(evaluateFormula('{{x}} == \'say "hi"\'', { x: 'say "hi"' })).toBe(true)
+    // 公式字面量内的 \n 转义序列与 JSON.stringify 产出的形态一致
+    expect(evaluateFormula('{{x}} == "a\\nb"', { x: 'a\nb' })).toBe(true)
+    expect(evaluateFormula('{{x}}', { x: 'a\nb' })).toBe('a\nb')
+  })
+
+  it('相邻字符串拼接由解析器原生支持（不依赖兜底）', () => {
+    expect(evaluateFormula('{{first}}{{last}}', { first: '张', last: '三' })).toBe('张三')
+    // 含转义字符的值拼接同样原样保留
+    expect(evaluateFormula('{{a}}{{b}}', { a: 'x\\', b: 'y"' })).toBe('x\\y"')
+  })
 })
