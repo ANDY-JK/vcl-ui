@@ -5,11 +5,40 @@
  * - 前缀带版本号，导入端按前缀识别（粘贴纯 JSON 走原有导入路径，互不干扰）
  * - base64url（+→- /→_ 去 =）可安全放入 URL/聊天窗口，不含换行
  * - UTF-8 经 TextEncoder 编码后转二进制串再 btoa，支持中文内容
+ *
+ * 短链：`S.<formId>` — 设计已存 store（本地/云端），链接只带表单 id（几十字符），
+ * 二维码容量有限（~2953 字节），完整分享码常超容，短链保证任何表单都能生成二维码。
+ * 扫码端从 store 按 id 加载设计（同设备本地可开；跨设备需云端 store 或复制完整链接）。
  */
 
 import { FORM_DESIGN_VERSION, type FormDesign } from './types'
 
 export const SHARE_CODE_PREFIX = 'FD1.'
+/** 短链前缀：S.<formId>，指向 store 中已保存的表单设计 */
+export const SHARE_ID_PREFIX = 'S.'
+
+/** 生成短链标识（设计已存 store，仅带 id） */
+export function encodeShareId(formId: string): string {
+  return SHARE_ID_PREFIX + formId
+}
+
+/** 解析短链标识 → 表单 id；非短链返回 null */
+export function parseShareId(code: string): string | null {
+  const raw = (code ?? '').trim()
+  if (!raw.startsWith(SHARE_ID_PREFIX)) return null
+  const id = raw.slice(SHARE_ID_PREFIX.length)
+  return id ? id : null
+}
+
+/** 完整分享链接（编码全部设计，跨设备可靠但长） */
+export function shareFullLink(shareCode: string): string {
+  return `${location.origin}${location.pathname}#/form/${shareCode}`
+}
+
+/** 短链链接（设计存 store，短到二维码能放下） */
+export function shareShortLink(formId: string): string {
+  return `${location.origin}${location.pathname}#/form/${encodeShareId(formId)}`
+}
 
 /** FormDesign → 分享码（内容不加密：仅传输编码，敏感表单请勿外发） */
 export function encodeShareCode(design: FormDesign): string {

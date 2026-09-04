@@ -13,13 +13,16 @@ import ModalBox from '@/components/layout/ModalBox.vue'
 import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import Toast from '@/components/feedback/Toast.vue'
 import DataTable from '@/components/data/DataTable.vue'
+import IconSvg from '@/components/basic/IconSvg.vue'
 import type { Column } from '@/components/data/composables/types'
 import { FORM_MANAGER_KEY } from './context'
 import FormDataSummary from './FormDataSummary.vue'
 import FormReview from './FormReview.vue'
+import FormCollect from '../FormCollect.vue'
 import { getActiveFormStore, type FormMetaItem } from './store'
-import { encodeShareCode } from './share'
-import type { FormDesign } from './types'
+import { encodeShareCode, shareShortLink } from './share'
+import QRCode from 'qrcode/lib/browser.js'
+import { flattenNodes, type FormDesign } from './types'
 
 const t = useT()
 
@@ -70,6 +73,10 @@ const tableColumns = ref<Column[]>([
 const shareVisible = ref(false)
 const shareCode = ref('')
 const shareLink = ref('')
+/** 发布链接二维码（dataURL，动态加载 qrcode 生成） */
+const shareQr = ref('')
+/** 二维码生成失败提示（链接过长超出二维码容量） */
+const shareQrError = ref('')
 
 async function openShare(item: FormMetaItem): Promise<void> {
   // 分享码 = 编码表单完整设计（需先加载）
@@ -79,8 +86,32 @@ async function openShare(item: FormMetaItem): Promise<void> {
     return
   }
   shareCode.value = encodeShareCode(design)
-  shareLink.value = `${location.origin}${location.pathname}#/form/${shareCode.value}`
+  // 发布链接 = 短链（设计已存 store，仅带 id，二维码容量有限保证可扫码）
+  shareLink.value = shareShortLink(item.id)
+  // 异步生成二维码（不阻塞弹窗打开）
+  void generateQr()
   shareVisible.value = true
+}
+
+/** 发布链接 → 二维码 dataURL（qrcode 浏览器端实现；短链只有几十字符，任何表单都能放下） */
+async function generateQr(): Promise<void> {
+  shareQr.value = ''
+  shareQrError.value = ''
+  try {
+    shareQr.value = await QRCode.toDataURL(shareLink.value, {
+      width: 180,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+    })
+  } catch {
+    shareQr.value = ''
+    shareQrError.value = t('fbd.qrGenFail')
+  }
+}
+
+async function copyShareCode(): Promise<void> {
+  const ok = await copyText(shareCode.value)
+  showTip(ok ? t('fbd.shareCopied') : t('fbd.copyFail'), ok ? 'success' : 'error')
 }
 
 async function copyShareLink(): Promise<void> {
@@ -119,6 +150,24 @@ const summaryTarget = ref<FormMetaItem | null>(null)
 
 function openSummary(item: FormMetaItem): void {
   summaryTarget.value = item
+}
+
+// ── 收集列表弹窗（点表单名打开：该表单的收集记录列表） ──
+const collectTarget = ref<FormMetaItem | null>(null)
+const collectDesign = ref<FormDesign | null>(null)
+const collectLoading = ref(false)
+
+async function openCollect(item: FormMetaItem): Promise<void> {
+  collectLoading.value = true
+  try {
+    const design = await activeStore().loadForm(item.id)
+    collectDesign.value = design
+    collectTarget.value = item
+  } catch {
+    showTip(t('fbd.loadFormFail'), 'error')
+  } finally {
+    collectLoading.value = false
+  }
 }
 
 // ── 表格操作列按钮（#cell 插槽直接回调，row 含 _item） ──
@@ -208,9 +257,13 @@ function onConfirmLoad(): void {
       <!-- 智能表格：表单列表 + 操作列（分享/查看/审核/重命名/删除） -->
       <div v-else class="ld-forms-table">
         <DataTable :columns="tableColumns" :data="tableRows" row-key="id" :page-size="10">
-          <!-- 操作列：Vue 组件渲染（v-html 会被 sanitizeHTML 消毒，插槽不受影响） -->
+          <!-- 名称列：点击打开该表单的收集列表 -->
           <template #cell="{ column, row }">
-            <span v-if="column.key === '_actions'" class="ld-table-actions">
+            <span v-if="column.key === 'name'" class="ld-form-link" @click="openCollect(row._item)">{{
+              row.name
+            }}</span>
+            <!-- 操作列：Vue 组件渲染（v-html 会被 sanitizeHTML 消毒，插槽不受影响） -->
+            <span v-else-if="column.key === '_actions'" class="ld-table-actions">
               <button class="ld-table-act" data-act="share" :data-id="row.id" @click="onTableAction('share', row)">
                 {{ t('fbd.share') }}
               </button>
@@ -247,11 +300,28 @@ function onConfirmLoad(): void {
     @update:visible="shareVisible = $event"
   >
     <div class="ld-share">
-      <p class="ld-share-hint">{{ t('fbd.shareCodeHint') }}</p>
-      <textarea class="ld-share-code" readonly rows="4" :value="shareCode" />
-      <div class="ld-share-publish">
-        <p class="ld-share-hint">{{ t('fbd.shareLinkHint') }}</p>
-        <input class="ld-share-link" readonly :value="shareLink" />
+      <!-- 左侧：发布链接二维码（手机扫码即开填写） -->
+      <div class="ld-share-qr">
+        <img v-if="shareQr" class="ld-share-qr-img" :src="shareQr" alt="QR" />
+        <div v-else-if="shareQrError" class="ld-share-qr-error" role="alert">
+          <IconSvg type="alert-circle" size="sm" />
+          <span>{{ shareQrError }}</span>
+        </div>
+        <div v-else class="ld-share-qr-placeholder" role="status">{{ t('fbd.qrLoading') }}</div>
+        <p class="ld-share-qr-hint">{{ t('fbd.shareQrHint') }}</p>
+      </div>
+      <!-- 右侧：分享码 / 发布链接，点击卡片即复制 -->
+      <div class="ld-share-cols">
+        <button type="button" class="ld-share-copy" :title="t('fbd.clickCopy')" @click="copyShareCode">
+          <span class="ld-share-copy-label">{{ t('fbd.shareCode') }}</span>
+          <span class="ld-share-copy-value">{{ shareCode }}</span>
+          <span class="ld-share-copy-tip">{{ t('fbd.clickCopy') }}</span>
+        </button>
+        <button type="button" class="ld-share-copy" :title="t('fbd.clickCopy')" @click="copyShareLink">
+          <span class="ld-share-copy-label">{{ t('fbd.shareLink') }}</span>
+          <span class="ld-share-copy-value">{{ shareLink }}</span>
+          <span class="ld-share-copy-tip">{{ t('fbd.clickCopy') }}</span>
+        </button>
       </div>
     </div>
     <template #footer>
@@ -269,6 +339,23 @@ function onConfirmLoad(): void {
     @update:visible="reviewTarget = null"
   >
     <FormReview :item="reviewTarget" />
+  </ModalBox>
+
+  <!-- 收集列表弹窗：点表单名打开——该表单的收集记录列表（FormCollect 收集页） -->
+  <ModalBox
+    :visible="!!collectTarget"
+    :title="t('fbd.collectListTitle', { name: collectTarget?.name ?? '' })"
+    modal-type="default"
+    size="xl"
+    @update:visible="collectTarget = null"
+  >
+    <div v-if="collectLoading" class="ld-forms-state" role="status">{{ t('fbd.loadingList') }}</div>
+    <FormCollect
+      v-else-if="collectDesign && collectTarget"
+      :fields="flattenNodes(collectDesign.nodes ?? collectDesign.fields ?? [])"
+      :meta="collectDesign.meta ?? {}"
+      :storage-key="collectTarget.collectKey"
+    />
   </ModalBox>
 
   <!-- 重命名弹窗 -->
@@ -337,6 +424,16 @@ function onConfirmLoad(): void {
   border-radius: 6px;
 }
 
+/* 表单名称：可点击打开收集列表 */
+.ld-form-link {
+  color: var(--color-primary, #3b82f6);
+  cursor: pointer;
+  font-weight: 500;
+}
+.ld-form-link:hover {
+  text-decoration: underline;
+}
+
 /* 操作列按钮（分享/查看/审核） */
 .ld-table-actions {
   display: inline-flex;
@@ -368,36 +465,106 @@ function onConfirmLoad(): void {
   color: var(--color-warning, #d97706);
 }
 
-/* 分享弹窗 */
+/* 分享弹窗：左二维码 + 右点击复制卡片 */
 .ld-share {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  align-items: stretch;
 }
-.ld-share-hint {
-  margin: 0;
+.ld-share-qr {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  border-radius: 10px;
+  background: var(--color-bg-alt, #fafbfc);
+}
+.ld-share-qr-img {
+  width: 180px;
+  height: 180px;
+  display: block;
+}
+.ld-share-qr-placeholder {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 12px;
   color: var(--color-text-muted, #94a3b8);
 }
-.ld-share-code,
-.ld-share-link {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px 10px;
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 6px;
-  font-size: 12px;
-  font-family: inherit;
-  background: var(--color-bg-alt, #f8fafc);
-  color: var(--color-text, #1e293b);
-}
-.ld-share-code {
-  resize: vertical;
-  min-height: 70px;
-}
-.ld-share-publish {
+.ld-share-qr-error {
+  width: 180px;
+  height: 180px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--color-danger, #dc2626);
+  text-align: center;
+  box-sizing: border-box;
+}
+.ld-share-qr-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-text-muted, #94a3b8);
+  text-align: center;
+}
+.ld-share-cols {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ld-share-copy {
+  flex: 1;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--color-bg, #fff);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.ld-share-copy:hover {
+  border-color: var(--color-primary, #3b82f6);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+}
+.ld-share-copy-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text, #1e293b);
+}
+.ld-share-copy-value {
+  width: 100%;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-secondary, #64748b);
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ld-share-copy-tip {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--color-primary, #3b82f6);
 }
 </style>

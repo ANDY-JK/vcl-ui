@@ -13,3 +13,17 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+// qrcode 浏览器端实现（子路径无 @types 覆盖，补最小类型）
+declare module 'qrcode/lib/browser.js' {
+  interface QRCodeToDataURLOptions {
+    width?: number
+    margin?: number
+    errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H'
+    [key: string]: unknown
+  }
+  const qrcode: {
+    toDataURL(text: string, options?: QRCodeToDataURLOptions): Promise<string>
+  }
+  export default qrcode
+}

@@ -20,7 +20,9 @@ import { formatDateZh, formatDateTimeZh } from '@/components/form/utils/date-uti
 import FormBuilder from './FormBuilder.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Button from '@/components/basic/Button.vue'
+import ModalBox from '@/components/layout/ModalBox.vue'
 import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
+import Toast from '@/components/feedback/Toast.vue'
 import {
   toFormSchema,
   collectStorageKey,
@@ -28,12 +30,19 @@ import {
   type DesignerField,
   type FormMeta,
   type CollectRecord,
+  type FormDesign,
 } from './designer/types'
 import { getActiveFormStore, type FormStore } from './designer/store'
+import { encodeShareCode, shareShortLink, shareFullLink } from './designer/share'
+import QRCode from 'qrcode/lib/browser.js'
 import { isLayoutField } from './fieldRegistry'
 import { buildHeaderMap, parseCsvRecords, parseJsonRecords, normalizeRecords, dedupeRecords } from './importRecords'
 
 const t = useT()
+
+const toastRef = ref<InstanceType<typeof Toast>>()
+const showTip = (msg: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') =>
+  toastRef.value?.show(msg, type, 2000)
 
 const props = withDefaults(
   defineProps<{
@@ -77,6 +86,166 @@ const records = ref<CollectRecord[]>([])
 /** 组件根节点（模板 ref，滚动定位限定在当前实例内） */
 const rootEl = ref<HTMLElement | null>(null)
 
+// ════════════════════════════════════════
+// 顶部工具栏（分享 / 新建）
+// ════════════════════════════════════════
+
+/** 分享弹窗状态 */
+const shareVisible = ref(false)
+const shareLink = ref('')
+const shareCode = ref('')
+/** 发布链接二维码（dataURL，动态加载 qrcode 生成） */
+const shareQr = ref('')
+/** 二维码生成失败提示（链接过长超出二维码容量） */
+const shareQrError = ref('')
+
+/**
+ * 打开分享弹窗：将本组件承接的表单设计编码为分享码/发布链接。
+ * FormCollect 由外部传入 fields/meta（不含完整 FormDesign），这里重建 FormDesign 结构。
+ * 发布链接用短链（设计先存入 store 拿 id，链接只带 id → 二维码容量有限也能放下）。
+ */
+async function openShare(): Promise<void> {
+  const design: FormDesign = { meta: { ...props.meta }, nodes: props.fields }
+  shareCode.value = encodeShareCode(design)
+  try {
+    // 存入 store（已有同名表单则复用 id，避免重复保存）
+    let formId = shareFormId.value
+    if (!formId) {
+      const item = await props.store.saveForm(null, design, design.meta.title || t('fbd.untitled'))
+      formId = item.id
+      shareFormId.value = formId
+    }
+    shareLink.value = shareShortLink(formId)
+  } catch {
+    // store 不可用时退回完整分享码链接（跨设备可靠，长表单链接超长）
+    shareLink.value = shareFullLink(shareCode.value)
+  }
+  // 异步生成二维码（不阻塞弹窗打开）
+  void generateQr()
+  shareVisible.value = true
+}
+
+/** 分享已存入 store 的表单 id（组件生命周期内复用，避免反复保存同一表单） */
+const shareFormId = ref('')
+
+/** 发布链接 → 二维码 dataURL（qrcode 浏览器端实现；短链只有几十字符，任何表单都能放下） */
+async function generateQr(): Promise<void> {
+  shareQr.value = ''
+  shareQrError.value = ''
+  try {
+    shareQr.value = await QRCode.toDataURL(shareLink.value, {
+      width: 180,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+    })
+  } catch {
+    shareQr.value = ''
+    shareQrError.value = t('fbd.qrGenFail')
+  }
+}
+
+/** 浏览器剪贴板复制（降级 execCommand） */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      return true
+    } catch {
+      return false
+    }
+  }
+}
+
+async function copyShareLink(): Promise<void> {
+  const ok = await copyText(shareLink.value)
+  showTip(ok ? t('fbd.shareLinkCopied') : t('fbd.copyFail'), ok ? 'success' : 'error')
+}
+
+async function copyShareCode(): Promise<void> {
+  const ok = await copyText(shareCode.value)
+  showTip(ok ? t('fbd.shareCopied') : t('fbd.copyFail'), ok ? 'success' : 'error')
+}
+
+/** 新建：清空表单并聚焦填写区 */
+function startNewRecord(): void {
+  formData.value = {}
+  errorMsg.value = ''
+  okMsg.value = ''
+  nextTick(() => {
+    rootEl.value?.querySelector('.ldc-form-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
+
+// ════════════════════════════════════════
+// 记录级查看 / 审核（旧版 DynamicForm 三模式承接：view=只读 / review=可编辑+提交）
+// ════════════════════════════════════════
+
+/** 记录操作弹窗类型：null=关闭 / 'view'=查看 / 'review'=审核 */
+const recordModal = ref<'view' | 'review' | null>(null)
+/** 当前操作的目标记录 */
+const recordTarget = ref<CollectRecord | null>(null)
+/** 记录弹窗内表单数据（回填自记录） */
+const recordFormData = ref<Record<string, unknown>>({})
+/** 记录弹窗内提交 loading / 错误 / 完成态 */
+const recordSubmitting = ref(false)
+const recordError = ref('')
+/** 审核提交完成（弹窗内显示成功态，替代 Toast——页面存在多个 Toast 实例时 Toast 会重复弹） */
+const recordDone = ref(false)
+
+/** 打开记录查看 / 审核弹窗：回填记录数据，按 mode 注入表单模式 */
+function openRecordModal(mode: 'view' | 'review', record: CollectRecord): void {
+  recordTarget.value = record
+  recordFormData.value = { ...(record.data ?? {}) }
+  recordError.value = ''
+  recordDone.value = false
+  recordModal.value = mode
+}
+
+/** 记录弹窗表单 schema（view=全字段只读；review=全字段可编辑+提交） */
+const recordSchema = computed(() => {
+  if (!recordModal.value) return null
+  const schema = toFormSchema(props.fields, props.meta)
+  schema.submitConfig = {
+    mode: recordModal.value,
+    // view 模式只读展示，不触发提交链路；review 提交走下方 handleRecordSubmit
+    apiUrl: '',
+    saveUrl: '',
+  }
+  return schema
+})
+
+/** 审核提交：原地更新被审核的记录（无 updateRecord 能力时降级为删+增，保持位置） */
+async function handleRecordSubmit(data: Record<string, unknown>): Promise<void> {
+  const record = recordTarget.value
+  if (!record || recordSubmitting.value) return
+  recordSubmitting.value = true
+  recordError.value = ''
+  try {
+    if (typeof props.store.updateRecord === 'function') {
+      await props.store.updateRecord(storageKey.value, record.id, data)
+    } else {
+      // 降级：外部注入的旧实现无 updateRecord —— 删除后重新写入
+      // （store 接口只有 appendRecord，重插后该记录排在列表顶部，无法保持原位）
+      await props.store.removeRecord(storageKey.value, record.id)
+      await props.store.appendRecord(storageKey.value, { ...record, data: { ...data } })
+    }
+    await refreshRecords()
+    recordDone.value = true
+  } catch (e) {
+    recordError.value = t('fbd.reviewRecordFail', { err: e instanceof Error ? e.message : String(e) })
+  } finally {
+    recordSubmitting.value = false
+  }
+}
+
 /** 格式化值显示 */
 function formatValue(v: unknown): string {
   if (v === null || v === undefined) return '-'
@@ -85,13 +254,6 @@ function formatValue(v: unknown): string {
   if (typeof v === 'object') return JSON.stringify(v)
   return String(v)
 }
-
-/** 详情表头（复用导出列配置） */
-const detailHeaders = computed(
-  () =>
-    props.exportColumns ??
-    props.fields.filter((f) => !isLayoutField(f.type)).map((f) => ({ key: f.key ?? f.id, label: f.label })),
-)
 
 /** 异步兼容的记录刷新 */
 async function refreshRecords(): Promise<void> {
@@ -160,7 +322,6 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
 // 记录管理 + 搜索筛选
 // ════════════════════════════════════════
 const showRecords = ref(false)
-const detail = ref<CollectRecord | null>(null)
 const searchQuery = ref('')
 
 /** 按搜索词过滤记录（匹配时间或数据值） */
@@ -176,9 +337,8 @@ const filteredRecords = computed(() => {
   })
 })
 
-// 搜索时收起详情并重置页码
+// 搜索时重置页码
 watch(searchQuery, () => {
-  detail.value = null
   currentPage.value = 1
 })
 
@@ -217,16 +377,6 @@ const pageButtons = computed(() => {
 async function removeRecord(id: string): Promise<void> {
   await props.store.removeRecord(storageKey.value, id)
   await refreshRecords()
-}
-
-/** 用记录数据填充表单（快速复用） */
-function fillFormFromRecord(record: CollectRecord): void {
-  formData.value = { ...record.data }
-  detail.value = null
-  // 滚动到表单顶部（限定在当前实例内）
-  nextTick(() => {
-    rootEl.value?.querySelector('.ldc-form-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  })
 }
 
 // 确认弹窗状态
@@ -480,6 +630,14 @@ async function confirmImport(): Promise<void> {
 
     <!-- 操作栏 -->
     <div class="ldc-actions">
+      <Button variant="outline" size="sm" @click="openShare">
+        <IconSvg type="share" size="xs" />
+        {{ t('fbd.share') }}
+      </Button>
+      <Button variant="primary" size="sm" @click="startNewRecord">
+        <IconSvg type="plus" size="xs" />
+        {{ t('fbd.newRecord') }}
+      </Button>
       <Button variant="outline" size="sm" :loading="exporting" :disabled="!records.length" @click="exportExcel">
         <IconSvg type="download" size="xs" />
         {{ t('fbd.exportExcel') }}
@@ -527,26 +685,19 @@ async function confirmImport(): Promise<void> {
               {{ r.time }}
             </span>
             <div class="ldc-record-btns">
-              <Button variant="ghost" size="sm" @click="detail = detail?.id === r.id ? null : r">
-                {{ detail?.id === r.id ? t('formBuilder.collapse') : t('formBuilder.detail') }}
+              <Button variant="ghost" size="sm" @click="openRecordModal('view', r)">
+                <IconSvg type="eye" size="xs" />
+                {{ t('fbd.viewRecordTitle') }}
+              </Button>
+              <Button variant="ghost" size="sm" class="ldc-review-btn" @click="openRecordModal('review', r)">
+                <IconSvg type="pen" size="xs" />
+                {{ t('fbd.review') }}
               </Button>
               <Button variant="ghost" size="sm" class="ldc-del-btn" @click="removeRecord(r.id)">
                 <IconSvg type="trash-2" size="xs" />
               </Button>
             </div>
           </div>
-          <Transition name="ldc-expand-inner">
-            <div v-if="detail?.id === r.id" class="ldc-detail">
-              <div v-for="h in detailHeaders" :key="h.key" class="ldc-detail-row">
-                <span class="ldc-detail-key">{{ h.label }}</span>
-                <span class="ldc-detail-val">{{ formatValue(r.data[h.key]) }}</span>
-              </div>
-              <button class="ldc-detail-reuse" @click="fillFormFromRecord(r)">
-                <IconSvg type="copy" size="xs" />
-                {{ t('fbd.reuseData') }}
-              </button>
-            </div>
-          </Transition>
         </div>
         <!-- 分页控件 -->
         <div v-if="totalPages > 1" class="ldc-pagination">
@@ -589,6 +740,75 @@ async function confirmImport(): Promise<void> {
       @update:visible="confirmVisible = $event"
       @confirm="onConfirmClear"
     />
+
+    <!-- 分享弹窗（生成发布链接 / 分享码） -->
+    <ModalBox
+      :visible="shareVisible"
+      :title="t('fbd.shareTitle')"
+      modal-type="default"
+      @update:visible="shareVisible = $event"
+    >
+      <div class="ldc-share">
+        <!-- 左侧：发布链接二维码（手机扫码即开填写） -->
+        <div class="ldc-share-qr">
+          <img v-if="shareQr" class="ldc-share-qr-img" :src="shareQr" alt="QR" />
+          <div v-else-if="shareQrError" class="ldc-share-qr-error" role="alert">
+            <IconSvg type="alert-circle" size="sm" />
+            <span>{{ shareQrError }}</span>
+          </div>
+          <div v-else class="ldc-share-qr-placeholder" role="status">{{ t('fbd.qrLoading') }}</div>
+          <p class="ldc-share-qr-hint">{{ t('fbd.shareQrHint') }}</p>
+        </div>
+        <!-- 右侧：分享码 / 发布链接，点击卡片即复制 -->
+        <div class="ldc-share-cols">
+          <button type="button" class="ldc-share-copy" :title="t('fbd.clickCopy')" @click="copyShareCode">
+            <span class="ldc-share-copy-label">{{ t('fbd.shareCode') }}</span>
+            <span class="ldc-share-copy-value">{{ shareCode }}</span>
+            <span class="ldc-share-copy-tip">{{ t('fbd.clickCopy') }}</span>
+          </button>
+          <button type="button" class="ldc-share-copy" :title="t('fbd.clickCopy')" @click="copyShareLink">
+            <span class="ldc-share-copy-label">{{ t('fbd.shareLink') }}</span>
+            <span class="ldc-share-copy-value">{{ shareLink }}</span>
+            <span class="ldc-share-copy-tip">{{ t('fbd.clickCopy') }}</span>
+          </button>
+        </div>
+      </div>
+      <template #footer>
+        <Button :text="t('common.cancel')" variant="secondary" @click="shareVisible = false" />
+        <Button :text="t('fbd.shareCopied')" variant="ghost" :icon="'code'" @click="copyShareCode" />
+        <Button :text="t('fbd.shareLinkCopy')" variant="primary" :icon="'link'" @click="copyShareLink" />
+      </template>
+    </ModalBox>
+
+    <!-- 记录查看 / 审核弹窗（旧版 DynamicForm 三模式：view=只读 / review=可编辑+提交） -->
+    <ModalBox
+      :visible="!!recordModal"
+      :title="recordModal === 'review' ? t('fbd.reviewRecordTitle') : t('fbd.viewRecordTitle')"
+      modal-type="default"
+      size="lg"
+      @update:visible="recordModal = null"
+    >
+      <div class="ldc-record-modal">
+        <!-- 审核完成态（弹窗内反馈，替代 Toast——页面多个 Toast 实例会重复弹） -->
+        <div v-if="recordDone" class="ldc-record-done" role="status">
+          <IconSvg type="circle-check" size="lg" color="var(--color-success, #059669)" />
+          <p>{{ t('fbd.reviewRecordDone') }}</p>
+          <Button :text="t('common.confirm')" variant="primary" @click="recordModal = null" />
+        </div>
+        <template v-else>
+          <p v-if="recordError" class="ldc-record-error" role="alert">{{ recordError }}</p>
+          <FormBuilder
+            v-if="recordSchema && recordTarget"
+            v-model="recordFormData"
+            :schema="recordSchema"
+            :readonly="recordModal === 'view'"
+            @submit="handleRecordSubmit"
+          />
+        </template>
+      </div>
+    </ModalBox>
+
+    <Toast ref="toastRef" variant="toast" position="top" />
   </div>
 </template>
 
@@ -995,5 +1215,145 @@ async function confirmImport(): Promise<void> {
 .ldc-expand-inner-leave-from {
   opacity: 1;
   max-height: 300px;
+}
+
+/* ── 分享弹窗：左二维码 + 右点击复制卡片 ── */
+.ldc-share {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+.ldc-share-qr {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  border-radius: 10px;
+  background: var(--color-bg-alt, #fafbfc);
+}
+.ldc-share-qr-img {
+  width: 180px;
+  height: 180px;
+  display: block;
+}
+.ldc-share-qr-placeholder {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--color-text-muted, #94a3b8);
+}
+.ldc-share-qr-error {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--color-danger, #dc2626);
+  text-align: center;
+  box-sizing: border-box;
+}
+.ldc-share-qr-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-text-muted, #94a3b8);
+  text-align: center;
+}
+.ldc-share-cols {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ldc-share-copy {
+  flex: 1;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--color-bg, #fff);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.ldc-share-copy:hover {
+  border-color: var(--color-primary, #3b82f6);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+}
+.ldc-share-copy-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text, #1e293b);
+}
+.ldc-share-copy-value {
+  width: 100%;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-secondary, #64748b);
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ldc-share-copy-tip {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--color-primary, #3b82f6);
+}
+
+/* ── 记录查看 / 审核弹窗 ── */
+.ldc-record-modal {
+  min-height: 160px;
+}
+.ldc-record-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px 0;
+  min-height: 200px;
+  color: var(--color-success, #059669);
+  font-size: 14px;
+  font-weight: 500;
+}
+.ldc-record-done p {
+  margin: 0;
+}
+.ldc-record-error {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-danger-light, #fef2f2);
+  color: var(--color-danger, #dc2626);
+  font-size: 13px;
+}
+
+/* 记录操作列按钮 */
+.ldc-review-btn {
+  color: var(--color-warning, #d97706) !important;
+}
+.ldc-review-btn:hover {
+  background: #fffbeb !important;
+  color: var(--color-warning, #d97706) !important;
 }
 </style>

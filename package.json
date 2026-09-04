@@ -102,6 +102,7 @@
     "echarts-wordcloud": "^2.1.0",
     "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
+    "qrcode": "^1.5.4",
     "vue-i18n": "^9.14.5",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zxing-wasm": "^3.0.3"
@@ -109,6 +110,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
+    "@types/qrcode": "^1.5.6",
     "@vitejs/plugin-vue": "^5.0.0",
     "@vitest/coverage-v8": "^4.1.10",
     "@vue/test-utils": "^2.4.11",

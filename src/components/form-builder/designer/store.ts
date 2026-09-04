@@ -43,6 +43,11 @@ export interface FormStore {
   loadRecords(storageKey: string): Promise<CollectRecord[]>
   /** 追加收集记录 */
   appendRecord(storageKey: string, record: CollectRecord): Promise<void>
+  /**
+   * 原地更新收集记录（记录级审核/编辑后保存）。
+   * 可选方法：外部注入的 SaaS 实现可能没有，调用方需做能力检测降级。
+   */
+  updateRecord?(storageKey: string, recordId: string, data: Record<string, unknown>): Promise<void>
   /** 删除单条收集记录 */
   removeRecord(storageKey: string, recordId: string): Promise<void>
   /** 清空某表单收集记录 */
@@ -152,6 +157,14 @@ export function createLocalFormStore(): FormStore {
       write(storageKey, list.length > MAX_RECORDS ? list.slice(0, MAX_RECORDS) : list)
     },
 
+    async updateRecord(storageKey, recordId, data) {
+      const list = await this.loadRecords(storageKey)
+      const idx = list.findIndex((r) => r.id === recordId)
+      if (idx === -1) return
+      list[idx] = { ...list[idx], data: { ...data } }
+      write(storageKey, list)
+    },
+
     async removeRecord(storageKey, recordId) {
       const list = await this.loadRecords(storageKey)
       write(
@@ -258,6 +271,14 @@ export function createCloudFormStore(cfg: SupabaseConfig): FormStore {
       list.unshift(record)
       const next = list.length > CLOUD_MAX_RECORDS ? list.slice(0, CLOUD_MAX_RECORDS) : list
       await kv.set(storageKey, next)
+    },
+
+    async updateRecord(storageKey, recordId, data) {
+      const list = await this.loadRecords(storageKey)
+      const idx = list.findIndex((r) => r.id === recordId)
+      if (idx === -1) return
+      list[idx] = { ...list[idx], data: { ...data } }
+      await kv.set(storageKey, list)
     },
 
     async removeRecord(storageKey, recordId) {

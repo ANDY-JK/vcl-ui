@@ -49,6 +49,8 @@ const props = defineProps<{
   error?: string
   /** 动态选项（联动 / 远程加载的选项，优先于 field.options） */
   dynamicOptions?: Option[]
+  /** 表单级禁用（查看模式/只读表单：FormBuilder effectiveReadonly 传入，与字段级 field.disabled 合并） */
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -91,6 +93,24 @@ const uploadValue = computed({
 // 透传 props
 // ════════════════════════════════════════
 
+/** 表单级禁用（查看模式只读等）与字段级 field.disabled 合并 */
+const effectiveDisabled = computed(() => props.disabled || props.field.disabled)
+
+/** 查看模式高级字段的值格式化（数组/对象/布尔统一转可读文本） */
+function formatValue(v: unknown): string {
+  if (v === null || v === undefined || v === '') return t('common.empty')
+  if (Array.isArray(v)) return v.join(', ')
+  if (typeof v === 'boolean') return v ? t('common.yes') : t('common.no')
+  if (typeof v === 'object') {
+    try {
+      return JSON.stringify(v)
+    } catch {
+      return String(v)
+    }
+  }
+  return String(v)
+}
+
 /** 字段的 props 透传（field.props 中的属性直接展开到组件上） */
 const extraProps = computed(() => props.field.props ?? {})
 
@@ -101,7 +121,7 @@ const inputProps = computed(() => ({
   label: props.field.label,
   placeholder: props.field.placeholder,
   hint: props.field.hint,
-  disabled: props.field.disabled,
+  disabled: effectiveDisabled.value,
   readonly: props.field.readonly,
   rules: (props.field.rules ?? []) as ((v: string) => string | undefined)[],
   required: props.field.required,
@@ -122,7 +142,7 @@ const selectProps = computed(() => ({
   placeholder: props.field.placeholder,
   options: resolvedOptions.value,
   cascaderOptions: props.field.cascaderOptions ?? [],
-  disabled: props.field.disabled,
+  disabled: effectiveDisabled.value,
   rules: (props.field.rules ?? []) as ((v: string) => string | undefined)[],
   ...extraProps.value,
 }))
@@ -132,7 +152,7 @@ const groupProps = computed(() => ({
   type: resolvedComponentType.value as 'radio' | 'checkbox' | 'switch' | 'rate' | 'slider',
   label: props.field.label,
   options: resolvedOptions.value,
-  disabled: props.field.disabled,
+  disabled: effectiveDisabled.value,
   size: styleSize.value === 'lg' ? 'md' : styleSize.value,
   ...extraProps.value,
 }))
@@ -143,7 +163,7 @@ const relateProps = computed(() => ({
   label: props.field.label,
   placeholder: props.field.placeholder ?? t('formBuilder.clickSelect'),
   options: resolvedOptions.value,
-  disabled: props.field.disabled,
+  disabled: effectiveDisabled.value,
   ...extraProps.value,
 }))
 
@@ -151,7 +171,7 @@ const relateProps = computed(() => ({
 const uploadProps = computed(() => ({
   accept: props.field.type === 'image-upload' ? 'image/*' : undefined,
   label: props.field.label,
-  disabled: props.field.disabled,
+  disabled: effectiveDisabled.value,
   ...extraProps.value,
 }))
 
@@ -275,8 +295,17 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 
     <!-- ═══ v3 高级字段（7 件组件化于 renderer/，本层只做标签/错误位装配） ═══ -->
     <template v-else-if="category === 'advanced'">
+      <!-- 查看模式（disabled）：高级字段显示只读值，不渲染可编辑控件 -->
+      <div v-if="effectiveDisabled" class="fb-adv-readonly">
+        <label v-if="field.label" class="fb-adv-label">
+          {{ field.label }}
+          <span v-if="field.required" class="fb-required">*</span>
+        </label>
+        <span class="fb-adv-readonly-val">{{ formatValue(props.modelValue) }}</span>
+      </div>
+
       <!-- 子表单 -->
-      <div v-if="field.type === 'subform'" class="fb-advanced-field">
+      <div v-else-if="field.type === 'subform'" class="fb-advanced-field">
         <label v-if="field.label" class="fb-adv-label">
           {{ field.label }}
           <span v-if="field.required" class="fb-required">*</span>
@@ -399,6 +428,22 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   --fb-field-border: var(--color-border, #e2e8f0);
   --fb-field-focus-border: var(--color-primary, #3b82f6);
   --fb-control-width: 100%;
+}
+/* 查看模式高级字段只读展示 */
+.fb-adv-readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  border-radius: 6px;
+  background: var(--color-bg-alt, #fafbfc);
+}
+.fb-adv-readonly-val {
+  font-size: 13px;
+  color: var(--color-text, #1e293b);
+  word-break: break-all;
+  line-height: 1.6;
 }
 /* 控件宽度（controlWidth）：作用于高级字段装配块 */
 .fb-renderer .fb-advanced-field {

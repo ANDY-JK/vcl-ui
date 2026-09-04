@@ -23,6 +23,10 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  optimizeDeps: {
+    // qrcode 为纯 CJS：显式预构建为 ESM，dev 下 import 才能被 vite 解析（含浏览器端子路径）
+    include: ['qrcode', 'qrcode/lib/browser.js'],
+  },
   server: {
     port: 3721,
     host: '0.0.0.0',
