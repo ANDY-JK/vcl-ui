@@ -37,6 +37,10 @@ export interface DynamicFieldConfig {
   visibleWhen?: { field: string; value: unknown }
   /** 只读（旧版 viewOnly） */
   readonly?: boolean
+  /** 级联选项：依赖字段 key（本字段选项由依赖值在 optionsMap 查出） */
+  optionsFrom?: string
+  /** 级联选项映射表：依赖字段值 → 选项列表 */
+  optionsMap?: Record<string, string[]>
   /** 分组标题（同 group 渲染在一个卡片内） */
   group?: string
   /** 布局宽度（1-24，默认 24） */
@@ -82,6 +86,9 @@ function toFormField(f: DynamicFieldConfig): FormField {
   if (Array.isArray(f.options)) {
     field.options = f.options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o))
   }
+  // 级联选项映射（旧版 optionsFrom+optionsMap 原样透传）
+  if (f.optionsFrom) field.optionsFrom = f.optionsFrom
+  if (f.optionsMap) field.optionsMap = f.optionsMap
   // visibleWhen: {field, value} → {field, equals}
   if (f.visibleWhen) {
     const vw: VisibleWhen = { field: f.visibleWhen.field, equals: f.visibleWhen.value }

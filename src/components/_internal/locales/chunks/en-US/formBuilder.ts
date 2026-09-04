@@ -210,6 +210,13 @@ export default {
     matchValue: 'Match value',
     matchValuePh: 'e.g. true / 1 / an option value',
     notMatch: 'Reverse match',
+    sectionCascade: 'Cascade options',
+    cascadeFrom: 'Depends on field',
+    cascadeFromPh: 'Options of this field are driven by this field value',
+    cascadeMap: 'Options map',
+    cascadeMapPh: 'Guangdong=Guangzhou,Shenzhen,Zhuhai',
+    cascadeMapHint:
+      'One rule per line: dependencyValue=option1,option2,…. Options clear when the dependency is empty or not in the map',
     sectionRequired: 'Required validation',
     requiredField: 'Required field',
     requiredMessage: 'Required message',

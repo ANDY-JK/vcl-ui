@@ -144,6 +144,9 @@ const builtinValidations = computed(() => {
 /** 判断字段类型是否需要显示选项编辑（注册表 defaults 含 options 即需要） */
 const hasOptions = computed(() => 'options' in getFieldDefaults(props.node.type))
 
+/** 级联选项适用：字段自身带静态选项编辑（select/radio/checkbox 等），级联映射覆盖其选项 */
+const hasStaticOptions = hasOptions
+
 /** 判断字段类型是否支持某通用属性（注册表 defaults 含对应 key 即支持） */
 function hasProp(key: string): boolean {
   return key in getFieldDefaults(props.node.type)
@@ -823,6 +826,33 @@ const linkageHelpText = computed(() => {
                 />
               </div>
             </template>
+          </template>
+
+          <!-- 级联选项映射：本字段选项由依赖字段值在映射表中查出（承接旧版 optionsFrom+optionsMap） -->
+          <template v-if="hasStaticOptions && visibleWhenFieldOptions.length">
+            <div class="ldp-section-title">{{ t('fbp.sectionCascade') }}</div>
+            <div class="ldp-prop">
+              <label>{{ t('fbp.cascadeFrom') }}</label>
+              <Select
+                :model-value="node.optionsFrom ?? ''"
+                :options="visibleWhenFieldOptions"
+                :placeholder="t('fbp.cascadeFromPh')"
+                @update:model-value="
+                  emit('update', { optionsFrom: $event === null ? '' : String($event) || undefined })
+                "
+              />
+            </div>
+            <div v-if="node.optionsFrom" class="ldp-prop">
+              <label>{{ t('fbp.cascadeMap') }}</label>
+              <textarea
+                class="ldp-options-editor"
+                :value="node.optionsMap ?? ''"
+                :placeholder="t('fbp.cascadeMapPh')"
+                rows="4"
+                @input="onInputEmit('optionsMap', ($event.target as HTMLTextAreaElement).value)"
+              />
+              <p class="ldp-prop-hint">{{ t('fbp.cascadeMapHint') }}</p>
+            </div>
           </template>
         </template>
       </div>

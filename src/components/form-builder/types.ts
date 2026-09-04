@@ -259,6 +259,17 @@ export interface FormField {
    */
   dataSource?: FieldDataSource
   /**
+   * 级联选项映射 — 承接旧版 DynamicForm 的 optionsFrom + optionsMap 模式
+   *
+   * 本字段选项由「依赖字段（optionsFrom）的当前值」在映射表（optionsMap）中查出：
+   * 省字段选「广东省」→ 市字段选项变为映射表里的广东城市列表。
+   * 依赖字段无值、或值不在映射表 → 本字段选项为空（与旧版语义一致，避免残留无关选项）。
+   * 优先级低于联动引擎动态选项（linkage / dataSource.api）。
+   */
+  optionsFrom?: string
+  /** 级联选项映射表：依赖字段值 → 本字段选项（字符串项归一化为 {value,label} 同值） */
+  optionsMap?: Record<string, (string | Option)[]>
+  /**
    * 类型特有属性透传
    *
    * 例：

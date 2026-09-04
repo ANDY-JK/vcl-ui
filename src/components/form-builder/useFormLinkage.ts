@@ -7,6 +7,8 @@
  * 3. showHide:      条件表达式求值，控制目标字段显隐
  * 4. followOptions: 根据依赖字段值过滤选项
  * 5. dataSource:    根据联动条件字段值变化，远程加载选项
+ * 6. optionsFrom+optionsMap: 级联选项映射（承接旧版 DynamicForm 模式：
+ *    依赖字段值在映射表中查出本字段选项，无匹配键 → 空选项）
  *
  * 公式语法：
  * - `{{fieldName}}` 替换为对应字段当前值
@@ -32,10 +34,7 @@ import { evaluateFormula, extractFields } from './expression-evaluator'
  * @param formData 表单数据（响应式 ref，联动会直接修改此对象）
  * @param externalOptions 外部注入的选项缓存（可选）
  */
-export function useFormLinkage(
-  fields: ComputedRef<FormField[]> | Ref<FormField[]>,
-  formData: Ref<FormData>,
-) {
+export function useFormLinkage(fields: ComputedRef<FormField[]> | Ref<FormField[]>, formData: Ref<FormData>) {
   /** 被联动隐藏的字段 key 集合 */
   const hiddenByLinkage = ref<Set<string>>(new Set())
 
@@ -51,17 +50,17 @@ export function useFormLinkage(
   /** 有 dataSource 配置的字段列表 */
   const dataSourceFields = ref<FormField[]>([])
 
+  /** 有 optionsFrom+optionsMap 级联映射的字段列表 */
+  const cascadeFields = ref<FormField[]>([])
+
   /**
    * 初始化：扫描字段，找出联动和数据源字段
    */
   function init(): void {
     const allFields = fields.value
-    linkageFields.value = allFields.filter(
-      f => f.linkage && f.linkage.type !== 'none' && f.linkage.formula,
-    )
-    dataSourceFields.value = allFields.filter(
-      f => f.dataSource && f.dataSource.type !== 'none',
-    )
+    linkageFields.value = allFields.filter((f) => f.linkage && f.linkage.type !== 'none' && f.linkage.formula)
+    dataSourceFields.value = allFields.filter((f) => f.dataSource && f.dataSource.type !== 'none')
+    cascadeFields.value = allFields.filter((f) => f.optionsFrom && f.optionsMap)
   }
 
   /**
@@ -81,6 +80,42 @@ export function useFormLinkage(
   }
 
   // ════════════════════════════════════════
+  // 级联选项映射（optionsFrom + optionsMap）
+  // ════════════════════════════════════════
+
+  /**
+   * 求值所有级联映射字段：依赖字段当前值 → 映射表查选项 → 写 dynamicOptions
+   *
+   * 与旧版 DynamicForm 语义一致：依赖无值或映射表无此键 → 选项清空（不是回退全量，
+   * 否则用户能看到与已选省份无关的城市）；映射值支持 string[]（同值同标签）与 Option[]。
+   */
+  function processCascadeOptions(): void {
+    for (const field of cascadeFields.value) {
+      const depKey = field.optionsFrom!
+      const map = field.optionsMap!
+      const depVal = formData.value[depKey]
+      const key = depVal === null || depVal === undefined ? '' : String(depVal)
+      const mapped = key !== '' ? map[key] : undefined
+      if (!mapped?.length) {
+        dynamicOptions.value.set(field.key, [])
+        continue
+      }
+      dynamicOptions.value.set(
+        field.key,
+        mapped.map((o) => (typeof o === 'string' ? ({ value: o, label: o } as Option) : (o as Option))),
+      )
+      // 已选值不在新选项中 → 清空，防止提交脏值（与旧版行为一致）
+      const current = formData.value[field.key]
+      if (current !== undefined && current !== null && current !== '') {
+        const hit = mapped.some((o) =>
+          typeof o === 'string' ? o === String(current) : String(o.value) === String(current),
+        )
+        if (!hit) formData.value[field.key] = ''
+      }
+    }
+  }
+
+  // ════════════════════════════════════════
   // 联动处理
   // ════════════════════════════════════════
 
@@ -92,6 +127,9 @@ export function useFormLinkage(
    */
   function processLinkages(): void {
     const newHidden = new Set<string>()
+
+    // 级联选项映射先求值（写入 dynamicOptions，供渲染层即时取用）
+    processCascadeOptions()
 
     for (const field of linkageFields.value) {
       const linkage = field.linkage!
@@ -133,7 +171,7 @@ export function useFormLinkage(
             // 从原始选项中过滤
             const original = field.options ?? []
             const filtered = original.filter(
-              opt => String(opt.value) === String(filterValue) || String(opt.label) === String(filterValue),
+              (opt) => String(opt.value) === String(filterValue) || String(opt.label) === String(filterValue),
             )
             dynamicOptions.value.set(field.key, filtered.length > 0 ? filtered : original)
           }
@@ -178,15 +216,17 @@ export function useFormLinkage(
       if (!resp.ok) return
       const json = await resp.json()
       // 期望返回数组，或 { data: [...] } 或 { list: [...] }
-      const rawList: Record<string, unknown>[] = (Array.isArray(json)
-        ? json
-        : Array.isArray(json?.data)
-          ? json.data
-          : Array.isArray(json?.list)
-            ? json.list
-            : Array.isArray(json?.options)
-              ? json.options
-              : []) as Record<string, unknown>[]
+      const rawList: Record<string, unknown>[] = (
+        Array.isArray(json)
+          ? json
+          : Array.isArray(json?.data)
+            ? json.data
+            : Array.isArray(json?.list)
+              ? json.list
+              : Array.isArray(json?.options)
+                ? json.options
+                : []
+      ) as Record<string, unknown>[]
 
       const labelField = ds.labelField || 'label'
       const valueField = ds.valueField || 'value'

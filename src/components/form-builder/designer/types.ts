@@ -160,6 +160,10 @@ export interface DesignerNode {
   visibleWhenValue?: string
   /** 条件显示：是否反向匹配（不等于时显示） */
   visibleWhenNot?: boolean
+  /** 级联选项：依赖字段 key（本字段选项由依赖值在 optionsMap 查出） */
+  optionsFrom?: string
+  /** 级联选项映射（每行一条：依赖值=选项1,选项2,选项3） */
+  optionsMap?: string
   /** 分组 key（兼容旧版平铺模式，相同 group 的字段渲染在一个卡片内） */
   group?: string
 
@@ -902,6 +906,27 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
         field: f.visibleWhenField,
         equals: matchValue,
         ...(f.visibleWhenNot ? { not: true } : {}),
+      }
+    }
+
+    // 级联选项映射（每行：依赖值=选项1,选项2,…；选项先按逗号拆再按需转数字语义——
+    // 映射值统一按字符串，与依赖值 String() 比对，与旧版 optionsMap 行为一致）
+    if (f.optionsFrom && f.optionsMap?.trim()) {
+      const map: Record<string, (string | Option)[]> = {}
+      for (const line of f.optionsMap.split('\n')) {
+        const eq = line.indexOf('=')
+        if (eq <= 0) continue
+        const key = line.slice(0, eq).trim()
+        const items = line
+          .slice(eq + 1)
+          .split(/[,，;；]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+        if (key && items.length) map[key] = items
+      }
+      if (Object.keys(map).length) {
+        base.optionsFrom = f.optionsFrom
+        base.optionsMap = map
       }
     }
 
