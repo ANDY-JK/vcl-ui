@@ -1,0 +1,203 @@
+/* ================================
+   滚动条美化
+   ================================ */
+.ldp-panel::-webkit-scrollbar,
+.ldp-props::-webkit-scrollbar,
+.ldc-canvas-content::-webkit-scrollbar {
+  width: 4px;
+}
+.ldp-panel::-webkit-scrollbar-track,
+.ldp-props::-webkit-scrollbar-track,
+.ldc-canvas-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ldp-panel::-webkit-scrollbar-thumb,
+.ldp-props::-webkit-scrollbar-thumb,
+.ldc-canvas-content::-webkit-scrollbar-thumb {
+  background: var(--color-border, #e5e7eb);
+  border-radius: 2px;
+}
+.ldp-panel::-webkit-scrollbar-thumb:hover,
+.ldp-props::-webkit-scrollbar-thumb:hover,
+.ldc-canvas-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted, #9ca3af);
+}
+
+.ld-canvas-wrap {
+  outline: none;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+/* ================================
+   步骤编辑器
+   ================================ */
+.ld-settings-steps {
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  border-radius: var(--radius-md, 8px);
+  padding: 12px;
+  background: var(--color-bg-alt, #fafbfc);
+}
+.ld-steps-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.ld-steps-header label {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text, #1e293b);
+}
+.ld-btn-sm {
+  padding: 3px 8px !important;
+  font-size: 11px !important;
+  border-radius: 5px !important;
+}
+.ld-step-item {
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  border-radius: var(--radius-sm, 6px);
+  padding: 10px;
+  background: var(--color-bg, #fff);
+  margin-bottom: 8px;
+}
+.ld-step-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ld-step-title {
+  flex: 1;
+  min-width: 0;
+}
+.ld-step-btns {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.ld-step-fields {
+  font-size: 12px;
+}
+.ld-step-fields-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-text-muted, #64748b);
+  font-weight: 500;
+}
+.ld-step-field-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ld-step-field-chk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--color-border-light, #e2e8f0);
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.ld-step-field-chk:hover {
+  border-color: var(--color-primary, #4f6ef7);
+}
+.ld-step-field-chk.checked {
+  background: rgba(79, 110, 247, 0.08);
+  border-color: var(--color-primary, #4f6ef7);
+  color: var(--color-primary, #4f6ef7);
+}
+.ld-step-field-chk input {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  accent-color: var(--color-primary, #4f6ef7);
+}
+.ld-step-empty {
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* ════════════════════════════════════════
+   v3 新增样式
+   ════════════════════════════════════════ */
+
+/* ── 高级表单设置 ── */
+.ld-settings-advanced {
+  border-top: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--color-bg, #fff);
+  padding-top: 10px;
+}
+.ld-settings-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+}
+.ld-settings-switch-row label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #475569);
+  white-space: nowrap;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 0;
+}
+
+/* ── 设备切换 ── */
+.ld-device-switch {
+  display: inline-flex;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  overflow: hidden;
+}
+.ld-device-btn {
+  padding: 5px 10px;
+  border: none;
+  background: var(--color-bg, #fff);
+  color: var(--color-text-muted, #9ca3af);
+  cursor: pointer;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+.ld-device-btn:hover {
+  background: var(--color-bg-alt, #f8fafc);
+}
+.ld-device-btn.active {
+  background: var(--color-primary, #4f6ef7);
+  color: #fff;
+}
+
+/* ── 字段面板：容器项特殊样式 ── */
+.ldp-field-item-container {
+  border-color: rgba(139, 92, 246, 0.2);
+}
+.ldp-field-item-container:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+  box-shadow: 0 1px 6px rgba(139, 92, 246, 0.08);
+}
+.ldp-field-icon-container {
+  background: #f5f3ff;
+  color: #8b5cf6;
+}
+.ldp-field-item-container:hover .ldp-field-icon {
+  background: #ede9fe;
+  color: #8b5cf6;
+}
+.ldp-group-cnt {
+  margin-left: 4px;
+  font-size: 9px;
+  background: var(--color-bg-soft, #f1f5f9);
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-weight: 600;
+}

@@ -1,0 +1,300 @@
+/* ================================
+   工具栏 — 对齐项目 Button 风格
+   ================================ */
+.ld-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: #fff;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  flex-wrap: wrap;
+  min-height: 48px;
+}
+.ld-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.ld-count {
+  font-size: 11px;
+  color: var(--color-text-muted, #94a3b8);
+  background: var(--color-bg-alt, #f8fafc);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+.ld-tip {
+  font-size: 12px;
+  color: #15803d;
+  background: #ecfdf5;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  animation: tip-in 0.2s ease-out;
+}
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.ld-toolbar-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 工具按钮 — 复用 .ld-tb-btn */
+.ld-btn,
+.ld-tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+  background: #fff;
+  color: var(--color-text-secondary, #475569);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: all 0.15s ease;
+  height: auto;
+}
+.ld-btn:hover,
+.ld-tb-btn:hover:not(:disabled) {
+  background: var(--color-bg-alt, #f8fafc);
+  color: var(--color-text, #1e293b);
+}
+.ld-btn.active,
+.ld-tb-btn.active {
+  background: var(--color-primary-light, #eef1ff);
+  border-color: var(--color-primary, #4f6ef7);
+  color: var(--color-primary, #4f6ef7);
+  font-weight: 600;
+}
+.ld-btn.ld-danger:hover,
+.ld-tb-btn.ld-danger:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+.ld-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--color-border-light, #f1f5f9);
+  margin: 0 3px;
+}
+
+/* ================================
+   表单设置面板
+   ================================ */
+.ld-settings {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--color-bg-alt, #f8fafc);
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.ld-settings-row {
+  flex: 1;
+  min-width: 160px;
+}
+.ld-settings-row.wide {
+  flex: 1;
+  min-width: 220px;
+}
+.ld-settings-row label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-text-muted, #94a3b8);
+  margin-bottom: 5px;
+}
+.ld-settings-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  background: #fff;
+  color: var(--color-text, #1e293b);
+  transition: border-color 0.15s;
+}
+.ld-settings-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #4f6ef7);
+  box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.08);
+}
+
+/* 布局缩略图预览 */
+.ld-layout-preview {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ld-layout-thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 2px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 60px;
+}
+.ld-layout-thumb:hover {
+  border-color: var(--color-primary, #3b82f6);
+}
+.ld-layout-thumb.active {
+  border-color: var(--color-primary, #3b82f6);
+  background: rgba(59, 130, 246, 0.06);
+}
+.ld-layout-thumb span {
+  font-size: 10.5px;
+  color: var(--color-text-muted, #94a3b8);
+  font-weight: 500;
+}
+.ld-layout-thumb.active span {
+  color: var(--color-primary, #3b82f6);
+}
+/* 单列缩略图 */
+.ld-thumb-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 28px;
+  height: 20px;
+}
+.ld-thumb-bars > div {
+  flex: 1;
+  background: currentColor;
+  border-radius: 2px;
+  opacity: 0.4;
+}
+/* 栅格缩略图 */
+.ld-thumb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  width: 28px;
+  height: 20px;
+}
+.ld-thumb-grid > div {
+  background: currentColor;
+  border-radius: 2px;
+  opacity: 0.4;
+}
+/* 分步缩略图 */
+.ld-thumb-steps {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: 28px;
+  height: 20px;
+}
+.ld-thumb-steps > div {
+  flex: 1;
+  height: 6px;
+  background: currentColor;
+  border-radius: 2px;
+  opacity: 0.4;
+}
+.ld-thumb-steps > div:nth-child(1) {
+  opacity: 0.7;
+}
+.ld-thumb-steps > div:nth-child(2) {
+  opacity: 0.5;
+}
+.ld-thumb-steps > div:nth-child(3) {
+  opacity: 0.3;
+}
+
+/* ================================
+   导入面板
+   ================================ */
+.ld-import {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--color-bg-alt, #fafbfc);
+}
+.ld-import textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-md, 6px);
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.55;
+  background: #fff;
+  color: var(--color-text, #1e293b);
+  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  resize: vertical;
+}
+.ld-import textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #3b82f6);
+}
+.ld-import-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.ld-import-error {
+  color: #ef4444;
+  font-size: 12px;
+}
+
+/* 拖放上传区 */
+.ld-import-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
+  margin-bottom: 8px;
+  border: 2px dashed var(--color-border, #cbd5e1);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-bg, #fff);
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.ld-import-dropzone.drag-over {
+  border-color: var(--color-primary, #3b82f6);
+  background: rgba(59, 130, 246, 0.05);
+  color: var(--color-primary, #3b82f6);
+}
+.ld-import-file-label {
+  color: var(--color-primary, #3b82f6);
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 500;
+}
+.ld-import-file-label:hover {
+  opacity: 0.8;
+}

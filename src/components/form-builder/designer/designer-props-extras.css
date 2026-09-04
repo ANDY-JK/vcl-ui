@@ -1,0 +1,318 @@
+/* ── 属性面板分页 tab ── */
+.ldp-prop-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+}
+.ldp-prop-tab {
+  flex: 1;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted, #9ca3af);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.ldp-prop-tab:hover {
+  color: var(--color-text, #1e293b);
+}
+.ldp-prop-tab.active {
+  color: var(--color-primary, #4f6ef7);
+  border-bottom-color: var(--color-primary, #4f6ef7);
+}
+.ldp-prop-page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 校验规则列表 ── */
+.ldp-validation-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+}
+.ldp-rule-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--color-bg-soft, #f1f5f9);
+  color: var(--color-text-muted, #9ca3af);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ldp-rule-icon.on {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success, #10b981);
+}
+.ldp-rule-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text, #1e293b);
+}
+.ldp-rule-status {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+.ldp-rule-status.on {
+  color: var(--color-success, #10b981);
+  background: rgba(16, 185, 129, 0.1);
+}
+.ldp-rule-status.off {
+  color: var(--color-text-muted, #9ca3af);
+  background: var(--color-bg-soft, #f1f5f9);
+}
+
+/* ── 事件配置卡片 ── */
+.ldp-event-card {
+  margin: 8px 14px;
+  padding: 12px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-bg-alt, #fafbfc);
+}
+.ldp-event-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ldp-event-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary, #4f6ef7);
+}
+.ldp-event-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+}
+.ldp-event-toggle {
+  margin-left: auto;
+}
+.ldp-event-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── 数据源配置 ── */
+.ldp-datasource-card {
+  margin: 8px 14px;
+  padding: 12px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-bg-alt, #fafbfc);
+}
+.ldp-datasource-url {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 6px;
+}
+.ldp-datasource-input {
+  flex: 1;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: 'Cascadia Code', monospace;
+  background: var(--color-bg, #fff);
+  color: var(--color-text, #1e293b);
+  outline: none;
+}
+
+/* ── Schema 代码查看 ── */
+.ld-code-panel {
+  background: var(--color-bg, #fff);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  border: 1px solid var(--color-border, #e5e7eb);
+}
+.ld-code-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--color-bg, #fff);
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+}
+.ld-code-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ld-code-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.ld-code-body {
+  padding: 20px;
+  background: #1e293b;
+  overflow: auto;
+  max-height: 680px;
+}
+.ld-code-body pre {
+  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+}
+
+/* ── 大纲全屏标签页 ── */
+.ld-outline-full {
+  max-width: 680px;
+  margin: 0 auto;
+  background: var(--color-bg, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-lg, 10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+.ld-outline-full-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--color-bg-alt, #f8fafc);
+}
+.ld-outline-full-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 2px;
+  color: var(--color-text, #1e293b);
+}
+.ld-outline-full-hint {
+  font-size: 12px;
+  color: var(--color-text-muted, #94a3b8);
+  margin: 0;
+}
+.ld-outline-full-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted, #94a3b8);
+  background: var(--color-bg, #fff);
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ld-outline-full-dot {
+  margin: 0 4px;
+}
+.ld-outline-full-body {
+  padding: 12px;
+}
+
+/* ── 联动帮助提示 ── */
+.ldp-linkage-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 14px 10px;
+  font-size: 11px;
+  color: var(--color-text-muted, #9ca3af);
+  line-height: 1.5;
+}
+.ldp-linkage-help code {
+  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  font-size: 10px;
+  background: var(--color-bg-alt, #f1f5f9);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--color-primary, #3b82f6);
+}
+
+/* ── FormDataSummary 数据汇总弹窗 ── */
+.ld-data-summary {
+  min-height: 120px;
+}
+.ld-data-state {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--color-text-secondary, #64748b);
+  font-size: 13px;
+}
+.ld-data-error {
+  color: var(--color-danger, #dc2626);
+}
+.ld-data-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ld-data-stat {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-sm, 8px);
+  background: var(--color-bg-alt, #f8fafc);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ld-data-stat-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ld-data-stat-label {
+  font-size: 11px;
+  color: var(--color-text-muted, #94a3b8);
+}
+.ld-data-table-wrap {
+  max-height: 300px;
+  overflow: auto;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+}
+.ld-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.ld-data-table th,
+.ld-data-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--color-border, #eef2f7);
+  text-align: left;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ld-data-table th {
+  position: sticky;
+  top: 0;
+  background: var(--color-bg-alt, #f8fafc);
+  font-weight: 600;
+  color: var(--color-text-secondary, #475569);
+  z-index: 1;
+}
+.ld-data-table tr:last-child td {
+  border-bottom: none;
+}
+.ld-data-time {
+  color: var(--color-text-secondary, #64748b);
+}

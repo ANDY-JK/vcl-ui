@@ -1,0 +1,260 @@
+/* ================================
+   右栏：属性面板
+   ================================ */
+.ldp-props {
+  width: 290px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 0;
+  background: #fff;
+  border-left: 1px solid var(--color-border-light, #f1f5f9);
+}
+
+/** 面板头部 */
+.ldp-props-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--color-bg-alt, #fafbfc);
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.ldp-props-type-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-primary, #3b82f6);
+  background: var(--color-primary-light, #eff6ff);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+/** 空态 */
+.ldp-props-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-muted, #9ca3af);
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+}
+.ldp-props-empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--color-bg-alt, #f3f4f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted, #9ca3af);
+}
+.ldp-props-empty p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--color-text-muted, #9ca3af);
+}
+
+/** 属性编辑体 */
+.ldp-props-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/** 分节标题 */
+.ldp-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-muted, #9ca3af);
+  padding: 10px 12px 6px;
+  background: var(--color-bg-alt, #fafbfc);
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+/** 单个属性 */
+.ldp-prop {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-border-light, #f3f4f6);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background 0.1s;
+}
+.ldp-prop:hover {
+  background: var(--color-bg-alt, #fafbfc);
+}
+.ldp-prop label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted, #9ca3af);
+  letter-spacing: 0.2px;
+}
+.ldp-prop-readonly {
+  background: var(--color-bg-alt, #f3f4f6);
+}
+.ldp-prop-switch {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.ldp-prop-switch label {
+  margin-bottom: 0;
+}
+
+/** 只读类型标签 */
+.ldp-type-readonly {
+  font-size: 12px;
+  padding: 6px 10px;
+  background: var(--color-bg-alt, #f3f4f6);
+  border-radius: var(--radius-xs, 4px);
+  color: var(--color-text-secondary, #6b7280);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/** 双列布局 */
+.ldp-prop-row {
+  display: flex;
+  gap: 8px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-border-light, #f3f4f6);
+}
+/* 属性行内联布局（图标选择器 + 清除按钮） */
+.ldp-prop-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.ldp-prop-inline > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+.ldp-icon-clear {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-bg, #fff);
+  color: var(--color-text-muted, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ldp-icon-clear:hover {
+  border-color: var(--color-danger, #ef4444);
+  color: var(--color-danger, #ef4444);
+}
+.ldp-prop-row > .ldp-prop {
+  padding: 0;
+  border: none;
+  flex: 1;
+  min-width: 0;
+}
+
+/** 选项编辑器 */
+.ldp-options-editor {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-xs, 4px);
+  padding: 7px 9px;
+  font-size: 12px;
+  line-height: 1.55;
+  background: #fff;
+  color: var(--color-text, #1e293b);
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.15s;
+}
+.ldp-options-editor:focus {
+  outline: none;
+  border-color: var(--color-primary, #3b82f6);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.08);
+}
+.ldp-option-count {
+  font-size: 10px;
+  color: var(--color-text-muted, #9ca3af);
+  margin-top: 3px;
+}
+
+/* ── 颜色选择器行 ── */
+.ldp-color-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ldp-color-picker {
+  width: 36px;
+  height: 30px;
+  min-width: 36px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+/** 提示文字 */
+.ldp-prop-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #16a34a;
+  margin-top: 3px;
+}
+.ldp-prop-hint:not(.ldp-prop-ok) {
+  color: #dc2626;
+}
+
+/* ================================
+   预览区域
+   ================================ */
+.ld-preview {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+}
+.ld-preview-data {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.ldc-detail {
+  width: 100%;
+  background: var(--color-bg-alt, #f8fafc);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  padding: 12px;
+  font-size: 11.5px;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'Cascadia Code', monospace;
+  line-height: 1.6;
+  color: var(--color-text-secondary, #6b7280);
+}

@@ -13,6 +13,7 @@ import chart from './chunks/zh-CN/chart'
 import amap from './chunks/zh-CN/amap'
 import routePlanner from './chunks/zh-CN/routePlanner'
 import formBuilder from './chunks/zh-CN/formBuilder'
+import formBuilderPresets from './chunks/zh-CN/formBuilderPresets'
 import basic from './chunks/zh-CN/basic'
 import wc from './chunks/zh-CN/wc'
 import storage from './chunks/zh-CN/storage'
@@ -30,6 +31,7 @@ export default {
   ...amap,
   ...routePlanner,
   ...formBuilder,
+  ...formBuilderPresets,
   ...basic,
   ...wc,
   ...storage,

@@ -1,0 +1,291 @@
+/* ================================
+   中栏：画布 — 干净表单预览
+   ================================ */
+.ldc-canvas {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 24px 20px;
+  background: #fff;
+  position: relative;
+  outline: none;
+}
+
+/* 拖拽高亮 */
+.ldc-canvas.drag-over {
+  background: #f0f4ff;
+}
+.ldc-canvas.drag-over::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 2px dashed var(--color-primary, #3b82f6);
+  border-radius: var(--radius-md, 6px);
+  pointer-events: none;
+  animation: dash-spin 1.5s linear infinite;
+}
+@keyframes dash-spin {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+/* 空状态 */
+.ldc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--color-text-muted, #94a3b8);
+  gap: 10px;
+  text-align: center;
+  padding: 40px;
+  border: 2px dashed var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  margin: 20px 0;
+}
+.ldc-empty-icon {
+  width: 40px;
+  height: 40px;
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted, #94a3b8);
+}
+.ldc-empty-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted, #94a3b8);
+}
+.ldc-empty-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted, #94a3b8);
+}
+
+/* 字段列表 — 表单行风格 */
+.ldc-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 620px;
+  margin: 0 auto;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  background: #fff;
+}
+
+/** 行外层 */
+.ldc-card-wrapper {
+  position: relative;
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+}
+.ldc-card-wrapper:last-child {
+  border-bottom: none;
+}
+
+/** 行主体 */
+.ldc-card {
+  position: relative;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.ldc-card:hover {
+  background: var(--color-bg-hover, #f5f7fa);
+}
+.ldc-card.selected {
+  background: var(--color-primary-50, #f0f4ff);
+  box-shadow: inset 3px 0 0 var(--color-primary, #4f6ef7);
+}
+.ldc-card.dragging {
+  opacity: 0.25;
+}
+
+/* 拖拽指示线 */
+.ldc-drop-indicator {
+  height: 2px;
+  background: var(--color-primary, #3b82f6);
+  margin: 0;
+  animation: pulse-h 1s ease-in-out infinite;
+  border-radius: 1px;
+}
+@keyframes pulse-h {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 行头部工具条 — 悬浮 chrome（把手/类型徽章/key/操作钮），
+   不占卡片常驻空间；label 由 FormRenderer 真实渲染（所见即所得） */
+.ldc-card-head {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 6px;
+  min-height: 22px;
+  border-radius: 0 6px 0 6px;
+  background: var(--color-primary-50, #f0f4ff);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.ldc-card:hover .ldc-card-head,
+.ldc-card.selected .ldc-card-head,
+.ldc-card:focus-within .ldc-card-head {
+  opacity: 1;
+}
+
+/* 选中态快捷键提示条 */
+.ldc-card-kbd-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: rgba(59, 130, 246, 0.06);
+  border-top: 1px dashed rgba(59, 130, 246, 0.2);
+  font-size: 11px;
+  color: var(--color-text-muted, #94a3b8);
+}
+.ldc-card-kbd-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--color-bg, #f1f5f9);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 3px;
+  font-family: ui-monospace, monospace;
+  font-size: 10.5px;
+  color: var(--color-text-secondary, #64748b);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+}
+.ldc-drag-handle {
+  cursor: grab;
+  color: var(--color-text-muted, #94a3b8);
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: all 0.12s;
+}
+.ldc-drag-handle:hover {
+  color: var(--color-text-secondary, #475569);
+  background: var(--color-bg-alt, #f1f5f9);
+}
+.ldc-drag-handle:active {
+  cursor: grabbing;
+}
+
+.ldc-card-type-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--color-primary, #4f6ef7);
+  background: var(--color-primary-light, #eef1ff);
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+.ldc-card-key {
+  font-size: 10px;
+  color: var(--color-text-muted, #94a3b8);
+  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  background: var(--color-bg-soft, #f1f5f9);
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.ldc-card-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 1px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.ldc-card:hover .ldc-card-actions,
+.ldc-card.selected .ldc-card-actions {
+  opacity: 1;
+}
+.ldc-card-actions button {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-muted, #94a3b8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+.ldc-card-actions button:hover:not(:disabled) {
+  background: var(--color-bg-soft, #f1f5f9);
+  color: var(--color-text, #1e293b);
+}
+.ldc-card-actions button:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+.ldc-card-actions .ldc-del:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+/* 行内容 — 真实组件 */
+.ldc-card-body {
+  padding: 8px 12px 10px;
+  min-height: 40px;
+  /* 画布预览中的表单组件设置 pointer-events: none，
+     让点击穿透到 ld-card 父元素触发 select 事件，
+     避免 Input/Select 等组件拦截点击导致无法选中字段 */
+  pointer-events: none;
+}
+/* 但容器节体的子节点需要保持可点击 */
+.ldc-container-body .ldc-card {
+  pointer-events: auto;
+}
+
+/* 表单头 — 对齐原型 canvas-form-head */
+.ldc-form-head {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-primary-light, #eef1ff);
+}
+.ldc-form-head h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text, #1e293b);
+  margin: 0 0 4px;
+}
+.ldc-form-head p {
+  font-size: 13px;
+  color: var(--color-text-secondary, #475569);
+  margin: 0;
+}
+
+/* 穿透控制内部组件 */
+.ldc-card-body :deep(.input-field) {
+  /* Input 正常显示 */
+}
+.ldc-card-body :deep(.fb-renderer) > * {
+  /* FormRenderer 自然展示 */
+}
+.ldc-card-body :deep(.fb-title) {
+  margin: 0;
+  padding-bottom: 6px;
+}

@@ -1,0 +1,8 @@
+/**
+ * 设计器扩展样式聚合 — v3 大纲树/容器体系/属性面板扩展/汇总弹窗等。
+ * 由 designer.css 聚合器引入，选择器与拆分前完全一致。
+ */
+@import './designer-steps.css';
+@import './designer-outline.css';
+@import './designer-containers.css';
+@import './designer-props-extras.css';
