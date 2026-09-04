@@ -31,6 +31,7 @@ export default {
     yes: '是',
     no: '否',
     ok: '确定',
+    logout: '退出登录',
     sendExpress: '发快递',
     dialog: '弹窗',
   },

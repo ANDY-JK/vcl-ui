@@ -236,7 +236,15 @@ export class SupabaseKVAdapter {
   private objectName(key: string): string {
     // 键名经 ASCII 清洗（中文键直接上传会 400 InvalidKey）后再 URL 编码；
     // 前缀中的 / 不参与编码（是路径分隔符），冲突域内唯一性由调用方保证
-    return KV_PREFIX + encodeURIComponent(sanitizeObjectKeyPart(key))
+    const clean = sanitizeObjectKeyPart(key)
+    // 清洗丢信息 = 不同键可能映射同一对象静默互相覆盖（如两个纯中文键都变 file），
+    // 库内 key 全 ASCII 不触发；外部消费者需自查
+    if (/[^\x20-\x7E]/.test(key)) {
+      console.warn(
+        `[supabase-kv] key 含非 ASCII 字符，清洗为 "${KV_PREFIX}${clean}"（与其他同类键可能同名互相覆盖），建议改用 ASCII key: ${key}`,
+      )
+    }
+    return KV_PREFIX + encodeURIComponent(clean)
   }
 
   async get<T = unknown>(key: string): Promise<T | null> {

@@ -12,12 +12,13 @@
  * 存储复用 contract-storage 聚合后端（IndexedDB 本地 + Supabase 云端，按 targetId 聚合、
  * 墓碑/对账防删复活、真机拍照本地先落盘）。
  */
-import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick, toRaw } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, toRaw } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import Upload from '@/components/form/Upload.vue'
 import Input from '@/components/form/Input.vue'
 import Button from '@/components/basic/Button.vue'
 import Toast from '@/components/feedback/Toast.vue'
+import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 import type { UploadFile } from '@/components/form/Upload.vue'
 import type { FormSchema, FormField } from './types'
@@ -182,7 +183,17 @@ async function saveStorageConfig(): Promise<void> {
   }
 }
 
-async function clearAll(): Promise<void> {
+/** 清空确认弹窗状态（一键删除全部上传属不可逆操作，与 FormCollect 同样走确认） */
+const clearConfirmVisible = ref(false)
+
+/** 无上传记录时不弹确认，直接忽略 */
+function requestClearAll(): void {
+  if (!uploadMap.size) return
+  clearConfirmVisible.value = true
+}
+
+async function onConfirmClear(): Promise<void> {
+  clearConfirmVisible.value = false
   try {
     await applyBackend().clearAll()
     uploadMap.clear()
@@ -197,11 +208,43 @@ async function clearAll(): Promise<void> {
 // 上传
 // ════════════════════════════════════════
 
+/**
+ * blob URL 缓存：key = `${targetId}:${slotKey}:${变更序号}`。
+ * UploadFile.url 每次渲染不能新建 objectURL（泄漏），同一文件复用缓存；
+ * 槽位被替换/删除/清空时 revoke 旧值。
+ */
+const blobUrlCache = new Map<string, string>()
+const slotVersion = new Map<string, number>()
+
+function slotCacheKey(targetId: number, slotKey: string): string {
+  return `${targetId}:${slotKey}`
+}
+
+function revokeSlotUrl(targetId: number, slotKey: string): void {
+  const ck = slotCacheKey(targetId, slotKey)
+  const url = blobUrlCache.get(ck)
+  if (url) {
+    URL.revokeObjectURL(url)
+    blobUrlCache.delete(ck)
+  }
+  slotVersion.set(ck, (slotVersion.get(ck) ?? 0) + 1)
+}
+
+onUnmounted(() => {
+  for (const url of blobUrlCache.values()) URL.revokeObjectURL(url)
+  blobUrlCache.clear()
+})
+
 /** 某目标某照片位的 UploadFile[]（供 Upload v-model） */
 function getUploadFiles(targetId: number, slotKey: string): UploadFile[] {
   const f = getSlotFile(uploadMap.get(targetId), slotKey)
   if (!f) return []
-  const url = typeof f.dataUrl === 'string' ? f.dataUrl : URL.createObjectURL(f.dataUrl)
+  const ck = slotCacheKey(targetId, slotKey)
+  let url = blobUrlCache.get(ck)
+  if (!url) {
+    url = typeof f.dataUrl === 'string' ? f.dataUrl : URL.createObjectURL(f.dataUrl)
+    blobUrlCache.set(ck, url)
+  }
   return [{ id: targetId, name: f.name, size: f.size, progress: 100, status: 'done', url }]
 }
 
@@ -212,6 +255,8 @@ async function onUpload(targetId: number, slotKey: string, files: UploadFile[]):
   const f = files[0]
   const cur = uploadMap.get(targetId)
   if (f && f.url && f.status === 'done') {
+    // 槽位内容变更：失效旧 blob URL（下次渲染按新文件重建）
+    revokeSlotUrl(targetId, slotKey)
     const file: StoreFile = {
       name: f.name,
       dataUrl: f.raw ?? f.url,
@@ -223,6 +268,7 @@ async function onUpload(targetId: number, slotKey: string, files: UploadFile[]):
     emit('change', targetId, slotKey, file)
     toast(t('fbTarget.saved'), 'success')
   } else if (files.length === 0) {
+    revokeSlotUrl(targetId, slotKey)
     uploadMap.set(targetId, setSlotFile(cur, slotKey, undefined))
     await saveToBackend(targetId)
     emit('change', targetId, slotKey, undefined)
@@ -284,6 +330,16 @@ function formatTs(ts: number): string {
 }
 
 async function exportZip(): Promise<void> {
+  if (exporting.value) return
+  exporting.value = true
+  try {
+    await buildZipAndDownload()
+  } finally {
+    exporting.value = false
+  }
+}
+
+async function buildZipAndDownload(): Promise<void> {
   const zip = new JSZip()
   let fileCount = 0
 
@@ -345,18 +401,13 @@ async function exportZip(): Promise<void> {
     return
   }
 
-  exporting.value = true
-  try {
-    const blob = await zip.generateAsync({ type: 'blob' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `${props.schema.title || '目标收集'}_${new Date().toISOString().slice(0, 10)}.zip`
-    a.click()
-    URL.revokeObjectURL(a.href)
-    toast(`${t('fbTarget.exported')} ${fileCount}`, 'success')
-  } finally {
-    exporting.value = false
-  }
+  const blob = await zip.generateAsync({ type: 'blob' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `${props.schema.title || '目标收集'}_${new Date().toISOString().slice(0, 10)}.zip`
+  a.click()
+  URL.revokeObjectURL(a.href)
+  toast(`${t('fbTarget.exported')} ${fileCount}`, 'success')
 }
 
 // ════════════════════════════════════════
@@ -365,23 +416,6 @@ async function exportZip(): Promise<void> {
 
 onMounted(async () => {
   await reloadFromBackend()
-  await nextTick()
-  // 滚动恢复（真机拍照返回整页重建后回到原位）
-  const wrap = document.querySelector('.ftc-wrap')
-  if (wrap) {
-    const el = wrap.closest('.content-body') as HTMLElement | null
-    if (el) {
-      try {
-        const top = Number(localStorage.getItem('ftc-scroll')) || 0
-        if (top) el.scrollTop = top
-      } catch {
-        /* 忽略 */
-      }
-    }
-  }
-})
-onUnmounted(() => {
-  /* 无全局监听 */
 })
 </script>
 
@@ -400,7 +434,7 @@ onUnmounted(() => {
       <Button size="sm" variant="outline" @click="showStoragePanel = !showStoragePanel">
         {{ cfg.backend === 'supabase' ? '☁ ' + t('fbTarget.cloud') : '💾 ' + t('fbTarget.local') }}
       </Button>
-      <Button size="sm" variant="ghost" @click="clearAll">{{ t('fbTarget.clear') }}</Button>
+      <Button size="sm" variant="ghost" @click="requestClearAll">{{ t('fbTarget.clear') }}</Button>
     </div>
 
     <!-- 存储面板 -->
@@ -482,6 +516,15 @@ onUnmounted(() => {
     </div>
 
     <Toast ref="toastRef" variant="toast" position="top" />
+    <ConfirmModal
+      :visible="clearConfirmVisible"
+      :title="t('fbTarget.clearTitle')"
+      :message="t('fbTarget.clearMessage', { n: targets.length })"
+      :confirm-text="t('fbTarget.clear')"
+      variant="danger"
+      @update:visible="clearConfirmVisible = $event"
+      @confirm="onConfirmClear"
+    />
     <ImagePreview v-if="previewVisible" :src="previewUrl" @close="previewVisible = false" />
   </div>
 </template>

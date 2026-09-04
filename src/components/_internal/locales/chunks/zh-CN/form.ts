@@ -14,6 +14,7 @@ export default {
     switchCamera: '切换摄像头',
     capture: '拍摄',
     retake: '重拍',
+    pickSource: '选择图片来源',
     // Input
     inputError: '输入组件异常',
     increase: '增加',

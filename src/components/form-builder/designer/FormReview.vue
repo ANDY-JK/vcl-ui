@@ -4,10 +4,11 @@
  *
  * 从「我的表单」智能表格操作列「审核」打开：
  * - 加载表单完整设计 → toFormSchema
- * - 注入 submitConfig.mode='review'（全字段可编辑 + 变更防抖自动保存 + 提交 POST）
+ * - 注入 submitConfig.mode='review'（全字段可编辑）
  * - 审核通过后写入收集记录（与 FormCollect 同链路）
  *
- * 旧版 DynamicForm 三模式承接：review = 审核模式（apiUrl 加载 + saveUrl 自动保存）
+ * 远程接口（可选）：传 apiUrl（GET 回填）/ saveUrl（防抖自动保存 + 提交 POST）才发请求；
+ * 缺省纯前端——数据写收集记录，不依赖任何后端。
  */
 import { ref, computed, onMounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
@@ -24,6 +25,12 @@ const props = defineProps<{
   item: FormMetaItem | null
   /** 存储实现（默认全局活动 store） */
   store?: FormStore
+  /** 远程回填接口（GET 按 key 拉取数据）；不传不发请求 */
+  apiUrl?: string
+  /** 远程保存接口（防抖自动保存 + 提交 POST）；不传不发请求 */
+  saveUrl?: string
+  /** 自动保存防抖毫秒（仅 saveUrl 存在时生效，默认 3000） */
+  reviewAutoSave?: number
 }>()
 
 const emit = defineEmits<{
@@ -38,17 +45,14 @@ const loading = ref(false)
 const error = ref('')
 const submitted = ref(false)
 
-/** 表单 schema（设计 → schema，注入 review 模式） */
+/** 表单 schema（设计 → schema，注入 review 模式；远程接口仅按需注入） */
 const formSchema = computed(() => {
   if (!design.value) return null
   const schema = toFormSchema(design.value.nodes ?? design.value.fields ?? [], design.value.meta ?? {})
-  // 审核模式：全字段可编辑 + 防抖自动保存 + 提交 POST
-  // saveUrl 由接入方替换（缺省指向示例接口，不配则退回纯前端表单）
   schema.submitConfig = {
     mode: 'review',
-    apiUrl: '/api/review-form',
-    saveUrl: '/api/review-form',
-    reviewAutoSave: 3000,
+    ...(props.apiUrl ? { apiUrl: props.apiUrl } : {}),
+    ...(props.saveUrl ? { saveUrl: props.saveUrl, reviewAutoSave: props.reviewAutoSave ?? 3000 } : {}),
   }
   return schema
 })

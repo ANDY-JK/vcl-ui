@@ -139,6 +139,8 @@ export default {
     fixAllRight: 'Fix all columns to the right',
     fixAllRightShort: 'Fix all right',
     clearAllFixed: 'Clear all fixed',
+    fixedLeftCount: '{n} fixed left',
+    fixedRightCount: '{n} fixed right',
     unfixAll: 'Unfix',
     showCol: 'Show {name}',
     narrower: 'Narrower 10px',

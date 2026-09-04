@@ -31,6 +31,7 @@ export default {
     yes: 'Yes',
     no: 'No',
     ok: 'OK',
+    logout: 'Log out',
     sendExpress: 'Send Express',
     dialog: 'Dialog',
   },

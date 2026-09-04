@@ -14,6 +14,7 @@ export default {
     switchCamera: 'Switch Camera',
     capture: 'Capture',
     retake: 'Retake',
+    pickSource: 'Choose image source',
     // Input
     inputError: 'Input component error',
     increase: 'Increase',

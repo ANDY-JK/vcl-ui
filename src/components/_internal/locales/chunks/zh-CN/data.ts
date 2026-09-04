@@ -139,6 +139,8 @@ export default {
     fixAllRight: '全部列固定到右侧',
     fixAllRightShort: '全部固定右',
     clearAllFixed: '清除全部固定',
+    fixedLeftCount: '已固定左 {n} 列',
+    fixedRightCount: '已固定右 {n} 列',
     unfixAll: '取消固定',
     showCol: '显示 {name}',
     narrower: '变窄 10px',
