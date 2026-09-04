@@ -467,6 +467,7 @@ function setSubmitting(v: boolean): void {
 onUnmounted(() => {
   if (submitTimer) clearTimeout(submitTimer)
   if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  if (saveTimer) clearTimeout(saveTimer)
 })
 
 /**

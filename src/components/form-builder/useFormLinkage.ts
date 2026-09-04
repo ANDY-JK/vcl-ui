@@ -282,6 +282,23 @@ export function useFormLinkage(fields: ComputedRef<FormField[]> | Ref<FormField[
       { deep: true, immediate: true },
     )
 
+    // 字段配置签名 watcher：schema 动态更新（宿主运行时改 fields）时重扫
+    // 联动/数据源/级联字段列表。用配置签名而非数组引用做依赖——
+    // effectiveFields 每次 formData 变化都会产出新数组，按引用监听会误触发。
+    watch(
+      () =>
+        fields.value
+          .map(
+            (f) =>
+              `${f.key}:${f.linkage?.type ?? ''}:${f.linkage?.formula ?? ''}:${f.optionsFrom ?? ''}:${f.dataSource?.type ?? ''}:${f.dataSource?.apiUrl ?? ''}`,
+          )
+          .join('|'),
+      () => {
+        init()
+        processLinkages()
+      },
+    )
+
     // 数据源联动 watcher：监听联动条件字段值变化
     for (const field of dataSourceFields.value) {
       const ds = field.dataSource!
