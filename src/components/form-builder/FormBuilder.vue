@@ -22,6 +22,9 @@ import { useFormSchema, isLayoutField, isFieldVisible } from './useFormSchema'
 import { useFormValidator } from './useFormValidator'
 import { useFormStorage } from './useFormStorage'
 import { useFormLinkage } from './useFormLinkage'
+import { useFormSteps } from './useFormSteps'
+import { useFormEvents } from './useFormEvents'
+import { useFormRemote } from './useFormRemote'
 import FormRenderer from './FormRenderer.vue'
 import FieldList from './FieldList.vue'
 import Button from '@/components/basic/Button.vue'
@@ -205,26 +208,7 @@ watch(
     }
 
     // 审核模式自动保存（submitConfig.mode='review' + saveUrl，防抖 reviewAutoSave ms）
-    const rc = submitConfig.value
-    if (rc?.mode === 'review' && rc.saveUrl && rc.reviewAutoSave !== 0) {
-      if (autoSaveTimer) clearTimeout(autoSaveTimer)
-      const ver = ++autoSaveVersion
-      autoSaveTimer = setTimeout(async () => {
-        if (ver !== autoSaveVersion) return
-        try {
-          const resp = await fetch(rc.saveUrl!, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...formData.value, ...(rc.params ?? {}) }),
-          })
-          if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-          // 成功静默（避免每 3 秒打断），失败才提示
-        } catch {
-          if (ver !== autoSaveVersion) return
-          toastRef.value?.show(t('formBuilder.autoSaveFail'), 'error', 2500)
-        }
-      }, rc.reviewAutoSave ?? 3000)
-    }
+    scheduleAutoSave()
   },
   { deep: true },
 )
@@ -270,78 +254,8 @@ onMounted(async () => {
   }
 })
 
-/**
- * 远程数据加载（submitConfig.apiUrl）：GET 拉取 → 按字段 key 回填
- * 响应取 json.data ?? json，仅回填 schema 内字段；成功 emit 'loaded'
- */
-async function loadRemoteData(): Promise<void> {
-  const rc = submitConfig.value
-  if (!rc?.apiUrl) return
-  try {
-    const url = new URL(rc.apiUrl, window.location.origin)
-    for (const [k, v] of Object.entries(rc.params ?? {})) url.searchParams.set(k, String(v))
-    const resp = await fetch(url.toString())
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-    const json = (await resp.json()) as Record<string, unknown>
-    const raw = (json && typeof json === 'object' && 'data' in json && json.data) || json
-    const source = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
-    const next: FormData = { ...formData.value }
-    let changed = false
-    for (const field of effectiveFields.value) {
-      const v = source[field.key]
-      if (v !== undefined && v !== null) {
-        next[field.key] = v
-        changed = true
-      }
-    }
-    if (changed) formData.value = next
-    emit('loaded', source)
-  } catch (e) {
-    toastRef.value?.show(t('formBuilder.loadFail', { err: String(e instanceof Error ? e.message : e) }), 'error', 2500)
-  }
-}
-
 // 草稿保存 timer（在上方 formData watcher 中使用）
 let saveTimer: ReturnType<typeof setTimeout> | null = null
-/** 审核模式自动保存 timer（submitConfig.mode='review'） */
-let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
-/** 自动保存版本号（防抖期间旧请求结果不覆盖新状态） */
-let autoSaveVersion = 0
-
-// ════════════════════════════════════════
-// 步骤模式（steps）
-// ════════════════════════════════════════
-
-const currentStep = ref(0)
-const totalSteps = computed(() => normalized.value.steps?.length ?? 0)
-
-/** 当前步骤的字段列表 */
-const stepFields = computed<FormField[]>(() => {
-  if (normalized.value.layout !== 'steps' || !normalized.value.steps) return []
-  const step = normalized.value.steps[currentStep.value]
-  if (!step) return []
-  return effectiveFields.value.filter((f) => step.fields.includes(f.key))
-})
-
-function nextStep(): void {
-  // 校验当前步骤的字段
-  const stepFieldKeys = normalized.value.steps?.[currentStep.value]?.fields ?? []
-  let stepValid = true
-  for (const key of stepFieldKeys) {
-    if (!validateOne(key)) stepValid = false
-  }
-  if (!stepValid) {
-    toastRef.value?.show(t('formBuilder.requiredStep'), 'warning', 2000)
-    return
-  }
-  if (currentStep.value < totalSteps.value - 1) {
-    currentStep.value++
-  }
-}
-
-function prevStep(): void {
-  if (currentStep.value > 0) currentStep.value--
-}
 
 // ════════════════════════════════════════
 // 提交与重置
@@ -466,7 +380,7 @@ function setSubmitting(v: boolean): void {
 
 onUnmounted(() => {
   if (submitTimer) clearTimeout(submitTimer)
-  if (autoSaveTimer) clearTimeout(autoSaveTimer)
+  disposeRemote()
   if (saveTimer) clearTimeout(saveTimer)
 })
 
@@ -521,97 +435,32 @@ function handleReset(): void {
 // 计算属性
 // ════════════════════════════════════════
 
-/** 事件动作隐藏的字段 key 集合（toggleVisible 用） */
-const hiddenByEvent = ref<Set<string>>(new Set())
+// 字段事件动作（setValue/toggleVisible/showTip/callApi/autoValidate/format/submit）
+// — 逻辑在 useFormEvents；onFieldUpdate 保留（FieldList 回写）
+const { hiddenByEvent, isHiddenByEvent, handleFieldChange } = useFormEvents(
+  formData,
+  (msg, type, ms) => toastRef.value?.show(msg, type, ms),
+  (key) => validateOne(key),
+  () => handleSubmit(),
+)
 
-/** 字段是否被事件动作隐藏 */
-function isHiddenByEvent(key: string): boolean {
-  return hiddenByEvent.value.has(key)
-}
+// 远程数据链路（GET 回填 + review 防抖自动保存）— 逻辑在 useFormRemote
+const {
+  loadRemoteData,
+  scheduleAutoSave,
+  dispose: disposeRemote,
+} = useFormRemote(
+  submitConfig,
+  formData,
+  () => effectiveFields.value,
+  (source) => emit('loaded', source),
+  (msg, type, ms) => toastRef.value?.show(msg, type, ms),
+  (err) => t('formBuilder.loadFail', { err }),
+)
 
 /** FieldList 回写字段值 */
 function onFieldUpdate(key: string, value: unknown): void {
   formData.value = { ...formData.value, [key]: value }
-}
-
-/**
- * 执行字段的事件动作（由 FormRenderer @change 触发）
- * 支持：setValue / toggleVisible / showTip / callApi / linkField（onChange）
- *       autoValidate / format / submit（onBlur）
- */
-function handleFieldChange(field: FormField, trigger: 'change' | 'blur'): void {
-  const evt = field.events?.[trigger === 'change' ? 'onChange' : 'onBlur']
-  if (!evt?.action) return
-  const target = evt.targetField
-
-  switch (evt.action) {
-    case 'setValue': {
-      if (target) {
-        // 把当前字段值同步给目标字段
-        formData.value = { ...formData.value, [target]: formData.value[field.key] }
-      }
-      break
-    }
-    case 'toggleVisible': {
-      if (target) {
-        const next = new Set(hiddenByEvent.value)
-        if (next.has(target)) next.delete(target)
-        else next.add(target)
-        hiddenByEvent.value = next
-      }
-      break
-    }
-    case 'showTip': {
-      toastRef.value?.show(t('formBuilder.eventTip', { field: field.label }), 'info', 1500)
-      break
-    }
-    case 'callApi': {
-      const url = evt.apiUrl
-      if (!url) {
-        toastRef.value?.show(t('formBuilder.eventNoApi'), 'warning', 2000)
-        break
-      }
-      // 后台调用接口，不阻塞交互；结果作为提示反馈
-      const value = formData.value[field.key]
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ field: field.key, value }),
-      })
-        .then((resp) => {
-          if (!resp.ok) throw new Error('HTTP ' + resp.status)
-          return resp.json().catch(() => ({}))
-        })
-        .then(() => toastRef.value?.show(t('formBuilder.eventApiDone', { field: field.label }), 'success', 1500))
-        .catch((err) =>
-          toastRef.value?.show(
-            t('formBuilder.eventApiFail', { field: field.label, err: String(err?.message ?? err) }),
-            'error',
-            2500,
-          ),
-        )
-      break
-    }
-    case 'linkField': {
-      // 联动字段：linkage 引擎已处理 followValue/showHide，这里无需额外动作
-      break
-    }
-    case 'autoValidate': {
-      validateOne(field.key)
-      break
-    }
-    case 'format': {
-      const v = formData.value[field.key]
-      if (typeof v === 'string' && v !== v.trim()) {
-        formData.value = { ...formData.value, [field.key]: v.trim() }
-      }
-      break
-    }
-    case 'submit': {
-      handleSubmit()
-      break
-    }
-  }
 }
 
 /** 可见字段列表（过滤 visibleWhen + 联动隐藏 + 事件隐藏） */
@@ -621,6 +470,24 @@ const visibleFields = computed(() => {
     return isFieldVisibleWithLinkage(f, formData.value)
   })
 })
+
+// 步骤模式（steps）— 逻辑在 useFormSteps，校验回调走 validateOne + toast
+const { currentStep, totalSteps, stepFields, nextStep, prevStep, isLastStep, stepCompletion } = useFormSteps(
+  normalized,
+  effectiveFields,
+  formData,
+  isFieldVisibleWithLinkage,
+  (keys) => {
+    let stepValid = true
+    for (const key of keys) {
+      if (!validateOne(key)) stepValid = false
+    }
+    if (!stepValid) {
+      toastRef.value?.show(t('formBuilder.requiredStep'), 'warning', 2000)
+    }
+    return stepValid
+  },
+)
 
 /** 当前应渲染的字段列表（steps 模式只渲染当前步骤） */
 const renderFields = computed<FormField[]>(() => {
@@ -745,24 +612,6 @@ const showSteps = computed(() => normalized.value.layout === 'steps' && totalSte
 
 /** 是否显示底部操作按钮（view 模式只读展示，隐藏提交/重置） */
 const showActions = computed(() => !normalized.value.hideActions && submitConfig.value?.mode !== 'view')
-
-/** 是否是最后一步 */
-const isLastStep = computed(() => currentStep.value === totalSteps.value - 1)
-
-/** 每步的字段完成度（已填/总数） */
-const stepCompletion = computed(() => {
-  if (normalized.value.layout !== 'steps' || !normalized.value.steps) return []
-  return normalized.value.steps.map((step) => {
-    const fields = effectiveFields.value.filter(
-      (f) => step.fields.includes(f.key) && isFieldVisibleWithLinkage(f, formData.value),
-    )
-    const filled = fields.filter((f) => {
-      const v = formData.value[f.key]
-      return v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)
-    }).length
-    return { filled, total: fields.length }
-  })
-})
 </script>
 
 <template>
@@ -957,180 +806,4 @@ const stepCompletion = computed(() => {
   </div>
 </template>
 
-<style scoped>
-.fb-builder {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-/* 标题 */
-.fb-header {
-  margin-bottom: 20px;
-}
-.fb-header-fade-enter-active {
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
-}
-.fb-header-fade-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-.fb-header-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-.fb-header-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-.fb-title {
-  margin: 0 0 6px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text, #1e293b);
-}
-.fb-desc {
-  margin: 0;
-  font-size: 13px;
-  color: var(--color-text-secondary, #64748b);
-  line-height: 1.5;
-}
-
-/* 表单 */
-.fb-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* group 卡片间距 */
-.fb-group-card {
-  margin-bottom: 0;
-}
-
-/* 字段容器 */
-.fb-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* grid 布局 */
-.fb-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--fb-cols, 2), 1fr);
-  gap: 12px 16px;
-}
-/* .fb-field 由 FieldList（多根片段）渲染，不继承本组件 scope id，必须 :deep 穿透 */
-.fb-fields :deep(.fb-field) {
-  min-width: 0;
-}
-/* grid 模式下按 span 跨列（--fb-span 已由 FieldList 折算为格数） */
-.fb-grid :deep(.fb-field) {
-  grid-column: span var(--fb-span, 1);
-}
-
-/* flex 横排布局：字段并排，按 span 折算占比（span 12 = 50%），可换行/对齐/间距 */
-.fb-flex {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: var(--fb-flex-wrap, wrap);
-  justify-content: var(--fb-flex-justify, flex-start);
-  gap: var(--fb-flex-gap, 12px);
-}
-.fb-flex :deep(.fb-field) {
-  flex: 0 1 var(--fb-basis, 100%);
-}
-
-/* 移动端响应式：单列布局 */
-@media (max-width: 640px) {
-  .fb-grid {
-    grid-template-columns: 1fr;
-  }
-  .fb-grid :deep(.fb-field) {
-    grid-column: span 1;
-  }
-}
-
-/* steps 模式字段间距 */
-.fb-fields-step {
-  gap: 20px;
-}
-
-/* steps 模式步骤过渡动画 */
-.fb-fields-step {
-  animation: fb-step-fade-in 0.3s ease;
-}
-@keyframes fb-step-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 步骤指示器 */
-.fb-step-indicator {
-  margin-right: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 120px;
-}
-.fb-step-progress {
-  height: 4px;
-  background: var(--color-border-light, #e2e8f0);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.fb-step-progress-bar {
-  height: 100%;
-  background: var(--color-primary, #3b82f6);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-.fb-step-text {
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-  font-size: 13px;
-  color: var(--color-text-secondary, #64748b);
-}
-.fb-step-current {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-primary, #3b82f6);
-}
-.fb-step-sep {
-  color: var(--color-text-muted, #94a3b8);
-}
-.fb-step-total {
-  font-weight: 500;
-}
-.fb-step-title {
-  margin-left: 8px;
-  font-size: 13px;
-  color: var(--color-text, #1e293b);
-  font-weight: 500;
-}
-.fb-step-completion {
-  margin-left: 4px;
-  font-size: 11px;
-  color: var(--color-text-muted, #94a3b8);
-  font-weight: 400;
-}
-
-/* 底部操作 */
-.fb-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border, #e2e8f0);
-}
-</style>
+<style scoped src="./FormBuilder.css"></style>
