@@ -77,6 +77,12 @@ export interface VisibleWhen {
   not?: boolean
 }
 
+/**
+ * 通用字段条件 — requiredWhen / disabledWhen 与 visibleWhen 共用同一匹配语义：
+ * 条件成立（equals 匹配 / not 反向匹配）时，对应能力生效（必填 / 禁用）。
+ * 与显隐联动互补：显隐管「字段在不在」，必填/禁用管「字段要不要填、能不能填」。
+ */
+
 // ════════════════════════════════════════
 // 字段联动配置
 // ════════════════════════════════════════
@@ -227,6 +233,10 @@ export interface FormField {
   group?: string
   /** 条件显示 */
   visibleWhen?: VisibleWhen
+  /** 条件必填：条件成立时本字段必填（匹配语义同 visibleWhen） */
+  requiredWhen?: VisibleWhen
+  /** 条件禁用：条件成立时本字段禁用（匹配语义同 visibleWhen） */
+  disabledWhen?: VisibleWhen
   /** 字段所属容器（设计器容器嵌套时由 toFormSchema 填充） */
   container?: FieldContainer
   /**

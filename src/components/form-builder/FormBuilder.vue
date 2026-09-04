@@ -18,7 +18,7 @@
 
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
 import { useT } from '@/components/_internal/i18n'
-import { useFormSchema, isLayoutField } from './useFormSchema'
+import { useFormSchema, isLayoutField, isFieldVisible } from './useFormSchema'
 import { useFormValidator } from './useFormValidator'
 import { useFormStorage } from './useFormStorage'
 import { useFormLinkage } from './useFormLinkage'
@@ -106,8 +106,30 @@ const formData = ref<FormData>({})
 // 联动引擎
 // ════════════════════════════════════════
 
-/** 字段列表（从 normalized 中提取 fields，供联动引擎使用） */
-const normalizedFields = computed(() => normalized.value.fields)
+/**
+ * 运行时字段：在归一化结果上合成条件必填（requiredWhen）与条件禁用（disabledWhen）。
+ * 条件匹配语义复用 isFieldVisible（条件成立 = 生效），仅判定条件表达式本身。
+ * 渲染、校验、提交收集统一消费本列表——合成进 field.required / field.disabled 后下游零改动。
+ */
+const effectiveFields = computed<FormField[]>(() =>
+  normalized.value.fields.map((f) => {
+    if (!f.requiredWhen && !f.disabledWhen) return f
+    const condDisable = f.disabledWhen ? isFieldVisible({ ...f, visibleWhen: f.disabledWhen }, formData.value) : false
+    const condRequire = f.requiredWhen ? isFieldVisible({ ...f, visibleWhen: f.requiredWhen }, formData.value) : false
+    if (!condDisable && !condRequire) return f
+    return {
+      ...f,
+      ...(condDisable ? { disabled: true } : {}),
+      ...(condRequire ? { required: true } : {}),
+    }
+  }),
+)
+
+/** 合成后的 schema（校验引擎消费：validateOne 按 key 从 fields 取字段） */
+const effectiveSchema = computed<FormSchema>(() => ({ ...normalized.value, fields: effectiveFields.value }))
+
+/** 字段列表（供联动引擎使用） */
+const normalizedFields = computed(() => effectiveFields.value)
 
 const { getFieldOptions, initDataSources, setupWatchers, isFieldVisibleWithLinkage } = useFormLinkage(
   normalizedFields,
@@ -147,7 +169,7 @@ watch(
 // 校验
 // ════════════════════════════════════════
 
-const { errors, validate, validateOne, clearErrors } = useFormValidator(schemaRef, formData, {
+const { errors, validate, validateOne, clearErrors } = useFormValidator(effectiveSchema, formData, {
   // 校验可见性使用联动感知版本：被 showHide/事件隐藏的字段跳过校验，
   // 避免“隐藏的必填字段卡死提交”且错误定位失效
   isFieldVisible: isFieldVisibleWithLinkage,
@@ -163,7 +185,7 @@ watch(
     // 实时校验模式
     if (normalized.value.validateOnChange) {
       // 只校验已填或已出错的字段（避免刚打开全红）
-      for (const field of normalized.value.fields) {
+      for (const field of effectiveFields.value) {
         if (isLayoutField(field.type)) continue
         const v = val[field.key]
         const hasValue = v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)
@@ -265,7 +287,7 @@ async function loadRemoteData(): Promise<void> {
     const source = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
     const next: FormData = { ...formData.value }
     let changed = false
-    for (const field of normalized.value.fields) {
+    for (const field of effectiveFields.value) {
       const v = source[field.key]
       if (v !== undefined && v !== null) {
         next[field.key] = v
@@ -298,7 +320,7 @@ const stepFields = computed<FormField[]>(() => {
   if (normalized.value.layout !== 'steps' || !normalized.value.steps) return []
   const step = normalized.value.steps[currentStep.value]
   if (!step) return []
-  return normalized.value.fields.filter((f) => step.fields.includes(f.key))
+  return effectiveFields.value.filter((f) => step.fields.includes(f.key))
 })
 
 function nextStep(): void {
@@ -350,7 +372,7 @@ function handleSubmit(): void {
 
   // 收集可见字段的数据（隐藏字段不提交）
   const submitData: FormData = {}
-  for (const field of normalized.value.fields) {
+  for (const field of effectiveFields.value) {
     if (isLayoutField(field.type)) continue
     if (!isFieldVisibleWithLinkage(field, formData.value)) continue
     if (isHiddenByEvent(field.key)) continue
@@ -453,7 +475,7 @@ onUnmounted(() => {
  */
 function getFormData(): FormData {
   const result: FormData = {}
-  for (const field of normalized.value.fields) {
+  for (const field of effectiveFields.value) {
     if (isLayoutField(field.type)) continue
     if (!isFieldVisibleWithLinkage(field, formData.value)) continue
     result[field.key] = formData.value[field.key]
@@ -593,7 +615,7 @@ function handleFieldChange(field: FormField, trigger: 'change' | 'blur'): void {
 
 /** 可见字段列表（过滤 visibleWhen + 联动隐藏 + 事件隐藏） */
 const visibleFields = computed(() => {
-  return normalized.value.fields.filter((f) => {
+  return effectiveFields.value.filter((f) => {
     if (isHiddenByEvent(f.key)) return false
     return isFieldVisibleWithLinkage(f, formData.value)
   })
@@ -730,7 +752,7 @@ const isLastStep = computed(() => currentStep.value === totalSteps.value - 1)
 const stepCompletion = computed(() => {
   if (normalized.value.layout !== 'steps' || !normalized.value.steps) return []
   return normalized.value.steps.map((step) => {
-    const fields = normalized.value.fields.filter(
+    const fields = effectiveFields.value.filter(
       (f) => step.fields.includes(f.key) && isFieldVisibleWithLinkage(f, formData.value),
     )
     const filled = fields.filter((f) => {

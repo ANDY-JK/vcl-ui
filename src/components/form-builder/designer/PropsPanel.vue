@@ -147,6 +147,34 @@ const hasOptions = computed(() => 'options' in getFieldDefaults(props.node.type)
 /** 级联选项适用：字段自身带静态选项编辑（select/radio/checkbox 等），级联映射覆盖其选项 */
 const hasStaticOptions = hasOptions
 
+/** 条件组配置：显示 / 必填 / 禁用共用同一套「触发字段 + 匹配值 + 反向」交互 */
+const whenConfigs = [
+  {
+    sectionKey: 'visible',
+    title: t('fbp.sectionVisible'),
+    ph: t('fbp.triggerFieldPh'),
+    fieldKey: 'visibleWhenField',
+    valueKey: 'visibleWhenValue',
+    notKey: 'visibleWhenNot',
+  },
+  {
+    sectionKey: 'required',
+    title: t('fbp.sectionRequiredWhen'),
+    ph: t('fbp.requiredWhenPh'),
+    fieldKey: 'requiredWhenField',
+    valueKey: 'requiredWhenValue',
+    notKey: 'requiredWhenNot',
+  },
+  {
+    sectionKey: 'disabled',
+    title: t('fbp.sectionDisabledWhen'),
+    ph: t('fbp.disabledWhenPh'),
+    fieldKey: 'disabledWhenField',
+    valueKey: 'disabledWhenValue',
+    notKey: 'disabledWhenNot',
+  },
+] as const
+
 /** 判断字段类型是否支持某通用属性（注册表 defaults 含对应 key 即支持） */
 function hasProp(key: string): boolean {
   return key in getFieldDefaults(props.node.type)
@@ -794,37 +822,41 @@ const linkageHelpText = computed(() => {
             </div>
           </template>
 
-          <!-- 条件显示 -->
+          <!-- 条件组：显示 / 必填 / 禁用（同一匹配语义，作用不同；布局元素不参与） -->
           <template v-if="node.type !== 'divider' && node.type !== 'title'">
-            <div class="ldp-section-title">{{ t('fbp.sectionVisible') }}</div>
-            <div class="ldp-prop">
-              <label>{{ t('fbp.triggerField') }}</label>
-              <Select
-                :model-value="node.visibleWhenField ?? ''"
-                :options="visibleWhenFieldOptions"
-                :placeholder="t('fbp.triggerFieldPh')"
-                @update:model-value="
-                  emit('update', { visibleWhenField: $event === null ? '' : String($event) || undefined })
-                "
-              />
-            </div>
-            <template v-if="node.visibleWhenField">
+            <template v-for="cfg in whenConfigs" :key="cfg.sectionKey">
+              <div class="ldp-section-title">{{ cfg.title }}</div>
               <div class="ldp-prop">
-                <label>{{ t('fbp.matchValue') }}</label>
-                <Input
-                  :model-value="node.visibleWhenValue ?? ''"
-                  :placeholder="t('fbp.matchValuePh')"
-                  @update:model-value="onInputEmit('visibleWhenValue', $event)"
+                <label>{{ t('fbp.triggerField') }}</label>
+                <Select
+                  :model-value="(node[cfg.fieldKey] as string) ?? ''"
+                  :options="visibleWhenFieldOptions"
+                  :placeholder="cfg.ph"
+                  @update:model-value="
+                    emit('update', {
+                      [cfg.fieldKey]: $event === null ? '' : String($event) || undefined,
+                    } as Partial<DesignerNode>)
+                  "
                 />
               </div>
-              <div class="ldp-prop ldp-prop-switch">
-                <label>{{ t('fbp.notMatch') }}</label>
-                <Group
-                  type="switch"
-                  :model-value="!!node.visibleWhenNot"
-                  @update:model-value="onGroupEmit('visibleWhenNot', $event)"
-                />
-              </div>
+              <template v-if="node[cfg.fieldKey]">
+                <div class="ldp-prop">
+                  <label>{{ t('fbp.matchValue') }}</label>
+                  <Input
+                    :model-value="(node[cfg.valueKey] as string) ?? ''"
+                    :placeholder="t('fbp.matchValuePh')"
+                    @update:model-value="onInputEmit(cfg.valueKey, $event)"
+                  />
+                </div>
+                <div class="ldp-prop ldp-prop-switch">
+                  <label>{{ t('fbp.notMatch') }}</label>
+                  <Group
+                    type="switch"
+                    :model-value="!!node[cfg.notKey]"
+                    @update:model-value="onGroupEmit(cfg.notKey, $event)"
+                  />
+                </div>
+              </template>
             </template>
           </template>
 

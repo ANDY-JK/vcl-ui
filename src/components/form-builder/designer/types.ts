@@ -160,6 +160,18 @@ export interface DesignerNode {
   visibleWhenValue?: string
   /** 条件显示：是否反向匹配（不等于时显示） */
   visibleWhenNot?: boolean
+  /** 条件必填：当指定字段值匹配时本字段必填 */
+  requiredWhenField?: string
+  /** 条件必填：匹配值 */
+  requiredWhenValue?: string
+  /** 条件必填：是否反向匹配 */
+  requiredWhenNot?: boolean
+  /** 条件禁用：当指定字段值匹配时本字段禁用 */
+  disabledWhenField?: string
+  /** 条件禁用：匹配值 */
+  disabledWhenValue?: string
+  /** 条件禁用：是否反向匹配 */
+  disabledWhenNot?: boolean
   /** 级联选项：依赖字段 key（本字段选项由依赖值在 optionsMap 查出） */
   optionsFrom?: string
   /** 级联选项映射（每行一条：依赖值=选项1,选项2,选项3） */
@@ -906,6 +918,24 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
         field: f.visibleWhenField,
         equals: matchValue,
         ...(f.visibleWhenNot ? { not: true } : {}),
+      }
+    }
+
+    // 条件必填 / 条件禁用（匹配语义与条件显示一致）
+    for (const [condField, condValue, condNot, target] of [
+      [f.requiredWhenField, f.requiredWhenValue, f.requiredWhenNot, 'requiredWhen'],
+      [f.disabledWhenField, f.disabledWhenValue, f.disabledWhenNot, 'disabledWhen'],
+    ] as const) {
+      if (!condField) continue
+      let matchValue: unknown = condValue ?? ''
+      const raw = condValue?.trim()
+      if (raw === 'true') matchValue = true
+      else if (raw === 'false') matchValue = false
+      else if (raw !== '' && raw !== undefined && !isNaN(Number(raw))) matchValue = Number(raw)
+      base[target] = {
+        field: condField,
+        equals: matchValue,
+        ...(condNot ? { not: true } : {}),
       }
     }
 
