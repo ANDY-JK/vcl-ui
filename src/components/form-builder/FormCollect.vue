@@ -36,7 +36,7 @@ import { getActiveFormStore, type FormStore } from './designer/store'
 import { encodeShareCode, shareShortLink, shareFullLink } from './designer/share'
 import QRCode from 'qrcode/lib/browser.js'
 import { isLayoutField } from './fieldRegistry'
-import { buildHeaderMap, parseCsvRecords, parseJsonRecords, normalizeRecords, dedupeRecords } from './importRecords'
+import { buildHeaderMap, normalizeRecords, dedupeRecords, readFileToRows } from './importRecords'
 
 const t = useT()
 
@@ -502,7 +502,7 @@ async function onImportFile(e: Event): Promise<void> {
   importError.value = ''
   try {
     const name = file.name.toLowerCase()
-    const rows = await readFileToRows(file, name)
+    const rows = await readFileToRows(file, name, importFields.value)
     const headerMap = buildHeaderMap(importFields.value)
     const { records: parsedRecs, invalid } = normalizeRecords(rows, headerMap, importFields.value)
     if (!parsedRecs.length) {
@@ -522,29 +522,6 @@ async function onImportFile(e: Event): Promise<void> {
   } finally {
     importing.value = false
   }
-}
-
-/** 文件 → 二维行（JSON 转为 {label/key} 对象行） */
-async function readFileToRows(file: File, name: string): Promise<string[][]> {
-  const text = await file.text()
-  if (name.endsWith('.json')) {
-    const recs = parseJsonRecords(text)
-    // JSON 记录：表头取字段 key/label 并集，值为 String（cleanCell 再按类型清洗）
-    const keys = Array.from(new Set(recs.flatMap((r) => Object.keys(r))))
-    const headerMap = buildHeaderMap(importFields.value)
-    const keyToHeader: Record<string, string> = {}
-    for (const k of keys) keyToHeader[k] = headerMap[k] ?? k
-    const rows: string[][] = [keys.map((k) => keyToHeader[k])]
-    for (const rec of recs) rows.push(keys.map((k) => (rec[k] === undefined ? '' : String(rec[k]))))
-    return rows
-  }
-  if (name.endsWith('.csv')) return parseCsvRecords(text)
-  // Excel（.xlsx/.xls）：动态加载 xlsx 库
-  const XLSX = await import('xlsx')
-  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
-  const ws = wb.Sheets[wb.SheetNames[0]]
-  if (!ws) return []
-  return XLSX.utils.sheet_to_json<string[]>(ws, { header: 1, raw: false }) as string[][]
 }
 
 /** 确认导入：批量写入存储 */

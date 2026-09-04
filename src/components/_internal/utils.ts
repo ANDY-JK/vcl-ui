@@ -635,3 +635,17 @@ export function rgbToHex(r: number, g: number, b: number): string {
 export function isHexColor(str: unknown): boolean {
   return isValidHex(toStr(str).trim())
 }
+
+/**
+ * 浅比较两个对象（避免 JSON.stringify 性能损耗）。
+ * 从 FormBuilder 下沉为通用工具（表单数据变化检测用）。
+ */
+export function shallowEqual(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
+  if (aKeys.length !== bKeys.length) return false
+  for (const k of aKeys) {
+    if (a[k] !== b[k]) return false
+  }
+  return true
+}

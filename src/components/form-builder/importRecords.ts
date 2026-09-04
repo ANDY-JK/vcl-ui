@@ -222,3 +222,34 @@ export function dedupeRecords(records: Record<string, unknown>[], existing: Coll
   }
   return { toImport, skipped }
 }
+
+// ════════════════════════════════════════
+// 文件 → 二维行（供 FormCollect 导入链路；JSON 转为 {label/key} 对象行）
+// ════════════════════════════════════════
+
+/** 文件 → 二维行：JSON 转 {label/key} 对象行；CSV 原样；Excel 动态加载 xlsx 库 */
+export async function readFileToRows(
+  file: File,
+  name: string,
+  importFields: { key?: string; label?: string; type?: string }[],
+): Promise<string[][]> {
+  const text = await file.text()
+  if (name.endsWith('.json')) {
+    const recs = parseJsonRecords(text)
+    // JSON 记录：表头取字段 key/label 并集，值为 String（cleanCell 再按类型清洗）
+    const keys = Array.from(new Set(recs.flatMap((r) => Object.keys(r))))
+    const headerMap = buildHeaderMap(importFields)
+    const keyToHeader: Record<string, string> = {}
+    for (const k of keys) keyToHeader[k] = headerMap[k] ?? k
+    const rows: string[][] = [keys.map((k) => keyToHeader[k])]
+    for (const rec of recs) rows.push(keys.map((k) => (rec[k] === undefined ? '' : String(rec[k]))))
+    return rows
+  }
+  if (name.endsWith('.csv')) return parseCsvRecords(text)
+  // Excel（.xlsx/.xls）：动态加载 xlsx 库
+  const XLSX = await import('xlsx')
+  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
+  const ws = wb.Sheets[wb.SheetNames[0]]
+  if (!ws) return []
+  return XLSX.utils.sheet_to_json<string[]>(ws, { header: 1, raw: false }) as string[][]
+}

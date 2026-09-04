@@ -18,6 +18,7 @@
 
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { shallowEqual } from '@/components/_internal/utils'
 import { useFormSchema, isLayoutField, isFieldVisible } from './useFormSchema'
 import { useFormValidator } from './useFormValidator'
 import { useFormStorage } from './useFormStorage'
@@ -212,17 +213,6 @@ watch(
   },
   { deep: true },
 )
-
-/** 浅比较两个 FormData 对象（避免 JSON.stringify 性能损耗） */
-function shallowEqual(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
-  const aKeys = Object.keys(a)
-  const bKeys = Object.keys(b)
-  if (aKeys.length !== bKeys.length) return false
-  for (const k of aKeys) {
-    if (a[k] !== b[k]) return false
-  }
-  return true
-}
 
 // ════════════════════════════════════════
 // 存储持久化（P2 — 接入 useFormStorage）
