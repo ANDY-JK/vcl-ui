@@ -527,6 +527,9 @@ export default {
     statTotal: '总记录',
     statToday: '今日',
     statFields: '字段数',
+    deleteRecordTitle: '删除记录',
+    deleteRecordConfirm: '确定删除这条收集记录？删除后不可恢复。',
+    collectSubmitFail: '提交失败：{err}',
     // FormDataSummary 数据汇总弹窗
     formDataTitle: '「{name}」数据',
     latestSubmit: '最新提交',

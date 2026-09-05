@@ -532,6 +532,9 @@ export default {
     statTotal: 'Total records',
     statToday: 'Today',
     statFields: 'Fields',
+    deleteRecordTitle: 'Delete record',
+    deleteRecordConfirm: 'Delete this collected record? This cannot be undone.',
+    collectSubmitFail: 'Submit failed: {err}',
     // FormDataSummary summary dialog
     formDataTitle: '"{name}" data',
     latestSubmit: 'Latest',

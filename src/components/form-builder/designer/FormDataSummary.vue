@@ -5,11 +5,13 @@
  * 从「我的表单」抽屉的「数据」按钮打开：展示该表单的提交数/最新提交/记录明细，
  * 支持 CSV 导出（轻量，避免引入 xlsx 依赖；复杂导出走 FormCollect 的 Excel）。
  */
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import IconSvg from '@/components/basic/IconSvg.vue'
 import Button from '@/components/basic/Button.vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
 import { downloadBlob } from '@/components/_internal/utils'
+import { computePageButtons } from '@/components/form/utils/pagination'
 import type { CollectRecord } from './types'
 import { getActiveFormStore, type FormStore, type FormMetaItem } from './store'
 
@@ -52,24 +54,41 @@ watch(
   { immediate: true },
 )
 
-/** 汇总统计 */
-const totalCount = () => records.value.length
-const latest = () => records.value[0] ?? null
+/** 汇总统计（computed：模板不可重复调用函数，500 条记录会 O(行×记录×字段) 卡死） */
+const totalCount = computed(() => records.value.length)
+const latest = computed(() => records.value[0] ?? null)
 
-/** 合并所有记录的字段 key（按出现顺序），用于 CSV 表头 */
-function allKeys(): string[] {
-  const keys: string[] = []
-  const seen = new Set<string>()
+/** 合并所有记录的字段 key（按出现顺序，computed 单次计算） */
+const keys = computed<string[]>(() => {
+  const seen: string[] = []
+  const set = new Set<string>()
   for (const r of records.value) {
     for (const k of Object.keys(r.data)) {
-      if (!seen.has(k)) {
-        seen.add(k)
-        keys.push(k)
+      if (!set.has(k)) {
+        set.add(k)
+        seen.push(k)
       }
     }
   }
-  return keys
-}
+  return seen
+})
+
+// ════════════════════════════════════════
+// 明细表分页（500 条全量渲染会卡死弹窗）
+// ════════════════════════════════════════
+
+const PAGE_SIZE = 20
+const currentPage = ref(1)
+const totalPages = computed(() => Math.ceil(records.value.length / PAGE_SIZE) || 1)
+const pagedRecords = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE
+  return records.value.slice(start, start + PAGE_SIZE)
+})
+const pageButtons = computed<number[]>(() => computePageButtons(currentPage.value, totalPages.value))
+// 记录刷新后页码回位（可能不足当前页）
+watch(records, () => {
+  currentPage.value = 1
+})
 
 function cellValue(v: unknown): string {
   if (Array.isArray(v)) return v.join(', ')
@@ -78,15 +97,15 @@ function cellValue(v: unknown): string {
   return String(v)
 }
 
-/** CSV 导出（UTF-8 BOM 保证 Excel 中文不乱码） */
+/** CSV 导出（UTF-8 BOM 保证 Excel 中文不乱码；全量记录不随分页截断） */
 function exportCsv(): void {
-  const keys = allKeys()
-  const header = ['提交时间', ...keys]
+  const ks = keys.value
+  const header = ['提交时间', ...ks]
   const escape = (s: string): string =>
     s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s
   const lines = [header.map(escape).join(',')]
   for (const r of records.value) {
-    lines.push([r.time, ...keys.map((k) => escape(cellValue(r.data[k])))].join(','))
+    lines.push([r.time, ...ks.map((k) => escape(cellValue(r.data[k])))].join(','))
   }
   const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
   downloadBlob(blob, `${props.item?.name ?? 'form'}-${records.value.length}${t('fbd.countSuffix')}.csv`)
@@ -110,31 +129,47 @@ function exportCsv(): void {
         <!-- 统计卡 -->
         <div class="ld-data-stats">
           <div class="ld-data-stat">
-            <span class="ld-data-stat-num">{{ totalCount() }}</span>
+            <span class="ld-data-stat-num">{{ totalCount }}</span>
             <span class="ld-data-stat-label">{{ t('fbd.statTotal') }}</span>
           </div>
           <div class="ld-data-stat">
-            <span class="ld-data-stat-num">{{ latest()?.time }}</span>
+            <span class="ld-data-stat-num">{{ latest?.time }}</span>
             <span class="ld-data-stat-label">{{ t('fbd.latestSubmit') }}</span>
           </div>
         </div>
 
-        <!-- 记录明细（紧凑表格） -->
+        <!-- 记录明细（紧凑表格，分页渲染防大数据卡死） -->
         <div class="ld-data-table-wrap">
           <table class="ld-data-table">
             <thead>
               <tr>
                 <th>{{ t('fbd.submittedAt') }}</th>
-                <th v-for="k in allKeys()" :key="k">{{ k }}</th>
+                <th v-for="k in keys" :key="k">{{ k }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in records" :key="r.id">
+              <tr v-for="r in pagedRecords" :key="r.id">
                 <td class="ld-data-time">{{ r.time }}</td>
-                <td v-for="k in allKeys()" :key="k">{{ cellValue(r.data[k]) }}</td>
+                <td v-for="k in keys" :key="k">{{ cellValue(r.data[k]) }}</td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- 分页控件 -->
+        <div v-if="totalPages > 1" class="ld-data-page">
+          <button class="ld-data-page-btn" :disabled="currentPage === 1" @click="currentPage--">
+            <IconSvg type="chevron-left" size="xs" />
+          </button>
+          <template v-for="(p, i) in pageButtons" :key="i">
+            <span v-if="p === -1" class="ld-data-page-ellipsis">…</span>
+            <button v-else class="ld-data-page-btn" :class="{ active: p === currentPage }" @click="currentPage = p">
+              {{ p }}
+            </button>
+          </template>
+          <button class="ld-data-page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
+            <IconSvg type="chevron-right" size="xs" />
+          </button>
         </div>
       </template>
     </div>

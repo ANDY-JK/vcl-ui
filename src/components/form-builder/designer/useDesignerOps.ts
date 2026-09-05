@@ -22,15 +22,26 @@ import {
   type DesignerContainerConfig,
   type DesignerNode,
   type DesignerNodeType,
+  type FormMeta,
 } from './types'
 
 const t = useT()
 
+/** 快照条目：meta=null 表示该历史操作不涉及表单设置（恢复时不动 meta） */
+export interface DesignerSnapshot {
+  nodes: DesignerNode[]
+  meta: FormMeta | null
+}
+
 export interface DesignerOpsHost {
   /** 当前画布节点（getter 保持响应） */
   nodes: () => DesignerNode[]
+  /** 当前表单元信息（撤销覆盖 meta 用） */
+  meta: () => FormMeta
   /** 画布整体替换（受控组件经 emit 回写） */
   patch: (list: DesignerNode[]) => void
+  /** 画布 + meta 整体替换（undo/redo 恢复用；meta=null 时不动 meta） */
+  patchAll: (nodes: DesignerNode[], meta: FormMeta | null) => void
   /** 主选中节点 id */
   selectedId: Ref<string | null>
   /** 多选集合（Ctrl/Cmd+点选） */
@@ -44,35 +55,49 @@ export function useDesignerOps(host: DesignerOpsHost) {
   // 撤销/重做
   // ════════════════════════════════════════
 
-  const undoStack = ref<DesignerNode[][]>([])
-  const redoStack = ref<DesignerNode[][]>([])
+  const undoStack = ref<DesignerSnapshot[]>([])
+  const redoStack = ref<DesignerSnapshot[]>([])
   const canUndo = computed(() => undoStack.value.length > 0)
   const canRedo = computed(() => redoStack.value.length > 0)
 
   /** 当前正在做「属性编辑」的字段 id（用于把连续属性编辑合并为一个撤销单元） */
   let editingPropId: string | null = null
+  /** 当前正在连续编辑的 meta 键（同键合并为一个撤销单元） */
+  let editingMetaKey: string | null = null
 
-  /** 记录快照（每次操作前调用） */
+  /** 记录快照（每次结构操作前调用；nodes+meta 整组入栈） */
   function snapshot(): void {
-    undoStack.value.push(deepClone(host.nodes()))
+    undoStack.value.push({ nodes: deepClone(host.nodes()), meta: deepClone(host.meta()) })
     if (undoStack.value.length > 50) undoStack.value.shift()
     redoStack.value = []
-    // 结构操作打断了属性编辑的连续性，重置跟踪，下次属性编辑重新快照
+    // 结构操作打断了连续编辑，重置跟踪，下次编辑重新快照
     editingPropId = null
+    editingMetaKey = null
+  }
+
+  /**
+   * meta 编辑专用快照（表单设置面板 patchMeta 调用）：
+   * 同一键的连续输入合并为一个撤销单元（首次编辑时快照一次）
+   */
+  function snapshotMeta(key: string): void {
+    if (editingMetaKey !== key) {
+      snapshot()
+      editingMetaKey = key
+    }
   }
 
   function undo(): void {
     if (!undoStack.value.length) return
-    redoStack.value.push(deepClone(host.nodes()))
+    redoStack.value.push({ nodes: deepClone(host.nodes()), meta: deepClone(host.meta()) })
     const prev = undoStack.value.pop()!
-    host.patch(prev)
+    host.patchAll(prev.nodes, prev.meta)
   }
 
   function redo(): void {
     if (!redoStack.value.length) return
-    undoStack.value.push(deepClone(host.nodes()))
+    undoStack.value.push({ nodes: deepClone(host.nodes()), meta: deepClone(host.meta()) })
     const next = redoStack.value.pop()!
-    host.patch(next)
+    host.patchAll(next.nodes, next.meta)
   }
 
   // ════════════════════════════════════════
@@ -284,6 +309,7 @@ export function useDesignerOps(host: DesignerOpsHost) {
     canUndo,
     canRedo,
     snapshot,
+    snapshotMeta,
     undo,
     redo,
     addNode,

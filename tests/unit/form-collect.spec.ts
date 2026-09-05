@@ -121,3 +121,46 @@ describe('FormCollect · 清空确认', () => {
     }
   })
 })
+
+describe('FormCollect · 单条删除确认（真实使用审查第 4 项）', () => {
+  it('点单条删除先弹确认，确认后才真正删除', async () => {
+    const store = memoryStore([rec('r1', '张三', '2026-01-01 09:00:00')])
+    const w = mountCollect(store)
+    await flushPromises()
+    // 展开记录列表
+    const viewBtn = w.findAll('button').find((b) => b.text().includes('已收集'))
+    await viewBtn!.trigger('click')
+    await nextTick()
+    // 点垃圾桶（无确认文案的删除按钮）
+    const delBtn = w.find('.ldc-del-btn')
+    expect(delBtn.exists()).toBe(true)
+    await delBtn.trigger('click')
+    await nextTick()
+    // 未确认前记录仍在
+    expect(store.records.length).toBe(1)
+    // 确认弹窗出现 → 确认
+    const confirmBtn = w.findAll('.confirm-btn').find((b) => !b.text().includes('取消'))
+    expect(confirmBtn).toBeTruthy()
+    await confirmBtn!.trigger('click')
+    await nextTick()
+    expect(store.records.length).toBe(0)
+    w.unmount()
+  })
+})
+
+describe('FormCollect · 提交失败反馈（真实使用审查第 4 项）', () => {
+  it('appendRecord 抛错时显示错误提示而非静默', async () => {
+    const store = memoryStore()
+    store.appendRecord = (() => Promise.reject(new Error('网络错误'))) as never
+    const w = mountCollect(store)
+    await flushPromises()
+    const input = w.find('input.f-input')
+    await input.setValue('张三')
+    await w.find('form.fb-form').trigger('submit')
+    await flushPromises()
+    // 错误反馈区可见且含报错信息；成功提示不出现
+    expect(w.find('.ldc-feedback.ldc-error, [role="alert"]').exists()).toBe(true)
+    expect(w.find('.ldc-ok').exists()).toBe(false)
+    w.unmount()
+  })
+})

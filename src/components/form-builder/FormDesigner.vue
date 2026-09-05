@@ -79,9 +79,7 @@ const emit = defineEmits<{
   saved: [item: FormMetaItem]
 }>()
 
-// ════════════════════════════════════════
-// 节点数据（兼容 v2 fields → v3 nodes）
-// ════════════════════════════════════════
+// ══ 节点数据（兼容 v2 fields → v3 nodes） ══
 
 /** 是否曾收到过非空 nodes（v3 模式）：此后清空也不再回退 fields，避免旧 fields 复活画布 */
 const hasOwnNodes = ref(false)
@@ -103,9 +101,7 @@ function patchNodes(list: DesignerNode[]): void {
   emit('update:fields', list) // 向后兼容
 }
 
-// ════════════════════════════════════════
-// 状态
-// ════════════════════════════════════════
+// ══ 状态 ══
 
 const selectedId = ref<string | null>(null)
 /** 多选集合（Ctrl/Cmd+点选进入；空 = 单选模式） */
@@ -160,14 +156,13 @@ onUnmounted(() => {
   if (_tipTimer) clearTimeout(_tipTimer)
 })
 
-// ════════════════════════════════════════
-// 节点操作与历史（撤销/重做 + 增删改 + 剪贴板）— 逻辑在 useDesignerOps
-// ════════════════════════════════════════
+// ══ 节点操作与历史（撤销/重做 + 增删改 + 剪贴板）— 逻辑在 useDesignerOps ══
 
 const {
   canUndo,
   canRedo,
   snapshot,
+  snapshotMeta,
   undo,
   redo,
   addNode,
@@ -186,15 +181,18 @@ const {
   onLabelChange,
 } = useDesignerOps({
   nodes: () => currentNodes.value,
+  meta: () => props.meta,
   patch: patchNodes,
+  patchAll: (nodes, meta) => {
+    patchNodes(nodes)
+    if (meta) emit('update:meta', meta)
+  },
   selectedId,
   selectedIds,
   showTip,
 })
 
-// ════════════════════════════════════════
-// 草稿自动保存（P2-13）：空白启动恢复上次未保存设计，变更防抖落盘
-// ════════════════════════════════════════
+// ══ 草稿自动保存（P2-13）：空白启动恢复上次未保存设计，变更防抖落盘 ══
 
 const { discardDraft } = useDesignerAutosave({
   getNodes: () => currentNodes.value,
@@ -207,9 +205,7 @@ const { discardDraft } = useDesignerAutosave({
   showTip,
 })
 
-// ════════════════════════════════════════
-// 表单管理（保存 / 我的表单 / 存储 / 分享）— 逻辑在 useFormManager
-// ════════════════════════════════════════
+// ══ 表单管理（保存 / 我的表单 / 存储 / 分享）— 逻辑在 useFormManager ══
 
 const manager = useFormManager({
   nodes: () => currentNodes.value,
@@ -279,9 +275,7 @@ async function copyShareLink(): Promise<void> {
   showTip(ok ? t('fbd.shareLinkCopied') : t('fbd.copyFail'))
 }
 
-// ════════════════════════════════════════
-// 导入/导出 — 逻辑在 useFormIO
-// ════════════════════════════════════════
+// ══ 导入/导出 — 逻辑在 useFormIO ══
 
 const {
   exportJson,
@@ -307,9 +301,7 @@ function selectFromOutline(id: string) {
   activeTab.value = 'design'
 }
 
-// ════════════════════════════════════════
-// 删除确认流（容器带子节点 / 多选删除需确认）
-// ════════════════════════════════════════
+// ══ 删除确认流（容器带子节点 / 多选删除需确认） ══
 
 /** 待删除节点 id（容器带子节点时需确认） */
 const pendingRemoveId = ref<string | null>(null)
@@ -357,9 +349,7 @@ function onConfirmRemoveBatch(): void {
   if (ids.length) doRemoveNodes(ids)
 }
 
-// ════════════════════════════════════════
-// 键盘快捷键
-// ════════════════════════════════════════
+// ══ 键盘快捷键（画布聚焦生效） ══
 
 function onCanvasKeydown(e: KeyboardEvent): void {
   const tag = (e.target as HTMLElement)?.tagName
@@ -369,6 +359,18 @@ function onCanvasKeydown(e: KeyboardEvent): void {
   if (e.key === '?') {
     e.preventDefault()
     showShortcuts.value = !showShortcuts.value
+    return
+  }
+
+  // 撤销/重做不依赖选中节点
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    e.preventDefault()
+    undo()
+    return
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+    e.preventDefault()
+    redo()
     return
   }
 
@@ -387,12 +389,6 @@ function onCanvasKeydown(e: KeyboardEvent): void {
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
     e.preventDefault()
     pasteNode(id)
-  } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-    e.preventDefault()
-    undo()
-  } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-    e.preventDefault()
-    redo()
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') {
     e.preventDefault()
     moveNode(id, -1)
@@ -402,9 +398,7 @@ function onCanvasKeydown(e: KeyboardEvent): void {
   }
 }
 
-// ════════════════════════════════════════
-// 预览 & Schema 查看
-// ════════════════════════════════════════
+// ══ 预览 & Schema 查看 ══
 
 const previewSchema = computed(() => toFormSchema(currentNodes.value, props.meta))
 
@@ -424,9 +418,7 @@ watch(activeTab, (v) => {
   if (v === 'preview') previewData.value = {}
 })
 
-// ════════════════════════════════════════
-// 清空
-// ════════════════════════════════════════
+// ══ 清空 ══
 
 const clearAllVisible = ref(false)
 
@@ -443,12 +435,11 @@ function onConfirmClearAll(): void {
 }
 
 function patchMeta(p: Partial<FormMeta>): void {
+  snapshotMeta(Object.keys(p)[0] ?? '') // 表单设置进撤销栈（同键连续编辑合并）
   emit('update:meta', { ...props.meta, ...p })
 }
 
-// ════════════════════════════════════════
-// 统计
-// ════════════════════════════════════════
+// ══ 统计 ══
 
 const nodeCount = computed(() => flattenNodes(currentNodes.value).length)
 const containerCount = computed(() => flattenNodes(currentNodes.value).filter((n) => isContainerNode(n)).length)

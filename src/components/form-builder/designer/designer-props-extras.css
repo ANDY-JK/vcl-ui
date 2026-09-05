@@ -316,3 +316,46 @@
 .ld-data-time {
   color: var(--color-text-secondary, #64748b);
 }
+
+/* ── 汇总弹窗分页（大数据量明细分页渲染） ── */
+.ld-data-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--color-border-light, #f1f5f9);
+  margin-top: 8px;
+}
+.ld-data-page-btn {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-surface, #fff);
+  color: var(--color-text-secondary, #64748b);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ld-data-page-btn:hover:not(:disabled) {
+  border-color: var(--color-primary, #3b82f6);
+  color: var(--color-primary, #3b82f6);
+}
+.ld-data-page-btn.active {
+  background: var(--color-primary, #3b82f6);
+  border-color: var(--color-primary, #3b82f6);
+  color: #fff;
+}
+.ld-data-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ld-data-page-ellipsis {
+  color: var(--color-text-muted, #94a3b8);
+  padding: 0 2px;
+}

@@ -17,6 +17,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { formatDateZh, formatDateTimeZh } from '@/components/form/utils/date-utils'
+import { computePageButtons } from '@/components/form/utils/pagination'
 import FormBuilder from './FormBuilder.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Button from '@/components/basic/Button.vue'
@@ -74,9 +75,7 @@ const emit = defineEmits<{
   submit: [data: Record<string, unknown>, record: CollectRecord]
 }>()
 
-// ════════════════════════════════════════
-// 数据与校验
-// ════════════════════════════════════════
+// ══ 数据与校验 ══
 const formData = ref<Record<string, unknown>>({})
 const errorMsg = ref('')
 const okMsg = ref('')
@@ -86,9 +85,7 @@ const records = ref<CollectRecord[]>([])
 /** 组件根节点（模板 ref，滚动定位限定在当前实例内） */
 const rootEl = ref<HTMLElement | null>(null)
 
-// ════════════════════════════════════════
-// 顶部工具栏（分享 / 新建）
-// ════════════════════════════════════════
+// ══ 顶部工具栏（分享 / 新建） ══
 
 /** 分享弹窗状态 */
 const shareVisible = ref(false)
@@ -184,9 +181,7 @@ function startNewRecord(): void {
   })
 }
 
-// ════════════════════════════════════════
-// 记录级查看 / 审核（旧版 DynamicForm 三模式承接：view=只读 / review=可编辑+提交）
-// ════════════════════════════════════════
+// ══ 记录级查看 / 审核（旧版 DynamicForm 三模式承接：view=只读 / review=可编辑+提交） ══
 
 /** 记录操作弹窗类型：null=关闭 / 'view'=查看 / 'review'=审核 */
 const recordModal = ref<'view' | 'review' | null>(null)
@@ -292,9 +287,7 @@ const stats = computed(() => [
   },
 ])
 
-// ════════════════════════════════════════
-// 提交
-// ════════════════════════════════════════
+// ══ 提交 ══
 async function handleSubmit(data: Record<string, unknown>): Promise<void> {
   errorMsg.value = ''
 
@@ -303,8 +296,14 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
     time: formatDateTimeZh(),
     data: { ...data },
   }
-  await props.store.appendRecord(storageKey.value, record)
-  await refreshRecords()
+  try {
+    await props.store.appendRecord(storageKey.value, record)
+    await refreshRecords()
+  } catch (e) {
+    // 云端模式写入失败若静默，用户会误以为提交成功
+    errorMsg.value = t('fbd.collectSubmitFail', { err: e instanceof Error ? e.message : String(e) })
+    return
+  }
   emit('submit', { ...data }, record)
   okMsg.value = t('formBuilder.submitSuccess')
   formData.value = {}
@@ -318,9 +317,7 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
   }, 3000)
 }
 
-// ════════════════════════════════════════
-// 记录管理 + 搜索筛选
-// ════════════════════════════════════════
+// ══ 记录管理 + 搜索筛选 ══
 const showRecords = ref(false)
 const searchQuery = ref('')
 
@@ -342,9 +339,7 @@ watch(searchQuery, () => {
   currentPage.value = 1
 })
 
-// ════════════════════════════════════════
-// 分页
-// ════════════════════════════════════════
+// ══ 分页 ══
 const PAGE_SIZE = 20
 const currentPage = ref(1)
 
@@ -357,47 +352,46 @@ const pagedRecords = computed(() => {
   return filteredRecords.value.slice(start, start + PAGE_SIZE)
 })
 
-/** 分页按钮列表 */
-const pageButtons = computed(() => {
-  const pages: number[] = []
-  const tp = totalPages.value
-  const cp = currentPage.value
-  if (tp <= 7) {
-    for (let i = 1; i <= tp; i++) pages.push(i)
-  } else {
-    pages.push(1)
-    if (cp > 4) pages.push(-1) // 省略号
-    for (let i = Math.max(2, cp - 1); i <= Math.min(tp - 1, cp + 1); i++) pages.push(i)
-    if (cp < tp - 3) pages.push(-1)
-    pages.push(tp)
-  }
-  return pages
-})
+/** 分页按钮列表（纯函数在 form/utils/pagination，与汇总弹窗共用） */
+const pageButtons = computed(() => computePageButtons(currentPage.value, totalPages.value))
 
-async function removeRecord(id: string): Promise<void> {
-  await props.store.removeRecord(storageKey.value, id)
-  await refreshRecords()
-}
-
+/** 待删除的记录 id（单条删除需确认，误删不可恢复） */
+const pendingDeleteId = ref<string | null>(null)
+const confirmTitle = ref('')
 // 确认弹窗状态
 const confirmVisible = ref(false)
 const confirmMessage = ref('')
 
+/** 单条删除：先弹确认，onConfirmClear 按 pendingDeleteId 分流 */
+function removeRecord(id: string): void {
+  pendingDeleteId.value = id
+  confirmTitle.value = t('fbd.deleteRecordTitle')
+  confirmMessage.value = t('fbd.deleteRecordConfirm')
+  confirmVisible.value = true
+}
+
 async function clearRecords(): Promise<void> {
   if (!records.value.length) return
+  pendingDeleteId.value = null
+  confirmTitle.value = t('formBuilder.clearRecordsTitle')
   confirmMessage.value = t('formBuilder.clearRecordsTitle') + ` (${records.value.length} ${t('formBuilder.records')})`
   confirmVisible.value = true
 }
 
 async function onConfirmClear(): Promise<void> {
   confirmVisible.value = false
+  const id = pendingDeleteId.value
+  pendingDeleteId.value = null
+  if (id) {
+    await props.store.removeRecord(storageKey.value, id)
+    await refreshRecords()
+    return
+  }
   await props.store.clearRecords(storageKey.value)
   records.value = []
 }
 
-// ════════════════════════════════════════
-// Excel 导出
-// ════════════════════════════════════════
+// ══ Excel 导出 ══
 const exporting = ref(false)
 
 async function exportExcel(): Promise<void> {
@@ -445,9 +439,7 @@ async function exportExcel(): Promise<void> {
   }
 }
 
-// ════════════════════════════════════════
-// 批量导入（P1-8：JSON / CSV / Excel）
-// ════════════════════════════════════════
+// ══ 批量导入（P1-8：JSON / CSV / Excel） ══
 const importing = ref(false)
 const importVisible = ref(false)
 const importError = ref('')
@@ -707,12 +699,12 @@ async function confirmImport(): Promise<void> {
       @confirm="confirmImport"
     />
 
-    <!-- 确认弹窗 -->
+    <!-- 确认弹窗（清空全部 / 单条删除共用，按 pendingDeleteId 分流） -->
     <ConfirmModal
       :visible="confirmVisible"
-      :title="t('formBuilder.clearRecordsTitle')"
+      :title="confirmTitle"
       :message="confirmMessage"
-      :confirm-text="t('fbd.clear')"
+      :confirm-text="t('common.delete')"
       variant="danger"
       @update:visible="confirmVisible = $event"
       @confirm="onConfirmClear"

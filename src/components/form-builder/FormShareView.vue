@@ -14,7 +14,7 @@
  * <FormShareView :design="design" />
  * ```
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { formatDateTimeZh } from '@/components/form/utils/date-utils'
 import FormBuilder from './FormBuilder.vue'
@@ -106,6 +106,22 @@ const submitting = ref(false)
 const submitted = ref(false)
 const error = ref('')
 
+/** 填写草稿 key（fd_share_ 前缀 + 分享码/字段指纹）：刷新/误关后自动恢复，提交成功由 FormBuilder 清除 */
+const draftKey = computed(() => (parsed.value ? `fd_share_${props.code || collectKey.value || 'design'}` : ''))
+
+/** 有未提交内容时拦截刷新/关闭（提交成功页与空表单不拦截） */
+function onBeforeUnload(e: BeforeUnloadEvent): void {
+  const dirty = Object.values(formData.value).some(
+    (v) => v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0),
+  )
+  if (dirty && !submitted.value) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
+onMounted(() => window.addEventListener('beforeunload', onBeforeUnload))
+onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload))
+
 async function handleSubmit(data: Record<string, unknown>): Promise<void> {
   if (!parsed.value) return
   submitting.value = true
@@ -169,7 +185,7 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
           <h2 v-if="title || formSchema.title" class="fsv-title">{{ title || formSchema.title }}</h2>
           <p v-if="formSchema.description" class="fsv-desc">{{ formSchema.description }}</p>
           <p v-if="error" class="fsv-error" role="alert">{{ error }}</p>
-          <FormBuilder v-model="formData" :schema="formSchema" @submit="handleSubmit" />
+          <FormBuilder v-model="formData" :schema="formSchema" :storage-key="draftKey" @submit="handleSubmit" />
         </template>
       </template>
     </div>
