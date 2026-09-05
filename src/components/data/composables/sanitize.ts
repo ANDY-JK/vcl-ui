@@ -8,11 +8,17 @@ const _allowedTags = new Set([
   'EM',
   'U',
   'S',
+  'DEL',
+  'STRIKE',
+  'SUB',
+  'SUP',
   'CODE',
   'PRE',
   'BR',
+  'HR',
   'SPAN',
   'DIV',
+  'BLOCKQUOTE',
   'P',
   'H1',
   'H2',
@@ -58,6 +64,9 @@ const _dangerousCss = [
   /@import/i,
   /vbscript:/i,
 ]
+/** href 与 src 分开白名单：data:image 仅对图片 src 有意义，链接 href 不放行 */
+const _hrefRe = /^(https?:|mailto:|#)/i
+const _srcRe = /^(https?:|data:image\/|mailto:|#)/i
 /** 危险标签整体移除（含内容） */
 const _dangerTags = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META', 'FORM', 'INPUT', 'BUTTON'])
 
@@ -84,7 +93,10 @@ export function sanitizeHTML(html: string): string {
         continue
       }
       const val = node.getAttribute(attr) || ''
-      if ((attr === 'href' || attr === 'src') && !/^(https?:|data:image\/|mailto:|#)/i.test(val)) {
+      if (attr === 'href' && !_hrefRe.test(val)) {
+        node.removeAttribute(attr)
+      }
+      if (attr === 'src' && !_srcRe.test(val)) {
         node.removeAttribute(attr)
       }
       // style 属性过滤危险 CSS 值（expression()/javascript:/url(javascript:)等）

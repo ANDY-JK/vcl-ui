@@ -48,8 +48,8 @@ function isEmptyValue(_field: FormField, v: unknown): boolean {
   return false
 }
 
-/** 去除 HTML 标签与实体，得到纯文本（richtext 字符数校验用） */
-function htmlToPlainText(html: string): string {
+/** 去除 HTML 标签与实体，得到纯文本（richtext 字符数校验 + 编辑器字数统计共用，保证同口径） */
+export function htmlToPlainText(html: string): string {
   return html
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/g, ' ')

@@ -13,15 +13,16 @@ import { sanitizeHTML } from '@/components/data/composables/sanitize'
 
 const rendererSrc = readFileSync(resolve(import.meta.dirname, '../../src/components/form-builder/FormRenderer.vue'), 'utf-8')
 // v3.1 拆分后富文本逻辑迁至 renderer/RendererRichtext.vue（源码锁定向导随迁；挂载行为测试仍走 FormRenderer 集成路径）
-const richtextSrc = readFileSync(
-  resolve(import.meta.dirname, '../../src/components/form-builder/renderer/RendererRichtext.vue'),
-  'utf-8',
-)
+// 2026-09 full 工具栏：逻辑再下沉 renderer/useRichtext.ts、UI 拆 renderer/RichtextToolbar.vue，锁定向覆盖全部四个文件
+const richtextDir = resolve(import.meta.dirname, '../../src/components/form-builder/renderer')
+const richtextSrc = readFileSync(resolve(richtextDir, 'RendererRichtext.vue'), 'utf-8')
+const toolbarSrc = readFileSync(resolve(richtextDir, 'RichtextToolbar.vue'), 'utf-8')
+const composableSrc = readFileSync(resolve(richtextDir, 'useRichtext.ts'), 'utf-8')
 
-function mountRichtext(modelValue = '<p>正文</p>') {
+function mountRichtext(modelValue = '<p>正文</p>', fieldProps: Record<string, unknown> = {}) {
   return mount(FormRenderer, {
     props: {
-      field: { type: 'richtext', key: 'c', label: '正文', props: {}, modelValue },
+      field: { type: 'richtext', key: 'c', label: '正文', props: fieldProps, modelValue },
       modelValue,
     },
     global: { stubs: { FieldError: true } },
@@ -29,28 +30,39 @@ function mountRichtext(modelValue = '<p>正文</p>') {
 }
 
 describe('富文本源码锁定（防回退到 v-html 反模式）', () => {
-  it('FormRenderer 与 RendererRichtext 全文件零 v-html（v-html 响应式绑定 = IME 打断根因）', () => {
+  it('renderer 目录四文件 + FormRenderer 全部零 v-html（v-html 响应式绑定 = IME 打断根因）', () => {
     expect(rendererSrc).not.toContain('v-html')
     expect(richtextSrc).not.toContain('v-html')
+    expect(toolbarSrc).not.toContain('v-html')
+    expect(composableSrc).not.toContain('v-html')
   })
 
   it('IME 合成保护：合成期间 input 不 emit，合成结束才同步', () => {
-    expect(richtextSrc).toMatch(/function onRichtextInput[\s\S]*?if \(richtextComposing\.value\) return/)
-    expect(richtextSrc).toMatch(
-      /function onRichtextCompositionEnd[\s\S]*?richtextComposing\.value = false[\s\S]*?richtextSyncFromDom\(\)/,
+    expect(composableSrc).toMatch(/function onInput\(\)[\s\S]*?if \(composing\.value\) return/)
+    expect(composableSrc).toMatch(
+      /function onCompositionEnd\(\)[\s\S]*?composing\.value = false[\s\S]*?syncFromDom\(\)/,
     )
   })
 
-  it('写入唯一出口 richtextSyncFromDom 必须消毒', () => {
-    expect(richtextSrc).toMatch(/function richtextSyncFromDom[\s\S]*?const html = sanitizeHTML\(el\.innerHTML\)/)
+  it('写入唯一出口 syncFromDom 必须消毒', () => {
+    expect(composableSrc).toMatch(/function syncFromDom\(\)[\s\S]*?const html = sanitizeHTML\(el\.innerHTML\)/)
     // 回声守卫：自身 emit 的值不回写 DOM
-    expect(richtextSrc).toMatch(/if \(val === richtextLastEmitted\) return/)
+    expect(composableSrc).toMatch(/if \(val === lastEmitted\) return/)
   })
 
   it('粘贴路径：preventDefault + 插入前消毒', () => {
-    expect(richtextSrc).toMatch(
-      /function onRichtextPaste[\s\S]*?e\.preventDefault\(\)[\s\S]*?const clean = sanitizeHTML\(raw\)/,
+    expect(composableSrc).toMatch(
+      /function onPaste\(e: ClipboardEvent\)[\s\S]*?e\.preventDefault\(\)[\s\S]*?const clean = sanitizeHTML\(raw\)/,
     )
+  })
+
+  it('预览路径：DOM 单向同步而非 v-html，且仅预览态写入', () => {
+    expect(richtextSrc).toMatch(/watch\(\s*\[previewEl, previewing, content\]/)
+    expect(richtextSrc).toMatch(/pel\.innerHTML = sanitizeHTML\(html\)/)
+  })
+
+  it('full 档配置被渲染器消费（设计器 richtextToolbar 不再是空头支票）', () => {
+    expect(richtextSrc).toMatch(/richtextToolbar === 'full'/)
   })
 
   it('sanitizeHTML 剥离富文本 XSS payload', () => {
@@ -59,6 +71,18 @@ describe('富文本源码锁定（防回退到 v-html 反模式）', () => {
     expect(sanitizeHTML('<img src="x" onerror="alert(1)">')).not.toContain('onerror')
     expect(sanitizeHTML('<a href="javascript:alert(1)">x</a>')).toBe('<a>x</a>')
     expect(sanitizeHTML('<div style="background:url(javascript:alert(1))">x</div>')).toBe('<div>x</div>')
+  })
+
+  it('sanitizeHTML 保留 full 工具栏产出的文章标签（blockquote/hr/del/strike/sub/sup）', () => {
+    expect(sanitizeHTML('<blockquote>引文</blockquote>')).toContain('<blockquote>')
+    expect(sanitizeHTML('<hr>')).toContain('<hr')
+    expect(sanitizeHTML('<del>删</del>')).toContain('<del>')
+    expect(sanitizeHTML('<strike>删</strike>')).toContain('<strike>')
+    expect(sanitizeHTML('<sub>下</sub><sup>上</sup>')).toContain('<sub>')
+    expect(sanitizeHTML('<sup>上</sup>')).toContain('<sup>')
+    // styleWithCSS 产物：带 style 的 span 与文本对齐
+    expect(sanitizeHTML('<span style="color:#dc2626">红</span>')).toContain('color')
+    expect(sanitizeHTML('<p style="text-align:center">中</p>')).toContain('text-align')
   })
 })
 
@@ -106,6 +130,15 @@ describe('富文本挂载行为（composition 感知受控 contenteditable）', 
     await wrapper.find('.fb-richtext-body').trigger('input')
     await wrapper.setProps({ modelValue: '<p>用户输入</p>' }) // 父层 v-model 回流
     expect(el.innerHTML).toBe('<p>用户输入</p>')
+  })
+
+  it('外部赋值含恶意 HTML：写入 DOM 前消毒（schema 导入/服务端回流不可绕过白名单）', async () => {
+    const wrapper = mountRichtext('<p>正文</p>')
+    await nextTick()
+    await wrapper.setProps({ modelValue: '<img src="x" onerror="alert(1)"><p>外部</p>' })
+    const el = wrapper.find('.fb-richtext-body').element as HTMLElement
+    expect(el.innerHTML).not.toContain('onerror')
+    expect(el.innerHTML).toContain('<p>外部</p>')
   })
 
   it('粘贴 text/html：阻止默认插入，消毒后内容进 DOM 并 emit', async () => {
