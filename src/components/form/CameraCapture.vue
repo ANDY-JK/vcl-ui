@@ -20,16 +20,22 @@ interface Props {
   fallbackOnError?: boolean
   /**
    * 多张连拍模式：快门确认后不交付、进内部队列并回到取景继续拍下一张；
-   * 底部胶卷可回看/左右切换/重拍某张/删除，按「完成」经 finish 一次性交付 File[]。
+   * 底部胶卷可回看/左右切换/重拍某张/删除，顶部「完成」经 finish 一次性交付 File[]。
    * 降级系统相机时无法连拍（每次一张，仍走 capture 事件逐张交付）。
    */
   multiple?: boolean
+  /**
+   * 计划拍摄的照片名称（按拍摄顺序对应，如 ['门头照','铭牌特写']）。
+   * 显示在顶部提示/胶卷/回看中，并写入交付文件名（name-时间戳.jpg）；未传则自动「照片1、照片2…」
+   */
+  shotNames?: string[]
 }
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
   quality: 0.9,
   fallbackOnError: true,
   multiple: false,
+  shotNames: () => [],
 })
 
 // P2-5：弹层焦点陷阱 —— 打开时焦点移入工具栏，Tab 循环不逃逸，关闭恢复
@@ -65,12 +71,34 @@ let streamKind: 'environment' | 'user' = 'environment'
 interface CamShot {
   file: File
   url: string
+  /** 照片名称（shotNames 对应项或自动「照片n」），写入文件名并展示 */
+  name: string
 }
 const shots = ref<CamShot[]>([])
 /** ≥0：正在回看队列第 viewIdx 张（左右切换/重拍/删除） */
 const viewIdx = ref(-1)
 /** ≥0：取景是为替换第 replaceIdx 张（快门确认后替换该位，而非追加） */
 const replaceIdx = ref(-1)
+
+/** 第 i 张（0 基）的照片名称：计划名称优先，超出计划自动编号 */
+function shotNameAt(i: number): string {
+  return props.shotNames[i] || t('form.photoN', { n: i + 1 })
+}
+
+/** 顶部提示文案：替换中显示重拍目标，回看显示当前名称，取景显示下一张计划 */
+const slotChipText = computed(() => {
+  if (replaceIdx.value >= 0 && replaceIdx.value < shots.value.length) {
+    return t('form.reshootSlot', { name: shots.value[replaceIdx.value].name })
+  }
+  if (viewIdx.value >= 0 && viewIdx.value < shots.value.length) {
+    return shots.value[viewIdx.value].name
+  }
+  const next = shots.value.length
+  if (props.shotNames.length && next < props.shotNames.length) {
+    return t('form.nextSlot', { name: props.shotNames[next], i: next + 1, n: props.shotNames.length })
+  }
+  return t('form.shotCountN', { n: next })
+})
 
 function clearShot() {
   if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
@@ -344,17 +372,25 @@ function useShot() {
     shotFile.value = null
     if (replaceIdx.value >= 0 && replaceIdx.value < shots.value.length) {
       URL.revokeObjectURL(shots.value[replaceIdx.value].url)
-      shots.value[replaceIdx.value] = { file: f, url }
+      // 替换位沿用原名称；文件重命名带名称（交付后上传列表可读）
+      const name = shots.value[replaceIdx.value].name
+      shots.value[replaceIdx.value] = { file: renameWithShotName(f, name), url, name }
       viewIdx.value = replaceIdx.value // 回看确认替换结果
       replaceIdx.value = -1
     } else {
-      shots.value.push({ file: f, url })
+      const i = shots.value.length
+      shots.value.push({ file: renameWithShotName(f, shotNameAt(i)), url, name: shotNameAt(i) })
     }
     return
   }
   close()
   emit('update:modelValue', false)
   emit('capture', f)
+}
+
+/** 按照片名重命名交付文件（保留 jpeg 扩展名），供上传列表/打包下载显示可读名称 */
+function renameWithShotName(f: File, name: string): File {
+  return new File([f], `${name}-${Date.now()}.jpg`, { type: f.type || 'image/jpeg' })
 }
 
 /** 浏览器摄像头错误 → 用户可读文案 */
@@ -425,24 +461,30 @@ onUnmounted(() => {
           <div v-if="!cameraReady && !shotUrl && viewIdx < 0" class="camc-status">{{ t('form.cameraStarting') }}</div>
         </div>
 
-        <!-- 连拍胶卷（multiple 模式）：缩略图回看 + 完成交付 -->
-        <div v-if="props.multiple" class="camc-strip">
-          <div class="camc-thumbs">
-            <button
-              v-for="(s, i) in shots"
-              :key="s.url"
-              type="button"
-              class="camc-thumb"
-              :class="{ active: i === viewIdx }"
-              :aria-label="`${t('form.review')} ${i + 1}/${shots.length}`"
-              @click="reviewShot(i)"
-            >
-              <img :src="s.url" alt="" />
-            </button>
-          </div>
+        <!-- 连拍顶部条（multiple）：左当前拍照名称/进度，右「完成」交付 -->
+        <div v-if="props.multiple" class="camc-topbar">
+          <span class="camc-slot-chip">{{ slotChipText }}</span>
           <button type="button" class="camc-done" :disabled="!shots.length" @click="finishShots">
             {{ t('form.done') }}<span v-if="shots.length">({{ shots.length }})</span>
           </button>
+        </div>
+
+        <!-- 连拍胶卷（multiple 模式）：缩略图回看，每张带名称 -->
+        <div v-if="props.multiple" class="camc-strip">
+          <div class="camc-thumbs">
+            <div v-for="(s, i) in shots" :key="s.url" class="camc-shot-item">
+              <button
+                type="button"
+                class="camc-thumb"
+                :class="{ active: i === viewIdx }"
+                :aria-label="`${t('form.review')} ${s.name}`"
+                @click="reviewShot(i)"
+              >
+                <img :src="s.url" alt="" />
+              </button>
+              <span class="camc-shot-name">{{ s.name }}</span>
+            </div>
+          </div>
         </div>
 
         <!-- 底部工具栏：中间快门 + 左右侧键 -->
@@ -549,23 +591,64 @@ onUnmounted(() => {
   z-index: 2;
 }
 
-/* 连拍胶卷（multiple）：位于工具栏上方，缩略图横向滚动 + 完成按钮 */
+/* 连拍顶部条（multiple）：左名称/进度提示，右完成按钮 */
+.camc-topbar {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 0 var(--space-5);
+  z-index: 2;
+}
+.camc-slot-chip {
+  min-width: 0;
+  max-width: calc(100% - 130px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: clamp(12px, 1.6vw, 14px);
+  backdrop-filter: blur(4px);
+}
+.camc-done {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 20px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: clamp(13px, 1.8vw, 15px);
+  font-weight: 600;
+  cursor: pointer;
+}
+.camc-done:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.camc-done:active {
+  opacity: 0.85;
+}
+
+/* 连拍胶卷（multiple）：位于工具栏上方，缩略图横向滚动，每张带名称 */
 .camc-strip {
   position: absolute;
   left: 0;
   right: 0;
   bottom: calc(28px + 56px + 20px + env(safe-area-inset-bottom));
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
   padding: 0 var(--space-5);
   z-index: 2;
 }
 .camc-thumbs {
-  flex: 1;
-  min-width: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-2);
   overflow-x: auto;
   scrollbar-width: none;
@@ -573,6 +656,24 @@ onUnmounted(() => {
 }
 .camc-thumbs::-webkit-scrollbar {
   display: none;
+}
+.camc-shot-item {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  max-width: 72px;
+}
+.camc-shot-name {
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  line-height: 1.3;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 .camc-thumb {
   flex-shrink: 0;
@@ -593,25 +694,6 @@ onUnmounted(() => {
 }
 .camc-thumb.active {
   border-color: #3b82f6;
-}
-.camc-done {
-  flex-shrink: 0;
-  height: 40px;
-  padding: 0 18px;
-  border: none;
-  border-radius: 20px;
-  background: #3b82f6;
-  color: #fff;
-  font-size: clamp(13px, 1.8vw, 15px);
-  font-weight: 600;
-  cursor: pointer;
-}
-.camc-done:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.camc-done:active {
-  opacity: 0.85;
 }
 
 /* 回看左右切换箭头（叠在取景框两侧） */

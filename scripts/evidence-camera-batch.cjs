@@ -4,7 +4,7 @@ const { chromium } = require('playwright')
 const fs = require('fs')
 const path = require('path')
 
-const BASE = process.env.EVIDENCE_URL || 'https://localhost:3726'
+const BASE = process.env.EVIDENCE_URL || 'https://localhost:3727'
 const OUT = path.join(__dirname, 'shots-select-unified')
 fs.mkdirSync(OUT, { recursive: true })
 
@@ -38,6 +38,8 @@ async function main() {
   await confirmBtn.click()
   await page.waitForTimeout(300)
   check('使用后回到取景、胶卷 1 张', (await mask.locator('.camc-thumb').count()) === 1)
+  check('顶部条显示下一张计划名称', (await mask.locator('.camc-slot-chip').textContent()).includes('拍摄：铭牌特写（2/3）'))
+  check('缩略图下方显示照片名称', (await mask.locator('.camc-shot-name').first().textContent()) === '现场全景')
 
   // 拍第 2 张
   await shutter.click()
@@ -46,6 +48,7 @@ async function main() {
   await page.waitForTimeout(300)
   check('连拍第 2 张后胶卷 2 张', (await mask.locator('.camc-thumb').count()) === 2)
   check('完成按钮显示计数', (await mask.locator('.camc-done').textContent()).includes('(2)'))
+  check('完成在顶部条（非胶卷行）', (await mask.locator('.camc-topbar .camc-done').count()) === 1)
   await page.screenshot({ path: path.join(OUT, 'cam-1-连拍两张.png') })
 
   // 回看第 1 张：左右切换
@@ -64,6 +67,7 @@ async function main() {
   await mask.locator('.camc-side', { hasText: '重拍' }).click()
   await page.waitForTimeout(300)
   check('重拍进入替换取景（左侧为返回）', (await mask.locator('.camc-side', { hasText: '返回' }).count()) === 1)
+  check('顶部提示重拍目标名称', (await mask.locator('.camc-slot-chip').textContent()).includes('重拍：现场全景'))
   await shutter.click()
   await page.waitForTimeout(300)
   await confirmBtn.click()

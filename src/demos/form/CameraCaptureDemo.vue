@@ -69,10 +69,11 @@ function onBatchFinish(files: File[]) {
     <!-- ══════ 多张连拍 ══════ -->
     <Card title="多张连拍 — 拍完一张接着拍，胶卷回看/重拍" style="margin-bottom: 24px">
       <p class="demo-hint" style="margin-bottom: 12px">
-        <code>multiple</code> — 快门确认后不关相机，照片进队列继续拍下一张；点底部缩略图回看， 大图 ‹ ›
-        切换上一张/下一张，侧键「重拍」替换该张、「删除」移除；「完成(n)」一次性交付
-        <code>finish</code> 事件（File[]）。取消时已拍照片会先确认防误丢。<br />
-        表单里 multiple 上传字段的「拍照」入口即此模式（组件内已接通）。
+        <code>multiple</code> — 快门确认后不关相机，照片进队列继续拍下一张；顶部「完成(n)」交付，底部缩略图回看， 大图 ‹
+        › 切换上一张/下一张，侧键「重拍」替换该张、「删除」移除。取消时已拍照片会先确认防误丢。<br />
+        <code>shotNames</code> — 计划照片名称（按拍摄顺序对应），顶部提示当前要拍哪张、缩略图/回看显示名称，
+        并写入交付文件名（如「现场全景-1730….jpg」）；未传自动「照片1、照片2…」。表单里 multiple
+        上传字段的「拍照」入口即此模式（组件内已接通）。
       </p>
       <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
         <Button text="打开连拍相机" variant="primary" icon="camera" @click="batchOpen = true" />
@@ -190,6 +191,7 @@ function onBatchFinish(files: File[]) {
     <CameraCapture
       v-model="batchOpen"
       multiple
+      :shot-names="['现场全景', '铭牌特写', '细节补充']"
       @finish="onBatchFinish"
       @cancel="batchOpen = false"
       @error="onCameraError"
