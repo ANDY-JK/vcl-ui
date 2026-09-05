@@ -15,12 +15,12 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  select: [id: string]
+  select: [id: string, additive?: boolean]
 }>()
 </script>
 
 <template>
-  <div class="ldc-card" @click.stop="emit('select', child.id)">
+  <div class="ldc-card" @click.stop="emit('select', child.id, $event.ctrlKey || $event.metaKey)">
     <div class="ldc-card-head">
       <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
       <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>

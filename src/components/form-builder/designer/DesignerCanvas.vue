@@ -452,7 +452,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                           :child="child"
                           :preview-data="previewData"
                           :find-field="findFieldByKey"
-                          @select="emit('select', $event)"
+                          @select="(id, additive) => emit('select', id, additive)"
                         />
                       </div>
                     </template>
@@ -504,7 +504,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                             :child="child"
                             :preview-data="previewData"
                             :find-field="findFieldByKey"
-                            @select="emit('select', $event)"
+                            @select="(id, additive) => emit('select', id, additive)"
                           />
                         </div>
                       </template>
@@ -576,7 +576,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                           :child="child"
                           :preview-data="previewData"
                           :find-field="findFieldByKey"
-                          @select="emit('select', $event)"
+                          @select="(id, additive) => emit('select', id, additive)"
                         />
                       </div>
                     </template>
@@ -599,7 +599,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                       <div
                         class="ldc-card"
                         :class="{ selected: child.id === selectedId }"
-                        @click.stop="emit('select', child.id)"
+                        @click.stop="emit('select', child.id, $event.ctrlKey || $event.metaKey)"
                       >
                         <div class="ldc-card-head">
                           <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
@@ -644,7 +644,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                       <div
                         class="ldc-card"
                         :class="{ selected: child.id === selectedId }"
-                        @click.stop="emit('select', child.id)"
+                        @click.stop="emit('select', child.id, $event.ctrlKey || $event.metaKey)"
                       >
                         <div class="ldc-card-head">
                           <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
@@ -672,7 +672,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                       class="ldc-card"
                       :class="{ selected: child.id === selectedId }"
                       :draggable="true"
-                      @click.stop="emit('select', child.id)"
+                      @click.stop="emit('select', child.id, $event.ctrlKey || $event.metaKey)"
                       @dragstart="onNodeDragStart($event, child)"
                       @dragover="onNodeDragOver($event, child)"
                       @drop="onNodeDrop($event, child)"
@@ -719,8 +719,11 @@ const deviceClass = computed(() => `device-${props.device}`)
             :class="{ selected: isSelected(node.id), dragging: sortDragId === node.id }"
             draggable="true"
             role="listitem"
+            tabindex="0"
             :aria-label="t('fbt.fieldAria', { label: node.label })"
             @click="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
+            @keydown.enter.prevent="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
+            @keydown.space.prevent="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
             @dragstart="onNodeDragStart($event, node)"
             @dragover="onNodeDragOver($event, node)"
             @drop="onNodeDrop($event, node)"

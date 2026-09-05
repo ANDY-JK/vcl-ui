@@ -94,10 +94,22 @@ export function useFormRemote(
     })
   }
 
+  /** 提交 POST（saveUrl + params）：成功 resolve，HTTP 非 2xx / 网络失败 reject（FormBuilder 统一 toast） */
+  async function submitRemote(data: FormData): Promise<void> {
+    const rc = submitConfig.value
+    if (!rc?.saveUrl) return
+    const resp = await fetch(rc.saveUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...data, ...(rc.params ?? {}) }),
+    })
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+  }
+
   /** 卸载清理（autoSave pending） */
   function dispose(): void {
     if (autoSaveTimer) clearTimeout(autoSaveTimer)
   }
 
-  return { loadRemoteData, scheduleAutoSave, applyApiDefaults, dispose }
+  return { loadRemoteData, scheduleAutoSave, applyApiDefaults, submitRemote, dispose }
 }

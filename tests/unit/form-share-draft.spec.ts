@@ -121,3 +121,31 @@ describe('FormShareView · beforeunload 离开拦截', () => {
     w.unmount()
   })
 })
+
+describe('FormShareView · 提交防重复（真实使用审查余项 ⑧）', () => {
+  it('云端写入缓慢时重复点击不产生第二条提交（越过 3 秒兜底窗口）', async () => {
+    let resolveWrite: () => void = () => {}
+    const slowStore = memoryStore()
+    slowStore.appendRecord = vi.fn(
+      () =>
+        new Promise<void>((res) => {
+          resolveWrite = res
+        }),
+    ) as never
+    const w = mountShare(makeDesign(), slowStore)
+    await flushPromises()
+    await w.find('input.f-input').setValue('答案')
+    await w.find('form.fb-form').trigger('submit')
+    await flushPromises()
+    expect(slowStore.appendRecord).toHaveBeenCalledTimes(1)
+    // 越过 FormBuilder 3 秒兜底复位窗口后再次提交 → 被入口守卫拦截
+    await new Promise((r) => setTimeout(r, 3600))
+    await w.find('form.fb-form').trigger('submit')
+    await flushPromises()
+    expect(slowStore.appendRecord).toHaveBeenCalledTimes(1)
+    resolveWrite()
+    await flushPromises()
+    expect(w.text()).toContain('提交成功')
+    w.unmount()
+  })
+})

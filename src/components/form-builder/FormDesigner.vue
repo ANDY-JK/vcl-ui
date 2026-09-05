@@ -376,25 +376,27 @@ function onCanvasKeydown(e: KeyboardEvent): void {
 
   if (!selectedId.value) return
   const id = selectedId.value
+  // 多选模式下结构操作作用于整个选中集合（删除在上游 removeNode 已处理）
+  const ids = selectedIds.value.size ? [...selectedIds.value] : [id]
 
   if (e.key === 'Delete' || e.key === 'Backspace') {
     e.preventDefault()
     removeNode(id)
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
     e.preventDefault()
-    duplicateNode(id)
+    duplicateNode(ids)
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
     e.preventDefault()
-    copyNode(id)
+    copyNode(ids)
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
     e.preventDefault()
     pasteNode(id)
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') {
     e.preventDefault()
-    moveNode(id, -1)
+    moveNode(ids, -1)
   } else if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowDown') {
     e.preventDefault()
-    moveNode(id, 1)
+    moveNode(ids, 1)
   }
 }
 

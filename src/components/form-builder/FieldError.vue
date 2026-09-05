@@ -14,9 +14,11 @@ defineProps<Props>()
 
 <template>
   <Transition name="fb-error">
-    <p v-if="message" class="fb-field-error">
+    <p v-if="message" class="fb-field-error" role="alert">
       <svg class="fb-error-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3.5a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-1.5 0v-4zM8 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+        <path
+          d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3.5a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-1.5 0v-4zM8 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
+        />
       </svg>
       <span>{{ message }}</span>
     </p>
@@ -42,10 +44,14 @@ defineProps<Props>()
 
 /* 入场动画 */
 .fb-error-enter-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 .fb-error-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 .fb-error-enter-from {
   opacity: 0;

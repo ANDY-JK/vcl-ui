@@ -39,6 +39,13 @@ export function useFormSteps(
     if (currentStep.value > 0) currentStep.value--
   }
 
+  /** 跳到指定 key 字段所在步骤（提交失败定位用；找不到不动） */
+  function jumpToFieldStep(key: string): void {
+    if (normalized.value.layout !== 'steps' || !normalized.value.steps) return
+    const idx = normalized.value.steps.findIndex((s) => s.fields.includes(key))
+    if (idx >= 0) currentStep.value = idx
+  }
+
   const isLastStep = computed(() => currentStep.value === totalSteps.value - 1)
 
   /** 每步的字段完成度（已填/总数），只统计可见字段，供步骤头进度展示 */
@@ -56,5 +63,5 @@ export function useFormSteps(
     })
   })
 
-  return { currentStep, totalSteps, stepFields, nextStep, prevStep, isLastStep, stepCompletion }
+  return { currentStep, totalSteps, stepFields, nextStep, prevStep, jumpToFieldStep, isLastStep, stepCompletion }
 }

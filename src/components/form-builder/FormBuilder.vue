@@ -38,9 +38,7 @@ import type { FormSchema, FormData, FormField, FormErrors, RenderSection, FieldC
 
 const t = useT()
 
-// ════════════════════════════════════════
-// Props
-// ════════════════════════════════════════
+// ══ Props ══
 
 interface Props {
   /** 表单 Schema */
@@ -79,9 +77,7 @@ const emit = defineEmits<{
   loaded: [raw: Record<string, unknown>]
 }>()
 
-// ════════════════════════════════════════
-// Schema 解析
-// ════════════════════════════════════════
+// ══ Schema 解析 ══
 
 const schemaRef = computed(() => props.schema)
 const userContextRef = computed(() => props.userContext)
@@ -93,9 +89,7 @@ const submitConfig = computed(() => normalized.value.submitConfig)
 /** 只读状态：props.readonly 或 submitConfig.mode='view'（全字段只读展示） */
 const effectiveReadonly = computed(() => props.readonly || submitConfig.value?.mode === 'view')
 
-// ════════════════════════════════════════
-// 表单数据（必须在联动引擎之前声明，避免 TDZ）
-// ════════════════════════════════════════
+// ══ 表单数据（必须在联动引擎之前声明，避免 TDZ） ══
 
 /**
  * 内部数据：以 modelValue 为源，缺失字段用 initialData 填充
@@ -106,9 +100,7 @@ const effectiveReadonly = computed(() => props.readonly || submitConfig.value?.m
  */
 const formData = ref<FormData>({})
 
-// ════════════════════════════════════════
-// 联动引擎
-// ════════════════════════════════════════
+// ══ 联动引擎 ══
 
 /**
  * 运行时字段：在归一化结果上合成条件必填（requiredWhen）与条件禁用（disabledWhen）。
@@ -169,9 +161,7 @@ watch(
   { deep: true },
 )
 
-// ════════════════════════════════════════
-// 校验
-// ════════════════════════════════════════
+// ══ 校验 ══
 
 const { errors, validate, validateOne, clearErrors } = useFormValidator(effectiveSchema, formData, {
   // 校验可见性使用联动感知版本：被 showHide/事件隐藏的字段跳过校验，
@@ -214,9 +204,7 @@ watch(
   { deep: true },
 )
 
-// ════════════════════════════════════════
-// 存储持久化（P2 — 接入 useFormStorage）
-// ════════════════════════════════════════
+// ══ 存储持久化（P2 — 接入 useFormStorage） ══
 
 const { loadDraft, saveDraft, clearDraft } = useFormStorage()
 
@@ -249,9 +237,7 @@ onMounted(async () => {
 // 草稿保存 timer（在上方 formData watcher 中使用）
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 
-// ════════════════════════════════════════
-// 提交与重置
-// ════════════════════════════════════════
+// ══ 提交与重置 ══
 
 const toastRef = ref<InstanceType<typeof Toast>>()
 const submitting = ref(false)
@@ -259,12 +245,16 @@ const submitting = ref(false)
 const rootEl = ref<HTMLElement | null>(null)
 
 function handleSubmit(): void {
+  if (submitting.value) return // 提交进行中：入口守卫（父组件可用 setSubmitting 延长锁定）
   // 全量校验
   const isValid = validate()
   emit('validate', isValid)
 
   if (!isValid) {
     toastRef.value?.show(t('formBuilder.requiredAll'), 'error', 2000)
+    // steps 布局：错误字段可能在其它步骤——先跳到首个错误所在步骤再滚动定位
+    const firstErrField = effectiveFields.value.find((f) => errors.value[f.key])
+    if (firstErrField) jumpToFieldStep(firstErrField.key)
     // 滚动到第一个错误字段（限定在当前组件实例内，避免多表单同页串扰）
     nextTick(() => {
       const firstErrEl = rootEl.value?.querySelector('.fb-field-error')
@@ -291,16 +281,11 @@ function handleSubmit(): void {
 
   submitting.value = true
 
-  // 提交链路：配置了 saveUrl → 先 POST 提交，成功后 emit submit 并提示
+  // 提交链路：配置了 saveUrl → 先 POST 提交（useFormRemote），成功后 emit submit 并提示
   const rc = submitConfig.value
   if (rc?.saveUrl) {
-    fetch(rc.saveUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...submitData, ...(rc.params ?? {}) }),
-    })
-      .then((resp) => {
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+    submitRemote(submitData)
+      .then(() => {
         // view 模式只读不提示（页面级查看场景）；edit/review 提示成功
         if (submitConfig.value?.mode !== 'view') {
           toastRef.value?.show(t('formBuilder.submitSuccess'), 'success', 2000)
@@ -421,9 +406,7 @@ function handleReset(): void {
   toastRef.value?.show(t('formBuilder.resetDone'), 'info', 1500)
 }
 
-// ════════════════════════════════════════
-// 计算属性
-// ════════════════════════════════════════
+// ══ 计算属性 ══
 
 // 字段事件动作（setValue/toggleVisible/showTip/callApi/autoValidate/format/submit）
 // — 逻辑在 useFormEvents；onFieldUpdate 保留（FieldList 回写）
@@ -434,11 +417,12 @@ const { hiddenByEvent, isHiddenByEvent, handleFieldChange } = useFormEvents(
   () => handleSubmit(),
 )
 
-// 远程数据链路（GET 回填 + review 防抖自动保存 + api 型动态默认值）— 逻辑在 useFormRemote
+// 远程数据链路（GET 回填 + review 防抖自动保存 + api 型动态默认值 + 提交 POST）— 逻辑在 useFormRemote
 const {
   loadRemoteData,
   scheduleAutoSave,
   applyApiDefaults,
+  submitRemote,
   dispose: disposeRemote,
 } = useFormRemote(
   submitConfig,
@@ -463,12 +447,8 @@ const visibleFields = computed(() => {
 })
 
 // 步骤模式（steps）— 逻辑在 useFormSteps，校验回调走 validateOne + toast
-const { currentStep, totalSteps, stepFields, nextStep, prevStep, isLastStep, stepCompletion } = useFormSteps(
-  normalized,
-  effectiveFields,
-  formData,
-  isFieldVisibleWithLinkage,
-  (keys) => {
+const { currentStep, totalSteps, stepFields, nextStep, prevStep, jumpToFieldStep, isLastStep, stepCompletion } =
+  useFormSteps(normalized, effectiveFields, formData, isFieldVisibleWithLinkage, (keys) => {
     let stepValid = true
     for (const key of keys) {
       if (!validateOne(key)) stepValid = false
@@ -477,8 +457,7 @@ const { currentStep, totalSteps, stepFields, nextStep, prevStep, isLastStep, ste
       toastRef.value?.show(t('formBuilder.requiredStep'), 'warning', 2000)
     }
     return stepValid
-  },
-)
+  })
 
 /** 当前应渲染的字段列表（steps 模式只渲染当前步骤） */
 const renderFields = computed<FormField[]>(() => {
@@ -535,9 +514,7 @@ const renderSections = computed<RenderSection[]>(() => {
   return sections
 })
 
-// ════════════════════════════════════════
-// 容器交互渲染辅助（tabs/collapse/steps）
-// ════════════════════════════════════════
+// ══ 容器交互渲染辅助（tabs/collapse/steps） ══
 
 /** tabs 容器：当前激活 tab 名 */
 const tabStates = ref<Record<string, string>>({})

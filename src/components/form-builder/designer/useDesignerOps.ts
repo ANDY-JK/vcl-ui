@@ -157,28 +157,36 @@ export function useDesignerOps(host: DesignerOpsHost) {
     host.selectedIds.value = new Set()
   }
 
-  function duplicateNode(id: string): void {
+  function duplicateNode(ids: string | string[]): void {
+    const idList = Array.isArray(ids) ? ids : [ids]
+    if (!idList.length) return
     snapshot()
-    const node = findNode(host.nodes(), id)
-    if (!node) return
-    const copy = cloneNode(node)
-    // 找到原节点位置，插入到后面
     const flat = flattenNodes(host.nodes())
-    const idx = flat.findIndex((f) => f.id === id)
-    if (idx >= 0) {
-      host.patch(insertNode(host.nodes(), copy, idx + 1))
-    } else {
-      host.patch([...host.nodes(), copy])
+    const order = new Map(flat.map((n, i) => [n.id, i]))
+    // 一次性构造目标树：对每个源节点（升序），克隆件插在「原节点或前一个克隆件」之后。
+    // 不能循环逐个 patch——受控 props 回写是异步的，循环内 host.nodes() 拿不到上一轮结果，
+    // 第二次插入会基于旧树覆盖第一次写入（表现为多选批量复制只 +1）。
+    let next = host.nodes()
+    const copyIds: string[] = []
+    const ordered = idList.filter((id) => order.has(id)).sort((a, b) => order.get(a)! - order.get(b)!)
+    for (const id of ordered) {
+      const node = findNode(next, id)
+      if (!node) continue
+      const copy = cloneNode(node)
+      const idx = flattenNodes(next).findIndex((f) => f.id === id)
+      next = idx >= 0 ? insertNode(next, copy, idx + 1) : [...next, copy]
+      copyIds.push(copy.id)
     }
-    host.selectedId.value = copy.id
+    host.patch(next)
+    if (copyIds.length) host.selectedId.value = copyIds[0]!
   }
 
   // ════════════════════════════════════════
   // 复制/粘贴（Ctrl+C / Ctrl+V 跨会话剪贴板）
   // ════════════════════════════════════════
 
-  /** 被复制的节点（深拷贝，避免后续编辑污染剪贴板内容） */
-  let clipboardNode: DesignerNode | null = null
+  /** 被复制的节点（深拷贝数组，避免后续编辑污染剪贴板；id 在粘贴时重新生成） */
+  let clipboardNodes: DesignerNode[] = []
 
   /** 深拷贝节点并生成新 id（key 加 _copy 后缀避免重复） */
   function cloneNode(node: DesignerNode): DesignerNode {
@@ -198,66 +206,83 @@ export function useDesignerOps(host: DesignerOpsHost) {
     return copy
   }
 
-  /** 复制选中节点到剪贴板 */
-  function copyNode(id: string): void {
-    const node = findNode(host.nodes(), id)
-    if (!node) return
-    clipboardNode = deepClone(node)
+  /** 复制节点到剪贴板（支持多选数组，保持传入顺序） */
+  function copyNode(ids: string | string[]): void {
+    const idList = Array.isArray(ids) ? ids : [ids]
+    const nodes: DesignerNode[] = []
+    for (const id of idList) {
+      const node = findNode(host.nodes(), id)
+      if (node) nodes.push(deepClone(node))
+    }
+    if (!nodes.length) return
+    clipboardNodes = nodes
     host.showTip(t('formBuilder.copied'))
   }
 
-  /** 粘贴剪贴板节点到选中节点之后（同父级） */
+  /** 兄弟数组替换后的树重建（纯函数：根级返回新数组，容器内按引用回填） */
+  function replaceSiblings(root: DesignerNode[], parent: DesignerNode[], siblings: DesignerNode[]): DesignerNode[] {
+    if (parent === root) return siblings
+    const rebuild = (list: DesignerNode[]): DesignerNode[] =>
+      list.map((n) => {
+        if (n.children === parent) return { ...n, children: siblings }
+        if (n.children?.length) return { ...n, children: rebuild(n.children) }
+        return n
+      })
+    return rebuild(root)
+  }
+
+  /** 粘贴剪贴板节点到选中节点之后（同父级，多个按序排列；单次 patch——受控回写异步，循环内不可多次 patch） */
   function pasteNode(id: string): void {
-    if (!clipboardNode) {
+    if (!clipboardNodes.length) {
       host.showTip(t('formBuilder.nothingToPaste'))
       return
     }
     snapshot()
-    const copy = cloneNode(clipboardNode)
-    // 找到选中节点的父级和索引，插入到其后
-    const loc = findParent(host.nodes(), id)
-    if (!loc) {
-      host.patch([...host.nodes(), copy])
-    } else {
-      const siblings = [...loc.parent]
-      siblings.splice(loc.index + 1, 0, copy)
-      if (loc.parent === host.nodes()) {
-        host.patch(siblings)
+    let next = host.nodes()
+    let anchor = id
+    let lastId = ''
+    for (const raw of clipboardNodes) {
+      const copy = cloneNode(raw)
+      const loc = findParent(next, anchor)
+      if (!loc) {
+        next = [...next, copy]
       } else {
-        const rebuild = (list: DesignerNode[]): DesignerNode[] =>
-          list.map((n) => {
-            if (n.children === loc.parent) return { ...n, children: siblings }
-            if (n.children?.length) return { ...n, children: rebuild(n.children) }
-            return n
-          })
-        host.patch(rebuild(host.nodes()))
+        const siblings = [...loc.parent]
+        siblings.splice(loc.index + 1, 0, copy)
+        next = replaceSiblings(next, loc.parent, siblings)
       }
+      anchor = copy.id
+      lastId = copy.id
     }
-    host.selectedId.value = copy.id
+    host.patch(next)
+    host.selectedId.value = lastId || null
   }
 
-  function moveNode(id: string, dir: -1 | 1): void {
+  /** 批量上移/下移：块移动语义——选中块与外部邻居交换，相邻选中节点间不互相穿越（单次 patch） */
+  function moveNode(ids: string | string[], dir: -1 | 1): void {
+    const idList = Array.isArray(ids) ? ids : [ids]
+    if (!idList.length) return
     snapshot()
-    // 定位节点所在层级，在其父级（根级或某容器 children）内交换
-    const loc = findParent(host.nodes(), id)
-    if (!loc) return
-    const i = loc.index
-    const j = i + dir
-    if (j < 0 || j >= loc.parent.length) return
-    const siblings = [...loc.parent]
-    ;[siblings[i], siblings[j]] = [siblings[j], siblings[i]]
-    // 根级直接 patch；容器内需重建树
-    if (loc.parent === host.nodes()) {
-      host.patch(siblings)
-    } else {
-      const rebuild = (list: DesignerNode[]): DesignerNode[] =>
-        list.map((n) => {
-          if (n.children === loc.parent) return { ...n, children: siblings }
-          if (n.children?.length) return { ...n, children: rebuild(n.children) }
-          return n
-        })
-      host.patch(rebuild(host.nodes()))
+    const idSet = new Set(idList)
+    // dir=-1 升序处理（顶部块先交换）；dir=+1 降序（底部块先交换）
+    const flat = flattenNodes(host.nodes())
+    const order = new Map(flat.map((n, i) => [n.id, i]))
+    const ordered = idList
+      .filter((id) => order.has(id))
+      .sort((a, b) => (dir === -1 ? order.get(a)! - order.get(b)! : order.get(b)! - order.get(a)!))
+    let next = host.nodes()
+    for (const id of ordered) {
+      const loc = findParent(next, id)
+      if (!loc) continue
+      const i = loc.index
+      const j = i + dir
+      const neighbor = loc.parent[j]
+      if (!neighbor || idSet.has(neighbor.id)) continue
+      const siblings = [...loc.parent]
+      ;[siblings[i], siblings[j]] = [siblings[j], siblings[i]]
+      next = replaceSiblings(next, loc.parent, siblings)
     }
+    host.patch(next)
   }
 
   function reorderNode(from: number, to: number): void {

@@ -123,7 +123,7 @@ onMounted(() => window.addEventListener('beforeunload', onBeforeUnload))
 onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload))
 
 async function handleSubmit(data: Record<string, unknown>): Promise<void> {
-  if (!parsed.value) return
+  if (!parsed.value || submitting.value) return // in-flight 守卫：越过 3 秒兜底窗口也不重复写入
   submitting.value = true
   error.value = ''
   try {

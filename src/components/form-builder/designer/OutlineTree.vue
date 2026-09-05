@@ -32,6 +32,17 @@ const emit = defineEmits<{
 /** 搜索关键词 */
 const searchQuery = ref('')
 
+/** 方向键在树节点间移动焦点（可达性：大纲树不用鼠标也能逐节点导航） */
+function onTreeKeydown(e: KeyboardEvent): void {
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+  const items = Array.from((e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="treeitem"]'))
+  const idx = items.indexOf(document.activeElement as HTMLElement)
+  if (idx === -1) return
+  e.preventDefault()
+  const next = e.key === 'ArrowDown' ? Math.min(items.length - 1, idx + 1) : Math.max(0, idx - 1)
+  items[next]?.focus()
+}
+
 /** 当前拖拽中的节点 id */
 const dragId = ref<string | null>(null)
 /** 当前拖拽悬停的目标节点 id 与落点位置（用于视觉反馈） */
@@ -236,7 +247,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
       <input v-model="searchQuery" class="ldo-search-input" :placeholder="t('fbt.searchNodesPh')" />
     </div>
     <!-- 树 -->
-    <div class="ldo-tree">
+    <div class="ldo-tree" role="tree" :aria-label="t('fbd.structureTree')" @keydown="onTreeKeydown">
       <div v-if="!flatTree.length" class="ldo-empty">
         <span>{{ t('fbt.noNodes') }}</span>
       </div>
