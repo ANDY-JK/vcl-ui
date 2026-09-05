@@ -1084,7 +1084,8 @@ function onTimeCancel() {
   color: var(--color-text-muted);
   pointer-events: none;
   transition: all var(--transition-fast);
-  line-height: 1;
+  /* 行高不可压成 1：系统字体上行+下行约 1.33em，负半行距会把 g/y 等下伸尾巴裁掉（overflow:hidden 是省略号必需） */
+  line-height: normal;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1142,7 +1143,8 @@ function onTimeCancel() {
   background: var(--color-primary-light);
   border-radius: var(--radius-sm);
   font-size: var(--ctrl-font-size);
-  line-height: 1;
+  /* 行高不可压成 1：tag-text 带省略号必需的 overflow:hidden，负半行距会把 g/y 下伸尾巴裁掉 */
+  line-height: normal;
   color: var(--color-primary);
 }
 .combobox-tag .tag-text {
