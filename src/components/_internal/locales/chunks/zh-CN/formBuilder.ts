@@ -605,5 +605,25 @@ export default {
     storageTestFail: '连接失败：{err}',
     storageHint: '配置保存在本浏览器；anon key 为公开密钥，访问控制由 Supabase RLS 策略管理',
     cloudConfigMissing: '云端存储未配置完整',
+    // P2-10 快捷键帮助面板
+    shortcuts: '快捷键',
+    shortcutsHint: '快捷键在画布聚焦（先点击画布区域）后生效',
+    scDelete: '删除选中节点',
+    scDuplicate: '复制选中节点',
+    scCopyPaste: '复制 / 粘贴节点',
+    scUndo: '撤销',
+    scRedo: '重做',
+    scMove: '上移 / 下移',
+    scMultiKeys: 'Ctrl + 点选',
+    scMultiSelect: '多选（追加 / 移除选中）',
+    scHelp: '开 / 关快捷键面板',
+    // P2-12 表单设置分组
+    setGroupBasic: '基础',
+    setGroupLayout: '布局',
+    setGroupValidation: '校验',
+    setGroupSubmit: '提交',
+    setGroupStorage: '存储',
+    // P2-13 设计器草稿自动保存
+    draftRestored: '已恢复上次未保存的设计草稿',
   },
 }

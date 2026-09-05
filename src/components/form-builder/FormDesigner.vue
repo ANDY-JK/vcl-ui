@@ -25,6 +25,7 @@ import FormBuilder from './FormBuilder.vue'
 import DesignerPanel from './designer/DesignerPanel.vue'
 import DesignerCanvas from './designer/DesignerCanvas.vue'
 import DesignerSettings from './designer/DesignerSettings.vue'
+import DesignerShortcuts from './designer/DesignerShortcuts.vue'
 import PropsPanel from './designer/PropsPanel.vue'
 import OutlineTree from './designer/OutlineTree.vue'
 import {
@@ -41,6 +42,7 @@ import {
 import { type FormStore, type FormMetaItem } from './designer/store'
 import { useFormManager } from './designer/useFormManager'
 import { useDesignerOps } from './designer/useDesignerOps'
+import { useDesignerAutosave } from './designer/useDesignerAutosave'
 import { useFormIO } from './designer/useFormIO'
 import { FORM_MANAGER_KEY } from './designer/context'
 import SavedFormsDrawer from './designer/SavedFormsDrawer.vue'
@@ -110,6 +112,7 @@ const selectedId = ref<string | null>(null)
 const selectedIds = ref<Set<string>>(new Set())
 const activeTab = ref<'design' | 'preview' | 'outline' | 'schema'>('design')
 const showSettings = ref(false)
+const showShortcuts = ref(false)
 const previewData = ref<Record<string, unknown>>({})
 const device = ref<'desktop' | 'tablet' | 'mobile'>('desktop')
 
@@ -190,6 +193,21 @@ const {
 })
 
 // ════════════════════════════════════════
+// 草稿自动保存（P2-13）：空白启动恢复上次未保存设计，变更防抖落盘
+// ════════════════════════════════════════
+
+const { discardDraft } = useDesignerAutosave({
+  getNodes: () => currentNodes.value,
+  getMeta: () => props.meta,
+  hasInitialNodes: () => props.nodes.length > 0 || props.fields.length > 0,
+  applyDraft: (d) => {
+    patchNodes(d.nodes)
+    emit('update:meta', { ...props.meta, ...d.meta })
+  },
+  showTip,
+})
+
+// ════════════════════════════════════════
 // 表单管理（保存 / 我的表单 / 存储 / 分享）— 逻辑在 useFormManager
 // ════════════════════════════════════════
 
@@ -203,6 +221,7 @@ const manager = useFormManager({
   showTip,
   onFormOpened: () => {
     activeTab.value = 'design'
+    discardDraft() // 已打开耐久副本，未保存草稿作废
   },
   onSaved: (item) => emit('saved', item),
 })
@@ -225,7 +244,10 @@ function openSave(): void {
 
 async function onConfirmSave(): Promise<void> {
   const item = await manager.saveForm(saveName.value)
-  if (item) saveVisible.value = false
+  if (item) {
+    saveVisible.value = false
+    discardDraft() // 已有耐久副本，草稿不再需要
+  }
 }
 
 // ── 分享弹窗 ──
@@ -340,10 +362,17 @@ function onConfirmRemoveBatch(): void {
 // ════════════════════════════════════════
 
 function onCanvasKeydown(e: KeyboardEvent): void {
-  if (!selectedId.value) return
   const tag = (e.target as HTMLElement)?.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
 
+  // ? 键呼出快捷键帮助（无需选中节点）
+  if (e.key === '?') {
+    e.preventDefault()
+    showShortcuts.value = !showShortcuts.value
+    return
+  }
+
+  if (!selectedId.value) return
   const id = selectedId.value
 
   if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -450,6 +479,14 @@ const selectedPath = computed(() => {
         <button class="ld-btn" :disabled="!canRedo" :title="t('fbd.redoTitle')" @click="redo">
           <IconSvg type="redo-2" size="xs" /> {{ t('fbd.redo') }}
         </button>
+        <button
+          class="ld-btn"
+          :class="{ active: showShortcuts }"
+          :title="t('fbd.shortcuts')"
+          @click="showShortcuts = !showShortcuts"
+        >
+          <IconSvg type="keyboard" size="xs" /> {{ t('fbd.shortcuts') }}
+        </button>
         <span class="ld-sep" />
         <!-- 设备切换 -->
         <div class="ld-device-switch">
@@ -514,6 +551,9 @@ const selectedPath = computed(() => {
         </button>
       </div>
     </div>
+
+    <!-- 快捷键帮助面板（按钮 / 画布 ? 键呼出） -->
+    <DesignerShortcuts v-if="showShortcuts" />
 
     <!-- 表单设置面板（基础 + 高级 + 数据存储） -->
     <DesignerSettings v-if="showSettings" :meta="meta" @patch-meta="patchMeta" />

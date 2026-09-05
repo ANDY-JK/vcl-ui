@@ -30,6 +30,17 @@ const DRAFT_TTL = 7 * 24 * 60 * 60 * 1000
 const DRAFT_MAX_SIZE = 2 * 1024 * 1024
 
 /**
+ * 深度转为纯 JSON（草稿写库前置）
+ *
+ * Vue 响应式对象是 Proxy，IndexedDB 的 structuredClone 无法克隆（DataCloneError），
+ * 且错误被草稿的静默降级 catch 吞掉——表现为草稿「静默不保存」。
+ * 草稿本就是 JSON 数据，JSON 往返是最小且无副作用的纯化手段。
+ */
+export function toPlainJson<T>(v: T): T {
+  return JSON.parse(JSON.stringify(v)) as T
+}
+
+/**
  * 校验草稿数据有效性
  * - 必须是对象
  * - 不能是数组或原始值
@@ -105,14 +116,19 @@ export function useFormStorage() {
    */
   async function saveDraft(key: string, data: FormData): Promise<void> {
     try {
+      const plain = toPlainJson(data)
       // 数据大小检查（防止超出 IndexedDB 配额）
       let size = 0
-      try { size = new Blob([JSON.stringify(data)]).size } catch { /* Blob 不可用时跳过 */ }
+      try {
+        size = new Blob([JSON.stringify(plain)]).size
+      } catch {
+        /* Blob 不可用时跳过 */
+      }
       if (size > DRAFT_MAX_SIZE) {
         console.warn(`[FormBuilder] 草稿数据过大 (${(size / 1024 / 1024).toFixed(1)}MB)，跳过保存:`, key)
         return
       }
-      await dbPut(STORE_NAME, key, data, DRAFT_TTL)
+      await dbPut(STORE_NAME, key, plain, DRAFT_TTL)
     } catch {
       console.warn('[FormBuilder] 草稿保存失败:', key)
     }

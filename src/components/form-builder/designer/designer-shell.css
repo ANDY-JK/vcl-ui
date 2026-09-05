@@ -15,6 +15,7 @@
    顶层容器
    ================================ */
 .ld {
+  position: relative; /* 快捷键帮助面板等浮层的定位基准 */
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: var(--radius-lg, 12px);
   overflow: hidden;
@@ -22,4 +23,57 @@
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.08),
     0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* ================================
+   快捷键帮助面板（P2-10）— 工具栏按钮 / 画布 ? 键呼出
+   ================================ */
+.ld-shortcuts {
+  position: absolute;
+  top: 56px;
+  right: 12px;
+  z-index: 30;
+  width: 280px;
+  padding: 10px 0 8px;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.ld-sc-head {
+  padding: 0 14px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+}
+.ld-sc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 14px;
+  font-size: 11px;
+}
+.ld-sc-keys {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  background: var(--color-bg-alt, #f8fafc);
+  border: 1px solid var(--color-border-light, #f1f5f9);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+.ld-sc-label {
+  color: var(--color-text, #1e293b);
+  text-align: right;
+}
+.ld-sc-hint {
+  margin-top: 4px;
+  padding: 6px 14px 0;
+  font-size: 10px;
+  color: var(--color-text-muted, #94a3b8);
+  border-top: 1px solid var(--color-border-light, #f1f5f9);
 }

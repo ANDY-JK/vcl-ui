@@ -371,7 +371,12 @@ const deviceClass = computed(() => `device-${props.device}`)
           <div
             v-if="isContainerNode(node)"
             class="ldc-container"
-            :class="{ selected: isSelected(node.id), 'drop-target': dropTargetId === node.id }"
+            :class="{
+              selected: isSelected(node.id),
+              'drop-target': dropTargetId === node.id,
+              // card 容器对齐运行时卡片视觉（分组标题/圆角/内边距）
+              'ldc-container--card': node.type === 'card',
+            }"
             @click="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
             @dragover="onNodeDragOver($event, node)"
             @drop="onNodeDrop($event, node)"

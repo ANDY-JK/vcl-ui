@@ -611,5 +611,25 @@ export default {
     storageHint:
       'Config is stored in this browser; the anon key is a public key — access is governed by Supabase RLS policies',
     cloudConfigMissing: 'Cloud storage is not fully configured',
+    // P2-10 shortcuts help panel
+    shortcuts: 'Shortcuts',
+    shortcutsHint: 'Shortcuts work when the canvas is focused (click the canvas area first)',
+    scDelete: 'Delete selected node(s)',
+    scDuplicate: 'Duplicate node',
+    scCopyPaste: 'Copy / paste node',
+    scUndo: 'Undo',
+    scRedo: 'Redo',
+    scMove: 'Move up / down',
+    scMultiKeys: 'Ctrl + Click',
+    scMultiSelect: 'Multi-select (toggle selection)',
+    scHelp: 'Toggle shortcuts panel',
+    // P2-12 form settings groups
+    setGroupBasic: 'Basic',
+    setGroupLayout: 'Layout',
+    setGroupValidation: 'Validation',
+    setGroupSubmit: 'Submit',
+    setGroupStorage: 'Storage',
+    // P2-13 designer draft autosave
+    draftRestored: 'Unsaved design draft restored',
   },
 }
