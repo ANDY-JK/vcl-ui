@@ -215,7 +215,13 @@ function onContextMenu(e: MouseEvent) {
           <p class="demo-val">选中: {{ cnVal || '(未选)' }}</p>
         </div>
         <div>
-          <Select v-model="descVal" :options="descOptions" label="角色（带描述）" clearable />
+          <Select
+            v-model="descVal"
+            :options="descOptions"
+            label="角色（描述，禁自建）"
+            :allow-create="false"
+            clearable
+          />
           <p class="demo-val">选中: {{ descVal || '(未选)' }}</p>
         </div>
       </div>

@@ -559,9 +559,19 @@ function onComboInput() {
   highlightIdx.value = -1
 }
 
-/** 提交输入：命中选项取其 value，否则（allowCreate）直接用输入文本作为值；提交后清空输入由 tag 展示 */
+/** 精确命中（label 或 value 全等；disabled 不过滤——调用方按语义拒绝） */
+function findExact(text: string): Option | undefined {
+  return props.options?.find((o) => o.label === text || String(o.value) === text)
+}
+
+/**
+ * 提交输入：命中可选选项取其 value，否则（allowCreate）直接用输入文本作为值。
+ * - 精确命中不受 allowCreate 限制（意图明确=选它；allowCreate 只管"创建列表外新值"）
+ * - disabled 命中一律拒绝（与面板 pick/selectOption 守卫对齐：点不动的键盘也不得选）
+ */
 function commitComboValue(text: string) {
-  const matched = props.options?.find((o) => o.label === text || String(o.value) === text)
+  const matched = findExact(text)
+  if (matched?.disabled) return
   if (matched) {
     emit('update:modelValue', matched.value as SelectModelValue)
     emit('change', matched.value as SelectModelValue)
@@ -587,9 +597,14 @@ function onComboBlur() {
       if (open.value) closePanel()
       return
     }
-    // 单选：输入未提交时失焦 → allowCreate 则提交，否则丢弃；面板收起
+    // 单选：精确命中不受 allowCreate 限制；disabled 命中被 commitComboValue 拒绝
     const text = comboText.value.trim()
-    if (text && props.allowCreate) commitComboValue(text)
+    if (!text) {
+      comboText.value = ''
+      if (open.value) closePanel()
+      return
+    }
+    if (findExact(text) || props.allowCreate) commitComboValue(text)
     comboText.value = ''
     if (open.value) closePanel()
   }, 150)
@@ -623,20 +638,14 @@ function onComboKeydown(e: KeyboardEvent) {
       return
     }
     const text = comboText.value.trim()
-    if (text && props.allowCreate) {
-      if (props.multiple) {
+    if (!text) return
+    const exact = findExact(text)
+    if (props.multiple) {
+      // 多选：精确命中优先（disabled 拒绝、不受 allowCreate 限制）；否则 allowCreate 才创建/模糊追加
+      if (exact) {
         const vals = [...((props.modelValue || []) as (string | number | boolean)[])]
-        // 即时匹配（不走 200ms 防抖）：快速输入+回车时防抖列表尚未更新，取 stale 首项会静默失败
-        let addVal: string | number | boolean = text
-        const exact = props.options?.find((o) => o.label === text || String(o.value) === text)
-        if (exact) {
-          addVal = exact.value
-        } else {
-          const fresh = matchOptions(text)
-          if (fresh.length > 0) addVal = fresh[0].value
-        }
-        if (!vals.some((v) => String(v) === String(addVal))) {
-          vals.push(addVal)
+        if (!exact.disabled && !vals.some((v) => String(v) === String(exact.value))) {
+          vals.push(exact.value)
           emit('update:modelValue', vals)
           emit('change', vals)
         }
@@ -644,6 +653,25 @@ function onComboKeydown(e: KeyboardEvent) {
         nextTick(() => comboInputRef.value?.focus())
         return
       }
+      if (props.allowCreate) {
+        const vals = [...((props.modelValue || []) as (string | number | boolean)[])]
+        // 即时匹配（不走 200ms 防抖）：快速输入+回车时防抖列表尚未更新，取 stale 首项会静默失败；
+        // 模糊首匹配跳过 disabled（键盘与面板守卫对齐）
+        let addVal: string | number | boolean = text
+        const fresh = matchOptions(text).filter((o) => !o.disabled)
+        if (fresh.length > 0) addVal = fresh[0].value
+        if (!vals.some((v) => String(v) === String(addVal))) {
+          vals.push(addVal)
+          emit('update:modelValue', vals)
+          emit('change', vals)
+        }
+        comboText.value = ''
+        nextTick(() => comboInputRef.value?.focus())
+      }
+      return
+    }
+    // 单选：精确命中不受 allowCreate 限制（意图明确=选它）；disabled 命中被 commitComboValue 拒绝
+    if (exact || props.allowCreate) {
       commitComboValue(text)
       closePanel()
     }

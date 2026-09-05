@@ -181,3 +181,77 @@ describe('Select · 统一格式：选中后下拉仍展示全部', () => {
     expect(w.findAll('.panel-item').length).toBe(3)
   })
 })
+
+// ===== 键盘提交语义（对齐小程序端评审结论） =====
+// ① 精确命中提交不受 allowCreate 限制（意图明确=选它；allowCreate 只管"创建列表外新值"）
+// ② disabled 选项键盘路径拒绝（与面板 pick/selectOption 守卫对齐，此前缺口）
+describe('Select · 键盘提交语义', () => {
+  const opts = [
+    { label: '上海', value: 'sh' },
+    { label: '已停用城市', value: 'disabled-city', disabled: true },
+    { label: '北京', value: 'bj' },
+  ]
+
+  it('allowCreate=false：输入精确 label + Enter → 选中（宽语义）', async () => {
+    const w = mountSelect({ options: opts, allowCreate: false, modelValue: '' })
+    const input = w.find('input.trigger-input')
+    await input.trigger('click')
+    await input.setValue('上海')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('update:modelValue')![0][0]).toBe('sh')
+  })
+
+  it('allowCreate=false：输入片段（非精确）+ Enter → 不创建不选中', async () => {
+    const w = mountSelect({ options: opts, allowCreate: false, modelValue: '' })
+    const input = w.find('input.trigger-input')
+    await input.trigger('click')
+    await input.setValue('上海某某分公司')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('allowCreate=false：失焦时精确 label 亦提交', async () => {
+    const w = mountSelect({ options: opts, allowCreate: false, modelValue: '' })
+    const input = w.find('input.trigger-input')
+    await input.trigger('click')
+    await input.setValue('北京')
+    ;(input.element as HTMLInputElement).blur()
+    await new Promise((r) => setTimeout(r, 200)) // blur 定时器 150ms
+    expect(w.emitted('update:modelValue')![0][0]).toBe('bj')
+  })
+
+  it('disabled 选项：精确 label + Enter（单选）→ 拒绝', async () => {
+    const w = mountSelect({ options: opts, modelValue: '' })
+    const input = w.find('input.trigger-input')
+    await input.trigger('click')
+    await input.setValue('已停用城市')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('disabled 选项：精确 label + Enter（多选）→ 不追加', async () => {
+    const w = mountSelect({ options: opts, multiple: true, modelValue: [] })
+    const input = w.find('input.trigger-input')
+    await input.trigger('click')
+    await input.setValue('已停用城市')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('多选：模糊首匹配为 disabled → 跳过取首个可选', async () => {
+    // '城' 前缀同时命中「已停用城市」（disabled）——模糊追加必须跳过它
+    const w = mountSelect({
+      options: [
+        { label: '已停用城市', value: 'disabled-city', disabled: true },
+        { label: '城市A', value: 'a' },
+      ],
+      multiple: true,
+      modelValue: [],
+    })
+    const input = w.find('input.trigger-input')
+    await input.trigger('click')
+    await input.setValue('城')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('update:modelValue')![0][0]).toEqual(['a'])
+  })
+})
