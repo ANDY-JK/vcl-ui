@@ -2,10 +2,15 @@
 // 门店合同收集表单 — 分批收集苹果专柜租赁协议
 // 基础存储 API（storageGet/Set/Delete、dbPut/dbGet/dbDelete）见 StorageDemo
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick, toRaw } from 'vue'
-import { Upload, Input, Toast } from '@/components'
+import { Upload, Toast } from '@/components'
+import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 import type { UploadFile } from '@/components/form/Upload.vue'
-import { createBackend, validateStorageConfig } from '@/components/storage/contract-storage'
+import {
+  createBackend,
+  validateStorageConfig,
+  defaultStorageConfigFromEnv,
+} from '@/components/storage/contract-storage'
 import type { StorageBackend, StorageConfig, StoreUploadState } from '@/components/storage/contract-storage'
 import JSZip from 'jszip'
 
@@ -437,31 +442,24 @@ const saving = ref(false)
 let backendInstance: StorageBackend | null = null
 
 function loadConfig(): StorageConfig {
-  // 默认云端配置来自 .env.local（VITE_SUPABASE_*），面板打开即预填；未配置则为空
-  const defaultSupabase = {
-    url: import.meta.env.VITE_SUPABASE_URL ?? '',
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
-    bucket: import.meta.env.VITE_SUPABASE_BUCKET ?? '',
-  }
   try {
     const raw = localStorage.getItem(CONFIG_KEY)
     if (raw) {
       const c = JSON.parse(raw) as StorageConfig
-      // 已存配置必须是合法结构：supabase 后端但 url/anonKey/bucket 缺失的坏配置
-      // （线上构建 env 为空时保存过）会卡死加载，忽略并回退默认
-      if (c && (c.backend === 'local' || (c.backend === 'supabase' && !validateStorageConfig(c)))) {
-        return c
-      }
+      // 已存配置必须是合法结构：云端后端但必填项缺失的坏配置（线上构建 env 为空时保存过）
+      // 会卡死加载，忽略并回退默认
+      const valid =
+        c &&
+        (c.backend === 'local' ||
+          (c.backend === 'supabase' && !validateStorageConfig(c)) ||
+          (c.backend === 's3' && !validateStorageConfig(c)))
+      if (valid) return c
     }
   } catch {
     /* 配置损坏则回退默认 */
   }
-  // env 三项配齐才默认云端；否则默认本地——线上构建（无 env）若默认 supabase，
-  // createBackend 会因空配置抛错 → 整页加载失败（ErrorBoundary），用户看到的是空白
-  const hasSupabase = Boolean(defaultSupabase.url && defaultSupabase.anonKey && defaultSupabase.bucket)
-  return hasSupabase
-    ? { backend: 'supabase', ...defaultSupabase }
-    : { backend: 'local', url: '', anonKey: '', bucket: '' }
+  // 环境变量默认：S3 兼容（缤纷云等）优先 → Supabase → 本地
+  return defaultStorageConfigFromEnv()
 }
 
 function persistConfig(): void {
@@ -491,7 +489,7 @@ async function reloadFromBackend(): Promise<void> {
     for (const [id, state] of map) uploadMap[id] = state
   } catch (e) {
     console.warn('[ContractCollection] 存储加载失败:', e)
-    toast(backend.kind === 'supabase' ? '云端加载失败，请检查配置或网络' : '本地加载失败', 'error')
+    toast(backend.kind !== 'local' ? '云端加载失败，请检查配置或网络' : '本地加载失败', 'error')
   }
 }
 
@@ -506,19 +504,16 @@ async function saveToBackend(appleId: number, deleting = false): Promise<void> {
   }
 }
 
-async function saveStorageConfig(): Promise<void> {
-  const err = validateStorageConfig(storageConfig.value)
-  if (err) {
-    toast(err, 'error')
-    return
-  }
+/** 共享面板保存回调：持久化 → 重建后端 → 重载（校验已在面板内完成） */
+async function onStorageConfigSave(next: StorageConfig): Promise<void> {
+  storageConfig.value = next
   saving.value = true
   try {
     persistConfig()
     resetBackend() // 配置变更后重建后端实例
     await reloadFromBackend()
     showStoragePanel.value = false
-    toast(`已切换到${storageConfig.value.backend === 'supabase' ? '云端存储' : '本地存储'}`, 'success')
+    toast('已切换到' + (storageConfig.value.backend !== 'local' ? '云端存储' : '本地存储'), 'success')
   } finally {
     saving.value = false
   }
@@ -555,7 +550,7 @@ async function clearAll(): Promise<void> {
   try {
     await applyBackend().clearAll()
     for (const k of Object.keys(uploadMap)) delete uploadMap[Number(k)]
-    toast(`已清空全部上传记录（${storageConfig.value.backend === 'supabase' ? '本地+云端' : '本地'}）`, 'success')
+    toast(`已清空全部上传记录（${storageConfig.value.backend !== 'local' ? '本地+云端' : '本地'}）`, 'success')
   } catch (e) {
     console.warn('[ContractCollection] 清空失败:', e)
     toast('清空失败，云端部分对象可能未删除，请重试', 'error')
@@ -768,47 +763,18 @@ onUnmounted(() => {
         {{ exporting ? '⏳' : '📦' }} 导出 ZIP
       </button>
       <button class="cc-btn" @click="showStoragePanel = !showStoragePanel">
-        {{ storageConfig.backend === 'supabase' ? '☁ 云端' : '💾 本地' }}
+        {{ storageConfig.backend !== 'local' ? '☁ 云端' : '💾 本地' }}
       </button>
       <button class="cc-btn cc-btn-clear" @click="clearAll">🗑 清空</button>
     </div>
 
-    <!-- 存储设置面板 -->
-    <div v-if="showStoragePanel" class="cc-storage-panel">
-      <div class="cc-storage-row">
-        <span class="cc-storage-label">存储后端</span>
-        <label class="cc-storage-option">
-          <input v-model="storageConfig.backend" type="radio" value="local" /> 本地（IndexedDB，仅当前设备）
-        </label>
-        <label class="cc-storage-option">
-          <input v-model="storageConfig.backend" type="radio" value="supabase" /> Supabase 云端（跨设备同步）
-        </label>
-      </div>
-      <template v-if="storageConfig.backend === 'supabase'">
-        <div class="cc-storage-row">
-          <span class="cc-storage-label">项目 URL</span>
-          <Input v-model="storageConfig.url" placeholder="https://xxxx.supabase.co" style="flex: 1" />
-        </div>
-        <div class="cc-storage-row">
-          <span class="cc-storage-label">anon key</span>
-          <Input v-model="storageConfig.anonKey" placeholder="eyJhbGciOi..." style="flex: 1" />
-        </div>
-        <div class="cc-storage-row">
-          <span class="cc-storage-label">bucket</span>
-          <Input v-model="storageConfig.bucket" placeholder="contracts" style="flex: 1" />
-        </div>
-        <p class="cc-storage-tip">
-          图片/任意文件将存入该 bucket（需在 Supabase 控制台建 public bucket）， 元数据即文件本身：对象名
-          {appleId}-{文件名}，跨设备可同步。 切换存储不会自动搬运已有数据。
-        </p>
-      </template>
-      <div class="cc-storage-actions">
-        <button class="cc-btn cc-btn-export" :disabled="saving" @click="saveStorageConfig">
-          {{ saving ? '保存中…' : '保存并切换' }}
-        </button>
-        <button class="cc-btn" @click="showStoragePanel = false">取消</button>
-      </div>
-    </div>
+    <!-- 存储设置面板（共享组件） -->
+    <StorageConfigPanel
+      v-model:visible="showStoragePanel"
+      :config="storageConfig"
+      @save="onStorageConfigSave"
+      @cancel="showStoragePanel = false"
+    />
 
     <!-- 表格 -->
     <div class="cc-table-wrap">
@@ -941,46 +907,6 @@ onUnmounted(() => {
 }
 .cc-btn-clear {
   color: #ef4444;
-}
-
-/* 存储设置面板 */
-.cc-storage-panel {
-  background: var(--color-surface, #f8fafc);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.cc-storage-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.cc-storage-label {
-  width: 90px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  flex-shrink: 0;
-}
-.cc-storage-option {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.cc-storage-tip {
-  margin: 0;
-  font-size: 11px;
-  color: var(--color-text-muted);
-  line-height: 1.6;
-}
-.cc-storage-actions {
-  display: flex;
-  gap: 8px;
 }
 
 /* 表格 */

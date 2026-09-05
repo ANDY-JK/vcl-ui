@@ -21,10 +21,12 @@ import Toast from '@/components/feedback/Toast.vue'
 import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 import type { UploadFile } from '@/components/form/Upload.vue'
+import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
 import type { FormSchema, FormField } from './types'
 import {
   createBackend,
   validateStorageConfig,
+  defaultStorageConfigFromEnv,
   getSlotFile,
   setSlotFile,
   allSlotsFilled,
@@ -103,24 +105,22 @@ const saving = ref(false)
 let backendInstance: StorageBackend | null = null
 
 function loadConfig(): StorageConfig {
-  const defaultSupabase = {
-    url: import.meta.env.VITE_SUPABASE_URL ?? '',
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
-    bucket: import.meta.env.VITE_SUPABASE_BUCKET ?? '',
-  }
   try {
     const raw = localStorage.getItem(CONFIG_KEY)
     if (raw) {
       const c = JSON.parse(raw) as StorageConfig
-      if (c && (c.backend === 'local' || (c.backend === 'supabase' && !validateStorageConfig(c)))) return c
+      const valid =
+        c &&
+        (c.backend === 'local' ||
+          (c.backend === 'supabase' && !validateStorageConfig(c)) ||
+          (c.backend === 's3' && !validateStorageConfig(c)))
+      if (valid) return c
     }
   } catch {
     /* 损坏配置回退默认 */
   }
-  const hasSupabase = Boolean(defaultSupabase.url && defaultSupabase.anonKey && defaultSupabase.bucket)
-  return hasSupabase
-    ? { backend: 'supabase', ...defaultSupabase }
-    : { backend: 'local', url: '', anonKey: '', bucket: '' }
+  // 环境变量默认：S3 兼容（缤纷云等）优先 → Supabase → 本地
+  return defaultStorageConfigFromEnv()
 }
 
 function persistConfig(): void {
@@ -151,7 +151,7 @@ async function reloadFromBackend(): Promise<void> {
     for (const [id, state] of map) uploadMap.set(id, state)
   } catch (e) {
     console.warn('[FormTargetCollect] 存储加载失败:', e)
-    toast(backend.kind === 'supabase' ? t('fbTarget.loadCloudFail') : t('fbTarget.loadLocalFail'), 'error')
+    toast(backend.kind !== 'local' ? t('fbTarget.loadCloudFail') : t('fbTarget.loadLocalFail'), 'error')
   }
 }
 
@@ -165,19 +165,16 @@ async function saveToBackend(targetId: number): Promise<void> {
   }
 }
 
-async function saveStorageConfig(): Promise<void> {
-  const err = validateStorageConfig(cfg.value)
-  if (err) {
-    toast(err, 'error')
-    return
-  }
+/** 共享面板保存回调：持久化 → 重建后端 → 重载（校验已在面板内完成） */
+async function onStorageConfigSave(next: StorageConfig): Promise<void> {
+  cfg.value = next
   saving.value = true
   try {
     persistConfig()
     resetBackend()
     await reloadFromBackend()
     showStoragePanel.value = false
-    toast(cfg.value.backend === 'supabase' ? t('fbTarget.switchCloud') : t('fbTarget.switchLocal'), 'success')
+    toast(cfg.value.backend !== 'local' ? t('fbTarget.switchCloud') : t('fbTarget.switchLocal'), 'success')
   } finally {
     saving.value = false
   }
@@ -432,43 +429,18 @@ onMounted(async () => {
         {{ t('fbTarget.export') }}
       </Button>
       <Button size="sm" variant="outline" @click="showStoragePanel = !showStoragePanel">
-        {{ cfg.backend === 'supabase' ? '☁ ' + t('fbTarget.cloud') : '💾 ' + t('fbTarget.local') }}
+        {{ cfg.backend !== 'local' ? '☁ ' + t('fbTarget.cloud') : '💾 ' + t('fbTarget.local') }}
       </Button>
       <Button size="sm" variant="ghost" @click="requestClearAll">{{ t('fbTarget.clear') }}</Button>
     </div>
 
-    <!-- 存储面板 -->
-    <div v-if="showStoragePanel" class="ftc-storage-panel">
-      <div class="ftc-storage-row">
-        <span class="ftc-storage-label">{{ t('fbTarget.backend') }}</span>
-        <label class="ftc-storage-option">
-          <input v-model="cfg.backend" type="radio" value="local" /> {{ t('fbTarget.localDesc') }}
-        </label>
-        <label class="ftc-storage-option">
-          <input v-model="cfg.backend" type="radio" value="supabase" /> {{ t('fbTarget.cloudDesc') }}
-        </label>
-      </div>
-      <template v-if="cfg.backend === 'supabase'">
-        <div class="ftc-storage-row">
-          <span class="ftc-storage-label">URL</span>
-          <Input v-model="cfg.url" placeholder="https://xxxx.supabase.co" class="ftc-storage-input" />
-        </div>
-        <div class="ftc-storage-row">
-          <span class="ftc-storage-label">anon key</span>
-          <Input v-model="cfg.anonKey" placeholder="eyJhbGciOi..." class="ftc-storage-input" />
-        </div>
-        <div class="ftc-storage-row">
-          <span class="ftc-storage-label">bucket</span>
-          <Input v-model="cfg.bucket" placeholder="contracts" class="ftc-storage-input" />
-        </div>
-      </template>
-      <div class="ftc-storage-actions">
-        <Button size="sm" variant="primary" :loading="saving" @click="saveStorageConfig">
-          {{ t('fbTarget.saveSwitch') }}
-        </Button>
-        <Button size="sm" variant="ghost" @click="showStoragePanel = false">{{ t('common.cancel') }}</Button>
-      </div>
-    </div>
+    <!-- 存储面板（共享组件：三后端 radio + 字段 + 校验） -->
+    <StorageConfigPanel
+      v-model:visible="showStoragePanel"
+      :config="cfg"
+      @save="onStorageConfigSave"
+      @cancel="showStoragePanel = false"
+    />
 
     <!-- 目标表格 -->
     <div class="ftc-table-wrap">
@@ -567,41 +539,6 @@ onMounted(async () => {
 .ftc-stat.done {
   background: #d1fae5;
   color: #065f46;
-}
-.ftc-storage-panel {
-  background: var(--color-surface, #f8fafc);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.ftc-storage-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.ftc-storage-label {
-  width: 90px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  flex-shrink: 0;
-}
-.ftc-storage-option {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.ftc-storage-input {
-  flex: 1;
-}
-.ftc-storage-actions {
-  display: flex;
-  gap: 8px;
 }
 .ftc-table-wrap {
   overflow-x: auto;

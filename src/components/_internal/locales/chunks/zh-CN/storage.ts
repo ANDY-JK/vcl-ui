@@ -18,5 +18,18 @@ export default {
     idbStoreBlocked: '[IndexedDB] 创建 store "{store}" 被阻塞，请关闭其他标签页后刷新',
     sourceImageUnavailable: '源图片不可用（HTTP {status}），已跳过上传',
     clearPartialFail: '云端有 {n} 个对象删除失败，请重试',
+    s3EndpointRequired: '请填写 S3 桶级访问域名（endpoint）',
+    s3EndpointFormat: 'S3 endpoint 需以 http(s):// 开头',
+    s3AkRequired: '请填写 Access Key',
+    s3SkRequired: '请填写 Secret Key',
+    panelBackend: '存储后端',
+    panelLocalDesc: '本地（IndexedDB，仅当前设备）',
+    panelSupabaseDesc: 'Supabase 云端（跨设备同步）',
+    panelS3Desc: 'S3 兼容对象存储（缤纷云等，跨设备同步）',
+    panelSave: '保存并切换',
+    panelSupabaseTip:
+      '图片/任意文件存入该 bucket（需在 Supabase 控制台建 public bucket）。对象名 {appleId}-{文件名}，跨设备可同步；切换存储不会自动搬运已有数据。',
+    panelS3Tip:
+      '对象名 {appleId}-{文件名}，跨设备同步；切换存储不会自动搬运已有数据。AK/SK 会进入浏览器端，仅限内部工具/私有部署使用。',
   },
 }

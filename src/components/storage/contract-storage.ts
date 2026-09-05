@@ -1,9 +1,10 @@
 /**
  * 合同收集存储适配层
  *
- * 后端由调用方决定、二选一互斥（不做双写/双读）：
+ * 后端由调用方决定、三选一互斥（不做双写/双读）：
  * - local    浏览器本地 IndexedDB（零配置；不用云端时的默认）
  * - supabase Supabase Storage（REST 直连，无需 SDK；配置 url + anonKey + bucket 即用）
+ * - s3       S3 兼容对象存储（缤纷云 Bitiful 等；配置 endpoint + bucket + AK/SK，零 SDK SigV4）
  *
  * 防御约定（调用方可能不按规则办事）：
  * - 即使跳过 validateStorageConfig，createBackend 也会在配置不合法时抛清晰错误
@@ -20,13 +21,14 @@ import {
   validateSupabaseConfig,
   type SupabaseConfig,
 } from './supabase-transport'
+import { S3Transport, validateS3Config, type S3Config } from './s3-transport'
 
 /** 模块级 t：用户可见错误消息按当前语言 */
 const t = useT()
 
 // 兼容再导出：实现已下沉 supabase-transport.ts（两套云端存储共用传输层），原路径不变
-export { sanitizeObjectKeyPart, validateSupabaseConfig }
-export type { SupabaseConfig }
+export { sanitizeObjectKeyPart, validateSupabaseConfig, validateS3Config }
+export type { SupabaseConfig, S3Config }
 
 export interface StoreFile {
   name: string
@@ -81,7 +83,7 @@ export function setSlotFile(
 }
 
 export interface StorageBackend {
-  readonly kind: 'local' | 'supabase'
+  readonly kind: 'local' | 'supabase' | 's3'
   /**
    * 加载全部记录，返回 targetId → 上传状态
    * @param slotKeys 本任务的照片位 key 集合（云端对象名解析需要；无则全按单文件位处理）
@@ -189,31 +191,39 @@ function dataUrlToBlob(dataUrl: string): Blob {
   return new Blob([bytes], { type: mime })
 }
 
-export class SupabaseBackend implements StorageBackend {
-  readonly kind = 'supabase' as const
+// ===== 对象云存储通用后端——supabase / S3 兼容（缤纷云等）共用，传输可插拔 =====
+
+/** 对象云传输的最小接口（SupabaseTransport / S3Transport 各自实现） */
+export interface ObjectCloudTransport {
+  listObjects(): Promise<{ name: string; size: number; mimetype: string; createdAt: number }[]>
+  putObject(name: string, body: Blob | string, contentType: string): Promise<void>
+  deleteObjectWithRetry(name: string): Promise<void>
+  /** 展示用 URL（supabase 公有 URL / S3 预签名） */
+  objectUrl(name: string): string
+}
+
+export class ObjectCloudBackend implements StorageBackend {
+  readonly kind: 'supabase' | 's3'
 
   /** appleId → slotKey → 云端对象名（含路径），上传/加载时维护，删除时据此定位 */
   private paths = new Map<number, Map<string, string>>()
   /** 已删除标记（墓碑）：appleId → 墓碑对象名与删除时间戳；loadAll 解析填充，删除时写入，重新上传时清理 */
   readonly tombstones = new Map<number, { name: string; ts: number }>()
-  /** REST 传输（超时/错误归类/分页/重试下沉 supabase-transport.ts，与 KV 适配器共用） */
-  private tr: SupabaseTransport
+  protected tr: ObjectCloudTransport
 
-  constructor(cfg: SupabaseConfig) {
-    // 工厂级防御：即使调用方跳过 validateStorageConfig，空配置也在此拒绝
-    this.tr = new SupabaseTransport(cfg)
+  constructor(tr: ObjectCloudTransport, kind: 'supabase' | 's3') {
+    this.tr = tr
+    this.kind = kind
   }
 
   /**
    * 对象名：
    * - 单文件位（contract）：{appleId}-{ASCII 化文件名}（旧格式，向后兼容）
    * - 多照片位：{appleId}-{slotKey}-{ASCII 化文件名}
-   * Supabase 对象键只接受 ASCII——含中文等非 ASCII 字符的对象名上传返回
-   * 400 InvalidKey（实测：「拍照-…」这类文件名上传必失败）。文件名本身无业务
-   * 含义（仅展示），对象键用 sanitizeObjectKeyPart 的 ASCII 形式（保留数字与扩展名），
-   * 列表解析/展示名字都基于该键。
+   * 对象键用 sanitizeObjectKeyPart 的 ASCII 形式（保留数字与扩展名）——历史原因是
+   * Supabase 拒绝非 ASCII 键；保持 ASCII 兼容旧数据与列表解析，展示名取自键本身。
    */
-  private objectName(appleId: number, slotKey: string, fileName: string): string {
+  protected objectName(appleId: number, slotKey: string, fileName: string): string {
     const ascii = sanitizeObjectKeyPart(fileName)
     return slotKey === 'contract' || !slotKey ? `${appleId}-${ascii}` : `${appleId}-${slotKey}-${ascii}`
   }
@@ -278,7 +288,7 @@ export class SupabaseBackend implements StorageBackend {
       if (!this.paths.get(appleId)) this.paths.set(appleId, new Map())
       this.paths.get(appleId)!.set(slotKey, obj.name)
       const prev = map.get(appleId)
-      const file = { name, dataUrl: this.tr.publicUrl(obj.name), size: obj.size, type: obj.mimetype }
+      const file = { name, dataUrl: this.tr.objectUrl(obj.name), size: obj.size, type: obj.mimetype }
       if (prev) {
         // 同目标多照片位：合并到 slots
         prev.slots = { ...(prev.slots ?? {}), [slotKey]: file }
@@ -376,6 +386,25 @@ export class SupabaseBackend implements StorageBackend {
   }
 }
 
+/** Supabase Storage 云端后端（REST 直连，零 SDK）——传输细节见 supabase-transport.ts */
+export class SupabaseBackend extends ObjectCloudBackend {
+  readonly kind = 'supabase' as const
+
+  constructor(cfg: SupabaseConfig) {
+    // 工厂级防御：即使调用方跳过 validateStorageConfig，空配置也在此拒绝
+    super(new SupabaseTransport(cfg), 'supabase')
+  }
+}
+
+/** S3 兼容对象存储云端后端（缤纷云 Bitiful / AWS / 其它 S3 兼容端点）——传输细节见 s3-transport.ts */
+export class S3Backend extends ObjectCloudBackend {
+  readonly kind = 's3' as const
+
+  constructor(cfg: S3Config) {
+    super(new S3Transport(cfg), 's3')
+  }
+}
+
 // ===== 组合后端：本地可靠落盘 + 云端后台同步 =====
 //
 // 移动端拍照场景：`<input capture>` 调起系统相机时，浏览器（尤其 Android
@@ -389,8 +418,9 @@ function isUrlRef(dataUrl: string | Blob | undefined): boolean {
   return typeof dataUrl === 'string' && !dataUrl.startsWith('data:')
 }
 
-/** CompositeBackend 对账所需的最小云端能力（SupabaseBackend 实现；测试可注入假实现） */
+/** CompositeBackend 对账所需的最小云端能力（SupabaseBackend/S3Backend 实现；测试可注入假实现） */
 interface CloudBackend {
+  readonly kind: 'supabase' | 's3'
   /** appleId → 墓碑对象名与删除时间戳（对账据此区分删除残留与删除后新拍的照片） */
   readonly tombstones: Map<number, { name: string; ts: number }>
   loadAll(slotKeys?: string[]): Promise<Map<number, StoreUploadState>>
@@ -399,7 +429,7 @@ interface CloudBackend {
 }
 
 export class CompositeBackend implements StorageBackend {
-  readonly kind: 'local' | 'supabase'
+  readonly kind: 'local' | 'supabase' | 's3'
   private local: StorageBackend = new IndexedDBBackend()
   private cloud: CloudBackend | null
   /** 每个 appleId 在飞的上传 Promise：清空/删除前先等它完成，避免「删除后上传又复活对象」 */
@@ -422,7 +452,7 @@ export class CompositeBackend implements StorageBackend {
     this.cloud = cloud ? new SupabaseBackend(cloud) : null
     if (internals?.cloud !== undefined) this.cloud = internals.cloud
     if (internals?.local) this.local = internals.local
-    this.kind = this.cloud ? 'supabase' : 'local'
+    this.kind = this.cloud ? this.cloud.kind : 'local'
   }
 
   /** 记录在飞上传；同门店操作链式排队（上传→删除按序执行） */
@@ -547,21 +577,93 @@ export class CompositeBackend implements StorageBackend {
 // ===== 工厂：按配置选择后端 =====
 
 export interface StorageConfig {
-  backend: 'local' | 'supabase'
+  backend: 'local' | 'supabase' | 's3'
+  /* supabase 后端配置（非 supabase 时为空串） */
   url: string
   anonKey: string
   bucket: string
+  /* S3 兼容后端配置（缤纷云 Bitiful 等；非 s3 时为空串）。bucket 复用上方字段 */
+  /** 桶级访问域名，如 https://my-main-oss-2026.s3.bitiful.net */
+  endpoint: string
+  /** SigV4 区域；缤纷云不校验（默认 us-east-1） */
+  region: string
+  accessKeyId: string
+  secretAccessKey: string
 }
 
-/** 本地后端是唯一零配置选项；supabase 三项配置缺一不可 */
+/** 空白配置（本地后端起点） */
+export function emptyStorageConfig(): StorageConfig {
+  return {
+    backend: 'local',
+    url: '',
+    anonKey: '',
+    bucket: '',
+    endpoint: '',
+    region: '',
+    accessKeyId: '',
+    secretAccessKey: '',
+  }
+}
+
+/** 环境变量默认配置：S3 兼容（缤纷云等）配齐则优先 → Supabase 配齐次之 → 本地 */
+export function defaultStorageConfigFromEnv(): StorageConfig {
+  const env = import.meta.env
+  const s3 = {
+    endpoint: env.VITE_S3_ENDPOINT ?? '',
+    region: env.VITE_S3_REGION ?? '',
+    bucket: env.VITE_S3_BUCKET ?? '',
+    accessKeyId: env.VITE_S3_ACCESS_KEY_ID ?? '',
+    secretAccessKey: env.VITE_S3_SECRET_ACCESS_KEY ?? '',
+  }
+  if (s3.endpoint && s3.bucket && s3.accessKeyId && s3.secretAccessKey) {
+    return { backend: 's3', url: '', anonKey: '', ...s3 }
+  }
+  const supabase = {
+    url: env.VITE_SUPABASE_URL ?? '',
+    anonKey: env.VITE_SUPABASE_ANON_KEY ?? '',
+    bucket: env.VITE_SUPABASE_BUCKET ?? '',
+  }
+  if (supabase.url && supabase.anonKey && supabase.bucket) {
+    return {
+      backend: 'supabase',
+      ...supabase,
+      endpoint: '',
+      region: '',
+      accessKeyId: '',
+      secretAccessKey: '',
+    }
+  }
+  return emptyStorageConfig()
+}
+
+/** 本地后端是唯一零配置选项；supabase / s3 各自必填项缺一不可 */
 export function validateStorageConfig(cfg: StorageConfig): string | null {
   if (cfg.backend === 'local') return null
+  if (cfg.backend === 's3') {
+    return validateS3Config({
+      endpoint: cfg.endpoint,
+      region: cfg.region,
+      bucket: cfg.bucket,
+      accessKeyId: cfg.accessKeyId,
+      secretAccessKey: cfg.secretAccessKey,
+    })
+  }
   return validateSupabaseConfig({ url: cfg.url, anonKey: cfg.anonKey, bucket: cfg.bucket })
 }
 
 export function createBackend(cfg: StorageConfig, onSyncError?: (appleId: number, e: unknown) => void): StorageBackend {
+  if (cfg.backend === 's3') {
+    const cloud = new S3Backend({
+      endpoint: cfg.endpoint,
+      region: cfg.region,
+      bucket: cfg.bucket,
+      accessKeyId: cfg.accessKeyId,
+      secretAccessKey: cfg.secretAccessKey,
+    })
+    return new CompositeBackend(null, onSyncError, { cloud })
+  }
   if (cfg.backend === 'supabase') {
-    // 工厂级防御：即使调用方跳过 validateStorageConfig，配置不合法也在此拒绝
+    // 工厂级防御：即使调用方跳过 validateStorageConfig，空配置也在此拒绝
     return new CompositeBackend({ url: cfg.url, anonKey: cfg.anonKey, bucket: cfg.bucket }, onSyncError)
   }
   return new CompositeBackend(null, onSyncError)

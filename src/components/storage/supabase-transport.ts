@@ -93,6 +93,11 @@ export class SupabaseTransport {
     return `${this.cfg.url.replace(/\/+$/, '')}/storage/v1/object/public/${this.cfg.bucket}/${encodeURIComponent(name)}`
   }
 
+  /** 展示用 URL——对象云后端统一入口（与 s3-transport 的 objectUrl 对齐） */
+  objectUrl(name: string): string {
+    return this.publicUrl(name)
+  }
+
   /** 对象路径编码：按路径段 encodeURIComponent（保留 / 的文件夹语义；无斜杠名不受影响） */
   private encodeObjectPath(name: string): string {
     return name.split('/').map(encodeURIComponent).join('/')

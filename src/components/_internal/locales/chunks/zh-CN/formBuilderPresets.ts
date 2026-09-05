@@ -217,6 +217,7 @@ export default {
     backend: '存储后端',
     localDesc: '本地（IndexedDB，仅当前设备）',
     cloudDesc: 'Supabase 云端（跨设备同步）',
+    s3Desc: 'S3 兼容对象存储（缤纷云等，跨设备同步）',
     saveSwitch: '保存并切换',
     saved: '已记录 ✓',
     syncFail: '目标 {id} 云端同步失败：{err}',

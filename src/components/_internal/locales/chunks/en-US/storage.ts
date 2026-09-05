@@ -20,5 +20,18 @@ export default {
     idbStoreBlocked: '[IndexedDB] Creating store "{store}" blocked, close other tabs and refresh',
     sourceImageUnavailable: 'Source image unavailable (HTTP {status}); upload skipped',
     clearPartialFail: '{n} objects failed to delete in the cloud, please retry',
+    s3EndpointRequired: 'S3 bucket endpoint is required',
+    s3EndpointFormat: 'S3 endpoint must start with http(s)://',
+    s3AkRequired: 'Access Key is required',
+    s3SkRequired: 'Secret Key is required',
+    panelBackend: 'Storage backend',
+    panelLocalDesc: 'Local (IndexedDB, this device only)',
+    panelSupabaseDesc: 'Supabase cloud (cross-device sync)',
+    panelS3Desc: 'S3-compatible object storage (Bitiful etc., cross-device)',
+    panelSave: 'Save & switch',
+    panelSupabaseTip:
+      'Files go to the bucket (create a public bucket in Supabase console first). Object name {appleId}-{file}; switching backends does not migrate existing data.',
+    panelS3Tip:
+      'Object name {appleId}-{file}; switching backends does not migrate existing data. AK/SK ships to the browser — internal tools / private deploys only.',
   },
 }

@@ -114,6 +114,7 @@
     "@vitejs/plugin-vue": "^5.0.0",
     "@vitest/coverage-v8": "^4.1.10",
     "@vue/test-utils": "^2.4.11",
+    "aws4": "^1.13.2",
     "echarts": "^6.1.0",
     "eslint-plugin-vue": "^10.10.0",
     "happy-dom": "^20.11.1",

@@ -218,6 +218,7 @@ export default {
     backend: 'Backend',
     localDesc: 'Local (IndexedDB, this device only)',
     cloudDesc: 'Supabase cloud (cross-device sync)',
+    s3Desc: 'S3-compatible object storage (Bitiful etc., cross-device)',
     saveSwitch: 'Save & switch',
     saved: 'Recorded ✓',
     syncFail: 'Target {id} cloud sync failed: {err}',
