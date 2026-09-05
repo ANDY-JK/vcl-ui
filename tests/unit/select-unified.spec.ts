@@ -61,6 +61,60 @@ describe('Select · 统一格式：tag 展示', () => {
   })
 })
 
+describe('Select · 面板互斥收起（stopPropagation 拦截回归锁）', () => {
+  // 背景：触发 input 带 @click.stop，useClickOutside 若在冒泡阶段监听 document，
+  // 点击另一个下拉时事件半路被拦 → 已打开的面板收不起来（多选面板常开时必现）
+  const TwoSelects = {
+    components: { Select },
+    data: () => ({ v1: [] as (string | number | boolean)[], v2: '', options }),
+    template: `
+      <div>
+        <Select v-model="v1" type="select" :options="options" multiple data-idx="first" />
+        <Select v-model="v2" type="select" :options="options" data-idx="second" />
+      </div>
+    `,
+  }
+
+  async function mountTwo() {
+    const w = mount(TwoSelects, { global: { stubs: { teleport: true } }, attachTo: document.body })
+    await w.findAll('input.trigger-input')[0].trigger('click')
+    await w.vm.$nextTick()
+    return w
+  }
+
+  it('多选面板开着 → 点击另一个下拉的 trigger，第一个面板关闭', async () => {
+    const w = await mountTwo()
+    await w.findAll('.panel-item')[0].trigger('click') // 多选选中，面板保持打开
+    expect(w.findAll('.dropdown-panel').length).toBe(1)
+    await new Promise((r) => setTimeout(r, 170)) // 越过 openedAt 150ms 开启防抖（真实用户点选后早已超过）
+    await w.findAll('input.trigger-input')[1].trigger('click') // 带 @click.stop
+    await w.vm.$nextTick()
+    expect(w.findAll('.dropdown-panel').length).toBe(1) // 只剩第二个的面板
+    w.unmount()
+  })
+
+  it('单选面板开着（未选中）→ 点击另一个下拉的 trigger，同样关闭', async () => {
+    const w = await mountTwo()
+    expect(w.findAll('.dropdown-panel').length).toBe(1)
+    await new Promise((r) => setTimeout(r, 170))
+    await w.findAll('input.trigger-input')[1].trigger('click')
+    await w.vm.$nextTick()
+    expect(w.findAll('.dropdown-panel').length).toBe(1)
+    w.unmount()
+  })
+
+  it('多选面板开着 → 焦点真离开（blur 到外部）→ 面板收起', async () => {
+    const w = await mountTwo()
+    await w.findAll('.panel-item')[0].trigger('click')
+    expect(w.findAll('.dropdown-panel').length).toBe(1)
+    // 模拟 Tab/点击外部输入框：原生 blur 使 activeElement 离开触发器
+    ;(w.findAll('input.trigger-input')[0].element as HTMLInputElement).blur()
+    await new Promise((r) => setTimeout(r, 220)) // blur 定时器 150ms
+    expect(w.findAll('.dropdown-panel').length).toBe(0)
+    w.unmount()
+  })
+})
+
 describe('Select · 统一格式：直接输入', () => {
   it('select 单选：输入自定义文本 + Enter → 直接采用该值（allowCreate 默认开）', async () => {
     const w = mountSelect({ modelValue: '' })

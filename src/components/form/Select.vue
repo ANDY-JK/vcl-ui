@@ -578,9 +578,13 @@ function onComboBlur() {
   // 延迟处理：等待面板选项 click 先行（点击选项必先触发 input blur）
   if (blurTimer) clearTimeout(blurTimer)
   blurTimer = setTimeout(() => {
+    // 焦点仍在触发器/面板内（如多选刚点选选项后重新聚焦输入框）→ 视为未离开，不收起
+    const active = document.activeElement as Node | null
+    if (active && (triggerRef.value?.contains(active) || floatingRef.value?.contains(active))) return
     if (props.multiple) {
-      // 多选：未提交的输入直接丢弃，已选值由 tag 展示；面板保持打开（可能刚重新聚焦继续选）
+      // 多选：未提交的输入直接丢弃，已选值由 tag 展示；焦点真离开时收起面板
       comboText.value = ''
+      if (open.value) closePanel()
       return
     }
     // 单选：输入未提交时失焦 → allowCreate 则提交，否则丢弃；面板收起
@@ -655,6 +659,11 @@ const navCount = computed(() => (isTreeSelect.value ? visibleTreeNodes.value.len
 function onTriggerKeydown(e: KeyboardEvent) {
   if (isMenu.value) return
   if (e.key === 'Escape') {
+    closePanel()
+    return
+  }
+  if (e.key === 'Tab') {
+    // 焦点随 Tab 移走，只读型面板（日期/树/菜单）没有 blur 收起逻辑，这里显式关闭
     closePanel()
     return
   }
