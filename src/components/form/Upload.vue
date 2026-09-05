@@ -406,6 +406,14 @@ function onCameraCapture(file: File) {
   processFiles(dt.files)
 }
 
+/** 连拍模式按「完成」：队列照片批量走上传链路（降级系统相机时仍逐张走 capture） */
+function onCameraBatchFinish(batch: File[]) {
+  if (!batch.length) return
+  const dt = new DataTransfer()
+  batch.forEach((f) => dt.items.add(f))
+  processFiles(dt.files)
+}
+
 /** 相机不可用提示（组件已自动降级系统相机，仅提示用户） */
 function onCameraError(msg: string) {
   emit('error', msg)
@@ -640,8 +648,15 @@ onUnmounted(() => {
     </div>
   </Teleport>
 
-  <!-- ===== 页面内拍照（CameraCapture 组件：原生相机布局，中键快门+左右侧键） ===== -->
-  <CameraCapture v-model="cameraOpen" @capture="onCameraCapture" @error="onCameraError" />
+  <!-- ===== 页面内拍照（CameraCapture 组件：原生相机布局，中键快门+左右侧键） =====
+       multiple 字段启用连拍：拍一张接着拍下一张、胶卷回看/重拍某张，完成时批量交付 -->
+  <CameraCapture
+    v-model="cameraOpen"
+    :multiple="props.multiple"
+    @capture="onCameraCapture"
+    @finish="onCameraBatchFinish"
+    @error="onCameraError"
+  />
 </template>
 
 <style scoped>

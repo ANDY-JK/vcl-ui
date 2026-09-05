@@ -18,11 +18,18 @@ interface Props {
   quality?: number
   /** 页面内相机不可用（权限拒绝/无摄像头/非 HTTPS）时自动降级调起设备系统相机，默认 true */
   fallbackOnError?: boolean
+  /**
+   * 多张连拍模式：快门确认后不交付、进内部队列并回到取景继续拍下一张；
+   * 底部胶卷可回看/左右切换/重拍某张/删除，按「完成」经 finish 一次性交付 File[]。
+   * 降级系统相机时无法连拍（每次一张，仍走 capture 事件逐张交付）。
+   */
+  multiple?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
   quality: 0.9,
   fallbackOnError: true,
+  multiple: false,
 })
 
 // P2-5：弹层焦点陷阱 —— 打开时焦点移入工具栏，Tab 循环不逃逸，关闭恢复
@@ -35,8 +42,10 @@ useFocusTrap({
 
 const emit = defineEmits<{
   'update:modelValue': [v: boolean]
-  /** 确认使用照片（页面内拍照或降级系统相机拍照均交付 File） */
+  /** 确认使用照片（页面内拍照或降级系统相机拍照均交付 File；multiple 模式下降级路径也走这里） */
   capture: [file: File]
+  /** multiple 模式：按「完成」一次性交付队列全部照片 */
+  finish: [files: File[]]
   /** 取消 / 关闭 */
   cancel: []
   /** 相机不可用提示；fallbackOnError 时附带说明已切换系统相机 */
@@ -52,6 +61,81 @@ const showFlip = ref(false)
 let stream: MediaStream | null = null
 let streamKind: 'environment' | 'user' = 'environment'
 
+/* ════════ multiple 连拍队列 ════════ */
+interface CamShot {
+  file: File
+  url: string
+}
+const shots = ref<CamShot[]>([])
+/** ≥0：正在回看队列第 viewIdx 张（左右切换/重拍/删除） */
+const viewIdx = ref(-1)
+/** ≥0：取景是为替换第 replaceIdx 张（快门确认后替换该位，而非追加） */
+const replaceIdx = ref(-1)
+
+function clearShot() {
+  if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
+  shotUrl.value = ''
+  shotFile.value = null
+}
+
+function clearShots() {
+  shots.value.forEach((s) => URL.revokeObjectURL(s.url))
+  shots.value = []
+  viewIdx.value = -1
+  replaceIdx.value = -1
+}
+
+/** 回看队列第 i 张 */
+function reviewShot(i: number) {
+  viewIdx.value = i
+  replaceIdx.value = -1
+  clearShot()
+}
+
+function reviewPrev() {
+  if (viewIdx.value > 0) viewIdx.value -= 1
+}
+
+function reviewNext() {
+  if (viewIdx.value < shots.value.length - 1) viewIdx.value += 1
+}
+
+/** 回看中：删除当前张 */
+function deleteShot() {
+  const i = viewIdx.value
+  if (i < 0 || i >= shots.value.length) return
+  URL.revokeObjectURL(shots.value[i].url)
+  shots.value.splice(i, 1)
+  if (!shots.value.length) {
+    viewIdx.value = -1
+    return
+  }
+  viewIdx.value = Math.min(i, shots.value.length - 1)
+}
+
+/** 回看中：重拍当前张 → 回取景，快门确认后替换该位 */
+function retakeShot() {
+  replaceIdx.value = viewIdx.value
+  viewIdx.value = -1
+  clearShot()
+}
+
+/** 回看/替换中：放弃替换或回取景继续拍 */
+function backToViewfinder() {
+  replaceIdx.value = -1
+  viewIdx.value = -1
+  clearShot()
+}
+
+/** multiple 模式按「完成」：一次性交付队列 */
+function finishShots() {
+  if (!shots.value.length) return
+  const files = shots.value.map((s) => s.file)
+  close()
+  emit('update:modelValue', false)
+  emit('finish', files)
+}
+
 watch(
   () => props.modelValue,
   (v) => {
@@ -62,8 +146,8 @@ watch(
 
 async function start() {
   cameraReady.value = false
-  shotUrl.value = ''
-  shotFile.value = null
+  clearShot()
+  clearShots()
   streamKind = 'environment'
   if (!navigator.mediaDevices?.getUserMedia) {
     handleCameraUnavailable(t('form.cameraUnavailable'))
@@ -172,12 +256,20 @@ function close() {
     stream = null
   }
   cameraReady.value = false
-  if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
-  shotUrl.value = ''
-  shotFile.value = null
+  clearShot()
+  clearShots()
 }
 
+/** multiple 模式下队列非空时取消，防误触丢片；替换取景中取消 = 退回回看不清队列 */
 function cancel() {
+  if (replaceIdx.value >= 0) {
+    viewIdx.value = Math.min(replaceIdx.value, shots.value.length - 1)
+    replaceIdx.value = -1
+    clearShot()
+    return
+  }
+  if (props.multiple && shots.value.length && !window.confirm(t('form.cancelDiscardShots', { n: shots.value.length })))
+    return
   close()
   emit('update:modelValue', false)
   emit('cancel')
@@ -239,14 +331,27 @@ function doShot(video: HTMLVideoElement) {
 }
 
 function retake() {
-  if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
-  shotUrl.value = ''
-  shotFile.value = null
+  clearShot()
 }
 
 function useShot() {
   if (!shotFile.value) return
   const f = shotFile.value
+  if (props.multiple) {
+    // 连拍：替换目标位（回看重拍进入）或追加队列，然后回到取景继续拍下一张
+    const url = shotUrl.value
+    shotUrl.value = '' // blob URL 所有权转移给队列，不随 clearShot revoke
+    shotFile.value = null
+    if (replaceIdx.value >= 0 && replaceIdx.value < shots.value.length) {
+      URL.revokeObjectURL(shots.value[replaceIdx.value].url)
+      shots.value[replaceIdx.value] = { file: f, url }
+      viewIdx.value = replaceIdx.value // 回看确认替换结果
+      replaceIdx.value = -1
+    } else {
+      shots.value.push({ file: f, url })
+    }
+    return
+  }
   close()
   emit('update:modelValue', false)
   emit('capture', f)
@@ -285,7 +390,7 @@ onUnmounted(() => {
         <div class="camc-viewport">
           <!-- video 常驻 DOM（v-show），避免重拍/翻转后元素重建导致 srcObject 丢失 -->
           <video
-            v-show="!shotUrl"
+            v-show="!shotUrl && viewIdx < 0"
             ref="videoRef"
             class="camc-video"
             :class="{ 'camc-mirror': streamKind === 'user' }"
@@ -293,23 +398,78 @@ onUnmounted(() => {
             playsinline
             muted
           />
+          <!-- 刚拍待确认 -->
           <img v-if="shotUrl" :src="shotUrl" class="camc-shot" />
-          <div v-if="!cameraReady && !shotUrl" class="camc-status">{{ t('form.cameraStarting') }}</div>
+          <!-- 连拍回看：队列第 viewIdx 张，左右箭头切换 -->
+          <template v-else-if="viewIdx >= 0">
+            <img :src="shots[viewIdx].url" class="camc-shot" />
+            <button
+              v-if="viewIdx > 0"
+              type="button"
+              class="camc-nav camc-nav-prev"
+              :aria-label="t('form.prevPhoto')"
+              @click="reviewPrev"
+            >
+              ‹
+            </button>
+            <button
+              v-if="viewIdx < shots.length - 1"
+              type="button"
+              class="camc-nav camc-nav-next"
+              :aria-label="t('form.nextPhoto')"
+              @click="reviewNext"
+            >
+              ›
+            </button>
+          </template>
+          <div v-if="!cameraReady && !shotUrl && viewIdx < 0" class="camc-status">{{ t('form.cameraStarting') }}</div>
+        </div>
+
+        <!-- 连拍胶卷（multiple 模式）：缩略图回看 + 完成交付 -->
+        <div v-if="props.multiple" class="camc-strip">
+          <div class="camc-thumbs">
+            <button
+              v-for="(s, i) in shots"
+              :key="s.url"
+              type="button"
+              class="camc-thumb"
+              :class="{ active: i === viewIdx }"
+              :aria-label="`${t('form.review')} ${i + 1}/${shots.length}`"
+              @click="reviewShot(i)"
+            >
+              <img :src="s.url" alt="" />
+            </button>
+          </div>
+          <button type="button" class="camc-done" :disabled="!shots.length" @click="finishShots">
+            {{ t('form.done') }}<span v-if="shots.length">({{ shots.length }})</span>
+          </button>
         </div>
 
         <!-- 底部工具栏：中间快门 + 左右侧键 -->
         <div class="camc-bar">
-          <!-- 已拍：左重拍 / 中「使用」 / 右取消 -->
-          <template v-if="shotUrl">
+          <!-- 回看队列某张：左重拍该张 / 中继续拍 / 右删除 -->
+          <template v-if="viewIdx >= 0">
+            <button type="button" class="camc-side" @click="retakeShot">{{ t('form.retake') }}</button>
+            <button type="button" class="camc-shutter camc-shutter-confirm" @click="backToViewfinder">
+              {{ t('form.continueShot') }}
+            </button>
+            <button type="button" class="camc-side" @click="deleteShot">{{ t('form.delete') }}</button>
+          </template>
+          <!-- 已拍待确认：左重拍 / 中「使用」 / 右取消（替换中为返回） -->
+          <template v-else-if="shotUrl">
             <button type="button" class="camc-side" @click="retake">{{ t('form.retake') }}</button>
             <button type="button" class="camc-shutter camc-shutter-confirm" @click="useShot">
               {{ t('form.use') }}
             </button>
-            <button type="button" class="camc-side" @click="cancel">{{ t('form.cancel') }}</button>
+            <button type="button" class="camc-side" @click="cancel">
+              {{ replaceIdx >= 0 ? t('form.back') : t('form.cancel') }}
+            </button>
           </template>
-          <!-- 取景：左取消 / 中快门 / 右翻转（无前置摄像头时右侧留空占位） -->
+          <!-- 取景：左取消（替换中为返回）/ 中快门 / 右翻转（无前置摄像头时右侧留空占位） -->
           <template v-else>
-            <button type="button" class="camc-side" @click="cancel">{{ t('form.cancel') }}</button>
+            <button type="button" class="camc-side" @click="cancel">
+              {{ replaceIdx >= 0 ? t('form.back') : t('form.cancel') }}
+            </button>
             <button
               type="button"
               class="camc-shutter"
@@ -387,6 +547,101 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 0 var(--space-7);
   z-index: 2;
+}
+
+/* 连拍胶卷（multiple）：位于工具栏上方，缩略图横向滚动 + 完成按钮 */
+.camc-strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(28px + 56px + 20px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-5);
+  z-index: 2;
+}
+.camc-thumbs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px;
+}
+.camc-thumbs::-webkit-scrollbar {
+  display: none;
+}
+.camc-thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+}
+.camc-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.camc-thumb.active {
+  border-color: #3b82f6;
+}
+.camc-done {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 20px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: clamp(13px, 1.8vw, 15px);
+  font-weight: 600;
+  cursor: pointer;
+}
+.camc-done:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.camc-done:active {
+  opacity: 0.85;
+}
+
+/* 回看左右切换箭头（叠在取景框两侧） */
+.camc-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.camc-nav:active {
+  background: rgba(0, 0, 0, 0.65);
+}
+.camc-nav-prev {
+  left: 12px;
+}
+.camc-nav-next {
+  right: 12px;
 }
 /* 左右侧键：同一尺寸占位，保证快门绝对居中 */
 .camc-side {

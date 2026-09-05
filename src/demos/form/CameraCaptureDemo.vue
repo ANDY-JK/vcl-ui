@@ -21,6 +21,17 @@ function onCameraError(msg: string) {
   console.warn('相机错误：', msg)
   showCamera.value = false
 }
+
+/* ══════ 多张连拍：拍完一张接着拍，胶卷回看/重拍某张，完成批量交付 ══════ */
+const batchOpen = ref(false)
+const batchPhotos = ref<File[]>([])
+const batchUrls = ref<string[]>([])
+
+function onBatchFinish(files: File[]) {
+  batchUrls.value.forEach((u) => URL.revokeObjectURL(u))
+  batchPhotos.value = files
+  batchUrls.value = files.map((f) => URL.createObjectURL(f))
+}
 </script>
 
 <template>
@@ -55,6 +66,39 @@ function onCameraError(msg: string) {
       </p>
     </Card>
 
+    <!-- ══════ 多张连拍 ══════ -->
+    <Card title="多张连拍 — 拍完一张接着拍，胶卷回看/重拍" style="margin-bottom: 24px">
+      <p class="demo-hint" style="margin-bottom: 12px">
+        <code>multiple</code> — 快门确认后不关相机，照片进队列继续拍下一张；点底部缩略图回看， 大图 ‹ ›
+        切换上一张/下一张，侧键「重拍」替换该张、「删除」移除；「完成(n)」一次性交付
+        <code>finish</code> 事件（File[]）。取消时已拍照片会先确认防误丢。<br />
+        表单里 multiple 上传字段的「拍照」入口即此模式（组件内已接通）。
+      </p>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+        <Button text="打开连拍相机" variant="primary" icon="camera" @click="batchOpen = true" />
+      </div>
+      <div v-if="batchUrls.length" style="margin-top: 16px">
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 8px">
+          连拍交付 {{ batchPhotos.length }} 张：
+        </p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <img
+            v-for="(u, i) in batchUrls"
+            :key="u"
+            :src="u"
+            :alt="`shot-${i + 1}`"
+            style="
+              width: 96px;
+              height: 72px;
+              object-fit: cover;
+              border-radius: 6px;
+              border: 1px solid var(--color-border);
+            "
+          />
+        </div>
+      </div>
+    </Card>
+
     <Card title="Props">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
@@ -83,12 +127,22 @@ function onCameraError(msg: string) {
             <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">JPEG 输出质量 0-1</td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px">
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
               <code>fallbackOnError</code>
             </td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">true</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              相机不可用时降级调起系统相机
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 8px">
+              <code>multiple</code>
+            </td>
             <td style="padding: 6px 8px">boolean</td>
-            <td style="padding: 6px 8px">true</td>
-            <td style="padding: 6px 8px">相机不可用时降级调起系统相机</td>
+            <td style="padding: 6px 8px">false</td>
+            <td style="padding: 6px 8px">多张连拍：胶卷回看/重拍某张，完成时 finish 交付 File[]</td>
           </tr>
         </tbody>
       </table>
@@ -133,6 +187,13 @@ function onCameraError(msg: string) {
 
     <!-- 相机组件 -->
     <CameraCapture v-model="showCamera" @capture="onCapture" @cancel="showCamera = false" @error="onCameraError" />
+    <CameraCapture
+      v-model="batchOpen"
+      multiple
+      @finish="onBatchFinish"
+      @cancel="batchOpen = false"
+      @error="onCameraError"
+    />
   </div>
 </template>
 
