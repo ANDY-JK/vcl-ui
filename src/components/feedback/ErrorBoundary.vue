@@ -78,7 +78,7 @@ watch(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(var(--space-7), 6vw, 64px);
+  padding: clamp(var(--space-12), 6vw, 64px);
   text-align: center;
 }
 .eb-icon {

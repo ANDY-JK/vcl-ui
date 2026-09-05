@@ -587,7 +587,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-7);
+  /* 旧版为 0 36px；勿用 --space-7（令牌表无此档，var 失效会归零导致侧键贴边） */
+  padding: 0 var(--space-12);
   z-index: 2;
 }
 
