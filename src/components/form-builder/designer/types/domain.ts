@@ -303,6 +303,10 @@ export interface DesignerDataConfig {
   defaultType?: 'none' | 'fixed' | 'formula' | 'api' | 'currentUser' | 'currentTime'
   /** 默认值公式 */
   defaultFormula?: string
+  /** 默认值接口地址（defaultType=api 时有效） */
+  defaultApiUrl?: string
+  /** 默认值响应取值路径，如 data.value（留空取整个响应体） */
+  defaultApiDataPath?: string
   /** 数据源类型 */
   sourceType?: 'none' | 'api' | 'database' | 'userList' | 'deptList'
   /** 接口地址 */

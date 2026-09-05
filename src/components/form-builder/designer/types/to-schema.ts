@@ -84,6 +84,13 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       base.defaultMeta = { type: dt }
     } else if (dt === 'formula' && f.dataConfig?.defaultFormula) {
       base.defaultMeta = { type: 'formula', formula: f.dataConfig.defaultFormula }
+    } else if (dt === 'api' && f.dataConfig?.defaultApiUrl) {
+      // api 型动态默认值：未填 apiUrl 不映射（避免运行时空请求）
+      base.defaultMeta = {
+        type: 'api',
+        apiUrl: f.dataConfig.defaultApiUrl,
+        ...(f.dataConfig.defaultApiDataPath ? { dataPath: f.dataConfig.defaultApiDataPath } : {}),
+      }
     }
 
     // 选项类型

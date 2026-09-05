@@ -349,6 +349,8 @@ export default {
     currentTime: 'Current time',
     defaultFormula: 'Default value formula',
     defaultFormulaPh: "e.g. {'{{'}phone{'}}'} + {'{{'}name{'}}'}",
+    defaultApiDataPath: 'Data path',
+    defaultApiDataPathPh: 'e.g. data.value (empty = whole response)',
     sectionRemote: 'Remote data source',
     sourceType: 'Data source type',
     srcNone: 'None (static data)',

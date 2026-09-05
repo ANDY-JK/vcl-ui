@@ -170,6 +170,7 @@ export function createInitialData(fields: FormField[], opts: { userContext?: Use
         data[field.key] = evaluateFormula(dm.formula, data)
         continue
       }
+      // type=api 不在此处理：初始同步为空值占位，异步回填走 applyRemoteDefaults
     }
 
     data[field.key] = field.default !== undefined ? field.default : getEmptyValue(field)
@@ -182,6 +183,110 @@ function formatCurrentTime(): string {
   const d = new Date()
   const p = (n: number): string => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`
+}
+
+/**
+ * 收集可见字段的数据（提交用：隐藏字段不提交）
+ *
+ * @param isVisible 调用方合成的可见性判定（联动显隐/事件隐藏等）
+ */
+export function collectVisibleData(
+  fields: FormField[],
+  data: FormData,
+  isVisible: (f: FormField) => boolean,
+): FormData {
+  const submitData: FormData = {}
+  for (const field of fields) {
+    if (isLayoutField(field.type)) continue
+    if (!isVisible(field)) continue
+    submitData[field.key] = data[field.key]
+  }
+  return submitData
+}
+
+// ════════════════════════════════════════
+// api 型动态默认值（异步回填）
+// ════════════════════════════════════════
+
+/** 响应取值：dataPath 点分路径遍历（数字段位数组索引），留空取整个响应体 */
+function pickByPath(resolved: unknown, path: string): unknown {
+  if (!path) return resolved
+  let cur: unknown = resolved
+  for (const seg of path.split('.')) {
+    if (cur === null || cur === undefined) return undefined
+    cur = (cur as Record<string, unknown>)[seg]
+  }
+  return cur
+}
+
+/** 可作为字段默认值的类型：原始值或原始值数组（对象无法回填给任何字段类型） */
+function isDefaultValue(v: unknown): boolean {
+  if (v === null || v === undefined) return false
+  if (Array.isArray(v)) return v.every((x) => typeof x === 'string' || typeof x === 'number' || typeof x === 'boolean')
+  return typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'
+}
+
+/**
+ * api 型动态默认值：打开表单时 GET 拉取并回填
+ *
+ * - 仅处理 defaultMeta.type='api' 且填了 apiUrl 的字段；同 URL 只发一次请求
+ * - dataPath 点分路径取响应子路径（数字段位数组索引），留空取整个响应体
+ * - 响应优先 JSON 解析，失败按纯文本
+ * - 请求失败/超时/取值不是原始值或原始值数组 → 跳过该字段（字段保持静态默认/空值）
+ * - 不做持久缓存：每次打开表单拉一次（跨表单同 URL 由浏览器 HTTP 缓存兜底）
+ *
+ * @param fields 字段列表（effectiveSchema.fields）
+ * @param opts.fetcher 请求实现（默认全局 fetch，测试可注入）
+ * @param opts.timeoutMs 单请求超时毫秒（默认 10s，AbortController 中断）
+ * @returns key → 默认值 映射（仅含成功解析的字段）；调用方自行决定是否覆盖（FormBuilder 只回填未被用户/草稿占用的字段）
+ */
+export async function applyRemoteDefaults(
+  fields: FormField[],
+  opts: { fetcher?: typeof fetch; timeoutMs?: number } = {},
+): Promise<FormData> {
+  const out: FormData = {}
+  const targets = fields.filter((f) => !isLayoutField(f.type) && f.defaultMeta?.type === 'api' && f.defaultMeta.apiUrl)
+  if (!targets.length) return out
+
+  const fetcher = opts.fetcher ?? fetch
+  const timeoutMs = opts.timeoutMs ?? 10_000
+  const urlKeys = new Map<string, string[]>()
+  for (const f of targets) {
+    const url = f.defaultMeta!.apiUrl!
+    urlKeys.set(url, [...(urlKeys.get(url) ?? []), f.key])
+  }
+
+  const fetchOne = async (url: string): Promise<unknown> => {
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null
+    const timer = setTimeout(() => ctrl?.abort(), timeoutMs)
+    try {
+      const res = await fetcher(url, { signal: ctrl?.signal } as RequestInit)
+      try {
+        return await res.json()
+      } catch {
+        return await res.text()
+      }
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  await Promise.all(
+    [...urlKeys.entries()].map(async ([url, keys]) => {
+      let resolved: unknown
+      try {
+        resolved = await fetchOne(url)
+      } catch {
+        return // 失败/超时：整组字段保持占位值
+      }
+      for (const f of targets) {
+        if (!keys.includes(f.key)) continue
+        const v = pickByPath(resolved, f.defaultMeta!.dataPath ?? '')
+        if (isDefaultValue(v)) out[f.key] = v as FormData[string]
+      }
+    }),
+  )
+  return out
 }
 
 // ════════════════════════════════════════

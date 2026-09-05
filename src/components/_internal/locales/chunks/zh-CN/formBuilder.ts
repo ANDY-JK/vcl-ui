@@ -346,6 +346,8 @@ export default {
     currentTime: '当前时间',
     defaultFormula: '默认值公式',
     defaultFormulaPh: "如：{'{{'}phone{'}}'} + {'{{'}name{'}}'}",
+    defaultApiDataPath: '取值路径',
+    defaultApiDataPathPh: '如：data.value（留空取整个响应）',
     sectionRemote: '远程数据源',
     sourceType: '数据源类型',
     srcNone: '无（静态数据）',

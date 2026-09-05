@@ -244,11 +244,16 @@ export interface FormField {
    * - currentTime: 初始化填当前时间
    * - currentUser: 初始化填当前用户（取 FormBuilder userContext）
    * - formula:     用公式求值（{{field}} 引用同表单其它字段）
+   * - api:         打开表单时 GET apiUrl 异步回填（applyRemoteDefaults；dataPath 取响应子路径）
    */
   defaultMeta?: {
-    type: 'currentTime' | 'currentUser' | 'formula'
+    type: 'currentTime' | 'currentUser' | 'formula' | 'api'
     /** formula 表达式（type=formula 时有效） */
     formula?: string
+    /** 接口地址（type=api 时有效） */
+    apiUrl?: string
+    /** 响应取值路径，如 data.value（type=api 时有效；留空取整个响应体） */
+    dataPath?: string
   }
   /**
    * 字段联动配置

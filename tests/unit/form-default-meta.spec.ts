@@ -34,6 +34,11 @@ describe('createInitialData · 动态默认值', () => {
     expect(data.f1).toBe('静态')
   })
 
+  it('api 型不参与同步初始化（先落空占位值，由 applyRemoteDefaults 异步回填）', () => {
+    const data = createInitialData([field({ defaultMeta: { type: 'api', apiUrl: 'https://x/api' } })])
+    expect(data.f1).toBeNull()
+  })
+
   it('纯布局字段不参与', () => {
     const data = createInitialData([
       { key: '', label: '分隔', type: 'divider' } as FormField,
@@ -64,6 +69,28 @@ describe('toFormSchema · dataConfig → defaultMeta 映射', () => {
     ]
     const schema = toFormSchema(nodes)
     expect(schema.fields[0].defaultMeta).toEqual({ type: 'formula', formula: '{{a}}+{{b}}' })
+  })
+
+  it('defaultType=api + defaultApiUrl → defaultMeta（apiUrl/dataPath 映射）', () => {
+    const nodes: DesignerNode[] = [
+      {
+        id: 'n1',
+        type: 'text',
+        label: '编号',
+        key: 'no',
+        dataConfig: { defaultType: 'api', defaultApiUrl: 'https://x/next-no', defaultApiDataPath: 'data.no' },
+      } as DesignerNode,
+    ]
+    const schema = toFormSchema(nodes)
+    expect(schema.fields[0].defaultMeta).toEqual({ type: 'api', apiUrl: 'https://x/next-no', dataPath: 'data.no' })
+  })
+
+  it('defaultType=api 但未填 apiUrl → 不映射（避免空请求）', () => {
+    const nodes: DesignerNode[] = [
+      { id: 'n1', type: 'text', label: 'A', key: 'a', dataConfig: { defaultType: 'api' } } as DesignerNode,
+    ]
+    const schema = toFormSchema(nodes)
+    expect(schema.fields[0].defaultMeta).toBeUndefined()
   })
 
   it('defaultType=none/fixed 不映射 defaultMeta', () => {

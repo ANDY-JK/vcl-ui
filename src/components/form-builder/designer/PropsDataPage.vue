@@ -54,6 +54,28 @@ const emit = defineEmits<{
         />
       </div>
     </template>
+    <template v-if="node.dataConfig?.defaultType === 'api'">
+      <div class="ldp-prop">
+        <label>{{ t('fbp.apiUrl') }}</label>
+        <Input
+          :model-value="node.dataConfig?.defaultApiUrl ?? ''"
+          :placeholder="t('fbp.apiUrlPh')"
+          @update:model-value="
+            emit('update', { dataConfig: { ...node.dataConfig, defaultApiUrl: String($event ?? '') } })
+          "
+        />
+      </div>
+      <div class="ldp-prop">
+        <label>{{ t('fbp.defaultApiDataPath') }}</label>
+        <Input
+          :model-value="node.dataConfig?.defaultApiDataPath ?? ''"
+          :placeholder="t('fbp.defaultApiDataPathPh')"
+          @update:model-value="
+            emit('update', { dataConfig: { ...node.dataConfig, defaultApiDataPath: String($event ?? '') } })
+          "
+        />
+      </div>
+    </template>
 
     <div class="ldp-section-title">{{ t('fbp.sectionRemote') }}</div>
     <div class="ldp-datasource-card">

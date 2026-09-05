@@ -4,10 +4,12 @@
  * submitConfig 驱动的两条远程链路：
  * - loadRemoteData: GET 拉取（apiUrl+params）→ 按 schema 字段回填 → emit 'loaded'
  * - scheduleAutoSave: review 模式防抖 POST 自动保存（版本号防过期覆盖）
+ * - applyApiDefaults: api 型动态默认值（defaultMeta.type='api'）打开表单时异步回填
  */
 import type { Ref } from 'vue'
 import { useT } from '@/components/_internal/i18n'
-import type { FormData } from './types'
+import { applyRemoteDefaults } from './useFormSchema'
+import type { FormData, FormField } from './types'
 import type { FormSubmitConfig } from './types'
 
 const t = useT()
@@ -25,10 +27,10 @@ export function useFormRemote(
   /** 自动保存版本号（防抖期间旧请求结果不覆盖新状态） */
   let autoSaveVersion = 0
 
-  /** 远程数据加载：GET 拉取 → 按 schema 字段回填（响应取 json.data ?? json） */
+  /** 远程数据加载：GET 拉取 → 按 schema 字段回填（响应取 json.data ?? json）；edit 模式跳过（不覆盖回填数据） */
   async function loadRemoteData(): Promise<void> {
     const rc = submitConfig.value
-    if (!rc?.apiUrl) return
+    if (!rc?.apiUrl || rc.mode === 'edit') return
     try {
       const url = new URL(rc.apiUrl, window.location.origin)
       for (const [k, v] of Object.entries(rc.params ?? {})) url.searchParams.set(k, String(v))
@@ -77,10 +79,25 @@ export function useFormRemote(
     }, rc.reviewAutoSave ?? 3000)
   }
 
+  /**
+   * api 型动态默认值（defaultMeta.type='api'）：打开表单时异步 GET 回填。
+   * 发出后不等待（不阻塞 GET 回填/草稿加载）；仅回填仍等于初始占位值的字段——
+   * 优先级天然低于 submitConfig GET 回填与草稿（它们先改值 → 守卫跳过）。
+   */
+  function applyApiDefaults(fields: () => FormField[], initialData: () => FormData): void {
+    void applyRemoteDefaults(fields()).then((defaults) => {
+      const patch: FormData = {}
+      for (const key of Object.keys(defaults)) {
+        if (formData.value[key] === initialData()[key]) patch[key] = defaults[key]
+      }
+      if (Object.keys(patch).length) formData.value = { ...formData.value, ...patch }
+    })
+  }
+
   /** 卸载清理（autoSave pending） */
   function dispose(): void {
     if (autoSaveTimer) clearTimeout(autoSaveTimer)
   }
 
-  return { loadRemoteData, scheduleAutoSave, dispose }
+  return { loadRemoteData, scheduleAutoSave, applyApiDefaults, dispose }
 }

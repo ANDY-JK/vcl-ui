@@ -19,7 +19,7 @@
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { shallowEqual } from '@/components/_internal/utils'
-import { useFormSchema, isLayoutField, isFieldVisible } from './useFormSchema'
+import { useFormSchema, isLayoutField, isFieldVisible, collectVisibleData } from './useFormSchema'
 import { useFormValidator } from './useFormValidator'
 import { useFormStorage } from './useFormStorage'
 import { useFormLinkage } from './useFormLinkage'
@@ -229,11 +229,13 @@ onMounted(async () => {
   // 初始化无联动条件的 API 数据源
   await initDataSources()
 
-  // submitConfig：GET 加载数据（apiUrl）→ 回填字段值
-  const rc = submitConfig.value
-  if (rc?.apiUrl && rc.mode !== 'edit') {
-    await loadRemoteData()
-  }
+  applyApiDefaults(
+    () => normalized.value.fields,
+    () => initialData.value,
+  ) // api 默认值异步回填（不阻塞）
+
+  // submitConfig：GET 加载数据（apiUrl）→ 回填字段值（edit 模式由 loadRemoteData 内部跳过）
+  await loadRemoteData()
 
   if (props.storageKey) {
     const draft = await loadDraft(props.storageKey)
@@ -275,13 +277,11 @@ function handleSubmit(): void {
   }
 
   // 收集可见字段的数据（隐藏字段不提交）
-  const submitData: FormData = {}
-  for (const field of effectiveFields.value) {
-    if (isLayoutField(field.type)) continue
-    if (!isFieldVisibleWithLinkage(field, formData.value)) continue
-    if (isHiddenByEvent(field.key)) continue
-    submitData[field.key] = formData.value[field.key]
-  }
+  const submitData = collectVisibleData(
+    effectiveFields.value,
+    formData.value,
+    (f) => isFieldVisibleWithLinkage(f, formData.value) && !isHiddenByEvent(f.key),
+  )
 
   // 提交模式：unique 模式下若已提交过则拦截（防止重复提交）
   if (normalized.value.submitMode === 'unique' && hasSubmitted.value) {
@@ -434,10 +434,11 @@ const { hiddenByEvent, isHiddenByEvent, handleFieldChange } = useFormEvents(
   () => handleSubmit(),
 )
 
-// 远程数据链路（GET 回填 + review 防抖自动保存）— 逻辑在 useFormRemote
+// 远程数据链路（GET 回填 + review 防抖自动保存 + api 型动态默认值）— 逻辑在 useFormRemote
 const {
   loadRemoteData,
   scheduleAutoSave,
+  applyApiDefaults,
   dispose: disposeRemote,
 } = useFormRemote(
   submitConfig,
