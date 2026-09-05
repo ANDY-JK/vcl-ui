@@ -19,6 +19,9 @@ import {
   reviewFormSchema,
   storeReportSchema,
   dynamicFormSchema,
+  contractCollectionSchema,
+  rebateLetterSchema,
+  shelfCollectionSchema,
 } from '@/components/form-builder'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
@@ -97,6 +100,10 @@ const presets = [
   { key: 'store', label: '门店收集', icon: 'file-text', schema: storeCollectionSchema },
   { key: 'review', label: '审批流程', icon: 'clipboard-check', schema: reviewFormSchema },
   { key: 'container', label: '容器布局', icon: 'layout-template', nodes: containerDemoNodes, meta: containerDemoMeta },
+  // 新旧对比拍板项（2026-08-31）：旧版业务 demo 走模板路线退役——三业务模板入通用模板库
+  { key: 'contract', label: '合同收集', icon: 'file-text', schema: contractCollectionSchema },
+  { key: 'rebate', label: '返利函收集', icon: 'mail', schema: rebateLetterSchema },
+  { key: 'shelf', label: '门店陈列', icon: 'image', schema: shelfCollectionSchema },
 ] as const
 
 // 当前选中的预置模板
