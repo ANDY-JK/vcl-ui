@@ -21,13 +21,15 @@ function mountSelect(props: Record<string, unknown> = {}) {
 }
 
 describe('Select · 开关', () => {
-  it('点击触发器打开面板，再点关闭', async () => {
+  it('点击触发器打开面板；打开状态再点不关闭（防输入中误收起），Escape 收起', async () => {
     const w = mountSelect()
     const input = w.find('input.trigger-input')
     expect(w.find('.dropdown-panel').exists()).toBe(false)
     await input.trigger('click')
     expect(w.find('.dropdown-panel').exists()).toBe(true)
     await input.trigger('click')
+    expect(w.find('.dropdown-panel').exists()).toBe(true)
+    await input.trigger('keydown', { key: 'Escape' })
     expect(w.find('.dropdown-panel').exists()).toBe(false)
   })
 
@@ -79,25 +81,28 @@ describe('Select · 单选与多选', () => {
 })
 
 describe('Select · 搜索过滤', () => {
+  // 统一格式后 select 无面板内搜索框：trigger 输入即过滤（与 combobox 同一交互）
   // 搜索关键词有 200ms debounce（防 1000+ 选项卡顿），断言前需等待
   const waitSearch = () => new Promise((r) => setTimeout(r, 260))
 
-  it('搜索关键词过滤选项（label 匹配）', async () => {
+  it('trigger 输入关键词过滤选项（label 匹配）', async () => {
     const w = mountSelect()
-    await w.find('input.trigger-input').trigger('click')
-    const search = w.find('input.panel-input')
-    await search.setValue('上')
+    const input = w.find('input.trigger-input')
+    await input.trigger('click')
+    await input.setValue('上')
     await waitSearch()
     const labels = w.findAll('.panel-item .item-label').map((n) => n.text())
     expect(labels).toEqual(['上海'])
   })
 
-  it('搜索无匹配 → 显示空状态', async () => {
+  it('搜索无匹配 → 显示空状态（提示可直接输入采用）', async () => {
     const w = mountSelect()
-    await w.find('input.trigger-input').trigger('click')
-    await w.find('input.panel-input').setValue('不存在的城市')
+    const input = w.find('input.trigger-input')
+    await input.trigger('click')
+    await input.setValue('不存在的城市')
     await waitSearch()
     expect(w.find('.panel-status').exists()).toBe(true)
+    expect(w.find('.panel-status').text()).toContain('不存在的城市')
   })
 })
 

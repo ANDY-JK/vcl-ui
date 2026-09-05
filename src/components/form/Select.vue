@@ -16,6 +16,11 @@ const t = useT()
  * 4. v-if 条件链：先判断模式类型（Date/Time/Tree/Menu），再判断空选项
  * 5. 统一上浮骑缝（floating label）样式
  *
+ * 单选/多选统一格式（select 与 combobox 同一套交互，isInputable）：
+ * - 已选值一律 tag 展示（单选 0-1 个、多选 0-N 个），input 只承载正在输入的文字
+ * - trigger 可直接输入：输入即过滤，Enter/失焦提交，allowCreate 允许自定义值
+ * - 打开面板恒展示全部选项（comboText 为空不过滤），选中项高亮 ✓
+ *
  * 支持模式：select | combobox | menu | cascader | tree-select | date | date-range | time
  */
 import { ref, computed, nextTick, watch, onMounted, onUnmounted, useId } from 'vue'
@@ -102,6 +107,8 @@ const selectInputId = useId()
 const dropdownId = useId()
 const isSelect = computed(() => props.type === 'select')
 const isCombobox = computed(() => props.type === 'combobox')
+/** 统一交互模式（单选/多选、select/combobox 同格式）：已选 tag 展示 + trigger 直接输入 + 打开面板展示全部 */
+const isInputable = computed(() => isSelect.value || isCombobox.value)
 const isMenu = computed(() => props.type === 'menu' && !!props.items)
 const isTreeSelect = computed(() => props.type === 'tree-select' || props.type === 'cascader')
 const isDate = computed(() => props.type === 'date')
@@ -165,7 +172,7 @@ const {
   defaultDirection: 'down',
   minSize: 160,
   zIndex: props.zIndex,
-  maxMatchWidth: isCombobox.value,
+  maxMatchWidth: isInputable.value,
 })
 
 // useClickOutside：加 openedAt 防抖，面板刚打开 150ms 内不响应外部点击
@@ -198,19 +205,17 @@ const comboInputRef = ref<HTMLInputElement | null>(null)
 const searchText = ref('')
 const highlightIdx = ref(-1)
 
-// combobox 输入文本
+// combobox/select 统一输入文本：已选值由 tag 展示，comboText 只承载"正在输入"的内容
 const comboText = ref('')
-let lastCommittedText = ''
-let justSelected = false
 let blurTimer: ReturnType<typeof setTimeout> | null = null
 
-// 面板打开后聚焦搜索框/输入框
+// 面板打开后聚焦输入框（select/combobox 聚 trigger 输入框可直接输入；tree-select 聚面板搜索框）
 watch(open, async (val) => {
   if (!val) return
   await nextTick()
-  if (isCombobox.value) {
+  if (isInputable.value) {
     comboInputRef.value?.focus()
-  } else if (props.searchable && (isSelect.value || isTreeSelect.value)) {
+  } else if (props.searchable && isTreeSelect.value) {
     searchInputRef.value?.focus()
   }
 })
@@ -246,6 +251,15 @@ function closePanel() {
   emit('visibleChange', false)
 }
 
+/** 触发器点击：输入型（select/combobox）打开面板但不做"再点关闭"（输入中误点不收起，靠外部点击/Escape 收起）；其余模式维持开关切换 */
+function onTriggerClick(e: MouseEvent) {
+  if (!isInputable.value) {
+    toggleOpen(e)
+    return
+  }
+  if (!open.value) toggleOpen(e)
+}
+
 /* ════════════════════════════════════════
    拼音搜索 — 预计算索引 + 缓存
    每个选项的拼音在全量拼音和首字母只计算一次，存入 Map
@@ -268,16 +282,21 @@ watch(
   },
 )
 
-// combobox 打开面板时如果 comboText 等于已选值（watch 同步来的），不做过滤，显示全部
-// 只有用户主动输入时才过滤
-const filterKeyword = computed(() => {
-  if (isCombobox.value) {
-    // comboText 和已选 label 一样时 = 打开面板自动同步的，不是用户输入
-    if (open.value && comboText.value === lastCommittedText) return ''
-    return comboText.value
-  }
-  return searchText.value
-})
+// select/combobox：comboText 只在有用户输入时非空 → 打开面板（comboText 为空）恒展示全部选项，
+// 选中内容不会把面板过滤成只剩匹配项；tree-select 用面板内搜索框的 searchText
+const filterKeyword = computed(() => (isInputable.value ? comboText.value : searchText.value))
+
+/** 同步匹配：按关键词过滤选项（不走防抖），供 Enter 提交等需要"即时结果"的路径使用 */
+function matchOptions(kw: string): Option[] {
+  if (!props.options) return []
+  if (!kw) return props.options
+  return props.options.filter(
+    (o) =>
+      _pinyinMatcher.match(o.label, kw) ||
+      _pinyinMatcher.match(String(o.value), kw) ||
+      (o._search ? _pinyinMatcher.match(o._search, kw) : false),
+  )
+}
 
 /** Debounced 搜索关键词：200ms 防抖后再生效，避免 1000+ 选项时每次按键全量过滤卡顿 */
 const _debouncedKeyword = ref(filterKeyword.value)
@@ -293,17 +312,7 @@ watch(filterKeyword, (val) => {
   _debounceSearch(val)
 })
 
-const filteredOptions = computed(() => {
-  if (!props.options) return []
-  const kw = _debouncedKeyword.value
-  if (!kw) return props.options
-  return props.options.filter(
-    (o) =>
-      _pinyinMatcher.match(o.label, kw) ||
-      _pinyinMatcher.match(String(o.value), kw) ||
-      (o._search ? _pinyinMatcher.match(o._search, kw) : false),
-  )
-})
+const filteredOptions = computed(() => matchOptions(_debouncedKeyword.value))
 
 watch(filteredOptions, () => {
   highlightIdx.value = -1
@@ -312,25 +321,12 @@ watch(filteredOptions, () => {
 /* ════════════════════════════════════════
    显示文本
    ════════════════════════════════════════ */
-const selectedLabels = computed(() => {
-  if (isTreeSelect.value) return treeSelectedPaths.value.map((p) => p.map((n) => n.label).join(' / '))
-  if (!props.options) return []
-  // JS 调用方显式传 null 会覆盖默认值：兜空数组防 .find of null（TS 项目不受影响）
-  const options = props.options ?? []
-  if (props.multiple) {
-    const vals = (props.modelValue || []) as (string | number | boolean)[]
-    return vals.map((v) => options.find((o) => String(o.value) === String(v))?.label || String(v))
-  }
-  const found = options.find((o) => String(o.value) === String(props.modelValue))
-  return found ? [found.label] : []
-})
-
 const displayText = computed(() => {
   if (isDate.value || isDateRange.value || isTime.value) return triggerDisplayText.value
   // tree-select 有 tag 显示完整路径时，input 不再重复显示文字
   if (isTreeSelect.value) return comboTags.value.length > 0 ? '' : treeDisplayText.value
-  if (isCombobox.value && !props.multiple) return comboText.value
-  return selectedLabels.value.join(', ')
+  // select/combobox 统一：已选值由 tag 展示，input 只显示正在输入的文字
+  return comboText.value
 })
 
 // floating 标签上浮条件
@@ -339,7 +335,7 @@ const floatingRaised = computed(() => {
 })
 
 /* ════════════════════════════════════════
-   多选 tag
+   已选 tag（单选 0-1 个、多选 0-N 个，格式统一）
    ════════════════════════════════════════ */
 const comboTags = computed(() => {
   if (isTreeSelect.value) {
@@ -348,20 +344,34 @@ const comboTags = computed(() => {
       label: p.map((n) => n.label).join(' / '),
     }))
   }
-  if (!isCombobox.value || !props.multiple) return []
-  const vals = (props.modelValue || []) as (string | number | boolean)[]
-  return vals.map((v) => ({
-    value: v,
-    label: props.options?.find((o) => String(o.value) === String(v))?.label || String(v),
-  }))
+  if (!isInputable.value) return []
+  const options = props.options ?? []
+  if (props.multiple) {
+    const vals = (props.modelValue || []) as (string | number | boolean)[]
+    return vals.map((v) => ({
+      value: v,
+      label: options.find((o) => String(o.value) === String(v))?.label || String(v),
+    }))
+  }
+  // 单选：0 或 1 个 tag，展示格式与多选一致
+  if (!hasValue.value) return []
+  const v = props.modelValue as string | number | boolean
+  return [{ value: v, label: options.find((o) => String(o.value) === String(v))?.label || String(v) }]
 })
 
 function removeComboTag(tag: { value: string | number | boolean; label: string }) {
-  const vals = ((props.modelValue || []) as (string | number | boolean)[]).filter(
-    (v) => String(v) !== String(tag.value),
-  )
-  emit('update:modelValue', vals)
-  emit('change', vals)
+  markTouched()
+  if (props.multiple || isTreeSelect.value) {
+    const vals = ((props.modelValue || []) as (string | number | boolean)[]).filter(
+      (v) => String(v) !== String(tag.value),
+    )
+    emit('update:modelValue', vals)
+    emit('change', vals)
+  } else {
+    // 单选：移除唯一 tag = 清空值（保持标量类型，与 onClear 一致）
+    emit('update:modelValue', '')
+    emit('change', '')
+  }
 }
 
 /* ════════════════════════════════════════
@@ -370,11 +380,9 @@ function removeComboTag(tag: { value: string | number | boolean; label: string }
 function isSelected(opt: Option) {
   if (props.multiple)
     return ((props.modelValue || []) as (string | number | boolean)[]).some((v) => String(v) === String(opt.value))
-  if (isCombobox.value) {
-    if (!comboText.value) return String(props.modelValue) === String(opt.value)
-    return opt.label === comboText.value || String(opt.value) === comboText.value
-  }
-  return String(props.modelValue) === String(opt.value)
+  // 单选：未输入时按当前值高亮；输入中按输入内容匹配（便于看到即将提交的项）
+  if (!comboText.value) return String(props.modelValue) === String(opt.value)
+  return opt.label === comboText.value || String(opt.value) === comboText.value
 }
 
 function selectOption(opt: Option) {
@@ -387,7 +395,7 @@ function selectOption(opt: Option) {
     else vals.push(opt.value)
     emit('update:modelValue', vals)
     emit('change', vals)
-    if (isCombobox.value) {
+    if (isInputable.value) {
       comboText.value = ''
       nextTick(() => comboInputRef.value?.focus())
     }
@@ -395,14 +403,9 @@ function selectOption(opt: Option) {
     closePanel()
     emit('update:modelValue', opt.value as SelectModelValue)
     emit('change', opt.value as SelectModelValue)
-    if (isCombobox.value) {
-      comboText.value = opt.label
-      lastCommittedText = opt.label
-      justSelected = true
-      nextTick(() => {
-        comboInputRef.value?.blur()
-        justSelected = false
-      })
+    if (isInputable.value) {
+      comboText.value = ''
+      nextTick(() => comboInputRef.value?.blur())
     }
   }
 }
@@ -413,14 +416,10 @@ function selectOption(opt: Option) {
 function onClear(e: MouseEvent) {
   e.stopPropagation()
   markTouched()
+  comboText.value = ''
   if (props.multiple || isTreeSelect.value || isDateRange.value) {
     emit('update:modelValue', null)
     emit('change', null)
-  } else if (isCombobox.value) {
-    comboText.value = ''
-    lastCommittedText = ''
-    emit('update:modelValue', '')
-    emit('change', '')
   } else {
     emit('update:modelValue', '')
     emit('change', '')
@@ -527,26 +526,10 @@ function hasTreeChildren(node: CascaderOption): boolean {
 }
 
 /* ════════════════════════════════════════
-   Combobox 事件
+   Combobox / Select 统一输入事件
+   说明：已选值由 tag 展示，modelValue 外部变化无需同步进 comboText，
+   comboText 只承载"正在输入"的内容，失焦/选中后统一清空
    ════════════════════════════════════════ */
-// 外部 modelValue 变化同步输入框
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (!isCombobox.value || props.multiple) return
-    if (val === '' || val === undefined || val === null) {
-      comboText.value = ''
-      lastCommittedText = ''
-      return
-    }
-    const found = props.options?.find((o) => String(o.value) === String(val))
-    const label = found ? found.label : String(val)
-    comboText.value = label
-    lastCommittedText = label
-  },
-  { immediate: true },
-)
-
 function onComboFocus() {
   if (props.disabled) return
   emit('focus')
@@ -559,7 +542,7 @@ function onComboFocus() {
     nextTick(() => requestAnimationFrame(() => updatePosition()))
   }
   // 多选 + clearOnFocus
-  if (isCombobox.value && props.multiple && props.clearOnFocus && comboTags.value.length > 0) {
+  if (props.multiple && props.clearOnFocus && comboTags.value.length > 0) {
     emit('update:modelValue', [])
     emit('change', [])
   }
@@ -576,57 +559,50 @@ function onComboInput() {
   highlightIdx.value = -1
 }
 
+/** 提交输入：命中选项取其 value，否则（allowCreate）直接用输入文本作为值；提交后清空输入由 tag 展示 */
 function commitComboValue(text: string) {
   const matched = props.options?.find((o) => o.label === text || String(o.value) === text)
   if (matched) {
     emit('update:modelValue', matched.value as SelectModelValue)
     emit('change', matched.value as SelectModelValue)
-    comboText.value = matched.label
-    lastCommittedText = matched.label
   } else {
     emit('update:modelValue', text)
     emit('change', text)
-    lastCommittedText = text
   }
+  comboText.value = ''
 }
 
 function onComboBlur() {
   markTouched()
   emit('blur')
+  // 延迟处理：等待面板选项 click 先行（点击选项必先触发 input blur）
   if (blurTimer) clearTimeout(blurTimer)
   blurTimer = setTimeout(() => {
-    if (!open.value || justSelected) return
-    if (isCombobox.value && props.multiple) return
-    const text = comboText.value.trim()
-    if (!text) {
-      comboText.value = lastCommittedText
-      if (!lastCommittedText) {
-        emit('update:modelValue', '')
-        emit('change', '')
-      }
-    } else if (props.allowCreate) {
-      commitComboValue(text)
-    } else {
-      const prev = props.modelValue
-      if (prev !== '' && prev !== undefined && prev !== null) {
-        const found = props.options?.find((o) => String(o.value) === String(prev))
-        comboText.value = found ? found.label : String(prev)
-      } else {
-        comboText.value = ''
-      }
+    if (props.multiple) {
+      // 多选：未提交的输入直接丢弃，已选值由 tag 展示；面板保持打开（可能刚重新聚焦继续选）
+      comboText.value = ''
+      return
     }
-    closePanel()
+    // 单选：输入未提交时失焦 → allowCreate 则提交，否则丢弃；面板收起
+    const text = comboText.value.trim()
+    if (text && props.allowCreate) commitComboValue(text)
+    comboText.value = ''
+    if (open.value) closePanel()
   }, 150)
 }
 
 function onComboKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
-    comboText.value = lastCommittedText
+    comboText.value = ''
     closePanel()
     return
   }
   if (e.key === 'ArrowDown') {
     e.preventDefault()
+    if (!open.value) {
+      toggleOpen()
+      return
+    }
     highlightIdx.value = Math.min(highlightIdx.value + 1, navItems.value.length - 1)
     return
   }
@@ -644,14 +620,16 @@ function onComboKeydown(e: KeyboardEvent) {
     }
     const text = comboText.value.trim()
     if (text && props.allowCreate) {
-      if (isCombobox.value && props.multiple) {
+      if (props.multiple) {
         const vals = [...((props.modelValue || []) as (string | number | boolean)[])]
+        // 即时匹配（不走 200ms 防抖）：快速输入+回车时防抖列表尚未更新，取 stale 首项会静默失败
         let addVal: string | number | boolean = text
-        if (filteredOptions.value.length > 0) {
-          addVal = filteredOptions.value[0].value
+        const exact = props.options?.find((o) => o.label === text || String(o.value) === text)
+        if (exact) {
+          addVal = exact.value
         } else {
-          const matched = props.options?.find((o) => o.label === text || String(o.value) === text)
-          addVal = matched ? matched.value : text
+          const fresh = matchOptions(text)
+          if (fresh.length > 0) addVal = fresh[0].value
         }
         if (!vals.some((v) => String(v) === String(addVal))) {
           vals.push(addVal)
@@ -830,13 +808,13 @@ function onTimeCancel() {
         ref="triggerRef"
         class="trigger-wrapper"
         :class="{ open, disabled, 'has-floating': label, 'has-tags': comboTags.length > 0 }"
-        @click="!isCombobox && toggleOpen($event)"
+        @click="onTriggerClick($event)"
       >
         <label v-if="label" class="fl-label" :for="selectInputId" :class="{ raised: floatingRaised }">{{
           label
         }}</label>
 
-        <!-- 多选 tag -->
+        <!-- 已选 tag（单选 0-1 个 / 多选 0-N 个，格式统一） -->
         <span v-for="tag in comboTags" :key="String(tag.value)" class="combobox-tag">
           <span class="tag-text">{{ tag.label }}</span>
           <button type="button" class="tag-close" tabindex="-1" @mousedown.prevent @click.stop="removeComboTag(tag)">
@@ -847,13 +825,15 @@ function onTimeCancel() {
         <input
           :id="selectInputId"
           ref="comboInputRef"
-          :value="isCombobox ? comboText : displayText"
+          :value="isInputable ? comboText : displayText"
           type="text"
           class="trigger-input"
-          :class="{ readonly: !isCombobox }"
-          :placeholder="label ? '' : isDate || isDateRange || isTime ? dateTimePlaceholder : placeholder"
+          :class="{ readonly: !isInputable }"
+          :placeholder="
+            label || comboTags.length ? '' : isDate || isDateRange || isTime ? dateTimePlaceholder : placeholder
+          "
           :disabled="disabled"
-          :readonly="!isCombobox"
+          :readonly="!isInputable"
           role="combobox"
           :aria-expanded="open"
           :aria-haspopup="
@@ -865,11 +845,11 @@ function onTimeCancel() {
             open && !isTreeSelect && highlightIdx >= 0 ? `select-option-${highlightIdx}` : undefined
           "
           autocomplete="off"
-          @click.stop="isCombobox ? !open && toggleOpen($event) : toggleOpen($event)"
-          @focus="isCombobox ? onComboFocus() : emit('focus')"
-          @blur="(isCombobox ? onComboBlur() : markTouched(), emit('blur'))"
-          @input="isCombobox ? ((comboText = ($event.target as HTMLInputElement).value), onComboInput()) : undefined"
-          @keydown="isCombobox ? onComboKeydown($event) : onTriggerKeydown($event)"
+          @click.stop="onTriggerClick($event)"
+          @focus="isInputable ? onComboFocus() : emit('focus')"
+          @blur="(isInputable ? onComboBlur() : markTouched(), emit('blur'))"
+          @input="isInputable ? ((comboText = ($event.target as HTMLInputElement).value), onComboInput()) : undefined"
+          @keydown="isInputable ? onComboKeydown($event) : onTriggerKeydown($event)"
         />
 
         <span
@@ -878,6 +858,7 @@ function onTimeCancel() {
           role="button"
           :aria-label="t('form.clear')"
           tabindex="-1"
+          @mousedown.prevent
           @click="onClear"
         >
           <IconSvg type="x" size="xs" />
@@ -906,8 +887,8 @@ function onTimeCancel() {
             :style="floatingStyle"
             :role="isMenu ? 'menu' : isTreeSelect ? 'tree' : 'listbox'"
           >
-            <!-- 搜索框（select / tree-select 模式） -->
-            <div v-if="(isSelect || isTreeSelect) && searchable" class="panel-search">
+            <!-- 搜索框（仅 tree-select：trigger 不可输入；select/combobox 由 trigger 直接输入过滤） -->
+            <div v-if="isTreeSelect && searchable" class="panel-search">
               <IconSvg type="search" size="sm" />
               <input
                 ref="searchInputRef"
@@ -1035,10 +1016,10 @@ function onTimeCancel() {
             <!-- 空选项状态 -->
             <div v-else-if="!filteredOptions.length" class="panel-status">
               <slot name="empty">
-                <template v-if="isCombobox && allowCreate && comboText">{{
+                <template v-if="isInputable && allowCreate && comboText">{{
                   t('form.enterToUse', { text: comboText })
                 }}</template>
-                <template v-else-if="isCombobox && allowCreate && !options?.length">{{
+                <template v-else-if="isInputable && allowCreate && !options?.length">{{
                   t('form.enterToCreate')
                 }}</template>
                 <template v-else>{{ emptyText }}</template>

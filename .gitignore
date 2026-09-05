@@ -61,3 +61,6 @@ null
 # 临时校验截图
 form-builder-zh-check.png
 /reports/
+
+# 浏览器留证截图（脚本入库可随时重生成，图不入库）
+scripts/shots-*/

@@ -195,9 +195,11 @@ function onContextMenu(e: MouseEvent) {
     <!-- ══════ 基础选择 ══════ -->
     <Card title="基础选择 — 单选 / 多选 / 拼音搜索" style="margin-bottom: 24px">
       <p class="demo-hint">
-        <code>type="select"</code>（默认）— 搜索框标配（<code>searchable=true</code>），
-        拼音搜索标配（<code>pinyinEnabled=true</code>）。输入 <code>bj</code> 可搜到北京。<br />
-        <strong>显示策略：</strong>单选 → input 直接显示选中 label；多选 → tag 标签逐个显示，可单独删除。
+        <code>type="select"</code>（默认）— 拼音搜索标配（<code>pinyinEnabled=true</code>）。输入
+        <code>bj</code> 可搜到北京。<br />
+        <strong>统一格式（单选/多选一致）：</strong>① 已选值 tag 展示（单选 1 个 / 多选 N 个），可单独删除； ② trigger
+        直接输入过滤，回车/失焦提交，<code>allowCreate</code> 允许自定义值； ③
+        已选中内容后再开下拉仍展示全部选项，选中项高亮 ✓
       </p>
       <div class="grid-2-col">
         <div>
@@ -240,7 +242,8 @@ function onContextMenu(e: MouseEvent) {
         <code>type="combobox"</code> —
         输入文字自动搜索匹配项，回车选中；无匹配时回车创建新选项（<code>allowCreate=true</code>）。 多选时以 tag
         标签显示已选项，可逐个删除。打开面板时自动显示全部选项。<br />
-        <strong>显示策略：</strong>单选 → input 显示 comboText（可编辑）；多选 → tag 显示。
+        <strong>与 select 已统一：</strong>tag 展示 / 直接输入 / 面板全量三能力单选多选完全一致，combobox 仅是
+        "可输入选择"的语义别名（默认 placeholder 提示可输入）。
       </p>
       <div class="grid-2-col">
         <div>
