@@ -104,6 +104,28 @@
   --bp-sm: 640px;
   --bp-md: 768px;
   --bp-lg: 1024px;
+
+  /* ===== 补录令牌（2026-09-05 审计：组件引用但此前未声明，值与既有色板对齐） =====
+     背景：var() 引用未声明令牌时属性整体失效——有兜底的暗色下露出静态亮色，
+     无兜底的直接归零（如相机底栏贴边）。rgb 三元组用逗号式，rgba(var(--x), a) 才合法 */
+  --space-0: 0px;
+  --radius-xs: 4px;
+  --bg-secondary: var(--color-bg);
+  --color-bg-soft: #f1f5f9;
+  --color-bg-hover: #f5f7fa;
+  --color-bg-inverse: #333333; /* 固定反色，不随主题 */
+  --color-text-inverse: #ffffff;
+  --color-border-dark: #94a3b8;
+  --color-primary-50: #f0f4ff;
+  --color-primary-soft: #e0e7ff;
+  --color-primary-bg: rgba(var(--color-primary-rgb), 0.08);
+  --color-danger-light: #fef2f2;
+  --color-danger-rgb: 229, 69, 69;
+  --color-success-rgb: 34, 173, 95;
+  --color-warning-rgb: 245, 158, 11;
+  --color-badge-ring: var(--color-surface);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  --z-lightbox: 10000; /* 图片预览全屏层 — 高于 --z-top */
 }
 
 /* ===== 移动端变量覆写 ===== */
@@ -169,6 +191,18 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+
+  /* 补录令牌 — 暗色覆写（与亮色块同名令牌对应；非颜色项继承亮色） */
+  --color-bg-soft: #191d24;
+  --color-bg-hover: #2a2e38;
+  --color-border-dark: #3d434f;
+  --color-primary-50: #1e2433;
+  --color-primary-soft: #1e2433;
+  --color-danger-light: #2e0f0f;
+  --color-danger-rgb: 248, 113, 113;
+  --color-success-rgb: 52, 211, 153;
+  --color-warning-rgb: 251, 191, 36;
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
 }
 
 /* ===== 自动跟随系统暗色（无 data-theme 属性时生效） ===== */
@@ -222,5 +256,17 @@
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+
+    /* 补录令牌 — 暗色覆写（同 data-theme 块） */
+    --color-bg-soft: #191d24;
+    --color-bg-hover: #2a2e38;
+    --color-border-dark: #3d434f;
+    --color-primary-50: #1e2433;
+    --color-primary-soft: #1e2433;
+    --color-danger-light: #2e0f0f;
+    --color-danger-rgb: 248, 113, 113;
+    --color-success-rgb: 52, 211, 153;
+    --color-warning-rgb: 251, 191, 36;
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
   }
 }
