@@ -334,7 +334,7 @@ function onContextMenu(e: MouseEvent) {
       <p class="demo-hint">
         <code>type="date"</code> 单日期 · <code>type="date-range"</code> 日期范围 ·
         <code>type="time"</code> 时间选择。<br />
-        面板宽度自适应父控件：父控件宽则面板宽，窄时保证最小 264px 不会挤压变形。
+        面板保持固有宽度（264–300px），不随父控件拉伸：父控件再宽日历也不会被拉散；窄时自动错开不被视口裁剪。
       </p>
       <div class="grid-3-col">
         <div>

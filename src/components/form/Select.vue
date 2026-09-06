@@ -114,6 +114,8 @@ const isTreeSelect = computed(() => props.type === 'tree-select' || props.type =
 const isDate = computed(() => props.type === 'date')
 const isDateRange = computed(() => props.type === 'date-range')
 const isTime = computed(() => props.type === 'time')
+/** 日期/时间面板：有固有宽度（clamp 264-300px），不跟随触发器拉伸 */
+const isDateTime = computed(() => isDate.value || isDateRange.value || isTime.value)
 
 /* ════════════════════════════════════════
    校验支持
@@ -172,6 +174,8 @@ const {
   defaultDirection: 'down',
   minSize: 160,
   zIndex: props.zIndex,
+  // 日期/时间面板固有宽度，不随触发器拉伸（列表型面板仍与触发器同宽）
+  matchWidth: !isDateTime.value,
   maxMatchWidth: isInputable.value,
 })
 

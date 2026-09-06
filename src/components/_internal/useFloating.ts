@@ -247,7 +247,9 @@ export function useFloating(options: FloatingOptions = {}) {
     if (!trigger || !floating) return
 
     const r = trigger.getBoundingClientRect()
-    const fw = Math.max(floating.offsetWidth, minSize, r.width)
+    // matchWidth=false 时面板宽度独立于触发器（如日历面板固有宽度），定位须按面板真实宽度算，
+    // 否则宽触发器会把 fw 抬高，右缘溢出判断多移位、面板与触发器脱开
+    const fw = matchWidth ? Math.max(floating.offsetWidth, minSize, r.width) : Math.max(floating.offsetWidth, minSize)
     const fh = floating.offsetHeight || minSize
 
     const result = computeFloatingPosition({
