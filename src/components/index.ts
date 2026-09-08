@@ -67,6 +67,9 @@ export type { NotifyOptions } from './feedback/composables/useNotify'
 export { useToast, TOAST_KEY } from './feedback/composables/toast-context'
 export type { ToastItem, ToastAPI } from './feedback/composables/toast-context'
 export { default as ConfirmModal } from './feedback/ConfirmModal.vue'
+// 全局错误兜底（ErrorBoundary 覆盖不到的三类逃逸口）
+export { installErrorGuard, uninstallErrorGuard } from './feedback/composables/useErrorGuard'
+export type { ErrorGuardOptions, ErrorGuardPayload, ErrorGuardSource } from './feedback/composables/useErrorGuard'
 
 // 导航
 export { default as Tabs } from './nav/Tabs.vue'

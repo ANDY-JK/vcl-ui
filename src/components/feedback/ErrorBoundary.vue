@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onErrorCaptured } from 'vue'
+import { ref, watch, onUnmounted, onErrorCaptured } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
@@ -45,7 +45,36 @@ const hasError = ref(false)
 const error = ref<Error | null>(null)
 const resetKey = ref(0)
 
+/** 重挂后该时间窗口内再次抛错 → 判定「原地复发」（错误不来自本组件树）；窗口内没再抛错 → 认定重挂已救回，标记清零 */
+const RECURRING_WINDOW_MS = 3000
+/** 上次点击重新加载的时间戳 */
+let lastRetryAt = 0
+/** 原地复发标记：再点一次转整页重载，不再无限重挂 */
+let deadEnd = false
+/** 静默期计时器：到期未再抛错即解除升级状态 */
+let settleTimer: ReturnType<typeof setTimeout> | null = null
+
+function clearError() {
+  hasError.value = false
+  error.value = null
+  resetKey.value++
+}
+
+function clearEscalation() {
+  lastRetryAt = 0
+  deadEnd = false
+  if (settleTimer) {
+    clearTimeout(settleTimer)
+    settleTimer = null
+  }
+}
+
 onErrorCaptured((err: Error) => {
+  if (settleTimer) {
+    clearTimeout(settleTimer)
+    settleTimer = null
+  }
+  if (lastRetryAt && Date.now() - lastRetryAt < RECURRING_WINDOW_MS) deadEnd = true
   hasError.value = true
   error.value = err
   console.error('[ErrorBoundary] 捕获组件错误:', err.message)
@@ -54,22 +83,28 @@ onErrorCaptured((err: Error) => {
 })
 
 function retry() {
-  hasError.value = false
-  error.value = null
-  resetKey.value++
+  if (deadEnd) {
+    // 先复位再重载：重载被沙箱 iframe / 微前端宿主拦下时，按钮退化成再重挂一次而不是彻底无响应
+    clearEscalation()
+    clearError()
+    if (typeof window !== 'undefined') window.location.reload()
+    return
+  }
+  lastRetryAt = Date.now()
+  clearError()
+  settleTimer = setTimeout(clearEscalation, RECURRING_WINDOW_MS)
 }
 
 /** watchKey 变化时自动重置，避免错误状态残留到新内容 */
 watch(
   () => props.watchKey,
   () => {
-    if (hasError.value) {
-      hasError.value = false
-      error.value = null
-      resetKey.value++
-    }
+    clearEscalation()
+    if (hasError.value) clearError()
   },
 )
+
+onUnmounted(clearEscalation)
 </script>
 
 <style scoped>

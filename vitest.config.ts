@@ -19,21 +19,24 @@ export default defineConfig({
     include: ['tests/unit/**/*.spec.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
+      // 'lcov' 会为 lcov.info 额外生成一整份 lcov-report/ 网页（与 'html' 那份内容相同），
+      // 而全仓库无人消费 lcov.info（CI 没有覆盖率上传步骤）→ 只留 text + html，产物减半
+      reporter: ['text', 'html'],
+      reportsDirectory: 'reports/coverage',
       include: ['src/components/**/*.{ts,vue}'],
       exclude: [
         'src/components/_internal/pinyin-pro/**',
         'src/components/_internal/solar-icons.ts',
         'src/components/wc/**',
       ],
-      // 覆盖率阈值 — 2026-08-25 审计整改后基线（435 用例）
-      // 实测：31.6 stmts / 24.5 branch / 28.8 funcs / 33.1 lines
-      // 阈值取基线约 80% 留余量，低于即失败，防覆盖回退；后续随测试增长逐步上调
+      // 覆盖率阈值 — 2026-09-08 错误防护整改后基线（738 用例）
+      // 实测：46.03 stmts / 37.83 branch / 43.27 funcs / 47.87 lines
+      // 地板留 5~7 个点余量，低于即失败防回退；测试再增长按同口径上调
       thresholds: {
-        statements: 25,
-        branches: 20,
-        functions: 23,
-        lines: 26,
+        statements: 40,
+        branches: 32,
+        functions: 38,
+        lines: 41,
       },
     },
   },

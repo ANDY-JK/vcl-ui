@@ -4,6 +4,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
 import { useT } from '@/components/_internal/i18n'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useEscClose } from '@/components/_internal/useEscClose'
@@ -126,7 +127,10 @@ const safeBottom = ref('env(safe-area-inset-bottom, 0px)')
 
     <!-- 内容区 -->
     <main class="mini-content">
-      <RouterView />
+      <!-- 边界正常态只渲染插槽本身，不额外插入 DOM 层级；watch-key 保证切页或换查询参数即复位错误态 -->
+      <ErrorBoundary :watch-key="route.fullPath">
+        <RouterView />
+      </ErrorBoundary>
     </main>
 
     <!-- Tab 模式：底部 TabBar -->

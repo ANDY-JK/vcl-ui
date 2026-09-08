@@ -26,11 +26,17 @@ jobs:
       - name: Lint
         run: npx eslint src --quiet
 
-      - name: Unit tests
-        run: npm run test
+      - name: Unit tests (with coverage floor)
+        run: npm run test:unit
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E (real browser)
+        run: npm run test:e2e
 
       - name: Audit (official registry)
         run: npm audit --registry=https://registry.npmjs.org

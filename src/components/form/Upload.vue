@@ -9,6 +9,7 @@ import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 const t = useT()
 const _error = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
+  console.error('[Upload] 内部异常已隔离:', e.message)
   _error.value = e
   return false
 })
@@ -69,6 +70,12 @@ const props = withDefaults(defineProps<Props>(), {
   maxWidth: 1920,
   compressQuality: 0.85,
 })
+
+// 入参变化 = 内容已变：清错误态让上传区重渲染一次，否则 ⚠ 降级提示会永久卡死（仍坏会再次捕获，不成环）
+watch(
+  () => ({ ...props }),
+  () => (_error.value = null),
+)
 
 const emit = defineEmits<{
   change: [files: UploadFile[]]

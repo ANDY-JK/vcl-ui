@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // ⛔ 保护 — 按钮，禁止：clamp() 尺寸 → px，variant/size 枚举修改
 //    需我确认：新增 variant、loading 状态行为
-import { ref, onErrorCaptured } from 'vue'
+import { ref, watch, onErrorCaptured } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
 
@@ -24,7 +24,7 @@ interface Props {
   showArrow?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   variant: 'primary',
   size: 'md',
   disabled: false,
@@ -32,6 +32,12 @@ withDefaults(defineProps<Props>(), {
   block: false,
   showArrow: false,
 })
+
+// 入参变化 = 插槽内容已变：清错误态让按钮重渲染一次，否则 ⚠ 降级提示会永久卡死（子组件仍坏会再次捕获，不成环）
+watch(
+  () => ({ ...props }),
+  () => (_e.value = null),
+)
 
 const emit = defineEmits<{ click: [e: MouseEvent] }>()
 </script>

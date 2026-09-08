@@ -16,3 +16,6 @@ export type { NotifyOptions } from './composables/useNotify'
 // Toast provide/inject API（消费方注入 Toast 实例后经 useToast() 编程调用）
 export { useToast, TOAST_KEY } from './composables/toast-context'
 export type { ToastItem, ToastAPI } from './composables/toast-context'
+// 全局错误兜底：接管 app.config.errorHandler + 浏览器级错误事件 + 懒加载 chunk 失效自愈
+export { installErrorGuard, uninstallErrorGuard } from './composables/useErrorGuard'
+export type { ErrorGuardOptions, ErrorGuardPayload, ErrorGuardSource } from './composables/useErrorGuard'

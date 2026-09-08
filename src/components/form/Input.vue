@@ -8,6 +8,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, onErrorCaptured, useId } from 'vue'
 const _error = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
+  console.error('[Input] 内部异常已隔离:', e.message)
   _error.value = e
   return false
 })
@@ -75,6 +76,12 @@ const props = withDefaults(defineProps<Props>(), {
   clearable: false,
   rows: 3,
 })
+
+// 入参变化 = 内容已变：清错误态让控件重渲染一次，否则 ⚠ 降级提示会永久卡死（仍坏会再次捕获，不成环）
+watch(
+  () => ({ ...props }),
+  () => (_error.value = null),
+)
 
 const emit = defineEmits<{
   'update:modelValue': [v: string | number | null]

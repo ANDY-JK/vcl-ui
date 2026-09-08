@@ -267,7 +267,8 @@ function onProgressMouseUp() {
       </div>
 
       <div ref="bodyRef" class="content-body" @scroll="onBodyScroll">
-        <ErrorBoundary>
+        <!-- watch-key=fullPath：切页或换查询参数即复位边界错误态，避免某页抛错后 fallback 顶掉整个 RouterView -->
+        <ErrorBoundary :watch-key="route.fullPath">
           <RouterView />
         </ErrorBoundary>
       </div>

@@ -31,18 +31,21 @@ export default defineConfig({
     port: 3721,
     host: '0.0.0.0',
     allowedHosts: true,
-    https: (() => {
-      try {
-        return {
-          key: readFileSync(resolve(__dirname, 'key.pem')),
-          cert: readFileSync(resolve(__dirname, 'cert.pem')),
-        }
-      } catch {
-        // HTTPS 证书不可用时回退 HTTP，生产部署应确保证书存在
-        console.warn('[vite] HTTPS 证书未找到，回退到 HTTP')
-        return false
-      }
-    })(),
+    https:
+      process.env.VITE_NO_HTTPS === '1'
+        ? false // e2e 专用：Playwright 探活/访问固定走明文 HTTP（自签证书会让它连不上）
+        : (() => {
+            try {
+              return {
+                key: readFileSync(resolve(__dirname, 'key.pem')),
+                cert: readFileSync(resolve(__dirname, 'cert.pem')),
+              }
+            } catch {
+              // HTTPS 证书不可用时回退 HTTP，生产部署应确保证书存在
+              console.warn('[vite] HTTPS 证书未找到，回退到 HTTP')
+              return false
+            }
+          })(),
   },
   build: {
     lib: {

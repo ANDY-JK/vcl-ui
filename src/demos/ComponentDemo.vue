@@ -124,6 +124,11 @@ const demoMap: Record<string, any> = {
 }
 
 const route = useRoute()
+/**
+ * E2E 崩溃夹具：`#/tag?crash=1` 让路由组件自身抛错（在模板里那层边界之外），
+ * 由 AppLayout 的页面级边界捕获 —— 供 tests/e2e/error-boundary.spec.ts 验证切页自愈。
+ */
+if (route.query.crash === '1') throw new Error('E2E 崩溃夹具')
 
 const currentCategory = computed(() => {
   return (route.params.category as string) || 'select'
