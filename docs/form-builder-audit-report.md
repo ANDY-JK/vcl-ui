@@ -2,7 +2,6 @@
 
 > **审计日期：** 2026-08-22  
 > **审计方法：** Playwright 浏览器自动化 + OCR 文本提取 + DOM 结构验证 + 原型图对比  
-> **原型文件：** `docs/mockups/form-builder-prototype.html`  
 > **实现入口：** `src/demos/form/FormBuilderDemo.vue` → `src/components/form-builder/FormDesigner.vue`
 
 ---
