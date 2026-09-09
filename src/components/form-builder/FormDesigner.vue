@@ -112,6 +112,128 @@ const showShortcuts = ref(false)
 const previewData = ref<Record<string, unknown>>({})
 const device = ref<'desktop' | 'tablet' | 'mobile'>('desktop')
 
+// ══ 面板宽度 / 显隐（可拖拽调宽并记忆；主体过窄时自动收起大纲列）══
+
+/** 宽度与显隐的持久化 key（同一浏览器记住用户调过的布局） */
+const PANEL_STORE_KEY = 'vcl-designer-panels'
+/** 面板宽度下限/上限：再窄放不下内容，再宽会把画布挤没 */
+const PANEL_MIN_W = 150
+const PANEL_MAX_W = 420
+/** 主体宽度小于此值时自动收起大纲列，优先保证画布可用 */
+const NARROW_W = 1080
+
+const bodyRef = ref<HTMLElement | null>(null)
+const paletteW = ref(220)
+const outlineW = ref(190)
+const propsW = ref(290)
+const showPalette = ref(true)
+const showOutline = ref(true)
+const showProps = ref(true)
+/** 主体实测宽度（0 = 尚未测量） */
+const bodyW = ref(0)
+const resizing = ref<'palette' | 'outline' | 'props' | null>(null)
+const narrow = computed(() => bodyW.value > 0 && bodyW.value < NARROW_W)
+/** 大纲列实际可见性 = 用户开关 && 非窄屏 */
+const outlineVisible = computed(() => showOutline.value && !narrow.value)
+
+function clampPanelW(w: number): number {
+  return Math.min(PANEL_MAX_W, Math.max(PANEL_MIN_W, Math.round(w)))
+}
+
+function persistPanels(): void {
+  try {
+    localStorage.setItem(
+      PANEL_STORE_KEY,
+      JSON.stringify({
+        paletteW: paletteW.value,
+        outlineW: outlineW.value,
+        propsW: propsW.value,
+        showPalette: showPalette.value,
+        showOutline: showOutline.value,
+        showProps: showProps.value,
+      }),
+    )
+  } catch {
+    // 隐私模式 / 配额满：记不住不影响使用
+  }
+}
+
+function restorePanels(): void {
+  try {
+    const raw = localStorage.getItem(PANEL_STORE_KEY)
+    if (!raw) return
+    const saved = JSON.parse(raw) as Partial<{
+      paletteW: number
+      outlineW: number
+      propsW: number
+      showPalette: boolean
+      showOutline: boolean
+      showProps: boolean
+    }>
+    if (typeof saved.paletteW === 'number') paletteW.value = clampPanelW(saved.paletteW)
+    if (typeof saved.outlineW === 'number') outlineW.value = clampPanelW(saved.outlineW)
+    if (typeof saved.propsW === 'number') propsW.value = clampPanelW(saved.propsW)
+    if (typeof saved.showPalette === 'boolean') showPalette.value = saved.showPalette
+    if (typeof saved.showOutline === 'boolean') showOutline.value = saved.showOutline
+    if (typeof saved.showProps === 'boolean') showProps.value = saved.showProps
+  } catch {
+    // 缓存损坏：回落默认宽度
+  }
+}
+
+restorePanels()
+
+/** 拖分隔条调宽（属性面板在右侧，向左拖才变宽） */
+function startResize(key: 'palette' | 'outline' | 'props', e: MouseEvent): void {
+  e.preventDefault()
+  const startX = e.clientX
+  const dir = key === 'props' ? -1 : 1
+  const startW = key === 'palette' ? paletteW.value : key === 'outline' ? outlineW.value : propsW.value
+  resizing.value = key
+  const onMove = (ev: MouseEvent): void => {
+    const next = clampPanelW(startW + (ev.clientX - startX) * dir)
+    if (key === 'palette') paletteW.value = next
+    else if (key === 'outline') outlineW.value = next
+    else propsW.value = next
+  }
+  const onUp = (): void => {
+    resizing.value = null
+    window.removeEventListener('mousemove', onMove)
+    window.removeEventListener('mouseup', onUp)
+    persistPanels()
+  }
+  window.addEventListener('mousemove', onMove)
+  window.addEventListener('mouseup', onUp)
+}
+
+function togglePanel(key: 'palette' | 'outline' | 'props'): void {
+  if (key === 'palette') showPalette.value = !showPalette.value
+  else if (key === 'outline') showOutline.value = !showOutline.value
+  else showProps.value = !showProps.value
+  persistPanels()
+}
+
+/** 主体宽度实测：窄屏自动收起大纲列 */
+let bodyObserver: ResizeObserver | null = null
+watch(
+  bodyRef,
+  (el) => {
+    bodyObserver?.disconnect()
+    bodyObserver = null
+    if (!el) return
+    bodyObserver = new ResizeObserver(() => {
+      bodyW.value = el.clientWidth
+    })
+    bodyObserver.observe(el)
+    bodyW.value = el.clientWidth
+  },
+  { flush: 'post' },
+)
+onUnmounted(() => {
+  bodyObserver?.disconnect()
+  bodyObserver = null
+})
+
 const selectedNode = computed(() => {
   if (!selectedId.value) return null
   return findNode(currentNodes.value, selectedId.value)
@@ -481,6 +603,33 @@ const selectedPath = computed(() => {
           <IconSvg type="keyboard" size="xs" /> {{ t('fbd.shortcuts') }}
         </button>
         <span class="ld-sep" />
+        <!-- 面板显隐（窄屏下大纲自动收起，此时按钮禁用并说明原因） -->
+        <button
+          class="ld-btn ld-btn-icon"
+          :class="{ active: showPalette }"
+          :title="t('fbd.togglePalette')"
+          @click="togglePanel('palette')"
+        >
+          <IconSvg type="panel-left" size="xs" />
+        </button>
+        <button
+          class="ld-btn ld-btn-icon"
+          :class="{ active: outlineVisible }"
+          :disabled="narrow"
+          :title="narrow ? t('fbd.outlineAutoHidden') : t('fbd.toggleOutline')"
+          @click="togglePanel('outline')"
+        >
+          <IconSvg type="list-tree" size="xs" />
+        </button>
+        <button
+          class="ld-btn ld-btn-icon"
+          :class="{ active: showProps }"
+          :title="t('fbd.toggleProps')"
+          @click="togglePanel('props')"
+        >
+          <IconSvg type="panel-right" size="xs" />
+        </button>
+        <span class="ld-sep" />
         <!-- 设备切换 -->
         <div class="ld-device-switch">
           <button
@@ -576,17 +725,39 @@ const selectedPath = computed(() => {
     </div>
 
     <!-- ═══ 设计标签页 ═══ -->
-    <div v-if="activeTab === 'design'" class="ld-body" :style="{ height }">
+    <div
+      v-if="activeTab === 'design'"
+      ref="bodyRef"
+      class="ld-body"
+      :class="{ 'is-resizing': resizing }"
+      :style="{ height }"
+    >
       <!-- 左栏：字段面板 -->
-      <DesignerPanel @add="addNode" />
+      <DesignerPanel v-if="showPalette" :style="{ width: `${paletteW}px` }" @add="addNode" />
+      <div
+        v-if="showPalette"
+        class="ld-splitter"
+        :class="{ active: resizing === 'palette' }"
+        :title="t('fbd.resizePanel')"
+        @mousedown="startResize('palette', $event)"
+      />
 
-      <!-- 左2栏：大纲树 -->
+      <!-- 左2栏：大纲树（主体过窄时自动收起） -->
       <OutlineTree
+        v-if="outlineVisible"
+        :style="{ width: `${outlineW}px` }"
         :nodes="currentNodes"
         :selected-id="selectedId"
         @select="handleSelect"
         @remove="removeNode"
         @move="sortNode"
+      />
+      <div
+        v-if="outlineVisible"
+        class="ld-splitter"
+        :class="{ active: resizing === 'outline' }"
+        :title="t('fbd.resizePanel')"
+        @mousedown="startResize('outline', $event)"
       />
 
       <!-- 中栏：画布 -->
@@ -614,18 +785,27 @@ const selectedPath = computed(() => {
       </div>
 
       <!-- 右栏：属性面板 -->
-      <PropsPanel
-        v-if="selectedNode"
-        :node="selectedNode"
-        :all-nodes="currentNodes"
-        @update="updateNode(selectedNode.id, $event)"
-        @name-change="onLabelChange(selectedNode.id, $event)"
-      />
-      <aside v-else class="ldp-props">
-        <div class="ldp-props-empty">
-          <span>{{ t('fbd.emptySelectTip') }}</span>
-        </div>
-      </aside>
+      <template v-if="showProps">
+        <div
+          class="ld-splitter"
+          :class="{ active: resizing === 'props' }"
+          :title="t('fbd.resizePanel')"
+          @mousedown="startResize('props', $event)"
+        />
+        <PropsPanel
+          v-if="selectedNode"
+          :style="{ width: `${propsW}px` }"
+          :node="selectedNode"
+          :all-nodes="currentNodes"
+          @update="updateNode(selectedNode.id, $event)"
+          @name-change="onLabelChange(selectedNode.id, $event)"
+        />
+        <aside v-else class="ldp-props" :style="{ width: `${propsW}px` }">
+          <div class="ldp-props-empty">
+            <span>{{ t('fbd.emptySelectTip') }}</span>
+          </div>
+        </aside>
+      </template>
     </div>
 
     <!-- ═══ 预览标签页 ═══ -->
@@ -760,7 +940,7 @@ const selectedPath = computed(() => {
     modal-type="default"
     @update:visible="shareVisible = $event"
   >
-    <div class="ld-share">
+    <div class="ld-share-dialog">
       <p class="ld-share-hint">{{ t('fbd.shareCodeHint') }}</p>
       <textarea
         class="ld-share-code"

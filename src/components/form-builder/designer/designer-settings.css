@@ -78,6 +78,21 @@
   background: var(--color-bg-alt, #f8fafc);
   color: var(--color-text, #1e293b);
 }
+.ld-btn:disabled,
+.ld-tb-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.ld-btn:disabled:hover {
+  background: #fff;
+  color: var(--color-text-secondary, #475569);
+}
+
+/** 图标按钮（面板显隐等）：方形，只放图标 */
+.ld-btn-icon {
+  padding: 6px;
+  width: 30px;
+}
 .ld-btn.active,
 .ld-tb-btn.active {
   background: var(--color-primary-light, #eef1ff);
@@ -144,6 +159,33 @@
   outline: none;
   border-color: var(--color-primary, #4f6ef7);
   box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.08);
+}
+
+/* 设置项辅助说明 */
+.ld-settings-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-muted, #94a3b8);
+}
+.ld-storage-hint {
+  display: block;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-muted, #94a3b8);
+}
+.ld-storage-test-row {
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ld-storage-test {
+  font-size: 11px;
+  color: var(--color-danger, #ef4444);
+}
+.ld-storage-test.ok {
+  color: var(--color-success, #16a34a);
 }
 
 /* 布局缩略图预览 */

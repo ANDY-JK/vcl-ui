@@ -23,8 +23,10 @@ withDefaults(
     sortable?: boolean
     /** 正在被拖拽（降低不透明度） */
     dragging?: boolean
+    /** 落点指示：before/after 时在卡片上/下缘显示指示线 */
+    dropPos?: 'before' | 'after' | 'inside' | null
   }>(),
-  { selected: false, sortable: false, dragging: false },
+  { selected: false, sortable: false, dragging: false, dropPos: null },
 )
 
 const emit = defineEmits<{
@@ -50,6 +52,7 @@ const emit = defineEmits<{
     @drop="sortable && emit('drop', $event, child)"
     @dragend="sortable && emit('dragend')"
   >
+    <div v-if="dropPos === 'before'" class="ldc-drop-indicator is-before" />
     <div class="ldc-card-head">
       <span v-if="sortable" class="ldc-drag-handle" :title="t('fbt.dragSort')">
         <IconSvg type="grip-vertical" size="sm" />
@@ -78,5 +81,6 @@ const emit = defineEmits<{
         :model-value="previewData[child.key ?? child.id]"
       />
     </div>
+    <div v-if="dropPos === 'after'" class="ldc-drop-indicator is-after" />
   </div>
 </template>

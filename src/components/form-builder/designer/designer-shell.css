@@ -77,3 +77,78 @@
   color: var(--color-text-muted, #94a3b8);
   border-top: 1px solid var(--color-border-light, #f1f5f9);
 }
+
+/* ================================
+   保存 / 重命名弹窗
+   ================================ */
+.ld-save-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ld-save-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #94a3b8);
+}
+.ld-save-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-text, #1e293b);
+  transition: border-color 0.15s;
+}
+.ld-save-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #4f6ef7);
+  box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.08);
+}
+
+/* ================================
+   分享弹窗（FormDesigner；抽屉内的 .ld-share 另有独立样式）
+   ================================ */
+.ld-share-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ld-share-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary, #475569);
+}
+.ld-share-code {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-bg-alt, #f8fafc);
+  font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text, #1e293b);
+  resize: vertical;
+  word-break: break-all;
+}
+.ld-share-code:focus {
+  outline: none;
+  border-color: var(--color-primary, #4f6ef7);
+}
+.ld-share-actions {
+  display: flex;
+  gap: 8px;
+}
+.ld-share-publish {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border-light, #f1f5f9);
+}

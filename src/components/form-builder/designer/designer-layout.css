@@ -6,3 +6,34 @@
   height: 640px;
   min-height: 340px;
 }
+
+/** 拖拽调宽中：禁掉文本选中，避免拖到面板上选中文字 */
+.ld-body.is-resizing {
+  user-select: none;
+  cursor: col-resize;
+}
+
+/* 分隔条 — 悬停/拖拽时高亮，命中区比视觉宽度大（6px 可抓） */
+.ld-splitter {
+  position: relative;
+  flex: 0 0 6px;
+  margin: 0 -3px;
+  cursor: col-resize;
+  z-index: 2;
+  background: transparent;
+}
+.ld-splitter::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background 0.15s;
+}
+.ld-splitter:hover::after,
+.ld-splitter.active::after {
+  background: var(--color-primary, #4f6ef7);
+}

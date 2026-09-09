@@ -432,6 +432,10 @@ export default {
     dropToCard: 'Drag fields onto this container',
     fieldAria: 'Field {label} (draggable to reorder)',
     dragSort: 'Drag to reorder',
+    zoomIn: 'Zoom in (Ctrl + wheel)',
+    zoomOut: 'Zoom out (Ctrl + wheel)',
+    zoomReset: 'Reset to 100%',
+    dropZone: 'Drop position',
   },
 
   // ═══ 设计器页面 / 数据收集（FormDesigner/FormCollect/storage/schema） ═══
@@ -450,6 +454,11 @@ export default {
     tabPreview: 'Preview',
     tabOutline: 'Outline',
     tabCode: 'Code',
+    resizePanel: 'Drag to resize',
+    togglePalette: 'Show/hide components',
+    toggleOutline: 'Show/hide outline',
+    outlineAutoHidden: 'Outline auto-hides on narrow screens',
+    toggleProps: 'Show/hide properties',
     formSettings: 'Form settings',
     save: 'Save',
     myForms: 'My Forms',

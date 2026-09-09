@@ -429,6 +429,10 @@ export default {
     dropToCard: '拖拽字段到此容器',
     fieldAria: '字段 {label}（可拖拽排序）',
     dragSort: '拖拽排序',
+    zoomIn: '放大（Ctrl+滚轮）',
+    zoomOut: '缩小（Ctrl+滚轮）',
+    zoomReset: '恢复 100%',
+    dropZone: '插入位置',
   },
 
   // ═══ 设计器页面 / 数据收集（FormDesigner/FormCollect/storage/schema） ═══
@@ -447,6 +451,11 @@ export default {
     tabPreview: '预览',
     tabOutline: '大纲',
     tabCode: '代码',
+    resizePanel: '拖拽调整宽度',
+    togglePalette: '显示/隐藏组件库',
+    toggleOutline: '显示/隐藏大纲',
+    outlineAutoHidden: '窗口较窄时自动隐藏大纲',
+    toggleProps: '显示/隐藏属性面板',
     formSettings: '表单设置',
     save: '保存',
     myForms: '我的表单',

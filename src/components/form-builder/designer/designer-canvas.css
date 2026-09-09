@@ -107,13 +107,23 @@
   opacity: 0.25;
 }
 
-/* 拖拽指示线 */
+/* 拖拽指示线 — 绝对定位，不参与布局（避免拖拽时列表抖动） */
 .ldc-drop-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
   height: 2px;
   background: var(--color-primary, #3b82f6);
-  margin: 0;
+  z-index: 6;
+  pointer-events: none;
   animation: pulse-h 1s ease-in-out infinite;
   border-radius: 1px;
+}
+.ldc-drop-indicator.is-before {
+  top: 0;
+}
+.ldc-drop-indicator.is-after {
+  bottom: 0;
 }
 @keyframes pulse-h {
   0%,
@@ -139,6 +149,9 @@
   min-height: 22px;
   border-radius: 0 6px 0 6px;
   background: var(--color-primary-50, #f0f4ff);
+  /* 窄卡片 / 高缩放时 chrome 不越出卡片左缘（左侧徽章/key 被裁，右侧操作钮保留） */
+  max-width: 100%;
+  overflow: hidden;
   opacity: 0;
   transition: opacity 0.12s;
 }
@@ -148,28 +161,7 @@
   opacity: 1;
 }
 
-/* 选中态快捷键提示条 */
-.ldc-card-kbd-hint {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  background: rgba(59, 130, 246, 0.06);
-  border-top: 1px dashed rgba(59, 130, 246, 0.2);
-  font-size: 11px;
-  color: var(--color-text-muted, #94a3b8);
-}
-.ldc-card-kbd-hint kbd {
-  display: inline-block;
-  padding: 1px 5px;
-  background: var(--color-bg, #f1f5f9);
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 3px;
-  font-family: ui-monospace, monospace;
-  font-size: 10.5px;
-  color: var(--color-text-secondary, #64748b);
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
-}
+/* 拖拽把手 */
 .ldc-drag-handle {
   cursor: grab;
   color: var(--color-text-muted, #94a3b8);
@@ -220,8 +212,8 @@
   opacity: 1;
 }
 .ldc-card-actions button {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border: none;
   border-radius: 4px;
   background: transparent;

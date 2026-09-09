@@ -92,6 +92,8 @@ const emit = defineEmits<{
 const dragSource = ref<'panel' | 'sort' | null>(null)
 const sortDragId = ref<string | null>(null)
 const dropTargetId = ref<string | null>(null)
+/** 落点位置：before/after 显示指示线，inside 显示容器内高亮 */
+const dropPos = ref<'before' | 'after' | 'inside' | null>(null)
 const canvasDragOver = ref(false)
 
 // ════════════════════════════════════════
@@ -111,6 +113,16 @@ function findFieldByKey(key: string) {
 /** 节点是否处于选中态（单选选中 或 多选集合内） */
 function isSelected(id: string): boolean {
   return id === props.selectedId || props.selectedIds.includes(id)
+}
+
+/** 该节点是否显示指定位置的落点指示线 */
+function showIndicator(id: string, pos: 'before' | 'after'): boolean {
+  return dropTargetId.value === id && dropPos.value === pos
+}
+
+/** 子卡片应显示的落点（未命中该子卡片时为 null） */
+function childDropPos(id: string): 'before' | 'after' | 'inside' | null {
+  return dropTargetId.value === id ? dropPos.value : null
 }
 
 // ════════════════════════════════════════
@@ -235,6 +247,7 @@ function onCanvasDragLeave(e: DragEvent): void {
   if (e.clientX < rect.left || e.clientX >= rect.right || e.clientY < rect.top || e.clientY >= rect.bottom) {
     canvasDragOver.value = false
     dropTargetId.value = null
+    dropPos.value = null
     dragSource.value = null
   }
 }
@@ -262,15 +275,33 @@ function onNodeDragStart(e: DragEvent, node: DesignerNode): void {
   }
 }
 
+/** 根据鼠标纵向位置算出落点：容器 25/50/25 分三区，字段 50/50 分两区 */
+function resolveDropPos(e: DragEvent, node: DesignerNode, sortDrag: boolean): 'before' | 'after' | 'inside' {
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const ratio = rect.height > 0 ? (e.clientY - rect.top) / rect.height : 0
+  if (isContainerNode(node)) {
+    // 面板拖入容器：一律放进容器内；排序拖拽才区分容器前后
+    if (!sortDrag) return 'inside'
+    if (ratio < 0.25) return 'before'
+    if (ratio > 0.75) return 'after'
+    return 'inside'
+  }
+  return ratio < 0.5 ? 'before' : 'after'
+}
+
 function onNodeDragOver(e: DragEvent, node: DesignerNode): void {
   if (dragSource.value === 'sort' && sortDragId.value !== node.id) {
     e.preventDefault()
+    e.stopPropagation()
     e.dataTransfer!.dropEffect = 'move'
     dropTargetId.value = node.id
+    dropPos.value = resolveDropPos(e, node, true)
   } else if (e.dataTransfer?.types.includes('application/x-field-type')) {
     e.preventDefault()
+    e.stopPropagation()
     e.dataTransfer.dropEffect = 'copy'
     dropTargetId.value = node.id
+    dropPos.value = resolveDropPos(e, node, false)
   }
 }
 
@@ -278,38 +309,26 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
   e.preventDefault()
   e.stopPropagation()
 
-  if (dragSource.value === 'sort' && sortDragId.value && sortDragId.value !== node.id) {
-    // 拖拽排序：根据鼠标位置判断插入到 before/after/inside
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const offsetY = e.clientY - rect.top
-    const height = rect.height
+  const pos = dropPos.value ?? resolveDropPos(e, node, dragSource.value === 'sort')
 
+  if (dragSource.value === 'sort' && sortDragId.value && sortDragId.value !== node.id) {
+    // 拖拽排序：容器区分 before/inside/after，字段区分 before/after
     if (isContainerNode(node)) {
-      // 拖到容器上：上半区 = before（同级），下半区 = inside（插入容器内，落到当前激活槽位）
-      if (offsetY < height * 0.3) {
-        emit('sortNode', sortDragId.value, node.id, 'before')
-      } else {
-        emit('sortNode', sortDragId.value, node.id, 'inside', activeSlotOf(node))
-      }
+      if (pos === 'inside') emit('sortNode', sortDragId.value, node.id, 'inside', activeSlotOf(node))
+      else emit('sortNode', sortDragId.value, node.id, pos)
     } else {
-      // 拖到字段上：上半区 = before，下半区 = after
-      if (offsetY < height * 0.5) {
-        emit('sortNode', sortDragId.value, node.id, 'before')
-      } else {
-        emit('sortNode', sortDragId.value, node.id, 'after')
-      }
+      emit('sortNode', sortDragId.value, node.id, pos === 'after' ? 'after' : 'before')
     }
     // 保持选中拖拽的节点
     emit('select', sortDragId.value)
   } else {
     const type = e.dataTransfer?.getData('application/x-field-type') || e.dataTransfer?.getData('text/plain')
     if (type) {
-      // 面板字段拖入：容器 → 插入容器内（落到当前激活槽位）；字段 → 按鼠标 Y 分半 before/after
+      // 面板字段拖入：容器 → 插入容器内（落到当前激活槽位）；字段 → 按落点插到前/后
       if (isContainerNode(node)) {
         emit('insertIntoContainer', type as DesignerNodeType, node.id, -1, activeSlotOf(node))
       } else {
-        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-        const before = e.clientY < rect.top + rect.height / 2
+        const before = pos !== 'after'
         const loc = findParent(props.nodes, node.id)
         // 嵌套子字段：插到它所在容器内的相对位置；否则会落到根级末尾（扁平索引对嵌套节点无意义）
         const container = loc && loc.parent !== props.nodes ? findContainerOfChildren(props.nodes, loc.parent) : null
@@ -339,6 +358,7 @@ function resetDrag(): void {
   dragSource.value = null
   sortDragId.value = null
   dropTargetId.value = null
+  dropPos.value = null
   canvasDragOver.value = false
 }
 
@@ -347,6 +367,56 @@ function resetDrag(): void {
 // ════════════════════════════════════════
 
 const deviceClass = computed(() => `device-${props.device}`)
+
+// ════════════════════════════════════════
+// 画布缩放（工具条按钮 / Ctrl·⌘ + 滚轮）
+// ════════════════════════════════════════
+
+const ZOOM_STORE_KEY = 'vcl-designer-zoom'
+const ZOOM_MIN = 0.5
+const ZOOM_MAX = 1.5
+const ZOOM_STEP = 0.1
+
+function clampZoom(v: number): number {
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(v * 100) / 100))
+}
+
+function readStoredZoom(): number {
+  try {
+    return clampZoom(Number(localStorage.getItem(ZOOM_STORE_KEY)) || 1)
+  } catch {
+    return 1
+  }
+}
+
+const zoom = ref(readStoredZoom())
+const zoomPercent = computed(() => Math.round(zoom.value * 100))
+const zoomStyle = computed(() => ({ '--ldc-zoom': String(zoom.value) }))
+
+function setZoom(v: number): void {
+  zoom.value = clampZoom(v)
+  try {
+    localStorage.setItem(ZOOM_STORE_KEY, String(zoom.value))
+  } catch {
+    /* 隐私模式 / 存储不可用时忽略 */
+  }
+}
+function zoomIn(): void {
+  setZoom(zoom.value + ZOOM_STEP)
+}
+function zoomOut(): void {
+  setZoom(zoom.value - ZOOM_STEP)
+}
+function resetZoom(): void {
+  setZoom(1)
+}
+
+/** Ctrl/⌘ + 滚轮缩放；普通滚轮保持页面滚动 */
+function onCanvasWheel(e: WheelEvent): void {
+  if (!e.ctrlKey && !e.metaKey) return
+  e.preventDefault()
+  setZoom(zoom.value + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP))
+}
 </script>
 
 <template>
@@ -372,162 +442,139 @@ const deviceClass = computed(() => `device-${props.device}`)
         </template>
       </div>
       <span class="ldc-canvas-tip">{{ t('fbt.canvasTip') }}</span>
+      <!-- 缩放控制 -->
+      <div class="ldc-zoom">
+        <button
+          type="button"
+          :title="t('fbt.zoomOut')"
+          :aria-label="t('fbt.zoomOut')"
+          :disabled="zoom <= ZOOM_MIN"
+          @click="zoomOut"
+        >
+          <IconSvg type="zoom-out" size="xs" />
+        </button>
+        <button type="button" class="ldc-zoom-val" :title="t('fbt.zoomReset')" @click="resetZoom">
+          {{ zoomPercent }}%
+        </button>
+        <button
+          type="button"
+          :title="t('fbt.zoomIn')"
+          :aria-label="t('fbt.zoomIn')"
+          :disabled="zoom >= ZOOM_MAX"
+          @click="zoomIn"
+        >
+          <IconSvg type="zoom-in" size="xs" />
+        </button>
+      </div>
     </div>
 
-    <!-- 画布内容区 -->
-    <div class="ldc-canvas-content" :class="deviceClass">
-      <!-- 表单头 -->
-      <div v-if="nodes.length" class="ldc-form-head">
-        <h3>{{ formTitle }}</h3>
-        <p>{{ formDescription }}</p>
-      </div>
-
-      <!-- 空状态 -->
-      <div v-if="!nodes.length" class="ldc-empty">
-        <div class="ldc-empty-icon">
-          <IconSvg type="mouse-pointer-click" size="xl" />
+    <!-- 画布内容区（缩放宿主：按 zoom 反算布局尺寸，视觉始终铺满，不产生横向滚动） -->
+    <div class="ldc-zoom-host" :style="zoomStyle">
+      <div class="ldc-canvas-content" :class="deviceClass" @wheel="onCanvasWheel">
+        <!-- 表单头 -->
+        <div v-if="nodes.length" class="ldc-form-head">
+          <h3>{{ formTitle }}</h3>
+          <p>{{ formDescription }}</p>
         </div>
-        <p class="ldc-empty-title">{{ t('fbt.emptyTitle') }}</p>
-        <p class="ldc-empty-hint">{{ t('fbt.emptyHint') }}</p>
-      </div>
 
-      <!-- 节点列表 -->
-      <div v-else class="ldc-fields">
-        <div v-for="node in nodes" :key="node.id" class="ldc-node-wrapper">
-          <!-- ═══ 容器节点 ═══ -->
-          <div
-            v-if="isContainerNode(node)"
-            class="ldc-container"
-            :class="{
-              selected: isSelected(node.id),
-              'drop-target': dropTargetId === node.id,
-              // card 容器对齐运行时卡片视觉（分组标题/圆角/内边距）
-              'ldc-container--card': node.type === 'card',
-            }"
-            @click="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
-            @dragover="onNodeDragOver($event, node)"
-            @drop="onNodeDrop($event, node)"
-          >
-            <!-- 容器头部 -->
-            <div class="ldc-container-head">
-              <IconSvg :type="getTypeIcon(node.type)" size="xs" />
-              <span class="ldc-container-label">{{ node.label }}</span>
-              <span class="ldc-container-badge">{{ getTypeLabel(node.type) }}</span>
-              <span class="ldc-container-actions" @click.stop>
-                <button :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
-                  <IconSvg type="chevron-up" size="xs" />
-                </button>
-                <button :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
-                  <IconSvg type="chevron-down" size="xs" />
-                </button>
-                <button :title="t('common.copy')" @click="emit('duplicate', node.id)">
-                  <IconSvg type="copy" size="xs" />
-                </button>
-                <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
-                  <IconSvg type="trash-2" size="xs" />
-                </button>
-              </span>
-            </div>
-            <!-- 容器体 -->
-            <div class="ldc-container-body">
-              <!-- tabs 容器特殊渲染：点击标签页真实切换，仅显示当前页 -->
-              <template v-if="node.type === 'tabs'">
-                <div class="ldc-tabs-head" role="tablist">
-                  <div
-                    v-for="(tab, ti) in tabSlots(node)"
-                    :key="ti"
-                    class="ldc-tab"
-                    :class="{ active: activeTabName(node) === tab.name }"
-                    role="tab"
-                    :aria-selected="activeTabName(node) === tab.name"
-                    tabindex="0"
-                    @click="setActiveTab(node, tab.name)"
-                    @keydown.enter.prevent="setActiveTab(node, tab.name)"
-                    @keydown.space.prevent="setActiveTab(node, tab.name)"
-                  >
-                    {{ tab.label }}
-                    <span class="ldc-tab-count" :title="t('fbd.fieldsCount', { n: childrenInSlot(node, ti).length })">{{
-                      childrenInSlot(node, ti).length
-                    }}</span>
-                  </div>
-                  <div
-                    class="ldc-tab ldc-tab-add"
-                    role="button"
-                    tabindex="0"
-                    :title="t('fbt.addTabTitle')"
-                    @click="addTabTo(node)"
-                    @keydown.enter.prevent="addTabTo(node)"
-                  >
-                    {{ t('fbt.addBtn') }}
-                  </div>
-                </div>
-                <div class="ldc-tabs-body">
-                  <div
-                    v-if="tabSlots(node).length"
-                    class="ldc-slot-body"
-                    @dragover="onSlotDragOver"
-                    @drop="onSlotDrop($event, node, activeTabIndex(node))"
-                  >
-                    <div class="ldc-slot-label">{{ tabSlots(node)[activeTabIndex(node)]?.label }}</div>
-                    <template v-if="childrenInSlot(node, activeTabIndex(node)).length">
-                      <div
-                        v-for="child in childrenInSlot(node, activeTabIndex(node))"
-                        :key="child.id"
-                        class="ldc-card-wrapper"
-                      >
-                        <DesignerChildCard
-                          :child="child"
-                          :preview-data="previewData"
-                          :find-field="findFieldByKey"
-                          :selected="isSelected(child.id)"
-                          @select="(id, additive) => emit('select', id, additive)"
-                        />
-                      </div>
-                    </template>
-                    <div v-else class="ldc-container-empty">{{ t('fbt.dropToTab') }}</div>
-                  </div>
-                  <div v-else class="ldc-container-empty">{{ t('fbt.configTabsFirst') }}</div>
-                </div>
-              </template>
+        <!-- 空状态 -->
+        <div v-if="!nodes.length" class="ldc-empty">
+          <div class="ldc-empty-icon">
+            <IconSvg type="mouse-pointer-click" size="xl" />
+          </div>
+          <p class="ldc-empty-title">{{ t('fbt.emptyTitle') }}</p>
+          <p class="ldc-empty-hint">{{ t('fbt.emptyHint') }}</p>
+        </div>
 
-              <!-- collapse 容器特殊渲染：点击折叠项标题真实折叠/展开 -->
-              <template v-else-if="node.type === 'collapse'">
-                <div class="ldc-collapse-list">
-                  <div
-                    v-for="(item, ci) in collapseSlots(node)"
-                    :key="ci"
-                    class="ldc-collapse-item"
-                    :class="{ open: isCollapseOpen(node, ci) }"
-                  >
+        <!-- 节点列表 -->
+        <div v-else class="ldc-fields">
+          <div v-for="node in nodes" :key="node.id" class="ldc-node-wrapper">
+            <!-- 落点指示线（插入到该节点之前） -->
+            <div v-if="showIndicator(node.id, 'before')" class="ldc-drop-indicator is-before" />
+
+            <!-- ═══ 容器节点 ═══ -->
+            <div
+              v-if="isContainerNode(node)"
+              class="ldc-container"
+              :class="{
+                selected: isSelected(node.id),
+                'drop-target': dropTargetId === node.id && dropPos === 'inside',
+                // card 容器对齐运行时卡片视觉（分组标题/圆角/内边距）
+                'ldc-container--card': node.type === 'card',
+              }"
+              @click="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
+              @dragover="onNodeDragOver($event, node)"
+              @drop="onNodeDrop($event, node)"
+            >
+              <!-- 容器头部 -->
+              <div class="ldc-container-head">
+                <IconSvg :type="getTypeIcon(node.type)" size="xs" />
+                <span class="ldc-container-label">{{ node.label }}</span>
+                <span class="ldc-container-badge">{{ getTypeLabel(node.type) }}</span>
+                <span class="ldc-container-actions" @click.stop>
+                  <button :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
+                    <IconSvg type="chevron-up" size="xs" />
+                  </button>
+                  <button :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
+                    <IconSvg type="chevron-down" size="xs" />
+                  </button>
+                  <button :title="t('common.copy')" @click="emit('duplicate', node.id)">
+                    <IconSvg type="copy" size="xs" />
+                  </button>
+                  <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
+                    <IconSvg type="trash-2" size="xs" />
+                  </button>
+                </span>
+              </div>
+              <!-- 容器体 -->
+              <div class="ldc-container-body">
+                <!-- tabs 容器特殊渲染：点击标签页真实切换，仅显示当前页 -->
+                <template v-if="node.type === 'tabs'">
+                  <div class="ldc-tabs-head" role="tablist">
                     <div
-                      class="ldc-collapse-head"
-                      role="button"
+                      v-for="(tab, ti) in tabSlots(node)"
+                      :key="ti"
+                      class="ldc-tab"
+                      :class="{ active: activeTabName(node) === tab.name }"
+                      role="tab"
+                      :aria-selected="activeTabName(node) === tab.name"
                       tabindex="0"
-                      :aria-expanded="isCollapseOpen(node, ci)"
-                      @click="toggleCollapse(node, ci)"
-                      @keydown.enter.prevent="toggleCollapse(node, ci)"
-                      @keydown.space.prevent="toggleCollapse(node, ci)"
+                      @click="setActiveTab(node, tab.name)"
+                      @keydown.enter.prevent="setActiveTab(node, tab.name)"
+                      @keydown.space.prevent="setActiveTab(node, tab.name)"
                     >
-                      <IconSvg
-                        :type="isCollapseOpen(node, ci) ? 'chevron-down' : 'chevron-right'"
-                        size="xs"
-                        class="ldc-collapse-arrow"
-                      />
-                      <span class="ldc-collapse-title">{{ item.title }}</span>
+                      {{ tab.label }}
                       <span
                         class="ldc-tab-count"
-                        :title="t('fbd.fieldsCount', { n: childrenInSlot(node, ci).length })"
-                        >{{ childrenInSlot(node, ci).length }}</span
+                        :title="t('fbd.fieldsCount', { n: childrenInSlot(node, ti).length })"
+                        >{{ childrenInSlot(node, ti).length }}</span
                       >
                     </div>
                     <div
-                      v-show="isCollapseOpen(node, ci)"
+                      class="ldc-tab ldc-tab-add"
+                      role="button"
+                      tabindex="0"
+                      :title="t('fbt.addTabTitle')"
+                      @click="addTabTo(node)"
+                      @keydown.enter.prevent="addTabTo(node)"
+                    >
+                      {{ t('fbt.addBtn') }}
+                    </div>
+                  </div>
+                  <div class="ldc-tabs-body">
+                    <div
+                      v-if="tabSlots(node).length"
                       class="ldc-slot-body"
                       @dragover="onSlotDragOver"
-                      @drop="onSlotDrop($event, node, ci)"
+                      @drop="onSlotDrop($event, node, activeTabIndex(node))"
                     >
-                      <template v-if="childrenInSlot(node, ci).length">
-                        <div v-for="child in childrenInSlot(node, ci)" :key="child.id" class="ldc-card-wrapper">
+                      <div class="ldc-slot-label">{{ tabSlots(node)[activeTabIndex(node)]?.label }}</div>
+                      <template v-if="childrenInSlot(node, activeTabIndex(node)).length">
+                        <div
+                          v-for="child in childrenInSlot(node, activeTabIndex(node))"
+                          :key="child.id"
+                          class="ldc-card-wrapper"
+                        >
                           <DesignerChildCard
                             :child="child"
                             :preview-data="previewData"
@@ -537,233 +584,293 @@ const deviceClass = computed(() => `device-${props.device}`)
                           />
                         </div>
                       </template>
-                      <div v-else class="ldc-container-empty">{{ t('fbt.dropToCollapse') }}</div>
+                      <div v-else class="ldc-container-empty">{{ t('fbt.dropToTab') }}</div>
                     </div>
+                    <div v-else class="ldc-container-empty">{{ t('fbt.configTabsFirst') }}</div>
                   </div>
-                </div>
-              </template>
+                </template>
 
-              <!-- steps 容器特殊渲染：点击步骤头/导航切换，仅显示当前步骤 -->
-              <template v-else-if="node.type === 'steps'">
-                <div class="ldc-steps-list">
-                  <div class="ldc-steps-head" role="tablist">
+                <!-- collapse 容器特殊渲染：点击折叠项标题真实折叠/展开 -->
+                <template v-else-if="node.type === 'collapse'">
+                  <div class="ldc-collapse-list">
                     <div
-                      v-for="(step, si) in stepSlots(node)"
-                      :key="si"
-                      class="ldc-step-btn"
-                      :class="{ active: activeStepIndex(node) === si, done: si < activeStepIndex(node) }"
-                      role="tab"
-                      :aria-selected="activeStepIndex(node) === si"
-                      tabindex="0"
-                      @click="setActiveStep(node, si)"
-                      @keydown.enter.prevent="setActiveStep(node, si)"
-                      @keydown.space.prevent="setActiveStep(node, si)"
+                      v-for="(item, ci) in collapseSlots(node)"
+                      :key="ci"
+                      class="ldc-collapse-item"
+                      :class="{ open: isCollapseOpen(node, ci) }"
                     >
-                      <span class="ldc-step-num">{{ si < activeStepIndex(node) ? '✓' : si + 1 }}</span>
-                      <span class="ldc-step-btn-label">{{ step.title }}</span>
-                      <span
-                        class="ldc-tab-count"
-                        :title="t('fbd.fieldsCount', { n: childrenInSlot(node, si).length })"
-                        >{{ childrenInSlot(node, si).length }}</span
+                      <div
+                        class="ldc-collapse-head"
+                        role="button"
+                        tabindex="0"
+                        :aria-expanded="isCollapseOpen(node, ci)"
+                        @click="toggleCollapse(node, ci)"
+                        @keydown.enter.prevent="toggleCollapse(node, ci)"
+                        @keydown.space.prevent="toggleCollapse(node, ci)"
                       >
+                        <IconSvg
+                          :type="isCollapseOpen(node, ci) ? 'chevron-down' : 'chevron-right'"
+                          size="xs"
+                          class="ldc-collapse-arrow"
+                        />
+                        <span class="ldc-collapse-title">{{ item.title }}</span>
+                        <span
+                          class="ldc-tab-count"
+                          :title="t('fbd.fieldsCount', { n: childrenInSlot(node, ci).length })"
+                          >{{ childrenInSlot(node, ci).length }}</span
+                        >
+                      </div>
+                      <div
+                        v-show="isCollapseOpen(node, ci)"
+                        class="ldc-slot-body"
+                        @dragover="onSlotDragOver"
+                        @drop="onSlotDrop($event, node, ci)"
+                      >
+                        <template v-if="childrenInSlot(node, ci).length">
+                          <div v-for="child in childrenInSlot(node, ci)" :key="child.id" class="ldc-card-wrapper">
+                            <DesignerChildCard
+                              :child="child"
+                              :preview-data="previewData"
+                              :find-field="findFieldByKey"
+                              :selected="isSelected(child.id)"
+                              @select="(id, additive) => emit('select', id, additive)"
+                            />
+                          </div>
+                        </template>
+                        <div v-else class="ldc-container-empty">{{ t('fbt.dropToCollapse') }}</div>
+                      </div>
                     </div>
                   </div>
-                  <!-- 步骤迷你导航（贴近运行时 FormBuilder 的上一步/下一步） -->
-                  <div class="ldc-steps-nav">
-                    <button
-                      type="button"
-                      :disabled="activeStepIndex(node) === 0"
-                      @click="setActiveStep(node, activeStepIndex(node) - 1)"
-                    >
-                      <IconSvg type="chevron-left" size="xs" /> {{ t('formBuilder.prevStep') }}
-                    </button>
-                    <span class="ldc-steps-indicator"
-                      >{{ activeStepIndex(node) + 1 }} / {{ stepSlots(node).length }}</span
-                    >
-                    <button
-                      type="button"
-                      :disabled="activeStepIndex(node) >= stepSlots(node).length - 1"
-                      @click="setActiveStep(node, activeStepIndex(node) + 1)"
-                    >
-                      {{ t('formBuilder.nextStep') }} <IconSvg type="chevron-right" size="xs" />
-                    </button>
-                  </div>
-                  <div
-                    v-if="stepSlots(node).length"
-                    class="ldc-slot-body"
-                    @dragover="onSlotDragOver"
-                    @drop="onSlotDrop($event, node, activeStepIndex(node))"
-                  >
-                    <div class="ldc-slot-label">{{ stepSlots(node)[activeStepIndex(node)]?.title }}</div>
-                    <template v-if="childrenInSlot(node, activeStepIndex(node)).length">
+                </template>
+
+                <!-- steps 容器特殊渲染：点击步骤头/导航切换，仅显示当前步骤 -->
+                <template v-else-if="node.type === 'steps'">
+                  <div class="ldc-steps-list">
+                    <div class="ldc-steps-head" role="tablist">
                       <div
-                        v-for="child in childrenInSlot(node, activeStepIndex(node))"
+                        v-for="(step, si) in stepSlots(node)"
+                        :key="si"
+                        class="ldc-step-btn"
+                        :class="{ active: activeStepIndex(node) === si, done: si < activeStepIndex(node) }"
+                        role="tab"
+                        :aria-selected="activeStepIndex(node) === si"
+                        tabindex="0"
+                        @click="setActiveStep(node, si)"
+                        @keydown.enter.prevent="setActiveStep(node, si)"
+                        @keydown.space.prevent="setActiveStep(node, si)"
+                      >
+                        <span class="ldc-step-num">{{ si < activeStepIndex(node) ? '✓' : si + 1 }}</span>
+                        <span class="ldc-step-btn-label">{{ step.title }}</span>
+                        <span
+                          class="ldc-tab-count"
+                          :title="t('fbd.fieldsCount', { n: childrenInSlot(node, si).length })"
+                          >{{ childrenInSlot(node, si).length }}</span
+                        >
+                      </div>
+                    </div>
+                    <!-- 步骤迷你导航（贴近运行时 FormBuilder 的上一步/下一步） -->
+                    <div class="ldc-steps-nav">
+                      <button
+                        type="button"
+                        :disabled="activeStepIndex(node) === 0"
+                        @click="setActiveStep(node, activeStepIndex(node) - 1)"
+                      >
+                        <IconSvg type="chevron-left" size="xs" /> {{ t('formBuilder.prevStep') }}
+                      </button>
+                      <span class="ldc-steps-indicator"
+                        >{{ activeStepIndex(node) + 1 }} / {{ stepSlots(node).length }}</span
+                      >
+                      <button
+                        type="button"
+                        :disabled="activeStepIndex(node) >= stepSlots(node).length - 1"
+                        @click="setActiveStep(node, activeStepIndex(node) + 1)"
+                      >
+                        {{ t('formBuilder.nextStep') }} <IconSvg type="chevron-right" size="xs" />
+                      </button>
+                    </div>
+                    <div
+                      v-if="stepSlots(node).length"
+                      class="ldc-slot-body"
+                      @dragover="onSlotDragOver"
+                      @drop="onSlotDrop($event, node, activeStepIndex(node))"
+                    >
+                      <div class="ldc-slot-label">{{ stepSlots(node)[activeStepIndex(node)]?.title }}</div>
+                      <template v-if="childrenInSlot(node, activeStepIndex(node)).length">
+                        <div
+                          v-for="child in childrenInSlot(node, activeStepIndex(node))"
+                          :key="child.id"
+                          class="ldc-card-wrapper"
+                        >
+                          <DesignerChildCard
+                            :child="child"
+                            :preview-data="previewData"
+                            :find-field="findFieldByKey"
+                            :selected="isSelected(child.id)"
+                            @select="(id, additive) => emit('select', id, additive)"
+                          />
+                        </div>
+                      </template>
+                      <div v-else class="ldc-container-empty">{{ t('fbt.dropToStep') }}</div>
+                    </div>
+                    <div v-else class="ldc-container-empty">{{ t('fbt.configStepsFirst') }}</div>
+                  </div>
+                </template>
+
+                <!-- grid 容器特殊渲染 -->
+                <template v-else-if="node.type === 'grid'">
+                  <div class="ldc-grid-row" :style="{ '--grid-cols': node.containerConfig?.columns ?? 2 }">
+                    <template v-if="node.children?.length">
+                      <div
+                        v-for="child in node.children"
                         :key="child.id"
-                        class="ldc-card-wrapper"
+                        class="ldc-grid-col"
+                        :style="{ '--col-span': gridColSpan(node, child) }"
                       >
                         <DesignerChildCard
                           :child="child"
                           :preview-data="previewData"
                           :find-field="findFieldByKey"
                           :selected="isSelected(child.id)"
+                          :dragging="sortDragId === child.id"
+                          :drop-pos="childDropPos(child.id)"
+                          sortable
                           @select="(id, additive) => emit('select', id, additive)"
+                          @move="(id, dir) => emit('move', id, dir)"
+                          @duplicate="(id) => emit('duplicate', id)"
+                          @remove="(id) => emit('remove', id)"
+                          @dragstart="onNodeDragStart"
+                          @dragover="onNodeDragOver"
+                          @drop="onNodeDrop"
+                          @dragend="onNodeDragEnd"
                         />
                       </div>
                     </template>
-                    <div v-else class="ldc-container-empty">{{ t('fbt.dropToStep') }}</div>
-                  </div>
-                  <div v-else class="ldc-container-empty">{{ t('fbt.configStepsFirst') }}</div>
-                </div>
-              </template>
-
-              <!-- grid 容器特殊渲染 -->
-              <template v-else-if="node.type === 'grid'">
-                <div class="ldc-grid-row" :style="{ '--grid-cols': node.containerConfig?.columns ?? 2 }">
-                  <template v-if="node.children?.length">
-                    <div
-                      v-for="child in node.children"
-                      :key="child.id"
-                      class="ldc-grid-col"
-                      :style="{ '--col-span': gridColSpan(node, child) }"
-                    >
-                      <DesignerChildCard
-                        :child="child"
-                        :preview-data="previewData"
-                        :find-field="findFieldByKey"
-                        :selected="isSelected(child.id)"
-                        :dragging="sortDragId === child.id"
-                        sortable
-                        @select="(id, additive) => emit('select', id, additive)"
-                        @move="(id, dir) => emit('move', id, dir)"
-                        @duplicate="(id) => emit('duplicate', id)"
-                        @remove="(id) => emit('remove', id)"
-                        @dragstart="onNodeDragStart"
-                        @dragover="onNodeDragOver"
-                        @drop="onNodeDrop"
-                        @dragend="onNodeDragEnd"
-                      />
-                    </div>
-                  </template>
-                  <div v-else class="ldc-container-empty">{{ t('fbt.dropToGrid') }}</div>
-                </div>
-              </template>
-
-              <!-- flex 横排容器：子字段并排，按 span 折算占比（与运行时 .fb-flex 行为一致） -->
-              <template v-else-if="node.type === 'flex'">
-                <div
-                  class="ldc-flex-row"
-                  :style="{
-                    '--flex-gap': (node.containerConfig?.gap ?? 12) + 'px',
-                    '--flex-wrap': node.containerConfig?.wrap === false ? 'nowrap' : 'wrap',
-                    '--flex-justify':
-                      node.containerConfig?.justify === 'center'
-                        ? 'center'
-                        : node.containerConfig?.justify === 'space-between'
-                          ? 'space-between'
-                          : 'flex-start',
-                  }"
-                >
-                  <template v-if="node.children?.length">
-                    <div
-                      v-for="child in node.children"
-                      :key="child.id"
-                      class="ldc-flex-col"
-                      :style="{ '--flex-basis': (Math.min(Math.max(child.span ?? 24, 1), 24) / 24) * 100 + '%' }"
-                    >
-                      <DesignerChildCard
-                        :child="child"
-                        :preview-data="previewData"
-                        :find-field="findFieldByKey"
-                        :selected="isSelected(child.id)"
-                        :dragging="sortDragId === child.id"
-                        sortable
-                        @select="(id, additive) => emit('select', id, additive)"
-                        @move="(id, dir) => emit('move', id, dir)"
-                        @duplicate="(id) => emit('duplicate', id)"
-                        @remove="(id) => emit('remove', id)"
-                        @dragstart="onNodeDragStart"
-                        @dragover="onNodeDragOver"
-                        @drop="onNodeDrop"
-                        @dragend="onNodeDragEnd"
-                      />
-                    </div>
-                  </template>
-                  <div v-else class="ldc-container-empty">{{ t('fbt.dropToFlex') }}</div>
-                </div>
-              </template>
-
-              <!-- card 容器：子节点平铺 -->
-              <template v-else>
-                <template v-if="node.children?.length">
-                  <div v-for="child in node.children" :key="child.id" class="ldc-card-wrapper">
-                    <DesignerChildCard
-                      :child="child"
-                      :preview-data="previewData"
-                      :find-field="findFieldByKey"
-                      :selected="isSelected(child.id)"
-                      :dragging="sortDragId === child.id"
-                      sortable
-                      @select="(id, additive) => emit('select', id, additive)"
-                      @move="(id, dir) => emit('move', id, dir)"
-                      @duplicate="(id) => emit('duplicate', id)"
-                      @remove="(id) => emit('remove', id)"
-                      @dragstart="onNodeDragStart"
-                      @dragover="onNodeDragOver"
-                      @drop="onNodeDrop"
-                      @dragend="onNodeDragEnd"
-                    />
+                    <div v-else class="ldc-container-empty">{{ t('fbt.dropToGrid') }}</div>
                   </div>
                 </template>
-                <div v-else class="ldc-container-empty">{{ t('fbt.dropToCard') }}</div>
-              </template>
-            </div>
-          </div>
 
-          <!-- ═══ 字段节点 ═══ -->
-          <div
-            v-else
-            class="ldc-card"
-            :class="{ selected: isSelected(node.id), dragging: sortDragId === node.id }"
-            draggable="true"
-            role="listitem"
-            tabindex="0"
-            :aria-label="t('fbt.fieldAria', { label: node.label })"
-            @click="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
-            @keydown.enter.prevent="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
-            @keydown.space.prevent="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
-            @dragstart="onNodeDragStart($event, node)"
-            @dragover="onNodeDragOver($event, node)"
-            @drop="onNodeDrop($event, node)"
-            @dragend="onNodeDragEnd"
-          >
-            <div class="ldc-card-head">
-              <span class="ldc-drag-handle" :title="t('fbt.dragSort')">
-                <IconSvg type="grip-vertical" size="sm" />
-              </span>
-              <span class="ldc-card-type-badge">{{ getTypeLabel(node.type) }}</span>
-              <span class="ldc-card-key">{{ node.key }}</span>
-              <span class="ldc-card-actions" @click.stop>
-                <button :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
-                  <IconSvg type="chevron-up" size="xs" />
-                </button>
-                <button :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
-                  <IconSvg type="chevron-down" size="xs" />
-                </button>
-                <button :title="t('common.copy')" @click="emit('duplicate', node.id)">
-                  <IconSvg type="copy" size="xs" />
-                </button>
-                <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
-                  <IconSvg type="trash-2" size="xs" />
-                </button>
-              </span>
+                <!-- flex 横排容器：子字段并排，按 span 折算占比（与运行时 .fb-flex 行为一致） -->
+                <template v-else-if="node.type === 'flex'">
+                  <div
+                    class="ldc-flex-row"
+                    :style="{
+                      '--flex-gap': (node.containerConfig?.gap ?? 12) + 'px',
+                      '--flex-wrap': node.containerConfig?.wrap === false ? 'nowrap' : 'wrap',
+                      '--flex-justify':
+                        node.containerConfig?.justify === 'center'
+                          ? 'center'
+                          : node.containerConfig?.justify === 'space-between'
+                            ? 'space-between'
+                            : 'flex-start',
+                    }"
+                  >
+                    <template v-if="node.children?.length">
+                      <div
+                        v-for="child in node.children"
+                        :key="child.id"
+                        class="ldc-flex-col"
+                        :style="{ '--flex-basis': (Math.min(Math.max(child.span ?? 24, 1), 24) / 24) * 100 + '%' }"
+                      >
+                        <DesignerChildCard
+                          :child="child"
+                          :preview-data="previewData"
+                          :find-field="findFieldByKey"
+                          :selected="isSelected(child.id)"
+                          :dragging="sortDragId === child.id"
+                          :drop-pos="childDropPos(child.id)"
+                          sortable
+                          @select="(id, additive) => emit('select', id, additive)"
+                          @move="(id, dir) => emit('move', id, dir)"
+                          @duplicate="(id) => emit('duplicate', id)"
+                          @remove="(id) => emit('remove', id)"
+                          @dragstart="onNodeDragStart"
+                          @dragover="onNodeDragOver"
+                          @drop="onNodeDrop"
+                          @dragend="onNodeDragEnd"
+                        />
+                      </div>
+                    </template>
+                    <div v-else class="ldc-container-empty">{{ t('fbt.dropToFlex') }}</div>
+                  </div>
+                </template>
+
+                <!-- card 容器：子节点平铺 -->
+                <template v-else>
+                  <template v-if="node.children?.length">
+                    <div v-for="child in node.children" :key="child.id" class="ldc-card-wrapper">
+                      <DesignerChildCard
+                        :child="child"
+                        :preview-data="previewData"
+                        :find-field="findFieldByKey"
+                        :selected="isSelected(child.id)"
+                        :dragging="sortDragId === child.id"
+                        :drop-pos="childDropPos(child.id)"
+                        sortable
+                        @select="(id, additive) => emit('select', id, additive)"
+                        @move="(id, dir) => emit('move', id, dir)"
+                        @duplicate="(id) => emit('duplicate', id)"
+                        @remove="(id) => emit('remove', id)"
+                        @dragstart="onNodeDragStart"
+                        @dragover="onNodeDragOver"
+                        @drop="onNodeDrop"
+                        @dragend="onNodeDragEnd"
+                      />
+                    </div>
+                  </template>
+                  <div v-else class="ldc-container-empty">{{ t('fbt.dropToCard') }}</div>
+                </template>
+              </div>
             </div>
-            <div class="ldc-card-body">
-              <FormRenderer
-                v-if="findFieldByKey(node.key ?? node.id)"
-                :field="findFieldByKey(node.key ?? node.id)!"
-                :model-value="previewData[node.key ?? node.id]"
-              />
+
+            <!-- ═══ 字段节点 ═══ -->
+            <div
+              v-else
+              class="ldc-card"
+              :class="{ selected: isSelected(node.id), dragging: sortDragId === node.id }"
+              draggable="true"
+              role="listitem"
+              tabindex="0"
+              :aria-label="t('fbt.fieldAria', { label: node.label })"
+              @click="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
+              @keydown.enter.prevent="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
+              @keydown.space.prevent="emit('select', node.id, $event.ctrlKey || $event.metaKey)"
+              @dragstart="onNodeDragStart($event, node)"
+              @dragover="onNodeDragOver($event, node)"
+              @drop="onNodeDrop($event, node)"
+              @dragend="onNodeDragEnd"
+            >
+              <div class="ldc-card-head">
+                <span class="ldc-drag-handle" :title="t('fbt.dragSort')">
+                  <IconSvg type="grip-vertical" size="sm" />
+                </span>
+                <span class="ldc-card-type-badge">{{ getTypeLabel(node.type) }}</span>
+                <span class="ldc-card-key">{{ node.key }}</span>
+                <span class="ldc-card-actions" @click.stop>
+                  <button :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
+                    <IconSvg type="chevron-up" size="xs" />
+                  </button>
+                  <button :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
+                    <IconSvg type="chevron-down" size="xs" />
+                  </button>
+                  <button :title="t('common.copy')" @click="emit('duplicate', node.id)">
+                    <IconSvg type="copy" size="xs" />
+                  </button>
+                  <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
+                    <IconSvg type="trash-2" size="xs" />
+                  </button>
+                </span>
+              </div>
+              <div class="ldc-card-body">
+                <FormRenderer
+                  v-if="findFieldByKey(node.key ?? node.id)"
+                  :field="findFieldByKey(node.key ?? node.id)!"
+                  :model-value="previewData[node.key ?? node.id]"
+                />
+              </div>
             </div>
+
+            <!-- 落点指示线（插入到该节点之后） -->
+            <div v-if="showIndicator(node.id, 'after')" class="ldc-drop-indicator is-after" />
           </div>
         </div>
       </div>

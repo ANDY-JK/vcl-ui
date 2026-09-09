@@ -35,6 +35,55 @@
   font-size: 10px;
 }
 
+/* ── 画布缩放控制 ── */
+.ldc-zoom {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.ldc-zoom button {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-muted, #94a3b8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  transition: all 0.12s;
+}
+.ldc-zoom button:hover:not(:disabled) {
+  background: var(--color-bg-soft, #f1f5f9);
+  color: var(--color-text, #1e293b);
+}
+.ldc-zoom button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.ldc-zoom-val {
+  min-width: 42px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 缩放宿主：百分比在 zoom 坐标系内解析，100% 即"视觉铺满画布"，不出现横向滚动 */
+.ldc-zoom-host {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  zoom: var(--ldc-zoom, 1);
+}
+
 /* ── 画布内容区 + 设备模式 ── */
 .ldc-canvas-content {
   flex: 1;
@@ -110,8 +159,8 @@
   opacity: 1;
 }
 .ldc-container-actions button {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 4px;
   background: transparent;

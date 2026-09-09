@@ -5,7 +5,7 @@
  * 五页签容器：基本 / 校验 / 样式 / 事件 / 数据。各页内容拆分为子组件：
  * PropsValidationPage / PropsEventPage / PropsDataPage / PropsConditionGroup / PropsAdvancedFields。
  */
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Input from '@/components/form/Input.vue'
 import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
@@ -127,10 +127,31 @@ const hasHint = computed(() => ['input', 'select', 'upload'].includes(getCompone
 
 /** 判断字段类型是否支持前缀图标/后缀文字（Input 文本输入分支，不含 textarea） */
 const isTextInput = computed(() => getComponentCategory(props.node.type) === 'input' && props.node.type !== 'textarea')
+
+// ════════════════════════════════════════
+// 滚动位置与页签有效性
+// ════════════════════════════════════════
+
+const panelRef = ref<HTMLElement | null>(null)
+
+function resetScroll(): void {
+  if (panelRef.value) panelRef.value.scrollTop = 0
+}
+
+// 切换页签 / 切换节点时回到顶部，避免长表单里"看不到刚打开的面板内容"
+watch(activeTab, () => resetScroll())
+watch(
+  () => props.node.id,
+  () => {
+    // 容器只有「基本」页，切到容器时把失效页签拉回基本页，否则面板会空白
+    if (!availableTabs.value.some((tab) => tab.id === activeTab.value)) activeTab.value = 'basic'
+    resetScroll()
+  },
+)
 </script>
 
 <template>
-  <aside class="ldp-props">
+  <aside ref="panelRef" class="ldp-props">
     <div v-if="node" class="ldp-props-body">
       <!-- 字段头部 -->
       <div class="ldp-props-header">
