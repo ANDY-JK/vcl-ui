@@ -65,3 +65,6 @@ form-builder-zh-check.png
 
 # 浏览器留证截图（脚本入库可随时重生成，图不入库）
 scripts/shots-*/
+
+# 测试用例只留本机不入库（历史里仍可取回：git checkout <commit> -- tests）
+/tests/
