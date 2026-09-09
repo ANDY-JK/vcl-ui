@@ -7,6 +7,7 @@ export default {
     planFailed: '路线规划失败',
     replanFailed: '重新规划失败',
     coordParseFailed: '坐标解析失败',
+    missingCoordColumns: '缺少经度/纬度列（第 {row} 行起）：表头需为「经度」「纬度」（可带单位括号，如「经度(°)」）',
     coordResolveFailed: '无法解析坐标: {name}',
     unknown: '未知',
     pointStart: '起点',

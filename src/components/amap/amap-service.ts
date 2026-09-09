@@ -86,8 +86,9 @@ async function safeFetch(url: string): Promise<Response> {
   }
 }
 
-/** 验证经纬度是否合法 */
+/** 验证经纬度是否合法。(0,0) 视为无效——它是占位/解析失败的典型值，不是真实门店坐标 */
 export function isValidLatLon(lat: number, lon: number): boolean {
+  if (lat === 0 && lon === 0) return false
   return !isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180
 }
 
@@ -559,7 +560,7 @@ export function buildNavLink(from: NavPoint, to: NavPoint, waypoints: NavPoint[]
   const webUrl = `https://uri.amap.com/navigation?${webParams.toString()}`
 
   const iosParams = new URLSearchParams({
-    sourceApplication: 'vue-component-lib',
+    sourceApplication: 'vcl-ui',
     sid: 'SV1',
     slat: String(from.lat),
     slon: String(from.lon),

@@ -7,6 +7,8 @@ export default {
     planFailed: 'Route planning failed',
     replanFailed: 'Re-planning failed',
     coordParseFailed: 'Coordinate parsing failed',
+    missingCoordColumns:
+      'Missing longitude/latitude columns (from row {row}): headers must be "经度"/"纬度" (unit parentheses allowed, e.g. "经度(°)")',
     coordResolveFailed: 'Cannot resolve coordinates: {name}',
     unknown: 'Unknown',
     pointStart: 'Start',

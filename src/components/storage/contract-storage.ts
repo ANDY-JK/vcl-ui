@@ -15,6 +15,7 @@
 
 import { dbPut, dbGetAll, dbClear } from './indexedDB'
 import { useT } from '@/components/_internal/i18n'
+import { envValue } from '@/components/_internal/env-guard'
 import {
   SupabaseTransport,
   sanitizeObjectKeyPart,
@@ -605,23 +606,22 @@ export function emptyStorageConfig(): StorageConfig {
   }
 }
 
-/** 环境变量默认配置：S3 兼容（缤纷云等）配齐则优先 → Supabase 配齐次之 → 本地 */
+/** 环境变量默认配置：仅开发期生效。S3 兼容（缤纷云等）配齐则优先 → Supabase 配齐次之 → 本地 */
 export function defaultStorageConfigFromEnv(): StorageConfig {
-  const env = import.meta.env
   const s3 = {
-    endpoint: env.VITE_S3_ENDPOINT ?? '',
-    region: env.VITE_S3_REGION ?? '',
-    bucket: env.VITE_S3_BUCKET ?? '',
-    accessKeyId: env.VITE_S3_ACCESS_KEY_ID ?? '',
-    secretAccessKey: env.VITE_S3_SECRET_ACCESS_KEY ?? '',
+    endpoint: envValue('VITE_S3_ENDPOINT') ?? '',
+    region: envValue('VITE_S3_REGION') ?? '',
+    bucket: envValue('VITE_S3_BUCKET') ?? '',
+    accessKeyId: envValue('VITE_S3_ACCESS_KEY_ID') ?? '',
+    secretAccessKey: envValue('VITE_S3_SECRET_ACCESS_KEY') ?? '',
   }
   if (s3.endpoint && s3.bucket && s3.accessKeyId && s3.secretAccessKey) {
     return { backend: 's3', url: '', anonKey: '', ...s3 }
   }
   const supabase = {
-    url: env.VITE_SUPABASE_URL ?? '',
-    anonKey: env.VITE_SUPABASE_ANON_KEY ?? '',
-    bucket: env.VITE_SUPABASE_BUCKET ?? '',
+    url: envValue('VITE_SUPABASE_URL') ?? '',
+    anonKey: envValue('VITE_SUPABASE_ANON_KEY') ?? '',
+    bucket: envValue('VITE_SUPABASE_BUCKET') ?? '',
   }
   if (supabase.url && supabase.anonKey && supabase.bucket) {
     return {

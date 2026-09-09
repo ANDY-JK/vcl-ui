@@ -46,7 +46,7 @@ const props = withDefaults(defineProps<Props>(), {
   phoneField: 'phone',
 })
 
-// 默认文案走 i18n：emptyText/buttonLabel 未传时用词条（'加载中...' 保持内联）
+// 默认文案走 i18n：emptyText/buttonLabel 未传时用词条，加载态固定用 common.loading
 const effectiveEmptyText = computed(() => props.emptyText || t('common.empty'))
 const effectiveButtonLabel = computed(() => props.buttonLabel || t('common.sendExpress'))
 
@@ -70,7 +70,7 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
   <div class="toggle-list">
     <div v-if="isLoading" class="list-loading">
       <IconSvg type="loader" size="lg" />
-      <span>加载中...</span>
+      <span>{{ t('common.loading') }}</span>
     </div>
 
     <div v-else-if="!items.length" class="list-empty">

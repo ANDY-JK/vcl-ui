@@ -97,11 +97,17 @@ export function parseRegion(input?: unknown): Region {
     addr = addr.slice(p[1].length)
   }
 
-  // 地级：自治州 / 地区 / 盟 / 市
-  const c = addr.match(/^(.+?(?:自治州|地区|盟|市|州))/)
-  if (c) {
-    region.city = c[1]
-    addr = addr.slice(c[1].length)
+  // 地级：自治州 / 地区 / 盟 / 市 优先，单字「州」作兜底（恩施州）
+  const c = addr.match(/^(.+?(?:自治州|地区|盟|市)|.+?州)/)
+  let city = c ? c[1] : ''
+  // 「州市」歧义消解：广州/杭州/苏州 里「州市」是城市名整体；恩施州利川市 里「州」是地级、
+  // 「利川市」才是县级。纯后缀规则无法两全，判据是「在州处切开后余下是否为县级单位」：
+  // 广州 → 余下「市天河区」以市开头，不是县级单位，故不切；恩施州 → 余下「利川市」，切。
+  const zhouCut = addr.match(/^(.+?州)([^市区县旗]+(?:自治县|自治旗|新区|区|县|旗|市))/)
+  if (zhouCut && zhouCut[1].length < city.length) city = zhouCut[1]
+  if (city) {
+    region.city = city
+    addr = addr.slice(city.length)
   }
 
   // 县级：自治县 / 自治旗 / 新区 / 区 / 县 / 旗 / 市

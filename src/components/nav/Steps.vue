@@ -14,7 +14,8 @@ export type { Step } from './types'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import type { Step } from './types'
 
-interface Props {
+/** 导出以供声明文件引用：不导出会触发 TS4082，本组件的 .d.ts 将无法生成 */
+export interface Props {
   steps: Step[]
   current: number
   direction?: 'horizontal' | 'vertical'

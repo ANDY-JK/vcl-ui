@@ -67,11 +67,11 @@ export function planRoute(options: RouteOptions): RoutePlan {
   const angularPlan = buildLoopFromClusters(angularOrdered, opts.startPoint || startPoint, skippedStores, opts)
   const nnPlan = buildLoopFromClusters(nnOrdered, opts.startPoint || startPoint, skippedStores, opts)
 
-  // 选跳过门店更少的（即规划门店更多的）
-  if (angularPlan.totalStores >= nnPlan.totalStores) {
-    return angularPlan
+  // 门店数多者优先；数量相同时比总里程——角度环形排序只是启发式，不保证更短
+  if (angularPlan.totalStores !== nnPlan.totalStores) {
+    return angularPlan.totalStores > nnPlan.totalStores ? angularPlan : nnPlan
   }
-  return nnPlan
+  return angularPlan.totalDrivingDistanceM <= nnPlan.totalDrivingDistanceM ? angularPlan : nnPlan
 }
 
 /**

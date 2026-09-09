@@ -36,13 +36,10 @@ export function registerModal(close: () => void, scope: string = DEFAULT_MUTEX_S
 
   // 返回清理函数
   return () => {
-    if (active.value === close) {
-      active.value = null
-      // 动态 scope（如按行 id）会不断创建新 key：引用归零后从 Map 移除，防无限累积
-      if (scope !== DEFAULT_MUTEX_SCOPE && active.value === null) {
-        scopes.delete(scope)
-      }
-    }
+    if (active.value !== close) return
+    active.value = null
+    // 动态 scope（如按行 id）会不断创建新 key：引用归零后从 Map 移除，防无限累积
+    if (scope !== DEFAULT_MUTEX_SCOPE) scopes.delete(scope)
   }
 }
 

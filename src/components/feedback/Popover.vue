@@ -1,10 +1,12 @@
 <script setup lang="ts">
 // ⛔ 保护 — 气泡浮层，禁止：clamp() → px，浮动定位算法，z-index
 //    需我确认：trigger 触发方式、placement 位置选项
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watchEffect } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
+import { useEscClose } from '@/components/_internal/useEscClose'
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import type { FlipDirection } from '@/components/_internal/useFloating'
 
 interface Props {
@@ -17,6 +19,8 @@ interface Props {
   text?: string
   /** tooltip 方向 */
   position?: 'top' | 'bottom' | 'left' | 'right'
+  /** 浮层 z-index（数字或 CSS 变量字符串）；默认走 --z-dropdown 变量 */
+  zIndex?: number | string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,13 +33,48 @@ const isTooltip = computed(() => props.variant === 'tooltip' || !!props.text)
 const open = ref(false)
 // 竞态保护：show() 的 RAF 回调可能晚于 hide() 执行，用 token 取消过期的 show
 let _showToken = 0
+// hover 关闭延迟：给指针穿过触发器与浮层之间的 offset 间隙留时间，否则浮层先 display:none 就再也命中不了
+let _closeTimer: ReturnType<typeof setTimeout> | null = null
+const HOVER_CLOSE_DELAY = 120
+// 触屏：tap 后浏览器会补发 mouseenter/mouseleave，此窗口内忽略 mouseleave，避免 tap 出来的气泡秒关
+let _lastTouchAt = 0
+const TOUCH_GRACE = 600
+
+// a11y 关联 id：tooltip 用 aria-describedby，dialog 用 aria-labelledby
+const floatingId = useIdSafe('popover')
+const titleId = useIdSafe('popover-title')
 
 const dirMap: Record<string, FlipDirection> = { top: 'up', bottom: 'down', left: 'left', right: 'right' }
 const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepareOpen } = useFloating({
-  offset: isTooltip.value ? 6 : 8,
-  defaultDirection: isTooltip.value ? dirMap[props.position] : 'down',
-  minSize: isTooltip.value ? 20 : 80,
+  // getter 形式：isTooltip / position 动态变化时，下一次定位即用新配置
+  get offset() {
+    return isTooltip.value ? 6 : 8
+  },
+  get defaultDirection() {
+    return isTooltip.value ? dirMap[props.position] : 'down'
+  },
+  get minSize() {
+    return isTooltip.value ? 20 : 80
+  },
+  get zIndex() {
+    return props.zIndex != null ? String(props.zIndex) : undefined
+  },
   matchWidth: false,
+})
+
+// tooltip 的语义关联必须挂在真正被聚焦的元素上：插槽首个子元素可能只是图标/包裹层（不可聚焦），
+// 只给它加 aria-describedby 读屏不会播报。优先找首个可聚焦后代，退化为首个子元素、再退化为宿主。
+const FOCUSABLE_SELECTOR = 'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
+function describedTarget(host: HTMLElement): HTMLElement {
+  return host.querySelector<HTMLElement>(FOCUSABLE_SELECTOR) ?? (host.firstElementChild as HTMLElement | null) ?? host
+}
+
+watchEffect(() => {
+  const host = triggerRef.value
+  if (!host) return
+  const target = describedTarget(host)
+  if (isTooltip.value) target.setAttribute('aria-describedby', floatingId)
+  else target.removeAttribute('aria-describedby')
 })
 
 async function toggle(e: MouseEvent) {
@@ -75,21 +114,78 @@ function onFocus() {
   show()
 }
 
-function onBlur() {
+function onBlur(e: FocusEvent) {
   if (props.trigger !== 'focus') return
+  // 焦点在触发器与浮层之间移动（Tab 进浮层内容）不算离开，否则键盘用户永远够不到内容
+  const next = e.relatedTarget as Node | null
+  if (next && (triggerRef.value?.contains(next) || floatingRef.value?.contains(next))) return
   hide()
+}
+
+function cancelClose() {
+  if (_closeTimer) {
+    clearTimeout(_closeTimer)
+    _closeTimer = null
+  }
+}
+
+function scheduleClose() {
+  cancelClose()
+  _closeTimer = setTimeout(() => {
+    _closeTimer = null
+    hide()
+  }, HOVER_CLOSE_DELAY)
+}
+
+function onEnter() {
+  cancelClose()
+  show()
+}
+
+function onLeave() {
+  // 触摸后合成的 mouseleave 不代表指针真的离开了触发器
+  if (Date.now() - _lastTouchAt < TOUCH_GRACE) return
+  if (props.trigger === 'hover' || isTooltip.value) scheduleClose()
+}
+
+function onTouchStart() {
+  _lastTouchAt = Date.now()
+  // click 路径交给 click 事件，避免 tap 先开后立即被 click 又切掉
+  if (props.trigger === 'click') return
+  cancelClose()
+  show()
 }
 
 function close() {
   open.value = false
 }
 useClickOutside([triggerRef, floatingRef], close)
+
+// Esc 关闭 — 复用共享弹层栈：多层弹层叠加时只关最上层可见的那一个
+const { mount: mountEsc, unmount: unmountEsc } = useEscClose(
+  () => open.value,
+  () => true,
+  close,
+)
+onMounted(mountEsc)
+onUnmounted(() => {
+  cancelClose()
+  unmountEsc()
+})
 </script>
 
 <template>
   <span class="popover-host" :class="{ tooltip: isTooltip }">
     <!-- 触发器（focus/blur 不冒泡，改用 focusin/focusout 才能收到插槽内子元素的焦点） -->
-    <span ref="triggerRef" @click="toggle" @mouseenter="show" @mouseleave="hide" @focusin="onFocus" @focusout="onBlur">
+    <span
+      ref="triggerRef"
+      @click="toggle"
+      @mouseenter="onEnter"
+      @mouseleave="onLeave"
+      @touchstart.passive="onTouchStart"
+      @focusin="onFocus"
+      @focusout="onBlur"
+    >
       <slot v-if="!isTooltip" name="trigger">
         <button
           type="button"
@@ -108,18 +204,21 @@ useClickOutside([triggerRef, floatingRef], close)
       <Transition :name="isTooltip ? 'tip' : 'pop'">
         <div
           v-show="open"
+          :id="floatingId"
           ref="floatingRef"
           :class="[isTooltip ? 'tooltip-pop' : 'popover-card', !isTooltip && `flip-${direction}`]"
           :style="floatingStyle"
-          :role="isTooltip ? undefined : 'dialog'"
-          @mouseenter="isTooltip ? show() : props.trigger === 'hover' && show()"
-          @mouseleave="hide"
+          :role="isTooltip ? 'tooltip' : 'dialog'"
+          :aria-labelledby="!isTooltip && title ? titleId : undefined"
+          @mouseenter="onEnter"
+          @mouseleave="onLeave"
+          @focusout="onBlur"
         >
           <!-- tooltip 模式 -->
           <template v-if="isTooltip">{{ text }}</template>
           <!-- popover 模式 -->
           <template v-else>
-            <div v-if="title" class="popover-title">{{ title }}</div>
+            <div v-if="title" :id="titleId" class="popover-title">{{ title }}</div>
             <div class="popover-body"><slot /></div>
           </template>
         </div>

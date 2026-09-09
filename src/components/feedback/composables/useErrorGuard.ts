@@ -1,21 +1,22 @@
 /**
- * 全局错误兜底 —— 补齐 ErrorBoundary 覆盖不到的三类逃逸口
+ * 全局错误兜底 —— 补齐 ErrorBoundary 覆盖不到的四类逃逸口
  *
  * ErrorBoundary 依赖 Vue 的 onErrorCaptured，只能拦住「组件渲染链上的同步错误」；
- * 以下三类会绕过边界、静默留在 console 或把组件留在半成品状态：
+ * 以下四类会绕过边界、静默留在 console 或把组件留在半成品状态：
  * 1. 未被任何边界捕获的 Vue 错误      → app.config.errorHandler
  * 2. 异步链错误（setTimeout / promise）→ window error / unhandledrejection
- * 3. 发版后旧页面懒加载 chunk 失效     → vite:preloadError（可自动整页重载一次）
+ * 3. 资源加载失败（img/script/link）   → window error 捕获阶段（资源 error 不冒泡）
+ * 4. 发版后旧页面懒加载 chunk 失效     → vite:preloadError（可自动整页重载一次）
  *
  * console 策略：只在"默认输出会被我们吃掉"的来源上自己打印（vue 覆写了 Vue 的默认打印、
  * chunk 会 preventDefault 拦住重抛）；window / rejection 浏览器本身就打，不再重复一条刷屏。
- * 零依赖、零平台绑定：只用浏览器标准事件；第 3 类事件仅 Vite 构建产物会派发，
+ * 零依赖、零平台绑定：只用浏览器标准事件；第 4 类事件仅 Vite 构建产物会派发，
  * 非 Vite 宿主下永不触发；无 window 环境（SSR / node）下自动跳过浏览器监听。
  */
 import type { App } from 'vue'
 
-/** 错误来源：组件树 / 全局同步错 / Promise 拒绝 / 懒加载 chunk 失效 */
-export type ErrorGuardSource = 'vue' | 'window' | 'rejection' | 'chunk'
+/** 错误来源：组件树 / 全局同步错 / 资源加载失败 / Promise 拒绝 / 懒加载 chunk 失效 */
+export type ErrorGuardSource = 'vue' | 'window' | 'resource' | 'rejection' | 'chunk'
 
 export interface ErrorGuardPayload {
   error: unknown
@@ -43,16 +44,50 @@ const DEFAULT_FLAG_KEY = 'vue-lib:last-chunk-reload'
 /** 组件链最多向上走几层 */
 const MAX_TRACE_DEPTH = 8
 
+/** 资源 URL 脱敏：去掉 query 与 fragment —— 签名参数（?token=…）不能随错误上报进日志/监控 */
+function sanitizeResourceUrl(raw: string): string {
+  const cut = raw.search(/[?#]/)
+  return cut >= 0 ? raw.slice(0, cut) : raw
+}
+
 /** 当前生效的注销函数；用函数自身身份比对，避免先返回的 off() 抹掉后装实例的注销钩子 */
 let activeOff: (() => void) | null = null
 
+/**
+ * window 级注销槽位 —— 同页加载多份打包拷贝时，各拷贝的模块级 activeOff 互相不可见，
+ * 只有这个共享槽位能让后装实例拆掉先装实例的监听（否则一份错误被两份监听各报一次）。
+ */
+type ErrorGuardWindow = Window & { __vueLibErrorGuardOff?: () => void }
+
+function sharedOff(): (() => void) | undefined {
+  return typeof window !== 'undefined' ? (window as ErrorGuardWindow).__vueLibErrorGuardOff : undefined
+}
+
+function setSharedOff(off: (() => void) | undefined): void {
+  if (typeof window === 'undefined') return
+  ;(window as ErrorGuardWindow).__vueLibErrorGuardOff = off
+}
+
+/** report 重入标志：上报钩子内部再触发错误时不再递归上报，破自激循环 */
+let inReporting = false
+
 function emit(options: ErrorGuardOptions, payload: ErrorGuardPayload, log: boolean) {
   if (log) console.error(`[ErrorGuard:${payload.source}]`, payload.error, payload.detail ?? '', payload.trace ?? '')
+  if (inReporting) return
+  inReporting = true
   try {
-    options.report?.(payload)
+    const ret: unknown = options.report?.(payload)
+    // 异步上报钩子返回 rejected promise 时，不能让拒绝冒到 window.unhandledrejection 再触发一次上报
+    if (ret && typeof (ret as PromiseLike<unknown>).then === 'function') {
+      void Promise.resolve(ret).catch((reportErr) => {
+        console.error('[ErrorGuard] report 钩子异常:', reportErr)
+      })
+    }
   } catch (reportErr) {
     // 上报钩子自身抛错不能再把兜底链路带崩
     console.error('[ErrorGuard] report 钩子异常:', reportErr)
+  } finally {
+    inReporting = false
   }
 }
 
@@ -93,6 +128,8 @@ function acquireReload(key: string, cooldownMs: number): boolean {
  */
 export function installErrorGuard(app: App | null, options: ErrorGuardOptions = {}): () => void {
   uninstallErrorGuard()
+  // 另一份打包拷贝装过：本拷贝的模块级 activeOff 看不到它的监听，用 window 槽位补拆一次
+  sharedOff()?.()
   const {
     reloadOnChunkError = true,
     reloadCooldownMs = DEFAULT_COOLDOWN_MS,
@@ -114,8 +151,23 @@ export function installErrorGuard(app: App | null, options: ErrorGuardOptions = 
 
   // 无 window 环境（SSR / node）：只保留上面的应用级兜底，不挂浏览器监听
   if (typeof window !== 'undefined') {
-    const onWindowError = (e: ErrorEvent) => {
-      emit(options, { error: e.error ?? e.message, source: 'window', detail: `${e.filename}:${e.lineno}` }, false)
+    const onWindowError = (e: Event) => {
+      const target = e.target as Node | null
+      const ev = e as ErrorEvent
+      // 资源加载失败（img/script/link）在元素上派发、不冒泡且无 error/message，
+      // 只有 window 捕获阶段能收到；nodeType===1 同时排除了 window 自身（无 nodeType）
+      if (target && target.nodeType === 1 && !ev.error && !ev.message) {
+        const el = target as HTMLElement
+        const url = sanitizeResourceUrl(el.getAttribute('src') || el.getAttribute('href') || '')
+        const tag = el.tagName.toLowerCase()
+        emit(
+          options,
+          { error: new Error(`资源加载失败：<${tag}> ${url}`), source: 'resource', detail: `${tag}:${url}` },
+          false,
+        )
+        return
+      }
+      emit(options, { error: ev.error ?? ev.message, source: 'window', detail: `${ev.filename}:${ev.lineno}` }, false)
     }
     const onRejection = (e: PromiseRejectionEvent) => {
       emit(options, { error: e.reason, source: 'rejection' }, false)
@@ -129,11 +181,12 @@ export function installErrorGuard(app: App | null, options: ErrorGuardOptions = 
       window.location.reload()
     }
 
-    window.addEventListener('error', onWindowError)
+    // 资源错误不冒泡，必须用捕获阶段；运行时错误在 window 上派发，捕获/冒泡都会到
+    window.addEventListener('error', onWindowError, true)
     window.addEventListener('unhandledrejection', onRejection)
     window.addEventListener('vite:preloadError', onPreloadError)
     cleanups.push(() => {
-      window.removeEventListener('error', onWindowError)
+      window.removeEventListener('error', onWindowError, true)
       window.removeEventListener('unhandledrejection', onRejection)
       window.removeEventListener('vite:preloadError', onPreloadError)
     })
@@ -141,10 +194,12 @@ export function installErrorGuard(app: App | null, options: ErrorGuardOptions = 
 
   const off = () => {
     if (activeOff !== off) return
+    setSharedOff(undefined)
     cleanups.forEach((fn) => fn())
     activeOff = null
   }
   activeOff = off
+  setSharedOff(off)
   return off
 }
 

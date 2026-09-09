@@ -5,6 +5,7 @@ import { ref, computed, watch, nextTick, type Ref, type ComputedRef } from 'vue'
 import type { Column, ColumnFilterState, RowContextAction, TableStorage } from './types'
 import { getCellText, clampFloatingPosition, markLayerOpen } from './utils'
 import { useTablePersistence } from './useTablePersistence'
+import { resolveRowKey } from './useTableCore'
 import { downloadBlob } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
 
@@ -97,7 +98,7 @@ export function useTableExtras(
     const rows = props.exportScope === 'page' ? (pagedData?.value ?? displayData.value) : displayData.value
     const overrides = cellOverrides?.value ?? {}
     const body = rows.map((row, rowIdx) => {
-      const rk = String(row[props.rowKey ?? 'seq'] ?? '')
+      const rk = resolveRowKey(row, props.rowKey)
       return cols.map((col) => {
         const origVal = getCellText(row[col.key], col, row, rowIdx)
         return overrides[rk]?.[col.key] ?? origVal
@@ -184,8 +185,8 @@ export function useTableExtras(
     if (!props.rowContextActions?.length) return
     closeContextMenu()
     markLayerOpen()
-    const rk = String(row[props.rowKey ?? 'seq'] ?? '')
-    const idx = displayData.value.findIndex((r) => String(r[props.rowKey ?? 'seq'] ?? '') === rk)
+    const rk = resolveRowKey(row, props.rowKey)
+    const idx = displayData.value.findIndex((r) => resolveRowKey(r, props.rowKey) === rk)
     contextMenu.value.rowKey = rk
     contextMenu.value.row = row
     contextMenu.value.rowIndex = idx
@@ -267,26 +268,34 @@ export function useTableExtras(
 
   const isAllSelected = computed(() => {
     const data = pagedData?.value ?? displayData.value
-    const keys = data.map((r) => String(r[props.rowKey ?? 'seq'] ?? ''))
+    const keys = data.map((r) => resolveRowKey(r, props.rowKey))
     if (keys.length === 0) return false
     return keys.every((k) => _selectedKeys.value.includes(k))
+  })
+
+  /** 部分选中（本页有选中但未全选）：供表头全选框的 indeterminate 状态使用 */
+  const isIndeterminateSelection = computed(() => {
+    const data = pagedData?.value ?? displayData.value
+    const keys = data.map((r) => resolveRowKey(r, props.rowKey))
+    if (keys.length === 0) return false
+    const selectedCount = keys.filter((k) => _selectedKeys.value.includes(k)).length
+    return selectedCount > 0 && selectedCount < keys.length
   })
 
   function toggleSelectAll() {
     const current = _selectedKeys.value
     const data = pagedData?.value ?? displayData.value
-    const rk = props.rowKey ?? 'seq'
     if (isAllSelected.value) {
-      const pageKeys = new Set(data.map((r) => String(r[rk] ?? '')))
+      const pageKeys = new Set(data.map((r) => resolveRowKey(r, props.rowKey)))
       updateSelectedKeys(current.filter((k) => !pageKeys.has(k)))
     } else {
-      const pageKeys = data.map((r) => String(r[rk] ?? ''))
+      const pageKeys = data.map((r) => resolveRowKey(r, props.rowKey))
       updateSelectedKeys([...new Set([...current, ...pageKeys])])
     }
   }
 
   function toggleRowSelect(row: Record<string, any>) {
-    const key = String(row[props.rowKey ?? 'seq'] ?? '')
+    const key = resolveRowKey(row, props.rowKey)
     if (_selectedKeys.value.includes(key)) {
       updateSelectedKeys(_selectedKeys.value.filter((k) => k !== key))
     } else {
@@ -297,18 +306,18 @@ export function useTableExtras(
   function updateSelectedKeys(keys: string[]) {
     _selectedKeys.value = keys
     emit('update:selectedKeys', keys)
-    const rk = props.rowKey ?? 'seq'
     emit(
       'selectionChange',
       keys,
-      props.data.filter((r) => keys.includes(String(r[rk] ?? ''))),
+      props.data.filter((r) => keys.includes(resolveRowKey(r, props.rowKey))),
     )
   }
 
   // ==================== 持久化（提取至 useTablePersistence） ====================
+  // 列经 getter 惰性读取：columns 可能异步到达，直接传数组会让 auto namespace 恒为 -i0 串数据
   const { _ns, _colKey, _clearPersisted, restoreColWidths, clearAllPersisted, flushWidths } = useTablePersistence(
     props.namespace,
-    props.columns,
+    () => props.columns,
     {
       sortState,
       sortHistory,
@@ -377,6 +386,7 @@ export function useTableExtras(
     // 行选择
     _selectedKeys,
     isAllSelected,
+    isIndeterminateSelection,
     toggleSelectAll,
     toggleRowSelect,
     // 全局事件

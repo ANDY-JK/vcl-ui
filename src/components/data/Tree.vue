@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // ⛔ 保护 — 树形控件，禁止：clamp() → px，递归渲染结构
 //    需我确认：TreeNode 接口扩展、勾选联动逻辑
-import { ref, reactive, computed, inject, provide, watch, onMounted } from 'vue'
+import { ref, reactive, computed, inject, provide, watch, onMounted, nextTick } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useTreeFlatten } from '@/components/_internal/useTreeFlatten'
 
@@ -75,6 +75,20 @@ const treeFlatten = useTreeFlatten<TreeNode>({
   childrenKey: 'children',
   keyExtractor: (n) => n.key,
 })
+
+// roving tabindex 只改 tabindex 不搬焦点，键盘移动后必须手动把真实 DOM 焦点移到目标节点，
+// 否则连续方向键始终从最初聚焦的节点算起，原地打转
+const treeRootRef = ref<HTMLElement | null>(null)
+function focusNode(key: string | number): void {
+  nextTick(() => {
+    const root = treeRootRef.value
+    if (!root) return
+    const target = Array.from(root.querySelectorAll<HTMLElement>('.tree-node')).find(
+      (el) => el.dataset.key === String(key),
+    )
+    target?.focus()
+  })
+}
 
 if (isRoot) {
   function collectAllKeys(nodes: TreeNode[]): (string | number)[] {
@@ -240,6 +254,7 @@ if (isRoot) {
         // 可选中模式：键盘移动即改变选中（与点击语义一致）
         if (state.selectable) emit('update:selectedKey', next.node.key)
         emit('node-click', next.node)
+        focusNode(next.node.key)
       }
     }
     switch (e.key) {
@@ -262,9 +277,18 @@ if (isRoot) {
         }
         break
       case 'Enter':
-      case ' ':
         e.preventDefault()
         handleNodeClick(node)
+        break
+      case ' ':
+        // 焦点在勾选框上时交给原生 checkbox，避免与这里重复切换
+        if (e.target !== e.currentTarget) break
+        e.preventDefault()
+        if (state.checkable && !node.disabled) {
+          state.toggleCheck(node, state.checkState.get(node.key) !== true)
+        } else {
+          handleNodeClick(node)
+        }
         break
     }
   }
@@ -332,7 +356,7 @@ const levelStyle = computed(() => {
 </script>
 
 <template>
-  <div v-if="data.length" class="tree" role="tree">
+  <div v-if="data.length" ref="treeRootRef" class="tree" role="tree">
     <div v-for="node in data" :key="node.key" class="tree-node-wrapper">
       <div
         class="tree-node"
@@ -343,8 +367,18 @@ const levelStyle = computed(() => {
         }"
         :style="levelStyle"
         role="treeitem"
+        :data-key="node.key"
         :aria-expanded="node.children?.length ? state.isExpanded(node.key) : undefined"
         :aria-selected="state.selectable ? state.selectedKeyRef.value === node.key : undefined"
+        :aria-checked="
+          state.checkable
+            ? isChecked(node.key)
+              ? 'true'
+              : isIndeterminate(node.key)
+                ? 'mixed'
+                : 'false'
+            : undefined
+        "
         :aria-label="node.label"
         :tabindex="state.focusKey.value === node.key ? 0 : -1"
         @click="state.handleNodeClick(node)"
@@ -467,7 +501,21 @@ const levelStyle = computed(() => {
   cursor: pointer;
 }
 .tree-check-input {
-  display: none;
+  /* 视觉隐藏但保留可聚焦（display:none 会让勾选框彻底退出 Tab 序，键盘用户无法勾选） */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.tree-check-input:focus-visible + .tree-check-box {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
 }
 .tree-check-box {
   width: clamp(14px, 2.2vw, 16px);

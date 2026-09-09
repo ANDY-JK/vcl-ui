@@ -46,6 +46,42 @@ export interface ToastAPI {
 export const TOAST_KEY: InjectionKey<ToastAPI> = Symbol('toast-state')
 
 /**
+ * 存活实例 API 栈 — window.__toast 全局入口的单一事实源。
+ *
+ * 各实例队列必须保持独立（DataTable / ImagePreview 等各自挂 <Toast> 靠 ref 通知自己那一份），
+ * 所以全局入口不做队列共享，只做「指向最后一个仍存活的实例」：栈顶卸载时回退到上一个存活实例，
+ * 避免旧实现里后装实例覆盖 getter、先卸载者卸载后 __toast 悬空指向死队列导致通知静默丢失。
+ */
+const _liveApis: ToastAPI[] = []
+
+function syncGlobalToast(): void {
+  if (typeof window === 'undefined') return
+  const top = _liveApis[_liveApis.length - 1]
+  if (!top) {
+    try {
+      delete (window as unknown as { __toast?: unknown }).__toast
+    } catch {
+      // 某些环境 window.__toast 不可配置，忽略
+    }
+    return
+  }
+  Object.defineProperty(window, '__toast', { get: () => top, configurable: true })
+}
+
+/** 注册一个存活实例为全局入口候选（后注册者优先） */
+export function registerGlobalToast(api: ToastAPI): void {
+  _liveApis.push(api)
+  syncGlobalToast()
+}
+
+/** 按身份摘除实例：无论它是不是栈顶都要从栈里移除，再把入口重新指向当前栈顶 */
+export function unregisterGlobalToast(api: ToastAPI): void {
+  const i = _liveApis.indexOf(api)
+  if (i >= 0) _liveApis.splice(i, 1)
+  syncGlobalToast()
+}
+
+/**
  * inject 辅助函数 — 在子组件 setup() 中调用获取 Toast API
  *
  * 用法：

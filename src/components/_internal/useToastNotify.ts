@@ -7,19 +7,43 @@
 import { ref, type Ref } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
 
+/** Toast 组件 show 的 options（与 Toast.vue / toast-context.ts 的 ToastAPI 对齐） */
+export interface ToastNotifyOptions {
+  undoText?: string
+  onUndo?: () => void
+  actionText?: string
+  onAction?: () => void
+  closable?: boolean
+}
+
 /** Toast 组件暴露的 show 方法（与 Toast.vue 的 defineExpose 对齐） */
 interface ToastInstance extends ComponentPublicInstance {
-  show: (msg: string, type?: 'info' | 'success' | 'warning' | 'error') => void
+  show: (
+    message: string,
+    type?: 'info' | 'success' | 'warning' | 'error',
+    duration?: number,
+    options?: ToastNotifyOptions,
+  ) => number
 }
 
 export function useToastNotify(): {
   toastRef: Ref<ToastInstance | undefined>
-  notify: (msg: string, type?: 'info' | 'success' | 'warning' | 'error') => void
+  notify: (
+    msg: string,
+    type?: 'info' | 'success' | 'warning' | 'error',
+    duration?: number,
+    options?: ToastNotifyOptions,
+  ) => number | undefined
 } {
   const toastRef = ref<ToastInstance>()
 
-  function notify(msg: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
-    toastRef.value?.show(msg, type)
+  function notify(
+    msg: string,
+    type: 'info' | 'success' | 'warning' | 'error' = 'info',
+    duration?: number,
+    options?: ToastNotifyOptions,
+  ) {
+    return toastRef.value?.show(msg, type, duration, options)
   }
 
   return { toastRef, notify }

@@ -4,15 +4,19 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { navTree, navLabel, type NavNode } from './utils/navData'
+import { useT } from '@/components/_internal/i18n'
+import { navLabel, type NavNode } from './utils/navData'
 import NavItem from './NavItem.vue'
+
+const t = useT()
 
 const props = defineProps<{ collapsed?: boolean; items?: NavNode[] }>()
 
 const router = useRouter()
 const route = useRoute()
 
-const tree = computed(() => props.items || navTree)
+// 不兜底 navTree：下游未传 items 时渲染空态，避免渲染指向宿主不存在路由的演示菜单
+const tree = computed<NavNode[]>(() => props.items ?? [])
 
 // 展开状态：按节点 label 存储，支持独立切换
 const expandedGroups = ref<Set<string>>(new Set(tree.value.map((g) => g.label)))
@@ -53,6 +57,7 @@ const activeRoute = computed(() => route.path)
 
 <template>
   <nav class="accordion-nav" :class="{ collapsed }">
+    <div v-if="!tree.length" class="nav-empty">{{ t('common.empty') }}</div>
     <template v-for="node in tree" :key="node.label">
       <!-- L1 根级叶子节点（无 children 的直接节点） -->
       <button
@@ -89,6 +94,13 @@ const activeRoute = computed(() => route.path)
 }
 .accordion-nav::-webkit-scrollbar {
   display: none;
+}
+.nav-empty {
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+  font-size: clamp(11px, 1.5vw, 15px);
+  color: var(--color-sidebar-text);
+  opacity: 0.6;
 }
 
 /* 根级叶子节点（无 children 的顶级导航项） */

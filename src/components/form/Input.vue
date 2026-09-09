@@ -5,7 +5,7 @@
 //    合并：Input + InputNumber + Textarea
 //    type 取值：text | password | email | tel | number | textarea | search | url
 //    日期/时间选择已移至 Select 组件（type=date / date-range / time）
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, onErrorCaptured, useId } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, onErrorCaptured } from 'vue'
 const _error = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
   console.error('[Input] 内部异常已隔离:', e.message)
@@ -14,11 +14,12 @@ onErrorCaptured((e: Error) => {
 })
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 
 const t = useT()
 
 /** 无障碍：label 与控件关联的唯一 id（number/textarea/text 三模式互斥，共享同一 id） */
-const inputId = useId()
+const inputId = useIdSafe('input')
 
 /* ════════════════════════════════════════
    Props — 统一接口

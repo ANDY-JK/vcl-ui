@@ -1150,6 +1150,7 @@ const {
   onFilterKeydown,
   _selectedKeys,
   isAllSelected,
+  isIndeterminateSelection,
   toggleSelectAll,
   toggleRowSelect,
   onGlobalKeydown,
@@ -1864,14 +1865,18 @@ provideDataTableContext({
               <tr>
                 <!-- 选择框列 -->
                 <th v-if="selectable" class="th-checkbox" :class="{ 'col-fixed-left': _hasFixedLeftCol }">
-                  <input type="checkbox" :checked="isAllSelected" @click.stop="toggleSelectAll" />
+                  <input
+                    type="checkbox"
+                    :checked="isAllSelected"
+                    :indeterminate="isIndeterminateSelection"
+                    @click.stop="toggleSelectAll"
+                  />
                 </th>
                 <th
                   v-for="col in _displayColumns"
                   :key="col.key"
                   draggable="true"
                   tabindex="0"
-                  role="button"
                   :style="{
                     width: columnWidths[col.key]
                       ? Math.max(columnWidths[col.key], 30) * _zoomX + 'px'
@@ -2285,16 +2290,16 @@ provideDataTableContext({
           <div
             v-for="(row, idx) in _cardVisibleData"
             :key="rowMetaMap.get(row)?.key ?? idx"
-            :data-row-key="String(row[props.rowKey] ?? '')"
+            :data-row-key="rowMetaMap.get(row)?.key ?? ''"
             class="card-view-item"
-            :class="{ 'card-selected': _selectedKeys.includes(String(row[props.rowKey] ?? '')) }"
+            :class="{ 'card-selected': _selectedKeys.includes(rowMetaMap.get(row)?.key ?? '') }"
             @click="emit('rowClick', row, idx)"
             @contextmenu.prevent="showRowContextMenu(row, $event)"
           >
             <div v-if="selectable" class="card-checkbox" @click.stop>
               <input
                 type="checkbox"
-                :checked="_selectedKeys.includes(String(row[props.rowKey] ?? ''))"
+                :checked="_selectedKeys.includes(rowMetaMap.get(row)?.key ?? '')"
                 @change="toggleRowSelect(row)"
               />
             </div>

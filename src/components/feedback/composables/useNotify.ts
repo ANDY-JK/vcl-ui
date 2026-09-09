@@ -11,9 +11,11 @@ export interface NotifyOptions {
 }
 
 async function ensure(): Promise<boolean> {
-  if (typeof window === 'undefined' || !('Notification' in window)) return false
-  if (Notification.permission === 'granted') return true
-  if (Notification.permission === 'denied') return false
+  // 用 getNotifyStatus 统一判环境，避免在不支持 Notification 时读裸引用抛 TypeError
+  const status = getNotifyStatus()
+  if (status === 'unsupported') return false
+  if (status === 'granted') return true
+  if (status === 'denied') return false
   return (await Notification.requestPermission()) === 'granted'
 }
 
@@ -21,7 +23,7 @@ async function ensure(): Promise<boolean> {
 export async function notify(title: string, bodyOrOptions?: string | NotifyOptions): Promise<void> {
   try {
     if (!(await ensure())) {
-      if (Notification.permission === 'denied') {
+      if (getNotifyStatus() === 'denied') {
         console.warn('[useNotify] 通知权限已被拒绝，请在浏览器设置中开启')
       }
       return

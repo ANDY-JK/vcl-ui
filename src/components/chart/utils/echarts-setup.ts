@@ -36,6 +36,7 @@ import {
   MarkLineComponent,
   MarkPointComponent,
   TimelineComponent,
+  MarkAreaComponent,
 } from 'echarts/components'
 // echarts-wordcloud 按需动态加载（~30KB gzip），仅在 wordCloud 图表类型使用时导入
 let _wordCloudLoaded = false
@@ -80,6 +81,7 @@ use([
   MarkLineComponent,
   MarkPointComponent,
   TimelineComponent,
+  MarkAreaComponent,
 ])
 
 export { init, getInstanceByDom, registerMap } from 'echarts/core'

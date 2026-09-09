@@ -19,6 +19,14 @@ export function stableRowId(row: object): string {
   return id
 }
 
+/** 行唯一键：优先 rowKey 字段值，空/缺省则回退 stableRowId。
+ *  行 key、行选择、右键定位、编辑 override、导出取值必须全部走这里——
+ *  否则 rowKey 字段缺失的行会共用空串 ''，一次选中即串成整表。 */
+export function resolveRowKey(row: Record<string, any>, rowKeyField?: string): string {
+  const rawKey = row[rowKeyField ?? 'seq']
+  return rawKey != null && String(rawKey) !== '' ? String(rawKey) : stableRowId(row)
+}
+
 // ==================== 主组合式函数 ====================
 
 export function useTableCore(
@@ -176,8 +184,7 @@ export function useTableCore(
         truncated[col.key] = threshold > 0 && t.length > threshold
       }
       // 行唯一键：优先 rowKey 字段值，空则用 WeakMap 分配的稳定 id（增删/排序/筛选均不变）
-      const rawKey = row[rowKey]
-      const stableKey = rawKey != null && String(rawKey) !== '' ? String(rawKey) : stableRowId(row)
+      const stableKey = resolveRowKey(row, rowKey)
       map.set(row, {
         key: stableKey,
         texts,

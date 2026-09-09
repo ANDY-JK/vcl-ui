@@ -25,6 +25,28 @@ const FOCUSABLE_SELECTOR = [
  */
 let activationSeq = 0
 
+/**
+ * 元素是否真的可见：跳过 display:none / visibility:hidden 的元素及其隐藏祖先。
+ * 不用 offsetParent / getClientRects 判定——它们依赖布局，且 position:fixed 元素的
+ * offsetParent 本来就是 null，会把浮层里的按钮误杀。
+ */
+function isRendered(el: HTMLElement): boolean {
+  if (!el.isConnected) return false
+  let cur: HTMLElement | null = el
+  while (cur) {
+    if (cur.hasAttribute('hidden')) return false
+    const style = getComputedStyle(cur)
+    if (style.display === 'none' || style.visibility === 'hidden') return false
+    cur = cur.parentElement
+  }
+  return true
+}
+
+/** 容器内「可见」的可聚焦元素（保持 DOM 顺序） */
+function focusables(container: HTMLElement): HTMLElement[] {
+  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(isRendered)
+}
+
 export interface UseFocusTrapOptions {
   /** 弹窗可见性 ref：内部 watch 自动 activate（true）/ deactivate（false） */
   visible: Ref<boolean>
@@ -62,7 +84,7 @@ export function useFocusTrap(options: UseFocusTrapOptions): UseFocusTrapReturn {
     if (!active || e.key !== 'Tab') return
     const container = getContainer?.() ?? null
     if (!container) return
-    const focusable = container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+    const focusable = focusables(container)
     if (focusable.length === 0) return
     const first = focusable[0]
     const last = focusable[focusable.length - 1]
@@ -83,9 +105,10 @@ export function useFocusTrap(options: UseFocusTrapOptions): UseFocusTrapReturn {
       target = container
     } else if (typeof autofocus === 'string') {
       target = container.querySelector<HTMLElement>(autofocus)
-      if (!target && container.matches(autofocus)) target = container
+      if (target && !isRendered(target)) target = null
+      if (!target && container.matches(autofocus) && isRendered(container)) target = container
     }
-    if (!target) target = container.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+    if (!target) target = focusables(container)[0] ?? null
     if (!target) target = container
     // 容器本身无 tabindex 时 focus() 静默无效，属预期（此时容器内必有其他可聚焦元素）
     target.focus()
@@ -125,11 +148,16 @@ export function useFocusTrap(options: UseFocusTrapOptions): UseFocusTrapReturn {
   }
 
   // 自动绑定：visible 变化时激活/停用。须在组件 registerModal 的 visible watch 之前创建，
-  // 保证"新弹窗先激活、旧弹窗后停用"，配合上面的序号检查消除焦点恢复竞态
-  watch(visible, v => {
-    if (v) activate()
-    else deactivate()
-  })
+  // 保证"新弹窗先激活、旧弹窗后停用"，配合上面的序号检查消除焦点恢复竞态。
+  // immediate：挂载时就已 visible=true（条件渲染 / 初始即打开）的弹层同样要接管焦点
+  watch(
+    visible,
+    v => {
+      if (v) activate()
+      else deactivate()
+    },
+    { immediate: true },
+  )
 
   // 组件卸载时兜底停用（恢复焦点仅在无更新弹窗时发生）
   onBeforeUnmount(() => deactivate())

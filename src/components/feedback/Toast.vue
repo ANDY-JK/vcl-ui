@@ -6,12 +6,6 @@
  */
 let nextId = 1
 
-/**
- * window.__toast 存活实例引用计数 — 模块级（<script setup> 顶层 let 是每实例一份），
- * 全部 Toast 实例卸载才 delete window.__toast，避免多实例场景任一卸载导致悬空。
- */
-let _liveToastInstances = 0
-
 /** Props 声明在普通 <script> 块：script setup 内 value 声明之后再出现 type 导出会触发 vue-tsc TS1184 */
 export interface Props {
   /** 'toast' 全局弹幕 | 'inline' 内联提示条（替代 Alert） */
@@ -22,6 +16,8 @@ export interface Props {
   closable?: boolean
   showIcon?: boolean
   position?: 'top' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  /** Teleport 目标（WC/Shadow DOM 宿主指向自身容器），默认 'body' */
+  teleportTo?: string | HTMLElement
 }
 </script>
 
@@ -33,8 +29,8 @@ export interface Props {
 import { ref, computed, provide, onUnmounted } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
-import { TOAST_KEY } from './composables/toast-context'
-import type { ToastItem } from './composables/toast-context'
+import { TOAST_KEY, registerGlobalToast, unregisterGlobalToast } from './composables/toast-context'
+import type { ToastAPI, ToastItem } from './composables/toast-context'
 
 // 模板 v-for 中 t 已被 toast 项占用，翻译函数用别名 tt
 const tt = useT()
@@ -45,12 +41,14 @@ const props = withDefaults(defineProps<Props>(), {
   closable: false,
   showIcon: true,
   position: 'top',
+  teleportTo: 'body',
 })
 
 // inline 模式的本地显隐
 const inlineVisible = ref(true)
 
-// toast 队列 — 通过 provide/inject 共享，多实例同页面共享同一队列
+// toast 队列 — 每实例一份：DataTable / ImagePreview 等各自挂 <Toast> 靠 ref 通知自己那一份；
+// provide/inject 只在本实例子树内共享，不跨实例合并队列（合并会导致同页多实例重复渲染）
 const toasts = ref<ToastItem[]>([])
 // 各 toast 的自动关闭定时器（id → timer）：组件卸载时统一清理，防止卸载后 timer 回调操作已卸载 ref
 const _closeTimers = new Map<number, ReturnType<typeof setTimeout>>()
@@ -152,30 +150,23 @@ function clearAll() {
   _closeTimers.clear()
 }
 
-// 通过 provide/inject 共享 toast API，子组件可 inject 后直接调用
-provide(TOAST_KEY, { toasts, show, remove: removeToast, clearAll })
+// 本实例 API —— provide 与全局入口共用同一个对象，卸载时才能按身份精确摘除
+const toastApi: ToastAPI = { toasts, show, remove: removeToast, clearAll }
+
+// 通过 provide/inject 共享本实例 API，子组件可 inject 后直接调用（仅限本实例子树）
+provide(TOAST_KEY, toastApi)
 
 // @deprecated window.__toast 已废弃，推荐使用 useToast() 或组件 ref
 // 保留兼容旧代码，后续版本将移除
-// 多实例安全：引用计数——全部实例卸载才 delete，避免任一实例卸载导致
-// 其他存活实例的 __toast 悬空/消失（计数器 _liveToastInstances 定义在模块级 <script> 块）
+// 多实例安全：全局入口指向最后一个仍存活的实例；本实例卸载时按身份出栈并回退到上一存活实例，
+// 不会像旧实现那样把入口留在已卸载实例的死队列上（通知静默丢失）
 if (typeof window !== 'undefined') {
-  _liveToastInstances++
-  Object.defineProperty(window, '__toast', {
-    get: () => ({ show, remove: removeToast, clearAll }),
-    configurable: true,
-  })
+  registerGlobalToast(toastApi)
 }
 
-// 本实例卸载时引用计数归零才清除 window.__toast（dangling 防护）
 onUnmounted(() => {
-  _liveToastInstances--
-  if (typeof window !== 'undefined' && _liveToastInstances <= 0) {
-    try {
-      delete (window as unknown as { __toast?: unknown }).__toast
-    } catch {
-      // 某些环境 window.__toast 不可配置，忽略
-    }
+  if (typeof window !== 'undefined') {
+    unregisterGlobalToast(toastApi)
   }
   // 清理未触发的自动关闭定时器，防止卸载后回调操作已卸载组件状态
   _closeTimers.forEach((t) => clearTimeout(t))
@@ -212,11 +203,17 @@ defineExpose({
     </button>
   </div>
 
-  <!-- toast 模式：全局弹幕 — H5 Teleport 到 body, 小程序直接渲染(已在根节点) -->
-  <Teleport v-if="isToast" to="body">
-    <div v-if="isToast" class="toast-container" :class="[`toast-${position}`]" aria-live="polite">
+  <!-- toast 模式：全局弹幕 — H5 Teleport 到 body（可用 teleportTo 指向 Shadow DOM 宿主容器），小程序直接渲染(已在根节点) -->
+  <Teleport v-if="isToast" :to="teleportTo">
+    <div v-if="isToast" class="toast-container" :class="[`toast-${position}`]">
       <TransitionGroup name="toast">
-        <div v-for="t in toasts" :key="t.id" class="toast-item" :style="{ background: colorMap[t.type] }">
+        <div
+          v-for="t in toasts"
+          :key="t.id"
+          class="toast-item"
+          :style="{ background: colorMap[t.type] }"
+          :role="t.type === 'error' ? 'alert' : 'status'"
+        >
           <IconSvg :type="iconMap[t.type]" size="md" color="white" class="toast-icon" />
           <span class="toast-msg">{{ t.message }}</span>
           <button

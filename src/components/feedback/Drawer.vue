@@ -6,6 +6,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { registerModal } from '@/components/_internal/useModalManager'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useEscClose } from '@/components/_internal/useEscClose'
+import { useBodyScrollLock } from '@/components/_internal/useBodyScrollLock'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
@@ -36,7 +37,6 @@ const props = withDefaults(defineProps<Props>(), {
   height: 'min(300px, 60vh)',
   closable: true,
   maskClosable: true,
-  zIndex: 1000,
   destroyOnClose: true,
   internal: false,
 })
@@ -64,26 +64,52 @@ useFocusTrap({
   autofocus: 'container',
 })
 
+// 打开期间锁 body 滚动（引用计数：与其它弹层叠加时，全部关闭才恢复）
+useBodyScrollLock(() => props.visible)
+
 function close() {
   emit('update:visible', false)
   emit('close')
 }
 
+// 遮罩误关判定：只有 mousedown 和 mouseup 都落在遮罩上才关闭。
+// 面板内按下选中文字、拖到遮罩松开时浏览器补发的 click 目标是最外层 overlay，
+// 旧的 click.self 会命中并误关（与 ModalBox 同一套判定，避免两份实现漂移）。
+let _maskPressed = false
+function onMaskMousedown() {
+  _maskPressed = true
+}
+function onMaskMouseup() {
+  if (_maskPressed && props.maskClosable) close()
+  _maskPressed = false
+}
+function onMaskMouseleave() {
+  _maskPressed = false
+}
+// 面板内重新按下时复位：面板 mousedown 被 .stop 拦下，不复位则上一次落在遮罩的按下会残留
+function onPanelMousedown() {
+  _maskPressed = false
+}
+
+// immediate：挂载时就已 visible=true 时也要置 hasOpened（destroyOnClose=false 的
+// 面板靠 hasOpened 渲染，不补这一步会整块不渲染）；但初次挂载即 false 不补发 afterClose
 watch(
   () => props.visible,
-  async (v) => {
+  async (v, oldV) => {
     if (v) {
       hasOpened.value = true
       await nextTick()
       emit('afterOpen')
-    } else {
+    } else if (oldV !== undefined) {
       emit('afterClose')
     }
   },
+  { immediate: true },
 )
 
 // --- 弹窗竞态管理：同 scope 只允许一个弹窗（internal 跳过）---
 let _unregDrawer: (() => void) | null = null
+// immediate：挂载时就已 visible=true 的抽屉也要注册，否则同域互斥对它失效
 watch(
   () => props.visible,
   (v) => {
@@ -97,6 +123,7 @@ watch(
       }
     }
   },
+  { immediate: true },
 )
 onUnmounted(() => {
   if (_unregDrawer) {
@@ -123,8 +150,10 @@ onUnmounted(unmountEsc)
         v-if="destroyOnClose ? visible : hasOpened"
         class="drawer-overlay"
         :class="{ hidden: !visible }"
-        :style="{ zIndex }"
-        @click.self="maskClosable && close()"
+        :style="zIndex != null ? { zIndex } : undefined"
+        @mousedown="onMaskMousedown"
+        @mouseup="onMaskMouseup"
+        @mouseleave="onMaskMouseleave"
       >
         <div
           ref="drawerPanel"
@@ -135,6 +164,8 @@ onUnmounted(unmountEsc)
           role="dialog"
           aria-modal="true"
           :aria-label="title || t('drawer.panel')"
+          @mousedown.stop="onPanelMousedown"
+          @mouseup.stop
           @click.stop
         >
           <div class="drawer-header">

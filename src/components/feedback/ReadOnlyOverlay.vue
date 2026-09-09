@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // ⛔ 保护 — 只读遮罩，禁止：遮罩透明度；z-index 层级 = var(--z-readonly, 2500)（压 modal/overlay/dropdown）
 //    需我确认：visible 触发逻辑、slot 内容区
+import { ref, watch, onUnmounted, nextTick } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
 
@@ -11,18 +12,78 @@ interface Props {
   reason?: string
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   reason: '',
 })
+
+const overlayRef = ref<HTMLElement | null>(null)
+
+/**
+ * 只读遮罩必须真的挡住键盘，而不只是挡鼠标：
+ * - 显示时把焦点收进遮罩，焦点一旦落到背景元素立即弹回（aria-modal 语义落地）；
+ * - 捕获阶段拦下 Tab（防焦点逃逸）与背景控件上的 Enter/Space（防回车绕过只读提交）；
+ * - 不拦方向键 / PageDown 等滚动键，也不锁 body overflow —— 遮罩后的内容仍可滚动查看。
+ */
+function onKeydownCapture(e: KeyboardEvent) {
+  if (!props.visible) return
+  if (e.key === 'Tab') {
+    e.preventDefault()
+    overlayRef.value?.focus()
+    return
+  }
+  // 焦点锁在遮罩上时 Enter/Space 命中不到任何背景控件，放行以保留 Space 滚动；
+  // 只有焦点意外逃到背景元素上才拦截，堵死键盘绕过只读
+  if ((e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') && e.target !== overlayRef.value) {
+    e.preventDefault()
+  }
+}
+
+function onFocusIn(e: FocusEvent) {
+  if (!props.visible) return
+  if (e.target === overlayRef.value) return
+  overlayRef.value?.focus()
+}
+
+let attached = false
+function attach() {
+  if (attached || typeof document === 'undefined') return
+  document.addEventListener('keydown', onKeydownCapture, true)
+  document.addEventListener('focusin', onFocusIn, true)
+  attached = true
+}
+function detach() {
+  if (!attached) return
+  document.removeEventListener('keydown', onKeydownCapture, true)
+  document.removeEventListener('focusin', onFocusIn, true)
+  attached = false
+}
+
+watch(
+  () => props.visible,
+  async (v) => {
+    if (!v) {
+      detach()
+      return
+    }
+    attach()
+    await nextTick()
+    overlayRef.value?.focus()
+  },
+  { immediate: true },
+)
+
+onUnmounted(detach)
 </script>
 
 <template>
   <Transition name="fade">
     <div
       v-if="visible"
+      ref="overlayRef"
       class="readonly-overlay"
       role="alertdialog"
       aria-modal="true"
+      tabindex="-1"
       :aria-label="reason || t('readonly.defaultReason')"
     >
       <div class="readonly-content">
@@ -43,6 +104,8 @@ withDefaults(defineProps<Props>(), {
   justify-content: center;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
+  /* 持焦容器是整屏遮罩，画出焦点环既无意义又难看 */
+  outline: none;
 }
 
 .readonly-content {

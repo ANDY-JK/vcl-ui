@@ -3,7 +3,7 @@
  * 固定格式：门店名 | 四级乡镇 | 详细地址 | 联系人 | 电话 | 经度 | 纬度
  * 第1行=表头 第2行=起点/终点 第3行起=门店数据
  */
-import { isValidLatLon, normalizeChinaLatLon } from '@/components/amap'
+import { normalizeChinaLatLon } from '@/components/amap'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：错误消息与点位名按当前语言 */
@@ -25,9 +25,11 @@ const HEADER_MAP: Record<string, string> = {
   手机号: 'phone',
   手机号码: 'phone',
   经度: 'longitude',
+  longitude: 'longitude',
   lon: 'longitude',
   lng: 'longitude',
   纬度: 'latitude',
+  latitude: 'latitude',
   lat: 'latitude',
   四级乡镇: 'fullAddr',
   '4级乡镇': 'fullAddr',
@@ -44,16 +46,16 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
   const rows = trimData(rawRows)
   if (rows.length < 2) return { stores: [], needGeocode: [] }
 
-  // 表头定位
+  // 表头定位（大小写不敏感 + 剥掉单位括号，如「经度(°)」/「LNG」）
   const headerRow = rows[0] as (string | number | undefined)[]
   const colMap = new Map<string, number>()
   headerRow.forEach((h, idx) => {
     if (h == null) return
-    const field = HEADER_MAP[String(h).trim()]
+    const field = HEADER_MAP[normalizeHeader(String(h))]
     if (field) colMap.set(field, idx)
   })
 
-  // 未映射列 → 按类型推断（电话/坐标）
+  // 未映射列 → 按类型推断（仅电话；坐标列必须显式声明，见下方校验）
   const maxCols = Math.max(...rows.map((r) => (r as unknown[]).length))
   const mappedCols = new Set(colMap.values())
   for (let col = 0; col < maxCols; col++) {
@@ -66,19 +68,12 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
     if (phoneCount >= 2 && !colMap.has('phone')) {
       colMap.set('phone', col)
       mappedCols.add(col)
-      continue
     }
-    const nums = sample.filter((v) => v != null && !isNaN(parseFloat(String(v))))
-    if (nums.length >= 3) {
-      const avg = nums.map((v) => parseFloat(String(v))).reduce((a, b) => a + b, 0) / nums.length
-      if (avg > 70 && avg <= 180 && !colMap.has('longitude')) {
-        colMap.set('longitude', col)
-        mappedCols.add(col)
-      } else if (avg > 0 && avg <= 90 && !colMap.has('latitude')) {
-        colMap.set('latitude', col)
-        mappedCols.add(col)
-      }
-    }
+  }
+
+  // 固定格式要求经纬度列：缺失时明确报错，不再按数值均值猜（任意数字列都会被误认）
+  if (!colMap.has('longitude') || !colMap.has('latitude')) {
+    throw new Error(t('routePlanner.missingCoordColumns', { row: 3 }))
   }
 
   // 第2行 = 起点/终点
@@ -86,28 +81,11 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
   const startAddr = getStr(startRow, colMap.get('address')) || getStr(startRow, colMap.get('fullAddr'))
   const startPoint = startAddr ? { name: t('routePlanner.startEndPoint'), address: startAddr } : null
 
-  // 第3行起 = 门店数据
-  // 先跑一遍去重：相同坐标的只保留第一家，其余清空走地理编码
-  const coordFirstSeen = new Map<string, number>() // key → 首次出现的行号
-  for (let i = 2; i < rows.length; i++) {
-    const row = rows[i] as (string | number | undefined)[]
-    if (!row || row.length === 0) continue
-    const lat = getNum(row, colMap.get('latitude'))
-    const lon = getNum(row, colMap.get('longitude'))
-    if (lat != null && lon != null && isValidLatLon(lat, lon)) {
-      const key = `${lat.toFixed(6)},${lon.toFixed(6)}`
-      if (coordFirstSeen.has(key)) {
-        // 重复坐标 → 清掉
-        row[colMap.get('latitude')!] = null as any
-        row[colMap.get('longitude')!] = null as any
-      } else {
-        coordFirstSeen.set(key, i)
-      }
-    }
-  }
-
   const stores: Partial<Store>[] = []
   const needGeocode: Partial<Store>[] = []
+  // 判重口径：仅「门店名 + 详细地址」完全相同才算重复。
+  // 同坐标不再判重——同商场多个柜台是正常数据，清掉坐标会逼它们重新地理编码。
+  const seenStoreKeys = new Set<string>()
 
   for (let i = 2; i < rows.length; i++) {
     const row = rows[i] as (string | number | undefined)[]
@@ -119,6 +97,12 @@ export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult
 
     // 完全空行跳过；允许仅四级乡镇无门店名/地址的行（乡镇标记）
     if (!name && !address && !fullAddr) continue
+
+    if (name && address) {
+      const dupKey = `${name}|${address}`
+      if (seenStoreKeys.has(dupKey)) continue
+      seenStoreKeys.add(dupKey)
+    }
 
     const parsed = parseRegion(fullAddr)
 
@@ -181,6 +165,14 @@ function trimData(rawRows: unknown[][]): unknown[][] {
     }
   }
   return rawRows.slice(0, lastRow + 1).map((r) => (r as unknown[]).slice(0, lastCol + 1))
+}
+
+/** 表头归一化：剥掉单位括号（「经度(°)」→「经度」）、去空白、转小写（「LNG」→「lng」） */
+function normalizeHeader(header: string): string {
+  return header
+    .replace(/[（(][^）)]*[）)]/g, '')
+    .replace(/\s+/g, '')
+    .toLowerCase()
 }
 
 function getStr(row: (string | number | undefined)[], idx: number | undefined): string {

@@ -1,5 +1,4 @@
 // Web Speech API 语音播报
-let voicesLoaded = false
 let preWarmed = false
 const KEY = 'vue-lib-voice-unlocked'
 
@@ -31,6 +30,8 @@ function autoInit(): void {
   const win = window as unknown as { __vueLibVoiceInited?: boolean }
   if (win.__vueLibVoiceInited) return
   win.__vueLibVoiceInited = true
+  // 页面离开（含 bfcache 前）停掉播报，否则 SPA 跳转后上一段语音会串读新页面
+  window.addEventListener('pagehide', stopSpeak)
   try {
     if (localStorage.getItem(KEY) === '1') {
       doWarm()
@@ -52,17 +53,50 @@ export function unlockVoice(): void {
   doWarm()
 }
 
-function ensureVoices(): void {
-  if (voicesLoaded || typeof window === 'undefined' || !window.speechSynthesis) return
-  speechSynthesis.getVoices()
-  speechSynthesis.onvoiceschanged = () => {
-    voicesLoaded = true
-  }
-  voicesLoaded = true
-}
-
 /** 支持的语言代码 */
 export type VoiceLang = 'zh' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'es' | 'auto'
+
+/** 待补发的播报请求：voices 异步就绪后重放一次（只保留最后一次，避免排队串读） */
+let pendingSpeak: { text: string; rate: number; pitch: number; lang: VoiceLang } | null = null
+let voicesListenerAttached = false
+
+function doSpeak(text: string, rate: number, pitch: number, lang: VoiceLang): void {
+  speechSynthesis.cancel()
+  const u = new SpeechSynthesisUtterance(text)
+  u.rate = rate
+  u.pitch = pitch
+  u.volume = 0.8
+  // 语言选择：'auto' 根据文本特征推断，否则匹配指定语言前缀
+  const targetLang = lang === 'auto' ? detectLang(text) : lang
+  const voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith(targetLang))
+  if (voice) u.voice = voice
+  u.lang = voice?.lang || targetLang
+  speechSynthesis.speak(u)
+}
+
+function attachVoicesListener(): void {
+  if (voicesListenerAttached) return
+  voicesListenerAttached = true
+  speechSynthesis.addEventListener('voiceschanged', onVoicesReady, { once: true })
+}
+
+function onVoicesReady(): void {
+  // 一次性监听已消费，标记必须复位；否则下一次 speak 不会再挂监听，请求永远补发不出去
+  voicesListenerAttached = false
+  const p = pendingSpeak
+  if (!p) return
+  // Chrome 可能分多次推送语音列表：本次仍为空时保持挂起，重新挂监听等下一次
+  if (!speechSynthesis.getVoices().length) {
+    attachVoicesListener()
+    return
+  }
+  pendingSpeak = null
+  try {
+    doSpeak(p.text, p.rate, p.pitch, p.lang)
+  } catch {
+    console.warn('[useVoice] 语音播报失败')
+  }
+}
 
 /** 播报文字；rate 0.1~10，pitch 0~2；lang 指定语言（默认 'zh'），'auto' 为自动检测 */
 export function speak(text: string, rate = 1, pitch = 1, lang: VoiceLang = 'zh'): void {
@@ -70,18 +104,14 @@ export function speak(text: string, rate = 1, pitch = 1, lang: VoiceLang = 'zh')
   rate = Math.max(0.1, Math.min(10, rate))
   pitch = Math.max(0, Math.min(2, pitch))
   try {
-    ensureVoices()
-    speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.rate = rate
-    u.pitch = pitch
-    u.volume = 0.8
-    // 语言选择：'auto' 根据文本特征推断，否则匹配指定语言前缀
-    const targetLang = lang === 'auto' ? detectLang(text) : lang
-    const voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith(targetLang))
-    if (voice) u.voice = voice
-    u.lang = voice?.lang || targetLang
-    speechSynthesis.speak(u)
+    if (!speechSynthesis.getVoices().length) {
+      // Chrome 首次 getVoices() 常为空（语音列表异步加载）：直接播会退化成系统默认音（语言错读）。
+      // 记下请求，voiceschanged 就绪后补发一次。
+      pendingSpeak = { text, rate, pitch, lang }
+      attachVoicesListener()
+      return
+    }
+    doSpeak(text, rate, pitch, lang)
   } catch {
     console.warn('[useVoice] 语音播报失败')
   }
@@ -98,6 +128,8 @@ function detectLang(text: string): string {
 }
 
 export function stopSpeak(): void {
+  // 停播后不再补发挂起的请求，否则离开页面后 voices 就绪还会响一声
+  pendingSpeak = null
   if (typeof window === 'undefined' || !window.speechSynthesis) return
   try {
     speechSynthesis.cancel()

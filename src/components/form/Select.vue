@@ -23,7 +23,8 @@ const t = useT()
  *
  * 支持模式：select | combobox | menu | cascader | tree-select | date | date-range | time
  */
-import { ref, computed, nextTick, watch, onMounted, onUnmounted, useId } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
@@ -38,7 +39,8 @@ import type { Option, MenuItem, CascaderOption } from '@/components/shared/types
 /* ════════════════════════════════════════
    Props
    ════════════════════════════════════════ */
-interface Props {
+/** 导出以供声明文件引用：不导出会触发 TS4082，本组件的 .d.ts 将无法生成 */
+export interface Props {
   /** 模式 */
   type?: 'select' | 'menu' | 'combobox' | 'cascader' | 'tree-select' | 'date' | 'date-range' | 'time'
   modelValue?: string | number | (string | number | boolean)[] | [string, string] | null
@@ -102,9 +104,9 @@ const emit = defineEmits<{
    模式判断
    ════════════════════════════════════════ */
 /** 无障碍：浮动 label 与 trigger input 关联的唯一 id */
-const selectInputId = useId()
+const selectInputId = useIdSafe('select-input')
 /** 下拉面板唯一 id：同页多个 Select 实例时 aria-controls/面板 id 各自独立，避免重复 id 导致关联错乱 */
-const dropdownId = useId()
+const dropdownId = useIdSafe('select-panel')
 const isSelect = computed(() => props.type === 'select')
 const isCombobox = computed(() => props.type === 'combobox')
 /** 统一交互模式（单选/多选、select/combobox 同格式）：已选 tag 展示 + trigger 直接输入 + 打开面板展示全部 */
@@ -883,7 +885,7 @@ function onTimeCancel() {
           aria-autocomplete="list"
           :aria-controls="open ? dropdownId : undefined"
           :aria-activedescendant="
-            open && !isTreeSelect && highlightIdx >= 0 ? `select-option-${highlightIdx}` : undefined
+            open && !isTreeSelect && highlightIdx >= 0 ? `${dropdownId}-${highlightIdx}` : undefined
           "
           autocomplete="off"
           @click.stop="onTriggerClick($event)"
@@ -1071,7 +1073,7 @@ function onTimeCancel() {
             <div v-else class="panel-list">
               <button
                 v-for="(opt, idx) in filteredOptions"
-                :id="`select-option-${idx}`"
+                :id="`${dropdownId}-${idx}`"
                 :key="String(opt.value)"
                 type="button"
                 class="panel-item"

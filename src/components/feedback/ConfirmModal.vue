@@ -1,14 +1,10 @@
-<script lang="ts">
-import { useT } from '@/components/_internal/i18n'
-
-/** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
-const t = useT()
-</script>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 const props = withDefaults(
   defineProps<{
@@ -22,14 +18,17 @@ const props = withDefaults(
     closable?: boolean
   }>(),
   {
-    title: () => t('confirmModal.title'),
-    confirmText: () => t('confirmModal.confirm'),
-    cancelText: () => t('confirmModal.cancel'),
     variant: 'danger',
     loading: false,
     closable: true,
   },
 )
+
+// 默认文案用 computed 回退而非 prop 工厂：工厂只在实例创建时求值一次，
+// 常驻弹窗中途切语言后标题/按钮会停在旧语言
+const effTitle = computed(() => props.title ?? t('confirmModal.title'))
+const effConfirmText = computed(() => props.confirmText ?? t('confirmModal.confirm'))
+const effCancelText = computed(() => props.cancelText ?? t('confirmModal.cancel'))
 
 const emit = defineEmits<{
   'update:visible': [val: boolean]
@@ -86,7 +85,7 @@ function onConfirm() {
 <template>
   <ModalBox
     :visible="visible"
-    :title="title"
+    :title="effTitle"
     size="sm"
     :closable="closable"
     @update:visible="emit('update:visible', $event)"
@@ -102,11 +101,11 @@ function onConfirm() {
     <template #footer>
       <div class="confirm-footer">
         <button class="confirm-btn cancel" @click="onCancel">
-          {{ cancelText }}
+          {{ effCancelText }}
         </button>
         <button :class="['confirm-btn', variantMeta.btnClass]" :disabled="loading" @click="onConfirm">
           <IconSvg v-if="loading" type="loader" size="xs" class="confirm-loading-icon" />
-          {{ confirmText }}
+          {{ effConfirmText }}
         </button>
       </div>
     </template>

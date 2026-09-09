@@ -100,7 +100,7 @@ export type OptionSort = 'name' | 'name-desc' | 'count' | 'count-desc'
  *
  *  @example 创建 localStorage 适配器（带前缀隔离）
  *  ```ts
- *  import { createLocalStorage } from 'vue-component-lib'
+ *  import { createLocalStorage } from 'vcl-ui'
  *  const storage = createLocalStorage('my-app')
  *  ```
  */
@@ -126,7 +126,11 @@ export function createLocalStorage(prefix: string = 'dt'): TableStorage {
   }
 }
 
-export interface Emits {
+/**
+ * 用 type 而非 interface：Vue 3.4 的 defineEmits<T>() 约束为 Record<string, any[]>，
+ * interface 没有隐式索引签名会报 TS2344（Vue 3.5 放宽了该约束，只在本机 3.5 下看不出来）。
+ */
+export type Emits = {
   sort: [key: string, order: 'asc' | 'desc']
   filter: [filters: Record<string, string[]>]
   'update:filters': [filters: Record<string, string[]>]

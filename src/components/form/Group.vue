@@ -4,7 +4,8 @@
 //  合并：CheckboxGroup + RadioGroup + Switch + Rate + Slider
 //  type 取值：radio | checkbox | switch | rate | slider
 // ════════════════════════════════════════════════
-import { ref, computed, useId } from 'vue'
+import { ref, computed } from 'vue'
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { clamp, alignStep } from './utils/slider-utils'
 import { useT } from '@/components/_internal/i18n'
@@ -72,7 +73,7 @@ const props = withDefaults(defineProps<Props>(), {
 type GroupValue = string | number | boolean | (string | number | boolean)[] | [number, number]
 
 /** radio 分组唯一 name（避免多个 Group 实例的 radio 互相干扰） */
-const groupId = useId()
+const groupId = useIdSafe('group')
 
 const emit = defineEmits<{
   'update:modelValue': [v: GroupValue]

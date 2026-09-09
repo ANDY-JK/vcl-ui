@@ -8,15 +8,15 @@
  *
  * 使用方式（消费方应用）：
  *   // main.ts
- *   import { i18n } from 'vue-component-lib/i18n'
+ *   import { i18n } from 'vcl-ui/i18n'
  *   app.use(i18n)
  *
  * 切换语言：
- *   import { setLocale } from 'vue-component-lib/i18n'
+ *   import { setLocale } from 'vcl-ui/i18n'
  *   setLocale('en-US')
  *
  * 外部项目补充/覆盖文案（不污染组件库内置语言包）：
- *   import { registerMessages } from 'vue-component-lib/i18n'
+ *   import { registerMessages } from 'vcl-ui/i18n'
  *   registerMessages({
  *     'zh-CN': { common: { confirm: '项目自定义确认' } },  // 覆盖组件库同 key
  *     'fr-FR': { common: { confirm: 'Confirmer' } },       // 注册组件库没有的语言

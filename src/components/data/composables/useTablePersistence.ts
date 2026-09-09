@@ -26,7 +26,7 @@ type PersistKind = 'layout' | 'state'
 
 export function useTablePersistence(
   namespace: string | undefined,
-  columns: Column[],
+  columns: Column[] | (() => Column[]),
   opts: {
     sortState?: Ref<{ key: string; order: 'asc' | 'desc' }>
     sortHistory?: Ref<Record<string, 'asc' | 'desc'>>
@@ -58,9 +58,14 @@ export function useTablePersistence(
   const _store: TableStorage = opts.storage ?? createLocalStorage('')
 
   // ---- 键名空间 ----
-  const _autoId = `-i${_colHash(columns)}`
-  const _ns = computed(() => (namespace ? `-${namespace}` : _autoId))
-  const _colKey = computed(() => columns.map((c) => c.key).join('|'))
+  // 列可能异步到达（挂载时为空）：列一律经 getter 惰性读取，否则 auto namespace 恒为 -i0，
+  // 多张表共用一个存储空间 → 排序/筛选/列宽/显隐互相串数据
+  const _getColumns = typeof columns === 'function' ? columns : () => columns
+  const _ns = computed(() => (namespace ? `-${namespace}` : `-i${_colHash(_getColumns())}`))
+  const _colKey = computed(() => _getColumns().map((c) => c.key).join('|'))
+
+  /** auto namespace 就绪判定：有 namespace 恒就绪；无 namespace 需列已到达（列空时 ns 恒为 -i0） */
+  const _nsReady = (): boolean => !!namespace || _getColumns().length > 0
 
   /** 持久化键名唯一出处（勿在别处拼 dt 前缀） */
   const _key = (feat: string): string => `dt${_ns.value}-${feat}`
@@ -116,13 +121,19 @@ export function useTablePersistence(
   }
 
   // ---- 旧格式键清理（一次性，dt{ns}-{colKey}-{feat} 遗留） ----
-  let _oldKeysCleaned = false
+  const _cleanedNs = new Set<string>()
   async function _cleanOldFormatKeys(): Promise<void> {
-    if (_oldKeysCleaned) return
-    _oldKeysCleaned = true
+    const ns = _ns.value
+    if (_cleanedNs.has(ns)) return
+    _cleanedNs.add(ns)
     for (const feat of FEATURE_KEYS) {
       try {
-        await _store.remove(`dt${_ns.value}-${_colKey.value}-${feat}`)
+        await _store.remove(`dt${ns}-${_colKey.value}-${feat}`)
+        // 异步列到达前 ns 恒为 -i0，多张表共用这批键 → 切到真实 ns 后连同遗留一起清掉
+        if (ns !== '-i0') {
+          await _store.remove(`dt-i0-${feat}`)
+          await _store.remove(`dt-i0-${_colKey.value}-${feat}`)
+        }
       } catch {
         /* 忽略 */
       }
@@ -160,12 +171,13 @@ export function useTablePersistence(
   /** 注册一个特性：统一接管 恢复 + 流式恢复 + 持久化 watch 三段样板 */
   function register<T>(def: FeatureDef<T>): void {
     if (!_isActive(def.kind) || !def.deps()) return
-    // 同步恢复
-    _loadAndApply<T>(def.key, (cached) => def.restore(cached))
+    // 同步恢复（列未就绪时跳过，避免从共享的 -i0 空间读到别的表的状态）
+    if (_nsReady()) _loadAndApply<T>(def.key, (cached) => def.restore(cached))
     // 流式恢复：列可能在数据到达后才逐步出现，列变化时补恢复
     watch(
-      () => columns.map((c) => c.key).join(','),
+      () => _getColumns().map((c) => c.key).join(','),
       () => {
+        if (!_nsReady()) return
         _loadAndApply<T>(def.key, (cached) => def.restore(cached))
       },
     )
@@ -174,6 +186,7 @@ export function useTablePersistence(
     watch(
       srcs,
       () => {
+        if (!_nsReady()) return
         _cleanOldFormatKeys()
         const value = def.serialize()
         if (value === undefined) _removePersist(def.key)
@@ -192,7 +205,7 @@ export function useTablePersistence(
     deps: () => !!opts.sortState && !!opts.sortHistory && !opts.sortKey,
     restore: (cached) => {
       if (_sortRestored && opts.sortState!.value.key) return // 已成功恢复且当前有排序，不覆盖
-      if (cached?.key && columns.some((c) => c.key === cached.key)) {
+      if (cached?.key && _getColumns().some((c) => c.key === cached.key)) {
         _cleanOldFormatKeys()
         opts.sortState!.value = { key: cached.key, order: cached.order === 'desc' ? 'desc' : 'asc' }
         if (cached.history) opts.sortHistory!.value = cached.history
@@ -218,7 +231,7 @@ export function useTablePersistence(
         _cleanOldFormatKeys()
         const restored: Record<string, { searchText: string; selectedValues: string[] }> = {}
         for (const [key, vals] of Object.entries(cached)) {
-          if (vals.length > 0 && columns.some((c) => c.key === key)) {
+          if (vals.length > 0 && _getColumns().some((c) => c.key === key)) {
             restored[key] = { searchText: '', selectedValues: vals }
           }
         }
@@ -288,7 +301,7 @@ export function useTablePersistence(
     restore: (cached) => {
       if (cached && Array.isArray(cached) && cached.length > 0) {
         _cleanOldFormatKeys()
-        const validKeys = new Set(columns.map((c) => c.key))
+        const validKeys = new Set(_getColumns().map((c) => c.key))
         for (const k of cached) {
           if (validKeys.has(k)) opts.hiddenColumns!.value.add(k)
         }
@@ -296,7 +309,7 @@ export function useTablePersistence(
     },
     sources: () => [opts.hiddenColumns!],
     serialize: () => {
-      const arr = Array.from(opts.hiddenColumns!.value).filter((k) => columns.some((c) => c.key === k))
+      const arr = Array.from(opts.hiddenColumns!.value).filter((k) => _getColumns().some((c) => c.key === k))
       return arr.length > 0 ? arr : undefined
     },
     deep: true,
@@ -310,7 +323,7 @@ export function useTablePersistence(
     restore: (cached) => {
       if (!cached || !Array.isArray(cached.left) || !Array.isArray(cached.right)) return
       _cleanOldFormatKeys()
-      const validKeys = new Set(columns.map((c) => c.key))
+      const validKeys = new Set(_getColumns().map((c) => c.key))
       const left = new Set<string>()
       const right = new Set<string>()
       for (const k of cached.left) if (validKeys.has(k)) left.add(k)
@@ -322,7 +335,7 @@ export function useTablePersistence(
         return
       }
       // 旧格式缓存：与静态 fixed prop 默认合并（静态列继续生效，动态列叠加）
-      for (const c of columns) {
+      for (const c of _getColumns()) {
         if (c.fixed === 'left') left.add(c.key)
         else if (c.fixed === 'right') right.add(c.key)
       }
@@ -333,8 +346,8 @@ export function useTablePersistence(
     },
     sources: () => [opts.dynamicFixedLeft!, opts.dynamicFixedRight!],
     serialize: () => ({
-      left: [...opts.dynamicFixedLeft!.value].filter((k) => columns.some((c) => c.key === k)),
-      right: [...opts.dynamicFixedRight!.value].filter((k) => columns.some((c) => c.key === k)),
+      left: [...opts.dynamicFixedLeft!.value].filter((k) => _getColumns().some((c) => c.key === k)),
+      right: [...opts.dynamicFixedRight!.value].filter((k) => _getColumns().some((c) => c.key === k)),
       // 显式记录用户已接管固定状态：即使全部取消也要记住，防止静态 fixed 重新生效
       userSet: true,
     }),

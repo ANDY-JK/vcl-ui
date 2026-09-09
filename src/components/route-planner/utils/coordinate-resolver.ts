@@ -63,11 +63,14 @@ export async function resolveCoordinate(store: Partial<Store>): Promise<CoordRes
   }
 
   // Priority 3: 四级地址 + 人民政府定位
-  // 优先用 Excel 原始「四级乡镇」列拼接，无则用拆解后的省市区镇字段回退
-  const townshipQuery = store.fullAddr
-    ? `${store.fullAddr}人民政府`
-    : [store.province, store.city, store.district, store.town, '人民政府'].filter(Boolean).join('')
-  if (townshipQuery.length > 0) {
+  // 优先用 Excel 原始「四级乡镇」列拼接，无则用拆解后的省市区镇字段回退。
+  // 必须有城市限定且至少有地域信息：否则会拼出裸查询「人民政府」，
+  // 命中任意政府大楼被当成门店坐标（比无坐标更糟）。
+  const hasTownshipParts = !!(store.fullAddr || store.province || store.city || store.district || store.town)
+  if (cityLimit && hasTownshipParts) {
+    const townshipQuery = store.fullAddr
+      ? `${store.fullAddr}人民政府`
+      : [store.province, store.city, store.district, store.town, '人民政府'].filter(Boolean).join('')
     const result3 = await keywordSearch(townshipQuery, cityLimit)
     if (result3.latitude != null && result3.longitude != null && isValidLatLon(result3.latitude, result3.longitude)) {
       return {

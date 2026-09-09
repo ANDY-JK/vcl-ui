@@ -3,6 +3,22 @@ import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
 const t = useT()
+
+/**
+ * 定义并导出在普通 <script> 块：本块才是模块上下文，<script setup> 里写 export 会报 TS1184；
+ * 而 Props 不导出会触发 TS4082，导致 IconPicker.vue.d.ts 无法生成、下游用该组件拿不到类型。
+ */
+export interface Props {
+  modelValue?: string
+  color?: string
+  bgColor?: string
+  /** 触发按钮占位文字 */
+  placeholder?: string
+  /** 预定义色板 */
+  presetColors?: string[]
+  /** 图标提供者 */
+  provider?: 'lucide' | 'solar'
+}
 </script>
 
 <script setup lang="ts">
@@ -18,18 +34,6 @@ import { useClickOutside } from '@/components/_internal/useClickOutside'
 
 /** Lucide 全量图标名（kebab-case），从预构建 JSON 加载，避免运行时 Object.keys + map 1500+ 项 */
 const allIcons = lucideIconNames as string[]
-
-interface Props {
-  modelValue?: string
-  color?: string
-  bgColor?: string
-  /** 触发按钮占位文字 */
-  placeholder?: string
-  /** 预定义色板 */
-  presetColors?: string[]
-  /** 图标提供者 */
-  provider?: 'lucide' | 'solar'
-}
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: 'star',

@@ -369,7 +369,7 @@ function onCamError(msg: string) {
         <span v-if="camError" style="font-size: 12px; color: var(--color-danger)">{{ camError }}</span>
       </div>
       <img v-if="camShotUrl" :src="camShotUrl" class="cam-shot" alt="拍照结果" />
-      <pre class="code-block" style="margin-top: 12px"><code>import { CameraCapture } from 'vue-component-lib'
+      <pre class="code-block" style="margin-top: 12px"><code>import { CameraCapture } from 'vcl-ui'
 
 const open = ref(false)
 const onCapture = (file: File) => { /* file 即拍照结果 */ }
@@ -411,7 +411,7 @@ const onCapture = (file: File) => { /* file 即拍照结果 */ }
 
     <!-- 极简代码示例 -->
     <Card title="极简用法" style="margin-top: 16px">
-      <pre class="code-block"><code>import { useBarcodeScanner } from 'vue-component-lib'
+      <pre class="code-block"><code>import { useBarcodeScanner } from 'vcl-ui'
 
 const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner({
   onScan: (code) => console.log('扫到:', code),

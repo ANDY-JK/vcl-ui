@@ -73,7 +73,6 @@ export function computeFloatingPosition(input: PositionInput): PositionResult {
   const anchorTop = input.rect ? input.rect.top : (input.clientY ?? 0)
   const anchorRight = input.rect ? input.rect.right : (input.clientX ?? 0)
   const anchorBottom = input.rect ? input.rect.bottom : (input.clientY ?? 0)
-  const anchorWidth = input.rect ? input.rect.width : 0
 
   // 1. 计算四个方向剩余空间
   const space = {
@@ -129,7 +128,8 @@ export function computeFloatingPosition(input: PositionInput): PositionResult {
       left = anchorLeft - fw - offset
     }
 
-    top = anchorTop + (anchorWidth > 0 ? (anchorWidth - fh) / 2 : 0)
+    // 垂直居中按触发器「高度」算（此前误用宽度，宽触发器会把浮层推到偏下方）
+    top = anchorTop + (input.rect && input.rect.height > 0 ? (input.rect.height - fh) / 2 : 0)
   }
 
   // 3. 边界裁剪
@@ -196,19 +196,19 @@ export function computePointerPosition(
 // ==================== Vue Composable ====================
 
 export function useFloating(options: FloatingOptions = {}) {
-  const {
-    offset = 4,
-    defaultDirection = 'down',
-    minSize = 120,
-    matchWidth = true,
-    maxMatchWidth = false,
-    zIndex = '2000',
-  } = options
-
   const triggerRef: Ref<HTMLElement | null> = ref(null)
   const floatingRef: Ref<HTMLElement | null> = ref(null)
-  const direction = ref<FlipDirection>(defaultDirection)
+  const direction = ref<FlipDirection>(options.defaultDirection ?? 'down')
   const floatingStyle = ref<Record<string, string>>({})
+
+  // 配置项在每次定位时读取，而非 setup 时解构：调用方可用 getter 传入随 props 变化的配置
+  // （如 Popover 的 offset/minSize 随 isTooltip 切换），否则一次求值后动态改动不生效
+  const optOffset = () => options.offset ?? 4
+  const optDirection = () => options.defaultDirection ?? 'down'
+  const optMinSize = () => options.minSize ?? 120
+  const optMatchWidth = () => options.matchWidth ?? true
+  const optMaxMatchWidth = () => options.maxMatchWidth ?? false
+  const optZIndex = () => options.zIndex ?? 'var(--z-dropdown, 2000)'
 
   function applyStyle(top: number, left: number, dir: FlipDirection, maxH: number | null, triggerWidth: number) {
     const vw = window.innerWidth
@@ -217,11 +217,11 @@ export function useFloating(options: FloatingOptions = {}) {
       position: 'fixed',
       top: `${top}px`,
       left: `${left}px`,
-      zIndex,
+      zIndex: optZIndex(),
     }
-    if (matchWidth && triggerWidth > 0) {
+    if (optMatchWidth() && triggerWidth > 0) {
       style.minWidth = `${triggerWidth}px`
-      if (maxMatchWidth) {
+      if (optMaxMatchWidth()) {
         style.maxWidth = `${triggerWidth}px`
       }
     }
@@ -247,17 +247,20 @@ export function useFloating(options: FloatingOptions = {}) {
     if (!trigger || !floating) return
 
     const r = trigger.getBoundingClientRect()
+    const minSize = optMinSize()
     // matchWidth=false 时面板宽度独立于触发器（如日历面板固有宽度），定位须按面板真实宽度算，
     // 否则宽触发器会把 fw 抬高，右缘溢出判断多移位、面板与触发器脱开
-    const fw = matchWidth ? Math.max(floating.offsetWidth, minSize, r.width) : Math.max(floating.offsetWidth, minSize)
+    const fw = optMatchWidth()
+      ? Math.max(floating.offsetWidth, minSize, r.width)
+      : Math.max(floating.offsetWidth, minSize)
     const fh = floating.offsetHeight || minSize
 
     const result = computeFloatingPosition({
       rect: r,
       floatingW: fw,
       floatingH: fh,
-      offset,
-      defaultDirection,
+      offset: optOffset(),
+      defaultDirection: optDirection(),
     })
     applyStyle(result.top, result.left, result.direction, result.maxHeight, r.width)
   }
@@ -268,6 +271,7 @@ export function useFloating(options: FloatingOptions = {}) {
     if (!trigger) return
     const r = trigger.getBoundingClientRect()
     const vh = window.innerHeight
+    const offset = optOffset()
     const spaceDown = vh - r.bottom - offset
     const spaceUp = r.top - offset
     const shouldFlipUp = spaceDown < spaceUp * 0.3 && spaceUp > 100
@@ -296,12 +300,13 @@ export function useFloating(options: FloatingOptions = {}) {
     ro?.disconnect()
   })
 
+  // 触发器与浮层任一尺寸变化都要重算：浮层内异步内容撑高后不重算会溢出视口/翻转方向脱节
   watchEffect(() => {
     ro?.disconnect()
-    if (triggerRef.value && typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(() => updatePosition())
-      ro.observe(triggerRef.value)
-    }
+    if (typeof ResizeObserver === 'undefined') return
+    ro = new ResizeObserver(() => updatePosition())
+    if (triggerRef.value) ro.observe(triggerRef.value)
+    if (floatingRef.value) ro.observe(floatingRef.value)
   })
 
   return { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepareOpen }

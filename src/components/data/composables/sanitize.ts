@@ -1,4 +1,5 @@
 // HTML 白名单消毒（DataTable 单元格 col.cell、FormRenderer 富文本字段共用）
+import { warnOnce } from '@/components/_internal/warnOnce'
 
 /** 允许的展示标签 */
 const _allowedTags = new Set([
@@ -70,12 +71,26 @@ const _srcRe = /^(https?:|data:image\/|mailto:|#)/i
 /** 危险标签整体移除（含内容） */
 const _dangerTags = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META', 'FORM', 'INPUT', 'BUTTON'])
 
+/** HTML 转义：无 DOM 环境（SSR/Node）下把原始 HTML 当纯文本输出，避免未消毒内容被当作标记注入 */
+function escapeHTML(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 /**
  * 白名单式 HTML 消毒：仅保留常用展示标签与安全属性，剥离脚本/事件/危险链接。
  * 非白名单普通标签被剥离但保留其文本内容；危险标签整体移除。
+ * 无 DOM 环境（SSR）无法消毒，降级为转义纯文本并告警——绝不原样返回。
  */
 export function sanitizeHTML(html: string): string {
-  if (typeof document === 'undefined') return html
+  if (typeof document === 'undefined') {
+    warnOnce('sanitize', '[sanitizeHTML] 无 DOM 环境（SSR），已降级为转义纯文本输出')
+    return escapeHTML(html)
+  }
   const el = document.createElement('div')
   el.innerHTML = html
   el.querySelectorAll('*').forEach((node) => {

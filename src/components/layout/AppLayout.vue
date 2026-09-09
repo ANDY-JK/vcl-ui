@@ -240,7 +240,7 @@ function onProgressMouseUp() {
               ★ 以上三种均支持 .active（主色高亮）和 .is-danger（红色危险）
               .topbar-tool-sep             → 按钮组间竖线分隔
             示例：
-              <button class="topbar-tool-btn" title="搜索"><IconSvg type="search" size="sm" /></button>
+              <button class="topbar-tool-btn" title="搜索" aria-label="搜索"><IconSvg type="search" size="sm" /></button>
               <span class="topbar-tool-sep" />
               <button class="topbar-tool-text active">编辑</button>
               <button class="topbar-tool-label"><IconSvg type="download" size="sm" /><span>导出</span></button>
@@ -258,7 +258,12 @@ function onProgressMouseUp() {
                 </div>
                 <span class="user-name">{{ username }}</span>
               </div>
-              <button class="logout-btn" :title="t('common.logout')" @click="emit('logout')">
+              <button
+                class="logout-btn"
+                :title="t('common.logout')"
+                :aria-label="t('common.logout')"
+                @click="emit('logout')"
+              >
                 <IconSvg type="log-out" size="sm" />
               </button>
             </template>

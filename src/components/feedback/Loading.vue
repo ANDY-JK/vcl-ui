@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // ⛔ 保护 — 加载状态，禁止：skeleton 动画时序，spinner 尺寸比例
 //    需我确认：variant 类型扩展、颜色/尺寸默认值
+import { useT } from '@/components/_internal/i18n'
+import { useBodyScrollLock } from '@/components/_internal/useBodyScrollLock'
 
 interface Props {
   /** 'spinner' 旋转图标 | 'skeleton' 骨架屏 | 'skeleton-text' 文字骨架 | 'skeleton-card' 卡片骨架 */
@@ -16,9 +18,11 @@ interface Props {
   fullscreen?: boolean
   /** fullscreen 模式 — 遮罩背景色（CSS 颜色或变量，默认半透明黑） */
   overlay?: boolean
+  /** Teleport 目标（WC/Shadow DOM 宿主指向自身容器），默认 'body' */
+  teleportTo?: string | HTMLElement
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   variant: 'spinner',
   size: 'md',
   rows: 3,
@@ -26,22 +30,31 @@ withDefaults(defineProps<Props>(), {
   height: '14px',
   fullscreen: false,
   overlay: true,
+  teleportTo: 'body',
 })
+
+const t = useT()
+// fullscreen 遮罩期间锁 body 滚动（引用计数：与其它弹层叠加时全部关闭才恢复）
+useBodyScrollLock(() => props.fullscreen)
 </script>
 
 <template>
-  <!-- fullscreen 全屏遮罩 -->
-  <Teleport v-if="fullscreen" to="body">
+  <!-- fullscreen 全屏遮罩（teleportTo 可指向 Shadow DOM 宿主容器） -->
+  <Teleport v-if="fullscreen" :to="teleportTo">
     <div
       class="loading-fullscreen"
       :class="{ 'loading-fullscreen--overlay': overlay }"
-      role="status"
-      aria-live="polite"
+      aria-busy="true"
     >
       <div class="loading-fullscreen__content">
         <div class="spinner-ring" :class="[`spinner-${size}`]" />
         <span v-if="text" class="spinner-text">{{ text }}</span>
       </div>
+    </div>
+    <!-- 播报区必须放在 aria-busy 子树之外：aria-busy=true 会让 AT 挂起该子树内 live region 的播报，
+         而本遮罩是卸载而非翻回 false，放里面等于永不播报 -->
+    <div class="loading-fullscreen__live sr-only" role="status" aria-live="polite">
+      {{ text || t('common.loading') }}
     </div>
   </Teleport>
 
@@ -101,6 +114,19 @@ withDefaults(defineProps<Props>(), {
 }
 .loading-fullscreen--overlay .loading-fullscreen__content {
   background: var(--color-surface);
+}
+
+/* 无障碍：仅读屏器可见的兜底文案 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ===== spinner ===== */

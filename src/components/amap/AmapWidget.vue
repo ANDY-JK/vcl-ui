@@ -68,9 +68,11 @@ const emit = defineEmits<{
 // 用 amapLoader 协调器：首次渲染用当前 key 初始化；已初始化后 setAmapKey 无法热换（SDK 限制）
 // ════════════════════════════════════════
 
+// securityJsCode 仅开发期来自 .env（见 _internal/env-guard），生产由宿主运行时 setAmapKeys() 注入。
+// 为空时不写全局配置：写入空串会让高德以"未配置安全密钥"失败，报错更难定位。
 const AMAP_SECRET = getAmapSecurityCode()
 
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && AMAP_SECRET) {
   ;(window as unknown as Record<string, unknown>)._AMapSecurityConfig = {
     securityJsCode: AMAP_SECRET,
   }

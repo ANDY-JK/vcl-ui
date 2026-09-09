@@ -9,6 +9,7 @@ import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import { registerModal } from '@/components/_internal/useModalManager'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useEscClose } from '@/components/_internal/useEscClose'
+import { useBodyScrollLock } from '@/components/_internal/useBodyScrollLock'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
@@ -103,8 +104,12 @@ useFocusTrap({
   autofocus: '.modal-footer button:last-of-type',
 })
 
+// 打开期间锁 body 滚动（引用计数：与其它弹层叠加时，全部关闭才恢复）
+useBodyScrollLock(() => props.visible)
+
 // --- 弹窗竞态管理：同 scope 只允许一个弹窗（confirm 模式由 ConfirmModal 内部处理，跳过）---
 let _unregModal: (() => void) | null = null
+// immediate：挂载时就已 visible=true 的弹窗也要注册，否则同域互斥对它失效
 watch(
   () => props.visible,
   (v) => {
@@ -118,6 +123,7 @@ watch(
       }
     }
   },
+  { immediate: true },
 )
 onUnmounted(() => {
   if (_unregModal) {
@@ -156,6 +162,10 @@ function onMaskMouseup() {
 }
 function onMaskMouseleave() {
   // 鼠标移出 overlay 时取消按下状态，防止在内部按下后移出再移回触发关闭
+  _maskPressed = false
+}
+// 弹窗内重新按下时复位：面板 mousedown 被 .stop 拦下，不复位则上一次落在遮罩的按下会残留
+function onPanelMousedown() {
   _maskPressed = false
 }
 
@@ -224,7 +234,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
             role="dialog"
             aria-modal="true"
             :aria-label="title || t('common.dialog')"
-            @mousedown.stop
+            @mousedown.stop="onPanelMousedown"
             @mouseup.stop
           >
             <!-- 头部 -->
@@ -244,7 +254,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
               <!-- detail 模式 -->
               <template v-if="modalType === 'detail'">
                 <div class="detail-wrap">
-                  <div v-for="item in detailItems" :key="item.label" class="detail-row">
+                  <div v-for="(item, i) in detailItems" :key="`${item.label}-${i}`" class="detail-row">
                     <span class="detail-label">{{ item.label }}</span>
                     <span class="detail-value" :class="{ mono: item.mono }">{{ item.value }}</span>
                   </div>
