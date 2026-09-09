@@ -71,15 +71,19 @@ const resolvedComponentType = computed(() => getComponentType(props.field.type))
 // 值绑定
 // ════════════════════════════════════════
 
-/** 输入值（Input/Select/Group 用 string | number | null） */
+/** 输入值（Input/Select 用 string | number | null）
+ *  modelValue 未赋值时必须落成 null：Input 的 modelValue 是非可选 prop，
+ *  透传 undefined 会触发 Vue 的 Invalid prop 运行时告警（Select 已可选，不受影响） */
 const inputValue = computed({
-  get: () => props.modelValue as string | number | null,
+  get: () => (props.modelValue as string | number | null) ?? null,
   set: (v) => emit('update:modelValue', v),
 })
 
-/** Group 值（支持数组/布尔/数字） */
+/** Group 值（支持数组/布尔/数字）
+ *  同 inputValue：Group 的 modelValue 非可选且不接受 null，空态落成 ''（各 type 内部均按 falsy 处理） */
 const groupValue = computed({
-  get: () => props.modelValue as string | number | boolean | (string | number | boolean)[] | [number, number],
+  get: () =>
+    (props.modelValue ?? '') as string | number | boolean | (string | number | boolean)[] | [number, number],
   set: (v) => emit('update:modelValue', v),
 })
 

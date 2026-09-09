@@ -93,10 +93,15 @@ function onGroupEmit(key: keyof DesignerNode, v: unknown): void {
   emit('update', { [key]: !!v } as Partial<DesignerNode>)
 }
 
-/** Number 值转换 */
+/** Number 值转换：清空输入必须落成 undefined——
+ *  落成 0 会把 maxLength 变成"锁死输入框"、min/step/rows 变成错误默认值 */
 function onNumberEmit(key: keyof DesignerNode, v: unknown): void {
+  if (v === '' || v == null) {
+    emit('update', { [key]: undefined } as Partial<DesignerNode>)
+    return
+  }
   const num = Number(v)
-  emit('update', { [key]: isNaN(num) ? 0 : num } as Partial<DesignerNode>)
+  emit('update', { [key]: isNaN(num) ? undefined : num } as Partial<DesignerNode>)
 }
 
 /** 可选的触发字段列表（含容器内字段，供条件显示/事件目标字段选择） */

@@ -173,8 +173,15 @@ export function useDesignerOps(host: DesignerOpsHost) {
       const node = findNode(next, id)
       if (!node) continue
       const copy = cloneNode(node)
-      const idx = flattenNodes(next).findIndex((f) => f.id === id)
-      next = idx >= 0 ? insertNode(next, copy, idx + 1) : [...next, copy]
+      // 插入到源节点的同父级之后：容器内子字段复制后仍留在原容器（扁平索引插根级会跑到画布末尾）
+      const loc = findParent(next, id)
+      if (!loc) {
+        next = [...next, copy]
+      } else {
+        const siblings = [...loc.parent]
+        siblings.splice(loc.index + 1, 0, copy)
+        next = replaceSiblings(next, loc.parent, siblings)
+      }
       copyIds.push(copy.id)
     }
     host.patch(next)

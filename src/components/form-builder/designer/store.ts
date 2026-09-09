@@ -10,10 +10,11 @@
  */
 
 import type { FormDesign, CollectRecord } from './types'
-import { collectStorageKey } from './types'
+import { formCollectStorageKey } from './types'
 import { formatDateTimeZh } from '@/components/form/utils/date-utils'
 import { uuid } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
+import { envValue } from '@/components/_internal/env-guard'
 import { SupabaseKVAdapter, validateSupabaseConfig, type SupabaseConfig } from '@/components/storage/supabase-transport'
 
 /** 模块级 t：纯 .ts 文件，各函数直接用 */
@@ -79,10 +80,35 @@ function write(key: string, value: unknown): void {
 
 export function createLocalFormStore(): FormStore {
   function listForms(): FormMetaItem[] {
-    return read<FormMetaItem[]>(FORMS_KEY, [])
+    return migrateCollectKeys(read<FormMetaItem[]>(FORMS_KEY, []))
   }
   function saveIndex(list: FormMetaItem[]): void {
     write(FORMS_KEY, list)
+  }
+
+  /**
+   * 读时迁移：老版本 collectKey 是字段结构指纹，结构相同的表单共用一个数据桶。
+   * 首次读到索引时把数据搬到 fd_collect_<表单id>；老键只被一个表引用就清掉，
+   * 被多个表共用则保留（各留一份副本，宁可重复也不丢数据）。
+   */
+  function migrateCollectKeys(list: FormMetaItem[]): FormMetaItem[] {
+    const usage = new Map<string, number>()
+    for (const it of list) usage.set(it.collectKey, (usage.get(it.collectKey) ?? 0) + 1)
+    let changed = false
+    for (const item of list) {
+      const next = formCollectStorageKey(item.id)
+      if (item.collectKey === next) continue
+      const legacy = item.collectKey
+      const legacyData = read<CollectRecord[] | null>(legacy, null)
+      if (legacyData && read<CollectRecord[] | null>(next, null) === null) {
+        write(next, legacyData)
+        if (legacy && usage.get(legacy) === 1) localStorage.removeItem(legacy)
+      }
+      item.collectKey = next
+      changed = true
+    }
+    if (changed) saveIndex(list)
+    return list
   }
 
   function genId(): string {
@@ -109,14 +135,13 @@ export function createLocalFormStore(): FormStore {
         item.name = name ?? item.name
         item.updatedAt = now
       } else {
-        // collectKey 使用与 FormCollect 相同的字段结构指纹（单一实现，见 types.ts collectStorageKey）
-        // v3 优先使用 nodes（树形结构），兼容旧版 fields
-        const allFields = design.nodes ?? design.fields ?? []
+        // collectKey 以表单 id 为锚（formCollectStorageKey）：结构相同的表单不再共用一个数据桶
+        const id = genId()
         item = {
-          id: genId(),
+          id,
           name: name || design.meta.title || t('fbd.untitled'),
           updatedAt: now,
-          collectKey: collectStorageKey(allFields),
+          collectKey: formCollectStorageKey(id),
         }
         index.unshift(item)
       }
@@ -204,10 +229,31 @@ export function createCloudFormStore(cfg: SupabaseConfig): FormStore {
   const kv = new SupabaseKVAdapter(cfg)
 
   async function listForms(): Promise<FormMetaItem[]> {
-    return (await kv.get<FormMetaItem[]>(CLOUD_INDEX_KEY)) ?? []
+    return migrateCollectKeys((await kv.get<FormMetaItem[]>(CLOUD_INDEX_KEY)) ?? [])
   }
   async function saveIndex(list: FormMetaItem[]): Promise<void> {
     await kv.set(CLOUD_INDEX_KEY, list)
+  }
+
+  /** 读时迁移：与本地实现同语义（老指纹键 → fd_collect_<表单id>），见 createLocalFormStore 注释 */
+  async function migrateCollectKeys(list: FormMetaItem[]): Promise<FormMetaItem[]> {
+    const usage = new Map<string, number>()
+    for (const it of list) usage.set(it.collectKey, (usage.get(it.collectKey) ?? 0) + 1)
+    let changed = false
+    for (const item of list) {
+      const next = formCollectStorageKey(item.id)
+      if (item.collectKey === next) continue
+      const legacy = item.collectKey
+      const legacyData = legacy ? await kv.get<CollectRecord[]>(legacy) : null
+      if (legacyData && !(await kv.get<CollectRecord[]>(next))) {
+        await kv.set(next, legacyData)
+        if (usage.get(legacy) === 1) await kv.remove(legacy)
+      }
+      item.collectKey = next
+      changed = true
+    }
+    if (changed) await saveIndex(list)
+    return list
   }
 
   return {
@@ -230,12 +276,12 @@ export function createCloudFormStore(cfg: SupabaseConfig): FormStore {
         item.name = name ?? item.name
         item.updatedAt = now
       } else {
-        const allFields = design.nodes ?? design.fields ?? []
+        const id = uuid('f_')
         item = {
-          id: uuid('f_'),
+          id,
           name: name || design.meta.title || t('fbd.untitled'),
           updatedAt: now,
-          collectKey: collectStorageKey(allFields),
+          collectKey: formCollectStorageKey(id),
         }
         index.unshift(item)
       }
@@ -354,12 +400,12 @@ export function saveCloudConfig(cfg: FormCloudConfig | null): void {
 /** 全局活动 store（模块级单例）：FormDesigner 切换存储方式后，FormCollect 等消费方自动跟随 */
 let _activeStore: FormStore | null = null
 
-/** 云端配置 env 兜底（VITE_SUPABASE_* 已配置时「云端」选项免手填） */
+/** 云端配置 env 兜底：仅开发期生效（VITE_SUPABASE_* 已配置时「云端」选项免手填），生产构建恒为 null */
 export function envCloudConfig(): FormCloudConfig | null {
-  const url = import.meta.env.VITE_SUPABASE_URL
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-  const bucket = import.meta.env.VITE_SUPABASE_BUCKET
-  if (url && anonKey && bucket) return { url: String(url), anonKey: String(anonKey), bucket: String(bucket) }
+  const url = envValue('VITE_SUPABASE_URL')
+  const anonKey = envValue('VITE_SUPABASE_ANON_KEY')
+  const bucket = envValue('VITE_SUPABASE_BUCKET')
+  if (url && anonKey && bucket) return { url, anonKey, bucket }
   return null
 }
 

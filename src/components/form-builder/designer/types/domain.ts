@@ -469,12 +469,19 @@ export function genRecordId(): string {
   return uuid('r')
 }
 
-/** 收集记录存储 key：基于字段结构指纹 */
+/** 收集记录存储 key：基于字段结构指纹。
+ *  仅用于无表单 id 的场景（FormCollect 独立嵌入、完整分享码），
+ *  已保存表单一律用 formCollectStorageKey(id)——指纹相同会让不同表单共用一个数据桶。 */
 export function collectStorageKey(fields: { key?: string; type: string }[]): string {
   const seed = fields.map((f) => `${f.key ?? ''}:${f.type}`).join('|')
   let h = 0
   for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0
   return 'fd_collect_' + Math.abs(h).toString(36)
+}
+
+/** 已保存表单的收集记录存储 key：以表单 id 为唯一锚，结构相同的表单不再共用数据桶 */
+export function formCollectStorageKey(formId: string): string {
+  return 'fd_collect_' + formId
 }
 
 /** 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） */

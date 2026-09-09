@@ -450,15 +450,31 @@ export type FormData = Record<string, unknown>
 export type FormErrors = Record<string, string>
 
 /**
- * 校验规则函数类型
+ * 校验规则声明对象（推荐写法）
  *
- * 支持两种签名：
- * - 简单签名：(v: string) => string | undefined（与 Input 组件兼容）
- * - 上下文签名：(v: unknown, data: FormData) => string | undefined（可跨字段校验）
+ * 显式声明取值口径，不靠函数形参个数猜：
+ * - needsRaw: true  → fn 收到字段原始值（数组/对象/布尔等，供多选、矩阵类校验）
+ * - needsRaw 缺省/false → fn 收到字符串值（与 Input 组件规则兼容）
  *
- * 校验引擎会自动适配：如果函数.length >= 2 则传入 FormData 上下文
+ * fn 第二参恒为 FormData，可用于跨字段校验。
  */
-export type ValidationRule = ((v: string) => string | undefined) | ((v: unknown, data: FormData) => string | undefined)
+export interface ValidationRuleSpec {
+  needsRaw?: boolean
+  fn: (v: unknown, data: FormData) => string | undefined
+}
+
+/**
+ * 校验规则类型
+ *
+ * 支持三种写法：
+ * - 简单签名：(v: string) => string | undefined（与 Input 组件兼容，旧写法）
+ * - 上下文签名：(v: unknown, data: FormData) => string | undefined（旧写法，按 .length >= 2 适配）
+ * - 声明对象：ValidationRuleSpec（新写法，取值口径显式声明）
+ */
+export type ValidationRule =
+  | ((v: string) => string | undefined)
+  | ((v: unknown, data: FormData) => string | undefined)
+  | ValidationRuleSpec
 
 /** 表单值类型联合（供外部类型推导） */
 export type FieldValue =

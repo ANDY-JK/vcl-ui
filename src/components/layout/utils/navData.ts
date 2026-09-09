@@ -146,10 +146,7 @@ export const navTree: NavNode[] = [
   {
     label: 'navData.pageTemplates',
     icon: 'layout-dashboard',
-    children: [
-      { label: 'navData.login', icon: 'user', route: '/login' },
-      { label: 'navData.mini', icon: 'compass', route: '/mini/home' },
-    ],
+    children: [{ label: 'navData.login', icon: 'user', route: '/login' }],
   },
 
   // ════════════════════════════════════════

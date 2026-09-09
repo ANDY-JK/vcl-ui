@@ -44,6 +44,7 @@ import {
   getTypeLabel,
   getTypeIcon,
   isContainerNode,
+  findParent,
   type DesignerNode,
   type DesignerNodeType,
   type DesignerContainerConfig,
@@ -120,6 +121,18 @@ function gridColSpan(node: DesignerNode, child: DesignerNode): number {
   const columns = Math.max(1, node.containerConfig?.columns ?? 2)
   const raw = Math.min(Math.max(1, child.span ?? 24), 24)
   return Math.max(1, Math.min(columns, Math.round((raw / 24) * columns)))
+}
+
+/** 找到 children 数组 === 目标数组的容器节点（面板字段拖到嵌套子字段上时，定位应插入的容器） */
+function findContainerOfChildren(list: DesignerNode[], children: DesignerNode[]): DesignerNode | null {
+  for (const n of list) {
+    if (n.children === children) return n
+    if (n.children?.length) {
+      const found = findContainerOfChildren(n.children, children)
+      if (found) return found
+    }
+  }
+  return null
 }
 
 /** tabs 容器「+ 添加」：追加新标签页并激活（name 防重复） */
@@ -291,13 +304,27 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
   } else {
     const type = e.dataTransfer?.getData('application/x-field-type') || e.dataTransfer?.getData('text/plain')
     if (type) {
-      // 面板字段拖入：容器 → 插入容器内（落到当前激活槽位）；普通字段 → 按鼠标 Y 分半 before/after
+      // 面板字段拖入：容器 → 插入容器内（落到当前激活槽位）；字段 → 按鼠标 Y 分半 before/after
       if (isContainerNode(node)) {
         emit('insertIntoContainer', type as DesignerNodeType, node.id, -1, activeSlotOf(node))
       } else {
         const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-        const index = props.nodes.findIndex((n) => n.id === node.id)
-        emit('insertAt', type as DesignerNodeType, e.clientY < rect.top + rect.height / 2 ? index : index + 1)
+        const before = e.clientY < rect.top + rect.height / 2
+        const loc = findParent(props.nodes, node.id)
+        // 嵌套子字段：插到它所在容器内的相对位置；否则会落到根级末尾（扁平索引对嵌套节点无意义）
+        const container = loc && loc.parent !== props.nodes ? findContainerOfChildren(props.nodes, loc.parent) : null
+        if (container) {
+          emit(
+            'insertIntoContainer',
+            type as DesignerNodeType,
+            container.id,
+            before ? loc!.index : loc!.index + 1,
+            node.containerSlot,
+          )
+        } else {
+          const index = props.nodes.findIndex((n) => n.id === node.id)
+          emit('insertAt', type as DesignerNodeType, before ? index : index + 1)
+        }
       }
     }
   }
@@ -452,6 +479,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                           :child="child"
                           :preview-data="previewData"
                           :find-field="findFieldByKey"
+                          :selected="isSelected(child.id)"
                           @select="(id, additive) => emit('select', id, additive)"
                         />
                       </div>
@@ -504,6 +532,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                             :child="child"
                             :preview-data="previewData"
                             :find-field="findFieldByKey"
+                            :selected="isSelected(child.id)"
                             @select="(id, additive) => emit('select', id, additive)"
                           />
                         </div>
@@ -576,6 +605,7 @@ const deviceClass = computed(() => `device-${props.device}`)
                           :child="child"
                           :preview-data="previewData"
                           :find-field="findFieldByKey"
+                          :selected="isSelected(child.id)"
                           @select="(id, additive) => emit('select', id, additive)"
                         />
                       </div>
@@ -596,23 +626,22 @@ const deviceClass = computed(() => `device-${props.device}`)
                       class="ldc-grid-col"
                       :style="{ '--col-span': gridColSpan(node, child) }"
                     >
-                      <div
-                        class="ldc-card"
-                        :class="{ selected: child.id === selectedId }"
-                        @click.stop="emit('select', child.id, $event.ctrlKey || $event.metaKey)"
-                      >
-                        <div class="ldc-card-head">
-                          <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
-                          <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
-                        </div>
-                        <div class="ldc-card-body">
-                          <FormRenderer
-                            v-if="findFieldByKey(child.key ?? child.id)"
-                            :field="findFieldByKey(child.key ?? child.id)!"
-                            :model-value="previewData[child.key ?? child.id]"
-                          />
-                        </div>
-                      </div>
+                      <DesignerChildCard
+                        :child="child"
+                        :preview-data="previewData"
+                        :find-field="findFieldByKey"
+                        :selected="isSelected(child.id)"
+                        :dragging="sortDragId === child.id"
+                        sortable
+                        @select="(id, additive) => emit('select', id, additive)"
+                        @move="(id, dir) => emit('move', id, dir)"
+                        @duplicate="(id) => emit('duplicate', id)"
+                        @remove="(id) => emit('remove', id)"
+                        @dragstart="onNodeDragStart"
+                        @dragover="onNodeDragOver"
+                        @drop="onNodeDrop"
+                        @dragend="onNodeDragEnd"
+                      />
                     </div>
                   </template>
                   <div v-else class="ldc-container-empty">{{ t('fbt.dropToGrid') }}</div>
@@ -641,23 +670,22 @@ const deviceClass = computed(() => `device-${props.device}`)
                       class="ldc-flex-col"
                       :style="{ '--flex-basis': (Math.min(Math.max(child.span ?? 24, 1), 24) / 24) * 100 + '%' }"
                     >
-                      <div
-                        class="ldc-card"
-                        :class="{ selected: child.id === selectedId }"
-                        @click.stop="emit('select', child.id, $event.ctrlKey || $event.metaKey)"
-                      >
-                        <div class="ldc-card-head">
-                          <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
-                          <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
-                        </div>
-                        <div class="ldc-card-body">
-                          <FormRenderer
-                            v-if="findFieldByKey(child.key ?? child.id)"
-                            :field="findFieldByKey(child.key ?? child.id)!"
-                            :model-value="previewData[child.key ?? child.id]"
-                          />
-                        </div>
-                      </div>
+                      <DesignerChildCard
+                        :child="child"
+                        :preview-data="previewData"
+                        :find-field="findFieldByKey"
+                        :selected="isSelected(child.id)"
+                        :dragging="sortDragId === child.id"
+                        sortable
+                        @select="(id, additive) => emit('select', id, additive)"
+                        @move="(id, dir) => emit('move', id, dir)"
+                        @duplicate="(id) => emit('duplicate', id)"
+                        @remove="(id) => emit('remove', id)"
+                        @dragstart="onNodeDragStart"
+                        @dragover="onNodeDragOver"
+                        @drop="onNodeDrop"
+                        @dragend="onNodeDragEnd"
+                      />
                     </div>
                   </template>
                   <div v-else class="ldc-container-empty">{{ t('fbt.dropToFlex') }}</div>
@@ -668,43 +696,22 @@ const deviceClass = computed(() => `device-${props.device}`)
               <template v-else>
                 <template v-if="node.children?.length">
                   <div v-for="child in node.children" :key="child.id" class="ldc-card-wrapper">
-                    <div
-                      class="ldc-card"
-                      :class="{ selected: child.id === selectedId }"
-                      :draggable="true"
-                      @click.stop="emit('select', child.id, $event.ctrlKey || $event.metaKey)"
-                      @dragstart="onNodeDragStart($event, child)"
-                      @dragover="onNodeDragOver($event, child)"
-                      @drop="onNodeDrop($event, child)"
+                    <DesignerChildCard
+                      :child="child"
+                      :preview-data="previewData"
+                      :find-field="findFieldByKey"
+                      :selected="isSelected(child.id)"
+                      :dragging="sortDragId === child.id"
+                      sortable
+                      @select="(id, additive) => emit('select', id, additive)"
+                      @move="(id, dir) => emit('move', id, dir)"
+                      @duplicate="(id) => emit('duplicate', id)"
+                      @remove="(id) => emit('remove', id)"
+                      @dragstart="onNodeDragStart"
+                      @dragover="onNodeDragOver"
+                      @drop="onNodeDrop"
                       @dragend="onNodeDragEnd"
-                    >
-                      <div class="ldc-card-head">
-                        <span class="ldc-drag-handle"><IconSvg type="grip-vertical" size="sm" /></span>
-                        <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
-                        <span class="ldc-card-key">{{ child.key }}</span>
-                        <span class="ldc-card-actions" @click.stop>
-                          <button :title="t('fbt.moveUp')" @click="emit('move', child.id, -1)">
-                            <IconSvg type="chevron-up" size="xs" />
-                          </button>
-                          <button :title="t('fbt.moveDown')" @click="emit('move', child.id, 1)">
-                            <IconSvg type="chevron-down" size="xs" />
-                          </button>
-                          <button :title="t('common.copy')" @click="emit('duplicate', child.id)">
-                            <IconSvg type="copy" size="xs" />
-                          </button>
-                          <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', child.id)">
-                            <IconSvg type="trash-2" size="xs" />
-                          </button>
-                        </span>
-                      </div>
-                      <div class="ldc-card-body">
-                        <FormRenderer
-                          v-if="findFieldByKey(child.key ?? child.id)"
-                          :field="findFieldByKey(child.key ?? child.id)!"
-                          :model-value="previewData[child.key ?? child.id]"
-                        />
-                      </div>
-                    </div>
+                    />
                   </div>
                 </template>
                 <div v-else class="ldc-container-empty">{{ t('fbt.dropToCard') }}</div>

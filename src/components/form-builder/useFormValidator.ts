@@ -11,7 +11,7 @@
  */
 
 import { ref, type Ref } from 'vue'
-import type { FormSchema, FormField, FormData, FormErrors } from './types'
+import type { FormSchema, FormField, FormData, FormErrors, ValidationRuleSpec } from './types'
 import { isLayoutField, isFieldVisible } from './useFormSchema'
 import { useT } from '@/components/_internal/i18n'
 import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl } from '@/components/_internal/utils'
@@ -150,18 +150,19 @@ export function validateField(
   const advErr = validateAdvanced(field, value)
   if (advErr) return advErr
 
-  // rules 规则数组（支持简单签名和上下文签名两种）
+  // rules 规则数组（支持声明对象、简单签名、上下文签名三种）
   if (field.rules && field.rules.length > 0) {
-    const rawVal = value // 原始值（供上下文签名用）
+    const rawVal = value // 原始值（供 needsRaw / 上下文签名用）
     const strVal = valueToString(value) // 字符串值（供简单签名用）
     for (const rule of field.rules) {
-      // 上下文签名：(v: unknown, data: FormData) => string | undefined
-      // 简单签名：(v: string) => string | undefined
-      // 用函数.length 判断：>=2 的传入上下文
+      // 声明对象：取值口径由 needsRaw 显式决定（不猜形参个数）
+      // 旧函数签名：上下文签名 (v, data) 按 .length >= 2 适配；简单签名 (v) 收字符串
       const err =
-        rule.length >= 2
-          ? (rule as (v: unknown, data: FormData) => string | undefined)(rawVal, data)
-          : (rule as (v: string) => string | undefined)(strVal)
+        typeof rule === 'function'
+          ? rule.length >= 2
+            ? (rule as (v: unknown, data: FormData) => string | undefined)(rawVal, data)
+            : (rule as (v: string) => string | undefined)(strVal)
+          : rule.fn(rule.needsRaw ? rawVal : strVal, data)
       if (err) return err
     }
   }
@@ -263,11 +264,14 @@ export const validators = {
       return v && !isNaN(n) && (n < min || n > max) ? t('formBuilder.rangeVal', { label, min, max }) : undefined
     }
   },
-  /** 必选项（用于 checkbox/select 多选至少选 N 项） */
-  minSelect(n: number, label = t('formBuilder.thisField')) {
-    return (v: unknown) => {
-      const count = Array.isArray(v) ? v.length : 0
-      return count < n ? t('formBuilder.minSelect', { label, n }) : undefined
+  /** 必选项（用于 checkbox/select 多选至少选 N 项）：需拿到原始数组，故声明 needsRaw */
+  minSelect(n: number, label = t('formBuilder.thisField')): ValidationRuleSpec {
+    return {
+      needsRaw: true,
+      fn: (v: unknown) => {
+        const count = Array.isArray(v) ? v.length : 0
+        return count < n ? t('formBuilder.minSelect', { label, n }) : undefined
+      },
     }
   },
 }

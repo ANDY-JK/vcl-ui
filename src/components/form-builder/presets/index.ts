@@ -1,11 +1,4 @@
 /** 预置 Schema 模板集合 */
 export { contractCollectionSchema } from './contract-collection'
-export { inspectionSchema } from './inspection'
-export { registrationSchema } from './registration'
 export { containerDemoNodes, containerDemoMeta } from './container-demo'
-export { rebateLetterSchema } from './rebate-letter'
-export { shelfCollectionSchema } from './shelf-collection'
-export { reviewFormSchema } from './review-form'
-export { storeCollectionSchema } from './store-collection'
-export { dynamicFormSchema } from './dynamic-form'
 export { storeReportSchema } from './store-report'

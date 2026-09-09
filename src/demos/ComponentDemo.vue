@@ -100,14 +100,6 @@ const demoMap: Record<string, any> = {
     loader: () => import('./map/ContractCollectionDemo.vue'),
     errorComponent: ErrorFallback,
   }),
-  'rebate-target-collect': defineAsyncComponent({
-    loader: () => import('./map/RebateTargetCollectDemo.vue'),
-    errorComponent: ErrorFallback,
-  }),
-  'shelf-target-collect': defineAsyncComponent({
-    loader: () => import('./map/ShelfTargetCollectDemo.vue'),
-    errorComponent: ErrorFallback,
-  }),
   'contract-target-collect': defineAsyncComponent({
     loader: () => import('./map/ContractTargetCollectDemo.vue'),
     errorComponent: ErrorFallback,

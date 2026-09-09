@@ -9,19 +9,12 @@
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { FormDesigner, FormCollect, FormBuilder, toFormSchema } from '@/components/form-builder'
-import type { DesignerField, DesignerNode, FormMeta } from '@/components/form-builder'
+import type { DesignerField, DesignerNode, FormMeta, FormSchema } from '@/components/form-builder'
 import {
-  registrationSchema,
-  inspectionSchema,
   containerDemoNodes,
   containerDemoMeta,
-  storeCollectionSchema,
-  reviewFormSchema,
   storeReportSchema,
-  dynamicFormSchema,
   contractCollectionSchema,
-  rebateLetterSchema,
-  shelfCollectionSchema,
 } from '@/components/form-builder'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
@@ -35,6 +28,9 @@ const tabs = [
   { key: 'preview' as const, label: '预览', icon: 'eye' },
   { key: 'collect' as const, label: '收集', icon: 'database' },
 ]
+
+/** 能力标签 — 让首次进入者一眼看到这套低代码能做什么 */
+const capabilities = ['拖拽设计', '容器嵌套布局', '条件显隐与联动', '草稿自动保存', '分享发布链接', 'JSON 导入导出']
 
 // ════════════════════════════════════════
 // 设计数据
@@ -52,12 +48,14 @@ const previewData = ref<Record<string, unknown>>({})
 // ════════════════════════════════════════
 // 设计器高度 — 单屏自适应（不滚动）
 // 可用高 = .content-body 可视高 − 固定开销(顶部 28 + 标签栏 66 + 底部 60 + 兜底 3 = 157)
-//          − 工具栏实际高（一行 51 / 换行 83，量取避免估算）
+//          − 能力说明头部高 − 工具栏实际高（一行 51 / 换行 83，量取避免估算）
 // ════════════════════════════════════════
 const bodyClientH = ref(0)
 const toolbarH = ref(83)
+const headH = ref(0)
 let bodyObserver: ResizeObserver | null = null
 let toolbarObserver: ResizeObserver | null = null
+let headObserver: ResizeObserver | null = null
 
 const measureBody = () => {
   const el = document.querySelector('.content-body')
@@ -66,6 +64,12 @@ const measureBody = () => {
 const measureToolbar = () => {
   const el = document.querySelector('.ld-toolbar')
   if (el) toolbarH.value = el.getBoundingClientRect().height
+}
+/** 头部高度含下外边距（getBoundingClientRect 不含 margin，需单独取） */
+const measureHead = () => {
+  const el = document.querySelector('.lc-demo-head') as HTMLElement | null
+  if (!el) return
+  headH.value = el.offsetHeight + (parseFloat(getComputedStyle(el).marginBottom) || 0)
 }
 
 onMounted(() => {
@@ -79,32 +83,65 @@ onMounted(() => {
   if (toolbar) toolbarObserver = new ResizeObserver(measureToolbar)
   toolbarObserver?.observe(toolbar!)
 
+  measureHead()
+  const head = document.querySelector('.lc-demo-head')
+  if (head) headObserver = new ResizeObserver(measureHead)
+  headObserver?.observe(head!)
+
   window.addEventListener('resize', measureBody)
 })
 onUnmounted(() => {
   bodyObserver?.disconnect()
   toolbarObserver?.disconnect()
+  headObserver?.disconnect()
   window.removeEventListener('resize', measureBody)
 })
-const designHeight = computed(() => `${Math.max(bodyClientH.value - 157 - toolbarH.value, 355)}px`)
+const designHeight = computed(() => `${Math.max(bodyClientH.value - 157 - headH.value - toolbarH.value, 355)}px`)
 
 /** 预览用 Schema（从设计数据转换） */
 const previewSchema = computed(() => toFormSchema(fields.value, meta.value))
 
-// 预置模板列表（schema 为平铺 FormSchema 工厂；nodes 为含嵌套容器的 DesignerNode 树工厂 — 调用时按当前语言翻译）
-const presets = [
-  { key: 'registration', label: '用户登记', icon: 'user', schema: registrationSchema },
-  { key: 'inspection', label: '设备巡检', icon: 'clipboard-check', schema: inspectionSchema },
-  { key: 'dynamic', label: '动态表单', icon: 'sparkles', schema: dynamicFormSchema },
-  { key: 'store-report', label: '门店提报', icon: 'store', schema: storeReportSchema },
-  { key: 'store', label: '门店收集', icon: 'file-text', schema: storeCollectionSchema },
-  { key: 'review', label: '审批流程', icon: 'clipboard-check', schema: reviewFormSchema },
-  { key: 'container', label: '容器布局', icon: 'layout-template', nodes: containerDemoNodes, meta: containerDemoMeta },
-  // 新旧对比拍板项（2026-08-31）：旧版业务 demo 走模板路线退役——三业务模板入通用模板库
-  { key: 'contract', label: '合同收集', icon: 'file-text', schema: contractCollectionSchema },
-  { key: 'rebate', label: '返利函收集', icon: 'mail', schema: rebateLetterSchema },
-  { key: 'shelf', label: '门店陈列', icon: 'image', schema: shelfCollectionSchema },
-] as const
+// 预置模板列表：schema 为平铺 FormSchema 工厂，nodes 为含嵌套容器的 DesignerNode 树工厂
+// （全部函数化 — 模块求值早于 setLocale，调用时按当前语言翻译）
+interface PresetItem {
+  key: string
+  label: string
+  icon: string
+  /** 分组标题（模板切换器内分组展示） */
+  group: string
+  /** 平铺 Schema 工厂（与 nodes 二选一） */
+  schema?: () => FormSchema
+  /** 含嵌套容器的节点树工厂（与 schema 二选一） */
+  nodes?: () => DesignerNode[]
+  meta?: () => FormMeta
+}
+
+const presets: PresetItem[] = [
+  { key: 'store-report', label: '门店提报', icon: 'store', group: '业务模板', schema: storeReportSchema },
+  { key: 'contract', label: '合同收集', icon: 'file-text', group: '业务模板', schema: contractCollectionSchema },
+  {
+    key: 'container',
+    label: '容器布局',
+    icon: 'layout-template',
+    group: '布局示例',
+    nodes: containerDemoNodes,
+    meta: containerDemoMeta,
+  },
+]
+
+/** 模板按 group 分组（保持声明顺序） */
+const presetGroups = computed(() => {
+  const groups: { label: string; items: PresetItem[] }[] = []
+  for (const p of presets) {
+    let g = groups.find((x) => x.label === p.group)
+    if (!g) {
+      g = { label: p.group, items: [] }
+      groups.push(g)
+    }
+    g.items.push(p)
+  }
+  return groups
+})
 
 // 当前选中的预置模板
 const activePreset = ref<string>('')
@@ -142,8 +179,8 @@ const previewTemplateSchema = computed(() => {
   const p = presets.find((x) => x.key === previewTemplate.value)
   if (!p) return null
   // nodes 形态（容器布局模板）→ 转真实 schema 渲染
-  if ('nodes' in p && p.nodes) return toFormSchema(p.nodes() as DesignerNode[], p.meta() as FormMeta)
-  return (p as { schema: typeof registrationSchema }).schema()
+  if (p.nodes) return toFormSchema(p.nodes(), p.meta?.() ?? {})
+  return p.schema?.() ?? null
 })
 
 /** 加载预置模板 */
@@ -152,14 +189,14 @@ function loadPreset(key: string): void {
   if (!preset) return
   activePreset.value = key
 
-  // nodes 形态：直接使用含嵌套容器的节点树（presets 已函数化，调用时取值）
-  if ('nodes' in preset && preset.nodes) {
-    fields.value = preset.nodes() as DesignerNode[]
-    meta.value = { ...(preset.meta() as FormMeta) }
+  // nodes 形态：直接使用含嵌套容器的节点树
+  if (preset.nodes) {
+    fields.value = preset.nodes()
+    meta.value = { ...(preset.meta?.() ?? {}) }
     return
   }
 
-  const s = (preset as { schema: typeof registrationSchema }).schema()
+  const s = preset.schema!()
   // 将 FormSchema 反向映射为 DesignerField[]
   fields.value = s.fields.map((f, i): DesignerField => ({
     id: 'pf' + (i + 1),
@@ -208,6 +245,17 @@ function loadPreset(key: string): void {
 
 <template>
   <div class="lc-demo">
+    <!-- 能力说明头部 — 首次进入先讲清这套低代码能做什么 -->
+    <header class="lc-demo-head">
+      <div class="lc-demo-head-text">
+        <h2 class="lc-demo-title">低代码表单平台</h2>
+        <p class="lc-demo-sub">拖拽设计 → 实时预览 → 数据收集，一套 Schema 同时驱动设计器与运行端</p>
+      </div>
+      <ul class="lc-demo-chips">
+        <li v-for="c in capabilities" :key="c" class="lc-demo-chip">{{ c }}</li>
+      </ul>
+    </header>
+
     <!-- 标签栏 -->
     <div class="lc-demo-tabs">
       <button
@@ -220,23 +268,22 @@ function loadPreset(key: string): void {
         <IconSvg :type="tab.icon" size="sm" />
         <span>{{ tab.label }}</span>
       </button>
-      <div class="lc-demo-tabs-right">
-        <button v-if="!fields.length" class="lc-demo-sample-btn" @click="loadPreset('registration')">
-          <IconSvg type="sparkles" size="xs" />
-          加载示例
-        </button>
-        <div v-else class="lc-demo-presets" @mouseleave="schedulePreviewClose">
-          <button
-            v-for="p in presets"
-            :key="p.key"
-            class="lc-demo-preset-btn"
-            :class="{ active: activePreset === p.key }"
-            @click="loadPreset(p.key)"
-            @mouseenter="onPresetEnter(p.key)"
-          >
-            <IconSvg :type="p.icon" size="xs" />
-            {{ p.label }}
-          </button>
+      <div class="lc-demo-tabs-right" @mouseleave="schedulePreviewClose">
+        <div v-for="g in presetGroups" :key="g.label" class="lc-demo-preset-group">
+          <span class="lc-demo-preset-group-label">{{ g.label }}</span>
+          <div class="lc-demo-presets">
+            <button
+              v-for="p in g.items"
+              :key="p.key"
+              class="lc-demo-preset-btn"
+              :class="{ active: activePreset === p.key }"
+              @click="loadPreset(p.key)"
+              @mouseenter="onPresetEnter(p.key)"
+            >
+              <IconSvg :type="p.icon" size="xs" />
+              {{ p.label }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -246,6 +293,7 @@ function loadPreset(key: string): void {
       <div
         v-if="previewTemplateSchema"
         class="lc-preset-preview"
+        :style="{ top: `${headH + 54}px` }"
         role="dialog"
         :aria-label="`${previewTemplateLabel} 预览`"
         @mouseenter="cancelPreviewClose"
@@ -302,6 +350,44 @@ function loadPreset(key: string): void {
   padding: 20px;
 }
 
+/* ── 能力说明头部 ── */
+.lc-demo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+}
+.lc-demo-title {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text, #1e293b);
+}
+.lc-demo-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary, #475569);
+}
+.lc-demo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lc-demo-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  background: var(--color-bg-alt, #f8fafc);
+  font-size: 11.5px;
+  color: var(--color-text-secondary, #475569);
+  white-space: nowrap;
+}
+
 /* ── 标签栏 — 对齐原型 ── */
 .lc-demo-tabs {
   display: flex;
@@ -343,34 +429,21 @@ function loadPreset(key: string): void {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
   padding-right: 4px;
 }
-.lc-demo-sample-btn {
+
+/* 预置模板切换（按「业务模板 / 布局示例」分组） */
+.lc-demo-preset-group {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 14px;
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, 6px);
-  background: var(--color-bg, #fff);
-  color: var(--color-text-secondary, #475569);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  transition: all 0.15s ease;
+  gap: 6px;
 }
-.lc-demo-sample-btn:hover {
-  border-color: var(--color-primary, #4f6ef7);
-  color: var(--color-primary, #4f6ef7);
+.lc-demo-preset-group-label {
+  font-size: 11px;
+  color: var(--color-text-muted, #94a3b8);
+  white-space: nowrap;
 }
-.lc-demo-sample-btn.active {
-  background: var(--color-primary-light, #eef1ff);
-  border-color: var(--color-primary, #4f6ef7);
-  color: var(--color-primary, #4f6ef7);
-}
-
-/* 预置模板切换 */
 .lc-demo-presets {
   display: inline-flex;
   gap: 4px;
@@ -430,7 +503,6 @@ function loadPreset(key: string): void {
 /* ── 模板悬浮预览 ── */
 .lc-preset-preview {
   position: absolute;
-  top: 54px;
   right: 16px;
   z-index: 80;
   width: 640px;

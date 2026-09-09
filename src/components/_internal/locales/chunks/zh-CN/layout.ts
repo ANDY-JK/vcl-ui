@@ -62,7 +62,6 @@ export default {
     flex: 'Flex 弹性布局',
     // 二级条目 — 页面模板
     login: 'Login 登录系列',
-    mini: 'Mini 小程序模板',
     // 二级条目 — 业务专项
     storage: 'Storage 组合存储',
     amap: 'Amap 高德地图',
@@ -70,23 +69,5 @@ export default {
     contractCollection: 'ContractCollection 合同收集',
     formDesigner: 'FormDesigner 低代码表单',
     formRenderer: 'FormRenderer 字段渲染器',
-  },
-
-  miniLayout: {
-    tabHome: '首页',
-    tabCategory: '分类',
-    tabFavorites: '收藏',
-    tabProfile: '我的',
-    scanInbound: '入库扫码',
-    scanOutbound: '出库扫码',
-    scanCheck: '盘点扫码',
-    scanTransfer: '调拨扫码',
-    scanQuery: '扫码查询',
-    back: '返回',
-    scan: '扫码',
-    scanTypeTitle: '选择扫码类型',
-    searchPlaceholder: '搜索商品/订单...',
-    backToPc: '返回PC组件库',
-    componentLib: '组件库',
   },
 }

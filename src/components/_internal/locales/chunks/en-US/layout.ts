@@ -62,7 +62,6 @@ export default {
     flex: 'Flex',
     // Items — Page Templates
     login: 'Login series',
-    mini: 'Mini (mini-program templates)',
     // Items — Business Modules
     storage: 'Storage',
     amap: 'Amap (AMap maps)',
@@ -70,23 +69,5 @@ export default {
     contractCollection: 'ContractCollection',
     formDesigner: 'FormDesigner (low-code forms)',
     formRenderer: 'FormRenderer (rich-text field)',
-  },
-
-  miniLayout: {
-    tabHome: 'Home',
-    tabCategory: 'Categories',
-    tabFavorites: 'Favorites',
-    tabProfile: 'Profile',
-    scanInbound: 'Inbound Scan',
-    scanOutbound: 'Outbound Scan',
-    scanCheck: 'Stocktake Scan',
-    scanTransfer: 'Transfer Scan',
-    scanQuery: 'Scan & Search',
-    back: 'Back',
-    scan: 'Scan',
-    scanTypeTitle: 'Choose scan type',
-    searchPlaceholder: 'Search products/orders...',
-    backToPc: 'Back to PC Component Library',
-    componentLib: 'Component Library',
   },
 }

@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
-import MiniLayout from '@/components/layout/MiniLayout.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
-
-const route = useRoute()
-const isMini = computed(() => route.path.startsWith('/mini'))
+import { navTree } from '@/components/layout/utils/navData'
 
 /* ---- topbar-tools 示例：工具栏按钮状态 ---- */
 const notifActive = ref(false)
@@ -15,8 +11,7 @@ const editMode = ref(false)
 </script>
 
 <template>
-  <MiniLayout v-if="isMini" />
-  <AppLayout v-else>
+  <AppLayout :nav-items="navTree">
     <!-- 工具栏按钮示例 — 三种变体全量展示 -->
     <template #topbar-tools>
       <!-- 纯图标 -->

@@ -23,7 +23,7 @@ import Result from '@/components/feedback/Result.vue'
 import Button from '@/components/basic/Button.vue'
 import { toFormSchema, collectStorageKey, genRecordId, type FormDesign, type CollectRecord } from './designer/types'
 import { decodeShareCode, parseShareId } from './designer/share'
-import { getActiveFormStore, type FormStore } from './designer/store'
+import { getActiveFormStore, type FormMetaItem, type FormStore } from './designer/store'
 
 const t = useT()
 
@@ -55,6 +55,8 @@ const emit = defineEmits<{
 const parsed = ref<FormDesign | null>(null)
 /** 短链异步加载中（S. 前缀需从 store 拉设计） */
 const loading = ref(false)
+/** 短链命中的索引项：collectKey 的权威来源（表单 id 才是记录桶的锚） */
+const storedItem = ref<FormMetaItem | null>(null)
 
 const activeStore = computed<FormStore>(() => props.store ?? getActiveFormStore())
 
@@ -74,6 +76,8 @@ async function resolveDesign(): Promise<void> {
     loading.value = true
     try {
       parsed.value = await activeStore.value.loadForm(formId)
+      // 索引项决定 collectKey；按字段指纹重算会与写入端错桶（结构相同的表单更会串台）
+      storedItem.value = (await activeStore.value.listForms()).find((x) => x.id === formId) ?? null
     } catch {
       parsed.value = null
     } finally {
@@ -98,8 +102,12 @@ const formSchema = computed(() =>
 const isTargetCollect = computed(() => parsed.value?.meta?.collectType === 'target' && !!formSchema.value)
 /** 目标清单（目标收集模式用；缺省空数组由组件降级处理） */
 const targets = computed(() => parsed.value?.meta?.targets ?? [])
-/** 收集记录存储 key（与 FormCollect 同算法：按字段结构指纹） */
-const collectKey = computed(() => (parsed.value ? collectStorageKey(nodes.value) : ''))
+/** 收集记录存储 key：短链用索引里的 item.collectKey（id 锚）；
+ *  完整分享码没有表单 id，只能退回字段指纹（与 FormCollect 独立嵌入同一口径） */
+const collectKey = computed(() => {
+  if (!parsed.value) return ''
+  return storedItem.value?.collectKey || collectStorageKey(nodes.value)
+})
 
 const formData = ref<Record<string, unknown>>({})
 const submitting = ref(false)

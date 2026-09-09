@@ -103,8 +103,8 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
     if (f.max !== undefined) base.props = { ...base.props, max: f.max }
     if (f.step !== undefined) base.props = { ...base.props, step: f.step }
 
-    // text 属性
-    if (f.maxLength !== undefined) base.props = { ...base.props, maxlength: f.maxLength }
+    // text 属性（0 视为未设置：maxlength="0" 会让输入框完全无法输入）
+    if (f.maxLength !== undefined && f.maxLength > 0) base.props = { ...base.props, maxlength: f.maxLength }
 
     // 前缀图标 / 后缀文字（输入类字段）
     if (f.icon) base.props = { ...base.props, icon: f.icon }

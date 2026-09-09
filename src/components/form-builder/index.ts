@@ -46,19 +46,7 @@ export { toDynamicFormSchema } from './dynamic-form-adapter'
 export type { DynamicFieldConfig, DynamicUploadConfig, DynamicFormConfig } from './dynamic-form-adapter'
 
 // ── 预置 Schema 模板 ──
-export {
-  contractCollectionSchema,
-  inspectionSchema,
-  registrationSchema,
-  containerDemoNodes,
-  containerDemoMeta,
-  rebateLetterSchema,
-  shelfCollectionSchema,
-  reviewFormSchema,
-  storeCollectionSchema,
-  dynamicFormSchema,
-  storeReportSchema,
-} from './presets'
+export { contractCollectionSchema, containerDemoNodes, containerDemoMeta, storeReportSchema } from './presets'
 
 // ── 设计器类型与工具 ──
 export {
