@@ -1,14 +1,17 @@
 {
-  "name": "vue-component-lib",
+  "name": "vcl-ui",
   "version": "1.0.0",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "verify:pkg": "node scripts/verify-pkg.mjs",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview",
     "lint": "eslint src",
@@ -17,7 +20,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run --coverage",
-    "quality-check": "npm run typecheck && npm run lint && npm run test:unit && npm run build && npm run test:e2e",
+    "quality-check": "npm run typecheck && npm run lint && npm run test:unit && npm run build && npm run verify:pkg && npm run test:e2e",
     "prepare": "husky",
     "report:audit": "npm audit --registry=https://registry.npmjs.org",
     "scan:deps": "depcheck",
@@ -26,79 +29,111 @@
     "test:e2e:headed": "npx playwright test --headed",
     "test:e2e:ui": "npx playwright test --ui"
   },
-  "main": "./dist/vue-component-lib.cjs",
-  "module": "./dist/vue-component-lib.js",
+  "main": "./dist/vcl-ui.cjs",
+  "module": "./dist/vcl-ui.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/vue-component-lib.js",
-      "require": "./dist/vue-component-lib.cjs"
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs",
+      "default": "./dist/vcl-ui.js"
     },
+    "./css": "./dist/vcl-ui.css",
     "./basic": {
-      "types": "./src/components/basic/index.ts",
-      "import": "./src/components/basic/index.ts"
+      "types": "./dist/basic/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./data": {
-      "types": "./src/components/data/index.ts",
-      "import": "./src/components/data/index.ts"
+      "types": "./dist/data/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./form": {
-      "types": "./src/components/form/index.ts",
-      "import": "./src/components/form/index.ts"
+      "types": "./dist/form/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./feedback": {
-      "types": "./src/components/feedback/index.ts",
-      "import": "./src/components/feedback/index.ts"
+      "types": "./dist/feedback/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./nav": {
-      "types": "./src/components/nav/index.ts",
-      "import": "./src/components/nav/index.ts"
+      "types": "./dist/nav/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./layout": {
-      "types": "./src/components/layout/index.ts",
-      "import": "./src/components/layout/index.ts"
+      "types": "./dist/layout/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./chart": {
-      "types": "./src/components/chart/index.ts",
-      "import": "./src/components/chart/index.ts"
+      "types": "./dist/chart/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./login": {
-      "types": "./src/components/login/index.ts",
-      "import": "./src/components/login/index.ts"
+      "types": "./dist/login/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./storage": {
-      "types": "./src/components/storage/index.ts",
-      "import": "./src/components/storage/index.ts"
+      "types": "./dist/storage/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./wc": {
-      "types": "./src/components/wc/index.ts",
-      "import": "./src/components/wc/index.ts"
+      "types": "./dist/wc/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./i18n": {
-      "types": "./src/components/_internal/i18n.ts",
-      "import": "./src/components/_internal/i18n.ts"
+      "types": "./dist/_internal/i18n.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
+    },
+    "./form-builder": {
+      "types": "./dist/form-builder/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
+    },
+    "./amap": {
+      "types": "./dist/amap/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
+    },
+    "./route-planner": {
+      "types": "./dist/route-planner/index.d.ts",
+      "import": "./dist/vcl-ui.js",
+      "require": "./dist/vcl-ui.cjs"
     },
     "./dist/*": "./dist/*",
-    "./src/*": "./src/*",
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
-    "src/components",
     "README.md"
   ],
   "peerDependencies": {
     "echarts": "^5.0.0 || ^6.0.0",
-    "pinia": "^2.1.7",
     "vue": "^3.4.0",
     "vue-router": "^4.3.0"
+  },
+  "peerDependenciesMeta": {
+    "echarts": {
+      "optional": true
+    },
+    "vue-router": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@iconify/vue": "^4.1.0",
     "@lucide/vue": "^1.21.0",
     "@vuemap/vue-amap": "^2.1.17",
-    "echarts-wordcloud": "^2.1.0",
     "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
     "qrcode": "^1.5.4",
@@ -115,6 +150,7 @@
     "@vue/test-utils": "^2.4.11",
     "aws4": "^1.13.2",
     "echarts": "^6.1.0",
+    "echarts-wordcloud": "^2.1.0",
     "eslint-plugin-vue": "^10.10.0",
     "happy-dom": "^20.11.1",
     "husky": "^9.1.7",
@@ -131,7 +167,8 @@
     "vue": "^3.4.0",
     "vue-eslint-parser": "^10.4.1",
     "vue-router": "^4.3.0",
-    "vue-tsc": "^2.0.0"
+    "vue-tsc": "^2.0.0",
+    "vue34": "npm:vue@~3.4.38"
   },
   "overrides": {
     "nanoid": "3.3.18",

@@ -80,7 +80,6 @@ export { default as Menu } from './nav/Menu.vue'
 
 // 布局
 export { default as AppLayout } from './layout/AppLayout.vue'
-export { default as MiniLayout } from './layout/MiniLayout.vue'
 export { default as AccordionNav } from './layout/AccordionNav.vue'
 export { default as ModalBox } from './layout/ModalBox.vue'
 /** @deprecated 已合并到 Flex，Space 保留为语法糖（direction='horizontal'/'vertical' → Flex row/column） */
@@ -152,7 +151,7 @@ export {
   isFieldRegistered,
 } from './form-builder/fieldRegistry'
 export type { FieldRegistration } from './form-builder/fieldRegistry'
-export { contractCollectionSchema, inspectionSchema, registrationSchema } from './form-builder/presets'
+export { contractCollectionSchema } from './form-builder/presets'
 export {
   getFieldTypes,
   createField,
@@ -274,3 +273,39 @@ export {
 } from './_internal/utils'
 export type { Region } from './_internal/utils'
 export { formatDateZh, formatDateTimeZh } from './form/utils/date-utils'
+
+// ══════════════════════════════════════════════════════════════════════
+// 分域子路径运行时补齐
+// package.json 的 ./form-builder、./storage、./wc 子路径以本入口的 bundle 为运行时，
+// 以下符号此前只存在于各域自己的 index（类型能过、运行时 undefined）。
+// 统一经域 barrel 转出 — 域 index 是导出的唯一映射表，不在此处重抄文件路径。
+// ══════════════════════════════════════════════════════════════════════
+
+// 低代码表单平台 — 收集/分享视图、schema 适配、树操作、预设模板
+export {
+  FormTargetCollect,
+  FormShareView,
+  normalizeSchema,
+  toDynamicFormSchema,
+  containerDemoNodes,
+  containerDemoMeta,
+  storeReportSchema,
+  findNode,
+  findParent,
+  updateNodeInTree,
+  removeNodeFromTree,
+  insertNode,
+  insertChildNode,
+  moveNodeInTree,
+  isContainerNode,
+  isFieldNode,
+  migrateFieldsToNodes,
+  CONTAINER_TYPES,
+  FIELD_NODE_TYPES,
+} from './form-builder'
+
+// 存储 — 对象键净化与 KV 适配器类
+export { sanitizeObjectKeyPart, SupabaseKVAdapter } from './storage'
+
+// Web Components 封装 — Custom Element 注册入口
+export { defineCustomElement, registerWebComponents, defineWC } from './wc'

@@ -4,6 +4,20 @@ import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
 
+/**
+ * 声明按最低承诺版本生成时，vue 被解析到构建别名 vue34，
+ * 于是 import 类型会带上别名路径（如 import('../../../node_modules/vue34')）。
+ * 这里改写回 'vue'，让消费者按自己安装的版本解析。
+ */
+function normalizeVueSpecifier(filePath: string, content: string): string {
+  // 形态有两种：import('…/node_modules/vue34') 类型引用、from '…/node_modules/vue34' 静态导入
+  const out = content.replace(/(['"])[^'"]*node_modules\/vue34\1/g, "'vue'")
+  if (out.includes('vue34')) {
+    throw new Error(`[dts] ${filePath} 仍残留构建别名 vue34，声明不可发布`)
+  }
+  return out
+}
+
 export default defineConfig({
   plugins: [
     vue(),
@@ -13,8 +27,17 @@ export default defineConfig({
       include: ['src/components'],
       exclude: ['src/demos', 'src/App.vue', 'src/main.ts'],
       rollupTypes: false,
+      // 声明必须按最低承诺版本（peer: vue ^3.4.0）生成：vue 3.5 的 DefineComponent
+      // 在前 13 个参数之后多出 7 个（LC/Directives/Exposed/Provide/...），
+      // 用 3.5 生成会让 3.4 消费者在 skipLibCheck:false 下报 73 条 TS2707。
+      // vue34 是 npm 别名（devDependency，仅构建期用），前 13 个参数两版完全一致。
+      beforeWriteFile: (filePath, content) => ({ content: normalizeVueSpecifier(filePath, content) }),
       compilerOptions: {
         types: ['vite/client'],
+        paths: {
+          '@/*': [resolve(__dirname, 'src/*')],
+          vue: [resolve(__dirname, 'node_modules/vue34')],
+        },
       },
     }),
   ],
@@ -31,6 +54,8 @@ export default defineConfig({
     port: 3721,
     host: '0.0.0.0',
     allowedHosts: true,
+    // reports/ 是测试/覆盖率生成物，跑测试时整目录重写；监听它会在文件消失的瞬间抛 lstat 未捕获异常打死 dev server
+    watch: { ignored: ['**/reports/**'] },
     https:
       process.env.VITE_NO_HTTPS === '1'
         ? false // e2e 专用：Playwright 探活/访问固定走明文 HTTP（自签证书会让它连不上）
@@ -50,8 +75,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/components/index.ts'),
-      name: 'VueComponentLib',
-      fileName: 'vue-component-lib',
+      name: 'VclUi',
+      fileName: 'vcl-ui',
       formats: ['es', 'cjs'],
     },
     rollupOptions: {
@@ -68,7 +93,7 @@ export default defineConfig({
           '@iconify/vue': 'IconifyVue',
         },
         // CSS 单独提取
-        assetFileNames: 'vue-component-lib.[ext]',
+        assetFileNames: 'vcl-ui.[ext]',
         // 按业务域拆分 chunk — 减小主 bundle，让按需加载/摇树更有效
         manualChunks(id) {
           // 依赖库（echarts 等已 external，这里是剩余的重型依赖）

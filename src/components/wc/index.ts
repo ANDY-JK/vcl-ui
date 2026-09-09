@@ -5,7 +5,7 @@
  * 支持在 React/Angular/原生 HTML 中使用 Vue 组件库。
  *
  * 用法：
- *   import { registerWebComponents } from 'vue-component-lib/wc'
+ *   import { registerWebComponents } from 'vcl-ui/wc'
  *   registerWebComponents()  // 注册所有组件为 Custom Elements
  *
  *   <!-- 在任意框架/HTML 中使用 -->
@@ -35,8 +35,18 @@ import Empty from '../data/Empty.vue'
 import Skeleton from '../data/Skeleton.vue'
 import Result from '../feedback/Result.vue'
 
-/** defineCustomElement 接受的组件形态 */
+/** defineCustomElement 接受的组件形态（公共 API defineWC 保持此严格签名） */
 type WCComponent = Parameters<typeof defineCustomElement>[0]
+
+/**
+ * 映射表值类型：Vue 3.4 下 WCComponent 解析为 Props = unknown 的 DefineComponent，
+ * 真实 SFC 组件赋不进去（Vue 3.5 才放宽该约束）→ 表内只要求对象/函数，
+ * 到 defineCustomElement 调用边界再用 asWC 收敛。
+ */
+type MappedComponent = Record<string, unknown> | ((...args: never[]) => unknown)
+
+/** 跨 Vue 版本收敛到 defineCustomElement 入参（3.5 解析为构造类型，须经 unknown 中转） */
+const asWC = (c: MappedComponent): WCComponent => c as unknown as WCComponent
 
 /** Group 是五合一组件（默认 type=radio）；作为 vc-switch 注册时默认锁定为开关形态 */
 const Switch = defineComponent({
@@ -53,7 +63,7 @@ const Switch = defineComponent({
 })
 
 /** 组件 → Custom Element 标签名映射（存原始组件，注册时才 defineCustomElement，避免模块加载期 eager 构造） */
-const componentMap: Record<string, WCComponent> = {
+const componentMap: Record<string, MappedComponent> = {
   'vc-button': Button,
   'vc-input': Input,
   'vc-tag': Tag,
@@ -84,7 +94,7 @@ export function registerWebComponents(prefix = 'vc'): void {
   for (const [tagName, component] of Object.entries(componentMap)) {
     const customName = tagName.replace(/^vc-/, `${prefix}-`)
     if (!customElements.get(customName)) {
-      customElements.define(customName, defineCustomElement(component))
+      customElements.define(customName, defineCustomElement(asWC(component)))
     }
   }
 }

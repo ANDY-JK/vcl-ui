@@ -96,6 +96,18 @@ export default [
       'vue/max-attributes-per-line': 'off',
       'vue/html-self-closing': 'off',
       'vue/attributes-order': 'warn',
+      // ⛔ 防复发（error 级，CI 的 --quiet 只保留 error，故必然生效）：
+      // Vite 会把 import.meta.env.VITE_* 静态替换为字面量，直接读等于把构建期密钥烧进 dist。
+      // 一律走 _internal/env-guard 的 envValue()——它在生产构建下会被摇树消除。
+      // 注：import.meta.env.DEV 不含密钥，不在此限制内。
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'MemberExpression[property.name=/^VITE_/]',
+          message:
+            '禁止直接读 import.meta.env.VITE_*（会把密钥内联进 dist）。改用 @/components/_internal/env-guard 的 envValue(key)。',
+        },
+      ],
     },
   },
 

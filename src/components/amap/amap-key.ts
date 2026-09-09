@@ -4,11 +4,14 @@
  * 组件库不内置任何 Key — 调用方必须自行设置：
  *   import { setAmapKey } from '@/components/amap'
  *   setAmapKey('your-key')
- * 或在 .env 中配置 VITE_AMAP_KEY / VITE_AMAP_SECRET
+ *
+ * .env 里的 VITE_AMAP_KEY / VITE_AMAP_SECRET 只是**开发期便利**（demo 站点免手填）：
+ * 走 runtimeEnv() 守卫，生产构建下该分支被摇树消除，库产物不携带任何凭证。
  *
  * JS API Key（前端地图 SDK）和 REST API Key（服务端接口）默认共用一个 Key，
  * 如需分别设置，用 setAmapKeys({ jsKey, restKey, securityCode })
  */
+import { envValue } from '@/components/_internal/env-guard'
 
 /** 高德 Key 集合 */
 interface AmapKeys {
@@ -20,11 +23,11 @@ interface AmapKeys {
   securityCode: string
 }
 
-/** 从环境变量读取默认 Key（未配置则为空字符串） */
+/** 开发期从环境变量取默认 Key；生产构建恒为空字符串（未配置也为空） */
 const ENV_KEYS: AmapKeys = {
-  jsKey: import.meta.env.VITE_AMAP_KEY || '',
-  restKey: import.meta.env.VITE_AMAP_KEY || '',
-  securityCode: import.meta.env.VITE_AMAP_SECRET || '',
+  jsKey: envValue('VITE_AMAP_KEY') ?? '',
+  restKey: envValue('VITE_AMAP_KEY') ?? '',
+  securityCode: envValue('VITE_AMAP_SECRET') ?? '',
 }
 
 /** 运行时覆盖的 Key（优先于环境变量） */

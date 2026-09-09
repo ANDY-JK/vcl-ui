@@ -28,10 +28,32 @@ jobs:
 
       # 测试用例不入仓库（只留开发本机），所以 CI 上没有可跑的用例：
       # vitest 找不到测试文件会直接 exit 1，playwright 会报 No tests found。
-      # 本地门禁仍然完整：npm run quality-check（类型 + lint + 单测/覆盖率 + 构建 + e2e）。
+      # 本地门禁仍然完整：npm run quality-check（类型 + lint + 单测/覆盖率 + 构建 + 发包自检 + e2e）。
 
       - name: Build
         run: npm run build
+
+      # 发包自检：每个组件都要有 .d.ts、exports 指向的文件都要存在
+      - name: Verify package contract
+        run: npm run verify:pkg
+
+      # 防构建期密钥被内联进产物。用假值当金丝雀：本机 .env.local 不在 CI 上，
+      # 所以必须在 CI 里也能证明「生产构建不会把 VITE_* 值烧进 dist」这条机制成立。
+      - name: Verify env values are not inlined into dist
+        env:
+          VITE_AMAP_KEY: canary-amap-jskey
+          VITE_AMAP_SECRET: canary-amap-security-code
+          VITE_SUPABASE_URL: https://canary-project.supabase.co
+          VITE_SUPABASE_ANON_KEY: canary-supabase-anon-key
+          VITE_SUPABASE_BUCKET: canary-bucket
+        run: |
+          npm run build
+          if grep -rl "canary-" dist/ > /tmp/canary-hit 2>/dev/null && [ -s /tmp/canary-hit ]; then
+            echo "::error::构建期环境变量被内联进产物，泄露面见下"
+            cat /tmp/canary-hit
+            exit 1
+          fi
+          echo "产物未含任何构建期 env 值"
 
       - name: Audit (official registry)
         run: npm audit --registry=https://registry.npmjs.org
