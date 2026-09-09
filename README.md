@@ -89,7 +89,7 @@ const handleClick = () => console.log('clicked')
 | `route-planner` | RouteMap / RouteResult / StorePanel … | 路线规划 |
 | `form-builder` | FormDesigner / FormBuilder / FormCollect / FormRenderer | 低代码表单 |
 
-> 完整组件清单与 API 见 [docs/组件使用手册.md](docs/组件使用手册.md) 与 [docs/api-auto.md](docs/api-auto.md)。
+> 组件用法与可运行示例都在 demo 站点里：`npm run dev` 后打开 http://localhost:3721 ，每个组件一页，含 Props 表与交互示例。
 
 ## 🌍 国际化
 
@@ -108,12 +108,11 @@ const t = useT()
 t('common.confirm')   // → '确认' / 'Confirm'
 ```
 
-## 📚 文档
+## 🧭 说明与验证
 
-- **使用手册**：`docs/组件使用手册.md` — 组件用法、Props、示例
-- **工具函数**：`docs/utils-api.md` — 校验 / 行政区划 / 金额 / 字符串 / 随机 ID / 文件转换 / 脱敏 / 颜色等通用工具
-- **API 文档**：`docs/api-auto.md` — 组件类型定义（历史快照，脚本已移除，手动维护）
-- **审计报告**：`docs/audit/` — 架构/安全/性能/无障碍/国际化等 13 份专项审计
+- **用法示例**：`src/demos/` — 每个组件一页 demo，`npm run dev` 直接看效果与 Props
+- **API 入口**：`src/components/index.ts` — 全部导出与类型，IDE 里可直接跳转
+- **质量门禁**：`npm run quality-check` — 类型检查 + lint + 单测（含覆盖率地板）+ 构建 + 真实浏览器 e2e
 
 ## 🛠 本地开发
 
