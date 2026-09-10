@@ -1,4 +1,6 @@
 // 地址省市数据（领域数据按 i18n 规范保留原文，不进语言包）
+// ⚠️ 内置为演示级子集（非完整区划表）：生产场景经 RendererAddress 的 addressData prop
+//    注入完整数据（如 china-division / 民政部区划表），结构：{ provinces: string[], cities: Record<省, 市[]> }
 export const addressProvinces = [
   '北京市',
   '上海市',

@@ -1,5 +1,7 @@
 // ⛔ 保护 — 组件库总入口，禁止删除/重命名导出，下游项目依赖此文件
 //    需我确认：新增组件导出、export 路径调整
+// 设计令牌必须先于所有组件样式进入产物 CSS（vcl-ui/css），否则 --color-*/--z-* 全部悬空
+import './tokens.css'
 // 基础
 export { default as Button } from './basic/Button.vue'
 export { default as IconSvg } from './basic/IconSvg.vue'
@@ -73,6 +75,7 @@ export type { ErrorGuardOptions, ErrorGuardPayload, ErrorGuardSource } from './f
 
 // 导航
 export { default as Tabs } from './nav/Tabs.vue'
+export { default as TabPanel } from './nav/TabPanel.vue'
 export { default as Steps } from './nav/Steps.vue'
 export { default as Pagination } from './nav/Pagination.vue'
 export { default as Breadcrumb } from './nav/Breadcrumb.vue'

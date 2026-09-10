@@ -101,6 +101,8 @@ const {
   error: e5,
   videoRef: v5,
   canvasRef: c5,
+  detections: detections5,
+  triggerDetection: trigger5,
 } = useBarcodeScanner({
   prefix: 'S',
   length: 11,
@@ -111,6 +113,19 @@ const {
     feedback(c)
   },
 })
+
+/** 检测框 canvas 像素坐标 → 相对 scan-live 容器的百分比定位 */
+import type { BarcodeDetection } from '@/components/form/utils/useBarcodeScanner'
+function boxStyle(d: BarcodeDetection) {
+  const cw = c5.value?.width || 1
+  const ch = c5.value?.height || 1
+  return {
+    left: (d.x / cw) * 100 + '%',
+    top: (d.y / ch) * 100 + '%',
+    width: (d.width / cw) * 100 + '%',
+    height: (d.height / ch) * 100 + '%',
+  }
+}
 
 async function openModal() {
   // 用户手势中解锁音频——之后 onScan 里的蜂鸣/语音才能自由播放
@@ -295,6 +310,19 @@ function onCamError(msg: string) {
           <div v-if="!s5 && !e5" class="scan-idle"><span class="spinner" /><span>启动摄像头...</span></div>
           <div v-show="s5" class="scan-live">
             <video ref="v5" class="scan-video" autoplay playsinline muted />
+            <!-- 多码指针：每帧把检测到的码画成可点击框，primary = 离取景中心最近（自动选中的那个） -->
+            <button
+              v-for="(d, i) in detections5"
+              :key="i"
+              type="button"
+              class="code-box"
+              :class="{ primary: d.primary }"
+              :style="boxStyle(d)"
+              :title="d.text"
+              @click="trigger5(d.text)"
+            >
+              <span class="code-box-label">{{ d.text }}</span>
+            </button>
             <span class="mask top" /><span class="mask bot" /><span class="mask left" /><span
               class="mask right"
             />
@@ -607,6 +635,37 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   border-radius: 8px;
   pointer-events: none;
   animation: pulse 1.5s ease-in-out infinite;
+}
+/* 多码检测框：虚线框 + 码文本标签；primary = 自动选中的（实线高亮） */
+.code-box {
+  position: absolute;
+  border: 2px dashed rgba(255, 255, 255, 0.75);
+  background: rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  z-index: 3;
+  padding: 0;
+}
+.code-box.primary {
+  border: 2px solid #22c55e;
+}
+.code-box-label {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 2px;
+  font-size: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  max-width: 200%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.code-box.primary .code-box-label {
+  background: #22c55e;
+  color: #052e16;
 }
 .mask {
   position: absolute;

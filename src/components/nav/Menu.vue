@@ -84,6 +84,14 @@ function toggleExpand(key: string | number) {
 function handleClick(item: MenuItem) {
   if (item.disabled) return
   if (item.children?.length) {
+    if (isHoverMode.value) {
+      // hover 模式下 click/Enter/Space 也要能开子菜单（触屏无 hover、键盘不触发 mouseenter）。
+      // 先清 pending enter/leave 定时器：触屏点按会先派发模拟 mouseenter，
+      // 不清的话第二次点按关闭后 150ms 又被定时器重新打开。
+      clearTimers()
+      hoverKey.value = hoverKey.value === item.key ? null : item.key
+      return
+    }
     toggleExpand(item.key)
     return
   }

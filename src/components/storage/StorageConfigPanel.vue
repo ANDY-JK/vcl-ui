@@ -32,7 +32,7 @@ const visible = defineModel<boolean>('visible', { default: false })
 
 /** 本地编辑副本（避免未保存的输入直接污染生效配置） */
 const draft = ref<StorageConfig>(emptyStorageConfig())
-const saving = ref(false)
+// 保存是同步 emit，无异步过程 — 死状态（此前恒 false，Button loading 永远不可见）
 const error = ref('')
 
 watch(
@@ -111,14 +111,15 @@ function save(): void {
       </div>
       <div class="scp-row">
         <span class="scp-label">Secret Key</span>
-        <Input v-model="draft.secretAccessKey" placeholder="Secret Access Key" class="scp-input" />
+        <!-- 密钥用密码输入：防旁观者窥屏 / 浏览器密码管理器误存 -->
+        <Input v-model="draft.secretAccessKey" placeholder="Secret Access Key" type="password" class="scp-input" />
       </div>
       <p class="scp-tip">{{ t('storage.panelS3Tip') }}</p>
     </template>
 
     <div v-if="error" class="scp-error">{{ error }}</div>
     <div class="scp-actions">
-      <Button size="sm" variant="primary" :loading="saving" @click="save">{{ t('storage.panelSave') }}</Button>
+      <Button size="sm" variant="primary" @click="save">{{ t('storage.panelSave') }}</Button>
       <Button size="sm" variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</Button>
     </div>
   </div>

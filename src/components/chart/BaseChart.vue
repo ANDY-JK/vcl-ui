@@ -204,7 +204,14 @@ watch(
         const merged = mergeToolbox(val)!
         const isCompound = !!(merged as Record<string, unknown>).baseOption
         try {
-          chartInstance.setOption(merged, isCompound ? false : true)
+          // 普通更新用合并模式 + replaceMerge：notMerge:true 会让图例切换等常规更新
+          // 全量重建坐标系，用户拖过的 dataZoom 被重置回起点。replaceMerge:['series']
+          // 防止新旧系列名不同时旧 series 残留
+          if (isCompound) {
+            chartInstance.setOption(merged, false)
+          } else {
+            chartInstance.setOption(merged, { notMerge: false, lazyUpdate: true, replaceMerge: ['series'] })
+          }
         } catch {
           // compound option 出错时降级为第一个子 option
           if (isCompound) {

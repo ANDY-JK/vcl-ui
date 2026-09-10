@@ -24,8 +24,8 @@ export interface Props {
 }
 
 const emit = defineEmits<{
-  /** 点击步骤项时触发（clickable=true 时生效） */
-  stepClick: [index: number, step: Step]
+  /** 点击步骤项时触发（clickable=true 时生效）；kebab-case 与全库事件命名一致 */
+  'step-click': [index: number, step: Step]
 }>()
 
 withDefaults(defineProps<Props>(), {
@@ -34,7 +34,7 @@ withDefaults(defineProps<Props>(), {
 })
 
 function onStepClick(idx: number, step: Step) {
-  emit('stepClick', idx, step)
+  emit('step-click', idx, step)
 }
 </script>
 

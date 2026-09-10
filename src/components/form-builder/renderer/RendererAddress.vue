@@ -1,5 +1,6 @@
 <script setup lang="ts">
 // 地址选择字段 — 省/市级联 + 区县/详情输入，值 = 四段拼接字符串
+// 内置省/市数据为演示级子集；生产场景经 addressData prop 注入完整区划表（结构同 address-data.ts）
 import { computed, ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { addressProvinces, addressCities } from './address-data'
@@ -12,17 +13,23 @@ const props = defineProps<{
   field: FormField
   /** 当前值（省+市+区县+详情 拼接字符串） */
   modelValue: unknown
+  /** 完整省市区数据注入（生产用）；缺省回退内置演示数据 */
+  addressData?: { provinces: string[]; cities: Record<string, string[]> }
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [v: unknown]
 }>()
 
+/** 生效数据源：注入优先，回退内置演示子集 */
+const effectiveProvinces = computed(() => props.addressData?.provinces ?? addressProvinces)
+const effectiveCities = computed(() => props.addressData?.cities ?? addressCities)
+
 const addressProvince = ref('')
 const addressCity = ref('')
 const addressDistrict = ref('')
 const addressDetailText = ref('')
-const addressCitiesForProvince = computed(() => addressCities[addressProvince.value] ?? [])
+const addressCitiesForProvince = computed(() => effectiveCities.value[addressProvince.value] ?? [])
 
 /** 反拆记录：自己 emit 出去的值不再回流反拆，否则输入区县会被切走/清空 */
 let lastEmitted = ''
@@ -53,9 +60,9 @@ function matchLongest(candidates: string[], text: string): string {
 /** 反拆回填：省 → 市 → （区县 / 详情） */
 function applyValue(v: unknown): void {
   const text = typeof v === 'string' ? v : ''
-  const province = matchLongest(addressProvinces, text)
+  const province = matchLongest(effectiveProvinces.value, text)
   let rest = text.slice(province.length)
-  const city = province ? matchLongest(addressCities[province] ?? [], rest) : ''
+  const city = province ? matchLongest(effectiveCities.value[province] ?? [], rest) : ''
   rest = rest.slice(city.length)
 
   let district = rest
@@ -91,7 +98,7 @@ watch(
   <div class="fb-address">
     <select v-model="addressProvince" class="fb-address-select" @change="onProvinceChange">
       <option value="">{{ t('formBuilder.selectProvince') }}</option>
-      <option v-for="p in addressProvinces" :key="p" :value="p">{{ p }}</option>
+      <option v-for="p in effectiveProvinces" :key="p" :value="p">{{ p }}</option>
     </select>
     <select v-model="addressCity" class="fb-address-select" @change="emitAddress">
       <option value="">{{ t('formBuilder.selectCity') }}</option>

@@ -412,6 +412,8 @@ onUnmounted(() => {
     stream = null
   }
   if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
+  // 队列照片的 blob URL 只在 close() 里释放；父级在开启状态下卸载组件（v-if/路由切换）会整批泄漏
+  clearShots()
 })
 </script>
 

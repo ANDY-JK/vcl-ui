@@ -136,6 +136,15 @@
   }
 }
 
+/* ===== 触屏设备 — 输入控件字号 ≥16px =====
+   iOS Safari 对 font-size<16px 的输入框聚焦时强制放大页面，每次点输入框页面都跳一下。
+   不动桌面 clamp（响应式比例受保护），只在触屏媒体查询下提到底线值 */
+@media (pointer: coarse) {
+  :root {
+    --ctrl-font-size: 16px;
+  }
+}
+
 /* ===== 暗色模式 — 通过 data-theme="dark" 或 prefers-color-scheme 自动激活 =====
    使用方式：
    1. 手动切换：<html data-theme="dark">

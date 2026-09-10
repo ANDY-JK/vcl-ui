@@ -120,7 +120,10 @@ function onClick() {
     :class="{ loaded, failed, clickable: preview && loaded }"
     role="img"
     :aria-label="alt || t('image.label')"
+    :tabindex="preview && loaded ? 0 : undefined"
     @click="onClick"
+    @keydown.enter.prevent="onClick"
+    @keydown.space.prevent="onClick"
   >
     <!-- 加载占位 -->
     <div v-if="!loaded && !failed" class="v-image-placeholder">
@@ -169,6 +172,10 @@ function onClick() {
 }
 .v-image.clickable:hover {
   opacity: 0.9;
+}
+.v-image.clickable:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .v-image-img {

@@ -17,6 +17,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const overlayRef = ref<HTMLElement | null>(null)
+/** 显示前记录焦点来源，关闭时归还（遮罩消失后焦点落 body，键盘用户丢失位置） */
+let prevFocus: HTMLElement | null = null
 
 /**
  * 只读遮罩必须真的挡住键盘，而不只是挡鼠标：
@@ -63,8 +65,13 @@ watch(
   async (v) => {
     if (!v) {
       detach()
+      // 归还焦点：遮罩消失后键盘用户回到触发前的位置
+      if (prevFocus?.isConnected) prevFocus.focus()
+      prevFocus = null
       return
     }
+    prevFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
     attach()
     await nextTick()
     overlayRef.value?.focus()

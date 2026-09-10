@@ -69,6 +69,7 @@ function close() {
 }
 
 function onCancel() {
+  if (props.loading) return
   emit('cancel')
   close()
 }
@@ -87,7 +88,8 @@ function onConfirm() {
     :visible="visible"
     :title="effTitle"
     size="sm"
-    :closable="closable"
+    :closable="closable && !loading"
+    :mask-closable="!loading"
     @update:visible="emit('update:visible', $event)"
   >
     <!-- 消息区：图标 + 彩色左边框 -->

@@ -25,17 +25,24 @@ const emit = defineEmits<{ 'update:modelValue': [v: number] }>()
 // pageSize<=0 时按 1 处理，避免 Math.ceil(total/0)=Infinity 导致分页循环无限渲染（逻辑在 pagination-utils）
 const totalPages = computed(() => calcTotalPages(props.total, props.pageSize))
 
-const pages = computed(() => {
+/** 渲染项：页码或省略号；key 保证两个省略号不重复（v-for :key 唯一性） */
+interface PageEntry {
+  key: string
+  value: number | '...'
+}
+
+const pages = computed<PageEntry[]>(() => {
   const current = props.modelValue
   const total = totalPages.value
   const delta = 2
-  const range: (number | string)[] = []
+  const range: PageEntry[] = []
+  let ellipsisIdx = 0
 
   for (let i = 1; i <= total; i++) {
     if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
-      range.push(i)
-    } else if (range[range.length - 1] !== '...') {
-      range.push('...')
+      range.push({ key: `p${i}`, value: i })
+    } else if (range[range.length - 1]?.value !== '...') {
+      range.push({ key: `e${ellipsisIdx++}`, value: '...' })
     }
   }
   return range
@@ -71,16 +78,16 @@ function onJumperKeyup(e: KeyboardEvent) {
 
     <button
       v-for="p in pages"
-      :key="p"
+      :key="p.key"
       type="button"
       class="page-btn"
-      :class="{ active: p === modelValue, ellipsis: p === '...' }"
-      :disabled="p === '...'"
-      :aria-hidden="p === '...' || undefined"
-      :aria-current="p === modelValue ? 'page' : undefined"
-      @click="typeof p === 'number' && goTo(p)"
+      :class="{ active: p.value === modelValue, ellipsis: p.value === '...' }"
+      :disabled="p.value === '...'"
+      :aria-hidden="p.value === '...' || undefined"
+      :aria-current="p.value === modelValue ? 'page' : undefined"
+      @click="typeof p.value === 'number' && goTo(p.value)"
     >
-      {{ p }}
+      {{ p.value }}
     </button>
 
     <button

@@ -3,7 +3,7 @@
  * 路线地图 — 高德地图展示门店标记 + 分天路线 + 起点
  * 动态居中，支持信息窗
  */
-import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted, onMounted } from 'vue'
 import { ElAmap } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import type { Store, RoutePlan } from '@/components/route-planner/types'
@@ -25,8 +25,11 @@ const mapReady = ref(false)
 // 安全配置 + 初始化（setup 内执行，非模块加载时；用协调器避免 key 锁死）
 const AMAP_SECRET = getAmapSecurityCode()
 if (typeof window !== 'undefined') {
-  ;(window as unknown as Record<string, unknown>)._AMapSecurityConfig = {
-    securityJsCode: AMAP_SECRET,
+  const w = window as unknown as Record<string, unknown>
+  // 判空 + 不覆盖宿主已有配置：写入空 securityJsCode 会让高德以"未配置安全密钥"失败且难排查
+  // （与 AmapWidget 同一口径；混用两组件时后挂载的不得抹掉先写入的有效值）
+  if (AMAP_SECRET && !w._AMapSecurityConfig) {
+    w._AMapSecurityConfig = { securityJsCode: AMAP_SECRET }
   }
 }
 // SSR 守卫：ensureInit 内部会注入 <script> 操作 document，服务端渲染直接跳过
@@ -176,7 +179,10 @@ function renderAll(): void {
 
 let renderTimer: ReturnType<typeof setTimeout> | null = null
 
-// 浅监听 + 防抖：避免 enrichDriving 每次更新都重绘地图导致闪烁
+// 上游数据链（enrichDriving / useStoreData）是「原地修改」不改引用：plan.days[i].routePolyline
+// 回填、addStore push、toggleSkip 字段翻转全都不会让 watch 源触发。
+// 必须 deep 监听 — 否则实测驾车路线/门店增删在地图上静默不同步。
+// 配合 600ms 防抖：深层编辑（如门店改名）触发重绘有防抖兜底，不闪烁。
 watch(
   () => props.plan,
   () => {
@@ -185,14 +191,16 @@ watch(
       nextTick(renderAll)
     }, 600)
   },
+  { deep: true },
 )
 
-// stores 变化也触发重绘
+// stores 变化也触发重绘（deep：addStore/importStores 是 push 原地变更）
 watch(
   () => props.stores,
   () => {
     nextTick(renderAll)
   },
+  { deep: true },
 )
 
 // 卸载时清掉 pending 的防抖回调，避免操作已销毁的地图实例
@@ -202,6 +210,27 @@ onUnmounted(() => {
 
 /** 是否有数据可显示 */
 const hasContent = computed(() => props.stores.length > 0 || (props.plan && props.plan.days.length > 0))
+
+// 初始化失败判定：SDK 15s 未就绪视为失败（网络断/key 无效/安全密钥错误都会卡在这里），
+// spinner 永远转圈不如给出失败态 + 重试
+const _mapFailed = ref(false)
+let _readyTimer: ReturnType<typeof setTimeout> | null = null
+onMounted(() => {
+  _readyTimer = setTimeout(() => {
+    if (!mapReady.value) _mapFailed.value = true
+  }, 15000)
+})
+onUnmounted(() => {
+  if (_readyTimer) clearTimeout(_readyTimer)
+})
+function retryMap(): void {
+  _mapFailed.value = false
+  if (_readyTimer) clearTimeout(_readyTimer)
+  _readyTimer = setTimeout(() => {
+    if (!mapReady.value) _mapFailed.value = true
+  }, 15000)
+  amapLoader.ensureInit(getAmapJsKey())
+}
 </script>
 
 <template>
@@ -209,9 +238,14 @@ const hasContent = computed(() => props.stores.length > 0 || (props.plan && prop
     <div class="map-container">
       <ElAmap :center="mapCenter" :zoom="8" @init="onMapInit" />
     </div>
-    <div v-if="!mapReady" class="map-loading">
+    <div v-if="!mapReady && !_mapFailed" class="map-loading">
       <div class="spinner" />
       <p>{{ t('routePlanner.mapLoading') }}</p>
+    </div>
+    <!-- 加载失败态：网络断/key 无效/安全密钥错误，15s 未就绪判定；给重试入口而非永远转圈 -->
+    <div v-if="!mapReady && _mapFailed" class="map-loading map-failed">
+      <p>{{ t('routePlanner.mapLoadFail') }}</p>
+      <button type="button" class="map-retry-btn" @click="retryMap">{{ t('common.retry') }}</button>
     </div>
     <!-- 空数据引导 -->
     <div v-if="mapReady && !hasContent" class="map-empty-guide">
@@ -266,6 +300,23 @@ const hasContent = computed(() => props.stores.length > 0 || (props.plan && prop
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 失败态 + 重试按钮 */
+.map-failed {
+  gap: var(--space-2);
+}
+.map-retry-btn {
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: clamp(12px, 1.6vw, 14px);
+  cursor: pointer;
+}
+.map-retry-btn:hover {
+  border-color: var(--color-primary);
 }
 
 /* 空数据引导 */

@@ -37,6 +37,9 @@ export function createAmapLoader(config: AmapLoaderConfig = {}): AmapLoader {
   return {
     ensureInit(key: string) {
       if (initialized) return
+      // 空 key 不初始化也不锁死：host 常见「异步拉配置后再 setAmapKey()」，
+      // 若以空 key 调 initAMapApiLoader 会立即置位 initialized，之后换 key 只能提示刷新 — 地图永久不可用
+      if (!key) return
       initialized = true
       loadScript({ key, version: '2.0', plugins: ['AMap.ToolBar', 'AMap.Scale'] })
     },
@@ -57,9 +60,15 @@ export function createAmapLoader(config: AmapLoaderConfig = {}): AmapLoader {
 /** 组件库共享的单例协调器（AmapWidget / RouteMap 共用同一实例） */
 export const amapLoader = createAmapLoader()
 
-// 订阅 Key 变更：初始化后变更 → 打印提示（高德 JS SDK 已加载无法热换 key）
+// 订阅 Key 变更：
+// - 已初始化 → 提示需刷新（高德 JS SDK 已加载无法热换 key）
+// - 未初始化（此前空 key 没有锁死）→ 现在有了 key，自动补初始化
 onAmapKeyChange((keys) => {
-  if (amapLoader.isInitialized() && keys.jsKey) {
-    console.warn('[amap] 高德地图已用旧 Key 初始化，新 Key 需刷新页面才能生效（JS SDK 无法热换）')
+  if (amapLoader.isInitialized()) {
+    if (keys.jsKey) {
+      console.warn('[amap] 高德地图已用旧 Key 初始化，新 Key 需刷新页面才能生效（JS SDK 无法热换）')
+    }
+    return
   }
+  if (keys.jsKey) amapLoader.ensureInit(keys.jsKey)
 })

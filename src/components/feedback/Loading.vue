@@ -182,4 +182,13 @@ useBodyScrollLock(() => props.fullscreen)
   flex-direction: column;
   gap: clamp(var(--space-2), 1.5vw, 12px);
 }
+
+/* 动效敏感用户豁免（对齐 Skeleton 先例）：spinner/shimmer 降为慢速，避免持续高频动画 */
+@media (prefers-reduced-motion: reduce) {
+  .spinner-ring,
+  .skel-line,
+  .skel-text {
+    animation-duration: 3s;
+  }
+}
 </style>

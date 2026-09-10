@@ -87,6 +87,8 @@ export function useThrottle<T>(source: Ref<T>, delay = 100) {
   const throttled = ref(source.value) as Ref<T>
   let lastTime = 0
   let timer: ReturnType<typeof setTimeout> | null = null
+  // 尾沿取最新值：pending 期间后续变化被丢弃会让定时器回调停在窗口首个值
+  let pendingVal: T
 
   const stop = watch(source, (val) => {
     const now = Date.now()
@@ -100,11 +102,14 @@ export function useThrottle<T>(source: Ref<T>, delay = 100) {
       throttled.value = val
       lastTime = now
     } else if (!timer) {
+      pendingVal = val
       timer = setTimeout(() => {
-        throttled.value = val
+        throttled.value = pendingVal
         lastTime = Date.now()
         timer = null
       }, remaining)
+    } else {
+      pendingVal = val
     }
   })
 
@@ -132,6 +137,8 @@ export function useThrottle<T>(source: Ref<T>, delay = 100) {
 export function useThrottleFn<F extends (...args: never[]) => unknown>(fn: F, delay = 100) {
   let lastTime = 0
   let timer: ReturnType<typeof setTimeout> | null = null
+  // 尾沿取最新参数：pending 期间的最后一次调用参数覆盖闭包里的旧参数
+  let pendingArgs: Parameters<F>
 
   function run(...args: Parameters<F>) {
     const now = Date.now()
@@ -145,11 +152,14 @@ export function useThrottleFn<F extends (...args: never[]) => unknown>(fn: F, de
       fn(...args)
       lastTime = now
     } else if (!timer) {
+      pendingArgs = args
       timer = setTimeout(() => {
-        fn(...args)
+        fn(...pendingArgs)
         lastTime = Date.now()
         timer = null
       }, remaining)
+    } else {
+      pendingArgs = args
     }
   }
 

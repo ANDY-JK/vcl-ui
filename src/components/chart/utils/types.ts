@@ -235,4 +235,6 @@ export interface BuildParams {
   palette?: PalettePreset
   markLine?: MarkLineConfig | MarkLineConfig[]
   markArea?: MarkAreaConfig | MarkAreaConfig[]
+  /** 大数据降采样（'lttb'）：line/area 系列点数超阈值时自动启用，传 null 强制关闭 */
+  sampling?: 'lttb' | 'average' | 'min' | 'max' | 'sum' | null
 }

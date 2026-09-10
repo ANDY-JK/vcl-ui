@@ -81,7 +81,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // 不打包这些，由使用方提供。zxing-wasm 作为 dependency 由消费方安装
-      external: ['vue', 'vue-router', 'pinia', 'echarts', /^echarts\//, '@lucide/vue', '@iconify/vue', 'zxing-wasm', /^zxing-wasm\//],
+      external: ['vue', 'vue-router', 'pinia', 'echarts', /^echarts\//, 'echarts-wordcloud', '@lucide/vue', '@iconify/vue', 'zxing-wasm', /^zxing-wasm\//],
       output: {
         globals: {
           vue: 'Vue',

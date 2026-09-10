@@ -4,8 +4,13 @@
  * 从 Input.vue 和 Select.vue 中抽离的重复 .fl-label 样式。
  * 两个组件的浮动标签样式几乎完全一致，统一维护避免漂移。
  *
- * 用法：在组件 <style> 中 @import 使用，或在模板中引入。
- * 注意：此样式不包含 scoped 标记，需在组件 <style> 中 @import 引入。
+ * 用法：在组件 <style> 中 @import 使用（@import '@/components/_internal/floating-label.css'）。
+ * 注意：此样式不含 scoped 标记，引入后受宿主组件 scoped 属性约束。
+ *
+ * 可定制变量：
+ *   --fl-label-bg — 骑缝小标签的遮边背景色。
+ *     默认 --color-surface（输入框自身底色）；当控件放在非 surface 底色上
+ *     （如页面灰底 --color-bg），小白疤会显形，消费方可按容器覆写此变量对齐底色。
  */
 
 .fl-label {
@@ -30,7 +35,7 @@
   transform: translateY(-50%);
   font-size: clamp(10px, 1.5vw, 11px);
   color: var(--color-primary);
-  background: var(--color-surface);
+  background: var(--fl-label-bg, var(--color-surface));
   padding: 0 var(--space-1);
   left: calc(var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)) - 4px);
   z-index: 2;

@@ -269,6 +269,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
                     :key="String(item.value)"
                     class="select-item"
                     :class="{ active: internalSelectValue.includes(item.value) }"
+                    :aria-pressed="internalSelectValue.includes(item.value)"
                     @click="toggleSelectItem(item.value)"
                   >
                     <IconSvg

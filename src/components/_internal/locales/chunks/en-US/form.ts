@@ -10,6 +10,7 @@ export default {
     uploading: 'Uploading...',
     uploadSuccess: 'Upload successful',
     uploadFailed: 'Upload failed',
+    previewImage: 'Preview image',
     camera: 'Camera',
     switchCamera: 'Switch Camera',
     capture: 'Capture',

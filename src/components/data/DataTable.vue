@@ -23,6 +23,8 @@ import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_int
 import { copyText } from '@/components/_internal/useCopy'
 import Toast from '@/components/feedback/Toast.vue'
 import { boostZTop } from '@/components/_internal/z-top'
+import { warnOnce } from '@/components/_internal/warnOnce'
+import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useToastNotify } from '@/components/_internal/useToastNotify'
 import ImagePreview from './ImagePreview.vue'
 import DataTableColumnSettings from './DataTableColumnSettings.vue'
@@ -437,6 +439,8 @@ const {
   visibleColumns,
   _effectiveSearchTerm,
   () => _effectiveRowHeight.value,
+  // 全屏忽略分页展示全量且容器有界 → 虚拟窗口须对全量数据开窗（_isFullscreen 声明在后，惰性求值安全）
+  { fullscreen: () => _isFullscreen.value },
 )
 // 回填前向引用，供 useTableColumns/useTableExtras 使用
 watch(
@@ -690,6 +694,8 @@ watch(_isFullscreen, async (v) => {
   await nextTick()
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
   applyAutoFit()
+  // 全屏切换后容器尺寸变化 → 重测虚拟滚动窗口高度（进出全屏都要测）
+  if (scrollContainerRef.value) containerHeight.value = scrollContainerRef.value.clientHeight
   emit('fullscreenChange', v)
 })
 
@@ -948,6 +954,11 @@ const {
     onCopied: () => notify(t('imagePreview.copyOk')),
   },
 )
+// aria-modal 备注编辑弹层的 Tab 循环（打开自动激活，输入框为首个可聚焦项；
+// 关闭时 trap 归还焦点到备注指示器）
+const _noteEditorRef = ref<HTMLElement | null>(null)
+const _noteTrapVisible = computed(() => !!noteEditing.value)
+useFocusTrap({ visible: _noteTrapVisible, getContainer: () => _noteEditorRef.value })
 watch(
   displayData,
   (val) => {
@@ -1149,6 +1160,7 @@ const {
   filterFocusIndex,
   onFilterKeydown,
   _selectedKeys,
+  _selectedKeySet,
   isAllSelected,
   isIndeterminateSelection,
   toggleSelectAll,
@@ -1517,11 +1529,13 @@ const _onKeydown = (e: Event) => {
     return
   }
   // 缩放快捷键：Ctrl+Plus/Minus/0（不拦截输入框内的操作）
+  // 仅当焦点位于本表格内部才拦截 — 否则会偷走整页浏览器缩放（无障碍硬伤）
   if (ke.ctrlKey || ke.metaKey) {
     const tag = (ke.target as HTMLElement)?.tagName
     const isInput =
       tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (ke.target as HTMLElement)?.isContentEditable
-    if (!isInput) {
+    const inTable = tableWrapRef.value?.contains(ke.target as Node) ?? false
+    if (!isInput && inTable) {
       if (ke.key === '=' || ke.key === '+' || ke.code === 'NumpadAdd') {
         ke.preventDefault()
         zoomIn()
@@ -1555,6 +1569,10 @@ const _onScroll = (e: Event) => {
 
 onMounted(() => {
   _releaseZTop = boostZTop()
+  // virtualScroll 需要表格自身可滚（maxHeight）或全屏态，静默失效对调用方不可见 — 明确提示
+  if (props.virtualScroll && !props.maxHeight) {
+    warnOnce('DataTable', 'virtualScroll 需配合 maxHeight 使用（或进入全屏），当前配置下不会启用虚拟滚动')
+  }
   document.addEventListener('click', _onClick, true)
   document.addEventListener('keydown', _onKeydown, true)
   document.addEventListener('keydown', onCellKeydown, true)
@@ -1770,6 +1788,7 @@ provideDataTableContext({
   notify,
   closeFilter,
   selectedKeys: _selectedKeys,
+  selectedKeySet: _selectedKeySet,
   noteInputEl,
   setNoteInputEl,
   currentPage: _currentPage,
@@ -2000,14 +2019,15 @@ provideDataTableContext({
             </tbody>
 
             <!-- ========== 空状态 ========== -->
-            <tbody v-else-if="isVirtual && !_isFullscreen ? !virtualTotal : !_effectivePagedData.length">
+            <tbody v-else-if="isVirtual ? !virtualTotal : !_effectivePagedData.length">
               <tr>
                 <td :colspan="_totalCols || 1">
-                  <slot name="empty" :filtered="!!(activeFilters.length || globalSearch)">
+                  <slot name="empty" :filtered="!!(activeFilters.length || searchTerm)">
+                    <!-- 用防抖后的 searchTerm：与实际过滤口径一致，且逐键输入不再触发整表重渲染 -->
                     <Result
-                      :status="activeFilters.length || globalSearch ? 'info' : 'empty'"
+                      :status="activeFilters.length || searchTerm ? 'info' : 'empty'"
                       :title="
-                        globalSearch
+                        searchTerm
                           ? t('table.searchNoResultHint')
                           : activeFilters.length
                             ? t('table.filterNoResultHint')
@@ -2022,22 +2042,20 @@ provideDataTableContext({
 
             <!-- ========== 数据行 ========== -->
             <tbody v-else>
-              <!-- 虚拟滚动：顶部占位 -->
-              <tr v-if="isVirtual && !_isFullscreen && virtualTopOffset > 0" aria-hidden="true">
+              <!-- 虚拟滚动：顶部占位（全屏态同样虚拟化 — 全量行一次性渲染会卡死） -->
+              <tr v-if="isVirtual && virtualTopOffset > 0" aria-hidden="true">
                 <td :colspan="_totalCols" :style="{ height: virtualTopOffset + 'px', padding: 0, border: 'none' }" />
               </tr>
 
               <tr
-                v-for="(row, idx) in _isFullscreen
-                  ? _effectivePagedData
-                  : isVirtual
-                    ? virtualVisibleData
-                    : _effectivePagedData"
+                v-for="(row, idx) in isVirtual
+                  ? virtualVisibleData
+                  : _effectivePagedData"
                 :key="rowMetaMap.get(row)?.key ?? idx"
                 :data-row-key="rowMetaMap.get(row)?.key"
                 :class="[
                   {
-                    'row-selected': _selectedKeys.includes(rowMetaMap.get(row)?.key ?? ''),
+                    'row-selected': _selectedKeySet.has(rowMetaMap.get(row)?.key ?? ''),
                     'row-striped': rowMetaMap.get(row)?.striped ?? false,
                     'row-clicked': _clickedRowKeys.has(rowMetaMap.get(row)?.key ?? ''),
                   },
@@ -2053,7 +2071,7 @@ provideDataTableContext({
                 <td v-if="selectable" class="td-checkbox" :class="{ 'col-fixed-left': _hasFixedLeftCol }" @click.stop>
                   <input
                     type="checkbox"
-                    :checked="_selectedKeys.includes(rowMetaMap.get(row)?.key ?? '')"
+                    :checked="_selectedKeySet.has(rowMetaMap.get(row)?.key ?? '')"
                     @change="toggleRowSelect(row)"
                   />
                 </td>
@@ -2233,7 +2251,7 @@ provideDataTableContext({
               </tr>
 
               <!-- 虚拟滚动：底部占位 -->
-              <tr v-if="isVirtual && !_isFullscreen && virtualBottomOffset > 0" aria-hidden="true">
+              <tr v-if="isVirtual && virtualBottomOffset > 0" aria-hidden="true">
                 <td :colspan="_totalCols" :style="{ height: virtualBottomOffset + 'px', padding: 0, border: 'none' }" />
               </tr>
             </tbody>
@@ -2292,14 +2310,14 @@ provideDataTableContext({
             :key="rowMetaMap.get(row)?.key ?? idx"
             :data-row-key="rowMetaMap.get(row)?.key ?? ''"
             class="card-view-item"
-            :class="{ 'card-selected': _selectedKeys.includes(rowMetaMap.get(row)?.key ?? '') }"
+            :class="{ 'card-selected': _selectedKeySet.has(rowMetaMap.get(row)?.key ?? '') }"
             @click="emit('rowClick', row, idx)"
             @contextmenu.prevent="showRowContextMenu(row, $event)"
           >
             <div v-if="selectable" class="card-checkbox" @click.stop>
               <input
                 type="checkbox"
-                :checked="_selectedKeys.includes(rowMetaMap.get(row)?.key ?? '')"
+                :checked="_selectedKeySet.has(rowMetaMap.get(row)?.key ?? '')"
                 @change="toggleRowSelect(row)"
               />
             </div>
@@ -2434,9 +2452,9 @@ provideDataTableContext({
       <!-- ========== 移动端空状态 ========== -->
       <div v-if="isCardViewEffective && !isLoading && !_cardVisibleData.length" class="card-view-empty">
         <Result
-          :status="activeFilters.length || globalSearch ? 'info' : 'empty'"
+          :status="activeFilters.length || searchTerm ? 'info' : 'empty'"
           :title="
-            globalSearch
+            searchTerm
               ? t('table.searchNoResult')
               : activeFilters.length
                 ? t('table.filterNoResult')
@@ -2685,6 +2703,7 @@ provideDataTableContext({
               zIndex: 'var(--z-tooltip, 3000)',
             }"
             role="dialog"
+            ref="_noteEditorRef"
             aria-modal="true"
             @click.stop
           >

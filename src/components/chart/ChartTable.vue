@@ -99,6 +99,7 @@ const rootRef = ref<HTMLDivElement>()
 const isVertical = ref(false)
 let _ro: ResizeObserver | null = null
 let _roPending = false
+let _winResizeFallback: (() => void) | null = null
 
 function checkLayout() {
   if (!rootRef.value) return
@@ -108,7 +109,8 @@ function checkLayout() {
 
 onMounted(() => {
   if (rootRef.value) {
-    // 环境降级：无 ResizeObserver 时先做一次布局判断，后续依赖窗口 resize
+    // 环境降级：无 ResizeObserver（旧 WebView）时先判断一次 + 监听 window resize，
+    // 否则旋转屏幕/拖拽分栏后图表-表格堆叠方向永不更新（BaseChart.vue 同款兜底）
     if (typeof ResizeObserver !== 'undefined') {
       _ro = new ResizeObserver(() => {
         if (_roPending) return
@@ -121,6 +123,8 @@ onMounted(() => {
       _ro.observe(rootRef.value)
     } else {
       checkLayout()
+      _winResizeFallback = () => checkLayout()
+      window.addEventListener('resize', _winResizeFallback)
     }
   }
 })
@@ -128,6 +132,10 @@ onMounted(() => {
 onUnmounted(() => {
   _ro?.disconnect()
   _ro = null
+  if (_winResizeFallback) {
+    window.removeEventListener('resize', _winResizeFallback)
+    _winResizeFallback = null
+  }
 })
 
 function onChartClick(p: any) {

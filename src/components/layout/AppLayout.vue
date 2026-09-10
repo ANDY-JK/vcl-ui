@@ -151,14 +151,14 @@ function onProgressMouseUp() {
 </script>
 
 <template>
-  <div class="app-layout">
-    <Transition name="fade">
-      <div v-if="isMobile && sidebarOpen" class="sidebar-overlay" @click="closeSidebar" />
+  <div class="vcl-app-layout">
+    <Transition name="vcl-fade">
+      <div v-if="isMobile && sidebarOpen" class="vcl-sidebar-overlay" @click="closeSidebar" />
     </Transition>
 
     <aside class="sidebar" :class="{ open: sidebarOpen, collapsed: sidebarCollapsed }">
-      <div class="sidebar-header">
-        <div class="logo">
+      <div class="vcl-sidebar-header">
+        <div class="vcl-logo">
           <svg
             width="22"
             height="22"
@@ -175,10 +175,10 @@ function onProgressMouseUp() {
             <rect x="14" y="14" width="7" height="7" rx="1" />
           </svg>
         </div>
-        <span v-show="!sidebarCollapsed" class="logo-text">{{ logoText }}</span>
+        <span v-show="!sidebarCollapsed" class="vcl-logo-text">{{ logoText }}</span>
         <button
           v-if="!isMobile"
-          class="collapse-btn"
+          class="vcl-collapse-btn"
           :aria-label="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
           :title="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
           @click="toggleCollapse"
@@ -201,12 +201,12 @@ function onProgressMouseUp() {
       <AccordionNav :collapsed="sidebarCollapsed" :items="navItems" />
     </aside>
 
-    <main class="content">
-      <div class="content-topbar">
-        <div class="topbar-glow" />
+    <main class="vcl-content">
+      <div class="vcl-content-topbar">
+        <div class="vcl-topbar-glow" />
         <button
           v-if="isMobile"
-          class="topbar-hamburger"
+          class="vcl-topbar-hamburger"
           :aria-label="t('common.menu')"
           @click="sidebarOpen = !sidebarOpen"
         >
@@ -225,12 +225,12 @@ function onProgressMouseUp() {
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
-        <span class="topbar-prompt">~</span>
-        <span class="topbar-category">{{ categoryName }}</span>
-        <span class="topbar-sep">/</span>
-        <span class="topbar-title">{{ nav.current ? navLabel(nav.current.label) : '' }}</span>
+        <span class="vcl-topbar-prompt">~</span>
+        <span class="vcl-topbar-category">{{ categoryName }}</span>
+        <span class="vcl-topbar-sep">/</span>
+        <span class="vcl-topbar-title">{{ nav.current ? navLabel(nav.current.label) : '' }}</span>
 
-        <div class="topbar-spacer" />
+        <div class="vcl-topbar-spacer" />
         <div class="topbar-tools">
           <!--
             预设类名速查（CSS 已内置，直接 class 引用即可）：
@@ -249,17 +249,17 @@ function onProgressMouseUp() {
         </div>
 
         <!-- 用户区 -->
-        <div class="topbar-right">
+        <div class="vcl-topbar-right">
           <slot name="topbar-right">
             <template v-if="username">
-              <div class="user-info">
-                <div class="user-avatar">
+              <div class="vcl-user-info">
+                <div class="vcl-user-avatar">
                   {{ username.charAt(0).toUpperCase() }}
                 </div>
-                <span class="user-name">{{ username }}</span>
+                <span class="vcl-user-name">{{ username }}</span>
               </div>
               <button
-                class="logout-btn"
+                class="vcl-logout-btn"
                 :title="t('common.logout')"
                 :aria-label="t('common.logout')"
                 @click="emit('logout')"
@@ -278,31 +278,35 @@ function onProgressMouseUp() {
         </ErrorBoundary>
       </div>
 
-      <div class="content-bottombar">
-        <button v-if="nav.prev" class="nav-btn" @click="goDemo(nav.prev.route!)">
-          <IconSvg type="arrow-left" size="sm" /><span class="toolbar-label">{{ navLabel(nav.prev.label) }}</span>
+      <div class="vcl-content-bottombar">
+        <button v-if="nav.prev" class="vcl-nav-btn" @click="goDemo(nav.prev.route!)">
+          <IconSvg type="arrow-left" size="sm" /><span class="vcl-toolbar-label">{{ navLabel(nav.prev.label) }}</span>
         </button>
-        <span v-else class="nav-btn is-empty" />
+        <span v-else class="vcl-nav-btn is-empty" />
 
-        <div v-if="hasScroll" class="nav-center" @mousedown="onProgressMouseDown">
-          <div ref="progressRef" class="nav-progress-track">
-            <div class="nav-progress" :style="progressStyle" />
+        <div v-if="hasScroll" class="vcl-nav-center" @mousedown="onProgressMouseDown">
+          <div ref="progressRef" class="vcl-nav-progress-track">
+            <div class="vcl-nav-progress" :style="progressStyle" />
           </div>
-          <span class="nav-percent">{{ scrollPercent }}%</span>
+          <span class="vcl-nav-percent">{{ scrollPercent }}%</span>
         </div>
 
-        <button v-if="nav.next" class="nav-btn" @click="goDemo(nav.next.route!)">
-          <span class="toolbar-label">{{ navLabel(nav.next.label) }}</span
+        <button v-if="nav.next" class="vcl-nav-btn" @click="goDemo(nav.next.route!)">
+          <span class="vcl-toolbar-label">{{ navLabel(nav.next.label) }}</span
           ><IconSvg type="arrow-right" size="sm" />
         </button>
-        <span v-else class="nav-btn is-empty" />
+        <span v-else class="vcl-nav-btn is-empty" />
       </div>
     </main>
   </div>
 </template>
 
 <style>
-.app-layout {
+/* 全局样式块类名契约（本组件未 scoped，以下类会进入宿主全局样式表）：
+   - vcl-*：组件内部业务类，宿主不应依赖
+   - .sidebar / .content-body：跨组件契约类（DataTable 全屏按类名查询），改名会静默破坏全屏定位
+   - .topbar-tool-*：文档化预设类（topbar-tools 插槽用），宿主按注释示例直接引用 */
+.vcl-app-layout {
   display: flex;
   height: 100vh;
   height: 100dvh;
@@ -310,7 +314,7 @@ function onProgressMouseUp() {
   contain: layout style;
 }
 
-.sidebar-overlay {
+.vcl-sidebar-overlay {
   position: fixed;
   inset: 0;
   z-index: calc(var(--z-sticky, 100) - 10);
@@ -352,7 +356,7 @@ function onProgressMouseUp() {
   }
 }
 
-.sidebar-header {
+.vcl-sidebar-header {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -366,18 +370,18 @@ function onProgressMouseUp() {
   width: 72px;
   min-width: 72px;
 }
-.sidebar.collapsed .sidebar-header {
+.sidebar.collapsed .vcl-sidebar-header {
   flex-direction: column;
   gap: var(--space-2);
   justify-content: center;
   padding: var(--space-4) var(--space-2);
   min-height: 72px;
 }
-.sidebar.collapsed .collapse-btn {
+.sidebar.collapsed .vcl-collapse-btn {
   margin-left: 0;
 }
 
-.logo {
+.vcl-logo {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -389,14 +393,14 @@ function onProgressMouseUp() {
   color: white;
   flex-shrink: 0;
 }
-.logo-text {
+.vcl-logo-text {
   font-size: clamp(13px, 2vw, 15px);
   font-weight: 600;
   white-space: nowrap;
   letter-spacing: 0.3px;
 }
 
-.collapse-btn {
+.vcl-collapse-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -414,12 +418,12 @@ function onProgressMouseUp() {
     color var(--transition-fast);
   flex-shrink: 0;
 }
-.collapse-btn:hover {
+.vcl-collapse-btn:hover {
   background: var(--color-sidebar-hover);
   color: var(--color-sidebar-text-active);
 }
 
-.content {
+.vcl-content {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -430,7 +434,7 @@ function onProgressMouseUp() {
 }
 
 /* ---- 顶栏 ---- */
-.content-topbar {
+.vcl-content-topbar {
   flex-shrink: 0;
   position: relative;
   display: flex;
@@ -445,7 +449,7 @@ function onProgressMouseUp() {
   border-bottom: 1px solid rgba(var(--color-primary-rgb), 0.15);
   overflow: hidden;
 }
-.topbar-glow {
+.vcl-topbar-glow {
   position: absolute;
   top: 0;
   left: 0;
@@ -461,7 +465,7 @@ function onProgressMouseUp() {
   );
   opacity: 0.5;
 }
-.topbar-hamburger {
+.vcl-topbar-hamburger {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -476,31 +480,31 @@ function onProgressMouseUp() {
   flex-shrink: 0;
   transition: all var(--transition-fast);
 }
-.topbar-hamburger:hover {
+.vcl-topbar-hamburger:hover {
   background: rgba(var(--color-primary-rgb), 0.08);
   color: var(--color-primary);
 }
-.topbar-prompt {
+.vcl-topbar-prompt {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: var(--ctrl-font-size);
   color: var(--color-primary);
   opacity: 0.7;
   margin-right: var(--space-1);
 }
-.topbar-category {
+.vcl-topbar-category {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: var(--ctrl-font-size);
   font-weight: 600;
   color: var(--color-primary);
   letter-spacing: 0.3px;
 }
-.topbar-sep {
+.vcl-topbar-sep {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: var(--ctrl-font-size);
   color: var(--color-text-secondary);
   font-weight: 300;
 }
-.topbar-title {
+.vcl-topbar-title {
   font-size: var(--ctrl-font-size);
   font-weight: 500;
   color: var(--color-sidebar-text-active);
@@ -508,7 +512,7 @@ function onProgressMouseUp() {
 }
 
 /* ---- 顶栏工具 + 用户区 ---- */
-.topbar-spacer {
+.vcl-topbar-spacer {
   flex: 1;
 }
 .topbar-tools {
@@ -521,7 +525,7 @@ function onProgressMouseUp() {
      .topbar-tool-btn.active → 激活态（主色背景描边）
      .topbar-tool-sep     → 按钮组之间的竖线分隔 */
 }
-.topbar-right {
+.vcl-topbar-right {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -720,12 +724,12 @@ function onProgressMouseUp() {
   border-color: rgba(239, 68, 68, 0.25);
 }
 
-.user-info {
+.vcl-user-info {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
-.user-avatar {
+.vcl-user-avatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -738,7 +742,7 @@ function onProgressMouseUp() {
   font-weight: 600;
   line-height: 1;
 }
-.user-name {
+.vcl-user-name {
   font-size: var(--ctrl-font-size);
   color: var(--color-text-muted);
   max-width: 100px;
@@ -746,7 +750,7 @@ function onProgressMouseUp() {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.logout-btn {
+.vcl-logout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -759,7 +763,7 @@ function onProgressMouseUp() {
   cursor: pointer;
   transition: all var(--transition-normal);
 }
-.logout-btn:hover {
+.vcl-logout-btn:hover {
   color: var(--color-danger);
   border-color: rgba(239, 68, 68, 0.3);
   background: rgba(239, 68, 68, 0.06);
@@ -780,7 +784,7 @@ function onProgressMouseUp() {
 }
 
 /* ---- 底栏 ---- */
-.content-bottombar {
+.vcl-content-bottombar {
   flex-shrink: 0;
   position: relative;
   display: flex;
@@ -791,7 +795,7 @@ function onProgressMouseUp() {
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   border-top: 1px solid rgba(var(--color-primary-rgb), 0.12);
 }
-.nav-btn {
+.vcl-nav-btn {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -805,21 +809,21 @@ function onProgressMouseUp() {
   cursor: pointer;
   transition: all var(--transition-normal);
 }
-.nav-btn:hover {
+.vcl-nav-btn:hover {
   color: var(--color-surface);
   border-color: rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.06);
   transform: translateY(-1px);
 }
-.nav-btn:active {
+.vcl-nav-btn:active {
   transform: translateY(0);
   box-shadow: none;
 }
-.nav-btn.is-empty {
+.vcl-nav-btn.is-empty {
   visibility: hidden;
 }
-.toolbar-label {
+.vcl-toolbar-label {
   font-weight: 500;
   letter-spacing: 0.2px;
   max-width: clamp(80px, 14vw, 160px);
@@ -827,7 +831,7 @@ function onProgressMouseUp() {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.nav-center {
+.vcl-nav-center {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -839,17 +843,17 @@ function onProgressMouseUp() {
   user-select: none;
   -webkit-user-select: none;
 }
-.nav-center:hover .nav-progress-track {
+.vcl-nav-center:hover .vcl-nav-progress-track {
   height: 4px;
   border-radius: var(--radius-sm);
 }
-.nav-center:hover .nav-progress {
+.vcl-nav-center:hover .vcl-nav-progress {
   box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.6);
 }
-.nav-center:active .nav-progress {
+.vcl-nav-center:active .vcl-nav-progress {
   box-shadow: 0 0 14px rgba(var(--color-primary-rgb), 0.75);
 }
-.nav-progress-track {
+.vcl-nav-progress-track {
   flex: 1;
   height: 2px;
   background: rgba(var(--color-primary-rgb), 0.12);
@@ -859,7 +863,7 @@ function onProgressMouseUp() {
     border-radius var(--transition-fast);
   overflow: hidden;
 }
-.nav-progress {
+.vcl-nav-progress {
   height: 100%;
   background: var(--color-primary);
   border-radius: var(--radius-sm);
@@ -869,7 +873,7 @@ function onProgressMouseUp() {
     box-shadow var(--transition-fast);
   pointer-events: none;
 }
-.nav-percent {
+.vcl-nav-percent {
   font-size: clamp(10px, 1.3vw, 13px);
   color: var(--color-primary);
   font-weight: 600;
@@ -880,12 +884,12 @@ function onProgressMouseUp() {
   pointer-events: none;
 }
 
-.fade-enter-active,
-.fade-leave-active {
+.vcl-fade-enter-active,
+.vcl-fade-leave-active {
   transition: opacity var(--transition-normal);
 }
-.fade-enter-from,
-.fade-leave-to {
+.vcl-fade-enter-from,
+.vcl-fade-leave-to {
   opacity: 0;
 }
 </style>

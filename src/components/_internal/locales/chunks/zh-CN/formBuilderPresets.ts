@@ -109,6 +109,11 @@ export default {
     noMatch: '无匹配目标',
     clearTitle: '确认清空',
     clearMessage: '将删除全部 {n} 个目标的上传记录（本地与云端），不可恢复。确定清空？',
+    targetId: '目标ID',
+    uploaded: '✓ 已上传',
+    notUploaded: '✗ 未上传',
+    lastUpload: '最后上传',
+    summaryFile: '汇总.xlsx',
   },
   fbType: {
     text: '单行输入',

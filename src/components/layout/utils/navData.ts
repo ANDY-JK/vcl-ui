@@ -1,5 +1,6 @@
 // ⛔ 保护 — 导航数据，禁止：NavNode 接口结构调整，navTree 数据删除
 //    需我确认：新增导航条目、icon 字段扩展
+import type { Router } from 'vue-router'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：纯 .ts 模块直接用（模式 3） */
@@ -36,6 +37,15 @@ export function flattenNodes(nodes: NavNode[]): NavNode[] {
     }
   }
   return result
+}
+
+/** 节点（或其子树）是否匹配当前路由 — AccordionNav / NavItem 共用，匹配规则改动只改这里 */
+export function isNodeActive(node: NavNode, currentPath: string, router: Router): boolean {
+  if (node.route) {
+    return currentPath === router.resolve(node.route).path
+  }
+  if (node.children) return node.children.some((c) => isNodeActive(c, currentPath, router))
+  return false
 }
 
 export const navTree: NavNode[] = [

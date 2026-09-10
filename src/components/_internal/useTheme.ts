@@ -19,6 +19,7 @@
  */
 
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { safeLocalStorage } from './ssr-guard'
 
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
@@ -41,8 +42,9 @@ function applyTheme(mode: ThemeMode) {
 function initTheme() {
   if (_initialized) return
   _initialized = true
-  if (typeof localStorage === 'undefined') return
-  const saved = localStorage.getItem(STORAGE_KEY) as ThemeMode | null
+  // safeLocalStorage：Safari 隐私模式/禁存储下裸访问会抛 SecurityError，中断组件挂载
+  const storage = safeLocalStorage()
+  const saved = storage?.getItem(STORAGE_KEY) as ThemeMode | null
   if (saved && ['light', 'dark', 'auto'].includes(saved)) {
     _currentTheme.value = saved
   }
@@ -54,8 +56,10 @@ function initTheme() {
 
 function setTheme(mode: ThemeMode) {
   _currentTheme.value = mode
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, mode)
+  try {
+    safeLocalStorage()?.setItem(STORAGE_KEY, mode)
+  } catch {
+    /* 隐私模式：主题不落盘，仅本次会话生效 */
   }
   applyTheme(mode)
 }

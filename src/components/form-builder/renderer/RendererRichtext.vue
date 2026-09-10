@@ -321,7 +321,8 @@ onUnmounted(() => {
 .fb-richtext--fullscreen {
   position: fixed;
   inset: 0;
-  z-index: var(--fb-rt-fullscreen-z, 1000);
+  /* 层级走全库令牌：写死 1000 会被宿主更高层弹层（如 9999）盖住 */
+  z-index: var(--z-top, 9999);
   width: 100%;
   border: none;
   border-radius: 0;

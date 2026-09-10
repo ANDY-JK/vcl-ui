@@ -132,6 +132,7 @@ export default {
     startEnd: '起点/终点',
     mapInfoWindow: '第 {day} 天 · 第 {idx} 家',
     mapLoading: '地图加载中...',
+    mapLoadFail: '地图加载失败，请检查网络或高德 Key 配置',
     mapEmpty: '📍 暂无门店数据',
     mapGuide: '导入 Excel 或添加门店后，地图将自动显示标记',
     dayLegend: '第{day}天',

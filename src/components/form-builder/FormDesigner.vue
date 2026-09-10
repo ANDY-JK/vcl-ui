@@ -159,6 +159,8 @@ function persistPanels(): void {
 }
 
 function restorePanels(): void {
+  // SSR 安全：localStorage 在无 window 环境是未定义标识符，先于 try 拦截
+  if (typeof localStorage === 'undefined') return
   try {
     const raw = localStorage.getItem(PANEL_STORE_KEY)
     if (!raw) return

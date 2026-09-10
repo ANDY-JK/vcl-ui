@@ -1,8 +1,8 @@
 <script lang="ts">
-// ⛔ 保护 — 图标渲染核心，使用 lucide-vue-next + @iconify/vue
+// ⛔ 保护 — 图标渲染核心，使用 @lucide/vue + @iconify/vue
 import { defineComponent, computed, h, ref } from 'vue'
-import { icons as lucideIcons } from '@lucide/vue'
 import { Icon } from '@iconify/vue'
+import { lucideSubset } from '@/components/_internal/lucide-subset'
 import { ensureSolarIcons, isSolarReady } from '@/components/_internal/solar-icons-registry'
 import { warnOnce } from '@/components/_internal/warnOnce'
 
@@ -94,9 +94,9 @@ export default defineComponent({
         })
       }
 
-      // Lucide 图标 → 使用 lucide-vue-next 组件
+      // Lucide 图标 → 子集具名导入（可摇树；新图标先加进 gen-lucide-subset 的收集范围重新生成）
       const compName = toPascal(props.type)
-      const comp = (lucideIcons as Record<string, any>)[compName]
+      const comp = lucideSubset[props.type]
       if (comp) {
         return h(comp, {
           size: sz,
@@ -106,6 +106,8 @@ export default defineComponent({
           'aria-hidden': true,
         })
       }
+      // 未命中：一次性告警（面板/业务传错名时可见），渲染兜底
+      if (import.meta.env?.DEV) warnOnce('IconSvg', `lucide 图标未收录: ${props.type}（${compName}），已渲染兜底图`)
 
       // 兜底 SVG
       return renderFallback(sz, clr)

@@ -110,6 +110,11 @@ export default {
     noMatch: 'No matching targets',
     clearTitle: 'Confirm clear',
     clearMessage: 'This deletes upload records of all {n} targets (local and cloud) and cannot be undone. Clear?',
+    targetId: 'Target ID',
+    uploaded: '✓ Uploaded',
+    notUploaded: '✗ Not uploaded',
+    lastUpload: 'Last upload',
+    summaryFile: 'Summary.xlsx',
   },
   fbType: {
     text: 'Single-line input',

@@ -133,6 +133,7 @@ export default {
     startEnd: 'Start/End',
     mapInfoWindow: 'Day {day} · Store {idx}',
     mapLoading: 'Loading map...',
+    mapLoadFail: 'Map failed to load. Check your network or AMap key settings',
     mapEmpty: '📍 No store data',
     mapGuide: 'Markers will appear after importing Excel or adding stores',
     dayLegend: 'Day {day}',

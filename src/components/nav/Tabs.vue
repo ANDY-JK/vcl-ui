@@ -1,14 +1,16 @@
 <script setup lang="ts">
 // ⛔ 保护 — 标签页，禁止：clamp() → px，active 指示器动画，TabItem 接口
 //    需我确认：underline/pill 模式行为
-import { ref, nextTick } from 'vue'
+import { ref, computed, nextTick, getCurrentInstance, onBeforeUnmount } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import type { TabItem } from './types'
+import { registerTabsHost, unregisterTabsHost, tabIdOf, type TabsContext } from './tabs-context'
 
 export type { TabItem }
 
-/** 实例级前缀，防止多个 Tabs 同页时 aria id 冲突 */
-const tabId = Math.random().toString(36).slice(2, 8)
+/** 实例级前缀，防止多个 Tabs 同页时 aria id 冲突；useIdSafe 保证 SSR/CSR 一致 */
+const tabId = useIdSafe('tabs')
 
 // icon 仅在 variant='tabbar' 时渲染，underline/pill 变体静默忽略
 interface Props {
@@ -24,6 +26,18 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{ 'update:modelValue': [v: string | number] }>()
 
 const tablistRef = ref<HTMLElement | null>(null)
+
+// TabPanel 关联：TabPanel 与 Tabs 是兄弟节点（provide/inject 不可达），
+// context 登记到「共同父组件 uid」，TabPanel 沿 parent 链查找命中
+const registeredPanels = ref<Set<string | number>>(new Set())
+const _instance = getCurrentInstance()
+const _ctx: TabsContext = {
+  idPrefix: tabId,
+  activeValue: computed(() => props.modelValue),
+  registered: registeredPanels,
+}
+registerTabsHost(_instance?.parent ?? null, _ctx)
+onBeforeUnmount(() => unregisterTabsHost(_instance?.parent ?? null))
 
 // WAI-ARIA Tab Pattern 键盘导航：ArrowLeft/Right 切换，Home/End 跳首尾
 function onKeydown(e: KeyboardEvent) {
@@ -61,14 +75,14 @@ function onKeydown(e: KeyboardEvent) {
   <div ref="tablistRef" class="tabs" :class="[`tabs-${variant}`]" role="tablist" @keydown="onKeydown">
     <button
       v-for="item in items"
-      :id="`tab-${tabId}-${String(item.value ?? item.label)}`"
+      :id="tabIdOf(tabId, String(item.value ?? item.label))"
       :key="String(item.value ?? item.label)"
       type="button"
       class="tab-btn"
       :class="{ active: modelValue === (item.value ?? item.label) }"
       role="tab"
       :aria-selected="modelValue === (item.value ?? item.label)"
-      :aria-controls="`tabpanel-${tabId}-${String(item.value ?? item.label)}`"
+      :aria-controls="registeredPanels.has(item.value ?? item.label) ? `tabpanel-${tabId}-${String(item.value ?? item.label)}` : undefined"
       @click="emit('update:modelValue', item.value ?? item.label)"
     >
       <IconSvg v-if="item.icon && variant === 'tabbar'" :type="item.icon" size="md" />

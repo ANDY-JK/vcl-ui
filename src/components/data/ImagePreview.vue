@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, watch, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, watch, computed, nextTick, onMounted, onUnmounted, toRef } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Toast from '@/components/feedback/Toast.vue'
 import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_internal/useScreenshot'
 import { boostZTop } from '@/components/_internal/z-top'
+import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useToastNotify } from '@/components/_internal/useToastNotify'
 import { useT } from '@/components/_internal/i18n'
 
@@ -144,6 +145,14 @@ let _ro: ResizeObserver | null = null
 let _releaseZTop: (() => void) | null = null
 const overlayRef = ref<HTMLElement | null>(null)
 
+// 组件常驻（v-if="currentUrl" 控制 backdrop），以「有图」作为弹层可见性驱动焦点陷阱
+const _trapVisible = toRef(() => !!currentUrl.value)
+const { activate: activateTrap, deactivate: deactivateTrap } = useFocusTrap({
+  visible: _trapVisible,
+  getContainer: () => overlayRef.value,
+  autofocus: 'container',
+})
+
 // ---- 顶栏标注工具行：色点按可用空间逐步裁减 ----
 // 单行布局下，窄屏空间不足时从最后一个色点往前逐个隐藏，保证所有控件一行放下（不换行/不横滚）。
 // 选中色始终保留可见（用户当前在用的颜色不因裁减而丢失）。桌面端宽屏空间充足，全部显示。
@@ -185,6 +194,8 @@ onMounted(() => {
   _releaseZTop = boostZTop()
   // 挂载即聚焦弹层，保证 Esc 立即可用（此前焦点在触发按钮，键盘关闭失效）
   nextTick(() => overlayRef.value?.focus())
+  // Tab 循环在弹层内：全屏 dialog 的 Tab 落到被遮住的背景页面对键盘用户是"焦点消失"
+  activateTrap()
 })
 onUnmounted(() => {
   if (_renderRAF != null) {
@@ -194,6 +205,7 @@ onUnmounted(() => {
   _ro?.disconnect()
   _annoToolsRo?.disconnect()
   unbindAnnoWindow()
+  deactivateTrap()
   _releaseZTop?.()
 })
 watch(annoCanvas, (cvs) => {
@@ -1018,18 +1030,21 @@ const displayTitle = computed(() => {
           </div>
         </div>
 
-        <!-- 缩略图面板 -->
-        <div v-if="isMulti && showThumbs" class="ip-thumbs">
-          <div
+        <!-- 缩略图面板：button 承载（键盘可聚焦/回车切换，纯 div 点击键盘不可达） -->
+        <div v-if="isMulti && showThumbs" class="ip-thumbs" role="tablist" :aria-label="t('imagePreview.thumbs')">
+          <button
             v-for="(item, i) in items"
             :key="i"
+            type="button"
             class="ip-thumb"
             :class="{ active: i === currentIndex }"
+            role="tab"
+            :aria-selected="i === currentIndex"
             @click="goTo(i)"
           >
             <img :src="item.url" :alt="item.label || $t('imagePreview.imageLabel', { n: i + 1 })" />
             <span class="ip-thumb-label">{{ item.label || $t('imagePreview.imageLabel', { n: i + 1 }) }}</span>
-          </div>
+          </button>
         </div>
       </div>
     </div>
@@ -1284,6 +1299,11 @@ const displayTitle = computed(() => {
   border-radius: var(--radius-sm);
 }
 .ip-thumb {
+  /* button 重置（div → button 后消除 UA 默认样式） */
+  padding: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
   width: clamp(72px, 8vw, 98px);
   flex-shrink: 0;
   border-radius: var(--radius-md);
@@ -1296,6 +1316,11 @@ const displayTitle = computed(() => {
   opacity: 0.55;
   display: flex;
   flex-direction: column;
+}
+.ip-thumb:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  opacity: 1;
 }
 .ip-thumb:hover {
   opacity: 0.85;

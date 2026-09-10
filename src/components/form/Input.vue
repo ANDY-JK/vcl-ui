@@ -20,6 +20,8 @@ const t = useT()
 
 /** 无障碍：label 与控件关联的唯一 id（number/textarea/text 三模式互斥，共享同一 id） */
 const inputId = useIdSafe('input')
+/** 错误文本元素 id：aria-describedby 关联（错误提示对读屏可感知） */
+const errorDescId = useIdSafe('input-error')
 
 /* ════════════════════════════════════════
    Props — 统一接口
@@ -316,7 +318,10 @@ function commitNum() {
 
 function onStepperBlur(e: FocusEvent) {
   focused.value = false
+  touched.value = true
   commitNum()
+  // 失焦触发规则校验：此前 touched 恒 false，number 字段配了 rules 也永不出错（与 text 口径不一致）
+  validate()
   // number 模式此前从不 emit blur（消费方拿得到 focus 拿不到 blur），补齐
   emit('blur', e)
 }
@@ -489,6 +494,8 @@ const floatingRaised = computed(() => {
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
           :id="inputId"
+          :aria-invalid="!!errorMsg || undefined"
+          :aria-describedby="errorMsg ? errorDescId : undefined"
           ref="floatInputRef"
           class="f-input"
           type="text"
@@ -511,7 +518,7 @@ const floatingRaised = computed(() => {
           <IconSvg type="x" size="sm" />
         </button>
       </div>
-      <p v-if="errorMsg" class="fl-error">
+      <p v-if="errorMsg" :id="errorDescId" class="fl-error" role="alert">
         {{ errorMsg }}
       </p>
       <p v-else-if="hint" class="fl-hint">
@@ -526,6 +533,8 @@ const floatingRaised = computed(() => {
       <div class="fl-wrap is-textarea" :class="{ focused: taFocused && !errorMsg, 'has-error': !!errorMsg, disabled }">
         <textarea
           :id="inputId"
+          :aria-invalid="!!errorMsg || undefined"
+          :aria-describedby="errorMsg ? errorDescId : undefined"
           ref="floatInputRef"
           class="f-textarea"
           :value="taValue"
@@ -546,7 +555,7 @@ const floatingRaised = computed(() => {
           <IconSvg type="x" size="sm" />
         </button>
       </div>
-      <p v-if="errorMsg" class="fl-error">
+      <p v-if="errorMsg" :id="errorDescId" class="fl-error" role="alert">
         {{ errorMsg }}
       </p>
       <p v-else-if="hint" class="fl-hint">
@@ -561,6 +570,8 @@ const floatingRaised = computed(() => {
       <div class="fl-wrap" :class="{ focused: focused && !errorMsg, 'has-error': !!errorMsg, disabled }">
         <input
           :id="inputId"
+          :aria-invalid="!!errorMsg || undefined"
+          :aria-describedby="errorMsg ? errorDescId : undefined"
           ref="floatInputRef"
           type="color"
           class="f-color"
@@ -574,7 +585,7 @@ const floatingRaised = computed(() => {
         <span class="f-color-hex">{{ String(modelValue ?? '') || '—' }}</span>
         <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
       </div>
-      <p v-if="errorMsg" class="fl-error">
+      <p v-if="errorMsg" :id="errorDescId" class="fl-error" role="alert">
         {{ errorMsg }}
       </p>
       <p v-else-if="hint" class="fl-hint">
@@ -593,6 +604,8 @@ const floatingRaised = computed(() => {
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
           :id="inputId"
+          :aria-invalid="!!errorMsg || undefined"
+          :aria-describedby="errorMsg ? errorDescId : undefined"
           ref="floatInputRef"
           :type="actualType"
           :value="String(modelValue ?? '')"
@@ -617,6 +630,7 @@ const floatingRaised = computed(() => {
           type="button"
           class="f-toggle-pwd"
           tabindex="-1"
+          :aria-label="showPassword ? t('form.passwordHidden') : t('form.passwordShown')"
           @click="showPassword = !showPassword"
         >
           <IconSvg :type="showPassword ? 'eye-off' : 'eye'" size="sm" />
@@ -626,6 +640,7 @@ const floatingRaised = computed(() => {
           type="button"
           class="f-clear"
           tabindex="-1"
+          :aria-label="t('common.reset')"
           @click="clearTextValue"
         >
           <IconSvg type="x" size="sm" />
@@ -634,7 +649,7 @@ const floatingRaised = computed(() => {
           showPassword ? t('form.passwordShown') : t('form.passwordHidden')
         }}</span>
       </div>
-      <p v-if="errorMsg" class="fl-error">
+      <p v-if="errorMsg" :id="errorDescId" class="fl-error" role="alert">
         {{ errorMsg }}
       </p>
       <p v-else-if="hint" class="fl-hint">

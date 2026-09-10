@@ -258,6 +258,8 @@ export function useTableExtras(
 
   // ==================== 行选择 ====================
   const _selectedKeys = ref<string[]>([...(props.selectedKeys ?? [])])
+  /** 选中键 Set：模板逐行/逐格判断选中态用 O(1) 查询（数组 includes 在大表上是 O(n²)） */
+  const _selectedKeySet = computed(() => new Set(_selectedKeys.value))
 
   watch(
     () => props.selectedKeys,
@@ -270,7 +272,7 @@ export function useTableExtras(
     const data = pagedData?.value ?? displayData.value
     const keys = data.map((r) => resolveRowKey(r, props.rowKey))
     if (keys.length === 0) return false
-    return keys.every((k) => _selectedKeys.value.includes(k))
+    return keys.every((k) => _selectedKeySet.value.has(k))
   })
 
   /** 部分选中（本页有选中但未全选）：供表头全选框的 indeterminate 状态使用 */
@@ -278,7 +280,7 @@ export function useTableExtras(
     const data = pagedData?.value ?? displayData.value
     const keys = data.map((r) => resolveRowKey(r, props.rowKey))
     if (keys.length === 0) return false
-    const selectedCount = keys.filter((k) => _selectedKeys.value.includes(k)).length
+    const selectedCount = keys.filter((k) => _selectedKeySet.value.has(k)).length
     return selectedCount > 0 && selectedCount < keys.length
   })
 
@@ -296,7 +298,7 @@ export function useTableExtras(
 
   function toggleRowSelect(row: Record<string, any>) {
     const key = resolveRowKey(row, props.rowKey)
-    if (_selectedKeys.value.includes(key)) {
+    if (_selectedKeySet.value.has(key)) {
       updateSelectedKeys(_selectedKeys.value.filter((k) => k !== key))
     } else {
       updateSelectedKeys([..._selectedKeys.value, key])
@@ -306,11 +308,8 @@ export function useTableExtras(
   function updateSelectedKeys(keys: string[]) {
     _selectedKeys.value = keys
     emit('update:selectedKeys', keys)
-    emit(
-      'selectionChange',
-      keys,
-      props.data.filter((r) => keys.includes(resolveRowKey(r, props.rowKey))),
-    )
+    const keySet = new Set(keys)
+    emit('selectionChange', keys, props.data.filter((r) => keySet.has(resolveRowKey(r, props.rowKey))))
   }
 
   // ==================== 持久化（提取至 useTablePersistence） ====================
@@ -385,6 +384,7 @@ export function useTableExtras(
     scrollFocusedIntoView,
     // 行选择
     _selectedKeys,
+    _selectedKeySet,
     isAllSelected,
     isIndeterminateSelection,
     toggleSelectAll,

@@ -41,6 +41,8 @@ export interface DataTableContext {
   closeFilter: () => void
   // ---- 行选择（批量修改等区块消费） ----
   selectedKeys: Ref<string[]>
+  /** 选中键 Set：模板逐行/逐格 O(1) 判选中（数组 includes 大表 O(n²)） */
+  selectedKeySet: ComputedRef<Set<string>>
   // ---- 备注输入框引用（备注编辑弹窗 / 批量修改弹窗共用焦点目标） ----
   noteInputEl: Ref<HTMLInputElement | null>
   setNoteInputEl: (el: unknown) => void

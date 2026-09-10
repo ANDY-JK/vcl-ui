@@ -5,7 +5,7 @@ import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
-import { navLabel, type NavNode } from './utils/navData'
+import { navLabel, isNodeActive, type NavNode } from './utils/navData'
 import NavItem from './NavItem.vue'
 
 const t = useT()
@@ -21,24 +21,35 @@ const tree = computed<NavNode[]>(() => props.items ?? [])
 // 展开状态：按节点 label 存储，支持独立切换
 const expandedGroups = ref<Set<string>>(new Set(tree.value.map((g) => g.label)))
 
-/** 路由变化时自动展开当前路由所在路径的所有父分组 */
+/** 路由变化时把当前路由所在路径的父分组并入展开集合；
+    不做整体替换 — 用户手动展开的其它分组保持原状 */
 function syncExpand() {
-  const next = new Set<string>()
+  let changed = false
+  const next = new Set(expandedGroups.value)
   for (const group of tree.value) {
-    if (hasActiveChild(group)) next.add(group.label)
+    if (hasActiveChild(group) && !next.has(group.label)) {
+      next.add(group.label)
+      changed = true
+    }
   }
-  expandedGroups.value = next
+  if (changed) expandedGroups.value = next
 }
-watch(() => route.path, syncExpand, { immediate: true })
+// 首次挂载仍以「仅展开活跃路径」初始化（初始集合本身就是全量展开）
+watch(
+  () => route.path,
+  (path, oldPath) => {
+    if (oldPath === undefined) {
+      expandedGroups.value = new Set(tree.value.filter((g) => isNodeActive(g, path, router)).map((g) => g.label))
+    } else {
+      syncExpand()
+    }
+  },
+  { immediate: true },
+)
 
 /** 递归检查节点子树中是否有匹配当前路由的叶子 */
 function hasActiveChild(node: NavNode): boolean {
-  if (node.route) {
-    const resolved = router.resolve(node.route)
-    if (route.path === resolved.path) return true
-  }
-  if (node.children) return node.children.some((c) => hasActiveChild(c))
-  return false
+  return isNodeActive(node, route.path, router)
 }
 
 /** 切换分组展开/折叠 */

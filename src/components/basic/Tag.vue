@@ -128,7 +128,7 @@ const supStyle = computed(() => {
     :style="colorStyle"
   >
     <slot>{{ displayText }}</slot>
-    <button v-if="closable && !dot" type="button" class="tag-close" @click.stop="emit('close')">
+    <button v-if="closable && !dot" type="button" class="tag-close" :aria-label="t('common.close')" @click.stop="emit('close')">
       <IconSvg type="x" size="sm" />
     </button>
   </span>

@@ -382,6 +382,8 @@ function clampZoom(v: number): number {
 }
 
 function readStoredZoom(): number {
+  // SSR 安全：无 window 环境下 localStorage 是未定义标识符，裸访问 ReferenceError
+  if (typeof localStorage === 'undefined') return 1
   try {
     return clampZoom(Number(localStorage.getItem(ZOOM_STORE_KEY)) || 1)
   } catch {

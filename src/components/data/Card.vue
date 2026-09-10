@@ -50,6 +50,12 @@ const trendUi = computed(() => ({
           : 'var(--color-text-muted)',
   },
 }))
+
+/** 图标底色：color-mix 兼容任意 CSS 颜色格式（旧写法 color+'20' 只对 6 位 hex 成立，
+    传 rgb()/8 位 hex/CSS 变量会生成非法颜色，背景静默丢失） */
+const iconBg = computed(() =>
+  props.color ? `color-mix(in srgb, ${props.color} 12%, transparent)` : 'var(--color-primary-light)',
+)
 </script>
 
 <template>
@@ -68,7 +74,7 @@ const trendUi = computed(() => ({
       v-if="icon"
       class="stat-icon"
       :style="{
-        background: color ? color + '20' : 'var(--color-primary-light)',
+        background: iconBg,
         color: color || 'var(--color-primary)',
       }"
     >

@@ -221,10 +221,11 @@ const externalLoading = computed(() => props.loading)
 /** 内部提交中状态：点击后立即反馈，防重复提交 */
 const internalLoading = ref(false)
 
-const usernameLabel = t('login.username')
-const passwordLabel = t('login.password')
-const submitText = t('login.submitBtn')
-const socialDividerText = t('login.socialDivider')
+// 标签走 computed：setup 期直接 t() 会把文案固化成快照，切换语言后页面中英混杂
+const usernameLabel = computed(() => t('login.username'))
+const passwordLabel = computed(() => t('login.password'))
+const submitText = computed(() => t('login.submitBtn'))
+const socialDividerText = computed(() => t('login.socialDivider'))
 
 const usernameHint = computed(() =>
   form.username.length > 0 && form.username.length < 3 ? t('login.usernameHint') : '',
@@ -326,7 +327,8 @@ const handleSubmit = () => {
   if (internalLoading.value) return
   if (lockUntil.value > Date.now()) return
 
-  if (!form.username || form.username.length < 3 || !form.password || form.password.length < 6) {
+  // 与 rules 的 v.trim() 口径一致：纯空格用户名不放行
+  if (!form.username.trim() || form.username.length < 3 || !form.password || form.password.length < 6) {
     internalError.value = t('login.invalidCredentialsFull')
     errorType.value = 'warning'
     return
@@ -427,7 +429,7 @@ defineExpose({
   max-width: var(--login-max-width, 960px);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--color-surface);
   animation: slideUp 0.5s ease-out;
   z-index: 1;
 }
@@ -525,7 +527,7 @@ defineExpose({
   padding: var(--space-12);
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--color-surface);
   border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
 }
 .login-header {
@@ -584,7 +586,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   color: white;
-  background: white;
+  background: var(--color-surface);
   transition: all var(--transition-fast);
 }
 .checkbox-icon.checked {
@@ -618,7 +620,7 @@ defineExpose({
   padding: var(--space-3);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: white;
+  background: var(--color-surface);
   cursor: pointer;
   transition: all var(--transition-fast);
   user-select: none;

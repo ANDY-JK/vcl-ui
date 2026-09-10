@@ -34,6 +34,24 @@ export interface BarcodeScannerOptions {
   cooldownMs?: number
   /** 是否启用动态间隔（根据设备性能自适应），默认 true */
   adaptiveInterval?: boolean
+  /**
+   * 多码场景：检测到多个合法码时如何触发。
+   * - 'center'（默认）：自动选最靠近截图区域中心的码触发（镜头对准哪个就录哪个）
+   * - 'manual'：不自动触发，结果进 detections，由消费方展示候选列表/点击框让用户选择后调 triggerDetection
+   */
+  multiMode?: 'center' | 'manual'
+}
+
+/** 单个码的实时检测信息（坐标系为 canvas 像素，消费方叠加渲染时按显示尺寸换算） */
+export interface BarcodeDetection {
+  text: string
+  /** 四角坐标（canvas 像素坐标） */
+  x: number
+  y: number
+  width: number
+  height: number
+  /** 是否为本帧被选中触发的码（center 模式下即离中心最近的） */
+  primary: boolean
 }
 
 /** 将浏览器摄像头英文错误映射为用户可读中文（复用 form.cameraErr* 词条，与 CameraCapture 一致） */
@@ -61,6 +79,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     confirmCount = 2,
     cooldownMs = 3000,
     adaptiveInterval: useAdaptive = true,
+    multiMode = 'center',
   } = options
   // 静态间隔下限 10ms；0 = 启用动态间隔
   const staticInterval = rawInterval > 0 ? Math.max(10, rawInterval) : 0
@@ -92,6 +111,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
   const error = ref('')
   const videoRef = ref<HTMLVideoElement | null>(null)
   const canvasRef = ref<HTMLCanvasElement | null>(null)
+  /** 当前帧检测到的所有合法码（含框位置）；单码时也填充，供消费方画指针/提示框 */
+  const detections = ref<BarcodeDetection[]>([])
 
   let stream: MediaStream | null = null
   let active = false
@@ -161,9 +182,10 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     cancelAnimationFrame(raf)
     raf = 0
     stopTracks()
-    // 清空连击/冷却状态：重启扫描不应残留上次会话的计数
+    // 清空连击/冷却/检测框状态：重启扫描不应残留上次会话的计数与旧框
     confirmHits.clear()
     acceptedAt.clear()
+    detections.value = []
   }
 
   // 组件卸载时自动清理
@@ -220,6 +242,26 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     }
   }
 
+  /** 码中心到截图区域中心的距离（越小越"被镜头对准"）；坐标相对截图区域局部系 */
+  function distanceFromRegionCenter(r: ReadResult, sw: number, sh: number): number {
+    const p = r.position
+    const cx = (p.topLeft.x + p.bottomRight.x) / 2
+    const cy = (p.topLeft.y + p.bottomLeft.y) / 2
+    const rcx = sw / 2
+    const rcy = sh / 2
+    return Math.hypot(cx - rcx, cy - rcy)
+  }
+
+  /** 四角坐标 → 包围矩形 */
+  function boundsOf(r: ReadResult): { x: number; y: number; width: number; height: number } {
+    const p = r.position
+    const xs = [p.topLeft.x, p.topRight.x, p.bottomLeft.x, p.bottomRight.x]
+    const ys = [p.topLeft.y, p.topRight.y, p.bottomLeft.y, p.bottomRight.y]
+    const x = Math.min(...xs)
+    const y = Math.min(...ys)
+    return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y }
+  }
+
   async function tick(): Promise<void> {
     if (busy || !active) return
     const v = videoRef.value,
@@ -242,12 +284,33 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
         sh = Math.round(dh * region.height)
       const results: ReadResult[] = await readBarcodes(ctx2d.getImageData(sx, sy, sw, sh), {
         tryHarder: true,
-        maxNumberOfSymbols: 3,
+        maxNumberOfSymbols: 5,
       })
       if (!active) return // stop() 已执行：放弃本次结果，不再触发 onScan
-      for (const r of results) {
+
+      // 合法码 → 检测框（坐标换回整帧 canvas 像素系，消费方按显示尺寸等比映射）
+      const valid = results.filter((r) => ok(r.text))
+      detections.value = valid.map((r) => {
+        const b = boundsOf(r)
+        return { text: r.text, ...b, primary: false }
+      })
+
+      if (valid.length > 0) lastScan = Date.now()
+      onScanResult(results.length > 0)
+
+      if (valid.length === 0) return
+      // 单码：直接走确认流程；多码：center 模式取离区域中心最近的，manual 模式不自动触发
+      const ordered =
+        valid.length === 1
+          ? valid
+          : multiMode === 'manual'
+            ? []
+            : [...valid].sort(
+                (a, b) => distanceFromRegionCenter(a, sw, sh) - distanceFromRegionCenter(b, sw, sh),
+              )
+      if (ordered.length > 0) detections.value[valid.indexOf(ordered[0])]!.primary = true
+      for (const r of ordered) {
         const code = r.text
-        if (!ok(code)) continue
         confirmHits.set(code, (confirmHits.get(code) || 0) + 1)
         if (confirmHits.get(code)! < confirmCount) continue
         confirmHits.delete(code)
@@ -255,8 +318,6 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
         acceptedAt.set(code, Date.now())
         onScan?.(code)
       }
-      if (results.length > 0) lastScan = Date.now()
-      onScanResult(results.length > 0)
     } catch (e) {
       // ZXing 解码失败（模糊/无条码）属正常；WASM 级错误需记录
       if (e instanceof Error && e.message?.includes('WASM')) console.warn('[Barcode] 扫描异常:', e.message)
@@ -264,6 +325,18 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     } finally {
       busy = false
     }
+  }
+
+  /**
+   * 手动触发某个检测框（multiMode='manual' 时消费方在用户点击候选框/列表项后调用）。
+   * 直接触发 onScan，绕过连击计数；仍受冷却约束（防连点重复提交）。
+   */
+  function triggerDetection(text: string): void {
+    if (!ok(text)) return
+    if (Date.now() - (acceptedAt.get(text) || 0) < cooldownMs) return
+    acceptedAt.set(text, Date.now())
+    confirmHits.delete(text)
+    onScan?.(text)
   }
 
   async function scanPhoto(file: File): Promise<string[]> {
@@ -301,5 +374,5 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     })
   }
 
-  return { start, stop, scanPhoto, scanning, error, videoRef, canvasRef }
+  return { start, stop, scanPhoto, scanning, error, videoRef, canvasRef, detections, triggerDetection }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // ⛔ 保护 — 气泡浮层，禁止：clamp() → px，浮动定位算法，z-index
 //    需我确认：trigger 触发方式、placement 位置选项
-import { ref, computed, nextTick, onMounted, onUnmounted, watchEffect } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watchEffect, watch } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
@@ -160,6 +160,30 @@ function close() {
   open.value = false
 }
 useClickOutside([triggerRef, floatingRef], close)
+
+// 非模态弹层的焦点管理（区别于 ModalBox 的 trap）：
+// 打开时把焦点移入浮层（首个可聚焦元素，无则浮层本身，浮层需 tabindex 承接），
+// 关闭时归还触发器 — 键盘用户 Enter 打开后能 Tab 进内容，Esc 关闭后回原位。
+// 不锁 Tab：popover 语义上允许焦点自由离开（离开经 clickOutside/hover 逻辑关闭）。
+let _prevFocus: HTMLElement | null = null
+watch(open, async (v) => {
+  if (isTooltip.value) return
+  // 仅 click 触发（键盘可达路径）移焦；hover 触发移焦会抢走指针用户的焦点
+  if (props.trigger !== 'click') return
+  if (v) {
+    _prevFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    await nextTick()
+    const panel = floatingRef.value
+    if (!panel) return
+    // 首个可聚焦元素，无则浮层本身承接（动态补 tabindex=-1）
+    if (!panel.hasAttribute('tabindex')) panel.setAttribute('tabindex', '-1')
+    const target = panel.querySelector<HTMLElement>(FOCUSABLE_SELECTOR) ?? panel
+    target.focus()
+  } else if (_prevFocus?.isConnected) {
+    _prevFocus.focus()
+    _prevFocus = null
+  }
+})
 
 // Esc 关闭 — 复用共享弹层栈：多层弹层叠加时只关最上层可见的那一个
 const { mount: mountEsc, unmount: unmountEsc } = useEscClose(

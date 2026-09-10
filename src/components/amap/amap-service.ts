@@ -75,14 +75,28 @@ export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityC
 // 通用工具
 // ════════════════════════════════════════
 
-/** fetch 封装：15s 超时 + 错误兜底 */
-async function safeFetch(url: string): Promise<Response> {
+/** 单次 fetch：15s 超时 */
+async function fetchOnce(url: string): Promise<Response> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), 15000)
   try {
     return await fetch(url, { signal: ctrl.signal })
   } finally {
     clearTimeout(timer)
+  }
+}
+
+/**
+ * fetch 封装：15s 超时 + 一次退避重试。
+ * 一次网络抖动就让坐标解析失败且批量路径会把失败项永久标 none（batchResolveCoordinates），
+ * 重试一轮能消掉绝大部分瞬时抖动。
+ */
+async function safeFetch(url: string): Promise<Response> {
+  try {
+    return await fetchOnce(url)
+  } catch {
+    await new Promise((r) => setTimeout(r, 800))
+    return fetchOnce(url)
   }
 }
 

@@ -2,6 +2,8 @@
 // ⛔ 保护 — 切换列表，禁止：clamp() → px，展开/折叠动画
 //    需我确认：ExtraColumn 接口扩展、toggle 行为
 import IconSvg from '@/components/basic/IconSvg.vue'
+import Loading from '@/components/feedback/Loading.vue'
+import Empty from './Empty.vue'
 import { computed } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 
@@ -64,19 +66,22 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
   }
   emit('toggle', item, newValue)
 }
+
+/** 行点击/键盘激活：事件来自行内真实控件（开关/按钮）时不抢发 itemClick。
+    click 的 detail>0 说明是真实点击且已由 label @click.stop 拦截内层；
+    keydown 只认 target 为行本身（内层控件自己的 Enter/Space 行为归控件） */
+function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
+  if (e.type === 'keydown' && e.target !== e.currentTarget) return
+  emit('itemClick', item)
+}
 </script>
 
 <template>
   <div class="toggle-list">
-    <div v-if="isLoading" class="list-loading">
-      <IconSvg type="loader" size="lg" />
-      <span>{{ t('common.loading') }}</span>
-    </div>
+    <!-- 加载/空态复用库内统一组件，图标/字号/间距与全库一致 -->
+    <Loading v-if="isLoading" variant="spinner" size="md" :text="t('common.loading')" class="list-state" />
 
-    <div v-else-if="!items.length" class="list-empty">
-      <IconSvg type="circle-alert" size="lg" color="var(--color-text-muted)" />
-      <span>{{ effectiveEmptyText }}</span>
-    </div>
+    <Empty v-else-if="!items.length" :title="effectiveEmptyText" class="list-state" />
 
     <div v-else class="list-items">
       <div
@@ -85,9 +90,9 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
         class="list-item"
         role="button"
         tabindex="0"
-        @click="emit('itemClick', item)"
-        @keydown.enter="emit('itemClick', item)"
-        @keydown.space.prevent="emit('itemClick', item)"
+        @click="onItemClick($event, item)"
+        @keydown.enter="onItemClick($event, item)"
+        @keydown.space.prevent="onItemClick($event, item)"
       >
         <div v-if="item[iconField]" class="item-icon">
           <IconSvg :type="item[iconField]" size="md" />
@@ -103,7 +108,7 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
         <div v-if="extraColumns.length" class="item-extras">
           <span v-for="col in extraColumns" :key="col.key" class="item-extra">{{ item[col.key] }}</span>
         </div>
-        <!-- 开关变体 -->
+        <!-- 开关变体：input 视觉隐藏但保留可聚焦（display:none 会退出 Tab 序，键盘无法切换） -->
         <label
           v-if="variant === 'switch' && toggleField && item[toggleField] !== undefined"
           class="item-toggle"
@@ -148,23 +153,10 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
   overflow: hidden;
 }
 
-.list-loading,
-.list-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(var(--space-1), 1vw, 8px);
+.list-state {
   padding: clamp(24px, 5vw, 40px) clamp(var(--space-3), 2.5vw, 20px);
   color: var(--color-text-muted);
   font-size: clamp(11px, 1.8vw, 15px);
-}
-.list-loading svg {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .list-item {
@@ -221,8 +213,22 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
   display: flex;
   flex-shrink: 0;
 }
+/* 视觉隐藏但保留可聚焦（display:none 会退出 Tab 序，键盘用户无法切换开关） */
 .toggle-input {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.toggle-input:focus-visible + .toggle-switch {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 .toggle-switch {
   width: clamp(40px, 6vw, 46px);

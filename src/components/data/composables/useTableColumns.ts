@@ -183,9 +183,17 @@ export function useTableColumns(
   })
 
   // --- autoFit 智能列宽压缩 ---
+  /** 表头文字宽度缓存：measureDomTextWidth 内部强制 reflow（写样式+读 getBoundingClientRect），
+      每列每次渲染重复测量 = N 列 × 强制布局；按文本缓存后同文本只测一次 */
+  const _headerTextWCached = new Map<string, number>()
   /** 表头最小宽度 = DOM 实测文字宽度 + 图标 + 间距 */
   function headerMinW(col: Column): number {
-    const textW = measureDomTextWidth(col.title || col.label || col.key, 14, 600)
+    const text = col.title || col.label || col.key
+    let textW = _headerTextWCached.get(text)
+    if (textW === undefined) {
+      textW = measureDomTextWidth(text, 14, 600)
+      _headerTextWCached.set(text, textW)
+    }
     let w = textW
     if (col.sortable !== false || col.filterable !== false) w += ICON_GAP
     if (col.sortable !== false) w += SORT_ARROW_W

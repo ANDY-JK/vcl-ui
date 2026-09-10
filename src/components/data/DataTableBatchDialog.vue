@@ -4,6 +4,7 @@
 // batchChange 事件由本组件 emit，主文件转发（对外事件面不变）。
 import { nextTick, ref } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { colTitle } from './composables/utils'
 import { injectDataTableContext } from './composables/context'
 
@@ -20,12 +21,22 @@ const { visibleColumns, selectedKeys: _selectedKeys, noteInputEl, setNoteInputEl
 const _batchShow = ref(false)
 const _batchCol = ref('')
 const _batchValue = ref('')
+const dialogRef = ref<HTMLElement | null>(null)
+// aria-modal=true 的承诺要有 Tab 循环兜底：否则键盘 Tab 会"消失"进被遮住的背景表格
+const { activate: activateTrap, deactivate: deactivateTrap } = useFocusTrap({
+  visible: _batchShow,
+  getContainer: () => dialogRef.value,
+})
 function openBatchEdit() {
   if (_selectedKeys.value.length === 0) return
   _batchCol.value = visibleColumns.value[0]?.key ?? ''
   _batchValue.value = ''
   _batchShow.value = true
-  nextTick(() => noteInputEl.value?.focus())
+  nextTick(() => {
+    noteInputEl.value?.focus()
+    // 陷阱聚焦在 input 之后激活，避免抢走首焦点
+    activateTrap()
+  })
 }
 function confirmBatchEdit() {
   if (!_batchCol.value || _batchShow.value === false) return
@@ -33,6 +44,7 @@ function confirmBatchEdit() {
   _batchShow.value = false
 }
 function closeBatchEdit() {
+  deactivateTrap()
   _batchShow.value = false
 }
 
@@ -50,6 +62,7 @@ defineExpose({
   <!-- 批量修改弹窗 -->
   <div
     v-if="selectable && _batchShow"
+    ref="dialogRef"
     class="note-editor"
     :style="{
       position: 'fixed',

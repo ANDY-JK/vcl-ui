@@ -3,6 +3,7 @@
 //    需我确认：accordion 互斥模式、defaultOpen 行为
 import { ref, watch, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 
 interface Props {
   title: string
@@ -37,7 +38,9 @@ watch(
 )
 
 // 生成唯一 ID，用于触发器与内容面板的 aria 关联
-const panelId = computed(() => props.id || `collapse-panel-${Math.random().toString(36).slice(2, 10)}`)
+// useIdSafe 保证 SSR/CSR 一致（Math.random() 会导致水合不匹配 + aria-controls 断链）
+const autoId = useIdSafe('collapse-panel')
+const panelId = computed(() => props.id || autoId)
 const triggerId = computed(() => `collapse-trigger-${panelId.value.replace('collapse-panel-', '')}`)
 
 // ---- max-height 动态计算：替代硬编码 1000px ----
@@ -104,13 +107,13 @@ function toggle() {
       <IconSvg type="chevron-right" size="sm" class="collapse-arrow" />
     </button>
     <div
-      v-show="_open"
       :id="panelId"
       ref="contentRef"
       class="collapse-content"
       role="region"
       :aria-labelledby="triggerId"
       :class="{ expanded: _open }"
+      :aria-hidden="!_open"
       :style="{ maxHeight: contentMaxH }"
     >
       <div class="collapse-body">
@@ -167,15 +170,21 @@ function toggle() {
   overflow: hidden;
   max-height: 0;
   opacity: 0;
+  /* 收起过程可聚焦问题：max-height:0 + overflow:hidden 后内容仍在 tab 序，
+     用 visibility 延迟生效 — 展开立即恢复、收起动画播完再隐身 */
   transition:
     max-height var(--transition-normal),
-    opacity var(--transition-fast);
+    opacity var(--transition-fast),
+    visibility 0s linear var(--transition-normal);
+  visibility: hidden;
 }
 .collapse-content.expanded {
   opacity: 1;
+  visibility: visible;
   transition:
     max-height var(--transition-normal),
-    opacity var(--transition-normal) 0.1s;
+    opacity var(--transition-normal) 0.1s,
+    visibility 0s;
 }
 
 .collapse-body {

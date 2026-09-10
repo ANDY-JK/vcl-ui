@@ -17,12 +17,13 @@
  *   逻辑与 scoped CSS 随块迁移，对外 props/emit 契约不变；本文件只保留分发、透传 props 与 styleConfig 落地
  */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import Input from '@/components/form/Input.vue'
 import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
 import Upload from '@/components/form/Upload.vue'
 import CameraCapture from '@/components/form/CameraCapture.vue'
+import Button from '@/components/basic/Button.vue'
 import Divider from '@/components/data/Divider.vue'
 import FieldError from './FieldError.vue'
 import RendererRichtext from './renderer/RendererRichtext.vue'
@@ -92,6 +93,28 @@ const uploadValue = computed({
   get: () => (props.modelValue as UploadFile[]) ?? [],
   set: (v) => emit('update:modelValue', v),
 })
+
+/** CameraCapture 弹层开关（此前未接线，相机永远打不开） */
+const cameraOpen = ref(false)
+/** 拍照交付 → 转 UploadFile[] 写入 formData（与 Upload 字段同构，校验/提交/回显一致） */
+function onCameraFinish(files: File[]) {
+  const uploaded: UploadFile[] = files.map((f, i) => ({
+    id: Date.now() + i,
+    name: f.name || `photo-${i + 1}.jpg`,
+    size: f.size,
+    progress: 100,
+    status: 'done',
+    raw: f,
+  }))
+  const current = (props.modelValue as UploadFile[]) ?? []
+  emit('update:modelValue', props.field.props?.multiple ? [...current, ...uploaded] : uploaded)
+  emit('change')
+}
+
+/** 地址字段完整区划数据注入（field.props.addressData；内置仅演示子集） */
+const addressDataProp = computed(
+  () => props.field.props?.addressData as { provinces: string[]; cities: Record<string, string[]> } | undefined,
+)
 
 // ════════════════════════════════════════
 // 透传 props
@@ -292,7 +315,27 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           {{ field.label }}
           <span v-if="field.required" class="fb-required">*</span>
         </label>
-        <CameraCapture v-bind="extraProps" />
+        <Upload
+          :model-value="uploadValue"
+          variant="card"
+          accept="image/*"
+          :disabled="effectiveDisabled"
+          @update:model-value="emit('update:modelValue', $event)"
+        />
+        <Button
+          type="button"
+          :text="t('form.takePhoto')"
+          icon="camera"
+          :disabled="effectiveDisabled"
+          class="fb-camera-trigger"
+          @click="cameraOpen = true"
+        />
+        <CameraCapture
+          v-model="cameraOpen"
+          v-bind="extraProps"
+          :multiple="Boolean(field.props?.multiple)"
+          @finish="onCameraFinish"
+        />
         <FieldError :message="error ?? ''" />
       </div>
     </template>
@@ -365,6 +408,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <RendererAddress
           :field="field"
           :model-value="modelValue"
+          :address-data="addressDataProp"
           @update:model-value="emit('update:modelValue', $event)"
         />
         <FieldError :message="error ?? ''" />
@@ -492,6 +536,9 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-secondary, #64748b);
+}
+.fb-camera-trigger {
+  align-self: flex-start;
 }
 .fb-required {
   color: var(--color-danger, #ef4444);

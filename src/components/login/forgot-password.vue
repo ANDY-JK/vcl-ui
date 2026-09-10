@@ -42,6 +42,7 @@
             icon="key"
             :rules="cardKeyRules"
             :hint="t('login.resetCardKeyHint')"
+            @keyup="handleEnter"
           />
 
           <Input
@@ -52,6 +53,7 @@
             autocomplete="new-password"
             :rules="passwordRules"
             :hint="passwordHint"
+            @keyup="handleEnter"
           />
 
           <Input
@@ -62,9 +64,10 @@
             autocomplete="new-password"
             :rules="confirmPasswordRules"
             :hint="confirmPasswordHint"
+            @keyup="handleEnter"
           />
 
-          <Button :text="t('login.resetBtn')" variant="primary" :loading="loading" block @click="handleSubmit" />
+          <Button :text="t('login.resetBtn')" variant="primary" :loading="_busy" block @click="handleSubmit" />
 
           <Toast v-if="displayError" variant="inline" type="error" :message="displayError" closable />
 
@@ -156,8 +159,14 @@ const confirmPasswordRules = [
 
 // ======================== 提交 ========================
 
+/** 内部防重复提交（对齐 register.vue）：父组件不传 loading 时连点/回车会重复 emit */
+const _submitting = ref(false)
+const _busy = computed(() => props.loading || _submitting.value)
+
 const handleSubmit = () => {
   internalError.value = ''
+
+  if (_busy.value) return
 
   if (!form.card_key.trim()) {
     internalError.value = t('login.cardKeyRequired')
@@ -172,10 +181,18 @@ const handleSubmit = () => {
     return
   }
 
+  _submitting.value = true
+  setTimeout(() => (_submitting.value = false), 15000)
+
   emit('submit', {
     card_key: form.card_key,
     password: form.new_password,
   })
+}
+
+/** 回车提交（login/portal_login/register 均已支持） */
+function handleEnter(e: KeyboardEvent) {
+  if (e.key === 'Enter') handleSubmit()
 }
 
 defineExpose({
@@ -243,9 +260,9 @@ defineExpose({
   min-height: clamp(380px, 55vh, 600px);
   max-height: 85vh;
   border-radius: var(--radius-xl);
-  overflow: hidden;
+  /* 移除 overflow:hidden —— 会裁掉 Input 浮动标签（top:0 translateY(-50%)），对齐 register.vue */
   box-shadow: var(--shadow-lg);
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--color-surface);
   animation: slideUp 0.5s ease-out;
   z-index: 1;
 }
@@ -339,7 +356,7 @@ defineExpose({
   padding: var(--space-12);
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--color-surface);
   border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
 }
 .login-header {

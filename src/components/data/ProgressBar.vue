@@ -55,6 +55,8 @@ const stops = computed(() => {
   const range = props.max - props.min
   if (range <= 0) return []
   const count = Math.floor(range / props.step) + 1
+  // count=1（range<step）时 0/0=NaN → 刻度定位失效
+  if (count <= 1) return []
   return Array.from({ length: Math.min(count, 50) }, (_, i) => ({
     value: props.min + i * props.step,
     percent: (i / (count - 1)) * 100,

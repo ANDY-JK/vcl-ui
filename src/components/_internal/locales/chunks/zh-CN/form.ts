@@ -10,6 +10,7 @@ export default {
     uploading: '上传中...',
     uploadSuccess: '上传成功',
     uploadFailed: '上传失败',
+    previewImage: '预览图片',
     camera: '拍照',
     switchCamera: '切换摄像头',
     capture: '拍摄',

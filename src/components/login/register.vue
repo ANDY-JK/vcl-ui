@@ -56,6 +56,7 @@
             autocomplete="username"
             :rules="usernameRules"
             :hint="usernameHint"
+            @keyup="handleEnter"
           />
 
           <Input
@@ -66,6 +67,7 @@
             autocomplete="new-password"
             :rules="passwordRules"
             :hint="passwordHint"
+            @keyup="handleEnter"
           />
 
           <!-- 选填字段 -->
@@ -91,7 +93,7 @@
 
           <slot name="extra-fields" />
 
-          <Button :text="t('login.registerBtn')" variant="primary" :loading="loading" block @click="handleSubmit" />
+          <Button :text="t('login.registerBtn')" variant="primary" :loading="_busy" block @click="handleSubmit" />
 
           <Toast v-if="displayError" variant="inline" type="error" :message="displayError" closable />
         </div>
@@ -223,8 +225,14 @@ const phoneRules = computed(() => [
 
 // ======================== 提交 ========================
 
+/** 内部防重复提交：父组件不传 loading 时（Button disabled 不生效）连点/连按 Enter 会重复 emit */
+const _submitting = ref(false)
+const _busy = computed(() => props.loading || _submitting.value)
+
 const handleSubmit = () => {
   internalError.value = ''
+
+  if (_busy.value) return
 
   // 基础必填校验
   if (
@@ -265,6 +273,11 @@ const handleSubmit = () => {
     return
   }
 
+  // 15s 兜底自动解锁（对齐 login.vue 的 internalLoading 模式），
+  // 父组件完成后通常用 resetForm / 通知驱动 UI，这里只防重复提交
+  _submitting.value = true
+  setTimeout(() => (_submitting.value = false), 15000)
+
   emit('submit', {
     display_name: form.display_name,
     card_key: props.requireCardKey ? form.card_key : undefined,
@@ -273,6 +286,11 @@ const handleSubmit = () => {
     email: form.email || undefined,
     phone: form.phone || undefined,
   })
+}
+
+/** 回车提交（注册表单字段最多，回车诉求最强；login/portal_login 均已支持） */
+function handleEnter(e: KeyboardEvent) {
+  if (e.key === 'Enter') handleSubmit()
 }
 
 // ======================== 暴露 ========================
@@ -346,7 +364,7 @@ defineExpose({
   border-radius: var(--radius-xl);
   /* 移除 overflow:hidden —— 会裁掉 Input 浮动标签（top:0 translateY(-50%)） */
   box-shadow: var(--shadow-lg);
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--color-surface);
   animation: slideUp 0.5s ease-out;
   z-index: 1;
 }
@@ -418,7 +436,7 @@ defineExpose({
   padding: var(--space-12);
   display: flex;
   flex-direction: column;
-  background: white;
+  background: var(--color-surface);
   border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
 }
 .login-header {

@@ -106,12 +106,12 @@ function toggleColVisible(colKey: string) {
   }
   hiddenColumns.value = new Set(hiddenColumns.value)
 }
-/** 全部显示 / 全部隐藏（保留第一列） */
+/** 全部显示 / 全部隐藏（保留第一列 — 按当前排序后的第一列，与表格实际显示顺序一致） */
 function toggleAllColsVisible(show: boolean) {
   if (show) {
     hiddenColumns.value = new Set()
   } else {
-    hiddenColumns.value = new Set(props.columns.map((c) => c.key).slice(1))
+    hiddenColumns.value = new Set(_settingsColumns.value.map((c) => c.key).slice(1))
   }
 }
 /** 当前是否全部列可见（驱动「全部隐藏/全部显示」切换按钮文案） */

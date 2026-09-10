@@ -100,7 +100,7 @@ function cellValue(v: unknown): string {
 /** CSV 导出（UTF-8 BOM 保证 Excel 中文不乱码；全量记录不随分页截断） */
 function exportCsv(): void {
   const ks = keys.value
-  const header = ['提交时间', ...ks]
+  const header = [t('fbd.submittedAt'), ...ks]
   const escape = (s: string): string =>
     s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s
   const lines = [header.map(escape).join(',')]

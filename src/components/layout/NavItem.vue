@@ -4,7 +4,7 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { navLabel, type NavNode } from './utils/navData'
+import { navLabel, isNodeActive, type NavNode } from './utils/navData'
 
 defineOptions({ name: 'NavItem' })
 
@@ -24,11 +24,7 @@ const route = useRoute()
 
 const isGroup = computed(() => props.node.children && props.node.children.length > 0)
 const isExpanded = computed(() => props.expandedSet.has(props.node.label))
-const isActive = computed(() => {
-  if (!props.node.route) return false
-  const resolved = router.resolve(props.node.route)
-  return route.path === resolved.path
-})
+const isActive = computed(() => isNodeActive(props.node, route.path, router))
 
 function onClick() {
   if (isGroup.value) {

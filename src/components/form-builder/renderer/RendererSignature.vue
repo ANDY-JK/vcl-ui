@@ -34,6 +34,12 @@ function startSignature(e: PointerEvent): void {
   signatureDrawing = true
   const canvas = signatureCanvasRef.value
   if (!canvas) return
+  // 指针捕获：笔迹滑出画布不丢笔（否则 pointermove 不再派发，线断在边界）
+  try {
+    canvas.setPointerCapture(e.pointerId)
+  } catch {
+    /* 老内核不支持则退化为 pointerleave 收笔 */
+  }
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   ctx.strokeStyle = '#1e293b'
@@ -124,6 +130,8 @@ onMounted(() => {
   width: 100%;
   height: 120px;
   cursor: crosshair;
+  /* 手机签名时阻止页面跟随滚动/下拉刷新，否则笔迹中断 */
+  touch-action: none;
 }
 .fb-signature-clear {
   position: absolute;

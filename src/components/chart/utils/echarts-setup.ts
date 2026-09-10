@@ -38,12 +38,18 @@ import {
   TimelineComponent,
   MarkAreaComponent,
 } from 'echarts/components'
-// echarts-wordcloud 按需动态加载（~30KB gzip），仅在 wordCloud 图表类型使用时导入
+// echarts-wordcloud 按需动态加载（~30KB gzip），仅在 wordCloud 图表类型使用时导入。
+// 未安装该包时（可选 peer）动态 import 会 reject，须捕获降级而非 unhandled rejection。
+import { warnOnce } from '../../_internal/warnOnce'
 let _wordCloudLoaded = false
 export async function ensureWordCloud(): Promise<void> {
   if (_wordCloudLoaded) return
-  await import('echarts-wordcloud')
-  _wordCloudLoaded = true
+  try {
+    await import('echarts-wordcloud')
+    _wordCloudLoaded = true
+  } catch {
+    warnOnce('Chart', "wordCloud 图表类型需安装 echarts-wordcloud：npm i echarts-wordcloud（当前渲染将留空）")
+  }
 }
 
 use([

@@ -31,6 +31,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
 import { TOAST_KEY, registerGlobalToast, unregisterGlobalToast } from './composables/toast-context'
 import type { ToastAPI, ToastItem } from './composables/toast-context'
+import { feedbackIconMap, feedbackColorMap } from '../shared/types'
 
 // 模板 v-for 中 t 已被 toast 项占用，翻译函数用别名 tt
 const tt = useT()
@@ -56,20 +57,16 @@ const _closeTimers = new Map<number, ReturnType<typeof setTimeout>>()
 const isToast = computed(() => props.variant === 'toast')
 const isInline = computed(() => props.variant === 'inline')
 
+// 图标/颜色映射单一事实源在 shared/types（Result/Toast 共用）；
+// Toast 本地键只是兼容 'circle-alert' 这种把图标名当类型传入的历史用法
 const iconMap: Record<string, string> = {
-  info: 'circle-alert',
+  ...feedbackIconMap,
   'circle-alert': 'circle-alert',
-  success: 'circle-check',
-  warning: 'circle-alert',
-  error: 'x',
 }
 
 const colorMap: Record<string, string> = {
+  ...feedbackColorMap,
   'circle-alert': 'var(--color-text)',
-  info: 'var(--color-info)',
-  success: 'var(--color-success)',
-  warning: 'var(--color-warning)',
-  error: 'var(--color-danger)',
 }
 
 const inlineBgMap: Record<string, string> = {

@@ -151,6 +151,7 @@ onUnmounted(unmountEsc)
         class="drawer-overlay"
         :class="{ hidden: !visible }"
         :style="zIndex != null ? { zIndex } : undefined"
+        :inert="!visible || undefined"
         @mousedown="onMaskMousedown"
         @mouseup="onMaskMouseup"
         @mouseleave="onMaskMouseleave"

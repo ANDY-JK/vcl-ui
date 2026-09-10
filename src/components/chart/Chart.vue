@@ -152,6 +152,8 @@ function buildParams(categories: string[], series: ChartSeriesItem[]): BuildPara
     palette: props.palette,
     markLine: props.markLine,
     markArea: props.markArea,
+    // 大数据降采样透传（未配置时由各 builder 按点数阈值自动决定）
+    sampling: (props as Record<string, unknown>).sampling as BuildParams['sampling'],
   }
 }
 

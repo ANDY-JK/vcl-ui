@@ -24,6 +24,8 @@ export interface RangeSelection {
   rows: string[]
   /** 当前显示列的 colKey（按显示顺序） */
   cols: string[]
+  /** rowKey → 显示行索引：拖选 mousemove 高频判格用 O(1)，避免 rows.indexOf 的 O(n) 逐格扫描 */
+  rowIndexOf: (rowKey: string) => number
 }
 
 export interface TableEditHooks {
@@ -174,11 +176,12 @@ export function useTableEdit(
     )
   }
 
-  /** 判断单元格是否在矩形选区（按显示顺序的行列索引） */
+  /** 判断单元格是否在矩形选区（按显示顺序的行列索引）。
+      O(1) 版：用行列索引直接与锚点/焦点边界比较，替代 rows/cols 数组 indexOf（拖选 mousemove 高频路径 O(格数×行数)） */
   function isInRange(rowKey: string, colKey: string): boolean {
     const r = rangeSel.value
     if (!r) return false
-    const ri = r.rows.indexOf(rowKey)
+    const ri = r.rowIndexOf(rowKey)
     const ci = r.cols.indexOf(colKey)
     if (ri < 0 || ci < 0) return false
     const r0 = Math.min(r.anchor.rowIndex, r.focus.rowIndex)
@@ -211,6 +214,8 @@ export function useTableEdit(
     selectedCell.value = null
     _multiSelection.value = new Set()
     _selectedColKey.value = null
+    // rowKey → 显示行索引 Map：拖选判格 O(1)（rows 数组本身保留，供矩阵粘贴等按序取值）
+    const rowIdxMap = new Map(rows.map((k, i) => [k, i]))
     rangeSel.value = {
       anchor: {
         rowKey: anchorRowKey,
@@ -222,6 +227,7 @@ export function useTableEdit(
       focus: { rowIndex: anchorRowIndex, colIndex: anchorColIndex },
       rows,
       cols,
+      rowIndexOf: (k) => rowIdxMap.get(k) ?? -1,
     }
   }
 

@@ -55,6 +55,8 @@ export function useTableCore(
   visibleColumns: ComputedRef<Column[]>,
   globalSearch: Ref<string>,
   rowHeight?: () => number,
+  // 全屏时表格忽略分页展示全量且容器有界 → 虚拟滚动需对全量数据开窗
+  virtualOpts?: { fullscreen?: () => boolean },
 ) {
   const _rowH = rowHeight ?? (() => 40)
   // 拼音匹配器（实例级，带缓存）：同一文本只做一次拼音转换，避免每行每列重复转换
@@ -244,14 +246,27 @@ export function useTableCore(
     return pages
   })
 
-  const isVirtual = computed(() => props.virtualScroll && !!props.maxHeight && (!props.pageSize || props.pageSize <= 0))
+  // 虚拟滚动生效条件：
+  // - 显式 maxHeight（表格自身是滚动容器，才能按窗口渲染）
+  // - 或全屏态（容器有界且忽略分页展示全量，全量行必须虚拟化否则卡死）
+  // autoHeight 无 maxHeight 时表格随内容增长、由页面滚动 — 此时不能虚拟化，
+  // 否则窗口外行高占位与页面滚动冲突；virtualScroll 未生效走 warnOnce 提示。
+  const isVirtual = computed(() => {
+    if (!props.virtualScroll) return false
+    const fullscreen = virtualOpts?.fullscreen?.() ?? false
+    if (fullscreen) return true
+    if (!props.maxHeight) return false
+    return !props.pageSize || props.pageSize <= 0
+  })
+  // 虚拟窗口数据源：普通态按当前页；全屏态忽略分页 → 对全量开窗
+  const virtualSourceData = computed(() => (virtualOpts?.fullscreen?.() ? displayData.value : pagedData.value))
 
   const scrollContainerRef = ref<HTMLElement | null>(null)
   const scrollTop = ref(0)
   const containerHeight = ref(0)
   const overscan = 10
 
-  const virtualTotal = computed(() => pagedData.value.length)
+  const virtualTotal = computed(() => virtualSourceData.value.length)
   const virtualStartIndex = computed(() => {
     if (!isVirtual.value) return 0
     return Math.max(0, Math.floor(scrollTop.value / _rowH()) - overscan)
@@ -262,8 +277,8 @@ export function useTableCore(
     return Math.min(virtualTotal.value, Math.ceil(scrollTop.value / _rowH()) + visible + overscan)
   })
   const virtualVisibleData = computed(() => {
-    if (!isVirtual.value) return pagedData.value
-    return pagedData.value.slice(virtualStartIndex.value, virtualEndIndex.value)
+    if (!isVirtual.value) return virtualSourceData.value
+    return virtualSourceData.value.slice(virtualStartIndex.value, virtualEndIndex.value)
   })
   const virtualTopOffset = computed(() => {
     if (!isVirtual.value) return 0

@@ -268,7 +268,7 @@ const linkageHelpText = computed(() => {
 
       <!-- 公式帮助提示 -->
       <div class="ldp-linkage-help">
-        <IconSvg type="info-circle" size="xs" />
+        <IconSvg type="info" size="xs" />
         <span>{{ linkageHelpText }}</span>
       </div>
     </template>

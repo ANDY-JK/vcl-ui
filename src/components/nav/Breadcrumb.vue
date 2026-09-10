@@ -24,6 +24,11 @@ function normalizeTo(p: string): string {
   const cleaned = p.replace(/^#/, '')
   return cleaned.startsWith('/') ? cleaned : `/${cleaned}`
 }
+
+/** 绝对 http(s) 链接：新标签页打开，避免 SPA 内丢失应用状态 */
+function isExternalHttp(p: string) {
+  return /^https?:\/\//i.test(p)
+}
 </script>
 
 <template>
@@ -36,7 +41,13 @@ function normalizeTo(p: string): string {
       >
         {{ item.label }}
       </RouterLink>
-      <a v-else-if="item.path" class="crumb-link" :href="item.path">{{ item.label }}</a>
+      <a
+        v-else-if="item.path || item.to"
+        class="crumb-link"
+        :href="(item.path || item.to)!"
+        :target="isExternalHttp((item.path || item.to)!) ? '_blank' : undefined"
+        :rel="isExternalHttp((item.path || item.to)!) ? 'noopener' : undefined"
+      >{{ item.label }}</a>
       <span v-else class="crumb-current" aria-current="page">{{ item.label }}</span>
       <span v-if="separator && idx < items.length - 1" class="crumb-sep-text">{{ separator }}</span>
       <IconSvg v-else-if="idx < items.length - 1" type="chevron-right" size="sm" class="crumb-sep" />

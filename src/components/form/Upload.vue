@@ -16,6 +16,7 @@ onErrorCaptured((e: Error) => {
 import IconSvg from '@/components/basic/IconSvg.vue'
 import ProgressBar from '@/components/data/ProgressBar.vue'
 import CameraCapture from '@/components/form/CameraCapture.vue'
+import ImagePreview from '@/components/data/ImagePreview.vue'
 
 export interface UploadFile {
   id: number
@@ -52,6 +53,8 @@ interface Props {
   maxWidth?: number
   /** 图片压缩质量 0-1；默认 0.85 */
   compressQuality?: number
+  /** 图片预览：'builtin' 点击图片直接打开内置全屏预览（默认）；'event' 仅抛 preview 事件由消费方自行处理 */
+  previewMode?: 'builtin' | 'event'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -69,6 +72,7 @@ const props = withDefaults(defineProps<Props>(), {
   compress: false,
   maxWidth: 1920,
   compressQuality: 0.85,
+  previewMode: 'builtin',
 })
 
 // 入参变化 = 内容已变：清错误态让上传区重渲染一次，否则 ⚠ 降级提示会永久卡死（仍坏会再次捕获，不成环）
@@ -92,12 +96,19 @@ const timers: ReturnType<typeof setInterval>[] = []
 
 let fileId = 0
 
-// 同步外部 modelValue → 内部 files（双向：外部清空时内部也清，避免预览残留）
+// 同步外部 modelValue → 内部 files。
+// 双向合并语义：外部程序化回填/删除时内部跟随；内部正在上传的项（尚未同步到父模型）保留。
+// 必须复制数组引用（files.value = [...val]）：直接引用会让后续 unshift 原地变异父组件传入的数组。
 watch(
   () => props.modelValue,
   (val) => {
     if (val && val.length > 0) {
-      if (files.value.length === 0) files.value = val
+      const sameAsInternal =
+        val.length === files.value.length && val.every((f, i) => files.value[i]?.id === f.id)
+      if (sameAsInternal) return
+      const externalIds = new Set(val.map((f) => f.id))
+      const internalUploading = files.value.filter((f) => f.status === 'uploading' && !externalIds.has(f.id))
+      files.value = [...val, ...internalUploading]
     } else if (val && val.length === 0) {
       // 竞态防护：内部有正在上传的文件时，外部空数组通常是「父组件 modelValue getter
       // 尚未反映本次上传」的同步回环。立即清空会让 realUpload 完成时 emit 空数组，
@@ -119,6 +130,9 @@ function syncModel() {
 
 /** 清空全部文件并同步模型（模板 @click 只支持单表达式，抽成方法） */
 function clearAllFiles() {
+  files.value.forEach((f) => {
+    if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
+  })
   files.value = []
   syncModel()
 }
@@ -450,6 +464,25 @@ const cardPreviewUrl = computed(() => {
 })
 const cardFileCount = computed(() => files.value.length)
 const cardHovered = ref(false)
+
+// ===== 内置图片预览（复用库内 ImagePreview；'event' 模式不接管，仅抛事件） =====
+const _previewItems = ref<{ url: string; label?: string }[]>([])
+const _previewIdx = ref(0)
+/** 可预览的图片文件（有 url 的） */
+const _imageFiles = computed(() => files.value.filter((f) => f.url))
+function openPreview(file: UploadFile) {
+  const idx = _imageFiles.value.findIndex((f) => f.id === file.id)
+  if (idx < 0) return
+  if (props.previewMode === 'builtin') {
+    _previewItems.value = _imageFiles.value.map((f) => ({ url: f.url!, label: f.name }))
+    _previewIdx.value = idx
+  }
+  emit('preview', file.url!)
+}
+function closePreview() {
+  _previewItems.value = []
+}
+
 let _clickTimer: ReturnType<typeof setTimeout> | null = null
 function onCardClick() {
   if (_clickTimer) {
@@ -459,7 +492,8 @@ function onCardClick() {
   }
   _clickTimer = setTimeout(() => {
     _clickTimer = null
-    if (files.value.length) emit('preview', cardPreviewUrl.value)
+    const f = files.value[cardIdx.value]
+    if (f?.url) openPreview(f)
     else handlePick()
   }, 280)
 }
@@ -549,9 +583,9 @@ onUnmounted(() => {
       <!-- ④ 点击区：接收点击/双击 -->
       <div class="card-click-area" @click.stop="onCardClick" @dblclick.stop="onCardDblClick" />
 
-      <!-- ⑤ 删除按钮：hover 时显示 -->
+      <!-- ⑤ 删除按钮：hover 时显示；触屏无 hover → 常显，否则移动端无法删除 -->
       <button
-        v-if="files.length && cardHovered && !disabled"
+        v-if="files.length && (cardHovered || isTouchDevice) && !disabled"
         type="button"
         class="card-clear"
         @click.stop="clearAllFiles"
@@ -613,7 +647,17 @@ onUnmounted(() => {
     <div v-if="files.length" class="upload-list">
       <slot v-for="(f, idx) in files" :key="f.id" name="file-item" :file="f" :index="idx">
         <div class="upload-item">
-          <IconSvg type="file" size="md" class="upload-file-icon" />
+          <!-- 图片文件：缩略图可点击进内置预览；非图片保持通用文件图标 -->
+          <button
+            v-if="f.url"
+            type="button"
+            class="upload-thumb"
+            :aria-label="t('form.previewImage')"
+            @click="openPreview(f)"
+          >
+            <img :src="f.url" alt="" />
+          </button>
+          <IconSvg v-else type="file" size="md" class="upload-file-icon" />
           <div class="upload-file-info">
             <div class="upload-file-name">
               {{ f.name }}
@@ -663,6 +707,14 @@ onUnmounted(() => {
     @capture="onCameraCapture"
     @finish="onCameraBatchFinish"
     @error="onCameraError"
+  />
+
+  <!-- ===== 内置图片预览（previewMode='builtin' 时接管；多图可左右切换） ===== -->
+  <ImagePreview
+    v-if="_previewItems.length"
+    :src="_previewItems"
+    :initial-index="_previewIdx"
+    @close="closePreview"
   />
 </template>
 
@@ -866,6 +918,28 @@ onUnmounted(() => {
 .upload-file-icon {
   flex-shrink: 0;
   color: var(--color-text-muted);
+}
+/* 图片文件缩略图（default 变体）：可点击进全屏预览 */
+.upload-thumb {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-alt);
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.upload-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.upload-thumb:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 .upload-file-info {
   flex: 1;

@@ -114,15 +114,6 @@ if (isRoot) {
   }
   // 初始构建
   buildParentMap(props.data)
-  // watch data 变化重建
-  watch(
-    () => props.data,
-    () => {
-      parentMap.clear()
-      buildParentMap(props.data)
-    },
-    { deep: true },
-  )
 
   // 初始化 expandedKeys
   const initialKeys = props.expandAll ? collectAllKeys(props.data) : props.defaultExpandedKeys
@@ -158,10 +149,18 @@ if (isRoot) {
     refreshParentStates(props.data)
   })
 
-  // data 异步到达 / lazy 回填时重建勾选状态（此前仅 onMounted 执行一次，后到的 checked 永不生效）
+  // data 深层变化（lazy 回填/节点编辑）单一重建入口：
+  // 此前 parentMap 与勾选状态各挂一个 deep watcher，任意深层编辑触发两遍全树遍历
   watch(
     () => props.data,
     () => {
+      parentMap.clear()
+      buildParentMap(props.data)
+      // 剪掉已不存在节点的勾选残留，防止 Map 无限增长阻碍节点对象 GC
+      const alive = new Set(collectAllKeys(props.data))
+      for (const k of [...checkState.keys()]) if (!alive.has(k)) checkState.delete(k)
+      for (const k of [...indeterminateState]) if (!alive.has(k)) indeterminateState.delete(k)
+      // data 异步到达 / lazy 回填时重建勾选状态（此前仅 onMounted 执行一次，后到的 checked 永不生效）
       initCheckState(props.data)
       refreshParentStates(props.data)
     },

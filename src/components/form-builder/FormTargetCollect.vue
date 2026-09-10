@@ -99,7 +99,10 @@ const displayKeys = computed<string[]>(() => {
 // ════════════════════════════════════════
 
 const CONFIG_KEY = 'form-target-collect-storage-config'
-const cfg = ref<StorageConfig>(props.storageConfig ?? loadConfig())
+// SSR 安全：loadConfig 内已 try，但 localStorage 访问本身在无 window 环境会 ReferenceError，先于 try 拦截
+const cfg = ref<StorageConfig>(
+  props.storageConfig ?? (typeof localStorage !== 'undefined' ? loadConfig() : defaultStorageConfigFromEnv()),
+)
 const showStoragePanel = ref(false)
 const saving = ref(false)
 let backendInstance: StorageBackend | null = null
@@ -277,7 +280,12 @@ async function onUpload(targetId: number, slotKey: string, files: UploadFile[]):
 // ════════════════════════════════════════
 
 const SEARCH_KEY = 'form-target-collect-search'
-const keyword = ref(localStorage.getItem(SEARCH_KEY) || '')
+// SSR 安全：setup 期裸读 localStorage 在服务端渲染直接 ReferenceError（对照 Select 的 typeof 守卫）
+const keyword = ref(
+  typeof localStorage !== 'undefined'
+    ? (localStorage.getItem(SEARCH_KEY) as string | null) || ''
+    : '',
+)
 watch(keyword, (v) => {
   try {
     localStorage.setItem(SEARCH_KEY, v)
@@ -379,19 +387,19 @@ async function buildZipAndDownload(): Promise<void> {
   // 2) 汇总 Excel
   const rows = props.targets.map((s) => {
     const up = uploadMap.get(s.id)
-    const row: Record<string, string | number> = { 目标ID: s.id }
+    const row: Record<string, string | number> = { [t('fbTarget.targetId')]: s.id }
     for (const k of displayKeys.value) row[String(k)] = String(s[k] ?? '')
     for (const f of slotFields.value) {
-      row[f.label] = getSlotFile(up, f.key) ? '✓ 已上传' : '✗ 未上传'
+      row[f.label] = getSlotFile(up, f.key) ? t('fbTarget.uploaded') : t('fbTarget.notUploaded')
     }
-    row['最后上传'] = up?.ts ? formatTs(up.ts) : ''
+    row[t('fbTarget.lastUpload')] = up?.ts ? formatTs(up.ts) : ''
     return row
   })
   const XLSX = await import('xlsx')
   const ws = XLSX.utils.json_to_sheet(rows)
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, props.schema.title || '目标收集')
-  zip.file('汇总.xlsx', XLSX.write(wb, { type: 'array', bookType: 'xlsx' }))
+  XLSX.utils.book_append_sheet(wb, ws, props.schema.title || t('fbTarget.title'))
+  zip.file(t('fbTarget.summaryFile'), XLSX.write(wb, { type: 'array', bookType: 'xlsx' }))
 
   if (fileCount === 0) {
     toast(t('fbTarget.noFileExport'), 'warning')
@@ -401,7 +409,7 @@ async function buildZipAndDownload(): Promise<void> {
   const blob = await zip.generateAsync({ type: 'blob' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `${props.schema.title || '目标收集'}_${new Date().toISOString().slice(0, 10)}.zip`
+  a.download = `${props.schema.title || t('fbTarget.title')}_${new Date().toISOString().slice(0, 10)}.zip`
   a.click()
   URL.revokeObjectURL(a.href)
   toast(`${t('fbTarget.exported')} ${fileCount}`, 'success')

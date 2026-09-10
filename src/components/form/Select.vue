@@ -374,9 +374,9 @@ function removeComboTag(tag: { value: string | number | boolean; label: string }
     emit('update:modelValue', vals)
     emit('change', vals)
   } else {
-    // 单选：移除唯一 tag = 清空值（保持标量类型，与 onClear 一致）
-    emit('update:modelValue', '')
-    emit('change', '')
+    // 单选：移除唯一 tag = 清空值（统一 null，与 onClear 一致）
+    emit('update:modelValue', null)
+    emit('change', null)
   }
 }
 
@@ -419,17 +419,13 @@ function selectOption(opt: Option) {
 /* ════════════════════════════════════════
    清除按钮
    ════════════════════════════════════════ */
+/** 清空值统一 emit null：此前单选清空发 ''、多选/树/区间发 null，同组件两种"空"导致消费方判断漏网 */
 function onClear(e: MouseEvent) {
   e.stopPropagation()
   markTouched()
   comboText.value = ''
-  if (props.multiple || isTreeSelect.value || isDateRange.value) {
-    emit('update:modelValue', null)
-    emit('change', null)
-  } else {
-    emit('update:modelValue', '')
-    emit('change', '')
-  }
+  emit('update:modelValue', null)
+  emit('change', null)
 }
 
 /* ════════════════════════════════════════
@@ -691,7 +687,6 @@ const navItems = computed(() => (isMenu.value ? props.items || [] : filteredOpti
 const navCount = computed(() => (isTreeSelect.value ? visibleTreeNodes.value.length : navItems.value.length))
 
 function onTriggerKeydown(e: KeyboardEvent) {
-  if (isMenu.value) return
   if (e.key === 'Escape') {
     closePanel()
     return
@@ -699,6 +694,26 @@ function onTriggerKeydown(e: KeyboardEvent) {
   if (e.key === 'Tab') {
     // 焦点随 Tab 移走，只读型面板（日期/树/菜单）没有 blur 收起逻辑，这里显式关闭
     closePanel()
+    return
+  }
+  // 菜单模式：方向键在菜单项间导航，Enter 选中（此前直接 return，下拉对键盘完全不可达）
+  if (isMenu.value) {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (!open.value) {
+        toggleOpen()
+        return
+      }
+      if (e.key === 'ArrowDown') highlightIdx.value = Math.min(highlightIdx.value + 1, navCount.value - 1)
+      else highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
+    } else if (e.key === 'Enter' && open.value) {
+      e.preventDefault()
+      const item = navItems.value[highlightIdx.value]
+      if (item) onMenuClick(item as MenuItem)
+    } else if ((e.key === 'Enter' || e.key === ' ') && !open.value) {
+      e.preventDefault()
+      toggleOpen()
+    }
     return
   }
   if (e.key === 'ArrowDown' || e.key === 'Enter') {
@@ -868,6 +883,7 @@ function onTimeCancel() {
         <input
           :id="selectInputId"
           ref="comboInputRef"
+          :aria-invalid="!!(errorMsg || props.error) || undefined"
           :value="isInputable ? comboText : displayText"
           type="text"
           class="trigger-input"
@@ -916,7 +932,7 @@ function onTimeCancel() {
       </div>
 
       <!-- 校验错误 -->
-      <div v-if="errorMsg || props.error" class="select-error">{{ props.error || errorMsg }}</div>
+      <div v-if="errorMsg || props.error" class="select-error" role="alert">{{ props.error || errorMsg }}</div>
 
       <!-- 下拉面板 -->
       <Teleport to="body">
@@ -1101,6 +1117,8 @@ function onTimeCancel() {
 </template>
 
 <style scoped>
+@import '@/components/_internal/floating-label.css';
+
 .select-dropdown-root {
   position: relative;
   width: 100%;
@@ -1118,31 +1136,10 @@ function onTimeCancel() {
   line-height: 1.4;
 }
 
+/* 浮动标签 — 基础样式见 @import floating-label.css，以下为 Select 专属覆写 */
 .fl-label {
-  position: absolute;
-  left: var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: clamp(12px, 1.8vw, 15px);
-  color: var(--color-text-muted);
-  pointer-events: none;
-  transition: all var(--transition-fast);
   /* 行高不可压成 1：系统字体上行+下行约 1.33em，负半行距会把 g/y 等下伸尾巴裁掉（overflow:hidden 是省略号必需） */
   line-height: normal;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: calc(100% - 16px);
-  z-index: 1;
-}
-.fl-label.raised {
-  top: 0;
-  transform: translateY(-50%);
-  font-size: clamp(10px, 1.5vw, 15px);
-  color: var(--color-primary);
-  background: var(--color-surface);
-  padding: 0 var(--space-1);
-  left: calc(var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)) - 4px);
 }
 .select-dropdown-root.error .fl-label.raised {
   color: var(--color-danger);
