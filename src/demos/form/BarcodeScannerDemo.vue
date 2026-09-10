@@ -116,16 +116,6 @@ function boxStyle(d: BarcodeDetection) {
   }
 }
 
-/** 箭头图标定位：悬在码的中心上方，尖朝下指向码 */
-function arrowStyle(d: BarcodeDetection) {
-  const cw = c5.value?.width || 1
-  const ch = c5.value?.height || 1
-  return {
-    left: ((d.x + d.width / 2) / cw) * 100 + '%',
-    top: (d.y / ch) * 100 + '%',
-  }
-}
-
 async function openModal() {
   // 用户手势中解锁音频——之后 onScan 里的蜂鸣/语音才能自由播放
   unlockAudio()
@@ -288,7 +278,7 @@ function onCamError(msg: string) {
       <template v-if="activeTab === 'scan'">
         <div class="scan-box">
           <div v-if="!s5 && !e5" class="scan-idle"><span class="spinner" /><span>启动摄像头...</span></div>
-          <div v-show="s5" class="scan-live">
+          <div v-show="s5" class="scan-live" :class="{ 'is-frozen': paused5 }">
             <video ref="v5" class="scan-video" autoplay playsinline muted />
             <!-- 实时扫描中：检测框（primary = 离取景中心最近，自动选中的那个） -->
             <template v-if="!paused5">
@@ -305,23 +295,22 @@ function onCamError(msg: string) {
                 <span class="code-box-label">{{ d.text }}</span>
               </button>
             </template>
-            <!-- 多码定格选码：画面冻结，每个码上方留一个箭头图标，点箭头 = 识别这个码 -->
+            <!-- 多码定格选码：画面压暗冻结，每码一个虚线选框 + 上方箭头图钉，点选即识别 -->
             <template v-else>
               <button
                 v-for="(d, i) in detections5"
                 :key="'frozen-' + i"
                 type="button"
-                class="code-arrow"
-                :style="arrowStyle(d)"
-                :title="'识别 ' + d.text"
+                class="pick-region"
+                :style="boxStyle(d)"
                 :aria-label="'识别 ' + d.text"
                 @click="pickArrow(d.text)"
               >
-                <IconSvg type="arrow-down" size="md" color="currentColor" />
-                <span class="code-arrow-label">{{ d.text }}</span>
+                <span class="pick-arrow"><IconSvg type="arrow-down" size="md" color="currentColor" /></span>
+                <span class="pick-chip">{{ d.text }}</span>
               </button>
               <div class="frozen-bar">
-                已定格 {{ detections5.length }} 个码 — 点击箭头选择要识别的
+                已定格 {{ detections5.length }} 个码 — 点击码上的箭头选择要识别的
                 <button type="button" class="frozen-resume" @click="cancelPick">重新扫描</button>
               </div>
             </template>
@@ -684,54 +673,87 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   background: #22c55e;
   color: #052e16;
 }
-/* 定格选码：箭头图标悬在码中心上方，尖朝下 */
-.code-arrow {
+/* ══════ 定格选码态 ══════ */
+/* 画面压暗：与实时态明确区分，选框/箭头在暗底上更醒目 */
+.scan-live.is-frozen .scan-video {
+  filter: brightness(0.62) saturate(0.85);
+}
+.scan-live.is-frozen .beam,
+.scan-live.is-frozen .scanning-txt {
+  display: none;
+}
+/* 虚线选框：整块可点 */
+.pick-region {
   position: absolute;
-  transform: translate(-50%, -130%);
+  border: 2px dashed #22c55e;
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.1);
+  cursor: pointer;
+  z-index: 3;
+  padding: 0;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+.pick-region:hover,
+.pick-region:focus-visible {
+  border-style: solid;
+  border-color: #fff;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.28);
+  outline: none;
+}
+/* 箭头图钉：圆徽 + 下箭头尖，悬在码中心上方，尖端指向码 */
+.pick-arrow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -100%);
+  width: 34px;
+  height: 34px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0;
-  padding: 5px 7px 3px;
-  border: none;
-  border-radius: 999px 999px 4px 4px;
+  justify-content: center;
+  border-radius: 50%;
   background: #22c55e;
   color: #052e16;
-  cursor: pointer;
-  z-index: 4;
   box-shadow: var(--shadow-md);
-  animation: arrow-bob 1.2s ease-in-out infinite;
+  pointer-events: none;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
 }
-.code-arrow:hover {
-  background: #16a34a;
+/* 圆徽下的小三角，形成「箭头尖」 */
+.pick-arrow::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: #22c55e;
+}
+/* 文字牌：挂在选框下沿 */
+.pick-chip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 10px);
+  max-width: 170%;
+  font-size: 11px;
   color: #fff;
-}
-.code-arrow:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 1px;
-}
-@keyframes arrow-bob {
-  0%,
-  100% {
-    transform: translate(-50%, -130%);
-  }
-  50% {
-    transform: translate(-50%, -115%);
-  }
-}
-/* 动效敏感豁免：箭头静止（自动化点击也需要稳定元素） */
-@media (prefers-reduced-motion: reduce) {
-  .code-arrow {
-    animation: none;
-  }
-}
-.code-arrow-label {
-  font-size: 10px;
-  font-weight: 500;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 2px 7px;
+  border-radius: 5px;
   white-space: nowrap;
-  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
+  pointer-events: none;
+}
+.pick-region:hover .pick-arrow,
+.pick-region:focus-visible .pick-arrow {
+  background: #16a34a;
+  color: #fff;
+  transform: translate(-50%, -100%) scale(1.12);
 }
 /* 定格提示条 */
 .frozen-bar {
@@ -745,8 +767,10 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   font-size: 12px;
   color: #fff;
   background: rgba(0, 0, 0, 0.6);
-  padding: 4px 10px;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  padding: 5px 12px;
+  border-radius: 999px;
   z-index: 4;
   white-space: nowrap;
 }
@@ -755,12 +779,12 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
   font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
   cursor: pointer;
 }
 .frozen-resume:hover {
-  background: rgba(255, 255, 255, 0.32);
+  background: var(--color-primary);
 }
 .mask {
   position: absolute;
