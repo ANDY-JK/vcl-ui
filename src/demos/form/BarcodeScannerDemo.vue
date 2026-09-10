@@ -408,6 +408,7 @@ const onCapture = (file: File) => { /* file 即拍照结果 */ }
 
 // 模板：&lt;CameraCapture v-model="open" @capture="onCapture" /&gt;</code></pre>
       <table class="doc-table" style="margin-top: 12px">
+        <tbody>
         <tr>
           <th>Props / Emits</th>
           <th>类型</th>
@@ -438,6 +439,7 @@ const onCapture = (file: File) => { /* file 即拍照结果 */ }
           <td>boolean</td>
           <td>页面内相机不可用（权限拒绝/无摄像头/非 HTTPS）时自动降级调起设备系统相机，默认 true</td>
         </tr>
+      </tbody>
       </table>
     </Card>
 
@@ -455,6 +457,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 
     <Card title="API" style="margin-top: 16px">
       <table class="doc-table">
+        <tbody>
         <tr>
           <th>Options</th>
           <th>类型</th>
@@ -475,8 +478,10 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
           <td>(code: string) => void</td>
           <td>识别到有效条码时回调</td>
         </tr>
+      </tbody>
       </table>
       <table class="doc-table" style="margin-top: 12px">
+        <tbody>
         <tr>
           <th>返回</th>
           <th>类型</th>
@@ -517,6 +522,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
           <td>Ref</td>
           <td>绑定到 &lt;canvas&gt; 元素</td>
         </tr>
+      </tbody>
       </table>
     </Card>
 

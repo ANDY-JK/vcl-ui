@@ -26,6 +26,7 @@ const page2 = ref(3)
 
     <Card title="Props">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+        <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
           <th style="padding: 4px 8px">Prop</th>
           <th style="padding: 4px 8px">类型</th>
@@ -56,6 +57,7 @@ const page2 = ref(3)
           <td style="padding: 3px 8px">false</td>
           <td style="padding: 3px 8px">显示快速跳页输入框</td>
         </tr>
+      </tbody>
       </table>
     </Card>
   </div>

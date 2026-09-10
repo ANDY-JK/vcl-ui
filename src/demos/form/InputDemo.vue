@@ -88,6 +88,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
     <!-- Props 表 -->
     <Card title="Props">
       <table class="props-table">
+        <tbody>
         <tr class="props-header">
           <th>Prop</th>
           <th>类型</th>
@@ -148,6 +149,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
           <td>false</td>
           <td>显示清除按钮</td>
         </tr>
+      </tbody>
       </table>
     </Card>
   </div>

@@ -118,6 +118,7 @@ const panelItems = [
 
     <Card title="Props">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+        <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
           <th style="padding: 4px 8px">Prop</th>
           <th style="padding: 4px 8px">类型</th>
@@ -140,6 +141,7 @@ const panelItems = [
           <td style="padding: 3px 8px">—</td>
           <td style="padding: 3px 8px">标签项数组</td>
         </tr>
+      </tbody>
       </table>
     </Card>
   </div>

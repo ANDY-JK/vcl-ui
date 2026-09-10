@@ -50,6 +50,7 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
 
     <Card title="Props">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+        <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
           <th style="padding: 4px 8px">Prop</th>
           <th style="padding: 4px 8px">类型</th>
@@ -88,6 +89,7 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
           <td style="padding: 3px 8px">false</td>
           <td style="padding: 3px 8px">显示关闭按钮（inline 模式）</td>
         </tr>
+      </tbody>
       </table>
     </Card>
   </div>

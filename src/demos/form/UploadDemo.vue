@@ -63,6 +63,7 @@ const multiFiles = ref<UploadFile[]>([])
 
     <Card title="Props">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+        <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
           <th style="padding: 4px 8px">Prop</th>
           <th style="padding: 4px 8px">类型</th>
@@ -125,6 +126,7 @@ const multiFiles = ref<UploadFile[]>([])
           <td style="padding: 3px 8px">builtin</td>
           <td style="padding: 3px 8px">图片预览：builtin = 内置全屏预览；event = 只抛 @preview 事件</td>
         </tr>
+      </tbody>
       </table>
     </Card>
   </div>

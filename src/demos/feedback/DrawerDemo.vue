@@ -39,6 +39,7 @@ const drawerLeftVisible = ref(false)
 
     <Card title="Props">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+        <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
           <th style="padding: 4px 8px">Prop</th>
           <th style="padding: 4px 8px">类型</th>
@@ -77,6 +78,7 @@ const drawerLeftVisible = ref(false)
           <td style="padding: 3px 8px">380px</td>
           <td style="padding: 3px 8px">抽屉宽度</td>
         </tr>
+      </tbody>
       </table>
     </Card>
   </div>
