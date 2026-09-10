@@ -302,7 +302,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
       onScanResult(results.length > 0)
 
       if (valid.length === 0) return
-      // 单码：直接走确认流程；多码：center 模式取离区域中心最近的，manual 模式不自动触发
+      // 多码触发策略：center 模式只自动录入离区域中心最近的一个（其余留在检测框供选择/移动镜头）；
+      // manual 模式全不自动触发；单码走正常确认流程
       const ordered =
         valid.length === 1
           ? valid
@@ -312,7 +313,9 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
                 (a, b) => distanceFromRegionCenter(a, sw, sh) - distanceFromRegionCenter(b, sw, sh),
               )
       if (ordered.length > 0) detections.value[valid.indexOf(ordered[0])]!.primary = true
-      for (const r of ordered) {
+      // 只对「本帧选中的那一个」走确认流程（此前遍历全部 → 多码全部连发，center 形同虚设）
+      const autoFire = ordered.length > 0 ? [ordered[0]!] : []
+      for (const r of autoFire) {
         const code = r.text
         confirmHits.set(code, (confirmHits.get(code) || 0) + 1)
         if (confirmHits.get(code)! < confirmCount) continue
