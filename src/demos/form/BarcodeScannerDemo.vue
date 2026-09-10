@@ -191,7 +191,7 @@ function onCamError(msg: string) {
           ><input v-model="scanFormat" type="radio" value="barcode" /> 仅条形码</label
         >
       </div>
-      <div class="scan-box">
+      <div class="scan-box scan-box--embedded">
         <div v-if="!s1 && !e1" class="scan-idle"><span class="spinner" /><span>待启动</span></div>
         <div v-show="s1" class="scan-live">
           <video ref="v1" class="scan-video" autoplay playsinline muted />
@@ -517,6 +517,10 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 }
 .btn:hover {
   background: var(--color-primary-hover);
+}
+/* 内嵌实例（非四列栅格时防止撑满整页）：取景框限制在常见扫码器尺寸 */
+.scan-box--embedded {
+  max-width: 360px;
 }
 .grid-4 {
   display: grid;
