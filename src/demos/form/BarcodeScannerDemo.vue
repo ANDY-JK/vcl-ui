@@ -76,6 +76,9 @@ const {
   canvasRef: c5,
   detections: detections5,
   triggerDetection: trigger5,
+  paused: paused5,
+  pause: pause5,
+  resume: resume5,
 } = useBarcodeScanner({
   // 不设 prefix/length：任意条码/二维码都能识别（想看过滤效果看上面实例 2/3）
   onScan: (c) => {
@@ -85,6 +88,20 @@ const {
     feedback(c)
   },
 })
+
+/** 多码定格选码：实时扫描中检测到 ≥2 个码 → 定格画面，每个码留箭头图标，点选识别 */
+watch(detections5, (list) => {
+  if (!paused5.value && list.length >= 2) pause5()
+})
+/** 点某个码的箭头 → 识别该码（onScan 入列）→ 恢复实时扫描 */
+function pickArrow(text: string) {
+  trigger5(text)
+  resume5()
+}
+/** 放弃选码，恢复实时扫描 */
+function cancelPick() {
+  resume5()
+}
 
 /** 检测框 canvas 像素坐标 → 相对 scan-live 容器的百分比定位 */
 import type { BarcodeDetection } from '@/components/form/utils/useBarcodeScanner'
@@ -96,6 +113,16 @@ function boxStyle(d: BarcodeDetection) {
     top: (d.y / ch) * 100 + '%',
     width: (d.width / cw) * 100 + '%',
     height: (d.height / ch) * 100 + '%',
+  }
+}
+
+/** 箭头图标定位：悬在码的中心上方，尖朝下指向码 */
+function arrowStyle(d: BarcodeDetection) {
+  const cw = c5.value?.width || 1
+  const ch = c5.value?.height || 1
+  return {
+    left: ((d.x + d.width / 2) / cw) * 100 + '%',
+    top: (d.y / ch) * 100 + '%',
   }
 }
 
@@ -263,25 +290,47 @@ function onCamError(msg: string) {
           <div v-if="!s5 && !e5" class="scan-idle"><span class="spinner" /><span>启动摄像头...</span></div>
           <div v-show="s5" class="scan-live">
             <video ref="v5" class="scan-video" autoplay playsinline muted />
-            <!-- 多码指针：每帧把检测到的码画成可点击框，primary = 离取景中心最近（自动选中的那个） -->
-            <button
-              v-for="(d, i) in detections5"
-              :key="i"
-              type="button"
-              class="code-box"
-              :class="{ primary: d.primary }"
-              :style="boxStyle(d)"
-              :title="d.text"
-              @click="trigger5(d.text)"
-            >
-              <span class="code-box-label">{{ d.text }}</span>
-            </button>
+            <!-- 实时扫描中：检测框（primary = 离取景中心最近，自动选中的那个） -->
+            <template v-if="!paused5">
+              <button
+                v-for="(d, i) in detections5"
+                :key="'live-' + i"
+                type="button"
+                class="code-box"
+                :class="{ primary: d.primary }"
+                :style="boxStyle(d)"
+                :title="d.text"
+                @click="trigger5(d.text)"
+              >
+                <span class="code-box-label">{{ d.text }}</span>
+              </button>
+            </template>
+            <!-- 多码定格选码：画面冻结，每个码上方留一个箭头图标，点箭头 = 识别这个码 -->
+            <template v-else>
+              <button
+                v-for="(d, i) in detections5"
+                :key="'frozen-' + i"
+                type="button"
+                class="code-arrow"
+                :style="arrowStyle(d)"
+                :title="'识别 ' + d.text"
+                :aria-label="'识别 ' + d.text"
+                @click="pickArrow(d.text)"
+              >
+                <IconSvg type="arrow-down" size="md" color="currentColor" />
+                <span class="code-arrow-label">{{ d.text }}</span>
+              </button>
+              <div class="frozen-bar">
+                已定格 {{ detections5.length }} 个码 — 点击箭头选择要识别的
+                <button type="button" class="frozen-resume" @click="cancelPick">重新扫描</button>
+              </div>
+            </template>
             <span class="mask top" /><span class="mask bot" /><span class="mask left" /><span
               class="mask right"
             />
             <span class="cnr tl" /><span class="cnr tr" /><span class="cnr bl" /><span class="cnr br" />
-            <span class="beam" />
-            <span class="scanning-txt">扫描中</span>
+            <span v-if="!paused5" class="beam" />
+            <span v-if="!paused5" class="scanning-txt">扫描中</span>
           </div>
           <canvas ref="c5" style="display: none" />
           <div v-if="e5" class="scan-err">
@@ -634,6 +683,84 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 .code-box.primary .code-box-label {
   background: #22c55e;
   color: #052e16;
+}
+/* 定格选码：箭头图标悬在码中心上方，尖朝下 */
+.code-arrow {
+  position: absolute;
+  transform: translate(-50%, -130%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 5px 7px 3px;
+  border: none;
+  border-radius: 999px 999px 4px 4px;
+  background: #22c55e;
+  color: #052e16;
+  cursor: pointer;
+  z-index: 4;
+  box-shadow: var(--shadow-md);
+  animation: arrow-bob 1.2s ease-in-out infinite;
+}
+.code-arrow:hover {
+  background: #16a34a;
+  color: #fff;
+}
+.code-arrow:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+@keyframes arrow-bob {
+  0%,
+  100% {
+    transform: translate(-50%, -130%);
+  }
+  50% {
+    transform: translate(-50%, -115%);
+  }
+}
+/* 动效敏感豁免：箭头静止（自动化点击也需要稳定元素） */
+@media (prefers-reduced-motion: reduce) {
+  .code-arrow {
+    animation: none;
+  }
+}
+.code-arrow-label {
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 定格提示条 */
+.frozen-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 10px;
+  border-radius: 8px;
+  z-index: 4;
+  white-space: nowrap;
+}
+.frozen-resume {
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.frozen-resume:hover {
+  background: rgba(255, 255, 255, 0.32);
 }
 .mask {
   position: absolute;

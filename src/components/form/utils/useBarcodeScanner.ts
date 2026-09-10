@@ -35,6 +35,17 @@ export const DEFAULT_CAPTURE_REGION: CaptureRegion = {
  */
 export type BarcodeFormats = 'qr' | 'barcode' | 'all'
 
+/**
+ * 构造 zxing ReaderOptions。注意 formats 键只在有值时才存在：
+ * zxing-wasm 对显式 formats: undefined 会内部崩溃（undefined.map），缺省键才正常。
+ */
+function buildReaderOptions(formats: BarcodeScannerOptions['formats'], maxNumberOfSymbols: number): Record<string, unknown> {
+  const opts: Record<string, unknown> = { tryHarder: true, maxNumberOfSymbols }
+  const fmts = resolveFormats(formats)
+  if (fmts) opts.formats = fmts
+  return opts
+}
+
 /** 映射到 zxing ReaderOptions.formats；all → undefined（不限制） */
 function resolveFormats(formats: BarcodeScannerOptions['formats']): ReadInputBarcodeFormat[] | undefined {
   const v = isRef(formats) ? formats.value : formats
@@ -207,6 +218,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     _starting = false
     active = false
     scanning.value = false
+    paused.value = false
     cancelAnimationFrame(raf)
     raf = 0
     stopTracks()
@@ -214,6 +226,29 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     confirmHits.clear()
     acceptedAt.clear()
     detections.value = []
+  }
+
+  /**
+   * 定格（多码选码用）：停掉解码循环 + 暂停视频播放 — 画面冻结在当前帧，
+   * detections 保持不变供消费方画箭头/候选框；摄像头流仍占用，resume() 立即恢复。
+   */
+  const paused = ref(false)
+  function pause(): void {
+    if (!active || paused.value) return
+    paused.value = true
+    cancelAnimationFrame(raf)
+    raf = 0
+    videoRef.value?.pause()
+  }
+
+  /** 恢复实时扫描（配合 pause()） */
+  function resume(): void {
+    if (!active || !paused.value) return
+    paused.value = false
+    lastScan = 0
+    busy = false
+    videoRef.value?.play().catch(() => {})
+    if (!raf) scanLoop()
   }
 
   // 组件卸载时自动清理
@@ -233,6 +268,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
       cancelAnimationFrame(raf)
       raf = 0
     } else {
+      if (paused.value) return // 定格中不自动恢复解码
       lastScan = 0
       busy = false
       if (!raf) scanLoop()
@@ -312,11 +348,10 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
         sy = Math.round(dh * region.top)
       const sw = Math.round(dw * region.width),
         sh = Math.round(dh * region.height)
-      const results: ReadResult[] = await readBarcodes(ctx2d.getImageData(sx, sy, sw, sh), {
-        tryHarder: true,
-        maxNumberOfSymbols: 5,
-        formats: resolveFormats(options.formats),
-      })
+      const results: ReadResult[] = await readBarcodes(
+        ctx2d.getImageData(sx, sy, sw, sh),
+        buildReaderOptions(options.formats, 5) as Parameters<typeof readBarcodes>[1],
+      )
       if (!active) return // stop() 已执行：放弃本次结果，不再触发 onScan
 
       // 合法码 → 检测框。readBarcodes 收到的是截图区域裁剪帧，position 为裁剪帧局部坐标 —
@@ -394,11 +429,10 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
           c.height = s < 1 ? Math.round(img.height * s) : img.height
           const pctx = c.getContext('2d', { willReadFrequently: true })!
           pctx.drawImage(img, 0, 0, c.width, c.height)
-          const results = await readBarcodes(pctx.getImageData(0, 0, c.width, c.height), {
-            tryHarder: true,
-            maxNumberOfSymbols: 5,
-            formats: resolveFormats(options.formats),
-          })
+          const results = await readBarcodes(
+            pctx.getImageData(0, 0, c.width, c.height),
+            buildReaderOptions(options.formats, 5) as Parameters<typeof readBarcodes>[1],
+          )
           resolve(results.map((r) => r.text).filter(ok))
         } catch (e) {
           console.error('scanPhoto error:', e)
@@ -410,5 +444,19 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     })
   }
 
-  return { start, stop, scanPhoto, scanning, error, videoRef, canvasRef, detections, triggerDetection }
+  return {
+    start,
+    stop,
+    scanPhoto,
+    scanning,
+    error,
+    videoRef,
+    canvasRef,
+    detections,
+    triggerDetection,
+    /** 定格/恢复：多码选码流程用（pause 停解码并冻结画面，resume 恢复实时扫描） */
+    paused,
+    pause,
+    resume,
+  }
 }
