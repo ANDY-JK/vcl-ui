@@ -245,6 +245,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
   /** 码中心到截图区域中心的距离（越小越"被镜头对准"）；坐标相对截图区域局部系 */
   function distanceFromRegionCenter(r: ReadResult, sw: number, sh: number): number {
     const p = r.position
+    if (!p) return Number.MAX_VALUE
     const cx = (p.topLeft.x + p.bottomRight.x) / 2
     const cy = (p.topLeft.y + p.bottomLeft.y) / 2
     const rcx = sw / 2
@@ -252,9 +253,10 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     return Math.hypot(cx - rcx, cy - rcy)
   }
 
-  /** 四角坐标 → 包围矩形 */
+  /** 四角坐标 → 包围矩形（position 缺失时返回零框：指针渲染失败不能拖死解码主流程） */
   function boundsOf(r: ReadResult): { x: number; y: number; width: number; height: number } {
     const p = r.position
+    if (!p) return { x: 0, y: 0, width: 0, height: 0 }
     const xs = [p.topLeft.x, p.topRight.x, p.bottomLeft.x, p.bottomRight.x]
     const ys = [p.topLeft.y, p.topRight.y, p.bottomLeft.y, p.bottomRight.y]
     const x = Math.min(...xs)
@@ -288,11 +290,12 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
       })
       if (!active) return // stop() 已执行：放弃本次结果，不再触发 onScan
 
-      // 合法码 → 检测框（坐标换回整帧 canvas 像素系，消费方按显示尺寸等比映射）
+      // 合法码 → 检测框。readBarcodes 收到的是截图区域裁剪帧，position 为裁剪帧局部坐标 —
+      // 必须加回 sx/sy 偏移才是整帧 canvas 像素系（此前漏加，框整体偏到画面左上）
       const valid = results.filter((r) => ok(r.text))
       detections.value = valid.map((r) => {
         const b = boundsOf(r)
-        return { text: r.text, ...b, primary: false }
+        return { text: r.text, x: b.x + sx, y: b.y + sy, width: b.width, height: b.height, primary: false }
       })
 
       if (valid.length > 0) lastScan = Date.now()

@@ -104,8 +104,7 @@ const {
   detections: detections5,
   triggerDetection: trigger5,
 } = useBarcodeScanner({
-  prefix: 'S',
-  length: 11,
+  // 不设 prefix/length：任意条码/二维码都能识别（想看过滤效果看上面实例 2/3）
   onScan: (c) => {
     modalCodes.value = [...modalCodes.value, c]
     lastResult.value = c

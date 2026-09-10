@@ -236,7 +236,8 @@ function processFiles(fileList: FileList | null) {
     })
   }
   if (newFiles.length) {
-    if (props.variant === 'card') createPreviews(newFiles, fileList)
+    // 图片文件一律生成 blob 预览地址（此前仅 card 变体生成，列表变体图片没有缩略图/预览入口）
+    createPreviews(newFiles, fileList)
     emit('change', files.value)
     syncModel()
   }
@@ -570,8 +571,15 @@ onUnmounted(() => {
         {{ label }}
       </p>
 
-      <!-- ② 预览图：有文件时显示 -->
-      <img v-if="cardPreviewUrl" :src="cardPreviewUrl" class="card-img" />
+      <!-- ② 预览图：有文件时显示；点图直接全屏预览（点中央小区域才是选文件，避免语义混淆） -->
+      <img
+        v-if="cardPreviewUrl"
+        :src="cardPreviewUrl"
+        class="card-img"
+        :alt="t('form.previewImage')"
+        style="cursor: zoom-in"
+        @click.stop="openPreview(files[cardIdx]!)"
+      />
 
       <!-- ③ 多张标志：翻页按钮 + 计数 -->
       <template v-if="cardFileCount > 1">
