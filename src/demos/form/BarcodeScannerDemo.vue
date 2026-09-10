@@ -116,6 +116,16 @@ function boxStyle(d: BarcodeDetection) {
   }
 }
 
+/** 选码图标定位：锚在码的中心（箭头尖 + 文字牌整体悬于中心上方） */
+function markerStyle(d: BarcodeDetection) {
+  const cw = c5.value?.width || 1
+  const ch = c5.value?.height || 1
+  return {
+    left: ((d.x + d.width / 2) / cw) * 100 + '%',
+    top: ((d.y + d.height / 2) / ch) * 100 + '%',
+  }
+}
+
 async function openModal() {
   // 用户手势中解锁音频——之后 onScan 里的蜂鸣/语音才能自由播放
   unlockAudio()
@@ -295,19 +305,20 @@ function onCamError(msg: string) {
                 <span class="code-box-label">{{ d.text }}</span>
               </button>
             </template>
-            <!-- 多码定格选码：画面压暗冻结，每码一个虚线选框 + 上方箭头图钉，点选即识别 -->
+            <!-- 多码定格选码（微信/支付宝式）：动态变静态，每码一个箭头图标，点图标即识别该码 -->
             <template v-else>
               <button
                 v-for="(d, i) in detections5"
                 :key="'frozen-' + i"
                 type="button"
-                class="pick-region"
-                :style="boxStyle(d)"
+                class="code-marker"
+                :style="markerStyle(d)"
                 :aria-label="'识别 ' + d.text"
                 @click="pickArrow(d.text)"
               >
-                <span class="pick-arrow"><IconSvg type="arrow-down" size="md" color="currentColor" /></span>
-                <span class="pick-chip">{{ d.text }}</span>
+                <span class="code-marker-badge"><IconSvg type="arrow-down" size="sm" color="currentColor" /></span>
+                <span class="code-marker-tip" />
+                <span class="code-marker-chip">{{ d.text }}</span>
               </button>
               <div class="frozen-bar">
                 已定格 {{ detections5.length }} 个码 — 点击码上的箭头选择要识别的
@@ -682,63 +693,49 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 .scan-live.is-frozen .scanning-txt {
   display: none;
 }
-/* 虚线选框：整块可点 */
-.pick-region {
+/* 选码图标（微信/支付宝式）：箭头徽章 + 下箭头尖 + 码文本牌，整体锚在码中心，
+   尖端落在码中心点上；整体为点击目标 */
+.code-marker {
   position: absolute;
-  border: 2px dashed #22c55e;
-  border-radius: 8px;
-  background: rgba(34, 197, 94, 0.1);
-  cursor: pointer;
-  z-index: 3;
+  transform: translate(-50%, calc(-100% - 6px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  border: none;
   padding: 0;
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+  cursor: pointer;
+  z-index: 4;
+  font-family: inherit;
 }
-.pick-region:hover,
-.pick-region:focus-visible {
-  border-style: solid;
-  border-color: #fff;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.28);
-  outline: none;
-}
-/* 箭头图钉：圆徽 + 下箭头尖，悬在码中心上方，尖端指向码 */
-.pick-arrow {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translate(-50%, -100%);
-  width: 34px;
-  height: 34px;
+.code-marker-badge {
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: #22c55e;
   color: #052e16;
-  box-shadow: var(--shadow-md);
-  pointer-events: none;
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 2px rgba(255, 255, 255, 0.85);
   transition:
     background var(--transition-fast),
     transform var(--transition-fast);
 }
-/* 圆徽下的小三角，形成「箭头尖」 */
-.pick-arrow::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 7px solid transparent;
+/* 徽章下的箭头尖：指向码中心 */
+.code-marker-tip {
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
   border-top-color: #22c55e;
+  margin-top: -1px;
 }
-/* 文字牌：挂在选框下沿 */
-.pick-chip {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, 10px);
-  max-width: 170%;
+/* 码文本牌：紧跟箭头尖下方，方便确认要识别的是哪个 */
+.code-marker-chip {
+  margin-top: 6px;
+  max-width: 150px;
   font-size: 11px;
   color: #fff;
   background: rgba(0, 0, 0, 0.65);
@@ -747,13 +744,16 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  pointer-events: none;
 }
-.pick-region:hover .pick-arrow,
-.pick-region:focus-visible .pick-arrow {
+.code-marker:hover .code-marker-badge,
+.code-marker:focus-visible .code-marker-badge {
   background: #16a34a;
   color: #fff;
-  transform: translate(-50%, -100%) scale(1.12);
+  transform: scale(1.15);
+}
+.code-marker:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 /* 定格提示条 */
 .frozen-bar {
