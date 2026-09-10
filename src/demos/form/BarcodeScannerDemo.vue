@@ -17,7 +17,8 @@ function feedback(code: string) {
   if (notifyOn.value) notify('扫码成功', code)
 }
 
-// ---- 实例 1：无过滤，接受所有条码 ----
+// ---- 内嵌实例（唯一一个）：formats 分流 通用/仅二维码/仅条形码，Ref 实时切换不用重启 ----
+const scanFormat = ref<'all' | 'qr' | 'barcode'>('all')
 const allCodes = ref<string[]>([])
 const {
   videoRef: v1,
@@ -27,39 +28,11 @@ const {
   start: start1,
   stop: stop1,
 } = useBarcodeScanner({
+  formats: scanFormat,
   onScan: (c) => (allCodes.value = [...allCodes.value, c]),
 })
 
-// ---- 实例 2：前缀 S + 11 位 ----
-const sCodes = ref<string[]>([])
-const {
-  videoRef: v2,
-  canvasRef: c2,
-  scanning: s2,
-  error: e2,
-  start: start2,
-  stop: stop2,
-} = useBarcodeScanner({
-  prefix: 'S',
-  length: 11,
-  onScan: (c) => (sCodes.value = [...sCodes.value, c]),
-})
-
-// ---- 实例 3：仅长度 8 位（如 EAN-8） ----
-const ean8Codes = ref<string[]>([])
-const {
-  videoRef: v3,
-  canvasRef: c3,
-  scanning: s3,
-  error: e3,
-  start: start3,
-  stop: stop3,
-} = useBarcodeScanner({
-  length: 8,
-  onScan: (c) => (ean8Codes.value = [...ean8Codes.value, c]),
-})
-
-// ---- 实例 4：拍照上传 ----
+// ---- 拍照上传 ----
 const photoCodes = ref<string[]>([])
 const photoScanning = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -198,70 +171,46 @@ function onCamError(msg: string) {
     <h2 class="title">useBarcodeScanner</h2>
     <p class="desc">
       纯 TS composable——消费方自己创建 video / canvas / UI。<br />
-      传 prefix/length → 只回调符合条件的；不传 → 全部回调。
+      <code>formats</code> 分流二维码/条形码/通用（可实时切换）；<code>prefix</code>/<code>length</code> 做内容过滤。
     </p>
 
-    <!-- 四列实例 -->
+    <!-- 内嵌实例（唯一一个）+ 格式分流 -->
+    <Card title="扫码识别（摄像头）" style="margin-bottom: 24px">
+      <p class="card-hint">
+        <code>formats</code> 分流：<code>通用</code>=二维码+条形码全识别；<code>仅二维码</code>/<code>仅条形码</code>
+        只认对应家族。切换实时生效，不用重启摄像头。内容过滤用 <code>prefix</code>/<code>length</code>（如 S 开头 11 位）。
+      </p>
+      <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 12px; flex-wrap: wrap">
+        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
+          ><input v-model="scanFormat" type="radio" value="all" /> 通用</label
+        >
+        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
+          ><input v-model="scanFormat" type="radio" value="qr" /> 仅二维码</label
+        >
+        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
+          ><input v-model="scanFormat" type="radio" value="barcode" /> 仅条形码</label
+        >
+      </div>
+      <div class="scan-box">
+        <div v-if="!s1 && !e1" class="scan-idle"><span class="spinner" /><span>待启动</span></div>
+        <div v-show="s1" class="scan-live">
+          <video ref="v1" class="scan-video" autoplay playsinline muted />
+        </div>
+        <canvas ref="c1" style="display: none" />
+        <div v-if="e1" class="scan-err">
+          <p>{{ e1 }}</p>
+          <button @click="start1">重试</button>
+        </div>
+      </div>
+      <button class="btn" style="margin-top: 10px" @click="s1 ? stop1() : start1()">
+        {{ s1 ? '停止' : '开始' }}
+      </button>
+      <div v-if="allCodes.length" class="result">{{ allCodes.length }} 条：{{ allCodes.join(', ') }}</div>
+    </Card>
+
     <div class="grid-4">
-      <Card title="无过滤">
-        <p class="card-hint">不传 prefix/length，所有条码都接受。</p>
-        <div class="scan-box">
-          <div v-if="!s1 && !e1" class="scan-idle"><span class="spinner" /><span>待启动</span></div>
-          <div v-show="s1" class="scan-live">
-            <video ref="v1" class="scan-video" autoplay playsinline muted />
-          </div>
-          <canvas ref="c1" style="display: none" />
-          <div v-if="e1" class="scan-err">
-            <p>{{ e1 }}</p>
-            <button @click="start1">重试</button>
-          </div>
-        </div>
-        <button class="btn" @click="s1 ? stop1() : start1()">
-          {{ s1 ? '停止' : '开始' }}
-        </button>
-        <div v-if="allCodes.length" class="result">{{ allCodes.length }} 条：{{ allCodes.join(', ') }}</div>
-      </Card>
-
-      <Card title="prefix='S' length=11">
-        <p class="card-hint">仅接受 S 开头且恰好 11 位。</p>
-        <div class="scan-box">
-          <div v-if="!s2 && !e2" class="scan-idle"><span class="spinner" /><span>待启动</span></div>
-          <div v-show="s2" class="scan-live">
-            <video ref="v2" class="scan-video" autoplay playsinline muted />
-          </div>
-          <canvas ref="c2" style="display: none" />
-          <div v-if="e2" class="scan-err">
-            <p>{{ e2 }}</p>
-            <button @click="start2">重试</button>
-          </div>
-        </div>
-        <button class="btn" @click="s2 ? stop2() : start2()">
-          {{ s2 ? '停止' : '开始' }}
-        </button>
-        <div v-if="sCodes.length" class="result">{{ sCodes.length }} 条：{{ sCodes.join(', ') }}</div>
-      </Card>
-
-      <Card title="length=8（无前缀）">
-        <p class="card-hint">仅校验 8 位长度，适合 EAN-8。</p>
-        <div class="scan-box">
-          <div v-if="!s3 && !e3" class="scan-idle"><span class="spinner" /><span>待启动</span></div>
-          <div v-show="s3" class="scan-live">
-            <video ref="v3" class="scan-video" autoplay playsinline muted />
-          </div>
-          <canvas ref="c3" style="display: none" />
-          <div v-if="e3" class="scan-err">
-            <p>{{ e3 }}</p>
-            <button @click="start3">重试</button>
-          </div>
-        </div>
-        <button class="btn" @click="s3 ? stop3() : start3()">
-          {{ s3 ? '停止' : '开始' }}
-        </button>
-        <div v-if="ean8Codes.length" class="result">{{ ean8Codes.length }} 条：{{ ean8Codes.join(', ') }}</div>
-      </Card>
-
-      <!-- 4. 拍照上传 -->
-      <Card title="拍照上传（prefix='S' length=11）">
+      <!-- 拍照上传 -->
+      <Card title="拍照上传识别">
         <p class="card-hint">用 scanPhoto(file) 识别，不需要摄像头。</p>
         <div class="upload-box" @click="fileInput?.click()">
           <div v-if="photoScanning"><span class="spinner" /><span>识别中...</span></div>
@@ -472,6 +421,11 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
           <td><code>length</code></td>
           <td>number</td>
           <td>条码长度过滤，不传/0=不校验</td>
+        </tr>
+        <tr>
+          <td><code>formats</code></td>
+          <td>'all' | 'qr' | 'barcode'（可传 Ref 实时切换）</td>
+          <td>识别格式分流：all=二维码+条形码全识别；qr=仅二维码家族；barcode=仅一维条码家族。默认 'all'</td>
         </tr>
         <tr>
           <td><code>onScan</code></td>

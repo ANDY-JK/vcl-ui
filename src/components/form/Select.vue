@@ -1288,6 +1288,9 @@ function onTimeCancel() {
 
 <style>
 .dropdown-panel {
+  /* 面板 Teleport 到 body 后是 z-auto —— 后续卡片内任何正层级元素都会盖住选项，
+     必须显式挂全库下拉层令牌 */
+  z-index: var(--z-dropdown, 2000);
   min-width: clamp(160px, 26vw, 220px);
   max-height: clamp(200px, 36vw, 280px);
   background: var(--color-surface);

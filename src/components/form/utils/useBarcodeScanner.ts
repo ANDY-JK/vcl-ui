@@ -1,5 +1,11 @@
-import { ref, onUnmounted } from 'vue'
-import { readBarcodes, type ReadResult } from 'zxing-wasm/reader'
+import { ref, isRef, onUnmounted, type Ref } from 'vue'
+import {
+  readBarcodes,
+  LINEAR_BARCODE_FORMATS,
+  MATRIX_BARCODE_FORMATS,
+  type ReadResult,
+  type ReadInputBarcodeFormat,
+} from 'zxing-wasm/reader'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：供各函数直接取当前语言文案 */
@@ -18,6 +24,23 @@ export const DEFAULT_CAPTURE_REGION: CaptureRegion = {
   top: 0.35,
   width: 0.65,
   height: 0.3,
+}
+
+/**
+ * 识别格式分流：
+ * - 'all'（默认）：二维码 + 条形码全部识别
+ * - 'qr'：仅二维码家族（QRCode/DataMatrix/Aztec/PDF417/MaxiCode）
+ * - 'barcode'：仅一维条码家族（EAN/UPC/Code128/Code39/ITF/DataBar 等）
+ * 支持传 Ref 实时切换（下一帧生效），无需重启摄像头。
+ */
+export type BarcodeFormats = 'qr' | 'barcode' | 'all'
+
+/** 映射到 zxing ReaderOptions.formats；all → undefined（不限制） */
+function resolveFormats(formats: BarcodeScannerOptions['formats']): ReadInputBarcodeFormat[] | undefined {
+  const v = isRef(formats) ? formats.value : formats
+  if (v === 'qr') return [...MATRIX_BARCODE_FORMATS] as ReadInputBarcodeFormat[]
+  if (v === 'barcode') return [...LINEAR_BARCODE_FORMATS] as ReadInputBarcodeFormat[]
+  return undefined
 }
 
 export interface BarcodeScannerOptions {
@@ -40,6 +63,11 @@ export interface BarcodeScannerOptions {
    * - 'manual'：不自动触发，结果进 detections，由消费方展示候选列表/点击框让用户选择后调 triggerDetection
    */
   multiMode?: 'center' | 'manual'
+  /**
+   * 识别格式分流（默认 'all' 全识别）：'qr' 仅二维码家族、'barcode' 仅一维条码家族。
+   * 支持 Ref 实时切换，下一帧生效。
+   */
+  formats?: BarcodeFormats | Ref<BarcodeFormats>
 }
 
 /** 单个码的实时检测信息（坐标系为 canvas 像素，消费方叠加渲染时按显示尺寸换算） */
@@ -287,6 +315,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
       const results: ReadResult[] = await readBarcodes(ctx2d.getImageData(sx, sy, sw, sh), {
         tryHarder: true,
         maxNumberOfSymbols: 5,
+        formats: resolveFormats(options.formats),
       })
       if (!active) return // stop() 已执行：放弃本次结果，不再触发 onScan
 
@@ -368,6 +397,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
           const results = await readBarcodes(pctx.getImageData(0, 0, c.width, c.height), {
             tryHarder: true,
             maxNumberOfSymbols: 5,
+            formats: resolveFormats(options.formats),
           })
           resolve(results.map((r) => r.text).filter(ok))
         } catch (e) {
