@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import Upload from '@/components/form/Upload.vue'
+import type { UploadFile } from '@/components/form/Upload.vue'
 import Card from '@/components/data/Card.vue'
+
+const multiFiles = ref<UploadFile[]>([])
 </script>
 
 <template>
@@ -9,6 +13,23 @@ import Card from '@/components/data/Card.vue'
     <p class="demo-desc">
       拖拽/点击上传文件，默认图片类型；传 accept 可限定类型，传空字符串 = 全部类型；支持多文件、大小限制、目录上传。
     </p>
+
+    <Card title="图片预览（内置）" style="margin-bottom: 24px">
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+        上传图片后：<b>卡片变体</b>点图片、<b>列表变体</b>点左侧缩略图 → 全屏预览，多图可左右切换，Esc 关闭。
+        想自己接管预览UI：传 <code>preview-mode="event"</code>，组件只抛 <code>@preview</code> 事件。
+      </p>
+      <div class="grid-2-col">
+        <div>
+          <p style="font-size: 12px; margin-bottom: 8px">卡片变体（点图片预览）</p>
+          <Upload variant="card" label="拍照/相册" compress />
+        </div>
+        <div>
+          <p style="font-size: 12px; margin-bottom: 8px">列表变体（点缩略图预览，多图可切换）</p>
+          <Upload v-model="multiFiles" multiple accept="image/*" compress />
+        </div>
+      </div>
+    </Card>
 
     <div class="grid-2-col" style="margin-bottom: 24px">
       <Card title="单文件上传（默认图片）">
@@ -95,6 +116,14 @@ import Card from '@/components/data/Card.vue'
           <td style="padding: 3px 8px">boolean</td>
           <td style="padding: 3px 8px">false</td>
           <td style="padding: 3px 8px">禁用</td>
+        </tr>
+        <tr>
+          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <code>preview-mode</code>
+          </td>
+          <td style="padding: 3px 8px">'builtin' | 'event'</td>
+          <td style="padding: 3px 8px">builtin</td>
+          <td style="padding: 3px 8px">图片预览：builtin = 内置全屏预览；event = 只抛 @preview 事件</td>
         </tr>
       </table>
     </Card>

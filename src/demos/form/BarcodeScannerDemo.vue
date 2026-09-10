@@ -284,7 +284,12 @@ function onCamError(msg: string) {
 
     <!-- 弹窗演示 -->
     <Card title="弹窗完整演示" style="margin-top: 16px">
-      <p class="card-hint">自定义 modal + tab（扫码/输入/上传）+ 反馈（声音/语音/通知）。</p>
+      <p class="card-hint">
+        自定义 modal + tab（扫码/输入/上传）+ 反馈（声音/语音/通知）。
+        <b>多码指针</b>：画面里同时出现多个码时，每个码画虚线框、码内容挂在框下方，
+        离取景框中心最近的框<b style="color: #22c55e">绿色高亮</b>并自动录入；
+        点击任意虚线框可改选那个码（扫码器 multiMode 可切 center/manual）。
+      </p>
       <div
         style="
           display: flex;

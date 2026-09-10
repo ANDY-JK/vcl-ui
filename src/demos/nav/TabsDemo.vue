@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Tabs from '@/components/nav/Tabs.vue'
+import TabPanel from '@/components/nav/TabPanel.vue'
 import Card from '@/components/data/Card.vue'
 
 const activeTab = ref('tab1')
 const mobileTab = ref('/home')
+const panelTab = ref('info')
 
 const tabItems = [
   { label: '全部', value: 'tab1' },
@@ -17,6 +19,10 @@ const bottomTabs = [
   { label: '发现', value: '/explore', icon: 'search' },
   { label: '消息', value: '/messages', icon: 'bell' },
   { label: '我的', value: '/profile', icon: 'user' },
+]
+const panelItems = [
+  { label: '基本信息', value: 'info' },
+  { label: '明细（懒加载）', value: 'detail' },
 ]
 </script>
 
@@ -45,6 +51,37 @@ const bottomTabs = [
           </p>
           <Tabs v-model="activeTab" :items="tabItems.slice(0, 3)" variant="card" />
         </div>
+      </div>
+    </Card>
+
+    <Card title="TabPanel 内容面板" style="margin-bottom: 24px">
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+        与 Tabs 配套的内容区：点哪个标签显示哪个面板。<code>lazy</code> 面板首次点开才渲染（重内容推荐）；
+        切走默认保留状态（下面的输入框填一半切回来还在）。
+      </p>
+      <Tabs v-model="panelTab" :items="panelItems" variant="underline" />
+      <div style="padding-top: 16px">
+        <TabPanel value="info">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <p style="margin: 0; font-size: 13px">基本信息面板 — 切走再切回来，输入框内容不会丢。</p>
+            <input
+              placeholder="在这里随便输入点什么，再切到「明细」再回来"
+              style="
+                height: 34px;
+                padding: 0 10px;
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-md);
+                background: var(--color-surface);
+                color: var(--color-text);
+              "
+            />
+          </div>
+        </TabPanel>
+        <TabPanel value="detail" lazy>
+          <p style="margin: 0; font-size: 13px">
+            明细面板（lazy）— 首次点开才渲染这段文字；重内容/异步数据推荐这种写法。
+          </p>
+        </TabPanel>
       </div>
     </Card>
 
