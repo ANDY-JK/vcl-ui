@@ -20,6 +20,7 @@ function feedback(code: string) {
 // ---- 内嵌实例（唯一一个）：formats 分流 通用/仅二维码/仅条形码，Ref 实时切换不用重启 ----
 const scanFormat = ref<'all' | 'qr' | 'barcode'>('all')
 const allCodes = ref<string[]>([])
+const starting1 = ref(false)
 const {
   videoRef: v1,
   canvasRef: c1,
@@ -31,6 +32,19 @@ const {
   formats: scanFormat,
   onScan: (c) => (allCodes.value = [...allCodes.value, c]),
 })
+/** 启动包装：启动期间先挂载相机分支（start 等流回来时 video 必须已存在，否则报未挂载） */
+async function toggle1() {
+  if (s1.value) {
+    stop1()
+    return
+  }
+  starting1.value = true
+  try {
+    await start1()
+  } finally {
+    starting1.value = false
+  }
+}
 
 // ---- 拍照上传 ----
 const photoCodes = ref<string[]>([])
@@ -201,39 +215,58 @@ function onCamError(msg: string) {
       <code>formats</code> 分流二维码/条形码/通用（可实时切换）；<code>prefix</code>/<code>length</code> 做内容过滤。
     </p>
 
-    <!-- 内嵌实例（唯一一个）+ 格式分流 -->
-    <Card title="扫码识别（摄像头）" style="margin-bottom: 24px">
-      <p class="card-hint">
-        <code>formats</code> 分流：<code>通用</code>=二维码+条形码全识别；<code>仅二维码</code>/<code>仅条形码</code>
-        只认对应家族。切换实时生效，不用重启摄像头。内容过滤用 <code>prefix</code>/<code>length</code>（如 S 开头 11 位）。
-      </p>
-      <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 12px; flex-wrap: wrap">
-        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
-          ><input v-model="scanFormat" type="radio" value="all" /> 通用</label
-        >
-        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
-          ><input v-model="scanFormat" type="radio" value="qr" /> 仅二维码</label
-        >
-        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer"
-          ><input v-model="scanFormat" type="radio" value="barcode" /> 仅条形码</label
-        >
-      </div>
-      <div class="scan-box scan-box--embedded">
-        <div v-if="!s1 && !e1" class="scan-idle"><span class="spinner" /><span>待启动</span></div>
-        <div v-show="s1" class="scan-live">
-          <video ref="v1" class="scan-video" autoplay playsinline muted />
-        </div>
-        <canvas ref="c1" style="display: none" />
-        <div v-if="e1" class="scan-err">
+    <!-- 内嵌实例（唯一一个）：saas 小程序同款渐变卡片，未启动=入口按钮，启动=相机嵌卡 -->
+    <div class="scan-hero" :class="{ 'scan-hero--on': s1 }">
+      <template v-if="!s1 && !starting1">
+        <button type="button" class="scan-open" @click="toggle1">
+          <span class="scan-open-icon" aria-hidden="true">
+            <span class="scan-corner tl" /><span class="scan-corner tr" />
+            <span class="scan-corner bl" /><span class="scan-corner br" />
+            <span class="scan-line" />
+          </span>
+          <span class="scan-open-text">开始扫码</span>
+        </button>
+        <div v-if="e1" class="scan-err scan-err--on-hero">
           <p>{{ e1 }}</p>
-          <button @click="start1">重试</button>
+          <button @click="toggle1">重试</button>
         </div>
+      </template>
+      <template v-else>
+        <div class="scan-inline">
+          <div class="scan-box scan-box--embedded">
+            <div class="scan-live">
+              <video ref="v1" class="scan-video" autoplay playsinline muted />
+            </div>
+            <canvas ref="c1" style="display: none" />
+          </div>
+          <button v-if="s1" type="button" class="scan-exit" @click="toggle1">停止扫码</button>
+        </div>
+      </template>
+      <!-- 格式分流：白字自绘勾选，融在渐变卡内（saas scan-auto 式） -->
+      <div class="fmt-row" role="radiogroup" aria-label="识别格式">
+        <button
+          v-for="f in [
+            { v: 'all', t: '通用' },
+            { v: 'qr', t: '仅二维码' },
+            { v: 'barcode', t: '仅条形码' },
+          ]"
+          :key="f.v"
+          type="button"
+          class="fmt-check"
+          :class="{ checked: scanFormat === f.v }"
+          role="radio"
+          :aria-checked="scanFormat === f.v"
+          @click="scanFormat = f.v as 'all' | 'qr' | 'barcode'"
+        >
+          <span class="fmt-check-box" />
+          <span class="fmt-check-text">{{ f.t }}</span>
+        </button>
       </div>
-      <button class="btn" style="margin-top: 10px" @click="s1 ? stop1() : start1()">
-        {{ s1 ? '停止' : '开始' }}
-      </button>
-      <div v-if="allCodes.length" class="result">{{ allCodes.length }} 条：{{ allCodes.join(', ') }}</div>
-    </Card>
+      <div class="scan-sub">扫描串码 / 条码 · 切换格式实时生效</div>
+      <div v-if="allCodes.length" class="result result--on-hero">
+        {{ allCodes.length }} 条：{{ allCodes.join(', ') }}
+      </div>
+    </div>
 
     <div class="grid-4">
       <!-- 拍照上传 -->
@@ -570,6 +603,198 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 /* 内嵌实例（非四列栅格时防止撑满整页）：取景框限制在常见扫码器尺寸 */
 .scan-box--embedded {
   max-width: 360px;
+  margin: 0 auto;
+}
+/* ══════ saas 小程序同款渐变扫码卡 ══════
+   对齐 mp-app/pages/tenant/scan.vue：主色渐变卡 + 入口按钮态/相机嵌卡态 + 白字勾选 */
+.scan-hero {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(160deg, var(--color-primary) 0%, #6d8cff 100%);
+  border-radius: 14px;
+}
+/* 扫描中：卡片收紧内边距，让相机铺满（同一张卡片，不换窗口） */
+.scan-hero--on {
+  padding: 8px;
+}
+.scan-open {
+  width: 100%;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  font-family: inherit;
+}
+.scan-open:hover {
+  opacity: 0.88;
+}
+.scan-open-icon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+.scan-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: #fff;
+  border-style: solid;
+  border-width: 0;
+}
+.scan-corner.tl {
+  top: 0;
+  left: 0;
+  border-top-width: 2.5px;
+  border-left-width: 2.5px;
+  border-top-left-radius: 5px;
+}
+.scan-corner.tr {
+  top: 0;
+  right: 0;
+  border-top-width: 2.5px;
+  border-right-width: 2.5px;
+  border-top-right-radius: 5px;
+}
+.scan-corner.bl {
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 2.5px;
+  border-left-width: 2.5px;
+  border-bottom-left-radius: 5px;
+}
+.scan-corner.br {
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 2.5px;
+  border-right-width: 2.5px;
+  border-bottom-right-radius: 5px;
+}
+.scan-line {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
+  animation: scan-sweep 2.2s ease-in-out infinite;
+}
+@keyframes scan-sweep {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(38px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.scan-open-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+.scan-inline {
+  width: 100%;
+}
+.scan-exit {
+  width: 100%;
+  margin-top: 8px;
+  padding: 9px 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  font-family: inherit;
+}
+.scan-exit:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+.fmt-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.fmt-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+.fmt-check-box {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  transition: background var(--transition-fast);
+}
+.fmt-check.checked .fmt-check-box {
+  background: #fff;
+}
+.fmt-check.checked .fmt-check-box::after {
+  content: '✓';
+  display: block;
+  font-size: 10px;
+  line-height: 11px;
+  color: var(--color-primary);
+  text-align: center;
+}
+.fmt-check-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.92);
+}
+.fmt-check.checked .fmt-check-text {
+  color: #fff;
+  font-weight: 600;
+}
+.scan-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+}
+.scan-err--on-hero {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.scan-err--on-hero p {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 13px;
+}
+.result--on-hero {
+  font-size: 13px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  padding: 8px 12px;
+  align-self: stretch;
+  word-break: break-all;
 }
 .grid-4 {
   display: grid;
