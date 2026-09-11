@@ -215,8 +215,9 @@ function onCamError(msg: string) {
       <code>formats</code> 分流二维码/条形码/通用（可实时切换）；<code>prefix</code>/<code>length</code> 做内容过滤。
     </p>
 
-    <!-- 内嵌实例（唯一一个）：saas 小程序同款渐变卡片，未启动=入口按钮，启动=相机嵌卡 -->
-    <div class="scan-hero" :class="{ 'scan-hero--on': s1 }">
+    <!-- 内嵌实例（唯一一个）：saas 小程序同款渐变卡片，未启动=入口按钮，启动=相机嵌卡；
+         入口按钮与相机框同尺寸 + 停止条槽位隐形占位 → 三态卡片尺寸恒定不跳变 -->
+    <div class="scan-hero">
       <template v-if="!s1 && !starting1">
         <button type="button" class="scan-open" @click="toggle1">
           <span class="scan-open-icon" aria-hidden="true">
@@ -226,20 +227,23 @@ function onCamError(msg: string) {
           </span>
           <span class="scan-open-text">开始扫码</span>
         </button>
-        <div v-if="e1" class="scan-err scan-err--on-hero">
-          <p>{{ e1 }}</p>
-          <button @click="toggle1">重试</button>
-        </div>
+        <button type="button" v-if="e1" class="scan-err scan-err--on-hero" @click="toggle1">
+          {{ e1 }} · 点击重试
+        </button>
+        <button v-else type="button" class="scan-exit scan-exit--ghost" aria-hidden="true" tabindex="-1">
+          停止扫码
+        </button>
       </template>
       <template v-else>
         <div class="scan-inline">
           <div class="scan-box scan-box--embedded">
             <div class="scan-live">
               <video ref="v1" class="scan-video" autoplay playsinline muted />
+              <span v-if="starting1" class="scan-starting"><span class="spinner" /><span>启动中...</span></span>
             </div>
             <canvas ref="c1" style="display: none" />
           </div>
-          <button v-if="s1" type="button" class="scan-exit" @click="toggle1">停止扫码</button>
+          <button type="button" class="scan-exit" @click="toggle1">停止扫码</button>
         </div>
       </template>
       <!-- 格式分流：白字自绘勾选，融在渐变卡内（saas scan-auto 式） -->
@@ -263,9 +267,10 @@ function onCamError(msg: string) {
         </button>
       </div>
       <div class="scan-sub">扫描串码 / 条码 · 切换格式实时生效</div>
-      <div v-if="allCodes.length" class="result result--on-hero">
-        {{ allCodes.length }} 条：{{ allCodes.join(', ') }}
-      </div>
+    </div>
+    <!-- 结果列表放卡片外：新码入列不撑卡（尺寸恒定） -->
+    <div v-if="allCodes.length" class="result result--hero-out">
+      已识别 {{ allCodes.length }} 条：{{ allCodes.join(', ') }}
     </div>
 
     <div class="grid-4">
@@ -601,48 +606,48 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   background: var(--color-primary-hover);
 }
 /* 内嵌实例（非四列栅格时防止撑满整页）：取景框限制在常见扫码器尺寸 */
-.scan-box--embedded {
-  max-width: 360px;
+/* 提权选择器：基础 .scan-box 定义在后面（width:100%），双类名保证 360px 稳定生效 */
+.scan-box.scan-box--embedded {
+  width: 360px;
+  max-width: 100%;
   margin: 0 auto;
 }
 /* ══════ saas 小程序同款渐变扫码卡 ══════
-   对齐 mp-app/pages/tenant/scan.vue：主色渐变卡 + 入口按钮态/相机嵌卡态 + 白字勾选 */
+   对齐 mp-app/pages/tenant/scan.vue：主色渐变卡 + 入口按钮态/相机嵌卡态 + 白字勾选
+   尺寸恒定：三态共用同一内容宽（360px 取景区）与同高的停止条槽位，卡片不跳变 */
 .scan-hero {
   margin-bottom: 24px;
-  padding: 16px 20px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(160deg, var(--color-primary) 0%, #6d8cff 100%);
+  border-radius: 14px;
+}
+/* 入口按钮 = 相机取景区的同尺寸占位（360×270），切换状态时卡片尺寸不变 */
+.scan-open {
+  width: 360px;
+  max-width: 100%;
+  height: 270px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  background: linear-gradient(160deg, var(--color-primary) 0%, #6d8cff 100%);
-  border-radius: 14px;
-}
-/* 扫描中：卡片收紧内边距，让相机铺满（同一张卡片，不换窗口） */
-.scan-hero--on {
-  padding: 8px;
-}
-.scan-open {
-  width: 100%;
-  padding: 16px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  gap: 12px;
   border: none;
-  border-radius: 999px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.14);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.35);
   cursor: pointer;
   font-family: inherit;
 }
 .scan-open:hover {
-  opacity: 0.88;
+  background: rgba(255, 255, 255, 0.22);
 }
 .scan-open-icon {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
 }
 .scan-corner {
   position: absolute;
@@ -711,8 +716,9 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   width: 100%;
 }
 .scan-exit {
-  width: 100%;
-  margin-top: 8px;
+  width: 360px;
+  max-width: 100%;
+  margin: 8px auto 0;
   padding: 9px 0;
   border: none;
   border-radius: 999px;
@@ -728,6 +734,28 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 }
 .scan-exit:hover {
   background: rgba(255, 255, 255, 0.32);
+}
+/* 隐形占位：未启动态保留停止条槽位，切态时卡片尺寸不跳变 */
+.scan-exit--ghost {
+  visibility: hidden;
+  cursor: default;
+}
+.scan-exit--ghost:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+/* 启动中：相机框内遮罩提示 */
+.scan-starting {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 13px;
+  z-index: 2;
 }
 .fmt-row {
   display: flex;
@@ -777,23 +805,33 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   color: rgba(255, 255, 255, 0.85);
   text-align: center;
 }
+/* 报错行与停止条同槽位同尺寸（360×35 单行胶囊）→ 出错也不跳卡 */
 .scan-err--on-hero {
+  width: 360px;
+  max-width: 100%;
+  height: 35px;
+  margin: 8px auto 0;
+  padding: 0 12px;
+  border: none;
+  border-radius: 999px;
   background: rgba(0, 0, 0, 0.35);
-  border-radius: 10px;
-  padding: 10px 14px;
-}
-.scan-err--on-hero p {
-  margin: 0 0 8px;
   color: #fff;
-  font-size: 13px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.result--on-hero {
+.result--hero-out {
+  margin: -14px 0 24px;
   font-size: 13px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-alt);
   border-radius: 10px;
   padding: 8px 12px;
-  align-self: stretch;
   word-break: break-all;
 }
 .grid-4 {
