@@ -140,6 +140,7 @@ export default {
     upload: '文件上传',
     imageUpload: '图片上传',
     camera: '拍照',
+    scanCode: '扫码识别',
     divider: '分割线',
     title: '标题文字',
     paragraph: '说明文字',

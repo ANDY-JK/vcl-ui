@@ -1220,6 +1220,12 @@ function onTimeCancel() {
   padding-block: 5px;
   flex-wrap: wrap;
 }
+/* 有 tag 时内容顶到 padding 上缘，骑缝浮标题下半截会咬进首行 tag 左上角。
+   不加 padding（控件会变高、tag 行靠底，与同行控件不齐）——改为上浮态大幅上偏：
+   标题 ~3/4 露在边框上方，下半截只探入 ~4-5px，首行 tag 上方留 ≥2px 净空，控件尺寸不变 */
+.trigger-wrapper.has-floating .fl-label.raised {
+  transform: translateY(-75%);
+}
 .trigger-input {
   flex: 1;
   min-width: 0;

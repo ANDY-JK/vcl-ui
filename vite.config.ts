@@ -23,8 +23,11 @@ export default defineConfig({
     vue(),
     dts({
       // 逐文件生成 .d.ts；显式加载 vite/client 类型以解析 import.meta.env
-      tsconfigPath: './tsconfig.json',
-      include: ['src/components'],
+      // tsconfig.dts.json = 主配置 + vueCompilerOptions.target 3.4（该 program 的 vue 被别名到 3.4）
+      tsconfigPath: './tsconfig.dts.json',
+      // include 会覆盖 tsconfig 的 include：根目录 env.d.ts 里有 qrcode/lib/browser.js 的
+      // 环境声明与 vite/client 引用，不带上的话该子路径会被推成 any（TS7016）
+      include: ['src/components', 'env.d.ts'],
       exclude: ['src/demos', 'src/App.vue', 'src/main.ts'],
       rollupTypes: false,
       // 声明必须按最低承诺版本（peer: vue ^3.4.0）生成：vue 3.5 的 DefineComponent
@@ -111,6 +114,23 @@ export default defineConfig({
           if (id.includes('/chart/')) return 'chart-chunk'
           if (id.includes('/storage/')) return 'storage-chunk'
           if (id.includes('/data/')) return 'data-chunk'
+          // 基础层与剩余目录必须显式归类：manualChunks 未命中的模块会被 rollup 归到
+          // 「先引用它」的业务 chunk 里。曾把 form/Input.vue 塞进 login-chunk，而
+          // login/_shared.ts 又引 storage，于是 login-chunk ↔ storage-chunk 成环。
+          if (id.includes('/form/')) return 'form-chunk'
+          if (id.includes('/nav/')) return 'nav-chunk'
+          if (id.includes('/wc/')) return 'wc-chunk'
+          // 图标数据是 registry 里动态 import 的懒加载资源，收进 core-chunk 会被拉进主链
+          if (id.includes('/solar-icons-data')) return undefined
+          if (
+            id.includes('/_internal/') ||
+            id.includes('/basic/') ||
+            id.includes('/feedback/') ||
+            id.includes('/layout/') ||
+            id.includes('/shared/')
+          ) {
+            return 'core-chunk'
+          }
           return undefined
         },
       },

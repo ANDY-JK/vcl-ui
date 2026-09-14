@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
 import OfflineIndicator from '@/components/feedback/OfflineIndicator.vue'
 import ReadOnlyOverlay from '@/components/feedback/ReadOnlyOverlay.vue'
 import Button from '@/components/basic/Button.vue'
 import Card from '@/components/data/Card.vue'
 
-// 模拟会抛异常的子组件
-const Boom = {
-  setup() {
+// 模拟会抛异常的子组件：setup 抛错由 ErrorBoundary 捕获。
+// render 必须存在且不可达也要给 —— 只给 template 会因 runtime-only 构建编译不了而告警，
+// 完全不提供 template/render 会触发「Component is missing template or render function」告警。
+const Boom = defineComponent({
+  // 显式标 void：否则 TS 把「总是 throw」的 setup 推成 never，Boom 的 props 也跟着变成 never
+  setup(): void {
     throw new Error('模拟的渲染异常：Division by zero in render')
   },
-  template: '<div>不会渲染到这里</div>',
-}
+  render: () => null,
+})
 
 const resetKey = ref(0)
 const triggerError = ref(false)

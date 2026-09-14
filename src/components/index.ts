@@ -28,8 +28,22 @@ export { default as Group } from './form/Group.vue'
 export { default as IconPicker } from './form/IconPicker.vue'
 export { default as Upload } from './form/Upload.vue'
 export { default as CameraCapture } from './form/CameraCapture.vue'
+export { default as CodeCapture } from './form/CodeCapture.vue'
+export { default as CaptureFallbackPanel } from './form/CaptureFallbackPanel.vue'
+export { default as CaptureFallbackSheet } from './form/CaptureFallbackSheet.vue'
 // 独立工具：无内置组件使用，供业务项目按需接入
 export { useBarcodeScanner, DEFAULT_CAPTURE_REGION } from './form/utils/useBarcodeScanner'
+// 采集兜底引擎：拍照/扫码/上传共用的自动降级链（页面内 → 系统 → 上传 → 手工输入）
+export {
+  detectCaptureCapability,
+  classifyCaptureError,
+  captureChainFrom,
+  nextCaptureLevel,
+  resolveEntryLevel,
+  openSystemCapture,
+  cancelPendingSystemCapture,
+  CAPTURE_CHAIN,
+} from './form/utils/capture-fallback'
 // 高德地图统一模块
 export { default as AmapWidget } from './amap/AmapWidget.vue'
 export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityCode } from './amap/amap-key'
@@ -49,6 +63,13 @@ export {
 export type { LatLng, PoiPhoto, PoiItem, DrivingRouteResult, NavLink, NavPoint } from './amap/amap-service'
 export type { MarkerItem } from './amap/types'
 export type { BarcodeScannerOptions, CaptureRegion } from './form/utils/useBarcodeScanner'
+export type {
+  CaptureLevel,
+  CaptureCapability,
+  CaptureFailReason,
+  ChainOptions,
+  SystemCaptureOptions,
+} from './form/utils/capture-fallback'
 export type { DropZoneConfig, DropZoneFile } from './form/utils/types'
 
 // 反馈

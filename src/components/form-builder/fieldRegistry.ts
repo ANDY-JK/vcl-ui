@@ -20,6 +20,7 @@ import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
 import Upload from '@/components/form/Upload.vue'
 import CameraCapture from '@/components/form/CameraCapture.vue'
+import CodeCapture from '@/components/form/CodeCapture.vue'
 import Divider from '@/components/data/Divider.vue'
 import { useT } from '@/components/_internal/i18n'
 
@@ -350,6 +351,18 @@ const REGISTRY: Record<string, FieldRegistration> = {
     icon: 'camera',
     group: 'fbGroup.advanced',
     defaults: () => ({ span: 24 }),
+  },
+  'scan-code': {
+    type: 'scan-code',
+    category: 'camera',
+    component: CodeCapture,
+    componentType: 'scan-code',
+    isLayout: false,
+    label: 'fbType.scanCode',
+    icon: 'scan',
+    group: 'fbGroup.advanced',
+    // scanFormats/scanPrefix/scanLength 进 defaults：PropsPanel 按「key 在 defaults」决定是否显示编辑行
+    defaults: () => ({ span: 24, scanFormats: 'all', scanPrefix: '', scanLength: undefined }),
   },
 
   // ── 纯布局 ──
@@ -712,6 +725,7 @@ const BUILTIN_TYPES = new Set<string>([
   'upload',
   'image-upload',
   'camera',
+  'scan-code',
   'divider',
   'title',
   'paragraph',

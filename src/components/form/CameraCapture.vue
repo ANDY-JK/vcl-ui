@@ -5,6 +5,9 @@
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
+import { useCaptureFallback } from './utils/useCaptureFallback'
+import CaptureFallbackSheet from './CaptureFallbackSheet.vue'
+import { cancelPendingSystemCapture } from './utils/capture-fallback'
 
 const t = useT()
 
@@ -29,6 +32,8 @@ interface Props {
    * 显示在顶部提示/胶卷/回看中，并写入交付文件名（name-时间戳.jpg）；未传则自动「照片1、照片2…」
    */
   shotNames?: string[]
+  /** 最后兜底：系统相机也拿不到照片（取消/不可用）时自动弹上传面板，默认 true */
+  fallbackSheet?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
   modelValue: false,
@@ -36,6 +41,7 @@ const props = withDefaults(defineProps<Props>(), {
   fallbackOnError: true,
   multiple: false,
   shotNames: () => [],
+  fallbackSheet: true,
 })
 
 // P2-5：弹层焦点陷阱 —— 打开时焦点移入工具栏，Tab 循环不逃逸，关闭恢复
@@ -241,41 +247,23 @@ async function openStream(kind: 'environment' | 'user') {
   }
 }
 
+/** 系统相机 + 上传兜底面板编排：取到照片经 capture 交付，取不到自动弹上传面板 */
+const { sheetVisible, captureViaSystem, onSheetFiles } = useCaptureFallback({
+  onFile: (f) => emit('capture', f),
+  allowSheet: () => props.fallbackSheet,
+})
+
 /** 页面内相机不可用：默认降级调起设备系统相机，避免用户不给权限就拍不了 */
 function handleCameraUnavailable(msg: string) {
   if (props.fallbackOnError) {
     close()
     emit('update:modelValue', false)
     emit('error', t('form.cameraSwitched', { msg }))
-    triggerSystemCamera()
+    void captureViaSystem()
   } else {
     emit('error', msg)
     emit('update:modelValue', false)
   }
-}
-
-/** 微信内置浏览器（含企业微信）检测：X5/XWeb 内核的 file input 行为与系统浏览器不同 */
-const isWeChat = typeof navigator !== 'undefined' && /MicroMessenger/i.test(navigator.userAgent)
-
-/** 调起设备系统相机（capture input）；拍照返回的 File 经 capture 事件交付，调用方无需感知降级 */
-function triggerSystemCamera() {
-  document.querySelectorAll('input[data-camc-fallback]').forEach((el) => el.remove())
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = 'image/*'
-  // 微信内置浏览器（X5/XWeb）对 capture 支持不稳定（部分版本忽略、部分直开相机后返回异常）。
-  // 微信自己的文件选择器自带「拍摄」入口（拍摄/相册/聊天记录），不带 capture 弹它最通用；
-  // wx.chooseMedia 需要后端签名（wx.config），非微信环境无此约束，可直开系统相机。
-  if (!isWeChat) input.setAttribute('capture', 'environment')
-  input.setAttribute('data-camc-fallback', '1')
-  input.style.display = 'none'
-  input.addEventListener('change', (e) => {
-    const f = (e.target as HTMLInputElement).files?.[0]
-    if (f) emit('capture', f)
-    input.remove()
-  })
-  document.body.appendChild(input)
-  input.click()
 }
 
 function close() {
@@ -407,6 +395,7 @@ function cameraErrorToChinese(err: unknown): string {
 }
 
 onUnmounted(() => {
+  cancelPendingSystemCapture() // 系统采集仍挂着（旧内核无 cancel）时强制按「取消」收尾
   if (stream) {
     stream.getTracks().forEach((t) => t.stop())
     stream = null
@@ -527,9 +516,16 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
+    <!-- 最后兜底：系统相机也取不到照片时自动弹上传面板 -->
+    <CaptureFallbackSheet
+      v-model="sheetVisible"
+      mode="photo"
+      :title="t('form.captureFallbackTitle')"
+      :upload-hint="t('form.captureUploadHint')"
+      @files="onSheetFiles"
+    />
   </Teleport>
 </template>
-
 <style scoped>
 /* 全屏取景（Teleport 到 body） */
 .camc-mask {

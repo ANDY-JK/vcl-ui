@@ -20,6 +20,10 @@ const router = createRouter({
       name: 'demo',
       component: () => import('@/demos/ComponentDemo.vue'),
     },
+    // 采集三页合并为 /capture（拍照+扫码同页三段），旧地址重定向保持外链/书签可用
+    { path: '/barcode-scanner', redirect: '/capture' },
+    { path: '/camera-capture', redirect: '/capture' },
+    { path: '/capture-fallback', redirect: '/capture' },
   ],
 })
 

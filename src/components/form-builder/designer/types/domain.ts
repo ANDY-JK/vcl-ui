@@ -11,7 +11,6 @@
  * DesignerNode[] (树) → toFormSchema() → FormSchema (扁平) → FormBuilder 渲染
  */
 
-import type { CascaderOption } from '@/components/shared/types'
 import { uuid } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
 import { extractFields } from '../../expression-evaluator'
@@ -65,6 +64,7 @@ export type DesignerFieldType =
   | 'upload'
   | 'image-upload'
   | 'camera'
+  | 'scan-code' // 扫码识别（自带兜底链）
   | 'divider'
   | 'title'
   | 'paragraph'
@@ -138,6 +138,10 @@ export interface DesignerNode {
   rateMax?: number
   /** rate 是否允许半星 */
   rateAllowHalf?: boolean
+  /** scan-code：识别格式 all/qr/barcode、前缀过滤、长度过滤（空/0 = 不过滤） */
+  scanFormats?: 'all' | 'qr' | 'barcode'
+  scanPrefix?: string
+  scanLength?: number
   /** 栅格宽度：24 整行 / 12 半行 / 8 三分之一，默认 24 */
   span?: number
   /** 提示文字 */
@@ -543,6 +547,7 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'upload',
   'image-upload',
   'camera',
+  'scan-code',
   'divider',
   'title',
   'paragraph',
@@ -555,17 +560,6 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'matrix',
   'serial',
 ]
-
-/** 解析 cascader JSON 文本；失败返回 null */
-export function parseCascaderOptions(text?: string): CascaderOption[] | null {
-  if (!text) return null
-  try {
-    const v = JSON.parse(text)
-    return Array.isArray(v) ? v : null
-  } catch {
-    return null
-  }
-}
 
 // ════════════════════════════════════════
 // 树操作工具函数

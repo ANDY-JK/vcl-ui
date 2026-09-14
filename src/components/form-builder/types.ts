@@ -53,6 +53,8 @@ export type FieldType =
   | 'upload'
   | 'image-upload'
   | 'camera'
+  /** 扫码识别：码值（字符串），自带兜底链（页面内 → 系统相机 → 上传识别 / 手工输入） */
+  | 'scan-code'
   // → 纯布局元素
   | 'divider'
   | 'title'

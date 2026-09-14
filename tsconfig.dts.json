@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  // 仅声明生成用（vite-plugin-dts 的 tsconfigPath），主类型检查仍走 tsconfig.json。
+  // 声明生成的 program 把 vue 别名到 3.4（见 vite.config.ts 的 paths.vue），
+  // 而语言服务默认按 3.5 生成 SFC 虚拟代码，模板里 defineProps 的属性会解析不出来，
+  // 构建日志刷 400+ 条假 TS2339（属性不存在于 CreateComponentPublicInstance）。按 3.4 生成即消失。
+  "vueCompilerOptions": {
+    "target": 3.4
+  }
+}

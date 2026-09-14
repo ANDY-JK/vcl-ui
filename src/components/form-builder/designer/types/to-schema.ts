@@ -1,7 +1,8 @@
 import type { FormSchema, FormField, FieldContainer, FieldContainerType, FieldType } from '../../types'
 import type { Option } from '@/components/shared/types'
 import type { DesignerNode, DesignerNodeType, FormMeta } from './domain'
-import { isContainerNode, parseCascaderOptions, FORM_DESIGN_VERSION } from './domain'
+import { isContainerNode, FORM_DESIGN_VERSION } from './domain'
+import type { CascaderOption } from '@/components/shared/types'
 import { getTypeLabel as fbGetTypeLabel, getTypeIcon as fbGetTypeIcon } from '../../fieldRegistry'
 import { useT } from '@/components/_internal/i18n'
 import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl } from '@/components/_internal/utils'
@@ -130,6 +131,13 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       if (f.maxSize !== undefined) base.props = { ...base.props, maxSize: f.maxSize }
       // upload 类型映射到 image-upload 或 upload
       if (f.accept === 'image/*') base.type = 'image-upload'
+    }
+
+    // scan-code 属性（all/空/0 = 默认或不过滤，不下发，与渲染端 ok() 的豁免口径一致）
+    if (f.type === 'scan-code') {
+      if (f.scanFormats && f.scanFormats !== 'all') base.props = { ...base.props, scanFormats: f.scanFormats }
+      if (f.scanPrefix) base.props = { ...base.props, scanPrefix: f.scanPrefix }
+      if (f.scanLength !== undefined && f.scanLength > 0) base.props = { ...base.props, scanLength: f.scanLength }
     }
 
     // 条件显示映射
@@ -341,4 +349,15 @@ export function migrateFieldsToNodes(fields: DesignerNode[]): DesignerNode[] {
   }
   // 旧版平铺字段直接作为根级节点
   return fields.map((f) => ({ ...f }))
+}
+
+/** 解析 cascader JSON 文本；失败返回 null（原在 domain.ts，随 schema 转换职责迁入本文件） */
+export function parseCascaderOptions(text?: string): CascaderOption[] | null {
+  if (!text) return null
+  try {
+    const v = JSON.parse(text)
+    return Array.isArray(v) ? v : null
+  } catch {
+    return null
+  }
 }

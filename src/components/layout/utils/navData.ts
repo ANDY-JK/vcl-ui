@@ -83,8 +83,7 @@ export const navTree: NavNode[] = [
       { label: 'navData.group', icon: 'check-square', route: '/group' },
       { label: 'navData.icon', icon: 'star', route: '/icon' },
       { label: 'navData.upload', icon: 'upload', route: '/upload' },
-      { label: 'navData.barcodeScanner', icon: 'scan', route: '/barcode-scanner' },
-      { label: 'navData.cameraCapture', icon: 'camera', route: '/camera-capture' },
+      { label: 'navData.capture', icon: 'scan', route: '/capture' },
     ],
   },
 

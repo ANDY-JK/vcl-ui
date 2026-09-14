@@ -32,8 +32,7 @@ export default {
     group: 'Group 选择组（radio/checkbox/switch/rate/slider）',
     icon: 'Icon 图标（渲染+选择器）',
     upload: 'Upload 上传',
-    barcodeScanner: 'BarcodeScanner 扫码',
-    cameraCapture: 'CameraCapture 拍照',
+    capture: '拍照 / 扫码采集（CodeCapture + CameraCapture）',
     // 二级条目 — 图表可视化
     chart: 'Chart 图表',
     chartTable: 'ChartTable 图表+表格',

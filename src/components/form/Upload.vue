@@ -16,6 +16,8 @@ onErrorCaptured((e: Error) => {
 import IconSvg from '@/components/basic/IconSvg.vue'
 import ProgressBar from '@/components/data/ProgressBar.vue'
 import CameraCapture from '@/components/form/CameraCapture.vue'
+import { openSystemCapture, cancelPendingSystemCapture } from '@/components/form/utils/capture-fallback'
+import { useUploadQueue } from './utils/useUploadQueue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 
 export interface UploadFile {
@@ -90,211 +92,10 @@ const emit = defineEmits<{
   preview: [url: string]
 }>()
 
-const files = ref<UploadFile[]>([])
 const dragging = ref(false)
-const timers: ReturnType<typeof setInterval>[] = []
 
-let fileId = 0
-
-// 同步外部 modelValue → 内部 files。
-// 双向合并语义：外部程序化回填/删除时内部跟随；内部正在上传的项（尚未同步到父模型）保留。
-// 必须复制数组引用（files.value = [...val]）：直接引用会让后续 unshift 原地变异父组件传入的数组。
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (val && val.length > 0) {
-      const sameAsInternal =
-        val.length === files.value.length && val.every((f, i) => files.value[i]?.id === f.id)
-      if (sameAsInternal) return
-      const externalIds = new Set(val.map((f) => f.id))
-      const internalUploading = files.value.filter((f) => f.status === 'uploading' && !externalIds.has(f.id))
-      files.value = [...val, ...internalUploading]
-    } else if (val && val.length === 0) {
-      // 竞态防护：内部有正在上传的文件时，外部空数组通常是「父组件 modelValue getter
-      // 尚未反映本次上传」的同步回环。立即清空会让 realUpload 完成时 emit 空数组，
-      // 父组件 onUpload 误判为「用户删除文件」→ 落盘空记录 → 拍照返回刷新后图片丢失
-      // （每个门店首次上传必现，需拍两次）。等上传完成 emit 后由父组件重新推入即可。
-      if (files.value.some((f) => f.status === 'uploading')) return
-      files.value.forEach((f) => {
-        if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
-      })
-      files.value = []
-    }
-  },
-  { immediate: true },
-)
-
-function syncModel() {
-  emit('update:modelValue', [...files.value])
-}
-
-/** 清空全部文件并同步模型（模板 @click 只支持单表达式，抽成方法） */
-function clearAllFiles() {
-  files.value.forEach((f) => {
-    if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
-  })
-  files.value = []
-  syncModel()
-}
-
-/** 图片压缩：canvas resize + quality 调整（移动端尤其需要） */
-async function compressImage(file: File): Promise<File> {
-  if (!props.compress || !file.type.startsWith('image/')) return file
-  try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const url = URL.createObjectURL(file)
-      const img = new Image()
-      img.onload = () => {
-        URL.revokeObjectURL(url)
-        resolve(img)
-      }
-      img.onerror = (e) => {
-        URL.revokeObjectURL(url)
-        reject(e)
-      }
-      img.src = url
-    })
-    // 等比缩小到 maxWidth 以内
-    let { width, height } = img
-    if (width > props.maxWidth) {
-      height = Math.round(height * (props.maxWidth / width))
-      width = props.maxWidth
-    }
-    const canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
-    const ctx = canvas.getContext('2d')!
-    ctx.drawImage(img, 0, 0, width, height)
-    const blob: Blob = await new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (b) => (b ? resolve(b) : reject(new Error(t('form.compressFailed')))),
-        file.type === 'image/png' ? 'image/png' : 'image/jpeg',
-        props.compressQuality,
-      )
-    })
-    // 压缩后体积大于原图则返回原文件
-    if (blob.size >= file.size) return file
-    return new File([blob], file.name, { type: blob.type, lastModified: Date.now() })
-  } catch {
-    // 压缩失败返回原文件
-    return file
-  }
-}
-
-function processFiles(fileList: FileList | null) {
-  if (!fileList || fileList.length === 0) return
-  // card 模式且已有文件 → 替换而非追加
-  if (props.variant === 'card' && files.value.length) {
-    // 清理旧 blob URL
-    files.value.forEach((f) => {
-      if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
-    })
-    files.value = []
-  }
-  const newFiles: UploadFile[] = []
-  const limit = props.multiple ? fileList.length : 1
-  for (let i = 0; i < limit; i++) {
-    const f = fileList[i]
-    if (!f) continue
-    // accept 白名单校验（文件选择、拖拽、目录选择都走这里）：
-    // 移动端选择器可能由宿主（如微信内置浏览器）提供拍照入口，但格式仍须匹配 accept
-    if (props.accept && !isMimeAccepted(f, props.accept)) {
-      emit('error', t('form.typeNotSupported', { name: f.name, accept: props.accept }))
-      continue
-    }
-    if (f.size > props.maxSize * 1024 * 1024) {
-      emit('error', t('form.sizeExceeded', { name: f.name, max: props.maxSize }))
-      continue
-    }
-    if (props.minSize && f.size < props.minSize * 1024) {
-      emit('error', t('form.sizeTooSmall', { name: f.name, min: props.minSize }))
-      continue
-    }
-    if (files.value.some((existing) => existing.name === f.name && existing.size === f.size)) {
-      emit('error', t('form.fileExists', { name: f.name }))
-      continue
-    }
-    const uf: UploadFile = {
-      id: ++fileId,
-      name: f.name,
-      size: f.size,
-      progress: 0,
-      status: 'uploading',
-      raw: f,
-    }
-    newFiles.push(uf)
-    files.value.unshift(uf)
-
-    // 异步压缩图片后上传
-    compressImage(f).then((compressed) => {
-      uf.size = compressed.size
-      if (props.customRequest) {
-        realUpload(uf, compressed)
-      } else {
-        simulateUpload(uf)
-      }
-    })
-  }
-  if (newFiles.length) {
-    // 图片文件一律生成 blob 预览地址（此前仅 card 变体生成，列表变体图片没有缩略图/预览入口）
-    createPreviews(newFiles, fileList)
-    emit('change', files.value)
-    syncModel()
-  }
-}
-
-function createPreviews(newFiles: UploadFile[], fileList: FileList) {
-  for (let i = 0; i < Math.min(newFiles.length, fileList.length); i++) {
-    const f = fileList[i]
-    if (f && f.type.startsWith('image/')) newFiles[i].url = URL.createObjectURL(f)
-  }
-}
-
-async function realUpload(uf: UploadFile, rawFile: File) {
-  if (!props.customRequest) {
-    uf.status = 'error'
-    emit('error', t('form.noCustomRequest'))
-    return
-  }
-  try {
-    const result = await props.customRequest(rawFile)
-    uf.progress = 100
-    uf.status = 'done'
-    uf.url = result.url
-    syncModel()
-  } catch (e: any) {
-    uf.status = 'error'
-    emit('error', e?.message || t('form.uploadFailed'))
-    syncModel()
-  }
-}
-
-function simulateUpload(uf: UploadFile) {
-  let p = 0
-  const timer = setInterval(() => {
-    p += Math.random() * 30 + 10
-    if (p >= 100) {
-      p = 100
-      uf.progress = 100
-      uf.status = 'done'
-      clearInterval(timer)
-      // 从清理列表移除已完成的定时器，避免长会话中数组只增不清
-      const idx = timers.indexOf(timer)
-      if (idx >= 0) timers.splice(idx, 1)
-    } else {
-      uf.progress = Math.round(p)
-    }
-  }, 300)
-  timers.push(timer)
-}
-
-function removeFile(uf: UploadFile) {
-  // 释放 Blob URL 避免内存泄漏
-  if (uf.url?.startsWith('blob:')) URL.revokeObjectURL(uf.url)
-  files.value = files.value.filter((f) => f.id !== uf.id)
-  emit('remove', uf)
-  syncModel()
-}
+// 文件队列引擎（拆分至 utils/useUploadQueue.ts）：队列状态/模型同步/校验/压缩/上传/删除/重试
+const { files, clearAllFiles, processFiles, removeFile, retryFile, isMimeAccepted } = useUploadQueue({ props, emit })
 
 function onDragOver(e: DragEvent) {
   e.preventDefault()
@@ -313,51 +114,21 @@ function onInputChange(e: Event) {
   processFiles((e.target as HTMLInputElement).files)
 }
 
-/** 检查文件 MIME 是否匹配 accept 模式（如 "image/*" 匹配 "image/png"） */
-function isMimeAccepted(file: File, accept: string): boolean {
-  if (!accept) return true
-  const types = accept.split(',').map((s) => s.trim())
-  return types.some((t) => {
-    if (t.endsWith('/*')) return file.type.startsWith(t.slice(0, -1))
-    if (t.startsWith('.')) return file.name.toLowerCase().endsWith(t.toLowerCase())
-    return file.type === t
-  })
-}
-
 function onPaste(e: ClipboardEvent) {
   if (props.disabled) return
   const tag = (e.target as HTMLElement)?.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA') return
   const items = e.clipboardData?.items
   if (!items) return
-  const dt = new DataTransfer()
+  const pasted: File[] = []
   for (let i = 0; i < items.length; i++) {
     const f = items[i].getAsFile()
     if (!f) continue
     // accept 白名单校验：仅允许匹配 accept 的文件类型，防止恶意 SVG/HTML 粘贴
     if (props.accept && !isMimeAccepted(f, props.accept)) continue
-    dt.items.add(f)
+    pasted.push(f)
   }
-  if (dt.files.length) processFiles(dt.files)
-}
-
-function retryFile(fileId: number) {
-  const f = files.value.find((x) => x.id === fileId)
-  if (f && f.status === 'error') {
-    f.status = 'uploading'
-    f.progress = 0
-    // 配置了真实上传时必须走 realUpload 链路（此前只重跑模拟进度，用户得到假进度假成功）
-    if (props.customRequest) {
-      if (f.raw) {
-        realUpload(f, f.raw as File)
-      } else {
-        f.status = 'error'
-        emit('error', t('form.uploadFailed'))
-      }
-    } else {
-      simulateUpload(f)
-    }
-  }
+  if (pasted.length) processFiles(pasted)
 }
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -385,34 +156,29 @@ function handlePick() {
   else triggerFileInput()
 }
 
-/** 拍照/相册/浏览：临时 input 走系统选择器。
- *  拍照用 capture 直开系统相机（用户验证此路径可用、有图；安卓部分版本文件选择器
- *  没有「拍摄」入口，capture 是这些机型唯一拍照途径）。 */
-function pickFrom(kind: 'camera' | 'gallery' | 'browse') {
+/** 拍照/相册/浏览：走系统选择器（共用采集兜底引擎的临时 input）。
+ *  拍照（capture）直开系统相机——安卓部分版本文件选择器没有「拍摄」入口，capture 是这些机型唯一拍照途径。
+ *  相机不可用 / 用户取消时由 CameraCapture 兜底链（系统相机 → 上传面板）接管。 */
+async function pickFrom(kind: 'camera' | 'gallery' | 'browse') {
   sheetOpen.value = false
   if (props.disabled) return
-  // 移除上一次残留的临时 input（用户取消选择时不会触发 change）
-  document.querySelectorAll('input[data-up-temp]').forEach((el) => el.remove())
-  const input = document.createElement('input')
-  input.type = 'file'
   // 浏览 = 全类型文件浏览器（对齐 iOS 原生「浏览」）；拍照/相册 = 原 accept（默认图片）
-  input.accept = kind === 'browse' ? '' : props.accept || 'image/*'
-  if (kind === 'camera') input.setAttribute('capture', 'environment')
-  input.setAttribute('data-up-temp', '1')
-  input.style.display = 'none'
-  input.addEventListener('change', (e) => {
-    onInputChange(e as Event)
-    input.remove()
+  const accept = kind === 'browse' ? '' : props.accept || 'image/*'
+  const files = await openSystemCapture({
+    accept,
+    // 拍照：后置相机直出；相册/浏览：不带 capture，让系统弹自己的选择器
+    capture: kind === 'camera' ? 'environment' : false,
+    multiple: props.multiple,
   })
-  document.body.appendChild(input)
-  input.click()
+  if (!files.length) return
+  processFiles(files)
 }
 
 // ===== 页面内拍照：调起 CameraCapture 组件（原生相机布局） =====
 // 真机 <input capture> 调起系统相机时，页面切到后台，Android/Edge 可能杀进程，
 // 返回即整页重建（白屏刷新）。改用 CameraCapture 页面内取景拍照，全程不离开页面，无刷新。
-// 相机不可用（无摄像头 / 权限拒绝 / 非 HTTPS）时由组件内置降级（fallbackOnError 默认开）调起系统相机，
-// 照片仍经 capture 事件交付，这里只需转发提示。
+// 相机不可用（无摄像头 / 权限拒绝 / 非 HTTPS）时由组件内置兜底链接管：
+// 页面内 → 系统相机 → 上传面板，照片仍经 capture 事件交付，这里只需转发提示。
 const cameraOpen = ref(false)
 
 function openCamera() {
@@ -423,17 +189,13 @@ function openCamera() {
 
 /** 组件拍照成功（页面内拍照或降级系统相机）→ 走正常上传链路（与相册/浏览一致） */
 function onCameraCapture(file: File) {
-  const dt = new DataTransfer()
-  dt.items.add(file)
-  processFiles(dt.files)
+  processFiles([file])
 }
 
 /** 连拍模式按「完成」：队列照片批量走上传链路（降级系统相机时仍逐张走 capture） */
 function onCameraBatchFinish(batch: File[]) {
   if (!batch.length) return
-  const dt = new DataTransfer()
-  batch.forEach((f) => dt.items.add(f))
-  processFiles(dt.files)
+  processFiles(batch)
 }
 
 /** 相机不可用提示（组件已自动降级系统相机，仅提示用户） */
@@ -523,9 +285,9 @@ defineExpose({
 })
 
 onUnmounted(() => {
-  timers.forEach((t) => clearInterval(t))
-  timers.length = 0
-  // 清理所有未释放的 Blob URL
+  // 系统采集仍挂着（旧内核无 cancel 事件）时强制按「取消」收尾，避免 Promise 永挂
+  cancelPendingSystemCapture()
+  // 清理所有未释放的 Blob URL（模拟上传定时器由 useUploadQueue 自行清理）
   files.value.forEach((f) => {
     if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
   })
@@ -566,8 +328,8 @@ onUnmounted(() => {
   >
     <!-- 内容容器 -->
     <div class="card-content">
-      <!-- ① 标签：始终居中，pointer-events:none -->
-      <p class="card-label">
+      <!-- ① 标签：无图时居中展示；有预览图后隐藏（图片撑满卡片，文字压图显脏） -->
+      <p v-if="label && !cardPreviewUrl" class="card-label">
         {{ label }}
       </p>
 
@@ -718,12 +480,7 @@ onUnmounted(() => {
   />
 
   <!-- ===== 内置图片预览（previewMode='builtin' 时接管；多图可左右切换） ===== -->
-  <ImagePreview
-    v-if="_previewItems.length"
-    :src="_previewItems"
-    :initial-index="_previewIdx"
-    @close="closePreview"
-  />
+  <ImagePreview v-if="_previewItems.length" :src="_previewItems" :initial-index="_previewIdx" @close="closePreview" />
 </template>
 
 <style scoped>
@@ -777,10 +534,13 @@ onUnmounted(() => {
   transform: translate(-50%, -50%);
   width: 90%;
 }
-/* 预览图（对标 .drop-zone img） */
+/* 预览图（对标 .drop-zone img）：撑满卡片 + cover 裁切。
+   此前 max-width/max-height 只能把宽图缩成细带（object-fit 无尺寸不生效），
+   卡片大片留白、label 文字压图，视觉上像变形 */
 .card-img {
-  max-width: 100%;
-  max-height: 100%;
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   position: relative;
   z-index: 1;

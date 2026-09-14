@@ -7,6 +7,7 @@ import {
   type ReadInputBarcodeFormat,
 } from 'zxing-wasm/reader'
 import { useT } from '@/components/_internal/i18n'
+import { classifyCaptureError, type CaptureFailReason } from './capture-fallback'
 
 /** 模块级 t：供各函数直接取当前语言文案 */
 const t = useT()
@@ -39,7 +40,10 @@ export type BarcodeFormats = 'qr' | 'barcode' | 'all'
  * 构造 zxing ReaderOptions。注意 formats 键只在有值时才存在：
  * zxing-wasm 对显式 formats: undefined 会内部崩溃（undefined.map），缺省键才正常。
  */
-function buildReaderOptions(formats: BarcodeScannerOptions['formats'], maxNumberOfSymbols: number): Record<string, unknown> {
+function buildReaderOptions(
+  formats: BarcodeScannerOptions['formats'],
+  maxNumberOfSymbols: number,
+): Record<string, unknown> {
   const opts: Record<string, unknown> = { tryHarder: true, maxNumberOfSymbols }
   const fmts = resolveFormats(formats)
   if (fmts) opts.formats = fmts
@@ -148,14 +152,22 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
 
   const scanning = ref(false)
   const error = ref('')
+  /** 失败归因（兜底链用）：unsupported/insecure/permission/notfound/occupied/unknown；成功时清空 */
+  const failReason = ref<CaptureFailReason | ''>('')
   const videoRef = ref<HTMLVideoElement | null>(null)
   const canvasRef = ref<HTMLCanvasElement | null>(null)
   /** 当前帧检测到的所有合法码（含框位置）；单码时也填充，供消费方画指针/提示框 */
   const detections = ref<BarcodeDetection[]>([])
+  /** 手电筒：仅当前轨道声明支持 torch 时可用（不支持则消费方隐藏入口，按了也不报错） */
+  const torchOn = ref(false)
+  const torchSupported = ref(false)
 
   let stream: MediaStream | null = null
   let active = false
   let _starting = false
+  /** 启动代际：每次 start/stop 自增。getUserMedia/play 迟到返回的结果据此自判过期并释放流，
+   *  防止「快速关-开」竞态下旧流覆盖新流变量导致摄像头泄漏（指示灯常亮到页面刷新） */
+  let startGen = 0
   const confirmHits = new Map<string, number>()
   const acceptedAt = new Map<string, number>()
   let raf = 0
@@ -180,11 +192,13 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
 
   async function start(): Promise<void> {
     if (active || _starting) return
+    const gen = ++startGen
     _starting = true
     error.value = ''
+    failReason.value = ''
     confirmHits.clear()
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      const s = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { min: 640, ideal: 1280, max: 1920 },
           height: { min: 480, ideal: 720, max: 1080 },
@@ -192,14 +206,28 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
         },
         audio: false,
       })
+      // 迟到的流：等待期间发生过 stop()（或新一轮 start）—— 直接释放，绝不接管。
+      // 否则会覆盖 stream 变量，让新流失去引用而泄漏（摄像头被占用到页面刷新）
+      if (gen !== startGen) {
+        s.getTracks().forEach((t) => t.stop())
+        return
+      }
       if (!videoRef.value) {
         error.value = t('form.videoNotMounted')
         _starting = false
         stopTracks()
         return
       }
-      videoRef.value.srcObject = stream
+      videoRef.value.srcObject = s
+      stream = s
       await videoRef.value.play()
+      if (gen !== startGen) return // play() 挂起期间被 stop()：流已由 stopTracks 释放，不再接管状态
+      // 手电筒能力探测：个别内核 getCapabilities 缺失/无 torch 字段 → 按不支持处理。
+      // 用 getTracks()[0]（video-only 流，与 stopTracks 同一取法）——部分内核/测试桩没有 getVideoTracks
+      const track = s.getTracks()[0]
+      const caps = track?.getCapabilities?.() as Record<string, unknown> | undefined
+      torchSupported.value = !!caps && 'torch' in caps
+      torchOn.value = false
       active = true
       scanning.value = true
       lastScan = 0
@@ -210,15 +238,19 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
       _starting = false
       stopTracks() // play() 抛错等场景：释放已获取的摄像头流，避免持续占用
       error.value = cameraErrorToChinese(e) || t('form.cameraStartFailed')
+      failReason.value = classifyCaptureError(e)
       scanning.value = false
     }
   }
 
   async function stop(): Promise<void> {
+    startGen++ // 使迟到的 start 结果自判过期（释放其流而非接管）
     _starting = false
     active = false
     scanning.value = false
     paused.value = false
+    torchOn.value = false
+    torchSupported.value = false
     cancelAnimationFrame(raf)
     raf = 0
     stopTracks()
@@ -226,6 +258,26 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     confirmHits.clear()
     acceptedAt.clear()
     detections.value = []
+  }
+
+  /**
+   * 手电筒开关（live 态用）。applyConstraints 不支持 torch 的内核会 reject：
+   * 静默降级为「不支持」，消费方据此隐藏入口，不弹错。
+   */
+  async function toggleTorch(): Promise<void> {
+    const track = stream?.getVideoTracks()[0]
+    if (!track) return
+    const next = !torchOn.value
+    try {
+      // torch 不在 TS DOM 类型里（规范外扩展约束），断言经 unknown 中转
+      await track.applyConstraints({
+        advanced: [{ torch: next }],
+      } as unknown as MediaTrackConstraints)
+      torchOn.value = next
+    } catch {
+      torchSupported.value = false
+      torchOn.value = false
+    }
   }
 
   /**
@@ -373,9 +425,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
           ? valid
           : multiMode === 'manual'
             ? []
-            : [...valid].sort(
-                (a, b) => distanceFromRegionCenter(a, sw, sh) - distanceFromRegionCenter(b, sw, sh),
-              )
+            : [...valid].sort((a, b) => distanceFromRegionCenter(a, sw, sh) - distanceFromRegionCenter(b, sw, sh))
       if (ordered.length > 0) detections.value[valid.indexOf(ordered[0])]!.primary = true
       // 只对「本帧选中的那一个」走确认流程（此前遍历全部 → 多码全部连发，center 形同虚设）
       const autoFire = ordered.length > 0 ? [ordered[0]!] : []
@@ -450,6 +500,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     scanPhoto,
     scanning,
     error,
+    /** 失败归因（'' 表示无失败）；兜底链据它决定下探到系统相机还是直接兜底面板 */
+    failReason,
     videoRef,
     canvasRef,
     detections,
@@ -458,5 +510,9 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     paused,
     pause,
     resume,
+    /** 手电筒（仅支持的设备可用；消费方按 torchSupported 决定是否展示入口） */
+    torchOn,
+    torchSupported,
+    toggleTorch,
   }
 }

@@ -1,0 +1,455 @@
+/**
+ * CodeCapture 扫码浮层全局样式（Teleport 到 body，前缀类名防冲突）。
+ *
+ * 布局对标 CameraCapture（全屏黑底 + 4:3 取景居中 + 顶栏/底栏），
+ * 视觉交互对标微信/支付宝小程序扫码页（角框 + 扫描线 + 相册/手电筒底栏）。
+ * 从 CodeCapture.vue 拆出（800 行约束），选择器仅供该组件模板使用。
+ */
+
+.codecap-mask {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-top, 9999);
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* 全屏舞台：取景区居中；顶栏/底栏/结果浮层 absolute 不参与流式布局（对标 CameraCapture） */
+.codecap-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+/* 顶栏：左关闭 / 中标题（小程序返回键位，安全区适配） */
+.codecap-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: calc(10px + env(safe-area-inset-top)) var(--space-4) 10px;
+  z-index: 3;
+}
+.codecap-iconbtn {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.codecap-iconbtn:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+.codecap-title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: clamp(14px, 2vw, 16px);
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.codecap-topbar-spacer {
+  width: 36px;
+  flex-shrink: 0;
+}
+
+/* 4:3 取景框：与 CameraCapture 同尺寸（宽撑满，横屏等高度受限场景按屏高收敛） */
+.codecap-viewport {
+  position: relative;
+  width: 100%;
+  max-width: calc(100vh * 4 / 3);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #000;
+}
+/* 兜底页：翻页态改为一枚居中卡片（内容比 4:3 高，自适应高度防裁） */
+.codecap-viewport--page {
+  aspect-ratio: auto;
+  width: min(420px, calc(100vw - 24px));
+  max-width: none;
+  height: auto;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  background: var(--color-bg);
+  border-radius: 16px;
+  padding: var(--space-3);
+  box-sizing: border-box;
+}
+.codecap-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.codecap-fallback-foot {
+  display: flex;
+  justify-content: flex-start;
+}
+.codecap-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.codecap-back:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+}
+.codecap-live {
+  position: absolute;
+  inset: 0;
+}
+.codecap-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* 取景提示（小程序同款：扫描窗下方一行浅色说明；定格时让位给冻结条） */
+.codecap-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+.codecap-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 13px;
+}
+.codecap-idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: #0b0d12;
+  text-align: center;
+}
+.codecap-tip {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.66);
+  line-height: 1.6;
+}
+.codecap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+.codecap-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.codecap-btn:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.18);
+}
+.codecap-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: codecap-spin 0.7s linear infinite;
+}
+@keyframes codecap-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.codecap-beam {
+  position: absolute;
+  left: 17.5%;
+  right: 17.5%;
+  height: 2px;
+  background: var(--color-primary);
+  opacity: 0.75;
+  box-shadow: 0 0 6px var(--color-primary);
+  animation: codecap-sweep 2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes codecap-sweep {
+  0% {
+    top: 35%;
+  }
+  50% {
+    top: 65%;
+  }
+  100% {
+    top: 35%;
+  }
+}
+/* 扫描窗四角：白色角标（暗画面可读性优先，扫描线保留主色） */
+.codecap-cnr {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: rgba(255, 255, 255, 0.9);
+  border-style: solid;
+  pointer-events: none;
+}
+.codecap-cnr.tl {
+  top: calc(35% + 8px);
+  left: calc(17.5% + 8px);
+  border-width: 2px 0 0 2px;
+}
+.codecap-cnr.tr {
+  top: calc(35% + 8px);
+  right: calc(17.5% + 8px);
+  border-width: 2px 2px 0 0;
+}
+.codecap-cnr.bl {
+  bottom: calc(35% + 8px);
+  left: calc(17.5% + 8px);
+  border-width: 0 0 2px 2px;
+}
+.codecap-cnr.br {
+  bottom: calc(35% + 8px);
+  right: calc(17.5% + 8px);
+  border-width: 0 2px 2px 0;
+}
+.codecap-box {
+  position: absolute;
+  border: 2px dashed rgba(255, 255, 255, 0.75);
+  background: rgba(0, 0, 0, 0.12);
+  padding: 0;
+  cursor: pointer;
+  z-index: 3;
+}
+.codecap-box.primary {
+  border: 2px solid #22c55e;
+}
+.codecap-box-label {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 2px;
+  font-size: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  max-width: 200%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.codecap-frozen {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 6px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 4;
+  font-family: inherit;
+}
+.codecap-frozen-badge {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #052e16;
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+.codecap-frozen-chip {
+  margin-top: 4px;
+  max-width: 150px;
+  font-size: 11px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.65);
+  padding: 2px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.codecap-frozen-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 5px 12px;
+  border-radius: 999px;
+  z-index: 4;
+  white-space: nowrap;
+}
+.codecap-frozen-bar button {
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+}
+/* 底部工具栏：相册识别 | 占位 | 手电筒（小程序同款 icon+文字，不支持手电筒时占位保持平衡） */
+.codecap-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-12, 48px);
+  z-index: 3;
+}
+.codecap-tool {
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.codecap-tool:hover {
+  color: #fff;
+}
+.codecap-tool.is-on {
+  color: var(--color-primary-light, #a5b4fc);
+}
+.codecap-tool-blank {
+  width: 64px;
+}
+/* 已识别结果：底栏上方的暗色玻璃浮层（连扫回看/删除） */
+.codecap-results {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(20px + 64px + 12px + env(safe-area-inset-bottom));
+  width: min(420px, calc(100vw - 32px));
+  max-height: 32vh;
+  overflow-y: auto;
+  background: rgba(15, 18, 26, 0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  z-index: 2;
+}
+.codecap-results-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 6px;
+}
+.codecap-results-head button {
+  border: none;
+  background: transparent;
+  color: var(--color-primary-light, #a5b4fc);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.codecap-results ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.codecap-results li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: monospace;
+  color: #fff;
+}
+.codecap-results li:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.06);
+}
+.codecap-results li button {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+.codecap-results li button:hover {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}

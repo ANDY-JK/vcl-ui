@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import { useBarcodeScanner } from '@/components/form/utils/useBarcodeScanner'
+import { openSystemCapture } from '@/components/form/utils/capture-fallback'
 import { beepSuccess, speak, notify, unlockAudio, unlockVoice, CameraCapture } from '@/components/index'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Card from '@/components/data/Card.vue'
@@ -17,10 +18,23 @@ function feedback(code: string) {
   if (notifyOn.value) notify('扫码成功', code)
 }
 
-// ---- 内嵌实例（唯一一个）：formats 分流 通用/仅二维码/仅条形码，Ref 实时切换不用重启 ----
+// ---- 内嵌实例（唯一一个）：三态等高渐变卡，观感/兜底对齐「小程序通用组件」BarcodeScanner 定版 ----
+// formats 分流（通用/仅二维码/仅条形码）实时切换，且决定取景装饰形状（通用不画装饰）
 const scanFormat = ref<'all' | 'qr' | 'barcode'>('all')
 const allCodes = ref<string[]>([])
 const starting1 = ref(false)
+/** 卡内反馈胶囊（粘滞显示不横跳，对齐原型 setFeedback） */
+const feedback1 = ref('')
+let feedbackTimer1: ReturnType<typeof setTimeout> | null = null
+function setFeedback1(text: string, holdMs: number, force = false) {
+  if (!force && feedback1.value) return
+  feedback1.value = text
+  if (feedbackTimer1) clearTimeout(feedbackTimer1)
+  feedbackTimer1 = setTimeout(() => {
+    feedback1.value = ''
+    feedbackTimer1 = null
+  }, holdMs)
+}
 const {
   videoRef: v1,
   canvasRef: c1,
@@ -28,22 +42,82 @@ const {
   error: e1,
   start: start1,
   stop: stop1,
+  torchSupported: torch1,
+  torchOn: torchOn1,
+  toggleTorch: torchToggle1,
+  scanPhoto: photo1,
 } = useBarcodeScanner({
   formats: scanFormat,
-  onScan: (c) => (allCodes.value = [...allCodes.value, c]),
+  onScan: (c) => {
+    allCodes.value = [...allCodes.value, c]
+    setFeedback1('已识别', 900, true)
+  },
 })
 /** 启动包装：启动期间先挂载相机分支（start 等流回来时 video 必须已存在，否则报未挂载） */
 async function toggle1() {
   if (s1.value) {
+    feedback1.value = ''
     stop1()
     return
   }
+  feedback1.value = ''
   starting1.value = true
   try {
     await start1()
   } finally {
     starting1.value = false
   }
+}
+/** 取景装饰形状：仅限定单一码型时画（二维码=方形窗、条形码=宽条槽），通用不画——对齐原型 viewShape */
+const viewShape = computed<'qr' | 'barcode' | 'none'>(() =>
+  scanFormat.value === 'qr' ? 'qr' : scanFormat.value === 'barcode' ? 'barcode' : 'none',
+)
+/** 触屏才有「系统扫码」（拉系统相机拍一张识别）；桌面用「选图识别」替代 */
+const isCoarse1 = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
+/** 兜底/选图共用一个隐藏 input：相机不可用就住在卡内（上传识别 + 手输），不弹系统选择器 */
+const fallbackInput1 = ref<HTMLInputElement | null>(null)
+const fallbackUploading1 = ref(false)
+async function recognize1(files: File[]) {
+  fallbackUploading1.value = true
+  try {
+    const fresh: string[] = []
+    for (const f of files) {
+      try {
+        const res = await photo1(f)
+        fresh.push(...res.filter((c) => !allCodes.value.includes(c)))
+      } catch {
+        /* 单张失败不阻塞下一张 */
+      }
+    }
+    if (fresh.length) {
+      allCodes.value = [...allCodes.value, ...fresh]
+      setFeedback1('已识别', 900, true)
+    } else {
+      setFeedback1('未识别', 1200, true)
+    }
+  } finally {
+    fallbackUploading1.value = false
+  }
+}
+function onFallbackPicked(e: Event) {
+  const el = e.target as HTMLInputElement
+  const files = el.files ? [...el.files] : []
+  el.value = ''
+  if (files.length) void recognize1(files)
+}
+/** 触屏「系统扫码」：调系统相机拍一张 → 同一引擎识别，结果照常入列 */
+async function systemScan1() {
+  const files = await openSystemCapture({ accept: 'image/*', capture: 'environment' })
+  if (files.length) void recognize1(files)
+}
+/** 兜底手输：直接入列（demo 未限定 prefix/length） */
+const manual1 = ref('')
+function submitManual1() {
+  const v = manual1.value.trim()
+  if (!v) return
+  allCodes.value = [...allCodes.value, v]
+  manual1.value = ''
+  setFeedback1('已提交', 900, true)
 }
 
 // ---- 拍照上传 ----
@@ -215,84 +289,137 @@ function onCamError(msg: string) {
       <code>formats</code> 分流二维码/条形码/通用（可实时切换）；<code>prefix</code>/<code>length</code> 做内容过滤。
     </p>
 
-    <!-- 内嵌实例（唯一一个）：saas 小程序同款渐变卡片，未启动=入口按钮，启动=相机嵌卡；
-         入口按钮与相机框同尺寸 + 停止条槽位隐形占位 → 三态卡片尺寸恒定不跳变 -->
-    <div class="scan-hero">
-      <template v-if="!s1 && !starting1">
-        <button type="button" class="scan-open" @click="toggle1">
-          <span class="scan-open-icon" aria-hidden="true">
-            <span class="scan-corner tl" /><span class="scan-corner tr" />
-            <span class="scan-corner bl" /><span class="scan-corner br" />
-            <span class="scan-line" />
-          </span>
-          <span class="scan-open-text">开始扫码</span>
-        </button>
-        <button type="button" v-if="e1" class="scan-err scan-err--on-hero" @click="toggle1">
-          {{ e1 }} · 点击重试
-        </button>
-        <button v-else type="button" class="scan-exit scan-exit--ghost" aria-hidden="true" tabindex="-1">
-          停止扫码
-        </button>
-      </template>
-      <template v-else>
-        <div class="scan-inline">
-          <div class="scan-box scan-box--embedded">
-            <div class="scan-live">
-              <video ref="v1" class="scan-video" autoplay playsinline muted />
-              <span v-if="starting1" class="scan-starting"><span class="spinner" /><span>启动中...</span></span>
+    <!-- 内嵌实例（唯一一个）：三段式等高渐变卡（主块 120px + 底行 44px），观感/兜底对齐
+         「小程序通用组件」BarcodeScanner 定版：未开始=卡上取景框入口，启动=相机嵌进同一张卡，
+         相机不可用=兜底终态住卡内（上传识别 + 手输行），全程不弹系统选择器。
+         取景装饰随 formats 变形：仅二维码=方形窗，仅条形码=宽条槽（横扫线），通用不画。
+         与「拍照上传识别」并排一行（省竖向空间），窄屏自动换行 -->
+    <div class="hero-row">
+      <div class="hero-col">
+        <div class="scan-hero">
+          <!-- 兜底终态（启动失败/相机不可用）：上传块占主块 + 手输行落底行，卡片高度不变 -->
+          <template v-if="!s1 && !starting1 && e1">
+            <button
+              type="button"
+              class="bs-up"
+              :class="{ uploading: fallbackUploading1 }"
+              :disabled="fallbackUploading1"
+              @click="fallbackInput1?.click()"
+            >
+              <span v-if="fallbackUploading1" class="bs-up-busy"><span class="spinner" /><span>识别中...</span></span>
+              <template v-else>
+                <IconSvg type="upload" size="md" color="currentColor" />
+                <span class="bs-up-text">上传码图片识别</span>
+              </template>
+            </button>
+            <div class="bs-foot">
+              <div class="bs-manual">
+                <input
+                  v-model="manual1"
+                  class="bs-manual-input"
+                  type="text"
+                  placeholder="输入码内容"
+                  @keyup.enter="submitManual1"
+                />
+                <button type="button" class="bs-manual-btn" @click="submitManual1">提交</button>
+                <button type="button" class="bs-manual-retry" @click="toggle1">重试</button>
+              </div>
             </div>
-            <canvas ref="c1" style="display: none" />
-          </div>
-          <button type="button" class="scan-exit" @click="toggle1">停止扫码</button>
-        </div>
-      </template>
-      <!-- 格式分流：白字自绘勾选，融在渐变卡内（saas scan-auto 式） -->
-      <div class="fmt-row" role="radiogroup" aria-label="识别格式">
-        <button
-          v-for="f in [
-            { v: 'all', t: '通用' },
-            { v: 'qr', t: '仅二维码' },
-            { v: 'barcode', t: '仅条形码' },
-          ]"
-          :key="f.v"
-          type="button"
-          class="fmt-check"
-          :class="{ checked: scanFormat === f.v }"
-          role="radio"
-          :aria-checked="scanFormat === f.v"
-          @click="scanFormat = f.v as 'all' | 'qr' | 'barcode'"
-        >
-          <span class="fmt-check-box" />
-          <span class="fmt-check-text">{{ f.t }}</span>
-        </button>
-      </div>
-      <div class="scan-sub">扫描串码 / 条码 · 切换格式实时生效</div>
-    </div>
-    <!-- 结果列表放卡片外：新码入列不撑卡（尺寸恒定） -->
-    <div v-if="allCodes.length" class="result result--hero-out">
-      已识别 {{ allCodes.length }} 条：{{ allCodes.join(', ') }}
-    </div>
+          </template>
 
-    <div class="grid-4">
-      <!-- 拍照上传 -->
-      <Card title="拍照上传识别">
-        <p class="card-hint">用 scanPhoto(file) 识别，不需要摄像头。</p>
-        <div class="upload-box" @click="fileInput?.click()">
-          <div v-if="photoScanning"><span class="spinner" /><span>识别中...</span></div>
+          <!-- 未开始：玻璃面板入口（图标 + 文案 + 副标题同块），底行 = 格式勾选 -->
+          <template v-else-if="!s1 && !starting1">
+            <button type="button" class="bs-open" @click="toggle1">
+              <span class="bs-open-icon" aria-hidden="true">
+                <span class="bs-cnr tl" /><span class="bs-cnr tr" />
+                <span class="bs-cnr bl" /><span class="bs-cnr br" />
+                <span class="bs-open-line" />
+              </span>
+              <span class="bs-open-text">开始扫码</span>
+              <span class="bs-open-sub">连续扫码 · 扫到即录入，无需退出</span>
+            </button>
+            <div class="bs-foot">
+              <div class="fmt-row" role="radiogroup" aria-label="识别格式">
+                <button
+                  v-for="f in [
+                    { v: 'all', t: '通用' },
+                    { v: 'qr', t: '仅二维码' },
+                    { v: 'barcode', t: '仅条形码' },
+                  ]"
+                  :key="f.v"
+                  type="button"
+                  class="fmt-check"
+                  :class="{ checked: scanFormat === f.v }"
+                  role="radio"
+                  :aria-checked="scanFormat === f.v"
+                  @click="scanFormat = f.v as 'all' | 'qr' | 'barcode'"
+                >
+                  <span class="fmt-check-box" />
+                  <span class="fmt-check-text">{{ f.t }}</span>
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- 取景态：相机嵌进同一张卡（深色取景块），底行 = 开灯/系统扫码(触屏)/选图识别(桌面)/关闭 -->
           <template v-else>
-            <IconSvg type="camera" size="lg" color="var(--color-text-muted)" /><span>点击选择照片</span>
+            <div class="bs-frame">
+              <video ref="v1" class="bs-camera" autoplay playsinline muted />
+              <canvas ref="c1" style="display: none" />
+              <span v-if="starting1" class="bs-idle"><span class="spinner" /><span>启动中...</span></span>
+              <!-- 取景装饰：仅单一码型时画（通用不画，只留提示胶囊） -->
+              <template v-if="!starting1 && viewShape !== 'none'">
+                <span class="bs-shade" />
+                <span class="bs-viewbox" :class="`bs-viewbox--${viewShape}`">
+                  <span class="bs-cnr tl" /><span class="bs-cnr tr" />
+                  <span class="bs-cnr bl" /><span class="bs-cnr br" />
+                  <span class="bs-beam" />
+                </span>
+              </template>
+              <span v-if="!starting1" class="bs-hint">对准条码 · 连续扫码无需退出</span>
+              <span v-if="feedback1" class="bs-feedback">{{ feedback1 }}</span>
+            </div>
+            <div class="bs-foot">
+              <div class="bs-actions">
+                <button v-if="torch1" type="button" class="bs-action-btn" @click="torchToggle1">
+                  {{ torchOn1 ? '关灯' : '开灯' }}
+                </button>
+                <button v-if="isCoarse1" type="button" class="bs-action-btn" @click="systemScan1">系统扫码</button>
+                <button v-else type="button" class="bs-action-btn" @click="fallbackInput1?.click()">选图识别</button>
+                <button type="button" class="bs-action-btn bs-action-btn--outline" @click="toggle1">关闭</button>
+              </div>
+            </div>
           </template>
         </div>
-        <input ref="fileInput" type="file" accept="image/*" style="display: none" @change="onPhoto" />
-        <div
-          v-if="photoLast"
-          class="result"
-          :style="{ color: photoLast === '未识别' ? 'var(--color-danger)' : 'var(--color-text-secondary)' }"
-        >
-          {{ photoLast }}
+        <!-- 隐藏选图 input：兜底终态/取景态「选图识别」共用（三态常驻，避免互斥态拿不到 ref） -->
+        <input ref="fallbackInput1" type="file" accept="image/*" style="display: none" @change="onFallbackPicked" />
+        <!-- 结果列表放卡片外：新码入列不撑卡（尺寸恒定） -->
+        <div v-if="allCodes.length" class="result result--hero-out">
+          已识别 {{ allCodes.length }} 条：{{ allCodes.join(', ') }}
         </div>
-        <div v-if="photoCodes.length" class="result">共 {{ photoCodes.length }} 条：{{ photoCodes.join(', ') }}</div>
-      </Card>
+      </div>
+
+      <div class="hero-side">
+        <!-- 拍照上传 -->
+        <Card title="拍照上传识别">
+          <p class="card-hint">用 scanPhoto(file) 识别，不需要摄像头。</p>
+          <div class="upload-box" @click="fileInput?.click()">
+            <div v-if="photoScanning"><span class="spinner" /><span>识别中...</span></div>
+            <template v-else>
+              <IconSvg type="camera" size="lg" color="var(--color-text-muted)" /><span>点击选择照片</span>
+            </template>
+          </div>
+          <input ref="fileInput" type="file" accept="image/*" style="display: none" @change="onPhoto" />
+          <div
+            v-if="photoLast"
+            class="result"
+            :style="{ color: photoLast === '未识别' ? 'var(--color-danger)' : 'var(--color-text-secondary)' }"
+          >
+            {{ photoLast }}
+          </div>
+          <div v-if="photoCodes.length" class="result">共 {{ photoCodes.length }} 条：{{ photoCodes.join(', ') }}</div>
+        </Card>
+      </div>
     </div>
 
     <!-- 弹窗演示 -->
@@ -605,87 +732,74 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 .btn:hover {
   background: var(--color-primary-hover);
 }
-/* 内嵌实例（非四列栅格时防止撑满整页）：取景框限制在常见扫码器尺寸 */
-/* 提权选择器：基础 .scan-box 定义在后面（width:100%），双类名保证 360px 稳定生效 */
-.scan-box.scan-box--embedded {
-  width: 360px;
+/* ══════ 渐变扫码卡（对齐「小程序通用组件」BarcodeScanner 定版） ══════
+   三段式等高：主块 120px（入口/取景/兜底共用）+ 底行 44px（勾选/操作键/手输行）+ 卡内距。
+   紧凑小程序组件风：卡片 336px 与拍照识别卡并排一行；三态结构等高，卡片不跳变 */
+.hero-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+/* 左列锁扫码卡宽度：识别结果行与卡片对齐 */
+.hero-col {
+  flex: 0 0 336px;
+  max-width: 100%;
+}
+/* 右列拍照识别卡与扫码卡等宽对称；窄屏换行后自然占满 */
+.hero-side {
+  flex: 0 0 336px;
+  max-width: 100%;
+}
+/* 上传框矮胶囊（对齐兜底面板选图条形态），不随卡片变宽撑大方块 */
+.hero-side .upload-box {
+  aspect-ratio: auto;
+  min-height: 96px;
+  margin: 0 auto 8px;
+  padding: 12px;
+}
+.scan-hero {
+  width: 336px;
   max-width: 100%;
   margin: 0 auto;
-}
-/* ══════ saas 小程序同款渐变扫码卡 ══════
-   对齐 mp-app/pages/tenant/scan.vue：主色渐变卡 + 入口按钮态/相机嵌卡态 + 白字勾选
-   尺寸恒定：三态共用同一内容宽（360px 取景区）与同高的停止条槽位，卡片不跳变 */
-.scan-hero {
-  margin-bottom: 24px;
   padding: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 5px;
   background: linear-gradient(160deg, var(--color-primary) 0%, #6d8cff 100%);
   border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
 }
-/* 入口按钮 = 相机取景区的同尺寸占位（360×270），切换状态时卡片尺寸不变 */
-.scan-open {
-  width: 360px;
-  max-width: 100%;
-  height: 270px;
+/* ── 主块槽位（120px）：入口 / 取景 / 兜底 上传块共用，三态等高由结构保证 ── */
+/* 未开始：玻璃面板入口（取景框 + 主文案 + 副标题同块） */
+.bs-open {
+  width: 100%;
+  height: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 6px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 8px rgba(255, 255, 255, 0.18);
   cursor: pointer;
   font-family: inherit;
 }
-.scan-open:hover {
-  background: rgba(255, 255, 255, 0.22);
+.bs-open:hover {
+  opacity: 0.9;
 }
-.scan-open-icon {
+.bs-open-icon {
   position: relative;
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
 }
-.scan-corner {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-color: #fff;
-  border-style: solid;
-  border-width: 0;
-}
-.scan-corner.tl {
-  top: 0;
-  left: 0;
-  border-top-width: 2.5px;
-  border-left-width: 2.5px;
-  border-top-left-radius: 5px;
-}
-.scan-corner.tr {
-  top: 0;
-  right: 0;
-  border-top-width: 2.5px;
-  border-right-width: 2.5px;
-  border-top-right-radius: 5px;
-}
-.scan-corner.bl {
-  bottom: 0;
-  left: 0;
-  border-bottom-width: 2.5px;
-  border-left-width: 2.5px;
-  border-bottom-left-radius: 5px;
-}
-.scan-corner.br {
-  bottom: 0;
-  right: 0;
-  border-bottom-width: 2.5px;
-  border-right-width: 2.5px;
-  border-bottom-right-radius: 5px;
-}
-.scan-line {
+.bs-open-line {
   position: absolute;
   left: 3px;
   right: 3px;
@@ -694,57 +808,48 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   border-radius: 1px;
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
-  animation: scan-sweep 2.2s ease-in-out infinite;
+  animation: bs-open-sweep 2.2s ease-in-out infinite;
 }
-@keyframes scan-sweep {
+@keyframes bs-open-sweep {
   0% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(38px);
+    transform: translateY(32px);
   }
   100% {
     transform: translateY(0);
   }
 }
-.scan-open-text {
-  font-size: 15px;
+.bs-open-text {
+  font-size: 16px;
   font-weight: 600;
   color: #fff;
 }
-.scan-inline {
+.bs-open-sub {
+  max-width: 86%;
+  font-size: 10px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+}
+/* 取景块：深色定高，相机嵌进同一张卡 */
+.bs-frame {
+  position: relative;
   width: 100%;
+  height: 120px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #111827;
 }
-.scan-exit {
-  width: 360px;
-  max-width: 100%;
-  margin: 8px auto 0;
-  padding: 9px 0;
-  border: none;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  color: #fff;
-  font-family: inherit;
+.bs-camera {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-.scan-exit:hover {
-  background: rgba(255, 255, 255, 0.32);
-}
-/* 隐形占位：未启动态保留停止条槽位，切态时卡片尺寸不跳变 */
-.scan-exit--ghost {
-  visibility: hidden;
-  cursor: default;
-}
-.scan-exit--ghost:hover {
-  background: rgba(255, 255, 255, 0.22);
-}
-/* 启动中：相机框内遮罩提示 */
-.scan-starting {
+.bs-idle {
   position: absolute;
   inset: 0;
   display: flex;
@@ -752,15 +857,207 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.45);
+  background: #111827;
   color: #fff;
-  font-size: 13px;
+  font-size: 12px;
   z-index: 2;
 }
+/* 取景装饰（仅单一码型）：压暗遮罩 + 镂空取景窗（形状随码型）+ 绿色辉光扫描线 */
+.bs-shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+.bs-viewbox {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+/* 二维码：方形取景窗（75px 方） */
+.bs-viewbox--qr {
+  width: 75px;
+  height: 75px;
+}
+/* 条形码：横向长条槽（210×55px），四角只留左右端角，扫描线横贯左右微扫 */
+.bs-viewbox--barcode {
+  width: 210px;
+  max-width: 88%;
+  height: 55px;
+}
+.bs-viewbox--barcode .bs-beam {
+  left: 4px;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  animation-name: bs-beam-h;
+}
+.bs-viewbox--barcode .bs-cnr {
+  width: 15px;
+  height: 55px;
+  border-radius: 0;
+}
+.bs-viewbox--barcode .bs-cnr.tl {
+  border-top-width: 2.5px;
+  border-left-width: 2.5px;
+  border-bottom-width: 2.5px;
+  border-top-left-radius: 7px;
+  border-bottom-left-radius: 7px;
+}
+.bs-viewbox--barcode .bs-cnr.tr {
+  border-top-width: 2.5px;
+  border-right-width: 2.5px;
+  border-bottom-width: 2.5px;
+  border-top-right-radius: 7px;
+  border-bottom-right-radius: 7px;
+}
+.bs-viewbox--barcode .bs-cnr.bl,
+.bs-viewbox--barcode .bs-cnr.br {
+  display: none;
+}
+.bs-cnr {
+  position: absolute;
+  width: 17px;
+  height: 17px;
+  border-color: #fff;
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+.bs-cnr.tl {
+  top: 0;
+  left: 0;
+  border-top-width: 2.5px;
+  border-left-width: 2.5px;
+  border-top-left-radius: 7px;
+}
+.bs-cnr.tr {
+  top: 0;
+  right: 0;
+  border-top-width: 2.5px;
+  border-right-width: 2.5px;
+  border-top-right-radius: 7px;
+}
+.bs-cnr.bl {
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 2.5px;
+  border-left-width: 2.5px;
+  border-bottom-left-radius: 7px;
+}
+.bs-cnr.br {
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 2.5px;
+  border-right-width: 2.5px;
+  border-bottom-right-radius: 7px;
+}
+/* 绿色辉光扫描线（SaaS 同款）：二维码态竖扫（行程 59px）；条形码态槽内左右微扫 */
+.bs-beam {
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  top: 7px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(34, 173, 95, 0.9);
+  box-shadow: 0 0 6px rgba(34, 173, 95, 0.9);
+  pointer-events: none;
+  animation: bs-beam 2.2s ease-in-out infinite;
+}
+@keyframes bs-beam {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(59px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes bs-beam-h {
+  0% {
+    transform: translateY(-50%) translateX(-1px);
+  }
+  50% {
+    transform: translateY(-50%) translateX(1px);
+  }
+  100% {
+    transform: translateY(-50%) translateX(-1px);
+  }
+}
+/* 顶部提示胶囊 / 底部反馈胶囊（粘滞文案） */
+.bs-hint,
+.bs-feedback {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 90%;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+.bs-hint {
+  top: 2%;
+}
+.bs-feedback {
+  bottom: 8%;
+}
+/* 兜底终态：上传块占主块（表面底 + 虚线边），识别中盖 spinner */
+.bs-up {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px dashed rgba(255, 255, 255, 0.55);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+}
+.bs-up:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+.bs-up:disabled {
+  cursor: wait;
+}
+.bs-up-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+.bs-up-busy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+/* ── 底行槽位（44px）：格式勾选 / 操作键 / 手输行 三态共用 ── */
+.bs-foot {
+  width: 100%;
+  height: 44px;
+}
+/* 入口态底行：格式勾选（决定取景装饰形状） */
 .fmt-row {
+  height: 100%;
   display: flex;
   gap: 14px;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
 }
 .fmt-check {
@@ -773,76 +1070,133 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   cursor: pointer;
   font-family: inherit;
 }
+/* 勾选框对齐原型 .bs-check：选中＝白底 + 主色内描边（实心方，不手画对勾笔画） */
 .fmt-check-box {
-  width: 14px;
-  height: 14px;
+  position: relative;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.25);
   border: 1.5px solid rgba(255, 255, 255, 0.85);
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
 }
 .fmt-check.checked .fmt-check-box {
   background: #fff;
-}
-.fmt-check.checked .fmt-check-box::after {
-  content: '✓';
-  display: block;
-  font-size: 10px;
-  line-height: 11px;
-  color: var(--color-primary);
-  text-align: center;
+  border-color: #fff;
+  box-shadow: inset 0 0 0 3px var(--color-primary);
 }
 .fmt-check-text {
-  font-size: 13px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.92);
 }
 .fmt-check.checked .fmt-check-text {
   color: #fff;
   font-weight: 600;
 }
-.scan-sub {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.85);
-  text-align: center;
+/* 取景态底行：三枚等宽矩形键占满一行（规格对齐兜底手输行，渐变卡上半透明白） */
+.bs-actions {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 6px;
 }
-/* 报错行与停止条同槽位同尺寸（360×35 单行胶囊）→ 出错也不跳卡 */
-.scan-err--on-hero {
-  width: 360px;
-  max-width: 100%;
-  height: 35px;
-  margin: 8px auto 0;
-  padding: 0 12px;
-  border: none;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  font-size: 12px;
+.bs-action-btn {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 11px;
+  font-family: inherit;
   cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+.bs-action-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+.bs-action-btn--outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+}
+.bs-action-btn--outline:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+/* 兜底终态底行：手输行（输入框 + 提交 + 重试，等高 44px） */
+.bs-manual {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bs-manual-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.bs-manual-input::placeholder {
+  color: var(--color-text-muted);
+}
+.bs-manual-btn {
+  flex-shrink: 0;
+  width: 56px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.bs-manual-btn:hover {
+  background: var(--color-primary-hover);
+}
+.bs-manual-retry {
+  flex-shrink: 0;
+  width: 56px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.bs-manual-retry:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 .result--hero-out {
-  margin: -14px 0 24px;
+  width: 336px;
+  max-width: 100%;
+  margin: 8px auto 0;
   font-size: 13px;
   color: var(--color-text-secondary);
   background: var(--color-bg-alt);
   border-radius: 10px;
   padding: 8px 12px;
+  box-sizing: border-box;
   word-break: break-all;
-}
-.grid-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-@media (max-width: 1024px) {
-  .grid-4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 .result {
   margin-top: 8px;

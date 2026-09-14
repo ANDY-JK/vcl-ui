@@ -23,7 +23,9 @@ import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
 import Upload from '@/components/form/Upload.vue'
 import CameraCapture from '@/components/form/CameraCapture.vue'
+import CodeCapture from '@/components/form/CodeCapture.vue'
 import Button from '@/components/basic/Button.vue'
+import IconSvg from '@/components/basic/IconSvg.vue'
 import Divider from '@/components/data/Divider.vue'
 import FieldError from './FieldError.vue'
 import RendererRichtext from './renderer/RendererRichtext.vue'
@@ -83,8 +85,7 @@ const inputValue = computed({
 /** Group 值（支持数组/布尔/数字）
  *  同 inputValue：Group 的 modelValue 非可选且不接受 null，空态落成 ''（各 type 内部均按 falsy 处理） */
 const groupValue = computed({
-  get: () =>
-    (props.modelValue ?? '') as string | number | boolean | (string | number | boolean)[] | [number, number],
+  get: () => (props.modelValue ?? '') as string | number | boolean | (string | number | boolean)[] | [number, number],
   set: (v) => emit('update:modelValue', v),
 })
 
@@ -96,6 +97,23 @@ const uploadValue = computed({
 
 /** CameraCapture 弹层开关（此前未接线，相机永远打不开） */
 const cameraOpen = ref(false)
+/** CodeCapture 弹层开关 + 已扫/已输码值（scan-code 字段） */
+const scanOpen = ref(false)
+const scanValue = computed(() => {
+  const v = props.modelValue
+  return v === null || v === undefined ? '' : String(v)
+})
+/** 扫码交付 → 写入 formData（字符串值，与 text 字段同构，校验/提交/回显一致） */
+function onScanCode(code: string) {
+  emit('update:modelValue', code)
+  emit('change')
+}
+
+/** 清除扫码值：与扫码交付同发 change（事件联动/校验依赖 change，清除也应触发） */
+function onScanClear() {
+  emit('update:modelValue', '')
+  emit('change')
+}
 /** 拍照交付 → 转 UploadFile[] 写入 formData（与 Upload 字段同构，校验/提交/回显一致） */
 function onCameraFinish(files: File[]) {
   const uploaded: UploadFile[] = files.map((f, i) => ({
@@ -305,6 +323,46 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <Upload v-model="uploadValue" v-bind="uploadProps" />
         <FieldError :message="error ?? ''" />
         <p v-if="field.hint" class="fb-hint">{{ field.hint }}</p>
+      </div>
+    </template>
+
+    <!-- ═══ 扫码识别（自带兜底链：页面内 → 系统相机 → 上传识别 / 手工输入） ═══ -->
+    <template v-else-if="field.type === 'scan-code'">
+      <div class="fb-scancode-field">
+        <label v-if="field.label" class="fb-scancode-label">
+          {{ field.label }}
+          <span v-if="field.required" class="fb-required">*</span>
+        </label>
+        <!-- 有值：显示已扫/已输的码值 + 清除；无值：一个「扫码」按钮直接进自动链 -->
+        <div v-if="scanValue" class="fb-scancode-value">
+          <span class="fb-scancode-code">{{ scanValue }}</span>
+          <button
+            v-if="!effectiveDisabled"
+            type="button"
+            class="fb-scancode-clear"
+            :aria-label="t('form.scanClear')"
+            @click="onScanClear"
+          >
+            <IconSvg type="x" size="sm" />
+          </button>
+        </div>
+        <Button
+          v-else
+          type="button"
+          :text="t('form.scanCode')"
+          icon="scan"
+          :disabled="effectiveDisabled"
+          class="fb-scancode-trigger"
+          @click="scanOpen = true"
+        />
+        <CodeCapture
+          v-model="scanOpen"
+          :formats="(field.props?.scanFormats as 'all' | 'qr' | 'barcode') || 'all'"
+          :prefix="field.props?.scanPrefix as string"
+          :length="field.props?.scanLength as number"
+          @scan="onScanCode"
+        />
+        <FieldError :message="error ?? ''" />
       </div>
     </template>
 
@@ -525,20 +583,60 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 /* Group 字段 */
 .fb-group-field,
 .fb-upload-field,
-.fb-camera-field {
+.fb-camera-field,
+.fb-scancode-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 .fb-group-label,
 .fb-upload-label,
-.fb-camera-label {
+.fb-camera-label,
+.fb-scancode-label {
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-secondary, #64748b);
 }
 .fb-camera-trigger {
   align-self: flex-start;
+}
+.fb-scancode-trigger {
+  align-self: flex-start;
+}
+/* 已扫码值：等宽显示 + 清除按钮 */
+.fb-scancode-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--fb-radius, 6px);
+  background: var(--color-bg-alt, #f8fafc);
+}
+.fb-scancode-code {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-family: monospace;
+  color: var(--color-text, #0f172a);
+  word-break: break-all;
+}
+.fb-scancode-clear {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text-muted, #94a3b8);
+  cursor: pointer;
+}
+.fb-scancode-clear:hover {
+  background: var(--color-danger-bg, #fee2e2);
+  color: var(--color-danger, #ef4444);
 }
 .fb-required {
   color: var(--color-danger, #ef4444);

@@ -28,8 +28,8 @@ export default {
     panelS3Desc: 'S3 兼容对象存储（缤纷云等，跨设备同步）',
     panelSave: '保存并切换',
     panelSupabaseTip:
-      '图片/任意文件存入该 bucket（需在 Supabase 控制台建 public bucket）。对象名 {appleId}-{文件名}，跨设备可同步；切换存储不会自动搬运已有数据。',
+      "图片/任意文件存入该 bucket（需在 Supabase 控制台建 public bucket）。对象名 {'{'}appleId{'}'}-{'{'}文件名{'}'}，跨设备可同步；切换存储不会自动搬运已有数据。",
     panelS3Tip:
-      '对象名 {appleId}-{文件名}，跨设备同步；切换存储不会自动搬运已有数据。AK/SK 会进入浏览器端，仅限内部工具/私有部署使用。',
+      "对象名 {'{'}appleId{'}'}-{'{'}文件名{'}'}，跨设备同步；切换存储不会自动搬运已有数据。AK/SK 会进入浏览器端，仅限内部工具/私有部署使用。",
   },
 }

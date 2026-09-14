@@ -26,6 +26,7 @@ import PropsEventPage from './PropsEventPage.vue'
 import PropsDataPage from './PropsDataPage.vue'
 import PropsConditionGroup from './PropsConditionGroup.vue'
 import PropsAdvancedFields from './PropsAdvancedFields.vue'
+import PropsContainerSection from './PropsContainerSection.vue'
 
 const t = useT()
 
@@ -201,158 +202,8 @@ watch(
           />
         </div>
 
-        <!-- 容器节点专属 -->
-        <template v-if="isContainer">
-          <div class="ldp-prop">
-            <label>{{ t('fbp.containerType') }}</label>
-            <div class="ldp-type-readonly">
-              <IconSvg type="layout-template" size="xs" />
-              {{ getTypeLabel(node.type) }}
-            </div>
-          </div>
-
-          <!-- grid 容器：列数 -->
-          <template v-if="node.type === 'grid'">
-            <div class="ldp-section-title">{{ t('fbp.sectionGrid') }}</div>
-            <div class="ldp-prop">
-              <label>{{ t('fbp.columns') }}</label>
-              <Select
-                :model-value="node.containerConfig?.columns ?? 2"
-                :options="[
-                  { value: 2, label: t('fbp.col2') },
-                  { value: 3, label: t('fbp.col3') },
-                  { value: 4, label: t('fbp.col4') },
-                ]"
-                @update:model-value="
-                  emit('update', { containerConfig: { ...node.containerConfig, columns: Number($event) } })
-                "
-              />
-            </div>
-          </template>
-
-          <!-- flex 容器：间距/换行/对齐 -->
-          <template v-if="node.type === 'flex'">
-            <div class="ldp-section-title">{{ t('fbp.sectionFlex') }}</div>
-            <div class="ldp-prop">
-              <label>{{ t('fbp.flexGap') }}</label>
-              <Select
-                :model-value="node.containerConfig?.gap ?? 12"
-                :options="[
-                  { value: 4, label: '4px' },
-                  { value: 8, label: '8px' },
-                  { value: 12, label: '12px' },
-                  { value: 16, label: '16px' },
-                  { value: 24, label: '24px' },
-                ]"
-                @update:model-value="
-                  emit('update', { containerConfig: { ...node.containerConfig, gap: Number($event) } })
-                "
-              />
-            </div>
-            <div class="ldp-prop ldp-prop-switch">
-              <label>{{ t('fbp.flexWrap') }}</label>
-              <Group
-                type="switch"
-                :model-value="node.containerConfig?.wrap !== false"
-                @update:model-value="emit('update', { containerConfig: { ...node.containerConfig, wrap: !!$event } })"
-              />
-            </div>
-            <div class="ldp-prop">
-              <label>{{ t('fbp.flexJustify') }}</label>
-              <Select
-                :model-value="node.containerConfig?.justify ?? 'start'"
-                :options="[
-                  { value: 'start', label: t('fbp.justifyStart') },
-                  { value: 'center', label: t('fbp.justifyCenter') },
-                  { value: 'space-between', label: t('fbp.justifyBetween') },
-                ]"
-                @update:model-value="
-                  emit('update', {
-                    containerConfig: {
-                      ...node.containerConfig,
-                      justify: String($event) as 'start' | 'center' | 'space-between',
-                    },
-                  })
-                "
-              />
-            </div>
-          </template>
-
-          <!-- tabs 容器：标签页列表 -->
-          <template v-if="node.type === 'tabs'">
-            <div class="ldp-section-title">{{ t('fbp.sectionTabs') }}</div>
-            <div class="ldp-prop">
-              <label>{{ t('fbp.tabsList') }}</label>
-              <textarea
-                class="ldp-options-editor"
-                :value="(node.containerConfig?.tabs ?? []).map((t) => t.label).join('\n')"
-                :placeholder="t('fbp.tabsPh')"
-                rows="4"
-                @input="
-                  emit('update', {
-                    containerConfig: {
-                      ...node.containerConfig,
-                      tabs: ($event.target as HTMLTextAreaElement).value
-                        .split('\n')
-                        .filter(Boolean)
-                        .map((label, i) => ({ label, name: 'tab' + (i + 1) })),
-                    },
-                  })
-                "
-              />
-            </div>
-          </template>
-
-          <!-- collapse 容器：折叠项列表 -->
-          <template v-if="node.type === 'collapse'">
-            <div class="ldp-section-title">{{ t('fbp.sectionCollapse') }}</div>
-            <div class="ldp-prop">
-              <label>{{ t('fbp.collapseList') }}</label>
-              <textarea
-                class="ldp-options-editor"
-                :value="(node.containerConfig?.collapseItems ?? []).map((c) => c.title).join('\n')"
-                :placeholder="t('fbp.collapsePh')"
-                rows="4"
-                @input="
-                  emit('update', {
-                    containerConfig: {
-                      ...node.containerConfig,
-                      collapseItems: ($event.target as HTMLTextAreaElement).value
-                        .split('\n')
-                        .filter(Boolean)
-                        .map((title) => ({ title, expanded: true })),
-                    },
-                  })
-                "
-              />
-            </div>
-          </template>
-
-          <!-- steps 容器：步骤列表 -->
-          <template v-if="node.type === 'steps'">
-            <div class="ldp-section-title">{{ t('fbp.sectionSteps') }}</div>
-            <div class="ldp-prop">
-              <label>{{ t('fbp.stepsList') }}</label>
-              <textarea
-                class="ldp-options-editor"
-                :value="(node.containerConfig?.steps ?? []).map((s) => s.title).join('\n')"
-                :placeholder="t('fbp.stepsPh')"
-                rows="4"
-                @input="
-                  emit('update', {
-                    containerConfig: {
-                      ...node.containerConfig,
-                      steps: ($event.target as HTMLTextAreaElement).value
-                        .split('\n')
-                        .filter(Boolean)
-                        .map((title) => ({ title })),
-                    },
-                  })
-                "
-              />
-            </div>
-          </template>
-        </template>
+        <!-- 容器节点专属（拆分至 PropsContainerSection.vue，超 800 行整改） -->
+        <PropsContainerSection v-if="isContainer" :node="node" @update="emit('update', $event)" />
 
         <!-- 字段节点专属属性 -->
         <template v-else>
@@ -630,6 +481,40 @@ watch(
                 type="number"
                 :model-value="node.maxSize ?? 10"
                 @update:model-value="onNumberEmit('maxSize', $event)"
+              />
+            </div>
+          </template>
+
+          <!-- 扫码识别属性（空/0 = 不过滤，与渲染端 ok() 口径一致） -->
+          <template v-if="node.type === 'scan-code'">
+            <div class="ldp-section-title">{{ t('fbp.sectionScan') }}</div>
+            <div class="ldp-prop">
+              <label>{{ t('fbp.scanFormats') }}</label>
+              <Select
+                :model-value="node.scanFormats ?? 'all'"
+                :options="[
+                  { value: 'all', label: t('fbp.scanFmtAll') },
+                  { value: 'qr', label: t('fbp.scanFmtQr') },
+                  { value: 'barcode', label: t('fbp.scanFmtBarcode') },
+                ]"
+                @update:model-value="emit('update', { scanFormats: $event as 'all' | 'qr' | 'barcode' })"
+              />
+            </div>
+            <div class="ldp-prop">
+              <label>{{ t('fbp.scanPrefix') }}</label>
+              <Input
+                :model-value="node.scanPrefix ?? ''"
+                :placeholder="t('fbp.scanPrefixPh')"
+                @update:model-value="onInputEmit('scanPrefix', $event)"
+              />
+            </div>
+            <div class="ldp-prop">
+              <label>{{ t('fbp.scanLength') }}</label>
+              <Input
+                type="number"
+                :model-value="node.scanLength ?? 0"
+                :placeholder="t('fbp.scanLengthPh')"
+                @update:model-value="onNumberEmit('scanLength', $event)"
               />
             </div>
           </template>

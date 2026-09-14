@@ -30,8 +30,8 @@ export default {
     panelS3Desc: 'S3-compatible object storage (Bitiful etc., cross-device)',
     panelSave: 'Save & switch',
     panelSupabaseTip:
-      'Files go to the bucket (create a public bucket in Supabase console first). Object name {appleId}-{file}; switching backends does not migrate existing data.',
+      "Files go to the bucket (create a public bucket in Supabase console first). Object name {'{'}appleId{'}'}-{'{'}file{'}'}; switching backends does not migrate existing data.",
     panelS3Tip:
-      'Object name {appleId}-{file}; switching backends does not migrate existing data. AK/SK ships to the browser — internal tools / private deploys only.',
+      "Object name {'{'}appleId{'}'}-{'{'}file{'}'}; switching backends does not migrate existing data. AK/SK ships to the browser — internal tools / private deploys only.",
   },
 }

@@ -23,14 +23,8 @@ const demoMap: Record<string, any> = {
   group: defineAsyncComponent({ loader: () => import('./form/GroupDemo.vue'), errorComponent: ErrorFallback }),
   // 其他表单
   upload: defineAsyncComponent({ loader: () => import('./form/UploadDemo.vue'), errorComponent: ErrorFallback }),
-  'barcode-scanner': defineAsyncComponent({
-    loader: () => import('./form/BarcodeScannerDemo.vue'),
-    errorComponent: ErrorFallback,
-  }),
-  'camera-capture': defineAsyncComponent({
-    loader: () => import('./form/CameraCaptureDemo.vue'),
-    errorComponent: ErrorFallback,
-  }),
+  // 采集合并演示（拍照 + 扫码三段同页；旧 /barcode-scanner /camera-capture /capture-fallback 路由已重定向）
+  capture: defineAsyncComponent({ loader: () => import('./form/CaptureDemo.vue'), errorComponent: ErrorFallback }),
 
   // 数据展示
   card: defineAsyncComponent({ loader: () => import('./data/CardDemo.vue'), errorComponent: ErrorFallback }),

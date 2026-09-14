@@ -2,7 +2,7 @@
 // 门店合同收集表单 — 分批收集苹果专柜租赁协议
 // 基础存储 API（storageGet/Set/Delete、dbPut/dbGet/dbDelete）见 StorageDemo
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick, toRaw } from 'vue'
-import { Upload, Toast } from '@/components'
+import { Input, Upload, Toast } from '@/components'
 import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 import type { UploadFile } from '@/components/form/Upload.vue'

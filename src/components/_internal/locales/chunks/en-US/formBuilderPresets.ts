@@ -141,6 +141,7 @@ export default {
     upload: 'File upload',
     imageUpload: 'Image upload',
     camera: 'Camera',
+    scanCode: 'Scan code',
     divider: 'Divider',
     title: 'Title text',
     paragraph: 'Paragraph',

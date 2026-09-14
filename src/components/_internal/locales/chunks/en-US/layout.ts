@@ -32,8 +32,7 @@ export default {
     group: 'Group (radio/checkbox/switch/rate/slider)',
     icon: 'Icon (render + picker)',
     upload: 'Upload',
-    barcodeScanner: 'BarcodeScanner',
-    cameraCapture: 'CameraCapture',
+    capture: 'Capture (photo & scan)',
     // Items — Charts
     chart: 'Chart',
     chartTable: 'ChartTable (chart + table)',
