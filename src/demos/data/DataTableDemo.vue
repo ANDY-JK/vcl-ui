@@ -14,6 +14,7 @@ const baseCols = [
   { key: 'status', title: '当前在职状态', align: 'center' as const, filterValues: ['在线', '离线'] },
   { key: 'amount', title: '月薪金额(人民币元)', align: 'right' as const, sortable: true },
   { key: 'date', title: '入职报到日期', sortable: true },
+  { key: 'remark', title: '备注' },
 ]
 const baseData = [
   {
@@ -25,6 +26,7 @@ const baseData = [
     status: '在线',
     amount: 15800,
     date: '2024-03-15',
+    remark: null,
   },
   {
     id: 2,
@@ -35,6 +37,7 @@ const baseData = [
     status: '在线',
     amount: 22000,
     date: '2024-01-10',
+    remark: '跟进中',
   },
   {
     id: 3,
@@ -45,6 +48,7 @@ const baseData = [
     status: '离线',
     amount: 13500,
     date: '2024-06-01',
+    remark: undefined,
   },
   {
     id: 4,
@@ -55,6 +59,7 @@ const baseData = [
     status: '在线',
     amount: 18500,
     date: '2024-12-20',
+    remark: '',
   },
   {
     id: 5,
@@ -65,6 +70,7 @@ const baseData = [
     status: '离线',
     amount: 25000,
     date: '2024-02-28',
+    remark: '  ',
   },
   {
     id: 6,
@@ -75,6 +81,7 @@ const baseData = [
     status: '在线',
     amount: 12000,
     date: '2024-07-05',
+    remark: '已归档',
   },
   {
     id: 7,
@@ -85,6 +92,7 @@ const baseData = [
     status: '在线',
     amount: 10500,
     date: '2024-09-18',
+    remark: null,
   },
   {
     id: 8,
@@ -95,6 +103,7 @@ const baseData = [
     status: '离线',
     amount: 9000,
     date: '2024-11-20',
+    remark: '  待补充  ',
   },
 ]
 
@@ -442,6 +451,11 @@ const modal2Cols = [
     <!-- ===== 1. 基础 ===== -->
     <Card title="基础用法 — 排序 + 筛选 + 行/单元格自定义样式">
       <p class="demo-hint">行样式：在线绿色背景；单元格：金额>15000 红色加粗</p>
+      <p class="demo-hint">
+        「备注」列演示空白占位：null / undefined / 空串 / 纯空白串统一显示为 <code>-</code>；0、false
+        等合法值不占位，有值列首尾空白不裁剪。占位仅作用于展示层，导出/筛选/列宽测量仍按原值；可用
+        <code>blank-text</code> 换占位文案（传空串即关闭）。
+      </p>
       <DataTable
         namespace="demo-base"
         :columns="baseCols"

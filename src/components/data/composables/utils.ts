@@ -59,15 +59,27 @@ export function measureDomTextWidth(text: string, fontSize: number = 14, fontWei
 import type { Column } from './types'
 import { computePointerPosition } from '@/components/_internal/useFloating'
 
-/** 单元格文本提取（纯函数，多处复用） */
+/** 单元格文本提取（纯函数，多处复用）
+ *  ⚠️ 保持「原值」语义：空白一律返回空串，绝不注入占位符。
+ *  展示层占位请用 blankPlaceholder —— 本函数同时喂导出/筛选/测宽，
+ *  注入占位符会污染导出的 CSV/Excel 数据。 */
 export function getCellText(value: any, col: Column, row: Record<string, any>, idx: number): string {
   if (col.render) {
     // 防御：render 声明返回 string，但实际可能返回 VNode/数字等任意类型
     const rendered = col.render(value, row, idx)
-    return typeof rendered === 'string' ? rendered : String(rendered ?? '-')
+    return typeof rendered === 'string' ? rendered : String(rendered ?? '')
   }
-  if (value === null || value === undefined) return '-'
-  return String(value)
+  return value == null ? '' : String(value)
+}
+
+/** 单元格空白占位（展示层专用）：null/undefined/空串/纯空白 → placeholder。
+ *  placeholder 传空串即关闭。0/false 等合法值不占位（trim 判空，非 falsy）。
+ *  ⚠️ 只在渲染层调用：getCellText 保持原值，导出/筛选/测宽口径不受影响。 */
+export function blankPlaceholder(text: unknown, placeholder = '-'): string {
+  if (!placeholder) return text == null ? '' : String(text)
+  if (text == null) return placeholder
+  const s = String(text)
+  return s.trim() === '' ? placeholder : s
 }
 
 /** 拼音匹配 — 委托给共享 usePinyinSearch 模块 */

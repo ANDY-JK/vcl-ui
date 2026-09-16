@@ -46,6 +46,7 @@ import {
   markLayerOpen,
   colTitle,
   optColor,
+  blankPlaceholder,
   isImageUrl as _isImageUrl,
 } from './composables/utils'
 import { captureTableCanvas } from './composables/canvas-screenshot'
@@ -72,6 +73,8 @@ const props = withDefaults(
     hoverable?: boolean
     isLoading?: boolean
     emptyText?: string
+    /** 单元格空白占位：null/undefined/空串/纯空白串 → 该文本（默认 '-'）；传空串关闭。仅展示层，不影响导出 */
+    blankText?: string
     sortKey?: string
     sortOrder?: 'asc' | 'desc'
     pinyinSearch?: boolean
@@ -152,6 +155,7 @@ const props = withDefaults(
     hoverable: true,
     isLoading: false,
     emptyText: '',
+    blankText: '-',
     pinyinSearch: true,
     truncateThreshold: 0,
     selectable: false,
@@ -1496,6 +1500,12 @@ function cellVal(row: Record<string, any>, colKey: string, metaVal: string): str
   return getCellValue(rk, colKey, metaVal)
 }
 
+/** 展示层文本：空白 → blankText 占位。包在 cellVal 最外层，确保编辑清空后同样占位。
+ *  cellVal / rowMetaMap.texts 保持原值供导出、筛选、列宽测量使用 */
+function cellShow(row: Record<string, any>, col: Column): string {
+  return blankPlaceholder(cellVal(row, col.key, rowMetaMap.value.get(row)?.texts[col.key] ?? ''), props.blankText)
+}
+
 /** 图片判定（域名单归 props.imageDomains；纯函数在 composables/utils） */
 function isImageUrl(val: unknown): boolean {
   return _isImageUrl(val, props.imageDomains)
@@ -2185,26 +2195,20 @@ provideDataTableContext({
                           name="cell"
                           :column="col"
                           :row="row"
-                          :value="cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')"
+                          :value="cellShow(row, col)"
                         >
                           <span
                             v-if="typeof col.cell === 'function'"
-                            v-html="
-                              sanitizeHTML(
-                                col.cell(cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? ''), row),
-                              )
-                            "
+                            v-html="sanitizeHTML(col.cell(cellShow(row, col), row))"
                           />
                           <span
                             v-else-if="col.options && col.options.length && typeof col.options[0] === 'object'"
                             :style="{
                               color: optColor(col, cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')),
                             }"
-                            >{{ cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '') }}</span
+                            >{{ cellShow(row, col) }}</span
                           >
-                          <template v-else>{{
-                            cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')
-                          }}</template>
+                          <template v-else>{{ cellShow(row, col) }}</template>
                         </slot>
                       </span>
                       <!-- 截断长文本展开图标：50字以上 + 被截断 → 可点击弹窗 -->
@@ -2279,7 +2283,7 @@ provideDataTableContext({
                     'col-fixed-right': isColumnFixed(col) === 'right',
                   }"
                 >
-                  {{ _summaryData[col.key] ?? '' }}
+                  {{ blankPlaceholder(_summaryData[col.key], blankText) }}
                 </th>
                 <th v-if="_hasActions" :class="{ 'col-fixed-right': _hasFixedRightCol }" />
               </tr>
@@ -2405,22 +2409,9 @@ provideDataTableContext({
                 >
                   <span
                     v-if="typeof col.cell === 'function'"
-                    v-html="
-                      sanitizeHTML(
-                        col.cell(
-                          getCellValue(
-                            rowMetaMap.get(row)?.key ?? '',
-                            col.key,
-                            rowMetaMap.get(row)?.texts[col.key] ?? '',
-                          ),
-                          row,
-                        ),
-                      )
-                    "
+                    v-html="sanitizeHTML(col.cell(cellShow(row, col), row))"
                   />
-                  <template v-else>{{
-                    getCellValue(rowMetaMap.get(row)?.key ?? '', col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')
-                  }}</template>
+                  <template v-else>{{ cellShow(row, col) }}</template>
                 </span>
               </span>
               <!-- 备注指示器 -->
