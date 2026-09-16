@@ -16,8 +16,8 @@ export interface Props {
   placeholder?: string
   /** 预定义色板 */
   presetColors?: string[]
-  /** 图标提供者 */
-  provider?: 'lucide' | 'solar'
+  /** 图标提供者：lucide/solar 为静态图标，morphicons 在图标切换时做形变动画 */
+  provider?: 'lucide' | 'solar' | 'morphicons'
 }
 </script>
 
@@ -29,6 +29,11 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { Icon } from '@iconify/vue'
 import { SOLAR_ICONS } from '@/components/_internal/solar-icons'
 import lucideIconNames from '@/components/_internal/lucide-icons.json'
+import {
+  ensureMorphicons,
+  isMorphiconsReady,
+  getMorphIconNames,
+} from '@/components/_internal/morphicons-registry'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 
@@ -48,7 +53,7 @@ const emit = defineEmits<{
   'update:modelValue': [v: string]
   'update:color': [v: string]
   'update:bgColor': [v: string]
-  'update:provider': [v: 'lucide' | 'solar']
+  'update:provider': [v: 'lucide' | 'solar' | 'morphicons']
   change: [v: { icon: string; color: string; bgColor: string }]
 }>()
 
@@ -58,14 +63,18 @@ const localIcon = ref(props.modelValue)
 const localColor = ref(props.color)
 const localBgColor = ref(props.bgColor)
 const colorTarget = ref<'fg' | 'bg'>('fg') // 预设色板作用于哪个颜色
-const localProvider = ref<'lucide' | 'solar'>(props.provider)
+const localProvider = ref<'lucide' | 'solar' | 'morphicons'>(props.provider)
 const solarIcons = ref<string[]>([])
 const solarLoading = ref(false)
+/** morphicons 图标名（惰性加载后填充），整库规范名 */
+const morphIcons = ref<string[]>([])
+const morphLoading = ref(false)
 
 // 事件处理用命名函数：模板内联多语句 handler 会被 prettier(semi:false) 去分号重排，导致 Vue 表达式解析失败
-function selectProvider(p: 'lucide' | 'solar') {
+function selectProvider(p: 'lucide' | 'solar' | 'morphicons') {
   localProvider.value = p
   if (p === 'solar') loadSolarIcons()
+  if (p === 'morphicons') loadMorphIcons()
 }
 function setFgColor(e: Event) {
   localColor.value = (e.target as HTMLInputElement).value
@@ -98,6 +107,21 @@ async function loadSolarIcons() {
   }
 }
 
+/** 加载 morphicons 图标列表：整库规范名，纯本地，无需网络 */
+async function loadMorphIcons() {
+  if (morphIcons.value.length) return
+  morphLoading.value = true
+  try {
+    await ensureMorphicons()
+    morphIcons.value = isMorphiconsReady() ? getMorphIconNames() : []
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn('[IconPicker] morphicons 加载失败', e)
+    morphIcons.value = []
+  } finally {
+    morphLoading.value = false
+  }
+}
+
 const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepareOpen } = useFloating({
   offset: 8,
   defaultDirection: 'down',
@@ -121,7 +145,9 @@ onUnmounted(() => window.removeEventListener('scroll', onExternalScroll, true))
 
 /** 当前提供者的图标源 */
 const iconSource = computed(() => {
-  return localProvider.value === 'solar' ? solarIcons.value : allIcons
+  if (localProvider.value === 'solar') return solarIcons.value
+  if (localProvider.value === 'morphicons') return morphIcons.value
+  return allIcons
 })
 
 const filteredIcons = computed(() => {
@@ -197,6 +223,7 @@ async function toggle(e: MouseEvent) {
   // 先预定位到触发器附近，再显示面板，避免从错误位置闪现
   prepareOpen()
   if (localProvider.value === 'solar') loadSolarIcons()
+  if (localProvider.value === 'morphicons') loadMorphIcons()
   open.value = true
   await nextTick()
   await Promise.race([new Promise((r) => requestAnimationFrame(r)), new Promise((r) => setTimeout(r, 100))])
@@ -222,7 +249,7 @@ function confirm() {
     <button ref="triggerRef" type="button" class="picker-trigger" @click="toggle">
       <span class="trigger-icon" :style="{ background: bgColor === 'transparent' ? 'var(--color-bg-alt)' : bgColor }">
         <Icon v-if="provider === 'solar'" :icon="solarIconName(modelValue)" :width="20" :height="20" :color="color" />
-        <IconSvg v-else :type="modelValue" size="md" :color="color" />
+        <IconSvg v-else :type="modelValue" size="md" :color="color" :provider="provider" />
       </span>
       <span class="trigger-placeholder">{{ placeholder }}</span>
       <IconSvg type="chevron-down" size="sm" class="trigger-arrow" :class="{ rotated: open }" />
@@ -250,6 +277,15 @@ function confirm() {
               @click="selectProvider('solar')"
             >
               Solar
+            </button>
+            <button
+              class="provider-tab"
+              role="tab"
+              :aria-selected="localProvider === 'morphicons'"
+              :class="{ active: localProvider === 'morphicons' }"
+              @click="selectProvider('morphicons')"
+            >
+              Morph
             </button>
           </div>
 
@@ -314,7 +350,7 @@ function confirm() {
                 :height="24"
                 :color="localColor"
               />
-              <IconSvg v-else :type="localIcon" size="lg" :color="localColor" />
+              <IconSvg v-else :type="localIcon" size="lg" :color="localColor" :provider="localProvider" />
             </span>
             <span class="preview-name"
               >{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span
@@ -354,11 +390,13 @@ function confirm() {
                   :height="20"
                   color="var(--color-text)"
                 />
-                <IconSvg v-else :type="name" size="md" color="var(--color-text)" />
+                <IconSvg v-else :type="name" size="md" color="var(--color-text)" :provider="localProvider" />
               </span>
               <span>{{ name }}</span>
             </button>
-            <p v-if="solarLoading" class="empty-tip">{{ t('form.loadingSolar') }}</p>
+            <p v-if="solarLoading || morphLoading" class="empty-tip">
+              {{ solarLoading ? t('form.loadingSolar') : t('form.loadingMorphicons') }}
+            </p>
             <p v-else-if="!filteredIcons.length" class="empty-tip">{{ t('form.noMatchIcon') }}</p>
             <div ref="iconSentinel" style="height: 1px" />
           </div>

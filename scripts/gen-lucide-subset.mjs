@@ -23,6 +23,11 @@ function walk(dir) {
     // 字段映射：icon: 'xxx'（此前正则引号吃两次，icon: 形态全部漏网）
     for (const m of src.matchAll(/icon: '([a-z0-9-]+)'/g)) names.add(m[1])
     for (const m of src.matchAll(/icon: "([a-z0-9-]+)"/g)) names.add(m[1])
+    // 纯字符串数组元素（如 demo 的 commonIcons: ['home','folder',…]）。
+    // 这些名字不经过 type= / icon: 任何一态，此前整段漏网 —— 表现为列表里的图标渲染成兜底方块。
+    // 过收无妨：下方以「lucide 导出存在性」为准过滤，非图标字符串会被归入 non-lucide 丢弃。
+    for (const m of src.matchAll(/^\s*'([a-z0-9-]+)',?\s*$/gm)) names.add(m[1])
+    for (const m of src.matchAll(/^\s*"([a-z0-9-]+)",?\s*$/gm)) names.add(m[1])
   }
 }
 walk('src') // 全 src 扫描（App.vue 在 src 根上，此前只扫 components/demos 漏掉它）

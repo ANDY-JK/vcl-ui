@@ -44,13 +44,29 @@ const iconColor = ref('#6366F1')
 const pickerIcon1 = ref('house')
 const pickerIcon2 = ref('settings')
 const pickerIcon3 = ref('user')
+
+/* Morphicons 形变动画：切换 type 时从旧图标平滑形变到新图标（全量图标均可形变） */
+const morphPairs = [
+  { from: 'menu', to: 'x', label: '菜单 → 关闭' },
+  { from: 'play', to: 'pause', label: '播放 → 暂停' },
+  { from: 'plus', to: 'minus', label: '展开 → 收起' },
+  { from: 'chevron-down', to: 'chevron-up', label: '折叠 → 展开' },
+  { from: 'sun', to: 'moon', label: '白天 → 夜间' },
+  { from: 'eye', to: 'eye-off', label: '显示 → 隐藏' },
+  { from: 'lock', to: 'lock-open', label: '锁定 → 解锁' },
+  { from: 'list', to: 'layout-grid', label: '列表 → 网格' },
+]
+const morphStates = ref(morphPairs.map(() => false))
+function toggleMorph(i: number) {
+  morphStates.value[i] = !morphStates.value[i]
+}
 </script>
 
 <template>
   <div class="demo">
     <h2 class="demo-title">Icon 图标</h2>
     <p class="demo-desc">
-      Lucide（1704 个，默认）和 Solar（Apple 风格，MIT 协议）双图标集。单图标渲染用 IconSvg，图标选择器用 IconPicker。
+      Lucide（1704 个，默认）、Solar（Apple 风格）与 Morphicons（形变动画）三套图标源。单图标渲染用 IconSvg，图标选择器用 IconPicker。
     </p>
 
     <!-- ══════════════ IconSvg 单图标渲染 ══════════════ -->
@@ -67,6 +83,38 @@ const pickerIcon3 = ref('user')
         <IconSvg type="settings" provider="solar" size="xl" color="#6366F1" />
         <IconSvg type="calendar" provider="solar" size="xl" color="#6366F1" />
         <IconSvg type="lock" provider="solar" size="xl" color="#6366F1" />
+      </div>
+    </Card>
+
+    <Card title="Morphicons 形变动画" style="margin-bottom: 24px">
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+        通过 <code>provider="morphicons"</code> 渲染（MIT 协议，零运行时依赖）。覆盖 Lucide 全量 1737 个图标及其别名，
+        任意两个图标间均可形变；切换 <code>type</code> 时以弹簧物理从旧形状平滑过渡到新形状，适合状态切换按钮。点击下方图标试试。
+      </p>
+      <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap">
+        <button
+          v-for="(p, i) in morphPairs"
+          :key="p.label"
+          type="button"
+          :aria-label="p.label"
+          :aria-pressed="morphStates[i]"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 10px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border-light);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-family: inherit;
+          "
+          @click="toggleMorph(i)"
+        >
+          <IconSvg :type="morphStates[i] ? p.to : p.from" provider="morphicons" size="xl" color="#6366F1" />
+          <span style="font-size: 10px; color: var(--color-text-muted)">{{ p.label }}</span>
+        </button>
       </div>
     </Card>
 
@@ -190,9 +238,9 @@ const pickerIcon3 = ref('user')
           </tr>
           <tr>
             <td><code>provider</code></td>
-            <td>'lucide' | 'solar'</td>
+            <td>'lucide' | 'solar' | 'morphicons'</td>
             <td>'lucide'</td>
-            <td>图标提供者</td>
+            <td>图标提供者（morphicons 为形变动画）</td>
           </tr>
           <tr>
             <td><code>color</code></td>
@@ -241,7 +289,7 @@ const pickerIcon3 = ref('user')
           </tr>
           <tr>
             <td><code>provider</code></td>
-            <td>'lucide' | 'solar'</td>
+            <td>'lucide' | 'solar' | 'morphicons'</td>
             <td>'lucide'</td>
             <td>图标提供者</td>
           </tr>

@@ -84,7 +84,21 @@ export default defineConfig({
     },
     rollupOptions: {
       // 不打包这些，由使用方提供。zxing-wasm 作为 dependency 由消费方安装
-      external: ['vue', 'vue-router', 'pinia', 'echarts', /^echarts\//, 'echarts-wordcloud', '@lucide/vue', '@iconify/vue', 'zxing-wasm', /^zxing-wasm\//],
+      // morphicons 为可选 provider（形变动画），子路径 import 也必须整包 external
+      external: [
+        'vue',
+        'vue-router',
+        'pinia',
+        'echarts',
+        /^echarts\//,
+        'echarts-wordcloud',
+        '@lucide/vue',
+        '@iconify/vue',
+        'zxing-wasm',
+        /^zxing-wasm\//,
+        'morphicons',
+        /^morphicons\//,
+      ],
       output: {
         globals: {
           vue: 'Vue',
@@ -94,6 +108,7 @@ export default defineConfig({
           'lucide-vue-next': 'LucideVueNext',
           '@lucide/vue': 'LucideVueNext',
           '@iconify/vue': 'IconifyVue',
+          morphicons: 'Morphicons',
         },
         // CSS 单独提取
         assetFileNames: 'vcl-ui.[ext]',
@@ -122,6 +137,7 @@ export default defineConfig({
           if (id.includes('/wc/')) return 'wc-chunk'
           // 图标数据是 registry 里动态 import 的懒加载资源，收进 core-chunk 会被拉进主链
           if (id.includes('/solar-icons-data')) return undefined
+          if (id.includes('/morphicons-icons-data')) return undefined
           if (
             id.includes('/_internal/') ||
             id.includes('/basic/') ||

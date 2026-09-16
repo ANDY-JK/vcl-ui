@@ -1,9 +1,15 @@
 <script lang="ts">
-// ⛔ 保护 — 图标渲染核心，使用 @lucide/vue + @iconify/vue
+// ⛔ 保护 — 图标渲染核心，使用 @lucide/vue + @iconify/vue + morphicons
 import { defineComponent, computed, h, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { lucideSubset } from '@/components/_internal/lucide-subset'
 import { ensureSolarIcons, isSolarReady } from '@/components/_internal/solar-icons-registry'
+import {
+  ensureMorphicons,
+  isMorphiconsReady,
+  getMorphIconComponent,
+  getMorphIconNode,
+} from '@/components/_internal/morphicons-registry'
 import { warnOnce } from '@/components/_internal/warnOnce'
 
 const sizeMap: Record<string, number> = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 }
@@ -55,6 +61,8 @@ export default defineComponent({
     const px = computed(() => sizeMap[props.size] || 20)
     // Solar 图标数据按需加载：默认 lucide 不加载 235KB 的 solar 数据
     const solarReady = ref(isSolarReady())
+    // Morphicons 组件与几何数据同样按需加载（全量 557KB / gzip 127KB），仅 provider='morphicons' 时引入
+    const morphReady = ref(isMorphiconsReady())
 
     /** Solar 图标变体后缀 */
     const SOLAR_VARIANTS = ['linear', 'bold', 'broken', 'outline', 'bold-duotone', 'line-duotone']
@@ -92,6 +100,38 @@ export default defineComponent({
           class: 'icon-svg',
           'aria-hidden': true,
         })
+      }
+
+      // Morphicons 提供者 → 形变动画（切换 type 时自动从旧图标形变到新图标）
+      if (props.provider === 'morphicons') {
+        // 组件与几何数据都动态加载，加载完成前渲染兜底（同 solar 策略）
+        if (!morphReady.value) {
+          ensureMorphicons()
+            .then(() => {
+              morphReady.value = true
+            })
+            .catch((e) => {
+              warnOnce('morphicons', '[IconSvg] morphicons 加载失败，渲染兜底图标: ' + String(e))
+            })
+          return renderFallback(sz, clr)
+        }
+        const MorphIcon = getMorphIconComponent()
+        const node = getMorphIconNode(props.type)
+        if (MorphIcon && node) {
+          // 非受控模式：icon 变化即触发形变；size/color 与静态图标保持一致的视觉口径
+          return h(MorphIcon, {
+            icon: node,
+            size: sz,
+            color: clr,
+            strokeWidth: 2,
+            class: 'icon-svg',
+            'aria-hidden': true,
+          })
+        }
+        if (import.meta.env?.DEV) {
+          warnOnce('IconSvg-morphicons', `morphicons 图标未收录: ${props.type}，已渲染兜底图`)
+        }
+        return renderFallback(sz, clr)
       }
 
       // Lucide 图标 → 子集具名导入（可摇树；新图标先加进 gen-lucide-subset 的收集范围重新生成）
