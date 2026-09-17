@@ -43,8 +43,12 @@ export function useCellFill(deps: CellFillDeps) {
     return { rows: select.displayRows.value, cols: select.displayCols.value }
   }
 
-  /** 填充柄是否可用：存在有效选区（矩形或单选格），且**所有**涉及列都可编辑 */
+  /** 填充柄是否可用：**整表**可编辑 + 存在有效选区（矩形或单选格）+ 涉及列都可编辑。
+   *  ⚠️ 必须同时校验 `props.editable`：applyFill 里有该守卫，若这里漏掉，
+   *  整表不可编辑时填充柄照旧渲染（紫色小点），拖拽却无效 —— 「看着能点却点不了」。
+   *  该判定同时驱动 `cell-fill-corner` 类与 `.cell-fill-handle` 的渲染，是唯一事实来源。 */
   function canFill(): boolean {
+    if (!props.editable) return false
     const b = rangeBounds()
     if (!b) return false
     const { cols } = rangeMatrix()

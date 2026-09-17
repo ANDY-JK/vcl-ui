@@ -537,8 +537,18 @@ const modal2Cols = [
     </Card>
 
     <!-- ===== 3.5 列级编辑开关（对齐 SaaS 副本） ===== -->
-    <Card title="列级编辑开关 — 只读列演示">
-      <p class="demo-hint">列配置 <code>editable: false</code> 可禁用单列编辑：工号列双击不会进入编辑，其余列正常。</p>
+    <Card title="列级编辑开关 — 可编辑 / 只读分色对比">
+      <p class="demo-hint">
+        列配置 <code>editable: false</code> 可禁用单列编辑：<strong>工号</strong>列双击不会进入编辑，
+        <strong>在职状态</strong>列连下拉也不出现（不可编辑就不给「可下拉」暗示）。
+      </p>
+      <p class="demo-hint">
+        <strong>选中颜色即「能否编辑」</strong>：点<strong>员工姓名 / 所属部门</strong>（可编辑）→
+        <span style="color: var(--dt-select)">紫色</span>边框 + 紫色填充柄；
+        点<strong>工号 / 在职状态</strong>（只读）→ 蓝色边框，且无填充柄。
+        <br />
+        填充柄（右下角小点）= 拖拽批量填充，<strong>只在可编辑单元格出现</strong>。
+      </p>
       <DataTable
         namespace="demo-col-edit"
         row-key="id"
