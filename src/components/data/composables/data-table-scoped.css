@@ -937,7 +937,10 @@ th.drag-over {
   margin-top: var(--space-1);
 }
 
-/* 选项列单元格 — 视觉提示可下拉 */
+/* 可下拉的选项列单元格 — 视觉提示可下拉。
+   ⚠️ 该类由 isOptionDroppable(col)（= 整表 editable 且列未 editable:false）决定，
+   不可编辑的 options 列**不挂此类**，因此也不会得到 cursor:pointer 与下拉箭头 ——
+   「能点」和「看起来能点」必须一致。 */
 td.cell-has-options {
   cursor: pointer;
   position: relative;
@@ -955,13 +958,7 @@ td.cell-has-options {
 }
 td.cell-has-options:hover .cell-options-arrow {
   opacity: 0.8;
-  /* 下拉指示器属选中/编辑语义 → 同 --dt-select */
-  color: var(--dt-select, #7c5cf0);
-}
-/* 只读 options 列（列级 editable:false）不显示下拉箭头：
-   否则会显示可下拉的暗示，但点击只会选中单元格、面板不弹出（误导） */
-td.cell-has-options.cell-readonly .cell-options-arrow {
-  display: none;
+  color: var(--color-primary);
 }
 
 /* 截断长文本展开图标 */
@@ -1022,27 +1019,26 @@ td.cell-has-options.cell-readonly .cell-options-arrow {
   cursor: pointer;
   transition: background var(--transition-fast);
 }
-/* 选项下拉（options 列的值选择）：属**选中**语义 → 与单元格选中同色 --dt-select。
-   ⚠️ 此前用 --color-primary（品牌蓝），与「可编辑单元格是紫色」不一致（用户反馈）。
-   注意：筛选下拉 .dt-filter-option 不在此列 —— 那是「筛选」语义，保持品牌蓝与筛选图标一致。 */
+/* 选项下拉（options 列的值选择）：**保持品牌蓝**，不参与「可编辑=紫」分色 ——
+   下拉是统一的交互组件，配色不随单元格状态变化（用户明确要求不改下拉颜色）。 */
 .opt-drop-item:hover {
-  background: var(--dt-select-soft, #f1ecfe);
-  color: var(--dt-select, #7c5cf0);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 .opt-drop-item.active {
-  background: rgba(var(--dt-select-rgb, 124 92 240), 0.1);
-  color: var(--dt-select, #7c5cf0);
+  background: rgba(var(--color-primary-rgb, 64 158 255), 0.08);
+  color: var(--color-primary);
   font-weight: 500;
 }
 .opt-drop-item.focused {
   background: var(--color-bg-alt);
 }
-/* 选中+焦点重叠时：用 active 的浅紫背景，不被 focused 灰色覆盖 */
+/* 选中+焦点重叠时：用 active 的浅蓝背景，不被 focused 灰色覆盖 */
 .opt-drop-item.active.focused {
-  background: rgba(var(--dt-select-rgb, 124 92 240), 0.1);
+  background: rgba(var(--color-primary-rgb, 64 158 255), 0.08);
 }
 .opt-drop-check {
-  color: var(--dt-select, #7c5cf0);
+  color: var(--color-primary);
   flex-shrink: 0;
   margin-left: var(--space-2);
 }

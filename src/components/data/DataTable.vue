@@ -1343,9 +1343,20 @@ const _optDrop = ref<{
   width: number
   above: boolean
 } | null>(null)
+/** options 列是否**可下拉**：整表 editable 且该列未被 editable:false 禁用。
+ *  该判定是唯一事实来源 —— 同时决定箭头指示器是否渲染、`cell-has-options`（cursor:pointer）
+ *  是否挂上、以及点击/双击能否打开面板。
+ *  ⚠️ 不可编辑的 options 列**不应显示任何「可下拉」暗示**（箭头/手型光标），否则看似能点却点不开。
+ *  声明为类型谓词（col is Column & { options: ... }），使调用方在守卫后可直接使用 col.options。 */
+function isOptionDroppable(
+  col: Column,
+): col is Column & { options: NonNullable<Column['options']> } {
+  return !!col.options && !!props.editable && col.editable !== false
+}
+
 function openOptDrop(row: Record<string, any>, col: Column, event: MouseEvent) {
   // 防御：非编辑模式或列级禁用不允许打开选项面板
-  if (!col.options || !props.editable || col.editable === false) return
+  if (!isOptionDroppable(col)) return
   // 标记活动表格：卡片视图的字段点击不经 selectCell，不标记会导致 Ctrl+Z 静默失效
   markEditActive()
   markLayerOpen()
@@ -1409,7 +1420,7 @@ function onCellClick(row: Record<string, any>, col: Column, event: MouseEvent) {
     _clickedRowKeys.value = next
   }
   // 仅编辑模式且列级开关未禁用时弹出选项面板；否则与普通列一致只做选中
-  if (col.options && props.editable && col.editable !== false) {
+  if (isOptionDroppable(col)) {
     openOptDrop(row, col, event)
   } else {
     selectCell(
@@ -1425,14 +1436,14 @@ function onCellClick(row: Record<string, any>, col: Column, event: MouseEvent) {
  *  卡片视图没有 <td>，也就不会走 selectCell —— 不标记的话该表的 Ctrl+Z/C/V 会静默失效。 */
 function onCardFieldClick(row: Record<string, any>, col: Column, event: MouseEvent) {
   markEditActive()
-  if (col.options && props.editable && col.editable !== false) openOptDrop(row, col, event)
+  if (isOptionDroppable(col)) openOptDrop(row, col, event)
 }
 
 /** 单元格双击：编辑模式且列可编辑 → 进入编辑；否则仅保留单元格选中态，清除浏览器双击产生的文本全选 */
 function onCellDblClick(row: Record<string, any>, col: Column, e?: MouseEvent) {
   const canEdit = props.editable && col.editable !== false
   // options 列双击：打开选项面板（不进入无输入框的内联编辑）
-  if (canEdit && col.options && e) {
+  if (isOptionDroppable(col) && e) {
     openOptDrop(row, col, e)
     return
   }
@@ -2237,7 +2248,8 @@ provideDataTableContext({
                       'cell-has-note': noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key),
                       'cell-selected': isCellSelected(rowMetaMap.get(row)?.key ?? '', col.key),
                       'cell-range-anchor': isRangeAnchor(rowMetaMap.get(row)?.key ?? '', col.key),
-                      'cell-has-options': col.options,
+                      // 仅「可下拉」时挂上：该类附加 cursor:pointer，属「可下拉」暗示
+                      'cell-has-options': isOptionDroppable(col),
                       'cell-fill-preview': isInFillPreview(rowDisplayIndex(idx), ci),
                       'cell-fill-corner':
                         fillable && isFillCorner(rowMetaMap.get(row)?.key ?? '', col.key),
@@ -2351,8 +2363,8 @@ provideDataTableContext({
                         <IconSvg type="external-link" size="sm" />
                       </span>
                     </span>
-                    <!-- 下拉选项列指示器 -->
-                    <span v-if="col.options" class="cell-options-arrow">
+                    <!-- 下拉选项列指示器：仅「可下拉」时渲染（不可编辑列不显示任何可下拉暗示） -->
+                    <span v-if="isOptionDroppable(col)" class="cell-options-arrow">
                       <IconSvg type="chevron-down" size="sm" />
                     </span>
                   </template>
