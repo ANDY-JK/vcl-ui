@@ -177,5 +177,8 @@ export default {
     invalidTime: 'Please enter a valid time',
     // Fill handle
     fillHandle: 'Drag to fill (numbers step / dates by day / text repeats)',
+    // Toolbar undo/redo buttons (keyboard equivalents Ctrl/Cmd+Z / Ctrl/Cmd+Y)
+    undo: 'Undo (Ctrl+Z)',
+    redo: 'Redo (Ctrl+Y)',
   },
 }

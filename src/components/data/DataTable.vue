@@ -937,6 +937,12 @@ const {
   pasteText,
   applyChanges,
   markEditActive,
+  cancelEdit,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+  editInvalidKey,
   fillHandleRange,
   fillable,
   isFillCorner,
@@ -969,10 +975,51 @@ const {
       })
     },
     onCopied: () => notify(t('imagePreview.copyOk')),
-    // 归一化失败：错误已由 composable 拦截（值未落库），这里只负责提示
+    // 归一化失败（仅失焦提交、值已被丢弃时触发）：全局提示一次。
+    // Enter/Tab 提交失败不走这里——由 editInvalidKey 在编辑格上就地呈现（红圈 + 气泡），
+    // 用户视线就在格子里，右下角 toast 够不着
     onNormalizeError: (key) => notify(t(key), 'warning'),
   },
 )
+
+// ==================== 2026-09-17 交互体验第二批：撤销/重做按钮 · 归一化失败 cell 级提示 · 数字列呈现 ====================
+
+/** 工具栏撤销/重做按钮：先取消进行中的内联编辑（避免撤销后旧编辑框把旧值写回去）。
+ *  键盘路径（Ctrl+Z 带 dirty 分流）在 composable 内自行处理，不受这里影响。 */
+function undoFromToolbar() {
+  if (editingCell.value) cancelEdit()
+  undo()
+}
+function redoFromToolbar() {
+  if (editingCell.value) cancelEdit()
+  redo()
+}
+
+/** 指定格上是否正显示「归一化失败」cell 级提示（Enter/Tab 提交被拒后挂起，随输入/成功/取消自动清除） */
+function isEditingInvalid(rowKey: string, colKey: string): boolean {
+  const c = editingCell.value
+  return !!editInvalidKey.value && !!c && c.rowKey === rowKey && c.colKey === colKey
+}
+
+/** 移动端键盘提示：number 列弹数字键盘（decimal），日期/时间列弹数字键盘（紧凑写法 1430/20260912 可直输）。
+ *  未声明 type 的列返回 undefined → 不渲染 inputmode，行为不变。 */
+function editInputMode(col: Column): 'decimal' | 'numeric' | undefined {
+  switch (col.type) {
+    case 'number':
+      return 'decimal'
+    case 'date':
+    case 'datetime':
+    case 'time':
+      return 'numeric'
+    default:
+      return undefined
+  }
+}
+
+/** 值类型驱动的默认对齐：number 列默认右对齐（Excel 习惯）；显式 cellAlign/align 永远优先 */
+function defaultAlignFor(col: Column): 'left' | 'center' | 'right' {
+  return col.type === 'number' ? 'right' : 'left'
+}
 // aria-modal 备注编辑弹层的 Tab 循环（打开自动激活，输入框为首个可聚焦项；
 // 关闭时 trap 归还焦点到备注指示器）
 const _noteEditorRef = ref<HTMLElement | null>(null)
@@ -1956,6 +2003,10 @@ provideDataTableContext({
   toggleFullscreen,
   captureScreenshot,
   copyTableData,
+  canUndo,
+  canRedo,
+  undoFromToolbar,
+  redoFromToolbar,
   isCardViewEffective,
   toggleCardMode,
   displayData,
@@ -1998,6 +2049,7 @@ provideDataTableContext({
         :selectable="selectable"
         :max-height="maxHeight"
         :auto-height="autoHeight"
+        :editable="editable"
       >
         <template #toolbar-actions><slot name="toolbar-actions" /></template>
       </DataTableToolbar>
@@ -2044,7 +2096,7 @@ provideDataTableContext({
                     width: columnWidths[col.key]
                       ? Math.max(columnWidths[col.key], 30) * _zoomX + 'px'
                       : Math.max(headerMinW(col), 60) * _zoomX + 'px',
-                    textAlign: col.headerAlign || col.align || 'left',
+                    textAlign: col.headerAlign || col.align || defaultAlignFor(col),
                     left:
                       isColumnFixed(col) === 'left'
                         ? Number(fixedLeftOffsets[col.key] ?? 0) * _zoomX + 'px'
@@ -2226,7 +2278,7 @@ provideDataTableContext({
                   :data-col-idx="ci"
                   :style="[
                     {
-                      textAlign: col.cellAlign || col.align || 'left',
+                      textAlign: col.cellAlign || col.align || defaultAlignFor(col),
                       left:
                         isColumnFixed(col) === 'left'
                           ? Number(fixedLeftOffsets[col.key] ?? 0) * _zoomX + 'px'
@@ -2245,6 +2297,8 @@ provideDataTableContext({
                       'col-fixed-right': isColumnFixed(col) === 'right',
                       'cell-editing':
                         editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') && editingCell?.colKey === col.key,
+                      'cell-edit-invalid': isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key),
+                      'cell-numeric': col.type === 'number',
                       'cell-has-note': noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key),
                       'cell-selected': isCellSelected(rowMetaMap.get(row)?.key ?? '', col.key),
                       'cell-range-anchor': isRangeAnchor(rowMetaMap.get(row)?.key ?? '', col.key),
@@ -2282,10 +2336,20 @@ provideDataTableContext({
                     :ref="setEditInputEl"
                     v-model="editValue"
                     class="cell-edit-input"
+                    :inputmode="editInputMode(col)"
+                    :aria-invalid="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
                     @keydown="(e) => onEditKeydown(e, _displayColumns, rowMetaMap.get(row)?.key ?? '')"
                     @blur="commitEdit('blur')"
                     @click.stop
                   />
+                  <!-- 归一化失败就地提示（Enter/Tab 提交被拒：红圈 + 气泡，用户视线在格子里；继续输入即消失） -->
+                  <span
+                    v-if="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
+                    class="cell-edit-invalid-hint"
+                    role="alert"
+                  >
+                    {{ editInvalidKey ? t(editInvalidKey) : '' }}
+                  </span>
                   <!-- 编辑中仅显示输入框（选项列不走内联编辑，始终显示内容+箭头） -->
                   <template
                     v-if="
@@ -2413,7 +2477,7 @@ provideDataTableContext({
                   v-for="col in _displayColumns"
                   :key="col.key"
                   :style="{
-                    textAlign: col.cellAlign || col.align || 'left',
+                    textAlign: col.cellAlign || col.align || defaultAlignFor(col),
                     left:
                       isColumnFixed(col) === 'left'
                         ? Number(fixedLeftOffsets[col.key] ?? 0) * _zoomX + 'px'
@@ -2477,6 +2541,7 @@ provideDataTableContext({
               :class="{
                 'card-field-editing':
                   editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') && editingCell?.colKey === col.key,
+                'card-field-invalid': isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key),
                 'cell-readonly': !editable || col.editable === false,
               }"
               @contextmenu.prevent="showContextMenu(col, $event)"
@@ -2518,10 +2583,20 @@ provideDataTableContext({
                   :ref="setEditInputEl"
                   v-model="editValue"
                   class="cell-edit-input card-edit-input"
+                  :inputmode="editInputMode(col)"
+                  :aria-invalid="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
                   @keydown="(e) => onEditKeydown(e, _displayColumns, rowMetaMap.get(row)?.key ?? '')"
                   @blur="commitEdit('blur')"
                   @click.stop
                 />
+                <!-- 归一化失败就地提示（卡片视图与表格视图同一套 editInvalidKey 状态） -->
+                <span
+                  v-if="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
+                  class="cell-edit-invalid-hint"
+                  role="alert"
+                >
+                  {{ editInvalidKey ? t(editInvalidKey) : '' }}
+                </span>
                 <!-- 下拉选项编辑（H5 用原生 select） -->
                 <select
                   v-else-if="

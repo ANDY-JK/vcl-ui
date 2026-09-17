@@ -1,6 +1,6 @@
 // ==================== 单元格编辑态（双击进入 / Enter 提交 / Tab 切列 / 提交后位移） ====================
 // 归一化只在**列显式声明 Column.type** 时生效（opt-in），未声明时原样返回，存量表格行为不变。
-import { ref, nextTick } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { normalizeCellInput } from './cell-input'
 import type { CellEditProps, TableEditHooks, EditState } from './cell-types'
 import type { Column } from './types'
@@ -25,6 +25,21 @@ export function useCellEdit(deps: CellEditDeps) {
   const preEditCell = ref<{ rowKey: string; colKey: string; value: string } | null>(null)
   // 组件级编辑框引用（替代全局 querySelector，避免多实例聚焦错表）
   const editInputEl = ref<HTMLInputElement | null>(null)
+  /** Enter/Tab 提交被归一化拒绝时挂起的 i18n key（table.invalid*）：
+   *  组件层据此在**编辑格上**渲染红圈 + 提示气泡（用户视线就在格子里，右下角 toast 够不着）。
+   *  用户继续输入 / 提交成功 / 取消编辑 / 重新进编辑时清除。
+   *  失焦（blur）提交失败不走这里——值已丢弃，改由 onNormalizeError 全局提示。 */
+  const editInvalidKey = ref<string | null>(null)
+  // 用户在输入框里改动了内容 → 之前那次「失败」提示已过期，清掉。
+  // flush:'sync'：值一变提示即消失（同一渲染周期内完成，不必等调度器）；
+  // 非 immediate，setup 期不会同步执行（D1 坑）
+  watch(
+    editValue,
+    () => {
+      if (editInvalidKey.value) editInvalidKey.value = null
+    },
+    { flush: 'sync' },
+  )
 
   function setEditInputEl(el: unknown) {
     editInputEl.value = (el as HTMLInputElement) || null
@@ -37,6 +52,7 @@ export function useCellEdit(deps: CellEditDeps) {
     // 拖选结束后 200ms 内的 click 会被 _rangeSuppressClick 吞掉，程序化 startEdit 更无 click，
     // 一旦漏标，后续 Ctrl+Z/Ctrl+C/Ctrl+V 会静默失效或作用到别的表格实例上。
     markActive(editKey)
+    editInvalidKey.value = null
     preEditCell.value = { rowKey, colKey, value: currentValue }
     // @patch 2026-07-15 进入编辑时清除选中样式，避免与编辑状态混淆
     select.selectedCell.value = null
@@ -55,8 +71,11 @@ export function useCellEdit(deps: CellEditDeps) {
   /** 提交编辑。返回 false = 归一化失败已拦截（未落库）。
    *
    *  mode 决定失败后的处置：
-   *   - 'enter'（Enter / Tab 显式提交）：**保持编辑态**让用户就地修正，对齐 Excel「拒绝非法输入并留在单元格」
-   *   - 'blur'（失焦提交，也是缺省）：丢弃本次输入并退出编辑态 —— 用户已在移开，不能把他困在格子里
+   *   - 'enter'（Enter / Tab 显式提交）：**保持编辑态**让用户就地修正，对齐 Excel「拒绝非法输入并留在单元格」；
+   *     失败原因就地呈现（挂 editInvalidKey，组件层渲染 cell 级红圈 + 气泡，不再弹右下角 toast——
+   *     用户视线在格子里，全局提示够不着）
+   *   - 'blur'（失焦提交，也是缺省）：丢弃本次输入并退出编辑态 —— 用户已在移开，不能把他困在格子里；
+   *     值被丢弃必须让用户知道 → 走 onNormalizeError 全局提示
    */
   function commitEdit(mode?: 'enter' | 'blur'): boolean {
     if (!editingCell.value) return true
@@ -68,8 +87,12 @@ export function useCellEdit(deps: CellEditDeps) {
       dateOrder: props.dateInputOrder,
     })
     if (!res.ok) {
-      hooks?.onNormalizeError?.(res.errorKey ?? 'table.invalidNumber')
-      if (mode === 'enter') return false
+      const key = res.errorKey ?? 'table.invalidNumber'
+      if (mode === 'enter') {
+        editInvalidKey.value = key
+        return false
+      }
+      hooks?.onNormalizeError?.(key)
       cancelEdit()
       return false
     }
@@ -77,6 +100,7 @@ export function useCellEdit(deps: CellEditDeps) {
       write.applyChange(rowKey, colKey, res.value)
     }
     editingCell.value = null
+    editInvalidKey.value = null
     restorePreEditCell(res.value)
     return true
   }
@@ -84,6 +108,7 @@ export function useCellEdit(deps: CellEditDeps) {
   function cancelEdit() {
     const oldVal = editingCell.value?.value ?? ''
     editingCell.value = null
+    editInvalidKey.value = null
     restorePreEditCell(oldVal)
   }
 
@@ -155,6 +180,8 @@ export function useCellEdit(deps: CellEditDeps) {
   return {
     editingCell,
     editValue,
+    /** Enter/Tab 提交被归一化拒绝时挂起的 i18n key；组件层据此在编辑格渲染 cell 级提示 */
+    editInvalidKey,
     editInputEl,
     setEditInputEl,
     startEdit,

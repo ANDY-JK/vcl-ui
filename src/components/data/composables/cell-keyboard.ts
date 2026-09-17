@@ -70,7 +70,8 @@ export function useCellKeyboard(deps: CellKeyboardDeps) {
       } else if (!(e.ctrlKey || e.metaKey) && !e.altKey) {
         if (isArrow) {
           if (select.navAnchor()) select.moveSelection(e)
-        } else if (e.key === 'Enter') {
+        } else if (e.key === 'Enter' || e.key === 'F2') {
+          // F2 = Excel 进编辑惯例（与 Enter 同义；外层分支已保证无修饰键，Ctrl+F2 不会进到这里）
           select.enterEditFromSelection(e)
         } else if (e.key === 'Delete' || e.key === 'Backspace') {
           clipboard.clearSelection(e)

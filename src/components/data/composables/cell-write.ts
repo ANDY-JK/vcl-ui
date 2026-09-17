@@ -23,6 +23,10 @@ export function useCellWrite(emit: CellEditEmit, deps: CellWriteDeps) {
   /** 本地覆盖值：rowKey → { colKey: displayValue }，改后即时显示 */
   const overrides = ref<Record<string, Record<string, string>>>({})
   const undoStack = createUndoStack()
+  // 历史栈是纯闭包状态（useTableUndo 零环境依赖设计），computed 读不到其变化。
+  // 用一个 ref 触点：任何 push/undo/redo/clear 都自增，canUndo/canRedo 先读它建立响应依赖 ——
+  // 否则工具栏「撤销/重做」按钮的 :disabled 会拿到一次求值的缓存结果，永远不变。
+  const historyTouch = ref(0)
 
   function getCellValue(rowKey: string, colKey: string, original: string): string {
     return overrides.value[rowKey]?.[colKey] ?? original
@@ -45,6 +49,7 @@ export function useCellWrite(emit: CellEditEmit, deps: CellWriteDeps) {
       emit.cellChange(en.rowKey, en.colKey, en.value)
     }
     undoStack.push({ changes })
+    historyTouch.value++
   }
 
   function applyChange(rowKey: string, colKey: string, value: string) {
@@ -87,6 +92,7 @@ export function useCellWrite(emit: CellEditEmit, deps: CellWriteDeps) {
       writeOverride(c.rowKey, c.colKey, c.before)
     }
     syncAfterHistory(rec.changes)
+    historyTouch.value++
     return true
   }
 
@@ -96,6 +102,7 @@ export function useCellWrite(emit: CellEditEmit, deps: CellWriteDeps) {
     if (!rec) return false
     for (const c of rec.changes) writeOverride(c.rowKey, c.colKey, c.after)
     syncAfterHistory(rec.changes.filter((c) => c.after !== undefined) as { rowKey: string; colKey: string }[])
+    historyTouch.value++
     return true
   }
 
@@ -109,8 +116,15 @@ export function useCellWrite(emit: CellEditEmit, deps: CellWriteDeps) {
     writeOverride,
     undo,
     redo,
-    canUndo: (): boolean => undoStack.canUndo(),
-    canRedo: (): boolean => undoStack.canRedo(),
+    // 先读触点再读闭包栈：在 computed/模板里调用才具备响应性（工具栏按钮 disabled 态依赖它）
+    canUndo: (): boolean => {
+      void historyTouch.value
+      return undoStack.canUndo()
+    },
+    canRedo: (): boolean => {
+      void historyTouch.value
+      return undoStack.canRedo()
+    },
   }
 }
 

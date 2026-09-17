@@ -190,6 +190,13 @@
   color: var(--color-primary);
   background: var(--color-primary-light);
 }
+/* 撤销/重做无可操作记录时：禁用态明示「没有可撤销/重做」，不藏按钮 */
+.toolbar-export-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: var(--color-text-muted);
+  background: none;
+}
 .toolbar-zoom-btn {
   padding: var(--space-1) 8px;
   font-size: 12px;

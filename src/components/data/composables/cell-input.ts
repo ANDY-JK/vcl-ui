@@ -244,6 +244,9 @@ function normalizeNumber(raw: string): NormalizeResult {
   t = t.replace(/[,\s]/g, '').replace(/[￥¥$€£]|元|人民币/g, '')
 
   if (!t) return invalid
+  // 前导零（007 / 01.5 / -007）：Excel 一般列把它当**文本**——静默转成 7 会损毁编码/工号/电话，
+  // 保原样（半角化后）比「归一化出错误数字」安全。'0' / '0.5' 不受影响（0 后第二位不是数字）。
+  if (/^[+-]?0\d/.test(t)) return { ok: true, value: t }
   // 严格数字形态：整数/小数/科学计数，杜绝 Number() 对 ''、'0x10'、'Infinity' 的宽松接受
   if (!/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(t)) return invalid
 

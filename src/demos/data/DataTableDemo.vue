@@ -505,8 +505,9 @@ const modal2Cols = [
     <!-- ===== 3. 编辑模式 + 原始值气泡 ===== -->
     <Card title="编辑模式 — 双击编辑 + 原始值气泡 + 已修改角标">
       <p class="demo-hint">
-        双击单元格编辑（Enter 确认 / Escape 取消 / Tab 切列）。长按单元格拖动可框选区域， Ctrl+C 复制选区 / Ctrl+V
+        双击单元格编辑（Enter / F2 确认 / Escape 取消 / Tab 切列）。长按单元格拖动可框选区域， Ctrl+C 复制选区 / Ctrl+V
         粘贴（支持 Excel 表格数据，筛选后只改可见行）。修改后 hover 单元格查看原始值。
+        工具栏<strong>撤销 / 重做</strong>按钮 = Ctrl+Z / Ctrl+Y（无可操作记录时置灰）。
       </p>
       <DataTable
         namespace="demo-edit"
@@ -564,8 +565,10 @@ const modal2Cols = [
       <p class="demo-hint">
         列声明 <code>type</code> 后，<strong>双击编辑提交</strong>会按类型归一化（未声明 type 的列行为完全不变）：
         日期列输入 <code>9/12</code> → 当年 <code>9月12日</code>；金额列输入 <code>￥1,234.50</code> → <code>1234.5</code>；
-        编码列声明 <code>text</code> 保住前导零 <code>007</code>。
-        非法值（如日期列输 <code>2026-02-31</code>、金额列输 <code>abc</code>）不落库 → Enter 提交时保持编辑态并提示，失焦提交则丢弃。
+        编码列声明 <code>text</code> 保住前导零 <code>007</code>（number 列的 <code>007</code> 也保原样，不静默改成 7）。
+        金额列默认<strong>右对齐 + 等宽数字</strong>；移动端编辑 number/日期列弹数字键盘。
+        非法值（如日期列输 <code>2026-02-31</code>、金额列输 <code>abc</code>）不落库 →
+        Enter 提交时<strong>该格红圈 + 气泡提示</strong>并保持编辑态待修正（继续输入提示即消失）；失焦提交则丢弃并全局提示。
       </p>
       <DataTable
         namespace="demo-cell-type"

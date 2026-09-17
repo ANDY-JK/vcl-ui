@@ -177,5 +177,8 @@ export default {
     invalidTime: '请输入有效时间',
     // 填充柄
     fillHandle: '拖拽填充（数字等差 / 日期按天 / 文本循环）',
+    // 工具栏撤销/重做按钮（键盘等价 Ctrl+Z / Ctrl+Y）
+    undo: '撤销 (Ctrl+Z)',
+    redo: '重做 (Ctrl+Y)',
   },
 }

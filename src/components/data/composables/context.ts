@@ -73,6 +73,11 @@ export interface DataTableContext {
   toggleFullscreen: () => void
   captureScreenshot: () => void
   copyTableData: () => void
+  // ---- 编辑撤销/重做（工具栏按钮消费） ----
+  canUndo: ComputedRef<boolean>
+  canRedo: ComputedRef<boolean>
+  undoFromToolbar: () => void
+  redoFromToolbar: () => void
   isCardViewEffective: ComputedRef<boolean>
   toggleCardMode: () => void
   /** 行数统计（displayData/displayTotal） */

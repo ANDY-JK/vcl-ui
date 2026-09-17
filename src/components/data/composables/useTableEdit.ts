@@ -60,6 +60,7 @@ export function useTableEdit(props: CellEditProps, emit: CellEditEmit, hooks?: T
     // 编辑模式
     editingCell: edit.editingCell,
     editValue: edit.editValue,
+    editInvalidKey: edit.editInvalidKey,
     startEdit: edit.startEdit,
     commitEdit: edit.commitEdit,
     cancelEdit: edit.cancelEdit,

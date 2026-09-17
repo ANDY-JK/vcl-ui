@@ -19,6 +19,8 @@ defineProps<{
   selectable: boolean
   maxHeight: string
   autoHeight: boolean
+  /** 编辑模式：为 true 时工具栏显示撤销/重做按钮（可发现性 + 触屏可用，等价 Ctrl+Z / Ctrl+Y） */
+  editable: boolean
 }>()
 
 const t = useT()
@@ -44,6 +46,10 @@ const {
   copyTableData,
   isCardViewEffective,
   toggleCardMode,
+  canUndo,
+  canRedo,
+  undoFromToolbar,
+  redoFromToolbar,
   displayData,
   displayTotal,
   selectedKeys: _selectedKeys,
@@ -116,6 +122,25 @@ function handleClearSort(): void {
       </div>
       <!-- 功能按钮靠右 -->
       <div class="toolbar-right">
+        <!-- 编辑撤销/重做（仅编辑模式；键盘等价 Ctrl+Z / Ctrl+Y，按钮给触屏与可发现性） -->
+        <template v-if="editable">
+          <button
+            class="toolbar-export-btn"
+            :title="t('table.undo')"
+            :disabled="!canUndo"
+            @click="undoFromToolbar()"
+          >
+            <IconSvg type="undo-2" size="sm" />
+          </button>
+          <button
+            class="toolbar-export-btn"
+            :title="t('table.redo')"
+            :disabled="!canRedo"
+            @click="redoFromToolbar()"
+          >
+            <IconSvg type="redo-2" size="sm" />
+          </button>
+        </template>
         <!-- 全局搜索 -->
         <div class="global-search-wrap" :class="{ active: showGlobalSearch }">
           <input
