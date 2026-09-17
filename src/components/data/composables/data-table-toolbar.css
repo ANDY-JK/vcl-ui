@@ -17,7 +17,8 @@
   height: 100%;
   background: var(--color-primary, #4f6ef7);
   border-radius: var(--radius-sm);
-  box-shadow: 0 0 8px rgba(79, 110, 247, 0.4);
+  /* 光晕用 primary 三元组：硬编码会锁死亮色蓝，与暗色主色(#6b8af9)不一致 */
+  box-shadow: 0 0 8px rgba(var(--color-primary-rgb, 79 110 247), 0.4);
   min-width: 6px;
   pointer-events: none;
 }
@@ -32,7 +33,7 @@
   border-radius: 2px;
   transform: translateX(-50%);
   cursor: pointer;
-  box-shadow: 0 0 6px rgba(79, 110, 247, 0.5);
+  box-shadow: 0 0 6px rgba(var(--color-primary-rgb, 79 110 247), 0.5);
   transition: transform var(--transition-fast);
   z-index: 1;
 }

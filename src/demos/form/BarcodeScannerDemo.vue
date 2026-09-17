@@ -806,7 +806,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   top: 4px;
   height: 2px;
   border-radius: 1px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-surface);
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
   animation: bs-open-sweep 2.2s ease-in-out infinite;
 }
@@ -1081,7 +1081,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   transition: background var(--transition-fast), box-shadow var(--transition-fast);
 }
 .fmt-check.checked .fmt-check-box {
-  background: #fff;
+  background: var(--color-surface);
   border-color: #fff;
   box-shadow: inset 0 0 0 3px var(--color-primary);
 }
@@ -1141,7 +1141,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   padding: 0 10px;
   border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--color-surface);
   color: var(--color-text);
   font-size: 13px;
   font-family: inherit;
@@ -1251,7 +1251,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   padding: 4px 12px;
   border: 1px solid var(--color-warning);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-warning-text);
   font-size: 12px;
   cursor: pointer;
@@ -1299,7 +1299,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 }
 .code-box.primary .code-box-label {
   background: #22c55e;
-  color: #052e16;
+  color: var(--color-success-text);
 }
 /* ══════ 定格选码态 ══════ */
 /* 画面压暗：与实时态明确区分，选框/箭头在暗底上更醒目 */
@@ -1333,7 +1333,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   justify-content: center;
   border-radius: 50%;
   background: #22c55e;
-  color: #052e16;
+  color: var(--color-success-text);
   box-shadow:
     var(--shadow-md),
     0 0 0 2px rgba(255, 255, 255, 0.85);

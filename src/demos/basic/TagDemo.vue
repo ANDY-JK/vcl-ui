@@ -53,13 +53,16 @@ const showHidden = ref(true)
         <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
           <code>dot</code> 红点 | <code>text</code> 文字徽标（优先于 count）
         </p>
+        <!-- ⚠️ color prop 是**实心底色**，须用 --color-*-solid 令牌。
+             直接传 --color-warning/-info/-success 这类「提亮色」（本为深底上的文字/图标设计）
+             会因底色过亮而压不住白字：暗色下 warning 对比度仅 1.67，等同看不见。 -->
         <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap">
           <Tag dot />
-          <Tag dot color="var(--color-warning)" />
+          <Tag dot color="var(--color-warning-solid)" />
           <Tag text="NEW" />
-          <Tag text="促销" color="var(--color-warning)" />
-          <Tag text="v2" color="var(--color-info)" />
-          <Tag text="试用" :count="9" color="var(--color-success)" />
+          <Tag text="促销" color="var(--color-warning-solid)" />
+          <Tag text="v2" color="var(--color-primary-solid)" />
+          <Tag text="试用" :count="9" color="var(--color-success-solid)" />
         </div>
       </Card>
 

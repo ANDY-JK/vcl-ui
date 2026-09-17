@@ -633,7 +633,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #f8fafc;
+  background: var(--color-bg);
 }
 
 .header {
@@ -641,7 +641,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: #fff;
+  background: var(--color-surface);
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 }
@@ -649,7 +649,7 @@ onMounted(async () => {
 .header h1 {
   font-size: 18px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -668,19 +668,19 @@ onMounted(async () => {
   font-size: 13px;
   cursor: pointer;
   border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #475569;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   transition: all 0.15s;
 }
 
 .btn-template {
-  color: #2563eb;
+  color: var(--color-primary);
   border-color: #bfdbfe;
-  background: #eff6ff;
+  background: var(--color-primary-light);
 }
 
 .btn-template:hover {
-  background: #dbeafe;
+  background: var(--color-primary-soft);
   border-color: #93c5fd;
 }
 
@@ -690,16 +690,16 @@ onMounted(async () => {
   font-size: 13px;
   cursor: pointer;
   border: 1px solid #e2e8f0;
-  background: #fff;
-  color: #475569;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   transition: all 0.15s;
-  color: #059669;
+  color: var(--color-success-text);
   border-color: #a7f3d0;
-  background: #ecfdf5;
+  background: var(--color-success-bg);
 }
 
 .btn-export:hover:not(:disabled) {
-  background: #d1fae5;
+  background: var(--color-success-bg);
   border-color: #6ee7b7;
 }
 
@@ -709,13 +709,13 @@ onMounted(async () => {
 }
 
 .btn-locate {
-  color: #059669;
+  color: var(--color-success-text);
   border-color: #a7f3d0;
-  background: #ecfdf5;
+  background: var(--color-success-bg);
 }
 
 .btn-locate:hover:not(:disabled) {
-  background: #d1fae5;
+  background: var(--color-success-bg);
   border-color: #6ee7b7;
 }
 
@@ -726,14 +726,14 @@ onMounted(async () => {
 
 .btn-import:hover,
 .btn-key:hover {
-  background: #f1f5f9;
+  background: var(--color-bg-soft);
   border-color: #cbd5e1;
 }
 
 .btn-clear:hover {
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   border-color: #fca5a5;
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .key-bar {
@@ -741,7 +741,7 @@ onMounted(async () => {
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
-  background: #fefce8;
+  background: var(--color-warning-bg);
   border-bottom: 1px solid #fef08a;
 }
 
@@ -766,7 +766,7 @@ onMounted(async () => {
 
 .key-hint {
   font-size: 11px;
-  color: #a16207;
+  color: var(--color-warning-text);
   margin: 0;
   white-space: nowrap;
 }
@@ -777,10 +777,10 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   padding: 8px 20px;
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   border-bottom: 1px solid #fecaca;
   font-size: 13px;
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .locate-error-bar button {
@@ -788,16 +788,16 @@ onMounted(async () => {
   border: none;
   font-size: 16px;
   cursor: pointer;
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 /* 起点提示 */
 .start-point-bar {
   padding: 6px 20px;
-  background: #f0fdf4;
+  background: var(--color-success-bg);
   border-bottom: 1px solid #bbf7d0;
   font-size: 12px;
-  color: #166534;
+  color: var(--color-success-text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -805,9 +805,9 @@ onMounted(async () => {
 }
 
 .start-point-bar.no-gps {
-  background: #fffbeb;
+  background: var(--color-warning-bg);
   border-color: #fde68a;
-  color: #92400e;
+  color: var(--color-warning-text);
 }
 
 .start-input-row {
@@ -830,7 +830,7 @@ onMounted(async () => {
 }
 
 .start-input:focus {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 
@@ -851,7 +851,7 @@ onMounted(async () => {
 }
 
 .btn-start-set:disabled {
-  background: #cbd5e1;
+  background: var(--color-border);
   cursor: not-allowed;
 }
 
@@ -866,18 +866,18 @@ onMounted(async () => {
 }
 
 .btn-start-reset:hover {
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .import-bar {
   padding: 8px 20px;
-  background: #fff;
+  background: var(--color-surface);
   border-bottom: 1px solid #e2e8f0;
 }
 
 .import-status {
   font-size: 13px;
-  color: #64748b;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -895,7 +895,7 @@ onMounted(async () => {
   width: 300px;
   flex-shrink: 0;
   border-right: 1px solid #e2e8f0;
-  background: #fff;
+  background: var(--color-surface);
   overflow: hidden;
   transition: width 0.25s ease;
 }
@@ -909,7 +909,7 @@ onMounted(async () => {
 .collapse-btn {
   width: 20px;
   flex-shrink: 0;
-  background: #f1f5f9;
+  background: var(--color-bg-soft);
   border: none;
   border-right: 1px solid #e2e8f0;
   cursor: pointer;
@@ -924,8 +924,8 @@ onMounted(async () => {
 }
 
 .collapse-btn:hover {
-  background: #e2e8f0;
-  color: #64748b;
+  background: var(--color-bg-alt);
+  color: var(--color-text-muted);
 }
 
 .center-panel {
@@ -937,7 +937,7 @@ onMounted(async () => {
   width: 340px;
   flex-shrink: 0;
   border-left: 1px solid #e2e8f0;
-  background: #fff;
+  background: var(--color-surface);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -969,7 +969,7 @@ onMounted(async () => {
 }
 
 .btn-generate:disabled {
-  background: #cbd5e1;
+  background: var(--color-border);
   cursor: not-allowed;
 }
 
@@ -980,7 +980,7 @@ onMounted(async () => {
   padding: 0 4px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .days-label {
@@ -996,7 +996,7 @@ onMounted(async () => {
   outline: none;
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: var(--color-text);
   text-align: center;
   background: transparent;
 }
@@ -1014,8 +1014,8 @@ onMounted(async () => {
 
 .btn-replan {
   padding: 8px 12px;
-  background: #f0fdf4;
-  color: #166534;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
   border: 1px solid #bbf7d0;
   border-radius: 6px;
   font-size: 12px;
@@ -1025,7 +1025,7 @@ onMounted(async () => {
 }
 
 .btn-replan:hover:not(:disabled) {
-  background: #dcfce7;
+  background: var(--color-success-bg);
   border-color: #86efac;
 }
 

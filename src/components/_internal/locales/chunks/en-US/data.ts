@@ -171,5 +171,11 @@ export default {
     notePlaceholder: 'Enter note content...',
     // Excel export
     sheetData: 'Data',
+    // Cell input normalization (active when Column.type is declared)
+    invalidNumber: 'Please enter a valid number',
+    invalidDate: 'Please enter a valid date',
+    invalidTime: 'Please enter a valid time',
+    // Fill handle
+    fillHandle: 'Drag to fill (numbers step / dates by day / text repeats)',
   },
 }

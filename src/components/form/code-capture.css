@@ -306,7 +306,7 @@
   justify-content: center;
   border-radius: 50%;
   background: #22c55e;
-  color: #052e16;
+  color: var(--color-success-text);
   box-shadow:
     var(--shadow-md),
     0 0 0 2px rgba(255, 255, 255, 0.85);

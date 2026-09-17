@@ -869,23 +869,24 @@ onUnmounted(() => {
   border-radius: 10px;
   font-size: 11px;
   font-weight: 600;
-  background: #f1f5f9;
+  background: var(--color-bg-soft);
   color: #94a3b8;
   white-space: nowrap;
 }
 .cc-stat-badge.done {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 .cc-stat-contract.done {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--color-primary-soft);
+  /* 深蓝字在 --color-primary-soft 上：暗色下该令牌是深底 → 深蓝字不可见，改为随主题 */
+  color: var(--color-primary);
 }
 .cc-btn {
   padding: 5px 14px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface);
   cursor: pointer;
   font-size: 12px;
   white-space: nowrap;
@@ -900,13 +901,13 @@ onUnmounted(() => {
 .cc-btn-export {
   background: #3b82f6;
   color: #fff;
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
 }
 .cc-btn-export:hover {
   background: #2563eb;
 }
 .cc-btn-clear {
-  color: #ef4444;
+  color: var(--color-danger);
 }
 
 /* 表格 */
@@ -971,7 +972,7 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 .cc-status-done {
-  color: #059669;
+  color: var(--color-success-text);
   font-weight: 600;
 }
 .cc-status-none {

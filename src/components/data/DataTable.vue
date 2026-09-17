@@ -33,6 +33,8 @@ import DataTablePagination from './DataTablePagination.vue'
 import DataTableToolbar from './DataTableToolbar.vue'
 import { provideDataTableContext, type ColumnSettingsPanelExpose, type BatchDialogExpose } from './composables/context'
 import type { Column, ColumnOption, Emits, RowAction, RowContextAction, TableStorage } from './composables/types'
+import type { DateOrder } from './composables/cell-input'
+import type { FillDirection } from './composables/fill-series'
 import { useTableCore } from './composables/useTableCore'
 import { useTableColumns } from './composables/useTableColumns'
 import { useTableFilter } from './composables/useTableFilter'
@@ -115,6 +117,10 @@ const props = withDefaults(
     persistence?: 'auto' | 'none'
     /** 单元格编辑模式：双击进入编辑，Enter 确认，Escape 取消 */
     editable?: boolean
+    /** 日期列（Column.type='date'/'datetime'）两段数字输入的月日顺序：
+     *  'MDY'（默认，9/12 → 9月12日）| 'DMY'（9/12 → 12月9日）。
+     *  ⚠️ 当月日都 ≤12 时无法自动消歧，必须由使用方声明。 */
+    dateInputOrder?: DateOrder
     /** 备注提示模式：hover 显示备注，点击填写 */
     noteMode?: boolean
     /** 外部传入的备注数据 */
@@ -173,6 +179,7 @@ const props = withDefaults(
     truncateMode: 'ellipsis',
     dense: false,
     editable: false,
+    dateInputOrder: 'MDY' as DateOrder,
     noteMode: false,
     colSettings: true,
     cellSelection: true,
@@ -928,6 +935,12 @@ const {
   copySelectedCell,
   pasteToSelection,
   pasteText,
+  applyChanges,
+  markEditActive,
+  fillHandleRange,
+  fillable,
+  isFillCorner,
+  applyFill,
   // @patch 2026-07-15 原始值气泡
   originalTooltip,
   showOriginalTooltip,
@@ -956,6 +969,8 @@ const {
       })
     },
     onCopied: () => notify(t('imagePreview.copyOk')),
+    // 归一化失败：错误已由 composable 拦截（值未落库），这里只负责提示
+    onNormalizeError: (key) => notify(t(key), 'warning'),
   },
 )
 // aria-modal 备注编辑弹层的 Tab 循环（打开自动激活，输入框为首个可聚焦项；
@@ -1135,12 +1150,29 @@ function onRangeUp() {
   }, 200)
 }
 
+// ==================== 填充柄拖拽（Excel 行为：拖选区右下角小方块批量填充） ====================
+/** 拖拽中的预览边界（显示索引）；null = 未在拖拽。由响应式状态驱动单元格高亮，不做 DOM 测量 */
+const _fillPreview = ref<{ r0: number; r1: number; c0: number; c1: number } | null>(null)
+let _fillDrag: {
+  /** 源选区边界（拖拽开始时快照，拖拽过程中不变） */
+  r0: number
+  r1: number
+  c0: number
+  c1: number
+  dir: FillDirection | null
+  count: number
+} | null = null
+
 /** 数据变化（筛选/排序/分页/列显隐/原地增删行）后旧选区失效，必须清空；
- *  同时维护显示行列快照，供无矩形选区时的矩阵粘贴定位 */
+ *  同时维护显示行列快照，供无矩形选区时的矩阵粘贴定位。
+ *  ⚠️ 下面的 watch 是 immediate 的（setup 期间同步执行），所以它引用的
+ *  `_fillDrag` 必须在**此处之前**声明 —— 否则会踩 TDZ（Cannot access before initialization）。 */
 watch(
   [() => _effectivePagedData.value.length, _effectivePagedData, _displayColumns],
   () => {
     if (rangeSel.value) clearRange()
+    // 拖拽填充中行/列集合变了 → 拖拽起始索引已失效，取消本次拖拽（不落库）
+    if (_fillDrag) cancelFillDrag()
     setDisplayMatrix(
       _effectivePagedData.value.map((r) => rowMetaMap.value.get(r)?.key ?? '').filter(Boolean),
       _displayColumns.value.map((c) => c.key),
@@ -1148,6 +1180,89 @@ watch(
   },
   { immediate: true },
 )
+
+/** 预览中的格是否高亮 */
+function isInFillPreview(ri: number, ci: number): boolean {
+  const b = _fillPreview.value
+  if (!b) return false
+  return ri >= b.r0 && ri <= b.r1 && ci >= b.c0 && ci <= b.c1
+}
+
+function onFillHandleMouseDown(e: MouseEvent) {
+  if (e.button !== 0 || !fillable.value) return
+  const b = fillHandleRange.value
+  if (!b) return
+  // 阻止 mousedown 冒泡到 td：否则会同时启动「矩形拖选」，两个拖拽互相打架
+  e.preventDefault()
+  e.stopPropagation()
+  markLayerOpen()
+  _fillDrag = { ...b, dir: null, count: 0 }
+  document.body.classList.add('dt-fill-dragging')
+  document.addEventListener('mousemove', onFillHandleMove)
+  document.addEventListener('mouseup', onFillHandleUp)
+}
+
+/** 拖拽中：用指针命中的单元格换算扩展格数（与拖选同一手法，虚拟滚动/缩放天然兼容） */
+function onFillHandleMove(e: MouseEvent) {
+  const d = _fillDrag
+  if (!d) return
+  const td = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.closest(
+    'td[data-row-idx][data-col-idx]',
+  ) as HTMLElement | null
+  if (!td) return
+  const ri = Number(td.dataset.rowIdx)
+  const ci = Number(td.dataset.colIdx)
+  if (!Number.isFinite(ri) || !Number.isFinite(ci)) return
+
+  // 方向：以「指针相对源选区」判断，选位移更大的轴
+  const outUp = ri < d.r0
+  const outDown = ri > d.r1
+  const outLeft = ci < d.c0
+  const outRight = ci > d.c1
+  let dir: FillDirection | null = null
+  if (outDown) dir = 'down'
+  else if (outUp) dir = 'up'
+  else if (outRight) dir = 'right'
+  else if (outLeft) dir = 'left'
+  if (!dir) {
+    // 仍在源选区内：不预览
+    if (_fillPreview.value) _fillPreview.value = null
+    d.dir = null
+    d.count = 0
+    return
+  }
+
+  const count =
+    dir === 'down' ? ri - d.r1
+    : dir === 'up' ? d.r0 - ri
+    : dir === 'right' ? ci - d.c1
+    : d.c0 - ci
+  d.dir = dir
+  d.count = count
+  const b = { r0: d.r0, r1: d.r1, c0: d.c0, c1: d.c1 }
+  if (dir === 'down') b.r1 = d.r1 + count
+  else if (dir === 'up') b.r0 = d.r0 - count
+  else if (dir === 'right') b.c1 = d.c1 + count
+  else b.c0 = d.c0 - count
+  _fillPreview.value = b
+}
+
+/** 结束填充拖拽并清理全部残留（监听器 / body 类 / 预览 / 状态）。
+ *  卸载与数据变更都要走这里，避免悬空监听与「索引已失效仍在拖」 */
+function cancelFillDrag() {
+  document.removeEventListener('mousemove', onFillHandleMove)
+  document.removeEventListener('mouseup', onFillHandleUp)
+  document.body.classList.remove('dt-fill-dragging')
+  _fillDrag = null
+  _fillPreview.value = null
+}
+
+function onFillHandleUp() {
+  const d = _fillDrag
+  cancelFillDrag()
+  if (!d || !d.dir || d.count <= 0) return
+  applyFill(d.dir, d.count)
+}
 
 // 6. 周边功能：导出 / 右键菜单 / 行选择 / 持久化 / 全局事件
 // _cellOverrides 直接传入，导出时无需桥接同步
@@ -1231,6 +1346,8 @@ const _optDrop = ref<{
 function openOptDrop(row: Record<string, any>, col: Column, event: MouseEvent) {
   // 防御：非编辑模式或列级禁用不允许打开选项面板
   if (!col.options || !props.editable || col.editable === false) return
+  // 标记活动表格：卡片视图的字段点击不经 selectCell，不标记会导致 Ctrl+Z 静默失效
+  markEditActive()
   markLayerOpen()
   const rk = rowMetaMap.value.get(row)?.key ?? ''
   // 点同一格则关闭
@@ -1270,11 +1387,8 @@ function pickOption(val: string) {
   const { rowKey, colKey, currentVal } = _optDrop.value
   _optDrop.value = null
   if (val !== currentVal) {
-    const next = { ..._cellOverrides.value }
-    if (!next[rowKey]) next[rowKey] = {}
-    next[rowKey] = { ...next[rowKey], [colKey]: val }
-    _cellOverrides.value = next
-    emit('cellChange', rowKey, colKey, val)
+    // 收敛到写入漏斗（此前自建 override 会绕过撤销栈与统一 emit）
+    applyChanges([{ rowKey, colKey, value: val }])
   }
 }
 
@@ -1305,6 +1419,13 @@ function onCellClick(row: Record<string, any>, col: Column, event: MouseEvent) {
       event.ctrlKey || event.metaKey,
     )
   }
+}
+
+/** 卡片视图字段点击：options 列打开选项面板，其余列仅标记活动表格。
+ *  卡片视图没有 <td>，也就不会走 selectCell —— 不标记的话该表的 Ctrl+Z/C/V 会静默失效。 */
+function onCardFieldClick(row: Record<string, any>, col: Column, event: MouseEvent) {
+  markEditActive()
+  if (col.options && props.editable && col.editable !== false) openOptDrop(row, col, event)
 }
 
 /** 单元格双击：编辑模式且列可编辑 → 进入编辑；否则仅保留单元格选中态，清除浏览器双击产生的文本全选 */
@@ -1677,6 +1798,8 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', onRangeMove)
   document.removeEventListener('mouseup', onRangeUp)
   document.body.classList.remove('dt-range-selecting')
+  // 清理填充拖拽残留（监听器 / body 类 / 预览状态）
+  cancelFillDrag()
   _closeCallbacks.delete(closeFilter)
   // 清理列宽拖拽事件（防止悬空监听）
   if (resizing.value) {
@@ -2115,6 +2238,9 @@ provideDataTableContext({
                       'cell-selected': isCellSelected(rowMetaMap.get(row)?.key ?? '', col.key),
                       'cell-range-anchor': isRangeAnchor(rowMetaMap.get(row)?.key ?? '', col.key),
                       'cell-has-options': col.options,
+                      'cell-fill-preview': isInFillPreview(rowDisplayIndex(idx), ci),
+                      'cell-fill-corner':
+                        fillable && isFillCorner(rowMetaMap.get(row)?.key ?? '', col.key),
                       'cell-modified':
                         (props.modifiedMark || props.originalTooltip) &&
                         (_cellOverrides[rowMetaMap.get(row)?.key ?? ''] ?? {})[col.key] !== undefined,
@@ -2145,7 +2271,7 @@ provideDataTableContext({
                     v-model="editValue"
                     class="cell-edit-input"
                     @keydown="(e) => onEditKeydown(e, _displayColumns, rowMetaMap.get(row)?.key ?? '')"
-                    @blur="commitEdit"
+                    @blur="commitEdit('blur')"
                     @click.stop
                   />
                   <!-- 编辑中仅显示输入框（选项列不走内联编辑，始终显示内容+箭头） -->
@@ -2236,6 +2362,13 @@ provideDataTableContext({
                     class="cell-note-dot"
                     :title="t('table.editNote')"
                     @click.stop="startNoteEdit($event, rowMetaMap.get(row)?.key ?? '', col.key)"
+                  />
+                  <!-- 填充柄：选区右下角小方块，拖拽批量填充（Excel 行为） -->
+                  <span
+                    v-if="fillable && isFillCorner(rowMetaMap.get(row)?.key ?? '', col.key)"
+                    class="cell-fill-handle"
+                    :title="t('table.fillHandle')"
+                    @mousedown="onFillHandleMouseDown"
                   />
                 </td>
                 <!-- 操作按钮列 -->
@@ -2374,7 +2507,7 @@ provideDataTableContext({
                   v-model="editValue"
                   class="cell-edit-input card-edit-input"
                   @keydown="(e) => onEditKeydown(e, _displayColumns, rowMetaMap.get(row)?.key ?? '')"
-                  @blur="commitEdit"
+                  @blur="commitEdit('blur')"
                   @click.stop
                 />
                 <!-- 下拉选项编辑（H5 用原生 select） -->
@@ -2387,8 +2520,8 @@ provideDataTableContext({
                   "
                   v-model="editValue"
                   class="card-edit-select"
-                  @change="commitEdit()"
-                  @blur="commitEdit"
+                  @change="commitEdit('blur')"
+                  @blur="commitEdit('blur')"
                   @click.stop
                 >
                   <option
@@ -2404,7 +2537,7 @@ provideDataTableContext({
                   v-else
                   class="card-field-value"
                   :class="{ 'cell-has-note': noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key) }"
-                  @click.stop="col.options && editable && openOptDrop(row, col, $event)"
+                  @click.stop="onCardFieldClick(row, col, $event)"
                   @dblclick.stop="onCellDblClick(row, col, $event)"
                 >
                   <span

@@ -171,5 +171,11 @@ export default {
     notePlaceholder: '输入备注内容...',
     // Excel 导出
     sheetData: '数据',
+    // 单元格输入归一化（Column.type 声明后生效）
+    invalidNumber: '请输入有效数字',
+    invalidDate: '请输入有效日期',
+    invalidTime: '请输入有效时间',
+    // 填充柄
+    fillHandle: '拖拽填充（数字等差 / 日期按天 / 文本循环）',
   },
 }

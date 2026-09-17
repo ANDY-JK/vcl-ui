@@ -87,9 +87,13 @@ const displayText = computed(() => {
   return t
 })
 
-/** 背景色覆盖 */
+/** 背景色覆盖。
+ *  ⚠️ color prop 用于「实心底」场景，此前的默认文字色是 --color-text-secondary（灰字），
+ *  压在实心底上对比度极低（实测暗色下配 --color-warning 仅 1.47，等同不可见）。
+ *  故传了 color 时文字自动改为白色 —— 这是实心 tag 唯一可读的默认组合；
+ *  需要自定义文字色请用 style/slot 覆盖。 */
 const colorStyle = computed(() => {
-  if (props.color) return { background: props.color }
+  if (props.color) return { background: props.color, color: '#fff' }
   return {}
 })
 
@@ -248,7 +252,9 @@ const supStyle = computed(() => {
   height: clamp(16px, 2vw, 18px);
   padding: 0 clamp(var(--space-1), 0.8vw, 6px);
   border-radius: 100px;
-  background: var(--color-danger);
+  /* 实心底压白字：用 --color-danger-solid（暗色下 --color-danger 被提亮为 #f87171，
+     白字对比度仅 2.77 不达标） */
+  background: var(--color-danger-solid, var(--color-danger));
   color: #ffffff;
   font-size: clamp(10px, 1.4vw, 15px);
   font-weight: 600;

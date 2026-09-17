@@ -230,7 +230,8 @@
   color: var(--color-danger, #ef4444);
 }
 .dt-context-item.ctx-danger:hover:not(.disabled) {
-  background: rgba(239, 68, 68, 0.08);
+  /* 走 danger 三元组令牌：两套主题各自声明 --color-danger-rgb，硬编码会锁死亮色红 */
+  background: rgba(var(--color-danger-rgb, 239 68 68), 0.08);
   color: var(--color-danger, #ef4444);
 }
 .dt-context-item.menu-focused {

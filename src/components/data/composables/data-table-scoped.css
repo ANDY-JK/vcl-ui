@@ -91,8 +91,9 @@
 .table-scroll::-webkit-scrollbar:vertical {
   width: 0;
 }
+/* 滚动条配色走令牌：此前硬编码 rgba(15,23,42,.05)/#b7bcc4 是亮色专用，暗色下轨道会发灰 */
 .table-scroll::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.05);
+  background: var(--color-bg-alt);
   border-radius: 5px;
 }
 .table-scroll::-webkit-scrollbar-thumb {
@@ -100,7 +101,7 @@
   border-radius: 5px;
 }
 .table-scroll::-webkit-scrollbar-thumb:hover {
-  background: #b7bcc4;
+  background: var(--color-text-muted);
 }
 /* maxHeight 设置后约束容器高度 */
 .table-scroll.table-scroll-fixed {
@@ -327,6 +328,10 @@ tfoot th.col-fixed-right {
 }
 td.cell-editing {
   padding: var(--space-1) 4px;
+  /* 编辑中：补上视觉标识（此前只有 padding，编辑态无颜色提示）——
+     用选中紫的虚线内描边，与「已选中」的实线区分 */
+  box-shadow: inset 0 0 0 2px var(--dt-select, #7c5cf0);
+  background: rgba(var(--dt-select-rgb, 124 92 240), 0.1);
 }
 /* 非编辑模式 / 只读列：禁止文本选择，双击与拖拽都不会选中单元格内容（保留单元格选中态） */
 .data-table td.cell-readonly,
@@ -339,19 +344,74 @@ td.cell-editing {
   user-select: none;
   -webkit-user-select: none;
 }
+/* 单元格选中框：按「能否编辑」分色，让用户一眼看出这个格能不能改。
+   蓝 = 选中（不可编辑单元格、行选择，沿用品牌色）
+   紫 = 可编辑（可编辑单元格、编辑中、填充、可下拉）
+   ⚠️ 不要把所有选中都统一成一种色 —— 那样就失去了区分能力。 */
 td.cell-selected {
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
-  background: rgba(var(--color-primary-rgb, 64 158 255), 0.06) !important;
+  background: rgba(var(--color-primary-rgb, 79 110 247), 0.06) !important;
+}
+/* 可编辑单元格选中 → 紫色 */
+td.cell-selected:not(.cell-readonly) {
+  outline-color: var(--dt-select, #7c5cf0);
+  background: rgba(var(--dt-select-rgb, 124 92 240), 0.08) !important;
 }
 /* @patch 2026-08-09 拖选期间禁止文本选择 */
 .dt-range-selecting,
 .dt-range-selecting * {
   user-select: none !important;
 }
-/* @patch 2026-08-09 矩形选区锚点格（Excel 风格视觉区分） */
+/* @patch 2026-08-09 矩形选区锚点格（Excel 风格视觉区分）
+   锚点格同样按「能否编辑」分色：可编辑列紫、不可编辑列蓝（与 cell-selected 一致） */
 td.cell-range-anchor {
-  background: rgba(var(--color-primary-rgb, 64 158 255), 0.16) !important;
+  background: rgba(var(--color-primary-rgb, 79 110 247), 0.16) !important;
+}
+td.cell-range-anchor:not(.cell-readonly) {
+  background: rgba(var(--dt-select-rgb, 124 92 240), 0.18) !important;
+}
+
+/* ==================== 填充柄（拖拽批量填充） ==================== */
+td.cell-fill-corner {
+  position: relative;
+}
+.cell-fill-handle {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dt-select, #7c5cf0);
+  border: 1px solid var(--color-surface);
+  box-sizing: border-box;
+  cursor: crosshair;
+  z-index: 4;
+  touch-action: none;
+}
+/* 放大命中区（8px 视觉尺寸对触屏/小目标太苛刻），不影响视觉 */
+.cell-fill-handle::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+/* 固定列（sticky，z-index:5）会盖住相邻格突出的填充柄：
+   这些列的填充柄改为向内收，保证可点、不被遮挡 */
+td.col-fixed-left.cell-fill-corner .cell-fill-handle,
+td.col-fixed-right.cell-fill-corner .cell-fill-handle {
+  right: 1px;
+}
+/* 拖拽中的目标区域预览：虚线框提示将写入的范围（不改数据，松手才落库） */
+td.cell-fill-preview {
+  background: rgba(var(--dt-select-rgb, 124 92 240), 0.12) !important;
+  box-shadow: inset 0 0 0 1px var(--dt-select, #7c5cf0);
+}
+/* 填充拖拽期间禁止文本选择（与拖选同一策略） */
+.dt-fill-dragging,
+.dt-fill-dragging * {
+  user-select: none !important;
+  cursor: crosshair !important;
 }
 
 /* @patch 2026-07-15 已编辑单元格右上角三角标记 */
@@ -367,7 +427,8 @@ td.cell-modified::after {
   height: 0;
   border-style: solid;
   border-width: 0 7px 7px 0;
-  border-color: transparent #e65100 transparent transparent;
+  /* 已修改角标：走 warning 令牌，暗色下自动换色（此前硬编码橙在暗色底上偏暗） */
+  border-color: transparent var(--color-warning, #f59e0b) transparent transparent;
 }
 
 /* 图片列 */
@@ -395,11 +456,12 @@ td.cell-modified::after {
   transition: border-color var(--transition-fast);
 }
 .cell-image-placeholder:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--dt-select, #7c5cf0);
+  color: var(--dt-select, #7c5cf0);
 }
 td.drag-over-image {
-  outline: 2px dashed var(--color-primary);
+  /* 拖入目标格：属选中/放置语义 → --dt-select */
+  outline: 2px dashed var(--dt-select, #7c5cf0);
   outline-offset: -2px;
 }
 
@@ -435,13 +497,15 @@ td.cell-has-note {
   word-break: break-word;
 }
 
-/* @patch 2026-07-15 原始值气泡 */
+/* @patch 2026-07-15 原始值气泡
+   ⚠️ 配色必须走 warning 语义令牌：此前硬编码 #fff8e1/#5d4037 是亮色主题专有色，
+   暗色下会变成「亮黄卡片」，与整表暗色风格割裂（同文件的 .note-tooltip 已用令牌，此处对齐） */
 .original-tooltip {
   max-width: min(320px, 85vw);
   padding: var(--space-2) 10px;
-  background: #fff8e1;
-  color: #5d4037;
-  border: 1px solid #ffe082;
+  background: var(--color-warning-bg, #fffbeb);
+  color: var(--color-warning-text, #d97706);
+  border: 1px solid var(--color-warning-border, #fde68a);
   border-radius: var(--radius-sm);
   font-size: 12px;
   line-height: 1.4;
@@ -452,7 +516,8 @@ td.cell-has-note {
 }
 .original-tooltip-label {
   font-weight: 600;
-  color: #e65100;
+  /* 标签需比正文更强调：用主状态色而非正文色 */
+  color: var(--color-warning, #f59e0b);
 }
 
 /* 备注编辑弹窗 */
@@ -524,14 +589,14 @@ td.cell-has-note {
   cursor: pointer;
 }
 
-/* 选中行高亮 */
+/* 选中行高亮（勾选）：行选择与「能否编辑」无关，沿用品牌蓝（紫只表示可编辑） */
 .data-table tbody tr.row-selected td {
   background: var(--color-primary-light) !important;
 }
 
-/* 行点击高亮（再次点击取消） */
+/* 行点击高亮（Ctrl+点击标记，再次取消） */
 .data-table tbody tr.row-clicked td {
-  background: rgba(var(--color-primary-rgb, 59 130 246), 0.25) !important;
+  background: rgba(var(--color-primary-rgb, 79 110 247), 0.22) !important;
 }
 .data-table tbody tr.row-clicked {
   box-shadow: inset 4px 0 0 0 var(--color-primary);
@@ -583,13 +648,15 @@ thead .col-fixed-right {
 .data-table.hoverable tbody tr:hover .col-fixed-right {
   background: var(--color-primary-light);
 }
+/* 固定列是 sticky 且自带不透明底，选中/高亮的底色必须与对应行同步，
+   否则固定列会露出未选中的底色（视觉上像「选了一半」） */
 .data-table tbody tr.row-selected .col-fixed-left,
 .data-table tbody tr.row-selected .col-fixed-right {
   background: var(--color-primary-light) !important;
 }
 .data-table tbody tr.row-clicked .col-fixed-left,
 .data-table tbody tr.row-clicked .col-fixed-right {
-  background: rgba(var(--color-primary-rgb, 59 130 246), 0.25) !important;
+  background: rgba(var(--color-primary-rgb, 79 110 247), 0.22) !important;
 }
 
 /* ==================== 列宽拖拽手柄 ==================== */
@@ -648,14 +715,14 @@ th.drag-over {
   width: var(--dt-scrollbar-size, 6px);
 }
 .card-view-scroll::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.05);
+  background: var(--color-bg-alt);
 }
 .card-view-scroll::-webkit-scrollbar-thumb {
   background: var(--color-border);
   border-radius: var(--radius-sm);
 }
 .card-view-scroll::-webkit-scrollbar-thumb:hover {
-  background: #b7bcc4;
+  background: var(--color-text-muted);
 }
 
 .card-view-item {
@@ -670,6 +737,7 @@ th.drag-over {
   gap: var(--space-2);
 }
 .card-view-item.card-selected {
+  /* 整卡片选中＝行级选中语义，与「能否编辑」无关 → 品牌蓝 */
   border-color: var(--color-primary);
   background: var(--color-primary-light);
 }
@@ -683,7 +751,9 @@ th.drag-over {
   position: relative;
 }
 .card-field.card-field-editing {
-  background: var(--color-primary-light);
+  /* 编辑态与桌面表 cell-editing 同色（--dt-select） */
+  background: var(--dt-select-soft, #f1ecfe);
+  box-shadow: inset 0 0 0 2px var(--dt-select, #7c5cf0);
   margin: -4px;
   padding: var(--space-1);
   border-radius: var(--radius-sm);
@@ -885,7 +955,13 @@ td.cell-has-options {
 }
 td.cell-has-options:hover .cell-options-arrow {
   opacity: 0.8;
-  color: var(--color-primary);
+  /* 下拉指示器属选中/编辑语义 → 同 --dt-select */
+  color: var(--dt-select, #7c5cf0);
+}
+/* 只读 options 列（列级 editable:false）不显示下拉箭头：
+   否则会显示可下拉的暗示，但点击只会选中单元格、面板不弹出（误导） */
+td.cell-has-options.cell-readonly .cell-options-arrow {
+  display: none;
 }
 
 /* 截断长文本展开图标 */
@@ -946,24 +1022,27 @@ td.cell-has-options:hover .cell-options-arrow {
   cursor: pointer;
   transition: background var(--transition-fast);
 }
+/* 选项下拉（options 列的值选择）：属**选中**语义 → 与单元格选中同色 --dt-select。
+   ⚠️ 此前用 --color-primary（品牌蓝），与「可编辑单元格是紫色」不一致（用户反馈）。
+   注意：筛选下拉 .dt-filter-option 不在此列 —— 那是「筛选」语义，保持品牌蓝与筛选图标一致。 */
 .opt-drop-item:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--dt-select-soft, #f1ecfe);
+  color: var(--dt-select, #7c5cf0);
 }
 .opt-drop-item.active {
-  background: rgba(var(--color-primary-rgb, 64 158 255), 0.08);
-  color: var(--color-primary);
+  background: rgba(var(--dt-select-rgb, 124 92 240), 0.1);
+  color: var(--dt-select, #7c5cf0);
   font-weight: 500;
 }
 .opt-drop-item.focused {
   background: var(--color-bg-alt);
 }
-/* 选中+焦点重叠时：用 active 的浅蓝背景，不被 focused 灰色覆盖 */
+/* 选中+焦点重叠时：用 active 的浅紫背景，不被 focused 灰色覆盖 */
 .opt-drop-item.active.focused {
-  background: rgba(var(--color-primary-rgb, 64 158 255), 0.08);
+  background: rgba(var(--dt-select-rgb, 124 92 240), 0.1);
 }
 .opt-drop-check {
-  color: var(--color-primary);
+  color: var(--dt-select, #7c5cf0);
   flex-shrink: 0;
   margin-left: var(--space-2);
 }

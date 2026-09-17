@@ -1,6 +1,9 @@
 // ⛔ 保护 — 禁止修改 Column 接口字段结构，禁止新增 width 等外部列宽字段
 //    需我确认：字段增删、枚举值扩展
+//    @approved 2026-09-17 `type` 字段经确认新增（Excel 输入习惯对齐，见 workspace 方案）
 // ==================== DataTable 类型定义 ====================
+
+import type { CellValueType } from './cell-input'
 
 export interface Column {
   key: string
@@ -20,6 +23,10 @@ export interface Column {
   fixed?: 'left' | 'right'
   /** 列内容约束：不设默认不限，可指定仅文本或仅图片 */
   accept?: 'text' | 'image' | 'all'
+  /** 列值类型：声明后「双击编辑提交」会按类型归一化（如 date 列输入 9/12 → 2026-09-12）。
+   *  未声明 = 不归一化、原样存字符串（存量表格行为完全不变）。
+   *  number 非法值会被拒绝并保持编辑态，不落库。 */
+  type?: CellValueType
   /** 列级编辑开关：默认 true（可编辑），显式设 false 后该列不进入编辑（仅 editable=true 时生效） */
   editable?: boolean
   /** 图片缩略图尺寸，默认 40px（该列含图片时生效） */

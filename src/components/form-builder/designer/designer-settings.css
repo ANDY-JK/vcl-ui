@@ -6,7 +6,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 18px;
-  background: #fff;
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   flex-wrap: wrap;
   min-height: 48px;
@@ -29,8 +29,8 @@
 }
 .ld-tip {
   font-size: 12px;
-  color: #15803d;
-  background: #ecfdf5;
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
   padding: 4px 12px;
   border-radius: 12px;
   font-weight: 600;
@@ -63,7 +63,7 @@
   padding: 6px 14px;
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: var(--radius-sm, 6px);
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-text-secondary, #475569);
   font-size: 12px;
   font-weight: 600;
@@ -84,7 +84,7 @@
   cursor: not-allowed;
 }
 .ld-btn:disabled:hover {
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-text-secondary, #475569);
 }
 
@@ -102,9 +102,9 @@
 }
 .ld-btn.ld-danger:hover,
 .ld-tb-btn.ld-danger:hover:not(:disabled) {
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   border-color: #fca5a5;
-  color: #ef4444;
+  color: var(--color-danger);
 }
 .ld-sep {
   width: 1px;
@@ -151,7 +151,7 @@
   font-size: 13px;
   font-family: inherit;
   resize: vertical;
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-text, #1e293b);
   transition: border-color 0.15s;
 }
@@ -289,7 +289,7 @@
   padding: 10px;
   font-size: 12px;
   line-height: 1.55;
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-text, #1e293b);
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
   resize: vertical;
@@ -305,7 +305,7 @@
   margin-top: 8px;
 }
 .ld-import-error {
-  color: #ef4444;
+  color: var(--color-danger);
   font-size: 12px;
 }
 

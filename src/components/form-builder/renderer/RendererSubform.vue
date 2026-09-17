@@ -119,7 +119,7 @@ function removeRow(rowIndex: number): void {
   gap: 3px;
 }
 .fb-subform-add:hover {
-  background: #eef1ff;
+  background: var(--color-primary-light);
   border-color: var(--color-primary, #3b82f6);
 }
 .fb-subform-rows {
@@ -166,7 +166,7 @@ function removeRow(rowIndex: number): void {
   font-size: 14px;
 }
 .fb-subform-del:hover {
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   color: var(--color-danger, #ef4444);
 }
 .fb-subform-empty {

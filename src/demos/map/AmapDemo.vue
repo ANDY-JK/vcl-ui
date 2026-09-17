@@ -159,20 +159,20 @@ function renderMap(center: { latitude: number; longitude: number }, list: (PoiIt
       // 使用 DOM API 构建 InfoWindow 内容，避免 XSS
       const iwRoot = document.createElement('div')
       iwRoot.style.cssText =
-        'min-width:180px;padding:10px 12px;font-size:13px;line-height:1.6;background:#fff;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);'
+        'min-width:180px;padding:10px 12px;font-size:13px;line-height:1.6;background:var(--color-surface);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);'
       const iwName = document.createElement('div')
-      iwName.style.cssText = 'font-weight:700;font-size:14px;margin-bottom:4px;color:#1f2937;'
+      iwName.style.cssText = 'font-weight:700;font-size:14px;margin-bottom:4px;color:var(--color-text);'
       iwName.textContent = p.name
       const iwAddr = document.createElement('div')
-      iwAddr.style.cssText = 'color:#6b7280;margin-bottom:4px;'
+      iwAddr.style.cssText = 'color:var(--color-text-muted);margin-bottom:4px;'
       iwAddr.textContent = '📍 ' + p.address
       const iwFooter = document.createElement('div')
-      iwFooter.style.cssText = 'display:flex;align-items:center;gap:8px;padding-top:4px;border-top:1px solid #e5e7eb;'
+      iwFooter.style.cssText = 'display:flex;align-items:center;gap:8px;padding-top:4px;border-top:1px solid var(--color-border);'
       const iwDist = document.createElement('span')
-      iwDist.style.cssText = 'font-weight:700;font-size:16px;color:#dc2626;'
+      iwDist.style.cssText = 'font-weight:700;font-size:16px;color:var(--color-danger);'
       iwDist.textContent = fm(p.distanceM)
       const iwCoord = document.createElement('span')
-      iwCoord.style.cssText = 'font-size:11px;color:#9ca3af;font-family:monospace;'
+      iwCoord.style.cssText = 'font-size:11px;color:var(--color-text-muted);font-family:monospace;'
       iwCoord.textContent = `${p.latitude.toFixed(6)}, ${p.longitude.toFixed(6)}`
       iwFooter.appendChild(iwDist)
       iwFooter.appendChild(iwCoord)
@@ -568,7 +568,7 @@ function onImgFail(e: Event) {
   left: 8px;
   bottom: 8px;
   width: 340px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-surface);
   backdrop-filter: blur(10px);
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);

@@ -692,7 +692,7 @@ onUnmounted(() => {
   object-fit: cover;
 }
 .camc-thumb.active {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
 }
 
 /* 回看左右切换箭头（叠在取景框两侧） */
@@ -772,7 +772,7 @@ onUnmounted(() => {
   opacity: 0.5;
 }
 .camc-shutter-confirm {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
   background: #3b82f6;
   display: flex;
   align-items: center;

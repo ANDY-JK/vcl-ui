@@ -120,7 +120,8 @@ onUnmounted(clearEscalation)
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-warning);
+  /* 实心底压白色图标：用 solid 令牌（暗色下 --color-warning 被提亮，白字对比度仅 1.67） */
+  background: var(--color-warning-solid, var(--color-warning));
   color: white;
   font-size: clamp(24px, 3.5vw, 36px);
   font-weight: 700;

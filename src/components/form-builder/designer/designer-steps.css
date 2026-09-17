@@ -181,17 +181,17 @@
   border-color: rgba(139, 92, 246, 0.2);
 }
 .ldp-field-item-container:hover {
-  border-color: #8b5cf6;
-  color: #8b5cf6;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
   box-shadow: 0 1px 6px rgba(139, 92, 246, 0.08);
 }
 .ldp-field-icon-container {
-  background: #f5f3ff;
-  color: #8b5cf6;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 .ldp-field-item-container:hover .ldp-field-icon {
-  background: #ede9fe;
-  color: #8b5cf6;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
 }
 .ldp-group-cnt {
   margin-left: 4px;

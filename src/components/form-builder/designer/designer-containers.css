@@ -142,8 +142,8 @@
 .ldc-container-badge {
   font-size: 9px;
   font-weight: 700;
-  color: #8b5cf6;
-  background: #f5f3ff;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
   padding: 2px 7px;
   border-radius: 10px;
   text-transform: uppercase;
@@ -175,7 +175,7 @@
   color: var(--color-text, #1e293b);
 }
 .ldc-container-actions .ldc-del:hover {
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   color: var(--color-danger, #ef4444);
 }
 .ldc-container-body {

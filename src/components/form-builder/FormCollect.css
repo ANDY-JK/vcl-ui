@@ -20,7 +20,7 @@
   width: 42px;
   height: 42px;
   border-radius: 11px;
-  background: linear-gradient(135deg, #eef1ff 0%, #dde6ff 100%);
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary-soft) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,12 +117,12 @@
 }
 .ldc-error {
   color: var(--color-danger, #dc2626);
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   border: 1px solid #fecaca;
 }
 .ldc-ok {
-  color: #15803d;
-  background: #f0fdf4;
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
   border: 1px solid #bbf7d0;
 }
 
@@ -140,7 +140,7 @@
   color: var(--color-danger, #dc2626) !important;
 }
 .ldc-danger-btn:hover {
-  background: #fef2f2 !important;
+  background: var(--color-danger-bg) !important;
 }
 
 /* 导入按钮（label 包装 file input） */
@@ -218,7 +218,7 @@
   flex-shrink: 0;
 }
 .ldc-search-clear:hover {
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   color: var(--color-danger, #dc2626);
 }
 
@@ -230,7 +230,7 @@
   transition: background 0.15s;
 }
 .ldc-record:hover {
-  background: #fff;
+  background: var(--color-surface);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .ldc-record-head {
@@ -256,7 +256,7 @@
 }
 .ldc-del-btn:hover {
   color: var(--color-danger, #dc2626) !important;
-  background: #fef2f2 !important;
+  background: var(--color-danger-bg) !important;
 }
 
 .ldc-detail {
@@ -540,6 +540,6 @@
   color: var(--color-warning, #d97706) !important;
 }
 .ldc-review-btn:hover {
-  background: #fffbeb !important;
+  background: var(--color-warning-bg) !important;
   color: var(--color-warning, #d97706) !important;
 }

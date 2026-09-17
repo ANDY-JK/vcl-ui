@@ -146,13 +146,15 @@ const emit = defineEmits<{ click: [e: MouseEvent] }>()
 }
 
 .btn-danger {
-  background: var(--color-danger);
+  /* 用 --color-danger-solid（实心底色专用）而非 --color-danger：
+     后者在暗色下会被提亮为 #f87171，压白字实测对比度仅 2.77（不达标） */
+  background: var(--color-danger-solid, var(--color-danger));
   color: white;
-  border-color: var(--color-danger);
+  border-color: var(--color-danger-solid, var(--color-danger));
 }
 .btn-danger:hover:not(:disabled) {
-  background: var(--color-danger-hover);
-  border-color: var(--color-danger-hover);
+  background: var(--color-danger-solid-hover, var(--color-danger-hover));
+  border-color: var(--color-danger-solid-hover, var(--color-danger-hover));
 }
 
 .btn-ghost {

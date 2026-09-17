@@ -263,6 +263,21 @@ const colEditData = [
   { id: 10, name: '陈十二', dept: '运营部', code: 'E010', status: '在职' },
 ]
 
+// ========== 列值类型（Excel 输入归一化） ==========
+const typedLog = ref('')
+const typedCols = [
+  { key: 'product', title: '商品名称' },
+  { key: 'shipDate', title: '发货日期（type=date）', type: 'date' as const, align: 'center' as const },
+  { key: 'amount', title: '结算金额（type=number）', type: 'number' as const, align: 'right' as const },
+  { key: 'code', title: '商品编码（type=text）', type: 'text' as const },
+  { key: 'slot', title: '预约时段（type=time）', type: 'time' as const, align: 'center' as const },
+]
+const typedData = [
+  { id: 1, product: '无线蓝牙耳机', shipDate: '2026-09-12', amount: '1234.5', code: '007', slot: '14:30' },
+  { id: 2, product: '机械键盘', shipDate: '2026-08-03', amount: '899', code: '012', slot: '09:00' },
+  { id: 3, product: '显示器支架', shipDate: '2026-07-21', amount: '258.8', code: '103', slot: '16:45' },
+]
+
 // ========== 图片列 ==========
 const imageCols = [
   { key: 'avatar', title: '员工头像照片', imageSize: 44, align: 'center' as const },
@@ -456,19 +471,16 @@ const modal2Cols = [
         等合法值不占位，有值列首尾空白不裁剪。占位仅作用于展示层，导出/筛选/列宽测量仍按原值；可用
         <code>blank-text</code> 换占位文案（传空串即关闭）。
       </p>
+      <!-- ⚠️ rowStyle / cellStyle 必须用 CSS 变量而非硬编码色值：
+           硬编码在暗色主题下会变成「浅底 + 浅字」导致内容不可见。 -->
       <DataTable
         namespace="demo-base"
         :columns="baseCols"
         :data="baseData"
         row-key="id"
         :truncate-threshold="20"
-        :row-style="(row) => (row.status === '在线' ? { background: '#e8f5e9' } : ({} as Record<string, string>))"
-        :cell-style="
-          (key, row) =>
-            key === 'amount' && row.amount > 15000
-              ? { color: '#e53935', fontWeight: 'bold' }
-              : ({} as Record<string, string>)
-        "
+        :row-style="(row) => (row.status === '在线' ? { background: 'var(--color-success-bg)' } : ({} as Record<string, string>))"
+        :cell-style="(key, row) => (key === 'amount' && row.amount > 15000 ? { color: 'var(--color-danger)', fontWeight: 'bold' } : ({} as Record<string, string>))"
       />
     </Card>
 
@@ -535,6 +547,28 @@ const modal2Cols = [
         editable
         max-height="280px"
       />
+    </Card>
+
+    <!-- ===== 3.6 列值类型（Excel 输入习惯对齐） ===== -->
+    <Card title="列值类型 — Excel 式输入归一化">
+      <p class="demo-hint">
+        列声明 <code>type</code> 后，<strong>双击编辑提交</strong>会按类型归一化（未声明 type 的列行为完全不变）：
+        日期列输入 <code>9/12</code> → 当年 <code>9月12日</code>；金额列输入 <code>￥1,234.50</code> → <code>1234.5</code>；
+        编码列声明 <code>text</code> 保住前导零 <code>007</code>。
+        非法值（如日期列输 <code>2026-02-31</code>、金额列输 <code>abc</code>）不落库 → Enter 提交时保持编辑态并提示，失焦提交则丢弃。
+      </p>
+      <DataTable
+        namespace="demo-cell-type"
+        row-key="id"
+        :columns="typedCols"
+        :data="typedData"
+        editable
+        max-height="280px"
+        @cell-change="(_rk, ck, nv) => (typedLog = `列「${ck}」→ ${nv}`)"
+      />
+      <p v-if="typedLog" class="demo-hint" style="color: var(--color-primary)">
+        {{ typedLog }}
+      </p>
     </Card>
 
     <!-- ===== 4. 图片列 + 批量修改 ===== -->

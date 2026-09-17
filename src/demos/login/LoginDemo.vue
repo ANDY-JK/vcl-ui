@@ -481,7 +481,7 @@ function resetCurrentForm() {
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: #f0f2f5;
+  background: var(--color-bg);
 }
 
 /* ---- Props 表 ---- */

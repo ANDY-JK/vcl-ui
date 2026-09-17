@@ -344,7 +344,7 @@ function retryMap(): void {
   position: absolute;
   bottom: var(--space-3);
   left: var(--space-3);
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-surface);
   border-radius: var(--radius-md);
   padding: var(--space-1) var(--space-2);
   display: flex;

@@ -42,7 +42,7 @@ const allIcons = lucideIconNames as string[]
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: 'star',
-  color: '#6366F1',
+  color: 'var(--color-primary)',
   bgColor: '#EAECF0',
   placeholder: () => t('form.selectIcon'),
   provider: 'lucide',

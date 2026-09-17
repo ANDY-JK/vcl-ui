@@ -540,13 +540,13 @@ onMounted(async () => {
   border-radius: 10px;
   font-size: 12px;
   font-weight: 600;
-  background: #f1f5f9;
+  background: var(--color-bg-soft);
   color: #94a3b8;
   white-space: nowrap;
 }
 .ftc-stat.done {
-  background: #d1fae5;
-  color: #065f46;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 .ftc-table-wrap {
   overflow-x: auto;
@@ -604,7 +604,7 @@ onMounted(async () => {
   white-space: nowrap;
 }
 .ftc-status-done {
-  color: #059669;
+  color: var(--color-success-text);
   font-weight: 600;
 }
 .ftc-status-none {

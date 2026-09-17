@@ -185,24 +185,25 @@ function onConfirm() {
   background: var(--color-bg-alt);
 }
 
-/* danger */
+/* danger —— 实心底压白字，用 --color-danger-solid（暗色下 --color-danger 被提亮，
+   压白字对比度仅 2.77 不达标）；本条优先级高于 Button 的 .btn-danger，必须同步 */
 .confirm-btn.btn-danger {
   border-color: var(--color-danger-border);
-  background: var(--color-danger);
+  background: var(--color-danger-solid, var(--color-danger));
   color: #fff;
 }
 .confirm-btn.btn-danger:hover {
-  background: var(--color-danger-hover);
+  background: var(--color-danger-solid-hover, var(--color-danger-hover));
 }
 
-/* warning */
+/* warning —— 同上，实心底压白字用 solid 令牌 */
 .confirm-btn.btn-warning {
   border-color: var(--color-warning-border);
-  background: var(--color-warning);
+  background: var(--color-warning-solid, var(--color-warning));
   color: #fff;
 }
 .confirm-btn.btn-warning:hover {
-  background: var(--color-warning-text);
+  background: var(--color-warning-solid-hover, var(--color-warning-text));
 }
 
 /* primary */

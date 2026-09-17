@@ -1374,7 +1374,7 @@ function onTimeCancel() {
   color: var(--color-danger);
 }
 .panel-item.danger:hover {
-  background: #fef2f2;
+  background: var(--color-danger-bg);
 }
 .item-text {
   display: flex;

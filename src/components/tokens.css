@@ -46,6 +46,20 @@
   --color-warning-text: #d97706;
   --color-warning-border: #fde68a;
   --color-danger: #e54545;
+  /* ===== 语义色「实心底」专用（压白色文字） =====
+     背景：暗色主题下 --color-{primary,success,warning,danger} 都会被**提亮**
+     （为在深色底上当文字/图标用），一旦拿它们做实心底再压白字就不可读：
+     实测暗色下白字对比度 primary 3.17 / danger 2.77 / success 1.92 / warning 1.67，
+     全部低于 4.5 的可读线。故实心底单列一套，亮暗各自保证与白字的对比度。 */
+  --color-danger-solid: #dc2626;
+  --color-danger-solid-hover: #b91c1c;
+  --color-warning-solid: #b45309;
+  --color-warning-solid-hover: #92400e;
+  --color-success-solid: #15803d;
+  --color-success-solid-hover: #166534;
+  /* primary 实心底：#4f6ef7 压白字仅 4.28（未达标），故实心场景用更深的蓝 */
+  --color-primary-solid: #3b56e0;
+  --color-primary-solid-hover: #2f4bd8;
   --color-danger-bg: #fef2f2;
   --color-danger-hover: #dc2626;
   --color-danger-border: #fecaca;
@@ -124,6 +138,16 @@
   --color-success-rgb: 34, 173, 95;
   --color-warning-rgb: 245, 158, 11;
   --color-badge-ring: var(--color-surface);
+  /* ===== DataTable 可编辑态专用色（2026-09-17） =====
+     分色规则 —— 用颜色表达「这个格能不能改」，让用户一眼区分：
+       蓝（--color-primary 系列）= **选中**：不可编辑单元格、行勾选、行标记、筛选项
+       紫（--dt-select 系列）    = **可编辑**：可编辑单元格选中、编辑中、填充柄与预览、
+                                  可下拉的选项面板与指示箭头、拖动放入图片
+     故紫不可用于纯选中语义（否则失去区分能力），蓝也不可用于可编辑语义。
+     与语义色不撞：绿=成功、橙=已修改、红=危险，紫未被占用。 */
+  --dt-select: #7c5cf0; /* 可编辑主色（描边、填充柄、inset 高亮条） */
+  --dt-select-rgb: 124, 92, 240; /* 三元组：rgba(var(--dt-select-rgb), a) 用于半透明底 */
+  --dt-select-soft: #f1ecfe; /* 可编辑浅底（编辑中字段、下拉悬停等较大面积着色） */
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
   --z-lightbox: 10000; /* 图片预览全屏层 — 高于 --z-top */
 }
@@ -156,6 +180,15 @@
   --color-primary: #6b8af9;
   --color-primary-hover: #8aa5fb;
   --color-primary-light: #1e2433;
+  /* rgb 三元组必须跟随主色覆写：它被 rgba(var(--color-primary-rgb), a) 用于
+     选中态/表头/描边等半透明底。此前只在亮色声明（79,110,247），
+     暗色下会残留亮色蓝，与 --color-primary(#6b8af9) 不一致。值 = #6b8af9 */
+  --color-primary-rgb: 107, 138, 249;
+
+  /* DataTable 选中/编辑专用色（暗色变体：提亮 + 深底，与紫主色同调） */
+  --dt-select: #a78bfa;
+  --dt-select-rgb: 167, 139, 250;
+  --dt-select-soft: #241f3d;
 
   /* 中性色 — 深底 */
   --color-surface: #1a1d24;
@@ -209,6 +242,15 @@
   --color-primary-soft: #1e2433;
   --color-danger-light: #2e0f0f;
   --color-danger-rgb: 248, 113, 113;
+  /* 暗色下实心底仍用较深色：提亮后的语义色压白字均不可读（见亮色块注释的实测数据） */
+  --color-danger-solid: #dc2626;
+  --color-danger-solid-hover: #b91c1c;
+  --color-warning-solid: #b45309;
+  --color-warning-solid-hover: #92400e;
+  --color-success-solid: #15803d;
+  --color-success-solid-hover: #166534;
+  --color-primary-solid: #3b56e0;
+  --color-primary-solid-hover: #2f4bd8;
   --color-success-rgb: 52, 211, 153;
   --color-warning-rgb: 251, 191, 36;
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
@@ -221,6 +263,14 @@
     --color-primary: #6b8af9;
     --color-primary-hover: #8aa5fb;
     --color-primary-light: #1e2433;
+    /* 与 :root[data-theme='dark'] 保持一致：两套暗色块必须同值，
+       否则「跟随系统」与「手动切暗色」会呈现不同配色 */
+    --color-primary-rgb: 107, 138, 249;
+
+    /* DataTable 选中/编辑专用色（与手动暗色块同值） */
+    --dt-select: #a78bfa;
+    --dt-select-rgb: 167, 139, 250;
+    --dt-select-soft: #241f3d;
 
     /* 中性色 */
     --color-surface: #1a1d24;
@@ -274,6 +324,15 @@
     --color-primary-soft: #1e2433;
     --color-danger-light: #2e0f0f;
     --color-danger-rgb: 248, 113, 113;
+    /* 与手动暗色块同值：实心语义底（压白字） */
+    --color-danger-solid: #dc2626;
+    --color-danger-solid-hover: #b91c1c;
+    --color-warning-solid: #b45309;
+    --color-warning-solid-hover: #92400e;
+    --color-success-solid: #15803d;
+    --color-success-solid-hover: #166534;
+    --color-primary-solid: #3b56e0;
+    --color-primary-solid-hover: #2f4bd8;
     --color-success-rgb: 52, 211, 153;
     --color-warning-rgb: 251, 191, 36;
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);

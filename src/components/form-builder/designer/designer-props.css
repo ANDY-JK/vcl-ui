@@ -6,7 +6,7 @@
   flex-shrink: 0;
   overflow-y: auto;
   padding: 0;
-  background: #fff;
+  background: var(--color-surface);
   border-left: 1px solid var(--color-border-light, #f1f5f9);
 }
 
@@ -180,7 +180,7 @@
   padding: 7px 9px;
   font-size: 12px;
   line-height: 1.55;
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-text, #1e293b);
   font-family: inherit;
   resize: vertical;
@@ -211,7 +211,7 @@
   border-radius: 4px;
   cursor: pointer;
   padding: 2px;
-  background: #fff;
+  background: var(--color-surface);
   flex-shrink: 0;
 }
 
@@ -225,7 +225,7 @@
   margin-top: 3px;
 }
 .ldp-prop-hint:not(.ldp-prop-ok) {
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 /* ================================

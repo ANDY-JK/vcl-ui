@@ -128,6 +128,8 @@ export type { NavNode } from './layout/utils/navData'
 
 // DataTable 类型 & 工具
 export { createLocalStorage } from './data/composables/types'
+export { normalizeCellInput } from './data/composables/cell-input'
+export type { CellValueType, DateOrder, NormalizeOptions, NormalizeResult } from './data/composables/cell-input'
 export type {
   Column,
   ColumnOption,
