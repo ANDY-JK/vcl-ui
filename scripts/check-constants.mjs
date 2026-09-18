@@ -146,6 +146,60 @@ for (const [rel, text] of styleTexts) {
 if (cssHits.length) fail.push(...cssHits)
 console.log(`[3] CSS 未登记断点 ${cssHits.length}（已登记 ${[...allowed.keys()].sort((a, b) => a - b).join('/')}）`)
 
+// ---------- [4] 延时位不得写字面量毫秒数 ----------
+/**
+ * 取 setTimeout/setInterval 调用的最后一个实参（按括号配对扫描，
+ * 不用正则尾匹配 —— 否则 `setTimeout(() => a.foo(1, 2), X)` 会把嵌套调用的 2 误判成延时）。
+ */
+function delayArgOf(text, openIdx) {
+  let i = openIdx
+  let depth = 1
+  let inStr = null
+  let lastComma = -1
+  for (; i < text.length; i++) {
+    const c = text[i]
+    if (inStr) {
+      if (c === '\\') i++
+      else if (c === inStr) inStr = null
+      continue
+    }
+    if (c === '"' || c === "'" || c === '`') inStr = c
+    else if (c === '(' || c === '[' || c === '{') depth++
+    else if (c === ')' || c === ']' || c === '}') {
+      depth--
+      if (depth === 0) break
+    } else if (c === ',' && depth === 1) lastComma = i
+  }
+  if (lastComma < 0) return null // 只有一个参数（无延时）
+  return text.slice(lastComma + 1, i).trim()
+}
+
+const delayHits = []
+const relOf = (x) => relative('.', x).replaceAll('\\', '/')
+// 只管 src/components（对外发布的库代码）：demos 里的延时是给读者看的示例值（"模拟 1.5s 网络"），
+// 换成常量反而让示例更难读。
+for (const f of files.filter(isSource).filter((x) => relOf(x).startsWith('src/components/'))) {
+  const text = readFileSync(f, 'utf8')
+  const rel = relOf(f)
+  for (const b of splitBlocks(f, text)) {
+    if (b.kind !== 'script') continue
+    const lines = stripComments(b.lines)
+    const joined = lines.join('\n')
+    const re = /\b(?:window\.)?(?:setTimeout|setInterval)\s*\(/g
+    let m
+    while ((m = re.exec(joined))) {
+      const arg = delayArgOf(joined, re.lastIndex)
+      if (arg === null || !/^\d+(\.\d+)?$/.test(arg)) continue
+      if (arg === '0') continue // 0 = 让出一个任务，不是时长
+      const lineNo = joined.slice(0, m.index).split('\n').length
+      delayHits.push(`${rel}:${lineNo} 延时写了字面量 ${arg}ms（改成本文件里有用途说明的 *_MS 常量）`)
+    }
+  }
+}
+if (delayHits.length) fail.push(...delayHits)
+console.log(`[4] 字面量延时 ${delayHits.length}`)
+
+
 if (fail.length) {
   console.error('\n❌ check:constants 未通过 —— 尺寸/断点常量必须有来源')
   fail.forEach((f) => console.error('   - ' + f))

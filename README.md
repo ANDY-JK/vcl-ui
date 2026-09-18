@@ -139,7 +139,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **用法示例**：`src/demos/` — 每个组件一页 demo，`npm run dev` 直接看效果与 Props
 - **API 入口**：`src/components/index.ts` — 全部导出与类型，IDE 里可直接跳转
 - **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 单测（含覆盖率地板）+ 构建 + **发包自检** + 真实浏览器 e2e
-- **常量来源自检**：`npm run check:constants` — 断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记
+- **常量来源自检**：`npm run check:constants` — 四项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
 
@@ -164,6 +164,7 @@ npm run build       # 构建产物到 dist/
 4. **上限/阈值默认自适应**：容量类上限按真实度量动态算（上传并发取同源连接数的一半、虚拟化只在"窗口行数确实小于总行数"时启用），同时给调用方留覆写口（`maxConcurrent`、`pageVirtualMin`、`cardBreakpoint`）。
 5. **同一哨兵值不抄两份**：跨文件复用的判定值收进共享常量或共享函数（如列拖拽顺序排序 `sortColumnsByOrder`），改一处全库生效。
 6. **静默截断要能被发现**：按长度截断/省略的地方必须留下完整值（`title`、`aria-label`、导出原文），不能让用户只看到被裁掉的那截。
+7. **延时要有名字和用途**：`setTimeout` / `setInterval` 的毫秒数写成带注释的 `*_MS` 常量，`check:constants` 拦住直接写数字的写法（`0` 表示让出一个任务，不算时长）。数值相同的两个延时不一定同一件事（如"失败退避重试"与"逐天请求的配额间隔"都是 800ms），确认同因才合并成共享常量。`src/demos/` 豁免：示例里 `模拟 1.5s 网络` 就是给读者看的字面值。
 
 ## 🚀 发版（维护者）
 

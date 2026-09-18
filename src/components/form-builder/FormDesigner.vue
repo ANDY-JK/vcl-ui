@@ -48,6 +48,9 @@ import { useFormIO } from './designer/useFormIO'
 import { FORM_MANAGER_KEY } from './designer/context'
 import SavedFormsDrawer from './designer/SavedFormsDrawer.vue'
 
+/** 轻提示停留时长 */
+const _TIP_TTL_MS = 2500
+
 const t = useT()
 
 const props = withDefaults(
@@ -275,7 +278,7 @@ function showTip(msg: string): void {
   if (_tipTimer) clearTimeout(_tipTimer)
   _tipTimer = setTimeout(() => {
     tip.value = ''
-  }, 2500)
+  }, _TIP_TTL_MS)
 }
 onUnmounted(() => {
   if (_tipTimer) clearTimeout(_tipTimer)

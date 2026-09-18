@@ -16,7 +16,15 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
 
+/** 数字步进按钮：按住多久开始连续步进 */
+const _STEP_HOLD_MS = 400
+/** 开始连续步进后的节拍 */
+const _STEP_REPEAT_MS = 100
+
 const t = useT()
+
+/** 自动填充检测的兜底延迟：MutationObserver 挂上之前浏览器可能已经填完（首帧后补测一次） */
+const AUTOFILL_FALLBACK_MS = 300
 
 /** 无障碍：label 与控件关联的唯一 id（number/textarea/text 三模式互斥，共享同一 id） */
 const inputId = useIdSafe('input')
@@ -180,7 +188,7 @@ onMounted(() => {
   nextTick(checkAutoFill)
   // 兜底：某些浏览器自动填充发生在 nextTick 之后但 MutationObserver 之前
   // 用一个短延迟兜底，替代原来的 4 次轮询
-  const fallbackTimer = setTimeout(checkAutoFill, 300)
+  const fallbackTimer = setTimeout(checkAutoFill, AUTOFILL_FALLBACK_MS)
   _afFallbackTimer = fallbackTimer
   // MutationObserver 监听 value 属性变化（浏览器自动填充时触发）
   const el = floatInputRef.value
@@ -393,8 +401,8 @@ function onBtnDown(dir: 1 | -1, e: PointerEvent) {
         return
       }
       stepBy(dir)
-    }, 100)
-  }, 400)
+    }, _STEP_REPEAT_MS)
+  }, _STEP_HOLD_MS)
 }
 
 function onBtnClick(dir: 1 | -1) {

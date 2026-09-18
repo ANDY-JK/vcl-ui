@@ -12,6 +12,11 @@ import { amapLoader } from '@/components/amap/amap-loader'
 import { useT } from '@/components/_internal/i18n'
 import { sanitizeHTML } from '@/components/_internal/sanitize'
 
+/** 规划结果连发时合并渲染的防抖 */
+const _RENDER_DEBOUNCE_MS = 600
+/** 地图迟迟不 ready 就判失败并给重试入口（spinner 永远转圈不如失败态） */
+const _MAP_READY_TIMEOUT_MS = 15000
+
 const t = useT()
 
 const props = defineProps<{
@@ -189,7 +194,7 @@ watch(
     if (renderTimer) clearTimeout(renderTimer)
     renderTimer = setTimeout(() => {
       nextTick(renderAll)
-    }, 600)
+    }, _RENDER_DEBOUNCE_MS)
   },
   { deep: true },
 )
@@ -218,7 +223,7 @@ let _readyTimer: ReturnType<typeof setTimeout> | null = null
 onMounted(() => {
   _readyTimer = setTimeout(() => {
     if (!mapReady.value) _mapFailed.value = true
-  }, 15000)
+  }, _MAP_READY_TIMEOUT_MS)
 })
 onUnmounted(() => {
   if (_readyTimer) clearTimeout(_readyTimer)
@@ -228,7 +233,7 @@ function retryMap(): void {
   if (_readyTimer) clearTimeout(_readyTimer)
   _readyTimer = setTimeout(() => {
     if (!mapReady.value) _mapFailed.value = true
-  }, 15000)
+  }, _MAP_READY_TIMEOUT_MS)
   amapLoader.ensureInit(getAmapJsKey())
 }
 </script>

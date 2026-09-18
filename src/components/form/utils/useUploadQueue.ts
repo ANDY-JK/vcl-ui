@@ -9,6 +9,9 @@ import { ref, watch, onUnmounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import type { UploadFile } from '../Upload.vue'
 
+/** 没给真实上传接口时，模拟进度条的推进节拍（仅演示路径） */
+const _SIM_PROGRESS_TICK_MS = 300
+
 /** 模块级 t：校验/错误文案随当前语言 */
 const t = useT()
 
@@ -271,7 +274,7 @@ export function useUploadQueue(opts: {
       } else {
         uf.progress = Math.round(p)
       }
-    }, 300)
+    }, _SIM_PROGRESS_TICK_MS)
     timers.push(timer)
   }
 

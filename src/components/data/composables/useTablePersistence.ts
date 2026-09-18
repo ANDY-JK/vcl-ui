@@ -5,6 +5,9 @@ import { watch, computed, type Ref, type ComputedRef, type WatchSource } from 'v
 import type { Column, TableStorage } from './types'
 import { createLocalStorage } from './types'
 
+/** 列宽持久化防抖：拖动过程中不逐次写存储，停下来写一次 */
+const _WIDTH_PERSIST_DEBOUNCE_MS = 200
+
 /** 列结构简单 hash，生成稳定的 auto namespace（页面刷新不丢映射） */
 function _colHash(columns: Column[]): string {
   const s = columns.map((c) => c.key).join('|')
@@ -376,7 +379,7 @@ export function useTablePersistence(
         _widthTimer = setTimeout(() => {
           _widthTimer = null
           persistWidths(widths)
-        }, 200)
+        }, _WIDTH_PERSIST_DEBOUNCE_MS)
       },
       { deep: true },
     )

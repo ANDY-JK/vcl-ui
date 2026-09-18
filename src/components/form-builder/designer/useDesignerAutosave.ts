@@ -13,6 +13,9 @@ import { useT } from '@/components/_internal/i18n'
 import { useDesignerDraft, type DesignerDraft } from './useDesignerDraft'
 import type { DesignerNode, FormMeta } from './types'
 
+/** 恢复草稿后解除「抑制自动保存」的等待：留给 v-model 回写的微任务流水线 */
+const _DRAFT_APPLY_SETTLE_MS = 50
+
 /** 变更后自动保存的防抖间隔（毫秒） */
 const AUTOSAVE_DEBOUNCE = 800
 
@@ -43,7 +46,7 @@ export function useDesignerAutosave(opts: {
       // 等 v-model 回写流水线（微任务）走完再解除抑制
       restoreTimer = setTimeout(() => {
         restoring = false
-      }, 50)
+      }, _DRAFT_APPLY_SETTLE_MS)
     }
   })
 

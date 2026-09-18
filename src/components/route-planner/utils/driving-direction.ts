@@ -12,6 +12,9 @@ export type { DrivingRouteResult } from '@/components/amap'
 import { getDrivingRoute, searchNearby } from '@/components/amap'
 import type { DayPlan, RoutePlan, Accommodation } from '@/components/route-planner/types'
 
+/** 逐天串行请求之间的间隔（毫秒）—— 见 enrichWithDrivingRoutes 里的用途说明 */
+const _REQUEST_QUOTA_GAP_MS = 800
+
 /**
  * 搜索附近住宿
  * @param lat 纬度
@@ -79,9 +82,10 @@ export async function enrichWithDrivingRoutes(
       // 驾车 API 失败，保留已有估算值不覆盖
     }
 
-    // 限速
+    // 请求配额间隔：逐天串行调驾车 API，隔一天发一次，撞上限流就是一整轮白跑。
+    // 与 amap-service 里"失败后退避重试"的 800ms 不是同一件事，只是数值巧合，故各自命名。
     if (i < total - 1) {
-      await new Promise((r) => setTimeout(r, 800))
+      await new Promise((r) => setTimeout(r, _REQUEST_QUOTA_GAP_MS))
     }
   }
 

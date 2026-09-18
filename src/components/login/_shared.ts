@@ -16,3 +16,9 @@ export { useT, useTm } from '@/components/_internal/i18n'
 export { isValidPhone, isValidEmail } from '@/components/_internal/utils'
 // 存储（走 storage 公共出口，非 indexedDB 内部路径）
 export { storageGet, storageSet, storageDelete } from '@/components/storage'
+
+/**
+ * 提交后自动解锁的兜底时长 —— 登录/注册/改密三页是同一件事，抄三遍就会各改各的。
+ * 提交动作交给宿主（emit 后由父组件收尾），这里只保证宿主没回音时按钮最迟这么久恢复可点。
+ */
+export const SUBMIT_UNLOCK_FALLBACK_MS = 15000

@@ -145,7 +145,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
-import { Input, Button, IconSvg, Toast, Divider, useT, useTm, storageGet, storageSet, storageDelete } from './_shared'
+import { Input, Button, IconSvg, Toast, Divider, useT, useTm, storageGet, storageSet, storageDelete, SUBMIT_UNLOCK_FALLBACK_MS } from './_shared'
+
+/** 锁定倒计时的刷新节拍（只做显示，能不能重试按 lockUntil 时间戳判） */
+const _LOCK_TICK_MS = 1000
 
 const t = useT()
 const tm = useTm()
@@ -291,7 +294,7 @@ function startLockCountdown() {
       internalError.value = t('login.lockedCountdown', { time: `${min}:${String(sec).padStart(2, '0')}` })
       errorType.value = 'warning'
     }
-  }, 1000)
+  }, _LOCK_TICK_MS)
 }
 
 onUnmounted(() => {
@@ -345,7 +348,7 @@ const handleSubmit = () => {
   internalLoading.value = true
   window.setTimeout(() => {
     internalLoading.value = false
-  }, 15000)
+  }, SUBMIT_UNLOCK_FALLBACK_MS)
   emit('submit', {
     username: form.username,
     password: form.password,

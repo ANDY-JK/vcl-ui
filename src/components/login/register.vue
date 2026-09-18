@@ -109,7 +109,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { Input, Button, IconSvg, Toast, isValidPhone, isValidEmail, useT } from './_shared'
+import { Input, Button, IconSvg, Toast, isValidPhone, isValidEmail, useT, SUBMIT_UNLOCK_FALLBACK_MS } from './_shared'
 
 const t = useT()
 
@@ -276,7 +276,7 @@ const handleSubmit = () => {
   // 15s 兜底自动解锁（对齐 login.vue 的 internalLoading 模式），
   // 父组件完成后通常用 resetForm / 通知驱动 UI，这里只防重复提交
   _submitting.value = true
-  setTimeout(() => (_submitting.value = false), 15000)
+  setTimeout(() => (_submitting.value = false), SUBMIT_UNLOCK_FALLBACK_MS)
 
   emit('submit', {
     display_name: form.display_name,

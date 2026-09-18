@@ -40,6 +40,9 @@ import { useClickOutside } from '@/components/_internal/useClickOutside'
 /** Lucide 全量图标名（kebab-case），从预构建 JSON 加载，避免运行时 Object.keys + map 1500+ 项 */
 const allIcons = lucideIconNames as string[]
 
+/** 等 rAF 的兜底上限：后台标签页不跑 rAF，超过这个时长就先按当前位置打开 */
+const RAF_FALLBACK_MS = 100
+
 const props = withDefaults(defineProps<Props>(), {
   modelValue: 'star',
   color: 'var(--color-primary)',
@@ -226,7 +229,8 @@ async function toggle(e: MouseEvent) {
   if (localProvider.value === 'morphicons') loadMorphIcons()
   open.value = true
   await nextTick()
-  await Promise.race([new Promise((r) => requestAnimationFrame(r)), new Promise((r) => setTimeout(r, 100))])
+  // rAF 为主、超时兜底：标签页在后台时 rAF 不跑，不能让面板永远等不到定位
+  await Promise.race([new Promise((r) => requestAnimationFrame(r)), new Promise((r) => setTimeout(r, RAF_FALLBACK_MS))])
   updatePosition(e.currentTarget as HTMLElement)
 }
 

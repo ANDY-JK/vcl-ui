@@ -36,6 +36,11 @@ import Card from '@/components/data/Card.vue'
 import Toast from '@/components/feedback/Toast.vue'
 import type { FormSchema, FormData, FormField, FormErrors, RenderSection, FieldContainer } from './types'
 
+/** 草稿自动保存防抖：连续输入只在停下来 1s 后存一次 */
+const _DRAFT_SAVE_DEBOUNCE_MS = 1000
+/** 提交兜底解锁：宿主没接住 submit 时，按钮最迟这么久恢复可点 */
+const _SUBMIT_STUCK_RESET_MS = 3000
+
 const t = useT()
 
 // ══ Props ══
@@ -195,7 +200,7 @@ watch(
       if (saveTimer) clearTimeout(saveTimer)
       saveTimer = setTimeout(() => {
         saveDraft(props.storageKey, formData.value).catch(() => {})
-      }, 1000)
+      }, _DRAFT_SAVE_DEBOUNCE_MS)
     }
 
     // 审核模式自动保存（submitConfig.mode='review' + saveUrl，防抖 reviewAutoSave ms）
@@ -328,7 +333,7 @@ function finishSubmit(): void {
   if (submitTimer) clearTimeout(submitTimer)
   submitTimer = setTimeout(() => {
     submitting.value = false
-  }, 3000)
+  }, _SUBMIT_STUCK_RESET_MS)
 }
 
 let submitTimer: ReturnType<typeof setTimeout> | null = null

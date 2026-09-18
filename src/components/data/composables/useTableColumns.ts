@@ -7,6 +7,11 @@ import type { Column } from './types'
 import { measureColumnWidth, measureDomTextWidth, sortColumnsByOrder } from './utils'
 import { BP_LG } from '@/components/_internal/breakpoints'
 
+/** 拖完列宽后抑制紧随的 click（mouseup 与 click 同帧触发，不抑制会误触排序/筛选） */
+const _RESIZE_CLICK_GUARD_MS = 150
+/** 数据变化后重算自适应列宽的防抖：连续刷新只重排一次 */
+const _AUTOFIT_DEBOUNCE_MS = 200
+
 // 表头图标尺寸常量（与 IconSvg size="sm" 对齐）
 const SORT_ARROW_W = 24 // 排序箭头图标 16 + sort-arrows padding 左右各 4
 const FILTER_ICON_W = 24 // 筛选图标宽
@@ -136,7 +141,7 @@ export function useTableColumns(
     _resizeJustEnded.value = true
     setTimeout(() => {
       _resizeJustEnded.value = false
-    }, 150)
+    }, _RESIZE_CLICK_GUARD_MS)
   }
 
   function startResize(col: Column, e: MouseEvent) {
@@ -365,7 +370,7 @@ export function useTableColumns(
     _dataDebounce = setTimeout(() => {
       _dataDebounce = null
       requestAnimationFrame(() => requestAnimationFrame(applyAutoFit))
-    }, 200)
+    }, _AUTOFIT_DEBOUNCE_MS)
   })
 
   onUnmounted(() => {

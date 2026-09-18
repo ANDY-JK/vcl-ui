@@ -40,6 +40,9 @@ import QRCode from 'qrcode/lib/browser.js'
 import { isLayoutField } from './fieldRegistry'
 import { buildHeaderMap, normalizeRecords, dedupeRecords, readFileToRows } from './importRecords'
 
+/** 成功提示（okMsg）停留时长 —— 三处同一个事实，别各写一份 */
+const _OK_MSG_TTL_MS = 3000
+
 const t = useT()
 
 const toastRef = ref<InstanceType<typeof Toast>>()
@@ -295,7 +298,7 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
   })
   setTimeout(() => {
     okMsg.value = ''
-  }, 3000)
+  }, _OK_MSG_TTL_MS)
 }
 
 // ══ 记录管理 + 搜索筛选 ══
@@ -412,7 +415,7 @@ async function exportExcel(): Promise<void> {
     okMsg.value = t('formBuilder.exportDone')
     setTimeout(() => {
       okMsg.value = ''
-    }, 3000)
+    }, _OK_MSG_TTL_MS)
   } catch (e) {
     errorMsg.value = t('fbd.exportFailMsg', { err: e instanceof Error ? e.message : String(e) })
   } finally {
@@ -518,7 +521,7 @@ async function confirmImport(): Promise<void> {
     okMsg.value = t('fbd.importDone', { n: list.length })
     setTimeout(() => {
       okMsg.value = ''
-    }, 3000)
+    }, _OK_MSG_TTL_MS)
   } catch (e) {
     importError.value = t('fbd.importFailMsg', { err: e instanceof Error ? e.message : String(e) })
   } finally {

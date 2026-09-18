@@ -7,6 +7,9 @@ import { ref, onMounted, onUnmounted, watchEffect, type Ref } from 'vue'
 
 export type FlipDirection = 'down' | 'up' | 'left' | 'right'
 
+/** resize 连发时合并重算的静默窗口：停止改变这么久才重排一次浮层 */
+const RESIZE_COALESCE_MS = 50
+
 /** 定位锚点模式 */
 export type AnchorMode = 'element' | 'pointer'
 
@@ -290,7 +293,8 @@ export function useFloating(options: FloatingOptions = {}) {
   let ro: ResizeObserver | null = null
   function onResize() {
     if (timer) clearTimeout(timer)
-    timer = setTimeout(updatePosition, 50)
+    // resize 是连发事件，合并到停止后一次重算（拖窗口时每帧重排浮层没有意义）
+    timer = setTimeout(updatePosition, RESIZE_COALESCE_MS)
   }
 
   onMounted(() => window.addEventListener('resize', onResize))

@@ -238,6 +238,8 @@ const highlightIdx = ref(-1)
 
 // combobox/select 统一输入文本：已选值由 tag 展示，comboText 只承载"正在输入"的内容
 const comboText = ref('')
+/** blur 后等一等：点选项必先触发输入框 blur，要给选项的 click 留出发时间 */
+const _BLUR_SETTLE_MS = 150
 let blurTimer: ReturnType<typeof setTimeout> | null = null
 
 // 面板打开后聚焦输入框（select/combobox 聚 trigger 输入框可直接输入；tree-select 聚面板搜索框）
@@ -689,7 +691,7 @@ function onComboBlur() {
     if (findExact(text) || props.allowCreate) commitComboValue(text)
     comboText.value = ''
     if (open.value) closePanel()
-  }, 150)
+  }, _BLUR_SETTLE_MS)
 }
 
 function onComboKeydown(e: KeyboardEvent) {

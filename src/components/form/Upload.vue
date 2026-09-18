@@ -20,6 +20,9 @@ import { openSystemCapture, cancelPendingSystemCapture } from '@/components/form
 import { useUploadQueue } from './utils/useUploadQueue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 
+/** 卡片单击的判定窗口：等到这时还没第二击才按「单击预览」处理（双击是选文件） */
+const _CARD_CLICK_DECIDE_MS = 280
+
 export interface UploadFile {
   id: number
   name: string
@@ -261,7 +264,7 @@ function onCardClick() {
     const f = files.value[cardIdx.value]
     if (f?.url) openPreview(f)
     else handlePick()
-  }, 280)
+  }, _CARD_CLICK_DECIDE_MS)
 }
 function onCardDblClick() {
   if (_clickTimer) {

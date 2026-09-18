@@ -56,6 +56,11 @@ import { useTableTooltip } from './composables/useTableTooltip'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
 
+/** 拉选结束后抑制紧随的 click（松手那下不能被当成单击行） */
+const _RANGE_CLICK_GUARD_MS = 200
+/** 单元格图片单击开灯箱的等待：留出双击判定的窗口 */
+const _LIGHTBOX_CLICK_DELAY_MS = 280
+
 // 内部异常兜底 — 单组件出错不导致页面崩溃
 const _internalError = ref<Error | null>(null)
 
@@ -679,10 +684,13 @@ function stopFullscreenBoundsWatch() {
 
 /**
  * 等某容器的宽度停止变化（连续两帧同值即认为过渡跑完）。
- * 用于退出全屏时替代按固定毫秒等待：侧栏动画长短随主题、容器宽度、动效降级设置而变，
+ * 用于进出全屏时替代按固定毫秒等待：侧栏动画长短随主题、容器宽度、动效降级设置而变，
  * 写死的数要么白等要么在动画跑完前就把节点搬走（表现为跳一下）。
- * 只兜一层：标签页在后台时 rAF 不跑，用超时收尾，别让表格回不了原位。
  */
+/** 兜底上限：后台标签页不跑 rAF，超过这个时长就认为已经稳定，不能让流程挂死 */
+const _SETTLE_TIMEOUT_MS = 2000
+/** 选区拖到容器边缘时，自动滚动的步进节拍 */
+const _RANGE_SCROLL_TICK_MS = 50
 function _waitForWidthSettle(el: HTMLElement | null): Promise<void> {
   if (!el || typeof requestAnimationFrame !== 'function') return Promise.resolve()
   return new Promise((resolve) => {
@@ -692,7 +700,7 @@ function _waitForWidthSettle(el: HTMLElement | null): Promise<void> {
       clearTimeout(timer)
       resolve()
     }
-    const timer = setTimeout(done, 2000)
+    const timer = setTimeout(done, _SETTLE_TIMEOUT_MS)
     const step = () => {
       const w = el.getBoundingClientRect().width
       stable = w === last ? stable + 1 : 0
@@ -1212,7 +1220,7 @@ function onRangeMove(e: MouseEvent) {
       _rangeLastX < rect.left + 30 ||
       _rangeLastX > rect.right - 30
     if (nearEdge && !_rangeScrollTimer) {
-      _rangeScrollTimer = setInterval(onRangeAutoScrollTick, 50)
+      _rangeScrollTimer = setInterval(onRangeAutoScrollTick, _RANGE_SCROLL_TICK_MS)
     } else if (!nearEdge && _rangeScrollTimer) {
       stopRangeAutoScroll()
     }
@@ -1274,7 +1282,7 @@ function onRangeUp() {
   _rangeActive = false
   setTimeout(() => {
     _rangeSuppressClick = false
-  }, 200)
+  }, _RANGE_CLICK_GUARD_MS)
 }
 
 // ==================== 填充柄拖拽（Excel 行为：拖选区右下角小方块批量填充） ====================
@@ -1452,7 +1460,7 @@ function onImageClick(_e: MouseEvent, src: string) {
   _lightboxTimer = setTimeout(() => {
     _lightboxSrc.value = src
     _lightboxTimer = null
-  }, 280)
+  }, _LIGHTBOX_CLICK_DELAY_MS)
 }
 function closeLightbox() {
   _lightboxSrc.value = ''

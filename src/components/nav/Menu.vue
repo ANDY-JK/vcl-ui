@@ -5,6 +5,9 @@ import { ref, computed, onBeforeUnmount } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import type { MenuItem } from './types'
 
+/** 悬停切换子菜单的进/出延时：同一手感，两向共用一个值 */
+const _HOVER_SWITCH_MS = 150
+
 export type { MenuItem }
 
 const props = withDefaults(
@@ -48,13 +51,13 @@ function scheduleEnter(key: string | number) {
   clearTimers()
   enterTimer = setTimeout(() => {
     hoverKey.value = key
-  }, 150)
+  }, _HOVER_SWITCH_MS)
 }
 function scheduleLeave() {
   clearTimers()
   leaveTimer = setTimeout(() => {
     hoverKey.value = null
-  }, 150)
+  }, _HOVER_SWITCH_MS)
 }
 function cancelLeave() {
   if (leaveTimer) {

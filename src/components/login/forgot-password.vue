@@ -85,7 +85,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { Input, Button, IconSvg, Toast, useT } from './_shared'
+import { Input, Button, IconSvg, Toast, useT, SUBMIT_UNLOCK_FALLBACK_MS } from './_shared'
 
 const t = useT()
 
@@ -182,7 +182,7 @@ const handleSubmit = () => {
   }
 
   _submitting.value = true
-  setTimeout(() => (_submitting.value = false), 15000)
+  setTimeout(() => (_submitting.value = false), SUBMIT_UNLOCK_FALLBACK_MS)
 
   emit('submit', {
     card_key: form.card_key,

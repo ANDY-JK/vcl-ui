@@ -9,6 +9,9 @@ import { useCaptureFallback } from './utils/useCaptureFallback'
 import CaptureFallbackSheet from './CaptureFallbackSheet.vue'
 import { cancelPendingSystemCapture } from './utils/capture-fallback'
 
+/** play() 后个别内核 metadata 仍未就绪（videoWidth=0），补测一次的间隔 */
+const _METADATA_RETRY_MS = 150
+
 const t = useT()
 
 /** 相机浮层容器（Teleport 到 body 的遮罩内），供焦点陷阱限定范围 */
@@ -310,7 +313,7 @@ function takeShot() {
       if (!props.modelValue || !cameraReady.value) return
       if (video.videoWidth) doShot(video)
       else handleCameraUnavailable(t('form.captureFailed'))
-    }, 150)
+    }, _METADATA_RETRY_MS)
     return
   }
   doShot(video)
