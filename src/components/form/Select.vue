@@ -23,7 +23,8 @@ const t = useT()
  *
  * 支持模式：select | combobox | menu | cascader | tree-select | date | date-range | time
  */
-import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted, useSlots } from 'vue'
+import { useListVirtual } from './utils/useListVirtual'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
 import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
 import IconSvg from '@/components/basic/IconSvg.vue'
@@ -320,8 +321,55 @@ watch(filterKeyword, (val) => {
 
 const filteredOptions = computed(() => matchOptions(_debouncedKeyword.value))
 
+/* ── 下拉窗口化（虚拟化）──────────────────────────────
+   .panel-list 只有 200px 可视高，但过去把 filteredOptions 全量渲染成 <button>，
+   1 万选项就是 1 万个看不见的节点。这里只渲染可视窗口 ± overscan。
+   行高必须一致才能用等系数学：带 desc 或用了 #option 插槽的行更高，
+   那种列表直接不启用（宁可全渲染，也不能滚到后面错行）。 */
+const panelListRef = ref<HTMLElement | null>(null)
+/** 实测出的单行高度；0 = 还没测到，此时不启用 */
+const optRowH = ref(0)
+const _slots = useSlots()
+const uniformOptionRows = computed(
+  () => !_slots.option && !filteredOptions.value.some((opt) => !!opt.desc),
+)
+const optVirtual = useListVirtual({
+  container: () => panelListRef.value,
+  itemCount: () => filteredOptions.value.length,
+  rowHeight: () => (uniformOptionRows.value ? optRowH.value : 0),
+})
+/** 窗口内的切片 —— 保留**绝对下标**，因为 option 的 id 与 aria-activedescendant 都按下标对应 */
+const windowedOptions = computed(() => {
+  const all = filteredOptions.value
+  if (!optVirtual.enabled.value) return all.map((opt, index) => ({ opt, index }))
+  return all.slice(optVirtual.start.value, optVirtual.end.value).map((opt, i) => ({
+    opt,
+    index: optVirtual.start.value + i,
+  }))
+})
+
+/** 面板打开、行渲染出来后测一次行高（有界容器才有 clientHeight 可读） */
+async function measureOptionRow() {
+  await nextTick()
+  const el = panelListRef.value?.querySelector('.panel-item') as HTMLElement | null
+  if (el) {
+    const h = el.offsetHeight
+    if (h > 0) {
+      optRowH.value = h
+      // 顺便把可视高取准，首帧就能算出正确窗口
+      if (panelListRef.value) optVirtual.onScroll({ target: panelListRef.value } as unknown as Event)
+    }
+  }
+}
+
 watch(filteredOptions, () => {
   highlightIdx.value = -1
+  optVirtual.reset()
+})
+
+// 键盘上下键走出窗口时把那一行滚进可视区
+watch(highlightIdx, (i) => {
+  if (i >= 0) optVirtual.scrollToIndex(i)
 })
 
 /* ════════════════════════════════════════
@@ -846,7 +894,10 @@ watch(
 )
 
 watch(open, async (val) => {
-  if (val && isTime.value) {
+  if (!val) return
+  // 面板是 v-if 渲染的，打开之后才有可测的行高与可视高
+  if (!isDate.value && !isDateRange.value && !isTime.value) await measureOptionRow()
+  if (isTime.value) {
     await nextTick()
     timeColumnsRef.value?.scrollToValue()
   }
@@ -1094,14 +1145,20 @@ function onTimeCancel() {
             </div>
 
             <!-- 选项列表 -->
-            <div v-else class="panel-list">
+            <div v-else ref="panelListRef" class="panel-list" @scroll="optVirtual.onScroll">
+              <!-- 上下占位：撑出与全量等高的滚动区域，窗口才能按 scrollTop 换算行号 -->
+              <div
+                v-if="optVirtual.enabled.value"
+                aria-hidden="true"
+                :style="{ height: optVirtual.topPad.value + 'px' }"
+              />
               <button
-                v-for="(opt, idx) in filteredOptions"
-                :id="`${dropdownId}-${idx}`"
+                v-for="{ opt, index } in windowedOptions"
+                :id="`${dropdownId}-${index}`"
                 :key="String(opt.value)"
                 type="button"
                 class="panel-item"
-                :class="{ selected: isSelected(opt), disabled: opt.disabled, highlighted: idx === highlightIdx }"
+                :class="{ selected: isSelected(opt), disabled: opt.disabled, highlighted: index === highlightIdx }"
                 :disabled="opt.disabled"
                 role="option"
                 :aria-selected="isSelected(opt)"
@@ -1116,6 +1173,11 @@ function onTimeCancel() {
                 </slot>
                 <IconSvg v-if="isSelected(opt)" type="circle-check-big" size="sm" color="var(--color-primary)" />
               </button>
+              <div
+                v-if="optVirtual.enabled.value"
+                aria-hidden="true"
+                :style="{ height: optVirtual.bottomPad.value + 'px' }"
+              />
             </div>
           </div>
         </Transition>
