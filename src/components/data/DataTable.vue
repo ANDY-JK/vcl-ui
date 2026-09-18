@@ -538,42 +538,42 @@ const _fullscreenParent = ref<HTMLElement | null>(null)
 const _fullscreenNext = ref<ChildNode | null>(null)
 const _toggleCollapse = props.onToggleSidebar ?? inject<() => void>('toggleCollapse', () => {})
 const _sidebarToggledByUs = ref(false)
-let _fsTimer: ReturnType<typeof setTimeout> | null = null
 let _fsResizeRaf = 0
 let _fsPending = false
+/** 内容区尺寸监听：侧栏收起、父容器变化都不会触发 window resize，
+ *  全屏框过去只在进入那一刻量一次 → 动画没跑完就进场，框会一直偏到下次刷新窗口 */
+let _fsBoundsRo: ResizeObserver | null = null
 const _cleanups: (() => void)[] = []
 
 function toggleFullscreen() {
   if (_isFullscreen.value) {
     _isFullscreen.value = false
   } else if (_fsPending) {
-    // 正在等待进入全屏 → 取消，还原导航
-    if (_fsTimer) {
-      clearTimeout(_fsTimer)
-      _fsTimer = null
-    }
+    // 正在等待进入全屏 → 取消（_fsPending 置回 false 就是取消令牌）
     _fsPending = false
     if (_sidebarToggledByUs.value) {
       _toggleCollapse()
       _sidebarToggledByUs.value = false
     }
   } else {
-    const sidebar = document.querySelector('.sidebar')
-    const needCollapse = sidebar && !sidebar.classList.contains('collapsed')
+    const sidebar = document.querySelector<HTMLElement>('.sidebar')
+    const needCollapse = !!sidebar && !sidebar.classList.contains('collapsed')
     if (needCollapse) {
       _toggleCollapse()
       _sidebarToggledByUs.value = true
     }
     _fsPending = true
-    _fsTimer = setTimeout(
-      () => {
-        _fsTimer = null
-        _fsPending = false
-        _isFullscreen.value = true
-      },
-      needCollapse ? 250 : 0,
-    )
+    // 先让侧栏收起动画跑完再进场，全屏框量的才是最终边界（过去这里等 250ms，见 _waitForWidthSettle）。
+    // 进场后仍有 ResizeObserver 持续纠正，所以这一步只是让入场观感稳定，不再是唯一的一次测量。
+    void _enterFullscreenAfterSettle(needCollapse ? sidebar : null, needCollapse)
   }
+}
+
+async function _enterFullscreenAfterSettle(sidebar: HTMLElement | null, needCollapse: boolean) {
+  if (needCollapse && sidebar) await _waitForWidthSettle(sidebar)
+  if (!_fsPending) return
+  _fsPending = false
+  _isFullscreen.value = true
 }
 function onFullscreenKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && _isFullscreen.value) {
@@ -630,21 +630,51 @@ function onFullscreenBodyClick(e: MouseEvent) {
   if (_screenshotModal.value.visible) return
   _isFullscreen.value = false
 }
-// 全屏时窗口 resize 更新边界（rAF 节流）
-function onFullscreenResize() {
+/** 把全屏框对齐到内容区边界；不在应用外壳里（无 .content-body）时按视口铺满 */
+function applyFullscreenBounds() {
+  const wrap = tableWrapRef.value
+  if (!wrap || !_isFullscreen.value) return
+  const cb = document.querySelector('.content-body')
+  if (cb) {
+    const r = cb.getBoundingClientRect()
+    wrap.style.top = r.top + 'px'
+    wrap.style.left = r.left + 'px'
+    wrap.style.width = r.width + 'px'
+    wrap.style.height = r.height + 'px'
+  } else {
+    wrap.style.top = '0'
+    wrap.style.left = '0'
+    wrap.style.width = '100vw'
+    wrap.style.height = '100vh'
+  }
+}
+
+/** 合并同一帧内的多次触发（窗口 resize 与内容区 RO 在动画期间会连发） */
+function scheduleFullscreenBounds() {
   if (_fsResizeRaf) return
   _fsResizeRaf = requestAnimationFrame(() => {
     _fsResizeRaf = 0
-    if (!_isFullscreen.value || !tableWrapRef.value) return
-    const cb = document.querySelector('.content-body')
-    if (cb) {
-      const r = cb.getBoundingClientRect()
-      tableWrapRef.value.style.top = r.top + 'px'
-      tableWrapRef.value.style.left = r.left + 'px'
-      tableWrapRef.value.style.width = r.width + 'px'
-      tableWrapRef.value.style.height = r.height + 'px'
-    }
+    applyFullscreenBounds()
   })
+}
+
+function onFullscreenResize() {
+  scheduleFullscreenBounds()
+}
+
+/** 盯内容区尺寸：侧栏收起/展开、父容器布局变化都不会触发 window resize，
+ *  过去只监听 resize 等于"量错一次就一直错到下次刷新窗口" */
+function startFullscreenBoundsWatch() {
+  stopFullscreenBoundsWatch()
+  const cb = document.querySelector('.content-body')
+  if (!cb || typeof ResizeObserver === 'undefined') return
+  _fsBoundsRo = new ResizeObserver(scheduleFullscreenBounds)
+  _fsBoundsRo.observe(cb)
+}
+
+function stopFullscreenBoundsWatch() {
+  _fsBoundsRo?.disconnect()
+  _fsBoundsRo = null
 }
 
 /**
@@ -688,30 +718,14 @@ watch(_isFullscreen, async (v) => {
       _fullscreenNext.value = tableWrapRef.value.nextSibling
       document.body.appendChild(tableWrapRef.value)
     }
-    // 动态计算内容区边界，不受滚动影响；无 .content-body 时回退为视口
+    // 动态计算内容区边界，并在整个全屏期间跟着它变（侧栏收起不触发 window resize）
     await nextTick()
-    const cb = document.querySelector('.content-body')
-    if (tableWrapRef.value) {
-      if (cb) {
-        const r = cb.getBoundingClientRect()
-        tableWrapRef.value.style.top = r.top + 'px'
-        tableWrapRef.value.style.left = r.left + 'px'
-        tableWrapRef.value.style.width = r.width + 'px'
-        tableWrapRef.value.style.height = r.height + 'px'
-      } else {
-        tableWrapRef.value.style.top = '0'
-        tableWrapRef.value.style.left = '0'
-        tableWrapRef.value.style.width = '100vw'
-        tableWrapRef.value.style.height = '100vh'
-      }
-    }
+    applyFullscreenBounds()
+    startFullscreenBoundsWatch()
   } else {
-    // 清理 pending 状态
-    if (_fsTimer) {
-      clearTimeout(_fsTimer)
-      _fsTimer = null
-    }
+    // 清理 pending 状态（取消令牌：等待进入全屏的异步流程会因此中止）
     _fsPending = false
+    stopFullscreenBoundsWatch()
     document.removeEventListener('keydown', onFullscreenKeydown, true)
     document.removeEventListener('click', onFullscreenBodyClick, true)
     window.removeEventListener('resize', onFullscreenResize)
@@ -1941,10 +1955,7 @@ onUnmounted(() => {
     document.removeEventListener('keydown', onFullscreenKeydown, true)
     document.removeEventListener('click', onFullscreenBodyClick, true)
     window.removeEventListener('resize', onFullscreenResize)
-    if (_fsTimer) {
-      clearTimeout(_fsTimer)
-      _fsTimer = null
-    }
+    stopFullscreenBoundsWatch()
     _fsPending = false
     if (_fsResizeRaf) {
       cancelAnimationFrame(_fsResizeRaf)
