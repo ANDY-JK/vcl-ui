@@ -338,6 +338,8 @@ onUnmounted(() => {
         v-if="cardPreviewUrl"
         :src="cardPreviewUrl"
         class="card-img"
+        loading="lazy"
+        decoding="async"
         :alt="t('form.previewImage')"
         style="cursor: zoom-in"
         @click.stop="openPreview(files[cardIdx]!)"
@@ -425,7 +427,7 @@ onUnmounted(() => {
             :aria-label="t('form.previewImage')"
             @click="openPreview(f)"
           >
-            <img :src="f.url" alt="" />
+            <img :src="f.url" alt="" loading="lazy" decoding="async" />
           </button>
           <IconSvg v-else type="file" size="md" class="upload-file-icon" />
           <div class="upload-file-info">

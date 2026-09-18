@@ -169,21 +169,60 @@ export function useUploadQueue(opts: {
       newFiles.push(uf)
       files.value.unshift(uf)
 
-      // 异步压缩图片后上传
-      compressImage(f).then((compressed) => {
-        uf.size = compressed.size
-        if (props.customRequest) {
-          realUpload(uf, compressed)
-        } else {
-          simulateUpload(uf)
-        }
-      })
+      // 压缩 + 上传整体过并发闸门（不 await：选完文件要立刻把列表画出来）
+      void gatedUpload(uf, f)
     }
     if (newFiles.length) {
       // 图片文件一律生成 blob 预览地址（此前仅 card 变体生成，列表变体图片没有缩略图/预览入口）
       createPreviews(newFiles, fileList)
       emit('change', files.value)
       syncModel()
+    }
+  }
+
+  /**
+   * 并发闸门 —— 默认同时只跑 MAX_CONCURRENT 个「压缩 + 上传」。
+   * 背景：循环里过去是直接 compressImage(f).then(upload)，一次选整目录（directory 变体
+   * 可以一次给出几百个文件）就是几百路并发：几百次 canvas 解码（移动端会直接 OOM 杀页）、
+   * 几百个 setInterval、几百个 blob URL，同域 6 条连接被塞满后还会触发服务端限流。
+   */
+  const MAX_CONCURRENT = 3
+  let _active = 0
+  const _waiting: Array<() => void> = []
+
+  function acquireSlot(): Promise<void> {
+    if (_active < MAX_CONCURRENT) {
+      _active++
+      return Promise.resolve()
+    }
+    return new Promise<void>((resolve) => {
+      _waiting.push(() => {
+        _active++
+        resolve()
+      })
+    })
+  }
+
+  function releaseSlot() {
+    _active--
+    _waiting.shift()?.()
+  }
+
+  /** 压缩与上传作为一个整体排队：解码没排到队就不该占内存 */
+  async function gatedUpload(uf: UploadFile, file: File) {
+    await acquireSlot()
+    try {
+      const compressed = await compressImage(file)
+      uf.size = compressed.size
+      if (props.customRequest) {
+        // 真实上传：await 住才占着名额
+        await realUpload(uf, compressed)
+      } else {
+        // 演示用的假进度：不占网络，立即让出名额（闸门约束的是压缩与真实请求）
+        simulateUpload(uf)
+      }
+    } finally {
+      releaseSlot()
     }
   }
 

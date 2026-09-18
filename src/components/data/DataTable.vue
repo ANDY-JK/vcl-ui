@@ -2377,6 +2377,8 @@ provideDataTableContext({
                       "
                       :src="cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')"
                       class="cell-image"
+                      loading="lazy"
+                      decoding="async"
                       :style="{ width: (col.imageSize || 40) + 'px', height: (col.imageSize || 40) + 'px' }"
                       @error="onImgError"
                       @click.stop="

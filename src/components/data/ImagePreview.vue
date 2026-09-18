@@ -1042,7 +1042,8 @@ const displayTitle = computed(() => {
             :aria-selected="i === currentIndex"
             @click="goTo(i)"
           >
-            <img :src="item.url" :alt="item.label || $t('imagePreview.imageLabel', { n: i + 1 })" />
+            <!-- 缩略图条是整批原图直挂（主图另有一张大图），不懒加载会一次拉完整册 -->
+            <img :src="item.url" :alt="item.label || $t('imagePreview.imageLabel', { n: i + 1 })" loading="lazy" decoding="async" />
             <span class="ip-thumb-label">{{ item.label || $t('imagePreview.imageLabel', { n: i + 1 }) }}</span>
           </button>
         </div>
