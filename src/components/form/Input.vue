@@ -786,7 +786,7 @@ const floatingRaised = computed(() => {
 .f-input {
   flex: 1;
   min-width: 0;
-  height: var(--ctrl-height, clamp(42px, 7vw, 48px));
+  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
   padding: 0 var(--ctrl-padding-x, clamp(8px, 1.5vw, 12px));
   padding-left: clamp(var(--space-1), 1vw, 8px);
   border: none;
@@ -819,8 +819,8 @@ const floatingRaised = computed(() => {
 /* color 取色：色块 + 色值文本 */
 .f-color {
   flex-shrink: 0;
-  width: var(--ctrl-height, clamp(36px, 5vw, 40px));
-  height: var(--ctrl-height, clamp(36px, 5vw, 40px));
+  width: var(--ctrl-height, clamp(38px, 6vw, 42px));
+  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
   padding: 4px;
   margin-left: clamp(var(--space-1), 1vw, 8px);
   border: none;

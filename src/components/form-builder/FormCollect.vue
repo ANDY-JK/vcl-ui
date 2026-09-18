@@ -16,6 +16,7 @@
  */
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { copyText } from '@/components/_internal/useCopy'
 import { formatDateZh, formatDateTimeZh } from '@/components/form/utils/date-utils'
 import { computePageButtons } from '@/components/form/utils/pagination'
 import FormBuilder from './FormBuilder.vue'
@@ -138,26 +139,6 @@ async function generateQr(): Promise<void> {
   } catch {
     shareQr.value = ''
     shareQrError.value = t('fbd.qrGenFail')
-  }
-}
-
-/** 浏览器剪贴板复制（降级 execCommand） */
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    try {
-      const ta = document.createElement('textarea')
-      ta.value = text
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
-      return true
-    } catch {
-      return false
-    }
   }
 }
 

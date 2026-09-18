@@ -1,0 +1,20 @@
+# 统一换行符：仓库内一律 LF，检出也不转 CRLF。
+# .editorconfig 与 .prettierrc 早已声明 lf，但没有本文件时 git 按各人 core.autocrlf 处理 ——
+# 本机实测 41/312 个源文件是 CRLF，且每次 commit 都刷 "LF will be replaced by CRLF" 警告；
+# 谁跑一次 npm run format 就会把这 41 个文件整文件重写，评审 diff 直接失真。
+# 注：本文件只约束"以后怎么存"，不追溯已存在的 CRLF 文件（那需要一次单独的 bulk 转换）。
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.mp4 binary
+*.wasm binary

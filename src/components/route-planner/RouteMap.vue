@@ -10,7 +10,7 @@ import type { Store, RoutePlan } from '@/components/route-planner/types'
 import { getAmapJsKey, getAmapSecurityCode } from '@/components/amap'
 import { amapLoader } from '@/components/amap/amap-loader'
 import { useT } from '@/components/_internal/i18n'
-import { sanitizeHTML } from '@/components/data/composables/sanitize'
+import { sanitizeHTML } from '@/components/_internal/sanitize'
 
 const t = useT()
 

@@ -41,7 +41,7 @@ import { useTableFilter } from './composables/useTableFilter'
 import { useTableExtras } from './composables/useTableExtras'
 import { useTableEdit } from './composables/useTableEdit'
 import './composables/data-table-global.css'
-import { sanitizeHTML } from './composables/sanitize'
+import { sanitizeHTML } from '../_internal/sanitize'
 import {
   clampFloatingPosition,
   isLayerFresh,

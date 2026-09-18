@@ -3,7 +3,7 @@
 // 写入唯一出口 syncFromDom（input/合成/工具栏命令/粘贴/插入共用），消毒后 emit
 import { computed, ref, watch, type ComputedRef, type Ref } from 'vue'
 import { warnOnce } from '@/components/_internal/warnOnce'
-import { sanitizeHTML } from '@/components/data/composables/sanitize'
+import { sanitizeHTML } from '@/components/_internal/sanitize'
 import { htmlToPlainText } from '../useFormValidator'
 
 /** exec 命令选项：css=true 时产生 style 样式（foreColor/hiliteColor），用完即还原避免污染 b/i 等标签命令 */

@@ -6,8 +6,9 @@
 import { computed, onMounted, onUnmounted, ref, toRef, watch } from 'vue'
 import RichtextToolbar from './RichtextToolbar.vue'
 import { useRichtextEditor, type RichtextExecOptions } from './useRichtext'
-import { sanitizeHTML } from '@/components/data/composables/sanitize'
+import { sanitizeHTML } from '@/components/_internal/sanitize'
 import { useT } from '@/components/_internal/i18n'
+import { useBodyScrollLock } from '@/components/_internal/useBodyScrollLock'
 import type { FormField } from '../types'
 
 type RtPanel = 'color' | 'link' | 'image' | null
@@ -96,14 +97,9 @@ watch(
   { flush: 'post' },
 )
 
-// 全屏滚动锁定；卸载时恢复，防路由切换后 body 残留 overflow:hidden
-// 已知边界：同页多实例时，任一实例退出全屏/卸载都会清掉滚动锁（引用计数未做，多实例同时全屏场景罕见）
-watch(fullscreen, (on) => {
-  document.body.style.overflow = on ? 'hidden' : ''
-})
-onUnmounted(() => {
-  document.body.style.overflow = ''
-})
+// 全屏滚动锁定 —— 用带引用计数的共享实现：富文本全屏之上再开任一弹层（图片面板/确认框），
+// 先关那层就会把 body 的 overflow 一起解掉，背景提前可滚。原自写版本注释里已自认此边界。
+useBodyScrollLock(() => fullscreen.value)
 
 /** 全局 Esc：面板开着先关面板，再退全屏 */
 function onGlobalKeydown(e: KeyboardEvent): void {

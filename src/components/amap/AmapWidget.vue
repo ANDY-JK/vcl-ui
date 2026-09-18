@@ -19,7 +19,7 @@ import { ElAmap } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import { getAmapJsKey, getAmapSecurityCode } from './amap-key'
 import { amapLoader } from './amap-loader'
-import { sanitizeHTML } from '@/components/data/composables/sanitize'
+import { sanitizeHTML } from '@/components/_internal/sanitize'
 import { useT } from '@/components/_internal/i18n'
 import type { MarkerItem } from './types'
 

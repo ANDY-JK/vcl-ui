@@ -101,6 +101,14 @@
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
 
+  /* 键盘焦点环 — 组件要覆写时引这两个值，不要再各写一套 outline/box-shadow */
+  --focus-ring-color: var(--color-primary);
+  --focus-ring: 2px solid var(--focus-ring-color);
+  --focus-ring-offset: 2px;
+
+  /* 原生控件与滚动条配色（亮/暗各自声明） */
+  color-scheme: light;
+
   /* 层级 — 全局 z-index 变量，组件引用变量而非硬编码数字 */
   --z-sticky: 100; /* 表头、工具栏等 sticky */
   --z-overlay: 1500; /* 全屏表格 — 高于弹窗但低于下拉 */
@@ -176,6 +184,9 @@
    3. JS 控制：import { useTheme } from '@/components/_internal/useTheme'
    仅覆写颜色变量，间距/圆角/动效/z-index 继承亮色值 */
 :root[data-theme='dark'] {
+  /* 原生控件/滚动条/焦点环底色跟着转暗 —— 否则暗色下 UA 给的 1px 焦点环是黑的，
+     压在 --color-surface 上实测对比度约 1.3:1，等于没有 */
+  color-scheme: dark;
   /* 主色调 — 保持品牌蓝一致，hover 提亮 */
   --color-primary: #6b8af9;
   --color-primary-hover: #8aa5fb;
@@ -259,6 +270,7 @@
 /* ===== 自动跟随系统暗色（无 data-theme 属性时生效） ===== */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
+    color-scheme: dark;
     /* 主色调 */
     --color-primary: #6b8af9;
     --color-primary-hover: #8aa5fb;
@@ -337,4 +349,30 @@
     --color-warning-rgb: 251, 191, 36;
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
   }
+}
+
+/* ===== 键盘焦点环兜底 =====
+   背景：全库 :focus-visible 只写在 11 个文件里，Button / Menu / Pagination / Tabs / Collapse /
+   IconPicker 等自绘可交互元素一个都没有 —— 键盘用户只能赌 UA 那条 1px 默认框。
+   口径：
+   - 选择器整体包在 :where() 里（特异性 0），任何组件自己的 :focus-visible 规则都能覆盖它；
+   - 排除 input/textarea/select/[role=combobox] 等自带聚焦表现的控件
+     （Input/Select 走 floating-label 的 .focused/.open 类驱动 3px 软晕，再加一圈会双环）；
+   - 只用 :focus-visible，鼠标点击不出现，普通观感零变化。 */
+:where(
+    button,
+    a[href],
+    summary,
+    [role='tab'],
+    [role='treeitem'],
+    [role='option'],
+    [role='menuitem'],
+    [role='checkbox'],
+    [role='radio'],
+    [role='switch'],
+    [role='slider'],
+    [tabindex]:not([tabindex='-1'])
+  ):not(input, textarea, select, [contenteditable='true'], [role='combobox']):focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }

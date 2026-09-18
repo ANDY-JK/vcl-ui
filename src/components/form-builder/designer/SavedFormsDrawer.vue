@@ -7,6 +7,7 @@
  */
 import { inject, ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { copyText } from '@/components/_internal/useCopy'
 import Button from '@/components/basic/Button.vue'
 import Drawer from '@/components/feedback/Drawer.vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
@@ -117,26 +118,6 @@ async function copyShareCode(): Promise<void> {
 async function copyShareLink(): Promise<void> {
   const ok = await copyText(shareLink.value)
   showTip(ok ? t('fbd.shareLinkCopied') : t('fbd.copyFail'), ok ? 'success' : 'error')
-}
-
-/** 浏览器剪贴板复制（降级 execCommand） */
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    try {
-      const ta = document.createElement('textarea')
-      ta.value = text
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
-      return true
-    } catch {
-      return false
-    }
-  }
 }
 
 // ── 审核模式弹窗状态 ──

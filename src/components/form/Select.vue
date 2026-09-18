@@ -1159,7 +1159,7 @@ function onTimeCancel() {
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  height: var(--ctrl-height, clamp(42px, 7vw, 48px));
+  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
   padding: 0 var(--ctrl-padding-x, clamp(8px, 1.5vw, 12px));
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
