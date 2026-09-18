@@ -11,7 +11,7 @@ const t = useT()
  *
  * 核心设计原则：
  * 1. 只用 @click 管开关（不用 @focus），消除 focus+click 双重触发
- * 2. useClickOutside 加 openedAt 时间戳防抖（150ms 内不响应外部点击）
+ * 2. useClickOutside 加 openedAt 时间戳防抖（窗口见 _CLICK_SUPPRESS_MS / _SCROLL_SUPPRESS_MS）
  * 3. 面板用 v-if + Transition（不用 v-show），避免 display:none 时 offsetHeight=0
  * 4. v-if 条件链：先判断模式类型（Date/Time/Tree/Menu），再判断空选项
  * 5. 统一上浮骑缝（floating label）样式
@@ -193,10 +193,23 @@ const {
   maxMatchWidth: isInputable.value,
 })
 
-// useClickOutside：加 openedAt 防抖，面板刚打开 150ms 内不响应外部点击
+/**
+ * 打开后还要吞掉的两类外部事件，各自有各自的成因，所以窗口分开取：
+ * - 外部 click：可输入变体是聚焦即开面板，而这次聚焦往往由一次点按带来，同一次手势随后还会
+ *   派生一个 click 打到 document 捕获层。
+ *   实测（Chromium，带 viewport meta）它距打开只有 0.2ms（鼠标）/ 0.8ms（触屏），
+ *   150ms 已是大余量；再往上加会把用户紧接着的真点击也吞掉（点第二下没反应）。
+ * - 外部 scroll：聚焦会让浏览器把元素滚进可视区，这一下可以拖到几百毫秒，取 300ms。
+ *   不按 pointer:coarse 收窄，是因为带触摸屏的笔记本会报 fine，收窄就把
+ *   「刚打开又被自己那次操作的滚动关掉」这个可见 bug 放回来了。
+ */
+const _CLICK_SUPPRESS_MS = 150
+const _SCROLL_SUPPRESS_MS = 300
+
+// useClickOutside：见上，面板刚打开时不响应这一次手势派生的外部点击
 useClickOutside([triggerRef, floatingRef], () => {
   if (!open.value) return
-  if (Date.now() - openedAt < 150) return
+  if (Date.now() - openedAt < _CLICK_SUPPRESS_MS) return
   closePanel()
 })
 
@@ -205,7 +218,7 @@ function onExternalScroll(e: Event) {
   if (!open.value) return
   const scrollEl = e.target
   if (scrollEl instanceof Node && floatingRef.value?.contains(scrollEl)) return
-  if (Date.now() - openedAt < 300) return
+  if (Date.now() - openedAt < _SCROLL_SUPPRESS_MS) return
   closePanel()
 }
 
