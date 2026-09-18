@@ -47,9 +47,11 @@ function autoInit(): void {
     /* localStorage 不可用，跳过持久化逻辑 */
   }
 }
-autoInit()
-
+/** 首次播报/显式解锁时才挂监听并预热 —— 库不得在 import 期改宿主全局状态
+ *  （原先模块顶层直接 autoInit()：只引一个 Button 也会读 localStorage、挂 pagehide + 3 个
+ *   document 监听，还可能立刻对 speechSynthesis 发一次空播报预热）。 */
 export function unlockVoice(): void {
+  autoInit()
   doWarm()
 }
 
@@ -101,6 +103,8 @@ function onVoicesReady(): void {
 /** 播报文字；rate 0.1~10，pitch 0~2；lang 指定语言（默认 'zh'），'auto' 为自动检测 */
 export function speak(text: string, rate = 1, pitch = 1, lang: VoiceLang = 'zh'): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) return
+  // 播报一旦发生就必须装好 pagehide 停读守卫（SPA 跳转串读是修过的真实缺陷，见文件头 #2）
+  autoInit()
   rate = Math.max(0.1, Math.min(10, rate))
   pitch = Math.max(0, Math.min(2, pitch))
   try {

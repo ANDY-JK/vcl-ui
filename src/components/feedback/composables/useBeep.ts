@@ -35,10 +35,17 @@ function autoInit(): void {
     document.addEventListener(e, unlock, { passive: true, once: true }),
   )
 }
-autoInit()
+
+/** 首次发声时才挂解锁监听 —— 库不得在 import 期改宿主全局状态（只引一个 Button 也会挂 4 个监听） */
+function ensureReady(): void {
+  autoInit()
+  // play() 的调用栈通常正处于用户手势内（点按钮→扫描→提示音），当场试一次解锁，
+  // 免得"首次注册监听、下次手势才生效"导致第一声静默。
+  if (!unlocked) unlock()
+}
 
 export function unlockAudio(): void {
-  unlock()
+  ensureReady()
 }
 
 function play(freqs: number[], type: OscillatorType, vol: number): void {
@@ -46,6 +53,8 @@ function play(freqs: number[], type: OscillatorType, vol: number): void {
   if (typeof vol !== 'number' || vol <= 0) return
   const validTypes: OscillatorType[] = ['sine', 'square', 'sawtooth', 'triangle', 'custom']
   if (!validTypes.includes(type)) return
+
+  ensureReady()
 
   if (ctx?.state === 'closed') {
     ctx = null

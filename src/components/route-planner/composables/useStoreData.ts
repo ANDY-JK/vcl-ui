@@ -3,6 +3,7 @@
  */
 import { ref, computed, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { useDebounceFn } from '@/components/_internal/useDebounce'
 
 /** 模块级 t：错误消息与点位名按当前语言 */
 const t = useT()
@@ -46,8 +47,12 @@ function saveToStorage(stores: Store[]): void {
 /** 单例状态 */
 const stores = ref<Store[]>(loadFromStorage())
 
-/** 持久化 */
-watch(stores, (val) => saveToStorage(val), { deep: true })
+/** 持久化 —— deep watch 会在逐字段编辑时每次都触发，而 saveToStorage 是全量
+ *  JSON.stringify + 同步 setItem（实测 5000 门店：序列化 3.9ms、单键 851KB）。
+ *  300ms 尾部防抖与同库 callApi / DataTable 列宽持久化同口径；代价是最后一次编辑
+ *  有 300ms 落盘窗口，与表格列宽持久化的既有取舍一致。 */
+const { run: scheduleSave } = useDebounceFn(saveToStorage, 300)
+watch(stores, (val) => scheduleSave(val), { deep: true })
 
 export function useStoreData() {
   /** 所有门店 */

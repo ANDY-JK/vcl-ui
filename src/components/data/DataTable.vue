@@ -1758,8 +1758,10 @@ const _onScroll = (e: Event) => {
 
 onMounted(() => {
   _releaseZTop = boostZTop()
-  // virtualScroll 需要表格自身可滚（maxHeight）或全屏态，静默失效对调用方不可见 — 明确提示
-  if (props.virtualScroll && !props.maxHeight) {
+  // virtualScroll 需要表格自身可滚（maxHeight）或全屏态，静默失效对调用方不可见 — 明确提示。
+  // 只在"行数无上限"时提示：带分页时一页就这么几行，本来就不需要虚拟化，
+  // 旧条件（只看 !maxHeight）会让最常见的「分页 + 不设 maxHeight」配置天天在控制台报黄字。
+  if (props.virtualScroll && !props.maxHeight && (!props.pageSize || props.pageSize <= 0)) {
     warnOnce('DataTable', 'virtualScroll 需配合 maxHeight 使用（或进入全屏），当前配置下不会启用虚拟滚动')
   }
   document.addEventListener('click', _onClick, true)

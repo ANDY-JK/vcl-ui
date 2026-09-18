@@ -383,9 +383,17 @@ function removeComboTag(tag: { value: string | number | boolean; label: string }
 /* ════════════════════════════════════════
    选项选择
    ════════════════════════════════════════ */
+/** 已选值集合 —— 归一口径与原先的逐值 String() 比较完全一致，只是把 O(k) 扫描换成 O(1) 查表。
+ *  不这么做的代价（实测）：10k 选项 × 5k 已选时，一次 patch 里 4 处调用 × 10k 选项 × 5k 扫描
+ *  = 1456ms，点开下拉即卡死。非数组值（单选标量）返回 null，由单选分支自行判定。 */
+const selectedValueKeys = computed<Set<string> | null>(() => {
+  const mv = props.modelValue
+  if (!Array.isArray(mv)) return null
+  return new Set((mv as (string | number | boolean)[]).map((v) => String(v)))
+})
+
 function isSelected(opt: Option) {
-  if (props.multiple)
-    return ((props.modelValue || []) as (string | number | boolean)[]).some((v) => String(v) === String(opt.value))
+  if (props.multiple) return selectedValueKeys.value?.has(String(opt.value)) ?? false
   // 单选：未输入时按当前值高亮；输入中按输入内容匹配（便于看到即将提交的项）
   if (!comboText.value) return String(props.modelValue) === String(opt.value)
   return opt.label === comboText.value || String(opt.value) === comboText.value
@@ -506,7 +514,7 @@ const treeDisplayText = computed(() => treeSelectedPaths.value.map((p) => p.map(
 
 function isTreeSelected(flatNode: (typeof visibleTreeNodes.value)[number]): boolean {
   if (!Array.isArray(props.modelValue)) return false
-  return (props.modelValue as (string | number)[]).some((v) => String(v) === String(flatNode.node.value))
+  return selectedValueKeys.value?.has(String(flatNode.node.value)) ?? false
 }
 
 function onTreeNodeClick(flatNode: (typeof visibleTreeNodes.value)[number]) {
