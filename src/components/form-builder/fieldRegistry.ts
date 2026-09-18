@@ -604,6 +604,15 @@ export function getFieldRegistration(type: string): FieldRegistration {
   return REGISTRY[type] ?? REGISTRY.text
 }
 
+/**
+ * 按类型查注册信息，未注册返回 undefined（不回退成 text）。
+ * 给「未注册就不该冒充某个具体类型」的调用方用，如 createField：
+ * 未注册类型的节点名应当是类型名本身，而不是「单行输入」。
+ */
+export function findFieldRegistration(type: string): FieldRegistration | undefined {
+  return REGISTRY[type]
+}
+
 /** 获取字段类型对应的组件分类 */
 export function getComponentCategory(type: string): ComponentCategory {
   return REGISTRY[type]?.category ?? 'input'

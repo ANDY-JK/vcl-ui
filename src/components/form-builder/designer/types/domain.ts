@@ -14,7 +14,7 @@
 import { uuid } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
 import { extractFields } from '../../expression-evaluator'
-import { getFieldMeta, getFieldDefaults } from '../../fieldRegistry'
+import { getFieldMeta, getFieldDefaults, findFieldRegistration } from '../../fieldRegistry'
 
 /** 模块级 t：FIELD_TYPES 派生与节点默认标签按当前语言 */
 const t = useT()
@@ -491,19 +491,21 @@ export function formCollectStorageKey(formId: string): string {
 /** 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） */
 export function createField(type: DesignerNodeType, index: number): DesignerNode {
   const defaults = getFieldDefaults(type)
-  const meta = getFieldTypes().find((m) => m.type === type)
+  // 只查这一条、只翻译这一个名字。过去先 getFieldTypes() 把整张表 40 项 × 80 次 t() 全翻译一遍
+  // 再 find（实测 3.6ms/次），Excel 导入/程序化建表要按字段数线性放大。
+  const reg = findFieldRegistration(type)
   const node: DesignerNode = {
     id: genFieldId(),
     type,
-    label: meta?.label ?? type,
+    label: reg ? t(reg.label) : type,
     ...(defaults as Partial<DesignerNode>),
   }
   // 字段节点自动生成 key
-  if (!meta?.isContainer) {
+  if (!reg?.isContainer) {
     node.key = `field${index}`
   }
   // 容器节点初始化 children
-  if (meta?.isContainer) {
+  if (reg?.isContainer) {
     node.children = []
   }
   return node
