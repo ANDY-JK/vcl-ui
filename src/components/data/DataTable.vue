@@ -827,7 +827,8 @@ const _effectivePagedData = computed(() => {
 const _cardVisibleData = computed(() => _effectivePagedData.value.slice(0, _cardRenderLimit.value))
 function onCardScroll(e: Event) {
   const el = e.target as HTMLElement
-  if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) {
+  // 预取提前量按容器实测高度取「还剩一屏」：写死像素在矮容器里太早补、在高屏容器里太晚补
+  if (el.scrollHeight - el.scrollTop - el.clientHeight < el.clientHeight) {
     _cardRenderLimit.value = Math.min(_effectivePagedData.value.length, _cardRenderLimit.value + _cardBatchSize)
   }
 }

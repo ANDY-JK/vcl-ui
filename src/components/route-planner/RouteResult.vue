@@ -220,7 +220,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
               </div>
               <div class="route-arrow">↓</div>
               <div class="route-stores-brief">
-                <span v-for="s in day.stores" :key="s.id" class="store-chip">
+                <span v-for="s in day.stores" :key="s.id" class="store-chip" :title="s.name">
                   {{ s.name.length > 6 ? s.name.slice(0, 6) + '…' : s.name }}
                 </span>
               </div>

@@ -225,6 +225,11 @@ async function parseAroundResp(resp: Response): Promise<PoiItem[]> {
     .filter((p) => p.latitude !== 0 && p.longitude !== 0)
 }
 
+/** 周边搜索单页条数 —— 高德 v5 place 接口 offset 的上限即 25。
+ *  请求参数和「这一页是否满了、还有下一页」的判定必须是同一个值：两处分开写时一旦改请求数，
+ *  判定就永远不再成立，结果静默停在第一页。 */
+const POI_PAGE_SIZE = 25
+
 /** 搜索一页周边 POI */
 async function searchNearbyPage(
   lat: number,
@@ -234,7 +239,7 @@ async function searchNearbyPage(
   types?: string,
 ): Promise<PoiItem[]> {
   try {
-    const base = `key=${getAmapRestKey()}&location=${lon},${lat}&radius=${radius}&offset=25&page=${page}&extensions=all`
+    const base = `key=${getAmapRestKey()}&location=${lon},${lat}&radius=${radius}&offset=${POI_PAGE_SIZE}&page=${page}&extensions=all`
     const url = types
       ? `https://restapi.amap.com/v5/place/around?${base}&types=${encodeURIComponent(types)}`
       : `https://restapi.amap.com/v5/place/around?${base}`
@@ -273,7 +278,7 @@ export async function searchNearby(lat: number, lon: number, radius: number = 10
 
   const page1 = await fetchDedup(1, types)
   merged.push(...page1)
-  if (page1.length >= 25) {
+  if (page1.length >= POI_PAGE_SIZE) {
     const page2 = await fetchDedup(2, types)
     merged.push(...page2)
   }
@@ -281,7 +286,7 @@ export async function searchNearby(lat: number, lon: number, radius: number = 10
   if (types) {
     const extra = await fetchDedup(1)
     merged.push(...extra)
-    if (extra.length >= 25) {
+    if (extra.length >= POI_PAGE_SIZE) {
       const extra2 = await fetchDedup(2)
       merged.push(...extra2)
     }
