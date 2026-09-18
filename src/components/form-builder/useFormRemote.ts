@@ -12,6 +12,9 @@ import { applyRemoteDefaults } from './useFormSchema'
 import type { FormData, FormField } from './types'
 import type { FormSubmitConfig } from './types'
 
+/** 调用方没配 reviewAutoSave 时的默认防抖：审核中边改边存，连改只发一次请求 */
+const _DEFAULT_AUTOSAVE_DEBOUNCE_MS = 3000
+
 const t = useT()
 
 export function useFormRemote(
@@ -76,7 +79,7 @@ export function useFormRemote(
         if (ver !== autoSaveVersion) return
         showToast(t('formBuilder.autoSaveFail'), 'error', 2500)
       }
-    }, rc.reviewAutoSave ?? 3000)
+    }, rc.reviewAutoSave ?? _DEFAULT_AUTOSAVE_DEBOUNCE_MS)
   }
 
   /**

@@ -25,17 +25,17 @@ const files = walk('src')
 const isSource = (f) => /\.(ts|vue)$/.test(f) && !f.endsWith('.d.ts')
 const isStyle = (f) => /\.(css|scss)$/.test(f)
 
-/** 从 .vue 里按标签切出 script / style 两段，返回 [{lang, lines}]；非 .vue 的 .ts 整份算 script */
+/** 把 .vue 切成 script / template / style 三类块（每块前面补等量空行，保证行号对得上原文件） */
 function splitBlocks(file, text) {
   if (!file.endsWith('.vue')) return [{ kind: 'script', lines: text.split('\n') }]
   const out = []
-  const re = /<(script|style)\b[^>]*>([\s\S]*?)<\/\1>/g
+  const re = /<(script|template|style)\b[^>]*>([\s\S]*?)<\/\1>/g
   let m
   while ((m = re.exec(text))) {
     const before = text.slice(0, m.index)
     // 保留原始行号：把前置内容换成等量空行，报错位置才对得上文件
     const offset = '\n'.repeat((before.match(/\n/g) || []).length)
-    out.push({ kind: m[1] === 'script' ? 'script' : 'style', lines: (offset + m[2]).split('\n') })
+    out.push({ kind: m[1], lines: (offset + m[2]).split('\n') })
   }
   return out
 }
@@ -87,7 +87,7 @@ for (const f of files.filter(isSource)) {
   const text = readFileSync(f, 'utf8')
   const rel = relative('.', f).replaceAll('\\', '/')
   if (rel.endsWith('_internal/breakpoints.ts')) continue // 常量本体就在这儿
-  for (const b of splitBlocks(f, text)) {
+  for (const b of splitBlocks(f, text, [true, true, false])) {
     if (b.kind !== 'script') continue
     const lines = stripComments(b.lines)
     const aliases = new Set()
@@ -148,14 +148,16 @@ console.log(`[3] CSS 未登记断点 ${cssHits.length}（已登记 ${[...allowed
 
 // ---------- [4] 延时位不得写字面量毫秒数 ----------
 /**
- * 取 setTimeout/setInterval 调用的最后一个实参（按括号配对扫描，
- * 不用正则尾匹配 —— 否则 `setTimeout(() => a.foo(1, 2), X)` 会把嵌套调用的 2 误判成延时）。
+ * 取 setTimeout/setInterval 的「延时位」实参（第二个位置参数），按括号配对扫描。
+ * 不用正则尾匹配 —— 那样 `setTimeout(() => a.foo(1, 2), X)` 会把嵌套调用的 2 误判成延时；
+ * 也不取"最后一个实参" —— 那样 `setTimeout(fn, 300, 'x')`（带附加参数）会跳过真正的延时。
  */
 function delayArgOf(text, openIdx) {
   let i = openIdx
   let depth = 1
   let inStr = null
-  let lastComma = -1
+  const args = []
+  let argStart = i
   for (; i < text.length; i++) {
     const c = text[i]
     if (inStr) {
@@ -168,31 +170,45 @@ function delayArgOf(text, openIdx) {
     else if (c === ')' || c === ']' || c === '}') {
       depth--
       if (depth === 0) break
-    } else if (c === ',' && depth === 1) lastComma = i
+    } else if (c === ',' && depth === 1) {
+      args.push(text.slice(argStart, i))
+      argStart = i + 1
+    }
   }
-  if (lastComma < 0) return null // 只有一个参数（无延时）
-  return text.slice(lastComma + 1, i).trim()
+  args.push(text.slice(argStart, i))
+  return args.length >= 2 ? args[1].trim() : null
+}
+
+/**
+ * 延时位是否含数字字面量：把标识符（含成员访问/调用）与字符串剔掉，剩下还有数字就算写死。
+ * 覆盖 `1e3`、`2_000`、`5 * 600`、`12 * 100` 这类"看着不是纯数字其实写死"的写法。
+ */
+function hasNumericLiteral(expr) {
+  const stripped = expr.replace(/[$A-Z_a-z][\w$]*(?:\s*\.\s*[$A-Z_a-z][\w$]*)*/g, '').replace(/['"`][^'"`]*['"`]/g, '')
+  return /\d/.test(stripped)
 }
 
 const delayHits = []
 const relOf = (x) => relative('.', x).replaceAll('\\', '/')
 // 只管 src/components（对外发布的库代码）：demos 里的延时是给读者看的示例值（"模拟 1.5s 网络"），
 // 换成常量反而让示例更难读。
+// 已知覆盖边界：延时位之外的时长（如 Toast 的 duration 默认值）由人判，见 README 规范第 7 条。
 for (const f of files.filter(isSource).filter((x) => relOf(x).startsWith('src/components/'))) {
   const text = readFileSync(f, 'utf8')
   const rel = relOf(f)
   for (const b of splitBlocks(f, text)) {
-    if (b.kind !== 'script') continue
+    if (b.kind === 'style') continue // script 与 template 都算代码块
     const lines = stripComments(b.lines)
     const joined = lines.join('\n')
     const re = /\b(?:window\.)?(?:setTimeout|setInterval)\s*\(/g
     let m
     while ((m = re.exec(joined))) {
       const arg = delayArgOf(joined, re.lastIndex)
-      if (arg === null || !/^\d+(\.\d+)?$/.test(arg)) continue
-      if (arg === '0') continue // 0 = 让出一个任务，不是时长
+      if (arg === null || !hasNumericLiteral(arg)) continue
+      if (/^0$/.test(arg)) continue // 0 = 让出一个任务，不是时长
       const lineNo = joined.slice(0, m.index).split('\n').length
-      delayHits.push(`${rel}:${lineNo} 延时写了字面量 ${arg}ms（改成本文件里有用途说明的 *_MS 常量）`)
+      delayHits.push(`${rel}:${lineNo} 延时写了字面量（${arg.trim()}）—— 改成本文件里有用途说明的 *_MS 常量`)
+      re.lastIndex = m.index + 1
     }
   }
 }

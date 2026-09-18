@@ -212,7 +212,9 @@ export function useTableColumns(
   //         数据加载阶段可能 3-5 次连续重算列宽，导致表格左右抖动。
   // AFTER: 300ms 冷却窗口内多次调用只保留最后一次，大幅减少列宽重算次数。
   let _autoFitTimer: ReturnType<typeof setTimeout> | null = null
-  const AUTO_FIT_COOLDOWN = 300 // ms，可调整
+  /** 冷却窗口：一帧约 16ms，300ms 足够覆盖"一次数据加载里连发的 3~5 个 watch"；
+   *  再长会让拖窗口后的列宽跟随变钝。未实测比较过取值，改前先想清楚这两端。 */
+  const _AUTOFIT_COOLDOWN_MS = 300
 
   function applyAutoFit() {
     if (!props.autoFit) return
@@ -220,7 +222,7 @@ export function useTableColumns(
     // ★ 冷却机制：窗口内重复调用只重置计时器，实际执行最后一次
     if (_autoFitTimer) {
       clearTimeout(_autoFitTimer)
-      _autoFitTimer = setTimeout(applyAutoFitCore, AUTO_FIT_COOLDOWN)
+      _autoFitTimer = setTimeout(applyAutoFitCore, _AUTOFIT_COOLDOWN_MS)
       return
     }
     _autoFitTimer = setTimeout(() => {

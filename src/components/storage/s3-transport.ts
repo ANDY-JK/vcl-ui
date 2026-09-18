@@ -10,6 +10,10 @@
  * - 上传使用 UNSIGNED-PAYLOAD（浏览器无法对 Blob 预算哈希；端点兼容已实测）
  */
 import { useT } from '@/components/_internal/i18n'
+import { REQUEST_TIMEOUT_MS } from './request-timeout'
+
+/** 删除对象失败的线性退避基数：第 i 次重试等 i × 该值。与 supabase-transport 的同名常量结构相同、数值不同（两份都是沿用各自现状，未实测比较过谁更合适） */
+const _DELETE_RETRY_STEP_MS = 200
 
 const t = useT()
 
@@ -43,7 +47,6 @@ export function validateS3Config(cfg: S3Config): string | null {
   return null
 }
 
-const REQUEST_TIMEOUT_MS = 60_000
 /** 列表分页保护上限：对象数远超此值时视为异常场景，避免失控翻页 */
 const MAX_LIST_PAGES = 200
 /** 预签名展示 URL 有效期：24h（跨设备打开页面即重新签名，无需更长） */
@@ -240,7 +243,7 @@ export class S3Transport {
         return
       } catch (e) {
         if (i === attempts) throw e
-        await new Promise((r) => setTimeout(r, 200 * i))
+        await new Promise((r) => setTimeout(r, _DELETE_RETRY_STEP_MS * i))
       }
     }
   }

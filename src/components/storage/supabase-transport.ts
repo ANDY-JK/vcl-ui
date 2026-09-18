@@ -14,6 +14,10 @@
  */
 
 import { useT } from '@/components/_internal/i18n'
+import { REQUEST_TIMEOUT_MS } from './request-timeout'
+
+/** 删除对象失败的线性退避基数：第 i 次重试等 i × 该值。与 s3-transport 的同名常量结构相同、数值不同（两份都是沿用各自现状，未实测比较过谁更合适） */
+const _DELETE_RETRY_STEP_MS = 500
 
 /** 模块级 t：用户可见错误消息按当前语言 */
 const t = useT()
@@ -25,7 +29,7 @@ export interface SupabaseConfig {
 }
 
 /** 云端请求超时（毫秒），大图上传也不应无限等待 */
-export const REQUEST_TIMEOUT_MS = 60_000
+export { REQUEST_TIMEOUT_MS } from './request-timeout'
 
 export function validateSupabaseConfig(cfg: SupabaseConfig): string | null {
   if (!cfg || !cfg.url.trim()) return t('storage.supabaseUrlRequired')
@@ -177,7 +181,7 @@ export class SupabaseTransport {
         return
       } catch (e) {
         if (i === attempts) throw e
-        await new Promise((r) => setTimeout(r, 500 * i))
+        await new Promise((r) => setTimeout(r, _DELETE_RETRY_STEP_MS * i))
       }
     }
   }

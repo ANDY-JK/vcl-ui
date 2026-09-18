@@ -76,6 +76,15 @@ export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityC
 // ════════════════════════════════════════
 
 /** 单次请求超时：高德 REST 正常几百 ms 内返回，15s 还没回来就是网络/服务端问题，别再占着批次 */
+/** 地理编码可信半径（米）：解析结果离原坐标超过这个距离就认为漂到了别处，改用地址口径重试。
+ *  取值来自"同城同地址的定位误差"经验量级，未实测分布 —— 调小会增多重试请求。 */
+const _GEOCODE_ACCEPT_RADIUS_M = 700
+
+/** 按名称补查照片的单轮上限：一次 Promise.allSettled 最多并发这么多请求。
+ *  ⚠️ 超出部分本轮不查，即第 11 家起会静默没有照片 —— 需要全量时应当分块遍历而非放大此值，
+ *  放大它会直接把高德 QPS 打满。 */
+const _NAME_SEARCH_BATCH_MAX = 10
+
 const _FETCH_TIMEOUT_MS = 15000
 /** 失败后的退避重试间隔：消掉一次网络抖动，避免批量解析把失败项永久标成 none */
 const _RETRY_BACKOFF_MS = 800
@@ -387,7 +396,7 @@ export async function batchFetchPoiPhotos(
       if (!p.id) return true
       return !idPhotoMap.has(p.id)
     })
-    .slice(0, 10)
+    .slice(0, _NAME_SEARCH_BATCH_MAX)
 
   if (needNameSearch.length > 0) {
     const nameResponses = await Promise.allSettled(
@@ -525,7 +534,7 @@ export async function geocodeCalc(params: {
     const distance = calcDistance(latitude, longitude, targetLat, targetLon)
     validResults.push({ latitude, longitude, distance, query })
 
-    if (distance > 700) {
+    if (distance > _GEOCODE_ACCEPT_RADIUS_M) {
       if (retryType === 'none') return performQuery(address, 'address')
       if (retryType === 'address') return performQuery(`${address} ${storeName}`, 'address_store')
     }
