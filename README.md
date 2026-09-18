@@ -22,18 +22,18 @@ npm install vcl-ui
 
 **peer 依赖**（按需安装）：
 
-| 包 | 版本 | 说明 |
-|----|------|------|
-| `vue` | `^3.4.0` | 必需。3.4 / 3.5 均可 |
-| `echarts` | `^5.0.0 \|\| ^6.0.0` | 可选 — 仅使用 `chart` 域时需要 |
-| `vue-router` | `^4.3.0` | 可选 — 仅使用 `layout` / `login` / `route-planner` 域时需要 |
+| 包           | 版本                 | 说明                                                        |
+| ------------ | -------------------- | ----------------------------------------------------------- |
+| `vue`        | `^3.4.0`             | 必需。3.4 / 3.5 均可                                        |
+| `echarts`    | `^5.0.0 \|\| ^6.0.0` | 可选 — 仅使用 `chart` 域时需要                              |
+| `vue-router` | `^4.3.0`             | 可选 — 仅使用 `layout` / `login` / `route-planner` 域时需要 |
 
 > 词汇说明：**peer 依赖**（专业词）= 不由本库自带、需要你的项目自己装的那类依赖；**可选** = 用不到对应功能就不用装。
 
 **⚠ 必须引入样式**：组件样式打包成独立 CSS 文件，不会自动注入。不引这一句，页面上所有组件都是没样式的裸元素。
 
 ```ts
-import 'vcl-ui/css'   // ← 一次性引入，放在 main.ts 里
+import 'vcl-ui/css' // ← 一次性引入，放在 main.ts 里
 ```
 
 ## 🚀 快速上手
@@ -45,11 +45,11 @@ import 'vcl-ui/css'   // ← 一次性引入，放在 main.ts 里
 import { createApp } from 'vue'
 import App from './App.vue'
 import { i18n, setLocale } from 'vcl-ui'
-import 'vcl-ui/css'             // 样式：必须引入
+import 'vcl-ui/css' // 样式：必须引入
 
 const app = createApp(App)
-app.use(i18n)          // 注册国际化
-setLocale('zh-CN')     // 可选，默认中文
+app.use(i18n) // 注册国际化
+setLocale('zh-CN') // 可选，默认中文
 
 app.mount('#app')
 ```
@@ -57,7 +57,7 @@ app.mount('#app')
 ### 按需引入
 
 ```ts
-import 'vcl-ui/css'                                 // 样式：必须引入（一次即可）
+import 'vcl-ui/css' // 样式：必须引入（一次即可）
 import { Button, Input, DataTable } from 'vcl-ui'
 // 或按域引入
 import { Button } from 'vcl-ui/basic'
@@ -83,20 +83,20 @@ const handleClick = () => console.log('clicked')
 
 ## 🧩 组件域总览
 
-| 域 | 主要组件 | 说明 |
-|----|---------|------|
-| `basic` | Button / IconSvg / Tag | 基础组件 |
-| `data` | DataTable / Tree / Collapse / Image / ProgressBar / Skeleton … | 数据展示 |
-| `form` | Input / Select / Group / IconPicker / Upload / CameraCapture | 表单控件 |
-| `feedback` | Toast / Loading / Popover / Drawer / ConfirmModal / ErrorBoundary … | 反馈 |
-| `nav` | Tabs / Steps / Pagination / Breadcrumb / Menu | 导航 |
-| `layout` | AppLayout / ModalBox / Flex / AccordionNav | 布局 |
-| `chart` | Chart / BaseChart / ChartTable / ChartLegend（20+ 图表类型） | 图表 |
-| `login` | LoginPage / RegisterPage / ForgotPasswordPage / PortalLogin | 登录 |
-| `storage` | storage\*（localStorage）/ db\*（IndexedDB）/ createBackend | 存储 |
-| `amap` | AmapWidget + setAmapKey 等工具 | 高德地图 |
-| `route-planner` | RouteMap / RouteResult / StorePanel … | 路线规划 |
-| `form-builder` | FormDesigner / FormBuilder / FormCollect / FormRenderer | 低代码表单 |
+| 域              | 主要组件                                                            | 说明       |
+| --------------- | ------------------------------------------------------------------- | ---------- |
+| `basic`         | Button / IconSvg / Tag                                              | 基础组件   |
+| `data`          | DataTable / Tree / Collapse / Image / ProgressBar / Skeleton …      | 数据展示   |
+| `form`          | Input / Select / Group / IconPicker / Upload / CameraCapture        | 表单控件   |
+| `feedback`      | Toast / Loading / Popover / Drawer / ConfirmModal / ErrorBoundary … | 反馈       |
+| `nav`           | Tabs / Steps / Pagination / Breadcrumb / Menu                       | 导航       |
+| `layout`        | AppLayout / ModalBox / Flex / AccordionNav                          | 布局       |
+| `chart`         | Chart / BaseChart / ChartTable / ChartLegend（20+ 图表类型）        | 图表       |
+| `login`         | LoginPage / RegisterPage / ForgotPasswordPage / PortalLogin         | 登录       |
+| `storage`       | storage\*（localStorage）/ db\*（IndexedDB）/ createBackend         | 存储       |
+| `amap`          | AmapWidget + setAmapKey 等工具                                      | 高德地图   |
+| `route-planner` | RouteMap / RouteResult / StorePanel …                               | 路线规划   |
+| `form-builder`  | FormDesigner / FormBuilder / FormCollect / FormRenderer             | 低代码表单 |
 
 > 组件用法与可运行示例都在 demo 站点里：`npm run dev` 后打开 http://localhost:3721 ，每个组件一页，含 Props 表与交互示例。
 
@@ -105,8 +105,8 @@ const handleClick = () => console.log('clicked')
 ```ts
 import { setLocale } from 'vcl-ui'
 
-setLocale('en-US')   // 切换到英文
-setLocale('zh-CN')   // 切换到中文
+setLocale('en-US') // 切换到英文
+setLocale('zh-CN') // 切换到中文
 ```
 
 内置语言包按域组织，可通过 `useT()` / `useTm()` 在自定义组件中复用：
@@ -114,7 +114,7 @@ setLocale('zh-CN')   // 切换到中文
 ```ts
 import { useT } from 'vcl-ui'
 const t = useT()
-t('common.confirm')   // → '确认' / 'Confirm'
+t('common.confirm') // → '确认' / 'Confirm'
 ```
 
 ## 🧱 Web Components（跨框架）
@@ -122,7 +122,7 @@ t('common.confirm')   // → '确认' / 'Confirm'
 ```ts
 import { registerWebComponents } from 'vcl-ui/wc'
 
-registerWebComponents()   // 注册全部支持的标签，如 <vc-button>、<vc-input>
+registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-input>
 ```
 
 ```html
@@ -138,7 +138,8 @@ registerWebComponents()   // 注册全部支持的标签，如 <vc-button>、<vc
 
 - **用法示例**：`src/demos/` — 每个组件一页 demo，`npm run dev` 直接看效果与 Props
 - **API 入口**：`src/components/index.ts` — 全部导出与类型，IDE 里可直接跳转
-- **质量门禁**：`npm run quality-check` — 类型检查 + lint + 单测（含覆盖率地板）+ 构建 + **发包自检** + 真实浏览器 e2e
+- **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 单测（含覆盖率地板）+ 构建 + **发包自检** + 真实浏览器 e2e
+- **常量来源自检**：`npm run check:constants` — 断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
 
@@ -152,6 +153,17 @@ npm run lint        # ESLint
 npm run test:unit   # 单元测试 + 覆盖率
 npm run build       # 构建产物到 dist/
 ```
+
+## 📐 开发规范（改代码前先看）
+
+### 常量与断点
+
+1. **数值常量只有两个合法来源**：实测度量（`getBoundingClientRect`、行高、可视区高度这类真实量出来的数）或已声明的设计令牌。不接受"看着合理"的字面量。
+2. **视口断点单源**：CSS 用 `tokens.css` 的 `--bp-sm/md/lg`；JS/TS 引 `src/components/_internal/breakpoints.ts` 的 `BP_SM/BP_MD/BP_LG`。两处必须同值，`check:constants` 会卡。
+3. **CSS `@media` 走登记制**：`@media` 里不能用 `var()`，所以宽度值必须出现在 `scripts/check-constants.mjs` 的登记集合里并注明用途。加新断点前先确认既有断点不能复用。
+4. **上限/阈值默认自适应**：容量类上限按真实度量动态算（上传并发取同源连接数的一半、虚拟化只在"窗口行数确实小于总行数"时启用），同时给调用方留覆写口（`maxConcurrent`、`pageVirtualMin`、`cardBreakpoint`）。
+5. **同一哨兵值不抄两份**：跨文件复用的判定值收进共享常量或共享函数（如列拖拽顺序排序 `sortColumnsByOrder`），改一处全库生效。
+6. **静默截断要能被发现**：按长度截断/省略的地方必须留下完整值（`title`、`aria-label`、导出原文），不能让用户只看到被裁掉的那截。
 
 ## 🚀 发版（维护者）
 

@@ -6,7 +6,7 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
-import { markLayerOpen, matchPinyin, colTitle } from './composables/utils'
+import { markLayerOpen, matchPinyin, colTitle, sortColumnsByOrder } from './composables/utils'
 import { injectDataTableContext } from './composables/context'
 import type { Column } from './composables/types'
 
@@ -38,10 +38,7 @@ const _colSettingsStyle = ref<Record<string, string>>({})
 const colSettingsRef = ref<HTMLElement | null>(null)
 const _colSettingsWidth = 380
 /** 面板列列表：全部列（含隐藏列），按当前拖拽顺序 */
-const _settingsColumns = computed(() => {
-  const orderMap = new Map(_columnOrder.value.map((k, i) => [k, i]))
-  return [...props.columns].sort((a, b) => (orderMap.get(a.key) ?? 999) - (orderMap.get(b.key) ?? 999))
-})
+const _settingsColumns = computed(() => sortColumnsByOrder(props.columns, _columnOrder.value))
 /** 列名搜索关键词 */
 const colKeyword = ref('')
 /** 过滤后的列列表（保留全量索引，固定/顺序判断不受过滤影响） */

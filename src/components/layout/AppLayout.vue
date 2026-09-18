@@ -14,6 +14,7 @@ import AccordionNav from './AccordionNav.vue'
 import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
 import { getPrevNext, getCategory, navLabel, type NavNode } from './utils/navData'
 import { useThrottleFn } from '@/components/_internal/useDebounce'
+import { BP_MD, BP_LG } from '@/components/_internal/breakpoints'
 
 const props = withDefaults(
   defineProps<{
@@ -44,11 +45,11 @@ provide('toggleCollapse', toggleCollapse)
 function checkScreen() {
   const w = window.innerWidth
   const wasMobile = isMobile.value
-  isMobile.value = w < 768
+  isMobile.value = w < BP_MD
   if (isMobile.value) sidebarCollapsed.value = false
-  if (w >= 1024) {
+  if (w >= BP_LG) {
     sidebarCollapsed.value = false
-  } else if (!wasMobile && w >= 768 && w < 1024) {
+  } else if (!wasMobile && w >= BP_MD && w < BP_LG) {
     sidebarCollapsed.value = true
   }
   if (!isMobile.value) sidebarOpen.value = false

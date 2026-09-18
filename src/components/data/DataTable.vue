@@ -41,6 +41,7 @@ import { useTableExtras } from './composables/useTableExtras'
 import { useTableEdit } from './composables/useTableEdit'
 import './composables/data-table-global.css'
 import { sanitizeHTML } from '../_internal/sanitize'
+import { BP_MD } from '@/components/_internal/breakpoints'
 import {
   clampFloatingPosition,
   isLayerFresh,
@@ -174,7 +175,7 @@ const props = withDefaults(
     excelExportable: false,
     pageSize: 0,
     currentPage: 1,
-    cardBreakpoint: 768,
+    cardBreakpoint: BP_MD,
     maxHeight: '',
     autoHeight: true,
     virtualScroll: true,

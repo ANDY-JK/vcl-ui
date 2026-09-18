@@ -26,9 +26,13 @@ jobs:
       - name: Lint
         run: npx eslint src --quiet
 
+      # 常量来源自检：断点令牌与 JS 常量同值、JS 不写字面量断点、@media 宽度已登记
+      - name: Check constants
+        run: npm run check:constants
+
       # 测试用例不入仓库（只留开发本机），所以 CI 上没有可跑的用例：
       # vitest 找不到测试文件会直接 exit 1，playwright 会报 No tests found。
-      # 本地门禁仍然完整：npm run quality-check（类型 + lint + 单测/覆盖率 + 构建 + 发包自检 + e2e）。
+      # 本地门禁仍然完整：npm run quality-check（类型 + lint + 常量自检 + 单测/覆盖率 + 构建 + 发包自检 + e2e）。
 
       - name: Build
         run: npm run build

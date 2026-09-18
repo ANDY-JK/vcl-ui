@@ -60,6 +60,10 @@ jobs:
       - name: Lint
         run: npx eslint src --quiet
 
+      # 常量来源自检（断点单源一致 / 无字面量断点 / @media 登记）
+      - name: Check constants
+        run: npm run check:constants
+
       # 用金丝雀值重建一次，证明构建期 env 不会烧进产物；随后清掉，正式构建不带任何 env 值
       - name: Verify env values are not inlined into dist
         env:

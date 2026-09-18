@@ -97,6 +97,18 @@ export function optColor(col: Column, val: string): string {
   return opt && typeof opt === 'object' && opt.color ? opt.color : 'inherit'
 }
 
+/** 不在拖拽顺序表里的列排到最后 —— 用最大安全整数，列数超过 999 也不会把未排序列挤到已排序列前面 */
+const UNRANKED_COL_RANK = Number.MAX_SAFE_INTEGER
+
+/**
+ * 按拖拽顺序重排列（主表可见列与列设置面板全量列共用一份口径）。
+ * 未登记的列同权重，靠 sort 的稳定性保持原始顺序。
+ */
+export function sortColumnsByOrder<T extends { key: string }>(columns: readonly T[], order: readonly string[]): T[] {
+  const rank = new Map(order.map((k, i) => [k, i]))
+  return [...columns].sort((a, b) => (rank.get(a.key) ?? UNRANKED_COL_RANK) - (rank.get(b.key) ?? UNRANKED_COL_RANK))
+}
+
 /** 默认图片域名白名单（调用方未传 imageDomains 时使用） */
 const _defaultImageDomains = [
   'pravatar.cc',

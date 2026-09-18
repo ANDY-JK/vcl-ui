@@ -4,7 +4,8 @@
 // ==================== 列管理（显隐 / 拖拽 / 固定偏移 / 自动列宽） ====================
 import { ref, computed, watch, nextTick, onUnmounted, type ComputedRef, type Ref } from 'vue'
 import type { Column } from './types'
-import { measureColumnWidth, measureDomTextWidth } from './utils'
+import { measureColumnWidth, measureDomTextWidth, sortColumnsByOrder } from './utils'
+import { BP_LG } from '@/components/_internal/breakpoints'
 
 // 表头图标尺寸常量（与 IconSvg size="sm" 对齐）
 const SORT_ARROW_W = 24 // 排序箭头图标 16 + sort-arrows padding 左右各 4
@@ -373,7 +374,8 @@ export function useTableColumns(
   })
 
   // --- 移动端卡片视图 ---
-  const _windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+  // 无 window（SSR/预渲染）时按最宽档处理：服务端不该渲染出卡片视图，水合后 resize 监听会纠正
+  const _windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : BP_LG)
 
   const isCardView = computed(() => {
     if (!props.cardBreakpoint || props.cardBreakpoint <= 0) return false
@@ -444,10 +446,7 @@ export function useTableColumns(
   }
 
   // 按拖拽顺序重排可见列
-  const displayColumns = computed(() => {
-    const orderMap = new Map(_columnOrder.value.map((k, i) => [k, i]))
-    return [...visibleColumns.value].sort((a, b) => (orderMap.get(a.key) ?? 999) - (orderMap.get(b.key) ?? 999))
-  })
+  const displayColumns = computed(() => sortColumnsByOrder(visibleColumns.value, _columnOrder.value))
 
   return {
     hiddenColumns,
