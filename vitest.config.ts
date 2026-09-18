@@ -13,6 +13,10 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    // 单条用例上限 20s —— 默认 5s 在「带覆盖率插桩 + 全库并行」下会误伤大数据挂载用例：
+    // 实测 1000~2000 行的 DataTable 挂载单条 2~4s，并行时越过 5s 判失败（不放开就是偶发红），
+    // 而真挂死的用例照样会在 20s 处报错，探测能力没丢。
+    testTimeout: 20_000,
     // 全局 setup：静默测试环境噪音（composable 组件外调用的生命周期 warn 等）
     setupFiles: ['tests/unit/setup.ts'],
     // 只收集 tests/unit 下的 vitest 用例，tests/*.spec.mjs 为 Playwright 套件，保持独立
