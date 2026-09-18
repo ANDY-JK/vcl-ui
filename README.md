@@ -117,6 +117,10 @@ const t = useT()
 t('common.confirm') // → '确认' / 'Confirm'
 ```
 
+**新增文案键必须同时写进 `zh-CN` 与 `en-US` 的对应分块**（`src/components/_internal/locales/chunks/`）。
+只补一边时运行时会回退成显示键名本身，类型检查和单测都发现不了，只有切到那门语言的用户看得到 ——
+`npm run check:i18n` 逐分块比对键集，已接进 `quality-check` 与 CI。
+
 ## 🧱 Web Components（跨框架）
 
 ```ts
@@ -138,8 +142,9 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 
 - **用法示例**：`src/demos/` — 每个组件一页 demo，`npm run dev` 直接看效果与 Props
 - **API 入口**：`src/components/index.ts` — 全部导出与类型，IDE 里可直接跳转
-- **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 单测（含覆盖率地板）+ 构建 + **发包自检** + 真实浏览器 e2e
+- **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 语言包对账 + 单测（含覆盖率地板）+ 构建 + **发包自检** + 真实浏览器 e2e
 - **常量来源自检**：`npm run check:constants` — 四项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量
+- **语言包对账**：`npm run check:i18n` — zh-CN / en-US 分块与键集一一对应，缺哪边点哪个键
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
 

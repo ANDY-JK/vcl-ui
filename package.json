@@ -22,7 +22,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run --coverage",
-    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run test:unit && npm run build && npm run verify:pkg && npm run test:e2e",
+    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:i18n && npm run test:unit && npm run build && npm run verify:pkg && npm run test:e2e",
     "prepare": "husky",
     "report:audit": "npm audit --registry=https://registry.npmjs.org",
     "scan:deps": "depcheck",
@@ -30,7 +30,8 @@
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed",
     "test:e2e:ui": "npx playwright test --ui",
-    "check:constants": "node scripts/check-constants.mjs"
+    "check:constants": "node scripts/check-constants.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",
