@@ -107,6 +107,7 @@ export default {
     noFileExport: '没有已上传的文件可导出（汇总表仍已包含）',
     exported: '已导出',
     noMatch: '无匹配目标',
+    fieldsMore: '表格只放得下前几列，另有 {n} 个字段未显示（导出的汇总表包含全部字段）',
     clearTitle: '确认清空',
     clearMessage: '将删除全部 {n} 个目标的上传记录（本地与云端），不可恢复。确定清空？',
     targetId: '目标ID',

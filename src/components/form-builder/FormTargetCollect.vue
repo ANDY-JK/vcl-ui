@@ -94,6 +94,32 @@ const displayKeys = computed<string[]>(() => {
     .slice(0, 3)
 })
 
+/**
+ * 导出用全量字段：表格为了排得下只展示前几列，导出不能跟着一起少 —— 少掉的那几列就是丢数据。
+ * 取所有目标键的并集（不同目标的字段可能不一样），按首次出现的顺序排。
+ */
+const exportKeys = computed<string[]>(() => {
+  const out: string[] = []
+  const seen = new Set(['id'])
+  for (const s of props.targets) {
+    for (const k of Object.keys(s)) {
+      if (seen.has(k)) continue
+      seen.add(k)
+      out.push(k)
+    }
+  }
+  return out
+})
+
+/** 没进表格的字段数 —— 用来在表头上方明说，别让人以为目标只有这几列 */
+const hiddenFieldCount = computed(() => Math.max(0, exportKeys.value.length - displayKeys.value.length))
+
+/** 单元格/导出值：嵌套对象序列化成 JSON，导出里既不丢列也不留 [object Object] */
+function cellText(v: unknown): string {
+  if (v === null || v === undefined) return ''
+  return typeof v === 'object' ? JSON.stringify(v) : String(v)
+}
+
 // ════════════════════════════════════════
 // 存储
 // ════════════════════════════════════════
@@ -388,7 +414,7 @@ async function buildZipAndDownload(): Promise<void> {
   const rows = props.targets.map((s) => {
     const up = uploadMap.get(s.id)
     const row: Record<string, string | number> = { [t('fbTarget.targetId')]: s.id }
-    for (const k of displayKeys.value) row[String(k)] = String(s[k] ?? '')
+    for (const k of exportKeys.value) row[String(k)] = cellText(s[k])
     for (const f of slotFields.value) {
       row[f.label] = getSlotFile(up, f.key) ? t('fbTarget.uploaded') : t('fbTarget.notUploaded')
     }
@@ -450,6 +476,10 @@ onMounted(async () => {
       @cancel="showStoragePanel = false"
     />
 
+    <!-- 表格里只放得下前几列，先说清"还有多少列没显示、导出是全的"，别让人以为目标只有这几列 -->
+    <p v-if="hiddenFieldCount" class="ftc-fields-more">
+      {{ t('fbTarget.fieldsMore', { n: hiddenFieldCount }) }}
+    </p>
     <!-- 目标表格 -->
     <div class="ftc-table-wrap">
       <table class="ftc-table">
@@ -464,7 +494,7 @@ onMounted(async () => {
         <tbody>
           <tr v-for="s in filteredTargets" :key="s.id" class="ftc-row">
             <td class="ftc-td-id">{{ s.id }}</td>
-            <td v-for="k in displayKeys" :key="k" class="ftc-td-val">{{ s[k] }}</td>
+            <td v-for="k in displayKeys" :key="k" class="ftc-td-val" :title="cellText(s[k])">{{ cellText(s[k]) }}</td>
             <td v-for="f in slotFields" :key="f.key" class="ftc-td-upload">
               <Upload
                 variant="card"
@@ -547,6 +577,11 @@ onMounted(async () => {
 .ftc-stat.done {
   background: var(--color-success-bg);
   color: var(--color-success-text);
+}
+.ftc-fields-more {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 .ftc-table-wrap {
   overflow-x: auto;
