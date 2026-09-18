@@ -16,6 +16,11 @@ import { uuid } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
 import { envValue } from '@/components/_internal/env-guard'
 import { SupabaseKVAdapter, validateSupabaseConfig, type SupabaseConfig } from '@/components/storage/supabase-transport'
+/**
+ * 收集记录条数上限（本地与云端同一口径）：收集型表单长跑会无限累积撑爆存储配额，
+ * 超限淘汰最旧记录 —— 配额满的表现是"新记录永远写不进去"，比丢旧记录更糟。
+ */
+const MAX_RECORDS = 500
 
 /** 模块级 t：纯 .ts 文件，各函数直接用 */
 const t = useT()
@@ -176,9 +181,6 @@ export function createLocalFormStore(): FormStore {
     async appendRecord(storageKey, record) {
       const list = await this.loadRecords(storageKey)
       list.unshift(record)
-      // 数量上限：收集型表单长跑会无限累积撑爆 localStorage 配额，
-      // 超限淘汰最旧记录（配额满的表现是"新记录永远写不进去"，比丢旧记录更糟）
-      const MAX_RECORDS = 500
       write(storageKey, list.length > MAX_RECORDS ? list.slice(0, MAX_RECORDS) : list)
     },
 
@@ -211,9 +213,6 @@ export function createLocalFormStore(): FormStore {
 /** 云端对象键：表单索引 / 单表单设计 / 收集记录（键均为 ASCII，无需额外清洗） */
 const CLOUD_INDEX_KEY = 'fd_forms_index'
 const cloudFormKey = (id: string): string => `fd_form_${id}`
-
-/** 收集记录上限（与本地实现一致，防止单对象无限膨胀） */
-const CLOUD_MAX_RECORDS = 500
 
 /**
  * 创建云端 FormStore（Supabase Storage bucket 存 JSON 对象）。
@@ -315,7 +314,7 @@ export function createCloudFormStore(cfg: SupabaseConfig): FormStore {
     async appendRecord(storageKey, record) {
       const list = await this.loadRecords(storageKey)
       list.unshift(record)
-      const next = list.length > CLOUD_MAX_RECORDS ? list.slice(0, CLOUD_MAX_RECORDS) : list
+      const next = list.length > MAX_RECORDS ? list.slice(0, MAX_RECORDS) : list
       await kv.set(storageKey, next)
     },
 

@@ -10,6 +10,7 @@
 import { dbPut, dbGet, dbDelete } from '@/components/storage/indexedDB'
 import { toPlainJson } from '../useFormStorage'
 import type { DesignerNode, FormMeta } from './types'
+import { DRAFT_MAX_SIZE, DRAFT_TTL } from '../draft-policy'
 
 // ════════════════════════════════════════
 // 常量
@@ -21,11 +22,7 @@ export const DRAFT_STORE = 'form-designer-drafts'
 /** 草稿存储键（单设计器全局一份：恢复「最近一次未保存的设计」语义） */
 export const DRAFT_KEY = 'designer-autosave'
 
-/** 草稿 TTL：7 天（毫秒） */
-const DRAFT_TTL = 7 * 24 * 60 * 60 * 1000
 
-/** 草稿最大大小（2MB，防超出 IndexedDB 配额） */
-const DRAFT_MAX_SIZE = 2 * 1024 * 1024
 
 /** 设计草稿数据结构 */
 export interface DesignerDraft {

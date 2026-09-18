@@ -411,14 +411,22 @@ async function buildZipAndDownload(): Promise<void> {
   }
 
   // 2) 汇总 Excel
+  // 列名撞车（字段 key 恰好等于某个照片位标题或「目标ID」「最后上传」）时给后写的列加序号后缀：
+  // 直接覆盖会整列丢数据，而且 Excel 里看不出少了一列。
+  const putCol = (row: Record<string, string | number>, label: string, value: string | number) => {
+    let key = label
+    for (let n = 2; Object.prototype.hasOwnProperty.call(row, key); n++) key = `${label}（${n}）`
+    row[key] = value
+  }
   const rows = props.targets.map((s) => {
     const up = uploadMap.get(s.id)
-    const row: Record<string, string | number> = { [t('fbTarget.targetId')]: s.id }
-    for (const k of exportKeys.value) row[String(k)] = cellText(s[k])
+    const row: Record<string, string | number> = {}
+    putCol(row, t('fbTarget.targetId'), s.id)
+    for (const k of exportKeys.value) putCol(row, String(k), cellText(s[k]))
     for (const f of slotFields.value) {
-      row[f.label] = getSlotFile(up, f.key) ? t('fbTarget.uploaded') : t('fbTarget.notUploaded')
+      putCol(row, f.label, getSlotFile(up, f.key) ? t('fbTarget.uploaded') : t('fbTarget.notUploaded'))
     }
-    row[t('fbTarget.lastUpload')] = up?.ts ? formatTs(up.ts) : ''
+    putCol(row, t('fbTarget.lastUpload'), up?.ts ? formatTs(up.ts) : '')
     return row
   })
   const XLSX = await import('xlsx')

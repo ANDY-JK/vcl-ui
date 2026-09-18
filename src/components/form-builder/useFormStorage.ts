@@ -15,6 +15,7 @@
 
 import { dbPut, dbGet, dbDelete } from '@/components/storage/indexedDB'
 import type { FormData } from './types'
+import { DRAFT_MAX_SIZE, DRAFT_TTL } from './draft-policy'
 
 // ════════════════════════════════════════
 // 常量
@@ -23,11 +24,7 @@ import type { FormData } from './types'
 /** IndexedDB store 名（表单草稿专用） */
 const STORE_NAME = 'form-drafts'
 
-/** 草稿 TTL：7 天（毫秒） */
-const DRAFT_TTL = 7 * 24 * 60 * 60 * 1000
-
-/** 草稿数据最大大小（2MB，防止超出 IndexedDB 配额） */
-const DRAFT_MAX_SIZE = 2 * 1024 * 1024
+/** 草稿容量策略与表单数据草稿共用一份，见 draft-policy */
 
 /**
  * 深度转为纯 JSON（草稿写库前置）

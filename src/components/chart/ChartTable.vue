@@ -4,6 +4,7 @@ import Chart from '@/components/chart/Chart.vue'
 import { useT } from '@/components/_internal/i18n'
 import type { Column } from '@/components/data/composables/types'
 import type { ChartProps } from './utils/types'
+import { DEFAULT_ANIMATION_MS } from './options/common'
 
 // DataTable 动态加载：chart 域不再静态依赖 data 域（M15），
 // 表格部分独立成 chunk，仅 showTable 为 true 时才拉取
@@ -58,7 +59,7 @@ const props = withDefaults(
     stacked100: false,
     legendPosition: 'bottom',
     animation: true,
-    animationDuration: 800,
+    animationDuration: DEFAULT_ANIMATION_MS,
     toolbar: () => ['saveAsImage', 'zoom'],
     showTable: true,
     tableTitle: '',

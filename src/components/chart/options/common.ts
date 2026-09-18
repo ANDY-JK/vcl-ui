@@ -2,6 +2,8 @@
 //    需我确认：色板值修改、grid 间距调整
 import type { EChartsOption } from 'echarts'
 import type { BuildParams, MarkLineConfig, MarkAreaConfig } from '../utils/types'
+/** 图表默认动画时长（组件的 prop 默认值与 options 兜底共用一份） */
+export const DEFAULT_ANIMATION_MS = 800
 
 /** 默认色板 —— 对齐项目 CSS 变量主色系 */
 export const DEFAULT_COLORS = [
@@ -249,7 +251,7 @@ export function buildCommonChrome(p: BuildParams): EChartsOption {
     backgroundColor: 'transparent' as const,
     color: resolvePalette(p.palette, p.colors),
     animation: p.animation ?? true,
-    animationDuration: p.animationDuration ?? 800,
+    animationDuration: p.animationDuration ?? DEFAULT_ANIMATION_MS,
     dataZoom,
     title: p.title
       ? {

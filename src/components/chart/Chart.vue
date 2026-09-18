@@ -17,6 +17,7 @@ import { ensureWordCloud } from './utils/echarts-setup'
 import { DEFAULT_COLORS } from './options/common'
 import type { ChartProps, ChartData, BuildParams, ChartSeriesItem } from './utils/types'
 import { toSize } from './utils/chart-utils'
+import { DEFAULT_ANIMATION_MS } from './options/common'
 
 const props = withDefaults(defineProps<ChartProps>(), {
   type: undefined,
@@ -43,7 +44,7 @@ const props = withDefaults(defineProps<ChartProps>(), {
   xAxis: undefined,
   yAxis: undefined,
   animation: true,
-  animationDuration: 800,
+  animationDuration: DEFAULT_ANIMATION_MS,
   toolbar: () => ['saveAsImage', 'zoom'],
   palette: undefined,
   markLine: undefined,
