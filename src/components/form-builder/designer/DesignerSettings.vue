@@ -9,6 +9,7 @@
  * - 样式沿用全局 designer.css（ld-settings-* / ld-set-group-* 类），本组件不带 scoped 样式
  * - 云端配置 UI 数据全部来自 useFormManager 实例（reactive 对象自动解包）
  */
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import { inject, computed, ref } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import IconSvg from '@/components/basic/IconSvg.vue'
@@ -57,6 +58,23 @@ function onTargetListInput(e: Event): void {
     /* 无效 JSON 不提交（保留原 targets，避免误清） */
   }
 }
+/** 悬空 label 的配对 id —— 逐实例生成，字面量 id 在多实例组件里会重复、for 会指错元素 */
+const fldIds = {
+  f1: useIdSafe('fld'),
+  f2: useIdSafe('fld'),
+  f3: useIdSafe('fld'),
+  f4: useIdSafe('fld'),
+  f5: useIdSafe('fld'),
+  f6: useIdSafe('fld'),
+  f7: useIdSafe('fld'),
+  f8: useIdSafe('fld'),
+  f9: useIdSafe('fld'),
+  f10: useIdSafe('fld'),
+  f11: useIdSafe('fld'),
+  f12: useIdSafe('fld'),
+  f13: useIdSafe('fld'),
+  f14: useIdSafe('fld'),
+}
 </script>
 
 <template>
@@ -69,8 +87,9 @@ function onTargetListInput(e: Event): void {
     <div v-show="openGroups.basic" class="ld-set-group-body">
       <div class="ld-settings">
         <div class="ld-settings-row wide">
-          <label>{{ t('fbd.formTitle') }}</label>
+          <label :for="fldIds.f1">{{ t('fbd.formTitle') }}</label>
           <input
+            :id="fldIds.f1"
             class="ld-settings-textarea"
             :value="meta.title ?? ''"
             :placeholder="t('fbd.formTitlePh')"
@@ -78,8 +97,9 @@ function onTargetListInput(e: Event): void {
           />
         </div>
         <div class="ld-settings-row wide">
-          <label>{{ t('fbd.formDesc') }}</label>
+          <label :for="fldIds.f2">{{ t('fbd.formDesc') }}</label>
           <input
+            :id="fldIds.f2"
             class="ld-settings-textarea"
             :value="meta.description ?? ''"
             :placeholder="t('fbd.formDescPh')"
@@ -141,8 +161,9 @@ function onTargetListInput(e: Event): void {
           </div>
         </div>
         <div class="ld-settings-row" style="max-width: 140px">
-          <label>{{ t('fbp.labelPosition') }}</label>
+          <label :for="fldIds.f3">{{ t('fbp.labelPosition') }}</label>
           <select
+            :id="fldIds.f3"
             class="ld-settings-textarea"
             :value="meta.labelPosition ?? 'left'"
             @change="
@@ -157,8 +178,9 @@ function onTargetListInput(e: Event): void {
           </select>
         </div>
         <div class="ld-settings-row" style="max-width: 140px">
-          <label>{{ t('fbp.labelWidth') }}</label>
+          <label :for="fldIds.f4">{{ t('fbp.labelWidth') }}</label>
           <select
+            :id="fldIds.f4"
             class="ld-settings-textarea"
             :value="meta.labelWidth ?? 'default'"
             @change="
@@ -191,8 +213,9 @@ function onTargetListInput(e: Event): void {
     <div v-show="openGroups.validation" class="ld-set-group-body">
       <div class="ld-settings">
         <div class="ld-settings-row" style="max-width: 160px">
-          <label>{{ t('fbd.realtimeValidate') }}</label>
+          <label :for="fldIds.f5">{{ t('fbd.realtimeValidate') }}</label>
           <select
+            :id="fldIds.f5"
             class="ld-settings-textarea"
             :value="meta.validateOnChange ? '1' : '0'"
             @change="emit('patch-meta', { validateOnChange: ($event.target as HTMLSelectElement).value === '1' })"
@@ -214,8 +237,9 @@ function onTargetListInput(e: Event): void {
     <div v-show="openGroups.submit" class="ld-set-group-body">
       <div class="ld-settings">
         <div class="ld-settings-row" style="max-width: 200px">
-          <label>{{ t('fbd.collectType') }}</label>
+          <label :for="fldIds.f6">{{ t('fbd.collectType') }}</label>
           <select
+            :id="fldIds.f6"
             class="ld-settings-textarea"
             :value="meta.collectType ?? 'single'"
             @change="
@@ -231,8 +255,9 @@ function onTargetListInput(e: Event): void {
         <!-- 目标收集模式：目标清单 JSON 配置 -->
         <template v-if="meta.collectType === 'target'">
           <div class="ld-settings-row wide">
-            <label>{{ t('fbd.targetList') }}</label>
+            <label :for="fldIds.f7">{{ t('fbd.targetList') }}</label>
             <textarea
+              :id="fldIds.f7"
               class="ld-settings-textarea"
               rows="6"
               :value="targetListText"
@@ -244,8 +269,9 @@ function onTargetListInput(e: Event): void {
           </div>
         </template>
         <div class="ld-settings-row" style="max-width: 200px">
-          <label>{{ t('fbd.submitBtnText') }}</label>
+          <label :for="fldIds.f8">{{ t('fbd.submitBtnText') }}</label>
           <input
+            :id="fldIds.f8"
             class="ld-settings-textarea"
             :value="meta.submitText ?? t('common.submit')"
             :placeholder="t('common.submit')"
@@ -253,8 +279,9 @@ function onTargetListInput(e: Event): void {
           />
         </div>
         <div class="ld-settings-row" style="max-width: 140px">
-          <label>{{ t('fbd.resetBtnText') }}</label>
+          <label :for="fldIds.f9">{{ t('fbd.resetBtnText') }}</label>
           <input
+            :id="fldIds.f9"
             class="ld-settings-textarea"
             :value="meta.resetText ?? t('common.reset')"
             :placeholder="t('common.reset')"
@@ -262,8 +289,9 @@ function onTargetListInput(e: Event): void {
           />
         </div>
         <div class="ld-settings-row" style="max-width: 140px">
-          <label>{{ t('fbd.submitMode') }}</label>
+          <label :for="fldIds.f10">{{ t('fbd.submitMode') }}</label>
           <select
+            :id="fldIds.f10"
             class="ld-settings-textarea"
             :value="meta.submitMode ?? 'once'"
             @change="
@@ -306,16 +334,17 @@ function onTargetListInput(e: Event): void {
     <div v-show="openGroups.storage" class="ld-set-group-body">
       <div class="ld-settings">
         <div class="ld-settings-row" style="max-width: 200px">
-          <label>{{ t('fbd.storageMode') }}</label>
-          <select class="ld-settings-textarea" :value="manager.storageMode" @change="manager.onModeChange">
+          <label :for="fldIds.f11">{{ t('fbd.storageMode') }}</label>
+          <select :id="fldIds.f11" class="ld-settings-textarea" :value="manager.storageMode" @change="manager.onModeChange">
             <option value="local">{{ t('fbd.storageLocal') }}</option>
             <option value="cloud">{{ t('fbd.storageCloud') }}</option>
           </select>
         </div>
         <template v-if="manager.storageMode === 'cloud'">
           <div class="ld-settings-row wide">
-            <label>{{ t('fbd.storageCloudUrl') }}</label>
+            <label :for="fldIds.f12">{{ t('fbd.storageCloudUrl') }}</label>
             <input
+              :id="fldIds.f12"
               v-model="manager.cloudUrl"
               class="ld-settings-textarea"
               placeholder="https://xxxx.supabase.co"
@@ -324,8 +353,9 @@ function onTargetListInput(e: Event): void {
             />
           </div>
           <div class="ld-settings-row wide">
-            <label>{{ t('fbd.storageCloudKey') }}</label>
+            <label :for="fldIds.f13">{{ t('fbd.storageCloudKey') }}</label>
             <input
+              :id="fldIds.f13"
               v-model="manager.cloudKey"
               class="ld-settings-textarea"
               type="password"
@@ -334,8 +364,9 @@ function onTargetListInput(e: Event): void {
             />
           </div>
           <div class="ld-settings-row" style="max-width: 200px">
-            <label>{{ t('fbd.storageCloudBucket') }}</label>
+            <label :for="fldIds.f14">{{ t('fbd.storageCloudBucket') }}</label>
             <input
+              :id="fldIds.f14"
               v-model="manager.cloudBucket"
               class="ld-settings-textarea"
               placeholder="form-builder"

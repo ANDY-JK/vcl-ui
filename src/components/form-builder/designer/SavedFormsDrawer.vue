@@ -5,6 +5,7 @@
  * 数据与动作全部来自 useFormManager 实例（reactive 对象，模板内 ref 自动解包），
  * 本组件只承载列表 UI 与三个确认弹窗（重命名 / 删除 / 覆盖打开）。
  */
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import { inject, ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { copyText } from '@/components/_internal/useCopy'
@@ -225,6 +226,10 @@ function onConfirmLoad(): void {
   manager.pendingLoad = null
   if (item) void manager.doOpenForm(item)
 }
+/** 悬空 label 的配对 id —— 逐实例生成，字面量 id 在多实例组件里会重复、for 会指错元素 */
+const fldIds = {
+  f1: useIdSafe('fld'),
+}
 </script>
 
 <template>
@@ -347,8 +352,9 @@ function onConfirmLoad(): void {
     @update:visible="renameVisible = $event"
   >
     <div class="ld-save-form">
-      <label class="ld-save-label">{{ t('fbd.saveNameLabel') }}</label>
+      <label :for="fldIds.f1" class="ld-save-label">{{ t('fbd.saveNameLabel') }}</label>
       <input
+        :id="fldIds.f1"
         v-model="renameName"
         class="ld-save-input"
         :placeholder="t('fbd.saveNamePh')"

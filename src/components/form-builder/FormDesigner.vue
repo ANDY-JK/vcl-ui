@@ -14,6 +14,7 @@
  * - DesignerSettings：表单设置面板（含存储配置 UI）
  * - SavedFormsDrawer：我的表单抽屉
  */
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import { ref, computed, watch, provide, onUnmounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { copyText } from '@/components/_internal/useCopy'
@@ -575,6 +576,10 @@ const selectedPath = computed(() => {
   if (!selectedId.value) return []
   return getNodePath(currentNodes.value, selectedId.value)
 })
+/** 悬空 label 的配对 id —— 逐实例生成，字面量 id 在多实例组件里会重复、for 会指错元素 */
+const fldIds = {
+  f1: useIdSafe('fld'),
+}
 </script>
 
 <template>
@@ -915,8 +920,9 @@ const selectedPath = computed(() => {
     @update:visible="saveVisible = $event"
   >
     <div class="ld-save-form">
-      <label class="ld-save-label">{{ t('fbd.saveNameLabel') }}</label>
+      <label :for="fldIds.f1" class="ld-save-label">{{ t('fbd.saveNameLabel') }}</label>
       <input
+        :id="fldIds.f1"
         v-model="saveName"
         class="ld-save-input"
         :placeholder="t('fbd.saveNamePh')"
