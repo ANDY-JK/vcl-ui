@@ -5,6 +5,7 @@ import { ref, computed, watch, onUnmounted, getCurrentInstance, type Ref, type C
 import type { Column, ColumnFilterState, RowMeta } from './types'
 import { getCellText } from './utils'
 import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
+import { useTableWindowScroll } from './useTableWindowScroll'
 
 /** 无 rowKey 行分配稳定递增 id（WeakMap 键为行对象引用，增删/排序/筛选均不改变，
  *  行对象被 GC 后条目自动清除，无泄漏） */
@@ -46,6 +47,8 @@ export function useTableCore(
     total?: number
     virtualScroll?: boolean
     maxHeight?: string
+    /** 页面滚动虚拟化阈值：无 maxHeight 时，行数超过它才按页面滚动开窗口 */
+    pageVirtualMin?: number
     // Modes
     filterMode?: 'client' | 'server'
   },
@@ -56,7 +59,7 @@ export function useTableCore(
   globalSearch: Ref<string>,
   rowHeight?: () => number,
   // 全屏时表格忽略分页展示全量且容器有界 → 虚拟滚动需对全量数据开窗
-  virtualOpts?: { fullscreen?: () => boolean },
+  virtualOpts?: { fullscreen?: () => boolean; pageVirtual?: () => boolean },
 ) {
   const _rowH = rowHeight ?? (() => 40)
   // 拼音匹配器（实例级，带缓存）：同一文本只做一次拼音转换，避免每行每列重复转换
@@ -246,17 +249,20 @@ export function useTableCore(
     return pages
   })
 
+  /** 无 maxHeight 时是否真的找到了可滚源（由 useTableWindowScroll 挂载后测出）。
+   *  测不到就必须退回全量渲染 —— 只渲染十行又没人能滚到剩下的行，比慢更糟。 */
+  const windowScrollReady = ref(false)
+
   // 虚拟滚动生效条件：
   // - 显式 maxHeight（表格自身是滚动容器，才能按窗口渲染）
   // - 或全屏态（容器有界且忽略分页展示全量，全量行必须虚拟化否则卡死）
-  // autoHeight 无 maxHeight 时表格随内容增长、由页面滚动 — 此时不能虚拟化，
-  // 否则窗口外行高占位与页面滚动冲突；virtualScroll 未生效走 warnOnce 提示。
+  // - 或"行数无上限 + 实测确有可滚源"（autoHeight 锁出的内层滚动条 / 祖先或页面滚动）
   const isVirtual = computed(() => {
     if (!props.virtualScroll) return false
     const fullscreen = virtualOpts?.fullscreen?.() ?? false
     if (fullscreen) return true
-    if (!props.maxHeight) return false
-    return !props.pageSize || props.pageSize <= 0
+    if (props.maxHeight) return !props.pageSize || props.pageSize <= 0
+    return !!virtualOpts?.pageVirtual?.() && windowScrollReady.value
   })
   // 虚拟窗口数据源：普通态按当前页；全屏态忽略分页 → 对全量开窗
   const virtualSourceData = computed(() => (virtualOpts?.fullscreen?.() ? displayData.value : pagedData.value))
@@ -288,6 +294,16 @@ export function useTableCore(
     if (!isVirtual.value) return 0
     const rendered = virtualEndIndex.value - virtualStartIndex.value
     return Math.max(0, (virtualTotal.value - virtualStartIndex.value - rendered) * _rowH())
+  })
+
+  // 页面滚动虚拟化：无 maxHeight 时由它每帧反推等效 scrollTop / containerHeight，喂给上面那组 computeds
+  useTableWindowScroll({
+    active: () => !!virtualOpts?.pageVirtual?.(),
+    container: () => scrollContainerRef.value,
+    sourceLength: () => virtualTotal.value,
+    scrollTop,
+    containerHeight,
+    ready: windowScrollReady,
   })
 
   let _rafId = 0

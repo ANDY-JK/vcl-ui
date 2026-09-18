@@ -23,7 +23,6 @@ import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_int
 import { copyText } from '@/components/_internal/useCopy'
 import Toast from '@/components/feedback/Toast.vue'
 import { boostZTop } from '@/components/_internal/z-top'
-import { warnOnce } from '@/components/_internal/warnOnce'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useToastNotify } from '@/components/_internal/useToastNotify'
 import ImagePreview from './ImagePreview.vue'
@@ -96,6 +95,9 @@ const props = withDefaults(
     /** 自适应高度：填充父容器剩余空间（需父容器有明确高度） */
     autoHeight?: boolean
     virtualScroll?: boolean
+    /** 页面滚动虚拟化的行数阈值：无 maxHeight（表格随页面滚动）时，行数超过它才开窗口。
+     *  阈值以下渲染结果与旧行为完全一致；设 0 = 只要行数多就虚拟化。 */
+    pageVirtualMin?: number
     autoFit?: boolean
     truncateMode?: 'ellipsis' | 'wrap' | 'none'
     dense?: boolean
@@ -175,6 +177,7 @@ const props = withDefaults(
     maxHeight: '',
     autoHeight: true,
     virtualScroll: true,
+    pageVirtualMin: 300,
     autoFit: true,
     truncateMode: 'ellipsis',
     dense: false,
@@ -451,7 +454,15 @@ const {
   _effectiveSearchTerm,
   () => _effectiveRowHeight.value,
   // 全屏忽略分页展示全量且容器有界 → 虚拟窗口须对全量数据开窗（_isFullscreen 声明在后，惰性求值安全）
-  { fullscreen: () => _isFullscreen.value },
+  {
+    fullscreen: () => _isFullscreen.value,
+    // 页面滚动态：无 maxHeight、无分页兜底、行数超过阈值才接管滚动
+    // （阈值以下是旧行为 —— 少量行的表格渲染结果逐字节不变）。
+    // 不读 _isFullscreen：isVirtual 里全屏分支在其之前已 return，本谓词只可能在非全屏时被调用，
+    // 读了会撞 setup 期的 TDZ。
+    pageVirtual: () =>
+      !props.maxHeight && (!props.pageSize || props.pageSize <= 0) && props.data.length > (props.pageVirtualMin ?? 300),
+  },
 )
 // 回填前向引用，供 useTableColumns/useTableExtras 使用
 watch(
@@ -1758,12 +1769,8 @@ const _onScroll = (e: Event) => {
 
 onMounted(() => {
   _releaseZTop = boostZTop()
-  // virtualScroll 需要表格自身可滚（maxHeight）或全屏态，静默失效对调用方不可见 — 明确提示。
-  // 只在"行数无上限"时提示：带分页时一页就这么几行，本来就不需要虚拟化，
-  // 旧条件（只看 !maxHeight）会让最常见的「分页 + 不设 maxHeight」配置天天在控制台报黄字。
-  if (props.virtualScroll && !props.maxHeight && (!props.pageSize || props.pageSize <= 0)) {
-    warnOnce('DataTable', 'virtualScroll 需配合 maxHeight 使用（或进入全屏），当前配置下不会启用虚拟滚动')
-  }
+  // 原先这里有一条「virtualScroll 需配合 maxHeight」提示：无 maxHeight 的行数无上限表格
+  // 确实会静默全量渲染。现在该场景由 useTablePageVirtual 按页面滚动接管，提示已无成立场景。
   document.addEventListener('click', _onClick, true)
   document.addEventListener('keydown', _onKeydown, true)
   document.addEventListener('keydown', onCellKeydown, true)
