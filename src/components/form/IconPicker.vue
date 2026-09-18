@@ -492,7 +492,7 @@ function confirm() {
   overflow: hidden;
 }
 
-.panel-search {
+.picker-panel .panel-search {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -501,7 +501,7 @@ function confirm() {
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
-.panel-input {
+.picker-panel .panel-input {
   flex: 1;
   border: none;
   background: transparent;
@@ -717,29 +717,29 @@ function confirm() {
 }
 
 /* 面板动画：弹性缓动 + 微缩放，进场 200ms 退场 150ms（退场快于进场） */
-.drop-enter-active {
+.picker-panel.drop-enter-active {
   transition:
     opacity var(--transition-normal),
     transform var(--transition-normal);
 }
-.drop-leave-active {
+.picker-panel.drop-leave-active {
   transition:
     opacity var(--transition-fast),
     transform var(--transition-fast);
 }
-.drop-enter-from {
+.picker-panel.drop-enter-from {
   opacity: 0;
   transform: translateY(calc(-1 * var(--space-2))) scale(0.97);
 }
-.drop-leave-to {
+.picker-panel.drop-leave-to {
   opacity: 0;
   transform: translateY(calc(-1 * var(--space-1))) scale(0.97);
 }
 /* 向上展开时动画方向反转 */
-.flip-up.drop-enter-from {
+.picker-panel.flip-up.drop-enter-from {
   transform: translateY(var(--space-2)) scale(0.97);
 }
-.flip-up.drop-leave-to {
+.picker-panel.flip-up.drop-leave-to {
   transform: translateY(var(--space-1)) scale(0.97);
 }
 </style>

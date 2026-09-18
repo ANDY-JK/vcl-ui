@@ -208,14 +208,18 @@ function parseDateTime(
 // ==================== 数字解析 ====================
 
 /** 把数值转成十进制字符串：String(n) 在 |n| ≥ 1e21 或 < 1e-6 时会切科学计数，
- *  这里用 toFixed 还原可读十进制，避免把 1e-7 写成 '1e-7' 落库。 */
-function numToPlainString(n: number): string {
+ *  这里用 toFixed 还原可读十进制，避免把 1e-7 写成 '1e-7' 落库。
+ *  返回 null = 无法无损还原（≥1e21 展开后仍是指数形式；极小数会被 toFixed 抹成 '0'），
+ *  由调用方保原样 —— 静默改值比"留个不好看的写法"危险得多。 */
+function numToPlainString(n: number): string | null {
   const s = String(n)
   if (!/[eE]/.test(s)) return s
-  return n
+  const plain = n
     .toFixed(20)
     .replace(/0+$/, '')
     .replace(/\.$/, '')
+  if (/[eE]/.test(plain) || Number(plain) !== n) return null
+  return plain
 }
 
 /** 数字归一化：去千分位/货币符号/空白，会计负数 (123) → -123，全角转半角 */
@@ -252,7 +256,12 @@ function normalizeNumber(raw: string): NormalizeResult {
 
   const n = Number(t)
   if (!Number.isFinite(n)) return invalid
-  return { ok: true, value: numToPlainString(n) }
+  // 超出安全整数范围的纯整数（银行卡 19 位 / 身份证 18 位 / 流水号）：Number 会静默抹掉尾数
+  // （6210001234567890123 → 6210001234567890000），落库后不可逆。与前导零同策略保原样。
+  if (/^[+-]?\d+$/.test(t) && !Number.isSafeInteger(n)) return { ok: true, value: t }
+  const plain = numToPlainString(n)
+  // 展开不成十进制的写法（1e21 / 1e-21）同样保原样，不返回被改坏的值
+  return { ok: true, value: plain ?? t }
 }
 
 // ==================== 对外入口 ====================

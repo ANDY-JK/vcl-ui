@@ -18,6 +18,16 @@ export interface CellClipboardDeps {
   editingCell: Ref<EditState | null>
 }
 
+/** 粘贴定位：矩形选区 > 单击格 > 整列选择（均按当前显示行列映射）
+ *  必须是模块级导出类型 —— 声明在 useCellClipboard 内部会让 tsc 报 TS4060
+ *  （返回类型引用了私有名字），该文件的 .d.ts 直接不生成，消费者 TS2307。 */
+export interface PasteTarget {
+  rows: string[]
+  cols: string[]
+  anchorRi: number
+  anchorCi: number
+}
+
 export function useCellClipboard(deps: CellClipboardDeps) {
   const { props, hooks, write, select, editingCell } = deps
 
@@ -49,12 +59,6 @@ export function useCellClipboard(deps: CellClipboardDeps) {
   }
 
   /** 粘贴定位：矩形选区 > 单击格 > 整列选择（均按当前显示行列映射） */
-  interface PasteTarget {
-    rows: string[]
-    cols: string[]
-    anchorRi: number
-    anchorCi: number
-  }
   function resolvePasteTarget(): PasteTarget | null {
     const r = select.rangeSel.value
     if (r) {

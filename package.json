@@ -10,6 +10,8 @@
   },
   "scripts": {
     "dev": "vite",
+    "clean": "node scripts/clean-dist.mjs",
+    "prebuild": "npm run clean",
     "build": "vite build",
     "verify:pkg": "node scripts/verify-pkg.mjs",
     "typecheck": "vue-tsc --noEmit",

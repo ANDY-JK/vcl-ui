@@ -1307,7 +1307,7 @@ function onTimeCancel() {
   display: flex;
   flex-direction: column;
 }
-.panel-search {
+.dropdown-panel .panel-search {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -1316,7 +1316,7 @@ function onTimeCancel() {
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
-.panel-input {
+.dropdown-panel .panel-input {
   flex: 1;
   border: none;
   background: transparent;
@@ -1422,28 +1422,30 @@ function onTimeCancel() {
   animation: spin 1s linear infinite;
 }
 
-.drop-enter-active {
+/* 面板动画：类名挂在本组件面板根上，必须用复合选择器限定 ——
+   与 IconPicker 的同名 transition 类都在非 scoped 块里，不限定会互相覆盖。 */
+.dropdown-panel.drop-enter-active {
   transition:
     opacity var(--transition-normal),
     transform var(--transition-normal);
 }
-.drop-leave-active {
+.dropdown-panel.drop-leave-active {
   transition:
     opacity var(--transition-fast),
     transform var(--transition-fast);
 }
-.drop-enter-from {
+.dropdown-panel.drop-enter-from {
   opacity: 0;
   transform: translateY(-6px) scale(0.97);
 }
-.drop-leave-to {
+.dropdown-panel.drop-leave-to {
   opacity: 0;
   transform: translateY(-4px) scale(0.97);
 }
-.flip-up.drop-enter-from {
+.dropdown-panel.flip-up.drop-enter-from {
   transform: translateY(6px) scale(0.97);
 }
-.flip-up.drop-leave-to {
+.dropdown-panel.flip-up.drop-leave-to {
   transform: translateY(4px) scale(0.97);
 }
 
