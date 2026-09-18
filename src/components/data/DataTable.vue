@@ -50,6 +50,7 @@ import {
   optColor,
   blankPlaceholder,
   isImageUrl as _isImageUrl,
+  EXPAND_ICON_TEXT_MIN,
 } from './composables/utils'
 import { captureTableCanvas } from './composables/canvas-screenshot'
 import { useTableTooltip } from './composables/useTableTooltip'
@@ -544,22 +545,28 @@ const _fullscreenNext = ref<ChildNode | null>(null)
 const _toggleCollapse = props.onToggleSidebar ?? inject<() => void>('toggleCollapse', () => {})
 const _sidebarToggledByUs = ref(false)
 let _fsResizeRaf = 0
-let _fsPending = false
+/** 进入全屏的等待令牌：自增即作废上一条未完成的等待（共享布尔会让"取消后再点"被前一条抢先放行） */
+let _fsRun = 0
 /** 内容区尺寸监听：侧栏收起、父容器变化都不会触发 window resize，
  *  全屏框过去只在进入那一刻量一次 → 动画没跑完就进场，框会一直偏到下次刷新窗口 */
 let _fsBoundsRo: ResizeObserver | null = null
 const _cleanups: (() => void)[] = []
 
+/** 放弃进行中的进入全屏，并把被本组件收起的侧栏还原（三条中断路径共用：再次点击 / 退出 / 卸载） */
+function cancelFullscreenEnter() {
+  _fsRun++
+  if (_sidebarToggledByUs.value) {
+    _toggleCollapse()
+    _sidebarToggledByUs.value = false
+  }
+}
+
 function toggleFullscreen() {
   if (_isFullscreen.value) {
     _isFullscreen.value = false
-  } else if (_fsPending) {
-    // 正在等待进入全屏 → 取消（_fsPending 置回 false 就是取消令牌）
-    _fsPending = false
-    if (_sidebarToggledByUs.value) {
-      _toggleCollapse()
-      _sidebarToggledByUs.value = false
-    }
+  } else if (_fsRun) {
+    // 正在等待进入全屏 → 取消并还原导航栏
+    cancelFullscreenEnter()
   } else {
     const sidebar = document.querySelector<HTMLElement>('.sidebar')
     const needCollapse = !!sidebar && !sidebar.classList.contains('collapsed')
@@ -567,17 +574,17 @@ function toggleFullscreen() {
       _toggleCollapse()
       _sidebarToggledByUs.value = true
     }
-    _fsPending = true
+    const run = ++_fsRun
     // 先让侧栏收起动画跑完再进场，全屏框量的才是最终边界（过去这里等 250ms，见 _waitForWidthSettle）。
     // 进场后仍有 ResizeObserver 持续纠正，所以这一步只是让入场观感稳定，不再是唯一的一次测量。
-    void _enterFullscreenAfterSettle(needCollapse ? sidebar : null, needCollapse)
+    void _enterFullscreenAfterSettle(needCollapse ? sidebar : null, needCollapse, run)
   }
 }
 
-async function _enterFullscreenAfterSettle(sidebar: HTMLElement | null, needCollapse: boolean) {
+async function _enterFullscreenAfterSettle(sidebar: HTMLElement | null, needCollapse: boolean, run: number) {
   if (needCollapse && sidebar) await _waitForWidthSettle(sidebar)
-  if (!_fsPending) return
-  _fsPending = false
+  if (_fsRun !== run) return // 等待期间被取消/退出/卸载过 → 本条作废，不再改任何状态
+  _fsRun = 0
   _isFullscreen.value = true
 }
 function onFullscreenKeydown(e: KeyboardEvent) {
@@ -731,22 +738,17 @@ watch(_isFullscreen, async (v) => {
     applyFullscreenBounds()
     startFullscreenBoundsWatch()
   } else {
-    // 清理 pending 状态（取消令牌：等待进入全屏的异步流程会因此中止）
-    _fsPending = false
+    // 作废仍在等待的进入流程（不还原侧栏 —— 下面的归还流程统一处理）
+    _fsRun++
     stopFullscreenBoundsWatch()
     document.removeEventListener('keydown', onFullscreenKeydown, true)
     document.removeEventListener('click', onFullscreenBodyClick, true)
     window.removeEventListener('resize', onFullscreenResize)
     document.body.classList.remove('dt-fullscreen-active')
-    // 还原导航栏
-    if (_sidebarToggledByUs.value) {
-      _toggleCollapse()
-      _sidebarToggledByUs.value = false
-      // 等原父容器宽度停下来再把节点搬回去：侧栏收起动画期间宽度一直在变，按固定时长等
-      // 要么白等（动画早就结束）、要么跳帧（动画还没跑完）。量到连续两帧不变即收尾。
-      await _waitForWidthSettle(_fullscreenParent.value)
-    }
-    // 还原到原始父容器
+    // 先归还节点、再清全屏内联尺寸，最后才还原侧栏。
+    // 归还后表格回到普通流，宽度自然跟着父容器变，不需要等侧栏动画收尾；
+    // 反过来（先等再归还）会把整张表以"定宽定高的静态块"留在 body 末尾直到等待结束，
+    // 把宿主页面内容顶开 —— 那正是过去这里等固定毫秒埋下的雷。
     if (tableWrapRef.value && _fullscreenParent.value) {
       // 全屏期间父容器 DOM 可能变动（路由切换/虚拟列表重排）导致 nextSibling 快照失效：
       // 快照节点已不在文档中时回退为 append（仍是原父容器内，位置次要于不丢节点）
@@ -764,6 +766,10 @@ watch(_isFullscreen, async (v) => {
       tableWrapRef.value.style.left = ''
       tableWrapRef.value.style.width = ''
       tableWrapRef.value.style.height = ''
+    }
+    if (_sidebarToggledByUs.value) {
+      _toggleCollapse()
+      _sidebarToggledByUs.value = false
     }
   }
   await nextTick()
@@ -874,14 +880,16 @@ const _cardRenderLimit = ref(_cardBatchSize)
 
 /** 相邻两张卡片的 offsetTop 差 = 卡片高度 + 间距；只有一张时退到自身高度。
  *  返回 0 表示量不出来（容器隐藏 / 无布局），此时调用方保留上一次的批大小 ——
- *  把 0 当 1 用会让批算成「整表一次渲染」，正好触发这段渐进加载要防的卡顿。 */
+ *  把 0 当 1 用会让批算成「整表一次渲染」，正好触发这段渐进加载要防的卡顿。
+ *  只取前两张（卡片是容器的直接子元素），滚动事件里不能整棵子树 querySelectorAll。 */
 function _cardPitch(el: HTMLElement): number {
-  const cards = el.querySelectorAll<HTMLElement>('.card-view-item')
-  if (cards.length >= 2) {
-    const pitch = cards[1].offsetTop - cards[0].offsetTop
+  const first = el.firstElementChild as HTMLElement | null
+  const second = first?.nextElementSibling as HTMLElement | null
+  if (first && second) {
+    const pitch = second.offsetTop - first.offsetTop
     return pitch > 0 ? pitch : 0
   }
-  return cards[0] ? Math.max(0, cards[0].offsetHeight) : 0
+  return first ? Math.max(0, first.offsetHeight) : 0
 }
 
 function _remeasureCardBatch(el: HTMLElement) {
@@ -1958,21 +1966,19 @@ onUnmounted(() => {
   document.removeEventListener('scroll', _onScroll, true)
   window.removeEventListener('resize', onWindowResizeCard)
   // 全屏清理：防止组件销毁后残留 DOM/事件/样式
+  // 无条件先作废"等待进入全屏"并还原侧栏：等待期间切路由时 _isFullscreen 还是 false，
+  // 若把这两件事留在下面的 if 里，等待落地会把已卸载组件置为全屏，
+  // 而导航栏被本组件收起后再无人复原（用户到新页面仍是收起态）。
+  cancelFullscreenEnter()
   if (_isFullscreen.value) {
     document.body.classList.remove('dt-fullscreen-active')
     document.removeEventListener('keydown', onFullscreenKeydown, true)
     document.removeEventListener('click', onFullscreenBodyClick, true)
     window.removeEventListener('resize', onFullscreenResize)
     stopFullscreenBoundsWatch()
-    _fsPending = false
     if (_fsResizeRaf) {
       cancelAnimationFrame(_fsResizeRaf)
       _fsResizeRaf = 0
-    }
-    // 还原侧边栏
-    if (_sidebarToggledByUs.value) {
-      _toggleCollapse()
-      _sidebarToggledByUs.value = false
     }
     // 清理 inline 样式
     if (tableWrapRef.value) {
@@ -2503,7 +2509,7 @@ provideDataTableContext({
                         v-if="
                           truncateMode === 'ellipsis' &&
                           (autoFit || (rowMetaMap.get(row)?.truncated[col.key] ?? false)) &&
-                          (rowMetaMap.get(row)?.texts[col.key]?.length || 0) > 50
+                          (rowMetaMap.get(row)?.texts[col.key]?.length || 0) > EXPAND_ICON_TEXT_MIN
                         "
                         class="cell-expand-icon"
                         :title="t('table.viewFullContent')"

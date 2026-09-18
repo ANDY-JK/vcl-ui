@@ -97,6 +97,11 @@ export function optColor(col: Column, val: string): string {
   return opt && typeof opt === 'object' && opt.color ? opt.color : 'inherit'
 }
 
+/** 单元格文本超过这个字数就改由「展开图标」承接完整内容，tooltip 让位（两处共用一个阈值）：
+ *  DataTable 模板决定是否渲染 .cell-expand-icon，useTableTooltip 决定要不要挂气泡。
+ *  两边各写一遍的话，改一侧会让长文本既没气泡也没图标（或两个都弹）。 */
+export const EXPAND_ICON_TEXT_MIN = 50
+
 /** 不在拖拽顺序表里的列排到最后 —— 用最大安全整数，列数超过 999 也不会把未排序列挤到已排序列前面 */
 const UNRANKED_COL_RANK = Number.MAX_SAFE_INTEGER
 

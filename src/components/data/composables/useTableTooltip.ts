@@ -9,6 +9,7 @@
  */
 import { ref, onUnmounted, type Ref } from 'vue'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
+import { EXPAND_ICON_TEXT_MIN } from './utils'
 
 export interface UseTableTooltipOptions {
   /** 截断模式，仅 ellipsis 模式下激活 tooltip */
@@ -34,8 +35,8 @@ export function useTableTooltip(options: UseTableTooltipOptions): TableTooltipRe
 
   function showTooltip(e: MouseEvent, text: string) {
     if (!text || truncateMode.value !== 'ellipsis') return
-    // 超过 50 字有弹窗图标，不用 tooltip
-    if (text.length > 50) return
+    // 超长文本由展开图标承接（阈值与 DataTable 渲染图标的判定同源）
+    if (text.length > EXPAND_ICON_TEXT_MIN) return
     const td = (e.target as HTMLElement).closest('td') as HTMLElement | null
     if (!td) return
     // 检测内部 .cell-text-inner span 是否溢出
