@@ -646,6 +646,33 @@ function onFullscreenResize() {
     }
   })
 }
+
+/**
+ * 等某容器的宽度停止变化（连续两帧同值即认为过渡跑完）。
+ * 用于退出全屏时替代按固定毫秒等待：侧栏动画长短随主题、容器宽度、动效降级设置而变，
+ * 写死的数要么白等要么在动画跑完前就把节点搬走（表现为跳一下）。
+ * 只兜一层：标签页在后台时 rAF 不跑，用超时收尾，别让表格回不了原位。
+ */
+function _waitForWidthSettle(el: HTMLElement | null): Promise<void> {
+  if (!el || typeof requestAnimationFrame !== 'function') return Promise.resolve()
+  return new Promise((resolve) => {
+    let last = -1
+    let stable = 0
+    const done = () => {
+      clearTimeout(timer)
+      resolve()
+    }
+    const timer = setTimeout(done, 2000)
+    const step = () => {
+      const w = el.getBoundingClientRect().width
+      stable = w === last ? stable + 1 : 0
+      last = w
+      if (stable >= 2) return done()
+      requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  })
+}
 watch(_isFullscreen, async (v) => {
   _lockedMaxH.value = '' // 全屏模式由内部 flex 布局接管，释放 JS 锁高
   if (v) {
@@ -693,7 +720,9 @@ watch(_isFullscreen, async (v) => {
     if (_sidebarToggledByUs.value) {
       _toggleCollapse()
       _sidebarToggledByUs.value = false
-      await new Promise((r) => setTimeout(r, 250))
+      // 等原父容器宽度停下来再把节点搬回去：侧栏收起动画期间宽度一直在变，按固定时长等
+      // 要么白等（动画早就结束）、要么跳帧（动画还没跑完）。量到连续两帧不变即收尾。
+      await _waitForWidthSettle(_fullscreenParent.value)
     }
     // 还原到原始父容器
     if (tableWrapRef.value && _fullscreenParent.value) {
@@ -813,9 +842,31 @@ const isCardViewEffective = computed(() => {
   return isCardView.value // 'auto' → 跟随响应式断点
 })
 
-// 卡片模式渐进加载：首批 50 张，滚到底自动追加，避免大批量渲染卡死
-const _cardBatchSize = 50
+// 卡片模式渐进加载：每批补到「还能再滚 _CARD_SCREENS 屏才需要等」，批大小由卡片实测间距换算。
+// 固定 50 张在矮卡片上一次补了七八屏（白渲染一堆 DOM）、在高卡片上不到一屏（滚两下又要等）。
+const _CARD_SCREENS = 2
+/** 卡片很高时「两屏」换算出来可能只有一两张，兜底批保证每次至少推进这么多，避免反复滚反复补 */
+const _CARD_BATCH_FLOOR = 10
+let _cardBatchSize = 50
 const _cardRenderLimit = ref(_cardBatchSize)
+
+/** 相邻两张卡片的 offsetTop 差 = 卡片高度 + 间距；只有一张时退到自身高度。
+ *  返回 0 表示量不出来（容器隐藏 / 无布局），此时调用方保留上一次的批大小 ——
+ *  把 0 当 1 用会让批算成「整表一次渲染」，正好触发这段渐进加载要防的卡顿。 */
+function _cardPitch(el: HTMLElement): number {
+  const cards = el.querySelectorAll<HTMLElement>('.card-view-item')
+  if (cards.length >= 2) {
+    const pitch = cards[1].offsetTop - cards[0].offsetTop
+    return pitch > 0 ? pitch : 0
+  }
+  return cards[0] ? Math.max(0, cards[0].offsetHeight) : 0
+}
+
+function _remeasureCardBatch(el: HTMLElement) {
+  const pitch = _cardPitch(el)
+  if (pitch > 0) _cardBatchSize = Math.max(_CARD_BATCH_FLOOR, Math.ceil((el.clientHeight * _CARD_SCREENS) / pitch))
+}
+
 watch(isCardViewEffective, (v) => {
   if (v) _cardRenderLimit.value = _cardBatchSize
 })
@@ -827,6 +878,7 @@ const _effectivePagedData = computed(() => {
 const _cardVisibleData = computed(() => _effectivePagedData.value.slice(0, _cardRenderLimit.value))
 function onCardScroll(e: Event) {
   const el = e.target as HTMLElement
+  _remeasureCardBatch(el)
   // 预取提前量按容器实测高度取「还剩一屏」：写死像素在矮容器里太早补、在高屏容器里太晚补
   if (el.scrollHeight - el.scrollTop - el.clientHeight < el.clientHeight) {
     _cardRenderLimit.value = Math.min(_effectivePagedData.value.length, _cardRenderLimit.value + _cardBatchSize)
