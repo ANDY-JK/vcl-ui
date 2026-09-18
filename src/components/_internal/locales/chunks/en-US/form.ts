@@ -128,6 +128,8 @@ export default {
     prevMonth: 'Previous month',
     nextMonth: 'Next month',
     yearMonth: '{year}/{month}',
+    /** Accessible name of a calendar cell — "15" alone hides which month/weekday */
+    dateCellAria: '{ymd}, {weekday}',
     today: 'Today',
     weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     hour: 'H',

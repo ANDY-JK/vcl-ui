@@ -262,8 +262,16 @@ export function useTableCore(
     const fullscreen = virtualOpts?.fullscreen?.() ?? false
     if (fullscreen) return true
     if (props.maxHeight) return !props.pageSize || props.pageSize <= 0
-    return !!virtualOpts?.pageVirtual?.() && windowScrollReady.value
+    return !!virtualOpts?.pageVirtual?.() && windowScrollReady.value && windowPaysOff.value
   })
+  // 页面滚动态还要过一道"实测真的有得省"的闸：可视行数 + 上下 overscan 是无论如何都要渲染的，
+  // 只有总行数超过这个必渲染量才值得开窗口 —— 判据全用实测值，不拍固定行数常量。
+  const windowPaysOff = computed(() => {
+    const rh = _rowH()
+    if (rh <= 0) return false
+    return virtualTotal.value > Math.ceil(containerHeight.value / rh) + overscan * 2
+  })
+
   // 虚拟窗口数据源：普通态按当前页；全屏态忽略分页 → 对全量开窗
   const virtualSourceData = computed(() => (virtualOpts?.fullscreen?.() ? displayData.value : pagedData.value))
 

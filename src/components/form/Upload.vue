@@ -55,6 +55,9 @@ interface Props {
   maxWidth?: number
   /** 图片压缩质量 0-1；默认 0.85 */
   compressQuality?: number
+  /** 同时在飞的文件数（压缩+上传）。默认 3：按浏览器同源约 6 条连接取半，
+   *  给页面其它请求留通道；服务端有并发/限流策略时按更严的那个设 */
+  maxConcurrent?: number
   /** 图片预览：'builtin' 点击图片直接打开内置全屏预览（默认）；'event' 仅抛 preview 事件由消费方自行处理 */
   previewMode?: 'builtin' | 'event'
 }

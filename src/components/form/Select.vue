@@ -117,6 +117,17 @@ const isTreeSelect = computed(() => props.type === 'tree-select' || props.type =
 const isDate = computed(() => props.type === 'date')
 const isDateRange = computed(() => props.type === 'date-range')
 const isTime = computed(() => props.type === 'time')
+/**
+ * 面板角色。日期/时间面板里装的是 DatePanel/TimeColumns 的一堆 <button>，
+ * 而 listbox 只允许 option 作后代 —— 挂 listbox 会让读屏把这些按钮整块剪出无障碍树
+ * （用户听得见"列表框"却读不到任何一天）。这两种模式改为不设角色。
+ */
+const panelRole = computed(() => {
+  if (isMenu.value) return 'menu'
+  if (isTreeSelect.value) return 'tree'
+  if (isDate.value || isDateRange.value || isTime.value) return undefined
+  return 'listbox'
+})
 /** 日期/时间面板：有固有宽度（clamp 264-300px），不跟随触发器拉伸 */
 const isDateTime = computed(() => isDate.value || isDateRange.value || isTime.value)
 
@@ -1003,7 +1014,7 @@ function onTimeCancel() {
             class="dropdown-panel"
             :class="[`flip-${flipDir}`]"
             :style="floatingStyle"
-            :role="isMenu ? 'menu' : isTreeSelect ? 'tree' : 'listbox'"
+            :role="panelRole"
           >
             <!-- 搜索框（仅 tree-select：trigger 不可输入；select/combobox 由 trigger 直接输入过滤） -->
             <div v-if="isTreeSelect && searchable" class="panel-search">

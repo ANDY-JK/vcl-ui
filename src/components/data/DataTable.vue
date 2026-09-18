@@ -95,8 +95,9 @@ const props = withDefaults(
     /** 自适应高度：填充父容器剩余空间（需父容器有明确高度） */
     autoHeight?: boolean
     virtualScroll?: boolean
-    /** 页面滚动虚拟化的行数阈值：无 maxHeight（表格随页面滚动）时，行数超过它才开窗口。
-     *  阈值以下渲染结果与旧行为完全一致；设 0 = 只要行数多就虚拟化。 */
+    /** 页面滚动虚拟化的**额外**行数下限（默认 0 = 不设人工下限）。
+     *  实际判据是实测的：总行数 > 可视行数 + 上下 overscan（那些行无论如何都要渲染），
+     *  所以面板高矮、dense、缩放都自适应，不靠猜常量。设 >0 只用于强制提前/推迟启用。 */
     pageVirtualMin?: number
     autoFit?: boolean
     truncateMode?: 'ellipsis' | 'wrap' | 'none'
@@ -177,7 +178,7 @@ const props = withDefaults(
     maxHeight: '',
     autoHeight: true,
     virtualScroll: true,
-    pageVirtualMin: 300,
+    pageVirtualMin: 0,
     autoFit: true,
     truncateMode: 'ellipsis',
     dense: false,
@@ -461,7 +462,7 @@ const {
     // 不读 _isFullscreen：isVirtual 里全屏分支在其之前已 return，本谓词只可能在非全屏时被调用，
     // 读了会撞 setup 期的 TDZ。
     pageVirtual: () =>
-      !props.maxHeight && (!props.pageSize || props.pageSize <= 0) && props.data.length > (props.pageVirtualMin ?? 300),
+      !props.maxHeight && (!props.pageSize || props.pageSize <= 0) && props.data.length > (props.pageVirtualMin ?? 0),
   },
 )
 // 回填前向引用，供 useTableColumns/useTableExtras 使用

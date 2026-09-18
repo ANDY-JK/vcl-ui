@@ -24,6 +24,8 @@ interface QueueProps {
   maxWidth: number
   compressQuality: number
   customRequest?: (file: File) => Promise<{ url: string }>
+  /** 同时在飞的文件数上限；默认 3（见 useUploadQueue 内注释的推导） */
+  maxConcurrent?: number
 }
 
 export function useUploadQueue(opts: {
@@ -181,12 +183,14 @@ export function useUploadQueue(opts: {
   }
 
   /**
-   * 并发闸门 —— 默认同时只跑 MAX_CONCURRENT 个「压缩 + 上传」。
+   * 并发闸门 —— 同时最多跑 MAX_CONCURRENT 个「压缩 + 上传」。
    * 背景：循环里过去是直接 compressImage(f).then(upload)，一次选整目录（directory 变体
    * 可以一次给出几百个文件）就是几百路并发：几百次 canvas 解码（移动端会直接 OOM 杀页）、
-   * 几百个 setInterval、几百个 blob URL，同域 6 条连接被塞满后还会触发服务端限流。
+   * 几百个 setInterval、几百个 blob URL，同域连接塞满后还会触发服务端限流。
+   * 默认 3 的来由：浏览器对同一源约 6 条并发连接（HTTP/1.1），上传只取一半，给页面的
+   * 其它请求（图片/接口/字体）留通道；更快/更慢由调用方按服务端限流策略用 maxConcurrent 覆盖。
    */
-  const MAX_CONCURRENT = 3
+  const MAX_CONCURRENT = Math.max(1, props.maxConcurrent ?? 3)
   let _active = 0
   const _waiting: Array<() => void> = []
 

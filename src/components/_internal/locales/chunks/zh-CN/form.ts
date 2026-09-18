@@ -128,6 +128,8 @@ export default {
     prevMonth: '上个月',
     nextMonth: '下个月',
     yearMonth: '{year}年{month}月',
+    /** 日历格的可访问名：只念"15"分不清哪个月/周几，读屏需要完整日期 */
+    dateCellAria: '{ymd} 星期{weekday}',
     today: '今天',
     weekdays: ['日', '一', '二', '三', '四', '五', '六'],
     hour: '时',

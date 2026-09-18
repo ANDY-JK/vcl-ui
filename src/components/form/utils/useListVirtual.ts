@@ -19,9 +19,9 @@ export interface ListVirtualOptions {
   container: () => HTMLElement | null
   /** 当前要渲染的条目总数（已过滤后的长度） */
   itemCount: () => number
-  /** 单行高度，px */
+  /** 单行高度，px（必须由调用方实测得到；0 = 还没测出来） */
   rowHeight: () => number
-  /** 行数低于此值不启用窗口 */
+  /** 额外的显式下限（默认不启用，判据见 enabled） */
   minCount?: () => number
 }
 
@@ -43,20 +43,41 @@ export function useListVirtual(o: ListVirtualOptions): ListVirtualApi {
   const scrollTop = ref(0)
   const viewH = ref(0)
 
+  /**
+   * 启用判据全部来自实测，不拍固定行数：
+   * 一行都不渲染的情况不存在 —— 可视区 visibleCount 行 + 上下各 OVERSCAN 行总会渲染，
+   * 所以只有当「条目总数比这个必渲染量还多出一整个上下边界」时，窗口化才真的少建节点。
+   * 这样面板高矮、字号缩放、dense 与否都自适应，不需要维护一个猜出来的常量。
+   */
   const enabled = computed(() => {
-    const min = o.minCount?.() ?? 200
-    return o.itemCount() > min && o.rowHeight() > 0
+    const rh = o.rowHeight()
+    const view = viewH.value
+    if (rh <= 0 || view <= 0) return false // 行高/可视高没测出来 → 等系数数学不成立，宁可全渲染
+    const alwaysRendered = Math.ceil(view / rh) + OVERSCAN * 2
+    const total = o.itemCount()
+    return total > Math.max(alwaysRendered, o.minCount?.() ?? 0)
   })
 
+  /** 一屏该装多少行（含上下边界）—— 也是窗口永不被压空时的最小行数 */
+  const windowRows = computed(() => {
+    const rh = o.rowHeight()
+    const view = viewH.value
+    return rh > 0 && view > 0 ? Math.ceil(view / rh) + OVERSCAN * 2 : o.itemCount()
+  })
+
+  /**
+   * start 必须与条目总数联合夹取：列表被过滤变短而 scrollTop 还是旧值时，
+   * 不夹取会得到 start > end → 切片为空 → 用户面对一个"莫名其妙空掉"的下拉。
+   */
   const start = computed(() => {
     if (!enabled.value) return 0
-    return Math.max(0, Math.floor(scrollTop.value / o.rowHeight()) - OVERSCAN)
+    const raw = Math.max(0, Math.floor(scrollTop.value / o.rowHeight()) - OVERSCAN)
+    return Math.min(raw, Math.max(0, o.itemCount() - windowRows.value))
   })
 
   const end = computed(() => {
     if (!enabled.value) return o.itemCount()
-    const visible = Math.ceil((viewH.value || 200) / o.rowHeight())
-    return Math.min(o.itemCount(), Math.ceil(scrollTop.value / o.rowHeight()) + visible + OVERSCAN)
+    return Math.min(o.itemCount(), start.value + windowRows.value)
   })
 
   const topPad = computed(() => (enabled.value ? start.value * o.rowHeight() : 0))

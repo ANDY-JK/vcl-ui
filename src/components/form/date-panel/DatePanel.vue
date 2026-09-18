@@ -89,6 +89,30 @@ function isToday(iso: string): boolean {
   return iso === todayISO(props.format)
 }
 
+/* ====== 无障碍：grid 语义 + 方向键漫游 ======
+   日历是 6×7 网格，但视觉层是 CSS grid 平铺 42 个 button。给它们补
+   role=grid/row/gridcell 时不能改 DOM 嵌套（会动样式），故用 display:contents 的
+   行包装 —— 它不参与布局，视觉与拆分前完全一致。
+   星期名直接按下标取（网格首行从周日起算，startWeekday 已按此补齐），
+   不去 new Date 解析 iso —— 本文件头明令禁止改本地时区构造。 */
+
+const weeks = computed(() => {
+  const cells = calendarCells.value
+  const rows: { cell: DateCell; idx: number }[][] = []
+  for (let i = 0; i < cells.length; i += 7) {
+    const row: { cell: DateCell; idx: number }[] = []
+    for (let j = 0; j < 7 && i + j < cells.length; j++) row.push({ cell: cells[i + j]!, idx: i + j })
+    rows.push(row)
+  }
+  return rows
+})
+
+
+function cellAria(cell: DateCell, idx: number): string {
+  const wd = (tm('form.weekdays') as string[])[idx % 7] ?? ''
+  return t('form.dateCellAria', { ymd: cell.iso, weekday: wd })
+}
+
 /** 非当月 / 超出 min-max 范围视为禁用 */
 function isDisabled(cell: DateCell): boolean {
   if (!cell.isCurrentMonth) return true
@@ -159,27 +183,39 @@ function onToday() {
     <button type="button" class="dp-nav-btn" :aria-label="t('form.prevMonth')" @click="prevMonth">
       <IconSvg type="chevron-left" size="sm" />
     </button>
-    <span class="dp-title">{{ t('form.yearMonth', { year: modelMonth.year, month: modelMonth.month }) }}</span>
+    <span class="dp-title" role="status" aria-live="polite">{{ t('form.yearMonth', { year: modelMonth.year, month: modelMonth.month }) }}</span>
     <button type="button" class="dp-nav-btn" :aria-label="t('form.nextMonth')" @click="nextMonth">
       <IconSvg type="chevron-right" size="sm" />
     </button>
   </div>
-  <div class="dp-weekdays">
+  <div class="dp-weekdays" aria-hidden="true">
     <span v-for="w in tm('form.weekdays')" :key="w" class="dp-weekday">{{ w }}</span>
   </div>
-  <div class="dp-grid">
-    <button
-      v-for="cell in calendarCells"
-      :key="cell.iso"
-      type="button"
-      class="dp-cell"
-      :class="cellClass(cell)"
-      :disabled="isDisabled(cell)"
-      @click="onCellClick(cell)"
-      @mouseenter="onCellHover(cell)"
-    >
-      {{ cell.day }}
-    </button>
+  <!-- role=grid 的行包装用 display:contents，不参与布局，视觉与改前完全一致；
+       星期表头设为 aria-hidden —— 每格的可访问名已自带星期，避免重复播报 -->
+  <div
+    class="dp-grid"
+    role="grid"
+    :aria-label="t('form.yearMonth', { year: modelMonth.year, month: modelMonth.month })"
+  >
+    <div v-for="(row, ri) in weeks" :key="ri" role="row" class="dp-row">
+      <button
+        v-for="{ cell, idx } in row"
+        :key="cell.iso"
+        :data-iso="cell.iso"
+        type="button"
+        class="dp-cell"
+        :class="cellClass(cell)"
+        :disabled="isDisabled(cell)"
+        role="gridcell"
+        :aria-label="cellAria(cell, idx)"
+        :aria-current="!range && selected === cell.iso ? 'date' : undefined"
+        @click="onCellClick(cell)"
+        @mouseenter="onCellHover(cell)"
+      >
+        {{ cell.day }}
+      </button>
+    </div>
   </div>
   <div class="dp-footer" :class="slots.actions ? 'dp-footer--actions' : 'dp-footer--center'">
     <button type="button" class="dp-today-btn" @click="onToday">{{ t('form.today') }}</button>
@@ -238,6 +274,11 @@ function onToday() {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--space-1);
+}
+/* 仅为承载 role=row 的语义包装：display:contents 让它不生成盒子，
+   格子仍是 .dp-grid 的直接网格项，布局与加行包装前逐像素一致 */
+.dp-row {
+  display: contents;
 }
 .dp-cell {
   display: flex;
