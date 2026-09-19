@@ -542,6 +542,9 @@ const _isFullscreen = ref(false)
 const _lockedMaxH = ref('')
 const _fullscreenParent = ref<HTMLElement | null>(null)
 const _fullscreenNext = ref<ChildNode | null>(null)
+/** 搬到 body 的那个节点本身：卸载时模板 ref 已被 Vue 置空（setRef 早于 onUnmounted），
+ *  必须另存一份裸引用，否则归还路径拿不到节点。 */
+let _fullscreenEl: HTMLElement | null = null
 const _toggleCollapse = props.onToggleSidebar ?? inject<() => void>('toggleCollapse', () => {})
 const _sidebarToggledByUs = ref(false)
 let _fsResizeRaf = 0
@@ -582,10 +585,38 @@ function toggleFullscreen() {
 }
 
 async function _enterFullscreenAfterSettle(sidebar: HTMLElement | null, needCollapse: boolean, run: number) {
-  if (needCollapse && sidebar) await _waitForWidthSettle(sidebar)
+  if (needCollapse && sidebar) await _waitForCollapseDone(sidebar)
   if (_fsRun !== run) return // 等待期间被取消/退出/卸载过 → 本条作废，不再改任何状态
   _fsRun = 0
   _isFullscreen.value = true
+}
+/**
+ * 把全屏期间挂到 body 下的节点放回原父容器（退出全屏 / 组件卸载共用）。
+ * 卸载路径必须走这里：.table-wrap 是根节点的**子**节点，被搬到 body 后 Vue 摘根节点摘不到它，
+ * 不放回去就整张表游离在 body 上，组件实例已销毁、再无人持有引用。
+ * 此时原父容器已随根节点脱离文档 → "放回去"等于把它请出 body。
+ */
+function returnFullscreenNode() {
+  const wrap = _fullscreenEl
+  const parent = _fullscreenParent.value
+  const next = _fullscreenNext.value
+  if (wrap && parent) {
+    // 全屏期间父容器 DOM 可能变动（路由切换/虚拟列表重排）导致快照失效：
+    // 快照节点已不在原父容器内时回退为 append（仍是原父容器内，位置次要于不丢节点）
+    if (next && next.parentNode === parent) parent.insertBefore(wrap, next)
+    else parent.appendChild(wrap)
+  } else if (wrap?.parentNode === document.body) {
+    wrap.remove() // 原父容器快照也没了：至少别把全屏框留在页面上
+  }
+  if (wrap) {
+    wrap.style.top = ''
+    wrap.style.left = ''
+    wrap.style.width = ''
+    wrap.style.height = ''
+  }
+  _fullscreenEl = null
+  _fullscreenParent.value = null
+  _fullscreenNext.value = null
 }
 function onFullscreenKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && _isFullscreen.value) {
@@ -689,15 +720,18 @@ function stopFullscreenBoundsWatch() {
   _fsBoundsRo = null
 }
 
-/**
- * 等某容器的宽度停止变化（连续两帧同值即认为过渡跑完）。
- * 用于进出全屏时替代按固定毫秒等待：侧栏动画长短随主题、容器宽度、动效降级设置而变，
- * 写死的数要么白等要么在动画跑完前就把节点搬走（表现为跳一下）。
- */
-/** 兜底上限：后台标签页不跑 rAF，超过这个时长就认为已经稳定，不能让流程挂死 */
+/** 兜底上限：后台标签页不跑 rAF、动画事件也不派发，超过这个时长就认为已稳定，不能让流程挂死 */
 const _SETTLE_TIMEOUT_MS = 2000
 /** 选区拖到容器边缘时，自动滚动的步进节拍 */
 const _RANGE_SCROLL_TICK_MS = 50
+
+/**
+ * 等某容器的宽度停止变化（连续两帧同值即认为过渡跑完）。
+ * 用于替代按固定毫秒等待：侧栏动画长短随主题、容器宽度、动效降级设置而变，
+ * 写死的数要么白等要么在动画跑完前就把节点搬走（表现为跳一下）。
+ * 它只能当兜底：过渡起步前宽度本来就恒定，帧一稀就会误判成"已稳定"，
+ * 能问到动画的情况一律先走 _waitForCssAnimations。
+ */
 function _waitForWidthSettle(el: HTMLElement | null): Promise<void> {
   if (!el || typeof requestAnimationFrame !== 'function') return Promise.resolve()
   return new Promise((resolve) => {
@@ -718,6 +752,35 @@ function _waitForWidthSettle(el: HTMLElement | null): Promise<void> {
     requestAnimationFrame(step)
   })
 }
+
+/**
+ * 等元素自身的 CSS 过渡/动画跑完；返回 false = 动画接口没给出结论（不支持 / 当前没有动画），
+ * 调用方要退回宽度实测。
+ * 为什么要等动画本身而不是等"宽度不再变化"：类名是 Vue 在微任务里落的，过渡又要到样式
+ * 重算那一刻才被创建 —— 起步前那几帧宽度恒定，实测会判成已稳定，全屏框就按半途的边界量。
+ */
+async function _waitForCssAnimations(el: HTMLElement): Promise<boolean> {
+  if (typeof el.getAnimations !== 'function') return false
+  await nextTick() // 等 collapsed 类落到 DOM
+  el.getBoundingClientRect() // 强制一次样式重算：transition 在这一步才被创建
+  // 只看挂在元素自己身上的动画：Element.getAnimations() 连后代的一起返回，后代常驻动画会把等待拖到兜底上限
+  // finished 在老 Safari（<16.4）上没有：拿不到 Promise 就等于问不出结论，退回宽度实测
+  const own = el
+    .getAnimations()
+    .filter((a) => a.effect instanceof KeyframeEffect && a.effect.target === el && a.finished instanceof Promise)
+  if (!own.length) return false // 动效降级时确实没有过渡：不白等，交给实测
+  await Promise.race([
+    Promise.all(own.map((a) => a.finished.catch(() => {}))), // 中途被 cancel 也算收尾
+    new Promise((r) => setTimeout(r, _SETTLE_TIMEOUT_MS)),
+  ])
+  return true
+}
+
+/** 进全屏前等侧栏收起：能问到动画就等动画跑完，问不到才退回"宽度连续两帧不变" */
+async function _waitForCollapseDone(el: HTMLElement): Promise<void> {
+  if (await _waitForCssAnimations(el)) return
+  await _waitForWidthSettle(el)
+}
 watch(_isFullscreen, async (v) => {
   _lockedMaxH.value = '' // 全屏模式由内部 flex 布局接管，释放 JS 锁高
   if (v) {
@@ -729,6 +792,7 @@ watch(_isFullscreen, async (v) => {
     document.body.classList.add('dt-fullscreen-active')
     // 移到 body 下，脱离弹窗/父容器的 overflow/display 限制
     if (tableWrapRef.value && tableWrapRef.value.parentElement) {
+      _fullscreenEl = tableWrapRef.value
       _fullscreenParent.value = tableWrapRef.value.parentElement
       _fullscreenNext.value = tableWrapRef.value.nextSibling
       document.body.appendChild(tableWrapRef.value)
@@ -745,28 +809,11 @@ watch(_isFullscreen, async (v) => {
     document.removeEventListener('click', onFullscreenBodyClick, true)
     window.removeEventListener('resize', onFullscreenResize)
     document.body.classList.remove('dt-fullscreen-active')
-    // 先归还节点、再清全屏内联尺寸，最后才还原侧栏。
+    // 先归还节点并清掉全屏内联尺寸，最后才还原侧栏。
     // 归还后表格回到普通流，宽度自然跟着父容器变，不需要等侧栏动画收尾；
     // 反过来（先等再归还）会把整张表以"定宽定高的静态块"留在 body 末尾直到等待结束，
     // 把宿主页面内容顶开 —— 那正是过去这里等固定毫秒埋下的雷。
-    if (tableWrapRef.value && _fullscreenParent.value) {
-      // 全屏期间父容器 DOM 可能变动（路由切换/虚拟列表重排）导致 nextSibling 快照失效：
-      // 快照节点已不在文档中时回退为 append（仍是原父容器内，位置次要于不丢节点）
-      const next = _fullscreenNext.value
-      if (next && next.parentNode === _fullscreenParent.value) {
-        _fullscreenParent.value.insertBefore(tableWrapRef.value, next)
-      } else {
-        _fullscreenParent.value.appendChild(tableWrapRef.value)
-      }
-      _fullscreenParent.value = null
-      _fullscreenNext.value = null
-    }
-    if (tableWrapRef.value) {
-      tableWrapRef.value.style.top = ''
-      tableWrapRef.value.style.left = ''
-      tableWrapRef.value.style.width = ''
-      tableWrapRef.value.style.height = ''
-    }
+    returnFullscreenNode()
     if (_sidebarToggledByUs.value) {
       _toggleCollapse()
       _sidebarToggledByUs.value = false
@@ -1980,13 +2027,10 @@ onUnmounted(() => {
       cancelAnimationFrame(_fsResizeRaf)
       _fsResizeRaf = 0
     }
-    // 清理 inline 样式
-    if (tableWrapRef.value) {
-      tableWrapRef.value.style.top = ''
-      tableWrapRef.value.style.left = ''
-      tableWrapRef.value.style.width = ''
-      tableWrapRef.value.style.height = ''
-    }
+    // 归还节点并清理 inline 尺寸：onUnmounted 跑在 Vue 摘除根节点之后，此时根节点（连同原父
+    // 容器）已脱离文档，而模板 ref 也已被置空 —— 被搬到 body 的 .table-wrap 不在那棵子树里，
+    // 不显式放回去就永久游离在页面上。
+    returnFullscreenNode()
   }
   _cleanups.forEach((fn) => fn())
 })
