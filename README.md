@@ -168,8 +168,8 @@ npm run build       # 构建产物到 dist/
 3. **CSS `@media` 走登记制**：`@media` 里不能用 `var()`，所以宽度值必须出现在 `scripts/check-constants.mjs` 的登记集合里并注明用途。加新断点前先确认既有断点不能复用。
 4. **上限/阈值默认自适应**：容量类上限按真实度量动态算（上传并发取同源连接数的一半、虚拟化只在"窗口行数确实小于总行数"时启用），同时给调用方留覆写口（`maxConcurrent`、`pageVirtualMin`、`cardBreakpoint`）。
 5. **同一哨兵值不抄两份**：跨文件复用的判定值收进共享常量或共享函数（如列拖拽顺序排序 `sortColumnsByOrder`），改一处全库生效。
-6. **静默截断要能被发现**：按长度截断/省略的地方必须留下完整值（`title`、`aria-label`、导出原文），不能让用户只看到被裁掉的那截。带 `text-overflow: ellipsis` 的类都要在 `scripts/check-constants.mjs` 的 `ELLIPSIS_VERDICTS` 里给一个判定（`title` / `covered` 说明已有兜底通道 / `not-user-data` 说明为什么不需要），新增截断类不登记就红。
-7. **延时要有名字和用途**：`setTimeout` / `setInterval` 的毫秒数写成带注释的 `*_MS` 常量，`check:constants` 拦住直接写数字的写法（`0` 表示让出一个任务，不算时长）。数值相同的两个延时不一定同一件事（如"失败退避重试"与"逐天请求的配额间隔"都是 800ms），确认同因才合并成共享常量。`src/demos/` 豁免：示例里 `模拟 1.5s 网络` 就是给读者看的字面值。
+6. **静默截断要能被发现**：按长度截断/省略的地方必须留下完整值（`title`、`aria-label`、导出原文、点击复制），不能让用户只看到被裁掉的那截。带 `text-overflow: ellipsis` 的类都要在 `scripts/check-constants.mjs` 的 `ELLIPSIS_VERDICTS` 里给一个判定（`title` / `covered` 说明已有兜底通道 / `not-user-data` 说明为什么不需要），新增截断类不登记就红。闸口只扫 `src/components`（demo 的展示文案由写 demo 的人当场判定）；`-webkit-line-clamp` 那类多行截断目前靠人判（现库内 2 处都在"点击即复制完整值"的按钮里）。
+7. **延时要有名字和用途**：`setTimeout` / `setInterval` 的毫秒数写成带注释的 `*_MS` 常量，`check:constants` 拦住直接写数字的写法（`0` 表示让出一个任务，不算时长）。它只管调用里的延时位：三元表达式与默认参数里的时长（如 Toast 的 `duration` 缺省值）它不报，见到同样要命名。数值相同的两个延时不一定同一件事（如"失败退避重试"与"逐天请求的配额间隔"都是 800ms），确认同因才合并成共享常量。`src/demos/` 豁免：示例里 `模拟 1.5s 网络` 就是给读者看的字面值。
 
 ## 🚀 发版（维护者）
 

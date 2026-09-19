@@ -8,6 +8,7 @@ import {
   computed,
   onMounted,
   onUnmounted,
+  onDeactivated,
   onErrorCaptured,
   nextTick,
   inject,
@@ -548,8 +549,11 @@ let _fullscreenEl: HTMLElement | null = null
 const _toggleCollapse = props.onToggleSidebar ?? inject<() => void>('toggleCollapse', () => {})
 const _sidebarToggledByUs = ref(false)
 let _fsResizeRaf = 0
-/** 进入全屏的等待令牌：自增即作废上一条未完成的等待（共享布尔会让"取消后再点"被前一条抢先放行） */
-let _fsRun = 0
+/** 进入全屏的等待：_fsSeq 只头发号，_fsPendingRun 记录当前在飞的那个号（0 = 没有在飞）。
+ *  为什么要两个数：共享布尔会让"取消后再点"被上一条抢先放行；只留一个自增计数又表达不出
+ *  "现在没在等"，于是退出时顺手 ++ 就把按钮变成永久"取消一条不存在的等待"（实测第二次进全屏点不动）。 */
+let _fsSeq = 0
+let _fsPendingRun = 0
 /** 内容区尺寸监听：侧栏收起、父容器变化都不会触发 window resize，
  *  全屏框过去只在进入那一刻量一次 → 动画没跑完就进场，框会一直偏到下次刷新窗口 */
 let _fsBoundsRo: ResizeObserver | null = null
@@ -557,7 +561,7 @@ const _cleanups: (() => void)[] = []
 
 /** 放弃进行中的进入全屏，并把被本组件收起的侧栏还原（三条中断路径共用：再次点击 / 退出 / 卸载） */
 function cancelFullscreenEnter() {
-  _fsRun++
+  _fsPendingRun = 0 // 在飞的那条等待落地时比不过号，自己作废
   if (_sidebarToggledByUs.value) {
     _toggleCollapse()
     _sidebarToggledByUs.value = false
@@ -567,27 +571,30 @@ function cancelFullscreenEnter() {
 function toggleFullscreen() {
   if (_isFullscreen.value) {
     _isFullscreen.value = false
-  } else if (_fsRun) {
-    // 正在等待进入全屏 → 取消并还原导航栏
-    cancelFullscreenEnter()
-  } else {
-    const sidebar = document.querySelector<HTMLElement>('.sidebar')
-    const needCollapse = !!sidebar && !sidebar.classList.contains('collapsed')
-    if (needCollapse) {
-      _toggleCollapse()
-      _sidebarToggledByUs.value = true
-    }
-    const run = ++_fsRun
-    // 先让侧栏收起动画跑完再进场，全屏框量的才是最终边界（过去这里等 250ms，见 _waitForWidthSettle）。
-    // 进场后仍有 ResizeObserver 持续纠正，所以这一步只是让入场观感稳定，不再是唯一的一次测量。
-    void _enterFullscreenAfterSettle(needCollapse ? sidebar : null, needCollapse, run)
+    return
   }
+  if (_fsPendingRun) {
+    // 正在等待进入全屏 → 取消并还原导航栏；下一次点击重新开始
+    cancelFullscreenEnter()
+    return
+  }
+  const sidebar = document.querySelector<HTMLElement>('.sidebar')
+  const needCollapse = !!sidebar && !sidebar.classList.contains('collapsed')
+  if (needCollapse) {
+    _toggleCollapse()
+    _sidebarToggledByUs.value = true
+  }
+  const run = ++_fsSeq
+  _fsPendingRun = run
+  // 先让侧栏收起动画跑完再进场，全屏框量的才是最终边界（过去这里等 250ms，见 _waitForWidthSettle）。
+  // 进场后仍有 ResizeObserver 持续纠正，所以这一步只是让入场观感稳定，不再是唯一的一次测量。
+  void _enterFullscreenAfterSettle(needCollapse ? sidebar : null, needCollapse, run)
 }
 
 async function _enterFullscreenAfterSettle(sidebar: HTMLElement | null, needCollapse: boolean, run: number) {
   if (needCollapse && sidebar) await _waitForCollapseDone(sidebar)
-  if (_fsRun !== run) return // 等待期间被取消/退出/卸载过 → 本条作废，不再改任何状态
-  _fsRun = 0
+  if (_fsPendingRun !== run) return // 等待期间被取消/退出/卸载过 → 本条作废，不再改任何状态
+  _fsPendingRun = 0
   _isFullscreen.value = true
 }
 /**
@@ -763,17 +770,34 @@ async function _waitForCssAnimations(el: HTMLElement): Promise<boolean> {
   if (typeof el.getAnimations !== 'function') return false
   await nextTick() // 等 collapsed 类落到 DOM
   el.getBoundingClientRect() // 强制一次样式重算：transition 在这一步才被创建
-  // 只看挂在元素自己身上的动画：Element.getAnimations() 连后代的一起返回，后代常驻动画会把等待拖到兜底上限
-  // finished 在老 Safari（<16.4）上没有：拿不到 Promise 就等于问不出结论，退回宽度实测
+  // 只看挂在元素自己身上的动画：Element.getAnimations() 连后代的一起返回，后代常驻动画会把等待拖到兜底上限；
+  // 同理排掉 ::before/::after 上的动画（宿主拿它做装饰常驻动画时，等的还是元素本身）
   const own = el
     .getAnimations()
-    .filter((a) => a.effect instanceof KeyframeEffect && a.effect.target === el && a.finished instanceof Promise)
+    .filter(
+      (a) =>
+        a.effect instanceof KeyframeEffect &&
+        a.effect.target === el &&
+        !a.effect.pseudoElement &&
+        a.finished instanceof Promise,
+    )
   if (!own.length) return false // 动效降级时确实没有过渡：不白等，交给实测
-  await Promise.race([
-    Promise.all(own.map((a) => a.finished.catch(() => {}))), // 中途被 cancel 也算收尾
-    new Promise((r) => setTimeout(r, _SETTLE_TIMEOUT_MS)),
-  ])
-  return true
+  let timer: ReturnType<typeof setTimeout> | undefined
+  let timedOut = false
+  try {
+    await Promise.race([
+      Promise.all(own.map((a) => a.finished.catch(() => {}))), // 中途被 cancel 也算收尾
+      new Promise<void>((r) => {
+        timer = setTimeout(() => {
+          timedOut = true
+          r()
+        }, _SETTLE_TIMEOUT_MS)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+  return !timedOut // 撞上限正是"问不出结论"，退回宽度实测，别把刚修掉的伪稳定放回来
 }
 
 /** 进全屏前等侧栏收起：能问到动画就等动画跑完，问不到才退回"宽度连续两帧不变" */
@@ -781,6 +805,11 @@ async function _waitForCollapseDone(el: HTMLElement): Promise<void> {
   if (await _waitForCssAnimations(el)) return
   await _waitForWidthSettle(el)
 }
+onDeactivated(() => {
+  // KeepAlive 失活时不能把全屏态带进缓存：表格节点挂在 body 上、body 的全屏类与全局监听都还在生效，
+  // 宿主切过去的新一页既被盖住又被 overflow:hidden 锁住。退出复用同一条归还路径。
+  if (_isFullscreen.value) _isFullscreen.value = false
+})
 watch(_isFullscreen, async (v) => {
   _lockedMaxH.value = '' // 全屏模式由内部 flex 布局接管，释放 JS 锁高
   if (v) {
@@ -803,7 +832,7 @@ watch(_isFullscreen, async (v) => {
     startFullscreenBoundsWatch()
   } else {
     // 作废仍在等待的进入流程（不还原侧栏 —— 下面的归还流程统一处理）
-    _fsRun++
+    _fsPendingRun = 0
     stopFullscreenBoundsWatch()
     document.removeEventListener('keydown', onFullscreenKeydown, true)
     document.removeEventListener('click', onFullscreenBodyClick, true)

@@ -302,7 +302,7 @@ const delayHits = []
 // 只管 src/components（对外发布的库代码）：demos 里的延时是给读者看的示例值（"模拟 1.5s 网络"），
 // 换成常量反而让示例更难读。
 // 已知边界：只管调用里的延时位。三元/默认参数里的时长（如 Toast 的 duration 默认值）不在此条范围，
-// 但同样受 README 规范第 1 条约束 —— 见到就该命名，别因为它不红就当它合规。
+// 但同样受 README 规范第 7 条约束 —— 见到就该命名，别因为它不红就当它合规。
 for (const f of files.filter(isSource).filter((x) => relOf(x).startsWith('src/components/'))) {
   const text = readFileSync(f, 'utf8')
   const rel = relOf(f)
