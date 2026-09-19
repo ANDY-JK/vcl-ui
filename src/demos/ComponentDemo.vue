@@ -86,6 +86,10 @@ const demoMap: Record<string, any> = {
 
   // 地图和位置
   amap: defineAsyncComponent({ loader: () => import('./map/AmapDemo.vue'), errorComponent: ErrorFallback }),
+  'amap-widget': defineAsyncComponent({
+    loader: () => import('./map/AmapWidgetDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
   'route-planner': defineAsyncComponent({
     loader: () => import('./map/RoutePlannerDemo.vue'),
     errorComponent: ErrorFallback,

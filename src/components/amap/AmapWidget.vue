@@ -241,7 +241,7 @@ defineExpose({
 
 <style scoped>
 .amap-widget {
-  border-radius: var(--radius-md, var(--radius-md));
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 </style>

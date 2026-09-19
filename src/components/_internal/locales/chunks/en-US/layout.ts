@@ -64,6 +64,7 @@ export default {
     // Items — Business Modules
     storage: 'Storage',
     amap: 'Amap (AMap maps)',
+    amapWidget: 'AmapWidget (map component)',
     routePlanner: 'RoutePlanner',
     contractCollection: 'ContractCollection',
     formDesigner: 'FormDesigner (low-code forms)',

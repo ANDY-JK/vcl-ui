@@ -64,6 +64,7 @@ export default {
     // 二级条目 — 业务专项
     storage: 'Storage 组合存储',
     amap: 'Amap 高德地图',
+    amapWidget: 'AmapWidget 地图组件',
     routePlanner: 'RoutePlanner 路线规划',
     contractCollection: 'ContractCollection 合同收集',
     formDesigner: 'FormDesigner 低代码表单',

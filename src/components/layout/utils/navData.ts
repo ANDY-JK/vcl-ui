@@ -113,7 +113,7 @@ export const navTree: NavNode[] = [
       { label: 'navData.drawer', icon: 'panel-left', route: '/drawer' },
       { label: 'navData.popover', icon: 'package', route: '/popover' },
       { label: 'navData.errorBoundary', icon: 'shield', route: '/error-boundary' },
-      { label: 'navData.beepVoice', icon: 'volume-high', route: '/beep-voice' },
+      { label: 'navData.beepVoice', icon: 'volume-2', route: '/beep-voice' },
       { label: 'navData.confirmModal', icon: 'message-circle', route: '/confirm-modal' },
       { label: 'navData.state', icon: 'wifi-off', route: '/state' },
     ],
@@ -167,6 +167,7 @@ export const navTree: NavNode[] = [
     children: [
       { label: 'navData.storage', icon: 'database', route: '/storage' },
       { label: 'navData.amap', icon: 'map-pin', route: '/amap' },
+      { label: 'navData.amapWidget', icon: 'target', route: '/amap-widget' },
       { label: 'navData.routePlanner', icon: 'route', route: '/route-planner' },
       { label: 'navData.contractCollection', icon: 'file-text', route: '/contract-collection' },
       { label: 'navData.formDesigner', icon: 'layout-template', route: '/form-builder' },

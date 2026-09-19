@@ -1,11 +1,27 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Chart from '@/components/chart/Chart.vue'
+import BaseChart from '@/components/chart/BaseChart.vue'
 import ChartLegend from '@/components/chart/ChartLegend.vue'
 import Card from '@/components/data/Card.vue'
 import Button from '@/components/basic/Button.vue'
+import type { EChartsOption } from 'echarts'
 
 const darkMode = ref(false)
+
+/* ===== BaseChart：原始 ECharts option 直通口，Chart 的封装覆盖不到时走这条 ===== */
+const rawGaugeOption: EChartsOption = {
+  series: [
+    {
+      type: 'gauge',
+      min: 0,
+      max: 100,
+      progress: { show: true, width: 12 },
+      detail: { formatter: '{value}%', fontSize: 18 },
+      data: [{ value: 72, name: '演示覆盖率' }],
+    },
+  ],
+}
 
 // ChartLegend 独立图例数据
 const legendItems = ref([
@@ -1396,6 +1412,17 @@ const mixedSeries = [
         <code>ChartLegend</code> Props: <code>items: { name, color, visible }[]</code> | Events:
         <code>@toggle(name: string)</code>
       </p>
+    </Card>
+
+    <!-- BaseChart：原始 option 直通 -->
+    <Card title="BaseChart — 直接喂 ECharts 原始 option" style="margin-top: 20px">
+      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+        <code>Chart</code> 的 props 覆盖不到的图形（仪表盘、桑基、自定义 series 等）用
+        <code>BaseChart</code>：只吃 <code>option</code> / <code>height</code> / <code>width</code> /
+        <code>darkMode</code> / <code>loading</code> / <code>emptyText</code> / <code>toolbar</code>，
+        其余全部交给 ECharts 自己。
+      </p>
+      <BaseChart :option="rawGaugeOption" :dark-mode="darkMode" height="220px" />
     </Card>
 
     <!-- Events -->
