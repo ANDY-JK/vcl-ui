@@ -44,6 +44,9 @@ Thumbs.db
 evidence/
 scratch/
 
+# 本机跑 python 时安装器在工作目录落下的缓存（曾被 bea29b9 顺手带进仓库，已删）
+/Python/
+
 # 工具报告产物（可随时重新生成，不应入库）
 /coverage/
 eslint-report.json
