@@ -94,6 +94,10 @@ function removeToast(id: number) {
   }
 }
 
+/** 未显式传 duration 时的默认停留：报错要给人读完并处理的时间，其余类型读完即走 */
+const _DEFAULT_ERROR_DURATION_MS = 5000
+const _DEFAULT_DURATION_MS = 3000
+
 // 全局方法
 function show(
   message: string,
@@ -108,7 +112,7 @@ function show(
   },
 ) {
   const id = nextId++
-  const dur = duration ?? (type === 'error' ? 5000 : 3000)
+  const dur = duration ?? (type === 'error' ? _DEFAULT_ERROR_DURATION_MS : _DEFAULT_DURATION_MS)
   const toast: ToastItem = {
     id,
     type,

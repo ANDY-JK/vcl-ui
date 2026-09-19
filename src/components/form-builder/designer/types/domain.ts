@@ -492,7 +492,7 @@ export function formCollectStorageKey(formId: string): string {
 export function createField(type: DesignerNodeType, index: number): DesignerNode {
   const defaults = getFieldDefaults(type)
   // 只查这一条、只翻译这一个名字。过去先 getFieldTypes() 把整张表 40 项 × 80 次 t() 全翻译一遍
-  // 再 find（实测 3.6ms/次），Excel 导入/程序化建表要按字段数线性放大。
+  // 再 find（同机实测整表翻译的单次成本约是直查的 50 倍），Excel 导入/程序化建表要按字段数线性放大。
   const reg = findFieldRegistration(type)
   const node: DesignerNode = {
     id: genFieldId(),
