@@ -1,5 +1,4 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './demos/router'
 import { installErrorGuard } from '@/components'
@@ -9,7 +8,6 @@ import '@/components/tokens.css'
 import './demos/site.css'
 
 const app = createApp(App)
-app.use(createPinia())
 app.use(router)
 
 /** 逃逸错误现场快照：控制台执行 __errorGuard 取最新一条（含组件链 + 堆栈），用于定位「页面加载异常」来源 */

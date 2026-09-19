@@ -88,7 +88,6 @@ export default defineConfig({
       external: [
         'vue',
         'vue-router',
-        'pinia',
         'echarts',
         /^echarts\//,
         'echarts-wordcloud',
