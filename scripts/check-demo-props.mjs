@@ -83,27 +83,57 @@ function findInterface(file, name, depth = 0) {
     if (imp) return findInterface(resolveSpec(file, imp[1]), name, depth + 1)
     return null
   }
-  let i = m.index + m[0].length - 1
-  let depth2 = 0
-  let end = i
-  for (; end < src.length; end++) {
-    if (src[end] === '{') depth2++
-    else if (src[end] === '}') {
-      depth2--
-      if (depth2 === 0) break
-    }
-  }
+  const i = m.index + m[0].length - 1
+  const end = matchBalanced(src, i, '{', '}')
+  if (end < 0) return null
   return src.slice(m.index + m[0].length, end)
 }
 
-/** 从 fromIdx 处的开字符起，配平地找到对应闭字符的下标；找不到返回 -1 */
+/** 从 fromIdx 处的开字符起，配平地找到对应闭字符的下标；找不到返回 -1
+ *  注释与字符串里的括号一律不计数 —— DataTable 的 props 块里有
+ *  「总行数 > 可视行数」这样的散文比较号，早先它把泛型体截断在半路，
+ *  58 个 prop 只认得 26 个，后半全被当成谎报。 */
 function matchBalanced(src, fromIdx, open, close) {
   const i0 = src.indexOf(open, fromIdx)
   if (i0 < 0) return -1
   let d = 0
+  let block = false
+  let lineCmt = false
+  let quote = ''
   for (let i = i0; i < src.length; i++) {
     const ch = src[i]
-    if (open === '<' && ch === '=' && src[i + 1] === '>') {
+    const next = src[i + 1]
+    if (block) {
+      if (ch === '*' && next === '/') {
+        block = false
+        i++
+      }
+      continue
+    }
+    if (lineCmt) {
+      if (ch === '\n') lineCmt = false
+      continue
+    }
+    if (quote) {
+      if (ch === '\\') i++
+      else if (ch === quote) quote = ''
+      continue
+    }
+    if (ch === '/' && next === '*') {
+      block = true
+      i++
+      continue
+    }
+    if (ch === '/' && next === '/') {
+      lineCmt = true
+      i++
+      continue
+    }
+    if (ch === "'" || ch === '"' || ch === '`') {
+      quote = ch
+      continue
+    }
+    if (open === '<' && ch === '=' && next === '>') {
       i++
       continue // 箭头函数的 => 不是泛型收尾
     }
