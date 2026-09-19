@@ -334,36 +334,59 @@ console.log(`[4] 字面量延时 ${delayHits.length}`)
 // （IconPicker 的默认色当年就是这个样子，demo 站 icon 页实测 18 条警告）。
 // 判定分两档：值绑定里当场写着 toNativeColorValue( 的算自证合规，不登记；
 // 绕一层 computed 的要在下面登记「这个类的值是从哪儿归一的」，新增绑定点不登记就红。
+// 只管 src/components 的静态模板（与第 [4][5] 条同口径）：
+//   —— demos 不引 _internal（全库 0 处），示例页的取色器由写 demo 的人负责，跑挂了由 site-audit 在浏览器里抓；
+//   —— h() 渲染函数或 :type 动态绑成 color 的写法本条扫不到，新增取色器请照现有 5 处的静态写法。
+// n = 该键下应有的取色器个数，双向对账：多出来（第三条同名 input 绑了裸值）与少了（改名/挪文件）都红，
+// 免得登记变成一张没人核对的死表。
 const COLOR_VALUE_VERDICTS = new Map([
   [
     'src/components/form/IconPicker.vue :: native-picker',
-    'fgPickerValue / bgPickerValue 走 toNativeColorValue；令牌值按 colorProbeTick 在面板打开时重算',
+    {
+      n: 2,
+      why: 'fgPickerValue / bgPickerValue 走 toNativeColorValue；令牌值按 colorProbeTick 在面板打开时重算',
+    },
   ],
   [
     'src/components/form/Input.vue :: f-color',
-    'nativeColorValue 走 toNativeColorValue；modelValue 由调用方给，什么 CSS 写法都可能',
+    { n: 1, why: 'nativeColorValue 走 toNativeColorValue；modelValue 由调用方给，什么 CSS 写法都可能' },
   ],
 ])
+/** 去掉模板注释，避免 <!-- <input type="color"> --> 这种示例片段被算成命中（按行等量留白，行号才对得上） */
+function stripHtmlComments(text) {
+  return text.replace(/<!--[\s\S]*?-->/g, (s) => s.replace(/[^\n]/g, ' '))
+}
 const colorHits = []
+const colorSeen = new Map()
 let colorSites = 0
 for (const f of files.filter((x) => x.endsWith('.vue') && relOf(x).startsWith('src/components/'))) {
-  const text = readFileSync(f, 'utf8')
+  const text = stripHtmlComments(readFileSync(f, 'utf8'))
   const rel = relOf(f)
   for (const t of scanTags(text)) {
-    if (t.name !== 'input' || !/\stype=["']color["']/.test(t.attrs)) continue
+    // type 允许等号两侧留空格；值绑定要带修饰符（v-model.number）与 v-bind:value 两种写法，
+    // 否则最常见的「换个写法绑值」正好从判定底下溜过去（那是假绿，不是没命中）
+    if (t.name !== 'input' || !/\stype\s*=\s*["']color["']/.test(t.attrs)) continue
     colorSites++
     // 没绑值的取色器喂不出非法值；绑了的看绑定表达式本体，别把后面属性里的函数名算成命中
-    const vb = /\s(?::value|v-model|value)\s*=\s*"([^"]*)"|\s(?::value|v-model|value)\s*=\s*'([^']*)'/.exec(t.attrs)
+    const vb =
+      /\s(?::value|v-bind:value|v-model(?:\.\w+)*|value)\s*=\s*"([^"]*)"|\s(?::value|v-bind:value|v-model(?:\.\w+)*|value)\s*=\s*'([^']*)'/.exec(
+        t.attrs,
+      )
     if (!vb) continue
     const expr = vb[1] ?? vb[2] ?? ''
     if (/toNativeColorValue\s*\(/.test(expr)) continue
     const cls = /(?:^|\s):?class=["']([^"'\s]*)/.exec(t.attrs)
     const key = `${rel} :: ${cls ? cls[1] : '（该 input 没有 class，登记时先补一个）'}`
+    colorSeen.set(key, (colorSeen.get(key) ?? 0) + 1)
     if (!COLOR_VALUE_VERDICTS.has(key)) {
       const line = text.slice(0, t.index).split('\n').length
       colorHits.push(`${rel}:${line} <input type="color"> 的值没走 toNativeColorValue —— 就地归一，或绕层 computed 时登记判定（键：${key}）`)
     }
   }
+}
+for (const [key, { n }] of COLOR_VALUE_VERDICTS) {
+  const got = colorSeen.get(key) ?? 0
+  if (got !== n) colorHits.push(`登记与实际对不上：${key} 登记 ${n} 处、实际 ${got} 处（改了 class/挪了文件就要同步这张表）`)
 }
 // 扫不到任何取色器说明这条整块空转（正则失效 / 写法变了），不能当成通过
 if (!colorSites) fail.push('一条 <input type="color"> 都没扫到 —— [6] 的匹配失效了，先修判定再看绿')
