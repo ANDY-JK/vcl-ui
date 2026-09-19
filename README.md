@@ -143,7 +143,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **用法示例**：`src/demos/` — 每个组件一页 demo，`npm run dev` 直接看效果与 Props
 - **API 入口**：`src/components/index.ts` — 全部导出与类型，IDE 里可直接跳转
 - **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 语言包对账 + 单测（含覆盖率地板）+ 构建 + **发包自检** + 真实浏览器 e2e
-- **常量来源自检**：`npm run check:constants` — 五项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量、截断类必须登记判定且用户数据类要绑 `title`
+- **常量来源自检**：`npm run check:constants` — 六项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量、截断类必须登记判定且用户数据类要绑 `title`、原生 `color` 输入的值必须经归一
 - **语言包对账**：`npm run check:i18n` — zh-CN / en-US 分块与键集一一对应，缺哪边点哪个键
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
@@ -170,6 +170,7 @@ npm run build       # 构建产物到 dist/
 5. **同一哨兵值不抄两份**：跨文件复用的判定值收进共享常量或共享函数（如列拖拽顺序排序 `sortColumnsByOrder`），改一处全库生效。
 6. **静默截断要能被发现**：按长度截断/省略的地方必须留下完整值（`title`、`aria-label`、导出原文、点击复制），不能让用户只看到被裁掉的那截。带 `text-overflow: ellipsis` 的类都要在 `scripts/check-constants.mjs` 的 `ELLIPSIS_VERDICTS` 里给一个判定（`title` / `covered` 说明已有兜底通道 / `not-user-data` 说明为什么不需要），新增截断类不登记就红。闸口只扫 `src/components`（demo 的展示文案由写 demo 的人当场判定）；`-webkit-line-clamp` 那类多行截断目前靠人判（现库内 2 处都在"点击即复制完整值"的按钮里）。
 7. **延时要有名字和用途**：`setTimeout` / `setInterval` 的毫秒数写成带注释的 `*_MS` 常量，`check:constants` 拦住直接写数字的写法（`0` 表示让出一个任务，不算时长）。它只管调用里的延时位：三元表达式与默认参数里的时长（如 Toast 的 `duration` 缺省值）它不报，见到同样要命名。数值相同的两个延时不一定同一件事（如"失败退避重试"与"逐天请求的配额间隔"都是 800ms），确认同因才合并成共享常量。`src/demos/` 豁免：示例里 `模拟 1.5s 网络` 就是给读者看的字面值。
+8. **喂给原生控件的值按控件的格式现交**：`<input type="color">` 只认 `#rrggbb`，绑 `var(--token)`、`red`、`#abc`、`transparent` 会被浏览器**静默**拒收——刷 `does not conform to the required format` 警告、取色块退成默认黑。库内统一走 `_internal/utils.ts` 的 `toNativeColorValue()`：`#abc` 简写展开，令牌与命名色挂离屏节点让真实 CSS 引擎算出实际色再转十六进制，算不出的（非法串、缺 `#` 的裸十六进制、`oklch()` 这类新记法）落黑而不是猜色。归一只发生在交给控件那一刻，`v-model` 与回传值仍是调用方原串。`check:constants` 扫 `src/components` 里每个 `<input type="color">`：值绑定没写 `toNativeColorValue(` 又没在 `COLOR_VALUE_VERDICTS` 登记"值从哪儿归一"就红。
 
 ## 🚀 发版（维护者）
 

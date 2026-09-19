@@ -1,4 +1,4 @@
-// 常量来源自检（三件事，任一不过即非零退出）
+// 常量与写死值自检（六项判定，任一不过即非零退出）
 // 规矩本体写在 README「开发规范」一节，这里只负责把它变成机器能拦的那部分：
 // [1] 断点令牌单源一致 —— _internal/breakpoints.ts 的 BP_* 必须与 tokens.css 的 --bp-* 逐个同值，
 //     否则「改了令牌、JS 判定没跟着改」会静默分叉（侧栏收起和表格卡片视图就是两个判定）
@@ -6,6 +6,9 @@
 //     一律引 breakpoints.ts 的常量
 // [3] CSS @media 的宽度值必须落在已登记集合内 —— CSS 侧 var() 进不了 @media，只能写数字，
 //     所以改成「登记制」：新增一个没登记过的断点就红，避免断点数量无意识膨胀
+// [4] setTimeout/setInterval 的延时位不得写字面量毫秒数 —— 要成本文件内有用途说明的 *_MS 常量
+// [5] 会截断文本的类必须登记判定 —— 新增一个 ellipsis 类不判"用户看得见完整值吗"就红
+// [6] 原生 <input type="color"> 的值必须经 toNativeColorValue 归一 —— 绕层 computed 的要登记判定
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -324,6 +327,48 @@ for (const f of files.filter(isSource).filter((x) => relOf(x).startsWith('src/co
 }
 if (delayHits.length) fail.push(...delayHits)
 console.log(`[4] 字面量延时 ${delayHits.length}`)
+
+// ---------- [6] 原生 color 输入的值必须先归一（README 规范第 8 条） ----------
+// <input type="color"> 只认 #rrggbb 一种写法：绑 var(--color-primary)、red、#abc、transparent
+// 会被浏览器静默拒收 —— 刷 "does not conform to the required format" 警告，取色块退成默认黑
+// （IconPicker 的默认色当年就是这个样子，demo 站 icon 页实测 18 条警告）。
+// 判定分两档：值绑定里当场写着 toNativeColorValue( 的算自证合规，不登记；
+// 绕一层 computed 的要在下面登记「这个类的值是从哪儿归一的」，新增绑定点不登记就红。
+const COLOR_VALUE_VERDICTS = new Map([
+  [
+    'src/components/form/IconPicker.vue :: native-picker',
+    'fgPickerValue / bgPickerValue 走 toNativeColorValue；令牌值按 colorProbeTick 在面板打开时重算',
+  ],
+  [
+    'src/components/form/Input.vue :: f-color',
+    'nativeColorValue 走 toNativeColorValue；modelValue 由调用方给，什么 CSS 写法都可能',
+  ],
+])
+const colorHits = []
+let colorSites = 0
+for (const f of files.filter((x) => x.endsWith('.vue') && relOf(x).startsWith('src/components/'))) {
+  const text = readFileSync(f, 'utf8')
+  const rel = relOf(f)
+  for (const t of scanTags(text)) {
+    if (t.name !== 'input' || !/\stype=["']color["']/.test(t.attrs)) continue
+    colorSites++
+    // 没绑值的取色器喂不出非法值；绑了的看绑定表达式本体，别把后面属性里的函数名算成命中
+    const vb = /\s(?::value|v-model|value)\s*=\s*"([^"]*)"|\s(?::value|v-model|value)\s*=\s*'([^']*)'/.exec(t.attrs)
+    if (!vb) continue
+    const expr = vb[1] ?? vb[2] ?? ''
+    if (/toNativeColorValue\s*\(/.test(expr)) continue
+    const cls = /(?:^|\s):?class=["']([^"'\s]*)/.exec(t.attrs)
+    const key = `${rel} :: ${cls ? cls[1] : '（该 input 没有 class，登记时先补一个）'}`
+    if (!COLOR_VALUE_VERDICTS.has(key)) {
+      const line = text.slice(0, t.index).split('\n').length
+      colorHits.push(`${rel}:${line} <input type="color"> 的值没走 toNativeColorValue —— 就地归一，或绕层 computed 时登记判定（键：${key}）`)
+    }
+  }
+}
+// 扫不到任何取色器说明这条整块空转（正则失效 / 写法变了），不能当成通过
+if (!colorSites) fail.push('一条 <input type="color"> 都没扫到 —— [6] 的匹配失效了，先修判定再看绿')
+else if (colorHits.length) fail.push(...colorHits)
+console.log(`[6] 原生 color 输入值归一 出现=${colorSites} 未登记=${colorHits.length}`)
 
 
 if (fail.length) {
