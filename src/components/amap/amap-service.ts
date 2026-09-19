@@ -76,16 +76,16 @@ export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityC
 // ════════════════════════════════════════
 
 /** 单次请求超时：高德 REST 正常几百 ms 内返回，15s 还没回来就是网络/服务端问题，别再占着批次 */
+const _FETCH_TIMEOUT_MS = 15000
 /** 地理编码可信半径（米）：解析结果离原坐标超过这个距离就认为漂到了别处，改用地址口径重试。
  *  取值来自"同城同地址的定位误差"经验量级，未实测分布 —— 调小会增多重试请求。 */
 const _GEOCODE_ACCEPT_RADIUS_M = 700
 
-/** 按名称补查照片的单轮上限：一次 Promise.allSettled 最多并发这么多请求。
- *  ⚠️ 超出部分本轮不查，即第 11 家起会静默没有照片 —— 需要全量时应当分块遍历而非放大此值，
- *  放大它会直接把高德 QPS 打满。 */
+/** 按名称补查照片的**单轮并发窗口**：一次 Promise.allSettled 最多并发这么多请求，
+ *  多出来的排到下一轮顺序跑完（见 batchFetchPoiPhotos）。放大这个值才会把高德 QPS 打满；
+ *  总量上限不在这里，是调用方传的 count。 */
 const _NAME_SEARCH_BATCH_MAX = 10
 
-const _FETCH_TIMEOUT_MS = 15000
 /** 失败后的退避重试间隔：消掉一次网络抖动，避免批量解析把失败项永久标成 none */
 const _RETRY_BACKOFF_MS = 800
 
@@ -391,21 +391,23 @@ export async function batchFetchPoiPhotos(
     }
   }
 
-  const needNameSearch = targets
-    .filter((p) => {
-      if (!p.id) return true
-      return !idPhotoMap.has(p.id)
-    })
-    .slice(0, _NAME_SEARCH_BATCH_MAX)
+  const needNameSearch = targets.filter((p) => {
+    if (!p.id) return true
+    return !idPhotoMap.has(p.id)
+  })
 
-  if (needNameSearch.length > 0) {
+  // 顺序分块跑完，不再只查前 _NAME_SEARCH_BATCH_MAX 个就把其余静默丢掉。
+  // 该常量是**单轮并发窗口**（放大它才会把高德 QPS 打满），不是总量上限；
+  // 这条链路的数量上限由调用方传的 count 决定。
+  for (let i = 0; i < needNameSearch.length; i += _NAME_SEARCH_BATCH_MAX) {
+    const batch = needNameSearch.slice(i, i + _NAME_SEARCH_BATCH_MAX)
     const nameResponses = await Promise.allSettled(
-      needNameSearch.map((p) => searchPoiPhotosByName(p.name, centerLat ?? p.latitude, centerLon ?? p.longitude)),
+      batch.map((p) => searchPoiPhotosByName(p.name, centerLat ?? p.latitude, centerLon ?? p.longitude)),
     )
-    for (let i = 0; i < needNameSearch.length; i++) {
-      const r = nameResponses[i]
+    for (let j = 0; j < batch.length; j++) {
+      const r = nameResponses[j]
       if (r.status === 'fulfilled' && r.value) {
-        const item = needNameSearch[i]
+        const item = batch[j]
         const syntheticKey = `${item.name}|${item.latitude}|${item.longitude}`
         result.set(syntheticKey, r.value)
         if (item.id) result.set(item.id, r.value)
