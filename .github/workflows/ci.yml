@@ -30,6 +30,11 @@ jobs:
       - name: Check constants
         run: npm run check:constants
 
+      # CSS 设计令牌断档自检：var() 引用了全库未声明且无 fallback 的令牌必红
+      # （静默失效 = 亮色碰巧正常、切暗色才暴露，静态闸口是唯一的机器拦截）
+      - name: Check CSS tokens
+        run: npm run check:css-tokens
+
       # 语言包对账：zh-CN / en-US 分块与键集一一对应
       - name: Check i18n parity
         run: npm run check:i18n

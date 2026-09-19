@@ -33,14 +33,15 @@ export default defineConfig({
         'src/components/_internal/solar-icons.ts',
         'src/components/wc/**',
       ],
-      // 覆盖率阈值 — 2026-09-08 错误防护整改后基线（738 用例）
-      // 实测：46.03 stmts / 37.83 branch / 43.27 funcs / 47.87 lines
-      // 地板留 5~7 个点余量，低于即失败防回退；测试再增长按同口径上调
+      // 覆盖率阈值 — 2026-09-20 测试入库扩量后基线（1139 用例）
+      // 实测：54.69 stmts / 46.33 branch / 51.37 funcs / 56.90 lines
+      // 地板留 4~5 个点余量，低于即失败防回退；测试再增长按同口径上调
+      // 已知结构性洼地：storage/indexedDB.ts（happy-dom 无原生 IDB，靠 e2e 覆盖）
       thresholds: {
-        statements: 40,
-        branches: 32,
-        functions: 38,
-        lines: 41,
+        statements: 50,
+        branches: 42,
+        functions: 46,
+        lines: 52,
       },
     },
   },

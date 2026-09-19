@@ -2196,7 +2196,7 @@ const interCols: Column[] = [
   font-size: 12px;
   line-height: 1.7;
   color: var(--color-text-secondary);
-  background: var(--color-bg-secondary);
+  background: var(--color-bg-soft);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
 }
