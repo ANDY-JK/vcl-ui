@@ -146,8 +146,9 @@ export async function copyScreenshotToClipboard(blob: Blob, dataUrl?: string): P
 
 /** 富文本 <img> 复制降级：HTTP 环境、部分 WebView 下 execCommand 可用 */
 function copyImageViaExecCommand(dataUrl: string): boolean {
+  let holder: HTMLDivElement | null = null
   try {
-    const holder = document.createElement('div')
+    holder = document.createElement('div')
     holder.contentEditable = 'true'
     holder.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none'
     const img = document.createElement('img')
@@ -160,16 +161,16 @@ function copyImageViaExecCommand(dataUrl: string): boolean {
     const sel = window.getSelection()
     sel?.removeAllRanges()
     sel?.addRange(range)
-    let ok = false
     try {
-      ok = document.execCommand('copy')
-    } catch {
-      ok = false
+      return document.execCommand('copy')
+    } finally {
+      sel?.removeAllRanges()
     }
-    sel?.removeAllRanges()
-    document.body.removeChild(holder)
-    return ok
   } catch {
     return false
+  } finally {
+    // 挂在 body 上的这个 div 必须无条件收走：createRange / getSelection 在部分 WebView 里会抛，
+    // 那种情况下 copy 没成是次要的，每失败一次留一个游离节点才是。remove 对已摘掉的节点是空操作。
+    holder?.remove()
   }
 }
