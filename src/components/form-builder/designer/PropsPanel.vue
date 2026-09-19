@@ -12,6 +12,7 @@ import Group from '@/components/form/Group.vue'
 import IconPicker from '@/components/form/IconPicker.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
+import { toNativeColorValue } from '@/components/_internal/utils'
 import {
   getTypeLabel,
   getTypeIcon,
@@ -607,7 +608,7 @@ watch(
             <input
               type="color"
               class="ldp-color-picker"
-              :value="node.styleConfig?.borderColor ?? '#e2e8f0'"
+              :value="toNativeColorValue(node.styleConfig?.borderColor ?? '#e2e8f0')"
               @input="
                 emit('update', {
                   styleConfig: { ...node.styleConfig, borderColor: ($event.target as HTMLInputElement).value },
@@ -629,7 +630,7 @@ watch(
             <input
               type="color"
               class="ldp-color-picker"
-              :value="node.styleConfig?.focusBorderColor ?? '#4f6ef7'"
+              :value="toNativeColorValue(node.styleConfig?.focusBorderColor ?? '#4f6ef7')"
               @input="
                 emit('update', {
                   styleConfig: { ...node.styleConfig, focusBorderColor: ($event.target as HTMLInputElement).value },

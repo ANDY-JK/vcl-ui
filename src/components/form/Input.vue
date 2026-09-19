@@ -15,6 +15,7 @@ onErrorCaptured((e: Error) => {
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
+import { toNativeColorValue } from '@/components/_internal/utils'
 
 /** 数字步进按钮：按住多久开始连续步进 */
 const _STEP_HOLD_MS = 400
@@ -110,6 +111,8 @@ const isNumber = computed(() => props.type === 'number')
 const isStepper = computed(() => isNumber.value && props.stepper)
 const isTextarea = computed(() => props.type === 'textarea')
 const isColor = computed(() => props.type === 'color')
+/** 原生取色器只认 #rrggbb，其余写法（red / #abc / var(--x)）先归一再喂，显示与回传仍用原值 */
+const nativeColorValue = computed(() => toNativeColorValue(props.modelValue))
 
 /* ════════════════════════════════════════
    通用状态
@@ -583,7 +586,7 @@ const floatingRaised = computed(() => {
           ref="floatInputRef"
           type="color"
           class="f-color"
-          :value="String(modelValue ?? '#000000')"
+          :value="nativeColorValue"
           :disabled="disabled"
           :name="name"
           @input="onInput"

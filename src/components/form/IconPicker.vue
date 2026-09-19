@@ -36,6 +36,7 @@ import {
 } from '@/components/_internal/morphicons-registry'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
+import { toNativeColorValue } from '@/components/_internal/utils'
 
 /** Lucide 全量图标名（kebab-case），从预构建 JSON 加载，避免运行时 Object.keys + map 1500+ 项 */
 const allIcons = lucideIconNames as string[]
@@ -91,6 +92,13 @@ function setTransparentBg() {
   localBgColor.value = 'transparent'
   colorTarget.value = 'bg'
 }
+
+/**
+ * 喂给两个原生取色器的值：#rrggbb 之外的写法（默认色是 var(--color-primary)、背景可选 transparent）
+ * 会被 Chrome 拒收并刷 console 警告。emit 时仍回原始字符串，主题联动不受影响。
+ */
+const fgPickerValue = computed(() => toNativeColorValue(localColor.value))
+const bgPickerValue = computed(() => toNativeColorValue(localBgColor.value))
 
 /** 加载 Solar 图标列表：优先 Iconify CDN API，失败回退内置精选列表 */
 async function loadSolarIcons() {
@@ -305,7 +313,7 @@ function confirm() {
               <span class="color-label">{{ t('form.iconColor') }}</span>
               <input
                 type="color"
-                :value="localColor"
+                :value="fgPickerValue"
                 class="native-picker"
                 @input="setFgColor($event)"
                 @focus="colorTarget = 'fg'"
@@ -322,7 +330,7 @@ function confirm() {
               <span class="color-label">{{ t('form.bgColor') }}</span>
               <input
                 type="color"
-                :value="localBgColor"
+                :value="bgPickerValue"
                 class="native-picker"
                 @input="setBgColor($event)"
                 @focus="colorTarget = 'bg'"

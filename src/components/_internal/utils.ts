@@ -7,7 +7,7 @@
  * - 下载：SSR / createObjectURL 缺失 / WebView / 异常 四级降级
  * - 深拷贝：null / undefined / 原始值原样返回
  */
-import { isBrowser } from './ssr-guard'
+import { isBrowser, safeDocument } from './ssr-guard'
 import { useT } from './i18n'
 
 /**
@@ -640,6 +640,57 @@ export function rgbToHex(r: number, g: number, b: number): string {
 /** 判断字符串是否为合法 HEX 颜色 */
 export function isHexColor(str: unknown): boolean {
   return isValidHex(toStr(str).trim())
+}
+
+/** 浏览器解析不出颜色时的兜底，与 <input type="color"> 无 value 时的默认黑一致 */
+const NATIVE_COLOR_FALLBACK = '#000000'
+
+/**
+ * 计算样式里的颜色串（rgb()/rgba()）→ #RRGGBB。
+ * 只认这两种：Chrome 对 hex/var()/命名色的计算输出就是 rgb()；oklch 等新记法原样回显，
+ * 其中的数字不是 0~255 分量，宁可回退黑色也不能猜错颜色。
+ */
+function computedColorToHex(computed: string): string | null {
+  const s = toStr(computed).trim()
+  if (!/^rgba?\(/.test(s)) return null
+  const nums = s.match(/[\d.]+/g)
+  if (!nums || nums.length < 3) return null
+  const [r, g, b] = nums.map(Number)
+  if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) return null
+  return rgbToHex(r!, g!, b!)
+}
+
+/** 临时把颜色挂进文档树读计算值，读完立刻摘掉 — 自定义属性只有挂在树里才解析得出来 */
+function resolveCssColor(value: string): string {
+  const doc = safeDocument()
+  if (!doc || !value) return ''
+  const probe = doc.createElement('span')
+  probe.setAttribute('aria-hidden', 'true')
+  probe.style.cssText = 'position:absolute;left:-9999px;top:0;width:0;height:0;overflow:hidden;pointer-events:none'
+  probe.style.color = value
+  doc.documentElement.appendChild(probe)
+  try {
+    return doc.defaultView?.getComputedStyle(probe).color ?? ''
+  } catch {
+    return ''
+  } finally {
+    probe.remove()
+  }
+}
+
+/**
+ * 归一成 <input type="color"> 收得了的 #rrggbb。
+ * 原生取色器只认 #rrggbb 一种写法，传 var(--color-primary)、red、#abc、transparent
+ * 浏览器会拒收并刷 console 警告（IconPicker 默认值即命中）。
+ * 只影响喂给控件的值，调用方持有的原始颜色字符串不改——图标实际渲染仍走 var() 跟随主题。
+ */
+export function toNativeColorValue(value: unknown): string {
+  const raw = toStr(value).trim()
+  if (raw.startsWith('#')) {
+    const rgb = hexToRgb(raw)
+    if (rgb) return rgbToHex(rgb.r, rgb.g, rgb.b)
+  }
+  return computedColorToHex(resolveCssColor(raw)) ?? NATIVE_COLOR_FALLBACK
 }
 
 /**
