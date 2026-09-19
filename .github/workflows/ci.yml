@@ -35,13 +35,15 @@ jobs:
         run: npm run check:i18n
 
       # demo 文档表对账：表里不许列组件没有的 prop，也不给必填无默认的 prop 编默认值
-      # （测试用例不入库，这类谎报只有静态闸口拦得住）
+      # （这类谎报只有静态闸口拦得住）
       - name: Check demo props tables
         run: npm run check:demo-props
 
-      # 测试用例不入仓库（只留开发本机），所以 CI 上没有可跑的用例：
-      # vitest 找不到测试文件会直接 exit 1，playwright 会报 No tests found。
-      # 本地门禁仍然完整：npm run quality-check（类型 + lint + 常量自检 + 单测/覆盖率 + 构建 + 发包自检 + e2e）。
+      # 单元测试（带覆盖率地板）。e2e 不在 CI 跑：扫码/相机用例依赖硬件与真实浏览器
+      # 环境，由开发本机的 quality-check 兜底；真实云端集成用例（s3-real）靠 skipIf
+      # 守卫在此环境自动跳过。
+      - name: Unit tests (with coverage floor)
+        run: npm run test:unit
 
       - name: Build
         run: npm run build
@@ -72,6 +74,9 @@ jobs:
         run: npm audit --registry=https://registry.npmjs.org
         continue-on-error: true
 
-      - name: Scan for secrets
-        run: npx gitleaks detect --source . --no-banner
-        continue-on-error: true
+      # gitleaks 是 Go 二进制、不经 npm 分发（旧的 npx gitleaks 在 CI 上实际无效）。
+      # 用官方 action，扫描结果阻断流水线；audit 的 moderate 噪音仍保留 continue。
+      - name: Scan for secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
