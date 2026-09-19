@@ -189,3 +189,14 @@ export function extractImageFile(e: DragEvent | ClipboardEvent): File | null {
   const f = files[0]
   return f.type.startsWith('image/') ? f : null
 }
+
+/**
+ * DataTable 侧的总页数：pageSize 缺省 / <=0 表示「关掉分页」→ 1 页（分页脚注本身也按此整条隐藏）。
+ * 与 nav/Pagination.vue 用的 calcTotalPages 是两种口径，别合：那边把 pageSize<=0 当录入错误，
+ * 按每页 1 条夹紧（totalPages=total）；这边的 0 是显式语义。
+ * 内部 total 取值两处不同（composable 用当前可见行数、主文件用 totalCount），所以只合公式不合入参。
+ */
+export function calcTableTotalPages(total: number, pageSize: number | undefined): number {
+  if (!pageSize || pageSize <= 0) return 1
+  return Math.max(1, Math.ceil(total / pageSize)) || 1 // 末尾 ||1 兜 total=NaN：NaN 流进页码列表会渲染出一个 NaN 按钮
+}

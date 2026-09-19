@@ -3,7 +3,7 @@
 // ==================== 数据核心：排序 + 数据管道 + 分页/虚拟滚动 ====================
 import { ref, computed, watch, onUnmounted, getCurrentInstance, type Ref, type ComputedRef } from 'vue'
 import type { Column, ColumnFilterState, RowMeta } from './types'
-import { getCellText } from './utils'
+import { getCellText, calcTableTotalPages } from './utils'
 import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
 import { useTableWindowScroll } from './useTableWindowScroll'
 
@@ -225,10 +225,8 @@ export function useTableCore(
   })
 
   const totalPages = computed(() => {
-    if (!props.pageSize || props.pageSize <= 0) return 1
     // 服务端分页用外部 total，客户端分页用 data 长度
-    const total = props.total ?? displayData.value.length
-    return Math.max(1, Math.ceil(total / props.pageSize))
+    return calcTableTotalPages(props.total ?? displayData.value.length, props.pageSize)
   })
 
   const displayPages = computed(() => {

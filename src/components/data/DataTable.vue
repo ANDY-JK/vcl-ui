@@ -52,6 +52,7 @@ import {
   blankPlaceholder,
   isImageUrl as _isImageUrl,
   EXPAND_ICON_TEXT_MIN,
+  calcTableTotalPages,
 } from './composables/utils'
 import { captureTableCanvas } from './composables/canvas-screenshot'
 import { useTableTooltip } from './composables/useTableTooltip'
@@ -483,10 +484,7 @@ watch(
 )
 // 外部 total 覆盖内部 totalCount（服务端分页场景）
 const displayTotal = computed(() => props.total ?? totalCount.value)
-const displayTotalPages = computed(() => {
-  if (!props.pageSize || props.pageSize <= 0) return 1
-  return Math.max(1, Math.ceil(displayTotal.value / props.pageSize))
-})
+const displayTotalPages = computed(() => calcTableTotalPages(displayTotal.value, props.pageSize))
 
 // 行点击高亮（支持多选，再次点击取消）
 const _clickedRowKeys = ref<Set<string>>(new Set())
