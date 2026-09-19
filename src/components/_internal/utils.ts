@@ -664,13 +664,18 @@ function computedColorToHex(computed: string): string | null {
 function resolveCssColor(value: string): string {
   const doc = safeDocument()
   if (!doc || !value) return ''
+  const view = doc.defaultView
+  if (!view) return ''
   const probe = doc.createElement('span')
   probe.setAttribute('aria-hidden', 'true')
   probe.style.cssText = 'position:absolute;left:-9999px;top:0;width:0;height:0;overflow:hidden;pointer-events:none'
+  // 非法颜色串会被 CSSOM 直接拒收（回读为空），此时计算值是 html 继承来的正文色，
+  // 读它就是把页面文字色当成用户选的色 —— 必须在读之前拦掉
   probe.style.color = value
+  if (!probe.style.color) return ''
   doc.documentElement.appendChild(probe)
   try {
-    return doc.defaultView?.getComputedStyle(probe).color ?? ''
+    return view.getComputedStyle(probe).color
   } catch {
     return ''
   } finally {
@@ -683,6 +688,11 @@ function resolveCssColor(value: string): string {
  * 原生取色器只认 #rrggbb 一种写法，传 var(--color-primary)、red、#abc、transparent
  * 浏览器会拒收并刷 console 警告（IconPicker 默认值即命中）。
  * 只影响喂给控件的值，调用方持有的原始颜色字符串不改——图标实际渲染仍走 var() 跟随主题。
+ *
+ * 认不出的一律回退黑：缺 # 的裸十六进制（'ff8800' 不是合法 CSS 颜色）、位数不对、
+ * oklch() 等新记法（计算值原样回显，数字不是 0~255 分量，猜不得）。
+ * 已知边界：var() 指向不存在的令牌时浏览器按继承色处理，取色块会显示成正文色；
+ * 不存在的令牌本身就是错的，回传值与图标渲染都不受影响。
  */
 export function toNativeColorValue(value: unknown): string {
   const raw = toStr(value).trim()

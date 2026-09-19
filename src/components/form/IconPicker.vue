@@ -96,9 +96,18 @@ function setTransparentBg() {
 /**
  * 喂给两个原生取色器的值：#rrggbb 之外的写法（默认色是 var(--color-primary)、背景可选 transparent）
  * 会被 Chrome 拒收并刷 console 警告。emit 时仍回原始字符串，主题联动不受影响。
+ * 依赖 colorProbeTick 重算：令牌值要现算，切主题后不能把取色块留在旧色上
+ * （面板开着时切主题不在处理范围内，下次打开即刷新；图标本身用原值渲染，始终跟主题）
  */
-const fgPickerValue = computed(() => toNativeColorValue(localColor.value))
-const bgPickerValue = computed(() => toNativeColorValue(localBgColor.value))
+const colorProbeTick = ref(0)
+const fgPickerValue = computed(() => {
+  void colorProbeTick.value
+  return toNativeColorValue(localColor.value)
+})
+const bgPickerValue = computed(() => {
+  void colorProbeTick.value
+  return toNativeColorValue(localBgColor.value)
+})
 
 /** 加载 Solar 图标列表：优先 Iconify CDN API，失败回退内置精选列表 */
 async function loadSolarIcons() {
@@ -205,6 +214,7 @@ onUnmounted(() => {
 watch(open, (val) => {
   if (val) {
     iconPage.value = 1
+    colorProbeTick.value++
     nextTick(() => {
       if (iconSentinel.value) _iconObserver?.observe(iconSentinel.value)
     })
