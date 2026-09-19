@@ -68,12 +68,6 @@ import Card from '@/components/data/Card.vue'
           <td style="padding: 3px 8px">circle</td>
           <td style="padding: 3px 8px">circle | rounded</td>
         </tr>
-        <tr>
-          <td style="padding: 3px 8px"><code>color</code></td>
-          <td style="padding: 3px 8px">string</td>
-          <td style="padding: 3px 8px">自动</td>
-          <td style="padding: 3px 8px">背景色</td>
-        </tr>
       </tbody>
       </table>
     </Card>

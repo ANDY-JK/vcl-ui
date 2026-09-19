@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import Result from '@/components/feedback/Result.vue'
 import Empty from '@/components/data/Empty.vue'
 import Button from '@/components/basic/Button.vue'
 import Card from '@/components/data/Card.vue'
+
+const lastAction = ref('')
 </script>
 
 <template>
@@ -14,12 +17,17 @@ import Card from '@/components/data/Card.vue'
     </p>
 
     <!-- ══════════════ Result 结果页 ══════════════ -->
+    <p class="demo-desc">
+      下方三个结果页的主行动按钮都会把点击回抛到 <code>@action</code>：
+      <strong>最近一次点击：{{ lastAction || '（还没点过）' }}</strong>
+    </p>
     <Card title="Result — 成功" style="margin-bottom: 24px">
       <Result
         status="success"
         title="操作成功"
         description="您的数据已成功提交，预计 3 个工作日内处理完成。"
         action-text="返回首页"
+        @action="lastAction = '返回首页'"
       />
     </Card>
 
@@ -29,11 +37,18 @@ import Card from '@/components/data/Card.vue'
         title="提交失败"
         description="请检查网络连接后重试，或联系管理员。"
         action-text="重新提交"
+        @action="lastAction = '重新提交'"
       />
     </Card>
 
     <Card title="Result — 警告" style="margin-bottom: 24px">
-      <Result status="warning" title="注意" description="当前操作可能会影响部分用户的数据。" action-text="我知道了" />
+      <Result
+        status="warning"
+        title="注意"
+        description="当前操作可能会影响部分用户的数据。"
+        action-text="我知道了"
+        @action="lastAction = '我知道了'"
+      />
     </Card>
 
     <Card title="Result — 404 / 空状态" style="margin-bottom: 24px">
@@ -61,7 +76,7 @@ import Card from '@/components/data/Card.vue'
 
       <Card title="Empty — 网络错误">
         <Empty icon="wifi-off" title="网络连接失败" description="请检查网络设置">
-          <Button text="重试" variant="outline" size="sm" icon="refresh" />
+          <Button text="重试" variant="outline" size="sm" icon="rotate-cw" />
         </Empty>
       </Card>
     </div>

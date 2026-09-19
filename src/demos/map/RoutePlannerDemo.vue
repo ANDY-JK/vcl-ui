@@ -22,6 +22,7 @@ const { plan, loading, enriching, generate, enrichDriving, replan, reset: resetP
 const showForm = ref(false)
 const editingStore = ref<Store | null>(null)
 const importStage = ref<'idle' | 'parsing' | 'geocoding' | 'done'>('idle')
+const importMsg = ref('')
 const geocodeProgress = ref({ current: 0, total: 0 })
 const amapKeyInput = ref('')
 const showKeyInput = ref(false)
@@ -142,7 +143,7 @@ async function processImport(data: File | ArrayBuffer): Promise<void> {
     if (dupCount > 0) msg += `，跳过 ${dupCount} 条重复`
     if (needGeocode.length > 0) msg += `，${needGeocode.length} 条已自动定位`
     importStage.value = 'done'
-    ;(importStage as any)._msg = msg
+    importMsg.value = msg
     setTimeout(() => {
       importStage.value = 'idle'
     }, 3000)
@@ -319,6 +320,7 @@ async function handleReplan(): Promise<void> {
       geocodeProgress.value = { current: cur, total }
     })
     hasRealDriving.value = true
+    importMsg.value = ''
     importStage.value = 'done'
     setTimeout(() => {
       importStage.value = 'idle'
@@ -550,7 +552,7 @@ onMounted(async () => {
       />
       <p v-else-if="importStage === 'parsing'" class="import-status">📄 解析 Excel...</p>
       <p v-else-if="importStage === 'done'" class="import-status success">
-        {{ (importStage as any)._msg || '✅ 操作完成' }}
+        {{ importMsg || '✅ 操作完成' }}
       </p>
     </div>
 

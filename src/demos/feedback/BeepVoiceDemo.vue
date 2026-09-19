@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import { beepSuccess, beepError, beepNotify, unlockAudio, notify, getNotifyStatus } from '@/components'
 import { speak, stopSpeak, unlockVoice } from '@/components'
+import type { VoiceLang } from '@/components'
 import Button from '@/components/basic/Button.vue'
 import Card from '@/components/data/Card.vue'
 
@@ -10,6 +11,7 @@ const voiceUnlocked = ref(false)
 const speaking = ref(false)
 const log = ref<string[]>([])
 const notifyPerm = ref(getNotifyStatus())
+let speakTimer: ReturnType<typeof setInterval> | undefined
 
 function addLog(msg: string) {
   log.value.unshift(`[${new Date().toLocaleTimeString()}] ${msg}`)
@@ -36,20 +38,54 @@ function doBeep(type: 'success' | 'error' | 'notify') {
   addLog(`蜂鸣音：${type}`)
 }
 
-function doSpeak(text: string) {
+function doSpeak(text: string, rate = 1, pitch = 1, lang: VoiceLang = 'zh') {
   if (!voiceUnlocked.value) doUnlockVoice()
   speaking.value = true
-  speak(text)
-  addLog(`播报：${text}`)
-  // 语音播报是异步的，延迟检测完成状态
-  setTimeout(() => {
+  addLog(`播报：${text}（rate=${rate} pitch=${pitch} lang=${lang}）`)
+  try {
+    speak(text, rate, pitch, lang)
+  } catch {
     speaking.value = false
-    addLog('播报完成')
-  }, 2000)
+    addLog('播报失败：语音引擎不可用')
+    return
+  }
+  // voices 未就绪时 speak 会把请求挂起补发，此时 speaking/pending 仍为 false —— 只认它自己报的忙标志
+  watchSynthBusy()
 }
+
+/** 轮询 speechSynthesis 的真实忙标志判定播完；speak() 没有完成回调（签名止于 lang） */
+function watchSynthBusy() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    speaking.value = false
+    addLog('本机无 SpeechSynthesis，无法判定播报状态')
+    return
+  }
+  const started = Date.now()
+  let sawBusy = false
+  stopWatch()
+  speakTimer = setInterval(() => {
+    const busy = speechSynthesis.speaking || speechSynthesis.pending
+    if (busy) sawBusy = true
+    if (!busy && (sawBusy || Date.now() - started > 5000)) {
+      stopWatch()
+      speaking.value = false
+      addLog(sawBusy ? '播报结束（语音引擎报闲）' : '播报未启动（语音引擎始终空闲）')
+    }
+  }, 200)
+}
+
+function stopWatch() {
+  if (speakTimer) {
+    clearInterval(speakTimer)
+    speakTimer = undefined
+  }
+}
+
+onUnmounted(stopWatch)
 
 function doStopSpeak() {
   stopSpeak()
+  stopWatch()
   speaking.value = false
   addLog('停止播报')
 }
@@ -90,7 +126,7 @@ function doNotifyClick() {
           text="解锁音频"
           variant="ghost"
           size="sm"
-          icon="volume-high"
+          icon="volume-2"
           :disabled="audioUnlocked"
           @click="doUnlockAudio"
         />
@@ -124,6 +160,13 @@ function doNotifyClick() {
           size="sm"
           :disabled="speaking"
           @click="doSpeak('操作失败，请重试')"
+        />
+        <Button
+          text="慢速英文播报"
+          variant="secondary"
+          size="sm"
+          :disabled="speaking"
+          @click="doSpeak('Order received', 0.7, 1.2, 'en')"
         />
         <Button text="停止" variant="outline" size="sm" :disabled="!speaking" @click="doStopSpeak" />
       </div>
@@ -204,10 +247,12 @@ function doNotifyClick() {
           </tr>
           <tr>
             <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
-              <code>speak(text, onEnd?)</code>
+              <code>speak(text, rate?, pitch?, lang?)</code>
             </td>
             <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useVoice</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">朗读文字，播完后回调</td>
+            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+              朗读文字；rate 0.1~10、pitch 0~2、lang 指定语言（'auto' 自动检测）。无完成回调，播放状态见下方按钮
+            </td>
           </tr>
           <tr>
             <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">

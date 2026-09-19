@@ -49,6 +49,7 @@ const loading = ref(true)
           <Skeleton avatar :rows="2" />
           <Skeleton avatar="lg" :rows="3" />
           <Skeleton avatar="48" :rows="2" />
+          <Skeleton :avatar="64" :rows="2" />
         </div>
       </Card>
 

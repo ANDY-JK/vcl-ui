@@ -38,7 +38,11 @@ const AVATAR_MAP: Record<string, string> = { sm: '32px', md: '40px', lg: '56px' 
 const avatarSize = computed(() => {
   const a = props.avatar
   if (typeof a === 'number') return `${a}px`
-  if (typeof a === 'string') return AVATAR_MAP[a] ?? a
+  if (typeof a === 'string') {
+    // '48' 这类无单位数字串是模板里 avatar="48" 的常见写法，直接透传会得到非法 CSS 使骨架块塌成 0×0
+    if (/^\d+(\.\d+)?$/.test(a)) return `${a}px`
+    return AVATAR_MAP[a] ?? a
+  }
   return a ? '40px' : ''
 })
 

@@ -42,6 +42,13 @@ const dangerVisible = ref(false)
 const warningVisible = ref(false)
 const primaryVisible = ref(false)
 const lastAction = ref('')
+const selectEcho = ref('')
+
+function onSelectConfirm(v: (string | number)[]) {
+  const labels = v.map((x) => selectItems.find((s) => s.value === x)?.label ?? String(x))
+  selectEcho.value = `已选：${labels.join('、') || '（一项都没选）'}`
+  visibleSelect.value = false
+}
 
 function onConfirm(variant: string) {
   lastAction.value = `已确认 — ${variant}`
@@ -68,6 +75,9 @@ function onCancel(variant: string) {
         <Button text="选择项" variant="outline" @click="visibleSelect = true" />
         <Button text="表单弹窗" variant="secondary" @click="visibleForm = true" />
       </div>
+      <p v-if="selectEcho" class="demo-desc" style="margin-top: 12px">
+        <strong>{{ selectEcho }}</strong>
+      </p>
     </Card>
 
     <!-- 默认 -->
@@ -97,7 +107,7 @@ function onCancel(variant: string) {
       modal-type="select"
       title="请选择"
       :select-items="selectItems"
-      @select-confirm="(v) => console.log('选中:', v)"
+      @select-confirm="onSelectConfirm"
     />
 
     <!-- 表单 -->
