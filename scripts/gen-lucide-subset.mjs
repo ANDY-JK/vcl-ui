@@ -20,6 +20,12 @@ function walk(dir) {
     for (const m of src.matchAll(/:type="([^"]*)"/g)) {
       for (const q of m[1].matchAll(/'([a-z0-9-]+)'/g)) names.add(q[1])
     }
+    // 包装组件上的静态 icon 属性：<Card icon="box" />、<Input icon="email" />。
+    // 这批不经 IconSvg 标签，此前整态漏网 —— 表现为统计卡图标一律渲染兜底方块。
+    for (const m of src.matchAll(/\bicon="([a-z0-9-]+)"/g)) names.add(m[1])
+    for (const m of src.matchAll(/:icon="([^"]*)"/g)) {
+      for (const q of m[1].matchAll(/'([a-z0-9-]+)'/g)) names.add(q[1])
+    }
     // 字段映射：icon: 'xxx'（此前正则引号吃两次，icon: 形态全部漏网）
     for (const m of src.matchAll(/icon: '([a-z0-9-]+)'/g)) names.add(m[1])
     for (const m of src.matchAll(/icon: "([a-z0-9-]+)"/g)) names.add(m[1])

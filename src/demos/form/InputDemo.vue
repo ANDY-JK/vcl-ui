@@ -36,7 +36,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
 
       <!-- 邮箱 -->
       <Card title="type='email' — 邮箱 + 图标">
-        <Input v-model="emailVal" label="邮箱" type="email" icon="email" autocomplete="email" />
+        <Input v-model="emailVal" label="邮箱" type="email" icon="mail" autocomplete="email" />
       </Card>
 
       <!-- 密码 + 校验 -->

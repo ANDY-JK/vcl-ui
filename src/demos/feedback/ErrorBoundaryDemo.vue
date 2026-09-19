@@ -42,8 +42,8 @@ function retry() {
 
     <Card title="捕获异常 + 重试" style="margin-bottom: 24px">
       <div style="margin-bottom: 12px">
-        <Button text="触发异常" variant="danger" icon="alert" @click="triggerError = true" />
-        <Button text="重试" variant="outline" icon="refresh" style="margin-left: 8px" @click="retry" />
+        <Button text="触发异常" variant="danger" icon="circle-alert" @click="triggerError = true" />
+        <Button text="重试" variant="outline" icon="rotate-cw" style="margin-left: 8px" @click="retry" />
       </div>
 
       <ErrorBoundary :key="resetKey" title="子组件崩溃" retry-text="重试加载">
