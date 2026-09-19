@@ -55,7 +55,7 @@ const steps = [
             <code>current</code>
           </td>
           <td style="padding: 3px 8px">number</td>
-          <td style="padding: 3px 8px">1</td>
+          <td style="padding: 3px 8px">—（必填）</td>
           <td style="padding: 3px 8px">当前步骤</td>
         </tr>
       </tbody>

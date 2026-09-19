@@ -172,6 +172,8 @@ npm run build       # 构建产物到 dist/
 7. **延时要有名字和用途**：`setTimeout` / `setInterval` 的毫秒数写成带注释的 `*_MS` 常量，`check:constants` 拦住直接写数字的写法（`0` 表示让出一个任务，不算时长）。它只管调用里的延时位：三元表达式与默认参数里的时长（如 Toast 的 `duration` 缺省值）它不报，见到同样要命名。数值相同的两个延时不一定同一件事（如"失败退避重试"与"逐天请求的配额间隔"都是 800ms），确认同因才合并成共享常量。`src/demos/` 豁免：示例里 `模拟 1.5s 网络` 就是给读者看的字面值。
 8. **喂给原生控件的值按控件的格式现交**：`<input type="color">` 只认 `#rrggbb`，绑 `var(--token)`、`red`、`#abc`、`transparent` 会被浏览器**静默**拒收——刷 `does not conform to the required format` 警告、取色块退成默认黑。库内统一走 `_internal/utils.ts` 的 `toNativeColorValue()`：`#abc` 简写展开，令牌与命名色挂离屏节点让真实 CSS 引擎算出实际色再转十六进制，算不出的（非法串、缺 `#` 的裸十六进制、`oklch()` 这类新记法）落黑而不是猜色。归一只发生在交给控件那一刻，`v-model` 与回传值仍是调用方原串。`check:constants` 扫 `src/components` 里每个 `<input type="color">`：值绑定没写 `toNativeColorValue(` 又没在 `COLOR_VALUE_VERDICTS` 登记"值从哪儿归一"就红。与第 6、7 条同口径只管库代码——demos 不引 `_internal`，示例页的取色器由写 demo 的人负责，真跑出问题由全站浏览器审查兜；`h()` 渲染函数或动态 `:type` 绑成 color 的写法闸口扫不到，新增取色器照现有 5 处的静态写法即可被拦。
 
+9. **demo 的 Props 表必须与组件真实 `defineProps` 对账**：每张表是手抄一遍的属性清单，抄错、抄漏、组件早删了表还留着，浏览器一声不响——`AvatarDemo` 曾列过 `Avatar` 根本没有的 `color`，`StepsDemo` 给必填无默认的 `current` 写了默认值 `1`。`check:demo-props` 扫 `src/demos` 里表头含 `Prop`/`属性` 的表，按"该表的行被哪个组件覆盖 60% 以上且无并列"把整张表判给那个组件（不这么判，多列一个同 demo 顺手 import 的组件真有的名字就会溜过去），再卡两档谎报：① 表里列了该组件没有的 prop；② 组件里必填且无默认、表里却给了默认值。确实没有默认就写 `—`，需要点明可写 `—（必填）`。**闸口不管"漏写"**：组件有、表里没列只算文档欠账，不拦——32 张表一次性要求列全会变成没人维护的死表。**已知扫不到**：`Events`/`Slots`/`函数` 那类表头不是 Prop 的表不在判定内；一张表混写两个组件的 props 时归属退回并集宽判，此时"多列一个别组件真有的名字"会漏过；`v-bind` 展开或运行时拼出来的 prop 名扫不到。一条表行都没扫到时闸口直接报红，不允许因为正则没命中而假绿。
+
 ## 🚀 发版（维护者）
 
 发布交给 GitHub Actions（`.github/workflows/release.yml`），本地只需打标签：

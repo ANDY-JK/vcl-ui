@@ -96,7 +96,7 @@ const lastAction = ref('')
           <tr>
             <td><code>status</code></td>
             <td>string</td>
-            <td>'empty'</td>
+            <td>—（必填）</td>
             <td>success | error | info | warning | 404 | empty</td>
           </tr>
           <tr>

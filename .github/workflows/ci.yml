@@ -34,6 +34,11 @@ jobs:
       - name: Check i18n parity
         run: npm run check:i18n
 
+      # demo 文档表对账：表里不许列组件没有的 prop，也不给必填无默认的 prop 编默认值
+      # （测试用例不入库，这类谎报只有静态闸口拦得住）
+      - name: Check demo props tables
+        run: npm run check:demo-props
+
       # 测试用例不入仓库（只留开发本机），所以 CI 上没有可跑的用例：
       # vitest 找不到测试文件会直接 exit 1，playwright 会报 No tests found。
       # 本地门禁仍然完整：npm run quality-check（类型 + lint + 常量自检 + 单测/覆盖率 + 构建 + 发包自检 + e2e）。
