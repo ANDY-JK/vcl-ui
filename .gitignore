@@ -69,5 +69,11 @@ form-builder-zh-check.png
 # 浏览器留证截图（脚本入库可随时重生成，图不入库）
 scripts/shots-*/
 
-# 测试用例只留本机不入库（历史里仍可取回：git checkout <commit> -- tests）
-/tests/
+# 测试资产入库（135 单测 + 17 e2e 是核心质量资产，必须随版本控制）。
+# 只忽略其中的生成物与本机特化文件：
+# - tests/reports/：Playwright HTML 报告（webm/截图，跑测试重新生成）
+# - tests/playwright.localport.config.ts：本机固定端口调试配置，与 CI/同事环境无关
+# - 真实云端集成用例（s3-real.spec.ts）本身无凭证（运行时读 .env.local），
+#   但依赖本机网络与真实桶，CI 上靠 skipIf 守卫自动跳过，可安全入库。
+/tests/reports/
+tests/playwright.localport.config.ts
