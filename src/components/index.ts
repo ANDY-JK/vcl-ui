@@ -106,6 +106,7 @@ export { default as Menu } from './nav/Menu.vue'
 export { default as AppLayout } from './layout/AppLayout.vue'
 export { default as AccordionNav } from './layout/AccordionNav.vue'
 export { default as ModalBox } from './layout/ModalBox.vue'
+export { default as ConfirmContent } from './layout/ConfirmContent.vue'
 export { default as Flex } from './layout/Flex.vue'
 
 // 图表

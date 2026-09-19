@@ -1,7 +1,14 @@
 <script setup lang="ts">
+/**
+ * ConfirmModal — 确认弹窗（feedback 域对外的确认对话框门面）
+ *
+ * 实现拆层（打破 ConfirmModal ↔ ModalBox 值循环）：
+ *   壳 = ModalBox（layout），内容 = ConfirmContent（layout，单一来源）。
+ *   本组件只做 props/emits 门面 + 关闭语义，不再自带 confirm 模板/CSS。
+ */
 import { computed } from 'vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
-import IconSvg from '@/components/basic/IconSvg.vue'
+import ConfirmContent from '@/components/layout/ConfirmContent.vue'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
@@ -24,11 +31,9 @@ const props = withDefaults(
   },
 )
 
-// 默认文案用 computed 回退而非 prop 工厂：工厂只在实例创建时求值一次，
-// 常驻弹窗中途切语言后标题/按钮会停在旧语言
+// 默认标题用 computed 回退而非 prop 工厂：工厂只在实例创建时求值一次，
+// 常驻弹窗中途切语言后标题会停在旧语言
 const effTitle = computed(() => props.title ?? t('confirmModal.title'))
-const effConfirmText = computed(() => props.confirmText ?? t('confirmModal.confirm'))
-const effCancelText = computed(() => props.cancelText ?? t('confirmModal.cancel'))
 
 const emit = defineEmits<{
   'update:visible': [val: boolean]
@@ -36,49 +41,17 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-// 每种变体的配色 & 图标
-const variantMeta = computed(() => {
-  const map = {
-    danger: {
-      icon: 'circle-alert',
-      iconColor: 'var(--color-danger)',
-      borderColor: 'var(--color-danger-border)',
-      bg: 'var(--color-danger-bg)',
-      btnClass: 'btn-danger',
-    },
-    warning: {
-      icon: 'circle-alert',
-      iconColor: 'var(--color-warning)',
-      borderColor: 'var(--color-warning-border)',
-      bg: 'var(--color-warning-bg)',
-      btnClass: 'btn-warning',
-    },
-    primary: {
-      icon: 'info',
-      iconColor: 'var(--color-primary)',
-      borderColor: 'var(--color-info-border)',
-      bg: 'var(--color-primary-light)',
-      btnClass: 'btn-primary',
-    },
-  }
-  return map[props.variant]
-})
-
 function close() {
   emit('update:visible', false)
 }
 
-function onCancel() {
-  if (props.loading) return
-  emit('cancel')
+// ConfirmContent 已挡掉 loading 态；这里只转发事件 + 关闭
+function onConfirm() {
+  emit('confirm')
   close()
 }
-
-function onConfirm() {
-  // loading 态 = 异步确认：保持打开让父组件在完成后通过 v-model 关闭，
-  // 否则 confirm 一触发就关闭，loading spinner 永远不可见
-  if (props.loading) return
-  emit('confirm')
+function onCancel() {
+  emit('cancel')
   close()
 }
 </script>
@@ -92,127 +65,14 @@ function onConfirm() {
     :mask-closable="!loading"
     @update:visible="emit('update:visible', $event)"
   >
-    <!-- 消息区：图标 + 彩色左边框 -->
-    <div class="confirm-body" :style="{ background: variantMeta.bg, borderLeftColor: variantMeta.borderColor }">
-      <IconSvg :type="variantMeta.icon" size="md" :color="variantMeta.iconColor" />
-      <p class="confirm-msg">
-        {{ message }}
-      </p>
-    </div>
-
-    <template #footer>
-      <div class="confirm-footer">
-        <button class="confirm-btn cancel" @click="onCancel">
-          {{ effCancelText }}
-        </button>
-        <button :class="['confirm-btn', variantMeta.btnClass]" :disabled="loading" @click="onConfirm">
-          <IconSvg v-if="loading" type="loader" size="xs" class="confirm-loading-icon" />
-          {{ effConfirmText }}
-        </button>
-      </div>
-    </template>
+    <ConfirmContent
+      :variant="variant"
+      :message="message"
+      :loading="loading"
+      :confirm-text="confirmText"
+      :cancel-text="cancelText"
+      @confirm="onConfirm"
+      @cancel="onCancel"
+    />
   </ModalBox>
 </template>
-
-<style scoped>
-/* 消息体 */
-.confirm-body {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  margin: var(--space-1) 0 0;
-  padding: var(--space-4) 16px;
-  border-radius: var(--radius-md);
-  border-left: 4px solid;
-}
-.confirm-msg {
-  margin: 0;
-  line-height: 1.7;
-  font-size: clamp(14px, 1.8vw, 15px);
-  color: var(--color-text);
-  flex: 1;
-}
-
-/* 底部按钮 */
-.confirm-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  width: 100%;
-}
-.confirm-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) 22px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  font-size: clamp(14px, 1.8vw, 15px);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  background: var(--color-bg);
-  color: var(--color-text);
-}
-.confirm-btn:hover {
-  filter: brightness(0.95);
-}
-.confirm-btn:active {
-  transform: scale(0.97);
-}
-.confirm-btn:disabled {
-  opacity: 0.7;
-  cursor: wait;
-}
-
-/* loading 旋转图标 */
-.confirm-loading-icon {
-  animation: confirm-spin 1s linear infinite;
-}
-@keyframes confirm-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* 取消 */
-.confirm-btn.cancel {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-}
-.confirm-btn.cancel:hover {
-  background: var(--color-bg-alt);
-}
-
-/* danger —— 实心底压白字，用 --color-danger-solid（暗色下 --color-danger 被提亮，
-   压白字对比度仅 2.77 不达标）；本条优先级高于 Button 的 .btn-danger，必须同步 */
-.confirm-btn.btn-danger {
-  border-color: var(--color-danger-border);
-  background: var(--color-danger-solid, var(--color-danger));
-  color: #fff;
-}
-.confirm-btn.btn-danger:hover {
-  background: var(--color-danger-solid-hover, var(--color-danger-hover));
-}
-
-/* warning —— 同上，实心底压白字用 solid 令牌 */
-.confirm-btn.btn-warning {
-  border-color: var(--color-warning-border);
-  background: var(--color-warning-solid, var(--color-warning));
-  color: #fff;
-}
-.confirm-btn.btn-warning:hover {
-  background: var(--color-warning-solid-hover, var(--color-warning-text));
-}
-
-/* primary */
-.confirm-btn.btn-primary {
-  border-color: var(--color-info-border);
-  background: var(--color-primary);
-  color: #fff;
-}
-.confirm-btn.btn-primary:hover {
-  background: var(--color-primary-hover);
-}
-</style>
