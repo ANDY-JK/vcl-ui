@@ -43,6 +43,12 @@ function formatDistance(m: number): string {
   return t('routePlanner.kilometers', { km: (m / 1000).toFixed(1) })
 }
 
+/** 当天途经城市串（首日带起点）：模板文本与 title 共用一份，避免两处各拼一遍后不同步 */
+function dayCitiesLabel(day: { stores: Store[] }, dayIdx: number): string {
+  const head = dayIdx === 0 && props.startPointName ? `🚩${props.startPointName} → ` : ''
+  return head + [...new Set(day.stores.map((s) => s.city))].join(' → ')
+}
+
 /** 两点间估算距离和驾驶时间 */
 function segmentInfo(a: Store, b: Store): { dist: string; time: string } | null {
   if (a.latitude == null || a.longitude == null || b.latitude == null || b.longitude == null) return null
@@ -188,10 +194,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
               </span>
             </div>
             <div class="day-header-right">
-              <span class="day-cities">
-                <template v-if="dayIdx === 0 && startPointName">🚩{{ startPointName }} → </template>
-                {{ [...new Set(day.stores.map((s) => s.city))].join(' → ') }}
-              </span>
+              <span class="day-cities" :title="dayCitiesLabel(day, dayIdx)">{{ dayCitiesLabel(day, dayIdx) }}</span>
               <span class="expand-icon">{{ expandedDay === day.day ? '▲' : '▼' }}</span>
             </div>
           </div>
@@ -241,7 +244,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
               <div v-for="(store, idx) in day.stores" :key="store.id" class="store-item">
                 <span class="store-num">{{ idx + 1 }}</span>
                 <div class="store-main">
-                  <span class="store-name">{{ store.name }}</span>
+                  <span class="store-name" :title="store.name">{{ store.name }}</span>
                   <span class="store-city">{{ store.city }}</span>
                 </div>
                 <div class="store-segment">

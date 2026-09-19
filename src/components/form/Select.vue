@@ -953,13 +953,13 @@ function onTimeCancel() {
         :class="{ open, disabled, 'has-floating': label, 'has-tags': comboTags.length > 0 }"
         @click="onTriggerClick($event)"
       >
-        <label v-if="label" class="fl-label" :for="selectInputId" :class="{ raised: floatingRaised }">{{
+        <label v-if="label" class="fl-label" :for="selectInputId" :title="label" :class="{ raised: floatingRaised }">{{
           label
         }}</label>
 
         <!-- 已选 tag（单选 0-1 个 / 多选 0-N 个，格式统一） -->
         <span v-for="tag in comboTags" :key="String(tag.value)" class="combobox-tag">
-          <span class="tag-text">{{ tag.label }}</span>
+          <span class="tag-text" :title="tag.label">{{ tag.label }}</span>
           <button type="button" class="tag-close" tabindex="-1" @mousedown.prevent @click.stop="removeComboTag(tag)">
             ×
           </button>
@@ -1093,7 +1093,7 @@ function onTimeCancel() {
                   />
                   <span v-else class="expand-placeholder" />
                   <div class="item-text">
-                    <span class="item-label">{{ flatNode.node.label }}</span>
+                    <span class="item-label" :title="flatNode.node.label">{{ flatNode.node.label }}</span>
                   </div>
                   <IconSvg
                     v-if="flatNode.isLeaf && isTreeSelected(flatNode)"
@@ -1193,7 +1193,7 @@ function onTimeCancel() {
                 <slot name="option" :opt="opt" :selected="isSelected(opt)">
                   <IconSvg v-if="opt.icon" :type="opt.icon" size="sm" />
                   <div class="item-text">
-                    <span class="item-label">{{ opt.label }}</span>
+                    <span class="item-label" :title="opt.label">{{ opt.label }}</span>
                     <span v-if="opt.desc" class="item-desc">{{ opt.desc }}</span>
                   </div>
                 </slot>

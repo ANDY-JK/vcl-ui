@@ -347,7 +347,7 @@ onUnmounted(() => {
           <button type="button" class="codecap-iconbtn" :aria-label="t('form.cancel')" @click="close">
             <IconSvg type="x" size="sm" />
           </button>
-          <span class="codecap-title">{{ title }}</span>
+          <span class="codecap-title" :title="title">{{ title }}</span>
           <span class="codecap-topbar-spacer" />
         </div>
 
@@ -367,7 +367,7 @@ onUnmounted(() => {
                 :title="d.text"
                 @click="triggerDetection(d.text)"
               >
-                <span class="codecap-box-label">{{ d.text }}</span>
+                <span class="codecap-box-label" :title="d.text">{{ d.text }}</span>
               </button>
             </template>
             <!-- 多码定格选码 -->
@@ -385,7 +385,7 @@ onUnmounted(() => {
                 @click="pickArrow(d.text)"
               >
                 <span class="codecap-frozen-badge"><IconSvg type="arrow-down" size="sm" color="currentColor" /></span>
-                <span class="codecap-frozen-chip">{{ d.text }}</span>
+                <span class="codecap-frozen-chip" :title="d.text">{{ d.text }}</span>
               </button>
               <div class="codecap-frozen-bar">
                 <span>{{ t('form.scanCode') }} · {{ detections.length }}</span>

@@ -181,12 +181,12 @@ const stats = computed(() => {
             :class="{ skipped: store.skipped, noCoord: !store.longitude }"
           >
             <div class="store-info">
-              <div class="store-name">
+              <div class="store-name" :title="store.name || store.address">
                 {{ store.name || store.address }}
               </div>
               <div class="store-meta">
                 <span class="source-tag">{{ sourceLabel(store.coordSource) }}</span>
-                <span v-if="store.contact" class="contact">{{ store.contact }} {{ store.phone }}</span>
+                <span v-if="store.contact" class="contact" :title="store.contact + ' ' + store.phone">{{ store.contact }} {{ store.phone }}</span>
               </div>
             </div>
             <div class="store-actions">

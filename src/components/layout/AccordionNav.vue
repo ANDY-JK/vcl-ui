@@ -79,7 +79,7 @@ const activeRoute = computed(() => route.path)
         @click="node.route && $router.push(node.route)"
       >
         <IconSvg :type="node.icon || 'square'" size="sm" color="currentColor" />
-        <span v-show="!collapsed" class="nav-leaf-label">{{ navLabel(node.label) }}</span>
+        <span v-show="!collapsed" class="nav-leaf-label" :title="navLabel(node.label)">{{ navLabel(node.label) }}</span>
       </button>
 
       <!-- 递归渲染分组（有 children 的节点交给 NavItem 递归处理） -->

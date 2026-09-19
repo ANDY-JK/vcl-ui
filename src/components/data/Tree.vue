@@ -410,7 +410,7 @@ const levelStyle = computed(() => {
         <IconSvg v-if="node.icon" :type="node.icon" size="sm" class="tree-node-icon" />
 
         <!-- 标签 -->
-        <span class="tree-node-label">{{ node.label }}</span>
+        <span class="tree-node-label" :title="node.label">{{ node.label }}</span>
       </div>
 
       <!-- 子级（v-if 按需渲染 + 过渡动画），最大递归深度 15 防止栈溢出 -->

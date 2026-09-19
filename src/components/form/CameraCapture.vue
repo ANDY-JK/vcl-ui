@@ -457,7 +457,7 @@ onUnmounted(() => {
 
         <!-- 连拍顶部条（multiple）：左当前拍照名称/进度，右「完成」交付 -->
         <div v-if="props.multiple" class="camc-topbar">
-          <span class="camc-slot-chip">{{ slotChipText }}</span>
+          <span class="camc-slot-chip" :title="slotChipText">{{ slotChipText }}</span>
           <button type="button" class="camc-done" :disabled="!shots.length" @click="finishShots">
             {{ t('form.done') }}<span v-if="shots.length">({{ shots.length }})</span>
           </button>
@@ -476,7 +476,7 @@ onUnmounted(() => {
               >
                 <img :src="s.url" alt="" />
               </button>
-              <span class="camc-shot-name">{{ s.name }}</span>
+              <span class="camc-shot-name" :title="s.name">{{ s.name }}</span>
             </div>
           </div>
         </div>

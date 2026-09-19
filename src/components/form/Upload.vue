@@ -437,7 +437,7 @@ onUnmounted(() => {
           </button>
           <IconSvg v-else type="file" size="md" class="upload-file-icon" />
           <div class="upload-file-info">
-            <div class="upload-file-name">
+            <div class="upload-file-name" :title="f.name">
               {{ f.name }}
             </div>
             <div class="upload-file-meta">
@@ -552,22 +552,6 @@ onUnmounted(() => {
   object-fit: cover;
   position: relative;
   z-index: 1;
-}
-.card-filename {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: 0;
-  padding: var(--space-1) 4px;
-  font-size: 9px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.5);
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  z-index: 3;
 }
 /* 多张翻页箭头 */
 .card-arrow {

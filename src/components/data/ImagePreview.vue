@@ -876,7 +876,7 @@ const displayTitle = computed(() => {
     >
       <!-- 顶部栏 -->
       <div class="ip-header">
-        <span class="ip-title">{{ displayTitle }}</span>
+        <span class="ip-title" :title="displayTitle">{{ displayTitle }}</span>
         <!-- 标注工具：矩形 / 圆形 / 画笔 / 颜色 / 粗细（单行；颜色数量按可用空间逐步裁减，窄屏先隐藏后面的色点） -->
         <div ref="annoToolsRef" class="ip-anno-tools">
           <button
@@ -1044,7 +1044,7 @@ const displayTitle = computed(() => {
           >
             <!-- 缩略图条是整批原图直挂（主图另有一张大图），不懒加载会一次拉完整册 -->
             <img :src="item.url" :alt="item.label || $t('imagePreview.imageLabel', { n: i + 1 })" loading="lazy" decoding="async" />
-            <span class="ip-thumb-label">{{ item.label || $t('imagePreview.imageLabel', { n: i + 1 }) }}</span>
+            <span class="ip-thumb-label" :title="item.label || $t('imagePreview.imageLabel', { n: i + 1 })">{{ item.label || $t('imagePreview.imageLabel', { n: i + 1 }) }}</span>
           </button>
         </div>
       </div>

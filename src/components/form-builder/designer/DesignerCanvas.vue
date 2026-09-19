@@ -662,7 +662,7 @@ function onCanvasWheel(e: WheelEvent): void {
                         @keydown.space.prevent="setActiveStep(node, si)"
                       >
                         <span class="ldc-step-num">{{ si < activeStepIndex(node) ? '✓' : si + 1 }}</span>
-                        <span class="ldc-step-btn-label">{{ step.title }}</span>
+                        <span class="ldc-step-btn-label" :title="step.title">{{ step.title }}</span>
                         <span
                           class="ldc-tab-count"
                           :title="t('fbd.fieldsCount', { n: childrenInSlot(node, si).length })"

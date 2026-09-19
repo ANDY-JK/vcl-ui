@@ -286,7 +286,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
         <span v-else class="ldo-expand-placeholder" />
 
         <IconSvg :type="nodeIcon(item.node.type)" size="xs" class="ldo-tree-icon" />
-        <span class="ldo-tree-label">{{ item.node.label }}</span>
+        <span class="ldo-tree-label" :title="item.node.label">{{ item.node.label }}</span>
         <span class="ldo-tree-type">{{ typeShort(item.node.type) }}</span>
         <span class="ldo-tree-actions" @click.stop>
           <button class="ldo-del-btn" :title="t('common.delete')" @click="emit('remove', item.node.id)">

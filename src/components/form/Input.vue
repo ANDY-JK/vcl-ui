@@ -521,7 +521,7 @@ const floatingRaised = computed(() => {
           @keyup="emit('keyup', $event)"
           @animationstart="onAutoFillStart"
         />
-        <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
         <button v-if="clearable && hasValue" type="button" class="f-clear" tabindex="-1" @click="clearNumValue">
           <IconSvg type="x" size="sm" />
         </button>
@@ -558,7 +558,7 @@ const floatingRaised = computed(() => {
           @blur="onTaBlur"
           @keyup="emit('keyup', $event)"
         />
-        <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
         <button v-if="clearable && hasTaValue" type="button" class="f-clear" tabindex="-1" @click="clearTaValue">
           <IconSvg type="x" size="sm" />
         </button>
@@ -591,7 +591,7 @@ const floatingRaised = computed(() => {
           @blur="onBlur"
         />
         <span class="f-color-hex">{{ String(modelValue ?? '') || '—' }}</span>
-        <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
       </div>
       <p v-if="errorMsg" :id="errorDescId" class="fl-error" role="alert">
         {{ errorMsg }}
@@ -631,7 +631,7 @@ const floatingRaised = computed(() => {
           @keyup="emit('keyup', $event)"
           @animationstart="onAutoFillStart"
         />
-        <label v-if="label" class="fl-label" :for="inputId" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
         <span v-if="suffix" class="fl-suffix" aria-hidden="true">{{ suffix }}</span>
         <button
           v-if="type === 'password'"

@@ -96,7 +96,7 @@ const navItemClass = computed(() => {
     @click="onClick"
   >
     <IconSvg :type="node.icon || 'square'" size="sm" color="currentColor" />
-    <span v-show="!collapsed" class="nav-level-text">{{ navLabel(node.label) }}</span>
+    <span v-show="!collapsed" class="nav-level-text" :title="navLabel(node.label)">{{ navLabel(node.label) }}</span>
   </button>
 
   <!-- 递归渲染子节点 -->

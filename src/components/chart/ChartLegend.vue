@@ -43,7 +43,7 @@ function onToggleAll() {
         @click="onClick(item.name)"
       >
         <span class="cl-dot" :style="{ backgroundColor: item.color }" />
-        <span class="cl-text">{{ item.name }}</span>
+        <span class="cl-text" :title="item.name">{{ item.name }}</span>
       </button>
     </div>
   </div>

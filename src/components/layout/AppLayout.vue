@@ -257,7 +257,7 @@ function onProgressMouseUp() {
                 <div class="vcl-user-avatar">
                   {{ username.charAt(0).toUpperCase() }}
                 </div>
-                <span class="vcl-user-name">{{ username }}</span>
+                <span class="vcl-user-name" :title="username">{{ username }}</span>
               </div>
               <button
                 class="vcl-logout-btn"
@@ -281,7 +281,7 @@ function onProgressMouseUp() {
 
       <div class="vcl-content-bottombar">
         <button v-if="nav.prev" class="vcl-nav-btn" @click="goDemo(nav.prev.route!)">
-          <IconSvg type="arrow-left" size="sm" /><span class="vcl-toolbar-label">{{ navLabel(nav.prev.label) }}</span>
+          <IconSvg type="arrow-left" size="sm" /><span class="vcl-toolbar-label" :title="navLabel(nav.prev.label)">{{ navLabel(nav.prev.label) }}</span>
         </button>
         <span v-else class="vcl-nav-btn is-empty" />
 
@@ -293,7 +293,7 @@ function onProgressMouseUp() {
         </div>
 
         <button v-if="nav.next" class="vcl-nav-btn" @click="goDemo(nav.next.route!)">
-          <span class="vcl-toolbar-label">{{ navLabel(nav.next.label) }}</span
+          <span class="vcl-toolbar-label" :title="navLabel(nav.next.label)">{{ navLabel(nav.next.label) }}</span
           ><IconSvg type="arrow-right" size="sm" />
         </button>
         <span v-else class="vcl-nav-btn is-empty" />

@@ -189,7 +189,7 @@ const levelStyle = computed(() => {
             <span v-if="item.icon" class="menu-item-icon">
               <IconSvg :type="item.icon" size="md" color="currentColor" />
             </span>
-            <span v-show="!(mode === 'vertical' && collapsed)" class="menu-item-label">{{ item.label }}</span>
+            <span v-show="!(mode === 'vertical' && collapsed)" class="menu-item-label" :title="item.label">{{ item.label }}</span>
             <span
               v-if="item.children?.length && !(mode === 'vertical' && collapsed)"
               class="menu-item-chevron"

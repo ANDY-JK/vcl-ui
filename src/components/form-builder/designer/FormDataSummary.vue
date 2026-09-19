@@ -133,7 +133,7 @@ function exportCsv(): void {
             <span class="ld-data-stat-label">{{ t('fbd.statTotal') }}</span>
           </div>
           <div class="ld-data-stat">
-            <span class="ld-data-stat-num">{{ latest?.time }}</span>
+            <span class="ld-data-stat-num" :title="latest?.time">{{ latest?.time }}</span>
             <span class="ld-data-stat-label">{{ t('fbd.latestSubmit') }}</span>
           </div>
         </div>

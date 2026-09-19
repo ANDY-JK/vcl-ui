@@ -356,7 +356,7 @@ function confirm() {
               />
               <IconSvg v-else :type="localIcon" size="lg" :color="localColor" :provider="localProvider" />
             </span>
-            <span class="preview-name"
+            <span class="preview-name" :title="localIcon + ' / ' + localColor"
               >{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span
             >
             <div class="preset-colors">

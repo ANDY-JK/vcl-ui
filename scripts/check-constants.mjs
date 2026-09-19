@@ -24,6 +24,7 @@ const walk = (d, out = []) => {
 const files = walk('src')
 const isSource = (f) => /\.(ts|vue)$/.test(f) && !f.endsWith('.d.ts')
 const isStyle = (f) => /\.(css|scss)$/.test(f)
+const relOf = (x) => relative('.', x).replaceAll('\\', '/')
 
 /** 把 .vue 切成 script / template / style 三类块（每块前面补等量空行，保证行号对得上原文件） */
 function splitBlocks(file, text) {
@@ -146,6 +147,115 @@ for (const [rel, text] of styleTexts) {
 if (cssHits.length) fail.push(...cssHits)
 console.log(`[3] CSS 未登记断点 ${cssHits.length}（已登记 ${[...allowed.keys()].sort((a, b) => a - b).join('/')}）`)
 
+// ---------- [5] 会截断文本的类必须登记判定（README 规范第 6 条） ----------
+// 凡带 text-overflow: ellipsis 的类，都要在这里给一个判定：
+//   title        —— 渲染用户数据，承载它的元素必须绑 :title / title（缺了就红）
+//   covered      —— 已有别的完整值通道（表格单元格的 hover 气泡 + 超长展开图标；筛选项的"溢出才挂 title"）
+//   not-user-data —— 静态文案 / 数字 / 非文本，本来就没什么可发现的（写清是什么）
+// 新增一个截断类而没登记判定 → 红，逼着当场判一次"用户看得见完整值吗"。
+// 只管 src/components（库代码）：demo 页的截断样式是页面自己的展示文案，判定由写 demo 的人当场负责。
+// covered 三项的完整值通道：.cell-text/.cell-text-inner/.truncated 是 hover 气泡 + 超长换展开图标；
+// .dt-filter-option-text 是"溢出才挂 title"的 hover 机制；.dt-col-quick-actions button 两个按钮本就带 :title；
+// .combobox-tag / .tree-node-item 是容器，截断发生在其内部已登记的 .tag-text / .item-label 上。
+const ELLIPSIS_VERDICTS = new Map([
+  ['cl-text', 'title'],
+  ['ip-thumb-label', 'title'],
+  ['ip-title', 'title'],
+  ['tree-node-label', 'title'],
+  ['ftc-td-val', 'title'],
+  ['ldc-step-btn-label', 'title'],
+  ['ldo-tree-label', 'title'],
+  ['camc-shot-name', 'title'],
+  ['camc-slot-chip', 'title'],
+  ['codecap-title', 'title'],
+  ['codecap-box-label', 'title'],
+  ['codecap-frozen-chip', 'title'],
+  ['fl-label', 'title'],
+  ['preview-name', 'title'],
+  ['tag-text', 'title'],
+  ['item-label', 'title'],
+  ['upload-file-name', 'title'],
+  ['nav-leaf-label', 'title'],
+  ['vcl-toolbar-label', 'title'],
+  ['vcl-user-name', 'title'],
+  ['nav-level-text', 'title'],
+  ['menu-item-label', 'title'],
+  ['day-cities', 'title'],
+  ['store-name', 'title'],
+  ['contact', 'title'],
+  ['dt-col-title', 'title'],
+  ['cell-text', 'covered'],
+  ['cell-text-inner', 'covered'],
+  ['truncated', 'covered'],
+  ['dt-filter-option-text', 'covered'],
+  ['dt-col-quick-actions', 'covered'],
+  ['combobox-tag', 'covered'],
+  ['tree-node-item', 'covered'],
+  ['ld-data-table', 'covered'],
+  ['ld-data-stat-num', 'not-user-data'],
+  ['ldp-field-label', 'not-user-data'],
+  ['expand-placeholder', 'not-user-data'],
+])
+const ellipsisClasses = new Set()
+for (const f of files.filter((x) => relOf(x).startsWith('src/components/'))) {
+  if (!/\.(css|vue)$/.test(f) || f.endsWith('.d.ts')) continue
+  const text = readFileSync(f, 'utf8')
+  for (const m of text.matchAll(/([^{}]+)\{[^{}]*text-overflow:\s*ellipsis[^{}]*\}/g)) {
+    const selector = m[1].replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim()
+    for (const c of selector.matchAll(/\.([A-Za-z][\w-]*)/g)) ellipsisClasses.add(c[1])
+  }
+}
+const unregistered = [...ellipsisClasses].filter((c) => !ELLIPSIS_VERDICTS.has(c)).sort()
+if (unregistered.length)
+  fail.push(`出现未登记的截断类（先判"用户能不能看到完整值"，再进 ELLIPSIS_VERDICTS）: ${unregistered.join(', ')}`)
+
+// 判定为 title 的类：用到它的那个元素必须带 title 绑定。
+// 标签体要按"引号内不算结束"逐字扫描 —— 属性值里合法地出现 > 与 &&（如 v-show="a && b > c"），
+// 而正则 [^>]* 会在那里截断；反过来要求 `>` 前有空白又会让普通 class="x"> 完全匹配不上（曾经就是空转）。
+function scanTags(text) {
+  const tags = []
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] !== '<' || !/[a-zA-Z]/.test(text[i + 1] || '')) continue
+    let j = i + 1
+    while (j < text.length && /[\w:.-]/.test(text[j])) j++
+    const name = text.slice(i + 1, j)
+    let quote = null
+    let k = j
+    for (; k < text.length; k++) {
+      const c = text[k]
+      if (quote) {
+        if (c === quote) quote = null
+        continue
+      }
+      if (c === '"' || c === "'") quote = c
+      else if (c === '>') break
+      else if (c === '<') break // 标签没闭合就遇到下一个标签：放弃这个起点
+    }
+    if (text[k] !== '>') continue
+    tags.push({ name, attrs: text.slice(j, k), index: i })
+    i = k
+  }
+  return tags
+}
+
+const missingTitle = []
+for (const f of files.filter((x) => x.endsWith('.vue'))) {
+  const rel = relOf(f)
+  if (!rel.startsWith('src/components/')) continue
+  const text = readFileSync(f, 'utf8')
+  for (const t of scanTags(text)) {
+    const cls = /(?:^|\s):?class=["']([^"']*)["']/.exec(t.attrs)
+    if (!cls) continue
+    const uses = cls[1].split(/\s+/).filter((c) => ELLIPSIS_VERDICTS.get(c) === 'title')
+    if (!uses.length) continue
+    if (/(?:^|\s):?title=/.test(t.attrs)) continue
+    const line = text.slice(0, t.index).split('\n').length
+    missingTitle.push(`${rel}:${line} <${t.name}> 用了截断类 .${uses.join('/.')} 却没绑 title`)
+  }
+}
+if (missingTitle.length) fail.push(...missingTitle)
+console.log(`[5] 截断类判定 出现=${ellipsisClasses.size} 缺 title=${missingTitle.length}`)
+
 // ---------- [4] 延时位不得写字面量毫秒数 ----------
 /**
  * 取 setTimeout/setInterval 的「延时位」实参（第二个位置参数），按括号配对扫描。
@@ -189,7 +299,6 @@ function hasNumericLiteral(expr) {
 }
 
 const delayHits = []
-const relOf = (x) => relative('.', x).replaceAll('\\', '/')
 // 只管 src/components（对外发布的库代码）：demos 里的延时是给读者看的示例值（"模拟 1.5s 网络"），
 // 换成常量反而让示例更难读。
 // 已知覆盖边界：延时位之外的时长（如 Toast 的 duration 默认值）由人判，见 README 规范第 7 条。
