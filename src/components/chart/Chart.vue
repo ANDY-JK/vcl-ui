@@ -149,7 +149,6 @@ function buildParams(categories: string[], series: ChartSeriesItem[]): BuildPara
     yAxis: props.yAxis,
     animation: props.animation,
     animationDuration: props.animationDuration,
-    toolbar: props.toolbar,
     palette: props.palette,
     markLine: props.markLine,
     markArea: props.markArea,
@@ -383,6 +382,7 @@ defineExpose({
       :dark-mode="darkMode"
       :loading="loading"
       :empty-text="emptyText"
+      :toolbar="toolbar"
     />
     <ChartLegend
       v-if="legendItems.length > 0"
