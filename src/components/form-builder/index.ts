@@ -1,3 +1,5 @@
+// 设计令牌必须先于本域组件样式（Q3 域级 CSS 自包含；与主入口 index.ts 同口径）
+import '../tokens.css'
 /**
  * FormBuilder 模块导出入口 (v3)
  *

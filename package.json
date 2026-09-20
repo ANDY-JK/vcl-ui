@@ -50,53 +50,53 @@
     "./css": "./dist/vcl-ui.css",
     "./basic": {
       "types": "./dist/basic/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/basic/index.js",
+      "require": "./dist/basic/index.cjs"
     },
     "./data": {
       "types": "./dist/data/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/data/index.js",
+      "require": "./dist/data/index.cjs"
     },
     "./form": {
       "types": "./dist/form/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/form/index.js",
+      "require": "./dist/form/index.cjs"
     },
     "./feedback": {
       "types": "./dist/feedback/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/feedback/index.js",
+      "require": "./dist/feedback/index.cjs"
     },
     "./nav": {
       "types": "./dist/nav/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/nav/index.js",
+      "require": "./dist/nav/index.cjs"
     },
     "./layout": {
       "types": "./dist/layout/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/layout/index.js",
+      "require": "./dist/layout/index.cjs"
     },
     "./chart": {
       "types": "./dist/chart/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/chart/index.js",
+      "require": "./dist/chart/index.cjs"
     },
     "./login": {
       "types": "./dist/login/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/login/index.js",
+      "require": "./dist/login/index.cjs"
     },
     "./storage": {
       "types": "./dist/storage/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/storage/index.js",
+      "require": "./dist/storage/index.cjs"
     },
     "./wc": {
       "types": "./dist/wc/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/wc/index.js",
+      "require": "./dist/wc/index.cjs"
     },
     "./i18n": {
       "types": "./dist/i18n.d.ts",
@@ -105,18 +105,18 @@
     },
     "./form-builder": {
       "types": "./dist/form-builder/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/form-builder/index.js",
+      "require": "./dist/form-builder/index.cjs"
     },
     "./amap": {
       "types": "./dist/amap/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/amap/index.js",
+      "require": "./dist/amap/index.cjs"
     },
     "./route-planner": {
       "types": "./dist/route-planner/index.d.ts",
-      "import": "./dist/vcl-ui.js",
-      "require": "./dist/vcl-ui.cjs"
+      "import": "./dist/route-planner/index.js",
+      "require": "./dist/route-planner/index.cjs"
     },
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"

@@ -1,3 +1,5 @@
+// 设计令牌必须先于本域组件样式（Q3 域级 CSS 自包含；与主入口 index.ts 同口径）
+import '../tokens.css'
 /** 表单组件按需导入入口 */
 export { default as Input } from './Input.vue'
 export { default as Select } from './Select.vue'

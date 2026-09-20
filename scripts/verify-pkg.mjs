@@ -104,10 +104,22 @@ if (!existsSync(join('node_modules', 'vue34'))) {
 // 5) 产物可达性 —— dist 里每个 js/cjs 都必须被入口或动态 import 图覆盖
 //    本机 I: 盘上 fs.rmSync 静默失效、vite emptyOutDir 形同虚设，历史 chunk 会跨次构建堆积，
 //    而 package.json 的 files:["dist"] 会把它们整批发给消费者（实测 690 文件/62MB，入口只用 11 个）。
+//    多入口（Q3）后入口集 = exports 声明的全部 dist js/cjs 目标：主 bundle + 13 个域 entry。
+//    不能只拿主 bundle 做种子——代码内联进 entry 的域（form-builder/chart/login/nav/…）
+//    主入口直连，代码留共享 chunk 的域（basic/data/form/…）其 entry 是薄壳、不被主入口引用，
+//    只种子主 bundle 会把这些薄壳误判成孤儿。
 const chunkFiles = walk('dist')
   .filter((f) => /\.(js|cjs)$/.test(f))
   .map((f) => f.replaceAll('\\', '/'))
-const entryFiles = chunkFiles.filter((f) => /\/vcl-ui\.(js|cjs)$/.test(f))
+const entryTargets = new Set()
+const collectEntries = (v) => {
+  if (typeof v === 'string') {
+    if (/^\.\/dist\/.+\.(js|cjs)$/.test(v) && !v.includes('*')) entryTargets.add(v.slice(2))
+  } else for (const x of Object.values(v)) collectEntries(x)
+}
+collectEntries(pkg.exports)
+const entryFiles = chunkFiles.filter((f) => entryTargets.has(f))
+if (entryFiles.length === 0) fail.push('exports 未声明任何 dist js/cjs 入口——检查包名与 exports 结构')
 const reached = new Set()
 const queue = [...entryFiles]
 const specRe = /(?:from\s+|import\s*\(\s*|import\s+|require\s*\(\s*)['"](\.\/[^'"]+)['"]/g
@@ -136,9 +148,12 @@ if (orphans.length) {
 }
 console.log(`[5] 产物可达性 可达=${reached.size} 孤儿=${orphans.length}`)
 
-// 6) 体积预算 —— 防止「慢慢变胖没人看」。只看 dist 根级 ESM（.js，.cjs 同内容不重复断言）。
-//    基线 2026-09-20 实测 + 15~30% 余量。抬高预算的提交须注明原因与新基线。
-const distTop = (f) => f.replaceAll('\\', '/').split('/').pop()
+// 6) 体积预算 —— 防止「慢慢变胖没人看」。只看 ESM（.js，.cjs 同内容不重复断言）。
+//    基线 2026-09-20 多入口改造后实测 + 15~30% 余量。抬高预算的提交须注明原因与新基线。
+//    多入口（Q3）后形态：单入口使用的域代码被 rollup 内联进该域 entry（form-builder-chunk 等
+//    共享 chunk 消失），故大文件预算按「dist 相对路径」判，不再只看根级 basename——
+//    否则 14 个 index.js 同名无法区分，form-builder（599KB）会落进 150KB 兜底误判。
+const relName = (f) => f.replaceAll('\\', '/').replace(/^dist\//, '')
 const esmChunks = walk('dist')
   .map((f) => f.replaceAll('\\', '/'))
   .filter((f) => /\.js$/.test(f) && f.startsWith('dist/'))
@@ -146,18 +161,22 @@ const esmChunks = walk('dist')
 const BUDGET_KB = [
   [/^core-chunk-.*\.js$/, 1000],
   [/^vendor-heavy-.*\.js$/, 900],
-  [/^form-builder-chunk-.*\.js$/, 700],
+  [/^form-builder\/index\.js$/, 700], // 原 form-builder-chunk 预算随代码内联迁到 entry
   [/^morphicons-icons-data-.*\.js$/, 700],
   [/^solar-icons-data-.*\.js$/, 280],
   [/^data-chunk-.*\.js$/, 320],
   [/^form-chunk-.*\.js$/, 180],
-  [/^vcl-ui\.js$/, 15],
+  [/^route-planner\/index\.js$/, 100],
+  [/^chart\/index\.js$/, 60],
+  [/^login\/index\.js$/, 40],
+  [/^nav\/index\.js$/, 25],
+  [/^vcl-ui\.js$/, 15], // 主入口已是 re-export 薄壳（9KB），壳膨胀即说明隔离被破坏
 ]
 const FALLBACK_BUDGET_KB = 150
 const CSS_BUDGET_KB = 350
 const oversize = []
 for (const f of esmChunks) {
-  const name = distTop(f)
+  const name = relName(f)
   const kb = (readFileSync(f).length / 1024) | 0
   const hit = BUDGET_KB.find(([re]) => re.test(name))
   const budget = hit ? hit[1] : FALLBACK_BUDGET_KB

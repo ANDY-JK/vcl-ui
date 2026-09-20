@@ -1,3 +1,5 @@
+// 设计令牌必须先于本域组件样式（Q3 域级 CSS 自包含；与主入口 index.ts 同口径）
+import '../tokens.css'
 /**
  * Web Components 封装 — 将 Vue 组件注册为 Custom Elements
  *

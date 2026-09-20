@@ -18,6 +18,35 @@ function normalizeVueSpecifier(filePath: string, content: string): string {
   return out
 }
 
+// ==================== 多入口构建（Q3） ====================
+// 主入口 + 14 个域 barrel 各自独立成包：消费方 `import { Button } from 'vcl-ui/basic'`
+// 只加载 basic 与共享 core-chunk，不再整包引入（此前所有 ./<domain> 子路径都指向
+// 同一个 vcl-ui.js，运行时零隔离）。
+// 注意两个多入口特有的坑：
+// ① 域 barrel 头部的 tokens.css 引入必须保留：当前 CSS 仍是单文件（vcl-ui.css），
+//    该引入本期不改变产物；但它是「域 CSS 自包含」的前置契约——将来开 cssCodeSplit
+//    时没有它，域的 CSS 会静默丢掉 var(--color-*)/--z-* 令牌（var() 断档不会报错，
+//    只是暗色下悬空）。manualChunks 里另有根级 CSS → core-chunk 的显式归类兜底。
+// ② 主入口体积预算 15KB：多入口后它是 re-export 薄壳，壳膨胀即说明域隔离被破坏。
+const DOMAINS = [
+  'basic',
+  'data',
+  'form',
+  'feedback',
+  'nav',
+  'layout',
+  'chart',
+  'login',
+  'storage',
+  'wc',
+  'form-builder',
+  'amap',
+  'route-planner',
+] as const
+
+const ENTRY: Record<string, string> = { main: resolve(__dirname, 'src/components/index.ts') }
+for (const d of DOMAINS) ENTRY[d] = resolve(__dirname, `src/components/${d}/index.ts`)
+
 export default defineConfig({
   plugins: [
     vue(),
@@ -77,9 +106,11 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/components/index.ts'),
+      entry: ENTRY,
       name: 'VclUi',
-      fileName: 'vcl-ui',
+      // main → vcl-ui.js（兼容旧路径）；域 → <domain>/index.js（与 d.ts 落点同目录）
+      fileName: (format, entryName) =>
+        entryName === 'main' ? `vcl-ui.${format === 'es' ? 'js' : 'cjs'}` : `${entryName}/index.${format === 'es' ? 'js' : 'cjs'}`,
       formats: ['es', 'cjs'],
     },
     rollupOptions: {
@@ -109,10 +140,17 @@ export default defineConfig({
           '@iconify/vue': 'IconifyVue',
           morphicons: 'Morphicons',
         },
-        // CSS 单独提取
-        assetFileNames: 'vcl-ui.[ext]',
+        // CSS 单独提取：按入口 chunk 名分文件 —— main 仍是全量 vcl-ui.css，
+        // 各域 entry 出自带域的 <domain>.css（含共享 core 样式，自包含，消费方按需引）
+        assetFileNames: (info) => (info.names?.length ? `${info.names[0].replace(/\.css$/, '')}.[ext]` : 'vcl-ui.[ext]'),
         // 按业务域拆分 chunk — 减小主 bundle，让按需加载/摇树更有效
         manualChunks(id) {
+          // 根级共享 CSS（tokens.css 等）显式归 core-chunk：manualChunks 对 CSS 模块
+          // （.vue?vue&type=style 虚拟模块与 .css 实体）同样生效，而 rollup 的默认块分配会
+          // 把多入口共用的 tokens.css park 到某个域 chunk——所有入口随即对该域产生依赖边，
+          // 与真实跨域边（storage→form→data）合成 chunk 环（2026-09-20 多入口改造实测）。
+          // 判据取「src/components/ 直属 .css」= 全库共享的根级样式。
+          if (/\/src\/components\/[^/]+\.css$/.test(id)) return 'core-chunk'
           // 依赖库（echarts 等已 external，这里是剩余的重型依赖）
           if (id.includes('node_modules')) {
             // 把 xlsx/zxing-wasm 等重型动态依赖拆出主链
