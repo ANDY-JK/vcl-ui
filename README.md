@@ -190,6 +190,8 @@ npm run build       # 构建产物到 dist/
 
 10. **CSS 设计令牌不许"无声明又无 fallback"**：`var(--x)` 引用一个全库从未声明的令牌时，浏览器会静默求值为继承/初始值——亮色下常因继承背景碰巧看着正常、切暗色才暴露。`check:css-tokens` 全仓收集两处「有主」信号：① 任何 `.css/.vue/.ts` 里出现的 `--name:` 声明（含 `:style` 内联键、`setProperty('name',…)` 字符串字面量）；② 引用带了 fallback（`var(--x, 默认)`）即视为显式降级、放行。两者都不满足才判红。新增局部变量照第 1 条走「同文件声明 + 引用兜底」即可，全局令牌加进 `tokens.css`。
 
+11. **form-builder 域单文件 ≤800 行**：该域交互密度高，设计器/渲染器/收集端三块各自曾长到近千行。09-04 收官过一次（PropsPanel 五页签、useTableEdit 式拆分），09-20 复查发现 `FormDesigner 979 / DesignerCanvas 881` 已回潮——**靠人工守必然回潮**，所以 `check:constants` 第 [7] 项直接扫该目录（含子目录）的 `.ts/.vue` 行数，超限即红。正确拆法：纯函数归 `.ts`（如 `canvas-utils.ts`）、有状态逻辑归 composable（如 `useDesignerPanels`）、可独立交互的 UI 归子组件；能不拆就别拆——拆错地方比不拆更糟。
+
 ## 🚀 发版（维护者）
 
 发布交给 GitHub Actions（`.github/workflows/release.yml`），本地只需打标签：

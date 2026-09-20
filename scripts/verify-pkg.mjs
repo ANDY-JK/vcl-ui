@@ -1,10 +1,11 @@
-// 发包前自检（五件事，任一不过即非零退出）
+// 发包前自检（六件事，任一不过即非零退出）
 // 1) 每个 .vue 源文件都要有对应 .d.ts —— 抓到过 IconPicker 静默缺失
 // 2) package.json exports 声明的每个目标文件必须真实存在
 // 3) .env.local 里的真值不得出现在可执行产物（跳过源码里本来就有的值，避免假阳性）
 // 4) 声明必须对最低承诺版本（peer: vue ^3.4.0）有效 —— 3.5 生成的 DefineComponent 多 7 个参数，
 //    3.4 消费者开 skipLibCheck:false 会报 73 条 TS2707（已发生）
 // 5) 产物里不得有不可达 chunk —— 本机删不掉旧 dist，旧版本代码会跟着发布（见 [5] 注释）
+// 6) 体积预算 —— 大块产物设绝对上限防「慢慢变胖没人看」（基线 2026-09-20，含 15~30% 余量）
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import ts from 'typescript'
@@ -134,6 +135,41 @@ if (orphans.length) {
   )
 }
 console.log(`[5] 产物可达性 可达=${reached.size} 孤儿=${orphans.length}`)
+
+// 6) 体积预算 —— 防止「慢慢变胖没人看」。只看 dist 根级 ESM（.js，.cjs 同内容不重复断言）。
+//    基线 2026-09-20 实测 + 15~30% 余量。抬高预算的提交须注明原因与新基线。
+const distTop = (f) => f.replaceAll('\\', '/').split('/').pop()
+const esmChunks = walk('dist')
+  .map((f) => f.replaceAll('\\', '/'))
+  .filter((f) => /\.js$/.test(f) && f.startsWith('dist/'))
+// 大块单独设预算（KB），其余 chunk 用统一兜底上限
+const BUDGET_KB = [
+  [/^core-chunk-.*\.js$/, 1000],
+  [/^vendor-heavy-.*\.js$/, 900],
+  [/^form-builder-chunk-.*\.js$/, 700],
+  [/^morphicons-icons-data-.*\.js$/, 700],
+  [/^solar-icons-data-.*\.js$/, 280],
+  [/^data-chunk-.*\.js$/, 320],
+  [/^form-chunk-.*\.js$/, 180],
+  [/^vcl-ui\.js$/, 15],
+]
+const FALLBACK_BUDGET_KB = 150
+const CSS_BUDGET_KB = 350
+const oversize = []
+for (const f of esmChunks) {
+  const name = distTop(f)
+  const kb = (readFileSync(f).length / 1024) | 0
+  const hit = BUDGET_KB.find(([re]) => re.test(name))
+  const budget = hit ? hit[1] : FALLBACK_BUDGET_KB
+  if (kb > budget) oversize.push(`${name}=${kb}KB/预算${budget}KB`)
+}
+const cssFile = walk('dist').find((f) => f.endsWith('.css') && /\/dist\/vcl-ui\.css$/.test(f.replaceAll('\\', '/')))
+if (cssFile) {
+  const kb = (readFileSync(cssFile).length / 1024) | 0
+  if (kb > CSS_BUDGET_KB) oversize.push(`vcl-ui.css=${kb}KB/预算${CSS_BUDGET_KB}KB`)
+}
+if (oversize.length) fail.push(`产物超体积预算: ${oversize.join(', ')}`)
+console.log(`[6] 体积预算 超限=${oversize.length}`)
 
 if (fail.length) {
   console.error('\n❌ verify:pkg 未通过')
