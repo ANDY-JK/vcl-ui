@@ -20,7 +20,7 @@ function onCancel(variant: string): void {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">ConfirmModal 确认弹窗</h2>
+    <h1 class="demo-title">ConfirmModal 确认弹窗</h1>
     <p class="demo-desc">危险/警告/确认三种变体，基于 ModalBox 封装。</p>
 
     <div
@@ -36,7 +36,7 @@ function onCancel(variant: string): void {
       {{ lastAction }}
     </div>
 
-    <Card title="变体演示" style="margin-bottom: 24px">
+    <Card title="变体演示" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 12px; flex-wrap: wrap">
         <Button text="danger 危险删除" variant="danger" @click="dangerVisible = true" />
         <Button text="warning 警告提醒" variant="outline" @click="warningVisible = true" />
@@ -77,7 +77,7 @@ function onCancel(variant: string): void {
       />
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
@@ -132,7 +132,7 @@ function onCancel(variant: string): void {
       </table>
     </Card>
 
-    <Card title="Events" style="margin-top: 24px">
+    <Card title="Events" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

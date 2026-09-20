@@ -12,14 +12,14 @@ const stats = [
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Card 卡片</h2>
+    <h1 class="demo-title">Card 卡片</h1>
     <p class="demo-desc">
       <code>type="stat"</code> 统计数值卡片 | <code>type="grid"</code> 通用容器卡片（默认）。 支持
       <code>highlight</code>、<code>summary</code>、header/body/footer 三段结构。
     </p>
 
     <!-- stat 模式 -->
-    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px">stat — 统计卡片</h3>
+    <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px">stat — 统计卡片</h2>
     <Card
       v-for="s in stats"
       :key="s.label"
@@ -47,9 +47,9 @@ const stats = [
     </div>
 
     <!-- grid 模式 -->
-    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px">grid — 通用容器卡片</h3>
+    <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px">grid — 通用容器卡片</h2>
     <div class="grid-2-col">
-      <Card title="基础卡片">
+      <Card title="基础卡片" title-as="h2">
         <p style="color: var(--color-text-secondary)">带 header + body + footer 三段结构。</p>
         <template #footer>
           <div style="display: flex; justify-content: flex-end; gap: 8px">
@@ -73,7 +73,7 @@ const stats = [
       </Card>
     </div>
 
-    <Card title="Props" style="margin-top: 24px">
+    <Card title="Props" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

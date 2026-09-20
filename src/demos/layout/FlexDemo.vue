@@ -6,7 +6,7 @@ import Button from '@/components/basic/Button.vue'
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Flex 弹性布局</h2>
+    <h1 class="demo-title">Flex 弹性布局</h1>
     <p class="demo-desc">
       弹性布局容器，通过 <code>direction</code>、<code>justify</code>、<code>align</code>、<code>gap</code>、<code>wrap</code>
       等 props 快速构建布局。<br />
@@ -15,7 +15,7 @@ import Button from '@/components/basic/Button.vue'
     </p>
 
     <div class="grid-2-col" style="margin-bottom: 24px">
-      <Card title="方向 — row（默认）">
+      <Card title="方向 — row（默认）" title-as="h2">
         <Flex direction="row" gap="8px">
           <div class="flex-block">A</div>
           <div class="flex-block">B</div>
@@ -23,7 +23,7 @@ import Button from '@/components/basic/Button.vue'
         </Flex>
       </Card>
 
-      <Card title="方向 — column">
+      <Card title="方向 — column" title-as="h2">
         <Flex direction="column" gap="8px">
           <div class="flex-block">A</div>
           <div class="flex-block">B</div>
@@ -31,7 +31,7 @@ import Button from '@/components/basic/Button.vue'
         </Flex>
       </Card>
 
-      <Card title="Space 兼容 — horizontal（等同 row）">
+      <Card title="Space 兼容 — horizontal（等同 row）" title-as="h2">
         <Flex direction="horizontal" gap="8px">
           <Button text="按钮1" variant="primary" size="sm" />
           <Button text="按钮2" variant="secondary" size="sm" />
@@ -39,7 +39,7 @@ import Button from '@/components/basic/Button.vue'
         </Flex>
       </Card>
 
-      <Card title="Space 兼容 — vertical（等同 column）">
+      <Card title="Space 兼容 — vertical（等同 column）" title-as="h2">
         <Flex direction="vertical" gap="8px">
           <Button text="按钮1" variant="primary" block />
           <Button text="按钮2" variant="secondary" block />
@@ -47,7 +47,7 @@ import Button from '@/components/basic/Button.vue'
         </Flex>
       </Card>
 
-      <Card title="对齐 — justify=center, align=center">
+      <Card title="对齐 — justify=center, align=center" title-as="h2">
         <Flex
           justify="center"
           align="center"
@@ -60,7 +60,7 @@ import Button from '@/components/basic/Button.vue'
         </Flex>
       </Card>
 
-      <Card title="对齐 — justify=between">
+      <Card title="对齐 — justify=between" title-as="h2">
         <Flex
           justify="between"
           align="center"
@@ -72,7 +72,7 @@ import Button from '@/components/basic/Button.vue'
         </Flex>
       </Card>
 
-      <Card title="间距 — 不同 gap 值">
+      <Card title="间距 — 不同 gap 值" title-as="h2">
         <Flex direction="horizontal" gap="4px" style="margin-bottom: 8px">
           <Button text="4px" variant="primary" size="sm" />
           <Button text="4px" variant="primary" size="sm" />
@@ -90,14 +90,14 @@ import Button from '@/components/basic/Button.vue'
         </Flex>
       </Card>
 
-      <Card title="换行 — wrap=true">
+      <Card title="换行 — wrap=true" title-as="h2">
         <Flex direction="row" gap="8px" wrap>
           <Button v-for="i in 8" :key="i" :text="`按钮${i}`" variant="primary" size="sm" />
         </Flex>
       </Card>
     </div>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

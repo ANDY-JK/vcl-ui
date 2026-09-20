@@ -29,10 +29,10 @@ function retry() {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">ErrorBoundary 错误边界 + 状态指示器</h2>
+    <h1 class="demo-title">ErrorBoundary 错误边界 + 状态指示器</h1>
     <p class="demo-desc">捕获子组件渲染异常、离线提示、只读遮罩。支持自定义 fallback slot 和重试。</p>
 
-    <Card title="正常渲染（无异常）" style="margin-bottom: 24px">
+    <Card title="正常渲染（无异常）" title-as="h2" style="margin-bottom: 24px">
       <ErrorBoundary title="安全区域">
         <div style="padding: 20px; text-align: center; color: var(--color-text-muted)">
           这是一个正常渲染的子组件，没有异常。
@@ -40,7 +40,7 @@ function retry() {
       </ErrorBoundary>
     </Card>
 
-    <Card title="捕获异常 + 重试" style="margin-bottom: 24px">
+    <Card title="捕获异常 + 重试" title-as="h2" style="margin-bottom: 24px">
       <div style="margin-bottom: 12px">
         <Button text="触发异常" variant="danger" icon="circle-alert" @click="triggerError = true" />
         <Button text="重试" variant="outline" icon="rotate-cw" style="margin-left: 8px" @click="retry" />
@@ -54,14 +54,14 @@ function retry() {
       </ErrorBoundary>
     </Card>
 
-    <Card title="OfflineIndicator 离线提示" style="margin-bottom: 24px">
+    <Card title="OfflineIndicator 离线提示" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
         断网时顶部自动显示黄色横幅。你可以断开网络测试，或查看页面顶部。
       </p>
       <OfflineIndicator />
     </Card>
 
-    <Card title="ReadOnlyOverlay 只读遮罩" style="margin-bottom: 24px">
+    <Card title="ReadOnlyOverlay 只读遮罩" title-as="h2" style="margin-bottom: 24px">
       <Button text="模拟只读模式" variant="outline" @click="readonlyVisible = true" />
       <ReadOnlyOverlay :visible="readonlyVisible" reason="系统升级维护中（2024-05-16 02:00-04:00），当前仅可查看数据" />
       <Button
@@ -77,7 +77,7 @@ function retry() {
       </p>
     </Card>
 
-    <Card title="自定义 fallback slot">
+    <Card title="自定义 fallback slot" title-as="h2">
       <ErrorBoundary title="自定义错误">
         <template #fallback="{ error, retry }">
           <div style="padding: 24px; text-align: center; background: var(--color-danger-bg); border-radius: 8px">
@@ -92,7 +92,7 @@ function retry() {
       </ErrorBoundary>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
@@ -123,7 +123,7 @@ function retry() {
       </table>
     </Card>
 
-    <Card title="Slots" style="margin-top: 24px">
+    <Card title="Slots" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

@@ -38,10 +38,10 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">ToggleList 开关列表</h2>
+    <h1 class="demo-title">ToggleList 开关列表</h1>
     <p class="demo-desc">两种模式：开关切换列表、操作按钮列表。支持图标、描述、额外列。</p>
 
-    <Card title="系统设置（switch 变体）" style="margin-bottom: 16px">
+    <Card title="系统设置（switch 变体）" title-as="h2" style="margin-bottom: 16px">
       <ToggleList
         :items="switchItems"
         variant="switch"
@@ -50,15 +50,15 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
       />
     </Card>
 
-    <Card title="通知设置（switch 变体）" style="margin-bottom: 16px">
+    <Card title="通知设置（switch 变体）" title-as="h2" style="margin-bottom: 16px">
       <ToggleList :items="notifyItems" variant="switch" toggle-field="is_enabled" @toggle="onToggle" />
     </Card>
 
-    <Card title="发快递（button 变体）">
+    <Card title="发快递（button 变体）" title-as="h2">
       <ToggleList :items="buttonItems" variant="button" button-label="发快递" @button-click="onButtonClick" />
     </Card>
 
-    <Card title="Props" style="margin-top: 24px">
+    <Card title="Props" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

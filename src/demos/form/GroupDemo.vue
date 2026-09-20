@@ -21,19 +21,19 @@ const fruitOptions = [
 
 <template>
   <div class="demo-container">
-    <h2>Group 统一选择组组件</h2>
+    <h1>Group 统一选择组组件</h1>
     <p class="desc">合并 RadioGroup / CheckboxGroup / Switch / Rate / Slider 为一个统一组件，通过 type 切换。</p>
 
     <!-- Radio -->
     <section class="demo-section">
-      <h3>type="radio" — 单选按钮组</h3>
+      <h2>type="radio" — 单选按钮组</h2>
       <Group v-model="radioVal" type="radio" :options="fruitOptions" direction="horizontal" aria-label="水果单选" />
       <p class="result">当前值：{{ radioVal }}</p>
     </section>
 
     <!-- Checkbox -->
     <section class="demo-section">
-      <h3>type="checkbox" — 复选按钮组</h3>
+      <h2>type="checkbox" — 复选按钮组</h2>
       <Group
         v-model="checkboxVal"
         type="checkbox"
@@ -47,7 +47,7 @@ const fruitOptions = [
 
     <!-- Switch -->
     <section class="demo-section">
-      <h3>type="switch" — 开关</h3>
+      <h2>type="switch" — 开关</h2>
       <div style="display: flex; gap: 24px; align-items: center">
         <Group v-model="switchVal" type="switch" label="默认尺寸" size="md" />
         <Group v-model="switchVal" type="switch" label="小尺寸" size="sm" />
@@ -58,7 +58,7 @@ const fruitOptions = [
 
     <!-- Rate -->
     <section class="demo-section">
-      <h3>type="rate" — 评分</h3>
+      <h2>type="rate" — 评分</h2>
       <div style="display: flex; gap: 32px; align-items: center">
         <Group v-model="rateVal" type="rate" :rate-max="5" />
         <Group v-model="rateVal" type="rate" :rate-max="5" allow-half color="#EF4444" />
@@ -69,20 +69,20 @@ const fruitOptions = [
 
     <!-- Slider -->
     <section class="demo-section">
-      <h3>type="slider" — 滑块（单值）</h3>
+      <h2>type="slider" — 滑块（单值）</h2>
       <Group v-model="sliderVal" type="slider" :min="0" :slider-max="100" :step="1" />
       <p class="result">当前值：{{ sliderVal }}</p>
     </section>
 
     <section class="demo-section">
-      <h3>type="slider" — 滑块（范围）</h3>
+      <h2>type="slider" — 滑块（范围）</h2>
       <Group v-model="sliderRange" type="slider" :min="0" :slider-max="100" :step="5" />
       <p class="result">当前值：{{ sliderRange[0] }} ~ {{ sliderRange[1] }}</p>
     </section>
 
     <!-- 禁用态 -->
     <section class="demo-section">
-      <h3>禁用态</h3>
+      <h2>禁用态</h2>
       <div style="display: flex; flex-direction: column; gap: 16px">
         <Group v-model="radioVal" type="radio" :options="fruitOptions" disabled />
         <Group v-model="checkboxVal" type="checkbox" :options="fruitOptions" disabled />

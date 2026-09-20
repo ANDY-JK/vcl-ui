@@ -18,7 +18,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Input 统一输入组件</h2>
+    <h1 class="demo-title">Input 统一输入组件</h1>
     <p class="demo-desc">
       合并 Input + InputNumber + Textarea。<br />
       通过 <code>type</code> 切换：text | password | email | tel | number | textarea | search | url<br />
@@ -27,7 +27,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
 
     <div class="grid-2-col">
       <!-- 文本 -->
-      <Card title="type='text' — 文本输入">
+      <Card title="type='text' — 文本输入" title-as="h2">
         <Input v-model="textVal" label="用户名" />
         <p class="result">
           {{ textVal || '空' }}
@@ -35,17 +35,17 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
       </Card>
 
       <!-- 邮箱 -->
-      <Card title="type='email' — 邮箱 + 图标">
+      <Card title="type='email' — 邮箱 + 图标" title-as="h2">
         <Input v-model="emailVal" label="邮箱" type="email" icon="mail" autocomplete="email" />
       </Card>
 
       <!-- 密码 + 校验 -->
-      <Card title="type='password' — 密码显隐 + 校验">
+      <Card title="type='password' — 密码显隐 + 校验" title-as="h2">
         <Input v-model="passwordVal" label="密码" type="password" :rules="rules" hint="至少3个字符，不能为空" />
       </Card>
 
       <!-- 搜索 + clearable -->
-      <Card title="type='search' — 搜索 + clearable">
+      <Card title="type='search' — 搜索 + clearable" title-as="h2">
         <Input v-model="searchVal" label="搜索" type="search" icon="search" clearable placeholder="输入关键词搜索..." />
         <p class="result">
           {{ searchVal || '空' }}
@@ -53,7 +53,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
       </Card>
 
       <!-- 数字步进 -->
-      <Card title="type='number' + stepper — 数字步进器">
+      <Card title="type='number' + stepper — 数字步进器" title-as="h2">
         <Input v-model="numVal" label="数量" type="number" :stepper="true" :min="0" :max="100" :step="1" />
         <p class="result">
           {{ numVal }}
@@ -61,7 +61,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
       </Card>
 
       <!-- 纯数字（无步进） -->
-      <Card title="type='number' — 纯数字输入">
+      <Card title="type='number' — 纯数字输入" title-as="h2">
         <Input v-model="numVal" label="纯数字" type="number" :min="0" :max="999" clearable />
         <p class="result">
           {{ numVal }}
@@ -69,7 +69,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
       </Card>
 
       <!-- Textarea -->
-      <Card title="type='textarea' — 多行文本">
+      <Card title="type='textarea' — 多行文本" title-as="h2">
         <Input v-model="taVal" label="备注" type="textarea" :rows="4" placeholder="输入备注内容..." />
         <p class="result">
           {{ taVal || '空' }}
@@ -78,7 +78,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
     </div>
 
     <!-- 禁用态 -->
-    <Card title="禁用态">
+    <Card title="禁用态" title-as="h2">
       <div class="disabled-grid">
         <Input :model-value="'已禁用'" label="文本" disabled />
         <Input :model-value="42" label="数字" type="number" :stepper="true" disabled />
@@ -86,7 +86,7 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
     </Card>
 
     <!-- Props 表 -->
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table class="props-table">
         <tbody>
         <tr class="props-header">

@@ -253,7 +253,7 @@ const mixedSeries = [
   <div class="demo">
     <div class="demo-header">
       <div>
-        <h2 class="demo-title">Chart 图表</h2>
+        <h1 class="demo-title">Chart 图表</h1>
         <p class="demo-desc">
           基于 ECharts 的统一图表组件，支持 16 种图表类型。默认宽高 <code>100%</code> 自适应容器，容器多大图表就多大。
         </p>
@@ -265,28 +265,28 @@ const mixedSeries = [
     </div>
 
     <!-- 趋势类 -->
-    <Card title="趋势类 — line / area / bar / mixed" style="margin-bottom: 14px">
+    <Card title="趋势类 — line / area / bar / mixed" title-as="h2" style="margin-bottom: 14px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>折线图 line — 平滑 + 图例 + 标题</h4>
+          <h2>折线图 line — 平滑 + 图例 + 标题</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart type="line" :categories="months" :series="lineSeries" :dark-mode="darkMode" title="月度访问趋势" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>面积图 area — 填充渐变</h4>
+          <h2>面积图 area — 填充渐变</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart type="area" :categories="months" :series="areaSeries" :dark-mode="darkMode" title="PV / UV" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>柱状图 bar — 多系列对比</h4>
+          <h2>柱状图 bar — 多系列对比</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart type="bar" :categories="days" :series="barSeries" :dark-mode="darkMode" title="水果销量" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>混合图表 mixed — 柱状 + 折线双轴</h4>
+          <h2>混合图表 mixed — 柱状 + 折线双轴</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="mixed"
@@ -301,22 +301,22 @@ const mixedSeries = [
     </Card>
 
     <!-- 分布类 -->
-    <Card title="分布类 — pie / scatter / radar" style="margin-bottom: 20px">
+    <Card title="分布类 — pie / scatter / radar" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>饼图 pie — 环形 + 标签</h4>
+          <h2>饼图 pie — 环形 + 标签</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" title="流量来源" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>散点图 scatter — 无平滑</h4>
+          <h2>散点图 scatter — 无平滑</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart type="scatter" :series="scatterSeries" :dark-mode="darkMode" title="身高-体重" :smooth="false" />
           </div>
         </div>
         <div class="chart-cell" style="grid-column: 1 / -1">
-          <h4>雷达图 radar — 双系列对比</h4>
+          <h2>雷达图 radar — 双系列对比</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="radar"
@@ -331,10 +331,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 业务类 -->
-    <Card title="业务类 — gauge / funnel / heatmap" style="margin-bottom: 20px">
+    <Card title="业务类 — gauge / funnel / heatmap" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>仪表盘 gauge</h4>
+          <h2>仪表盘 gauge</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="gauge"
@@ -345,13 +345,13 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>漏斗图 funnel</h4>
+          <h2>漏斗图 funnel</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart type="funnel" :series="funnelSeries" :dark-mode="darkMode" title="转化漏斗" />
           </div>
         </div>
         <div class="chart-cell" style="grid-column: 1 / -1">
-          <h4>热力图 heatmap — 24h × 7d</h4>
+          <h2>热力图 heatmap — 24h × 7d</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart
               type="heatmap"
@@ -365,16 +365,16 @@ const mixedSeries = [
     </Card>
 
     <!-- 层次类 -->
-    <Card title="层次类 — treemap / sunburst" style="margin-bottom: 20px">
+    <Card title="层次类 — treemap / sunburst" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>矩形树图 treemap — 可下钻</h4>
+          <h2>矩形树图 treemap — 可下钻</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="treemap" :data="{ treeData: treemapData }" :dark-mode="darkMode" title="销售分布" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>旭日图 sunburst — 层级展示</h4>
+          <h2>旭日图 sunburst — 层级展示</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="sunburst" :data="{ treeData: sunburstData }" :dark-mode="darkMode" title="组织架构" />
           </div>
@@ -383,16 +383,16 @@ const mixedSeries = [
     </Card>
 
     <!-- 流程类 -->
-    <Card title="流程类 — sankey / graph" style="margin-bottom: 20px">
+    <Card title="流程类 — sankey / graph" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>桑基图 sankey — 流向分析</h4>
+          <h2>桑基图 sankey — 流向分析</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart type="sankey" :data="{ sankeyNodes, sankeyLinks }" :dark-mode="darkMode" title="用户流转" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>关系图 graph — 力导向布局</h4>
+          <h2>关系图 graph — 力导向布局</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="graph" :data="{ graphNodes, graphLinks }" :dark-mode="darkMode" title="社交网络" />
           </div>
@@ -401,10 +401,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 金融类 -->
-    <Card title="金融类 — candlestick / boxplot" style="margin-bottom: 20px">
+    <Card title="金融类 — candlestick / boxplot" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>K 线图 candlestick — 红涨绿跌</h4>
+          <h2>K 线图 candlestick — 红涨绿跌</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="candlestick"
@@ -416,7 +416,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>箱线图 boxplot — 分布特征</h4>
+          <h2>箱线图 boxplot — 分布特征</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart type="boxplot" :categories="days" :data="{ boxplotData }" :dark-mode="darkMode" title="周数据分布" />
           </div>
@@ -425,10 +425,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 新增图表类型 -->
-    <Card title="🆕 新增 — waterfall / pictorialBar / tree / wordCloud / timeline" style="margin-bottom: 20px">
+    <Card title="🆕 新增 — waterfall / pictorialBar / tree / wordCloud / timeline" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>瀑布图 waterfall — 财务收支</h4>
+          <h2>瀑布图 waterfall — 财务收支</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="waterfall"
@@ -440,7 +440,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>象形柱状 pictorialBar — 符号柱</h4>
+          <h2>象形柱状 pictorialBar — 符号柱</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="pictorialBar"
@@ -455,7 +455,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>树图 tree — 组织架构</h4>
+          <h2>树图 tree — 组织架构</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart
               type="tree"
@@ -477,7 +477,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>词云 wordCloud — 文本分析</h4>
+          <h2>词云 wordCloud — 文本分析</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart
               type="wordCloud"
@@ -506,7 +506,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell" style="grid-column: 1 / -1">
-          <h4>时间轴 timeline — 时序播放</h4>
+          <h2>时间轴 timeline — 时序播放</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="timeline"
@@ -527,10 +527,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 高级功能演示 -->
-    <Card title="🆕 高级功能 — 堆叠 / 条形 / 数据标签 / 百分比堆叠" style="margin-bottom: 20px">
+    <Card title="🆕 高级功能 — 堆叠 / 条形 / 数据标签 / 百分比堆叠" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>堆叠柱状图 stacked</h4>
+          <h2>堆叠柱状图 stacked</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="bar"
@@ -544,7 +544,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>百分比堆叠 stacked100</h4>
+          <h2>百分比堆叠 stacked100</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="bar"
@@ -557,7 +557,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>条形图 horizontal</h4>
+          <h2>条形图 horizontal</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="bar"
@@ -571,7 +571,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>折线图 + 数据标签</h4>
+          <h2>折线图 + 数据标签</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="line"
@@ -584,7 +584,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>堆叠面积图 stacked</h4>
+          <h2>堆叠面积图 stacked</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="area"
@@ -597,7 +597,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>图例左侧 + Y轴范围</h4>
+          <h2>图例左侧 + Y轴范围</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="line"
@@ -614,16 +614,16 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 极简推断模式 -->
-    <Card title="🆕 极简模式 — 裸数据自动推断，无需传 type/categories/series" style="margin-bottom: 20px">
+    <Card title="🆕 极简模式 — 裸数据自动推断，无需传 type/categories/series" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>一维数组 :data="[12, 18, 24, 30, 36]"</h4>
+          <h2>一维数组 :data="[12, 18, 24, 30, 36]"</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart :data="[12, 18, 24, 30, 36]" :dark-mode="darkMode" title="极简一维" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>二维数组 :data="[[12,18,24], [8,12,15]]"</h4>
+          <h2>二维数组 :data="[[12,18,24], [8,12,15]]"</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               :data="[
@@ -636,7 +636,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>对象数组 :data="[{name:'Q1',value:12},...]"</h4>
+          <h2>对象数组 :data="[{name:'Q1',value:12},...]"</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               :data="[
@@ -651,7 +651,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>长标签自动旋转（>4字自动45°）</h4>
+          <h2>长标签自动旋转（>4字自动45°）</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="bar"
@@ -666,10 +666,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 标注线 + 标注区 -->
-    <Card title="🆕 标注线 markLine / 标注区 markArea" style="margin-bottom: 20px">
+    <Card title="🆕 标注线 markLine / 标注区 markArea" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>均值线 + 目标线</h4>
+          <h2>均值线 + 目标线</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="bar"
@@ -685,7 +685,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>标注区域 — 绿区标正常范围</h4>
+          <h2>标注区域 — 绿区标正常范围</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="line"
@@ -702,7 +702,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>柱状图 + 均值线</h4>
+          <h2>柱状图 + 均值线</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="bar"
@@ -718,7 +718,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>堆叠 + 标注区（红色警戒带）</h4>
+          <h2>堆叠 + 标注区（红色警戒带）</h2>
           <div class="chart-wrap" style="height: 320px">
             <Chart
               type="bar"
@@ -735,40 +735,40 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 色板预设 -->
-    <Card title="🆕 色板预设 palette — 一键换皮（5套内置方案）" style="margin-bottom: 20px">
+    <Card title="🆕 色板预设 palette — 一键换皮（5套内置方案）" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>ocean 海洋</h4>
+          <h2>ocean 海洋</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="ocean" title="海洋色" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>forest 森林</h4>
+          <h2>forest 森林</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="forest" title="森林色" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>sunset 日落</h4>
+          <h2>sunset 日落</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="sunset" title="日落色" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>midnight 午夜</h4>
+          <h2>midnight 午夜</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="midnight" title="午夜色" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>pastel 马卡龙</h4>
+          <h2>pastel 马卡龙</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="pastel" title="马卡龙色" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>midnight 柱状图效果</h4>
+          <h2>midnight 柱状图效果</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="bar"
@@ -784,10 +784,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 组合演示 -->
-    <Card title="🆕 多属性组合 — 堆叠+色板+标注+数据标签同时使用" style="margin-bottom: 20px">
+    <Card title="🆕 多属性组合 — 堆叠+色板+标注+数据标签同时使用" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>堆叠条形 + 数据标签 + ocean 色板</h4>
+          <h2>堆叠条形 + 数据标签 + ocean 色板</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart
               type="bar"
@@ -803,7 +803,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>折线 + 标注线 + 数据标签 + sunset + 区间</h4>
+          <h2>折线 + 标注线 + 数据标签 + sunset + 区间</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart
               type="line"
@@ -819,7 +819,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>面积图 + 堆叠 + forest 色板</h4>
+          <h2>面积图 + 堆叠 + forest 色板</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart
               type="area"
@@ -833,7 +833,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>百分比堆叠 + 左侧图例 + pastel</h4>
+          <h2>百分比堆叠 + 左侧图例 + pastel</h2>
           <div class="chart-wrap" style="height: 380px">
             <Chart
               type="bar"
@@ -851,10 +851,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 暗色全体验 -->
-    <Card title="🆕 暗色模式 — 深色背景下各色板效果" style="margin-bottom: 20px">
+    <Card title="🆕 暗色模式 — 深色背景下各色板效果" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>默认色板 dark</h4>
+          <h2>默认色板 dark</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="bar"
@@ -870,7 +870,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>ocean dark</h4>
+          <h2>ocean dark</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="bar"
@@ -886,7 +886,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>sunset dark</h4>
+          <h2>sunset dark</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="bar"
@@ -902,7 +902,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>midnight dark</h4>
+          <h2>midnight dark</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="bar"
@@ -921,10 +921,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 散点图 + 标注结合 -->
-    <Card title="🆕 散点图 + 标注 — 体重分布参考" style="margin-bottom: 20px">
+    <Card title="🆕 散点图 + 标注 — 体重分布参考" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>散点图 + 均值十字线</h4>
+          <h2>散点图 + 均值十字线</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="scatter"
@@ -968,7 +968,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>散点 + 标注区（标准体重范围）</h4>
+          <h2>散点 + 标注区（标准体重范围）</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="scatter"
@@ -1010,10 +1010,10 @@ const mixedSeries = [
     </Card>
 
     <!-- 状态 & 参数演示 -->
-    <Card title="参数演示" style="margin-bottom: 20px">
+    <Card title="参数演示" title-as="h2" style="margin-bottom: 20px">
       <div class="chart-grid">
         <div class="chart-cell">
-          <h4>Loading 加载态</h4>
+          <h2>Loading 加载态</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="bar"
@@ -1026,13 +1026,13 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>空数据 emptyText</h4>
+          <h2>空数据 emptyText</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart type="line" :dark-mode="darkMode" empty-text="暂无可用数据" />
           </div>
         </div>
         <div class="chart-cell">
-          <h4>自定义色板 colors + 无图例 showLegend=false</h4>
+          <h2>自定义色板 colors + 无图例 showLegend=false</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="pie"
@@ -1045,7 +1045,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>无标题无图例 + 阶梯折线 smooth=false</h4>
+          <h2>无标题无图例 + 阶梯折线 smooth=false</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="line"
@@ -1058,7 +1058,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>隐藏数据点 showSymbol=false</h4>
+          <h2>隐藏数据点 showSymbol=false</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               type="area"
@@ -1071,7 +1071,7 @@ const mixedSeries = [
           </div>
         </div>
         <div class="chart-cell">
-          <h4>完整 option 模式 — 直接传入 ECharts 配置</h4>
+          <h2>完整 option 模式 — 直接传入 ECharts 配置</h2>
           <div class="chart-wrap" style="height: 360px">
             <Chart
               :dark-mode="darkMode"
@@ -1088,7 +1088,7 @@ const mixedSeries = [
     </Card>
 
     <!-- Props 表格 -->
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table class="props-table">
         <thead>
           <tr>
@@ -1266,7 +1266,7 @@ const mixedSeries = [
     </Card>
 
     <!-- 图表类型速查 -->
-    <Card title="图表类型速查" style="margin-top: 20px">
+    <Card title="图表类型速查" title-as="h2" style="margin-top: 20px">
       <table class="props-table">
         <thead>
           <tr>
@@ -1386,7 +1386,7 @@ const mixedSeries = [
     </Card>
 
     <!-- 独立图例组件 -->
-    <Card title="ChartLegend 独立图例组件" style="margin-top: 20px">
+    <Card title="ChartLegend 独立图例组件" title-as="h2" style="margin-top: 20px">
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
         flex-wrap + gap 自然撑高，永不重叠。图例点击切换显隐，适合与 BaseChart 配合使用。
       </p>
@@ -1415,7 +1415,7 @@ const mixedSeries = [
     </Card>
 
     <!-- BaseChart：原始 option 直通 -->
-    <Card title="BaseChart — 直接喂 ECharts 原始 option" style="margin-top: 20px">
+    <Card title="BaseChart — 直接喂 ECharts 原始 option" title-as="h2" style="margin-top: 20px">
       <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         <code>Chart</code> 的 props 覆盖不到的图形（仪表盘、桑基、自定义 series 等）用
         <code>BaseChart</code>：只吃 <code>option</code> / <code>height</code> / <code>width</code> /
@@ -1426,7 +1426,7 @@ const mixedSeries = [
     </Card>
 
     <!-- Events -->
-    <Card title="Events" style="margin-top: 20px">
+    <Card title="Events" title-as="h2" style="margin-top: 20px">
       <table class="props-table">
         <thead>
           <tr>

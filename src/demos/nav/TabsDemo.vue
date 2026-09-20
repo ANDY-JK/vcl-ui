@@ -28,10 +28,10 @@ const panelItems = [
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Tabs 标签页</h2>
+    <h1 class="demo-title">Tabs 标签页</h1>
     <p class="demo-desc">underline / pills / card / tabbar 四种变体。</p>
 
-    <Card title="Tabs 标签页" style="margin-bottom: 24px">
+    <Card title="Tabs 标签页" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; flex-direction: column; gap: 24px">
         <div>
           <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px">
@@ -54,7 +54,7 @@ const panelItems = [
       </div>
     </Card>
 
-    <Card title="TabPanel 内容面板" style="margin-bottom: 24px">
+    <Card title="TabPanel 内容面板" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         与 Tabs 配套的内容区：点哪个标签显示哪个面板。<code>lazy</code> 面板首次点开才渲染（重内容推荐）；
         切走默认保留状态（下面的输入框填一半切回来还在）。
@@ -85,7 +85,7 @@ const panelItems = [
       </div>
     </Card>
 
-    <Card title="TabBar 底部导航">
+    <Card title="TabBar 底部导航" title-as="h2">
       <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         <code>variant="tabbar"</code> 移动端底部标签栏
       </p>
@@ -116,7 +116,7 @@ const panelItems = [
       </div>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

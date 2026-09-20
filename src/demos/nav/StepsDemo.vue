@@ -15,10 +15,10 @@ const steps = [
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Steps 步骤条</h2>
+    <h1 class="demo-title">Steps 步骤条</h1>
     <p class="demo-desc">分步引导流程，支持标签和描述。</p>
 
-    <Card title="Steps 步骤条">
+    <Card title="Steps 步骤条" title-as="h2">
       <Button
         v-if="currentStep < 4"
         text="下一步"
@@ -33,7 +33,7 @@ const steps = [
       </p>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

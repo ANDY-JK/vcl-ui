@@ -7,22 +7,22 @@ const crumbs = [{ label: '首页', path: '/' }, { label: '组件库', path: '/co
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Breadcrumb 面包屑</h2>
+    <h1 class="demo-title">Breadcrumb 面包屑</h1>
     <p class="demo-desc">页面层级路径导航。</p>
 
-    <Card title="Breadcrumb 面包屑">
+    <Card title="Breadcrumb 面包屑" title-as="h2">
       <Breadcrumb :items="crumbs" />
       <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">显示页面层级路径</p>
     </Card>
 
-    <Card title="自定义分隔符（separator）">
+    <Card title="自定义分隔符（separator）" title-as="h2">
       <Breadcrumb :items="crumbs" separator="›" />
       <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">
         传入 separator 后以文本替代默认箭头图标
       </p>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

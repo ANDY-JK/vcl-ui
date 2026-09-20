@@ -401,7 +401,7 @@ function onCamError(msg: string) {
 
       <div class="hero-side">
         <!-- 拍照上传 -->
-        <Card title="拍照上传识别">
+        <Card title="拍照上传识别" title-as="h2">
           <p class="card-hint">用 scanPhoto(file) 识别，不需要摄像头。</p>
           <div class="upload-box" @click="fileInput?.click()">
             <div v-if="photoScanning"><span class="spinner" /><span>识别中...</span></div>
@@ -423,7 +423,7 @@ function onCamError(msg: string) {
     </div>
 
     <!-- 弹窗演示 -->
-    <Card title="弹窗完整演示" style="margin-top: 16px">
+    <Card title="弹窗完整演示" title-as="h2" style="margin-top: 16px">
       <p class="card-hint">
         自定义 modal + tab（扫码/输入/上传）+ 反馈（声音/语音/通知）。
         <b>多码指针</b>：画面里同时出现多个码时，每个码画虚线框、码内容挂在框下方，
@@ -553,7 +553,7 @@ function onCamError(msg: string) {
     </ModalBox>
 
     <!-- CameraCapture 拍照组件 -->
-    <Card title="CameraCapture 页面内拍照" style="margin-top: 16px">
+    <Card title="CameraCapture 页面内拍照" title-as="h2" style="margin-top: 16px">
       <p class="card-hint">
         页面内全屏取景拍照（原生相机布局：中间快门 +
         左右侧键按需显示），不调起系统相机，避免页面切后台被浏览器重建刷新。
@@ -607,7 +607,7 @@ const onCapture = (file: File) => { /* file 即拍照结果 */ }
     </Card>
 
     <!-- 极简代码示例 -->
-    <Card title="极简用法" style="margin-top: 16px">
+    <Card title="极简用法" title-as="h2" style="margin-top: 16px">
       <pre class="code-block"><code>import { useBarcodeScanner } from 'vcl-ui'
 
 const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner({
@@ -618,7 +618,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 // start() 开始扫描  stop() 停止</code></pre>
     </Card>
 
-    <Card title="API" style="margin-top: 16px">
+    <Card title="API" title-as="h2" style="margin-top: 16px">
       <table class="doc-table">
         <tbody>
         <tr>

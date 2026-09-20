@@ -10,11 +10,11 @@ const sliderVal = ref(30)
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">ProgressBar 进度条 / 滑块</h2>
+    <h1 class="demo-title">ProgressBar 进度条 / 滑块</h1>
     <p class="demo-desc">只读进度条 + <strong>interactive</strong> 滑块模式。滑块支持拖动、键盘、输入框、刻度。</p>
 
     <div class="grid-2-col" style="margin-bottom: 24px">
-      <Card title="只读进度条">
+      <Card title="只读进度条" title-as="h2">
         <div style="display: flex; flex-direction: column; gap: 12px">
           <ProgressBar :percent="progress" variant="primary" />
           <ProgressBar :percent="45" variant="success" />
@@ -30,21 +30,21 @@ const sliderVal = ref(30)
         </div>
       </Card>
 
-      <Card title="滑块 interactive">
+      <Card title="滑块 interactive" title-as="h2">
         <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">当前值: {{ sliderVal }}</p>
         <ProgressBar v-model="sliderVal" interactive />
       </Card>
 
-      <Card title="带输入框 + 刻度">
+      <Card title="带输入框 + 刻度" title-as="h2">
         <ProgressBar v-model="sliderVal" interactive :step="10" show-input show-stops />
       </Card>
 
-      <Card title="禁用滑块">
+      <Card title="禁用滑块" title-as="h2">
         <ProgressBar interactive :model-value="40" disabled />
       </Card>
     </div>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

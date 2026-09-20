@@ -66,7 +66,7 @@ function onCamError(msg: string) {
     </p>
 
     <!-- 能力探测 -->
-    <Card title="环境能力探测（detectCaptureCapability）">
+    <Card title="环境能力探测（detectCaptureCapability）" title-as="h2">
       <p class="card-hint">
         入口级由能力决定：不具备页面内取流条件（非 HTTPS / 无 getUserMedia）时，直接跳到系统相机，避免注定失败的权限纠缠。
       </p>
@@ -86,7 +86,7 @@ function onCamError(msg: string) {
     </Card>
 
     <!-- 扫码 -->
-    <Card title="扫码（自动兜底）" style="margin-top: 16px">
+    <Card title="扫码（自动兜底）" title-as="h2" style="margin-top: 16px">
       <p class="card-hint">
         点「开始扫码」后链路自动运行。想复现兜底：在浏览器里拒绝摄像头权限 → 会自动走系统相机；
         无线程环境/桌面无摄像头 → 直接弹「上传识别 + 手工输入」面板。底部也可随时手动切上传/输入。
@@ -105,7 +105,7 @@ function onCamError(msg: string) {
     </Card>
 
     <!-- 拍照 -->
-    <Card title="拍照（自动兜底）" style="margin-top: 16px">
+    <Card title="拍照（自动兜底）" title-as="h2" style="margin-top: 16px">
       <p class="card-hint">
         页面内取景 → 相机不可用自动调系统相机 → 系统相机也拿不到（取消/不可用）→ 自动弹上传面板。
       </p>

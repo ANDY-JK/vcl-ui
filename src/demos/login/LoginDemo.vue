@@ -85,13 +85,13 @@ function resetCurrentForm() {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Login 登录系列</h2>
+    <h1 class="demo-title">Login 登录系列</h1>
     <p class="demo-desc">
       4 个登录相关组件，纯 props/emits 驱动，不依赖外部 API。 支持 maxWidth / minHeight / hideBrand 布局参数。
     </p>
 
     <!-- ===== 控制面板 ===== -->
-    <Card title="配置开关" style="margin-bottom: 20px">
+    <Card title="配置开关" title-as="h2" style="margin-bottom: 20px">
       <div class="control-bar">
         <div class="control-group">
           <label class="ctrl-label">当前组件</label>
@@ -229,7 +229,7 @@ function resetCurrentForm() {
     </div>
 
     <!-- ===== Props 说明表 ===== -->
-    <Card title="通用布局 Props（LoginPage / RegisterPage / ForgotPasswordPage）" style="margin-top: 24px">
+    <Card title="通用布局 Props（LoginPage / RegisterPage / ForgotPasswordPage）" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>
@@ -262,7 +262,7 @@ function resetCurrentForm() {
       </table>
     </Card>
 
-    <Card title="LoginPage 独有 Props" style="margin-top: 24px">
+    <Card title="LoginPage 独有 Props" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>
@@ -325,7 +325,7 @@ function resetCurrentForm() {
       </table>
     </Card>
 
-    <Card title="Events" style="margin-top: 24px">
+    <Card title="Events" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>
@@ -384,7 +384,7 @@ function resetCurrentForm() {
       </table>
     </Card>
 
-    <Card title="Exposed Methods" style="margin-top: 24px">
+    <Card title="Exposed Methods" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>

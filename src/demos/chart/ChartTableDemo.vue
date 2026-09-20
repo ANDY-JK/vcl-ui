@@ -371,6 +371,7 @@ const trendData = computed(() => {
 
 <template>
   <div class="demo">
+    <h1 class="demo-title">ChartTable 图表表格</h1>
     <!-- KPI -->
     <div class="kpi-bar">
       <div class="kpi">

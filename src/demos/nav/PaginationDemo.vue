@@ -9,22 +9,22 @@ const page2 = ref(3)
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Pagination 分页</h2>
+    <h1 class="demo-title">Pagination 分页</h1>
     <p class="demo-desc">页码导航组件，支持快速跳页。</p>
 
-    <Card title="Pagination 分页">
+    <Card title="Pagination 分页" title-as="h2">
       <Pagination v-model="page" :total="86" :page-size="10" />
       <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">第 {{ page }} 页 / 共 9 页</p>
     </Card>
 
-    <Card title="快速跳页（showQuickJumper）">
+    <Card title="快速跳页（showQuickJumper）" title-as="h2">
       <Pagination v-model="page2" :total="86" :page-size="10" show-quick-jumper />
       <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">
         第 {{ page2 }} 页 — 输入页码后按回车跳转，超出范围自动钳制
       </p>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

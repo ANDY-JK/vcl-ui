@@ -6,13 +6,13 @@ import { ref } from 'vue'
 import { FormRenderer } from '@/components/form-builder'
 
 const simpleValue = ref('<p>默认正文，可直接编辑</p>')
-const fullValue = ref('<h2>文章标题</h2><p>这里用 full 工具栏写作：标题、引用、代码块、插图、表格一应俱全。</p>')
+const fullValue = ref('<h1>文章标题</h1><p>这里用 full 工具栏写作：标题、引用、代码块、插图、表格一应俱全。</p>')
 const minChars = 20
 </script>
 
 <template>
   <div class="fr-demo">
-    <h3>FormRenderer · 富文本字段</h3>
+    <h2>FormRenderer · 富文本字段</h2>
     <p class="fr-demo-tip">
       simple 档输入文字验证同步；切换中文输入法验证候选不中断；粘贴富文本验证自动消毒。full
       档面向发文场景：标题/引用/代码块/对齐/颜色/链接/插图/表格 + 字数/预览/全屏。

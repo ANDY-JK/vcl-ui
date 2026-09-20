@@ -41,13 +41,13 @@ function openMulti(idx: number) {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Image 图片</h2>
+    <h1 class="demo-title">Image 图片</h1>
     <p class="demo-desc">
       图片展示（懒加载 / 加载占位 / 失败兜底）、头像模式（Avatar）、全屏预览（缩放 / 旋转 / 标注 / 多图切换 / 导出）。
     </p>
 
     <!-- ══════════════ Image 基础 ══════════════ -->
-    <Card title="基本用法" style="margin-bottom: 24px">
+    <Card title="基本用法" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap">
         <div style="text-align: center">
           <Image :src="demoImages.valid" :size="60" alt="示例" />
@@ -64,7 +64,7 @@ function openMulti(idx: number) {
       </div>
     </Card>
 
-    <Card title="圆角 & 圆形" style="margin-bottom: 24px">
+    <Card title="圆角 & 圆形" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap">
         <div style="text-align: center">
           <Image :src="demoImages.valid" :size="80" :radius="4" alt="默认圆角" />
@@ -81,7 +81,7 @@ function openMulti(idx: number) {
       </div>
     </Card>
 
-    <Card title="Object-Fit 模式" style="margin-bottom: 24px">
+    <Card title="Object-Fit 模式" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap">
         <div style="text-align: center">
           <Image :src="demoImages.valid" :width="140" :height="80" fit="cover" alt="cover" />
@@ -102,7 +102,7 @@ function openMulti(idx: number) {
       </div>
     </Card>
 
-    <Card title="灯箱预览（点击放大）" style="margin-bottom: 24px">
+    <Card title="灯箱预览（点击放大）" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
         默认 preview=true，点击图片可全屏预览。按 ESC 或点击遮罩关闭。多图画廊、标注、下载等高级能力见下方
         ImagePreview。
@@ -110,7 +110,7 @@ function openMulti(idx: number) {
       <Image :src="demoImages.valid" :size="120" alt="点击预览" />
     </Card>
 
-    <Card title="加载失败状态" style="margin-bottom: 24px">
+    <Card title="加载失败状态" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap">
         <div style="text-align: center">
           <Image :src="demoImages.broken" :size="80" alt="加载失败" />
@@ -124,7 +124,7 @@ function openMulti(idx: number) {
     </Card>
 
     <!-- ══════════════ Avatar 头像 ══════════════ -->
-    <Card title="Avatar 头像 — 尺寸（圆形）" style="margin-bottom: 24px">
+    <Card title="Avatar 头像 — 尺寸（圆形）" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
         <Avatar :src="photoUrl" size="sm" name="小" />
         <Avatar :src="photoUrl" size="md" name="中" />
@@ -133,14 +133,14 @@ function openMulti(idx: number) {
       </div>
     </Card>
 
-    <Card title="Avatar 头像 — 形状对比" style="margin-bottom: 24px">
+    <Card title="Avatar 头像 — 形状对比" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
         <Avatar :src="photoUrl" size="lg" shape="circle" name="圆形" />
         <Avatar :src="photoUrl" size="lg" shape="rounded" name="圆角" />
       </div>
     </Card>
 
-    <Card title="Avatar 头像 — 回退策略（图片失败→文字首字母）" style="margin-bottom: 24px">
+    <Card title="Avatar 头像 — 回退策略（图片失败→文字首字母）" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
         <Avatar src="invalid-url" size="lg" name="张三" />
         <Avatar size="lg" name="李四" />
@@ -153,7 +153,7 @@ function openMulti(idx: number) {
     </Card>
 
     <!-- ══════════════ ImagePreview 全屏预览 ══════════════ -->
-    <Card title="ImagePreview 全屏预览 — 单图模式（:src）" style="margin-bottom: 24px">
+    <Card title="ImagePreview 全屏预览 — 单图模式（:src）" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 10px; flex-wrap: wrap">
         <Button text="宽图" variant="secondary" @click="openSingle('https://picsum.photos/seed/wide2/1200/600')" />
         <Button text="长图" variant="secondary" @click="openSingle('https://picsum.photos/seed/tall2/600/1200')" />
@@ -161,7 +161,7 @@ function openMulti(idx: number) {
       </div>
     </Card>
 
-    <Card title="ImagePreview 全屏预览 — 多图模式（:src 数组）" style="margin-bottom: 24px">
+    <Card title="ImagePreview 全屏预览 — 多图模式（:src 数组）" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 10px">
         支持<strong>缩放拖拽</strong>（滚轮 / 双指缩放 / 双击）、<strong>旋转翻转</strong>、<strong>标注</strong>（矩形
         / 圆形 / 画笔，R / C / P 快捷键）、<strong>下载 / 复制</strong>（含标注合成图）、<strong>缩略图侧边栏</strong>、左右箭头 / 键盘 ← → / 触摸滑动。
@@ -172,7 +172,7 @@ function openMulti(idx: number) {
     </Card>
 
     <!-- ══════════════ Props 表 ══════════════ -->
-    <Card title="Image Props">
+    <Card title="Image Props" title-as="h2">
       <table class="props-table">
         <thead>
           <tr>
@@ -235,7 +235,7 @@ function openMulti(idx: number) {
       </table>
     </Card>
 
-    <Card title="Avatar Props" style="margin-top: 24px">
+    <Card title="Avatar Props" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>
@@ -274,7 +274,7 @@ function openMulti(idx: number) {
       </table>
     </Card>
 
-    <Card title="ImagePreview Props" style="margin-top: 24px">
+    <Card title="ImagePreview Props" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>

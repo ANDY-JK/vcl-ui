@@ -10,14 +10,14 @@ const showHidden = ref(true)
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Tag 标签 + 徽标</h2>
+    <h1 class="demo-title">Tag 标签 + 徽标</h1>
     <p class="demo-desc">
       标签与徽标合一。内联标签（多变体/可关闭/圆角）+ 角标模式（数字/红点/文字，包裹内容右上角定位）。
     </p>
 
     <div class="grid-2-col" style="margin-bottom: 24px">
       <!-- 内联标签 -->
-      <Card title="内联标签 — 多变体">
+      <Card title="内联标签 — 多变体" title-as="h2">
         <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
           5 种变体 + 可关闭 + sm/md 尺寸 + 圆角
         </p>
@@ -33,7 +33,7 @@ const showHidden = ref(true)
       </Card>
 
       <!-- 数字徽标 -->
-      <Card title="数字徽标">
+      <Card title="数字徽标" title-as="h2">
         <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
           <code>count</code> 数字 | <code>max=99</code> 溢出 99+ | count=0 默认隐藏，<code>show-zero</code> 显示
         </p>
@@ -49,7 +49,7 @@ const showHidden = ref(true)
       </Card>
 
       <!-- 红点 / 文字徽标 -->
-      <Card title="红点 / 文字徽标">
+      <Card title="红点 / 文字徽标" title-as="h2">
         <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
           <code>dot</code> 红点 | <code>text</code> 文字徽标（优先于 count）
         </p>
@@ -67,7 +67,7 @@ const showHidden = ref(true)
       </Card>
 
       <!-- 包裹内容角标 -->
-      <Card title="角标模式 — 包裹内容右上角">
+      <Card title="角标模式 — 包裹内容右上角" title-as="h2">
         <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
           默认骑在内容右上角（<code>offset</code> 可微调），超出边界对半跨出、不被裁剪
         </p>
@@ -88,7 +88,7 @@ const showHidden = ref(true)
       </Card>
     </div>
 
-    <Card title="Tag Props">
+    <Card title="Tag Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

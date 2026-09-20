@@ -15,11 +15,11 @@ function simulateLoading() {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Button 按钮</h2>
+    <h1 class="demo-title">Button 按钮</h1>
     <p class="demo-desc">五种变体 + 三种尺寸 + 加载/禁用/图标/箭头状态。</p>
 
     <!-- 变体 -->
-    <Card title="按钮变体 (Variants)" style="margin-bottom: 24px">
+    <Card title="按钮变体 (Variants)" title-as="h2" style="margin-bottom: 24px">
       <div class="demo-row">
         <Button text="Primary 主按钮" variant="primary" />
         <Button text="Secondary 次按钮" variant="secondary" />
@@ -30,7 +30,7 @@ function simulateLoading() {
     </Card>
 
     <!-- 尺寸 -->
-    <Card title="按钮尺寸 (Sizes)" style="margin-bottom: 24px">
+    <Card title="按钮尺寸 (Sizes)" title-as="h2" style="margin-bottom: 24px">
       <div class="demo-row">
         <Button text="Small 小" size="sm" variant="primary" />
         <Button text="Medium 中" size="md" variant="primary" />
@@ -39,7 +39,7 @@ function simulateLoading() {
     </Card>
 
     <!-- 状态组合 -->
-    <Card title="状态组合" style="margin-bottom: 24px">
+    <Card title="状态组合" title-as="h2" style="margin-bottom: 24px">
       <div class="demo-row">
         <Button text="带图标" variant="primary" icon="plus" />
         <Button text="带箭头" variant="outline" show-arrow />
@@ -51,7 +51,7 @@ function simulateLoading() {
       </div>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

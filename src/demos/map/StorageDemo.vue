@@ -64,14 +64,14 @@ onMounted(() => {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Storage 组合存储演示</h2>
+    <h1 class="demo-title">Storage 组合存储演示</h1>
     <p class="demo-desc">
       统一存储抽象层：<code>storageGet/Set/Delete</code> 走 localStorage（同步，轻量 KV），<code>dbPut/dbGet/dbDelete</code>
       走 IndexedDB（异步，支持 TTL 过期、动态 Store、批量事务）。 组合存储架构见
       <code>contract-storage.ts</code>（IndexedDB 毫秒级落盘 + Supabase 异步同步 + 墓碑对账）。
     </p>
 
-    <Card title="localStorage（storageGet / Set / Delete）" style="margin-bottom: 24px">
+    <Card title="localStorage（storageGet / Set / Delete）" title-as="h2" style="margin-bottom: 24px">
       <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 12px; align-items: end">
         <div>
           <label style="font-size: 12px; color: var(--color-text-muted)">Key</label>
@@ -140,7 +140,7 @@ onMounted(() => {
       </div>
     </Card>
 
-    <Card title="IndexedDB（dbPut / dbGet / dbDelete + TTL）" style="margin-bottom: 24px">
+    <Card title="IndexedDB（dbPut / dbGet / dbDelete + TTL）" title-as="h2" style="margin-bottom: 24px">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; align-items: end">
         <div>
           <label style="font-size: 12px; color: var(--color-text-muted)">Key</label>
@@ -207,7 +207,7 @@ onMounted(() => {
       </div>
     </Card>
 
-    <Card title="存储架构说明">
+    <Card title="存储架构说明" title-as="h2">
       <div style="font-size: 13px; line-height: 1.8; color: var(--color-text-muted)">
         <p><strong>场景路由：</strong></p>
         <ul style="margin-left: 20px; margin-bottom: 12px">
@@ -224,7 +224,7 @@ onMounted(() => {
       </div>
     </Card>
 
-    <Card title="API" style="margin-top: 24px">
+    <Card title="API" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

@@ -248,7 +248,7 @@ function loadPreset(key: string): void {
     <!-- 能力说明头部 — 首次进入先讲清这套低代码能做什么 -->
     <header class="lc-demo-head">
       <div class="lc-demo-head-text">
-        <h2 class="lc-demo-title">低代码表单平台</h2>
+        <h1 class="lc-demo-title">低代码表单平台</h1>
         <p class="lc-demo-sub">拖拽设计 → 实时预览 → 数据收集，一套 Schema 同时驱动设计器与运行端</p>
       </div>
       <ul class="lc-demo-chips">

@@ -186,14 +186,14 @@ function onContextMenu(e: MouseEvent) {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Select 选择器</h2>
+    <h1 class="demo-title">Select 选择器</h1>
     <p class="demo-desc">
       一个组件覆盖全部选择场景：下拉选择（单选/多选/拼音搜索）、可输入选择（combobox）、
       树形选择（级联/树单选/多选）、日期时间、菜单。统一样式、统一交互、统一 tag 显示策略。
     </p>
 
     <!-- ══════ 基础选择 ══════ -->
-    <Card title="基础选择 — 单选 / 多选 / 拼音搜索" style="margin-bottom: 24px">
+    <Card title="基础选择 — 单选 / 多选 / 拼音搜索" title-as="h2" style="margin-bottom: 24px">
       <p class="demo-hint">
         <code>type="select"</code>（默认）— 拼音搜索标配（<code>pinyinEnabled=true</code>）。输入
         <code>bj</code> 可搜到北京。<br />
@@ -228,7 +228,7 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 多选 tag 溢出场景 ══════ -->
-    <Card title="多选 tag 溢出 — 选项很多时 tag 区域可滚动" style="margin-bottom: 24px">
+    <Card title="多选 tag 溢出 — 选项很多时 tag 区域可滚动" title-as="h2" style="margin-bottom: 24px">
       <p class="demo-hint">
         当多选选项很多时（如全国 32 个城市），tag 区域不会无限撑高。<br />
         <strong>防截断策略：</strong>trigger 最大高度限制 + 内部滚动；单个 tag 文本过长时
@@ -243,7 +243,7 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 可输入选择 ══════ -->
-    <Card title="可输入选择 — Combobox（本质 = select + 可输入）" style="margin-bottom: 24px">
+    <Card title="可输入选择 — Combobox（本质 = select + 可输入）" title-as="h2" style="margin-bottom: 24px">
       <p class="demo-hint">
         <code>type="combobox"</code> —
         输入文字自动搜索匹配项，回车选中；无匹配时回车创建新选项（<code>allowCreate=true</code>）。 多选时以 tag
@@ -271,7 +271,7 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 树形选择 ══════ -->
-    <Card title="树形选择 — Cascader 级联 / TreeSelect 树（单选 + 多选）" style="margin-bottom: 24px" overflow-visible>
+    <Card title="树形选择 — Cascader 级联 / TreeSelect 树（单选 + 多选）" title-as="h2" style="margin-bottom: 24px" overflow-visible>
       <p class="demo-hint">
         两者共用 <code>cascader-options</code> 数据结构，区别仅在交互方式：<br />
         <code>type="cascader"</code> — 展开树逐级选择（省→市→区）；<code>type="tree-select"</code> —
@@ -330,7 +330,7 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 日期 / 时间 ══════ -->
-    <Card title="日期 / 时间 — Date / DateRange / Time" style="margin-bottom: 24px" overflow-visible>
+    <Card title="日期 / 时间 — Date / DateRange / Time" title-as="h2" style="margin-bottom: 24px" overflow-visible>
       <p class="demo-hint">
         <code>type="date"</code> 单日期 · <code>type="date-range"</code> 日期范围 ·
         <code>type="time"</code> 时间选择。<br />
@@ -353,7 +353,7 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 菜单模式 ══════ -->
-    <Card title="菜单模式 — Menu / 右键菜单">
+    <Card title="菜单模式 — Menu / 右键菜单" title-as="h2">
       <p class="demo-hint">
         <code>type="menu"</code> + <code>items</code> —
         操作菜单，支持分隔线（<code>divided</code>）、危险项（<code>danger</code>）、禁用项。

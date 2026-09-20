@@ -76,7 +76,7 @@ function doPeek() {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">AmapWidget 地图组件</h2>
+    <h1 class="demo-title">AmapWidget 地图组件</h1>
     <p class="demo-desc">
       库自带的高德地图封装（挂 <code>ElAmap</code> 之上）：传 <code>markers</code> 自动画点、点标记弹信息窗、
       <code>marker-click</code> / <code>map-click</code> / <code>ready</code> 三个事件，外加
@@ -87,7 +87,7 @@ function doPeek() {
       ⚠ 当前环境没配 <code>VITE_AMAP_KEY</code>，地图不会出图 —— 下面的事件区与按钮仍可验证接口是否接得上。
     </p>
 
-    <Card title="标记 + 信息窗 + 事件" style="margin-bottom: 20px">
+    <Card title="标记 + 信息窗 + 事件" title-as="h2" style="margin-bottom: 20px">
       <div class="amap-host">
         <AmapWidget
           ref="widgetRef"
@@ -108,7 +108,7 @@ function doPeek() {
       </div>
     </Card>
 
-    <Card title="defineExpose 的六个方法">
+    <Card title="defineExpose 的六个方法" title-as="h2">
       <div class="btn-row">
         <Button text="setZoomAndCenter → 国贸" variant="primary" size="sm" @click="doSetCenter" />
         <Button text="clearMarkers" variant="outline" size="sm" @click="doClear" />

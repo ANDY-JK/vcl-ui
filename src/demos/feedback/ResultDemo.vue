@@ -10,7 +10,7 @@ const lastAction = ref('')
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Result 结果页</h2>
+    <h1 class="demo-title">Result 结果页</h1>
     <p class="demo-desc">
       操作结果反馈（success / error / warning / 404 / empty）+ 空状态占位（Empty）。Result 用于完整结果页，Empty
       用于列表/面板内的简洁空占位。
@@ -21,7 +21,7 @@ const lastAction = ref('')
       下方三个结果页的主行动按钮都会把点击回抛到 <code>@action</code>：
       <strong>最近一次点击：{{ lastAction || '（还没点过）' }}</strong>
     </p>
-    <Card title="Result — 成功" style="margin-bottom: 24px">
+    <Card title="Result — 成功" title-as="h2" style="margin-bottom: 24px">
       <Result
         status="success"
         title="操作成功"
@@ -31,7 +31,7 @@ const lastAction = ref('')
       />
     </Card>
 
-    <Card title="Result — 失败" style="margin-bottom: 24px">
+    <Card title="Result — 失败" title-as="h2" style="margin-bottom: 24px">
       <Result
         status="error"
         title="提交失败"
@@ -41,7 +41,7 @@ const lastAction = ref('')
       />
     </Card>
 
-    <Card title="Result — 警告" style="margin-bottom: 24px">
+    <Card title="Result — 警告" title-as="h2" style="margin-bottom: 24px">
       <Result
         status="warning"
         title="注意"
@@ -51,7 +51,7 @@ const lastAction = ref('')
       />
     </Card>
 
-    <Card title="Result — 404 / 空状态" style="margin-bottom: 24px">
+    <Card title="Result — 404 / 空状态" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px">
         <Result status="404" title="页面不存在" description="您访问的页面可能已删除或迁移。" />
         <Result status="empty" title="暂无数据" />
@@ -60,21 +60,21 @@ const lastAction = ref('')
 
     <!-- ══════════════ Empty 空状态（简洁占位） ══════════════ -->
     <div class="grid-2-col">
-      <Card title="Empty — 图标 + 标题 + 描述">
+      <Card title="Empty — 图标 + 标题 + 描述" title-as="h2">
         <Empty icon="file" title="暂无数据" description="点击上方按钮添加数据" />
       </Card>
 
-      <Card title="Empty — 带操作按钮">
+      <Card title="Empty — 带操作按钮" title-as="h2">
         <Empty icon="search" title="无搜索结果" description="试试更换关键词">
           <Button text="重新搜索" variant="primary" size="sm" icon="search" />
         </Empty>
       </Card>
 
-      <Card title="Empty — 通知空">
+      <Card title="Empty — 通知空" title-as="h2">
         <Empty icon="bell" title="暂无通知" description="新消息将显示在这里" />
       </Card>
 
-      <Card title="Empty — 网络错误">
+      <Card title="Empty — 网络错误" title-as="h2">
         <Empty icon="wifi-off" title="网络连接失败" description="请检查网络设置">
           <Button text="重试" variant="outline" size="sm" icon="rotate-cw" />
         </Empty>
@@ -82,7 +82,7 @@ const lastAction = ref('')
     </div>
 
     <!-- ══════════════ Props ══════════════ -->
-    <Card title="Result Props" style="margin-top: 24px">
+    <Card title="Result Props" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>
@@ -121,7 +121,7 @@ const lastAction = ref('')
       </table>
     </Card>
 
-    <Card title="Empty Props" style="margin-top: 24px">
+    <Card title="Empty Props" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>

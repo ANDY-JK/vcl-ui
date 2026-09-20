@@ -10,17 +10,17 @@ const readonlyVisible = ref(false)
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">State 状态 / 离线 & 只读</h2>
+    <h1 class="demo-title">State 状态 / 离线 & 只读</h1>
     <p class="demo-desc">离线提示 / 只读遮罩。</p>
 
-    <Card title="OfflineIndicator - 离线提示" style="margin-bottom: 24px">
+    <Card title="OfflineIndicator - 离线提示" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
         断网时顶部自动显示黄色横幅。你可以断开网络测试，或查看页面顶部。
       </p>
       <OfflineIndicator />
     </Card>
 
-    <Card title="ReadOnlyOverlay - 只读遮罩">
+    <Card title="ReadOnlyOverlay - 只读遮罩" title-as="h2">
       <Button text="模拟只读模式" variant="outline" @click="readonlyVisible = true" />
       <ReadOnlyOverlay :visible="readonlyVisible" reason="系统升级维护中（2024-05-16 02:00-04:00），当前仅可查看数据" />
       <Button
@@ -32,7 +32,7 @@ const readonlyVisible = ref(false)
       />
     </Card>
 
-    <Card title="Props — ReadOnlyOverlay" style="margin-top: 24px">
+    <Card title="Props — ReadOnlyOverlay" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

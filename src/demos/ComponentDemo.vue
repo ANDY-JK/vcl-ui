@@ -6,7 +6,7 @@ import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
 const ErrorFallback = {
   props: ['error'],
   template: `<div style="padding:40px;text-align:center;">
-    <h3 style="color:var(--color-danger);margin-bottom:8px;">组件加载失败</h3>
+    <h2 style="color:var(--color-danger);margin-bottom:8px;">组件加载失败</h2>
     <p style="color:var(--color-text-muted);font-size:13px;">{{ error?.message || '未知错误' }}</p>
   </div>`,
 }

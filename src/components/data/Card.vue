@@ -8,6 +8,12 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 interface GridProps {
   type?: 'grid' | 'stat'
   title?: string
+  /**
+   * title 的标题标签级。默认 h3：卡片通常是「页标题(h1) → 区块(h2) → 卡片」的第三级。
+   * 硬编码某一级会在宿主层级不同时跳级（axe heading-order），故把选择权交给调用方；
+   * 传 'div' 表示纯展示标题（卡片不承担文档结构职责时用）。
+   */
+  titleAs?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div'
   highlight?: boolean
   summary?: boolean
   /** 允许内容溢出卡片边界（用于包含下拉/弹出组件的场景） */
@@ -27,6 +33,7 @@ interface StatProps {
 const props = withDefaults(defineProps<GridProps & StatProps>(), {
   type: 'grid',
   icon: 'circle-alert',
+  titleAs: 'h3',
 })
 
 const emit = defineEmits<{ (e: 'click'): void }>()
@@ -97,9 +104,9 @@ const iconBg = computed(() =>
   <!-- grid 模式 -->
   <div v-else class="grid-card" :class="{ summary, highlight, 'grid-card--overflow-visible': overflowVisible }">
     <div v-if="title || $slots.header" class="grid-header">
-      <h4 v-if="title" class="grid-title">
+      <component :is="titleAs" v-if="title" class="grid-title">
         {{ title }}
-      </h4>
+      </component>
       <slot name="header" />
     </div>
     <div class="grid-body">

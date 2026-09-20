@@ -60,14 +60,14 @@ function onCancel(variant: string) {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Modal 弹窗</h2>
+    <h1 class="demo-title">Modal 弹窗</h1>
     <p class="demo-desc">
       通用模态框 ModalBox（default / confirm / detail / select / form 五种模式）+ 确认弹窗 ConfirmModal（danger /
       warning / primary 三种变体，基于 ModalBox 封装）。
     </p>
 
     <!-- ══════════════ ModalBox 模式 ══════════════ -->
-    <Card title="ModalBox — 点击按钮查看各种模式" style="margin-bottom: 24px">
+    <Card title="ModalBox — 点击按钮查看各种模式" title-as="h2" style="margin-bottom: 24px">
       <div class="demo-row">
         <Button text="默认弹窗" variant="primary" @click="visibleDefault = true" />
         <Button text="确认删除" variant="danger" @click="visibleConfirm = true" />
@@ -133,7 +133,7 @@ function onCancel(variant: string) {
     </ModalBox>
 
     <!-- ══════════════ ConfirmModal 独立变体 ══════════════ -->
-    <Card title="ConfirmModal — danger / warning / primary 三种变体" style="margin-bottom: 24px">
+    <Card title="ConfirmModal — danger / warning / primary 三种变体" title-as="h2" style="margin-bottom: 24px">
       <div
         v-if="lastAction"
         style="
@@ -187,7 +187,7 @@ function onCancel(variant: string) {
     </Card>
 
     <!-- ══════════════ Props ══════════════ -->
-    <Card title="ModalBox Props">
+    <Card title="ModalBox Props" title-as="h2">
       <table class="props-table">
         <thead>
           <tr>
@@ -242,7 +242,7 @@ function onCancel(variant: string) {
       </p>
     </Card>
 
-    <Card title="ConfirmModal Props" style="margin-top: 24px">
+    <Card title="ConfirmModal Props" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>

@@ -6,10 +6,10 @@ import Button from '@/components/basic/Button.vue'
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Popover 气泡/提示</h2>
+    <h1 class="demo-title">Popover 气泡/提示</h1>
     <p class="demo-desc">Tooltip 文字提示 + Popover 气泡卡片。</p>
 
-    <Card title="Tooltip 文字提示" style="margin-bottom: 24px">
+    <Card title="Tooltip 文字提示" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
         <Popover variant="tooltip" text="悬停提示" position="top">
           <Button text="悬停 ↑" size="sm" variant="outline" />
@@ -36,7 +36,7 @@ import Button from '@/components/basic/Button.vue'
       </p>
     </Card>
 
-    <Card title="Popover 气泡卡片">
+    <Card title="Popover 气泡卡片" title-as="h2">
       <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
         <Popover title="通知中心" trigger="click">
           <p>你有 3 条新消息</p>
@@ -48,7 +48,7 @@ import Button from '@/components/basic/Button.vue'
       </div>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

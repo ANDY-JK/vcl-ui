@@ -328,7 +328,7 @@ function onImgFail(e: Event) {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">🗺️ 高德地图 API（@vuemap/vue-amap）</h2>
+    <h1 class="demo-title">🗺️ 高德地图 API（@vuemap/vue-amap）</h1>
     <p class="demo-desc">输入门店名称+地址 → 自动获取 GPS → 100m 周边固定建筑 + 地图标记</p>
 
     <!-- ① 搜索工具栏 -->

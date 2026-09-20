@@ -111,13 +111,13 @@ function doNotifyClick() {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">通知反馈（蜂鸣 + 语音 + 系统通知）</h2>
+    <h1 class="demo-title">通知反馈（蜂鸣 + 语音 + 系统通知）</h1>
     <p class="demo-desc">
       蜂鸣音（操作反馈音效）、语音播报（TTS 朗读文字）、系统通知（Windows/macOS
       通知中心）。浏览器要求用户交互后才能播放音频。
     </p>
 
-    <Card title="蜂鸣音（Beep）" style="margin-bottom: 24px">
+    <Card title="蜂鸣音（Beep）" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
         ⚠️ 浏览器限制：首次播放前需用户交互。点击「解锁音频」按钮后才能播放。
       </p>
@@ -136,7 +136,7 @@ function doNotifyClick() {
       </div>
     </Card>
 
-    <Card title="语音播报（Voice / TTS）" style="margin-bottom: 24px">
+    <Card title="语音播报（Voice / TTS）" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px">
         <Button
           text="解锁语音"
@@ -172,7 +172,7 @@ function doNotifyClick() {
       </div>
     </Card>
 
-    <Card title="系统通知（Notify）" style="margin-bottom: 24px">
+    <Card title="系统通知（Notify）" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
         Windows / macOS 通知中心。首次调用 notify() 会弹权限请求，授权后永久生效。当前权限：<code>{{
           notifyPerm
@@ -191,7 +191,7 @@ function doNotifyClick() {
       </div>
     </Card>
 
-    <Card title="操作日志">
+    <Card title="操作日志" title-as="h2">
       <div v-if="log.length" style="font-size: 13px; font-family: monospace; line-height: 1.8">
         <div v-for="(item, i) in log" :key="i" style="color: var(--color-text-muted)">
           {{ item }}
@@ -200,7 +200,7 @@ function doNotifyClick() {
       <p v-else style="font-size: 13px; color: var(--color-text-muted)">暂无操作记录</p>
     </Card>
 
-    <Card title="API" style="margin-top: 24px">
+    <Card title="API" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

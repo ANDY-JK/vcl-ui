@@ -64,13 +64,13 @@ function toggleMorph(i: number) {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Icon 图标</h2>
+    <h1 class="demo-title">Icon 图标</h1>
     <p class="demo-desc">
       Lucide（1704 个，默认）、Solar（Apple 风格）与 Morphicons（形变动画）三套图标源。单图标渲染用 IconSvg，图标选择器用 IconPicker。
     </p>
 
     <!-- ══════════════ IconSvg 单图标渲染 ══════════════ -->
-    <Card title="Solar 图标（Apple 风格）" style="margin-bottom: 24px">
+    <Card title="Solar 图标（Apple 风格）" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         Solar 图标集（MIT 协议）通过 <code>provider="solar"</code> 渲染，默认使用 <code>-linear</code> 变体。
       </p>
@@ -86,7 +86,7 @@ function toggleMorph(i: number) {
       </div>
     </Card>
 
-    <Card title="Morphicons 形变动画" style="margin-bottom: 24px">
+    <Card title="Morphicons 形变动画" title-as="h2" style="margin-bottom: 24px">
       <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         通过 <code>provider="morphicons"</code> 渲染（MIT 协议，零运行时依赖）。覆盖 Lucide 全量 1737 个图标及其别名，
         任意两个图标间均可形变；切换 <code>type</code> 时以弹簧物理从旧形状平滑过渡到新形状，适合状态切换按钮。点击下方图标试试。
@@ -118,7 +118,7 @@ function toggleMorph(i: number) {
       </div>
     </Card>
 
-    <Card title="尺寸" style="margin-bottom: 24px">
+    <Card title="尺寸" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap">
         <div
           v-for="s in sizes"
@@ -131,7 +131,7 @@ function toggleMorph(i: number) {
       </div>
     </Card>
 
-    <Card title="颜色自定义" style="margin-bottom: 24px">
+    <Card title="颜色自定义" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
         <IconSvg type="heart" size="xl" :color="iconColor" />
         <input
@@ -163,7 +163,7 @@ function toggleMorph(i: number) {
       </div>
     </Card>
 
-    <Card title="常用图标速查" style="margin-bottom: 24px">
+    <Card title="常用图标速查" title-as="h2" style="margin-bottom: 24px">
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px">
         <div
           v-for="name in commonIcons"
@@ -187,14 +187,14 @@ function toggleMorph(i: number) {
     </Card>
 
     <!-- ══════════════ IconPicker 图标选择器 ══════════════ -->
-    <Card title="IconPicker 图标选择器 — Lucide 图标库" style="margin-bottom: 24px">
+    <Card title="IconPicker 图标选择器 — Lucide 图标库" title-as="h2" style="margin-bottom: 24px">
       <IconPicker v-model="pickerIcon1" placeholder="选择图标" />
       <p style="margin-top: 6px; font-size: 12px; color: var(--color-text-muted)">
         当前选择：{{ pickerIcon1 || '无' }}
       </p>
     </Card>
 
-    <Card title="IconPicker — 带预设颜色" style="margin-bottom: 24px">
+    <Card title="IconPicker — 带预设颜色" title-as="h2" style="margin-bottom: 24px">
       <IconPicker
         v-model="pickerIcon2"
         placeholder="选择图标"
@@ -205,7 +205,7 @@ function toggleMorph(i: number) {
       </p>
     </Card>
 
-    <Card title="IconPicker — Solar 图标库" style="margin-bottom: 24px">
+    <Card title="IconPicker — Solar 图标库" title-as="h2" style="margin-bottom: 24px">
       <IconPicker v-model="pickerIcon3" placeholder="选择 Solar 图标" provider="solar" />
       <p style="margin-top: 6px; font-size: 12px; color: var(--color-text-muted)">
         当前选择：{{ pickerIcon3 || '无' }}
@@ -213,7 +213,7 @@ function toggleMorph(i: number) {
     </Card>
 
     <!-- ══════════════ Props 表 ══════════════ -->
-    <Card title="IconSvg Props">
+    <Card title="IconSvg Props" title-as="h2">
       <table class="props-table">
         <thead>
           <tr>
@@ -252,7 +252,7 @@ function toggleMorph(i: number) {
       </table>
     </Card>
 
-    <Card title="IconPicker Props" style="margin-top: 24px">
+    <Card title="IconPicker Props" title-as="h2" style="margin-top: 24px">
       <table class="props-table">
         <thead>
           <tr>

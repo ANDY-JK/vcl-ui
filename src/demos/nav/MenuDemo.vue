@@ -93,7 +93,7 @@ function onSelect(item: { key: string | number; label: string }) {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Menu 多级菜单</h2>
+    <h1 class="demo-title">Menu 多级菜单</h1>
     <p class="demo-desc">
       支持 vertical（侧边栏）和 horizontal（顶部导航）两种模式，可递归渲染多级子菜单。 选中值：<code>{{
         selectedKey
@@ -101,7 +101,7 @@ function onSelect(item: { key: string | number; label: string }) {
     </p>
 
     <!-- ========== Vertical Sidebar ========== -->
-    <Card title="Vertical 侧边栏菜单" style="margin-bottom: 24px" overflow-visible>
+    <Card title="Vertical 侧边栏菜单" title-as="h2" style="margin-bottom: 24px" overflow-visible>
       <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         <code>mode="vertical"</code> — 点击展开子菜单，内联缩进 + 滑动动画，支持多级嵌套
       </p>
@@ -118,7 +118,7 @@ function onSelect(item: { key: string | number; label: string }) {
     </Card>
 
     <!-- ========== Collapsed Vertical ========== -->
-    <Card title="Collapsed 图标模式" style="margin-bottom: 24px" overflow-visible>
+    <Card title="Collapsed 图标模式" title-as="h2" style="margin-bottom: 24px" overflow-visible>
       <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
         <code>:collapsed="true"</code> — 仅显示图标，子菜单 hover 时以浮层弹出
       </p>
@@ -161,7 +161,7 @@ function onSelect(item: { key: string | number; label: string }) {
     </Card>
 
     <!-- ========== API Table ========== -->
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
@@ -232,7 +232,7 @@ function onSelect(item: { key: string | number; label: string }) {
       </table>
     </Card>
 
-    <Card title="Events">
+    <Card title="Events" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
@@ -260,7 +260,7 @@ function onSelect(item: { key: string | number; label: string }) {
       </table>
     </Card>
 
-    <Card title="MenuItem 接口">
+    <Card title="MenuItem 接口" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

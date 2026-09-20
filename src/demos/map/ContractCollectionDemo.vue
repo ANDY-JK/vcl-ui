@@ -750,7 +750,7 @@ onUnmounted(() => {
   <div class="cc-wrap">
     <!-- 顶部工具栏 -->
     <div class="cc-toolbar">
-      <h2 class="cc-title">📋 门店合同收集</h2>
+      <h1 class="cc-title">📋 门店合同收集</h1>
       <div class="cc-search">
         <Input v-model="keyword" placeholder="输入 Apple ID 或营业执照名称搜索…" style="width: 320px" />
       </div>

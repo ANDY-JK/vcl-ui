@@ -5,10 +5,10 @@ import Card from '@/components/data/Card.vue'
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Collapse 折叠面板</h2>
+    <h1 class="demo-title">Collapse 折叠面板</h1>
     <p class="demo-desc">可展开/折叠的内容面板，支持默认展开和禁用。</p>
 
-    <Card title="Collapse 折叠面板">
+    <Card title="Collapse 折叠面板" title-as="h2">
       <div style="display: flex; flex-direction: column; gap: 8px">
         <Collapse title="什么是 Vue？">
           <p style="color: var(--color-text-secondary)">Vue 是一套用于构建用户界面的渐进式 JavaScript 框架。</p>
@@ -24,7 +24,7 @@ import Card from '@/components/data/Card.vue'
       </div>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

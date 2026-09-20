@@ -62,7 +62,7 @@ const targets: TargetItem[] = [
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">门店合同收集（目标收集模式）</h2>
+    <h1 class="demo-title">门店合同收集（目标收集模式）</h1>
     <p class="demo-desc">
       FormTargetCollect 实例：合同 schema（柜机协议 1 个照片位）。 门店清单由宿主注入（此处示例 8 家，可换完整 49
       家或接口数据）。

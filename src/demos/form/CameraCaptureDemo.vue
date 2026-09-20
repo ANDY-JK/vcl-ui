@@ -36,13 +36,13 @@ function onBatchFinish(files: File[]) {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">CameraCapture 页面内拍照</h2>
+    <h1 class="demo-title">CameraCapture 页面内拍照</h1>
     <p class="demo-desc">
       替代系统相机调起，防止页面切后台被杀进程。支持前后置切换、4:3 高清、JPEG
       质量控制。相机不可用时自动降级调起系统相机。
     </p>
 
-    <Card title="拍照演示" style="margin-bottom: 24px">
+    <Card title="拍照演示" title-as="h2" style="margin-bottom: 24px">
       <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
         <Button text="打开相机" variant="primary" icon="camera" @click="showCamera = true" />
         <Button text="关闭相机" variant="ghost" :disabled="!showCamera" @click="showCamera = false" />
@@ -67,7 +67,7 @@ function onBatchFinish(files: File[]) {
     </Card>
 
     <!-- ══════ 多张连拍 ══════ -->
-    <Card title="多张连拍 — 拍完一张接着拍，胶卷回看/重拍" style="margin-bottom: 24px">
+    <Card title="多张连拍 — 拍完一张接着拍，胶卷回看/重拍" title-as="h2" style="margin-bottom: 24px">
       <p class="demo-hint" style="margin-bottom: 12px">
         <code>multiple</code> — 快门确认后不关相机，照片进队列继续拍下一张；顶部「完成(n)」交付，底部缩略图回看， 大图 ‹
         › 切换上一张/下一张，侧键「重拍」替换该张、「删除」移除。取消时已拍照片会先确认防误丢。<br />
@@ -100,7 +100,7 @@ function onBatchFinish(files: File[]) {
       </div>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
@@ -149,7 +149,7 @@ function onBatchFinish(files: File[]) {
       </table>
     </Card>
 
-    <Card title="Events" style="margin-top: 24px">
+    <Card title="Events" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

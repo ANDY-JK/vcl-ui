@@ -5,10 +5,10 @@ import Card from '@/components/data/Card.vue'
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Avatar 头像</h2>
+    <h1 class="demo-title">Avatar 头像</h1>
     <p class="demo-desc">文字/图片头像，sm/md/lg/xl 尺寸，支持圆形和圆角。</p>
 
-    <Card title="Avatar 头像">
+    <Card title="Avatar 头像" title-as="h2">
       <div style="display: flex; flex-direction: column; gap: 16px">
         <div>
           <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px">尺寸</p>
@@ -35,7 +35,7 @@ import Card from '@/components/data/Card.vue'
       </div>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

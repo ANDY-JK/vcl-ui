@@ -10,10 +10,10 @@ const drawerLeftVisible = ref(false)
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Drawer 抽屉</h2>
+    <h1 class="demo-title">Drawer 抽屉</h1>
     <p class="demo-desc">从右侧/左侧滑出的面板，支持标题、页脚、遮罩关闭。</p>
 
-    <Card title="Drawer 抽屉">
+    <Card title="Drawer 抽屉" title-as="h2">
       <div style="display: flex; gap: 12px">
         <Button text="打开右侧抽屉" @click="drawerVisible = true" />
         <Button text="打开左侧抽屉" variant="outline" @click="drawerLeftVisible = true" />
@@ -37,7 +37,7 @@ const drawerLeftVisible = ref(false)
       <p style="color: var(--color-text-secondary)">从左侧滑出的面板，常用于移动端导航菜单。</p>
     </Drawer>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

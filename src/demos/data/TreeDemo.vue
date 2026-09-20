@@ -165,7 +165,7 @@ function onNodeClick(node: TreeNode) {
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Tree 树形控件</h2>
+    <h1 class="demo-title">Tree 树形控件</h1>
     <p class="demo-desc">
       递归树形控件，用于展示层级数据。支持
       <strong>展开/折叠</strong>、<strong>多选联动</strong>、<strong>单选高亮</strong>、<strong>图标</strong> 和
@@ -174,13 +174,13 @@ function onNodeClick(node: TreeNode) {
 
     <div class="grid-2-col" style="margin-bottom: 24px">
       <!-- Basic tree -->
-      <Card title="基础用法" overflow-visible>
+      <Card title="基础用法" title-as="h2" overflow-visible>
         <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">点击箭头或标签展开/折叠子节点</p>
         <Tree :data="treeData" @node-click="onNodeClick" />
       </Card>
 
       <!-- Checkable tree -->
-      <Card title="多选联动" overflow-visible>
+      <Card title="多选联动" title-as="h2" overflow-visible>
         <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
           勾选父节点自动选中所有子节点，半选状态自动计算
         </p>
@@ -191,7 +191,7 @@ function onNodeClick(node: TreeNode) {
       </Card>
 
       <!-- Selectable tree -->
-      <Card title="单选模式" overflow-visible>
+      <Card title="单选模式" title-as="h2" overflow-visible>
         <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
           点击节点高亮选中，不会自动展开/折叠
         </p>
@@ -207,7 +207,7 @@ function onNodeClick(node: TreeNode) {
       </Card>
 
       <!-- Expand all / default expanded -->
-      <Card title="默认展开" overflow-visible>
+      <Card title="默认展开" title-as="h2" overflow-visible>
         <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
           通过 defaultExpandedKeys 指定初始展开的节点
         </p>
@@ -215,7 +215,7 @@ function onNodeClick(node: TreeNode) {
       </Card>
     </div>
 
-    <Card title="API">
+    <Card title="API" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

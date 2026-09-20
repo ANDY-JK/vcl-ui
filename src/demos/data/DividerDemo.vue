@@ -5,10 +5,10 @@ import Card from '@/components/data/Card.vue'
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">Divider 分割线</h2>
+    <h1 class="demo-title">Divider 分割线</h1>
     <p class="demo-desc">水平/垂直分割线，支持文字、虚线。</p>
 
-    <Card title="Divider 分割线">
+    <Card title="Divider 分割线" title-as="h2">
       <div style="display: flex; flex-direction: column; gap: 16px">
         <p>默认分割线</p>
         <Divider />
@@ -27,7 +27,7 @@ import Card from '@/components/data/Card.vue'
       </div>
     </Card>
 
-    <Card title="Props">
+    <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">
         <tbody>
         <tr style="border-bottom: 2px solid var(--color-border); text-align: left">

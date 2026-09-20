@@ -743,11 +743,11 @@ const interCols: Column[] = [
 
 <template>
   <div class="demo">
-    <h2 class="demo-title">DataTable 数据表格</h2>
+    <h1 class="demo-title">DataTable 数据表格</h1>
     <p class="demo-desc">通用数据表格，支持排序、筛选、分页、导出、固定列、编辑、右键菜单、卡片视图。</p>
 
     <!-- ===== 弹窗中的智能表格（放最上面方便测试） ===== -->
-    <Card title="弹窗中的智能表格 — 全屏 + 滚动 + 筛选测试">
+    <Card title="弹窗中的智能表格 — 全屏 + 滚动 + 筛选测试" title-as="h2">
       <div class="demo-modal-row">
         <button class="demo-add-btn" @click="modal1Visible = true">简单弹窗 — 多数据无分页</button>
         <button class="demo-add-btn" @click="modal2Visible = true">复杂弹窗 — 统计 + 分页表格</button>
@@ -757,7 +757,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 1. 基础 ===== -->
-    <Card title="基础用法 — 排序 + 筛选 + 行/单元格自定义样式">
+    <Card title="基础用法 — 排序 + 筛选 + 行/单元格自定义样式" title-as="h2">
       <p class="demo-hint">行样式：在线绿色背景；单元格：金额>15000 红色加粗</p>
       <p class="demo-hint">
         「备注」列演示空白占位：null / undefined / 空串 / 纯空白串统一显示为 <code>-</code>；0、false
@@ -778,7 +778,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 2. 全功能 ===== -->
-    <Card title="全功能 — 行选择 + 分页 + 导出 + 固定列">
+    <Card title="全功能 — 行选择 + 分页 + 导出 + 固定列" title-as="h2">
       <DataTable
         v-model:selected-keys="fullSelectedKeys"
         v-model:current-page="fullCurrentPage"
@@ -796,7 +796,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 3. 编辑模式 + 原始值气泡 ===== -->
-    <Card title="编辑模式 — 双击编辑 + 原始值气泡 + 已修改角标">
+    <Card title="编辑模式 — 双击编辑 + 原始值气泡 + 已修改角标" title-as="h2">
       <p class="demo-hint">
         双击单元格编辑（Enter / F2 确认 / Escape 取消 / Tab 切列）。长按单元格拖动可框选区域， Ctrl+C 复制选区 / Ctrl+V
         粘贴（支持 Excel 表格数据，筛选后只改可见行）。修改后 hover 单元格查看原始值。
@@ -831,7 +831,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 3.5 列级编辑开关（对齐 SaaS 副本） ===== -->
-    <Card title="列级编辑开关 — 可编辑 / 只读分色对比">
+    <Card title="列级编辑开关 — 可编辑 / 只读分色对比" title-as="h2">
       <p class="demo-hint">
         列配置 <code>editable: false</code> 可禁用单列编辑：<strong>工号</strong>列双击不会进入编辑，
         <strong>在职状态</strong>列连下拉也不出现（不可编辑就不给「可下拉」暗示）。
@@ -854,7 +854,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 3.6 列值类型（Excel 输入习惯对齐） ===== -->
-    <Card title="列值类型 — Excel 式输入归一化">
+    <Card title="列值类型 — Excel 式输入归一化" title-as="h2">
       <p class="demo-hint">
         列声明 <code>type</code> 后，<strong>双击编辑提交</strong>会按类型归一化（未声明 type 的列行为完全不变）：
         日期列输入 <code>9/12</code> → 当年 <code>9月12日</code>；金额列输入 <code>￥1,234.50</code> → <code>1234.5</code>；
@@ -878,7 +878,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 4. 图片列 + 批量修改 ===== -->
-    <Card title="图片列 + 批量修改">
+    <Card title="图片列 + 批量修改" title-as="h2">
       <p class="demo-hint">空头像双击可粘贴/拖入图片。勾选多行 → 工具栏"批量修改"统一改值。</p>
       <DataTable
         v-model:selected-keys="imageSelectedKeys"
@@ -896,13 +896,13 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 5. 列下拉选项 ===== -->
-    <Card title="列下拉选项 — 预设选项列表">
+    <Card title="列下拉选项 — 预设选项列表" title-as="h2">
       <p class="demo-hint">双击部门、角色、职级、状态列 → 弹出选项面板；双击姓名列 → 自由输入。</p>
       <DataTable namespace="demo-dropdown" :columns="dropdownCols" :data="dropdownData" row-key="id" editable />
     </Card>
 
     <!-- ===== 6. 操作按钮 + 右键菜单（展示新功能 onClick） ===== -->
-    <Card title="操作按钮 + 行右键菜单 — onClick 内联绑定">
+    <Card title="操作按钮 + 行右键菜单 — onClick 内联绑定" title-as="h2">
       <p class="demo-hint">
         每行末尾有编辑/删除按钮；<strong>右键数据行</strong>弹出菜单，菜单项通过 <code>onClick</code> 直接绑定回调。
       </p>
@@ -923,13 +923,13 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 7. 卡片视图 ===== -->
-    <Card title="卡片视图 — 移动端自适应">
+    <Card title="卡片视图 — 移动端自适应" title-as="h2">
       <p class="demo-hint">cardBreakpoint=9999 强制卡片模式；实际使用时设为 768 即可在窄屏自动切换。</p>
       <DataTable namespace="demo-card" :columns="baseCols" :data="baseData" row-key="id" :card-breakpoint="9999" />
     </Card>
 
     <!-- ===== 外观开关 ===== -->
-    <Card title="外观开关 — striped / bordered / hoverable">
+    <Card title="外观开关 — striped / bordered / hoverable" title-as="h2">
       <p class="demo-hint">三个都是实时生效的表格样式类，默认全开，关掉即可看到差异。</p>
       <div class="demo-ck-row">
         <label class="demo-ck"><input v-model="look.striped" type="checkbox" /> 斑马纹 striped</label>
@@ -948,7 +948,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 紧凑密度 ===== -->
-    <Card title="紧凑密度 — dense 是初值，不是受控开关">
+    <Card title="紧凑密度 — dense 是初值，不是受控开关" title-as="h2">
       <p class="demo-hint">
         <code>dense</code> 只在挂载时读一次作为初值，渲染后密度归工具栏的紧凑按钮管，再改 prop 不会回灌
         —— 这是组件的固定行为，所以这里给两张表对照，而不是做一个拨了没反应的开关。
@@ -966,7 +966,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 文本处理 ===== -->
-    <Card title="文本处理 — truncateMode / truncateThreshold / blankText / pinyinSearch">
+    <Card title="文本处理 — truncateMode / truncateThreshold / blankText / pinyinSearch" title-as="h2">
       <div class="demo-ck-row">
         <label class="demo-ck">
           截断模式
@@ -1008,7 +1008,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 加载态与空态 ===== -->
-    <Card title="加载态与空态 — isLoading / emptyText / #empty 插槽">
+    <Card title="加载态与空态 — isLoading / emptyText / #empty 插槽" title-as="h2">
       <div class="demo-ck-row">
         <label class="demo-ck"><input v-model="stateCfg.isLoading" type="checkbox" /> isLoading 加载骨架</label>
         <label class="demo-ck">
@@ -1043,7 +1043,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 汇总行 ===== -->
-    <Card title="汇总行 — summary 函数式与对象式">
+    <Card title="汇总行 — summary 函数式与对象式" title-as="h2">
       <div class="demo-ck-row">
         <label class="demo-ck">
           形式
@@ -1068,7 +1068,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 备注模式 ===== -->
-    <Card title="备注模式 — noteMode / notes / cell-note 事件">
+    <Card title="备注模式 — noteMode / notes / cell-note 事件" title-as="h2">
       <p class="demo-hint">
         开着 <code>noteMode</code> 时，有备注的单元格右上角有标记，hover 看内容、点击填备注。
         填完组件只 <code>emit('cell-note')</code>，<strong>不写回 notes</strong> —— 落不落库、落到哪，是使用方的事
@@ -1092,7 +1092,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 日期输入顺序 ===== -->
-    <Card title="日期输入顺序 — dateInputOrder（MDY / DMY 必须自己声明）">
+    <Card title="日期输入顺序 — dateInputOrder（MDY / DMY 必须自己声明）" title-as="h2">
       <p class="demo-hint">
         两张表数据完全一样，只换 <code>date-input-order</code>。双击日期格输
         <code>9/12</code> 再按 Enter：左表 → <code>2026-09-12</code>，右表 →
@@ -1126,7 +1126,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 虚拟滚动 ===== -->
-    <Card title="虚拟滚动 — virtualScroll / pageVirtualMin">
+    <Card title="虚拟滚动 — virtualScroll / pageVirtualMin" title-as="h2">
       <p class="demo-hint">
         下面这张表喂 {{ VIRTUAL_ROWS }} 行。开与关都渲染得动，但关掉之后 DOM 里就是
         {{ VIRTUAL_ROWS }} 个 <code>&lt;tr&gt;</code>，滚动会明显发涩 —— 按 F12 数一下
@@ -1165,7 +1165,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 类名定制 ===== -->
-    <Card title="类名定制 — rowClass / cellClass（与 rowStyle / cellStyle 并列）">
+    <Card title="类名定制 — rowClass / cellClass（与 rowStyle / cellStyle 并列）" title-as="h2">
       <p class="demo-hint">
         回调签名固定的两对：行级 <code>(row, index)</code>、单元格级
         <code>(colKey, row, index)</code>，各有一个 class 版和一个 style 版。
@@ -1182,7 +1182,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 服务端模式 ===== -->
-    <Card title="服务端模式 — searchMode / filterMode / filters / sortKey + sortOrder / total / onExport">
+    <Card title="服务端模式 — searchMode / filterMode / filters / sortKey + sortOrder / total / onExport" title-as="h2">
       <p class="demo-hint" style="color: var(--color-warning)">
         这块是<strong>用本地假数据模拟后端</strong>（共 {{ SRV_ROWS }} 条藏在 <code>srvAll</code> 里）。
         真实项目把「后端」那段换成自己的接口请求即可，组件侧的用法一字不改。
@@ -1246,7 +1246,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 截图与导出 ===== -->
-    <Card title="截图与导出 — shotMode / screenshotMaxRows / excelExportable / exportScope">
+    <Card title="截图与导出 — shotMode / screenshotMaxRows / excelExportable / exportScope" title-as="h2">
       <div class="demo-ck-row">
         <label class="demo-ck">
           shotMode
@@ -1282,7 +1282,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 存储适配器与持久化 ===== -->
-    <Card title="存储适配器 — storage / namespace / persistence">
+    <Card title="存储适配器 — storage / namespace / persistence" title-as="h2">
       <p class="demo-hint">
         持久化存的是<strong>布局</strong>：列宽、列顺序、隐藏列、固定列、密度。
         <code>storage</code> / <code>namespace</code> / <code>persistence</code> 三个都在挂载时读一次，
@@ -1315,7 +1315,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 全屏与宿主 ===== -->
-    <Card title="全屏与宿主 — onToggleSidebar / fullscreenChange">
+    <Card title="全屏与宿主 — onToggleSidebar / fullscreenChange" title-as="h2">
       <p class="demo-hint">
         点这张表工具栏的全屏按钮：组件把整张表搬到 body 下并锁页面滚动，进出各调一次
         <code>onToggleSidebar</code> 通知宿主收起/还原侧边栏 —— 本站左侧那条真导航栏会跟着动。
@@ -1343,7 +1343,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 图片域名白名单 ===== -->
-    <Card title="图片域名白名单 — imageDomains">
+    <Card title="图片域名白名单 — imageDomains" title-as="h2">
       <p class="demo-hint">
         组件靠 <code>isImageUrl</code> 判断一个字符串是文本还是图，顺序固定：内联数据前缀 →
         图片扩展名 → 域名白名单 → 路径启发式兜底。<code>imageDomains</code> 传了就是
@@ -1365,7 +1365,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 插槽 ===== -->
-    <Card title="插槽 — #header-cell / #cell（#toolbar-actions 与 #empty 见上面两块）">
+    <Card title="插槽 — #header-cell / #cell（#toolbar-actions 与 #empty 见上面两块）" title-as="h2">
       <p class="demo-hint">
         <code>#header-cell</code> 作用域给 <code>column</code>，<code>#cell</code> 给
         <code>column / row / value</code>（value 是按空白口径处理后的展示文本）。
@@ -1383,7 +1383,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 交互开关 ===== -->
-    <Card title="交互开关 — colSettings / cellSelection / keyboardNav / cellContextMenu">
+    <Card title="交互开关 — colSettings / cellSelection / keyboardNav / cellContextMenu" title-as="h2">
       <p class="demo-hint">
         四项默认全开。四个都是真开关，当场生效：
         <strong>colSettings</strong> 管工具栏的列设置按钮；
@@ -1412,7 +1412,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 事件 ===== -->
-    <Card title="事件一览 — 15 个 emit 的回显">
+    <Card title="事件一览 — 15 个 emit 的回显" title-as="h2">
       <p class="demo-hint">
         操作下面这张表，右半边会打出组件真正抛出的事件与载荷。
         带 <code>update:</code> 前缀的三个（<code>update:selectedKeys</code> /
@@ -1461,7 +1461,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== API ===== -->
-    <Card title="API — props 全表（与 defineProps 逐条对账，闸口 check:demo-props 会拦谎报）">
+    <Card title="API — props 全表（与 defineProps 逐条对账，闸口 check:demo-props 会拦谎报）" title-as="h2">
       <table class="api-table">
         <thead>
           <tr>
