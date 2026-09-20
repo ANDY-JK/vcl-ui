@@ -39,7 +39,6 @@ export default {
     confirm: '确定',
     selectColor: '选择颜色 {color}',
     selectIconName: '选择图标 {name}',
-    loadingSolar: '加载 Solar 图标中…',
     loadingMorphicons: '加载 Morphicons 图标中…',
     noMatchIcon: '无匹配图标',
     // CameraCapture

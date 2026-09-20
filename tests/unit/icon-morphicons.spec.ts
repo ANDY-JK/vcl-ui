@@ -122,3 +122,37 @@ describe('IconSvg · provider 默认值与静态链路不受影响', () => {
     expect(w.find('svg').attributes('width')).toBe('28')
   })
 })
+
+// Solar 名录契约（2026-09-20）：IconPicker 的 solar 列表 = 本地可渲染集，
+// 曾优先 fetch Iconify CDN 全量名录——CDN 名录里大多数名字不在随包几何数据里，
+// 列出也只能渲染兜底占位图；手抄精选还与数据 17 stale / 5 漏名双向漂移。
+// 现在名录与数据键一一对应，本测试锁住这个双边相等（改数据忘同步名录即红）。
+describe('SOLAR_ICONS 名录 · 与几何数据一一对应', () => {
+  it('名录每个名字都在 solar-icons-data.json 里（列出的都渲染得出来）', async () => {
+    const { SOLAR_ICONS } = await import('@/components/_internal/solar-icons')
+    const data = (await import('@/components/_internal/solar-icons-data.json')).default as {
+      icons: Record<string, unknown>
+      aliases: Record<string, unknown>
+    }
+    const renderable = new Set([...Object.keys(data.icons), ...Object.keys(data.aliases)])
+    const missing = SOLAR_ICONS.filter((n) => !renderable.has(n))
+    expect(missing, `名录里有 ${missing.length} 个名字没有几何数据（会渲染兜底图）`).toEqual([])
+  })
+
+  it('数据里每个可渲染名字都在名录里（不漏）', async () => {
+    const { SOLAR_ICONS } = await import('@/components/_internal/solar-icons')
+    const data = (await import('@/components/_internal/solar-icons-data.json')).default as {
+      icons: Record<string, unknown>
+      aliases: Record<string, unknown>
+    }
+    const listed = new Set(SOLAR_ICONS)
+    const unlisted = [...Object.keys(data.icons), ...Object.keys(data.aliases)].filter((n) => !listed.has(n))
+    expect(unlisted, `数据里有 ${unlisted.length} 个可渲染名字没进名录`).toEqual([])
+  })
+
+  it('名录只收 -linear 变体（Solar 的线性变体名）', async () => {
+    const { SOLAR_ICONS } = await import('@/components/_internal/solar-icons')
+    expect(SOLAR_ICONS.length).toBeGreaterThan(300)
+    expect(SOLAR_ICONS.every((n) => n.endsWith('-linear'))).toBe(true)
+  })
+})

@@ -26,8 +26,8 @@ export interface Props {
 //    需我确认：lucide 图标源、分页大小
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { Icon } from '@iconify/vue'
 import { SOLAR_ICONS } from '@/components/_internal/solar-icons'
+import { ensureSolarIcons } from '@/components/_internal/solar-icons-registry'
 import lucideIconNames from '@/components/_internal/lucide-icons.json'
 import {
   ensureMorphicons,
@@ -69,7 +69,6 @@ const localBgColor = ref(props.bgColor)
 const colorTarget = ref<'fg' | 'bg'>('fg') // 预设色板作用于哪个颜色
 const localProvider = ref<'lucide' | 'solar' | 'morphicons'>(props.provider)
 const solarIcons = ref<string[]>([])
-const solarLoading = ref(false)
 /** morphicons 图标名（惰性加载后填充），整库规范名 */
 const morphIcons = ref<string[]>([])
 const morphLoading = ref(false)
@@ -109,22 +108,22 @@ const bgPickerValue = computed(() => {
   return toNativeColorValue(localBgColor.value)
 })
 
-/** 加载 Solar 图标列表：优先 Iconify CDN API，失败回退内置精选列表 */
-async function loadSolarIcons() {
+/**
+ * Solar 图标名录：本地可渲染集，无网络请求。
+ *
+ * 曾经优先 fetch Iconify CDN 的全量名录、失败回退内置精选——但 CDN 名录里的名字
+ * 大多不在随包的 solar-icons-data.json 几何数据里，列出来也只能渲染兜底占位图
+ * （在线体验反而更差），且引入一条运行时三方网络依赖（连接失败时审计页冒
+ * ERR_CONNECTION_RESET 噪音）。名录与几何数据对齐后：列出的每个名字都渲染得出来，
+ * 离线可用，无网络抖动面。增删图标只改 _internal/solar-icons.ts 一处。
+ */
+function loadSolarIcons() {
   if (solarIcons.value.length) return
-  solarLoading.value = true
-  try {
-    const res = await fetch('https://api.iconify.design/collection?prefix=solar&info=true')
-    const data = await res.json()
-    const names: string[] = Object.values(data.categories || {}).flat() as string[]
-    // 仅取 -linear 变体（Apple 风格）
-    solarIcons.value = names.filter((n: string) => n.endsWith('-linear')).sort()
-  } catch (e) {
-    if (import.meta.env.DEV) console.warn('[IconPicker] 在线图标加载失败，降级使用内置图标', e)
-    solarIcons.value = SOLAR_ICONS
-  } finally {
-    solarLoading.value = false
-  }
+  solarIcons.value = SOLAR_ICONS
+  // 面板预览直接渲染 `solar:<name>`（@iconify/vue 的 Icon）：集合未注册时它会向
+  // api.iconify.design 逐个拉几何。这里与名录同步触发注册，预览全部走本地缓存。
+  // 注册失败不阻塞面板（Icon 组件自身有降级），下次打开重试。
+  ensureSolarIcons().catch(() => {})
 }
 
 /** 加载 morphicons 图标列表：整库规范名，纯本地，无需网络 */
@@ -221,16 +220,6 @@ watch(open, (val) => {
   }
 })
 
-/** 构建 Iconify Solar 图标标识符，未指定变体时默认 -linear */
-function solarIconName(name: string): string {
-  const variants = ['linear', 'bold', 'broken', 'outline', 'bold-duotone', 'line-duotone']
-  const parts = name.split('-')
-  const lastTwo = parts.slice(-2).join('-')
-  const lastOne = parts[parts.length - 1]!
-  const hasVariant = variants.includes(lastTwo) || variants.includes(lastOne)
-  return `solar:${name}${hasVariant ? '' : '-linear'}`
-}
-
 async function toggle(e: MouseEvent) {
   if (open.value) {
     open.value = false
@@ -270,8 +259,9 @@ function confirm() {
   <div class="picker-root">
     <button ref="triggerRef" type="button" class="picker-trigger" @click="toggle">
       <span class="trigger-icon" :style="{ background: bgColor === 'transparent' ? 'var(--color-bg-alt)' : bgColor }">
-        <Icon v-if="provider === 'solar'" :icon="solarIconName(modelValue)" :width="20" :height="20" :color="color" />
-        <IconSvg v-else :type="modelValue" size="md" :color="color" :provider="provider" />
+        <!-- solar 也走 IconSvg（未注册完先兜底、注册完自动重渲）；直接渲染 @iconify 的
+           Icon 会在集合注册前向 api.iconify.design 拉几何，离线/限网再回源 unisvg -->
+        <IconSvg :type="modelValue" size="md" :color="color" :provider="provider" />
       </span>
       <span class="trigger-placeholder">{{ placeholder }}</span>
       <IconSvg type="chevron-down" size="sm" class="trigger-arrow" :class="{ rotated: open }" />
@@ -365,14 +355,7 @@ function confirm() {
           <!-- 选中预览 + 预设 + 确认 -->
           <div class="panel-preview">
             <span class="preview-icon-bg" :style="{ background: localBgColor }">
-              <Icon
-                v-if="localProvider === 'solar'"
-                :icon="solarIconName(localIcon)"
-                :width="24"
-                :height="24"
-                :color="localColor"
-              />
-              <IconSvg v-else :type="localIcon" size="lg" :color="localColor" :provider="localProvider" />
+              <IconSvg :type="localIcon" size="lg" :color="localColor" :provider="localProvider" />
             </span>
             <span class="preview-name" :title="localIcon + ' / ' + localColor"
               >{{ localIcon }} <span class="preview-hex">/ {{ localColor }}</span></span
@@ -405,19 +388,15 @@ function confirm() {
               @click="selectIcon(name)"
             >
               <span class="icon-item-bg">
-                <Icon
-                  v-if="localProvider === 'solar'"
-                  :icon="'solar:' + name"
-                  :width="20"
-                  :height="20"
-                  color="var(--color-text)"
-                />
-                <IconSvg v-else :type="name" size="md" color="var(--color-text)" :provider="localProvider" />
+                <!-- solar 预览也走 IconSvg：它有「集合未注册完先渲染兜底、注册完自动重渲」
+                 的本地逻辑。直接渲染 @iconify 的 Icon 会在注册完成前向 api.iconify.design
+                 逐个拉几何（离线/限网下还会再回源 api.unisvg.com），纯网络抖动面。 -->
+                <IconSvg :type="name" size="md" color="var(--color-text)" :provider="localProvider" />
               </span>
               <span>{{ name }}</span>
             </button>
-            <p v-if="solarLoading || morphLoading" class="empty-tip">
-              {{ solarLoading ? t('form.loadingSolar') : t('form.loadingMorphicons') }}
+            <p v-if="morphLoading" class="empty-tip">
+              {{ t('form.loadingMorphicons') }}
             </p>
             <p v-else-if="!filteredIcons.length" class="empty-tip">{{ t('form.noMatchIcon') }}</p>
             <div ref="iconSentinel" style="height: 1px" />

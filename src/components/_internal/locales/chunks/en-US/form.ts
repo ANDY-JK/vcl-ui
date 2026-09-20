@@ -39,7 +39,6 @@ export default {
     confirm: 'Confirm',
     selectColor: 'Select color {color}',
     selectIconName: 'Select icon {name}',
-    loadingSolar: 'Loading Solar icons...',
     loadingMorphicons: 'Loading Morphicons...',
     noMatchIcon: 'No matching icons',
     // CameraCapture

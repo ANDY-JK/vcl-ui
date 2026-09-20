@@ -76,7 +76,7 @@ function toggleMorph(i: number) {
       </p>
       <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
         <IconSvg type="home" provider="solar" size="xl" color="#6366F1" />
-        <IconSvg type="magnifer" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="user-circle" provider="solar" size="xl" color="#6366F1" />
         <IconSvg type="bell" provider="solar" size="xl" color="#6366F1" />
         <IconSvg type="star" provider="solar" size="xl" color="#6366F1" />
         <IconSvg type="chat-round-dots" provider="solar" size="xl" color="#6366F1" />
