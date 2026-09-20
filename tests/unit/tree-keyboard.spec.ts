@@ -23,7 +23,7 @@ function mountTree(props: Record<string, unknown> = {}) {
 }
 
 function nodes(w: ReturnType<typeof mountTree>) {
-  return w.findAll('.tree-node')
+  return w.findAll('.tree-node-wrapper')
 }
 
 function keydown(target: Element, key: string) {
