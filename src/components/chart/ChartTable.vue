@@ -81,8 +81,10 @@ const emit = defineEmits<{
 const showLegendLocal = ref(props.showLegend)
 const showTableLocal = ref(props.showTable)
 
-const chartWidth = computed(() => (showTableLocal.value ? `${props.chartRatio * 100}%` : '100%'))
-const tableWidth = computed(() => (showTableLocal.value ? `${(1 - props.chartRatio) * 100}%` : '0%'))
+// 百分比取整到 2 位：(1-0.45)*100 浮点尾差会产出 55.00000000000001% 混进 style
+const pct = (v: number) => `${Math.round(v * 100) / 100}%`
+const chartWidth = computed(() => (showTableLocal.value ? pct(props.chartRatio * 100) : '100%'))
+const tableWidth = computed(() => (showTableLocal.value ? pct((1 - props.chartRatio) * 100) : '0%'))
 
 // 图表最低宽度
 const CHART_MIN_W = 200
