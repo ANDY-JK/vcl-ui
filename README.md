@@ -60,10 +60,14 @@ app.mount('#app')
 ```ts
 import 'vcl-ui/css' // 样式：必须引入（一次即可）
 import { Button, Input, DataTable } from 'vcl-ui'
-// 或按域引入
+// 或按域引入 —— 每个域子路径是独立构建产物（Q3 多入口），
+// 引 vcl-ui/basic 只会加载 basic + 共享 core chunk，不带其他域的代码
 import { Button } from 'vcl-ui/basic'
 import { Input, Select } from 'vcl-ui/form'
 ```
+
+> 样式目前仍是单个全量 `vcl-ui.css`（各域共用一份）；按域拆分 CSS 已在路线图上，
+> 落地前「一次引入全量 CSS」的口径不变。
 
 ### 基本使用
 
@@ -162,6 +166,20 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
 
+### 依赖选型记录（评估过的，不是没看）
+
+- **`xlsx`（SheetJS）— 维持 CDN tarball，不迁 exceljs**（2026-09-20 实测，登记 Q6）：
+  - 现状：SheetJS 自 2023 起停止向 npm registry 发布新版本（registry 停在 0.18.5），官方唯一新版本通道是 `cdn.sheetjs.com` 的 tarball，本库锁 0.20.3。
+  - 代价如实记录：**CDN tarball 绕过 registry 审计**——`npm audit` 扫不到它（实测 audit 报告 0 条 xlsx 相关）；安装需能访问 `cdn.sheetjs.com`；供应链面比 registry 依赖宽。
+  - 缓解：`package.json` 锁精确版本 tarball URL（不带 `^`），lockfile 同步；只动态 `import`（不进首屏 chunk，落 `vendor-heavy` 惰性块，受体积预算闸口管）。
+  - 为何不迁 exceljs（PoC 实测）：① **exceljs 读不了 legacy `.xls`**（load 直接报 `Can't find end of central directory`），而 form-builder / route-planner 的导入面明确收 `.xls`（FormCollect 的 `accept=".json,.csv,.xlsx,.xls"`）——迁移 = 用户可见的能力损失；② exceljs 4.4.0（2024-12 最后发布）并非高频维护项；③ 读出口径要把 `sheet_to_json({ header: 1, raw: false })` 换成逐格 `cell.text` 遍历（写侧 `addRows`/`writeBuffer` 双向互通已验证可行）。
+  - 结论：1.0 维持 xlsx；v2 若决定放弃 `.xls` 兼容再迁，读写两侧 API 映射已在本轮 PoC 跑通。
+- **`html2canvas`（截图）— 维持，不迁 modern-screenshot**（2026-09-20 实测，登记 Q11）：
+  - 现状：html2canvas 1.4.1（2023-07 后无发布），本库经 `_internal/useScreenshot.ts` 的 `captureElement` **动态** `import`（惰性，不进首屏 chunk）。该函数当前无库内调用方，能力随库保留。
+  - modern-screenshot（4.7.0，2026-04 活跃维护，MIT，186KB）实测更快（同元素 27ms vs 4175ms，约 154 倍），亮色主题下与 html2canvas 渲染目视等价。
+  - **阻断项：暗色主题渲染错误**。本库全套令牌走 CSS 自定义属性 + `:root[data-theme]` 切换，modern-screenshot 的 foreignObject 克隆丢失该上下文 —— 真实页面实测暗色截图 60.87% 像素偏差、卡片底/标题/按钮颜色全错（地面真相 `rgb(26,29,36)` 底 vs 截图白底）。html2canvas + 现有 `onclone` 复制自定义属性的方案渲染正确。
+  - 结论：1.0 维持 html2canvas（+ 既有 onclone hack）；re-evaluate 条件：modern-screenshot 能正确捕获 `:root[data-theme]` 令牌主题（如经其 `style` 注入选项把解析后的变量写进克隆文档），或截图能力改为不再依赖变量令牌。
+
 ## 🛠 本地开发
 
 ```bash
@@ -191,6 +209,30 @@ npm run build       # 构建产物到 dist/
 10. **CSS 设计令牌不许"无声明又无 fallback"**：`var(--x)` 引用一个全库从未声明的令牌时，浏览器会静默求值为继承/初始值——亮色下常因继承背景碰巧看着正常、切暗色才暴露。`check:css-tokens` 全仓收集两处「有主」信号：① 任何 `.css/.vue/.ts` 里出现的 `--name:` 声明（含 `:style` 内联键、`setProperty('name',…)` 字符串字面量）；② 引用带了 fallback（`var(--x, 默认)`）即视为显式降级、放行。两者都不满足才判红。新增局部变量照第 1 条走「同文件声明 + 引用兜底」即可，全局令牌加进 `tokens.css`。
 
 11. **form-builder 域单文件 ≤800 行**：该域交互密度高，设计器/渲染器/收集端三块各自曾长到近千行。09-04 收官过一次（PropsPanel 五页签、useTableEdit 式拆分），09-20 复查发现 `FormDesigner 979 / DesignerCanvas 881` 已回潮——**靠人工守必然回潮**，所以 `check:constants` 第 [7] 项直接扫该目录（含子目录）的 `.ts/.vue` 行数，超限即红。正确拆法：纯函数归 `.ts`（如 `canvas-utils.ts`）、有状态逻辑归 composable（如 `useDesignerPanels`）、可独立交互的 UI 归子组件；能不拆就别拆——拆错地方比不拆更糟。
+
+### defineExpose 公开契约（Q18，2026-09-20 盘点）
+
+`defineExpose` 是组件实例的**公开**方法面（`ref.value.xxx()` 能调到即契约）。分两类，动以前先在这里对账：
+
+**公开 API（消费方 ref 可调，v2 前只增不改语义）**：
+
+| 组件 | 暴露动词 | 用途 |
+|---|---|---|
+| `Chart` / `BaseChart` | `chart`(getter) / `getOption()` / `setOption(opt, opts?)` | ECharts 实例与 option 读写（setOption 自动注入 toolbox） |
+| `AmapWidget` | `getMap()` / `setZoomAndCenter()` / `clearMarkers()` / `renderMarkers()` / `openInfoWindow()` / `closeInfoWindow()` | 地图实例与标记/信息窗控制 |
+| `Toast` | `show(msg\|opts)` / `remove(id)` | 手动 toast（duration≤0 常驻需手动 remove） |
+| `Select` | `openMenu()` | 程序化展开面板 |
+| `Upload` | `retryFile()` / `triggerFileInput()` | 重试失败上传 / 手动打开文件选择 |
+| `FormBuilder` | `stopSubmit` / `setSubmitting` / `submitting` / `getFormData()` / `validateForm()` / `validateAndGet()` / `validate()` / `errors` | 表单提交与校验全家桶 |
+| `login` / `portal_login` / `register` / `forgot-password` | `resetForm()`（login 另有 `notifyFailed()` / `notifySuccess()`） | 清表单；login 的两个 notify 供宿主在自行完成登录后回写锁定状态 |
+
+**内部区块 expose（⛔ 非公开 API，仅 DataTable 主文件经 ref 驱动，消费方勿依赖）**：
+`DataTableBatchDialog`（`show` / `open` / `close`）、`DataTableColumnSettings`（`show` / `toggle` / `close` / `unfixFromMenu`）、`CaptureFallbackPanel`（`reset`）、`TimeColumns`（`scrollToValue`）。契约类型在 `data/composables/context.ts` 的 `*Expose` interface，随区块拆分演进。
+
+**已登记 v2 收敛项（都是破坏性改名，不在 1.x 动）**：
+1. `FormBuilder` 的 `validate` / `validateForm` / `validateAndGet` 三个近义入口收敛为单一动词（demos 零调用，消费面主要在外部接入方）。
+2. `login` 的 `notifyFailed` / `recordFailedAttempt` 是宿主回写钩子而非组件行为，v2 随事件化改造一并收口。
+3. 审查报告 09-20 曾记「BatchDialog 六近义名 / ColumnSettings 八名」——那是扫描正则把 `show: _batchShow` 的键与源标识符重复计数所致，实际暴露面就是上表 3/4 个动词，以本条为准。
 
 ## 🚀 发版（维护者）
 
