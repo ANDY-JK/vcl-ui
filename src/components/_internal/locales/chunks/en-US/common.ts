@@ -15,6 +15,8 @@ export default {
     previous: 'Previous',
     submit: 'Submit',
     reset: 'Reset',
+
+    progress: 'Progress',
     search: 'Search',
     filter: 'Filter',
     loading: 'Loading...',

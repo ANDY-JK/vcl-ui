@@ -15,6 +15,8 @@ export default {
     previous: '上一步',
     submit: '提交',
     reset: '重置',
+
+    progress: '进度',
     search: '搜索',
     filter: '筛选',
     loading: '加载中...',

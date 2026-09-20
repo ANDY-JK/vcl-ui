@@ -1,0 +1,106 @@
+// @vitest-environment node
+/**
+ * SSR 冒烟 — 真实服务端渲染代表性组件，实证「无裸 DOM 访问」而非口头承诺
+ *
+ * 背景：README 声称 SSR 守卫（ssr-guard / useTheme / i18n 的 typeof 判定）就位，
+ * 但此前从未验证过。SSR 兼容是组件库硬门槛——消费者在 Nuxt/Vite SSR 里
+ * 一挂就是整站 500，所以这里用 @vue/server-renderer 真渲染一遍。
+ *
+ * 关键：必须 @vitest-environment node。全局 setup 是 happy-dom，会提供
+ * window/document，SSR 检测（typeof window !== 'undefined'）在它下面恒真，
+ * 裸 DOM 访问全被掩盖 —— 那是 jsdom 假绿灯，测不出真问题。
+ *
+ * 覆盖取舍（各域代表 + 交互最重的组件）：
+ *   每个域至少一个；DataTable/Select/ModalBox/Toast 这些挂满生命周期 +
+ *   observer + 本地存储的优先。全量 60+ 组件逐个渲染成本高、收益低，
+ *   真正的回归保护由「setup 顶层不碰 DOM」这条不变量承担——冒烟抓的是
+ *   有人新加了顶层裸访问的场景。
+ */
+import { describe, it, expect, beforeAll } from 'vitest'
+import { createSSRApp } from 'vue'
+import { renderToString } from '@vue/server-renderer'
+import { setLocale } from '@/components/_internal/i18n'
+
+// 组件库入口在 node 环境下 import：进来的是 setup 顶层代码，
+// 任何裸 window/document/localStorage 访问都会在 import 阶段就炸
+import Button from '@/components/basic/Button.vue'
+import IconSvg from '@/components/basic/IconSvg.vue'
+import Tag from '@/components/basic/Tag.vue'
+import Input from '@/components/form/Input.vue'
+import Select from '@/components/form/Select.vue'
+import DataTable from '@/components/data/DataTable.vue'
+import Tree from '@/components/data/Tree.vue'
+import Collapse from '@/components/data/Collapse.vue'
+import ProgressBar from '@/components/data/ProgressBar.vue'
+import ToggleList from '@/components/data/ToggleList.vue'
+import ModalBox from '@/components/layout/ModalBox.vue'
+import ConfirmContent from '@/components/layout/ConfirmContent.vue'
+import Toast from '@/components/feedback/Toast.vue'
+import Popover from '@/components/feedback/Popover.vue'
+import Tabs from '@/components/nav/Tabs.vue'
+import Steps from '@/components/nav/Steps.vue'
+import Pagination from '@/components/nav/Pagination.vue'
+import Breadcrumb from '@/components/nav/Breadcrumb.vue'
+import Chart from '@/components/chart/Chart.vue'
+import BaseChart from '@/components/chart/BaseChart.vue'
+import FormBuilder from '@/components/form-builder/FormBuilder.vue'
+import FormRenderer from '@/components/form-builder/FormRenderer.vue'
+import AmapWidget from '@/components/amap/AmapWidget.vue'
+import { useTheme } from '@/components/_internal/useTheme'
+
+const cases: Array<[string, unknown, Record<string, unknown>]> = [
+  ['Button', Button, { text: '按钮' }],
+  ['IconSvg', IconSvg, { type: 'heart' }],
+  ['Tag', Tag, { text: '标签' }],
+  ['Input', Input, { modelValue: 'x', label: '名称' }],
+  ['Input.stepper', Input, { modelValue: 1, stepper: true, label: '数量' }],
+  ['Select', Select, { modelValue: 'a', options: [{ value: 'a', label: 'A' }] }],
+  ['DataTable', DataTable, { data: [{ n: '甲' }], columns: [{ key: 'n', title: '名' }] }],
+  ['Tree', Tree, { data: [{ key: 1, label: '根', children: [{ key: 2, label: '子' }] }] }],
+  ['Collapse', Collapse, { items: [{ key: 'a', title: 'A', content: '内容' }] }],
+  ['ProgressBar', ProgressBar, { percent: 30 }],
+  ['ProgressBar.interactive', ProgressBar, { interactive: true, modelValue: 30 }],
+  ['ToggleList', ToggleList, { items: [{ id: 1, name: 'A' }], idKey: 'id', titleField: 'name' }],
+  ['ModalBox.default', ModalBox, { visible: false, title: '弹窗' }],
+  ['ModalBox.confirm', ModalBox, { visible: false, modalType: 'confirm', confirmMessage: '确定？' }],
+  ['ConfirmContent', ConfirmContent, { message: '确定删除？', variant: 'danger' }],
+  ['Toast', Toast, { visible: false, message: '提示' }],
+  ['Popover', Popover, { title: '说明', content: '内容' }],
+  ['Tabs', Tabs, { modelValue: 'a', tabs: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }] }],
+  ['Steps', Steps, { current: 1, steps: [{ title: '一' }, { title: '二' }] }],
+  ['Pagination', Pagination, { current: 1, total: 10 }],
+  ['Breadcrumb', Breadcrumb, { items: [{ label: '首页' }, { label: '列表' }] }],
+  ['Chart', Chart, { type: 'bar', data: { x: ['A'], series: [{ name: 's', data: [1] }] } }],
+  ['BaseChart', BaseChart, { option: { xAxis: { type: 'category' }, yAxis: {}, series: [] } }],
+  ['FormBuilder', FormBuilder, { schema: { schemaVersion: 1, meta: { title: 't' }, fields: [] } }],
+  ['FormRenderer', FormRenderer, { schema: { schemaVersion: 1, meta: { title: 't' }, fields: [] }, field: { id: 'f1', type: 'text', label: '字段' } }],
+  ['AmapWidget', AmapWidget, { lng: 116, lat: 39 }],
+]
+
+describe('SSR 冒烟：组件在无 DOM 环境下可渲染', () => {
+  beforeAll(() => {
+    setLocale('zh-CN')
+  })
+
+  it('node 环境下确实没有浏览器全局（防止测试自身失真）', () => {
+    expect(typeof window).toBe('undefined')
+    expect(typeof document).toBe('undefined')
+    expect(typeof localStorage).toBe('undefined')
+  })
+
+  it.each(cases)('%s：renderToString 不抛错且产出 HTML', async (_name, comp, props) => {
+    const app = createSSRApp(comp as never, props as never)
+    const html = await renderToString(app)
+    expect(typeof html).toBe('string')
+    expect(html.length).toBeGreaterThan(0)
+  })
+
+  it('useTheme() 在 node 环境可调用且不抛错', () => {
+    const theme = useTheme()
+    expect(theme.theme).toBeDefined()
+    expect(typeof theme.setTheme).toBe('function')
+    // 'auto' 在无 matchMedia 环境下必须回落（守卫生效）
+    theme.setTheme('auto')
+    expect(theme.effectiveTheme.value).toBeDefined()
+  })
+})
