@@ -116,7 +116,7 @@ function onKeydown(e: KeyboardEvent) {
   color: var(--color-text);
 }
 .tabs-underline .tab-btn.active {
-  color: var(--color-primary);
+  color: var(--color-primary-solid); /* AA：主色基色压白底实测仅 4.28，solid 档 5.84 */
   border-bottom-color: var(--color-primary);
   font-weight: 500;
 }
@@ -170,7 +170,7 @@ function onKeydown(e: KeyboardEvent) {
 .tabs-card .tab-btn.active {
   background: var(--color-primary-light);
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-primary-solid);
   z-index: 1;
 }
 

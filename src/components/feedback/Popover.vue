@@ -7,6 +7,9 @@ import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { useEscClose } from '@/components/_internal/useEscClose'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 import type { FlipDirection } from '@/components/_internal/useFloating'
 
 interface Props {
@@ -211,9 +214,12 @@ onUnmounted(() => {
       @focusout="onBlur"
     >
       <slot v-if="!isTooltip" name="trigger">
+        <!-- 默认触发器是纯图标按钮，必须自带 aria-label（axe button-name）；
+             调用方传 trigger slot 时自行负责可访问名 -->
         <button
           type="button"
           class="popover-btn"
+          :aria-label="t('feedback.popoverTrigger')"
           :aria-expanded="open"
           :aria-haspopup="isTooltip ? undefined : 'dialog'"
         >

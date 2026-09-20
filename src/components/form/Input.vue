@@ -447,6 +447,8 @@ const floatingRaised = computed(() => {
           type="text"
           inputmode="decimal"
           autocomplete="off"
+          :id="inputId"
+          :aria-label="label || placeholder || undefined"
           :value="numText"
           :placeholder="placeholder"
           :disabled="disabled"
@@ -455,6 +457,9 @@ const floatingRaised = computed(() => {
           @blur="onStepperBlur"
           @keydown="onNumKeydown"
         />
+        <!-- stepper 模式的标签：浮窗模式用 .fl-label 浮动效果，此处静态标签即可，
+             但必须与 inputId 关联 —— 否则 input 无可访问名（axe label 违规） -->
+        <label v-if="label" class="step-label" :for="inputId" :title="label">{{ label }}</label>
         <div class="step-controls">
           <button
             type="button"
@@ -505,6 +510,7 @@ const floatingRaised = computed(() => {
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
           :id="inputId"
+          :aria-label="label || placeholder || undefined"
           :aria-invalid="!!errorMsg || undefined"
           :aria-describedby="errorMsg ? errorDescId : undefined"
           ref="floatInputRef"
@@ -525,7 +531,7 @@ const floatingRaised = computed(() => {
           @animationstart="onAutoFillStart"
         />
         <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
-        <button v-if="clearable && hasValue" type="button" class="f-clear" tabindex="-1" @click="clearNumValue">
+        <button v-if="clearable && hasValue" type="button" class="f-clear" tabindex="-1" :aria-label="t('common.reset')" @click="clearNumValue">
           <IconSvg type="x" size="sm" />
         </button>
       </div>
@@ -544,6 +550,7 @@ const floatingRaised = computed(() => {
       <div class="fl-wrap is-textarea" :class="{ focused: taFocused && !errorMsg, 'has-error': !!errorMsg, disabled }">
         <textarea
           :id="inputId"
+          :aria-label="label || placeholder || undefined"
           :aria-invalid="!!errorMsg || undefined"
           :aria-describedby="errorMsg ? errorDescId : undefined"
           ref="floatInputRef"
@@ -562,7 +569,7 @@ const floatingRaised = computed(() => {
           @keyup="emit('keyup', $event)"
         />
         <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
-        <button v-if="clearable && hasTaValue" type="button" class="f-clear" tabindex="-1" @click="clearTaValue">
+        <button v-if="clearable && hasTaValue" type="button" class="f-clear" tabindex="-1" :aria-label="t('common.reset')" @click="clearTaValue">
           <IconSvg type="x" size="sm" />
         </button>
       </div>
@@ -581,6 +588,7 @@ const floatingRaised = computed(() => {
       <div class="fl-wrap" :class="{ focused: focused && !errorMsg, 'has-error': !!errorMsg, disabled }">
         <input
           :id="inputId"
+          :aria-label="label || placeholder || undefined"
           :aria-invalid="!!errorMsg || undefined"
           :aria-describedby="errorMsg ? errorDescId : undefined"
           ref="floatInputRef"
@@ -615,6 +623,7 @@ const floatingRaised = computed(() => {
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
           :id="inputId"
+          :aria-label="label || placeholder || undefined"
           :aria-invalid="!!errorMsg || undefined"
           :aria-describedby="errorMsg ? errorDescId : undefined"
           ref="floatInputRef"
@@ -970,6 +979,15 @@ const floatingRaised = computed(() => {
   color: var(--color-text);
   font-family: inherit;
   text-align: center;
+}
+/* stepper 模式的静态标签（关联 inputId；stepper-wrap 是 inline-flex，标签独占一行在上方） */
+.step-label {
+  align-self: center;
+  margin-right: var(--space-2);
+  padding-left: var(--space-3);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 .step-input::placeholder {
   color: var(--color-text-muted);

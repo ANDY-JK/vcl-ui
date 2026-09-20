@@ -83,7 +83,9 @@ function focusNode(key: string | number): void {
   nextTick(() => {
     const root = treeRootRef.value
     if (!root) return
-    const target = Array.from(root.querySelectorAll<HTMLElement>('.tree-node')).find(
+    // treeitem 角色与 tabindex 在 v-for wrapper 上（role="tree" 的 required owned
+    // elements 不能隔 generic div），故焦点目标查 wrapper。data-key 同步带在 wrapper 上。
+    const target = Array.from(root.querySelectorAll<HTMLElement>('.tree-node-wrapper')).find(
       (el) => el.dataset.key === String(key),
     )
     target?.focus()
@@ -356,7 +358,39 @@ const levelStyle = computed(() => {
 
 <template>
   <div v-if="data.length" ref="treeRootRef" class="tree" role="tree">
-    <div v-for="node in data" :key="node.key" class="tree-node-wrapper">
+    <!--
+      role="none"：v-for 的包裹层对无障碍树不可见。role="tree" 的 required children 是
+      treeitem / group，若这层 div 保持默认 generic 角色，axe 判 aria-required-children。
+      加 role="none" 后 tree 直接看见内部的 treeitem（包一层只是布局需要）。
+    -->
+    <!--
+      role="treeitem" 放在 v-for 的外层 wrapper 上：role="tree" 的 required owned elements
+      是 treeitem / group，若中间隔着一层 generic div，axe 判 aria-required-children
+      （role="none" 的包装层并不能让 axe 满意）。wrapper 本就要包 Transition，
+      由它承担 treeitem 角色正好零额外 DOM；内层 .tree-node 改 role="none" 纯布局。
+    -->
+    <div
+      v-for="node in data"
+      :key="node.key"
+      class="tree-node-wrapper"
+      role="treeitem"
+      :data-key="node.key"
+      :aria-expanded="node.children?.length ? state.isExpanded(node.key) : undefined"
+      :aria-selected="state.selectable ? state.selectedKeyRef.value === node.key : undefined"
+      :aria-checked="
+        state.checkable
+          ? isChecked(node.key)
+            ? 'true'
+            : isIndeterminate(node.key)
+              ? 'mixed'
+              : 'false'
+          : undefined
+      "
+      :aria-label="node.label"
+      :tabindex="state.focusKey.value === node.key ? 0 : -1"
+      @click="state.handleNodeClick(node)"
+      @keydown="state.handleKeydown($event, node)"
+    >
       <div
         class="tree-node"
         :class="{
@@ -365,23 +399,7 @@ const levelStyle = computed(() => {
           'tree-node--has-children': node.children?.length,
         }"
         :style="levelStyle"
-        role="treeitem"
-        :data-key="node.key"
-        :aria-expanded="node.children?.length ? state.isExpanded(node.key) : undefined"
-        :aria-selected="state.selectable ? state.selectedKeyRef.value === node.key : undefined"
-        :aria-checked="
-          state.checkable
-            ? isChecked(node.key)
-              ? 'true'
-              : isIndeterminate(node.key)
-                ? 'mixed'
-                : 'false'
-            : undefined
-        "
-        :aria-label="node.label"
-        :tabindex="state.focusKey.value === node.key ? 0 : -1"
-        @click="state.handleNodeClick(node)"
-        @keydown="state.handleKeydown($event, node)"
+        role="none"
       >
         <!-- 展开箭头（对齐 AccordionNav: 右指→下转） -->
         <span
@@ -394,7 +412,7 @@ const levelStyle = computed(() => {
         <span v-else class="tree-arrow tree-arrow--spacer" />
 
         <!-- 勾选框 -->
-        <label v-if="state.checkable" class="tree-check" @click.stop>
+        <label v-if="state.checkable" class="tree-check" :aria-label="node.label" @click.stop>
           <input
             type="checkbox"
             class="tree-check-input"

@@ -2239,7 +2239,7 @@ provideDataTableContext({
             <thead>
               <tr>
                 <!-- 选择框列 -->
-                <th v-if="selectable" class="th-checkbox" :class="{ 'col-fixed-left': _hasFixedLeftCol }">
+                <th v-if="selectable" class="th-checkbox" :class="{ 'col-fixed-left': _hasFixedLeftCol }" :aria-label="t('table.selectAll')">
                   <input
                     type="checkbox"
                     :checked="isAllSelected"
@@ -2292,7 +2292,10 @@ provideDataTableContext({
                       <span class="th-title">{{ colTitle(col) }}</span>
                     </slot>
                     <span v-if="col.sortable !== false || col.filterable !== false" class="th-actions">
-                      <span v-if="col.sortable !== false" class="sort-arrows" :aria-label="t('table.sort')">
+                      <!-- 排序指示：纯装饰（内部图标 aria-hidden）。排序语义由 th 上的
+                           aria-sort 与 onThKeydown 承载——aria-label 放这个无角色 span 上
+                           会被 axe 判 aria-prohibited-attr（无效属性） -->
+                      <span v-if="col.sortable !== false" class="sort-arrows">
                         <IconSvg
                           type="chevron-up"
                           size="sm"
@@ -2427,6 +2430,7 @@ provideDataTableContext({
                 <td v-if="selectable" class="td-checkbox" :class="{ 'col-fixed-left': _hasFixedLeftCol }" @click.stop>
                   <input
                     type="checkbox"
+                    :aria-label="t('table.selectRow')"
                     :checked="_selectedKeySet.has(rowMetaMap.get(row)?.key ?? '')"
                     @change="toggleRowSelect(row)"
                   />
@@ -2527,6 +2531,7 @@ provideDataTableContext({
                         isImageUrl(cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? ''))
                       "
                       :src="cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')"
+                      :alt="colTitle(col)"
                       class="cell-image"
                       loading="lazy"
                       decoding="async"
@@ -2692,6 +2697,7 @@ provideDataTableContext({
             <div v-if="selectable" class="card-checkbox" @click.stop>
               <input
                 type="checkbox"
+                :aria-label="t('table.selectRow')"
                 :checked="_selectedKeySet.has(rowMetaMap.get(row)?.key ?? '')"
                 @change="toggleRowSelect(row)"
               />

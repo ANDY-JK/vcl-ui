@@ -74,11 +74,11 @@ function onToggleAll() {
 }
 .cl-toggle-all:hover {
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-primary-solid);
 }
 .cl-toggle-all--active {
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-primary-solid); /* AA：浅主色底上基色 3.8 不达标 */
   background: var(--color-primary-light);
 }
 .cl-list {

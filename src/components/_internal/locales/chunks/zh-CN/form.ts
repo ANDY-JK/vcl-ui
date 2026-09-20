@@ -24,6 +24,8 @@ export default {
     passwordHidden: '密码已隐藏',
     // Group
     rateLabel: '评分 {value}/{max}',
+
+    rateStar: '{value} 星，共 {max} 星',
     sliderMin: '最小值',
     sliderMax: '最大值',
     slider: '滑块',

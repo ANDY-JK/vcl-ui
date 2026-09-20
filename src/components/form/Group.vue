@@ -388,13 +388,16 @@ onUnmounted(unbindWindowPointer)
   </span>
 
   <!-- ===== rate ===== -->
+  <!--
+    rate 语义纠正：原 role="slider" 是谎报——slider 必须容器可聚焦 + 方向键可调，
+    而这里真实的交互是「N 个星形按钮 + 整组说明」。改为 role="group"（组合控件），
+    每个星按钮自带 aria-label 说明点数。这样既消除 aria-input-field-name /
+    nested-interactive（slider 里嵌 button）两类违规，也不谎报能力。
+  -->
   <div
     v-else-if="isRate"
     class="rate"
-    role="slider"
-    :aria-valuenow="Number(modelValue)"
-    aria-valuemin="0"
-    :aria-valuemax="rateMax"
+    role="group"
     :aria-label="tt('form.rateLabel', { value: modelValue, max: rateMax })"
     @mouseleave="hoverVal = 0"
   >
@@ -405,6 +408,7 @@ onUnmounted(unbindWindowPointer)
       class="rate-btn"
       :class="{ active: stars[i].full || stars[i].half }"
       :disabled="disabled"
+      :aria-label="tt('form.rateStar', { value: i + 1, max: rateMax })"
       @click="selectRate($event, i)"
       @mousemove="onHoverRate($event, i)"
     >

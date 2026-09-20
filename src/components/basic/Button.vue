@@ -118,13 +118,15 @@ const emit = defineEmits<{ click: [e: MouseEvent] }>()
 
 /* 变体 */
 .btn-primary {
-  background: var(--color-primary);
+  /* 同 btn-danger 口径：实心底用 -solid 令牌而非基色。
+     主色基色压白字实测 4.28，低于 AA 4.5；solid 档 5.84 达标。 */
+  background: var(--color-primary-solid);
   color: white;
-  border-color: var(--color-primary);
+  border-color: var(--color-primary-solid);
 }
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
+  background: var(--color-primary-solid-hover);
+  border-color: var(--color-primary-solid-hover);
 }
 
 .btn-secondary {
@@ -137,9 +139,11 @@ const emit = defineEmits<{ click: [e: MouseEvent] }>()
 }
 
 .btn-outline {
+  /* 描边按钮的文字/边框用 solid 档：主色基色在白底上实测对比度 4.28（低于 AA 4.5）；
+     solid 档 5.84 达标且仍在同一主色相，视觉无感差 */
   background: transparent;
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  color: var(--color-primary-solid);
+  border-color: var(--color-primary-solid);
 }
 .btn-outline:hover:not(:disabled) {
   background: var(--color-primary-light);

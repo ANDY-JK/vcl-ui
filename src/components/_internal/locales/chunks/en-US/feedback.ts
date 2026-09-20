@@ -17,6 +17,8 @@ export default {
     close: 'Close drawer',
   },
 
+  popoverTrigger: 'More info',
+
   confirmModal: {
     title: 'Confirm action',
     confirm: 'Confirm',

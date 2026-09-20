@@ -773,7 +773,7 @@ const interCols: Column[] = [
         row-key="id"
         :truncate-threshold="20"
         :row-style="(row) => (row.status === '在线' ? { background: 'var(--color-success-bg)' } : ({} as Record<string, string>))"
-        :cell-style="(key, row) => (key === 'amount' && row.amount > 15000 ? { color: 'var(--color-danger)', fontWeight: 'bold' } : ({} as Record<string, string>))"
+        :cell-style="(key, row) => (key === 'amount' && row.amount > 15000 ? { color: 'var(--color-danger-hover)', fontWeight: 'bold' } : ({} as Record<string, string>))"
       />
     </Card>
 

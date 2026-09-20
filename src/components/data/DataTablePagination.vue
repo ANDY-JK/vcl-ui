@@ -27,7 +27,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
         >{{ t('table.selected') }} <strong>{{ _selectedKeys.length }}</strong> {{ t('table.rows') }} - </template
       >{{ t('table.pageInfo', { current: _currentPage, total: totalPages }) }}
     </span>
-    <button class="page-btn" :disabled="_currentPage <= 1" @click="setPage(_currentPage - 1)">
+    <button class="page-btn" :disabled="_currentPage <= 1" :aria-label="t('table.prevPage')" @click="setPage(_currentPage - 1)">
       <IconSvg type="chevron-left" size="sm" />
     </button>
     <template v-for="p in displayPages" :key="p">
@@ -36,7 +36,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
       </button>
       <span v-else class="page-ellipsis">...</span>
     </template>
-    <button class="page-btn" :disabled="_currentPage >= totalPages" @click="setPage(_currentPage + 1)">
+    <button class="page-btn" :disabled="_currentPage >= totalPages" :aria-label="t('table.nextPage')" @click="setPage(_currentPage + 1)">
       <IconSvg type="chevron-right" size="sm" />
     </button>
   </div>

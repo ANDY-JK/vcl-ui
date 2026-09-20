@@ -39,11 +39,11 @@
   /* 状态色 */
   --color-success: #22ad5f;
   --color-success-bg: #f0fdf4;
-  --color-success-text: #16a34a;
+  --color-success-text: #15803d; /* AA：原 #16a34a 压 success-bg 实测 3.15，加深一档到 4.79 */
   --color-success-border: #bbf7d0;
   --color-warning: #f59e0b;
   --color-warning-bg: #fffbeb;
-  --color-warning-text: #d97706;
+  --color-warning-text: #b45309; /* AA：原 #d97706 压 warning-bg 实测 3.07，加深一档到 4.84 */
   --color-warning-border: #fde68a;
   --color-danger: #e54545;
   /* ===== 语义色「实心底」专用（压白色文字） =====
@@ -61,7 +61,7 @@
   --color-primary-solid: #3b56e0;
   --color-primary-solid-hover: #2f4bd8;
   --color-danger-bg: #fef2f2;
-  --color-danger-hover: #dc2626;
+  --color-danger-hover: #c81e1e; /* AA：原 #dc2626 压 danger-bg 实测 4.41，加深一档达标 */
   --color-danger-border: #fecaca;
   --color-info: #4f6ef7;
   --color-info-bg: #eff6ff;

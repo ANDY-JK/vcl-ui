@@ -112,6 +112,8 @@ export default {
     editNote: '点击编辑备注',
     // 分页
     pageInfo: '第 {current} / {total} 页',
+    prevPage: '上一页',
+    nextPage: '下一页',
     // 筛选下拉
     pinyinSearchPlaceholder: '拼音/中文搜索...',
     searchPlaceholder: '搜索...',
@@ -119,6 +121,7 @@ export default {
     byName: '名称',
     byCount: '数量',
     selectAll: '全选',
+    selectRow: '选择本行',
     invertSelection: '反选',
     duplicates: '重复项',
     uniqueOnly: '唯一项',

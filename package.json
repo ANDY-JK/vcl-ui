@@ -154,6 +154,7 @@
     "zxing-wasm": "^3.0.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
     "@types/qrcode": "^1.5.6",

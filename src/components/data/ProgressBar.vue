@@ -1,6 +1,9 @@
 <script setup lang="ts">
 // ProgressBar — 进度条 / 滑块（interactive 模式）
 import { ref, computed, onUnmounted } from 'vue'
+import { useT } from '@/components/_internal/i18n'
+
+const t = useT()
 
 interface Props {
   percent?: number
@@ -17,6 +20,8 @@ interface Props {
   disabled?: boolean
   showInput?: boolean
   showStops?: boolean
+  /** 无障碍名称：interactive 模式的 slider/数字输入需要可访问名，未传时回退通用文案 */
+  label?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -148,6 +153,7 @@ onUnmounted(unbindWindowPointer)
       v-if="showInput"
       type="number"
       class="slider-input"
+      :aria-label="label || t('common.progress')"
       :value="modelValue"
       :min="min"
       :max="max"
@@ -173,6 +179,7 @@ onUnmounted(unbindWindowPointer)
         :style="{ left: sliderPercent + '%' }"
         tabindex="0"
         role="slider"
+        :aria-label="label || t('common.progress')"
         :aria-valuemin="min"
         :aria-valuemax="max"
         :aria-valuenow="modelValue"

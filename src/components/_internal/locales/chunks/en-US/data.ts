@@ -112,6 +112,8 @@ export default {
     editNote: 'Click to edit note',
     // Pagination
     pageInfo: 'Page {current} / {total}',
+    prevPage: 'Previous page',
+    nextPage: 'Next page',
     // Filter dropdown
     pinyinSearchPlaceholder: 'Pinyin/Chinese search...',
     searchPlaceholder: 'Search...',
@@ -119,6 +121,7 @@ export default {
     byName: 'Name',
     byCount: 'Count',
     selectAll: 'Select all',
+    selectRow: 'Select this row',
     invertSelection: 'Invert',
     duplicates: 'Duplicates',
     uniqueOnly: 'Unique',

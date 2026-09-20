@@ -84,6 +84,14 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
     <Empty v-else-if="!items.length" :title="effectiveEmptyText" class="list-state" />
 
     <div v-else class="list-items">
+      <!--
+        整行 role=button + tabindex=0：行的主交互是选中（itemClick），回车/空格直达，
+        这是库的公开契约（tests/unit/keyboard-a11y.spec.ts 有回归锁）。
+        注意：切到 checkbox 未选中态由尾部开关独立处理——axe 会报
+        nested-interactive（button 内嵌可聚焦 checkbox）。解除办法是拆掉嵌套
+        （行改 group + 复选框独立），但那要改 Enter 契约并动 demo/单测，
+        已登记为取舍项（见 docs/全量审查报告-2026-09-20.md Q12）。
+      -->
       <div
         v-for="item in items"
         :key="item[idKey]"
@@ -112,6 +120,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
         <label
           v-if="variant === 'switch' && toggleField && item[toggleField] !== undefined"
           class="item-toggle"
+          :aria-label="String(item[titleField] ?? '')"
           @click.stop
         >
           <input

@@ -17,6 +17,8 @@ export default {
     close: '关闭抽屉',
   },
 
+  popoverTrigger: '查看详情',
+
   confirmModal: {
     title: '确认操作',
     confirm: '确定',

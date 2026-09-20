@@ -137,6 +137,7 @@ function toggleMorph(i: number) {
         <input
           type="color"
           :value="iconColor"
+          aria-label="自定义图标颜色"
           style="width: 36px; height: 36px; border: none; border-radius: var(--radius-sm); cursor: pointer; padding: 0"
           @input="iconColor = ($event.target as HTMLInputElement).value"
         />
@@ -157,6 +158,7 @@ function toggleMorph(i: number) {
               cursor: pointer;
               transition: all var(--transition-fast);
             "
+            :aria-label="c"
             @click="iconColor = c"
           />
         </div>

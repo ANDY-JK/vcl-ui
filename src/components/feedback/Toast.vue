@@ -199,7 +199,7 @@ defineExpose({
         {{ message }}
       </div>
     </div>
-    <button v-if="closable" type="button" class="toast-inline-close" @click="inlineVisible = false">
+    <button v-if="closable" type="button" class="toast-inline-close" :aria-label="tt('common.close')" @click="inlineVisible = false">
       <IconSvg type="x" size="sm" />
     </button>
   </div>

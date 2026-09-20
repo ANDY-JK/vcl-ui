@@ -24,6 +24,8 @@ export default {
     passwordHidden: 'Password hidden',
     // Group
     rateLabel: 'Rating {value}/{max}',
+
+    rateStar: '{value} of {max} stars',
     sliderMin: 'Min value',
     sliderMax: 'Max value',
     slider: 'Slider',

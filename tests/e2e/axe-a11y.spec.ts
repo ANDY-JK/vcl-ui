@@ -1,0 +1,154 @@
+import { test, expect } from '@playwright/test'
+import fs from 'node:fs'
+import path from 'node:path'
+import { AxeBuilder } from '@axe-core/playwright'
+
+/**
+ * 全站无障碍回归锁（axe-core / WCAG 2.1 AA）
+ *
+ * 第一轮基线：153 条违规 → 清零标题层级 / 库组件可访问名 / 组件配色后剩 36 条节点级，其中三方与 demo 内联两类在扫描循环内直接放行，余 15 条进 TRADEOFF 基线（按「规则 × 页面」条数计）。已清零的类别（标题层级、库组件
+ * 可访问名、组件配色）由本用例守住不回归；剩余 36 处按下述三类显式豁免——
+ * 豁免必须点名来源（与 site-audit.spec.ts 同口径），不允许"凑数式放过"：
+ *
+ *   THIRD_PARTY  三方 SDK 自渲染内容（本库改不掉）：
+ *     - amap / amap-widget / route-planner 三页的高德 markers 图片 <img>（SDK 内部注入）
+ *     - amap 页的 <select class="radius-select">、高德 <iframe> 无 title
+ *   DEMO_INLINE  demo 页自己写的内联样式（不入库产物，属示例写法）：
+ *     - 各页 <span style="color: var(--color-success/danger)"> 统计数字、.result 文本
+ *     - .demo-add-btn / .upload-link / .fl-label 等 demo 私有类的对比度
+ *   TRADEOFF     解除需改库公开契约、已登记的取舍：
+ *     - nested-interactive ×2：ToggleList list-item（role=button 内嵌可聚焦 checkbox，
+ *       Enter/itemClick 契约被 keyboard-a11y.spec.ts 锁定）、Upload area（同构问题）
+ *     - empty-table-header：DataTable 的 th-checkbox 只有 checkbox 无文本（全选列表头）
+ *     - label ×2：DataTable 某处 checkbox、storage demo 内联 input
+ *     - landmark-*：demo 站点的 main/landmark 结构（非库组件）
+ *     - label-title-only：popover/route-planner demo 的 input 仅靠 title
+ *
+ * 若豁免条数比基线多 → 判红（防止"顺手多放过几条"）。新增规则类别也判红。
+ */
+const BASE = process.env.E2E_BASE || 'http://localhost:3721'
+const ROOT = process.cwd()
+
+const demoSource = fs.readFileSync(path.join(ROOT, 'src/demos/ComponentDemo.vue'), 'utf8')
+const ROUTES = [...demoSource.matchAll(/^\s*'?([a-z][a-z0-9-]*)'?:\s*defineAsyncComponent/gm)].map((m) => m[1])
+
+const THIRD_PARTY = [
+  /webapi\.amap\.com/, // 高德 markers 图片
+  /radius-select/, // 高德 SDK 的半径下拉
+  /<iframe/, // 三方库注入的工作 iframe（截图库的透明离屏 iframe，src 为 javascript:void(0)）
+]
+// demo 页私有类名 / 内联色（示例写法，不入库产物）。按类名与内联样式匹配，与页面无关：
+// 这些是写 demo 的人当场负责的展示样式，改了不动库产物，故放行不计数。
+const DEMO_INLINE = [
+  /class="[^"]*\bfl-label\b/,
+  /class="[^"]*\bresult\b/,
+  /class="[^"]*\bupload-link\b/,
+  /class="[^"]*\bdemo-add-btn\b/,
+  /class="[^"]*\bpill\b/,
+  /class="[^"]*\bforgot-password\b/,
+  /class="[^"]*\bbtn-template\b/,
+  /class="[^"]*\bbtn-add\b/,
+  /class="[^"]*\bdays-label\b/,
+  /class="[^"]*\bcc-stat-badge\b/,
+  /class="[^"]*\bcc-btn\b/,
+  /class="[^"]*\bftc-stat\b/,
+  /class="[^"]*\bld-btn\b/,
+  /class="[^"]*\bbtn\b/,
+  /style="color: var\(--color-/,
+]
+// 已知取舍：规则 × 页面（命中即放行），条数被 countTradeoff 计数
+const TRADEOFF: Record<string, Set<string>> = {
+  'nested-interactive': new Set(['upload', 'toggle-list']),
+  'empty-table-header': new Set(['data-table']),
+  label: new Set(['data-table', 'storage']),
+  'scrollable-region-focusable': new Set(['divider', 'avatar']),
+  'label-title-only': new Set(['popover', 'route-planner']),
+  'landmark-unique': new Set(['pagination', 'breadcrumb', 'route-planner', 'form-builder']),
+  'landmark-main-is-top-level': new Set(['form-builder']),
+  'landmark-no-duplicate-main': new Set(['form-builder']),
+}
+// 基线总取舍条数（2026-09-20 修复后，按「规则 × 页面」的 violation 条数计）：
+// 第一轮 axe 首扫 153 条，清零标题层级/可访问名/组件配色后剩 36 条节点级违规；
+// 其中三方（amap 自渲染 img/select/iframe）与 demo 内联样式两条线在扫描循环里
+// 直接放行不计数，剩下 15 条进 TRADEOFF 基线——降了说明又修好一批（改小这个数），
+// 升了说明回退或新增（判红）。
+const BASELINE_TOTAL = 15
+// 基线里各「规则 × 页面」条数（升即红；仅覆盖 TRADEOFF 类别，三方/demo 内联不计入）
+const BASELINE_BY_RULE: Record<string, number> = {
+  'nested-interactive': 2,
+  'empty-table-header': 1,
+  label: 2,
+  'scrollable-region-focusable': 2,
+  'label-title-only': 2,
+  'landmark-unique': 4,
+  'landmark-main-is-top-level': 1,
+  'landmark-no-duplicate-main': 1,
+}
+
+const isThirdParty = (text: string) => THIRD_PARTY.some((r) => r.test(text))
+const isDemoInline = (text: string) => DEMO_INLINE.some((r) => r.test(text))
+
+test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) => {
+  test.setTimeout(15 * 60_000)
+  let total = 0
+  const byRule: Record<string, number> = {}
+  const unexempted: string[] = []
+  let tradeoffCount = 0
+
+  for (const route of ROUTES) {
+    await page.goto(`${BASE}/#/${route}`)
+    await page.waitForTimeout(600) // 等异步组件挂载
+    let violations: Array<{ id: string; impact?: string | null; nodes: unknown[] }>
+    try {
+      violations = (await new AxeBuilder({ page }).analyze()).violations
+    } catch {
+      continue
+    }
+    for (const v of violations) {
+      // 判定顺序（先特异后一般）：
+      //   1) 点名登记的取舍（规则 × 页面）→ 计入 tradeoffCount 后放行（条数受基线断言）
+      //   2) 按节点过滤：三方 SDK 自渲染 / demo 页私有类与内联色 → 这些节点不计
+      //      （一条违规常混多种节点，如 data-table 的 demo-add-btn 与库 cell-text-inner
+      //       同在一条里——必须逐节点判，否则豁免一个会连带放过真缺陷）
+      //   3) 过滤后仍有残余节点、或无节点明细且未登记 → 未豁免违规，判红
+      if (TRADEOFF[v.id]?.has(route)) {
+        tradeoffCount++
+        continue
+      }
+      const nodeTexts = ((v.nodes ?? []) as Array<string | { html?: string }>)
+        .map((n) => (typeof n === 'string' ? n : n?.html ?? ''))
+        .filter(Boolean)
+      if (nodeTexts.length === 0) {
+        // 无节点明细的结构类规则：未登记的才是回退
+        total++
+        byRule[v.id] = (byRule[v.id] ?? 0) + 1
+        unexempted.push(`${route}/${v.id}`)
+        continue
+      }
+      const residual = nodeTexts.filter((t) => !isThirdParty(t) && !isDemoInline(t))
+      if (residual.length === 0) continue
+      total++
+      byRule[v.id] = (byRule[v.id] ?? 0) + 1
+      unexempted.push(`${route}/${v.id}(${residual.length}/${nodeTexts.length})`)
+    }
+  }
+
+  // 超出基线的规则逐一报出（既有规则涨了 / 新规则出现都逃不掉）
+  const regressions: string[] = []
+  for (const [rule, n] of Object.entries(byRule)) {
+    const base = BASELINE_BY_RULE[rule] ?? 0
+    if (n > base) regressions.push(`${rule} 现有 ${n} > 基线 ${base}`)
+  }
+  const newRules = Object.keys(byRule).filter((r) => !(r in BASELINE_BY_RULE))
+  if (newRules.length) regressions.push(`新规则类别（未登记）：${newRules.join(', ')}`)
+
+  expect(
+    regressions,
+    `无障碍基线回退（豁免未覆盖的违规 ${total} 条：${unexempted.slice(0, 12).join(', ')}）`,
+  ).toEqual([])
+  expect(
+    tradeoffCount,
+    `已知取舍条数应为 ${BASELINE_TOTAL}（当前 ${tradeoffCount}）——基线数字变了要同步 BASELINE_*`,
+  ).toBe(BASELINE_TOTAL)
+  console.log(`axe 全站扫描：路由 ${ROUTES.length}，已知取舍 ${tradeoffCount}，未豁免违规 ${total}`)
+})

@@ -408,6 +408,8 @@ onUnmounted(() => {
           :multiple="multiple"
           :disabled="disabled"
           :webkitdirectory="directory ? '' : undefined"
+          tabindex="-1"
+          aria-hidden="true"
           @change="onInputChange"
           @click="onDefaultInputClick"
         />

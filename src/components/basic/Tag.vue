@@ -191,8 +191,10 @@ const supStyle = computed(() => {
   border-radius: var(--radius-sm);
 }
 .tag-primary {
+  /* 同其它语义色口径：浅底上的文字用深档令牌。--color-primary 基色压在
+     --color-primary-light 上实测对比度不足 AA；solid 档（5.84）达标 */
   background: var(--color-primary-light);
-  color: var(--color-primary);
+  color: var(--color-primary-solid);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-sm);
 }
