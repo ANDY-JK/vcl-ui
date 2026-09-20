@@ -4,6 +4,7 @@ import Chart from '@/components/chart/Chart.vue'
 import { useT } from '@/components/_internal/i18n'
 import type { Column } from '@/components/data/composables/types'
 import type { ChartProps } from './utils/types'
+import type { ECElementEvent, ECharts } from 'echarts'
 import { DEFAULT_ANIMATION_MS } from './options/common'
 
 // DataTable 动态加载：chart 域不再静态依赖 data 域（M15），
@@ -71,8 +72,9 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  'chart-click': [params: any]
-  'chart-ready': [instance: any]
+  // echarts 主入口导出这两个类型（UMD re-export types/dist/echarts）
+  'chart-click': [params: ECElementEvent]
+  'chart-ready': [instance: ECharts]
 }>()
 
 // 图例/表格本地开关（初始值来自 prop，之后由按钮控制）
@@ -139,10 +141,10 @@ onUnmounted(() => {
   }
 })
 
-function onChartClick(p: any) {
+function onChartClick(p: ECElementEvent) {
   emit('chart-click', p)
 }
-function onChartReady(inst: any) {
+function onChartReady(inst: ECharts) {
   emit('chart-ready', inst)
 }
 </script>

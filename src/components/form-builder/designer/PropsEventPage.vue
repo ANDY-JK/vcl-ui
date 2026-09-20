@@ -228,7 +228,7 @@ const linkageHelpText = computed(() => {
           { value: 'followOptions', label: t('fbp.linkageFollowOptions') },
           { value: 'showHide', label: t('fbp.linkageShowHide') },
         ]"
-        @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, linkageType: $event as any } })"
+        @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, linkageType: $event as 'none' | 'followValue' | 'followOptions' | 'showHide' } })"
       />
     </div>
     <template v-if="node.eventConfig?.linkageType && node.eventConfig.linkageType !== 'none'">

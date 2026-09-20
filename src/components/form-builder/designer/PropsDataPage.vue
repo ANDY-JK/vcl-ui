@@ -39,7 +39,7 @@ const emit = defineEmits<{
           { value: 'currentUser', label: t('fbp.currentUser') },
           { value: 'currentTime', label: t('fbp.currentTime') },
         ]"
-        @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, defaultType: $event as any } })"
+        @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, defaultType: $event as 'none' | 'fixed' | 'formula' | 'api' | 'currentUser' | 'currentTime' } })"
       />
     </div>
     <template v-if="node.dataConfig?.defaultType === 'formula'">
@@ -90,7 +90,7 @@ const emit = defineEmits<{
             { value: 'userList', label: t('fbp.srcUserList') },
             { value: 'deptList', label: t('fbp.srcDeptList') },
           ]"
-          @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, sourceType: $event as any } })"
+          @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, sourceType: $event as 'none' | 'api' | 'database' | 'userList' | 'deptList' } })"
         />
       </div>
       <template v-if="node.dataConfig?.sourceType === 'api'">
@@ -142,7 +142,7 @@ const emit = defineEmits<{
           { value: 'deptList', label: t('fbp.srcDeptList') },
           { value: 'roleList', label: t('fbp.srcRoleList') },
         ]"
-        @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, linkageSource: $event as any } })"
+        @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, linkageSource: $event as 'none' | 'userList' | 'deptList' | 'roleList' } })"
       />
     </div>
     <div v-if="node.dataConfig?.linkageSource && node.dataConfig.linkageSource !== 'none'" class="ldp-prop">

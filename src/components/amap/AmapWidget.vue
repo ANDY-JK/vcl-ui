@@ -21,7 +21,7 @@ import { getAmapJsKey, getAmapSecurityCode } from './amap-key'
 import { amapLoader } from './amap-loader'
 import { sanitizeHTML } from '@/components/_internal/sanitize'
 import { useT } from '@/components/_internal/i18n'
-import type { MarkerItem } from './types'
+import type { AmapCtor, AmapInfoWindow, AmapLngLat, AmapMapClickEvent, AmapMapInstance, AmapMarkerInstance, MarkerItem } from './types'
 
 const t = useT()
 
@@ -60,7 +60,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   'marker-click': [marker: MarkerItem<T>, index: number]
   'map-click': [lng: number, lat: number]
-  ready: [map: any]
+  ready: [map: AmapMapInstance]
 }>()
 
 // ════════════════════════════════════════
@@ -85,7 +85,7 @@ if (typeof window !== 'undefined') {
 }
 
 const mapReady = ref(false)
-let mapInstance: any = null
+let mapInstance: AmapMapInstance | null = null
 
 /** 颜色映射到图标 URL */
 const ICON_MAP: Record<string, string> = {
@@ -95,10 +95,10 @@ const ICON_MAP: Record<string, string> = {
 }
 
 /** 标记实例列表 */
-let markerInstances: any[] = []
-let infoWindow: any = null
+let markerInstances: unknown[] = []
+let infoWindow: AmapInfoWindow | null = null
 
-function onMapInit(map: any) {
+function onMapInit(map: AmapMapInstance) {
   mapInstance = map
   mapReady.value = true
 
@@ -109,24 +109,27 @@ function onMapInit(map: any) {
   if (plugins.length > 0) {
     mapInstance.plugin(plugins, () => {
       const AMapNS = AMap as unknown as Record<string, unknown>
+      const map = mapInstance
+      if (!map) return
       if (props.showToolBar) {
-        mapInstance.addControl(new (AMapNS.ToolBar as new () => any)())
+        map.addControl(new (AMapNS.ToolBar as new () => unknown)())
       }
       if (props.showScale) {
-        mapInstance.addControl(new (AMapNS.Scale as new () => any)())
+        map.addControl(new (AMapNS.Scale as new () => unknown)())
       }
     })
   }
 
   const AMapNS = AMap as unknown as Record<string, unknown>
-  infoWindow = new (AMapNS.InfoWindow as new (opts: any) => any)({
+  infoWindow = new (AMapNS.InfoWindow as AmapCtor<AmapInfoWindow>)({
     isCustom: true,
-    offset: new (AMapNS.Pixel as new (x: number, y: number) => any)(0, -35),
+    offset: new (AMapNS.Pixel as AmapCtor<unknown>)(0, -35),
   })
 
-  mapInstance.on('click', (e: any) => {
-    if (e.lnglat) {
-      emit('map-click', e.lnglat.getLng(), e.lnglat.getLat())
+  mapInstance.on('click', (e: unknown) => {
+    const lnglat = (e as AmapMapClickEvent).lnglat as AmapLngLat | undefined
+    if (lnglat) {
+      emit('map-click', lnglat.getLng(), lnglat.getLat())
     }
   })
 
@@ -159,11 +162,11 @@ function renderMarkers() {
     const iconUrl = item.iconUrl || ICON_MAP[item.color || 'blue']
     const iconSize = item.iconSize || [24, 24]
 
-    const marker = new (AMapNS.Marker as new (opts: any) => any)({
+    const marker = new (AMapNS.Marker as AmapCtor<AmapMarkerInstance>)({
       position: [item.longitude, item.latitude],
       title: item.title || '',
       zIndex: 90,
-      icon: new (AMapNS.Icon as new (opts: any) => any)({
+      icon: new (AMapNS.Icon as AmapCtor<unknown>)({
         size: iconSize,
         image: iconUrl,
         imageSize: iconSize,
@@ -174,12 +177,12 @@ function renderMarkers() {
       if (item.infoWindow) {
         // 白名单消毒：infoWindow 为 HTML 字符串，可能含用户输入（店名/地址），剥离脚本/事件属性防 XSS
         infoWindow?.setContent(sanitizeHTML(item.infoWindow))
-        infoWindow?.open(mapInstance, marker.getPosition())
+        if (mapInstance) infoWindow?.open(mapInstance, marker.getPosition())
       }
       emit('marker-click', item, idx)
     })
 
-    mapInstance.add(marker)
+    mapInstance?.add(marker)
     markerInstances.push(marker)
   })
 }
@@ -219,7 +222,7 @@ defineExpose({
   renderMarkers,
   openInfoWindow: (content: string, position: [number, number]) => {
     infoWindow?.setContent(sanitizeHTML(content))
-    infoWindow?.open(mapInstance, position)
+    if (mapInstance) infoWindow?.open(mapInstance, position)
   },
   closeInfoWindow: () => {
     infoWindow?.close()

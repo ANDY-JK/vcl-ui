@@ -7,6 +7,7 @@
  */
 import { ref, watch, onUnmounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { errMessage } from '@/components/_internal/utils'
 import type { UploadFile } from '../Upload.vue'
 
 /** 没给真实上传接口时，模拟进度条的推进节拍（仅演示路径） */
@@ -252,9 +253,9 @@ export function useUploadQueue(opts: {
       uf.status = 'done'
       uf.url = result.url
       syncModel()
-    } catch (e: any) {
+    } catch (e: unknown) {
       uf.status = 'error'
-      emit('error', e?.message || t('form.uploadFailed'))
+      emit('error', errMessage(e) || t('form.uploadFailed'))
       syncModel()
     }
   }

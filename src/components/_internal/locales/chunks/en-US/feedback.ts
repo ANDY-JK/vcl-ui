@@ -16,8 +16,9 @@ export default {
     panel: 'Drawer panel',
     close: 'Close drawer',
   },
-
-  popoverTrigger: 'More info',
+  popover: {
+    trigger: 'More info',
+  },
 
   confirmModal: {
     title: 'Confirm action',

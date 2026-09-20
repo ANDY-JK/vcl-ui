@@ -78,6 +78,8 @@ export interface FieldConfig {
   /** 排列方向，默认 'horizontal' */
   radioDirection?: 'horizontal' | 'vertical'
   // ---- 仅 type='cascader' / 'tree-select' 时生效 ----
+  // children 的 any[] 是决策：级联树的深度与节点字段由调用方决定（可递归任意层），
+  // 收成具体结构会限制用法；消费方按 children?: CascaderOption[] 自行递归收窄
   cascaderOptions?: { value: string | number; label: string; children?: any[]; disabled?: boolean }[]
   // ---- 仅 type='number' 时生效 ----
   min?: number
@@ -153,6 +155,7 @@ export interface ExportColumn {
   key?: string
   width?: number
   /** 值格式化：(原始值, 行, 列索引) => 显示值 */
+  // val/row 的 any 与返回 any 同 DataTable render：行数据为消费方任意结构（见 data/composables/types.ts）
   format?: (val: any, row: Record<string, any>, colIndex: number) => any
   /** 值为图片时的列宽高 */
   imageWidth?: number

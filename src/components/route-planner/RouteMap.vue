@@ -11,6 +11,7 @@ import { getAmapJsKey, getAmapSecurityCode } from '@/components/amap'
 import { amapLoader } from '@/components/amap/amap-loader'
 import { useT } from '@/components/_internal/i18n'
 import { sanitizeHTML } from '@/components/_internal/sanitize'
+import type { AmapMapInstance } from '@/components/amap/types'
 
 /** 规划结果连发时合并渲染的防抖 */
 const _RENDER_DEBOUNCE_MS = 600
@@ -24,7 +25,7 @@ const props = defineProps<{
   plan: RoutePlan | null
 }>()
 
-let mapInstance: any = null
+let mapInstance: AmapMapInstance | null = null
 const mapReady = ref(false)
 
 // 安全配置 + 初始化（setup 内执行，非模块加载时；用协调器避免 key 锁死）
@@ -59,7 +60,7 @@ const mapCenter = computed((): [number, number] => {
   return [112.9388, 28.2282]
 })
 
-function onMapInit(map: any): void {
+function onMapInit(map: AmapMapInstance): void {
   mapInstance = map
   mapReady.value = true
   renderAll()
@@ -87,7 +88,7 @@ function getDayColor(day: number): string {
 }
 
 /** 所有标记（用于信息窗管理） */
-const allMarkers: any[] = []
+const allMarkers: unknown[] = []
 
 /** 渲染所有标记和路线 */
 function renderAll(): void {
@@ -136,7 +137,10 @@ function renderAll(): void {
             </div>`),
             offset: new AMap.Pixel(0, -28),
           })
-          infoWin.open(mapInstance, pos)
+          // 高德全局 AMap.InfoWindow.open 期望 vuemap 封装的 Map 完整类型，
+          // 而 mapInstance 是本域最小接口（AmapMapInstance）——同一运行时对象的两套
+          // 声明，此处断言对齐（SDK 边界，已在 amap/types.ts 登记）
+          if (mapInstance) infoWin.open(mapInstance as never, pos)
         })
         mapInstance.add(marker)
         allMarkers.push(marker)
@@ -171,7 +175,8 @@ function renderAll(): void {
           </div>`),
           offset: new AMap.Pixel(0, -28),
         })
-        infoWin.open(mapInstance, pos)
+        // 同上：同一运行时对象的两套类型声明（SDK 边界，见 amap/types.ts）
+        if (mapInstance) infoWin.open(mapInstance as never, pos)
       })
       mapInstance.add(marker)
       allMarkers.push(marker)

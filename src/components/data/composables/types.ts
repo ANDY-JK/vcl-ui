@@ -31,14 +31,23 @@ export interface Column {
   editable?: boolean
   /** 图片缩略图尺寸，默认 40px（该列含图片时生效） */
   imageSize?: number
-  /** 自定义渲染，返回纯文本 */
+  /**
+   * 自定义渲染，返回纯文本。
+   * value/row 保留 any 是决策不是偷懒：DataTable 的行数据是消费方任意结构
+   * （Record<string, any>），列值来自该结构的某列，类型不可知；改 unknown 会逼
+   * 每个使用方在回调里写守卫——那是把库的成本转嫁给使用者。
+   * v2 处理方向：DataTable<T> 泛型化后收成 T[keyof T]，属破坏性变更，攒批。
+   */
   render?: (value: any, row: Record<string, any>, index: number) => string
   /** 预设下拉选项：存在时编辑模式渲染为下拉面板；支持 string 或 { value, label?, color? } */
   options?: (string | ColumnOption)[]
   /** 筛选候选值：服务端分页时由外部传入全量可选值，优先于从 data 提取 */
   filterValues?: string[]
-  /** 自定义单元格渲染函数，返回 HTML 字符串（v-html 渲染）
-   *  ⚠️ 安全：返回值经过内置消毒（剥离 script/style/事件处理器），但仍不建议传入不可信内容 */
+  /**
+   * 自定义单元格渲染函数，返回 HTML 字符串（v-html 渲染）。
+   * ⚠️ 安全：返回值经过内置消毒（剥离 script/style/事件处理器），但仍不建议传入不可信内容。
+   * value/row 的 any 同 render：行数据为消费方任意结构，见上。
+   */
   cell?: (value: any, row: Record<string, any>) => string
 }
 
@@ -134,7 +143,7 @@ export function createLocalStorage(prefix: string = 'dt'): TableStorage {
 }
 
 /**
- * 用 type 而非 interface：Vue 3.4 的 defineEmits<T>() 约束为 Record<string, any[]>，
+ * 用 type 而非 interface：Vue 3.4 的 defineEmits<T>() 约束为 Record<string, 数组>，
  * interface 没有隐式索引签名会报 TS2344（Vue 3.5 放宽了该约束，只在本机 3.5 下看不出来）。
  */
 export type Emits = {

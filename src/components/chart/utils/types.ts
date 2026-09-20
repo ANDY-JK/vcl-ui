@@ -64,11 +64,15 @@ export interface ChartSeriesItem {
   data?: unknown[]
   color?: string
   smooth?: boolean
+  /** 折线/散点是否显示数据点（与 Chart props 同名项一致，line/scatter builder 直读） */
+  showSymbol?: boolean
   areaStyle?: Record<string, unknown> | boolean
   barMaxWidth?: number
   symbolSize?: number
   yAxisIndex?: number
-  [key: string]: any // 保留索引签名以兼容 ECharts 灵活配置，data 字段已收紧为 unknown[]
+  // 保留索引签名以兼容 ECharts 灵活配置（data 已收紧为 unknown[]；索引值用 unknown，
+  // 取未声明字段的消费方自行收窄，不再让 any 无声穿透）
+  [key: string]: unknown
 }
 
 /** 柱状图系列数据项（供外部精确调用） */
@@ -141,14 +145,14 @@ export interface ChartData {
   sankeyNodes?: SankeyNode[]
   sankeyLinks?: SankeyLink[]
   // 矩形树图 / 旭日图（层次数据）
-  treeData?: any[]
+  treeData?: Record<string, unknown>[]
   // 关系图
   graphNodes?: GraphNode[]
   graphLinks?: GraphLink[]
   // 箱线图：[min, Q1, median, Q3, max]
   boxplotData?: number[][]
   // 时间轴
-  timelineData?: Array<{ time: string; categories: string[]; series: any[] }>
+  timelineData?: Array<{ time: string; categories: string[]; series: Record<string, unknown>[] }>
 }
 
 /** Chart.vue Props */

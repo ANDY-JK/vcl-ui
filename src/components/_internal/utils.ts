@@ -456,6 +456,21 @@ export function chunk<T>(arr: T[], size: number): T[][] {
 // 对象比较
 // ════════════════════════════════════════
 
+/**
+ * 从 unknown 错误里取可读消息：Error 实例取 message，字符串原样返回，
+ * 其它取 name 或 String()。catch (e: unknown) 后要给人看消息时用它，
+ * 不必在每个调用点写 instanceof 链。
+ */
+export function errMessage(err: unknown): string {
+  if (typeof err === "string") return err
+  if (err instanceof Error) return err.message
+  if (isPlainObject(err)) {
+    const m = err.message ?? err.name
+    if (typeof m === "string") return m
+  }
+  return String(err)
+}
+
 /** 判断是否为普通对象（排除 null/数组/Date 等） */
 export function isPlainObject(v: unknown): v is Record<string, unknown> {
   if (v === null || typeof v !== 'object') return false

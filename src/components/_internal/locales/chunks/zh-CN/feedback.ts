@@ -16,8 +16,9 @@ export default {
     panel: '抽屉面板',
     close: '关闭抽屉',
   },
-
-  popoverTrigger: '查看详情',
+  popover: {
+    trigger: '查看详情',
+  },
 
   confirmModal: {
     title: '确认操作',

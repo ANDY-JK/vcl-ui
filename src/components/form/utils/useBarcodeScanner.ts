@@ -7,6 +7,7 @@ import {
   type ReadInputBarcodeFormat,
 } from 'zxing-wasm/reader'
 import { useT } from '@/components/_internal/i18n'
+import { errMessage } from '@/components/_internal/utils'
 import { classifyCaptureError, type CaptureFailReason } from './capture-fallback'
 
 /** 模块级 t：供各函数直接取当前语言文案 */
@@ -98,8 +99,8 @@ export interface BarcodeDetection {
 }
 
 /** 将浏览器摄像头英文错误映射为用户可读中文（复用 form.cameraErr* 词条，与 CameraCapture 一致） */
-function cameraErrorToChinese(err: any): string {
-  const raw: string = err?.message || err?.name || ''
+function cameraErrorToChinese(err: unknown): string {
+  const raw: string = errMessage(err)
   // 精确命中
   if (raw.includes('Requested device not found')) return t('form.cameraErrDeviceNotFound')
   if (raw.includes('Permission denied') || raw.includes('NotAllowedError')) return t('form.cameraErrNotAllowed')
@@ -134,7 +135,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     // SSR/测试环境无 navigator：按中端设备默认值，避免 ReferenceError
     if (typeof navigator === 'undefined') return 120
     const cores = navigator.hardwareConcurrency || 4
-    const memory = (navigator as any).deviceMemory as number | undefined
+    // deviceMemory 是实验性 API（Chrome only），TS 的 Navigator 类型没有它
+    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
     // 低端设备（≤4 核或 ≤4GB）→ 150ms；中端 → 100ms；高端（≥8 核且 ≥8GB）→ 60ms
     if (cores <= 2 || (memory != null && memory <= 2)) return 200
     if (cores <= 4 || (memory != null && memory <= 4)) return 120
@@ -234,7 +236,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
       busy = false
       scanLoop()
       _starting = false
-    } catch (e: any) {
+    } catch (e: unknown) {
       _starting = false
       stopTracks() // play() 抛错等场景：释放已获取的摄像头流，避免持续占用
       error.value = cameraErrorToChinese(e) || t('form.cameraStartFailed')

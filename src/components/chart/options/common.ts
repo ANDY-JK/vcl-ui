@@ -1,7 +1,8 @@
 // ⛔ 保护 — 图表公共配置，禁止：DEFAULT_COLORS 色板删除，textColor/mutedColor 逻辑
 //    需我确认：色板值修改、grid 间距调整
-import type { EChartsOption } from 'echarts'
+import type { EChartsOption, DataZoomComponentOption } from 'echarts'
 import type { BuildParams, MarkLineConfig, MarkAreaConfig } from '../utils/types'
+
 /** 图表默认动画时长（组件的 prop 默认值与 options 兜底共用一份） */
 export const DEFAULT_ANIMATION_MS = 800
 
@@ -177,7 +178,10 @@ export function autoLabelRotate(categories: string[]): number {
  * 智能默认值：检测是否需要 dataZoom
  * 规则：数据点数超过 50 个 → 自动开启底部滑动条
  */
-export function autoDataZoom(categories: string[], darkMode: boolean): any {
+export function autoDataZoom(
+  categories: string[],
+  darkMode: boolean,
+): DataZoomComponentOption | DataZoomComponentOption[] | undefined {
   if (categories.length <= 50) return undefined
   return [
     {
@@ -205,16 +209,18 @@ export function smartLegend(showLegend: boolean, seriesCount: number): boolean {
  * appendToBody 确保渲染在 document.body 层级
  * position 函数动态避开边缘
  */
-function buildTooltip(showTooltip: boolean, trigger: 'axis' | 'item' = 'axis'): Record<string, any> | undefined {
+// tooltip 的 position 回调：echarts 只导出回调签名不导出这几个内部参数类型
+// （DOM/rect/size 都是它运行时传的），且本实现一个都不用（下划线前缀），故 unknown
+function buildTooltip(showTooltip: boolean, trigger: 'axis' | 'item' = 'axis'): Record<string, unknown> | undefined {
   if (!showTooltip) return undefined
   return {
     trigger,
     appendToBody: true,
     position: function (
       point: [number, number],
-      _params: any,
-      _dom: any,
-      _rect: any,
+      _params: unknown,
+      _dom: unknown,
+      _rect: unknown,
       size: { contentSize: [number, number]; viewSize: [number, number] },
     ): [number, number] {
       const [x, y] = point
@@ -281,7 +287,7 @@ export function buildCommonChrome(p: BuildParams): EChartsOption {
    ================================================================ */
 
 /** 构建 X 轴（category），强制 splitLine + axisTick + 实线 */
-export function buildXAxis(p: BuildParams, extra?: Record<string, any>): any {
+export function buildXAxis(p: BuildParams, extra?: Record<string, unknown>): Record<string, unknown> {
   return {
     type: 'category',
     data: p.categories as (string | number)[],
@@ -297,7 +303,7 @@ export function buildXAxis(p: BuildParams, extra?: Record<string, any>): any {
 }
 
 /** 构建 Y 轴（value），强制 splitLine + axisTick + 实线 */
-export function buildYAxis(p: BuildParams, extra?: Record<string, any>): any {
+export function buildYAxis(p: BuildParams, extra?: Record<string, unknown>): Record<string, unknown> {
   return {
     type: 'value',
     axisLabel: { color: mutedColor(p) },

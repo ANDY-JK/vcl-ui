@@ -7,6 +7,18 @@ import { useT } from '@/components/_internal/i18n'
 /** 模块级 t：图表文案按当前语言 */
 const t = useT()
 
+/**
+ * tooltip formatter 参数：echarts 主入口不导出该类型（dist/shared 内部），
+ * 用窄接口 + 取值兜底表达，避免 any 掩盖真实形状。
+ */
+interface GraphTooltipParam {
+  data?: { name?: unknown }
+  name?: unknown
+}
+function graphTip(params: GraphTooltipParam): string {
+  return String(params.data?.name ?? params.name ?? '')
+}
+
 export function buildGraph(p: BuildParams): EChartsOption {
   const gNodes = p.data.graphNodes || []
   const gLinks = p.data.graphLinks || []
@@ -17,7 +29,7 @@ export function buildGraph(p: BuildParams): EChartsOption {
       ? { text: p.title, left: 'center', textStyle: { fontSize: 14, color: textColor(p), fontWeight: 600 } }
       : undefined,
     tooltip: p.showTooltip
-      ? { trigger: 'item' as const, formatter: (params: any) => params.data?.name || params.name }
+      ? { trigger: 'item' as const, formatter: (params: unknown) => graphTip(params as GraphTooltipParam) }
       : undefined,
     series: [
       {
