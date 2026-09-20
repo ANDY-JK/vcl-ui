@@ -50,6 +50,10 @@ jobs:
       - name: Unit tests (with coverage floor)
         run: npm run test:unit
 
+      # 按域覆盖防回退（Q4）：全局地板掩盖域级洼地（login 35%、nav 41%…）
+      - name: Domain coverage floors
+        run: npm run check:coverage-domains
+
       - name: Build
         run: npm run build
 

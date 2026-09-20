@@ -25,7 +25,7 @@ export default defineConfig({
       provider: 'v8',
       // 'lcov' 会为 lcov.info 额外生成一整份 lcov-report/ 网页（与 'html' 那份内容相同），
       // 而全仓库无人消费 lcov.info（CI 没有覆盖率上传步骤）→ 只留 text + html，产物减半
-      reporter: ['text', 'html'],
+      reporter: ['text', 'html', 'json'],
       reportsDirectory: 'reports/coverage',
       include: ['src/components/**/*.{ts,vue}'],
       exclude: [

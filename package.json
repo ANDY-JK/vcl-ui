@@ -23,7 +23,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run --coverage",
-    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:css-tokens && npm run check:i18n && npm run check:demo-props && npm run test:unit && npm run build && npm run verify:pkg && npm run check:docs && npm run test:e2e",
+    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:css-tokens && npm run check:i18n && npm run check:demo-props && npm run test:unit && npm run check:coverage-domains && npm run build && npm run verify:pkg && npm run check:docs && npm run test:e2e",
     "prepare": "husky",
     "report:audit": "npm audit --registry=https://registry.npmjs.org",
     "scan:deps": "depcheck",
@@ -40,7 +40,8 @@
     "check:docs": "node scripts/check-docs.mjs",
     "docs:dev": "vitepress dev docs-site",
     "docs:build": "vitepress build docs-site",
-    "docs:preview": "vitepress preview docs-site"
+    "docs:preview": "vitepress preview docs-site",
+    "check:coverage-domains": "node scripts/check-coverage-domains.mjs"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",
