@@ -1472,6 +1472,7 @@ const interCols: Column[] = [
           </tr>
         </thead>
         <tbody>
+          <tr class="api-group"><td colspan="4">数据与列</td></tr>
           <tr>
             <td><code>columns</code></td>
             <td><code>Column[]</code></td>
@@ -1490,6 +1491,7 @@ const interCols: Column[] = [
             <td><code>'seq'</code></td>
             <td>行唯一键字段名；选行、编辑回执、备注都按它寻址</td>
           </tr>
+          <tr class="api-group"><td colspan="4">外观与布局</td></tr>
           <tr>
             <td><code>striped</code></td>
             <td><code>boolean</code></td>
@@ -1526,6 +1528,7 @@ const interCols: Column[] = [
             <td><code>'-'</code></td>
             <td>空白占位文本，传空串关闭；仅展示层，导出与筛选按原值</td>
           </tr>
+          <tr class="api-group"><td colspan="4">排序 · 筛选 · 搜索</td></tr>
           <tr>
             <td><code>sortKey</code></td>
             <td><code>string</code></td>
@@ -1550,6 +1553,7 @@ const interCols: Column[] = [
             <td><code>0</code></td>
             <td>超长判定字数；0 表示交给列宽实测决定，不按字数</td>
           </tr>
+          <tr class="api-group"><td colspan="4">行选择与导出</td></tr>
           <tr>
             <td><code>selectable</code></td>
             <td><code>boolean</code></td>
@@ -1586,6 +1590,7 @@ const interCols: Column[] = [
             <td><code>'all'</code></td>
             <td>导出范围：筛选后全量 / 仅当前页</td>
           </tr>
+          <tr class="api-group"><td colspan="4">分页与虚拟化</td></tr>
           <tr>
             <td><code>pageSize</code></td>
             <td><code>number</code></td>
@@ -1652,6 +1657,7 @@ const interCols: Column[] = [
             <td><code>false</code></td>
             <td>紧凑密度<strong>初值</strong>；挂载后归工具栏紧凑按钮管，改 prop 不回灌</td>
           </tr>
+          <tr class="api-group"><td colspan="4">交互开关</td></tr>
           <tr>
             <td><code>colSettings</code></td>
             <td><code>boolean</code></td>
@@ -1676,6 +1682,7 @@ const interCols: Column[] = [
             <td><code>true</code></td>
             <td>单元格右键菜单（复制/粘贴/清空）</td>
           </tr>
+          <tr class="api-group"><td colspan="4">汇总与持久化</td></tr>
           <tr>
             <td><code>summary</code></td>
             <td><code>(rows: T[]) =&gt; Record</code> / <code>Record</code></td>
@@ -1700,6 +1707,7 @@ const interCols: Column[] = [
             <td><code>'auto'</code></td>
             <td>none 强制不落存储；auto 下受控排序与服务端筛选自动豁免</td>
           </tr>
+          <tr class="api-group"><td colspan="4">编辑与备注</td></tr>
           <tr>
             <td><code>editable</code></td>
             <td><code>boolean</code></td>
@@ -1724,6 +1732,7 @@ const interCols: Column[] = [
             <td><code>{}</code></td>
             <td>外部备注数据源；组件不自行写回</td>
           </tr>
+          <tr class="api-group"><td colspan="4">行 / 单元格自定义</td></tr>
           <tr>
             <td><code>rowActions</code></td>
             <td><code>RowAction[]</code></td>
@@ -1753,6 +1762,9 @@ const interCols: Column[] = [
             <td><code>string[]</code></td>
             <td><code>[]</code></td>
             <td>图片域名白名单；传了即整表替换默认清单，不是追加</td>
+          </tr>
+          <tr class="api-group">
+            <td colspan="4">排序 · 筛选 · 搜索（续：服务端模式三件）</td>
           </tr>
           <tr>
             <td><code>searchMode</code></td>
@@ -1802,6 +1814,7 @@ const interCols: Column[] = [
             <td>—</td>
             <td>单元格级内联样式</td>
           </tr>
+          <tr class="api-group"><td colspan="4">截图</td></tr>
           <tr>
             <td><code>shotMode</code></td>
             <td><code>'preview' | 'download' | 'copy'</code></td>
@@ -1814,6 +1827,7 @@ const interCols: Column[] = [
             <td><code>400</code></td>
             <td>超过此行数只提醒不出图；另有 8000px 高度硬上限不开放</td>
           </tr>
+          <tr class="api-group"><td colspan="4">宿主联动</td></tr>
           <tr>
             <td><code>onToggleSidebar</code></td>
             <td><code>() =&gt; void</code></td>
@@ -2247,6 +2261,13 @@ const interCols: Column[] = [
 }
 .api-table th {
   border-bottom: 2px solid var(--color-border);
+}
+/* props 分组行（与 defineProps 内的分组注释同口径；文本行不参与 check:demo-props 对账） */
+.api-group td {
+  padding-top: 10px;
+  font-weight: 600;
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-border);
 }
 .api-table code {
   white-space: nowrap;

@@ -381,6 +381,11 @@ function getFormData(): FormData {
 /**
  * 主动校验全表单
  * @returns true = 校验通过
+ *
+ * ⛔ 契约（Q18）：`validate` / `validateForm` / `validateAndGet` 是暴露面的三个近义
+ * 入口（核心 `validate` + 布尔包装 + 数据打包），v2 计划收敛为单一动词——
+ * 收敛前只增不改，消费方按需取用；新增校验能力挂在 `validateAndGet` 的返回结构上，
+ * 不要再加第四个变体。全表以 README「defineExpose 公开契约」一节为对账单。
  */
 function validateForm(): boolean {
   return validate()

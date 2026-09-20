@@ -357,7 +357,9 @@ const handleSubmit = () => {
 }
 
 // ======================== 暴露方法 ========================
-
+// ⛔ 契约（Q18）：`notifyFailed` / `notifySuccess` 是宿主回写钩子（宿主自行完成登录后
+// 回传结果，组件据此维护失败锁定计数），不是组件自身行为——v2 随事件化改造收口，
+// 收敛前保持现状。全表以 README「defineExpose 公开契约」一节为对账单。
 defineExpose({
   /** 外部通知登录失败时调用（触发锁定计数） */
   notifyFailed: recordFailedAttempt,

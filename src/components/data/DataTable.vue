@@ -74,10 +74,15 @@ onErrorCaptured((err: Error) => {
 })
 
 const props = withDefaults(
+  // ⛔ Q5 契约：props 按下列分组维护（新增能力优先收进已有分组；交互类布尔开关已 14 个，
+  //    再加应先考虑并入对象 prop）。v2 已登记迁移：onExport / onToggleSidebar 两个
+  //    回调 prop 与事件语义混淆，v2 改 emit 或改名——收敛前保持现状。
   defineProps<{
+    // ────────────────────────────── 数据与列 ──────────────────────────────
     columns: Column[]
     data: T[]
     rowKey?: string
+    // ────────────────────────────── 外观与布局 ──────────────────────────────
     striped?: boolean
     bordered?: boolean
     hoverable?: boolean
@@ -85,10 +90,12 @@ const props = withDefaults(
     emptyText?: string
     /** 单元格空白占位：null/undefined/空串/纯空白串 → 该文本（默认 '-'）；传空串关闭。仅展示层，不影响导出 */
     blankText?: string
+    // ────────────────────────────── 排序 · 筛选 · 搜索 ──────────────────────────────
     sortKey?: string
     sortOrder?: 'asc' | 'desc'
     pinyinSearch?: boolean
     truncateThreshold?: number
+    // ────────────────────────────── 行选择与导出 ──────────────────────────────
     selectable?: boolean
     selectedKeys?: string[]
     exportable?: boolean
@@ -96,6 +103,7 @@ const props = withDefaults(
     excelExportable?: boolean
     /** 导出范围：'all' 筛选后全量（默认），'page' 仅当前页 */
     exportScope?: 'all' | 'page'
+    // ────────────────────────────── 分页与虚拟化 ──────────────────────────────
     pageSize?: number
     currentPage?: number
     total?: number
@@ -109,8 +117,10 @@ const props = withDefaults(
      *  所以面板高矮、dense、缩放都自适应，不靠猜常量。设 >0 只用于强制提前/推迟启用。 */
     pageVirtualMin?: number
     autoFit?: boolean
+    // ────────────────────────────── 外观补充（截断/密度） ──────────────────────────────
     truncateMode?: 'ellipsis' | 'wrap' | 'none'
     dense?: boolean
+    // ────────────────────────────── 交互开关 ──────────────────────────────
     /** 列设置按钮（默认显示，false 可隐藏） */
     colSettings?: boolean
     /** 单元格矩形选区：长按/拖拽框选 + 拖选自动滚动（默认开启） */
@@ -119,6 +129,7 @@ const props = withDefaults(
     keyboardNav?: boolean
     /** 单元格右键菜单：复制/粘贴/清空（默认开启） */
     cellContextMenu?: boolean
+    // ────────────────────────────── 汇总与持久化 ──────────────────────────────
     /** 汇总行：函数形式用 props.data 计算（仅客户端模式可用）；服务端分页请传对象（后端算好汇总值） */
     summary?: ((rows: T[]) => Record<string, string | number>) | Record<string, string | number>
     /** 存储适配器，默认 localStorage；SaaS 场景可传入按账号隔离的实现 */
@@ -127,6 +138,7 @@ const props = withDefaults(
     namespace?: string
     /** 持久化模式：'auto' 自动判断（sortKey 受控/searchMode='server'/filterMode='server' → 禁用），'none' 强制禁用内部 IndexedDB */
     persistence?: 'auto' | 'none'
+    // ────────────────────────────── 编辑与备注 ──────────────────────────────
     /** 单元格编辑模式：双击进入编辑，Enter 确认，Escape 取消 */
     editable?: boolean
     /** 日期列（Column.type='date'/'datetime'）两段数字输入的月日顺序：
@@ -137,6 +149,7 @@ const props = withDefaults(
     noteMode?: boolean
     /** 外部传入的备注数据 */
     notes?: Record<string, Record<string, string>>
+    // ────────────────────────────── 行 / 单元格自定义 ──────────────────────────────
     /** 行操作按钮：添加后在每行末尾渲染操作列 */
     rowActions?: RowAction[]
     /** 行右键菜单项：右键点击数据行时显示的自定义操作 */
@@ -147,23 +160,28 @@ const props = withDefaults(
     modifiedMark?: boolean
     /** 图片域名白名单，isImageUrl 判图用。默认覆盖常见 CDN */
     imageDomains?: string[]
+    // ────────────────────────────── 排序 · 筛选 · 搜索（续：服务端模式三件） ──────────────────────────────
     /** 搜索模式：'client' 客户端本地过滤，'server' 抛 search 事件由后端处理 */
     searchMode?: 'client' | 'server'
     /** 筛选模式：'client' 客户端本地过滤，'server' 只抛 filter 事件由后端处理 */
     filterMode?: 'client' | 'server'
     /** 外部筛选状态（v-model:filters）：服务端模式下父组件可程序化控制筛选，变化时自动同步到内部 filterState */
     filters?: Record<string, string[]>
-    /** 服务端导出回调：存在时点击导出按钮调用此函数（后端返全量数据下载），不执行内置 CSV 导出 */
+    /** 服务端导出回调：存在时点击导出按钮调用此函数（后端返全量数据下载），不执行内置 CSV 导出。
+     *  ⚠️ v2 迁移项（Q5）：回调 prop 与事件语义混淆，v2 改 emit('export') 或更名——收敛前保持现状 */
     onExport?: () => void
     rowClass?: (row: T, index: number) => string
     rowStyle?: (row: T, index: number) => Record<string, string>
     cellClass?: (colKey: string, row: T, index: number) => string
     cellStyle?: (colKey: string, row: T, index: number) => Record<string, string>
+    // ────────────────────────────── 截图 ──────────────────────────────
     /** 截图行为模式：'preview' 弹窗预览 | 'download' 直接下载 | 'copy' 直接复制到剪贴板 */
     shotMode?: 'preview' | 'download' | 'copy'
     /** 截图最大行数（超过提醒用户先筛选，避免生成超大 canvas 卡死） */
     screenshotMaxRows?: number
-    /** 全屏时收起宿主侧边栏的回调（不传则尝试 inject('toggleCollapse') 降级） */
+    // ────────────────────────────── 宿主联动 ──────────────────────────────
+    /** 全屏时收起宿主侧边栏的回调（不传则尝试 inject('toggleCollapse') 降级）。
+     *  ⚠️ v2 迁移项（Q5）：回调 prop 与事件语义混淆，v2 改 emit 或更名——收敛前保持现状 */
     onToggleSidebar?: () => void
   }>(),
   {
