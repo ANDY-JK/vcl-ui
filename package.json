@@ -99,7 +99,7 @@
       "require": "./dist/vcl-ui.cjs"
     },
     "./i18n": {
-      "types": "./dist/_internal/i18n.d.ts",
+      "types": "./dist/i18n.d.ts",
       "import": "./dist/vcl-ui.js",
       "require": "./dist/vcl-ui.cjs"
     },
