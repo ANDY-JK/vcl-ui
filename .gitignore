@@ -77,3 +77,8 @@ scripts/shots-*/
 #   但依赖本机网络与真实桶，CI 上靠 skipIf 守卫自动跳过，可安全入库。
 /tests/reports/
 tests/playwright.localport.config.ts
+.gitnexus/
+
+# VitePress 文档站产物（Q9）
+docs-site/.vitepress/dist
+docs-site/.vitepress/cache

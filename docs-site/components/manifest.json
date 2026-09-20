@@ -1,0 +1,59 @@
+{
+  "domains": {
+    "basic": {
+      "components": 3,
+      "named": 0
+    },
+    "data": {
+      "components": 12,
+      "named": 1
+    },
+    "form": {
+      "components": 9,
+      "named": 10
+    },
+    "feedback": {
+      "components": 9,
+      "named": 14
+    },
+    "nav": {
+      "components": 6,
+      "named": 0
+    },
+    "layout": {
+      "components": 5,
+      "named": 5
+    },
+    "chart": {
+      "components": 4,
+      "named": 0
+    },
+    "login": {
+      "components": 4,
+      "named": 0
+    },
+    "storage": {
+      "components": 0,
+      "named": 22
+    },
+    "wc": {
+      "components": 0,
+      "named": 0
+    },
+    "form-builder": {
+      "components": 7,
+      "named": 58
+    },
+    "amap": {
+      "components": 1,
+      "named": 16
+    },
+    "route-planner": {
+      "components": 5,
+      "named": 0
+    }
+  },
+  "unparsed": [],
+  "totalComponents": 65,
+  "totalNamed": 126
+}

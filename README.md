@@ -185,11 +185,15 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 ```bash
 npm install         # 安装依赖
 npm run dev         # 启动开发服务器（http://localhost:3721）
+npm run docs:dev    # 文档站（VitePress，http://localhost:5173）
 npm run typecheck   # TypeScript 类型检查
 npm run lint        # ESLint
 npm run test:unit   # 单元测试 + 覆盖率
 npm run build       # 构建产物到 dist/
 ```
+
+文档站的组件 API 页由 `npm run gen:docs` 从源码自动生成（`docs-site/components/`，提交入库），
+改 props/events 后必须重新生成——`check:docs` 闸口（已串入 quality-check 与 CI）会卡漂移。
 
 ## 📐 开发规范（改代码前先看）
 

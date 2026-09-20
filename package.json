@@ -23,7 +23,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run --coverage",
-    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:css-tokens && npm run check:i18n && npm run check:demo-props && npm run test:unit && npm run build && npm run verify:pkg && npm run test:e2e",
+    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:css-tokens && npm run check:i18n && npm run check:demo-props && npm run test:unit && npm run build && npm run verify:pkg && npm run check:docs && npm run test:e2e",
     "prepare": "husky",
     "report:audit": "npm audit --registry=https://registry.npmjs.org",
     "scan:deps": "depcheck",
@@ -35,7 +35,12 @@
     "changelog": "node scripts/gen-changelog.mjs",
     "check:css-tokens": "node scripts/check-css-tokens.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
-    "check:demo-props": "node scripts/check-demo-props.mjs"
+    "check:demo-props": "node scripts/check-demo-props.mjs",
+    "gen:docs": "node scripts/gen-docs.mjs",
+    "check:docs": "node scripts/check-docs.mjs",
+    "docs:dev": "vitepress dev docs-site",
+    "docs:build": "vitepress build docs-site",
+    "docs:preview": "vitepress preview docs-site"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",
@@ -176,6 +181,7 @@
     "typescript-eslint": "^8.67.0",
     "vite": "^6.4.3",
     "vite-plugin-dts": "^5.0.3",
+    "vitepress": "^1.6.4",
     "vitest": "^4.1.10",
     "vue": "^3.4.0",
     "vue-eslint-parser": "^10.4.1",
@@ -189,7 +195,8 @@
     "brace-expansion": "2.1.4",
     "echarts-wordcloud": {
       "echarts": "$echarts"
-    }
+    },
+    "vite": "$vite"
   },
   "lint-staged": {
     "src/**/*.{ts,vue}": [
