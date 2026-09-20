@@ -198,11 +198,19 @@ npm run build       # 构建产物到 dist/
 
 ```bash
 git add -A && git commit -m "chore: 本次改动"   # 工作区干净才能打版本
-npm version patch                              # 或 minor / major，会自动提交并打 v1.0.1 标签
+npm run changelog                                # 从 conventional commits 重生成 CHANGELOG.md
+git add CHANGELOG.md && git commit -m "docs: changelog for $(node -p "require('./package.json').version")"
+npm version patch                                # 或 minor / major，会自动提交并打 v1.0.1 标签
 git push --follow-tags
 ```
 
 流水线会先跑类型检查、lint、构建、发包自检和「密钥是否被内联进产物」检查，全绿才发到 npm；**标签与 `package.json` 的 version 不一致会直接拒绝发布**。
+
+> **CHANGELOG 是生成的，不是手写的**：`npm run changelog` 扫全部 conventional commits
+> 按 Keep a Changelog 分组（Added/Changed/Fixed/…），审查过程记录（`docs(audit)`）折叠成
+> 汇总行不逐条列——那些是内部流程而非消费方可见变更。有版本 tag 后可用
+> `npm run changelog -- --since v1.0.0` 只生成增量段。不符合 conventional 格式的提交进
+> Other 段（不静默丢弃），见到就去把那条提交信息补齐。
 
 首次使用要做两件事（各一次）：
 
