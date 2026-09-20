@@ -14,24 +14,26 @@ const chartProps = [
 ]
 vi.mock('@/components/chart/Chart.vue', async () => {
   const { defineComponent } = await import('vue')
-  return {
-  default: defineComponent({
+  const stub = defineComponent({
     name: 'ChartStub',
     props: chartProps,
     emits: ['chart-click', 'chart-ready'],
     template: '<div class="chart-stub" />',
-  }),
-  }
+  })
+  // __esModule: true 是关键：defineAsyncComponent 的加载器按 __esModule/Module
+  // 标记决定是否取 .default，mock 命名空间没这个标记时 Vue 会把命名空间本身当组件，
+  // VTU 随后经 mock 代理读 __isTeleport 等内部旗标逐一抛错（vitest 5 起未声明导出
+  // 访问即抛，4.x 是静默 undefined）。打了标记，Vue 取 default，命名空间不再上场。
+  return { default: stub, __esModule: true }
 })
 vi.mock('@/components/data/DataTable.vue', async () => {
   const { defineComponent } = await import('vue')
-  return {
-  default: defineComponent({
+  const stub = defineComponent({
     name: 'DataTableStub',
     props: ['columns', 'data', 'rowKey', 'striped', 'dense', 'autoHeight'],
     template: '<div class="table-stub" />',
-  }),
-  }
+  })
+  return { default: stub, __esModule: true }
 })
 
 const ChartTable = (await import('@/components/chart/ChartTable.vue')).default
@@ -50,25 +52,32 @@ class ROStub {
 }
 const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()))
 
-const mountCT = (props = {}) => mount(ChartTable, { props })
+/** 挂载并等异步 DataTable 解析完——defineAsyncComponent 的动态 import 若在测试结束
+ *  时才落地会冒 EnvironmentTeardownError（coverage 环境下模块加载更慢更易触发） */
+const mountCT = async (props = {}) => {
+  const w = mount(ChartTable, { props })
+  await new Promise((r) => setTimeout(r, 0))
+  await w.vm.$nextTick()
+  return w
+}
 
 describe('ChartTable · 宽度分配', () => {
-  it('默认 chartRatio 0.45：图表 45% / 表格 55%', () => {
-    const w = mountCT()
+  it('默认 chartRatio 0.45：图表 45% / 表格 55%', async () => {
+    const w = await mountCT()
     const chart = w.find('.ct-chart')
     const table = w.find('.ct-table')
     expect(chart.attributes('style')).toContain('width: 45%')
     expect(table.attributes('style')).toContain('width: 55%') // (1-0.45)*100 的浮点尾差已由组件取整
   })
 
-  it('自定义 chartRatio 0.6：图表 60% / 表格 40%', () => {
-    const w = mountCT({ chartRatio: 0.6 })
+  it('自定义 chartRatio 0.6：图表 60% / 表格 40%', async () => {
+    const w = await mountCT({ chartRatio: 0.6 })
     expect(w.find('.ct-chart').attributes('style')).toContain('width: 60%')
     expect(w.find('.ct-table').attributes('style')).toContain('width: 40%')
   })
 
-  it('showTable=false：表格不渲染，图表满宽', () => {
-    const w = mountCT({ showTable: false })
+  it('showTable=false：表格不渲染，图表满宽', async () => {
+    const w = await mountCT({ showTable: false })
     expect(w.find('.ct-table').exists()).toBe(false)
     expect(w.find('.ct-chart').attributes('style')).toContain('width: 100%')
   })
@@ -76,7 +85,7 @@ describe('ChartTable · 宽度分配', () => {
 
 describe('ChartTable · 开关按钮', () => {
   it('表格开关：点击后表格消失、图表满宽、按钮态翻转', async () => {
-    const w = mountCT()
+    const w = await mountCT()
     const btns = w.findAll('.ct-toggle')
     const tableBtn = btns[1]! // [图例, 表格]
     await tableBtn.trigger('click')
@@ -91,7 +100,7 @@ describe('ChartTable · 开关按钮', () => {
   })
 
   it('图例开关：透传给 Chart 的 show-legend', async () => {
-    const w = mountCT()
+    const w = await mountCT()
     const chart = w.findComponent({ name: 'ChartStub' })
     expect(chart.props('showLegend')).toBe(true)
     await w.findAll('.ct-toggle')[0]!.trigger('click')
@@ -109,7 +118,7 @@ describe('ChartTable · 窄容器纵向堆叠', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('容器宽度低于复合最低宽度：ct-body 加 vertical 类（图表上+表格下）', async () => {
-    const w = mountCT()
+    const w = await mountCT()
     const root = w.find('.ct-root')
     // 默认无 columns → 表格最低 180，复合最低 = 200+180+20 = 400
     Object.defineProperty(root.element, 'clientWidth', { value: 300, configurable: true })
@@ -120,7 +129,7 @@ describe('ChartTable · 窄容器纵向堆叠', () => {
   })
 
   it('容器够宽：不堆叠', async () => {
-    const w = mountCT()
+    const w = await mountCT()
     const root = w.find('.ct-root')
     Object.defineProperty(root.element, 'clientWidth', { value: 1200, configurable: true })
     roCallback!()
@@ -130,7 +139,7 @@ describe('ChartTable · 窄容器纵向堆叠', () => {
   })
 
   it('showTable 关闭时复合最低宽度只剩图表 200：极窄也不堆叠表格', async () => {
-    const w = mountCT({ showTable: false })
+    const w = await mountCT({ showTable: false })
     const root = w.find('.ct-root')
     Object.defineProperty(root.element, 'clientWidth', { value: 250, configurable: true })
     roCallback!()
@@ -142,7 +151,7 @@ describe('ChartTable · 窄容器纵向堆叠', () => {
 
 describe('ChartTable · 事件透传与清理', () => {
   it('chart-click / chart-ready 原样转 emit', async () => {
-    const w = mountCT()
+    const w = await mountCT()
     const chart = w.findComponent({ name: 'ChartStub' })
     const payload = { name: 'click' }
     // ChartTable 的契约：Chart 的 click → 自己的 chart-click（@click 绑定，非 @chart-click）
@@ -154,9 +163,9 @@ describe('ChartTable · 事件透传与清理', () => {
     expect(w.emitted('chart-ready')![0]).toEqual([inst])
   })
 
-  it('卸载时 disconnect ResizeObserver（防泄漏）', () => {
+  it('卸载时 disconnect ResizeObserver（防泄漏）', async () => {
     vi.stubGlobal('ResizeObserver', ROStub)
-    const w = mountCT()
+    const w = await mountCT()
     w.unmount()
     expect(roDisconnected).toBe(true)
     vi.unstubAllGlobals()
@@ -164,8 +173,8 @@ describe('ChartTable · 事件透传与清理', () => {
 })
 
 describe('ChartTable · 插槽', () => {
-  it('header/footer 插槽渲染，未传时回落 tableTitle', () => {
-    const w = mountCT({ tableTitle: '排行榜' })
+  it('header/footer 插槽渲染，未传时回落 tableTitle', async () => {
+    const w = await mountCT({ tableTitle: '排行榜' })
     expect(w.find('.ct-title').text()).toBe('排行榜')
     const w2 = mount(ChartTable, {
       props: {},
