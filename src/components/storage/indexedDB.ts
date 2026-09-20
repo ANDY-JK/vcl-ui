@@ -380,49 +380,9 @@ export async function dbBatch(ops: BatchOp[]): Promise<void> {
   return idbBatch(ops)
 }
 
+
 // ======================== Storage 轻量 API（localStorage） ========================
-
-const STORAGE_PREFIX = 'saas_'
-
-/** 轻量写入 —— token、标记、小配置。同步，不阻塞。 */
-export function storageSet<T>(key: string, value: T, ttl?: number): void {
-  try {
-    const now = Date.now()
-    const item: StoreItem<T> = { key, value, _ts: now, _exp: ttl ? now + ttl : 0 }
-    localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(item))
-  } catch {
-    console.warn('[Storage] 写入失败:', key)
-  }
-}
-
-/** 轻量读取 —— 自动判过期 */
-export function storageGet<T>(key: string): T | null {
-  try {
-    const raw: string | null = localStorage.getItem(STORAGE_PREFIX + key)
-    if (!raw) return null
-    const item = JSON.parse(raw) as StoreItem<T>
-    if (item._exp > 0 && Date.now() > item._exp) {
-      localStorage.removeItem(STORAGE_PREFIX + key)
-      return null
-    }
-    return item.value
-  } catch (e) {
-    // 隐私模式/数据损坏静默返回 null 是既有语义；warnOnce 保证损坏数据至少可被观测到
-    warnOnce('storageGet', `[Storage] 读取失败（返回 null）: ${key} — ${String(e)}`)
-    return null
-  }
-}
-
-/** 轻量删除 */
-export function storageDelete(key: string): void {
-  try {
-    localStorage.removeItem(STORAGE_PREFIX + key)
-  } catch {
-    console.warn('[Storage] localStorage.removeItem 失败:', key)
-  }
-}
-
-/** 检查 key 是否存在且未过期 */
-export function storageHas(key: string): boolean {
-  return storageGet(key) !== null
-}
+// 物理拆到 local-storage.ts（2026-09-20，Q17：本文件名只对应 IndexedDB 家族，
+// storage* 走 localStorage，按文件名找不到这批同步 API）。此处保留 re-export ——
+// 所有现存 import 路径与 API 签名不变（⛔ 契约不受影响）。
+export { storageSet, storageGet, storageDelete, storageHas } from './local-storage'
