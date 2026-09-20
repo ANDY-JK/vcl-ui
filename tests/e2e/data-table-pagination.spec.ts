@@ -12,9 +12,11 @@ test('分页脚注：翻页生效、页码文案跟着走、末页禁用下一�
   // 用 hasText:'第 1 / 4 页' 定位的话，翻到第 3 页后这个过滤条件自己就不成立了（实测 element(s) not found）；
   // 只按「有 4 个页码按钮」过滤也不行 —— 演示页后来加了服务端模式那张 5 页的表，同样带 4 号按钮，实测抓到 2 个。
   // 所以先按卡片标题圈定，再在圈内用稳定锚。
+  // 标题层级注意：Q12 无障碍整改把演示卡片统一成 h2（title-as="h2"），这里曾是 h4 —— 改过 demo 标题层级
+  // 要同步本 spec，否则 locator 静默失配（09-20 全链真红过一次）。
   const hostCard = page
     .locator('.grid-card')
-    .filter({ has: page.locator('h4.grid-title', { hasText: '全功能' }) })
+    .filter({ has: page.locator('h2.grid-title', { hasText: '全功能' }) })
     .first()
   const bar = hostCard.locator('.table-pagination').filter({ has: page.getByRole('button', { name: '4', exact: true }) })
   await expect(bar, '锚点表应当正好有一个带 4 个页码按钮的脚注').toHaveCount(1)

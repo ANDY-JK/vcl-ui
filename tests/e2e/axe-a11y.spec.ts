@@ -97,7 +97,18 @@ test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) =
 
   for (const route of ROUTES) {
     await page.goto(`${BASE}/#/${route}`)
-    await page.waitForTimeout(600) // 等异步组件挂载
+    // 等 demo 页真挂载再扫：换页走 defineAsyncComponent 异步 chunk，盲等固定毫秒在
+    // 串行全链负载下不够（amap-widget 要拉高德 SDK，实测超 600ms），扫到未挂载的空页
+    // 会把「无 h1」误报成 page-has-heading-one —— 09-20 全链假红过一次。
+    // 全量探针（workspace/probe-h1.mjs）证实 45 条路由均有 h1（挂载 100~800ms），
+    // 等 h1 可见即页面就绪，比固定 sleep 确定。
+    await page.locator('h1').first().waitFor({ state: 'visible', timeout: 15_000 })
+    // 还要等入场动画收尾：login 卡片带 slideUp 0.5s（库组件 login/login.vue），
+    // 动画中段 axe 取到的是混合色（h1 #a4a6aa on #f8f9fa = 2.31），一次误报 9 条
+    // color-contrast —— 09-20 全链真红过。无限动画（loading 页 spinner）不纳入等待条件。
+    await page.waitForFunction(() =>
+      document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity),
+    )
     let violations: Array<{ id: string; impact?: string | null; nodes: unknown[] }>
     try {
       violations = (await new AxeBuilder({ page }).analyze()).violations
