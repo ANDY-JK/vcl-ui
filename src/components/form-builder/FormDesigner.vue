@@ -11,6 +11,10 @@
  * - useDesignerOps：撤销/重做 + 节点增删改/剪贴板/排序
  * - useFormIO：JSON 导入导出 + 分享码识别
  * - useFormManager：保存 / 我的表单 / 存储方式 / 分享码生成
+ * - useDesignerPanels：三面板宽度/显隐拖拽与持久化 + 窄屏自动收起大纲
+ * - useDesignerSave：保存 / 分享弹窗（保存成功接草稿作废）
+ * - useDesignerRemoveConfirm：删除确认流（容器带子节点 / 多选删除）
+ * - useDesignerShortcuts：画布键盘快捷键（?/Delete/Ctrl+Z/Y/D/C/V/方向键）
  * - DesignerSettings：表单设置面板（含存储配置 UI）
  * - SavedFormsDrawer：我的表单抽屉
  */
@@ -45,6 +49,10 @@ import { useFormManager } from './designer/useFormManager'
 import { useDesignerOps } from './designer/useDesignerOps'
 import { useDesignerAutosave } from './designer/useDesignerAutosave'
 import { useFormIO } from './designer/useFormIO'
+import { useDesignerPanels } from './designer/useDesignerPanels'
+import { useDesignerSave } from './designer/useDesignerSave'
+import { useDesignerRemoveConfirm } from './designer/useDesignerRemoveConfirm'
+import { useDesignerShortcuts } from './designer/useDesignerShortcuts'
 import { FORM_MANAGER_KEY } from './designer/context'
 import SavedFormsDrawer from './designer/SavedFormsDrawer.vue'
 
@@ -116,129 +124,21 @@ const showShortcuts = ref(false)
 const previewData = ref<Record<string, unknown>>({})
 const device = ref<'desktop' | 'tablet' | 'mobile'>('desktop')
 
-// ══ 面板宽度 / 显隐（可拖拽调宽并记忆；主体过窄时自动收起大纲列）══
-
-/** 宽度与显隐的持久化 key（同一浏览器记住用户调过的布局） */
-const PANEL_STORE_KEY = 'vcl-designer-panels'
-/** 面板宽度下限/上限：再窄放不下内容，再宽会把画布挤没 */
-const PANEL_MIN_W = 150
-const PANEL_MAX_W = 420
-/** 主体宽度小于此值时自动收起大纲列，优先保证画布可用 */
-const NARROW_W = 1080
+// ══ 面板宽度 / 显隐（可拖拽调宽并记忆；主体过窄时自动收起大纲列）— 逻辑在 useDesignerPanels ══
 
 const bodyRef = ref<HTMLElement | null>(null)
-const paletteW = ref(220)
-const outlineW = ref(190)
-const propsW = ref(290)
-const showPalette = ref(true)
-const showOutline = ref(true)
-const showProps = ref(true)
-/** 主体实测宽度（0 = 尚未测量） */
-const bodyW = ref(0)
-const resizing = ref<'palette' | 'outline' | 'props' | null>(null)
-const narrow = computed(() => bodyW.value > 0 && bodyW.value < NARROW_W)
-/** 大纲列实际可见性 = 用户开关 && 非窄屏 */
-const outlineVisible = computed(() => showOutline.value && !narrow.value)
-
-function clampPanelW(w: number): number {
-  return Math.min(PANEL_MAX_W, Math.max(PANEL_MIN_W, Math.round(w)))
-}
-
-function persistPanels(): void {
-  try {
-    localStorage.setItem(
-      PANEL_STORE_KEY,
-      JSON.stringify({
-        paletteW: paletteW.value,
-        outlineW: outlineW.value,
-        propsW: propsW.value,
-        showPalette: showPalette.value,
-        showOutline: showOutline.value,
-        showProps: showProps.value,
-      }),
-    )
-  } catch {
-    // 隐私模式 / 配额满：记不住不影响使用
-  }
-}
-
-function restorePanels(): void {
-  // SSR 安全：localStorage 在无 window 环境是未定义标识符，先于 try 拦截
-  if (typeof localStorage === 'undefined') return
-  try {
-    const raw = localStorage.getItem(PANEL_STORE_KEY)
-    if (!raw) return
-    const saved = JSON.parse(raw) as Partial<{
-      paletteW: number
-      outlineW: number
-      propsW: number
-      showPalette: boolean
-      showOutline: boolean
-      showProps: boolean
-    }>
-    if (typeof saved.paletteW === 'number') paletteW.value = clampPanelW(saved.paletteW)
-    if (typeof saved.outlineW === 'number') outlineW.value = clampPanelW(saved.outlineW)
-    if (typeof saved.propsW === 'number') propsW.value = clampPanelW(saved.propsW)
-    if (typeof saved.showPalette === 'boolean') showPalette.value = saved.showPalette
-    if (typeof saved.showOutline === 'boolean') showOutline.value = saved.showOutline
-    if (typeof saved.showProps === 'boolean') showProps.value = saved.showProps
-  } catch {
-    // 缓存损坏：回落默认宽度
-  }
-}
-
-restorePanels()
-
-/** 拖分隔条调宽（属性面板在右侧，向左拖才变宽） */
-function startResize(key: 'palette' | 'outline' | 'props', e: MouseEvent): void {
-  e.preventDefault()
-  const startX = e.clientX
-  const dir = key === 'props' ? -1 : 1
-  const startW = key === 'palette' ? paletteW.value : key === 'outline' ? outlineW.value : propsW.value
-  resizing.value = key
-  const onMove = (ev: MouseEvent): void => {
-    const next = clampPanelW(startW + (ev.clientX - startX) * dir)
-    if (key === 'palette') paletteW.value = next
-    else if (key === 'outline') outlineW.value = next
-    else propsW.value = next
-  }
-  const onUp = (): void => {
-    resizing.value = null
-    window.removeEventListener('mousemove', onMove)
-    window.removeEventListener('mouseup', onUp)
-    persistPanels()
-  }
-  window.addEventListener('mousemove', onMove)
-  window.addEventListener('mouseup', onUp)
-}
-
-function togglePanel(key: 'palette' | 'outline' | 'props'): void {
-  if (key === 'palette') showPalette.value = !showPalette.value
-  else if (key === 'outline') showOutline.value = !showOutline.value
-  else showProps.value = !showProps.value
-  persistPanels()
-}
-
-/** 主体宽度实测：窄屏自动收起大纲列 */
-let bodyObserver: ResizeObserver | null = null
-watch(
-  bodyRef,
-  (el) => {
-    bodyObserver?.disconnect()
-    bodyObserver = null
-    if (!el) return
-    bodyObserver = new ResizeObserver(() => {
-      bodyW.value = el.clientWidth
-    })
-    bodyObserver.observe(el)
-    bodyW.value = el.clientWidth
-  },
-  { flush: 'post' },
-)
-onUnmounted(() => {
-  bodyObserver?.disconnect()
-  bodyObserver = null
-})
+const {
+  paletteW,
+  outlineW,
+  propsW,
+  showPalette,
+  showProps,
+  resizing,
+  narrow,
+  outlineVisible,
+  startResize,
+  togglePanel,
+} = useDesignerPanels(bodyRef)
 
 const selectedNode = computed(() => {
   if (!selectedId.value) return null
@@ -353,55 +253,24 @@ const manager = useFormManager({
 /** 表单管理实例共享给设置面板与我的表单抽屉（reactive 按引用共享，非 prop 单向流） */
 provide(FORM_MANAGER_KEY, manager)
 
-// ── 保存弹窗（本地状态：名称输入 + 开关；写入走 manager.saveForm） ──
-const saveVisible = ref(false)
-const saveName = ref('')
-
-function openSave(): void {
-  if (!currentNodes.value.length) {
-    showTip(t('fbd.nothingToSave'))
-    return
-  }
-  saveName.value = props.meta.title ?? ''
-  saveVisible.value = true
-}
-
-async function onConfirmSave(): Promise<void> {
-  const item = await manager.saveForm(saveName.value)
-  if (item) {
-    saveVisible.value = false
-    discardDraft() // 已有耐久副本，草稿不再需要
-  }
-}
-
-// ── 分享弹窗 ──
-const shareVisible = ref(false)
-const shareCode = ref('')
-
-function openShare(): void {
-  const code = manager.buildShareCode()
-  if (!code) {
-    showTip(t('fbd.nothingToSave'))
-    return
-  }
-  shareCode.value = code
-  shareVisible.value = true
-}
-
-async function copyShare(): Promise<void> {
-  const ok = await copyText(shareCode.value)
-  showTip(ok ? t('fbd.shareCopied') : t('fbd.copyFail'))
-}
-
-/** 发布链接：宿主应用需注册 `#/form/:code` 路由指向 FormShareView */
-function buildShareUrl(): string {
-  return `${location.origin}${location.pathname}#/form/${shareCode.value}`
-}
-
-async function copyShareLink(): Promise<void> {
-  const ok = await copyText(buildShareUrl())
-  showTip(ok ? t('fbd.shareLinkCopied') : t('fbd.copyFail'))
-}
+// ── 保存 / 分享弹窗 — 逻辑在 useDesignerSave（保存成功后 onSaved 接草稿作废） ──
+const {
+  saveVisible,
+  saveName,
+  openSave,
+  onConfirmSave,
+  shareVisible,
+  shareCode,
+  openShare,
+  copyShare,
+  copyShareLink,
+} = useDesignerSave({
+  getNodes: () => currentNodes.value,
+  getMeta: () => props.meta,
+  manager,
+  onSaved: () => discardDraft(),
+  showTip,
+})
 
 // ══ 导入/导出 — 逻辑在 useFormIO ══
 
@@ -429,104 +298,35 @@ function selectFromOutline(id: string) {
   activeTab.value = 'design'
 }
 
-// ══ 删除确认流（容器带子节点 / 多选删除需确认） ══
+// ══ 删除确认流（容器带子节点 / 多选删除需确认）— 逻辑在 useDesignerRemoveConfirm ══
 
-/** 待删除节点 id（容器带子节点时需确认） */
-const pendingRemoveId = ref<string | null>(null)
-const pendingRemoveLabel = ref('')
-/** 待批量删除的 id 集合（多选删除确认用） */
-const pendingRemoveIds = ref<string[]>([])
+const {
+  pendingRemoveId,
+  pendingRemoveLabel,
+  pendingRemoveIds,
+  removeNode,
+  onConfirmRemove,
+  onConfirmRemoveBatch,
+} = useDesignerRemoveConfirm({
+  getNodes: () => currentNodes.value,
+  selectedIds,
+  doRemoveNodes,
+})
 
-function removeNode(id: string): void {
-  // 多选模式下：删除整个选中集合（含当前 id）
-  if (selectedIds.value.size > 0 && selectedIds.value.has(id)) {
-    const ids = [...selectedIds.value]
-    const hasContainerWithChildren = ids.some((nid) => {
-      const n = findNode(currentNodes.value, nid)
-      return n && isContainerNode(n) && !!n.children?.length
-    })
-    if (hasContainerWithChildren || ids.length > 1) {
-      pendingRemoveIds.value = ids
-      return
-    }
-    doRemoveNodes(ids)
-    return
-  }
+// ══ 键盘快捷键（画布聚焦生效）— 逻辑在 useDesignerShortcuts ══
 
-  const node = findNode(currentNodes.value, id)
-  if (!node) return
-  // 容器节点带子节点时，删除会连带删掉子字段，弹确认
-  if (isContainerNode(node) && node.children?.length) {
-    pendingRemoveId.value = id
-    pendingRemoveLabel.value = node.label
-    return
-  }
-  doRemoveNodes([id])
-}
-
-function onConfirmRemove(): void {
-  const id = pendingRemoveId.value
-  pendingRemoveId.value = null
-  pendingRemoveLabel.value = ''
-  if (id) doRemoveNodes([id])
-}
-
-function onConfirmRemoveBatch(): void {
-  const ids = pendingRemoveIds.value
-  pendingRemoveIds.value = []
-  if (ids.length) doRemoveNodes(ids)
-}
-
-// ══ 键盘快捷键（画布聚焦生效） ══
-
-function onCanvasKeydown(e: KeyboardEvent): void {
-  const tag = (e.target as HTMLElement)?.tagName
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-
-  // ? 键呼出快捷键帮助（无需选中节点）
-  if (e.key === '?') {
-    e.preventDefault()
-    showShortcuts.value = !showShortcuts.value
-    return
-  }
-
-  // 撤销/重做不依赖选中节点
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-    e.preventDefault()
-    undo()
-    return
-  }
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-    e.preventDefault()
-    redo()
-    return
-  }
-
-  if (!selectedId.value) return
-  const id = selectedId.value
-  // 多选模式下结构操作作用于整个选中集合（删除在上游 removeNode 已处理）
-  const ids = selectedIds.value.size ? [...selectedIds.value] : [id]
-
-  if (e.key === 'Delete' || e.key === 'Backspace') {
-    e.preventDefault()
-    removeNode(id)
-  } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-    e.preventDefault()
-    duplicateNode(ids)
-  } else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-    e.preventDefault()
-    copyNode(ids)
-  } else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-    e.preventDefault()
-    pasteNode(id)
-  } else if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') {
-    e.preventDefault()
-    moveNode(ids, -1)
-  } else if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowDown') {
-    e.preventDefault()
-    moveNode(ids, 1)
-  }
-}
+const { onCanvasKeydown } = useDesignerShortcuts({
+  undo,
+  redo,
+  removeNode,
+  duplicateNode,
+  copyNode,
+  pasteNode,
+  moveNode,
+  showShortcuts,
+  selectedId,
+  selectedIds,
+})
 
 // ══ 预览 & Schema 查看 ══
 

@@ -1,4 +1,4 @@
-// 常量与写死值自检（六项判定，任一不过即非零退出）
+// 常量与写死值自检（七项判定，任一不过即非零退出）
 // 规矩本体写在 README「开发规范」一节，这里只负责把它变成机器能拦的那部分：
 // [1] 断点令牌单源一致 —— _internal/breakpoints.ts 的 BP_* 必须与 tokens.css 的 --bp-* 逐个同值，
 //     否则「改了令牌、JS 判定没跟着改」会静默分叉（侧栏收起和表格卡片视图就是两个判定）
@@ -9,6 +9,8 @@
 // [4] setTimeout/setInterval 的延时位不得写字面量毫秒数 —— 要成本文件内有用途说明的 *_MS 常量
 // [5] 会截断文本的类必须登记判定 —— 新增一个 ellipsis 类不判"用户看得见完整值吗"就红
 // [6] 原生 <input type="color"> 的值必须经 toNativeColorValue 归一 —— 绕层 computed 的要登记判定
+// [7] form-builder 域源文件 ≤800 行 —— 该域交互密、曾靠人工把 979/881 行两文件拆回纪律内；
+//     无机械闸口必然回潮（09-04 收官过 ≤800，09-20 复查已漂移）。超限=该抽 composable/子组件了
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -392,6 +394,32 @@ for (const [key, { n }] of COLOR_VALUE_VERDICTS) {
 if (!colorSites) fail.push('一条 <input type="color"> 都没扫到 —— [6] 的匹配失效了，先修判定再看绿')
 else if (colorHits.length) fail.push(...colorHits)
 console.log(`[6] 原生 color 输入值归一 出现=${colorSites} 未登记=${colorHits.length}`)
+
+// ---------- [7] form-builder 域单文件行数 ≤800 ----------
+const FB_DIR = 'src/components/form-builder'
+const LINE_LIMIT = 800
+let fbCount = 0
+const oversized = []
+const collect = (d) => {
+  for (const e of readdirSync(d, { withFileTypes: true })) {
+    const p = join(d, e.name)
+    if (e.isDirectory()) collect(p)
+    else if (/\.(ts|vue)$/.test(e.name) && !/\.d\.ts$/.test(e.name)) {
+      fbCount++
+      const n = readFileSync(p, 'utf8').split('\n').length - 1
+      if (n > LINE_LIMIT) oversized.push(`${relative('.', p).replaceAll('\\', '/')}=${n} 行`)
+    }
+  }
+}
+collect(FB_DIR)
+if (fbCount === 0) fail.push('[7] 一个 form-builder 源文件都没扫到 —— 匹配失效了，先修判定再看绿')
+else if (oversized.length) {
+  fail.push(
+    `form-builder 域 ${oversized.length} 个文件超 ${LINE_LIMIT} 行（该域 09-04 收官纪律，靠人工守会回潮）：` +
+      `${oversized.join(', ')}。抽 composable / 子组件收口，别再长`,
+  )
+}
+console.log(`[7] form-builder 域行数 文件=${fbCount} 超${LINE_LIMIT}行=${oversized.length}`)
 
 
 if (fail.length) {

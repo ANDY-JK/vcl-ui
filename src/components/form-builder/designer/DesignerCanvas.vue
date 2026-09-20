@@ -50,6 +50,16 @@ import {
   type DesignerContainerConfig,
   type FormMeta,
 } from './types'
+import { useCanvasZoom } from './useCanvasZoom'
+import {
+  isSelected as canvasIsSelected,
+  showIndicator as canvasShowIndicator,
+  childDropPos as canvasChildDropPos,
+  gridColSpan as canvasGridColSpan,
+  findContainerOfChildren as canvasFindContainerOfChildren,
+  resolveDropPos as canvasResolveDropPos,
+  previewFakeData as canvasPreviewFakeData,
+} from './canvas-utils'
 
 const props = defineProps({
   nodes: { type: Array as PropType<DesignerNode[]>, default: () => [] },
@@ -110,42 +120,28 @@ function findFieldByKey(key: string) {
   return previewSchema.value.fields.find((f) => f.key === key)
 }
 
+// ════════════════════════════════════════
+// 选中态 / 落点指示（纯函数在 canvas-utils）
+// ════════════════════════════════════════
+
 /** 节点是否处于选中态（单选选中 或 多选集合内） */
 function isSelected(id: string): boolean {
-  return id === props.selectedId || props.selectedIds.includes(id)
+  return canvasIsSelected(id, props.selectedId, props.selectedIds)
 }
 
 /** 该节点是否显示指定位置的落点指示线 */
 function showIndicator(id: string, pos: 'before' | 'after'): boolean {
-  return dropTargetId.value === id && dropPos.value === pos
+  return canvasShowIndicator(id, pos, dropTargetId.value, dropPos.value)
 }
 
 /** 子卡片应显示的落点（未命中该子卡片时为 null） */
 function childDropPos(id: string): 'before' | 'after' | 'inside' | null {
-  return dropTargetId.value === id ? dropPos.value : null
+  return canvasChildDropPos(id, dropTargetId.value, dropPos.value)
 }
 
 // ════════════════════════════════════════
 // tabs/collapse/steps 容器：槽位渲染辅助
 // ════════════════════════════════════════
-
-function gridColSpan(node: DesignerNode, child: DesignerNode): number {
-  const columns = Math.max(1, node.containerConfig?.columns ?? 2)
-  const raw = Math.min(Math.max(1, child.span ?? 24), 24)
-  return Math.max(1, Math.min(columns, Math.round((raw / 24) * columns)))
-}
-
-/** 找到 children 数组 === 目标数组的容器节点（面板字段拖到嵌套子字段上时，定位应插入的容器） */
-function findContainerOfChildren(list: DesignerNode[], children: DesignerNode[]): DesignerNode | null {
-  for (const n of list) {
-    if (n.children === children) return n
-    if (n.children?.length) {
-      const found = findContainerOfChildren(n.children, children)
-      if (found) return found
-    }
-  }
-  return null
-}
 
 /** tabs 容器「+ 添加」：追加新标签页并激活（name 防重复） */
 function addTabTo(node: DesignerNode): void {
@@ -194,41 +190,8 @@ function onSlotDragOver(e: DragEvent): void {
   }
 }
 
-/** 预览用的假数据 */
-const previewData = computed<Record<string, unknown>>(() => {
-  const data: Record<string, unknown> = {}
-  // 递归遍历所有节点（包括容器子节点）
-  function walkAll(list: DesignerNode[]): void {
-    for (const f of list) {
-      if (isContainerNode(f)) {
-        if (f.children?.length) walkAll(f.children)
-        continue
-      }
-      const key = f.key ?? f.id
-      if (f.type === 'text' || f.type === 'textarea') data[key] = f.placeholder ?? ''
-      else if (f.type === 'number' || f.type === 'slider') data[key] = f.min ?? 0
-      else if (f.type === 'select' || f.type === 'cascader') data[key] = null
-      else if (f.type === 'radio') data[key] = f.options?.[0] ?? ''
-      else if (f.type === 'checkbox') data[key] = (f.options?.length ?? 0) > 1 ? [f.options![0]] : []
-      else if (f.type === 'switch') data[key] = false
-      else if (f.type === 'rate') data[key] = Math.ceil((f.rateMax ?? 5) / 2)
-      else if (f.type === 'date' || f.type === 'time') data[key] = null
-      else if (f.type === 'upload') data[key] = []
-      // v3 高级字段初始值
-      else if (f.type === 'subform') data[key] = []
-      else if (f.type === 'relate') data[key] = null
-      else if (f.type === 'richtext') data[key] = ''
-      else if (f.type === 'signature') data[key] = ''
-      else if (f.type === 'address') data[key] = ''
-      else if (f.type === 'idcard') data[key] = ''
-      else if (f.type === 'matrix') data[key] = {}
-      else if (f.type === 'serial') data[key] = null
-      else data[key] = null
-    }
-  }
-  walkAll(props.nodes)
-  return data
-})
+/** 预览用的假数据（按字段类型归一，纯函数在 canvas-utils） */
+const previewData = computed<Record<string, unknown>>(() => canvasPreviewFakeData(props.nodes))
 
 // ════════════════════════════════════════
 // 画布拖拽（从面板拖入）
@@ -275,18 +238,9 @@ function onNodeDragStart(e: DragEvent, node: DesignerNode): void {
   }
 }
 
-/** 根据鼠标纵向位置算出落点：容器 25/50/25 分三区，字段 50/50 分两区 */
+/** 根据鼠标纵向位置算出落点（纯函数在 canvas-utils） */
 function resolveDropPos(e: DragEvent, node: DesignerNode, sortDrag: boolean): 'before' | 'after' | 'inside' {
-  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  const ratio = rect.height > 0 ? (e.clientY - rect.top) / rect.height : 0
-  if (isContainerNode(node)) {
-    // 面板拖入容器：一律放进容器内；排序拖拽才区分容器前后
-    if (!sortDrag) return 'inside'
-    if (ratio < 0.25) return 'before'
-    if (ratio > 0.75) return 'after'
-    return 'inside'
-  }
-  return ratio < 0.5 ? 'before' : 'after'
+  return canvasResolveDropPos(e, node, sortDrag)
 }
 
 function onNodeDragOver(e: DragEvent, node: DesignerNode): void {
@@ -331,7 +285,7 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
         const before = pos !== 'after'
         const loc = findParent(props.nodes, node.id)
         // 嵌套子字段：插到它所在容器内的相对位置；否则会落到根级末尾（扁平索引对嵌套节点无意义）
-        const container = loc && loc.parent !== props.nodes ? findContainerOfChildren(props.nodes, loc.parent) : null
+        const container = loc && loc.parent !== props.nodes ? canvasFindContainerOfChildren(props.nodes, loc.parent) : null
         if (container) {
           emit(
             'insertIntoContainer',
@@ -369,56 +323,10 @@ function resetDrag(): void {
 const deviceClass = computed(() => `device-${props.device}`)
 
 // ════════════════════════════════════════
-// 画布缩放（工具条按钮 / Ctrl·⌘ + 滚轮）
+// 画布缩放（工具条按钮 / Ctrl·⌘ + 滚轮）— 逻辑在 useCanvasZoom
 // ════════════════════════════════════════
 
-const ZOOM_STORE_KEY = 'vcl-designer-zoom'
-const ZOOM_MIN = 0.5
-const ZOOM_MAX = 1.5
-const ZOOM_STEP = 0.1
-
-function clampZoom(v: number): number {
-  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(v * 100) / 100))
-}
-
-function readStoredZoom(): number {
-  // SSR 安全：无 window 环境下 localStorage 是未定义标识符，裸访问 ReferenceError
-  if (typeof localStorage === 'undefined') return 1
-  try {
-    return clampZoom(Number(localStorage.getItem(ZOOM_STORE_KEY)) || 1)
-  } catch {
-    return 1
-  }
-}
-
-const zoom = ref(readStoredZoom())
-const zoomPercent = computed(() => Math.round(zoom.value * 100))
-const zoomStyle = computed(() => ({ '--ldc-zoom': String(zoom.value) }))
-
-function setZoom(v: number): void {
-  zoom.value = clampZoom(v)
-  try {
-    localStorage.setItem(ZOOM_STORE_KEY, String(zoom.value))
-  } catch {
-    /* 隐私模式 / 存储不可用时忽略 */
-  }
-}
-function zoomIn(): void {
-  setZoom(zoom.value + ZOOM_STEP)
-}
-function zoomOut(): void {
-  setZoom(zoom.value - ZOOM_STEP)
-}
-function resetZoom(): void {
-  setZoom(1)
-}
-
-/** Ctrl/⌘ + 滚轮缩放；普通滚轮保持页面滚动 */
-function onCanvasWheel(e: WheelEvent): void {
-  if (!e.ctrlKey && !e.metaKey) return
-  e.preventDefault()
-  setZoom(zoom.value + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP))
-}
+const { ZOOM_MIN, ZOOM_MAX, zoom, zoomPercent, zoomStyle, zoomIn, zoomOut, resetZoom, onCanvasWheel } = useCanvasZoom()
 </script>
 
 <template>
@@ -726,7 +634,7 @@ function onCanvasWheel(e: WheelEvent): void {
                         v-for="child in node.children"
                         :key="child.id"
                         class="ldc-grid-col"
-                        :style="{ '--col-span': gridColSpan(node, child) }"
+                        :style="{ '--col-span': canvasGridColSpan(node, child) }"
                       >
                         <DesignerChildCard
                           :child="child"
