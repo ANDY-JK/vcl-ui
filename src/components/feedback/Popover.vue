@@ -219,7 +219,7 @@ onUnmounted(() => {
         <button
           type="button"
           class="popover-btn"
-          :aria-label="t('feedback.popoverTrigger')"
+          :aria-label="t('popover.trigger')"
           :aria-expanded="open"
           :aria-haspopup="isTooltip ? undefined : 'dialog'"
         >
