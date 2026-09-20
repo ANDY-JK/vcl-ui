@@ -23,6 +23,11 @@ const THIRD_PARTY = [
   // 高德地图 SDK 自己反复回读 canvas。本库仅有的两处 getImageData（useBarcodeScanner.ts:390,480）
   // 都已显式开 willReadFrequently，且这条只在挂了地图的 amap / route-planner 两页出现 —— 归三方。
   /willReadFrequently/,
+  // @iconify 运行时兜底回源：IconPicker 枚举的图标名未进本地子集时 @iconify/vue 会请求
+  // api.unisvg.com 拉取。库代码零引用该域名（grep 证实），离线/限网下超时属三方网络可用性。
+  /api\.unisvg\.com/,
+  // 高德 markers 主题图：地图 SDK 自请求，超时 / ORB 拒绝均属三方网络，非本库产物。
+  /webapi\.amap\.com/,
 ]
 
 const BY_DESIGN: Record<string, RegExp[]> = {
