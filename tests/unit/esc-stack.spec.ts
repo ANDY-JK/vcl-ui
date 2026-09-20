@@ -6,7 +6,7 @@ import { defineComponent, h, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import type { Ref } from 'vue'
 import { useEscClose } from '@/components/_internal/useEscClose'
 import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
-import ModalBox from '@/components/layout/ModalBox.vue'
+import ModalShell from '@/components/_internal/ModalShell.vue'
 
 const mounted: Array<{ unmount: () => void }> = []
 
@@ -98,10 +98,14 @@ describe('useEscClose · 弹层栈', () => {
   })
 })
 
-describe('ConfirmModal · ModalBox 行为开关透传（走 Vue attrs 落到唯一根组件）', () => {
-  // ConfirmModal 未声明这三个 prop，靠单根组件 attrs fallthrough 自动落到 ModalBox；
-  // 本用例锁定该链路，防止将来加多根节点或 inheritAttrs:false 时静默失效
-  it('maskClosable / mutexScope / internal 透传给内部 ModalBox', () => {
+describe('ConfirmModal · 行为开关透传（走 Vue attrs 落到唯一根组件）', () => {
+  // ConfirmModal 未声明这三个 prop，靠单根组件 attrs fallthrough 自动落到根组件；
+  // 本用例锁定该链路，防止将来加多根节点或 inheritAttrs:false 时静默失效。
+  //
+  // 2026-09-11 更新：根组件由 layout/ModalBox 换成 _internal/ModalShell
+  // （为消除 ModalBox ↔ ConfirmModal 的双向依赖）。透传链路本身没有变，
+  // 只是落点跟着换 —— 断言目标同步改为 ModalShell，并补一条功能性断言。
+  it('maskClosable / mutexScope / internal 透传给根组件 ModalShell', () => {
     const w = mount(ConfirmModal, {
       props: {
         visible: true,
@@ -114,9 +118,28 @@ describe('ConfirmModal · ModalBox 行为开关透传（走 Vue attrs 落到唯�
     })
     mounted.push(w)
 
-    const box = w.findComponent(ModalBox)
-    expect(box.props('maskClosable')).toBe(false)
-    expect(box.props('mutexScope')).toBe('confirm-x')
-    expect(box.props('internal')).toBe(true)
+    const shell = w.findComponent(ModalShell)
+    expect(shell.exists()).toBe(true)
+    expect(shell.props('maskClosable')).toBe(false)
+    expect(shell.props('mutexScope')).toBe('confirm-x')
+    expect(shell.props('internal')).toBe(true)
+  })
+
+  // 上面那条只证明「props 收到了」，万一 ModalShell 之后不再使用它们仍会通过。
+  // 这里直接验行为：maskClosable=false 时点遮罩不应该关闭。
+  it('maskClosable=false 真的不响应遮罩点击（功能性验证，非仅 prop 透传）', async () => {
+    const w = mount(ConfirmModal, {
+      props: { visible: true, message: '确定？', maskClosable: false },
+      attachTo: document.body,
+    })
+    mounted.push(w)
+
+    const overlay = document.querySelector('.modal-overlay') as HTMLElement
+    expect(overlay).toBeTruthy()
+    overlay.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    overlay.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    await nextTick()
+
+    expect(w.emitted('update:visible')).toBeUndefined()
   })
 })

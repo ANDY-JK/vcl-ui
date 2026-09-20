@@ -1,19 +1,17 @@
 <script setup lang="ts">
 // ⛔ 保护 — 模态框，禁止：clamp() → px，动画时序修改，z-index 层级
 //    需我确认：detail 模式行为、Select 内嵌渲染
-// ⭐ confirm 模式原生实现（内容区走 ConfirmContent 单一来源）——本组件不再引用 feedback 域，
-//    打破 ConfirmModal ↔ ModalBox 值循环（依赖单向：ConfirmModal → ModalBox → ConfirmContent）
-import { ref, watch, onMounted, onUnmounted, computed, toRef } from 'vue'
+// ⭐ 基础外壳（遮罩/盒子/头部/焦点管理/互斥/ESC）已下沉到 _internal/ModalShell.vue
+// ⭐ confirm 模式委托给 ConfirmModal — 本组件不维护 confirm 模板/CSS
+import { ref, watch, computed, useSlots } from 'vue'
+import ModalShell from '@/components/_internal/ModalShell.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Button from '@/components/basic/Button.vue'
-import ConfirmContent from '@/components/layout/ConfirmContent.vue'
-import { registerModal } from '@/components/_internal/useModalManager'
-import { useFocusTrap } from '@/components/_internal/useFocusTrap'
-import { useEscClose } from '@/components/_internal/useEscClose'
-import { useBodyScrollLock } from '@/components/_internal/useBodyScrollLock'
+import ConfirmModal from '@/components/feedback/ConfirmModal.vue'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
+const slots = useSlots()
 
 interface DetailItem {
   label: string
@@ -41,7 +39,7 @@ interface Props {
    * 默认不传 → 全页面全局互斥（历史行为）。需要与其它弹窗共存（如 Drawer 内开确认框）时传独立 scope。
    */
   mutexScope?: string
-  // confirm 模式（内容区走 ConfirmContent 单一来源）
+  // confirm 模式（委托给 ConfirmModal）
   confirmMessage?: string
   confirmVariant?: 'warning' | 'danger' | 'info' | 'success'
   confirmDanger?: boolean
@@ -93,99 +91,9 @@ watch(
   },
 )
 
-// --- 焦点管理：打开时容器内 autofocus（首选 footer 确认/确定按钮，缺省第一个 focusable）→
-//    Tab/Shift+Tab 容器内循环 → 关闭恢复焦点到打开按钮 ---
-// 须在下方 registerModal 的 visible watch 之前创建：新弹窗先激活（序号 +1），
-// 旧弹窗被 registerModal 同步关闭时停用，检测到序号落后则不恢复焦点（避免抢新弹窗焦点）。
-// confirm 模式现由本组件原生渲染（modalBoxRef 已绑定），陷阱与 ESC 一并按本层管理。
-const modalBoxRef = ref<HTMLElement | null>(null)
-useFocusTrap({
-  visible: toRef(props, 'visible'),
-  getContainer: () => modalBoxRef.value,
-  // 普通模式 footer 尾按钮；confirm 模式内容区（ConfirmContent）的尾部确认按钮
-  autofocus: '.modal-footer button:last-of-type, .confirm-footer button:last-of-type',
-})
-
-// 打开期间锁 body 滚动（引用计数：与其它弹层叠加时，全部关闭才恢复）
-useBodyScrollLock(() => props.visible)
-
-// --- 弹窗竞态管理：同 scope 只允许一个弹窗（confirm 模式现由本层原生注册，不再跳过）---
-let _unregModal: (() => void) | null = null
-// immediate：挂载时就已 visible=true 的弹窗也要注册，否则同域互斥对它失效
-watch(
-  () => props.visible,
-  (v) => {
-    if (props.internal) return
-    if (v) {
-      _unregModal = registerModal(close, props.mutexScope)
-    } else {
-      if (_unregModal) {
-        _unregModal()
-        _unregModal = null
-      }
-    }
-  },
-  { immediate: true },
-)
-onUnmounted(() => {
-  if (_unregModal) {
-    _unregModal()
-    _unregModal = null
-  }
-})
-
-// confirm 模式 + loading 时禁用关闭（关闭按钮/遮罩/ESC 一并生效）
-const effectiveClosable = computed(() =>
-  props.modalType === 'confirm' && props.confirmLoading ? false : props.closable,
-)
-
-// ESC 关闭 — 使用共享 useEscClose composable（confirm 模式现由本层原生处理）
-const { mount: mountEsc, unmount: unmountEsc } = useEscClose(
-  () => props.visible,
-  () => effectiveClosable.value,
-  close,
-)
-onMounted(() => {
-  mountEsc()
-})
-onUnmounted(unmountEsc)
-
 function close() {
   emit('update:visible', false)
   emit('close')
-}
-
-// confirm 模式原生动作：ConfirmContent 已挡掉 loading 态，这里仅关闭 + 透传事件
-function onConfirmAction() {
-  emit('confirm')
-  close()
-}
-function onCancelAction() {
-  emit('cancel')
-  close()
-}
-
-// 修复"弹窗内按下→移出→松开导致误关闭"：
-// 只有 mousedown 和 mouseup 都在 overlay 上时才关闭
-let _maskPressed = false
-function onMaskMousedown() {
-  _maskPressed = true
-}
-function onMaskMouseup() {
-  // confirm 模式 loading 中遮罩不关（对齐原 ConfirmModal 的 :mask-closable="!loading"）
-  const maskBlocked = props.modalType === 'confirm' && props.confirmLoading
-  if (_maskPressed && props.maskClosable && !maskBlocked) {
-    close()
-  }
-  _maskPressed = false
-}
-function onMaskMouseleave() {
-  // 鼠标移出 overlay 时取消按下状态，防止在内部按下后移出再移回触发关闭
-  _maskPressed = false
-}
-// 弹窗内重新按下时复位：面板 mousedown 被 .stop 拦下，不复位则上一次落在遮罩的按下会残留
-function onPanelMousedown() {
-  _maskPressed = false
 }
 
 function toggleSelectItem(val: string | number) {
@@ -202,7 +110,7 @@ function confirmSelect() {
   emit('select-confirm', internalSelectValue.value)
 }
 
-// confirm 模式：将 ModalBox 的 confirm 属性映射到 ConfirmContent 的变体
+// confirm 模式：将 ModalBox 的 confirm 属性映射到 ConfirmModal 的变体
 const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
   if (props.confirmDanger) return 'danger'
   const map: Record<string, 'danger' | 'warning' | 'primary'> = {
@@ -214,199 +122,103 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
   return map[props.confirmVariant]
 })
 
-// confirm 模式标题回退：未传 title 时与 ConfirmModal 历史行为一致（confirmModal.title 键）
-const effectiveTitle = computed(() =>
-  props.modalType === 'confirm' ? props.title || t('confirmModal.title') : props.title,
+// 底部区域是否出现 —— 与抽取前的 `$slots.footer || modalType==='form' || modalType==='select'` 等价。
+// ModalShell 只认「有没有 footer 插槽」，所以这里要把 form/select 的内置按钮也算进去，
+// 否则这两个模式的默认按钮会消失。
+const showFooter = computed(
+  () => !!slots.footer || props.modalType === 'form' || props.modalType === 'select',
 )
 </script>
 
 <template>
-  <!-- 通用 ModalBox 模板（confirm 模式内容区走 ConfirmContent，不再委托 feedback 域） -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div
-        v-if="visible"
-        class="modal-overlay"
-        :style="zIndex != null ? { zIndex } : undefined"
-        @mousedown="onMaskMousedown"
-        @mouseup="onMaskMouseup"
-        @mouseleave="onMaskMouseleave"
-      >
-        <div
-          ref="modalBoxRef"
-          class="modal-box"
-          :class="[modalType === 'confirm' ? 'modal-sm' : `modal-${size}`]"
-          role="dialog"
-          aria-modal="true"
-          :aria-label="effectiveTitle || t('common.dialog')"
-          @mousedown.stop="onPanelMousedown"
-          @mouseup.stop
-        >
-          <!-- 头部 -->
-          <div class="modal-header">
-            <h3 class="modal-title">
-              {{ effectiveTitle }}
-            </h3>
-            <button v-if="effectiveClosable" class="modal-close" :aria-label="t('common.close')" @click="close">
-              <IconSvg type="x" size="md" />
-            </button>
-          </div>
+  <!-- ════════════════════════════════════════
+       confirm 模式 — 委托给 ConfirmModal
+       ════════════════════════════════════════ -->
+  <ConfirmModal
+    v-if="modalType === 'confirm'"
+    :visible="visible"
+    :title="title"
+    :message="confirmMessage ?? ''"
+    :variant="confirmModalVariant"
+    :loading="confirmLoading"
+    :closable="closable"
+    @update:visible="emit('update:visible', $event)"
+    @confirm="emit('confirm')"
+    @cancel="emit('cancel')"
+  />
 
-          <!-- 内容区 -->
-          <div class="modal-body">
-            <!-- confirm 模式：单一来源 ConfirmContent（消息体 + 按钮区），loading 守卫在其内部 -->
-            <ConfirmContent
-              v-if="modalType === 'confirm'"
-              :variant="confirmModalVariant"
-              :message="confirmMessage ?? ''"
-              :loading="confirmLoading"
-              @confirm="onConfirmAction"
-              @cancel="onCancelAction"
-            />
+  <!-- ════════════════════════════════════════
+       其他模式：通用 ModalBox 内容，外壳由 ModalShell 提供
+       ════════════════════════════════════════ -->
+  <ModalShell
+    v-else
+    :visible="visible"
+    :title="title"
+    :size="size"
+    :closable="closable"
+    :mask-closable="maskClosable"
+    :z-index="zIndex"
+    :internal="internal"
+    :mutex-scope="mutexScope"
+    @update:visible="emit('update:visible', $event)"
+    @close="emit('close')"
+  >
+    <slot />
 
-            <template v-else>
-              <slot />
-
-              <!-- detail 模式 -->
-              <template v-if="modalType === 'detail'">
-                <div class="detail-wrap">
-                  <div v-for="(item, i) in detailItems" :key="`${item.label}-${i}`" class="detail-row">
-                    <span class="detail-label">{{ item.label }}</span>
-                    <span class="detail-value" :class="{ mono: item.mono }">{{ item.value }}</span>
-                  </div>
-                </div>
-              </template>
-
-              <!-- select 模式 -->
-              <template v-if="modalType === 'select'">
-                <div class="select-wrap">
-                  <button
-                    v-for="item in selectItems"
-                    :key="String(item.value)"
-                    class="select-item"
-                    :class="{ active: internalSelectValue.includes(item.value) }"
-                    :aria-pressed="internalSelectValue.includes(item.value)"
-                    @click="toggleSelectItem(item.value)"
-                  >
-                    <IconSvg
-                      :type="internalSelectValue.includes(item.value) ? 'circle-check' : 'circle'"
-                      size="md"
-                      :color="
-                        internalSelectValue.includes(item.value) ? 'var(--color-primary)' : 'var(--color-text-muted)'
-                      "
-                    />
-                    <div class="select-item-text">
-                      <span class="select-item-label">{{ item.label }}</span>
-                      <span v-if="item.desc" class="select-item-desc">{{ item.desc }}</span>
-                    </div>
-                  </button>
-                </div>
-              </template>
-            </template>
-          </div>
-
-          <!-- 底部（confirm 模式的按钮区在 ConfirmContent 内，不渲染 footer） -->
-          <div
-            v-if="modalType !== 'confirm' && ($slots.footer || modalType === 'form' || modalType === 'select')"
-            class="modal-footer"
-          >
-            <slot name="footer">
-              <template v-if="modalType === 'form'">
-                <Button :text="t('common.cancel')" variant="secondary" @click="close" />
-                <Button :text="t('common.submit')" variant="primary" @click="emit('form-submit')" />
-              </template>
-              <template v-else-if="modalType === 'select'">
-                <Button :text="t('common.cancel')" variant="secondary" @click="close" />
-                <Button :text="t('common.confirm')" variant="primary" @click="confirmSelect" />
-              </template>
-            </slot>
-          </div>
+    <!-- detail 模式 -->
+    <template v-if="modalType === 'detail'">
+      <div class="detail-wrap">
+        <div v-for="(item, i) in detailItems" :key="`${item.label}-${i}`" class="detail-row">
+          <span class="detail-label">{{ item.label }}</span>
+          <span class="detail-value" :class="{ mono: item.mono }">{{ item.value }}</span>
         </div>
       </div>
-    </Transition>
-  </Teleport>
+    </template>
+
+    <!-- select 模式 -->
+    <template v-if="modalType === 'select'">
+      <div class="select-wrap">
+        <button
+          v-for="item in selectItems"
+          :key="String(item.value)"
+          class="select-item"
+          :class="{ active: internalSelectValue.includes(item.value) }"
+          :aria-pressed="internalSelectValue.includes(item.value)"
+          @click="toggleSelectItem(item.value)"
+        >
+          <IconSvg
+            :type="internalSelectValue.includes(item.value) ? 'circle-check' : 'circle'"
+            size="md"
+            :color="internalSelectValue.includes(item.value) ? 'var(--color-primary)' : 'var(--color-text-muted)'"
+          />
+          <div class="select-item-text">
+            <span class="select-item-label">{{ item.label }}</span>
+            <span v-if="item.desc" class="select-item-desc">{{ item.desc }}</span>
+          </div>
+        </button>
+      </div>
+    </template>
+
+    <!-- 底部 -->
+    <template v-if="showFooter" #footer>
+      <slot name="footer">
+        <template v-if="modalType === 'form'">
+          <Button :text="t('common.cancel')" variant="secondary" @click="close" />
+          <Button :text="t('common.submit')" variant="primary" @click="emit('form-submit')" />
+        </template>
+        <template v-else-if="modalType === 'select'">
+          <Button :text="t('common.cancel')" variant="secondary" @click="close" />
+          <Button :text="t('common.confirm')" variant="primary" @click="confirmSelect" />
+        </template>
+      </slot>
+    </template>
+  </ModalShell>
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal, 1000);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-}
-@supports (backdrop-filter: blur(4px)) {
-  .modal-overlay {
-    backdrop-filter: blur(4px);
-  }
-}
-
-.modal-box {
-  display: flex;
-  flex-direction: column;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  width: clamp(320px, 92vw, 520px);
-  max-height: 85vh;
-  max-height: 85dvh;
-}
-.modal-sm {
-  width: clamp(280px, 38vw, 420px);
-}
-.modal-md {
-  width: clamp(380px, 52vw, 580px);
-}
-.modal-lg {
-  width: clamp(480px, 66vw, 760px);
-}
-.modal-xl {
-  width: clamp(580px, 82vw, 980px);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: clamp(var(--space-1), 1.2vw, 10px) clamp(8px, 1.5vw, 12px);
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.modal-title {
-  font-size: clamp(14px, 2.2vw, 36px);
-  font-weight: 600;
-}
-
-.modal-close {
-  display: flex;
-  padding: var(--space-1);
-  border: none;
-  background: transparent;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-}
-.modal-close:hover {
-  background: var(--color-bg-alt);
-}
-
-.modal-body {
-  flex: 1;
-  min-width: 0;
-  max-width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: clamp(var(--space-1), 1.2vw, 10px);
-}
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: clamp(var(--space-1), 1vw, 8px);
-  padding: clamp(var(--space-2), 2vw, 16px) clamp(12px, 2.5vw, 20px);
-  border-top: 1px solid var(--color-border-light);
-}
+/* 基础外壳样式（.modal-overlay / .modal-box / .modal-header / .modal-body /
+   .modal-footer / 尺寸类 / 过渡动画）已随模板移入 _internal/ModalShell.vue，
+   本文件只保留 detail 与 select 两个模式各自的样式。 */
 
 /* detail */
 .detail-wrap {
@@ -461,25 +273,5 @@ const effectiveTitle = computed(() =>
 .select-item-desc {
   font-size: clamp(11px, 1.5vw, 15px);
   color: var(--color-text-muted);
-}
-
-/* 过渡动画 */
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity var(--transition-normal);
-}
-.modal-enter-active .modal-box,
-.modal-leave-active .modal-box {
-  transition: transform var(--transition-normal);
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-.modal-enter-from .modal-box {
-  transform: scale(0.95) translateY(10px);
-}
-.modal-leave-to .modal-box {
-  transform: scale(0.95) translateY(10px);
 }
 </style>
