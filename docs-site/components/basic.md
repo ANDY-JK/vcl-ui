@@ -4,11 +4,11 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `Button` | 8 | 1 |
-| `IconSvg` | 0 | 0 |
-| `Tag` | 13 | 1 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `Button` | 8 | 1 | 1 |
+| `IconSvg` | 0 | 0 | 0 |
+| `Tag` | 13 | 1 | 1 |
 
 ---
 
@@ -33,9 +33,15 @@
 | --- | --- | --- |
 | `click` | `e: MouseEvent` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
+
 ## `IconSvg`
 
-> 该组件无 props / events API（纯插槽或纯展示组件）。
+> 该组件无 props / events / slots API（纯展示组件）。
 
 ## `Tag`
 
@@ -62,4 +68,10 @@
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `close` | `无` | — |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | {{ displayText }} |
 

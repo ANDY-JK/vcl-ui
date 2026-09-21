@@ -4,17 +4,17 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `Input` | 22 | 6 |
-| `Select` | 24 | 5 |
-| `Group` | 16 | 2 |
-| `IconPicker` | 6 | 5 |
-| `Upload` | 17 | 5 |
-| `CameraCapture` | 6 | 5 |
-| `CodeCapture` | 7 | 5 |
-| `CaptureFallbackPanel` | 9 | 3 |
-| `CaptureFallbackSheet` | 11 | 5 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `Input` | 22 | 6 | 0 |
+| `Select` | 24 | 5 | 2 |
+| `Group` | 16 | 2 | 0 |
+| `IconPicker` | 6 | 5 | 0 |
+| `Upload` | 17 | 5 | 2 |
+| `CameraCapture` | 6 | 5 | 0 |
+| `CodeCapture` | 7 | 5 | 0 |
+| `CaptureFallbackPanel` | 9 | 3 | 0 |
+| `CaptureFallbackSheet` | 11 | 5 | 0 |
 
 ## 组合式函数 / 工具导出
 
@@ -114,6 +114,13 @@
 | `blur` | `无` | — |
 | `visibleChange` | `v: boolean` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `empty` | — | {{ t('form.enterToUse', { text: comboTex |
+| `option` | `opt, selected` | {{ opt.label }} {{ opt.desc }} |
+
 ## `Group`
 
 ### Props
@@ -200,6 +207,13 @@
 | `error` | `message: string` | — |
 | `'update:modelValue'` | `files: UploadFile[]` | — |
 | `preview` | `url: string` | card 模式：点击图片预览 |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `file-item` | `key, file, index` | {{ f.name }} {{ formatSize(f.size) }} ✓  |
+| `trigger` | `open-file-dialog` | {{ t('form.dropHint') }} {{ t('form.drag |
 
 ## `CameraCapture`
 

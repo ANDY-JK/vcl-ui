@@ -4,12 +4,12 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `Chart` | 29 | 12 |
-| `BaseChart` | 7 | 0 |
-| `ChartTable` | 31 | 2 |
-| `ChartLegend` | 1 | 2 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `Chart` | 29 | 12 | 0 |
+| `BaseChart` | 7 | 0 | 0 |
+| `ChartTable` | 31 | 2 | 2 |
+| `ChartLegend` | 1 | 2 | 0 |
 
 ---
 
@@ -124,6 +124,13 @@
 | --- | --- | --- |
 | `'chart-click'` | `params: ECElementEvent` | — |
 | `'chart-ready'` | `instance: ECharts` | — |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `footer` | — | — |
+| `header` | — | {{ tableTitle }} |
 
 ## `ChartLegend`
 

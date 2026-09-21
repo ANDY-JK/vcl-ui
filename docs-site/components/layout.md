@@ -4,13 +4,13 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `AppLayout` | 3 | 1 |
-| `AccordionNav` | 2 | 0 |
-| `ModalBox` | 17 | 6 |
-| `ConfirmContent` | 5 | 2 |
-| `Flex` | 7 | 0 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `AppLayout` | 3 | 1 | 2 |
+| `AccordionNav` | 2 | 0 | 0 |
+| `ModalBox` | 17 | 6 | 2 |
+| `ConfirmContent` | 5 | 2 | 0 |
+| `Flex` | 7 | 0 | 1 |
 
 ## 组合式函数 / 工具导出
 
@@ -39,6 +39,13 @@
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `logout` | `无` | — |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `topbar-right` | — | {{ username.charAt(0).toUpperCase() }} { |
+| `topbar-tools` | — | — |
 
 ## `AccordionNav`
 
@@ -84,6 +91,13 @@
 | `'select-confirm'` | `v: (string \| number)[]` | — |
 | `close` | `无` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
+| `footer` | — | — |
+
 ## `ConfirmContent`
 
 ### Props
@@ -116,4 +130,10 @@
 | `wrap` | `boolean` | `false` | 否 | — |
 | `flex` | `string` | `'1'` | 否 | — |
 | `inline` | `boolean` | `false` | 否 | — |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
 

@@ -4,9 +4,9 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `AmapWidget` | 7 | 3 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `AmapWidget` | 7 | 3 | 0 |
 
 ## 组合式函数 / 工具导出
 

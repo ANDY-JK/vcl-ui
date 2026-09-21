@@ -4,17 +4,17 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `Toast` | 8 | 0 |
-| `Loading` | 9 | 0 |
-| `Popover` | 6 | 0 |
-| `Result` | 5 | 1 |
-| `Drawer` | 11 | 4 |
-| `OfflineIndicator` | 0 | 0 |
-| `ReadOnlyOverlay` | 2 | 0 |
-| `ErrorBoundary` | 3 | 1 |
-| `ConfirmModal` | 8 | 3 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `Toast` | 8 | 0 | 0 |
+| `Loading` | 9 | 0 | 0 |
+| `Popover` | 6 | 0 | 2 |
+| `Result` | 5 | 1 | 2 |
+| `Drawer` | 11 | 4 | 3 |
+| `OfflineIndicator` | 0 | 0 | 0 |
+| `ReadOnlyOverlay` | 2 | 0 | 0 |
+| `ErrorBoundary` | 3 | 1 | 2 |
+| `ConfirmModal` | 8 | 3 | 0 |
 
 ## 组合式函数 / 工具导出
 
@@ -81,6 +81,13 @@
 | `position` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | 否 | tooltip 方向 |
 | `zIndex` | `number \| string` | — | 否 | 浮层 z-index（数字或 CSS 变量字符串）；默认走 --z-dropdown 变量 |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
+| `trigger` | — | — |
+
 ## `Result`
 
 ### Props
@@ -98,6 +105,13 @@
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `action` | `无` | — |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
+| `extra` | — | — |
 
 ## `Drawer`
 
@@ -126,9 +140,17 @@
 | `afterOpen` | `无` | — |
 | `afterClose` | `无` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
+| `footer` | — | — |
+| `header` | — | {{ title }} |
+
 ## `OfflineIndicator`
 
-> 该组件无 props / events API（纯插槽或纯展示组件）。
+> 该组件无 props / events / slots API（纯展示组件）。
 
 ## `ReadOnlyOverlay`
 
@@ -154,6 +176,13 @@
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `error` | `err: Error` | — |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | `key` | — |
+| `fallback` | `error, retry` | ! {{ title \|\| t('errorBoundary.title') } |
 
 ## `ConfirmModal`
 

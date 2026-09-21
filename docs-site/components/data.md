@@ -4,20 +4,20 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `DataTable` | 58 | 15 |
-| `ToggleList` | 13 | 3 |
-| `Card` | 11 | 1 |
-| `Avatar` | 4 | 0 |
-| `Collapse` | 5 | 2 |
-| `Divider` | 3 | 0 |
-| `Image` | 12 | 3 |
-| `ImagePreview` | 3 | 2 |
-| `ProgressBar` | 15 | 2 |
-| `Skeleton` | 7 | 0 |
-| `Tree` | 8 | 4 |
-| `Empty` | 3 | 0 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `DataTable` | 58 | 15 | 4 |
+| `ToggleList` | 13 | 3 | 0 |
+| `Card` | 11 | 1 | 3 |
+| `Avatar` | 4 | 0 | 0 |
+| `Collapse` | 5 | 2 | 1 |
+| `Divider` | 3 | 0 | 0 |
+| `Image` | 12 | 3 | 0 |
+| `ImagePreview` | 3 | 2 | 1 |
+| `ProgressBar` | 15 | 2 | 0 |
+| `Skeleton` | 7 | 0 | 1 |
+| `Tree` | 8 | 4 | 0 |
+| `Empty` | 3 | 0 | 1 |
 
 ## 组合式函数 / 工具导出
 
@@ -112,6 +112,15 @@
 | `search` | `term: string` | — |
 | `fullscreenChange` | `isFullscreen: boolean` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `cell` | `column, row, value` | {{ cellShow(row, col) }} {{ cellShow(row |
+| `empty` | `filtered` | — |
+| `header-cell` | `column` | {{ colTitle(col) }} |
+| `toolbar-actions` | — | — |
+
 ## `ToggleList`
 
 ### Props
@@ -164,6 +173,14 @@
 | --- | --- | --- |
 | `click` | `无` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
+| `footer` | — | — |
+| `header` | — | — |
+
 ## `Avatar`
 
 ### Props
@@ -193,6 +210,12 @@
 | --- | --- | --- |
 | `'update:open'` | `v: boolean` | — |
 | `'accordion-expand'` | `无` | 手风琴模式：展开时触发，外部 CollapseGroup 监听后关闭同组其他面板 |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
 
 ## `Divider`
 
@@ -248,6 +271,12 @@
 | `close` | `无` | — |
 | `change` | `index: number` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `actions` | — | — |
+
 ## `ProgressBar`
 
 ### Props
@@ -291,6 +320,12 @@
 | `width` | `string` | — | 否 | 自定义骨架块宽度 |
 | `height` | `string` | — | 否 | 自定义骨架块高度 |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
+
 ## `Tree`
 
 ### Props
@@ -324,4 +359,10 @@
 | `icon` | `string` | `'file'` | 否 | 图标类型，默认 'file' |
 | `title` | `string` | `''` | 否 | 标题 |
 | `description` | `string` | `''` | 否 | 描述文本 |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
 

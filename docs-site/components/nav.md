@@ -4,14 +4,14 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `Tabs` | 3 | 1 |
-| `TabPanel` | 3 | 0 |
-| `Steps` | 4 | 1 |
-| `Pagination` | 4 | 1 |
-| `Breadcrumb` | 2 | 0 |
-| `Menu` | 7 | 2 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `Tabs` | 3 | 1 | 0 |
+| `TabPanel` | 3 | 0 | 1 |
+| `Steps` | 4 | 1 | 0 |
+| `Pagination` | 4 | 1 | 0 |
+| `Breadcrumb` | 2 | 0 | 0 |
+| `Menu` | 7 | 2 | 0 |
 
 ---
 
@@ -40,6 +40,12 @@
 | `value` | `string \| number` | — | 是 | 对应 Tabs items 里的 value（item 未设 value 时与 label 一致） |
 | `lazy` | `boolean` | `false` | 否 | 懒渲染：首次激活前不渲染内容（重内容/异步内容推荐）；默认 false 全量渲染 |
 | `keepAlive` | `boolean` | `true` | 否 | 切走后是否保留 DOM（true = 仅隐藏，表单输入等状态不丢）；默认 true。false = 切走即卸载 |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `default` | — | — |
 
 ## `Steps`
 

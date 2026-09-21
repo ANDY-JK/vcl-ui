@@ -187,10 +187,53 @@ function parseEmits(typeNode, ctx) {
   return out
 }
 
-/** 主解析：一个 .vue → { props, defaults, emits }；无任何 API 声明返回 { props: null, defaults, emits: [] } */
+/**
+ * 提取 SFC 模板里的 slot 声明 → [{ name, scope, fallback }]
+ * 形态覆盖：`<slot />`（default）、`<slot name="x" />`、带兜底内容的
+ * `<slot name="x">…</slot>`、作用域参数 `<slot name="x" :a="1" :b="2">`、
+ * 条件/循环分支（`<slot v-if/v-else/v-for … name="x">`）——同名去重取信息最全的一条。
+ */
+function parseSlots(file) {
+  const src = read(file)
+  // 根 template 边界：起始取无属性的 `<template>`（嵌套的 <template v-if> 带属性，不误判），
+  // 结束取全文最后一个 `</template>`（最外层闭合在最后）。非贪婪正则会卡在第一个内层
+  // </template> 截断——DataTable 第 2402 行的 empty slot 就是这样漏掉的。
+  const startMatch = /<template>/.exec(src)
+  if (!startMatch) return []
+  const start = startMatch.index + startMatch[0].length
+  const end = src.lastIndexOf('</template>')
+  if (end < start) return []
+  const body = src.slice(start, end)
+  const found = new Map()
+  const upsert = (slot) => {
+    const prev = found.get(slot.name)
+    // 信息量优先：有作用域参数 > 有兜底内容 > 空
+    if (!prev || (slot.scope && !prev.scope) || (slot.fallback && !prev.fallback)) {
+      found.set(slot.name, prev ? { ...prev, ...slot } : slot)
+    }
+  }
+  // 逐个 slot 标签：先判自闭合，非自闭合的取到**最近的** </slot> 为止（slot 不嵌套，
+  // 最近闭合即自己的）。混用「成对正则 + 自闭合正则」两遍扫会让自闭合 slot 误配到
+  // 下一个 slot 的闭合标签，兜底预览混进无关模板代码。
+  for (const m of body.matchAll(/<slot\b([^>]*?)(\/?)>/g)) {
+    const attrs = m[1]
+    const name = /name\s*=\s*["']([^"']+)["']/.exec(attrs)?.[1] ?? 'default'
+    const scope = [...attrs.matchAll(/:([a-zA-Z][\w-]*)\s*=/g)].map((x) => x[1]).join(', ')
+    let fallback = ''
+    if (m[2] !== '/') {
+      const rest = body.slice(m.index + m[0].length)
+      const closeIdx = rest.indexOf('</slot>')
+      if (closeIdx >= 0) fallback = rest.slice(0, closeIdx).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40)
+    }
+    upsert({ name, scope, fallback })
+  }
+  return [...found.values()].sort((a, b) => (a.name === 'default' ? -1 : b.name === 'default' ? 1 : a.name.localeCompare(b.name)))
+}
+
+/** 主解析：一个 .vue → { props, defaults, emits, slots, declared } */
 function parseComponent(file) {
   const script = extractScripts(file)
-  if (!script) return { props: null, defaults: new Map(), emits: [] }
+  if (!script) return { props: null, defaults: new Map(), emits: [], slots: [], declared: false }
   const dir = path.dirname(file)
   const { sf, decls } = collectDeclarations(script)
   const typeImports = collectTypeImports(script, dir)
@@ -219,9 +262,10 @@ function parseComponent(file) {
   const props = propsTypeNode ? resolvePropsType(propsTypeNode, ctx) : null
   const defaults = defaultsOf(defaultsNode)
   const emits = parseEmits(emitsTypeNode, ctx)
-  // 完全没声明 props/emits（如 IconSvg 纯插槽组件）不算失败；声明了但解析不到才算
-  const declared = !!propsTypeNode || !!emitsTypeNode
-  return { props, defaults, emits, declared }
+  const slots = parseSlots(file)
+  // 完全没声明 props/emits/slots（空壳组件）不算失败；声明了但解析不到才算
+  const declared = !!propsTypeNode || !!emitsTypeNode || slots.length > 0
+  return { props, defaults, emits, slots, declared }
 }
 
 // ---------- barrel 导出清单 ----------
@@ -316,21 +360,23 @@ for (const domain of DOMAINS) {
 
   if (components.length) {
     lines.push('## 组件一览', '')
-    lines.push(tableRow(['组件', 'Props 数', 'Events 数']))
-    lines.push(tableRow(['---', '---', '---']))
+    lines.push(tableRow(['组件', 'Props 数', 'Events 数', 'Slots 数']))
+    lines.push(tableRow(['---', '---', '---', '---']))
   }
   for (const c of components) {
     const api = parseComponent(c.srcFile)
     if (!api.declared) {
-      lines.push(tableRow([`\`${c.name}\``, '0', '0']))
+      lines.push(tableRow([`\`${c.name}\``, '0', '0', '0']))
       continue
     }
-    if (!api.props && !api.emits.length) {
+    if (!api.props && !api.emits.length && !api.slots.length) {
       manifest.unparsed.push(`${domain}/${c.name}`)
-      lines.push(tableRow([`\`${c.name}\``, '解析失败', '解析失败']))
+      lines.push(tableRow([`\`${c.name}\``, '解析失败', '解析失败', '解析失败']))
       continue
     }
-    lines.push(tableRow([`\`${c.name}\``, String(api.props?.length ?? 0), String(api.emits.length)]))
+    lines.push(
+      tableRow([`\`${c.name}\``, String(api.props?.length ?? 0), String(api.emits.length), String(api.slots.length)]),
+    )
   }
   if (named.length) {
     lines.push('', '## 组合式函数 / 工具导出', '')
@@ -346,7 +392,7 @@ for (const domain of DOMAINS) {
     const api = parseComponent(c.srcFile)
     lines.push(`## \`${c.name}\``, '')
     if (!api.declared) {
-      lines.push('> 该组件无 props / events API（纯插槽或纯展示组件）。', '')
+      lines.push('> 该组件无 props / events / slots API（纯展示组件）。', '')
       continue
     }
     if (!api.props && !api.emits.length) {
@@ -372,6 +418,15 @@ for (const domain of DOMAINS) {
       lines.push(tableRow(['---', '---', '---']))
       for (const e of api.emits) {
         lines.push(tableRow([`\`${e.name}\``, '`' + e.payload + '`', e.doc || '—']))
+      }
+      lines.push('')
+    }
+    if (api.slots.length) {
+      lines.push('### Slots', '')
+      lines.push(tableRow(['插槽', '作用域参数', '兜底内容预览']))
+      lines.push(tableRow(['---', '---', '---']))
+      for (const s of api.slots) {
+        lines.push(tableRow([`\`${s.name}\``, s.scope ? '`' + s.scope + '`' : '—', s.fallback || '—']))
       }
       lines.push('')
     }

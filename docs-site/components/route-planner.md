@@ -4,13 +4,13 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `RouteMap` | 2 | 0 |
-| `RouteResult` | 5 | 0 |
-| `StorePanel` | 1 | 6 |
-| `StoreFormModal` | 2 | 2 |
-| `ImportProgress` | 3 | 0 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `RouteMap` | 2 | 0 | 0 |
+| `RouteResult` | 5 | 0 | 0 |
+| `StorePanel` | 1 | 6 | 0 |
+| `StoreFormModal` | 2 | 2 | 0 |
+| `ImportProgress` | 3 | 0 | 0 |
 
 ---
 

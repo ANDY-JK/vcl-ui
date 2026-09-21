@@ -4,15 +4,15 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `FormDesigner` | 5 | 4 |
-| `FormBuilder` | 6 | 6 |
-| `FormRenderer` | 5 | 2 |
-| `FieldError` | 1 | 0 |
-| `FormCollect` | 6 | 1 |
-| `FormTargetCollect` | 4 | 1 |
-| `FormShareView` | 4 | 1 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `FormDesigner` | 5 | 4 | 0 |
+| `FormBuilder` | 6 | 6 | 0 |
+| `FormRenderer` | 5 | 2 | 0 |
+| `FieldError` | 1 | 0 | 0 |
+| `FormCollect` | 6 | 1 | 0 |
+| `FormTargetCollect` | 4 | 1 | 0 |
+| `FormShareView` | 4 | 1 | 0 |
 
 ## 组合式函数 / 工具导出
 

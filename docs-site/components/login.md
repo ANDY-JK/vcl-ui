@@ -4,12 +4,12 @@
 
 ## 组件一览
 
-| 组件 | Props 数 | Events 数 |
-| --- | --- | --- |
-| `LoginPage` | 14 | 4 |
-| `RegisterPage` | 11 | 2 |
-| `ForgotPasswordPage` | 6 | 2 |
-| `PortalLogin` | 5 | 1 |
+| 组件 | Props 数 | Events 数 | Slots 数 |
+| --- | --- | --- | --- |
+| `LoginPage` | 14 | 4 | 9 |
+| `RegisterPage` | 11 | 2 | 2 |
+| `ForgotPasswordPage` | 6 | 2 | 1 |
+| `PortalLogin` | 5 | 1 | 2 |
 
 ---
 
@@ -43,6 +43,20 @@
 | `register` | `无` | 点击注册 |
 | `'social-login'` | `provider: string` | 点击社交登录按钮 |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `forgot-text` | — | {{ t('login.forgotPasswordQ') }} |
+| `logo` | — | — |
+| `register-prompt` | — | {{ t('login.registerPrompt') }} {{ t('lo |
+| `register-text` | — | {{ t('login.registerNow') }} |
+| `remember-text` | — | {{ t('login.rememberUsername') }} |
+| `social-phone-text` | — | {{ t('login.socialPhone') }} |
+| `subtitle` | — | {{ tenantMode ? t('login.welcomeSubtitle |
+| `tenant-footer-text` | — | {{ t('login.tenantFooter') }} |
+| `welcome-title` | — | {{ t('login.welcomeTitle') }} |
+
 ## `RegisterPage`
 
 ### Props
@@ -68,6 +82,13 @@
 | `submit` | `payload: RegisterPayload` | — |
 | `'go-login'` | `无` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `extra-fields` | — | — |
+| `logo` | — | — |
+
 ## `ForgotPasswordPage`
 
 ### Props
@@ -88,6 +109,12 @@
 | `submit` | `payload: ResetPasswordPayload` | — |
 | `'go-login'` | `无` | — |
 
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `logo` | — | — |
+
 ## `PortalLogin`
 
 ### Props
@@ -105,4 +132,11 @@
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `submit` | `payload: { username: string; password: string }` | — |
+
+### Slots
+
+| 插槽 | 作用域参数 | 兜底内容预览 |
+| --- | --- | --- |
+| `footer` | — | — |
+| `logo` | — | — |
 
