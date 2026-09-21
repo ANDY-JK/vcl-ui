@@ -5,7 +5,7 @@
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-09-20
+## [1.0.0] - 2026-09-21
 
 > 首次发布：以下为全部历史变更。
 
@@ -22,6 +22,8 @@
   - 多张连拍模式——拍完一张接着拍，胶卷回看/重拍某张，完成批量交付（27c8831）
 - **`capture`**
   - 采集兜底链落地+审查修复收口+超800行文件拆分（487c084）
+- **`ci`**
+  - 多入口运行时冒烟闸口 + site-audit 剪贴板权限豁免（37d59e0）
 - **`data-table`**
   - 交互体验第二批 — 失败就地提示/撤销重做按钮/F2/number 列呈现/前导零防护（dc372bf）
   - 列值类型归一化 + Excel 交互三件套 + 暗色分色修复 — useTableEdit 拆分（83fc8fb）
@@ -29,6 +31,9 @@
   - 扫码页真实摄像头识别 + HTTPS 开发证书脚本（b0d2337）
 - **`demos`**
   - 补 AmapWidget 演示页与 BaseChart 原始 option 实例（d931dfb）
+- **`docs`**
+  - 文档站落地（Q9-半）——VitePress + 源码生成器 + 漂移闸口（061ea1e）
+  - CHANGELOG 生成链落地（gen-changelog 自建脚本 + npm run changelog）（9bbe385）
 - **`form+demos`**
   - 新旧版缺口收口——4 个演示页注册 + Input color 取色 + 设计器 color 字段（e0dcd67）
 - **`form-builder`**
@@ -92,6 +97,7 @@
 ### Changed
 
 - **通用**
+  - 多入口构建（Q3）——14 域独立 entry，按域子路径运行时隔离（ff542a7）
   - 按业务域拆分 chunk，主 bundle 降 90%（H12）（b1b6163）
   - Solar 图标数据改为按需加载，拆出主包（755c9e9）
   - v1.5.0 大规模重构 - 高德地图统一模块/测试扩充/ESLint+Prettier+Husky/Playwright E2E/文档更新（450bc13）
@@ -144,6 +150,7 @@
 - **`form-builder,chart`**
   - 同一事实各写一遍的常量收单源；目标收集导出加列名撞车防护（0e30622）
 - **`i18n`**
+  - ./i18n 声明落稳定路径 dist/i18n.d.ts（Q13 收口）（1f995be）
   - 新增语言包键集对账闸口 check:i18n，接进 quality-check 与两条 workflow（efb340d）
   - data/layout/_internal 三模块清扫——DataTable/导航数据/内部设施文案 t() 化（2edaf92）
   - form-builder 模块全量清扫——fieldRegistry key 化 + presets 函数化 + 设计器/收集/渲染器文案 t() 化（daae15e）
@@ -165,8 +172,11 @@
 - **`select,feedback,route-planner`**
   - 批次2 — 多选判定 Set 化 / import 期零全局副作用 / 告警与持久化口径（749a108）
 - **`storage`**
+  - storage* 轻量 API 物理拆到 local-storage.ts（Q17，API 不变）（a8ead93）
   - 两套云端存储合并——Supabase REST 传输层下沉 + CloudKVAdapter 官方实现（0172d5e）
   - contract-storage 本地引擎复用统一存储层（2a17147）
+- **`types`**
+  - any 收窄 51 → 5 处（chart/amap/form-builder 清零，剩 5 处为已登记决策）（5711080）
 - **`upload,data-table,image-preview`**
   - 上传并发闸门 + 缩略图懒加载（b60f78c）
 - **`utils`**
@@ -254,8 +264,10 @@
 - **`guard`**
   - 页面级错误边界跨页复位 + 全局兜底 + 三层质量闸补齐（e2e 已静默失效三周）（3a21bd3）
 - **`i18n`**
+  - Popover 引用键前缀写错（feedback.popover.trigger → popover.trigger）+ 键存在性守卫（3521def）
   - 清理硬编码中文（portal_login/ModalBox/ToggleList/ChartLegend）+ Popover 语义补全（2f431d8）
 - **`icons`**
+  - IconPicker 去 solar CDN 依赖，名录与渲染数据一一对应（6c240e7）
   - 子集生成器补 icon 静态属性收集态，非 lucide 名逐个归位（45ec72f）
 - **`quality`**
   - 覆盖率地板上调至 50/42/46/52；新增 check:css-tokens 令牌断档闸口（485c1a0）
@@ -275,6 +287,8 @@
   - tag/浮动 label 行高裁切小写 g 下伸尾巴（taq 现象）（5c637e4）
 - **`style,a11y,internal`**
   - 批次3 — 焦点环兜底/暗色 color-scheme/高度兜底统一/重复实现收口（63b5361）
+- **`test`**
+  - vitest 5 mock 兼容——__esModule 标记 + 挂载等异步解析（4e8c4e7）
 - **`tokens`**
   - 补录 21 个被引用未声明的断档令牌（亮+暗两套）+ 全库扫描脚本（d34e1cd）
 - **`ui`**
@@ -285,6 +299,12 @@
 ### Documentation
 
 - **通用**
+  - 报告 §9.7 补 vitest 5 mock 迁移三条经验（__esModule 标记/异步 teardown/importOriginal 禁用场景）（62da721）
+  - 报告 §9.3-9.5——文档站落地、site-audit 假红根治、剩余开放重排（2d08b0f）
+  - 依赖选型记录（Q6/Q11 PoC 结论）+ expose 公开契约表（Q18）+ 按需引入口径 + 报告 §9 跟进处置（ff3ba29）
+  - 报告标记 Q10 any 收窄完成（51→5，含 scatter 冗余字段缺陷）（741d245）
+  - 报告补录 Q16 SSR 冒烟与 i18n 键存在性闸口（含两个连锁缺陷）（590fa27）
+  - 报告标记 Q9 CHANGELOG 与 Q17 storageSet 拆分已完成（c1519eb）
   - 报告标记 Q12 完成（axe 全站扫描 + 12 处库组件 a11y/对比度修复）（7ad8ff1）
   - 报告 N4 更新为合并终版（ModalShell + ConfirmContent 双下沉）（2fa00e8）
   - 报告 N5/Q14 标记已修（800 行拆分+行数闸口、体积预算）（e5554fd）
@@ -296,6 +316,8 @@
   - 更新质量评估报告至v5.1-修复轮（214b87a）
   - 明确评估目标平台为纯Vue3 Web（不兼容小程序）（2750a68）
   - v5.0-final 质量评估报告+流程手册升级（19维度+10阶段+动态响应式审计+Git基线）（0a4b5fe）
+- **`api`**
+  - DataTable props 分组（Q5）+ defineExpose 注释契约（Q18）（962f543）
 - **`demos`**
   - 补 TabPanel / 上传内置预览 / 扫码多码指针示例（89c9f26）
 - **`form`**
@@ -314,12 +336,21 @@
   - 补充组件冒烟与工具函数测试，覆盖率跨过 5% 阈值（7e457da）
 - **`amap`**
   - amap-service 纯函数行为锁定（11 个）（2bdee41）
+- **`chart,form`**
+  - Q4 后半继续抬升——chart +8/+4/+10，form +1.3/+1.6/+1（c9a8202）
+- **`code-capture`**
+  - form 域收尾——扫码状态机 10 条，CodeCapture 32.7%→42.9%（55c9698）
+- **`coverage`**
+  - 按域覆盖防回退闸口（Q4 前半）——全局地板不再掩盖域级洼地（d78969b）
 - **`data`**
   - ImagePreview 行为锁定（巨型组件 1468 行）（2627bd5）
   - useTableExtras 行为锁定（DataTable 安全网补全）（97286c3）
   - useTableFilter 行为锁定（DataTable 筛选安全网补全）（2ccae80）
   - useTableCore 数据管道行为锁定（P2-3 安全网）（5973863）
+- **`date-panel`**
+  - form 域再抬升——DatePanel.vue 1.1% → 全覆盖，form 52.6/48.1/47.7（f5048e7）
 - **`e2e`**
+  - 修复全链暴露的两条失败——分页锚点 h4→h2（真红）+ axe 盲等改确定性等待（假红）（362e7ac）
   - site-audit 登记三方网络噪音豁免（iconify 回源/高德 markers）（99bd9fb）
   - login 页 i18n + AppLayout a11y 真实浏览器验证（800020b）
 - **`fb`**
@@ -332,10 +363,14 @@
   - useFormSchema 行为锁定（11 个）（9ee73bd）
   - 联动求值安全行为锁定（P0-5）（3df288e）
   - 富文本 XSS 消毒行为锁定（P0-4）（94a863c）
+- **`login,menu`**
+  - Q4 后半抬升两个覆盖洼地——login +16/+10/+8，nav +30/+32/+30（d22ab8f）
 - **`repo`**
   - 测试资产入库 —— 单测与 e2e 随版本控制迁移，S3 签名测试凭证假化（d625494）
 - **`route-planner`**
   - 核心算法行为锁定（聚类/分天/绕路/重规划 9 例）（046ccbf）
+- **`ssr`**
+  - SSR 冒烟落地（Q16）——25 个代表组件真服务端渲染 + 抓出 common.progress 键缺失（5af1b80）
 - **`storage`**
   - contract-storage 契约固化（M9）（8272013）
 - **`tree`**
@@ -350,6 +385,7 @@
 - **`data`**
   - 删除死代码 useTableEvents.ts（cab99aa）
 - **`deps`**
+  - vitest 4→5 + CI Node 20→22，npm audit 归零（74f1eb4）
   - 清除 pinia 死安装（devDep/rollup external/globals/demo 宿主挂载）（612d762）
   - 升级消除已知安全漏洞（da1bc4f）
 - **`dev`**
@@ -370,6 +406,9 @@
 - **`test`**
   - 单条用例超时 5s → 20s，消除大数据挂载用例的偶发红（ae09d8f）
   - 覆盖率阈值 5%→基线 25/20/23/26（435 用例实测 31.6%，防覆盖回退）（a7459a9）
+- **`workspace`**
+  - 本轮评估探针与验收证据入库（51cb58f）
+  - 审查检测工具入库（上轮遗留未提交）（809e82e）
 
 ### Other
 
@@ -380,4 +419,4 @@
 
 ---
 
-生成口径：286 条提交 → 列入 253 条，审查过程记录折叠 31 条，非 conventional 格式 2 条（见 Other）；范围：全部历史。
+生成口径：313 条提交 → 列入 280 条，审查过程记录折叠 31 条，非 conventional 格式 2 条（见 Other）；范围：全部历史。
