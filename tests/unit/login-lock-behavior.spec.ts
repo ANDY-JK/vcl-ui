@@ -2,7 +2,7 @@
 // 这些逻辑此前只被 login-i18n.spec.ts 的文案冒烟覆盖，锁定计数/倒计时/存储恢复零测试，
 // 是 login 域覆盖率 35% 洼地的主要缺口。改锁定语义/存储键/提交防护时必须过本组。
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, type VueWrapper } from '@vue/test-utils'
 import Login from '@/components/login/login.vue'
 import { storageGet, storageSet, storageHas } from '@/components/storage'
 
@@ -109,26 +109,27 @@ describe('login · 失败计数与锁定', () => {
   })
   afterEach(() => vi.useRealTimers())
 
-  it('notifyFailed 按次数累加并警告剩余次数', async () => {
+  /** v2（Q18）：宿主回写走 authResult prop（watch 驱动），取代 notifyFailed() 暴露方法 */
+  const failOnce = (w: VueWrapper) => w.setProps({ authResult: { ok: false } })
+
+  it('authResult {ok:false} 按次数累加并警告剩余次数', async () => {
     const w = mountLogin({ maxAttempts: 3 })
-    w.vm.notifyFailed()
-    await w.vm.$nextTick()
+    await failOnce(w)
     expect(storageGet(ATTEMPT_KEY)).toBe('1')
     expect(w.text()).toContain('用户名或密码错误 (1/3)')
-    w.vm.notifyFailed()
-    await w.vm.$nextTick()
+    await failOnce(w)
     expect(storageGet(ATTEMPT_KEY)).toBe('2')
     expect(w.text()).toContain('用户名或密码错误 (2/3)')
   })
 
   it('达到 maxAttempts：写入锁定时间戳并进入倒计时文案', async () => {
     const w = mountLogin({ maxAttempts: 2, lockMinutes: 15 })
-    w.vm.notifyFailed()
-    w.vm.notifyFailed()
+    await failOnce(w)
+    await failOnce(w)
     const until = Number(storageGet(LOCK_KEY))
     expect(until).toBeGreaterThan(Date.now())
     expect(storageGet(ATTEMPT_KEY)).toBe('0') // 计数复位
-    await w.vm.$nextTick() // notifyFailed 的 errorType 写入需 flush
+    await w.vm.$nextTick() // 回写的 errorType 写入需 flush
     vi.advanceTimersByTime(1000) // 倒计时节拍
     await w.vm.$nextTick()
     expect(w.text()).toMatch(/账户已锁定，请 \d+:\d{2} 后重试/)
@@ -136,7 +137,7 @@ describe('login · 失败计数与锁定', () => {
 
   it('锁定期间提交被拒绝（不 emit）', async () => {
     const w = mountLogin({ maxAttempts: 1, lockMinutes: 15 })
-    w.vm.notifyFailed() // 一次即锁
+    await failOnce(w) // 一次即锁
     await w.find('input[type="text"]').setValue('alice')
     await w.find('input[type="password"]').setValue('secret123')
     const btn = w.findAll('button').find((b) => b.text().includes('登'))!
@@ -146,17 +147,16 @@ describe('login · 失败计数与锁定', () => {
 
   it('maxAttempts<=0：不计数不锁定（宿主自行管控）', async () => {
     const w = mountLogin({ maxAttempts: 0 })
-    w.vm.notifyFailed()
+    await failOnce(w)
     expect(storageHas(ATTEMPT_KEY)).toBe(false)
     expect(storageHas(LOCK_KEY)).toBe(false)
   })
 
-  it('notifySuccess：清错误、清计数与锁定', async () => {
+  it('authResult {ok:true}：清错误、清计数与锁定', async () => {
     const w = mountLogin({ maxAttempts: 2 })
-    w.vm.notifyFailed()
-    w.vm.notifyFailed()
-    w.vm.notifySuccess()
-    await w.vm.$nextTick()
+    await failOnce(w)
+    await failOnce(w)
+    await w.setProps({ authResult: { ok: true } })
     expect(storageHas(ATTEMPT_KEY)).toBe(false)
     expect(storageHas(LOCK_KEY)).toBe(false)
     expect(w.text()).not.toContain('账户已锁定')
@@ -172,10 +172,16 @@ describe('login · 失败计数与锁定', () => {
 
   it('倒计时走完：错误自动清除、锁定键删除', async () => {
     const w = mountLogin({ maxAttempts: 1, lockMinutes: 15 })
-    w.vm.notifyFailed()
+    await failOnce(w)
     vi.advanceTimersByTime(15 * 60 * 1000 + 2000)
     await w.vm.$nextTick()
     expect(storageHas(LOCK_KEY)).toBe(false)
     expect(w.text()).not.toContain('账户已锁定')
+  })
+
+  it('服务端错误文案经 message 透传（等同原 notifyFailed(serverMsg)）', async () => {
+    const w = mountLogin({ maxAttempts: 3 })
+    await w.setProps({ authResult: { ok: false, message: '账号已在别处登录' } })
+    expect(w.text()).toContain('账号已在别处登录')
   })
 })

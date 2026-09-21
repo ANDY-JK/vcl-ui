@@ -34,8 +34,8 @@ describe('P1-5 可点击元素键盘可达', () => {
     expect(item.attributes('role')).toBe('button')
     expect(item.attributes('tabindex')).toBe('0')
     await item.trigger('keydown', { key: 'Enter' })
-    expect(wrapper.emitted('itemClick')).toHaveLength(1)
-    expect(wrapper.emitted('itemClick')![0][0]).toEqual({ id: 1, name: 'A' })
+    expect(wrapper.emitted('item-click')).toHaveLength(1)
+    expect(wrapper.emitted('item-click')![0][0]).toEqual({ id: 1, name: 'A' })
   })
 
   it('TimeColumns tp-cell：role=button + Enter 触发选中', async () => {

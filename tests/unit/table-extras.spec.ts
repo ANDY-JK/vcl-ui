@@ -1,8 +1,15 @@
 // useTableExtras 行为锁定测试（DataTable 安全网补全：行选择 + 列显隐）
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { ref, computed } from 'vue'
 import { useTableExtras } from '@/components/data/composables/useTableExtras'
+import { downloadBlob } from '@/components/_internal/utils'
 import type { Column, ColumnFilterState } from '@/components/data/composables/types'
+
+// 导出落到 downloadBlob（造 a 标签点击），jsdom 下不真下载——mock 掉只断言调用
+vi.mock('@/components/_internal/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/_internal/utils')>()
+  return { ...actual, downloadBlob: vi.fn() }
+})
 
 const cols: Column[] = [
   { key: 'id', title: 'ID' },
@@ -33,6 +40,7 @@ function makeExtras(props: Record<string, unknown> = {}, overrides: Record<strin
       hiddenColumns,
       filterState,
       pagedData: computed(() => displayData.value),
+      hasExportListener: () => false,
       ...overrides,
     } as never,
   )
@@ -47,7 +55,7 @@ describe('useTableExtras 行选择', () => {
     // emit update:selectedKeys
     expect(emitted[0]).toEqual(['update:selectedKeys', ['1']])
     // emit selectionChange（含行对象）
-    expect(emitted[1][0]).toBe('selectionChange')
+    expect(emitted[1][0]).toBe('selection-change')
     expect(emitted[1][1]).toEqual(['1'])
     expect(emitted[1][2]).toEqual([data[0]])
     // 再点取消
@@ -150,7 +158,30 @@ describe('useTableExtras 行选择 · rowKey 字段缺失', () => {
   it('selectionChange 只回传被选中的那一行', () => {
     const { api, emitted } = makeNoKeyExtras()
     api.toggleRowSelect(noKeyData[0])
-    const selectionChange = emitted.find((e) => e[0] === 'selectionChange')
+    const selectionChange = emitted.find((e) => e[0] === 'selection-change')
     expect(selectionChange?.[2]).toEqual([noKeyData[0]])
+  })
+})
+
+// v2（Q5）：onExport 回调 prop 收敛为 @export 事件——监听在否决定服务端导出还是内置导出
+describe('useTableExtras 导出（@export 事件化）', () => {
+  it('挂了 @export 监听：emit export，不下载内置 CSV', () => {
+    const { api, emitted } = makeExtras({}, { hasExportListener: () => true })
+    api.exportCSV()
+    expect(emitted).toEqual([['export']])
+    expect(downloadBlob).not.toHaveBeenCalled()
+  })
+
+  it('没挂监听：走内置 CSV 下载，不 emit export', () => {
+    const { api, emitted } = makeExtras()
+    api.exportCSV()
+    expect(emitted).toEqual([])
+    expect(downloadBlob).toHaveBeenCalledTimes(1)
+  })
+
+  it('excel 导出同样让位 @export（不惰性加载 xlsx）', async () => {
+    const { api, emitted } = makeExtras({}, { hasExportListener: () => true })
+    await api.exportExcel()
+    expect(emitted).toEqual([['export']])
   })
 })

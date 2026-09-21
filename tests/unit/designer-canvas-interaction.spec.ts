@@ -112,7 +112,7 @@ describe('DesignerCanvas · tabs 容器交互', () => {
     const addBtn = w.findAll('.ldc-tab').find((b) => b.text().includes('+ 添加'))
     expect(addBtn).toBeTruthy()
     await addBtn!.trigger('click')
-    const events = w.emitted('updateContainer')
+    const events = w.emitted('update-container')
     expect(events).toBeTruthy()
     const [id, config] = events![0] as [string, { tabs: { label: string; name: string }[] }]
     expect(id).toBe('c-tabs')

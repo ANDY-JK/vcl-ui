@@ -51,10 +51,10 @@ function mountInHost(tableProps: Record<string, unknown> = MINIMAL): VueWrapper 
   )
 }
 
-/** 等待 DataTable 发出第 n 次 fullscreenChange（全屏 watch 异步收尾后才会 emit） */
+/** 等待 DataTable 发出第 n 次 fullscreen-change（全屏 watch 异步收尾后才会 emit） */
 async function waitFullscreenChange(dt: VueWrapper, n: number): Promise<void> {
   await vi.waitFor(() => {
-    expect((dt.emitted('fullscreenChange') ?? []).length).toBeGreaterThanOrEqual(n)
+    expect((dt.emitted('fullscreen-change') ?? []).length).toBeGreaterThanOrEqual(n)
   })
 }
 
@@ -94,7 +94,7 @@ describe('DataTable 挂载级护栏 — 全屏 DOM 还原', () => {
     expect(enterBtn).toBeTruthy()
     await enterBtn!.trigger('click')
     await waitFullscreenChange(dt, 1)
-    expect((dt.emitted('fullscreenChange')![0] as unknown[])[0]).toBe(true)
+    expect((dt.emitted('fullscreen-change')![0] as unknown[])[0]).toBe(true)
     // 全屏态：容器移到 body 下
     expect(tableWrap.parentElement).toBe(document.body)
     expect(document.body.classList.contains('dt-fullscreen-active')).toBe(true)
@@ -103,7 +103,7 @@ describe('DataTable 挂载级护栏 — 全屏 DOM 还原', () => {
     const exitBtn = fullscreenButton(dt)
     await exitBtn!.trigger('click')
     await waitFullscreenChange(dt, 2)
-    expect((dt.emitted('fullscreenChange')![1] as unknown[])[0]).toBe(false)
+    expect((dt.emitted('fullscreen-change')![1] as unknown[])[0]).toBe(false)
     // 还原：原父容器 + 原位置（nextSibling 快照有效 → insertBefore 分支）
     expect(tableWrap.parentElement).toBe(hostWrap)
     expect(tableWrap.previousElementSibling?.classList.contains('before')).toBe(true)
@@ -246,7 +246,7 @@ describe('DataTable 挂载级护栏 — 批量编辑弹窗区块（主子装配�
     await dlg.find('input.note-editor-input').setValue('批量值')
     await dlg.find('input.note-editor-input').trigger('keydown', { key: 'Enter' })
 
-    expect(w.emitted('batchChange')?.[0]).toEqual(['name', '批量值', ['r0']])
+    expect(w.emitted('batch-change')?.[0]).toEqual(['name', '批量值', ['r0']])
     // 提交后弹窗关闭
     expect(dlg.find('.note-editor').exists()).toBe(false)
   })
@@ -271,7 +271,7 @@ describe('DataTable 挂载级护栏 — 分页脚注区块（主子装配路径�
     expect(w.findAll('tbody tr').length).toBe(2)
     // 下一页
     await pageBtns[4].trigger('click')
-    expect(w.emitted('pageChange')?.[0]).toEqual([2, 2])
+    expect(w.emitted('page-change')?.[0]).toEqual([2, 2])
     expect(w.emitted('update:currentPage')?.[0]).toEqual([2])
     await nextTick()
     // 第 2 页数据
@@ -309,6 +309,19 @@ describe('DataTable 挂载级护栏 — 工具栏区块（主子装配路径）'
       vi.useRealTimers()
     }
   })
+
+  // v2（Q5）：onExport 回调 prop 收敛为 @export 事件——监听检测走 vnode.props（defineEmits 无 hasListeners）
+  it('导出按钮：挂 @export 监听 → emit export（服务端导出接管，不产内置文件）', async () => {
+    const w = track(
+      mount(DataTable, {
+        attachTo: document.body,
+        props: { ...MINIMAL, exportable: true, onExport: () => {} },
+      }),
+    )
+    // 工具栏功能按钮共用 .toolbar-export-btn 类，CSV 导出按钮靠 title（i18n 文案）定位
+    await w.find(`button[title="${t('table.downloadCsv')}"]`).trigger('click')
+    expect(w.emitted('export')).toHaveLength(1)
+  })
 })
 
 describe('DataTable 挂载级护栏 — 行编辑闭环', () => {
@@ -334,7 +347,7 @@ describe('DataTable 挂载级护栏 — 行编辑闭环', () => {
     await input.trigger('blur') // commitEdit
 
     // emit 装配路径：cellChange(rowKey, colKey, newValue)
-    expect(w.emitted('cellChange')?.[0]).toEqual(['r1', 'name', '新值'])
+    expect(w.emitted('cell-change')?.[0]).toEqual(['r1', 'name', '新值'])
     // 提交后退出编辑态，显示值经本地 override 更新
     expect(w.find('input.cell-edit-input').exists()).toBe(false)
     expect(w.find('td[data-row-idx="0"][data-col-idx="0"]').text()).toContain('新值')
@@ -355,7 +368,7 @@ describe('DataTable 挂载级护栏 — 行编辑闭环', () => {
     await input.trigger('input')
     await input.trigger('keydown', { key: 'Enter' })
 
-    expect(w.emitted('cellChange')?.[0]).toEqual(['r1', 'name', 'b'])
+    expect(w.emitted('cell-change')?.[0]).toEqual(['r1', 'name', 'b'])
     expect(w.find('input.cell-edit-input').exists()).toBe(false)
     expect(w.find('td[data-row-idx="0"][data-col-idx="0"]').text()).toContain('b')
   })
@@ -382,7 +395,7 @@ describe('DataTable 挂载级护栏 — 行编辑闭环', () => {
     await input.trigger('keydown', { key: 'Enter' })
 
     const expected = `${new Date().getFullYear()}-09-12`
-    expect(w.emitted('cellChange')?.[0]).toEqual(['r1', 'day', expected])
+    expect(w.emitted('cell-change')?.[0]).toEqual(['r1', 'day', expected])
     // 关键：表格里显示的是归一化后的值，而不是原样 9/12
     expect(w.find('td[data-row-idx="0"][data-col-idx="1"]').text()).toContain(expected)
   })
@@ -407,7 +420,7 @@ describe('DataTable 挂载级护栏 — 行编辑闭环', () => {
     await input.trigger('keydown', { key: 'Enter' })
 
     // 未落库、仍可继续输入（不把用户困在非法值上）
-    expect(w.emitted('cellChange')).toBeUndefined()
+    expect(w.emitted('cell-change')).toBeUndefined()
     expect(w.find('input.cell-edit-input').exists()).toBe(true)
   })
 
@@ -426,7 +439,7 @@ describe('DataTable 挂载级护栏 — 行编辑闭环', () => {
     await input.trigger('input')
     await input.trigger('keydown', { key: 'Enter' })
 
-    expect(w.emitted('cellChange')?.[0]).toEqual(['r1', 'name', '9/12'])
+    expect(w.emitted('cell-change')?.[0]).toEqual(['r1', 'name', '9/12'])
   })
 
   it('type=date 列：改值后 blur 提交同样归一化（失焦路径与 Enter 路径同口径）', async () => {
@@ -449,7 +462,7 @@ describe('DataTable 挂载级护栏 — 行编辑闭环', () => {
     await input.trigger('blur')
 
     const expected = `${new Date().getFullYear()}-09-12`
-    expect(w.emitted('cellChange')?.[0]).toEqual(['r1', 'day', expected])
+    expect(w.emitted('cell-change')?.[0]).toEqual(['r1', 'day', expected])
     expect(w.find('td[data-row-idx="0"][data-col-idx="1"]').text()).toContain(expected)
   })
 
@@ -473,7 +486,7 @@ describe('DataTable 挂载级护栏 — 行编辑闭环', () => {
     await nextTick()
     await nextTick()
 
-    expect(w.emitted('cellChange')?.[0]).toEqual(['r1', 'name', '改a'])
+    expect(w.emitted('cell-change')?.[0]).toEqual(['r1', 'name', '改a'])
     // 直接落到下一行同列并进入编辑（不同行同列）
     const next = w.find('td[data-row-idx="1"][data-col-idx="0"] input.cell-edit-input')
     expect(next.exists()).toBe(true)
@@ -607,7 +620,7 @@ describe('DataTable 挂载级护栏 — 交互体验第二批（撤销/重做按
     inputEl.value = '99'
     await input.trigger('input')
     await input.trigger('keydown', { key: 'Enter' })
-    expect(w.emitted('cellChange')?.[0]).toEqual(['r1', 'amount', '99'])
+    expect(w.emitted('cell-change')?.[0]).toEqual(['r1', 'amount', '99'])
     expect(w.find('.cell-edit-invalid-hint').exists()).toBe(false)
   })
 
