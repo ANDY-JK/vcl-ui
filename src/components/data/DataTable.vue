@@ -12,6 +12,7 @@ import {
   onErrorCaptured,
   nextTick,
   inject,
+  getCurrentInstance,
   toRef,
   type ComputedRef,
 } from 'vue'
@@ -75,8 +76,8 @@ onErrorCaptured((err: Error) => {
 
 const props = withDefaults(
   // ⛔ Q5 契约：props 按下列分组维护（新增能力优先收进已有分组；交互类布尔开关已 14 个，
-  //    再加应先考虑并入对象 prop）。v2 已登记迁移：onExport / onToggleSidebar 两个
-  //    回调 prop 与事件语义混淆，v2 改 emit 或改名——收敛前保持现状。
+  //    再加应先考虑并入对象 prop）。v2（Q5）已收敛：onExport / onToggleSidebar 两个
+  //    回调 prop 删了，宿主联动统一走 @export / @toggle-sidebar 事件（见 Emits 契约注释）。
   defineProps<{
     // ────────────────────────────── 数据与列 ──────────────────────────────
     columns: Column[]
@@ -167,9 +168,6 @@ const props = withDefaults(
     filterMode?: 'client' | 'server'
     /** 外部筛选状态（v-model:filters）：服务端模式下父组件可程序化控制筛选，变化时自动同步到内部 filterState */
     filters?: Record<string, string[]>
-    /** 服务端导出回调：存在时点击导出按钮调用此函数（后端返全量数据下载），不执行内置 CSV 导出。
-     *  ⚠️ v2 迁移项（Q5）：回调 prop 与事件语义混淆，v2 改 emit('export') 或更名——收敛前保持现状 */
-    onExport?: () => void
     rowClass?: (row: T, index: number) => string
     rowStyle?: (row: T, index: number) => Record<string, string>
     cellClass?: (colKey: string, row: T, index: number) => string
@@ -180,9 +178,8 @@ const props = withDefaults(
     /** 截图最大行数（超过提醒用户先筛选，避免生成超大 canvas 卡死） */
     screenshotMaxRows?: number
     // ────────────────────────────── 宿主联动 ──────────────────────────────
-    /** 全屏时收起宿主侧边栏的回调（不传则尝试 inject('toggleCollapse') 降级）。
-     *  ⚠️ v2 迁移项（Q5）：回调 prop 与事件语义混淆，v2 改 emit 或更名——收敛前保持现状 */
-    onToggleSidebar?: () => void
+    /** v2（Q5）起宿主联动改走事件：@export（服务端导出）、@toggle-sidebar（全屏时收/还宿主侧边栏），
+     *  原 onExport / onToggleSidebar 回调 prop 已移除（见 Emits 契约注释） */
   }>(),
   {
     rowKey: 'seq',
@@ -328,7 +325,7 @@ function onContextItemClick(act: RowContextAction) {
   if (act.onClick) {
     act.onClick(ctx.row!, ctx.rowIndex)
   } else {
-    emit('rowContextAction', act.key, ctx.row!, ctx.rowIndex)
+    emit('row-context-action', act.key, ctx.row!, ctx.rowIndex)
   }
   closeContextMenu()
 }
@@ -562,7 +559,16 @@ const _fullscreenNext = ref<ChildNode | null>(null)
 /** 搬到 body 的那个节点本身：卸载时模板 ref 已被 Vue 置空（setRef 早于 onUnmounted），
  *  必须另存一份裸引用，否则归还路径拿不到节点。 */
 let _fullscreenEl: HTMLElement | null = null
-const _toggleCollapse = props.onToggleSidebar ?? inject<() => void>('toggleCollapse', () => {})
+/** v2（Q5）：onToggleSidebar 回调 prop 收敛为 @toggle-sidebar 事件——宿主联动统一事件面。
+ *  有监听=通知宿主收/还侧边栏；无监听=降级 inject('toggleCollapse')（与 v1 语义一致）。
+ *  监听在否读 vnode.props：defineEmits 不提供 hasListeners 查询，且调用期判定比 setup 期
+ *  取值更稳（父组件条件渲染监听器时不会钉死在旧状态）。 */
+const _dtInstance = getCurrentInstance()
+const _injectedToggleCollapse = inject<() => void>('toggleCollapse', () => {})
+const _toggleCollapse = () => {
+  if (_dtInstance?.vnode.props?.onToggleSidebar) emit('toggle-sidebar')
+  else _injectedToggleCollapse()
+}
 const _sidebarToggledByUs = ref(false)
 let _fsResizeRaf = 0
 /** 进入全屏的等待：_fsSeq 只头发号，_fsPendingRun 记录当前在飞的那个号（0 = 没有在飞）。
@@ -869,7 +875,7 @@ watch(_isFullscreen, async (v) => {
   applyAutoFit()
   // 全屏切换后容器尺寸变化 → 重测虚拟滚动窗口高度（进出全屏都要测）
   if (scrollContainerRef.value) containerHeight.value = scrollContainerRef.value.clientHeight
-  emit('fullscreenChange', v)
+  emit('fullscreen-change', v)
 })
 
 // 截图导出
@@ -1142,8 +1148,8 @@ const {
 } = useTableEdit(
   props,
   {
-    cellChange: (rk, ck, nv) => emit('cellChange', rk, ck, nv),
-    cellNote: (rk, ck, n) => emit('cellNote', rk, ck, n),
+    cellChange: (rk, ck, nv) => emit('cell-change', rk, ck, nv),
+    cellNote: (rk, ck, n) => emit('cell-note', rk, ck, n),
   },
   {
     // 复制矩形选区时读取某格显示值
@@ -1526,6 +1532,8 @@ const {
   restoreColWidths,
   flushWidths,
 } = useTableExtras(props, emit as (...args: unknown[]) => void, {
+  // v2（Q5）：@export 监听在否决定服务端导出还是内置 CSV/Excel
+  hasExportListener: () => !!_dtInstance?.vnode.props?.onExport,
   displayData: _displayDataRef as ComputedRef<Record<string, any>[]>,
   tableWrapRef,
   filteredOptions,
@@ -1890,7 +1898,7 @@ function handleRowClick(row: Record<string, any>, idx: number) {
   if (next.has(key)) next.delete(key)
   else next.add(key)
   _clickedRowKeys.value = next
-  emit('rowClick', row, idx)
+  emit('row-click', row, idx)
 }
 
 const _onClick = (e: Event) => {
@@ -2640,7 +2648,7 @@ provideDataTableContext({
                     :key="act.key"
                     :class="['row-action-btn', `row-action-${act.variant || 'default'}`]"
                     :title="act.label"
-                    @click="emit('rowAction', act.key, row, rowDisplayIndex(idx))"
+                    @click="emit('row-action', act.key, row, rowDisplayIndex(idx))"
                   >
                     <IconSvg v-if="act.icon" :type="act.icon" size="sm" />
                     {{ act.label }}
@@ -2709,7 +2717,7 @@ provideDataTableContext({
             :data-row-key="rowMetaMap.get(row)?.key ?? ''"
             class="card-view-item"
             :class="{ 'card-selected': _selectedKeySet.has(rowMetaMap.get(row)?.key ?? '') }"
-            @click="emit('rowClick', row, idx)"
+            @click="emit('row-click', row, idx)"
             @contextmenu.prevent="showRowContextMenu(row, $event)"
           >
             <div v-if="selectable" class="card-checkbox" @click.stop>
@@ -2836,7 +2844,7 @@ provideDataTableContext({
                 :key="act.key"
                 :class="['row-action-btn', `row-action-${act.variant || 'default'}`]"
                 :title="act.label"
-                @click="emit('rowAction', act.key, row, idx)"
+                @click="emit('row-action', act.key, row, idx)"
               >
                 <IconSvg v-if="act.icon" :type="act.icon" size="sm" />
                 {{ act.label }}
@@ -3167,7 +3175,7 @@ provideDataTableContext({
           <DataTableBatchDialog
             ref="batchDialog"
             :selectable="selectable"
-            @batch-change="(ck, nv, keys) => emit('batchChange', ck, nv, keys)"
+            @batch-change="(ck, nv, keys) => emit('batch-change', ck, nv, keys)"
           />
         </div>
       </Teleport>

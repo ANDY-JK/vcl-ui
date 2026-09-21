@@ -646,9 +646,9 @@ const srvRows = computed(() => srvSorted.value.slice((srvPage.value - 1) * srvSi
 function srvSay(msg: string) {
   srvLog.value = [`${new Date().toLocaleTimeString()} ${msg}`, ...srvLog.value].slice(0, 6)
 }
-/** 服务端导出：组件不再生成 CSV，改为回调通知使用方去调自己的导出接口 */
+/** 服务端导出：v2（Q5）起监听 @export 即接管——组件不再生成 CSV，由使用方去调自己的导出接口 */
 function srvExport() {
-  srvSay('onExport 触发 → 真实项目在这里请求后端导出接口')
+  srvSay('@export 触发 → 真实项目在这里请求后端导出接口')
 }
 
 // ========== 16. 截图与导出 ==========
@@ -676,14 +676,14 @@ function dumpStorage() {
 
 // ========== 18. 全屏与宿主 ==========
 /** 本 demo 站的宿主就是 AppLayout，它 provide('toggleCollapse') 并渲染 .sidebar。
- *  组件在不传 onToggleSidebar 时正是降级去找这个 inject，所以两条路径都能当场看到效果。 */
+ *  组件在没挂 @toggle-sidebar 监听时正是降级去找这个 inject，所以两条路径都能当场看到效果。 */
 const hostToggleCollapse = inject<() => void>('toggleCollapse', () => {})
 const fsLog = ref('')
 async function collapseHostSidebar() {
   hostToggleCollapse()
   await nextTick()
   const collapsed = document.querySelector('.sidebar')?.classList.contains('collapsed')
-  fsLog.value = `onToggleSidebar 被调用 → 已接管 inject 降级路径，宿主侧栏${collapsed ? '收起' : '还原'}`
+  fsLog.value = `@toggle-sidebar 被调用 → 已接管 inject 降级路径，宿主侧栏${collapsed ? '收起' : '还原'}`
 }
 
 // ========== 19. 图片域名白名单 ==========
@@ -1182,7 +1182,7 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 服务端模式 ===== -->
-    <Card title="服务端模式 — searchMode / filterMode / filters / sortKey + sortOrder / total / onExport" title-as="h2">
+    <Card title="服务端模式 — searchMode / filterMode / filters / sortKey + sortOrder / total / @export" title-as="h2">
       <p class="demo-hint" style="color: var(--color-warning)">
         这块是<strong>用本地假数据模拟后端</strong>（共 {{ SRV_ROWS }} 条藏在 <code>srvAll</code> 里）。
         真实项目把「后端」那段换成自己的接口请求即可，组件侧的用法一字不改。
@@ -1214,7 +1214,7 @@ const interCols: Column[] = [
         :total="srvTotal"
         :sort-key="srvSortKey || undefined"
         :sort-order="srvSortOrder"
-        :on-export="srvExport"
+        @export="srvExport"
         @search="
           (v) => {
             srvKeyword = v
@@ -1236,7 +1236,7 @@ const interCols: Column[] = [
           }
         "
         @page-change="
-          (p, s) => srvSay(`pageChange → 第 ${p} 页 / 每页 ${s} 条`)
+          (p, s) => srvSay(`page-change → 第 ${p} 页 / 每页 ${s} 条`)
         "
       />
       <div class="demo-log">
@@ -1315,15 +1315,15 @@ const interCols: Column[] = [
     </Card>
 
     <!-- ===== 全屏与宿主 ===== -->
-    <Card title="全屏与宿主 — onToggleSidebar / fullscreenChange" title-as="h2">
+    <Card title="全屏与宿主 — @toggle-sidebar / @fullscreen-change" title-as="h2">
       <p class="demo-hint">
-        点这张表工具栏的全屏按钮：组件把整张表搬到 body 下并锁页面滚动，进出各调一次
-        <code>onToggleSidebar</code> 通知宿主收起/还原侧边栏 —— 本站左侧那条真导航栏会跟着动。
+        点这张表工具栏的全屏按钮：组件把整张表搬到 body 下并锁页面滚动，进出各发一次
+        <code>@toggle-sidebar</code> 事件通知宿主收起/还原侧边栏 —— 本站左侧那条真导航栏会跟着动。
       </p>
       <p class="demo-hint">
         两条固定前提，缺一条就一次都不会调：其一，组件先看
-        <code>document.querySelector('.sidebar')</code> 存不存在且未折叠；其二，不传
-        <code>onToggleSidebar</code> 时它降级去找 <code>inject('toggleCollapse')</code>
+        <code>document.querySelector('.sidebar')</code> 存不存在且未折叠；其二，没挂
+        <code>@toggle-sidebar</code> 监听时它降级去找 <code>inject('toggleCollapse')</code>
         —— 本站宿主就是 AppLayout，它两样都给了，所以两条路径都通。
       </p>
       <p class="demo-hint">
@@ -1337,8 +1337,8 @@ const interCols: Column[] = [
         :data="evData"
         row-key="id"
         :page-size="5"
-        :on-toggle-sidebar="collapseHostSidebar"
-        @fullscreen-change="(v: boolean) => evSay(`fullscreenChange → ${v ? '进入全屏' : '退出全屏'}`)"
+        @toggle-sidebar="collapseHostSidebar"
+        @fullscreen-change="(v: boolean) => evSay(`fullscreen-change → ${v ? '进入全屏' : '退出全屏'}`)"
       />
     </Card>
 
@@ -1439,12 +1439,12 @@ const interCols: Column[] = [
             :page-size="4"
             @sort="(k: string, o: string) => evSay(`sort: ${k} ${o}`)"
             @filter="(f: Record<string, string[]>) => evSay(`filter: ${JSON.stringify(f)}`)"
-            @row-click="(r: Record<string, any>, i: number) => evSay(`rowClick: ${r.name} #${i}`)"
-            @selection-change="(ks: string[]) => evSay(`selectionChange: ${ks.length} 行`)"
-            @page-change="(p: number, s: number) => evSay(`pageChange: ${p}/${s}`)"
-            @cell-change="(rk: string, ck: string, v: string) => evSay(`cellChange: ${rk}.${ck}=${v}`)"
-            @cell-note="(rk: string, ck: string, v: string) => evSay(`cellNote: ${rk}.${ck}=${v}`)"
-            @batch-change="(ck: string, v: string, ks: string[]) => evSay(`batchChange: ${ck}=${v} ×${ks.length} 行`)"
+            @row-click="(r: Record<string, any>, i: number) => evSay(`row-click: ${r.name} #${i}`)"
+            @selection-change="(ks: string[]) => evSay(`selection-change: ${ks.length} 行`)"
+            @page-change="(p: number, s: number) => evSay(`page-change: ${p}/${s}`)"
+            @cell-change="(rk: string, ck: string, v: string) => evSay(`cell-change: ${rk}.${ck}=${v}`)"
+            @cell-note="(rk: string, ck: string, v: string) => evSay(`cell-note: ${rk}.${ck}=${v}`)"
+            @batch-change="(ck: string, v: string, ks: string[]) => evSay(`batch-change: ${ck}=${v} ×${ks.length} 行`)"
             @search="(v: string) => evSay(`search: ${v}`)"
           >
             <template #toolbar-actions>
@@ -1743,7 +1743,7 @@ const interCols: Column[] = [
             <td><code>rowContextActions</code></td>
             <td><code>RowContextAction[]</code></td>
             <td>—</td>
-            <td>行右键菜单项；带 onClick 就直接执行，否则抛 rowContextAction</td>
+            <td>行右键菜单项；带 onClick 就直接执行，否则抛 row-context-action</td>
           </tr>
           <tr>
             <td><code>originalTooltip</code></td>
@@ -1785,12 +1785,6 @@ const interCols: Column[] = [
             <td>外部筛选状态，支持 <code>v-model:filters</code>，变化时同步进内部</td>
           </tr>
           <tr>
-            <td><code>onExport</code></td>
-            <td><code>() =&gt; void</code></td>
-            <td>—</td>
-            <td>存在时点导出只调它，内置 CSV 生成整个跳过</td>
-          </tr>
-          <tr>
             <td><code>rowClass</code></td>
             <td><code>(row, index) =&gt; string</code></td>
             <td>—</td>
@@ -1826,13 +1820,6 @@ const interCols: Column[] = [
             <td><code>number</code></td>
             <td><code>400</code></td>
             <td>超过此行数只提醒不出图；另有 8000px 高度硬上限不开放</td>
-          </tr>
-          <tr class="api-group"><td colspan="4">宿主联动</td></tr>
-          <tr>
-            <td><code>onToggleSidebar</code></td>
-            <td><code>() =&gt; void</code></td>
-            <td>—</td>
-            <td>全屏进出时通知宿主收起/还原侧边栏；不传则降级找 inject('toggleCollapse')</td>
           </tr>
         </tbody>
       </table>
@@ -1983,7 +1970,7 @@ const interCols: Column[] = [
             <td><code>v-model:filters</code> 的写入侧</td>
           </tr>
           <tr>
-            <td><code>rowClick</code></td>
+            <td><code>row-click</code></td>
             <td><code>(row, index)</code></td>
             <td>—</td>
             <td>点击数据行；index 是渲染序，非过滤前原序</td>
@@ -2001,43 +1988,43 @@ const interCols: Column[] = [
             <td><code>v-model:current-page</code> 的写入侧</td>
           </tr>
           <tr>
-            <td><code>pageChange</code></td>
+            <td><code>page-change</code></td>
             <td><code>(page, pageSize)</code></td>
             <td><code>pageSize</code> / <code>total</code></td>
             <td>翻页，带上每页条数便于换算 offset</td>
           </tr>
           <tr>
-            <td><code>selectionChange</code></td>
+            <td><code>selection-change</code></td>
             <td><code>(keys, rows)</code></td>
             <td><code>selectable</code></td>
             <td>选行变化，同时给行对象省一次回查</td>
           </tr>
           <tr>
-            <td><code>cellChange</code></td>
+            <td><code>cell-change</code></td>
             <td><code>(rowKey, colKey, newValue)</code></td>
             <td><code>editable</code></td>
             <td>单元格编辑落定；组件不改 data，写回是使用方的事</td>
           </tr>
           <tr>
-            <td><code>cellNote</code></td>
+            <td><code>cell-note</code></td>
             <td><code>(rowKey, colKey, note)</code></td>
             <td><code>noteMode</code> / <code>notes</code></td>
             <td>备注填完；组件不写回 notes</td>
           </tr>
           <tr>
-            <td><code>batchChange</code></td>
+            <td><code>batch-change</code></td>
             <td><code>(colKey, newValue, rowKeys)</code></td>
             <td><code>selectable</code> + <code>editable</code></td>
             <td>工具栏批量修改确认，一次给齐改了哪些行</td>
           </tr>
           <tr>
-            <td><code>rowAction</code></td>
+            <td><code>row-action</code></td>
             <td><code>(actionKey, row, index)</code></td>
             <td><code>rowActions</code></td>
             <td>行操作按钮点击</td>
           </tr>
           <tr>
-            <td><code>rowContextAction</code></td>
+            <td><code>row-context-action</code></td>
             <td><code>(actionKey, row, index)</code></td>
             <td><code>rowContextActions</code></td>
             <td>行右键菜单项点击；该项自带 onClick 时不抛</td>
@@ -2049,10 +2036,22 @@ const interCols: Column[] = [
             <td>搜索词防抖 200ms 后抛出</td>
           </tr>
           <tr>
-            <td><code>fullscreenChange</code></td>
+            <td><code>fullscreen-change</code></td>
             <td><code>(isFullscreen)</code></td>
-            <td><code>onToggleSidebar</code></td>
+            <td><code>@toggle-sidebar</code></td>
             <td>进出全屏</td>
+          </tr>
+          <tr>
+            <td><code>export</code></td>
+            <td><code>()</code></td>
+            <td><code>exportable</code> / <code>excelExportable</code></td>
+            <td>v2（Q5）：挂了监听=服务端导出，内置 CSV/Excel 整个跳过；没挂=内置导出</td>
+          </tr>
+          <tr>
+            <td><code>toggle-sidebar</code></td>
+            <td><code>()</code></td>
+            <td><code>@toggle-sidebar</code></td>
+            <td>v2（Q5）：全屏进出时收/还宿主侧边栏；没挂监听则降级 inject('toggleCollapse')</td>
           </tr>
         </tbody>
       </table>

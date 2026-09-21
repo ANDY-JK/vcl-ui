@@ -21,7 +21,6 @@ export function useTableExtras(
     excelExportable?: boolean
     /** 导出范围：'all' 筛选后全量（默认），'page' 仅当前页 */
     exportScope?: 'all' | 'page'
-    onExport?: () => void
     // 行选择 + 行右键
     rowKey?: string
     selectedKeys?: string[]
@@ -51,6 +50,8 @@ export function useTableExtras(
     // 导出
     displayColumns?: ComputedRef<Column[]>
     cellOverrides?: Ref<Record<string, Record<string, string>>>
+    /** v2（Q5）：是否挂了 @export 监听——挂了=服务端导出（emit 后不打内置 CSV/Excel），没挂=内置导出 */
+    hasExportListener: () => boolean
     // 持久化状态
     sortState?: Ref<{ key: string; order: 'asc' | 'desc' }>
     sortHistory?: Ref<Record<string, 'asc' | 'desc'>>
@@ -108,8 +109,11 @@ export function useTableExtras(
   }
 
   function exportCSV() {
-    // 服务端导出：由外部回调处理（后端返回全量数据下载）
-    if (props.onExport) return props.onExport()
+    // 服务端导出：v2（Q5）起由 @export 事件接管（宿主请求后端下载全量），不再走内置 CSV
+    if (options.hasExportListener()) {
+      emit('export')
+      return
+    }
 
     const { cols, body } = buildExportPayload()
     const BOM = '﻿'
@@ -123,8 +127,11 @@ export function useTableExtras(
 
   // ==================== Excel 导出（xlsx 惰性加载，含编辑后显示值） ====================
   async function exportExcel() {
-    // 服务端导出：由外部回调处理
-    if (props.onExport) return props.onExport()
+    // 服务端导出：v2（Q5）起由 @export 事件接管，不再走内置 Excel
+    if (options.hasExportListener()) {
+      emit('export')
+      return
+    }
 
     // 惰性加载 xlsx，避免首屏包体增加（与 DynamicForm 同一策略）
     const XLSX = await import('xlsx')
@@ -309,7 +316,7 @@ export function useTableExtras(
     _selectedKeys.value = keys
     emit('update:selectedKeys', keys)
     const keySet = new Set(keys)
-    emit('selectionChange', keys, props.data.filter((r) => keySet.has(resolveRowKey(r, props.rowKey))))
+    emit('selection-change', keys, props.data.filter((r) => keySet.has(resolveRowKey(r, props.rowKey))))
   }
 
   // ==================== 持久化（提取至 useTablePersistence） ====================

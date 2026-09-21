@@ -17,11 +17,11 @@ const emit = defineEmits<{
   (e: 'add'): void
   (e: 'edit', store: Store): void
   (e: 'remove', id: string): void
-  (e: 'toggleSkip', id: string): void
+  (e: 'toggle-skip', id: string): void
   /** 跳过/取消跳过整个城市 */
-  (e: 'skipCity', city: string): void
+  (e: 'skip-city', city: string): void
   /** 删除整个城市的所有门店 */
-  (e: 'removeCity', city: string): void
+  (e: 'remove-city', city: string): void
 }>()
 
 // ── 搜索 ──
@@ -87,7 +87,7 @@ function requestDeleteCity(city: string, count: number): void {
 function confirmDelete(): void {
   if (!confirmTarget.value) return
   if (confirmTarget.value.city) {
-    emit('removeCity', confirmTarget.value.city)
+    emit('remove-city', confirmTarget.value.city)
   } else if (confirmTarget.value.id) {
     emit('remove', confirmTarget.value.id)
   }
@@ -161,7 +161,7 @@ const stats = computed(() => {
           <span class="group-name">{{ city }}</span>
           <span class="group-count">{{ t('routePlanner.storeCountUnit', { count: cityStores.length }) }}</span>
           <div class="group-batch" @click.stop>
-            <button class="btn-batch" :title="t('routePlanner.skipCityTitle')" @click="emit('skipCity', city)">
+            <button class="btn-batch" :title="t('routePlanner.skipCityTitle')" @click="emit('skip-city', city)">
               ⏭️
             </button>
             <button
@@ -194,7 +194,7 @@ const stats = computed(() => {
               <button
                 class="btn-icon"
                 :title="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
-                @click="emit('toggleSkip', store.id)"
+                @click="emit('toggle-skip', store.id)"
               >
                 {{ store.skipped ? '↩️' : '⏭️' }}
               </button>

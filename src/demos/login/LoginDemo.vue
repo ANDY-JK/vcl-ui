@@ -11,6 +11,8 @@ import type { RegisterPayload, ResetPasswordPayload } from '@/components/index'
 // ---- 模拟状态 ----
 const loginLoading = ref(false)
 const loginError = ref('')
+/** v2（Q18）：宿主登录结果回写 prop——失败记一次尝试（累积到 maxAttempts 即锁定），成功清计数 */
+const loginAuthResult = ref<{ ok: boolean; message?: string } | null>(null)
 const registerLoading = ref(false)
 const registerError = ref('')
 const forgotLoading = ref(false)
@@ -33,6 +35,10 @@ async function handleLogin(payload: { username: string; password: string; rememb
   loginLoading.value = false
   if (payload.password.length < 6) {
     loginError.value = '模拟错误：密码至少6位'
+    // 回写失败结果：驱动组件内的尝试计数（连续失败到 maxAttempts 会锁定并倒计时）
+    loginAuthResult.value = { ok: false }
+  } else {
+    loginAuthResult.value = { ok: true }
   }
 }
 
@@ -178,6 +184,7 @@ function resetCurrentForm() {
         :tenant-mode="demoConfig.tenantMode"
         :loading="loginLoading"
         :error="loginError"
+        :auth-result="loginAuthResult"
         :show-social-login="demoConfig.showSocial"
         :show-forgot-password="demoConfig.showForgot"
         :show-register="demoConfig.showRegister"
@@ -397,20 +404,15 @@ function resetCurrentForm() {
           <tr>
             <td><code>resetForm()</code></td>
             <td>全部 4 个</td>
-            <td>清空表单 & 错误</td>
-          </tr>
-          <tr>
-            <td><code>notifyFailed()</code></td>
-            <td>LoginPage</td>
-            <td>外部通知登录失败（触发锁定计数）</td>
-          </tr>
-          <tr>
-            <td><code>notifySuccess()</code></td>
-            <td>LoginPage</td>
-            <td>外部通知登录成功（清除锁定）</td>
+            <td>清空表单 &amp; 错误</td>
           </tr>
         </tbody>
       </table>
+      <p class="demo-hint" style="margin-top: 12px">
+        v2（Q18）起宿主登录结果回写改走 <code>authResult</code> prop（<code>{ ok, message? }</code>，
+        每次回写传新对象），不再经暴露方法：<code>{ ok: false, message }</code> 记一次失败尝试并透传服务端文案，
+        <code>{ ok: true }</code> 清错误/计数/锁定。
+      </p>
     </Card>
   </div>
 </template>

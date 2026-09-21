@@ -144,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
 import { Input, Button, IconSvg, Toast, Divider, useT, useTm, storageGet, storageSet, storageDelete, SUBMIT_UNLOCK_FALLBACK_MS } from './_shared'
 
 /** 锁定倒计时的刷新节拍（只做显示，能不能重试按 lockUntil 时间戳判） */
@@ -188,6 +188,10 @@ const props = withDefaults(
     showForgotPassword?: boolean
     /** 是否显示注册入口 */
     showRegister?: boolean
+    /** 宿主登录结果回写（v2 Q18 收敛，取代 notifyFailed/notifySuccess 两个暴露方法）：
+     *  宿主自行完成登录后回传——{ ok: false, message? } 记一次失败尝试（message 为服务端错误文案），
+     *  { ok: true } 清错误/计数/锁定。每次回写传新对象（或先置 null 再传），同一引用重复赋值不重复触发 */
+    authResult?: { ok: boolean; message?: string } | null
   }>(),
   {
     maxWidth: '960px',
@@ -200,6 +204,7 @@ const props = withDefaults(
     showSocialLogin: true,
     showForgotPassword: true,
     showRegister: true,
+    authResult: null,
   },
 )
 
@@ -356,20 +361,30 @@ const handleSubmit = () => {
   })
 }
 
-// ======================== 暴露方法 ========================
-// ⛔ 契约（Q18）：`notifyFailed` / `notifySuccess` 是宿主回写钩子（宿主自行完成登录后
-// 回传结果，组件据此维护失败锁定计数），不是组件自身行为——v2 随事件化改造收口，
-// 收敛前保持现状。全表以 README「defineExpose 公开契约」一节为对账单。
-defineExpose({
-  /** 外部通知登录失败时调用（触发锁定计数） */
-  notifyFailed: recordFailedAttempt,
-  /** 外部通知登录成功时调用（清除锁定） */
-  notifySuccess: () => {
-    internalLoading.value = false
-    storageDelete(ATTEMPT_KEY)
-    storageDelete(LOCK_KEY)
-    internalError.value = ''
+// ======================== 宿主登录结果回写（v2 Q18：事件化收口） ========================
+// v1 的 notifyFailed()/notifySuccess() 是宿主回写钩子而非组件行为，暴露在方法面上与
+// resetForm 这类真组件行为混在一起；v2 收敛为 authResult 数据 prop——父→子本就该走
+// 响应式数据通道，watch 在变化时驱动同一套锁定计数状态机。
+watch(
+  () => props.authResult,
+  (res) => {
+    if (!res) return
+    if (res.ok) {
+      internalLoading.value = false
+      storageDelete(ATTEMPT_KEY)
+      storageDelete(LOCK_KEY)
+      internalError.value = ''
+    } else {
+      recordFailedAttempt(res.message)
+    }
   },
+  { deep: true },
+)
+
+// ======================== 暴露方法 ========================
+// ⛔ 契约（Q18，v2 已收敛）：宿主登录结果回写走 authResult prop（见上），不再占暴露方法面；
+// 暴露面只剩 resetForm 一个真组件行为。全表以 README「defineExpose 公开契约」一节为对账单。
+defineExpose({
   /** 清除表单 */
   resetForm: () => {
     form.username = ''

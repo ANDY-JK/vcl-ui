@@ -21,10 +21,10 @@ const emit = defineEmits<{
   link: [url: string, newTab: boolean]
   image: [src: string]
   table: []
-  inlineCode: []
+  'inline-code': []
   unlink: []
-  togglePreview: []
-  toggleFullscreen: []
+  'toggle-preview': []
+  'toggle-fullscreen': []
 }>()
 
 const t = useT()
@@ -320,7 +320,7 @@ function resetForm(): void {
           type="button"
           :title="t('formBuilder.rtInlineCode')"
           :aria-label="t('formBuilder.rtInlineCode')"
-          @click="emit('inlineCode')"
+          @click="emit('inline-code')"
         >
           <IconSvg type="code" size="xs" />
         </button>
@@ -409,7 +409,7 @@ function resetForm(): void {
         :title="t('formBuilder.rtPreview')"
         :aria-label="t('formBuilder.rtPreview')"
         :class="{ 'is-active': previewing }"
-        @click="emit('togglePreview')"
+        @click="emit('toggle-preview')"
       >
         <IconSvg type="eye" size="xs" />
       </button>
@@ -418,7 +418,7 @@ function resetForm(): void {
         :title="fullscreen ? t('formBuilder.rtExitFullscreen') : t('formBuilder.rtFullscreen')"
         :aria-label="fullscreen ? t('formBuilder.rtExitFullscreen') : t('formBuilder.rtFullscreen')"
         :class="{ 'is-active': fullscreen }"
-        @click="emit('toggleFullscreen')"
+        @click="emit('toggle-fullscreen')"
       >
         <IconSvg :type="fullscreen ? 'minimize-2' : 'maximize-2'" size="xs" />
       </button>

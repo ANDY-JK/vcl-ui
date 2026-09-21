@@ -54,9 +54,9 @@ const effectiveButtonLabel = computed(() => props.buttonLabel || t('common.sendE
 
 const emit = defineEmits<{
   toggle: [item: Record<string, any>, newValue: boolean]
-  itemClick: [item: Record<string, any>]
+  'item-click': [item: Record<string, any>]
   /** variant='button' 时点击按钮，payload: { name, phone, address, item } */
-  buttonClick: [payload: { name: string; phone: string; address: string; item: Record<string, any> }]
+  'button-click': [payload: { name: string; phone: string; address: string; item: Record<string, any> }]
 }>()
 
 /** switch toggle — 同步更新 item 数据，使 extraColumns 等状态标签立即更新 */
@@ -72,7 +72,7 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
     keydown 只认 target 为行本身（内层控件自己的 Enter/Space 行为归控件） */
 function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   if (e.type === 'keydown' && e.target !== e.currentTarget) return
-  emit('itemClick', item)
+  emit('item-click', item)
 }
 </script>
 
@@ -139,7 +139,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
           class="item-action-btn"
           :disabled="disabled"
           @click.stop="
-            emit('buttonClick', {
+            emit('button-click', {
               name: item[titleField],
               phone: item[phoneField] ?? '',
               address: item[descriptionField] ?? '',

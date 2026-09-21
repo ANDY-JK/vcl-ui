@@ -11,7 +11,7 @@ import { injectDataTableContext } from './composables/context'
 defineProps<{ selectable: boolean }>()
 
 const emit = defineEmits<{
-  batchChange: [colKey: string, newValue: string, rowKeys: string[]]
+  'batch-change': [colKey: string, newValue: string, rowKeys: string[]]
 }>()
 
 const t = useT()
@@ -40,7 +40,7 @@ function openBatchEdit() {
 }
 function confirmBatchEdit() {
   if (!_batchCol.value || _batchShow.value === false) return
-  emit('batchChange', _batchCol.value, _batchValue.value, [..._selectedKeys.value])
+  emit('batch-change', _batchCol.value, _batchValue.value, [..._selectedKeys.value])
   _batchShow.value = false
 }
 function closeBatchEdit() {

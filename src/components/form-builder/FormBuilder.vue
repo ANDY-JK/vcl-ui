@@ -34,7 +34,7 @@ import Tabs from '@/components/nav/Tabs.vue'
 import Collapse from '@/components/data/Collapse.vue'
 import Card from '@/components/data/Card.vue'
 import Toast from '@/components/feedback/Toast.vue'
-import type { FormSchema, FormData, FormField, FormErrors, RenderSection, FieldContainer } from './types'
+import type { FormSchema, FormData, FormField, RenderSection, FieldContainer } from './types'
 
 /** 草稿自动保存防抖：连续输入只在停下来 1s 后存一次 */
 const _DRAFT_SAVE_DEBOUNCE_MS = 1000
@@ -378,29 +378,11 @@ function getFormData(): FormData {
   return result
 }
 
-/**
- * 主动校验全表单
- * @returns true = 校验通过
- *
- * ⛔ 契约（Q18）：`validate` / `validateForm` / `validateAndGet` 是暴露面的三个近义
- * 入口（核心 `validate` + 布尔包装 + 数据打包），v2 计划收敛为单一动词——
- * 收敛前只增不改，消费方按需取用；新增校验能力挂在 `validateAndGet` 的返回结构上，
- * 不要再加第四个变体。全表以 README「defineExpose 公开契约」一节为对账单。
- */
-function validateForm(): boolean {
-  return validate()
-}
-
-/**
- * 主动校验并返回数据和校验结果
- * @returns { data, isValid, errors }
- */
-function validateAndGet(): { data: FormData; isValid: boolean; errors: FormErrors } {
-  const isValid = validate()
-  return { data: getFormData(), isValid, errors: { ...errors.value } }
-}
-
-defineExpose({ stopSubmit, setSubmitting, submitting, getFormData, validateForm, validateAndGet, validate, errors })
+// ⛔ 契约（Q18，v2 已收敛）：暴露面的校验动词只有 `validate()`（布尔）一个——
+//   `validateForm` / `validateAndGet` 两个近义入口已删，要数据用 `getFormData()`、
+//   要错误明细用 `errors`，各自独立调用即可拼出原先 `validateAndGet` 的组合。
+//   不要再加第二个校验变体。全表以 README「defineExpose 公开契约」一节为对账单。
+defineExpose({ stopSubmit, setSubmitting, submitting, getFormData, validate, errors })
 
 function handleReset(): void {
   formData.value = { ...initialData.value }

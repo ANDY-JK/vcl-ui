@@ -132,8 +132,8 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
         </tbody>
       </table>
       <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
-        Events: <code>@toggle(item, value)</code> | <code>@itemClick(item)</code> |
-        <code>@buttonClick({ name, phone, address, item })</code>
+        Events: <code>@toggle(item, value)</code> | <code>@item-click(item)</code> |
+        <code>@button-click({ name, phone, address, item })</code>
       </p>
     </Card>
   </div>

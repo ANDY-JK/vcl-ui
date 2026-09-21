@@ -98,7 +98,7 @@ const emit = defineEmits<{
   change: [v: SelectModelValue]
   focus: []
   blur: []
-  visibleChange: [v: boolean]
+  'visible-change': [v: boolean]
 }>()
 
 /* ════════════════════════════════════════
@@ -269,7 +269,7 @@ function toggleOpen(e?: MouseEvent) {
   prepareOpen()
   openedAt = Date.now()
   open.value = true
-  emit('visibleChange', true)
+  emit('visible-change', true)
   // 下一帧更新位置（等面板渲染完成）
   nextTick(() => {
     requestAnimationFrame(() => updatePosition((e?.currentTarget as HTMLElement) || undefined))
@@ -281,7 +281,7 @@ function closePanel() {
   searchText.value = ''
   // 不在这里恢复 comboText — onComboBlur 已处理失焦恢复
   // 这里恢复会导致 commitComboValue 后 closePanel 把新值覆盖回旧值
-  emit('visibleChange', false)
+  emit('visible-change', false)
 }
 
 /** 触发器点击：输入型（select/combobox）打开面板但不做"再点关闭"（输入中误点不收起，靠外部点击/Escape 收起）；其余模式维持开关切换 */
@@ -515,7 +515,7 @@ function onClear(e: MouseEvent) {
    ════════════════════════════════════════ */
 function onMenuClick(item: MenuItem) {
   open.value = false
-  emit('visibleChange', false)
+  emit('visible-change', false)
   item.action?.()
 }
 
@@ -526,7 +526,7 @@ function openMenu(e: MouseEvent | { x: number; y: number }) {
   prepareOpen()
   open.value = true
   searchText.value = ''
-  emit('visibleChange', true)
+  emit('visible-change', true)
   const x = 'clientX' in e ? e.clientX : e.x
   const y = 'clientY' in e ? e.clientY : e.y
   floatingStyle.value = {
@@ -622,7 +622,7 @@ function onComboFocus() {
     prepareOpen()
     openedAt = Date.now()
     open.value = true
-    emit('visibleChange', true)
+    emit('visible-change', true)
     nextTick(() => requestAnimationFrame(() => updatePosition()))
   }
   // 多选 + clearOnFocus
@@ -637,7 +637,7 @@ function onComboInput() {
     prepareOpen()
     openedAt = Date.now()
     open.value = true
-    emit('visibleChange', true)
+    emit('visible-change', true)
     nextTick(() => requestAnimationFrame(() => updatePosition()))
   }
   highlightIdx.value = -1

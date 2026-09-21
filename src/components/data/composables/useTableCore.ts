@@ -212,7 +212,7 @@ export function useTableCore(
   function setPage(p: number) {
     _currentPage.value = p
     emit('update:currentPage', p)
-    emit('pageChange', p, props.pageSize || 0)
+    emit('page-change', p, props.pageSize || 0)
   }
 
   const pagedData = computed(() => {

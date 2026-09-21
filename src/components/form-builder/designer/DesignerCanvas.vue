@@ -84,15 +84,15 @@ const emit = defineEmits<{
   duplicate: [id: string]
   remove: [id: string]
   reorder: [from: number, to: number]
-  insertAt: [type: DesignerNodeType, index: number]
+  'insert-at': [type: DesignerNodeType, index: number]
   /** 插入到容器内（slot = tabs/collapse/steps 容器第几个槽位，普通容器省略） */
-  insertIntoContainer: [type: DesignerNodeType, containerId: string, index: number, slot?: number]
+  'insert-into-container': [type: DesignerNodeType, containerId: string, index: number, slot?: number]
   /** 拖拽排序：将源节点移动到目标节点之前/之后（跨容器）；slot = 拖入 tabs/collapse/steps 容器内部时的目标槽位 */
-  sortNode: [sourceId: string, targetId: string, position: 'before' | 'after' | 'inside', slot?: number]
+  'sort-node': [sourceId: string, targetId: string, position: 'before' | 'after' | 'inside', slot?: number]
   /** 把字段移动到 tabs/collapse/steps 容器的指定槽位 */
-  assignSlot: [sourceId: string, slot: number]
+  'assign-slot': [sourceId: string, slot: number]
   /** 更新容器配置（如添加标签页），由 FormDesigner 快照后写入节点 */
-  updateContainer: [id: string, config: DesignerContainerConfig]
+  'update-container': [id: string, config: DesignerContainerConfig]
 }>()
 
 // ════════════════════════════════════════
@@ -150,7 +150,7 @@ function addTabTo(node: DesignerNode): void {
   while (tabs.some((t) => t.name === 'tab' + n)) n++
   const name = 'tab' + n
   const next = [...tabs, { label: t('fb.tabN', { n }), name }]
-  emit('updateContainer', node.id, { ...node.containerConfig, tabs: next })
+  emit('update-container', node.id, { ...node.containerConfig, tabs: next })
   localActiveTab.value = { ...localActiveTab.value, [node.id]: name }
 }
 
@@ -160,7 +160,7 @@ function onSlotDropFromPanel(e: DragEvent, node: DesignerNode, slot: number): vo
   if (!type) return
   e.preventDefault()
   e.stopPropagation()
-  emit('insertIntoContainer', type as DesignerNodeType, node.id, -1, slot)
+  emit('insert-into-container', type as DesignerNodeType, node.id, -1, slot)
   resetDrag()
 }
 
@@ -169,7 +169,7 @@ function onSlotDropFromSort(e: DragEvent, _node: DesignerNode, slot: number): vo
   e.preventDefault()
   e.stopPropagation()
   const sourceId = sortDragId.value
-  if (sourceId) emit('assignSlot', sourceId, slot)
+  if (sourceId) emit('assign-slot', sourceId, slot)
   resetDrag()
 }
 
@@ -220,7 +220,7 @@ function onCanvasDrop(e: DragEvent): void {
   e.stopPropagation()
   const type = e.dataTransfer?.getData('application/x-field-type') || e.dataTransfer?.getData('text/plain')
   if (type) {
-    emit('insertAt', type as DesignerNodeType, -1)
+    emit('insert-at', type as DesignerNodeType, -1)
   }
   resetDrag()
 }
@@ -268,10 +268,10 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
   if (dragSource.value === 'sort' && sortDragId.value && sortDragId.value !== node.id) {
     // 拖拽排序：容器区分 before/inside/after，字段区分 before/after
     if (isContainerNode(node)) {
-      if (pos === 'inside') emit('sortNode', sortDragId.value, node.id, 'inside', activeSlotOf(node))
-      else emit('sortNode', sortDragId.value, node.id, pos)
+      if (pos === 'inside') emit('sort-node', sortDragId.value, node.id, 'inside', activeSlotOf(node))
+      else emit('sort-node', sortDragId.value, node.id, pos)
     } else {
-      emit('sortNode', sortDragId.value, node.id, pos === 'after' ? 'after' : 'before')
+      emit('sort-node', sortDragId.value, node.id, pos === 'after' ? 'after' : 'before')
     }
     // 保持选中拖拽的节点
     emit('select', sortDragId.value)
@@ -280,7 +280,7 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
     if (type) {
       // 面板字段拖入：容器 → 插入容器内（落到当前激活槽位）；字段 → 按落点插到前/后
       if (isContainerNode(node)) {
-        emit('insertIntoContainer', type as DesignerNodeType, node.id, -1, activeSlotOf(node))
+        emit('insert-into-container', type as DesignerNodeType, node.id, -1, activeSlotOf(node))
       } else {
         const before = pos !== 'after'
         const loc = findParent(props.nodes, node.id)
@@ -288,7 +288,7 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
         const container = loc && loc.parent !== props.nodes ? canvasFindContainerOfChildren(props.nodes, loc.parent) : null
         if (container) {
           emit(
-            'insertIntoContainer',
+            'insert-into-container',
             type as DesignerNodeType,
             container.id,
             before ? loc!.index : loc!.index + 1,
@@ -296,7 +296,7 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
           )
         } else {
           const index = props.nodes.findIndex((n) => n.id === node.id)
-          emit('insertAt', type as DesignerNodeType, before ? index : index + 1)
+          emit('insert-at', type as DesignerNodeType, before ? index : index + 1)
         }
       }
     }

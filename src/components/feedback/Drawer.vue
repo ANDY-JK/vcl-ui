@@ -44,8 +44,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:visible': [v: boolean]
   close: []
-  afterOpen: []
-  afterClose: []
+  'after-open': []
+  'after-close': []
 }>()
 
 const drawerPanel = ref<HTMLElement | null>(null)
@@ -99,9 +99,9 @@ watch(
     if (v) {
       hasOpened.value = true
       await nextTick()
-      emit('afterOpen')
+      emit('after-open')
     } else if (oldV !== undefined) {
-      emit('afterClose')
+      emit('after-close')
     }
   },
   { immediate: true },
