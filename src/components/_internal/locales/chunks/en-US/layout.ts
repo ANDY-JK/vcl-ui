@@ -5,6 +5,10 @@
 export default {
   appLayout: {
     logoText: 'Vue Component Library',
+    // AccordionNav inline sidebar search
+    searchPlaceholder: 'Search navigation…',
+    searchEmpty: 'No matching items',
+    searchClear: 'Clear search',
   },
 
   navData: {

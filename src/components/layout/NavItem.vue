@@ -82,7 +82,14 @@ const navItemClass = computed(() => {
 
 <template>
   <!-- 有子节点：渲染为可折叠分组 -->
-  <button v-if="isGroup" v-show="!collapsed" :class="navItemClass" :style="levelStyle" @click="onClick">
+  <button
+    v-if="isGroup"
+    v-show="!collapsed"
+    :class="navItemClass"
+    :style="levelStyle"
+    :aria-expanded="isExpanded"
+    @click="onClick"
+  >
     <span class="nav-level-label">{{ navLabel(node.label) }}</span>
     <span class="nav-arrow">▾</span>
   </button>
@@ -92,6 +99,7 @@ const navItemClass = computed(() => {
     v-else
     :class="navItemClass"
     :style="levelStyle"
+    :aria-current="isActive ? 'page' : undefined"
     :title="collapsed ? navLabel(node.label) : undefined"
     @click="onClick"
   >

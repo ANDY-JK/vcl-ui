@@ -5,6 +5,10 @@
 export default {
   appLayout: {
     logoText: 'Vue 组件库',
+    // AccordionNav 侧栏即时搜索
+    searchPlaceholder: '搜索导航…',
+    searchEmpty: '无匹配的导航项',
+    searchClear: '清空搜索',
   },
 
   navData: {
