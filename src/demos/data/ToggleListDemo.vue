@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import ToggleList from '@/components/data/ToggleList.vue'
 import Card from '@/components/data/Card.vue'
+import Toast from '@/components/feedback/Toast.vue'
 
 // 示例 1：系统设置（Switch 变体）
 const switchItems = ref([
@@ -31,8 +32,11 @@ function onToggle(item: Record<string, any>, val: boolean) {
   console.log('toggle', item.display_name, val)
 }
 
+const toastRef = ref<InstanceType<typeof Toast> | null>(null)
+
 function onButtonClick(payload: { name: string; phone: string; address: string }) {
-  alert(`发快递给 ${payload.name}（${payload.phone}）\n地址：${payload.address}`)
+  // 用库自带 Toast 做页内反馈——原生 alert 会阻塞页面（自动化/无障碍都难受）
+  toastRef.value?.show(`发快递给 ${payload.name}（${payload.phone}）— ${payload.address}`, 'success')
 }
 </script>
 
@@ -57,6 +61,8 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
     <Card title="发快递（button 变体）" title-as="h2">
       <ToggleList :items="buttonItems" variant="button" button-label="发快递" @button-click="onButtonClick" />
     </Card>
+
+    <Toast ref="toastRef" position="bottom-right" />
 
     <Card title="Props" title-as="h2" style="margin-top: 24px">
       <table style="width: 100%; font-size: 13px; border-collapse: collapse">

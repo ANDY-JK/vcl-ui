@@ -3,6 +3,9 @@ import { ref } from 'vue'
 import type { Option, CascaderOption } from '@/components/shared/types'
 import Select from '@/components/form/Select.vue'
 import Card from '@/components/data/Card.vue'
+import Toast from '@/components/feedback/Toast.vue'
+
+const toastRef = ref<InstanceType<typeof Toast> | null>(null)
 
 /* ════════════════════════════════════════
    基础选择 — 单选 / 多选 / 拼音搜索
@@ -175,7 +178,7 @@ const menuItems = [
   { label: '编辑', icon: 'square-pen' },
   { label: '复制', icon: 'file' },
   { label: '分享', icon: 'link', divided: true },
-  { label: '删除', icon: 'trash', danger: true, action: () => alert('已删除') },
+  { label: '删除', icon: 'trash', danger: true, action: () => toastRef.value?.show('已删除', 'success') },
 ]
 const contextMenuRef = ref<InstanceType<typeof Select>>()
 function onContextMenu(e: MouseEvent) {
@@ -365,6 +368,8 @@ function onContextMenu(e: MouseEvent) {
       <div class="context-menu-area" @contextmenu="onContextMenu">在此区域右键 → 弹出菜单</div>
       <Select ref="contextMenuRef" type="menu" :items="menuItems" label="操作" style="display: none" />
     </Card>
+
+    <Toast ref="toastRef" position="bottom-right" />
   </div>
 </template>
 

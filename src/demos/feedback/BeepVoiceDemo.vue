@@ -5,6 +5,9 @@ import { speak, stopSpeak, unlockVoice } from '@/components'
 import type { VoiceLang } from '@/components'
 import Button from '@/components/basic/Button.vue'
 import Card from '@/components/data/Card.vue'
+import Toast from '@/components/feedback/Toast.vue'
+
+const toastRef = ref<InstanceType<typeof Toast> | null>(null)
 
 const audioUnlocked = ref(false)
 const voiceUnlocked = ref(false)
@@ -105,7 +108,7 @@ function doNotifyUrl() {
 }
 
 function doNotifyClick() {
-  doNotify('点击测试', { body: '点击通知看效果', onClick: () => alert('通知被点击了！') })
+  doNotify('点击测试', { body: '点击通知看效果', onClick: () => toastRef.value?.show('通知被点击了！') })
 }
 </script>
 
@@ -280,6 +283,8 @@ function doNotifyClick() {
         </tbody>
       </table>
     </Card>
+
+    <Toast ref="toastRef" position="bottom-right" />
   </div>
 </template>
 
