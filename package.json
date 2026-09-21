@@ -26,6 +26,7 @@
     "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:css-tokens && npm run check:i18n && npm run check:demo-props && npm run test:unit && npm run check:coverage-domains && npm run build && npm run smoke:entries && npm run verify:pkg && npm run docs:build && npm run check:docs && npm run test:e2e",
     "prepare": "husky",
     "report:audit": "npm audit --registry=https://registry.npmjs.org",
+    "release:dry-run": "npm publish --dry-run --registry https://registry.npmjs.org",
     "scan:deps": "depcheck",
     "scan:secrets": "npx gitleaks detect --source . --no-banner",
     "test:e2e": "npx playwright test",
