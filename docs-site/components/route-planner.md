@@ -56,9 +56,9 @@
 | `add` | `无` | — |
 | `edit` | `store: Store` | — |
 | `remove` | `id: string` | — |
-| `toggleSkip` | `id: string` | — |
-| `skipCity` | `city: string` | — |
-| `removeCity` | `city: string` | — |
+| `toggle-skip` | `id: string` | — |
+| `skip-city` | `city: string` | — |
+| `remove-city` | `city: string` | — |
 
 ## `StoreFormModal`
 

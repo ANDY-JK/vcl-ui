@@ -147,8 +147,8 @@
 | --- | --- | --- |
 | `'update:visible'` | `v: boolean` | — |
 | `close` | `无` | — |
-| `afterOpen` | `无` | — |
-| `afterClose` | `无` | — |
+| `'after-open'` | `无` | — |
+| `'after-close'` | `无` | — |
 
 ### Slots
 

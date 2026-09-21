@@ -214,11 +214,11 @@ npm run build       # 构建产物到 dist/
 
 11. **form-builder 域单文件 ≤800 行**：该域交互密度高，设计器/渲染器/收集端三块各自曾长到近千行。09-04 收官过一次（PropsPanel 五页签、useTableEdit 式拆分），09-20 复查发现 `FormDesigner 979 / DesignerCanvas 881` 已回潮——**靠人工守必然回潮**，所以 `check:constants` 第 [7] 项直接扫该目录（含子目录）的 `.ts/.vue` 行数，超限即红。正确拆法：纯函数归 `.ts`（如 `canvas-utils.ts`）、有状态逻辑归 composable（如 `useDesignerPanels`）、可独立交互的 UI 归子组件；能不拆就别拆——拆错地方比不拆更糟。
 
-### defineExpose 公开契约（Q18，2026-09-20 盘点）
+### defineExpose 公开契约（Q18，2026-09-20 盘点 · 2026-09-21 v2.0 收敛）
 
 `defineExpose` 是组件实例的**公开**方法面（`ref.value.xxx()` 能调到即契约）。分两类，动以前先在这里对账：
 
-**公开 API（消费方 ref 可调，v2 前只增不改语义）**：
+**公开 API（消费方 ref 可调，只增不改语义）**：
 
 | 组件 | 暴露动词 | 用途 |
 |---|---|---|
@@ -227,16 +227,36 @@ npm run build       # 构建产物到 dist/
 | `Toast` | `show(msg\|opts)` / `remove(id)` | 手动 toast（duration≤0 常驻需手动 remove） |
 | `Select` | `openMenu()` | 程序化展开面板 |
 | `Upload` | `retryFile()` / `triggerFileInput()` | 重试失败上传 / 手动打开文件选择 |
-| `FormBuilder` | `stopSubmit` / `setSubmitting` / `submitting` / `getFormData()` / `validateForm()` / `validateAndGet()` / `validate()` / `errors` | 表单提交与校验全家桶 |
-| `login` / `portal_login` / `register` / `forgot-password` | `resetForm()`（login 另有 `notifyFailed()` / `notifySuccess()`） | 清表单；login 的两个 notify 供宿主在自行完成登录后回写锁定状态 |
+| `FormBuilder` | `stopSubmit` / `setSubmitting` / `submitting` / `getFormData()` / `validate()` / `errors` | 表单提交与校验全家桶 |
+| `login` / `portal_login` / `register` / `forgot-password` | `resetForm()` | 清表单 |
 
 **内部区块 expose（⛔ 非公开 API，仅 DataTable 主文件经 ref 驱动，消费方勿依赖）**：
 `DataTableBatchDialog`（`show` / `open` / `close`）、`DataTableColumnSettings`（`show` / `toggle` / `close` / `unfixFromMenu`）、`CaptureFallbackPanel`（`reset`）、`TimeColumns`（`scrollToValue`）。契约类型在 `data/composables/context.ts` 的 `*Expose` interface，随区块拆分演进。
 
-**已登记 v2 收敛项（都是破坏性改名，不在 1.x 动）**：
-1. `FormBuilder` 的 `validate` / `validateForm` / `validateAndGet` 三个近义入口收敛为单一动词（demos 零调用，消费面主要在外部接入方）。
-2. `login` 的 `notifyFailed` / `recordFailedAttempt` 是宿主回写钩子而非组件行为，v2 随事件化改造一并收口。
+**v2.0 已收敛项（原 v1 破坏性改名/删除，从 1.x 升级需对照）**：
+1. ~~`FormBuilder` 的 `validate` / `validateForm` / `validateAndGet` 三个近义入口收敛为单一动词~~ —— ✅ 已删后两个，只留 `validate()`；要数据用 `getFormData()`、要错误明细用 `errors`。
+2. ~~`login` 的 `notifyFailed` / `recordFailedAttempt` 是宿主回写钩子而非组件行为~~ —— ✅ 已删两个暴露方法，改 `authResult` prop（`{ ok, message? }`，watch 驱动同一套锁定计数）。
 3. 审查报告 09-20 曾记「BatchDialog 六近义名 / ColumnSettings 八名」——那是扫描正则把 `show: _batchShow` 的键与源标识符重复计数所致，实际暴露面就是上表 3/4 个动词，以本条为准。
+
+## ⬆️ 从 1.x 升级到 2.0（破坏性变更清单）
+
+2.0 是一次「契约卫生」大版本：回调 prop 归位事件、多词事件名统一 kebab、expose 近义入口收敛。**模板里的 `@事件` 监听一律不用改**（Vue 编译期会把 `@row-click` 和 `@rowClick` 都归一成同一个处理器键，两种写法都收得到）；需要动的只有三类：传过被删 prop 的、用 JS/TS 直接调过被删方法的、以及在测试里按 camelCase 断言过事件名的。
+
+**1. DataTable 宿主联动回调 prop 删了，改事件（Q5）**
+
+| v1 | v2 |
+|---|---|
+| `:on-export="fn"` | `@export="fn"`（语义不变：挂了监听=服务端导出，内置 CSV/Excel 整个跳过） |
+| `:on-toggle-sidebar="fn"` | `@toggle-sidebar="fn"`（没挂监听仍降级 `inject('toggleCollapse')`） |
+
+**2. 多词事件名统一 kebab-case（N8）** —— 模板监听无需改，仅文档/测试断言口径变化：
+
+- `DataTable`：`rowClick`→`row-click`、`rowAction`→`row-action`、`rowContextAction`→`row-context-action`、`cellChange`→`cell-change`、`cellNote`→`cell-note`、`batchChange`→`batch-change`、`pageChange`→`page-change`、`selectionChange`→`selection-change`、`fullscreenChange`→`fullscreen-change`
+- `Select`：`visibleChange`→`visible-change`；`ToggleList`：`itemClick`→`item-click`、`buttonClick`→`button-click`；`Drawer`：`afterOpen`/`afterClose`→`after-open`/`after-close`
+- `StorePanel`（route-planner）：`toggleSkip`→`toggle-skip`、`skipCity`→`skip-city`、`removeCity`→`remove-city`
+- form-builder 内部子组件（`DesignerCanvas` / `RichtextToolbar`，仅经 FormDesigner/RendererRichtext 消费）：`insertAt`→`insert-at`、`insertIntoContainer`→`insert-into-container`、`sortNode`→`sort-node`、`assignSlot`→`assign-slot`、`updateContainer`→`update-container`、`inlineCode`→`inline-code`、`togglePreview`→`toggle-preview`、`toggleFullscreen`→`toggle-fullscreen`
+
+**3. expose 近义入口收敛（Q18）** —— `FormBuilder` 删 `validateForm()` / `validateAndGet()`（只留 `validate()`，数据用 `getFormData()`、错误用 `errors` 拼装）；`login` 删 `notifyFailed()` / `notifySuccess()`，改传 `:auth-result="{ ok, message? }"` prop。
 
 ## 🚀 发版（维护者）
 
@@ -246,7 +266,7 @@ npm run build       # 构建产物到 dist/
 git add -A && git commit -m "chore: 本次改动"   # 工作区干净才能打版本
 npm run changelog                                # 从 conventional commits 重生成 CHANGELOG.md
 git add CHANGELOG.md && git commit -m "docs: changelog for $(node -p "require('./package.json').version")"
-npm version patch                                # 或 minor / major，会自动提交并打 v1.0.1 标签
+npm version major                                # 或 minor / patch，会自动提交并打 v2.0.0 标签
 git push --follow-tags
 ```
 
@@ -254,8 +274,9 @@ git push --follow-tags
 
 > **CHANGELOG 是生成的，不是手写的**：`npm run changelog` 扫全部 conventional commits
 > 按 Keep a Changelog 分组（Added/Changed/Fixed/…），审查过程记录（`docs(audit)`）折叠成
-> 汇总行不逐条列——那些是内部流程而非消费方可见变更。有版本 tag 后可用
-> `npm run changelog -- --since v1.0.0` 只生成增量段。不符合 conventional 格式的提交进
+> 汇总行不逐条列——那些是内部流程而非消费方可见变更。`type(scope)!:` 带感叹号的提交另进
+> **BREAKING CHANGES** 段（2.0 的破坏性清单就是这么来的）。有版本 tag 后可用
+> `npm run changelog -- --since v2.0.0` 只生成增量段。不符合 conventional 格式的提交进
 > Other 段（不静默丢弃），见到就去把那条提交信息补齐。
 
 首次使用要做两件事（各一次）：
@@ -264,6 +285,17 @@ git push --follow-tags
 2. 仓库 `Settings → Secrets and variables → Actions` 添加 `NPM_TOKEN`（npmjs.com → Access Tokens → 选 **Automation** 类型）
 
 手动触发（`Actions → Release → Run workflow`）默认只做预演 `npm publish --dry-run`，不会真的上传。
+
+**本地预演注意 npm 源**：本机 `npm config get registry` 多半指向 npmmirror（装依赖快），
+但发布/预演必须显式指向官方源，否则 dry-run 也会打到镜像上去：
+
+```bash
+npm run release:dry-run    # = npm publish --dry-run --registry https://registry.npmjs.org
+```
+
+> 发布前置状态（2026-09-21）：本地仓库**尚未配置 git remote**，推送地址待维护者提供；
+> 提供后 `git remote add origin <url> && git push -u origin main --follow-tags` 即可，
+> 标签推送即触发 Release 流水线。检查清单见 `workspace/发布检查清单-2026-09-21.md`。
 
 ## 📄 License
 

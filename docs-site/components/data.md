@@ -6,7 +6,7 @@
 
 | 组件 | Props 数 | Events 数 | Slots 数 |
 | --- | --- | --- | --- |
-| `DataTable` | 58 | 15 | 4 |
+| `DataTable` | 56 | 17 | 4 |
 | `ToggleList` | 13 | 3 | 0 |
 | `Card` | 11 | 1 | 3 |
 | `Avatar` | 4 | 0 | 0 |
@@ -85,14 +85,12 @@
 | `searchMode` | `'client' \| 'server'` | `'client'` | 否 | 搜索模式：'client' 客户端本地过滤，'server' 抛 search 事件由后端处理 |
 | `filterMode` | `'client' \| 'server'` | `'client'` | 否 | 筛选模式：'client' 客户端本地过滤，'server' 只抛 filter 事件由后端处理 |
 | `filters` | `Record<string, string[]>` | — | 否 | 外部筛选状态（v-model:filters）：服务端模式下父组件可程序化控制筛选，变化时自动同步到内部 filterState |
-| `onExport` | `() => void` | — | 否 | 服务端导出回调：存在时点击导出按钮调用此函数（后端返全量数据下载），不执行内置 CSV 导出。 ⚠️ v2 迁移项（Q5）：回调 prop 与事件语义混淆，v2 改 emit('export') 或更名——收敛前保持现状 |
 | `rowClass` | `(row: T, index: number) => string` | — | 否 | — |
 | `rowStyle` | `(row: T, index: number) => Record<string, string>` | — | 否 | — |
 | `cellClass` | `(colKey: string, row: T, index: number) => string` | — | 否 | — |
 | `cellStyle` | `(colKey: string, row: T, index: number) => Record<string, string>` | — | 否 | — |
 | `shotMode` | `'preview' \| 'download' \| 'copy'` | `'preview' as 'preview' \| 'download' \| 'copy'` | 否 | 截图行为模式：'preview' 弹窗预览 \| 'download' 直接下载 \| 'copy' 直接复制到剪贴板 |
 | `screenshotMaxRows` | `number` | `400` | 否 | 截图最大行数（超过提醒用户先筛选，避免生成超大 canvas 卡死） |
-| `onToggleSidebar` | `() => void` | — | 否 | 全屏时收起宿主侧边栏的回调（不传则尝试 inject('toggleCollapse') 降级）。 ⚠️ v2 迁移项（Q5）：回调 prop 与事件语义混淆，v2 改 emit 或更名——收敛前保持现状 |
 
 ### Events
 
@@ -101,18 +99,20 @@
 | `sort` | `key: string, order: 'asc' \| 'desc'` | — |
 | `filter` | `filters: Record<string, string[]>` | — |
 | `'update:filters'` | `filters: Record<string, string[]>` | — |
-| `rowClick` | `row: Record<string, any>, index: number` | — |
+| `'row-click'` | `row: Record<string, any>, index: number` | — |
 | `'update:selectedKeys'` | `keys: string[]` | — |
 | `'update:currentPage'` | `page: number` | — |
-| `pageChange` | `page: number, pageSize: number` | — |
-| `selectionChange` | `keys: string[], rows: Record<string, any>[]` | — |
-| `cellChange` | `rowKey: string, colKey: string, newValue: string` | — |
-| `cellNote` | `rowKey: string, colKey: string, note: string` | — |
-| `batchChange` | `colKey: string, newValue: string, rowKeys: string[]` | — |
-| `rowAction` | `actionKey: string, row: Record<string, any>, index: number` | — |
-| `rowContextAction` | `actionKey: string, row: Record<string, any>, index: number` | — |
+| `'page-change'` | `page: number, pageSize: number` | — |
+| `'selection-change'` | `keys: string[], rows: Record<string, any>[]` | — |
+| `'cell-change'` | `rowKey: string, colKey: string, newValue: string` | — |
+| `'cell-note'` | `rowKey: string, colKey: string, note: string` | — |
+| `'batch-change'` | `colKey: string, newValue: string, rowKeys: string[]` | — |
+| `'row-action'` | `actionKey: string, row: Record<string, any>, index: number` | — |
+| `'row-context-action'` | `actionKey: string, row: Record<string, any>, index: number` | — |
 | `search` | `term: string` | — |
-| `fullscreenChange` | `isFullscreen: boolean` | — |
+| `'fullscreen-change'` | `isFullscreen: boolean` | — |
+| `export` | `无` | v2（Q5）：onExport 回调 prop 收敛为事件——有监听=服务端导出（宿主自处理），无监听=内置 CSV/Excel 导出 |
+| `'toggle-sidebar'` | `无` | v2（Q5）：onToggleSidebar 回调 prop 收敛为事件——有监听=通知宿主收/还侧边栏，无监听=降级 inject('toggleCollapse') |
 
 ### Slots
 
@@ -150,8 +150,8 @@
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `toggle` | `item: Record<string, any>, newValue: boolean` | — |
-| `itemClick` | `item: Record<string, any>` | — |
-| `buttonClick` | `payload: { name: string; phone: string; address: string; item: Record<string, any> }` | variant='button' 时点击按钮，payload: { name, phone, address, item } |
+| `'item-click'` | `item: Record<string, any>` | — |
+| `'button-click'` | `payload: { name: string; phone: string; address: string; item: Record<string, any> }` | variant='button' 时点击按钮，payload: { name, phone, address, item } |
 
 ## `Card`
 

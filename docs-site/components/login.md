@@ -6,7 +6,7 @@
 
 | 组件 | Props 数 | Events 数 | Slots 数 |
 | --- | --- | --- | --- |
-| `LoginPage` | 14 | 4 | 9 |
+| `LoginPage` | 15 | 4 | 9 |
 | `RegisterPage` | 11 | 2 | 2 |
 | `ForgotPasswordPage` | 6 | 2 | 1 |
 | `PortalLogin` | 5 | 1 | 2 |
@@ -35,6 +35,7 @@
 | `showSocialLogin` | `boolean` | `true` | 否 | 是否显示社交登录 |
 | `showForgotPassword` | `boolean` | `true` | 否 | 是否显示忘记密码入口 |
 | `showRegister` | `boolean` | `true` | 否 | 是否显示注册入口 |
+| `authResult` | `{ ok: boolean; message?: string } \| null` | `null` | 否 | 宿主登录结果回写（v2 Q18 收敛，取代 notifyFailed/notifySuccess 两个暴露方法）： 宿主自行完成登录后回传——{ ok: false, message? } 记一次失败尝试（message 为服务端错误文案）， { ok: true } 清错误/计数/锁定。每次回写传新对象（或先置 null 再传），同一引用重复赋值不重复触发 |
 
 ### Events
 

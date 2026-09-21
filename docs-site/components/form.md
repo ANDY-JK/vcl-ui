@@ -116,7 +116,7 @@
 | `change` | `v: SelectModelValue` | — |
 | `focus` | `无` | — |
 | `blur` | `无` | — |
-| `visibleChange` | `v: boolean` | — |
+| `'visible-change'` | `v: boolean` | — |
 
 ### Slots
 

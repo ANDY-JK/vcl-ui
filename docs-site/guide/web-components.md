@@ -31,4 +31,4 @@ export default function Page() {
 
 - 样式仍来自 `vcl-ui/css`（Design Token 驱动），WC 版本与 Vue 版本共用同一套令牌与暗色机制
 - Shadow DOM 内部样式隔离：外部 CSS 选择器进不去，定制走令牌覆盖
-- 事件名为 kebab-case（`marker-click` 形式），与 Vue 版本的 `update:*` camelCase 双轨一致
+- 事件名为 kebab-case（`marker-click` 形式）——v2.0 起 Vue 侧多词事件也统一 kebab，WC 封装与 Vue 版本事件名一一对应（`update:*` 的 v-model 写入侧除外，它跟随 prop 名）
