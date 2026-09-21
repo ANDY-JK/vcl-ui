@@ -49,15 +49,15 @@
 
 | 插槽 | 作用域参数 | 兜底内容预览 |
 | --- | --- | --- |
-| `forgot-text` | — | {{ t('login.forgotPasswordQ') }} |
+| `forgot-text` | — | &#123;&#123; t('login.forgotPasswordQ') &#125;&#125; |
 | `logo` | — | — |
-| `register-prompt` | — | {{ t('login.registerPrompt') }} {{ t('lo |
-| `register-text` | — | {{ t('login.registerNow') }} |
-| `remember-text` | — | {{ t('login.rememberUsername') }} |
-| `social-phone-text` | — | {{ t('login.socialPhone') }} |
-| `subtitle` | — | {{ tenantMode ? t('login.welcomeSubtitle |
-| `tenant-footer-text` | — | {{ t('login.tenantFooter') }} |
-| `welcome-title` | — | {{ t('login.welcomeTitle') }} |
+| `register-prompt` | — | &#123;&#123; t('login.registerPrompt') &#125;&#125; &#123;&#123; t('lo |
+| `register-text` | — | &#123;&#123; t('login.registerNow') &#125;&#125; |
+| `remember-text` | — | &#123;&#123; t('login.rememberUsername') &#125;&#125; |
+| `social-phone-text` | — | &#123;&#123; t('login.socialPhone') &#125;&#125; |
+| `subtitle` | — | &#123;&#123; tenantMode ? t('login.welcomeSubtitle |
+| `tenant-footer-text` | — | &#123;&#123; t('login.tenantFooter') &#125;&#125; |
+| `welcome-title` | — | &#123;&#123; t('login.welcomeTitle') &#125;&#125; |
 
 ## `RegisterPage`
 

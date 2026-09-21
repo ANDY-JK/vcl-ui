@@ -156,7 +156,7 @@
 | --- | --- | --- |
 | `default` | — | — |
 | `footer` | — | — |
-| `header` | — | {{ title }} |
+| `header` | — | &#123;&#123; title &#125;&#125; |
 
 ## `OfflineIndicator`
 
@@ -194,7 +194,7 @@
 | 插槽 | 作用域参数 | 兜底内容预览 |
 | --- | --- | --- |
 | `default` | `key` | — |
-| `fallback` | `error, retry` | ! {{ title \|\| t('errorBoundary.title') } |
+| `fallback` | `error, retry` | ! &#123;&#123; title \|\| t('errorBoundary.title') &#125; |
 
 ## `ConfirmModal`
 

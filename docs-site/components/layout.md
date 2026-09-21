@@ -44,7 +44,7 @@
 
 | 插槽 | 作用域参数 | 兜底内容预览 |
 | --- | --- | --- |
-| `topbar-right` | — | {{ username.charAt(0).toUpperCase() }} { |
+| `topbar-right` | — | &#123;&#123; username.charAt(0).toUpperCase() &#125;&#125; &#123; |
 | `topbar-tools` | — | — |
 
 ## `AccordionNav`

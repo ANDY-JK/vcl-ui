@@ -118,9 +118,9 @@
 
 | 插槽 | 作用域参数 | 兜底内容预览 |
 | --- | --- | --- |
-| `cell` | `column, row, value` | {{ cellShow(row, col) }} {{ cellShow(row |
+| `cell` | `column, row, value` | &#123;&#123; cellShow(row, col) &#125;&#125; &#123;&#123; cellShow(row |
 | `empty` | `filtered` | — |
-| `header-cell` | `column` | {{ colTitle(col) }} |
+| `header-cell` | `column` | &#123;&#123; colTitle(col) &#125;&#125; |
 | `toolbar-actions` | — | — |
 
 ## `ToggleList`

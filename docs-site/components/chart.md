@@ -134,7 +134,7 @@
 | 插槽 | 作用域参数 | 兜底内容预览 |
 | --- | --- | --- |
 | `footer` | — | — |
-| `header` | — | {{ tableTitle }} |
+| `header` | — | &#123;&#123; tableTitle &#125;&#125; |
 
 ## `ChartLegend`
 

@@ -69,6 +69,11 @@ jobs:
       - name: Check docs drift
         run: npm run check:docs
 
+      # 文档站构建（Q9）：check:docs 只比对源码层，markdown 里的 Vue 模板语法错误
+      # （如未转义的 {{ }}）只有真构建才暴露——曾出现「构建坏了但闸口全绿」
+      - name: Build docs site
+        run: npm run docs:build
+
       # 防构建期密钥被内联进产物。用假值当金丝雀：本机 .env.local 不在 CI 上，
       # 所以必须在 CI 里也能证明「生产构建不会把 VITE_* 值烧进 dist」这条机制成立。
       - name: Verify env values are not inlined into dist

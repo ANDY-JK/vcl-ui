@@ -223,7 +223,18 @@ function parseSlots(file) {
     if (m[2] !== '/') {
       const rest = body.slice(m.index + m[0].length)
       const closeIdx = rest.indexOf('</slot>')
-      if (closeIdx >= 0) fallback = rest.slice(0, closeIdx).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40)
+      if (closeIdx >= 0) {
+        fallback = rest
+          .slice(0, closeIdx)
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 40)
+        // 兜底预览是模板源码，含 {{ expr }}：VitePress 把 markdown 当 Vue 模板编译，
+        // 双花括号会被当插值表达式求值（文档页没有那些变量 → 构建直接失败）。
+        // 转成 HTML 实体：渲染仍是 {{ }}，编译器不当表达式。
+        fallback = fallback.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;')
+      }
     }
     upsert({ name, scope, fallback })
   }

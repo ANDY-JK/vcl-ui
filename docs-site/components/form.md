@@ -122,8 +122,8 @@
 
 | 插槽 | 作用域参数 | 兜底内容预览 |
 | --- | --- | --- |
-| `empty` | — | {{ t('form.enterToUse', { text: comboTex |
-| `option` | `opt, selected` | {{ opt.label }} {{ opt.desc }} |
+| `empty` | — | &#123;&#123; t('form.enterToUse', &#123; text: comboTex |
+| `option` | `opt, selected` | &#123;&#123; opt.label &#125;&#125; &#123;&#123; opt.desc &#125;&#125; |
 
 ## `Group`
 
@@ -222,8 +222,8 @@
 
 | 插槽 | 作用域参数 | 兜底内容预览 |
 | --- | --- | --- |
-| `file-item` | `key, file, index` | {{ f.name }} {{ formatSize(f.size) }} ✓  |
-| `trigger` | `open-file-dialog` | {{ t('form.dropHint') }} {{ t('form.drag |
+| `file-item` | `key, file, index` | &#123;&#123; f.name &#125;&#125; &#123;&#123; formatSize(f.size) &#125;&#125; ✓  |
+| `trigger` | `open-file-dialog` | &#123;&#123; t('form.dropHint') &#125;&#125; &#123;&#123; t('form.drag |
 
 ## `CameraCapture`
 
