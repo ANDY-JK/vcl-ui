@@ -82,8 +82,10 @@ lines.push('')
 const version = PKG.version
 lines.push(`## [${version}] - ${new Date().toISOString().slice(0, 10)}`)
 lines.push('')
-if (!since) lines.push('> 首次发布：以下为全部历史变更。')
-lines.push('')
+if (!since) {
+  lines.push('> 首次发布：以下为全部历史变更。')
+  lines.push('')
+}
 
 // BREAKING CHANGES 段（Keep a Changelog 约定置于版本头部）：`!` 标记的提交
 const breakingItems = entries.filter((e) => e.breaking)
@@ -138,15 +140,20 @@ lines.push('---')
 lines.push('')
 lines.push(summary)
 
-// --since 增量模式：旧文件里已发布的版本段（第一个非 Unreleased 的 ## [x] 起）原样拼回，
-// 否则重生成会把 1.0.0 等历史段整段冲掉——CHANGELOG 是累积文档，不是单版本快照
+// --since 增量模式：旧文件里已发布的版本段原样拼回，否则重生成会把 1.0.0 等历史段
+// 整段冲掉——CHANGELOG 是累积文档，不是单版本快照。同版本段（上次 --since 生成的）
+// 跳过，保证重复跑是幂等的；从第一个「更早版本」的段开始保留。
 if (since) {
   try {
     const old = readFileSync(OUT, 'utf8')
-    const m = old.match(/^## \[(?!Unreleased\])[^\]]+\] - \d{4}-\d{2}-\d{2}$/m)
-    if (m) {
-      lines.push('')
-      lines.push(old.slice(m.index).trimEnd())
+    const re = /^## \[([^\]]+)\] - \d{4}-\d{2}-\d{2}$/gm
+    let m
+    while ((m = re.exec(old))) {
+      if (m[1] !== version) {
+        lines.push('')
+        lines.push(old.slice(m.index).trimEnd())
+        break
+      }
     }
   } catch {
     // 旧文件不存在（首次生成）——没有可保留的段，正常

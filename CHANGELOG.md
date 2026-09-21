@@ -1,9 +1,39 @@
 # Changelog
 
-本文件由 `npm run changelog` 从 conventional commits 全量重生成，请勿手改。
+本文件由 `npm run changelog` 从 conventional commits 增量重生成（`--since`），历史版本段原样保留，请勿手改。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
 ## [Unreleased]
+
+## [2.0.0] - 2026-09-21
+
+### BREAKING CHANGES
+
+- **通用** v2 契约收敛——DataTable 回调 prop 改事件、多词事件统一 kebab、expose 近义入口收口（Q5/N8/Q18）（aa4a03c）
+
+### Added
+
+- **`scripts`**
+  - changelog 生成器支持 BREAKING CHANGES 段 + release:dry-run 显式 npmjs 源（c43f74a）
+
+### Changed
+
+- **通用**
+  - v2 契约收敛——DataTable 回调 prop 改事件、多词事件统一 kebab、expose 近义入口收口（Q5/N8/Q18）（aa4a03c）
+
+### Documentation
+
+- **通用**
+  - README 2.0 迁移节 + expose 契约收敛标注 + 文档站重生成 + WC 指南事件口径（d0c8b18）
+
+### Tests
+
+- **通用**
+  - 适配 v2 事件名与 authResult prop，补 @export 行为锁（5ce7436）
+
+---
+
+生成口径：4 条提交 → 列入 4 条；范围 v1.0.0..HEAD。
 
 ## [1.0.0] - 2026-09-21
 
