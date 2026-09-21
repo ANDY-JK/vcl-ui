@@ -57,6 +57,10 @@ jobs:
       - name: Build
         run: npm run build
 
+      # 多入口运行时冒烟（Q3）：静态检查之外，双格式真加载 + 导出面与 barrel 一致
+      - name: Smoke multi-entry bundles
+        run: npm run smoke:entries
+
       # 发包自检：每个组件都要有 .d.ts、exports 指向的文件都要存在
       - name: Verify package contract
         run: npm run verify:pkg

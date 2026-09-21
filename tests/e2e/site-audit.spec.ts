@@ -28,6 +28,11 @@ const THIRD_PARTY = [
   /api\.unisvg\.com/,
   // 高德 markers 主题图：地图 SDK 自请求，超时 / ORB 拒绝均属三方网络，非本库产物。
   /webapi\.amap\.com/,
+  // 无头浏览器无剪贴板写权限：任何带复制按钮的页（data-table / form-builder / …）
+  // 被审计点到复制时，useCopy 按设计降级 execCommand 并打这条 warning（useCopy.ts:19）。
+  // 环境约束非缺陷；且是否点到复制按钮随页面渲染时序漂移（偶发，非稳定回归）——
+  // 受影响面是「所有带复制按钮的页」，按页登记列不全，故按文本豁免并注明来源。
+  /\[useCopy\] Clipboard API 失败/,
 ]
 
 const BY_DESIGN: Record<string, RegExp[]> = {
