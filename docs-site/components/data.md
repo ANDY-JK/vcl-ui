@@ -16,7 +16,7 @@
 | `ImagePreview` | 3 | 2 | 1 |
 | `ProgressBar` | 15 | 2 | 0 |
 | `Skeleton` | 7 | 0 | 1 |
-| `Tree` | 8 | 4 | 0 |
+| `Tree` | 9 | 4 | 0 |
 | `Empty` | 3 | 0 | 1 |
 
 ## 组合式函数 / 工具导出
@@ -359,7 +359,8 @@
 | `expandAll` | `boolean` | `false` | 否 | — |
 | `selectable` | `boolean` | `false` | 否 | — |
 | `selectedKey` | `string \| number \| null` | `null` | 否 | — |
-| `lazy` | `boolean` | `false` | 否 | 懒加载：展开节点时若无 children 且 isLeaf 非 true，触发 load 事件 |
+| `lazy` | `boolean` | `false` | 否 | 懒加载：展开节点时若无 children 且 isLeaf 非 true 的节点不会触发 load |
+| `sharedState` | `TreeState \| null` | — | 否 | ⛔ 内部 plumbing：递归子树经此 prop 接收根实例的共享 state。 不能只靠 provide/inject——嵌套 Tree 渲染在 Transition 的插槽里， 该边界上 inject 实测取不到（每层自建 state：深层没有勾选框、勾选级联 不同步、深层节点的事件发不出去、expandAll 只生效一层）。消费方勿传。 |
 
 ### Events
 

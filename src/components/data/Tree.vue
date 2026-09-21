@@ -26,8 +26,13 @@ interface Props {
   expandAll?: boolean
   selectable?: boolean
   selectedKey?: string | number | null
-  /** 懒加载：展开节点时若无 children 且 isLeaf 非 true，触发 load 事件 */
+  /** 懒加载：展开节点时若无 children 且 isLeaf 非 true 的节点不会触发 load */
   lazy?: boolean
+  /** ⛔ 内部 plumbing：递归子树经此 prop 接收根实例的共享 state。
+   *  不能只靠 provide/inject——嵌套 Tree 渲染在 Transition 的插槽里，
+   *  该边界上 inject 实测取不到（每层自建 state：深层没有勾选框、勾选级联
+   *  不同步、深层节点的事件发不出去、expandAll 只生效一层）。消费方勿传。 */
+  sharedState?: TreeState | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -66,7 +71,10 @@ interface TreeState {
 }
 
 const injected = inject<TreeState | null>(TREE_KEY, null)
-const isRoot = injected === null
+// 共享 state 两条来路：父级递归下传的 prop（主路径，见 Props.sharedState 注释），
+// 或 inject（同层直接嵌套时的兜底）。都拿不到才是独立使用的根——自建 state。
+const sharedState = props.sharedState ?? injected
+const isRoot = sharedState === null
 let state: TreeState
 
 // ---- 使用 useTreeFlatten 管理展开/收起 ----
@@ -333,7 +341,7 @@ if (isRoot) {
     },
   )
 } else {
-  state = injected!
+  state = sharedState!
 }
 
 function isChecked(key: string | number) {
@@ -438,7 +446,9 @@ const levelStyle = computed(() => {
           class="tree-children"
           role="group"
         >
-          <Tree :data="node.children" :level="props.level + 1" />
+          <!-- sharedState 显式下传：inject 在 Transition 插槽边界上取不到（见 Props 注释），
+               少了它每层自建 state——深层勾选框消失、勾选级联断、事件发不出根 -->
+          <Tree :data="node.children" :level="props.level + 1" :shared-state="state" />
         </div>
       </Transition>
     </div>
