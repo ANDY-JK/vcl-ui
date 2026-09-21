@@ -15,6 +15,8 @@
 
 ## `Chart`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/chart`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -81,6 +83,8 @@
 | `toolbar` | `Array<'saveAsImage' \| 'zoom' \| 'dataView'> \| false` | `() => ['saveAsImage', 'zoom']` | 否 | — |
 
 ## `ChartTable`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/chart-table`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 

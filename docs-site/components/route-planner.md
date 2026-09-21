@@ -16,6 +16,8 @@
 
 ## `RouteMap`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/route-planner`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -24,6 +26,8 @@
 | `plan` | `RoutePlan \| null` | — | 是 | — |
 
 ## `RouteResult`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/route-planner`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -36,6 +40,8 @@
 | `startPointName` | `string` | — | 否 | 起点名称（如"我的位置"），用于路线概览展示 |
 
 ## `StorePanel`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/route-planner`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -56,6 +62,8 @@
 
 ## `StoreFormModal`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/route-planner`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -71,6 +79,8 @@
 | `save` | `store: Store` | — |
 
 ## `ImportProgress`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/route-planner`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 

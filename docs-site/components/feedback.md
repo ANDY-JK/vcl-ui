@@ -39,6 +39,8 @@
 
 ## `Toast`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/toast`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -53,6 +55,8 @@
 | `teleportTo` | `string \| HTMLElement` | `'body'` | 否 | Teleport 目标（WC/Shadow DOM 宿主指向自身容器），默认 'body' |
 
 ## `Loading`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/loading`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -69,6 +73,8 @@
 | `teleportTo` | `string \| HTMLElement` | `'body'` | 否 | Teleport 目标（WC/Shadow DOM 宿主指向自身容器），默认 'body' |
 
 ## `Popover`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/popover`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -89,6 +95,8 @@
 | `trigger` | — | — |
 
 ## `Result`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/result`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -114,6 +122,8 @@
 | `extra` | — | — |
 
 ## `Drawer`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/drawer`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -163,6 +173,8 @@
 
 ## `ErrorBoundary`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/error-boundary`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -185,6 +197,8 @@
 | `fallback` | `error, retry` | ! {{ title \|\| t('errorBoundary.title') } |
 
 ## `ConfirmModal`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/confirm-modal`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 

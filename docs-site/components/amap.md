@@ -33,6 +33,8 @@
 
 ## `AmapWidget`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/amap-widget`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |

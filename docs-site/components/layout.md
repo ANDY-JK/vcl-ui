@@ -58,6 +58,8 @@
 
 ## `ModalBox`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/modal`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -118,6 +120,8 @@
 | `cancel` | `无` | — |
 
 ## `Flex`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/flex`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 

@@ -35,6 +35,8 @@
 
 ## `Input`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/input`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -74,6 +76,8 @@
 | `change` | `v: string \| number \| null` | — |
 
 ## `Select`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/select`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -123,6 +127,8 @@
 
 ## `Group`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/group`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -153,6 +159,8 @@
 
 ## `IconPicker`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/icon`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -175,6 +183,8 @@
 | `change` | `v: { icon: string; color: string; bgColor: string }` | — |
 
 ## `Upload`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/upload`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -217,6 +227,8 @@
 
 ## `CameraCapture`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/capture`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -239,6 +251,8 @@
 | `error` | `message: string` | 相机不可用提示；fallbackOnError 时附带说明已切换系统相机 |
 
 ## `CodeCapture`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/capture`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -264,6 +278,8 @@
 
 ## `CaptureFallbackPanel`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/capture`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -287,6 +303,8 @@
 | `retry` | `无` | 重试上一级采集（宿主决定怎么重开：页面内相机 / 系统相机） |
 
 ## `CaptureFallbackSheet`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/capture`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 

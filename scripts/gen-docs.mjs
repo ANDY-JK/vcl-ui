@@ -278,6 +278,65 @@ function resolveModule(spec, dir) {
   return base
 }
 
+/**
+ * demo 站路由表：routeKey → demo 文件路径（解析 ComponentDemo.vue，与 site-audit 同口径）。
+ * 路由键可能带引号也可能不带（'data-table': 与 button: 混用），正则两者都容让。
+ */
+function demoRoutes() {
+  const src = read(path.join(ROOT, 'src/demos/ComponentDemo.vue'))
+  const map = new Map()
+  const re = /['"]?([a-z][a-z0-9-]*)['"]?\s*:\s*defineAsyncComponent\(\{[\s\S]{0,200}?import\(\s*'\.\/([^']+)'\s*\)/g
+  let m
+  while ((m = re.exec(src))) map.set(m[1], m[2])
+  return map
+}
+
+/**
+ * 组件 → demo 路由的命名分歧桥接（显式人工表，纯名字映射抓不到这些）：
+ * 组件在 barrel 里的导出名与 demo 文件名不一致（barrel 重命名、一页 demo 覆盖多组件、
+ * demo 文件名另起）。改这里必须同步改 ComponentDemo.vue 的路由，check:docs 只保生成
+ * 一致性、不验路由存在——路由失效由 e2e site-audit 的全站遍历兜。
+ */
+const DEMO_ALIAS = {
+  // form-builder 域：一页设计器 demo 覆盖三大组件 + 合同收集独立页
+  FormDesigner: 'form-builder',
+  FormCollect: 'form-builder',
+  FormTargetCollect: 'contract-target-collect',
+  // 采集域：三段合并 demo 页
+  CameraCapture: 'capture',
+  CodeCapture: 'capture',
+  CaptureFallbackPanel: 'capture',
+  CaptureFallbackSheet: 'capture',
+  IconPicker: 'icon',
+  // 登录域：barrel 重命名为 XxxPage，demo 一页覆盖四页面
+  LoginPage: 'login',
+  RegisterPage: 'login',
+  ForgotPasswordPage: 'login',
+  PortalLogin: 'login',
+  // 布局/导航/地图：demo 文件名与组件名不一致
+  ModalBox: 'modal',
+  TabPanel: 'tabs',
+  ProgressBar: 'progress',
+  RouteMap: 'route-planner',
+  RouteResult: 'route-planner',
+  StorePanel: 'route-planner',
+  StoreFormModal: 'route-planner',
+  ImportProgress: 'route-planner',
+}
+
+/** 组件 → demo 路由键：别名表 → 精确 XxxDemo.vue → 文件名以组件名开头取最短 */
+function demoRouteFor(componentName, routes) {
+  if (DEMO_ALIAS[componentName]) return DEMO_ALIAS[componentName]
+  const lower = componentName.toLowerCase()
+  const entries = [...routes.entries()]
+  const exact = entries.find(([, file]) => path.basename(file).toLowerCase() === `${lower}demo.vue`)
+  if (exact) return exact[0]
+  const prefixed = entries
+    .filter(([, file]) => path.basename(file).toLowerCase().startsWith(lower))
+    .sort((a, b) => path.basename(a[1]).length - path.basename(b[1]).length)
+  return prefixed[0]?.[0]
+}
+
 function barrelExports(domain) {
   const file = path.join(ROOT, 'src/components', domain, 'index.ts')
   const src = read(file)
@@ -388,9 +447,14 @@ for (const domain of DOMAINS) {
     }
   }
   lines.push('', '---', '')
+  const routes = demoRoutes()
   for (const c of components) {
     const api = parseComponent(c.srcFile)
     lines.push(`## \`${c.name}\``, '')
+    const route = demoRouteFor(c.name, routes)
+    if (route) {
+      lines.push(`> 🔗 在线示例：\`npm run dev\` 启动 demo 站后访问 \`#/${route}\`（Props 表与交互行为以 demo 页为准）`, '')
+    }
     if (!api.declared) {
       lines.push('> 该组件无 props / events / slots API（纯展示组件）。', '')
       continue

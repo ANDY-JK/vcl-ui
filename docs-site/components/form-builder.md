@@ -81,6 +81,8 @@
 
 ## `FormDesigner`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/form-builder`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -101,6 +103,8 @@
 | `saved` | `item: FormMetaItem` | 保存成功（新建或覆盖）后通知宿主，携带存储层返回的表单元信息 |
 
 ## `FormBuilder`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/form-builder`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -125,6 +129,8 @@
 | `loaded` | `raw: Record<string, unknown>` | 远程数据加载完成（submitConfig.apiUrl GET 回填后，返回原始响应数据） |
 
 ## `FormRenderer`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/form-renderer`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -153,6 +159,8 @@
 
 ## `FormCollect`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/form-builder`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -171,6 +179,8 @@
 | `submit` | `data: Record<string, unknown>, record: CollectRecord` | — |
 
 ## `FormTargetCollect`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/contract-target-collect`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 

@@ -17,6 +17,8 @@
 
 ## `Tabs`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/tabs`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -33,6 +35,8 @@
 
 ## `TabPanel`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/tabs`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -48,6 +52,8 @@
 | `default` | — | — |
 
 ## `Steps`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/steps`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
@@ -66,6 +72,8 @@
 
 ## `Pagination`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/pagination`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -83,6 +91,8 @@
 
 ## `Breadcrumb`
 
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/breadcrumb`（Props 表与交互行为以 demo 页为准）
+
 ### Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -91,6 +101,8 @@
 | `separator` | `string` | — | 否 | 自定义分隔符文本；不传时使用 chevron 图标 |
 
 ## `Menu`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/menu`（Props 表与交互行为以 demo 页为准）
 
 ### Props
 
