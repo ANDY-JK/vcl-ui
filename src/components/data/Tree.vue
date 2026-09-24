@@ -53,8 +53,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** 节点点击（selectable 模式下同时更新选中） */
   'node-click': [node: TreeNode]
+  /** 勾选变化：[勾选后的全量键集合, 本次变更的节点] */
   'check-change': [checkedKeys: (string | number)[], node: TreeNode]
+  /** v-model:selectedKey——受控选中节点键 */
   'update:selectedKey': [key: string | number | null]
   /** 懒加载：节点展开时触发，父组件加载子节点后回填到 data */
   load: [node: TreeNode]

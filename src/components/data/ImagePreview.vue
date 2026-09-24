@@ -25,14 +25,18 @@ const props = withDefaults(
   defineProps<{
     /** 图片源：字符串/对象 = 单图，数组 = 多图 */
     src?: ImageSrc
+    /** 初始打开定位到第几张（越界自动收敛） */
     initialIndex?: number
+    /** 预览标题（优先显示；未传时多图显示当前张 label 或「第 n 张」） */
     title?: string
   }>(),
   { initialIndex: 0 },
 )
 
 const emit = defineEmits<{
+  /** 关闭预览 */
   close: []
+  /** 切换图片：[当前索引] */
   change: [index: number]
 }>()
 
@@ -1043,8 +1047,15 @@ const displayTitle = computed(() => {
             @click="goTo(i)"
           >
             <!-- 缩略图条是整批原图直挂（主图另有一张大图），不懒加载会一次拉完整册 -->
-            <img :src="item.url" :alt="item.label || $t('imagePreview.imageLabel', { n: i + 1 })" loading="lazy" decoding="async" />
-            <span class="ip-thumb-label" :title="item.label || $t('imagePreview.imageLabel', { n: i + 1 })">{{ item.label || $t('imagePreview.imageLabel', { n: i + 1 }) }}</span>
+            <img
+              :src="item.url"
+              :alt="item.label || $t('imagePreview.imageLabel', { n: i + 1 })"
+              loading="lazy"
+              decoding="async"
+            />
+            <span class="ip-thumb-label" :title="item.label || $t('imagePreview.imageLabel', { n: i + 1 })">{{
+              item.label || $t('imagePreview.imageLabel', { n: i + 1 })
+            }}</span>
           </button>
         </div>
       </div>

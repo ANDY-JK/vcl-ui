@@ -6,8 +6,11 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
 
 interface Props {
+  /** 面板标题 */
   title: string
+  /** 受控展开态（v-model:open）；不传时组件自主管理 */
   open?: boolean
+  /** 禁用（标题栏不可点击展开） */
   disabled?: boolean
   /** 面板唯一标识，用于 aria-controls / aria-labelledby 关联 */
   id?: string
@@ -23,6 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** v-model:open——展开/收起 */
   'update:open': [v: boolean]
   /** 手风琴模式：展开时触发，外部 CollapseGroup 监听后关闭同组其他面板 */
   'accordion-expand': []

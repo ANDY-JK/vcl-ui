@@ -6,19 +6,33 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 
 interface Props {
+  /** 进度百分比 0-100（非交互模式） */
   percent?: number
+  /** 语义色 */
   variant?: 'primary' | 'success' | 'warning' | 'danger'
+  /** 显示百分比文字 */
   showText?: boolean
+  /** 轨道高度（px，默认 6） */
   height?: number
+  /** 条纹轨道 */
   striped?: boolean
+  /** 流光动画 */
   animated?: boolean
+  /** 交互模式：进度条变滑块（拖拽/键盘/数字输入） */
   interactive?: boolean
+  /** 交互模式的受控值（v-model:modelValue） */
   modelValue?: number
+  /** 交互模式最小值（默认 0） */
   min?: number
+  /** 交互模式最大值（默认 100） */
   max?: number
+  /** 交互模式步进（默认 1） */
   step?: number
+  /** 交互模式禁用 */
   disabled?: boolean
+  /** 交互模式显示数字输入框 */
   showInput?: boolean
+  /** 显示刻度断点 */
   showStops?: boolean
   /** 无障碍名称：interactive 模式的 slider/数字输入需要可访问名，未传时回退通用文案 */
   label?: string
@@ -42,7 +56,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** 交互模式拖拽/输入中的实时值（v-model:modelValue） */
   'update:modelValue': [v: number]
+  /** 交互模式值提交（松手/失焦/回车） */
   change: [v: number]
 }>()
 

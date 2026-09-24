@@ -131,13 +131,25 @@ export function createLocalStorage(prefix: string = 'dt'): TableStorage {
   const pfx = `saas_${prefix}-`
   return {
     get(key: string): string | null {
-      try { return localStorage.getItem(pfx + key) } catch { return null }
+      try {
+        return localStorage.getItem(pfx + key)
+      } catch {
+        return null
+      }
     },
     set(key: string, value: string): void {
-      try { localStorage.setItem(pfx + key, value) } catch { /* quota exceeded 等静默 */ }
+      try {
+        localStorage.setItem(pfx + key, value)
+      } catch {
+        /* quota exceeded 等静默 */
+      }
     },
     remove(key: string): void {
-      try { localStorage.removeItem(pfx + key) } catch { /* 静默 */ }
+      try {
+        localStorage.removeItem(pfx + key)
+      } catch {
+        /* 静默 */
+      }
     },
   }
 }
@@ -147,20 +159,35 @@ export function createLocalStorage(prefix: string = 'dt'): TableStorage {
  * interface 没有隐式索引签名会报 TS2344（Vue 3.5 放宽了该约束，只在本机 3.5 下看不出来）。
  */
 export type Emits = {
+  /** 排序变化：表头点击排序后抛出（受控排序经 sortKey/sortOrder 驱动时同样触发） */
   sort: [key: string, order: 'asc' | 'desc']
+  /** 筛选变化：列头筛选提交后抛出当前全量筛选状态（filterMode='server' 时接此事件由后端处理） */
   filter: [filters: Record<string, string[]>]
+  /** v-model:filters——外部程序化控制筛选状态（服务端筛选场景） */
   'update:filters': [filters: Record<string, string[]>]
+  /** 行点击 */
   'row-click': [row: Record<string, any>, index: number]
+  /** v-model:selectedKeys——选中行键集合 */
   'update:selectedKeys': [keys: string[]]
+  /** v-model:currentPage——当前页码 */
   'update:currentPage': [page: number]
+  /** 翻页：[页码, 每页行数]（服务端分页接此事件换数据） */
   'page-change': [page: number, pageSize: number]
+  /** 选中集合变化：[行键数组, 行对象数组] */
   'selection-change': [keys: string[], rows: Record<string, any>[]]
+  /** 单元格编辑提交：[行键, 列键, 新值]——新值已经过 Column.type 归一化 */
   'cell-change': [rowKey: string, colKey: string, newValue: string]
+  /** 备注保存：[行键, 列键, 备注文本] */
   'cell-note': [rowKey: string, colKey: string, note: string]
+  /** 批量修改/填充柄提交：一次动作为一条记录，[列键, 新值, 受影响行键集合] */
   'batch-change': [colKey: string, newValue: string, rowKeys: string[]]
+  /** 行操作按钮点击：[actionKey, 行对象, 行号] */
   'row-action': [actionKey: string, row: Record<string, any>, index: number]
+  /** 行右键菜单项点击：[actionKey, 行对象, 行号] */
   'row-context-action': [actionKey: string, row: Record<string, any>, index: number]
+  /** 全局搜索词变化（searchMode='server' 时接此事件由后端过滤） */
   search: [term: string]
+  /** 进入/退出全屏 */
   'fullscreen-change': [isFullscreen: boolean]
   /** v2（Q5）：onExport 回调 prop 收敛为事件——有监听=服务端导出（宿主自处理），无监听=内置 CSV/Excel 导出 */
   export: []

@@ -96,21 +96,21 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `sort` | `key: string, order: 'asc' \| 'desc'` | — |
-| `filter` | `filters: Record<string, string[]>` | — |
-| `'update:filters'` | `filters: Record<string, string[]>` | — |
-| `'row-click'` | `row: Record<string, any>, index: number` | — |
-| `'update:selectedKeys'` | `keys: string[]` | — |
-| `'update:currentPage'` | `page: number` | — |
-| `'page-change'` | `page: number, pageSize: number` | — |
-| `'selection-change'` | `keys: string[], rows: Record<string, any>[]` | — |
-| `'cell-change'` | `rowKey: string, colKey: string, newValue: string` | — |
-| `'cell-note'` | `rowKey: string, colKey: string, note: string` | — |
-| `'batch-change'` | `colKey: string, newValue: string, rowKeys: string[]` | — |
-| `'row-action'` | `actionKey: string, row: Record<string, any>, index: number` | — |
-| `'row-context-action'` | `actionKey: string, row: Record<string, any>, index: number` | — |
-| `search` | `term: string` | — |
-| `'fullscreen-change'` | `isFullscreen: boolean` | — |
+| `sort` | `key: string, order: 'asc' \| 'desc'` | 排序变化：表头点击排序后抛出（受控排序经 sortKey/sortOrder 驱动时同样触发） |
+| `filter` | `filters: Record<string, string[]>` | 筛选变化：列头筛选提交后抛出当前全量筛选状态（filterMode='server' 时接此事件由后端处理） |
+| `'update:filters'` | `filters: Record<string, string[]>` | v-model:filters——外部程序化控制筛选状态（服务端筛选场景） |
+| `'row-click'` | `row: Record<string, any>, index: number` | 行点击 |
+| `'update:selectedKeys'` | `keys: string[]` | v-model:selectedKeys——选中行键集合 |
+| `'update:currentPage'` | `page: number` | v-model:currentPage——当前页码 |
+| `'page-change'` | `page: number, pageSize: number` | 翻页：[页码, 每页行数]（服务端分页接此事件换数据） |
+| `'selection-change'` | `keys: string[], rows: Record<string, any>[]` | 选中集合变化：[行键数组, 行对象数组] |
+| `'cell-change'` | `rowKey: string, colKey: string, newValue: string` | 单元格编辑提交：[行键, 列键, 新值]——新值已经过 Column.type 归一化 |
+| `'cell-note'` | `rowKey: string, colKey: string, note: string` | 备注保存：[行键, 列键, 备注文本] |
+| `'batch-change'` | `colKey: string, newValue: string, rowKeys: string[]` | 批量修改/填充柄提交：一次动作为一条记录，[列键, 新值, 受影响行键集合] |
+| `'row-action'` | `actionKey: string, row: Record<string, any>, index: number` | 行操作按钮点击：[actionKey, 行对象, 行号] |
+| `'row-context-action'` | `actionKey: string, row: Record<string, any>, index: number` | 行右键菜单项点击：[actionKey, 行对象, 行号] |
+| `search` | `term: string` | 全局搜索词变化（searchMode='server' 时接此事件由后端过滤） |
+| `'fullscreen-change'` | `isFullscreen: boolean` | 进入/退出全屏 |
 | `export` | `无` | v2（Q5）：onExport 回调 prop 收敛为事件——有监听=服务端导出（宿主自处理），无监听=内置 CSV/Excel 导出 |
 | `'toggle-sidebar'` | `无` | v2（Q5）：onToggleSidebar 回调 prop 收敛为事件——有监听=通知宿主收/还侧边栏，无监听=降级 inject('toggleCollapse') |
 
@@ -131,26 +131,26 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `items` | `Record<string, any>[]` | — | 是 | — |
-| `idKey` | `string` | `'id'` | 否 | — |
-| `titleField` | `string` | `'display_name'` | 否 | — |
-| `descriptionField` | `string` | `'description'` | 否 | — |
-| `iconField` | `string` | `'icon'` | 否 | — |
-| `toggleField` | `string` | `'is_enabled'` | 否 | — |
-| `extraColumns` | `ExtraColumn[]` | `() => []` | 否 | — |
-| `disabled` | `boolean` | `false` | 否 | — |
-| `isLoading` | `boolean` | `false` | 否 | — |
-| `emptyText` | `string` | `''` | 否 | — |
+| `items` | `Record<string, any>[]` | — | 是 | 列表数据（行对象按各 *Field prop 取列） |
+| `idKey` | `string` | `'id'` | 否 | 行唯一键字段名（默认 'id'） |
+| `titleField` | `string` | `'display_name'` | 否 | 标题字段名（默认 'display_name'） |
+| `descriptionField` | `string` | `'description'` | 否 | 描述字段名（默认 'description'） |
+| `iconField` | `string` | `'icon'` | 否 | 图标字段名（默认 'icon'） |
+| `toggleField` | `string` | `'is_enabled'` | 否 | 开关绑定字段名（默认 'is_enabled'） |
+| `extraColumns` | `ExtraColumn[]` | `() => []` | 否 | 追加列（状态标签等，ExtraColumn：取值字段/格式化/标签色） |
+| `disabled` | `boolean` | `false` | 否 | 整列禁用（开关与按钮不可操作） |
+| `isLoading` | `boolean` | `false` | 否 | 加载态（显示骨架行） |
+| `emptyText` | `string` | `''` | 否 | 空数据文案（空串用内置 i18n） |
 | `variant` | `'switch' \| 'button'` | `'switch'` | 否 | 'switch' = 开关列表, 'button' = 操作按钮（发快递等场景） |
-| `buttonLabel` | `string` | `''` | 否 | variant='button' 时按钮文字 |
+| `buttonLabel` | `string` | `''` | 否 | variant='button' 时按钮文字（空串用内置 i18n） |
 | `phoneField` | `string` | `'phone'` | 否 | variant='button' 时手机号字段 |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `toggle` | `item: Record<string, any>, newValue: boolean` | — |
-| `'item-click'` | `item: Record<string, any>` | — |
+| `toggle` | `item: Record<string, any>, newValue: boolean` | 开关切换：[行对象, 切换后的新值]（内部同步回写行数据，extraColumns 状态标签立即更新） |
+| `'item-click'` | `item: Record<string, any>` | 行点击 |
 | `'button-click'` | `payload: { name: string; phone: string; address: string; item: Record<string, any> }` | variant='button' 时点击按钮，payload: { name, phone, address, item } |
 
 ## `Card`
@@ -161,17 +161,17 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `type` | `'grid' \| 'stat'` | `'grid'` | 否 | — |
-| `title` | `string` | — | 否 | — |
+| `type` | `'grid' \| 'stat'` | `'grid'` | 否 | 模式：grid 内容卡片（默认）\| stat 统计卡片 |
+| `title` | `string` | — | 否 | 卡片标题（grid 模式） |
 | `titleAs` | `'h1' \| 'h2' \| 'h3' \| 'h4' \| 'h5' \| 'h6' \| 'div'` | `'h3'` | 否 | title 的标题标签级。默认 h3：卡片通常是「页标题(h1) → 区块(h2) → 卡片」的第三级。 硬编码某一级会在宿主层级不同时跳级（axe heading-order），故把选择权交给调用方； 传 'div' 表示纯展示标题（卡片不承担文档结构职责时用）。 |
-| `highlight` | `boolean` | — | 否 | — |
-| `summary` | `boolean` | — | 否 | — |
+| `highlight` | `boolean` | — | 否 | 高亮描边（强调当前选中/活动卡片） |
+| `summary` | `boolean` | — | 否 | 摘要形态：压缩内边距的紧凑布局 |
 | `overflowVisible` | `boolean` | — | 否 | 允许内容溢出卡片边界（用于包含下拉/弹出组件的场景） |
-| `value` | `string \| number` | — | 否 | — |
-| `label` | `string` | — | 否 | — |
-| `icon` | `string` | `'circle-alert'` | 否 | — |
-| `color` | `string` | — | 否 | — |
-| `trend` | `number \| string` | — | 否 | — |
+| `value` | `string \| number` | — | 否 | 统计数值 |
+| `label` | `string` | — | 否 | 数值下方的标签文案 |
+| `icon` | `string` | `'circle-alert'` | 否 | 统计图标（IconSvg 图标名） |
+| `color` | `string` | — | 否 | 数值/图标语义色（CSS 颜色值或令牌名） |
+| `trend` | `number \| string` | — | 否 | 趋势：数字或 '12%' 类字符串；正=上涨箭头、负=下跌箭头、0/非法值=持平 |
 
 ### Events
 
@@ -195,10 +195,10 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `src` | `string` | — | 否 | — |
-| `name` | `string` | — | 否 | — |
-| `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | 否 | — |
-| `shape` | `'circle' \| 'rounded'` | `'circle'` | 否 | — |
+| `src` | `string` | — | 否 | 图片地址；未传时按 name 首字生成文字头像 |
+| `name` | `string` | — | 否 | 显示名（取首字渲染；文字头像的数据来源） |
+| `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | 否 | 尺寸档位（默认 'md'） |
+| `shape` | `'circle' \| 'rounded'` | `'circle'` | 否 | 形状：圆形（默认）\| 圆角方 |
 
 ## `Collapse`
 
@@ -208,9 +208,9 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `title` | `string` | — | 是 | — |
-| `open` | `boolean` | `false` | 否 | — |
-| `disabled` | `boolean` | `false` | 否 | — |
+| `title` | `string` | — | 是 | 面板标题 |
+| `open` | `boolean` | `false` | 否 | 受控展开态（v-model:open）；不传时组件自主管理 |
+| `disabled` | `boolean` | `false` | 否 | 禁用（标题栏不可点击展开） |
 | `id` | `string` | `''` | 否 | 面板唯一标识，用于 aria-controls / aria-labelledby 关联 |
 | `accordion` | `boolean` | `false` | 否 | 手风琴模式标记：配合外部 CollapseGroup 使用，展开时自动关闭同组其他面板 |
 
@@ -218,7 +218,7 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:open'` | `v: boolean` | — |
+| `'update:open'` | `v: boolean` | v-model:open——展开/收起 |
 | `'accordion-expand'` | `无` | 手风琴模式：展开时触发，外部 CollapseGroup 监听后关闭同组其他面板 |
 
 ### Slots
@@ -235,9 +235,9 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `text` | `string` | — | 否 | — |
-| `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | 否 | — |
-| `dashed` | `boolean` | `false` | 否 | — |
+| `text` | `string` | — | 否 | 分隔线文案（居中显示在线上） |
+| `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | 否 | 方向：水平线（默认）\| 垂直线 |
+| `dashed` | `boolean` | `false` | 否 | 虚线样式 |
 
 ## `Image`
 
@@ -247,26 +247,26 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `src` | `string` | — | 否 | — |
-| `alt` | `string` | `''` | 否 | — |
+| `src` | `string` | — | 否 | 图片地址 |
+| `alt` | `string` | `''` | 否 | 原生 alt |
 | `width` | `number` | — | 否 | 图片宽度 |
 | `height` | `number` | — | 否 | 图片高度 |
-| `size` | `number` | `80` | 否 | 默认尺寸（宽高未设时） |
-| `fit` | `'cover' \| 'contain' \| 'fill' \| 'none' \| 'scale-down'` | `'cover'` | 否 | object-fit |
+| `size` | `number` | `80` | 否 | 默认尺寸（宽高未设时，默认 80） |
+| `fit` | `'cover' \| 'contain' \| 'fill' \| 'none' \| 'scale-down'` | `'cover'` | 否 | object-fit（默认 'cover'） |
 | `radius` | `number` | — | 否 | 圆角 |
 | `round` | `boolean` | — | 否 | 圆形 |
-| `lazy` | `boolean` | `true` | 否 | 是否懒加载 |
-| `preview` | `boolean` | `true` | 否 | 点击放大预览 |
-| `loadingText` | `string` | `''` | 否 | 加载中文本 |
-| `errorText` | `string` | `''` | 否 | 加载失败文本 |
+| `lazy` | `boolean` | `true` | 否 | 懒加载（默认开） |
+| `preview` | `boolean` | `true` | 否 | 点击放大预览（默认开） |
+| `loadingText` | `string` | `''` | 否 | 加载中文本（空串用内置 i18n） |
+| `errorText` | `string` | `''` | 否 | 加载失败文本（空串用内置 i18n） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `load` | `src: string` | — |
-| `error` | `src: string` | — |
-| `click` | `src: string` | — |
+| `load` | `src: string` | 图片加载成功 |
+| `error` | `src: string` | 图片加载失败 |
+| `click` | `src: string` | 图片点击 |
 
 ## `ImagePreview`
 
@@ -275,15 +275,15 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `src` | `ImageSrc` | — | 否 | 图片源：字符串/对象 = 单图，数组 = 多图 |
-| `initialIndex` | `number` | `0` | 否 | — |
-| `title` | `string` | — | 否 | — |
+| `initialIndex` | `number` | `0` | 否 | 初始打开定位到第几张（越界自动收敛） |
+| `title` | `string` | — | 否 | 预览标题（优先显示；未传时多图显示当前张 label 或「第 n 张」） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `close` | `无` | — |
-| `change` | `index: number` | — |
+| `close` | `无` | 关闭预览 |
+| `change` | `index: number` | 切换图片：[当前索引] |
 
 ### Slots
 
@@ -299,28 +299,28 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `percent` | `number` | `0` | 否 | — |
-| `variant` | `'primary' \| 'success' \| 'warning' \| 'danger'` | `'primary'` | 否 | — |
-| `showText` | `boolean` | `true` | 否 | — |
-| `height` | `number` | `6` | 否 | — |
-| `striped` | `boolean` | `false` | 否 | — |
-| `animated` | `boolean` | `false` | 否 | — |
-| `interactive` | `boolean` | `false` | 否 | — |
-| `modelValue` | `number` | `0` | 否 | — |
-| `min` | `number` | `0` | 否 | — |
-| `max` | `number` | `100` | 否 | — |
-| `step` | `number` | `1` | 否 | — |
-| `disabled` | `boolean` | `false` | 否 | — |
-| `showInput` | `boolean` | `false` | 否 | — |
-| `showStops` | `boolean` | `false` | 否 | — |
+| `percent` | `number` | `0` | 否 | 进度百分比 0-100（非交互模式） |
+| `variant` | `'primary' \| 'success' \| 'warning' \| 'danger'` | `'primary'` | 否 | 语义色 |
+| `showText` | `boolean` | `true` | 否 | 显示百分比文字 |
+| `height` | `number` | `6` | 否 | 轨道高度（px，默认 6） |
+| `striped` | `boolean` | `false` | 否 | 条纹轨道 |
+| `animated` | `boolean` | `false` | 否 | 流光动画 |
+| `interactive` | `boolean` | `false` | 否 | 交互模式：进度条变滑块（拖拽/键盘/数字输入） |
+| `modelValue` | `number` | `0` | 否 | 交互模式的受控值（v-model:modelValue） |
+| `min` | `number` | `0` | 否 | 交互模式最小值（默认 0） |
+| `max` | `number` | `100` | 否 | 交互模式最大值（默认 100） |
+| `step` | `number` | `1` | 否 | 交互模式步进（默认 1） |
+| `disabled` | `boolean` | `false` | 否 | 交互模式禁用 |
+| `showInput` | `boolean` | `false` | 否 | 交互模式显示数字输入框 |
+| `showStops` | `boolean` | `false` | 否 | 显示刻度断点 |
 | `label` | `string` | — | 否 | 无障碍名称：interactive 模式的 slider/数字输入需要可访问名，未传时回退通用文案 |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: number` | — |
-| `change` | `v: number` | — |
+| `'update:modelValue'` | `v: number` | 交互模式拖拽/输入中的实时值（v-model:modelValue） |
+| `change` | `v: number` | 交互模式值提交（松手/失焦/回车） |
 
 ## `Skeleton`
 
@@ -366,9 +366,9 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'node-click'` | `node: TreeNode` | — |
-| `'check-change'` | `checkedKeys: (string \| number)[], node: TreeNode` | — |
-| `'update:selectedKey'` | `key: string \| number \| null` | — |
+| `'node-click'` | `node: TreeNode` | 节点点击（selectable 模式下同时更新选中） |
+| `'check-change'` | `checkedKeys: (string \| number)[], node: TreeNode` | 勾选变化：[勾选后的全量键集合, 本次变更的节点] |
+| `'update:selectedKey'` | `key: string \| number \| null` | v-model:selectedKey——受控选中节点键 |
 | `load` | `node: TreeNode` | 懒加载：节点展开时触发，父组件加载子节点后回填到 data |
 
 ## `Empty`

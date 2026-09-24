@@ -15,19 +15,29 @@ interface ExtraColumn {
 }
 
 interface Props {
+  /** 列表数据（行对象按各 *Field prop 取列） */
   items: Record<string, any>[]
+  /** 行唯一键字段名（默认 'id'） */
   idKey?: string
+  /** 标题字段名（默认 'display_name'） */
   titleField?: string
+  /** 描述字段名（默认 'description'） */
   descriptionField?: string
+  /** 图标字段名（默认 'icon'） */
   iconField?: string
+  /** 开关绑定字段名（默认 'is_enabled'） */
   toggleField?: string
+  /** 追加列（状态标签等，ExtraColumn：取值字段/格式化/标签色） */
   extraColumns?: ExtraColumn[]
+  /** 整列禁用（开关与按钮不可操作） */
   disabled?: boolean
+  /** 加载态（显示骨架行） */
   isLoading?: boolean
+  /** 空数据文案（空串用内置 i18n） */
   emptyText?: string
   /** 'switch' = 开关列表, 'button' = 操作按钮（发快递等场景） */
   variant?: 'switch' | 'button'
-  /** variant='button' 时按钮文字 */
+  /** variant='button' 时按钮文字（空串用内置 i18n） */
   buttonLabel?: string
   /** variant='button' 时手机号字段 */
   phoneField?: string
@@ -53,7 +63,9 @@ const effectiveEmptyText = computed(() => props.emptyText || t('common.empty'))
 const effectiveButtonLabel = computed(() => props.buttonLabel || t('common.sendExpress'))
 
 const emit = defineEmits<{
+  /** 开关切换：[行对象, 切换后的新值]（内部同步回写行数据，extraColumns 状态标签立即更新） */
   toggle: [item: Record<string, any>, newValue: boolean]
+  /** 行点击 */
   'item-click': [item: Record<string, any>]
   /** variant='button' 时点击按钮，payload: { name, phone, address, item } */
   'button-click': [payload: { name: string; phone: string; address: string; item: Record<string, any> }]

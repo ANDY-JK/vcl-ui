@@ -4,9 +4,13 @@
 import { computed, ref, watch } from 'vue'
 
 interface Props {
+  /** 图片地址；未传时按 name 首字生成文字头像 */
   src?: string
+  /** 显示名（取首字渲染；文字头像的数据来源） */
   name?: string
+  /** 尺寸档位（默认 'md'） */
   size?: 'sm' | 'md' | 'lg' | 'xl'
+  /** 形状：圆形（默认）| 圆角方 */
   shape?: 'circle' | 'rounded'
 }
 

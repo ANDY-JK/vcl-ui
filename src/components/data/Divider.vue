@@ -2,8 +2,11 @@
 // ⛔ 保护 — 分割线，禁止：clamp() margin → px，dashed/solid 样式
 //    需我确认：direction 方向、text 插槽位置
 interface Props {
+  /** 分隔线文案（居中显示在线上） */
   text?: string
+  /** 方向：水平线（默认）| 垂直线 */
   direction?: 'horizontal' | 'vertical'
+  /** 虚线样式 */
   dashed?: boolean
 }
 

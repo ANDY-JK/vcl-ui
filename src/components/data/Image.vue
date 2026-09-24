@@ -10,27 +10,29 @@ const t = useT()
 
 const props = withDefaults(
   defineProps<{
+    /** 图片地址 */
     src?: string
+    /** 原生 alt */
     alt?: string
     /** 图片宽度 */
     width?: number
     /** 图片高度 */
     height?: number
-    /** 默认尺寸（宽高未设时） */
+    /** 默认尺寸（宽高未设时，默认 80） */
     size?: number
-    /** object-fit */
+    /** object-fit（默认 'cover'） */
     fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down'
     /** 圆角 */
     radius?: number
     /** 圆形 */
     round?: boolean
-    /** 是否懒加载 */
+    /** 懒加载（默认开） */
     lazy?: boolean
-    /** 点击放大预览 */
+    /** 点击放大预览（默认开） */
     preview?: boolean
-    /** 加载中文本 */
+    /** 加载中文本（空串用内置 i18n） */
     loadingText?: string
-    /** 加载失败文本 */
+    /** 加载失败文本（空串用内置 i18n） */
     errorText?: string
   }>(),
   {
@@ -45,8 +47,11 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
+  /** 图片加载成功 */
   load: [src: string]
+  /** 图片加载失败 */
   error: [src: string]
+  /** 图片点击 */
   click: [src: string]
 }>()
 

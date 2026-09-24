@@ -6,7 +6,9 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 
 /* ====== grid 模式 Props ====== */
 interface GridProps {
+  /** 模式：grid 内容卡片（默认）| stat 统计卡片 */
   type?: 'grid' | 'stat'
+  /** 卡片标题（grid 模式） */
   title?: string
   /**
    * title 的标题标签级。默认 h3：卡片通常是「页标题(h1) → 区块(h2) → 卡片」的第三级。
@@ -14,18 +16,26 @@ interface GridProps {
    * 传 'div' 表示纯展示标题（卡片不承担文档结构职责时用）。
    */
   titleAs?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div'
+  /** 高亮描边（强调当前选中/活动卡片） */
   highlight?: boolean
+  /** 摘要形态：压缩内边距的紧凑布局 */
   summary?: boolean
   /** 允许内容溢出卡片边界（用于包含下拉/弹出组件的场景） */
   overflowVisible?: boolean
 }
 /* ====== stat 模式 Props ====== */
 interface StatProps {
+  /** 模式：grid 内容卡片 | stat 统计卡片（默认 'grid'） */
   type?: 'grid' | 'stat'
+  /** 统计数值 */
   value?: string | number
+  /** 数值下方的标签文案 */
   label?: string
+  /** 统计图标（IconSvg 图标名） */
   icon?: string
+  /** 数值/图标语义色（CSS 颜色值或令牌名） */
   color?: string
+  /** 趋势：数字或 '12%' 类字符串；正=上涨箭头、负=下跌箭头、0/非法值=持平 */
   trend?: number | string
 }
 
@@ -36,7 +46,10 @@ const props = withDefaults(defineProps<GridProps & StatProps>(), {
   titleAs: 'h3',
 })
 
-const emit = defineEmits<{ (e: 'click'): void }>()
+const emit = defineEmits<{
+  /** 卡片点击 */
+  (e: 'click'): void
+}>()
 
 const isStat = computed(() => props.type === 'stat')
 
