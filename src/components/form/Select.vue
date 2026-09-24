@@ -42,30 +42,53 @@ import type { Option, MenuItem, CascaderOption } from '@/components/shared/types
    ════════════════════════════════════════ */
 /** 导出以供声明文件引用：不导出会触发 TS4082，本组件的 .d.ts 将无法生成 */
 export interface Props {
-  /** 模式 */
+  /** 模式：select 下拉 | menu 菜单 | combobox 可输入 | cascader 级联 | tree-select 树选 | date | date-range | time */
   type?: 'select' | 'menu' | 'combobox' | 'cascader' | 'tree-select' | 'date' | 'date-range' | 'time'
+  /** 受控值：单选 string|number；多选数组；date-range 为 [起, 止] */
   modelValue?: string | number | (string | number | boolean)[] | [string, string] | null
+  /** 选项表（select/combobox）：{ value, label, disabled? } */
   options?: Option[]
+  /** 浮动标签文案（上浮骑缝样式） */
   label?: string
+  /** 校验规则：返回错误文案即不通过 */
   rules?: ((v: string) => string | undefined)[]
+  /** 外部注入错误提示（覆盖 rules 结果） */
   error?: string
+  /** 多选：tags 展示，值为数组 */
   multiple?: boolean
+  /** 占位文案（默认内置「请选择」） */
   placeholder?: string
+  /** 触发器可输入过滤（默认开） */
   searchable?: boolean
+  /** 过滤启用拼音匹配（默认开） */
   pinyinEnabled?: boolean
+  /** 面板加载态 */
   isLoading?: boolean
+  /** 无匹配文案（默认内置） */
   emptyText?: string
+  /** 允许创建选项表外的自定义值（默认开）；选项精确命中不受此开关限制 */
   allowCreate?: boolean
+  /** 多选下聚焦即清空已选 tags、重新输入（默认关） */
   clearOnFocus?: boolean
+  /** menu 模式的菜单项 */
   items?: MenuItem[]
+  /** cascader 模式的级联选项（value/label/children/disabled） */
   cascaderOptions?: CascaderOption[]
+  /** 禁用 */
   disabled?: boolean
+  /** 浮层面板 z-index 覆盖 */
   zIndex?: string
+  /** date/date-range 模式的值格式（默认 'YYYY-MM-DD'） */
   format?: string
+  /** 可选日期下限（同 format 格式） */
   dateMin?: string
+  /** 可选日期上限（同 format 格式） */
   dateMax?: string
+  /** date-range 双占位（默认内置起/止文案） */
   rangePlaceholder?: [string, string]
+  /** time 模式分钟步进（默认 1） */
   timeStep?: number
+  /** 显示清除按钮（默认关） */
   clearable?: boolean
 }
 
@@ -356,9 +379,7 @@ const panelListRef = ref<HTMLElement | null>(null)
 /** 实测出的单行高度；0 = 还没测到，此时不启用 */
 const optRowH = ref(0)
 const _slots = useSlots()
-const uniformOptionRows = computed(
-  () => !_slots.option && !filteredOptions.value.some((opt) => !!opt.desc),
-)
+const uniformOptionRows = computed(() => !_slots.option && !filteredOptions.value.some((opt) => !!opt.desc))
 const optVirtual = useListVirtual({
   container: () => panelListRef.value,
   itemCount: () => filteredOptions.value.length,

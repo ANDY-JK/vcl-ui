@@ -38,14 +38,21 @@ const errorDescId = useIdSafe('input-error')
 interface Props {
   /** 统一类型：text | password | email | tel | number | textarea | search | url | color */
   type?: 'text' | 'password' | 'email' | 'tel' | 'number' | 'textarea' | 'search' | 'url' | 'color'
+  /** 受控值：数字模式回传 number，其余 string；可为 null */
   modelValue: string | number | null
+  /** 浮动标签文案 */
   label?: string
+  /** 输入框前置图标（IconSvg 图标名） */
   icon?: string
+  /** 占位文案 */
   placeholder?: string
+  /** 禁用 */
   disabled?: boolean
+  /** 只读 */
   readonly?: boolean
   /** 校验规则 */
   rules?: ((v: string) => string | undefined)[]
+  /** 控件下方帮助文案 */
   hint?: string
   /** HTML name 属性 */
   name?: string
@@ -63,8 +70,11 @@ interface Props {
   precision?: number
   /** 数字模式：尺寸 */
   size?: 'sm' | 'md' | 'lg'
+  /** 显示一键清空按钮（默认关） */
   clearable?: boolean
+  /** 原生 maxlength */
   maxlength?: number
+  /** 原生 minlength */
   minlength?: number
   /** textarea 行数 */
   rows?: number
@@ -442,12 +452,12 @@ const floatingRaised = computed(() => {
     <template v-if="isStepper">
       <div class="stepper-wrap" :class="[`size-${size}`, { disabled, focused }]">
         <input
+          :id="inputId"
           ref="floatInputRef"
           class="step-input"
           type="text"
           inputmode="decimal"
           autocomplete="off"
-          :id="inputId"
           :aria-label="label || placeholder || undefined"
           :value="numText"
           :placeholder="placeholder"
@@ -510,10 +520,10 @@ const floatingRaised = computed(() => {
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
           :id="inputId"
+          ref="floatInputRef"
           :aria-label="label || placeholder || undefined"
           :aria-invalid="!!errorMsg || undefined"
           :aria-describedby="errorMsg ? errorDescId : undefined"
-          ref="floatInputRef"
           class="f-input"
           type="text"
           inputmode="decimal"
@@ -530,8 +540,17 @@ const floatingRaised = computed(() => {
           @keyup="emit('keyup', $event)"
           @animationstart="onAutoFillStart"
         />
-        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
-        <button v-if="clearable && hasValue" type="button" class="f-clear" tabindex="-1" :aria-label="t('common.reset')" @click="clearNumValue">
+        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{
+          label
+        }}</label>
+        <button
+          v-if="clearable && hasValue"
+          type="button"
+          class="f-clear"
+          tabindex="-1"
+          :aria-label="t('common.reset')"
+          @click="clearNumValue"
+        >
           <IconSvg type="x" size="sm" />
         </button>
       </div>
@@ -550,10 +569,10 @@ const floatingRaised = computed(() => {
       <div class="fl-wrap is-textarea" :class="{ focused: taFocused && !errorMsg, 'has-error': !!errorMsg, disabled }">
         <textarea
           :id="inputId"
+          ref="floatInputRef"
           :aria-label="label || placeholder || undefined"
           :aria-invalid="!!errorMsg || undefined"
           :aria-describedby="errorMsg ? errorDescId : undefined"
-          ref="floatInputRef"
           class="f-textarea"
           :value="taValue"
           :placeholder="taFocused && !hasTaValue ? placeholder : ''"
@@ -568,8 +587,17 @@ const floatingRaised = computed(() => {
           @blur="onTaBlur"
           @keyup="emit('keyup', $event)"
         />
-        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
-        <button v-if="clearable && hasTaValue" type="button" class="f-clear" tabindex="-1" :aria-label="t('common.reset')" @click="clearTaValue">
+        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{
+          label
+        }}</label>
+        <button
+          v-if="clearable && hasTaValue"
+          type="button"
+          class="f-clear"
+          tabindex="-1"
+          :aria-label="t('common.reset')"
+          @click="clearTaValue"
+        >
           <IconSvg type="x" size="sm" />
         </button>
       </div>
@@ -588,10 +616,10 @@ const floatingRaised = computed(() => {
       <div class="fl-wrap" :class="{ focused: focused && !errorMsg, 'has-error': !!errorMsg, disabled }">
         <input
           :id="inputId"
+          ref="floatInputRef"
           :aria-label="label || placeholder || undefined"
           :aria-invalid="!!errorMsg || undefined"
           :aria-describedby="errorMsg ? errorDescId : undefined"
-          ref="floatInputRef"
           type="color"
           class="f-color"
           :value="nativeColorValue"
@@ -602,7 +630,9 @@ const floatingRaised = computed(() => {
           @blur="onBlur"
         />
         <span class="f-color-hex">{{ String(modelValue ?? '') || '—' }}</span>
-        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{
+          label
+        }}</label>
       </div>
       <p v-if="errorMsg" :id="errorDescId" class="fl-error" role="alert">
         {{ errorMsg }}
@@ -623,10 +653,10 @@ const floatingRaised = computed(() => {
         <IconSvg v-if="icon" :type="icon" size="md" class="fl-icon" />
         <input
           :id="inputId"
+          ref="floatInputRef"
           :aria-label="label || placeholder || undefined"
           :aria-invalid="!!errorMsg || undefined"
           :aria-describedby="errorMsg ? errorDescId : undefined"
-          ref="floatInputRef"
           :type="actualType"
           :value="String(modelValue ?? '')"
           :placeholder="(focused || autoFilled) && !hasValue ? placeholder : ''"
@@ -643,7 +673,9 @@ const floatingRaised = computed(() => {
           @keyup="emit('keyup', $event)"
           @animationstart="onAutoFillStart"
         />
-        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{ label }}</label>
+        <label v-if="label" class="fl-label" :for="inputId" :title="label" :class="{ raised: floatingRaised }">{{
+          label
+        }}</label>
         <span v-if="suffix" class="fl-suffix" aria-hidden="true">{{ suffix }}</span>
         <button
           v-if="type === 'password'"

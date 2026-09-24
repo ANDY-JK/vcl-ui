@@ -42,14 +42,14 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `type` | `'text' \| 'password' \| 'email' \| 'tel' \| 'number' \| 'textarea' \| 'search' \| 'url' \| 'color'` | `'text'` | 否 | 统一类型：text \| password \| email \| tel \| number \| textarea \| search \| url \| color |
-| `modelValue` | `string \| number \| null` | — | 是 | — |
-| `label` | `string` | — | 否 | — |
-| `icon` | `string` | — | 否 | — |
-| `placeholder` | `string` | `''` | 否 | — |
-| `disabled` | `boolean` | `false` | 否 | — |
-| `readonly` | `boolean` | `false` | 否 | — |
+| `modelValue` | `string \| number \| null` | — | 是 | 受控值：数字模式回传 number，其余 string；可为 null |
+| `label` | `string` | — | 否 | 浮动标签文案 |
+| `icon` | `string` | — | 否 | 输入框前置图标（IconSvg 图标名） |
+| `placeholder` | `string` | `''` | 否 | 占位文案 |
+| `disabled` | `boolean` | `false` | 否 | 禁用 |
+| `readonly` | `boolean` | `false` | 否 | 只读 |
 | `rules` | `((v: string) => string \| undefined)[]` | `() => []` | 否 | 校验规则 |
-| `hint` | `string` | — | 否 | — |
+| `hint` | `string` | — | 否 | 控件下方帮助文案 |
 | `name` | `string` | — | 否 | HTML name 属性 |
 | `autocomplete` | `string` | `'off'` | 否 | HTML autocomplete |
 | `stepper` | `boolean` | `false` | 否 | 数字模式：显示加减按钮 |
@@ -58,9 +58,9 @@
 | `step` | `number` | `1` | 否 | 数字模式：步进值 |
 | `precision` | `number` | `undefined` | 否 | 数字模式：小数位数 |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 否 | 数字模式：尺寸 |
-| `clearable` | `boolean` | `false` | 否 | — |
-| `maxlength` | `number` | — | 否 | — |
-| `minlength` | `number` | — | 否 | — |
+| `clearable` | `boolean` | `false` | 否 | 显示一键清空按钮（默认关） |
+| `maxlength` | `number` | — | 否 | 原生 maxlength |
+| `minlength` | `number` | — | 否 | 原生 minlength |
 | `rows` | `number` | `3` | 否 | textarea 行数 |
 | `suffix` | `string` | — | 否 | 后缀文字（输入框内右侧固定显示，如单位 "元" / "kg"） |
 
@@ -83,30 +83,30 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `type` | `'select' \| 'menu' \| 'combobox' \| 'cascader' \| 'tree-select' \| 'date' \| 'date-range' \| 'time'` | `'select'` | 否 | 模式 |
-| `modelValue` | `string \| number \| (string \| number \| boolean)[] \| [string, string] \| null` | — | 否 | — |
-| `options` | `Option[]` | `() => []` | 否 | — |
-| `label` | `string` | — | 否 | — |
-| `rules` | `((v: string) => string \| undefined)[]` | `() => []` | 否 | — |
-| `error` | `string` | — | 否 | — |
-| `multiple` | `boolean` | `false` | 否 | — |
-| `placeholder` | `string` | `() => t('form.pleaseSelect')` | 否 | — |
-| `searchable` | `boolean` | `true` | 否 | — |
-| `pinyinEnabled` | `boolean` | `true` | 否 | — |
-| `isLoading` | `boolean` | `false` | 否 | — |
-| `emptyText` | `string` | `() => t('form.noMatch')` | 否 | — |
-| `allowCreate` | `boolean` | `true` | 否 | — |
-| `clearOnFocus` | `boolean` | `false` | 否 | — |
-| `items` | `MenuItem[]` | `() => []` | 否 | — |
-| `cascaderOptions` | `CascaderOption[]` | — | 否 | — |
-| `disabled` | `boolean` | `false` | 否 | — |
-| `zIndex` | `string` | — | 否 | — |
-| `format` | `string` | `'YYYY-MM-DD'` | 否 | — |
-| `dateMin` | `string` | `''` | 否 | — |
-| `dateMax` | `string` | `''` | 否 | — |
-| `rangePlaceholder` | `[string, string]` | `() => [t('form.startDate'), t('form.endDate')] as [string, string]` | 否 | — |
-| `timeStep` | `number` | `1` | 否 | — |
-| `clearable` | `boolean` | `false` | 否 | — |
+| `type` | `'select' \| 'menu' \| 'combobox' \| 'cascader' \| 'tree-select' \| 'date' \| 'date-range' \| 'time'` | `'select'` | 否 | 模式：select 下拉 \| menu 菜单 \| combobox 可输入 \| cascader 级联 \| tree-select 树选 \| date \| date-range \| time |
+| `modelValue` | `string \| number \| (string \| number \| boolean)[] \| [string, string] \| null` | — | 否 | 受控值：单选 string\|number；多选数组；date-range 为 [起, 止] |
+| `options` | `Option[]` | `() => []` | 否 | 选项表（select/combobox）：{ value, label, disabled? } |
+| `label` | `string` | — | 否 | 浮动标签文案（上浮骑缝样式） |
+| `rules` | `((v: string) => string \| undefined)[]` | `() => []` | 否 | 校验规则：返回错误文案即不通过 |
+| `error` | `string` | — | 否 | 外部注入错误提示（覆盖 rules 结果） |
+| `multiple` | `boolean` | `false` | 否 | 多选：tags 展示，值为数组 |
+| `placeholder` | `string` | `() => t('form.pleaseSelect')` | 否 | 占位文案（默认内置「请选择」） |
+| `searchable` | `boolean` | `true` | 否 | 触发器可输入过滤（默认开） |
+| `pinyinEnabled` | `boolean` | `true` | 否 | 过滤启用拼音匹配（默认开） |
+| `isLoading` | `boolean` | `false` | 否 | 面板加载态 |
+| `emptyText` | `string` | `() => t('form.noMatch')` | 否 | 无匹配文案（默认内置） |
+| `allowCreate` | `boolean` | `true` | 否 | 允许创建选项表外的自定义值（默认开）；选项精确命中不受此开关限制 |
+| `clearOnFocus` | `boolean` | `false` | 否 | 多选下聚焦即清空已选 tags、重新输入（默认关） |
+| `items` | `MenuItem[]` | `() => []` | 否 | menu 模式的菜单项 |
+| `cascaderOptions` | `CascaderOption[]` | — | 否 | cascader 模式的级联选项（value/label/children/disabled） |
+| `disabled` | `boolean` | `false` | 否 | 禁用 |
+| `zIndex` | `string` | — | 否 | 浮层面板 z-index 覆盖 |
+| `format` | `string` | `'YYYY-MM-DD'` | 否 | date/date-range 模式的值格式（默认 'YYYY-MM-DD'） |
+| `dateMin` | `string` | `''` | 否 | 可选日期下限（同 format 格式） |
+| `dateMax` | `string` | `''` | 否 | 可选日期上限（同 format 格式） |
+| `rangePlaceholder` | `[string, string]` | `() => [t('form.startDate'), t('form.endDate')] as [string, string]` | 否 | date-range 双占位（默认内置起/止文案） |
+| `timeStep` | `number` | `1` | 否 | time 模式分钟步进（默认 1） |
+| `clearable` | `boolean` | `false` | 否 | 显示清除按钮（默认关） |
 
 ### Events
 
