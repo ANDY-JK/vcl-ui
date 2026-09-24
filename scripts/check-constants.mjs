@@ -395,31 +395,44 @@ if (!colorSites) fail.push('一条 <input type="color"> 都没扫到 —— [6] 
 else if (colorHits.length) fail.push(...colorHits)
 console.log(`[6] 原生 color 输入值归一 出现=${colorSites} 未登记=${colorHits.length}`)
 
-// ---------- [7] form-builder 域单文件行数 ≤800 ----------
-const FB_DIR = 'src/components/form-builder'
-const LINE_LIMIT = 800
-let fbCount = 0
-const oversized = []
-const collect = (d) => {
+// ---------- [7] 单文件行数纪律：按域止涨线（M3 扩面） ----------
+// form-builder 是 09-04 收官纪律（≤800）；其余域为「现状止涨线」＝当前最大文件 + 一点余量，
+// 只拦增长不追溯存量，止涨后再随重构逐步回收。抬线必须带新实测值；超线提交＝拆分信号。
+const LINE_LIMITS = {
+  'form-builder': 800, // 09-04 收官纪律
+  data: 3300, // DataTable.vue 3214 现状止涨
+  form: 1650, // Select.vue 1581 现状止涨
+  layout: 950, // AppLayout.vue 896 现状止涨
+  'route-planner': 850, // utils/route-planning.ts 811 现状止涨
+}
+const domainCounts = {}
+const domainOversized = {}
+const collectLines = (domain, d) => {
   for (const e of readdirSync(d, { withFileTypes: true })) {
     const p = join(d, e.name)
-    if (e.isDirectory()) collect(p)
+    if (e.isDirectory()) collectLines(domain, p)
     else if (/\.(ts|vue)$/.test(e.name) && !/\.d\.ts$/.test(e.name)) {
-      fbCount++
+      domainCounts[domain] = (domainCounts[domain] || 0) + 1
       const n = readFileSync(p, 'utf8').split('\n').length - 1
-      if (n > LINE_LIMIT) oversized.push(`${relative('.', p).replaceAll('\\', '/')}=${n} 行`)
+      if (n > LINE_LIMITS[domain]) {
+        ;(domainOversized[domain] ||= []).push(`${relative('.', p).replaceAll('\\', '/')}=${n} 行`)
+      }
     }
   }
 }
-collect(FB_DIR)
-if (fbCount === 0) fail.push('[7] 一个 form-builder 源文件都没扫到 —— 匹配失效了，先修判定再看绿')
-else if (oversized.length) {
-  fail.push(
-    `form-builder 域 ${oversized.length} 个文件超 ${LINE_LIMIT} 行（该域 09-04 收官纪律，靠人工守会回潮）：` +
-      `${oversized.join(', ')}。抽 composable / 子组件收口，别再长`,
-  )
+for (const domain of Object.keys(LINE_LIMITS)) collectLines(domain, join('src/components', domain))
+for (const [domain, limit] of Object.entries(LINE_LIMITS)) {
+  const count = domainCounts[domain] || 0
+  const oversized = domainOversized[domain] || []
+  if (count === 0) fail.push(`[7] ${domain} 域一个源文件都没扫到 —— 匹配失效了，先修判定再看绿`)
+  else if (oversized.length) {
+    fail.push(
+      `[7] ${domain} 域 ${oversized.length} 个文件超止涨线 ${limit} 行（靠人工守会回潮）：` +
+        `${oversized.join(', ')}。抽 composable / 子组件收口，别再长`,
+    )
+  }
+  console.log(`[7] ${domain} 域行数 文件=${count} 止涨线=${limit} 超线=${oversized.length}`)
 }
-console.log(`[7] form-builder 域行数 文件=${fbCount} 超${LINE_LIMIT}行=${oversized.length}`)
 
 
 if (fail.length) {
