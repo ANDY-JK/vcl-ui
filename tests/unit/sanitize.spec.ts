@@ -105,3 +105,99 @@ describe('sanitizeHTML · SSR（无 DOM 环境）', () => {
     }
   })
 })
+
+describe('sanitizeHTML · 对抗性回归（M10：攻击向量冻结）', () => {
+  /**
+   * 安全不变式按「消费端真实行为」判定：v-html 会把产物重新解析成 DOM，
+   * 所以对消毒产物做一次再解析，断言再解析后的树里不存在可执行面。
+   * 字符串正则做不到这点——被转义成文本的 `<script`（&lt;script）是安全的，
+   * 字符串包含却会误报，再解析则天然正确。
+   */
+  const reparseInvariants = (out: string) => {
+    const probe = document.createElement('div')
+    probe.innerHTML = out
+    expect(probe.querySelector('script, iframe, object, embed, base, form, meta, link')).toBeNull()
+    probe.querySelectorAll('*').forEach((node) => {
+      for (const attr of node.getAttributeNames()) {
+        expect(attr.startsWith('on'), `残留事件属性 ${attr}`).toBe(false)
+        if (attr === 'href' || attr === 'src') {
+          const v = (node.getAttribute(attr) || '').toLowerCase().replace(/\s+/g, '')
+          expect(v, `危险协议 ${attr}=${v}`).not.toMatch(/^(javascript|vbscript|data:text\/html)/)
+        }
+      }
+    })
+  }
+
+  // 每条载荷断言「消毒产物再解析后无执行面」，而非具体输出形状——
+  // 锁的是安全性质不是实现细节，实现重构时不必逐条改断言。
+  const PAYLOADS = [
+    // 事件属性：大小写混淆 / 未加引号
+    '<img src=x ONERROR=alert(1)>',
+    '<img src=x OnErRoR=alert(1)>',
+    '<a href="#" ONCLICK="evil()">x</a>',
+    // javascript: 变体：大小写 / 实体编码 / 控制字符穿插 / &colon; / 前导空白
+    '<a href="JaVaScRiPt:alert(1)">x</a>',
+    '<a href="&#106;avascript:alert(1)">x</a>',
+    '<a href="jav&#x09;ascript:alert(1)">x</a>',
+    '<a href="javascript&colon;alert(1)">x</a>',
+    '<a href=" \tjavascript:alert(1)">x</a>',
+    '<img src="jav&#x0A;ascript:alert(1)">',
+    // data: 协议边界：href 不放行任何 data:，src 仅放行 data:image/
+    '<a href="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==">x</a>',
+    '<a href="data:image/png;base64,iVBOR">x</a>',
+    '<img src="data:text/html;base64,PHNjcmlwdD4=">',
+    // 危险标签整体移除（含 base/meta/link 这类无内容注入面）
+    '<form action="javascript:alert(1)"><input type=submit></form>',
+    '<button onclick="alert(1)">x</button>',
+    '<input onfocus=alert(1) autofocus>',
+    '<base href="https://evil.com/">',
+    '<meta http-equiv="refresh" content="0;url=javascript:alert(1)">',
+    '<link rel="stylesheet" href="https://evil.com/x.css">',
+    // 嵌套/畸形：解析器归一后必须仍能消毒
+    '<scr<script>ipt>alert(1)</scr</script>ipt>',
+    '<img src="x" onerror="alert(1)"',
+    '<<script>alert(1)//<</script>',
+    // SVG/MathML 外来内容：命名空间内标签为小写、不匹配大写白名单 → 解包为纯文本
+    '<svg><script>alert(1)</script></svg>',
+    '<svg><a xlink:href="javascript:alert(1)"><text>x</text></a></svg>',
+    '<math><mtext><script>alert(1)</script></mtext></math>',
+    // template 内容挂在 content fragment 上、不进 childNodes → 整体丢弃
+    '<template><img src=x onerror=alert(1)></template>',
+    // 经典 mXSS 载荷（DOMPurify 历史漏洞同型）：解析→消毒→序列化→再解析不得复活
+    '<noscript><p title="</noscript><img src=x onerror=alert(1)>">',
+    '<svg></p><style><a id="</style><img src=1 onerror=alert(1)>"></svg>',
+    '<p title="&lt;img src=x onerror=alert(1)&gt;">双编码进属性值</p>',
+    // style 危险值：注释混淆变体（对应 sanitize.ts 的剥注释预检）
+    '<div style="background:url(/*x*/ javascript:alert(1))">x</div>',
+    '<div style="width:expression/*x*/(alert(1))">x</div>',
+    '<div style="background:url(&quot;javascript:alert(1)&quot;)">x</div>',
+    '<div style="behavior:url(evil.htc)">x</div>',
+    '<div style="-moz-binding:url(evil.xml)">x</div>',
+    '<div style="background:url(vbscript:alert(1))">x</div>',
+  ]
+
+  it.each(PAYLOADS)('不复活可执行标记：%s', (payload) => {
+    reparseInvariants(sanitizeHTML(payload))
+  })
+
+  it('合成大载荷（向量叠加）也不复活', () => {
+    const combo = [
+      '<b>正常<b>加粗</b></b>',
+      '<a href="https://ok.com" target="_blank">外链</a>',
+      '<svg><script>alert(1)</script></svg>',
+      '<img src=x ONERROR=alert(1)>',
+      '<style>body{}</style>',
+      '<template><iframe src=evil></iframe></template>',
+    ].join('')
+    reparseInvariants(sanitizeHTML(combo))
+    // 正常内容同时必须存活（消毒不能误杀成空串）
+    const out = sanitizeHTML(combo)
+    expect(out).toContain('加粗')
+    expect(out).toContain('外链')
+  })
+
+  it('良性复杂 HTML 原样保留（防误杀回归）', () => {
+    const good = '<table><thead><tr><th>列</th></tr></thead><tbody><tr><td><b>粗</b><img src="https://a.com/b.png" alt="图"></td></tr></tbody></table>'
+    expect(sanitizeHTML(good)).toBe(good)
+  })
+})

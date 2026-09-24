@@ -114,8 +114,9 @@ export function sanitizeHTML(html: string): string {
       if (attr === 'src' && !_srcRe.test(val)) {
         node.removeAttribute(attr)
       }
-      // style 属性过滤危险 CSS 值（expression()/javascript:/url(javascript:)等）
-      if (attr === 'style' && _dangerousCss.some((re) => re.test(val))) {
+      // style 属性过滤危险 CSS 值（expression()/javascript:/url(javascript:)等）。
+      // 先剥 CSS 注释再匹配：`expression/*x*/(alert(1))` 这类注释混淆能绕过裸正则。
+      if (attr === 'style' && _dangerousCss.some((re) => re.test(val.replace(/\/\*[\s\S]*?\*\//g, '')))) {
         node.removeAttribute('style')
       }
     }
