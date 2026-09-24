@@ -651,6 +651,7 @@ export function validateStorageConfig(cfg: StorageConfig): string | null {
   return validateSupabaseConfig({ url: cfg.url, anonKey: cfg.anonKey, bucket: cfg.bucket })
 }
 
+/** 存储后端工厂：按 cfg.backend（local/s3/supabase）装配对应实现（本地缓存 + 云端对账），onSyncError 接收单文件同步失败 */
 export function createBackend(cfg: StorageConfig, onSyncError?: (appleId: number, e: unknown) => void): StorageBackend {
   if (cfg.backend === 's3') {
     const cloud = new S3Backend({

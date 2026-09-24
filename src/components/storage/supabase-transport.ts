@@ -73,6 +73,7 @@ export interface CloudObjectMeta {
   createdAt: number
 }
 
+/** Supabase Storage 传输层：上传/下载/对账（对象键经 sanitizeObjectKeyPart 的 ASCII 形式） */
 export class SupabaseTransport {
   constructor(public readonly cfg: SupabaseConfig) {
     // 工厂级防御：即使调用方跳过 validateStorageConfig，空配置也在此拒绝

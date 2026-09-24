@@ -219,6 +219,7 @@ function onChange(handler: ChangeHandler): () => void {
 // 统一命名空间导出
 // ════════════════════════════════════════
 
+/** 统一存储门面：声明意图、自动路由后端（localStorage / 云端），业务侧只与它对话 */
 export const storage = {
   /** 同步读（localStorage）—— token、开关、小配置 */
   getSync,

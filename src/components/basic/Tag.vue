@@ -50,7 +50,10 @@ const props = withDefaults(defineProps<Props>(), {
   sup: false,
 })
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{
+  /** 点击关闭按钮（仅 closable 时出现） */
+  close: []
+}>()
 const slots = useSlots()
 
 /** 有默认插槽 + sup 模式 → 角标定位在内容右上角 */
@@ -132,7 +135,13 @@ const supStyle = computed(() => {
     :style="colorStyle"
   >
     <slot>{{ displayText }}</slot>
-    <button v-if="closable && !dot" type="button" class="tag-close" :aria-label="t('common.close')" @click.stop="emit('close')">
+    <button
+      v-if="closable && !dot"
+      type="button"
+      class="tag-close"
+      :aria-label="t('common.close')"
+      @click.stop="emit('close')"
+    >
       <IconSvg type="x" size="sm" />
     </button>
   </span>

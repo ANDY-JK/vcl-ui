@@ -377,8 +377,10 @@ function barrelExports(domain) {
   return entries
 }
 
-/** .ts 命名导出的 JSDoc 摘要（取声明处第一行） */
-function namedDoc(file, name) {
+/** .ts 命名导出的 JSDoc 摘要（取声明处第一行）。
+ *  声明不在本文件时（barrel 二次转发，如 storage/index → indexedDB → local-storage），
+ *  沿 `export { name } from './x'` 的 re-export 链递归追源（最多 5 层防环）。 */
+function namedDoc(file, name, depth = 0) {
   const src = read(file)
   const { sf } = collectDeclarations(src)
   let doc = ''
@@ -397,6 +399,20 @@ function namedDoc(file, name) {
     ts.forEachChild(node, visit)
   }
   visit(sf)
+  if (!doc && depth < 5) {
+    // 两种再导出形态：① export { name } from './x'（直接给 spec）
+    // ② export { name }（无 from——绑定来自顶部 import { name } from './x'，沿 import 回溯）
+    const re = new RegExp(`export\\s*\\{[^}]*\\b${name}\\b[^}]*\\}\\s*from\\s*['"]([^'"]+)['"]`)
+    let spec = re.exec(src)?.[1]
+    if (!spec) {
+      const ire = new RegExp(`import\\s*\\{[^}]*\\b${name}\\b[^}]*\\}\\s*from\\s*['"]([^'"]+)['"]`)
+      spec = ire.exec(src)?.[1]
+    }
+    if (spec) {
+      const next = resolveModule(spec, path.dirname(file))
+      if (next && fs.existsSync(next)) return namedDoc(next, name, depth + 1)
+    }
+  }
   return doc
 }
 

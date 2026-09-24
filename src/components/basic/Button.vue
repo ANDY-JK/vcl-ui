@@ -14,13 +14,21 @@ onErrorCaptured((e: Error) => {
 })
 
 interface Props {
+  /** 按钮文字（与 default 插槽二选一，插槽优先） */
   text?: string
+  /** 语义形态：primary 实心主色 | secondary 实心次色 | outline 描边 | danger 危险 | ghost 幽灵 */
   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost'
+  /** 尺寸档位（默认 'md'） */
   size?: 'sm' | 'md' | 'lg'
+  /** 前置图标（IconSvg 图标名） */
   icon?: string
+  /** 禁用 */
   disabled?: boolean
+  /** 加载态（转圈 + 禁点，不改变宽度） */
   loading?: boolean
+  /** 块级（撑满整行） */
   block?: boolean
+  /** 文字后显示箭头（「下一步」类场景） */
   showArrow?: boolean
 }
 
@@ -39,7 +47,10 @@ watch(
   () => (_e.value = null),
 )
 
-const emit = defineEmits<{ click: [e: MouseEvent] }>()
+const emit = defineEmits<{
+  /** 点击（loading/disabled 期间不触发） */
+  click: [e: MouseEvent]
+}>()
 </script>
 
 <template>

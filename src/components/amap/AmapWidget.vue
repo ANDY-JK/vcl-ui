@@ -21,7 +21,15 @@ import { getAmapJsKey, getAmapSecurityCode } from './amap-key'
 import { amapLoader } from './amap-loader'
 import { sanitizeHTML } from '@/components/_internal/sanitize'
 import { useT } from '@/components/_internal/i18n'
-import type { AmapCtor, AmapInfoWindow, AmapLngLat, AmapMapClickEvent, AmapMapInstance, AmapMarkerInstance, MarkerItem } from './types'
+import type {
+  AmapCtor,
+  AmapInfoWindow,
+  AmapLngLat,
+  AmapMapClickEvent,
+  AmapMapInstance,
+  AmapMarkerInstance,
+  MarkerItem,
+} from './types'
 
 const t = useT()
 
@@ -58,8 +66,11 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
+  /** 点击标记：[标记对象, 序号] */
   'marker-click': [marker: MarkerItem<T>, index: number]
+  /** 点击地图空白处：[经度, 纬度] */
   'map-click': [lng: number, lat: number]
+  /** 地图初始化完成：拿到 AMap 地图实例可做深度定制 */
   ready: [map: AmapMapInstance]
 }>()
 

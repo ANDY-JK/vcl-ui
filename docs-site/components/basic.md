@@ -20,20 +20,20 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `text` | `string` | — | 否 | — |
-| `variant` | `'primary' \| 'secondary' \| 'outline' \| 'danger' \| 'ghost'` | `'primary'` | 否 | — |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 否 | — |
-| `icon` | `string` | — | 否 | — |
-| `disabled` | `boolean` | `false` | 否 | — |
-| `loading` | `boolean` | `false` | 否 | — |
-| `block` | `boolean` | `false` | 否 | — |
-| `showArrow` | `boolean` | `false` | 否 | — |
+| `text` | `string` | — | 否 | 按钮文字（与 default 插槽二选一，插槽优先） |
+| `variant` | `'primary' \| 'secondary' \| 'outline' \| 'danger' \| 'ghost'` | `'primary'` | 否 | 语义形态：primary 实心主色 \| secondary 实心次色 \| outline 描边 \| danger 危险 \| ghost 幽灵 |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 否 | 尺寸档位（默认 'md'） |
+| `icon` | `string` | — | 否 | 前置图标（IconSvg 图标名） |
+| `disabled` | `boolean` | `false` | 否 | 禁用 |
+| `loading` | `boolean` | `false` | 否 | 加载态（转圈 + 禁点，不改变宽度） |
+| `block` | `boolean` | `false` | 否 | 块级（撑满整行） |
+| `showArrow` | `boolean` | `false` | 否 | 文字后显示箭头（「下一步」类场景） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `click` | `e: MouseEvent` | — |
+| `click` | `e: MouseEvent` | 点击（loading/disabled 期间不触发） |
 
 ### Slots
 
@@ -71,7 +71,7 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `close` | `无` | — |
+| `close` | `无` | 点击关闭按钮（仅 closable 时出现） |
 
 ### Slots
 

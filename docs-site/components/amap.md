@@ -51,7 +51,7 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'marker-click'` | `marker: MarkerItem<T>, index: number` | — |
-| `'map-click'` | `lng: number, lat: number` | — |
-| `ready` | `map: AmapMapInstance` | — |
+| `'marker-click'` | `marker: MarkerItem<T>, index: number` | 点击标记：[标记对象, 序号] |
+| `'map-click'` | `lng: number, lat: number` | 点击地图空白处：[经度, 纬度] |
+| `ready` | `map: AmapMapInstance` | 地图初始化完成：拿到 AMap 地图实例可做深度定制 |
 
