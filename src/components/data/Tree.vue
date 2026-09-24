@@ -19,12 +19,19 @@ interface TreeNode {
 }
 
 interface Props {
+  /** 树数据：TreeNode[]，children 嵌套构成层级 */
   data: TreeNode[]
+  /** ⛔ 内部递归层级（子树实例由组件自建），消费方勿传 */
   level?: number
+  /** 节点勾选框：父子级联 + 半选态 */
   checkable?: boolean
+  /** 初始展开的节点键集合（此后展开状态由组件内部管理） */
   defaultExpandedKeys?: (string | number)[]
+  /** 初始全部展开 */
   expandAll?: boolean
+  /** 节点单选（配合 v-model:selectedKey） */
   selectable?: boolean
+  /** 受控选中节点键（v-model:selectedKey） */
   selectedKey?: string | number | null
   /** 懒加载：展开节点时若无 children 且 isLeaf 非 true 的节点不会触发 load */
   lazy?: boolean
@@ -386,13 +393,7 @@ const levelStyle = computed(() => {
       :aria-expanded="node.children?.length ? state.isExpanded(node.key) : undefined"
       :aria-selected="state.selectable ? state.selectedKeyRef.value === node.key : undefined"
       :aria-checked="
-        state.checkable
-          ? isChecked(node.key)
-            ? 'true'
-            : isIndeterminate(node.key)
-              ? 'mixed'
-              : 'false'
-          : undefined
+        state.checkable ? (isChecked(node.key) ? 'true' : isIndeterminate(node.key) ? 'mixed' : 'false') : undefined
       "
       :aria-label="node.label"
       :tabindex="state.focusKey.value === node.key ? 0 : -1"

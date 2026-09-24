@@ -80,46 +80,72 @@ const props = withDefaults(
   //    回调 prop 删了，宿主联动统一走 @export / @toggle-sidebar 事件（见 Emits 契约注释）。
   defineProps<{
     // ────────────────────────────── 数据与列 ──────────────────────────────
+    /** 列定义数组：key/label/type/width/sortable/filterable/cell 等（见 Column 类型） */
     columns: Column[]
+    /** 行数据数组（泛型 T，行对象需含 rowKey 指定的键字段） */
     data: T[]
+    /** 行唯一键字段名（默认 'seq'）：选中/编辑/备注/持久化都以此键定位行 */
     rowKey?: string
     // ────────────────────────────── 外观与布局 ──────────────────────────────
+    /** 斑马纹（默认开） */
     striped?: boolean
+    /** 单元格边框（默认开） */
     bordered?: boolean
+    /** 行悬停高亮（默认开） */
     hoverable?: boolean
+    /** 加载态：表格蒙层，期间禁用交互 */
     isLoading?: boolean
+    /** 空数据提示文案；空串（默认）用内置 i18n 文案 */
     emptyText?: string
     /** 单元格空白占位：null/undefined/空串/纯空白串 → 该文本（默认 '-'）；传空串关闭。仅展示层，不影响导出 */
     blankText?: string
     // ────────────────────────────── 排序 · 筛选 · 搜索 ──────────────────────────────
+    /** 初始/受控排序字段：传入后外部驱动排序状态（变化经 @sort 抛出）；不传则组件内部自由排序 */
     sortKey?: string
+    /** 受控排序方向，'asc' | 'desc'（默认 'asc'），与 sortKey 成对使用 */
     sortOrder?: 'asc' | 'desc'
+    /** 全局搜索是否启用拼音匹配（默认开） */
     pinyinSearch?: boolean
+    /** 单元格截断判定的字符数下限：0（默认）全部单元格按 truncateMode 处理；>0 时仅文本超过该长度的单元格截断 */
     truncateThreshold?: number
     // ────────────────────────────── 行选择与导出 ──────────────────────────────
+    /** 行首选择列（复选框）开关 */
     selectable?: boolean
+    /** 受控选中行键集合（v-model:selectedKeys） */
     selectedKeys?: string[]
+    /** CSV 导出按钮；有 @export 监听时抛事件由宿主自理，无监听时内置导出 */
     exportable?: boolean
+    /** 导出文件名（不含扩展名，默认 'export'） */
     exportFileName?: string
+    /** Excel(.xlsx) 导出按钮（导出范围同 exportScope） */
     excelExportable?: boolean
     /** 导出范围：'all' 筛选后全量（默认），'page' 仅当前页 */
     exportScope?: 'all' | 'page'
     // ────────────────────────────── 分页与虚拟化 ──────────────────────────────
+    /** 每页行数；0（默认）不分页 */
     pageSize?: number
+    /** 受控当前页（v-model:currentPage） */
     currentPage?: number
+    /** 总行数：传入即按服务端分页处理（分页器用它算页数，数据由父组件按页提供；不传=客户端分页） */
     total?: number
+    /** 卡片视图断点（px）：容器实测宽度低于该值时自动切卡片视图（视图模式 auto 下生效） */
     cardBreakpoint?: number
+    /** 表格区最大高度（CSS 高度值，如 '400px'）；空串不限高 */
     maxHeight?: string
     /** 自适应高度：填充父容器剩余空间（需父容器有明确高度） */
     autoHeight?: boolean
+    /** 虚拟滚动（默认开）：行数超过可视范围时只渲染窗口内行，容器滚动/页面滚动都会自动接管 */
     virtualScroll?: boolean
     /** 页面滚动虚拟化的**额外**行数下限（默认 0 = 不设人工下限）。
      *  实际判据是实测的：总行数 > 可视行数 + 上下 overscan（那些行无论如何都要渲染），
      *  所以面板高矮、dense、缩放都自适应，不靠猜常量。设 >0 只用于强制提前/推迟启用。 */
     pageVirtualMin?: number
+    /** 列宽自适应（默认开）：忽略列的 width 声明，列宽由内部按容器宽度动态分配（防抖 + 冷却） */
     autoFit?: boolean
     // ────────────────────────────── 外观补充（截断/密度） ──────────────────────────────
+    /** 单元格文本截断：'ellipsis' 省略号（默认）| 'wrap' 换行 | 'none' 不截断 */
     truncateMode?: 'ellipsis' | 'wrap' | 'none'
+    /** 紧凑密度（更小的行高与内边距） */
     dense?: boolean
     // ────────────────────────────── 交互开关 ──────────────────────────────
     /** 列设置按钮（默认显示，false 可隐藏） */
@@ -168,9 +194,13 @@ const props = withDefaults(
     filterMode?: 'client' | 'server'
     /** 外部筛选状态（v-model:filters）：服务端模式下父组件可程序化控制筛选，变化时自动同步到内部 filterState */
     filters?: Record<string, string[]>
+    /** 行类名回调：(row, index) => class 串，每行渲染时调用 */
     rowClass?: (row: T, index: number) => string
+    /** 行内联样式回调：(row, index) => 样式对象 */
     rowStyle?: (row: T, index: number) => Record<string, string>
+    /** 单元格类名回调：(colKey, row, index) => class 串 */
     cellClass?: (colKey: string, row: T, index: number) => string
+    /** 单元格内联样式回调：(colKey, row, index) => 样式对象 */
     cellStyle?: (colKey: string, row: T, index: number) => Record<string, string>
     // ────────────────────────────── 截图 ──────────────────────────────
     /** 截图行为模式：'preview' 弹窗预览 | 'download' 直接下载 | 'copy' 直接复制到剪贴板 */
@@ -1473,11 +1503,7 @@ function onFillHandleMove(e: MouseEvent) {
     return
   }
 
-  const count =
-    dir === 'down' ? ri - d.r1
-    : dir === 'up' ? d.r0 - ri
-    : dir === 'right' ? ci - d.c1
-    : d.c0 - ci
+  const count = dir === 'down' ? ri - d.r1 : dir === 'up' ? d.r0 - ri : dir === 'right' ? ci - d.c1 : d.c0 - ci
   d.dir = dir
   d.count = count
   const b = { r0: d.r0, r1: d.r1, c0: d.c0, c1: d.c1 }
@@ -1591,9 +1617,7 @@ const _optDrop = ref<{
  *  是否挂上、以及点击/双击能否打开面板。
  *  ⚠️ 不可编辑的 options 列**不应显示任何「可下拉」暗示**（箭头/手型光标），否则看似能点却点不开。
  *  声明为类型谓词（col is Column & { options: ... }），使调用方在守卫后可直接使用 col.options。 */
-function isOptionDroppable(
-  col: Column,
-): col is Column & { options: NonNullable<Column['options']> } {
+function isOptionDroppable(col: Column): col is Column & { options: NonNullable<Column['options']> } {
   return !!col.options && !!props.editable && col.editable !== false
 }
 
@@ -2265,7 +2289,12 @@ provideDataTableContext({
             <thead>
               <tr>
                 <!-- 选择框列 -->
-                <th v-if="selectable" class="th-checkbox" :class="{ 'col-fixed-left': _hasFixedLeftCol }" :aria-label="t('table.selectAll')">
+                <th
+                  v-if="selectable"
+                  class="th-checkbox"
+                  :class="{ 'col-fixed-left': _hasFixedLeftCol }"
+                  :aria-label="t('table.selectAll')"
+                >
                   <input
                     type="checkbox"
                     :checked="isAllSelected"
@@ -2433,9 +2462,7 @@ provideDataTableContext({
               </tr>
 
               <tr
-                v-for="(row, idx) in isVirtual
-                  ? virtualVisibleData
-                  : _effectivePagedData"
+                v-for="(row, idx) in isVirtual ? virtualVisibleData : _effectivePagedData"
                 :key="rowMetaMap.get(row)?.key ?? idx"
                 :data-row-key="rowMetaMap.get(row)?.key"
                 :class="[
@@ -2495,8 +2522,7 @@ provideDataTableContext({
                       // 仅「可下拉」时挂上：该类附加 cursor:pointer，属「可下拉」暗示
                       'cell-has-options': isOptionDroppable(col),
                       'cell-fill-preview': isInFillPreview(rowDisplayIndex(idx), ci),
-                      'cell-fill-corner':
-                        fillable && isFillCorner(rowMetaMap.get(row)?.key ?? '', col.key),
+                      'cell-fill-corner': fillable && isFillCorner(rowMetaMap.get(row)?.key ?? '', col.key),
                       'cell-modified':
                         (props.modifiedMark || props.originalTooltip) &&
                         (_cellOverrides[rowMetaMap.get(row)?.key ?? ''] ?? {})[col.key] !== undefined,
@@ -2586,12 +2612,7 @@ provideDataTableContext({
                       "
                     >
                       <span class="cell-text-inner">
-                        <slot
-                          name="cell"
-                          :column="col"
-                          :row="row"
-                          :value="cellShow(row, col)"
-                        >
+                        <slot name="cell" :column="col" :row="row" :value="cellShow(row, col)">
                           <span
                             v-if="typeof col.cell === 'function'"
                             v-html="sanitizeHTML(col.cell(cellShow(row, col), row))"
@@ -3099,6 +3120,7 @@ provideDataTableContext({
           <!-- 备注编辑弹窗 -->
           <div
             v-if="noteMode && noteEditing"
+            ref="_noteEditorRef"
             class="note-editor"
             :style="{
               position: 'fixed',
@@ -3108,7 +3130,6 @@ provideDataTableContext({
               zIndex: 'var(--z-tooltip, 3000)',
             }"
             role="dialog"
-            ref="_noteEditorRef"
             aria-modal="true"
             @click.stop
           >

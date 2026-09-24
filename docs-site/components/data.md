@@ -35,36 +35,36 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `columns` | `Column[]` | — | 是 | — |
-| `data` | `T[]` | — | 是 | — |
-| `rowKey` | `string` | `'seq'` | 否 | — |
-| `striped` | `boolean` | `true` | 否 | — |
-| `bordered` | `boolean` | `true` | 否 | — |
-| `hoverable` | `boolean` | `true` | 否 | — |
-| `isLoading` | `boolean` | `false` | 否 | — |
-| `emptyText` | `string` | `''` | 否 | — |
+| `columns` | `Column[]` | — | 是 | 列定义数组：key/label/type/width/sortable/filterable/cell 等（见 Column 类型） |
+| `data` | `T[]` | — | 是 | 行数据数组（泛型 T，行对象需含 rowKey 指定的键字段） |
+| `rowKey` | `string` | `'seq'` | 否 | 行唯一键字段名（默认 'seq'）：选中/编辑/备注/持久化都以此键定位行 |
+| `striped` | `boolean` | `true` | 否 | 斑马纹（默认开） |
+| `bordered` | `boolean` | `true` | 否 | 单元格边框（默认开） |
+| `hoverable` | `boolean` | `true` | 否 | 行悬停高亮（默认开） |
+| `isLoading` | `boolean` | `false` | 否 | 加载态：表格蒙层，期间禁用交互 |
+| `emptyText` | `string` | `''` | 否 | 空数据提示文案；空串（默认）用内置 i18n 文案 |
 | `blankText` | `string` | `'-'` | 否 | 单元格空白占位：null/undefined/空串/纯空白串 → 该文本（默认 '-'）；传空串关闭。仅展示层，不影响导出 |
-| `sortKey` | `string` | — | 否 | — |
-| `sortOrder` | `'asc' \| 'desc'` | — | 否 | — |
-| `pinyinSearch` | `boolean` | `true` | 否 | — |
-| `truncateThreshold` | `number` | `0` | 否 | — |
-| `selectable` | `boolean` | `false` | 否 | — |
-| `selectedKeys` | `string[]` | `() => []` | 否 | — |
-| `exportable` | `boolean` | `false` | 否 | — |
-| `exportFileName` | `string` | `'export'` | 否 | — |
-| `excelExportable` | `boolean` | `false` | 否 | — |
+| `sortKey` | `string` | — | 否 | 初始/受控排序字段：传入后外部驱动排序状态（变化经 @sort 抛出）；不传则组件内部自由排序 |
+| `sortOrder` | `'asc' \| 'desc'` | — | 否 | 受控排序方向，'asc' \| 'desc'（默认 'asc'），与 sortKey 成对使用 |
+| `pinyinSearch` | `boolean` | `true` | 否 | 全局搜索是否启用拼音匹配（默认开） |
+| `truncateThreshold` | `number` | `0` | 否 | 单元格截断判定的字符数下限：0（默认）全部单元格按 truncateMode 处理；>0 时仅文本超过该长度的单元格截断 |
+| `selectable` | `boolean` | `false` | 否 | 行首选择列（复选框）开关 |
+| `selectedKeys` | `string[]` | `() => []` | 否 | 受控选中行键集合（v-model:selectedKeys） |
+| `exportable` | `boolean` | `false` | 否 | CSV 导出按钮；有 @export 监听时抛事件由宿主自理，无监听时内置导出 |
+| `exportFileName` | `string` | `'export'` | 否 | 导出文件名（不含扩展名，默认 'export'） |
+| `excelExportable` | `boolean` | `false` | 否 | Excel(.xlsx) 导出按钮（导出范围同 exportScope） |
 | `exportScope` | `'all' \| 'page'` | — | 否 | 导出范围：'all' 筛选后全量（默认），'page' 仅当前页 |
-| `pageSize` | `number` | `0` | 否 | — |
-| `currentPage` | `number` | `1` | 否 | — |
-| `total` | `number` | — | 否 | — |
-| `cardBreakpoint` | `number` | `BP_MD` | 否 | — |
-| `maxHeight` | `string` | `''` | 否 | — |
+| `pageSize` | `number` | `0` | 否 | 每页行数；0（默认）不分页 |
+| `currentPage` | `number` | `1` | 否 | 受控当前页（v-model:currentPage） |
+| `total` | `number` | — | 否 | 总行数：传入即按服务端分页处理（分页器用它算页数，数据由父组件按页提供；不传=客户端分页） |
+| `cardBreakpoint` | `number` | `BP_MD` | 否 | 卡片视图断点（px）：容器实测宽度低于该值时自动切卡片视图（视图模式 auto 下生效） |
+| `maxHeight` | `string` | `''` | 否 | 表格区最大高度（CSS 高度值，如 '400px'）；空串不限高 |
 | `autoHeight` | `boolean` | `true` | 否 | 自适应高度：填充父容器剩余空间（需父容器有明确高度） |
-| `virtualScroll` | `boolean` | `true` | 否 | — |
+| `virtualScroll` | `boolean` | `true` | 否 | 虚拟滚动（默认开）：行数超过可视范围时只渲染窗口内行，容器滚动/页面滚动都会自动接管 |
 | `pageVirtualMin` | `number` | `0` | 否 | 页面滚动虚拟化的**额外**行数下限（默认 0 = 不设人工下限）。 实际判据是实测的：总行数 > 可视行数 + 上下 overscan（那些行无论如何都要渲染）， 所以面板高矮、dense、缩放都自适应，不靠猜常量。设 >0 只用于强制提前/推迟启用。 |
-| `autoFit` | `boolean` | `true` | 否 | — |
-| `truncateMode` | `'ellipsis' \| 'wrap' \| 'none'` | `'ellipsis'` | 否 | — |
-| `dense` | `boolean` | `false` | 否 | — |
+| `autoFit` | `boolean` | `true` | 否 | 列宽自适应（默认开）：忽略列的 width 声明，列宽由内部按容器宽度动态分配（防抖 + 冷却） |
+| `truncateMode` | `'ellipsis' \| 'wrap' \| 'none'` | `'ellipsis'` | 否 | 单元格文本截断：'ellipsis' 省略号（默认）\| 'wrap' 换行 \| 'none' 不截断 |
+| `dense` | `boolean` | `false` | 否 | 紧凑密度（更小的行高与内边距） |
 | `colSettings` | `boolean` | `true` | 否 | 列设置按钮（默认显示，false 可隐藏） |
 | `cellSelection` | `boolean` | `true` | 否 | 单元格矩形选区：长按/拖拽框选 + 拖选自动滚动（默认开启） |
 | `keyboardNav` | `boolean` | `true` | 否 | 键盘导航：方向键移动/Shift 扩展/Enter 编辑/Delete 清空/Ctrl+Home/End（默认开启） |
@@ -85,10 +85,10 @@
 | `searchMode` | `'client' \| 'server'` | `'client'` | 否 | 搜索模式：'client' 客户端本地过滤，'server' 抛 search 事件由后端处理 |
 | `filterMode` | `'client' \| 'server'` | `'client'` | 否 | 筛选模式：'client' 客户端本地过滤，'server' 只抛 filter 事件由后端处理 |
 | `filters` | `Record<string, string[]>` | — | 否 | 外部筛选状态（v-model:filters）：服务端模式下父组件可程序化控制筛选，变化时自动同步到内部 filterState |
-| `rowClass` | `(row: T, index: number) => string` | — | 否 | — |
-| `rowStyle` | `(row: T, index: number) => Record<string, string>` | — | 否 | — |
-| `cellClass` | `(colKey: string, row: T, index: number) => string` | — | 否 | — |
-| `cellStyle` | `(colKey: string, row: T, index: number) => Record<string, string>` | — | 否 | — |
+| `rowClass` | `(row: T, index: number) => string` | — | 否 | 行类名回调：(row, index) => class 串，每行渲染时调用 |
+| `rowStyle` | `(row: T, index: number) => Record<string, string>` | — | 否 | 行内联样式回调：(row, index) => 样式对象 |
+| `cellClass` | `(colKey: string, row: T, index: number) => string` | — | 否 | 单元格类名回调：(colKey, row, index) => class 串 |
+| `cellStyle` | `(colKey: string, row: T, index: number) => Record<string, string>` | — | 否 | 单元格内联样式回调：(colKey, row, index) => 样式对象 |
 | `shotMode` | `'preview' \| 'download' \| 'copy'` | `'preview' as 'preview' \| 'download' \| 'copy'` | 否 | 截图行为模式：'preview' 弹窗预览 \| 'download' 直接下载 \| 'copy' 直接复制到剪贴板 |
 | `screenshotMaxRows` | `number` | `400` | 否 | 截图最大行数（超过提醒用户先筛选，避免生成超大 canvas 卡死） |
 
@@ -352,13 +352,13 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `data` | `TreeNode[]` | — | 是 | — |
-| `level` | `number` | `0` | 否 | — |
-| `checkable` | `boolean` | `false` | 否 | — |
-| `defaultExpandedKeys` | `(string \| number)[]` | `() => []` | 否 | — |
-| `expandAll` | `boolean` | `false` | 否 | — |
-| `selectable` | `boolean` | `false` | 否 | — |
-| `selectedKey` | `string \| number \| null` | `null` | 否 | — |
+| `data` | `TreeNode[]` | — | 是 | 树数据：TreeNode[]，children 嵌套构成层级 |
+| `level` | `number` | `0` | 否 | ⛔ 内部递归层级（子树实例由组件自建），消费方勿传 |
+| `checkable` | `boolean` | `false` | 否 | 节点勾选框：父子级联 + 半选态 |
+| `defaultExpandedKeys` | `(string \| number)[]` | `() => []` | 否 | 初始展开的节点键集合（此后展开状态由组件内部管理） |
+| `expandAll` | `boolean` | `false` | 否 | 初始全部展开 |
+| `selectable` | `boolean` | `false` | 否 | 节点单选（配合 v-model:selectedKey） |
+| `selectedKey` | `string \| number \| null` | `null` | 否 | 受控选中节点键（v-model:selectedKey） |
 | `lazy` | `boolean` | `false` | 否 | 懒加载：展开节点时若无 children 且 isLeaf 非 true 的节点不会触发 load |
 | `sharedState` | `TreeState \| null` | — | 否 | ⛔ 内部 plumbing：递归子树经此 prop 接收根实例的共享 state。 不能只靠 provide/inject——嵌套 Tree 渲染在 Transition 的插槽里， 该边界上 inject 实测取不到（每层自建 state：深层没有勾选框、勾选级联 不同步、深层节点的事件发不出去、expandAll 只生效一层）。消费方勿传。 |
 
