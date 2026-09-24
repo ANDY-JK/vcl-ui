@@ -8,7 +8,9 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 
 interface Props {
+  /** 显隐 */
   visible: boolean
+  /** 只读原因（空串用内置 i18n 文案） */
   reason?: string
 }
 
@@ -70,8 +72,7 @@ watch(
       prevFocus = null
       return
     }
-    prevFocus =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null
+    prevFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
     attach()
     await nextTick()
     overlayRef.value?.focus()

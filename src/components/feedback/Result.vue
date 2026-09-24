@@ -5,10 +5,15 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import Button from '@/components/basic/Button.vue'
 
 interface Props {
+  /** 结果类型（决定图标与配色） */
   status: 'success' | 'error' | 'info' | 'warning' | '404' | 'empty'
+  /** 主标题 */
   title: string
+  /** 描述文案 */
   description?: string
+  /** 操作按钮文字（非空才渲染按钮，点击抛 action） */
   actionText?: string
+  /** 操作按钮占满宽度 */
   fullWidth?: boolean
 }
 
@@ -18,7 +23,7 @@ withDefaults(defineProps<Props>(), {
   fullWidth: false,
 })
 
-const emit = defineEmits<{ action: [] }>()
+const emit = defineEmits<{ /** 点击操作按钮 */ action: [] }>()
 
 const iconMap: Record<string, string> = {
   success: 'circle-check',

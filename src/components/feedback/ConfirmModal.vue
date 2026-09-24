@@ -18,13 +18,21 @@ const t = useT()
 
 const props = withDefaults(
   defineProps<{
+    /** 显隐（v-model:visible） */
     visible: boolean
+    /** 弹窗标题（空串用内置 i18n，语言切换实时跟随） */
     title?: string
+    /** 正文消息 */
     message: string
+    /** 确认按钮文字（空串用内置 i18n） */
     confirmText?: string
+    /** 取消按钮文字（空串用内置 i18n） */
     cancelText?: string
+    /** 语义色：danger 危险操作（默认）| warning 谨慎 | primary 常规确认 */
     variant?: 'danger' | 'warning' | 'primary'
+    /** 确认按钮 loading（等待宿主异步操作期间防重复提交） */
     loading?: boolean
+    /** 显示右上角关闭按钮（默认开） */
     closable?: boolean
   }>(),
   {
@@ -39,8 +47,11 @@ const props = withDefaults(
 const effTitle = computed(() => props.title ?? t('confirmModal.title'))
 
 const emit = defineEmits<{
+  /** v-model:visible——显隐 */
   'update:visible': [val: boolean]
+  /** 点击确认（loading 态由宿主控制） */
   confirm: []
+  /** 点击取消 / 关闭 */
   cancel: []
 }>()
 

@@ -44,6 +44,7 @@ function ensureReady(): void {
   if (!unlocked) unlock()
 }
 
+/** 首次用户交互后显式解锁 AudioContext（浏览器自动播放策略要求；一次解锁永久可用） */
 export function unlockAudio(): void {
   ensureReady()
 }
@@ -93,16 +94,20 @@ function play(freqs: number[], type: OscillatorType, vol: number): void {
   }
 }
 
-// 四种提示音
+// 四种提示音（纯 Web Audio 合成，无外部音频文件）
+/** 成功提示音（上行双音） */
 export function beepSuccess(): void {
   play([880, 1100], 'sine', 0.15)
 }
+/** 错误提示音（低频方波） */
 export function beepError(): void {
   play([200], 'square', 0.1)
 }
+/** 通知提示音（三连中性音） */
 export function beepNotify(): void {
   play([440, 494, 440], 'sine', 0.12)
 }
+/** 警告提示音（下行双音） */
 export function beepWarning(): void {
   play([600, 500], 'triangle', 0.13)
 }

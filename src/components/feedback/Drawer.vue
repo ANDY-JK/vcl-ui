@@ -12,14 +12,23 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 
 interface Props {
+  /** 显隐（v-model:visible） */
   visible: boolean
+  /** 抽屉标题（标题栏；空串不渲染标题行） */
   title?: string
+  /** 滑出方位（默认右侧） */
   placement?: 'left' | 'right' | 'top' | 'bottom'
+  /** 抽屉宽度（默认 'min(380px, 88vw)'） */
   width?: string
+  /** 抽屉高度（上下方位时生效，默认 'min(300px, 60vh)'） */
   height?: string
+  /** 显示右上角关闭按钮（默认开） */
   closable?: boolean
+  /** 点遮罩关闭（默认开） */
   maskClosable?: boolean
+  /** 遮罩 z-index 覆盖 */
   zIndex?: number
+  /** 关闭即销毁内容（默认开；关掉可保留表单等内部状态） */
   destroyOnClose?: boolean
   /** 设为 true 时不参与全局弹窗互斥管理（组件内部弹窗用） */
   internal?: boolean
@@ -42,9 +51,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** v-model:visible——显隐 */
   'update:visible': [v: boolean]
+  /** 请求关闭（关闭按钮/遮罩/Esc） */
   close: []
+  /** 打开动画完成后（内容需要测量尺寸的场景接这个） */
   'after-open': []
+  /** 关闭动画完成后 */
   'after-close': []
 }>()
 

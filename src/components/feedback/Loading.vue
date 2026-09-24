@@ -7,12 +7,15 @@ import { useBodyScrollLock } from '@/components/_internal/useBodyScrollLock'
 interface Props {
   /** 'spinner' 旋转图标 | 'skeleton' 骨架屏 | 'skeleton-text' 文字骨架 | 'skeleton-card' 卡片骨架 */
   variant?: 'spinner' | 'skeleton' | 'skeleton-text' | 'skeleton-card'
+  /** spinner 尺寸档位（默认 'md'） */
   size?: 'sm' | 'md' | 'lg'
+  /** 加载提示文字 */
   text?: string
   /** skeleton 模式 — 行数 */
   rows?: number
   /** skeleton 模式 — 自定义宽高 */
   width?: string
+  /** 骨架块高度（默认 '14px'） */
   height?: string
   /** 全屏加载遮罩：fixed 定位 + backdrop-filter + spinner 居中 */
   fullscreen?: boolean
@@ -41,11 +44,7 @@ useBodyScrollLock(() => props.fullscreen)
 <template>
   <!-- fullscreen 全屏遮罩（teleportTo 可指向 Shadow DOM 宿主容器） -->
   <Teleport v-if="fullscreen" :to="teleportTo">
-    <div
-      class="loading-fullscreen"
-      :class="{ 'loading-fullscreen--overlay': overlay }"
-      aria-busy="true"
-    >
+    <div class="loading-fullscreen" :class="{ 'loading-fullscreen--overlay': overlay }" aria-busy="true">
       <div class="loading-fullscreen__content">
         <div class="spinner-ring" :class="[`spinner-${size}`]" />
         <span v-if="text" class="spinner-text">{{ text }}</span>

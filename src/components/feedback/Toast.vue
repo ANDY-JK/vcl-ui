@@ -10,11 +10,17 @@ let nextId = 1
 export interface Props {
   /** 'toast' 全局弹幕 | 'inline' 内联提示条（替代 Alert） */
   variant?: 'toast' | 'inline'
+  /** 语义类型（决定图标与配色） */
   type?: 'circle-alert' | 'info' | 'success' | 'warning' | 'error'
+  /** 标题（加粗首行） */
   title?: string
+  /** 正文消息 */
   message?: string
+  /** 显示关闭按钮 */
   closable?: boolean
+  /** 显示语义图标（默认开） */
   showIcon?: boolean
+  /** toast 弹幕出没方位（默认 'top'） */
   position?: 'top' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
   /** Teleport 目标（WC/Shadow DOM 宿主指向自身容器），默认 'body' */
   teleportTo?: string | HTMLElement
@@ -199,7 +205,13 @@ defineExpose({
         {{ message }}
       </div>
     </div>
-    <button v-if="closable" type="button" class="toast-inline-close" :aria-label="tt('common.close')" @click="inlineVisible = false">
+    <button
+      v-if="closable"
+      type="button"
+      class="toast-inline-close"
+      :aria-label="tt('common.close')"
+      @click="inlineVisible = false"
+    >
       <IconSvg type="x" size="sm" />
     </button>
   </div>

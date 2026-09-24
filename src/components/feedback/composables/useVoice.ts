@@ -131,6 +131,7 @@ function detectLang(text: string): string {
   return 'en'
 }
 
+/** 立即停止当前语音播报并丢弃挂起请求 */
 export function stopSpeak(): void {
   // 停播后不再补发挂起的请求，否则离开页面后 voices 就绪还会响一声
   pendingSpeak = null

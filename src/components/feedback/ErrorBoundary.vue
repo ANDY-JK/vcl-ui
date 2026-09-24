@@ -25,7 +25,9 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 
 interface Props {
+  /** 错误面板标题（空串用内置 i18n） */
   title?: string
+  /** 重试按钮文字（空串用内置 i18n） */
   retryText?: string
   /** 监听值变化时自动重置错误状态（如路由参数、组件 key 等） */
   watchKey?: string | number
@@ -38,6 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** 子树抛错时通知（已捕获，不冒泡到全局；retry 或 watchKey 变化后恢复） */
   error: [err: Error]
 }>()
 
