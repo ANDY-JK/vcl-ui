@@ -22,6 +22,7 @@ const t = useT()
 interface Props {
   /** scan = 上传识别 + 手工输入；photo = 仅上传（相册/文件） */
   mode?: 'scan' | 'photo'
+  /** 整面板禁用（上传/输入均不可操作） */
   disabled?: boolean
   /** 识别中（控件禁用 + 显示进度提示） */
   busy?: boolean
@@ -33,7 +34,9 @@ interface Props {
   hint?: string
   /** 手工输入占位 */
   placeholder?: string
+  /** 上传接受的文件类型（默认 image/*） */
   accept?: string
+  /** 允许多选文件 */
   multiple?: boolean
 }
 
@@ -100,7 +103,9 @@ onUnmounted(() => {})
 
     <!-- 下：手工输入（原型兜底终态底行：手输框 · 提交 · 重试） -->
     <template v-if="props.mode === 'scan'">
-      <div class="capfb-or"><span>{{ t('form.captureOrInput') }}</span></div>
+      <div class="capfb-or">
+        <span>{{ t('form.captureOrInput') }}</span>
+      </div>
       <div class="capfb-input">
         <Input
           v-model="inputText"
@@ -110,11 +115,7 @@ onUnmounted(() => {})
           clearable
           @keyup.enter="submitInput"
         />
-        <Button
-          :text="t('form.captureSubmit')"
-          :disabled="locked || !inputText.trim()"
-          @click="submitInput"
-        />
+        <Button :text="t('form.captureSubmit')" :disabled="locked || !inputText.trim()" @click="submitInput" />
         <Button :text="t('form.retry')" variant="ghost" :disabled="props.busy" @click="emit('retry')" />
       </div>
     </template>

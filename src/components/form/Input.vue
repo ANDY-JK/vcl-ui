@@ -106,11 +106,17 @@ watch(
 )
 
 const emit = defineEmits<{
+  /** v-model——受控值 */
   'update:modelValue': [v: string | number | null]
+  /** 获得焦点（原生事件） */
   focus: [e: FocusEvent]
+  /** 失去焦点（原生事件） */
   blur: [e: FocusEvent]
+  /** 按键抬起（原生事件） */
   keyup: [e: KeyboardEvent]
+  /** 点击清空按钮后触发 */
   clear: []
+  /** 值提交（失焦/回车，语义同原生 change） */
   change: [v: string | number | null]
 }>()
 

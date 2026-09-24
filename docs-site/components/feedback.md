@@ -31,7 +31,7 @@
 | `notify` | 发送系统通知——首次调用时请求权限 |
 | `getNotifyStatus` | 获取当前通知权限状态 |
 | `useToast` | inject 辅助函数 — 在子组件 setup() 中调用获取 Toast API |
-| `TOAST_KEY` | — |
+| `TOAST_KEY` | provide/inject key |
 | `installErrorGuard` | 安装全局错误兜底。 |
 | `uninstallErrorGuard` | 注销当前兜底（幂等）：还原宿主 handler + 移除浏览器监听 |
 

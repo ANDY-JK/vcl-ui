@@ -20,8 +20,8 @@
 
 | 导出 | 说明 |
 | --- | --- |
-| `useBarcodeScanner` | — |
-| `DEFAULT_CAPTURE_REGION` | — |
+| `useBarcodeScanner` | 扫码 composable：相机取流 + 识别框区域抽帧（zxing-wasm 解码）+ 连扫确认/冷却，返回状态与起停控制 |
+| `DEFAULT_CAPTURE_REGION` | 默认识别框（画面中下部横条，占位比例 0-1，对准条码常见位置） |
 | `detectCaptureCapability` | 探测当前环境能力（SSR / 测试环境安全回退，不抛错） |
 | `classifyCaptureError` | 浏览器摄像头错误 → 归因（与 CameraCapture / useBarcodeScanner 的文案映射同源） |
 | `captureChainFrom` | 从某级起的可用子链（按 allow* 裁剪掉被禁用的级） |
@@ -29,7 +29,7 @@
 | `resolveEntryLevel` | 入口级：不满足页面内取流条件就直接从系统级起步。 |
 | `openSystemCapture` | 调起系统相机 / 相册（隐藏 file input），返回用户选中的文件。 |
 | `cancelPendingSystemCapture` | 强制结算上一次未完成的系统采集（视作用户取消）并清理残留临时 input。 |
-| `CAPTURE_CHAIN` | — |
+| `CAPTURE_CHAIN` | 默认链路顺序 |
 
 ---
 
@@ -68,12 +68,12 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: string \| number \| null` | — |
-| `focus` | `e: FocusEvent` | — |
-| `blur` | `e: FocusEvent` | — |
-| `keyup` | `e: KeyboardEvent` | — |
-| `clear` | `无` | — |
-| `change` | `v: string \| number \| null` | — |
+| `'update:modelValue'` | `v: string \| number \| null` | v-model——受控值 |
+| `focus` | `e: FocusEvent` | 获得焦点（原生事件） |
+| `blur` | `e: FocusEvent` | 失去焦点（原生事件） |
+| `keyup` | `e: KeyboardEvent` | 按键抬起（原生事件） |
+| `clear` | `无` | 点击清空按钮后触发 |
+| `change` | `v: string \| number \| null` | 值提交（失焦/回车，语义同原生 change） |
 
 ## `Select`
 
@@ -112,11 +112,11 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: SelectModelValue` | — |
-| `change` | `v: SelectModelValue` | — |
-| `focus` | `无` | — |
-| `blur` | `无` | — |
-| `'visible-change'` | `v: boolean` | — |
+| `'update:modelValue'` | `v: SelectModelValue` | v-model——受控值 |
+| `change` | `v: SelectModelValue` | 值提交（选中/清除后；与 update:modelValue 同步抛出） |
+| `focus` | `无` | 触发器获得焦点 |
+| `blur` | `无` | 触发器失去焦点 |
+| `'visible-change'` | `v: boolean` | 下拉面板展开/收起：[true=展开] |
 
 ### Slots
 
@@ -134,10 +134,10 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `type` | `'radio' \| 'checkbox' \| 'switch' \| 'rate' \| 'slider'` | `'radio'` | 否 | 统一类型：radio \| checkbox \| switch \| rate \| slider |
-| `modelValue` | `string \| number \| boolean \| (string \| number \| boolean)[] \| [number, number]` | — | 是 | — |
+| `modelValue` | `string \| number \| boolean \| (string \| number \| boolean)[] \| [number, number]` | — | 是 | 受控值：radio/switch 为单值，checkbox 为数组，rate 为数值，slider 为数值或 [起, 止] |
 | `options` | `Option[]` | `() => []` | 否 | radio / checkbox 模式选项列表 |
 | `direction` | `'vertical' \| 'horizontal'` | `'vertical'` | 否 | radio / checkbox 排列方向 |
-| `disabled` | `boolean` | `false` | 否 | — |
+| `disabled` | `boolean` | `false` | 否 | 整组禁用 |
 | `max` | `number` | `0` | 否 | checkbox 最多选几项，0 = 不限 |
 | `ariaLabel` | `string` | `''` | 否 | 分组标签（无障碍） |
 | `label` | `string` | — | 否 | switch 标签文字 |
@@ -154,8 +154,8 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: GroupValue` | — |
-| `change` | `v: GroupValue` | — |
+| `'update:modelValue'` | `v: GroupValue` | v-model——受控值（形状随 type：checkbox 为数组、range 滑块为 [起, 止]） |
+| `change` | `v: GroupValue` | 值提交（与 update:modelValue 同步抛出） |
 
 ## `IconPicker`
 
@@ -165,9 +165,9 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `modelValue` | `string` | `'star'` | 否 | — |
-| `color` | `string` | `'var(--color-primary)'` | 否 | — |
-| `bgColor` | `string` | `'#EAECF0'` | 否 | — |
+| `modelValue` | `string` | `'star'` | 否 | 受控图标名（kebab-case，默认 'star'） |
+| `color` | `string` | `'var(--color-primary)'` | 否 | 图标颜色（CSS 颜色值或令牌，默认主色令牌） |
+| `bgColor` | `string` | `'#EAECF0'` | 否 | 触发按钮底色（默认 #EAECF0） |
 | `placeholder` | `string` | `() => t('form.selectIcon')` | 否 | 触发按钮占位文字 |
 | `presetColors` | `string[]` | `() => ['#6366F1', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4']` | 否 | 预定义色板 |
 | `provider` | `'lucide' \| 'solar' \| 'morphicons'` | `'lucide'` | 否 | 图标提供者：lucide/solar 为静态图标，morphicons 在图标切换时做形变动画 |
@@ -176,11 +176,11 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: string` | — |
-| `'update:color'` | `v: string` | — |
-| `'update:bgColor'` | `v: string` | — |
-| `'update:provider'` | `v: 'lucide' \| 'solar' \| 'morphicons'` | — |
-| `change` | `v: { icon: string; color: string; bgColor: string }` | — |
+| `'update:modelValue'` | `v: string` | v-model——选中图标名 |
+| `'update:color'` | `v: string` | v-model:color——图标颜色 |
+| `'update:bgColor'` | `v: string` | v-model:bgColor——触发按钮底色 |
+| `'update:provider'` | `v: 'lucide' \| 'solar' \| 'morphicons'` | v-model:provider——图标提供者切换 |
+| `change` | `v: { icon: string; color: string; bgColor: string }` | 任一选择提交：[图标名 + 颜色 + 底色] 快照 |
 
 ## `Upload`
 
@@ -191,13 +191,13 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `accept` | `string` | `'image/*'` | 否 | 接受的文件类型：默认图片；传空字符串 = 全部类型（含目录里的文件） |
-| `multiple` | `boolean` | `false` | 否 | — |
-| `maxSize` | `number` | `10` | 否 | — |
-| `minSize` | `number` | — | 否 | — |
-| `disabled` | `boolean` | `false` | 否 | — |
-| `drag` | `boolean` | `true` | 否 | — |
-| `modelValue` | `UploadFile[]` | `() => []` | 否 | — |
-| `customRequest` | `(file: File) => Promise<{ url: string }>` | `undefined` | 否 | — |
+| `multiple` | `boolean` | `false` | 否 | 多文件 |
+| `maxSize` | `number` | `10` | 否 | 单文件大小上限（MB，默认 10） |
+| `minSize` | `number` | — | 否 | 单文件大小下限（KB） |
+| `disabled` | `boolean` | `false` | 否 | 禁用 |
+| `drag` | `boolean` | `true` | 否 | 拖拽上传（默认开） |
+| `modelValue` | `UploadFile[]` | `() => []` | 否 | 受控文件列表（v-model:modelValue，UploadFile[]） |
+| `customRequest` | `(file: File) => Promise<{ url: string }>` | `undefined` | 否 | 自定义上传：替代内置请求，返回 { url }；失败时 reject 走 error 事件 |
 | `variant` | `'default' \| 'card'` | `'default'` | 否 | 'default' 标准上传区 \| 'card' 紧凑方块卡片 |
 | `label` | `string` | `''` | 否 | card 模式下的显示标签 |
 | `directory` | `boolean` | `false` | 否 | 目录选择模式（webkitdirectory）：选择整个文件夹上传（隐式多文件），仍按 accept 校验每个文件 |
@@ -212,10 +212,10 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `change` | `files: UploadFile[]` | — |
-| `remove` | `file: UploadFile` | — |
-| `error` | `message: string` | — |
-| `'update:modelValue'` | `files: UploadFile[]` | — |
+| `change` | `files: UploadFile[]` | 文件列表变化（新增/删除/状态流转后抛全量） |
+| `remove` | `file: UploadFile` | 移除单个文件 |
+| `error` | `message: string` | 校验/上传失败提示文案 |
+| `'update:modelValue'` | `files: UploadFile[]` | v-model——受控文件列表 |
 | `preview` | `url: string` | card 模式：点击图片预览 |
 
 ### Slots
@@ -244,7 +244,7 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: boolean` | — |
+| `'update:modelValue'` | `v: boolean` | v-model——显隐 |
 | `capture` | `file: File` | 确认使用照片（页面内拍照或降级系统相机拍照均交付 File；multiple 模式下降级路径也走这里） |
 | `finish` | `files: File[]` | multiple 模式：按「完成」一次性交付队列全部照片 |
 | `cancel` | `无` | 取消 / 关闭 |
@@ -264,17 +264,17 @@
 | `length` | `number` | `undefined` | 否 | 条码长度过滤 |
 | `multiple` | `boolean` | `false` | 否 | 连扫模式：扫到不关闭、结果累积，关闭时经 finish 一次性交付 |
 | `autoFallback` | `boolean` | `true` | 否 | 是否启用自动兜底链（失败后自动下探系统相机），默认 true；关掉则失败仅报错，兜底面板保留手动入口 |
-| `title` | `string` | `''` | 否 | — |
+| `title` | `string` | `''` | 否 | 扫码浮层标题（空串用内置 i18n） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: boolean` | — |
+| `'update:modelValue'` | `v: boolean` | v-model——显隐 |
 | `scan` | `code: string` | 识别到一条码（逐条交付） |
 | `finish` | `codes: string[]` | multiple 模式关闭时一次性交付全部结果 |
 | `error` | `msg: string` | 降级/失败提示（相机不可用、识别失败等） |
-| `close` | `无` | — |
+| `close` | `无` | 关闭浮层 |
 
 ## `CaptureFallbackPanel`
 
@@ -285,14 +285,14 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `mode` | `'scan' \| 'photo'` | `'scan'` | 否 | scan = 上传识别 + 手工输入；photo = 仅上传（相册/文件） |
-| `disabled` | `boolean` | `false` | 否 | — |
+| `disabled` | `boolean` | `false` | 否 | 整面板禁用（上传/输入均不可操作） |
 | `busy` | `boolean` | `false` | 否 | 识别中（控件禁用 + 显示进度提示） |
 | `error` | `string` | `''` | 否 | 识别失败等错误提示（留在面板内，方便直接改用输入） |
 | `uploadHint` | `string` | `''` | 否 | 上传条文案 |
 | `hint` | `string` | `''` | 否 | 面板顶部说明（通常由宿主传入降级原因） |
 | `placeholder` | `string` | `''` | 否 | 手工输入占位 |
-| `accept` | `string` | `'image/*'` | 否 | — |
-| `multiple` | `boolean` | `false` | 否 | — |
+| `accept` | `string` | `'image/*'` | 否 | 上传接受的文件类型（默认 image/*） |
+| `multiple` | `boolean` | `false` | 否 | 允许多选文件 |
 
 ### Events
 
@@ -311,24 +311,24 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `modelValue` | `boolean` | — | 是 | 显隐（v-model） |
-| `mode` | `'scan' \| 'photo'` | `'scan'` | 否 | — |
-| `disabled` | `boolean` | `false` | 否 | — |
-| `busy` | `boolean` | `false` | 否 | — |
-| `error` | `string` | `''` | 否 | — |
-| `uploadHint` | `string` | `''` | 否 | — |
-| `hint` | `string` | `''` | 否 | — |
-| `placeholder` | `string` | `''` | 否 | — |
-| `accept` | `string` | `'image/*'` | 否 | — |
-| `multiple` | `boolean` | `false` | 否 | — |
-| `title` | `string` | `''` | 否 | — |
+| `mode` | `'scan' \| 'photo'` | `'scan'` | 否 | 同 CaptureFallbackPanel：scan = 上传识别 + 手工输入；photo = 仅上传 |
+| `disabled` | `boolean` | `false` | 否 | 整面板禁用（转发自面板） |
+| `busy` | `boolean` | `false` | 否 | 识别中（控件禁用 + 显示进度提示） |
+| `error` | `string` | `''` | 否 | 识别失败等错误提示 |
+| `uploadHint` | `string` | `''` | 否 | 上传条文案 |
+| `hint` | `string` | `''` | 否 | 面板顶部说明（通常由宿主传入降级原因） |
+| `placeholder` | `string` | `''` | 否 | 手工输入占位 |
+| `accept` | `string` | `'image/*'` | 否 | 上传接受的文件类型（默认 image/*） |
+| `multiple` | `boolean` | `false` | 否 | 允许多选文件 |
+| `title` | `string` | `''` | 否 | 弹层标题（空串用内置 i18n） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: boolean` | — |
-| `files` | `files: File[]` | — |
-| `submit` | `code: string` | — |
+| `'update:modelValue'` | `v: boolean` | v-model——显隐 |
+| `files` | `files: File[]` | 用户选好文件：宿主负责识别 / 交付（转发自面板） |
+| `submit` | `code: string` | scan 模式手工输入提交（转发自面板） |
 | `retry` | `无` | 重试上一级采集（转发自 CaptureFallbackPanel，宿主自行接线） |
-| `close` | `无` | — |
+| `close` | `无` | 关闭弹层 |
 

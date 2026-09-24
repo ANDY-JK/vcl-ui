@@ -17,15 +17,25 @@ const t = useT()
 interface Props {
   /** 显隐（v-model） */
   modelValue: boolean
+  /** 同 CaptureFallbackPanel：scan = 上传识别 + 手工输入；photo = 仅上传 */
   mode?: 'scan' | 'photo'
+  /** 整面板禁用（转发自面板） */
   disabled?: boolean
+  /** 识别中（控件禁用 + 显示进度提示） */
   busy?: boolean
+  /** 识别失败等错误提示 */
   error?: string
+  /** 上传条文案 */
   uploadHint?: string
+  /** 面板顶部说明（通常由宿主传入降级原因） */
   hint?: string
+  /** 手工输入占位 */
   placeholder?: string
+  /** 上传接受的文件类型（默认 image/*） */
   accept?: string
+  /** 允许多选文件 */
   multiple?: boolean
+  /** 弹层标题（空串用内置 i18n） */
   title?: string
 }
 
@@ -43,11 +53,15 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** v-model——显隐 */
   'update:modelValue': [v: boolean]
+  /** 用户选好文件：宿主负责识别 / 交付（转发自面板） */
   files: [files: File[]]
+  /** scan 模式手工输入提交（转发自面板） */
   submit: [code: string]
   /** 重试上一级采集（转发自 CaptureFallbackPanel，宿主自行接线） */
   retry: []
+  /** 关闭弹层 */
   close: []
 }>()
 

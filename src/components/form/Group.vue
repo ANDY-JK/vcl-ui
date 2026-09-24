@@ -17,11 +17,13 @@ const tt = useT()
 interface Props {
   /** 统一类型：radio | checkbox | switch | rate | slider */
   type?: 'radio' | 'checkbox' | 'switch' | 'rate' | 'slider'
+  /** 受控值：radio/switch 为单值，checkbox 为数组，rate 为数值，slider 为数值或 [起, 止] */
   modelValue: string | number | boolean | (string | number | boolean)[] | [number, number]
   /** radio / checkbox 模式选项列表 */
   options?: Option[]
   /** radio / checkbox 排列方向 */
   direction?: 'vertical' | 'horizontal'
+  /** 整组禁用 */
   disabled?: boolean
   /** checkbox 最多选几项，0 = 不限 */
   max?: number
@@ -76,7 +78,9 @@ type GroupValue = string | number | boolean | (string | number | boolean)[] | [n
 const groupId = useIdSafe('group')
 
 const emit = defineEmits<{
+  /** v-model——受控值（形状随 type：checkbox 为数组、range 滑块为 [起, 止]） */
   'update:modelValue': [v: GroupValue]
+  /** 值提交（与 update:modelValue 同步抛出） */
   change: [v: GroupValue]
 }>()
 

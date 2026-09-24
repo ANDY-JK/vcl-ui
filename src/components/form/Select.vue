@@ -117,10 +117,15 @@ const props = withDefaults(defineProps<Props>(), {
 type SelectModelValue = string | number | (string | number | boolean)[] | [string, string] | null
 
 const emit = defineEmits<{
+  /** v-model——受控值 */
   'update:modelValue': [v: SelectModelValue]
+  /** 值提交（选中/清除后；与 update:modelValue 同步抛出） */
   change: [v: SelectModelValue]
+  /** 触发器获得焦点 */
   focus: []
+  /** 触发器失去焦点 */
   blur: []
+  /** 下拉面板展开/收起：[true=展开] */
   'visible-change': [v: boolean]
 }>()
 

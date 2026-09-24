@@ -22,11 +22,11 @@
 | `isFieldVisible` | 判断字段在当前数据下是否可见 |
 | `createInitialData` | 从 Schema 的 fields 提取默认值，生成初始 form data |
 | `normalizeSchema` | 归一化 Schema：合并默认值，填充缺失字段 |
-| `SCHEMA_VERSION` | — |
+| `SCHEMA_VERSION` | Schema 版本常量 |
 | `useFormValidator` | 表单校验 composable |
 | `validateField` | 校验单个字段 |
 | `validateAll` | 校验全部字段 |
-| `validators` | — |
+| `validators` | 预置校验规则工厂函数 |
 | `useFormStorage` | 表单存储 composable |
 | `getFieldRegistration` | 获取字段类型的注册信息（未注册回退 text） |
 | `getComponentCategory` | 获取字段类型对应的组件分类 |

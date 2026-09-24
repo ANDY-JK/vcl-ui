@@ -9,8 +9,11 @@ const t = useT()
  * 而 Props 不导出会触发 TS4082，导致 IconPicker.vue.d.ts 无法生成、下游用该组件拿不到类型。
  */
 export interface Props {
+  /** 受控图标名（kebab-case，默认 'star'） */
   modelValue?: string
+  /** 图标颜色（CSS 颜色值或令牌，默认主色令牌） */
   color?: string
+  /** 触发按钮底色（默认 #EAECF0） */
   bgColor?: string
   /** 触发按钮占位文字 */
   placeholder?: string
@@ -29,11 +32,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { SOLAR_ICONS } from '@/components/_internal/solar-icons'
 import { ensureSolarIcons } from '@/components/_internal/solar-icons-registry'
 import lucideIconNames from '@/components/_internal/lucide-icons.json'
-import {
-  ensureMorphicons,
-  isMorphiconsReady,
-  getMorphIconNames,
-} from '@/components/_internal/morphicons-registry'
+import { ensureMorphicons, isMorphiconsReady, getMorphIconNames } from '@/components/_internal/morphicons-registry'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { toNativeColorValue } from '@/components/_internal/utils'
@@ -54,10 +53,15 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** v-model——选中图标名 */
   'update:modelValue': [v: string]
+  /** v-model:color——图标颜色 */
   'update:color': [v: string]
+  /** v-model:bgColor——触发按钮底色 */
   'update:bgColor': [v: string]
+  /** v-model:provider——图标提供者切换 */
   'update:provider': [v: 'lucide' | 'solar' | 'morphicons']
+  /** 任一选择提交：[图标名 + 颜色 + 底色] 快照 */
   change: [v: { icon: string; color: string; bgColor: string }]
 }>()
 

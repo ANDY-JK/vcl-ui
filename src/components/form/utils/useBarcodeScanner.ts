@@ -21,6 +21,7 @@ export interface CaptureRegion {
   height: number
 }
 
+/** 默认识别框（画面中下部横条，占位比例 0-1，对准条码常见位置） */
 export const DEFAULT_CAPTURE_REGION: CaptureRegion = {
   left: 0.175,
   top: 0.35,
@@ -113,6 +114,7 @@ function cameraErrorToChinese(err: unknown): string {
   return ''
 }
 
+/** 扫码 composable：相机取流 + 识别框区域抽帧（zxing-wasm 解码）+ 连扫确认/冷却，返回状态与起停控制 */
 export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
   const {
     prefix,

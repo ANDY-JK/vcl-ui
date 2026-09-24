@@ -56,6 +56,7 @@ useFocusTrap({
 })
 
 const emit = defineEmits<{
+  /** v-model——显隐 */
   'update:modelValue': [v: boolean]
   /** 确认使用照片（页面内拍照或降级系统相机拍照均交付 File；multiple 模式下降级路径也走这里） */
   capture: [file: File]

@@ -384,10 +384,11 @@ function namedDoc(file, name) {
   let doc = ''
   const visit = (node) => {
     const names = []
-    if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node) || ts.isVariableStatement(node)) && node.name) {
-      if (ts.isVariableStatement(node)) {
-        for (const d of node.declarationList.declarations) if (d.name && ts.isIdentifier(d.name)) names.push(d.name.text)
-      } else names.push(node.name.getText())
+    if (ts.isVariableStatement(node)) {
+      // const/let 导出：VariableStatement 没有 .name，逐声明取标识符（此前被 && node.name 短路，export const 的 JSDoc 全部提取不到）
+      for (const d of node.declarationList.declarations) if (d.name && ts.isIdentifier(d.name)) names.push(d.name.text)
+    } else if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) && node.name) {
+      names.push(node.name.getText())
     }
     if (names.includes(name)) {
       const js = ts.getJSDocCommentsAndTags(node).filter((t) => ts.isJSDoc(t))

@@ -37,12 +37,19 @@ export interface UploadFile {
 interface Props {
   /** 接受的文件类型：默认图片；传空字符串 = 全部类型（含目录里的文件） */
   accept?: string
+  /** 多文件 */
   multiple?: boolean
+  /** 单文件大小上限（MB，默认 10） */
   maxSize?: number // MB
+  /** 单文件大小下限（KB） */
   minSize?: number // KB
+  /** 禁用 */
   disabled?: boolean
+  /** 拖拽上传（默认开） */
   drag?: boolean
+  /** 受控文件列表（v-model:modelValue，UploadFile[]） */
   modelValue?: UploadFile[]
+  /** 自定义上传：替代内置请求，返回 { url }；失败时 reject 走 error 事件 */
   customRequest?: (file: File) => Promise<{ url: string }>
   /** 'default' 标准上传区 | 'card' 紧凑方块卡片 */
   variant?: 'default' | 'card'
@@ -90,9 +97,13 @@ watch(
 )
 
 const emit = defineEmits<{
+  /** 文件列表变化（新增/删除/状态流转后抛全量） */
   change: [files: UploadFile[]]
+  /** 移除单个文件 */
   remove: [file: UploadFile]
+  /** 校验/上传失败提示文案 */
   error: [message: string]
+  /** v-model——受控文件列表 */
   'update:modelValue': [files: UploadFile[]]
   /** card 模式：点击图片预览 */
   preview: [url: string]

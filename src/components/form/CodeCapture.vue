@@ -39,6 +39,7 @@ interface Props {
   multiple?: boolean
   /** 是否启用自动兜底链（失败后自动下探系统相机），默认 true；关掉则失败仅报错，兜底面板保留手动入口 */
   autoFallback?: boolean
+  /** 扫码浮层标题（空串用内置 i18n） */
   title?: string
 }
 
@@ -52,6 +53,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** v-model——显隐 */
   'update:modelValue': [v: boolean]
   /** 识别到一条码（逐条交付） */
   scan: [code: string]
@@ -59,6 +61,7 @@ const emit = defineEmits<{
   finish: [codes: string[]]
   /** 降级/失败提示（相机不可用、识别失败等） */
   error: [msg: string]
+  /** 关闭浮层 */
   close: []
 }>()
 
