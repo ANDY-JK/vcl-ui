@@ -52,17 +52,29 @@ const props = withDefaults(defineProps<ChartProps>(), {
 })
 
 const emit = defineEmits<{
+  /** ECharts 实例就绪（拿到实例可做 setOption/dispose 等深度定制） */
   'chart-ready': [instance: ReturnType<typeof import('echarts').init>]
+  /** 元素点击（透传 ECharts 事件，params 为点击目标信息） */
   click: [params: ECElementEvent]
+  /** 元素双击 */
   dblclick: [params: ECElementEvent]
+  /** 元素按下 */
   mousedown: [params: ECElementEvent]
+  /** 元素抬起 */
   mouseup: [params: ECElementEvent]
+  /** 元素悬停进入 */
   mouseover: [params: ECElementEvent]
+  /** 元素悬停离开 */
   mouseout: [params: ECElementEvent]
+  /** 画布空白处点击（全局坐标系） */
   globalout: [params: ECElementEvent]
+  /** 右键 */
   contextmenu: [params: ECElementEvent]
+  /** 图例选中态变化（含取消选中） */
   legendselectchanged: [params: ECElementEvent]
+  /** 数据缩放（dataZoom 组件拖动/缩放） */
   datazoom: [params: ECElementEvent]
+  /** 渲染完成一帧 */
   finished: [params: ECElementEvent]
 }>()
 

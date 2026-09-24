@@ -6,11 +6,14 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 
 const props = defineProps<{
+  /** 图例项：名称 + 色值 + 当前可见态 */
   items: { name: string; color: string; visible: boolean }[]
 }>()
 
 const emit = defineEmits<{
+  /** 点击单个图例：切换该序列可见性 */
   toggle: [name: string]
+  /** 全部显示 / 全部隐藏 */
   'toggle-all': [visible: boolean]
 }>()
 

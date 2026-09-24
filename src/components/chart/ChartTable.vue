@@ -16,36 +16,67 @@ const t = useT()
 // Props 逐一声明以保留 IDE 类型提示，未用 $attrs 透传
 const props = withDefaults(
   defineProps<{
+    /** 同 Chart：图表类型（chart:表格 上下组合的上半部分） */
     type?: ChartProps['type']
+    /** 同 Chart：原生 ECharts option */
     option?: ChartProps['option']
+    /** 同 Chart：快捷数据 */
     data?: ChartProps['data']
+    /** 同 Chart：X 轴类目 */
     categories?: string[]
+    /** 同 Chart：快捷多序列 */
     series?: ChartProps['series']
+    /** 同 Chart：ECharts 内置 dark 主题 */
     darkMode?: boolean
+    /** 同 Chart：自定义系列颜色 */
     colors?: string[]
+    /** 同 Chart：图表标题 */
     title?: string
+    /** 同 Chart：显示图例（初始值，之后由表头按钮控制） */
     showLegend?: boolean
+    /** 同 Chart：显示悬浮提示 */
     showTooltip?: boolean
+    /** 同 Chart：折线平滑 */
     smooth?: boolean
+    /** 同 Chart：数据点符号 */
     showSymbol?: boolean
+    /** 同 Chart：数据点数值标签 */
     showDataLabel?: boolean
+    /** 同 Chart：条形图（X/Y 互换） */
     horizontal?: boolean
+    /** 同 Chart：堆叠 */
     stacked?: boolean
+    /** 同 Chart：百分比堆叠 */
     stacked100?: boolean
+    /** 同 Chart：图例位置（默认 'bottom'） */
     legendPosition?: ChartProps['legendPosition']
+    /** 同 Chart：X 轴配置 */
     xAxis?: ChartProps['xAxis']
+    /** 同 Chart：Y 轴配置 */
     yAxis?: ChartProps['yAxis']
+    /** 同 Chart：动画开关 */
     animation?: boolean
+    /** 同 Chart：动画时长（毫秒） */
     animationDuration?: number
+    /** 同 Chart：工具栏按钮 */
     toolbar?: ChartProps['toolbar']
+    /** 同 Chart：内置色板预设 */
     palette?: ChartProps['palette']
+    /** 同 Chart：标注线（均值线/目标线/警戒线） */
     markLine?: ChartProps['markLine']
+    /** 同 Chart：标注区域（高亮区间） */
     markArea?: ChartProps['markArea']
+    /** 下半部分表格列定义（DataTable Column 结构） */
     columns?: Column[]
+    /** 下半部分表格数据 */
     tableData?: Record<string, any>[]
+    /** 显示表格区（初始值，之后由按钮控制；默认开） */
     showTable?: boolean
+    /** 表格区标题 */
     tableTitle?: string
+    /** 表格行键字段（默认 'rank'） */
     rowKey?: string
+    /** 图表区占容器高度比例 0-1（默认 0.45，其余给表格） */
     chartRatio?: number
   }>(),
   {
@@ -73,7 +104,9 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   // echarts 主入口导出这两个类型（UMD re-export types/dist/echarts）
+  /** 图表元素点击（透传 ECharts 事件） */
   'chart-click': [params: ECElementEvent]
+  /** ECharts 实例就绪 */
   'chart-ready': [instance: ECharts]
 }>()
 

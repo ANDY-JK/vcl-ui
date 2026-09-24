@@ -13,15 +13,22 @@ const t = useT()
 const props = withDefaults(
   defineProps<
     BaseChartProps & {
+      /** 工具栏按钮（saveAsImage 保存图片 / zoom 区域缩放 / dataView 数据视图），传 false 全关 */
       toolbar?: Array<'saveAsImage' | 'zoom' | 'dataView'> | false
     }
   >(),
   {
+    /** 原生 ECharts option（必传，null 时渲染空态） */
     option: null,
+    /** 加载态（showLoading 蒙层） */
     loading: false,
+    /** 空数据文案 */
     emptyText: '',
+    /** 容器高（默认 '100%' 随父容器） */
     height: '100%',
+    /** 容器宽（默认 '100%'） */
     width: '100%',
+    /** ECharts 内置 dark 主题 */
     darkMode: false,
     toolbar: () => ['saveAsImage', 'zoom'],
   },

@@ -157,21 +157,37 @@ export interface ChartData {
 
 /** Chart.vue Props */
 export interface ChartProps {
+  /** 图表类型（line/bar/pie 等，见 ChartType）；传 option 时可省略 */
   type?: ChartType
+  /** 原生 ECharts option（优先级最高，传入后覆盖快捷 props 组装） */
   option?: EChartsOption
+  /** 快捷数据：单序列数值数组 / 多序列二维数组 / 饼图 { name, value } 列表 / ChartData 完整结构 */
   data?: ChartData | number[] | number[][] | { name: string; value: number }[]
+  /** X 轴类目（快捷模式的类目轴） */
   categories?: string[]
+  /** 快捷多序列（name + data，与 categories 对齐） */
   series?: ChartSeriesItem[]
+  /** 容器高（数字 px 或 CSS 值，默认 '100%' 随父容器） */
   height?: number | string
+  /** 容器宽（默认 '100%'） */
   width?: number | string
+  /** 暗色主题（ECharts 内置 dark 色板，独立于全局 useTheme） */
   darkMode?: boolean
+  /** 自定义系列颜色（覆盖内置色板） */
   colors?: string[]
+  /** 加载态（showLoading 蒙层） */
   loading?: boolean
+  /** 空数据文案 */
   emptyText?: string
+  /** 图表标题 */
   title?: string
+  /** 显示图例（默认开） */
   showLegend?: boolean
+  /** 显示悬浮提示（默认开） */
   showTooltip?: boolean
+  /** 折线平滑（默认开） */
   smooth?: boolean
+  /** 折线数据点符号（默认开） */
   showSymbol?: boolean
   // ---- 第3层「高级控制」新增 ----
   /** 在数据点上显示数值标签 */
@@ -204,11 +220,17 @@ export interface ChartProps {
 
 /** BaseChart.vue Props */
 export interface BaseChartProps {
+  /** 原生 ECharts option（必传，null 时渲染空态） */
   option: EChartsOption | null
+  /** 加载态（showLoading 蒙层） */
   loading?: boolean
+  /** 空数据文案 */
   emptyText?: string
+  /** 容器高（默认 '100%' 随父容器） */
   height?: number | string
+  /** 容器宽（默认 '100%'） */
   width?: number | string
+  /** ECharts 内置 dark 主题 */
   darkMode?: boolean
 }
 
