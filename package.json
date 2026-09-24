@@ -131,7 +131,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "peerDependencies": {
     "echarts": "^5.0.0 || ^6.0.0",
