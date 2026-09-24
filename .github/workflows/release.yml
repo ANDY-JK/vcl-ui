@@ -68,6 +68,21 @@ jobs:
       - name: Check i18n parity
         run: npm run check:i18n
 
+      # demo 文档表对账：表里不许列组件没有的 prop（与 ci.yml 同构，M14）
+      - name: Check demo props tables
+        run: npm run check:demo-props
+
+      # CSS 设计令牌断档自检：var() 引用未声明令牌必红
+      - name: Check CSS tokens
+        run: npm run check:css-tokens
+
+      # 单元测试（带覆盖率地板）+ 按域覆盖防回退；coverage-domains 依赖前一步的 json 报告
+      - name: Unit tests (with coverage floor)
+        run: npm run test:unit
+
+      - name: Domain coverage floors
+        run: npm run check:coverage-domains
+
       # 用金丝雀值重建一次，证明构建期 env 不会烧进产物；随后清掉，正式构建不带任何 env 值
       - name: Verify env values are not inlined into dist
         env:
