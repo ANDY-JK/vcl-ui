@@ -7,7 +7,7 @@
 
 ## ✨ 特性
 
-- **14 个组件域、60+ 组件**：从按钮到低代码表单设计器，开箱即用
+- **13 个组件域、60+ 组件**：从按钮到低代码表单设计器，开箱即用
 - **TypeScript 优先**：全量类型定义，`vue-tsc` 零错误
 - **国际化内置**：基于 vue-i18n，`zh-CN` / `en-US` 双语，`setLocale()` 一键切换
 - **无障碍（a11y）**：焦点陷阱、ARIA 语义、标签关联，面向 WCAG 2.1/2.2 AA
@@ -102,6 +102,7 @@ const handleClick = () => console.log('clicked')
 | `amap`          | AmapWidget + setAmapKey 等工具                                      | 高德地图   |
 | `route-planner` | RouteMap / RouteResult / StorePanel …                               | 路线规划   |
 | `form-builder`  | FormDesigner / FormBuilder / FormCollect / FormRenderer             | 低代码表单 |
+| `wc`            | vc-button / vc-input / vc-toast 等 15 个 Custom Elements             | Web Components 封装 |
 
 > 组件用法与可运行示例都在 demo 站点里：`npm run dev` 后打开 http://localhost:3721 ，每个组件一页，含 Props 表与交互示例。
 

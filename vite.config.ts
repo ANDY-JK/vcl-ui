@@ -19,7 +19,7 @@ function normalizeVueSpecifier(filePath: string, content: string): string {
 }
 
 // ==================== 多入口构建（Q3） ====================
-// 主入口 + 14 个域 barrel 各自独立成包：消费方 `import { Button } from 'vcl-ui/basic'`
+// 主入口 + 13 个域 barrel 各自独立成包：消费方 `import { Button } from 'vcl-ui/basic'`
 // 只加载 basic 与共享 core-chunk，不再整包引入（此前所有 ./<domain> 子路径都指向
 // 同一个 vcl-ui.js，运行时零隔离）。
 // 注意两个多入口特有的坑：
