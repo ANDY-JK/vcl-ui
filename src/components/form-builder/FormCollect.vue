@@ -76,6 +76,7 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
+  /** 收集提交：[表单数据, 收集记录（含时间戳/指纹等）]（落库由内置存储完成，宿主可接此上报） */
   submit: [data: Record<string, unknown>, record: CollectRecord]
 }>()
 

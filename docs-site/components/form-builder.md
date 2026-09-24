@@ -37,42 +37,42 @@
 | `registerField` | 注册自定义字段类型使用示例：```tsimport { registerField } from '@/components/form-builder'import MyRichText from './MyRichText.vue'registerField({  type: 'rich-text',  category: 'input',       // 复用 Input 分支（需有 v-model + label + props）  component: MyRichText,  componentType: 'rich-text',  isLayout: false,  label: '自定义富文本',   // 原始文案或 i18n key 均可  icon: 'type',  group: '高级字段',})```注册后可在 FormSchema 中使用 `type: 'rich-text'` 字段 |
 | `isFieldRegistered` | 判断字段类型是否已注册 |
 | `toDynamicFormSchema` | 旧版 DynamicForm 配置 → 新版 FormSchema |
-| `contractCollectionSchema` | — |
-| `containerDemoNodes` | — |
-| `containerDemoMeta` | — |
-| `storeReportSchema` | — |
-| `getFieldTypes` | — |
-| `createField` | — |
-| `genFieldId` | — |
-| `genRecordId` | — |
-| `collectStorageKey` | — |
-| `toFormSchema` | — |
-| `parseCascaderOptions` | — |
-| `getTypeLabel` | — |
-| `flattenNodes` | — |
-| `findNode` | — |
-| `findParent` | — |
-| `updateNodeInTree` | — |
-| `removeNodeFromTree` | — |
-| `insertNode` | — |
-| `insertChildNode` | — |
-| `moveNodeInTree` | — |
-| `isContainerNode` | — |
-| `isFieldNode` | — |
-| `migrateFieldsToNodes` | — |
-| `CONTAINER_TYPES` | — |
-| `FIELD_NODE_TYPES` | — |
-| `createLocalFormStore` | — |
+| `contractCollectionSchema` | 预置模板：合同收集表单 Schema（返利函/合同类场景的字段编排） |
+| `containerDemoNodes` | 预置模板：容器演示节点树（grid/flex/tabs/collapse/steps 五类容器的编排示例） |
+| `containerDemoMeta` | 预置模板：容器演示的表单元信息（标题/描述等 meta） |
+| `storeReportSchema` | 预置模板：门店提报表单 Schema（陈列检查/提报类场景的字段编排） |
+| `getFieldTypes` | 节点类型注册表 — 从 fieldRegistry 派生（单一事实源）新增/修改字段类型只需改 fieldRegistry，此处自动同步。label/group 在调用时翻译（fieldRegistry 存 i18n key），函数形式保证响应语言切换。 |
+| `createField` | 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） |
+| `genFieldId` | 生成节点实例 id |
+| `genRecordId` | 生成收集记录 id |
+| `collectStorageKey` | 收集记录存储 key：基于字段结构指纹。 仅用于无表单 id 的场景（FormCollect 独立嵌入、完整分享码）， 已保存表单一律用 formCollectStorageKey(id)——指纹相同会让不同表单共用一个数据桶。 |
+| `toFormSchema` | 设计数据 → FormSchema（FormBuilder 可渲染格式）v3 变化：- 支持 nodes 树形结构（优先）- 兼容旧版 fields 平铺结构- 容器节点转换为字段的 container 归属信息（不再丢弃） |
+| `parseCascaderOptions` | 解析 cascader JSON 文本；失败返回 null（原在 domain.ts，随 schema 转换职责迁入本文件） |
+| `getTypeLabel` | 节点类型 → 中文标签（委托 fieldRegistry，单一事实源） |
+| `flattenNodes` | 深度优先遍历节点树，返回所有节点（扁平化） |
+| `findNode` | 查找节点（深度优先） |
+| `findParent` | 查找节点的父节点和索引 |
+| `updateNodeInTree` | 不可变更新：替换节点树中指定 id 的节点 |
+| `removeNodeFromTree` | 不可变更新：删除节点树中指定 id 的节点 |
+| `insertNode` | 不可变更新：在指定位置插入节点@param nodes 节点列表@param node 要插入的节点@param index 插入位置（-1 或超出长度则追加到末尾） |
+| `insertChildNode` | 不可变更新：在容器节点的 children 中插入子节点 |
+| `moveNodeInTree` | 不可变更新：移动节点（从原位置移到新位置） |
+| `isContainerNode` | 判断节点是否为容器节点 |
+| `isFieldNode` | 判断节点是否为字段节点（非容器） |
+| `migrateFieldsToNodes` | v2 → v3 兼容：将旧版 DesignerField[] 转为 DesignerNode[] |
+| `CONTAINER_TYPES` | 获取所有容器类型 |
+| `FIELD_NODE_TYPES` | 获取所有字段类型（非容器） |
+| `createLocalFormStore` | 创建 localStorage 形态的表单存储（草稿/表单列表/收集数据全走本机） |
 | `createCloudFormStore` | 创建云端 FormStore（Supabase Storage bucket 存 JSON 对象）。 |
 | `createFormStore` | 工厂：按模式创建 store（配置非法时抛错，调用方决定降级） |
 | `getActiveFormStore` | 获取全局活动 FormStore：首次调用按持久化偏好初始化（云端配置缺失时诚实回退本地） |
 | `setActiveFormStore` | 覆盖全局活动 FormStore（设计器切换存储方式 / 宿主注入自定义实现） |
 | `loadStoreMode` | 读取存储方式偏好（无记录/非法值回退 local） |
-| `saveStoreMode` | — |
+| `saveStoreMode` | 持久化存储模式选择（local / cloud，启动时恢复） |
 | `loadCloudConfig` | 读取云端配置偏好（未配置返回 null） |
-| `saveCloudConfig` | — |
+| `saveCloudConfig` | 持久化云端存储配置（传 null 清除，回落本地模式） |
 | `envCloudConfig` | 云端配置 env 兜底：仅开发期生效（VITE_SUPABASE_* 已配置时「云端」选项免手填），生产构建恒为 null |
-| `useFormManager` | — |
+| `useFormManager` | 表单管理编排：存储实现选择（宿主注入优先）、列表/草稿/收集数据的增删改查与落库调度 |
 | `encodeShareCode` | FormDesign → 分享码（内容不加密：仅传输编码，敏感表单请勿外发） |
 | `decodeShareCode` | 分享码 → FormDesign；非分享码/损坏内容返回 null（导入面板据此走 JSON 路径或报错） |
 | `SHARE_CODE_PREFIX` | — |
@@ -97,9 +97,9 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:nodes'` | `nodes: DesignerNode[]` | — |
-| `'update:fields'` | `fields: DesignerNode[]` | — |
-| `'update:meta'` | `meta: FormMeta` | — |
+| `'update:nodes'` | `nodes: DesignerNode[]` | v-model:nodes——设计器节点树变化（拖拽/编辑/删除后抛全量） |
+| `'update:fields'` | `fields: DesignerNode[]` | v-model:fields——旧版字段列表视图（与 nodes 同源同步） |
+| `'update:meta'` | `meta: FormMeta` | v-model:meta——表单元信息变化（标题/描述） |
 | `saved` | `item: FormMetaItem` | 保存成功（新建或覆盖）后通知宿主，携带存储层返回的表单元信息 |
 
 ## `FormBuilder`
@@ -121,7 +121,7 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: FormData` | — |
+| `'update:modelValue'` | `v: FormData` | v-model——表单数据（受控回写） |
 | `submit` | `v: FormData` | 提交（校验通过后触发） |
 | `change` | `v: FormData` | 数据变化 |
 | `validate` | `isValid: boolean` | 校验结果变化 |
@@ -146,7 +146,7 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: unknown` | — |
+| `'update:modelValue'` | `v: unknown` | v-model——受控值（渲染字段的当前数据） |
 | `change` | `无` | 值变化（透传原子组件 change，供 FormBuilder 执行事件动作） |
 
 ## `FieldError`
@@ -176,7 +176,7 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `submit` | `data: Record<string, unknown>, record: CollectRecord` | — |
+| `submit` | `data: Record<string, unknown>, record: CollectRecord` | 收集提交：[表单数据, 收集记录（含时间戳/指纹等）]（落库由内置存储完成，宿主可接此上报） |
 
 ## `FormTargetCollect`
 

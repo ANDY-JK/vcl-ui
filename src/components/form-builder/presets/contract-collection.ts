@@ -16,6 +16,7 @@ import { buildStoreCollectionSchema, storePhotoProps } from './store-profile'
 
 const t = useT()
 
+/** 预置模板：合同收集表单 Schema（返利函/合同类场景的字段编排） */
 export function contractCollectionSchema(): FormSchema {
   return buildStoreCollectionSchema({
     titleKey: 'fbPre.ctTitle',

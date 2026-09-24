@@ -83,6 +83,7 @@ function write(key: string, value: unknown): void {
   }
 }
 
+/** 创建 localStorage 形态的表单存储（草稿/表单列表/收集数据全走本机） */
 export function createLocalFormStore(): FormStore {
   function listForms(): FormMetaItem[] {
     return migrateCollectKeys(read<FormMetaItem[]>(FORMS_KEY, []))
@@ -366,6 +367,7 @@ export function loadStoreMode(): FormStoreMode {
   }
 }
 
+/** 持久化存储模式选择（local / cloud，启动时恢复） */
 export function saveStoreMode(mode: FormStoreMode): void {
   try {
     localStorage.setItem(MODE_KEY, mode)
@@ -387,6 +389,7 @@ export function loadCloudConfig(): FormCloudConfig | null {
   }
 }
 
+/** 持久化云端存储配置（传 null 清除，回落本地模式） */
 export function saveCloudConfig(cfg: FormCloudConfig | null): void {
   try {
     if (cfg) localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(cfg))

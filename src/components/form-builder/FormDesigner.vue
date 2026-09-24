@@ -84,8 +84,11 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
+  /** v-model:nodes——设计器节点树变化（拖拽/编辑/删除后抛全量） */
   'update:nodes': [nodes: DesignerNode[]]
+  /** v-model:fields——旧版字段列表视图（与 nodes 同源同步） */
   'update:fields': [fields: DesignerNode[]]
+  /** v-model:meta——表单元信息变化（标题/描述） */
   'update:meta': [meta: FormMeta]
   /** 保存成功（新建或覆盖）后通知宿主，携带存储层返回的表单元信息 */
   saved: [item: FormMetaItem]
@@ -254,23 +257,14 @@ const manager = useFormManager({
 provide(FORM_MANAGER_KEY, manager)
 
 // ── 保存 / 分享弹窗 — 逻辑在 useDesignerSave（保存成功后 onSaved 接草稿作废） ──
-const {
-  saveVisible,
-  saveName,
-  openSave,
-  onConfirmSave,
-  shareVisible,
-  shareCode,
-  openShare,
-  copyShare,
-  copyShareLink,
-} = useDesignerSave({
-  getNodes: () => currentNodes.value,
-  getMeta: () => props.meta,
-  manager,
-  onSaved: () => discardDraft(),
-  showTip,
-})
+const { saveVisible, saveName, openSave, onConfirmSave, shareVisible, shareCode, openShare, copyShare, copyShareLink } =
+  useDesignerSave({
+    getNodes: () => currentNodes.value,
+    getMeta: () => props.meta,
+    manager,
+    onSaved: () => discardDraft(),
+    showTip,
+  })
 
 // ══ 导入/导出 — 逻辑在 useFormIO ══
 
@@ -300,18 +294,12 @@ function selectFromOutline(id: string) {
 
 // ══ 删除确认流（容器带子节点 / 多选删除需确认）— 逻辑在 useDesignerRemoveConfirm ══
 
-const {
-  pendingRemoveId,
-  pendingRemoveLabel,
-  pendingRemoveIds,
-  removeNode,
-  onConfirmRemove,
-  onConfirmRemoveBatch,
-} = useDesignerRemoveConfirm({
-  getNodes: () => currentNodes.value,
-  selectedIds,
-  doRemoveNodes,
-})
+const { pendingRemoveId, pendingRemoveLabel, pendingRemoveIds, removeNode, onConfirmRemove, onConfirmRemoveBatch } =
+  useDesignerRemoveConfirm({
+    getNodes: () => currentNodes.value,
+    selectedIds,
+    doRemoveNodes,
+  })
 
 // ══ 键盘快捷键（画布聚焦生效）— 逻辑在 useDesignerShortcuts ══
 

@@ -417,6 +417,16 @@ function namedDoc(file, name, depth = 0) {
       const next = resolveModule(spec, path.dirname(file))
       if (next && fs.existsSync(next)) return namedDoc(next, name, depth + 1)
     }
+    // ③ export * from './x' 聚合桶（无名字清单）：逐个目标找声明
+    const starRe = /export\s*\*\s*from\s*['"]([^'"]+)['"]/g
+    let sm
+    while ((sm = starRe.exec(src))) {
+      const cand = resolveModule(sm[1], path.dirname(file))
+      if (cand && fs.existsSync(cand)) {
+        const d = namedDoc(cand, name, depth + 1)
+        if (d) return d
+      }
+    }
   }
   return doc
 }

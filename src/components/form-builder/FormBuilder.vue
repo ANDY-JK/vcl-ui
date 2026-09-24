@@ -69,6 +69,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** v-model——表单数据（受控回写） */
   'update:modelValue': [v: FormData]
   /** 提交（校验通过后触发） */
   submit: [v: FormData]

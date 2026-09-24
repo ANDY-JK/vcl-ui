@@ -57,6 +57,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  /** v-model——受控值（渲染字段的当前数据） */
   'update:modelValue': [v: unknown]
   /** 值变化（透传原子组件 change，供 FormBuilder 执行事件动作） */
   change: []

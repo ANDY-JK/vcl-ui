@@ -54,6 +54,7 @@ function errText(e: unknown): string {
   return e instanceof Error ? e.message : String(e)
 }
 
+/** 表单管理编排：存储实现选择（宿主注入优先）、列表/草稿/收集数据的增删改查与落库调度 */
 export function useFormManager(host: FormManagerHost) {
   /** 存储实现：宿主注入优先，否则全局活动 store */
   const activeStore = computed<FormStore>(() => host.injectedStore?.() ?? getActiveFormStore())

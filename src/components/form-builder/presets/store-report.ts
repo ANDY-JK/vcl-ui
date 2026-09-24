@@ -51,6 +51,7 @@ const isLng = (v: string) => {
   return undefined
 }
 
+/** 预置模板：门店提报表单 Schema（陈列检查/提报类场景的字段编排） */
 export function storeReportSchema(): FormSchema {
   /** 品牌字段（仅「是否提报=项目店」显示，旧版 salesroom 逻辑） */
   const brand = (key: string, label: string): FormField => ({

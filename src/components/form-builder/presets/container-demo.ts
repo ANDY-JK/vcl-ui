@@ -20,6 +20,7 @@ import { useT } from '@/components/_internal/i18n'
 /** 模块级 t：纯 .ts 文件，各函数直接用 */
 const t = useT()
 
+/** 预置模板：容器演示节点树（grid/flex/tabs/collapse/steps 五类容器的编排示例） */
 export function containerDemoNodes(): DesignerNode[] {
   return [
     // ── grid 容器：基本信息（2 列） ──
@@ -230,6 +231,7 @@ export function containerDemoNodes(): DesignerNode[] {
   ]
 }
 
+/** 预置模板：容器演示的表单元信息（标题/描述等 meta） */
 export function containerDemoMeta(): FormMeta {
   return {
     title: t('fbPre.cdMetaTitle'),
