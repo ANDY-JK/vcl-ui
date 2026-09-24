@@ -62,7 +62,7 @@ const missing = []
 if (SUBSET) {
   // 精简模式：只收库内实际引用的图标名（键保留源码里写的那个名字，别名也直接存几何）
   const subsetSrc = fs.readFileSync(SUBSET_FILE, 'utf8')
-  const names = [...subsetSrc.matchAll(/^  '([a-z0-9-]+)':/gm)].map((m) => m[1])
+  const names = [...subsetSrc.matchAll(/^ {2}'([a-z0-9-]+)':/gm)].map((m) => m[1])
   for (const name of names) {
     const file = pascalToFile.get(toPascal(name))
     const node = file ? await readIconNode(file) : null
@@ -83,7 +83,7 @@ if (SUBSET) {
 
   // 别名 → 规范名（字符串引用）。来源取面板名单 ∪ 源码子集，覆盖用户可能传入的两种名字
   const subsetSrc = fs.readFileSync(SUBSET_FILE, 'utf8')
-  const subsetNames = [...subsetSrc.matchAll(/^  '([a-z0-9-]+)':/gm)].map((m) => m[1])
+  const subsetNames = [...subsetSrc.matchAll(/^ {2}'([a-z0-9-]+)':/gm)].map((m) => m[1])
   const panelNames = JSON.parse(fs.readFileSync(PANEL_FILE, 'utf8'))
   let aliasCount = 0
   for (const name of new Set([...panelNames, ...subsetNames])) {

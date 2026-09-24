@@ -1,7 +1,6 @@
 // useTableEdit composable 行为锁定：单元格选择/编辑/键盘导航/复制粘贴/修改追踪
 // 背景：审计发现该 composable（856 行，全库最大）零直接测试
 import { describe, it, expect, vi } from 'vitest'
-import { ref } from 'vue'
 import { useTableEdit } from '@/components/data/composables/useTableEdit'
 import type { Column } from '@/components/data/composables/types'
 

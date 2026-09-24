@@ -46,16 +46,10 @@ function mountBuilder(schema: FormSchema, data: FormData = {}) {
   })
 }
 
-function fieldInput(wrapper: ReturnType<typeof mountBuilder>, key: string) {
-  const field = wrapper.findAll('.fb-field').find((f) => f.find(`[data-key="${key}"], input`).exists())
-  return field?.find('input')
-}
-
 describe('requiredWhen 条件必填', () => {
   it('条件未触发（type=B）→ reason 不必填，可直接提交', async () => {
     const wrapper = mountBuilder(condSchema())
-    const selects = wrapper.findAll('select')
-    // type 用原生 select 模拟（Select 组件在 jsdom 下渲染 input）——直接改 modelValue 更稳
+    // 不驱动 type 的下拉（Select 在 jsdom 下渲染 input，交互不稳）——直接提交
     await wrapper.find('.fb-form').trigger('submit')
     // 未选类型时 reason 无 requiredWhen 生效，无必填错误
     expect(wrapper.find('.fb-field-error').exists()).toBe(false)
@@ -64,7 +58,6 @@ describe('requiredWhen 条件必填', () => {
 
   it('条件触发（type=A）→ reason 必填拦截提交', async () => {
     const wrapper = mountBuilder(condSchema())
-    wrapper.vm.$data // noop
     // 通过 props 直接驱动 formData：触发 update:modelValue 循环不现实，改用内部 vm 变量
     // @ts-expect-error 测试访问内部状态
     wrapper.vm.formData.type = 'A'

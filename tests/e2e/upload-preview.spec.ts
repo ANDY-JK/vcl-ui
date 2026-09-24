@@ -44,7 +44,6 @@ async function makePng(page: Page, name: string, r: number, g: number, b: number
       ihdr[9] = 2
       const u8 = [137, 80, 78, 71, 13, 10, 26, 10]
       const ihdrC = chunk('IHDR', ihdr)
-      const idatC = chunk('IDAT', new Uint8Array(0))
       // IDAT 用原生 deflate 不可得 → 用无压缩 zlib 块（stored blocks）
       const maxBlock = 65535
       const blocks: Uint8Array[] = []

@@ -96,7 +96,7 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
     const n = Math.min(await btns.count(), 30)
     for (let i = 0; i < n; i++) {
       const b = btns.nth(i)
-      let label = ''
+      let label: string
       try {
         label = (await b.innerText({ timeout: 400 })).trim()
       } catch {

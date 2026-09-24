@@ -1,6 +1,6 @@
 // FormBuilder 挂载级行为锁定：校验失败拦截 / 提交载荷 / 隐藏字段不提交 / 步骤模式
 // 背景：审计发现 FormBuilder（962 行动态表单引擎）挂载级 0 测试，仅 composable 间接覆盖
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import FormBuilder from '@/components/form-builder/FormBuilder.vue'
 import type { FormSchema, FormData } from '@/components/form-builder/types'

@@ -16,7 +16,7 @@
  * 注释里的示例 var(--xxx) 会先剥注释再扫；JS 动态生成的样式串（如 html2canvas
  * onclone 复制计算值）不含静态 var() 引用，天然不在引用集内。
  *
- * 用法：node scripts/check-css-tokens.mjs　（接进 quality-check 之前先用 npm run check:css-tokens 观察）
+ * 用法：node scripts/check-css-tokens.mjs（接进 quality-check 之前先用 npm run check:css-tokens 观察）
  */
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { join, resolve } from 'path'

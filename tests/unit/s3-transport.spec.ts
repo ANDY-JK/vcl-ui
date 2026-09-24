@@ -34,9 +34,6 @@ describe('S3Transport · 签名原语（KAT 已知答案）', () => {
 })
 
 describe('S3Transport · aws4 参考实现交叉验证', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const aws4 = require('aws4')
-
   it('LIST 签名经真实服务端背书（spike 实测 200）；此处锁定结构 + 确定性', () => {
     const tr = new S3Transport(CFG, () => FIXED)
     // presign（同步路径）结构断言：同输入同输出（确定性），参数齐全

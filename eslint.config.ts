@@ -95,6 +95,11 @@ export default [
       'vue/multiline-html-element-content-newline': 'off',
       'vue/max-attributes-per-line': 'off',
       'vue/html-self-closing': 'off',
+      // 缩进与闭合括号换行同样交给 Prettier 单一权威：这两条开着会产生约 1000 条与
+      // Prettier 结果相冲的 warning，且 eslint --fix 会按它们重排全 src（「lint:fix
+      // 跑完整片文件变更」的根源）。格式以 Prettier 为准，ESLint 不再插手。
+      'vue/html-indent': 'off',
+      'vue/html-closing-bracket-newline': 'off',
       'vue/attributes-order': 'warn',
       // ⛔ 防复发（error 级，CI 的 --quiet 只保留 error，故必然生效）：
       // Vite 会把 import.meta.env.VITE_* 静态替换为字面量，直接读等于把构建期密钥烧进 dist。
@@ -108,6 +113,16 @@ export default [
             '禁止直接读 import.meta.env.VITE_*（会把密钥内联进 dist）。改用 @/components/_internal/env-guard 的 envValue(key)。',
         },
       ],
+    },
+  },
+
+  // 测试不进构建产物：s3-real 等真实云端集成用例经 vite 的 loadEnv 在运行时读 .env.local
+  // 取真实凭证是设计行为（见 spec 头注释），env-guard 那条「防密钥内联进 dist」的
+  // no-restricted-syntax 只对 src（产物来源）生效，tests 侧豁免。
+  {
+    files: ['tests/**'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
 

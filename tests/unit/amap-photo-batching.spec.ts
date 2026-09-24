@@ -46,7 +46,7 @@ describe('batchFetchPoiPhotos 名称兜底', () => {
     let peak = 0
     vi.stubGlobal(
       'fetch',
-      vi.fn(async (url: string) => {
+      vi.fn(async () => {
         inflight++
         peak = Math.max(peak, inflight)
         await new Promise((r) => setTimeout(r, 1))

@@ -13,7 +13,8 @@ const VERBOSE = process.argv.includes('--verbose')
 const walk = (d, o = []) => {
   for (const f of fs.readdirSync(d, { withFileTypes: true })) {
     const p = path.join(d, f.name)
-    f.isDirectory() ? walk(p, o) : o.push(p)
+    if (f.isDirectory()) walk(p, o)
+    else o.push(p)
   }
   return o
 }

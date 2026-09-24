@@ -127,7 +127,7 @@ while (queue.length) {
   const cur = queue.pop()
   if (reached.has(cur)) continue
   reached.add(cur)
-  let src = ''
+  let src
   try {
     src = readFileSync(cur, 'utf8')
   } catch {

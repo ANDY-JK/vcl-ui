@@ -58,7 +58,7 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
-        run: npx eslint src --quiet
+        run: npx eslint src tests scripts --quiet
 
       # 常量来源自检（断点单源一致 / 无字面量断点 / @media 登记）
       - name: Check constants

@@ -95,7 +95,9 @@ describe('useTableCore 大数据性能基线', () => {
 
     const t0 = performance.now()
     core.toggleSort(cols[1])
-    core.displayData.value // 触发排序计算
+    // 读取 computed 触发求值，纳入计时窗口
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    core.displayData.value
     const t1 = performance.now()
     // eslint-disable-next-line no-console
     console.log(`[perf] 客户端排序: ${(t1 - t0).toFixed(1)}ms`)
