@@ -11,8 +11,10 @@ import NavItem from './NavItem.vue'
 const t = useT()
 
 const props = defineProps<{
-  /** 侧栏折叠态（收起时仅显示图标） */ collapsed?: boolean
-  /** 导航树（不传渲染空态） */ items?: NavNode[]
+  /** 侧栏折叠态（收起时仅显示图标） */
+  collapsed?: boolean
+  /** 导航树（不传渲染空态） */
+  items?: NavNode[]
 }>()
 
 const router = useRouter()

@@ -31,7 +31,10 @@ const props = withDefaults(
   },
 )
 
-const emit = defineEmits<{ /** 点击退出登录（导航跳转由宿主自理） */ logout: [] }>()
+const emit = defineEmits<{
+  /** 点击退出登录（导航跳转由宿主自理） */
+  logout: []
+}>()
 
 const router = useRouter()
 const route = useRoute()
