@@ -188,6 +188,10 @@ export default defineConfig({
         },
       },
     },
+    // 域级 CSS（M7）：lib 模式默认强制 cssCodeSplit=false（源码 cssCodeSplit: !raw.lib，
+    // mergeWithDefaults 允许显式 true 覆盖）。开启后按 chunk 出 CSS——各域入口的样式
+    // 落到自己的 chunk CSS 里，tokens.css 等根级共享样式仍归 core-chunk（见 manualChunks）。
+    cssCodeSplit: true,
     // 清空 dist
     emptyOutDir: true,
   },

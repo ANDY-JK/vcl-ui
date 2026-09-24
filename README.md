@@ -66,8 +66,10 @@ import { Button } from 'vcl-ui/basic'
 import { Input, Select } from 'vcl-ui/form'
 ```
 
-> 样式目前仍是单个全量 `vcl-ui.css`（各域共用一份）；按域拆分 CSS 已在路线图上，
-> 落地前「一次引入全量 CSS」的口径不变。
+> 样式默认「一次引入全量 `vcl-ui.css`」即可。按域引入且有打包依赖时，也可引域自包含 CSS
+> （= 共享令牌 + 该域样式）：`import 'vcl-ui/dist/css/data.css'`——13 个域各有对应文件，
+> 引了域 CSS 就不必再引全量。注意：全量 CSS 产物按 chunk 碎片组装于 build 后
+> （`scripts/emit-css.mjs`），改动构建配置时留意该脚本的映射守卫。
 
 ### 基本使用
 
