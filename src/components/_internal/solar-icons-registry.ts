@@ -11,7 +11,7 @@
  * ⚠️ 性能：solar-icons-data.json 约 235KB，采用动态 import 拆分为独立 chunk，
  *    仅在 provider='solar' 时按需加载，避免随 IconSvg（默认 lucide）打入主包。
  */
-import { addCollection, iconExists } from '@iconify/vue'
+import { addCollection, iconLoaded } from '@iconify/vue'
 
 let registered = false
 let pending: Promise<void> | null = null
@@ -21,7 +21,7 @@ export function ensureSolarIcons(): Promise<void> {
   if (registered) return Promise.resolve()
   if (pending) return pending
   pending = import('./solar-icons-data.json').then(({ default: solarData }) => {
-    if (!iconExists('solar:full-screen-linear')) {
+    if (!iconLoaded('solar:full-screen-linear')) {
       addCollection(solarData as never)
     }
     registered = true
@@ -36,5 +36,5 @@ export function isSolarReady(): boolean {
 
 /** 检查某个 solar 图标是否在本地数据中存在（会触发异步加载） */
 export function hasSolarIcon(iconName: string): Promise<boolean> {
-  return ensureSolarIcons().then(() => iconExists(`solar:${iconName}`))
+  return ensureSolarIcons().then(() => iconLoaded(`solar:${iconName}`))
 }
