@@ -18,8 +18,11 @@ import { BP_MD, BP_LG } from '@/components/_internal/breakpoints'
 
 const props = withDefaults(
   defineProps<{
+    /** 侧栏导航树（NavNode[]；不传时渲染空态，不渲染演示菜单） */
     navItems?: NavNode[]
+    /** 侧栏 Logo 文字（默认用内置 i18n） */
     logoText?: string
+    /** 顶栏显示的用户名 */
     username?: string
   }>(),
   {
@@ -28,7 +31,7 @@ const props = withDefaults(
   },
 )
 
-const emit = defineEmits<{ logout: [] }>()
+const emit = defineEmits<{ /** 点击退出登录（导航跳转由宿主自理） */ logout: [] }>()
 
 const router = useRouter()
 const route = useRoute()
@@ -281,7 +284,9 @@ function onProgressMouseUp() {
 
       <div class="vcl-content-bottombar">
         <button v-if="nav.prev" class="vcl-nav-btn" @click="goDemo(nav.prev.route!)">
-          <IconSvg type="arrow-left" size="sm" /><span class="vcl-toolbar-label" :title="navLabel(nav.prev.label)">{{ navLabel(nav.prev.label) }}</span>
+          <IconSvg type="arrow-left" size="sm" /><span class="vcl-toolbar-label" :title="navLabel(nav.prev.label)">{{
+            navLabel(nav.prev.label)
+          }}</span>
         </button>
         <span v-else class="vcl-nav-btn is-empty" />
 

@@ -18,10 +18,15 @@ const t = useT()
 
 const props = withDefaults(
   defineProps<{
+    /** 语义色：danger 危险操作（默认）| warning 谨慎 | primary 常规确认 */
     variant?: 'danger' | 'warning' | 'primary'
+    /** 正文消息 */
     message: string
+    /** 确认按钮 loading */
     loading?: boolean
+    /** 确认按钮文字（空串用内置 i18n，语言切换实时跟随） */
     confirmText?: string
+    /** 取消按钮文字（空串用内置 i18n） */
     cancelText?: string
   }>(),
   {
@@ -36,7 +41,9 @@ const effConfirmText = computed(() => props.confirmText ?? t('confirmModal.confi
 const effCancelText = computed(() => props.cancelText ?? t('confirmModal.cancel'))
 
 const emit = defineEmits<{
+  /** 点击确认 */
   confirm: []
+  /** 点击取消 */
   cancel: []
 }>()
 

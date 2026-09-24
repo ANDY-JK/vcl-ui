@@ -6,11 +6,17 @@ import type { CSSProperties } from 'vue'
 interface Props {
   /** 排列方向：'row'/'column'（Flex 原生）或 'horizontal'/'vertical'（Space 兼容） */
   direction?: 'row' | 'column' | 'horizontal' | 'vertical'
+  /** 主轴对齐 */
   justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'
+  /** 交叉轴对齐 */
   align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline'
+  /** 子项间距（CSS 间距值，默认令牌 --space-2） */
   gap?: string
+  /** 允许换行 */
   wrap?: boolean
+  /** 自身 flex 值（默认 '1' 撑满剩余空间） */
   flex?: string
+  /** 行内 flex（inline-flex） */
   inline?: boolean
 }
 

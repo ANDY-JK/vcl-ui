@@ -48,6 +48,7 @@ export function isNodeActive(node: NavNode, currentPath: string, router: Router)
   return false
 }
 
+/** demo 站默认导航树：13 域全组件的分类菜单（消费方应传自己的 navItems 覆盖） */
 export const navTree: NavNode[] = [
   // ════════════════════════════════════════
   // 一、数据展示 — 表格/列表/树/图片等数据呈现

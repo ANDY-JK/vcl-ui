@@ -10,7 +10,10 @@ import NavItem from './NavItem.vue'
 
 const t = useT()
 
-const props = defineProps<{ collapsed?: boolean; items?: NavNode[] }>()
+const props = defineProps<{
+  /** 侧栏折叠态（收起时仅显示图标） */ collapsed?: boolean
+  /** 导航树（不传渲染空态） */ items?: NavNode[]
+}>()
 
 const router = useRouter()
 const route = useRoute()
@@ -105,12 +108,7 @@ const effectiveExpanded = computed(() => {
         :aria-label="t('appLayout.searchPlaceholder')"
         @keydown.esc="query = ''"
       />
-      <button
-        v-if="query"
-        class="nav-search-clear"
-        :aria-label="t('appLayout.searchClear')"
-        @click="query = ''"
-      >
+      <button v-if="query" class="nav-search-clear" :aria-label="t('appLayout.searchClear')" @click="query = ''">
         <IconSvg type="x" size="sm" color="currentColor" />
       </button>
     </div>

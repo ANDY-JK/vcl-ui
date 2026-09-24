@@ -25,12 +25,19 @@ interface SelectItem {
 }
 
 interface Props {
+  /** 显隐（v-model:visible） */
   visible: boolean
+  /** 弹窗标题 */
   title?: string
+  /** 模式：default 自由内容 | confirm 确认框 | form 表单 | detail 明细 | select 选择 */
   modalType?: 'default' | 'confirm' | 'form' | 'detail' | 'select'
+  /** 尺寸档位（默认 'md'） */
   size?: 'sm' | 'md' | 'lg' | 'xl'
+  /** 显示关闭按钮（默认开） */
   closable?: boolean
+  /** 点遮罩关闭（默认开） */
   maskClosable?: boolean
+  /** 遮罩 z-index 覆盖 */
   zIndex?: number | string
   /** 设为 true 时不参与全局弹窗互斥管理（组件内部弹窗用） */
   internal?: boolean
@@ -40,15 +47,23 @@ interface Props {
    */
   mutexScope?: string
   // confirm 模式（委托给 ConfirmModal）
+  /** confirm 模式：正文消息 */
   confirmMessage?: string
+  /** confirm 模式：语义色 */
   confirmVariant?: 'warning' | 'danger' | 'info' | 'success'
+  /** confirm 模式：危险操作（实心红按钮） */
   confirmDanger?: boolean
+  /** confirm 模式：确认按钮 loading */
   confirmLoading?: boolean
   // detail 模式
+  /** detail 模式：键值对明细列表 */
   detailItems?: DetailItem[]
   // select 模式
+  /** select 模式：候选项 */
   selectItems?: SelectItem[]
+  /** select 模式：受控选中值 */
   selectValue?: (string | number)[]
+  /** select 模式：允许多选 */
   selectMultiple?: boolean
 }
 
@@ -69,11 +84,17 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
+  /** v-model:visible——显隐 */
   'update:visible': [v: boolean]
+  /** confirm 模式点击确认 / form 模式提交前的通用确认 */
   confirm: []
+  /** 点击取消 / 关闭 */
   cancel: []
+  /** form 模式表单提交 */
   'form-submit': []
+  /** select 模式点确认：[选中值集合] */
   'select-confirm': [v: (string | number)[]]
+  /** 请求关闭（关闭按钮/遮罩/Esc） */
   close: []
 }>()
 
@@ -125,9 +146,7 @@ const confirmModalVariant = computed<'danger' | 'warning' | 'primary'>(() => {
 // 底部区域是否出现 —— 与抽取前的 `$slots.footer || modalType==='form' || modalType==='select'` 等价。
 // ModalShell 只认「有没有 footer 插槽」，所以这里要把 form/select 的内置按钮也算进去，
 // 否则这两个模式的默认按钮会消失。
-const showFooter = computed(
-  () => !!slots.footer || props.modalType === 'form' || props.modalType === 'select',
-)
+const showFooter = computed(() => !!slots.footer || props.modalType === 'form' || props.modalType === 'select')
 </script>
 
 <template>
