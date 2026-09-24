@@ -10,13 +10,18 @@ import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 const t = useT()
 
 const props = defineProps<{
+  /** 门店列表（按城市分组展示，支持搜索过滤） */
   stores: Store[]
 }>()
 
 const emit = defineEmits<{
+  /** 点击「新增门店」 */
   (e: 'add'): void
+  /** 点击某门店的编辑 */
   (e: 'edit', store: Store): void
+  /** 删除单个门店：[门店 id] */
   (e: 'remove', id: string): void
+  /** 切换单个门店跳过态：[门店 id] */
   (e: 'toggle-skip', id: string): void
   /** 跳过/取消跳过整个城市 */
   (e: 'skip-city', city: string): void
@@ -186,7 +191,9 @@ const stats = computed(() => {
               </div>
               <div class="store-meta">
                 <span class="source-tag">{{ sourceLabel(store.coordSource) }}</span>
-                <span v-if="store.contact" class="contact" :title="store.contact + ' ' + store.phone">{{ store.contact }} {{ store.phone }}</span>
+                <span v-if="store.contact" class="contact" :title="store.contact + ' ' + store.phone"
+                  >{{ store.contact }} {{ store.phone }}</span
+                >
               </div>
             </div>
             <div class="store-actions">

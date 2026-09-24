@@ -109,8 +109,11 @@ const props = withDefaults(
     minHeight?: string
 
     // === 内容 ===
+    /** 外部控制加载态（如 API 请求中） */
     loading?: boolean
+    /** 外部注入错误/提示信息 */
     error?: string
+    /** 重置成功提示（非空时切成功态视图） */
     success?: string
   }>(),
   {
@@ -124,7 +127,9 @@ const props = withDefaults(
 // ======================== Emits ========================
 
 const emit = defineEmits<{
+  /** 重置提交：[表单载荷]（宿主调 API） */
   submit: [payload: ResetPasswordPayload]
+  /** 点击「去登录」 */
   'go-login': []
 }>()
 

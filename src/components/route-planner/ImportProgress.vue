@@ -7,8 +7,11 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 
 defineProps<{
+  /** 已完成条数 */
   current: number
+  /** 总条数 */
   total: number
+  /** 进度说明文字（空串用内置 i18n） */
   label?: string
 }>()
 

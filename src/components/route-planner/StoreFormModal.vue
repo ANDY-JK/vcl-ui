@@ -12,12 +12,16 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 
 const props = defineProps<{
+  /** 显隐 */
   visible: boolean
+  /** 编辑目标（null = 新增模式） */
   store?: Store | null
 }>()
 
 const emit = defineEmits<{
+  /** 关闭弹窗（取消/Esc） */
   (e: 'close'): void
+  /** 保存：[完整门店数据]（宿主负责落库） */
   (e: 'save', store: Store): void
 }>()
 
@@ -173,7 +177,12 @@ const fldIds = {
           <div class="form-row form-grid-4">
             <div>
               <label :for="fldIds.f3">{{ t('routePlanner.province') }}</label>
-              <input :id="fldIds.f3" v-model="form.province" type="text" :placeholder="t('routePlanner.provincePlaceholder')" />
+              <input
+                :id="fldIds.f3"
+                v-model="form.province"
+                type="text"
+                :placeholder="t('routePlanner.provincePlaceholder')"
+              />
             </div>
             <div>
               <label :for="fldIds.f4">{{ t('routePlanner.city') }}</label>
@@ -181,7 +190,12 @@ const fldIds = {
             </div>
             <div>
               <label :for="fldIds.f5">{{ t('routePlanner.district') }}</label>
-              <input :id="fldIds.f5" v-model="form.district" type="text" :placeholder="t('routePlanner.districtPlaceholder')" />
+              <input
+                :id="fldIds.f5"
+                v-model="form.district"
+                type="text"
+                :placeholder="t('routePlanner.districtPlaceholder')"
+              />
             </div>
             <div>
               <label :for="fldIds.f6">{{ t('routePlanner.town') }}</label>
@@ -192,22 +206,44 @@ const fldIds = {
           <div class="form-row form-grid-2">
             <div>
               <label :for="fldIds.f7">{{ t('routePlanner.contact') }}</label>
-              <input :id="fldIds.f7" v-model="form.contact" type="text" :placeholder="t('routePlanner.contactPlaceholder')" />
+              <input
+                :id="fldIds.f7"
+                v-model="form.contact"
+                type="text"
+                :placeholder="t('routePlanner.contactPlaceholder')"
+              />
             </div>
             <div>
               <label :for="fldIds.f8">{{ t('routePlanner.phone') }}</label>
-              <input :id="fldIds.f8" v-model="form.phone" type="text" :placeholder="t('routePlanner.phonePlaceholder')" />
+              <input
+                :id="fldIds.f8"
+                v-model="form.phone"
+                type="text"
+                :placeholder="t('routePlanner.phonePlaceholder')"
+              />
             </div>
           </div>
 
           <div class="form-row form-grid-2">
             <div>
               <label :for="fldIds.f9">{{ t('routePlanner.longitudeOptional') }}</label>
-              <input :id="fldIds.f9" v-model.number="form.longitude" type="number" step="0.000001" placeholder="113.123456" />
+              <input
+                :id="fldIds.f9"
+                v-model.number="form.longitude"
+                type="number"
+                step="0.000001"
+                placeholder="113.123456"
+              />
             </div>
             <div>
               <label :for="fldIds.f10">{{ t('routePlanner.latitudeOptional') }}</label>
-              <input :id="fldIds.f10" v-model.number="form.latitude" type="number" step="0.000001" placeholder="28.123456" />
+              <input
+                :id="fldIds.f10"
+                v-model.number="form.latitude"
+                type="number"
+                step="0.000001"
+                placeholder="28.123456"
+              />
             </div>
           </div>
 

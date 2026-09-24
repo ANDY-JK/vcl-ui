@@ -67,8 +67,11 @@ const props = withDefaults(
     minHeight?: string
 
     // === 内容 ===
+    /** 外部控制加载态（如 API 请求中） */
     loading?: boolean
+    /** 外部注入错误/提示信息 */
     error?: string
+    /** 卡片标题（空串用内置 i18n） */
     title?: string
   }>(),
   {
@@ -81,6 +84,7 @@ const props = withDefaults(
 // ======================== Emits ========================
 
 const emit = defineEmits<{
+  /** 登录提交：[用户名 + 密码]（宿主调 API，成功后自行跳转） */
   submit: [payload: { username: string; password: string }]
 }>()
 

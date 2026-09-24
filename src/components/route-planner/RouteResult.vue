@@ -14,8 +14,11 @@ import { DEFAULTS } from './utils/route-planning'
 const t = useT()
 
 const props = defineProps<{
+  /** 规划结果（按天分组的路线视图；null 渲染空态） */
   plan: RoutePlan | null
+  /** 规划计算中 */
   loading: boolean
+  /** 实测驾车数据获取中（enrichDriving 进行时） */
   enriching: boolean
   /** 是否已获取实测驾车数据（用于区分估算/实测标识） */
   hasRealDriving?: boolean

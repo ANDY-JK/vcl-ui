@@ -137,9 +137,13 @@ const props = withDefaults(
     minHeight?: string
 
     // === 内容 ===
+    /** 外部控制加载态（如 API 请求中） */
     loading?: boolean
+    /** 外部注入错误/提示信息 */
     error?: string
+    /** 品牌标题（左侧品牌面板；空串用内置 i18n） */
     brandTitle?: string
+    /** 品牌副标题 */
     brandSubtitle?: string
     /** 是否需要卡密字段 */
     requireCardKey?: boolean
@@ -165,7 +169,9 @@ const props = withDefaults(
 // ======================== Emits ========================
 
 const emit = defineEmits<{
+  /** 注册提交：[表单载荷]（宿主调 API，成功后自行跳转） */
   submit: [payload: RegisterPayload]
+  /** 点击「去登录」 */
   'go-login': []
 }>()
 

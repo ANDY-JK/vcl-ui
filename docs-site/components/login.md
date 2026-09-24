@@ -71,10 +71,10 @@
 | `maxWidth` | `string` | `'960px'` | 否 | 容器最大宽度，CSS 值，默认 960px |
 | `hideBrand` | `boolean` | `false` | 否 | 强制隐藏左侧品牌面板 |
 | `minHeight` | `string` | `'100vh'` | 否 | 容器最小高度，CSS 值，默认 100vh |
-| `loading` | `boolean` | `false` | 否 | — |
-| `error` | `string` | — | 否 | — |
-| `brandTitle` | `string` | — | 否 | — |
-| `brandSubtitle` | `string` | — | 否 | — |
+| `loading` | `boolean` | `false` | 否 | 外部控制加载态（如 API 请求中） |
+| `error` | `string` | — | 否 | 外部注入错误/提示信息 |
+| `brandTitle` | `string` | — | 否 | 品牌标题（左侧品牌面板；空串用内置 i18n） |
+| `brandSubtitle` | `string` | — | 否 | 品牌副标题 |
 | `requireCardKey` | `boolean` | `true` | 否 | 是否需要卡密字段 |
 | `showOptionalFields` | `boolean` | `true` | 否 | 是否显示邮箱 & 手机号字段 |
 | `requireEmail` | `boolean` | `false` | 否 | 邮箱是否必填 |
@@ -84,8 +84,8 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `submit` | `payload: RegisterPayload` | — |
-| `'go-login'` | `无` | — |
+| `submit` | `payload: RegisterPayload` | 注册提交：[表单载荷]（宿主调 API，成功后自行跳转） |
+| `'go-login'` | `无` | 点击「去登录」 |
 
 ### Slots
 
@@ -105,16 +105,16 @@
 | `maxWidth` | `string` | `'960px'` | 否 | 容器最大宽度，CSS 值，默认 960px |
 | `hideBrand` | `boolean` | `false` | 否 | 强制隐藏左侧品牌面板 |
 | `minHeight` | `string` | `'100vh'` | 否 | 容器最小高度，CSS 值，默认 100vh |
-| `loading` | `boolean` | `false` | 否 | — |
-| `error` | `string` | — | 否 | — |
-| `success` | `string` | — | 否 | — |
+| `loading` | `boolean` | `false` | 否 | 外部控制加载态（如 API 请求中） |
+| `error` | `string` | — | 否 | 外部注入错误/提示信息 |
+| `success` | `string` | — | 否 | 重置成功提示（非空时切成功态视图） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `submit` | `payload: ResetPasswordPayload` | — |
-| `'go-login'` | `无` | — |
+| `submit` | `payload: ResetPasswordPayload` | 重置提交：[表单载荷]（宿主调 API） |
+| `'go-login'` | `无` | 点击「去登录」 |
 
 ### Slots
 
@@ -132,15 +132,15 @@
 | --- | --- | --- | --- | --- |
 | `maxWidth` | `string` | `'380px'` | 否 | 卡片最大宽度，CSS 值，默认 380px |
 | `minHeight` | `string` | `'100vh'` | 否 | 容器最小高度，CSS 值，默认 100vh |
-| `loading` | `boolean` | `false` | 否 | — |
-| `error` | `string` | — | 否 | — |
-| `title` | `string` | — | 否 | — |
+| `loading` | `boolean` | `false` | 否 | 外部控制加载态（如 API 请求中） |
+| `error` | `string` | — | 否 | 外部注入错误/提示信息 |
+| `title` | `string` | — | 否 | 卡片标题（空串用内置 i18n） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `submit` | `payload: { username: string; password: string }` | — |
+| `submit` | `payload: { username: string; password: string }` | 登录提交：[用户名 + 密码]（宿主调 API，成功后自行跳转） |
 
 ### Slots
 

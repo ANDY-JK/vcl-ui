@@ -170,7 +170,12 @@ function parseEmits(typeNode, ctx) {
         }
         if (!name) continue
         const rest = member.parameters.slice(1).map((p) => `${p.name.getText()}: ${p.type ? p.type.getText() : 'unknown'}`).join(', ')
-        out.push({ name, payload: compactType(rest || '无'), doc: '' })
+        // 调用签名成员的 JSDoc 同样提取（此前硬编码空串，StorePanel 六事件等文档列恒为「—」）
+        const js = ts.getJSDocCommentsAndTags(member).filter((t) => ts.isJSDoc(t))
+        const doc = js.length
+          ? js[0].getText().replace(/^\/\*\*|\*\/$/g, '').replace(/^\s*\*\s?/gm, '').trim().split('\n')[0]
+          : ''
+        out.push({ name, payload: compactType(rest || '无'), doc })
         continue
       }
     }

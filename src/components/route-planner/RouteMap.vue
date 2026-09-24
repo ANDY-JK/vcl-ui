@@ -21,7 +21,9 @@ const _MAP_READY_TIMEOUT_MS = 15000
 const t = useT()
 
 const props = defineProps<{
+  /** 门店列表（有坐标的门店打点渲染） */
   stores: Store[]
+  /** 规划结果（非空时按天绘制路线顺序连线） */
   plan: RoutePlan | null
 }>()
 
