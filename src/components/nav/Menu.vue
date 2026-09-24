@@ -12,19 +12,28 @@ export type { MenuItem }
 
 const props = withDefaults(
   defineProps<{
+    /** 菜单树（MenuItem：key/label/children） */
     items: MenuItem[]
+    /** 排列方向（默认 vertical，纵向可折叠子级） */
     mode?: 'vertical' | 'horizontal'
+    /** 受控选中项 key */
     selectedKey?: string | number
+    /** 折叠态（纵向：仅显示图标 + 悬停浮层子菜单） */
     collapsed?: boolean
+    /** 允许多个子菜单同时展开（默认关=手风琴） */
     multiple?: boolean
+    /** 嵌套层级（递归子菜单内部用，消费方勿传） */
     level?: number
+    /** 配色：light 浅色 | dark 深色（侧栏内嵌时用） */
     theme?: 'light' | 'dark'
   }>(),
   { mode: 'vertical', multiple: false, level: 0, theme: 'light' },
 )
 
 const emit = defineEmits<{
+  /** 选中菜单项：[MenuItem] */
   select: [item: MenuItem]
+  /** v-model:selectedKey——受控选中 */
   'update:selectedKey': [key: string | number]
 }>()
 
@@ -189,7 +198,9 @@ const levelStyle = computed(() => {
             <span v-if="item.icon" class="menu-item-icon">
               <IconSvg :type="item.icon" size="md" color="currentColor" />
             </span>
-            <span v-show="!(mode === 'vertical' && collapsed)" class="menu-item-label" :title="item.label">{{ item.label }}</span>
+            <span v-show="!(mode === 'vertical' && collapsed)" class="menu-item-label" :title="item.label">{{
+              item.label
+            }}</span>
             <span
               v-if="item.children?.length && !(mode === 'vertical' && collapsed)"
               class="menu-item-chevron"

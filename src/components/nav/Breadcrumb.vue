@@ -8,6 +8,7 @@ import type { Crumb } from './types'
 export type { Crumb }
 
 interface Props {
+  /** 面包屑列表（Crumb：label + 可选 path/to，有路径则渲染为路由链接） */
   items: Crumb[]
   /** 自定义分隔符文本；不传时使用 chevron 图标 */
   separator?: string
@@ -47,7 +48,8 @@ function isExternalHttp(p: string) {
         :href="(item.path || item.to)!"
         :target="isExternalHttp((item.path || item.to)!) ? '_blank' : undefined"
         :rel="isExternalHttp((item.path || item.to)!) ? 'noopener' : undefined"
-      >{{ item.label }}</a>
+        >{{ item.label }}</a
+      >
       <span v-else class="crumb-current" aria-current="page">{{ item.label }}</span>
       <span v-if="separator && idx < items.length - 1" class="crumb-sep-text">{{ separator }}</span>
       <IconSvg v-else-if="idx < items.length - 1" type="chevron-right" size="sm" class="crumb-sep" />

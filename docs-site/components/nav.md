@@ -23,15 +23,15 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `modelValue` | `string \| number` | — | 是 | — |
-| `items` | `TabItem[]` | — | 是 | — |
-| `variant` | `'underline' \| 'pills' \| 'card' \| 'tabbar'` | `'underline'` | 否 | — |
+| `modelValue` | `string \| number` | — | 是 | 受控激活页签值（对应 TabItem 的 value） |
+| `items` | `TabItem[]` | — | 是 | 页签列表（TabItem：value/label/icon） |
+| `variant` | `'underline' \| 'pills' \| 'card' \| 'tabbar'` | `'underline'` | 否 | 形态：underline 下划线（默认）\| pills 药丸 \| card 卡片 \| tabbar 底部标签栏（移动端，带 icon） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: string \| number` | — |
+| `'update:modelValue'` | `v: string \| number` | v-model——切换激活页签 |
 
 ## `TabPanel`
 
@@ -59,9 +59,9 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `steps` | `Step[]` | — | 是 | — |
-| `current` | `number` | — | 是 | — |
-| `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | 否 | — |
+| `steps` | `Step[]` | — | 是 | 步骤列表（Step：title/description/content） |
+| `current` | `number` | — | 是 | 当前步（0 起，小于 0 全部待办、超尾全部完成） |
+| `direction` | `'horizontal' \| 'vertical'` | `'horizontal'` | 否 | 排列方向（默认水平） |
 | `clickable` | `boolean` | `false` | 否 | 是否允许点击步骤跳转 |
 
 ### Events
@@ -78,16 +78,16 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `modelValue` | `number` | — | 是 | — |
-| `total` | `number` | — | 是 | — |
-| `pageSize` | `number` | `10` | 否 | — |
-| `showQuickJumper` | `boolean` | `false` | 否 | — |
+| `modelValue` | `number` | — | 是 | 受控当前页（v-model:modelValue，1 起） |
+| `total` | `number` | — | 是 | 总条数 |
+| `pageSize` | `number` | `10` | 否 | 每页行数（默认 10） |
+| `showQuickJumper` | `boolean` | `false` | 否 | 显示页码快速跳转输入框 |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `'update:modelValue'` | `v: number` | — |
+| `'update:modelValue'` | `v: number` | v-model——页码变化 |
 
 ## `Breadcrumb`
 
@@ -97,7 +97,7 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `items` | `Crumb[]` | — | 是 | — |
+| `items` | `Crumb[]` | — | 是 | 面包屑列表（Crumb：label + 可选 path/to，有路径则渲染为路由链接） |
 | `separator` | `string` | — | 否 | 自定义分隔符文本；不传时使用 chevron 图标 |
 
 ## `Menu`
@@ -108,18 +108,18 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `items` | `MenuItem[]` | — | 是 | — |
-| `mode` | `'vertical' \| 'horizontal'` | `'vertical'` | 否 | — |
-| `selectedKey` | `string \| number` | — | 否 | — |
-| `collapsed` | `boolean` | — | 否 | — |
-| `multiple` | `boolean` | `false` | 否 | — |
-| `level` | `number` | `0` | 否 | — |
-| `theme` | `'light' \| 'dark'` | `'light'` | 否 | — |
+| `items` | `MenuItem[]` | — | 是 | 菜单树（MenuItem：key/label/children） |
+| `mode` | `'vertical' \| 'horizontal'` | `'vertical'` | 否 | 排列方向（默认 vertical，纵向可折叠子级） |
+| `selectedKey` | `string \| number` | — | 否 | 受控选中项 key |
+| `collapsed` | `boolean` | — | 否 | 折叠态（纵向：仅显示图标 + 悬停浮层子菜单） |
+| `multiple` | `boolean` | `false` | 否 | 允许多个子菜单同时展开（默认关=手风琴） |
+| `level` | `number` | `0` | 否 | 嵌套层级（递归子菜单内部用，消费方勿传） |
+| `theme` | `'light' \| 'dark'` | `'light'` | 否 | 配色：light 浅色 \| dark 深色（侧栏内嵌时用） |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `select` | `item: MenuItem` | — |
-| `'update:selectedKey'` | `key: string \| number` | — |
+| `select` | `item: MenuItem` | 选中菜单项：[MenuItem] |
+| `'update:selectedKey'` | `key: string \| number` | v-model:selectedKey——受控选中 |
 

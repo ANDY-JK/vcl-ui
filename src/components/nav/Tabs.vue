@@ -14,8 +14,11 @@ const tabId = useIdSafe('tabs')
 
 // icon 仅在 variant='tabbar' 时渲染，underline/pill 变体静默忽略
 interface Props {
+  /** 受控激活页签值（对应 TabItem 的 value） */
   modelValue: string | number
+  /** 页签列表（TabItem：value/label/icon） */
   items: TabItem[]
+  /** 形态：underline 下划线（默认）| pills 药丸 | card 卡片 | tabbar 底部标签栏（移动端，带 icon） */
   variant?: 'underline' | 'pills' | 'card' | 'tabbar'
 }
 
@@ -23,7 +26,10 @@ const props = withDefaults(defineProps<Props>(), {
   variant: 'underline',
 })
 
-const emit = defineEmits<{ 'update:modelValue': [v: string | number] }>()
+const emit = defineEmits<{
+  /** v-model——切换激活页签 */
+  'update:modelValue': [v: string | number]
+}>()
 
 const tablistRef = ref<HTMLElement | null>(null)
 
@@ -82,7 +88,11 @@ function onKeydown(e: KeyboardEvent) {
       :class="{ active: modelValue === (item.value ?? item.label) }"
       role="tab"
       :aria-selected="modelValue === (item.value ?? item.label)"
-      :aria-controls="registeredPanels.has(item.value ?? item.label) ? `tabpanel-${tabId}-${String(item.value ?? item.label)}` : undefined"
+      :aria-controls="
+        registeredPanels.has(item.value ?? item.label)
+          ? `tabpanel-${tabId}-${String(item.value ?? item.label)}`
+          : undefined
+      "
       @click="emit('update:modelValue', item.value ?? item.label)"
     >
       <IconSvg v-if="item.icon && variant === 'tabbar'" :type="item.icon" size="md" />

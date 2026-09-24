@@ -16,8 +16,11 @@ import type { Step } from './types'
 
 /** 导出以供声明文件引用：不导出会触发 TS4082，本组件的 .d.ts 将无法生成 */
 export interface Props {
+  /** 步骤列表（Step：title/description/content） */
   steps: Step[]
+  /** 当前步（0 起，小于 0 全部待办、超尾全部完成） */
   current: number
+  /** 排列方向（默认水平） */
   direction?: 'horizontal' | 'vertical'
   /** 是否允许点击步骤跳转 */
   clickable?: boolean

@@ -9,9 +9,13 @@ import { calcTotalPages } from './utils/pagination-utils'
 const t = useT()
 
 interface Props {
+  /** 受控当前页（v-model:modelValue，1 起） */
   modelValue: number
+  /** 总条数 */
   total: number
+  /** 每页行数（默认 10） */
   pageSize?: number
+  /** 显示页码快速跳转输入框 */
   showQuickJumper?: boolean
 }
 
@@ -20,7 +24,10 @@ const props = withDefaults(defineProps<Props>(), {
   showQuickJumper: false,
 })
 
-const emit = defineEmits<{ 'update:modelValue': [v: number] }>()
+const emit = defineEmits<{
+  /** v-model——页码变化 */
+  'update:modelValue': [v: number]
+}>()
 
 // pageSize<=0 时按 1 处理，避免 Math.ceil(total/0)=Infinity 导致分页循环无限渲染（逻辑在 pagination-utils）
 const totalPages = computed(() => calcTotalPages(props.total, props.pageSize))
