@@ -55,6 +55,11 @@ import {
   calcTableTotalPages,
 } from './composables/utils'
 import { useTableScreenshot, buildTsv } from './composables/useTableScreenshot'
+import {
+  useFullscreenNodeRelocation,
+  useFullscreenBounds,
+  waitForSidebarCollapse,
+} from './composables/useTableFullscreen'
 import { useTableTooltip } from './composables/useTableTooltip'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
@@ -583,11 +588,6 @@ let _releaseZTop: (() => void) | null = null
 // 全屏切换
 const _isFullscreen = ref(false)
 const _lockedMaxH = ref('')
-const _fullscreenParent = ref<HTMLElement | null>(null)
-const _fullscreenNext = ref<ChildNode | null>(null)
-/** 搬到 body 的那个节点本身：卸载时模板 ref 已被 Vue 置空（setRef 早于 onUnmounted），
- *  必须另存一份裸引用，否则归还路径拿不到节点。 */
-let _fullscreenEl: HTMLElement | null = null
 /** v2（Q5）：onToggleSidebar 回调 prop 收敛为 @toggle-sidebar 事件——宿主联动统一事件面。
  *  有监听=通知宿主收/还侧边栏；无监听=降级 inject('toggleCollapse')（与 v1 语义一致）。
  *  监听在否读 vnode.props：defineEmits 不提供 hasListeners 查询，且调用期判定比 setup 期
@@ -599,16 +599,18 @@ const _toggleCollapse = () => {
   else _injectedToggleCollapse()
 }
 const _sidebarToggledByUs = ref(false)
-let _fsResizeRaf = 0
 /** 进入全屏的等待：_fsSeq 只头发号，_fsPendingRun 记录当前在飞的那个号（0 = 没有在飞）。
  *  为什么要两个数：共享布尔会让"取消后再点"被上一条抢先放行；只留一个自增计数又表达不出
  *  "现在没在等"，于是退出时顺手 ++ 就把按钮变成永久"取消一条不存在的等待"（实测第二次进全屏点不动）。 */
 let _fsSeq = 0
 let _fsPendingRun = 0
-/** 内容区尺寸监听：侧栏收起、父容器变化都不会触发 window resize，
- *  全屏框过去只在进入那一刻量一次 → 动画没跑完就进场，框会一直偏到下次刷新窗口 */
-let _fsBoundsRo: ResizeObserver | null = null
 const _cleanups: (() => void)[] = []
+
+// 全屏机械层下沉 useTableFullscreen.ts：节点搬迁/归还、边界监听（RO+resize 合帧）、
+// 侧栏收起等待（动画优先宽度实测兜底）。Escape 优先级链等业务编排留在本文件。
+const { moveToBody: _moveFullscreenNodeToBody, returnToOrigin: returnFullscreenNode } =
+  useFullscreenNodeRelocation(tableWrapRef)
+const _fsBounds = useFullscreenBounds(tableWrapRef, () => _isFullscreen.value)
 
 /** 放弃进行中的进入全屏，并把被本组件收起的侧栏还原（三条中断路径共用：再次点击 / 退出 / 卸载） */
 function cancelFullscreenEnter() {
@@ -637,44 +639,16 @@ function toggleFullscreen() {
   }
   const run = ++_fsSeq
   _fsPendingRun = run
-  // 先让侧栏收起动画跑完再进场，全屏框量的才是最终边界（过去这里等 250ms，见 _waitForWidthSettle）。
+  // 先让侧栏收起动画跑完再进场，全屏框量的才是最终边界（过去这里等 250ms，见 waitForWidthSettle）。
   // 进场后仍有 ResizeObserver 持续纠正，所以这一步只是让入场观感稳定，不再是唯一的一次测量。
   void _enterFullscreenAfterSettle(needCollapse ? sidebar : null, needCollapse, run)
 }
 
 async function _enterFullscreenAfterSettle(sidebar: HTMLElement | null, needCollapse: boolean, run: number) {
-  if (needCollapse && sidebar) await _waitForCollapseDone(sidebar)
+  if (needCollapse && sidebar) await waitForSidebarCollapse(sidebar)
   if (_fsPendingRun !== run) return // 等待期间被取消/退出/卸载过 → 本条作废，不再改任何状态
   _fsPendingRun = 0
   _isFullscreen.value = true
-}
-/**
- * 把全屏期间挂到 body 下的节点放回原父容器（退出全屏 / 组件卸载共用）。
- * 卸载路径必须走这里：.table-wrap 是根节点的**子**节点，被搬到 body 后 Vue 摘根节点摘不到它，
- * 不放回去就整张表游离在 body 上，组件实例已销毁、再无人持有引用。
- * 此时原父容器已随根节点脱离文档 → "放回去"等于把它请出 body。
- */
-function returnFullscreenNode() {
-  const wrap = _fullscreenEl
-  const parent = _fullscreenParent.value
-  const next = _fullscreenNext.value
-  if (wrap && parent) {
-    // 全屏期间父容器 DOM 可能变动（路由切换/虚拟列表重排）导致快照失效：
-    // 快照节点已不在原父容器内时回退为 append（仍是原父容器内，位置次要于不丢节点）
-    if (next && next.parentNode === parent) parent.insertBefore(wrap, next)
-    else parent.appendChild(wrap)
-  } else if (wrap?.parentNode === document.body) {
-    wrap.remove() // 原父容器快照也没了：至少别把全屏框留在页面上
-  }
-  if (wrap) {
-    wrap.style.top = ''
-    wrap.style.left = ''
-    wrap.style.width = ''
-    wrap.style.height = ''
-  }
-  _fullscreenEl = null
-  _fullscreenParent.value = null
-  _fullscreenNext.value = null
 }
 function onFullscreenKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && _isFullscreen.value) {
@@ -731,131 +705,9 @@ function onFullscreenBodyClick(e: MouseEvent) {
   if (_screenshotModal.value.visible) return
   _isFullscreen.value = false
 }
-/** 把全屏框对齐到内容区边界；不在应用外壳里（无 .content-body）时按视口铺满 */
-function applyFullscreenBounds() {
-  const wrap = tableWrapRef.value
-  if (!wrap || !_isFullscreen.value) return
-  const cb = document.querySelector('.content-body')
-  if (cb) {
-    const r = cb.getBoundingClientRect()
-    wrap.style.top = r.top + 'px'
-    wrap.style.left = r.left + 'px'
-    wrap.style.width = r.width + 'px'
-    wrap.style.height = r.height + 'px'
-  } else {
-    wrap.style.top = '0'
-    wrap.style.left = '0'
-    wrap.style.width = '100vw'
-    wrap.style.height = '100vh'
-  }
-}
-
-/** 合并同一帧内的多次触发（窗口 resize 与内容区 RO 在动画期间会连发） */
-function scheduleFullscreenBounds() {
-  if (_fsResizeRaf) return
-  _fsResizeRaf = requestAnimationFrame(() => {
-    _fsResizeRaf = 0
-    applyFullscreenBounds()
-  })
-}
-
-function onFullscreenResize() {
-  scheduleFullscreenBounds()
-}
-
-/** 盯内容区尺寸：侧栏收起/展开、父容器布局变化都不会触发 window resize，
- *  过去只监听 resize 等于"量错一次就一直错到下次刷新窗口" */
-function startFullscreenBoundsWatch() {
-  stopFullscreenBoundsWatch()
-  const cb = document.querySelector('.content-body')
-  if (!cb || typeof ResizeObserver === 'undefined') return
-  _fsBoundsRo = new ResizeObserver(scheduleFullscreenBounds)
-  _fsBoundsRo.observe(cb)
-}
-
-function stopFullscreenBoundsWatch() {
-  _fsBoundsRo?.disconnect()
-  _fsBoundsRo = null
-}
-
-/** 兜底上限：后台标签页不跑 rAF、动画事件也不派发，超过这个时长就认为已稳定，不能让流程挂死 */
-const _SETTLE_TIMEOUT_MS = 2000
 /** 选区拖到容器边缘时，自动滚动的步进节拍 */
 const _RANGE_SCROLL_TICK_MS = 50
 
-/**
- * 等某容器的宽度停止变化（连续两帧同值即认为过渡跑完）。
- * 用于替代按固定毫秒等待：侧栏动画长短随主题、容器宽度、动效降级设置而变，
- * 写死的数要么白等要么在动画跑完前就把节点搬走（表现为跳一下）。
- * 它只能当兜底：过渡起步前宽度本来就恒定，帧一稀就会误判成"已稳定"，
- * 能问到动画的情况一律先走 _waitForCssAnimations。
- */
-function _waitForWidthSettle(el: HTMLElement | null): Promise<void> {
-  if (!el || typeof requestAnimationFrame !== 'function') return Promise.resolve()
-  return new Promise((resolve) => {
-    let last = -1
-    let stable = 0
-    const done = () => {
-      clearTimeout(timer)
-      resolve()
-    }
-    const timer = setTimeout(done, _SETTLE_TIMEOUT_MS)
-    const step = () => {
-      const w = el.getBoundingClientRect().width
-      stable = w === last ? stable + 1 : 0
-      last = w
-      if (stable >= 2) return done()
-      requestAnimationFrame(step)
-    }
-    requestAnimationFrame(step)
-  })
-}
-
-/**
- * 等元素自身的 CSS 过渡/动画跑完；返回 false = 动画接口没给出结论（不支持 / 当前没有动画），
- * 调用方要退回宽度实测。
- * 为什么要等动画本身而不是等"宽度不再变化"：类名是 Vue 在微任务里落的，过渡又要到样式
- * 重算那一刻才被创建 —— 起步前那几帧宽度恒定，实测会判成已稳定，全屏框就按半途的边界量。
- */
-async function _waitForCssAnimations(el: HTMLElement): Promise<boolean> {
-  if (typeof el.getAnimations !== 'function') return false
-  await nextTick() // 等 collapsed 类落到 DOM
-  el.getBoundingClientRect() // 强制一次样式重算：transition 在这一步才被创建
-  // 只看挂在元素自己身上的动画：Element.getAnimations() 连后代的一起返回，后代常驻动画会把等待拖到兜底上限；
-  // 同理排掉 ::before/::after 上的动画（宿主拿它做装饰常驻动画时，等的还是元素本身）
-  const own = el
-    .getAnimations()
-    .filter(
-      (a) =>
-        a.effect instanceof KeyframeEffect &&
-        a.effect.target === el &&
-        !a.effect.pseudoElement &&
-        a.finished instanceof Promise,
-    )
-  if (!own.length) return false // 动效降级时确实没有过渡：不白等，交给实测
-  let timer: ReturnType<typeof setTimeout> | undefined
-  let timedOut = false
-  try {
-    await Promise.race([
-      Promise.all(own.map((a) => a.finished.catch(() => {}))), // 中途被 cancel 也算收尾
-      new Promise<void>((r) => {
-        timer = setTimeout(() => {
-          timedOut = true
-          r()
-        }, _SETTLE_TIMEOUT_MS)
-      }),
-    ])
-  } finally {
-    clearTimeout(timer)
-  }
-  return !timedOut // 撞上限正是"问不出结论"，退回宽度实测，别把刚修掉的伪稳定放回来
-}
-
-/** 进全屏前等侧栏收起：能问到动画就等动画跑完，问不到才退回"宽度连续两帧不变" */
-async function _waitForCollapseDone(el: HTMLElement): Promise<void> {
-  if (await _waitForCssAnimations(el)) return
-  await _waitForWidthSettle(el)
-}
 onDeactivated(() => {
   // KeepAlive 失活时不能把全屏态带进缓存：表格节点挂在 body 上、body 的全屏类与全局监听都还在生效，
   // 宿主切过去的新一页既被盖住又被 overflow:hidden 锁住。退出复用同一条归还路径。
@@ -868,26 +720,21 @@ watch(_isFullscreen, async (v) => {
     document.removeEventListener('keydown', _onKeydown, true)
     document.addEventListener('keydown', _onKeydown, true) // 重新注册，排在 onFullscreenKeydown 后面
     document.addEventListener('click', onFullscreenBodyClick, true)
-    window.addEventListener('resize', onFullscreenResize)
+    window.addEventListener('resize', _fsBounds.onWindowResize)
     document.body.classList.add('dt-fullscreen-active')
     // 移到 body 下，脱离弹窗/父容器的 overflow/display 限制
-    if (tableWrapRef.value && tableWrapRef.value.parentElement) {
-      _fullscreenEl = tableWrapRef.value
-      _fullscreenParent.value = tableWrapRef.value.parentElement
-      _fullscreenNext.value = tableWrapRef.value.nextSibling
-      document.body.appendChild(tableWrapRef.value)
-    }
+    _moveFullscreenNodeToBody()
     // 动态计算内容区边界，并在整个全屏期间跟着它变（侧栏收起不触发 window resize）
     await nextTick()
-    applyFullscreenBounds()
-    startFullscreenBoundsWatch()
+    _fsBounds.apply()
+    _fsBounds.start()
   } else {
     // 作废仍在等待的进入流程（不还原侧栏 —— 下面的归还流程统一处理）
     _fsPendingRun = 0
-    stopFullscreenBoundsWatch()
+    _fsBounds.stop()
     document.removeEventListener('keydown', onFullscreenKeydown, true)
     document.removeEventListener('click', onFullscreenBodyClick, true)
-    window.removeEventListener('resize', onFullscreenResize)
+    window.removeEventListener('resize', _fsBounds.onWindowResize)
     document.body.classList.remove('dt-fullscreen-active')
     // 先归还节点并清掉全屏内联尺寸，最后才还原侧栏。
     // 归还后表格回到普通流，宽度自然跟着父容器变，不需要等侧栏动画收尾；
@@ -2068,12 +1915,9 @@ onUnmounted(() => {
     document.body.classList.remove('dt-fullscreen-active')
     document.removeEventListener('keydown', onFullscreenKeydown, true)
     document.removeEventListener('click', onFullscreenBodyClick, true)
-    window.removeEventListener('resize', onFullscreenResize)
-    stopFullscreenBoundsWatch()
-    if (_fsResizeRaf) {
-      cancelAnimationFrame(_fsResizeRaf)
-      _fsResizeRaf = 0
-    }
+    window.removeEventListener('resize', _fsBounds.onWindowResize)
+    _fsBounds.stop()
+    _fsBounds.cancelRaf()
     // 归还节点并清理 inline 尺寸：onUnmounted 跑在 Vue 摘除根节点之后，此时根节点（连同原父
     // 容器）已脱离文档，而模板 ref 也已被置空 —— 被搬到 body 的 .table-wrap 不在那棵子树里，
     // 不显式放回去就永久游离在页面上。
