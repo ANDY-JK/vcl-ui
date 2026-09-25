@@ -21,7 +21,6 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import Result from '@/components/feedback/Result.vue'
 import Loading from '@/components/feedback/Loading.vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
-import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_internal/useScreenshot'
 import { copyText } from '@/components/_internal/useCopy'
 import Toast from '@/components/feedback/Toast.vue'
 import { boostZTop } from '@/components/_internal/z-top'
@@ -55,7 +54,7 @@ import {
   EXPAND_ICON_TEXT_MIN,
   calcTableTotalPages,
 } from './composables/utils'
-import { captureTableCanvas } from './composables/canvas-screenshot'
+import { useTableScreenshot, buildTsv } from './composables/useTableScreenshot'
 import { useTableTooltip } from './composables/useTableTooltip'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
@@ -908,67 +907,38 @@ watch(_isFullscreen, async (v) => {
   emit('fullscreen-change', v)
 })
 
-// 截图导出
-const _screenshotModal = ref({ visible: false, dataUrl: '', blob: null as Blob | null })
-async function captureScreenshot() {
-  // 关闭其他内部弹窗（避免与 ModalManager 冲突）
-  if (_cellDetailModal.value.visible) _cellDetailModal.value.visible = false
-  // 内容过多限制：避免几千行生成超大 canvas 卡死/黑屏（浏览器 canvas 高度上限约 16383px@2x）
-  const shotEl = tableWrapRef.value?.querySelector('.table-scroll') as HTMLElement | null
-  const shotTable = shotEl?.querySelector('table.data-table') as HTMLTableElement | null
-  const rowCount = shotTable?.querySelectorAll('tr').length ?? 0
-  if (rowCount > props.screenshotMaxRows || (shotTable?.scrollHeight ?? 0) > 8000) {
-    notify(t('table.tooManyRows', { n: rowCount }), 'warning')
-    return
-  }
-  const result = await captureTableCanvas(shotTable)
-  if (!result) {
-    notify(t('table.screenshotFail'), 'error')
-    return
-  }
+// 截图导出（编排下沉 useTableScreenshot；本文件只保留取表元素与关闭其它弹窗的接线）
+const {
+  modal: _screenshotModal,
+  capture: captureScreenshot,
+  downloadFromModal: downloadScreenshotFromModal,
+  copyFromModal: copyScreenshotFromModal,
+} = useTableScreenshot({
+  getShotTable: () =>
+    (tableWrapRef.value?.querySelector('.table-scroll') as HTMLElement | null)?.querySelector(
+      'table.data-table',
+    ) as HTMLTableElement | null,
+  maxRows: () => props.screenshotMaxRows,
+  shotMode: () => props.shotMode,
+  notify,
+  t,
+  closeOtherModals: () => {
+    if (_cellDetailModal.value.visible) _cellDetailModal.value.visible = false
+  },
+})
 
-  if (props.shotMode === 'download') {
-    downloadScreenshot(result.dataUrl)
-    notify(t('table.screenshotDownloaded'), 'success')
-  } else if (props.shotMode === 'copy') {
-    const ok = await copyScreenshotToClipboard(result.blob, result.dataUrl)
-    notify(ok ? t('table.screenshotCopied') : t('table.screenshotCopyFail'), ok ? 'success' : 'error')
-  } else {
-    // preview 模式：弹窗预览
-    _screenshotModal.value = { visible: true, dataUrl: result.dataUrl, blob: result.blob }
-  }
-}
-
-function downloadScreenshotFromModal() {
-  downloadScreenshot(_screenshotModal.value.dataUrl)
-  notify(t('table.screenshotDownloaded'), 'success')
-  _screenshotModal.value.visible = false
-}
-async function copyScreenshotFromModal() {
-  const ok = _screenshotModal.value.blob
-    ? await copyScreenshotToClipboard(_screenshotModal.value.blob, _screenshotModal.value.dataUrl)
-    : false
-  notify(ok ? t('table.screenshotCopied') : t('table.screenshotCopyFail'), ok ? 'success' : 'error')
-  _screenshotModal.value.visible = false
-}
-
-// 复制表格数据（TSV 格式，可粘贴到 Excel）
+// 复制表格数据（TSV 格式，可粘贴到 Excel；公式注入防护在 buildTsv）
 function copyTableData() {
   const cols = visibleColumns.value.filter((c) => !hiddenColumns.value.has(c.key))
-  const header = cols.map((c) => c.title).join('\t')
   const source = props.exportScope === 'page' ? pagedData.value : displayData.value
+  const meta = rowMetaMap.value
+  const header = cols.map((c) => c.title)
   const rows = source.map((row) => {
-    const meta = rowMetaMap.value.get(row)
-    return cols
-      .map((c) => {
-        // 与导出一致：优先显示值（含本地编辑 override）
-        const s = String(cellVal(row, c.key, meta?.texts[c.key] ?? '') ?? '')
-        // 公式注入防护：以 = + - @ 或制表符/回车开头时加单引号前缀，Excel 按文本打开
-        return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s
-      })
-      .join('\t')
+    const rm = meta.get(row)
+    // 与导出一致：优先显示值（含本地编辑 override）
+    return cols.map((c) => String(cellVal(row, c.key, rm?.texts[c.key] ?? '') ?? ''))
   })
-  copyText(header + '\n' + rows.join('\n'))
+  copyText(buildTsv(header, rows))
   notify(t('table.tableDataCopied'))
 }
 
