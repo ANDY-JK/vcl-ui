@@ -80,12 +80,16 @@ lines.push('## [Unreleased]')
 lines.push('')
 
 const version = PKG.version
-lines.push(`## [${version}] - ${new Date().toISOString().slice(0, 10)}`)
-lines.push('')
 if (!since) {
+  // 全量模式（首次生成/换大版本重写）：全部历史收进当前版本段
+  lines.push(`## [${version}] - ${new Date().toISOString().slice(0, 10)}`)
+  lines.push('')
   lines.push('> 首次发布：以下为全部历史变更。')
   lines.push('')
 }
+// --since 增量模式：增量提交归入上方 [Unreleased]（Keep a Changelog 约定——发布后的
+// 工作累积在 Unreleased，直到下次发版才切版本段）。绝不生成「当前版本号 + 今天」的
+// 段：该版本可能已发布（tag），会覆盖真正的发布段（含 BREAKING CHANGES），实测踩过。
 
 // BREAKING CHANGES 段（Keep a Changelog 约定置于版本头部）：`!` 标记的提交
 const breakingItems = entries.filter((e) => e.breaking)
@@ -140,20 +144,16 @@ lines.push('---')
 lines.push('')
 lines.push(summary)
 
-// --since 增量模式：旧文件里已发布的版本段原样拼回，否则重生成会把 1.0.0 等历史段
-// 整段冲掉——CHANGELOG 是累积文档，不是单版本快照。同版本段（上次 --since 生成的）
-// 跳过，保证重复跑是幂等的；从第一个「更早版本」的段开始保留。
+// --since 增量模式：旧文件里「第一个带日期的版本段」起全部原样拼回（已发布段神圣不可
+// 覆盖；Unreleased 的旧增量被本次重生成替代，属预期）。幂等：重复跑结果一致。
 if (since) {
   try {
     const old = readFileSync(OUT, 'utf8')
     const re = /^## \[([^\]]+)\] - \d{4}-\d{2}-\d{2}$/gm
-    let m
-    while ((m = re.exec(old))) {
-      if (m[1] !== version) {
-        lines.push('')
-        lines.push(old.slice(m.index).trimEnd())
-        break
-      }
+    const m = re.exec(old)
+    if (m) {
+      lines.push('')
+      lines.push(old.slice(m.index).trimEnd())
     }
   } catch {
     // 旧文件不存在（首次生成）——没有可保留的段，正常

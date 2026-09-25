@@ -5,6 +5,73 @@
 
 ## [Unreleased]
 
+### Added
+
+- **`bench`**
+  - 自研性能基准 harness——关键路径基线落地（31397c3）
+- **`build`**
+  - 域级 CSS 落地——cssCodeSplit + emit-css 组装（M7）（43e371f）
+- **`gate`**
+  - 行数纪律扩面——form-builder 之外的 4 域上止涨线（M3）（4a96ce4）
+- **`layout`**
+  - AccordionNav 加即时搜索 + aria 语义补全（830c740）
+
+### Fixed
+
+- **`data`**
+  - Tree 共享 state 改 prop 显式下传——修深层节点没勾选框等四个同根缺陷（5bde2cf）
+- **`demos`**
+  - 三处 demo 的原生 alert() 改库自带 Toast——不再阻塞页面（fee5419）
+
+### Documentation
+
+- **`basic,storage,amap`**
+  - 三小域扫尾 + gen-docs 再导出链递归解析（M6 第八批）（bc2da8c）
+- **`chart`**
+  - chart 域 Props/Events 说明补齐——文档站空缺 72→1（M6 第五批）（b1bf619）
+- **`data`**
+  - data 域 Props/Events 说明扫尾——文档站空缺 85→10（M6 第三批）（fe3cb06）
+  - DataTable/Tree prop 说明补齐——文档站「说明」列 122→85（M6 第一批）（1c5b5da）
+- **`feedback`**
+  - feedback 域 Props/Events 说明扫尾——文档站空缺 58→9（M6 第六批）（e67dbed）
+- **`form`**
+  - form 域 Props/Events 说明扫尾——文档站空缺 58→0（M6 第四批）（ef6cc02）
+  - Select/Input prop 说明补齐——form.md 空缺 91→58（M6 第二批）（02ffe6c）
+- **`form-builder`**
+  - form-builder 域说明补齐——文档站空缺 36→1（M6 第十一批）（98db343）
+- **`layout`**
+  - logout 与 AccordionNav 单行内联类型改多行——JSDoc 提取生效（45→4）（da8c03c）
+  - layout 域 Props/Events 说明补齐——文档站空缺 45→1（M6 第七批）（0bdc38f）
+- **`login,route-planner`**
+  - 两域 Props/Events 说明补齐（M6 第十批）（a07ebb8）
+- **`nav`**
+  - nav 域 Props/Events 说明补齐——文档站空缺 23→1（M6 第九批）（bc4f127）
+- **`readme`**
+  - 域总览表补 wc 域、域数口径 14→13（vite.config 注释同步）（M8）（9d85a81）
+
+### Tests
+
+- **`route-planner`**
+  - 三个 composables 编排/持久化测试 22 条 + 抬地板（M11）（4e6f7cf）
+- **`sanitize`**
+  - 对抗性向量冻结 + style 剥注释预检（M10）（8c4260a）
+
+### Chores
+
+- **`deps`**
+  - zxing-wasm 3.1.4 + @iconify/vue 5——iconExists 更名 iconLoaded（M5）（11cfe1e）
+- **`husky`**
+  - 重建 pre-commit 钩子——lint-staged 从死配置回到生效（M1）（bc28f91）
+- **`lint`**
+  - 检查面扩到 tests+scripts——22 处 error 修复 + 格式规则归 Prettier（M9）（c019655）
+- **`release`**
+  - 发布门禁与 CI 同构——补 demo-props/css-tokens/单测/coverage-domains（M14）（017a503）
+  - npm files 补 CHANGELOG.md——发布包内不再缺变更日志（M13）（0f6b130）
+
+---
+
+生成口径：36 条提交 → 列入 26 条，审查过程记录折叠 10 条；范围 v2.0.0..HEAD。
+
 ## [2.0.0] - 2026-09-21
 
 ### BREAKING CHANGES
