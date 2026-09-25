@@ -95,6 +95,8 @@ import 'vcl-ui/dist/theme.css'   // 或本地开发路径
 - 空配置也生成占位产物（`/* 空主题 */`），宿主可无条件引入，定制与否不改变引入代码
 - 值含 `;{}"` 注入字符、键非 `--kebab-case`、令牌未在 tokens.css 声明——一律报错不出产物（`check:css-tokens` 只查库内引用，宿主侧靠这道闸）
 
+可视化配置层：demo 站点 `#/theme-editor`（顶栏月亮按钮直达）——分组令牌面板（颜色走原生取色器、断点/z-index 只读）+ 按当前主题记录覆盖 + 全站实时预览（动态 style）+ 一键导出 `theme.config.json` / `theme.css`（导出与 CLI 同一套校验，`scripts/theme-pure.mjs` 单一真源）。草稿存 localStorage。
+
 ### 基本使用
 
 ```vue

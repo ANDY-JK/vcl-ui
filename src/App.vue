@@ -21,9 +21,9 @@ const editMode = ref(false)
       <button class="topbar-tool-btn" :class="{ active: notifActive }" title="通知" @click="notifActive = !notifActive">
         <IconSvg type="bell" size="sm" />
       </button>
-      <button class="topbar-tool-btn" title="主题切换">
+      <RouterLink class="topbar-tool-btn" to="/theme-editor" title="主题定制">
         <IconSvg type="moon" size="sm" />
-      </button>
+      </RouterLink>
 
       <span class="topbar-tool-sep" />
 

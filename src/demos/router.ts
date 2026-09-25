@@ -14,6 +14,12 @@ const router = createRouter({
       component: () => import('@/components/form-builder/FormShareView.vue'),
       props: true,
     },
+    // 主题可视化配置层（宿主侧）：`#/theme-editor`。静态段优先于 /:category 通配，放它前面显式声明
+    {
+      path: '/theme-editor',
+      name: 'theme-editor',
+      component: () => import('@/demos/theme/ThemeEditorDemo.vue'),
+    },
     // 组件 demo 路由（/:category 对应 demoMap 中的 key）
     {
       path: '/:category',
