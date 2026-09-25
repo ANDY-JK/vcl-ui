@@ -6,6 +6,7 @@ import { boostZTop } from '@/components/_internal/z-top'
 import type { Annotation, AnnoType } from './composables/annotation-types'
 import { paintAnno } from './composables/image-anno-paint'
 import { useImageExport } from './composables/useImageExport'
+import { useImageTransform } from './composables/useImageTransform'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useToastNotify } from '@/components/_internal/useToastNotify'
 import { useT } from '@/components/_internal/i18n'
@@ -254,6 +255,54 @@ function hitTest(p: { x: number; y: number }): Annotation | null {
   return null
 }
 
+// 触摸被系统中断时标注侧的状态清理（由 useImageTransform.onTouchCancel 经注入调用）
+// ——否则 _annoDrawing/_annoCurrent 残留，取消工具后再次触摸仍会画出幽灵标注
+function cancelAnnoGestures() {
+  _annoCurrent = null
+  _annoDrawing.value = false
+  _annoDrag = false
+  _annoDragOrig = null
+  unbindAnnoWindow()
+  renderAnnos()
+}
+
+// ---- 变换 + 触摸手势子系统下沉 useImageTransform（M3 第七刀）----
+// 图片手势对标注的让位判定（工具激活/命中）经注入；轻扫切图经 onSwipe（宿主 goTo 已 resetTransform）
+const {
+  scale,
+  dragging,
+  rotation,
+  flipH,
+  imgTransform,
+  resetTransform,
+  setScale,
+  rotateCW,
+  rotateCCW,
+  toggleFlip,
+  onWheel,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
+  onDblClick,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+  onTouchCancel,
+} = useImageTransform(annoCanvas, {
+  isMulti: () => isMulti.value,
+  annoActive: () => !!annoTool.value,
+  isAnnoDrawing: () => _annoDrawing.value,
+  isAnnoDragging: () => _annoDrag,
+  startAnnoAt: (p) => annoStartAt(p),
+  moveAnnoAt: (p) => annoMoveAt(p),
+  endAnnoDraw: () => onAnnoMouseUp(),
+  cancelAnnoGestures,
+  stagePoint: (x, y) => stagePoint(x, y),
+  stageCoords: (e) => stageCoords(e),
+  hitTest: (p) => hitTest(p),
+  onSwipe: (dir) => (dir === 'prev' ? goPrev() : goNext()),
+})
+
 // ---- 标注删除 ----
 function deleteAnno(id: string) {
   annotations.value = annotations.value.filter((a) => a.id !== id)
@@ -440,207 +489,6 @@ function onKeydown(e: KeyboardEvent) {
     }
   }
 }
-
-// ---- 触摸手势：双指缩放 / 放大后单指平移 / 双击缩放 / 多图轻扫切图 ----
-let _touchStartX = 0
-let _touchStartY = 0
-let _touchDragging = false
-let _pinchDist = 0
-let _pinchStartScale = 1
-let _pinchStartPos = { x: 0, y: 0 }
-let _pinchCenter = { x: 0, y: 0 }
-let _pinchStageCenter = { x: 0, y: 0 }
-let _lastTapAt = 0
-
-function onTouchStart(e: TouchEvent) {
-  // 双指：进入 pinch 缩放
-  if (e.touches.length >= 2) {
-    const [a, b] = [e.touches[0], e.touches[1]]
-    _pinchDist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
-    _pinchStartScale = scale.value
-    _pinchStartPos = { ...pos.value }
-    const stage = annoCanvas.value?.parentElement
-    const r = stage?.getBoundingClientRect()
-    _pinchCenter = r
-      ? {
-          x: (a.clientX + b.clientX) / 2 - r.left,
-          y: (a.clientY + b.clientY) / 2 - r.top,
-        }
-      : { x: 0, y: 0 }
-    _pinchStageCenter = r ? { x: r.width / 2, y: r.height / 2 } : { x: 0, y: 0 }
-    _touchStartX = 0
-    _touchStartY = 0
-    _touchDragging = false
-    return
-  }
-  const t = e.touches[0]
-  const p = stagePoint(t.clientX, t.clientY)
-  // 标注工具激活 → 开始绘制
-  if (annoTool.value) {
-    annoStartAt(p)
-    return
-  }
-  // 无工具：命中已有标注则选中拖动（图片手势让位）
-  annoStartAt(p)
-  if (_annoDrag) return
-  _touchStartX = t.clientX
-  _touchStartY = t.clientY
-  // 已放大 / 已旋转时，单指即可拖动平移
-  if (scale.value > 1 || rotation.value !== 0) {
-    _touchDragging = true
-    dragStart = { x: t.clientX - pos.value.x, y: t.clientY - pos.value.y }
-  }
-}
-
-function onTouchMove(e: TouchEvent) {
-  // 双指 pinch：以双指中心为锚点缩放，中心对应的图片像素保持不动
-  if (e.touches.length >= 2 && _pinchDist > 0) {
-    const [a, b] = [e.touches[0], e.touches[1]]
-    const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)
-    if (d === 0) return
-    const ns = Math.max(0.25, Math.min(5, _pinchStartScale * (d / _pinchDist)))
-    if (ns === scale.value) return
-    const ratio = ns / _pinchStartScale
-    pos.value = {
-      x: _pinchStartPos.x * ratio + (_pinchCenter.x - _pinchStageCenter.x) * (1 - ratio),
-      y: _pinchStartPos.y * ratio + (_pinchCenter.y - _pinchStageCenter.y) * (1 - ratio),
-    }
-    if (ns <= 1) pos.value = { x: 0, y: 0 }
-    scale.value = ns
-    return
-  }
-  // 标注绘制 / 拖动中
-  if (_annoDrawing.value || _annoDrag) {
-    annoMoveAt(stagePoint(e.touches[0].clientX, e.touches[0].clientY))
-    return
-  }
-  if (_touchDragging && e.touches.length === 1) {
-    const t = e.touches[0]
-    pos.value = { x: t.clientX - dragStart.x, y: t.clientY - dragStart.y }
-  }
-}
-
-function onTouchEnd(e: TouchEvent) {
-  // pinch 结束：抬起一指后若仍有一指，转为拖动平移
-  if (_pinchDist > 0) {
-    _pinchDist = 0
-    if (e.touches.length === 1) {
-      _touchDragging = true
-      const t = e.touches[0]
-      dragStart = { x: t.clientX - pos.value.x, y: t.clientY - pos.value.y }
-    } else {
-      _touchDragging = false
-    }
-    return
-  }
-  // 标注绘制 / 拖动结束
-  if (_annoDrawing.value || _annoDrag) {
-    onAnnoMouseUp()
-    return
-  }
-  const t = e.changedTouches[0]
-  const dx = t.clientX - _touchStartX
-  const dy = t.clientY - _touchStartY
-  // 轻点（位移小）：双击切换 1x / 2x 缩放；放大状态下优先于拖拽结束判定
-  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-    _touchDragging = false
-    const now = Date.now()
-    if (now - _lastTapAt < 300) {
-      setScale(scale.value > 1 ? 1 : 2)
-      _lastTapAt = 0
-    } else {
-      _lastTapAt = now
-    }
-    return
-  }
-  if (_touchDragging) {
-    _touchDragging = false
-    return
-  }
-  // 多图且未放大：水平轻扫切图（位移需超过阈值且水平主导）
-  if (isMulti.value && scale.value <= 1 && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-    if (dx > 0) {
-      goPrev()
-    } else {
-      goNext()
-    }
-  }
-}
-
-// 触摸被系统中断（来电/手势识别抢走触摸等）：丢弃当前半成品绘制，清理绘制状态
-// ——否则 _annoDrawing/_annoCurrent 残留，取消工具后再次触摸仍会画出幽灵标注
-function onTouchCancel() {
-  _annoCurrent = null
-  _annoDrawing.value = false
-  _annoDrag = false
-  _annoDragOrig = null
-  _pinchDist = 0
-  _touchDragging = false
-  unbindAnnoWindow()
-  renderAnnos()
-}
-
-// ---- 变换：缩放 + 拖拽 + 旋转 + 翻转 ----
-const scale = ref(1)
-const pos = ref({ x: 0, y: 0 })
-const dragging = ref(false)
-const rotation = ref(0) // 0 | 90 | 180 | 270
-const flipH = ref(false)
-let dragStart = { x: 0, y: 0 }
-
-function resetTransform() {
-  scale.value = 1
-  pos.value = { x: 0, y: 0 }
-  rotation.value = 0
-  flipH.value = false
-}
-function setScale(s: number) {
-  scale.value = Math.max(0.25, Math.min(5, s))
-  if (scale.value <= 1) pos.value = { x: 0, y: 0 }
-}
-function rotateCW() {
-  rotation.value = ((rotation.value + 90) % 360) as 0 | 90 | 180 | 270
-}
-function rotateCCW() {
-  rotation.value = ((rotation.value - 90 + 360) % 360) as 0 | 90 | 180 | 270
-}
-function toggleFlip() {
-  flipH.value = !flipH.value
-}
-
-function onWheel(e: WheelEvent) {
-  e.preventDefault()
-  setScale(scale.value + (e.deltaY > 0 ? -0.15 : 0.15))
-}
-function onMouseDown(e: MouseEvent) {
-  if (annoTool.value) return
-  // 命中已有标注时不启动图片拖拽（拖动标注只移动标注，避免图片同时平移）
-  if (hitTest(stageCoords(e))) return
-  if (scale.value <= 1 && rotation.value === 0) return
-  dragging.value = true
-  dragStart = { x: e.clientX - pos.value.x, y: e.clientY - pos.value.y }
-}
-function onMouseMove(e: MouseEvent) {
-  if (annoTool.value) return
-  if (!dragging.value) return
-  pos.value = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }
-}
-function onMouseUp() {
-  if (annoTool.value) return
-  dragging.value = false
-}
-function onDblClick() {
-  setScale(scale.value > 1 ? 1 : 2)
-}
-
-const imgTransform = computed(() => {
-  const parts: string[] = []
-  parts.push(`translate(${pos.value.x}px, ${pos.value.y}px)`)
-  parts.push(`scale(${scale.value})`)
-  if (rotation.value !== 0) parts.push(`rotate(${rotation.value}deg)`)
-  if (flipH.value) parts.push('scaleX(-1)')
-  return parts.join(' ')
-})
 
 // ---- 加载状态 ----
 type LoadState = 'loading' | 'loaded' | 'error'
