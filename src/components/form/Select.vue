@@ -32,7 +32,7 @@ import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
 import { useTreeFlatten, type FlattenNode } from '@/components/_internal/useTreeFlatten'
-import { parseDate } from './utils/date-utils'
+import { useSelectDatePanel } from './useSelectDatePanel'
 import DatePanel from './date-panel/DatePanel.vue'
 import TimeColumns from './date-panel/TimeColumns.vue'
 import type { Option, MenuItem, CascaderOption } from '@/components/shared/types'
@@ -850,123 +850,36 @@ function onTriggerKeydown(e: KeyboardEvent) {
 }
 
 /* ════════════════════════════════════════
-   Date / Date-range / Time
+   Date / Date-range / Time（编排下沉 useSelectDatePanel：
+   草稿态、modelValue 三个 immediate watch、打开时行高/滚位修正、选中/确认/取消处理器）
    ════════════════════════════════════════ */
-const dateFmt = computed(() => props.format || 'YYYY-MM-DD')
-const modelMonth = ref({ year: new Date().getFullYear(), month: new Date().getMonth() + 1 })
-const draftStart = ref('')
-const draftEnd = ref('')
-const draftHover = ref('')
-const draftTime = ref('')
-const timeColumnsRef = ref<InstanceType<typeof TimeColumns> | null>(null)
-
-const triggerDisplayText = computed(() => {
-  if (isDateRange.value) {
-    const arr = Array.isArray(props.modelValue) ? props.modelValue : []
-    if (arr[0] && arr[1]) return `${String(arr[0])} ~ ${String(arr[1])}`
-    return ''
-  }
-  if (!props.modelValue) return ''
-  return String(props.modelValue)
-})
-
-const dateTimePlaceholder = computed(() => {
-  if (isDateRange.value) return `${props.rangePlaceholder[0]} ~ ${props.rangePlaceholder[1]}`
-  return props.placeholder || (isDate.value ? t('form.selectDate') : isTime.value ? t('form.selectTime') : '')
-})
-
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (isDate.value) {
-      const parsed = parseDate(String(val || ''), dateFmt.value)
-      if (parsed) modelMonth.value = { year: parsed.y, month: parsed.m }
-    }
+const {
+  dateFmt,
+  modelMonth,
+  draftStart,
+  draftEnd,
+  draftHover,
+  draftTime,
+  timeColumnsRef,
+  triggerDisplayText,
+  dateTimePlaceholder,
+  onDateSelect,
+  onDateRangeClick,
+  onDateRangeHover,
+  onDateRangeConfirm,
+  onTimePick,
+  onTimeConfirm,
+  onTimeCancel,
+} = useSelectDatePanel(props, open, {
+  closePanel,
+  markTouched,
+  measureOptionRow,
+  emit: (ev, v) => {
+    const val = v as SelectModelValue
+    if (ev === 'change') emit('change', val)
+    else emit('update:modelValue', val)
   },
-  { immediate: true },
-)
-
-function onDateSelect(date: string) {
-  markTouched()
-  closePanel()
-  emit('update:modelValue', date)
-  emit('change', date)
-}
-
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (isDateRange.value) {
-      const arr = Array.isArray(val) ? val : []
-      draftStart.value = arr[0] ? String(arr[0]) : ''
-      draftEnd.value = arr[1] ? String(arr[1]) : ''
-      draftHover.value = ''
-      const first = draftStart.value || draftEnd.value
-      const parsed = parseDate(first, dateFmt.value)
-      if (parsed) modelMonth.value = { year: parsed.y, month: parsed.m }
-    }
-  },
-  { immediate: true },
-)
-
-function onDateRangeClick(date: string) {
-  if (!draftStart.value || draftEnd.value) {
-    draftStart.value = date
-    draftEnd.value = ''
-  } else {
-    if (date < draftStart.value) {
-      draftEnd.value = draftStart.value
-      draftStart.value = date
-    } else {
-      draftEnd.value = date
-    }
-  }
-  draftHover.value = ''
-}
-
-function onDateRangeHover(date: string) {
-  if (draftStart.value && !draftEnd.value) draftHover.value = date
-}
-
-function onDateRangeConfirm() {
-  if (!draftStart.value) return
-  markTouched()
-  const value: [string, string] = [draftStart.value, draftEnd.value || draftStart.value]
-  closePanel()
-  emit('update:modelValue', value)
-  emit('change', value)
-}
-
-watch(
-  () => props.modelValue,
-  (val) => {
-    if (isTime.value) draftTime.value = String(val || '')
-  },
-  { immediate: true },
-)
-
-watch(open, async (val) => {
-  if (!val) return
-  // 面板是 v-if 渲染的，打开之后才有可测的行高与可视高
-  if (!isDate.value && !isDateRange.value && !isTime.value) await measureOptionRow()
-  if (isTime.value) {
-    await nextTick()
-    timeColumnsRef.value?.scrollToValue()
-  }
 })
-
-function onTimePick(time: string) {
-  draftTime.value = time
-}
-function onTimeConfirm() {
-  markTouched()
-  closePanel()
-  emit('update:modelValue', draftTime.value)
-  emit('change', draftTime.value)
-}
-function onTimeCancel() {
-  closePanel()
-}
 </script>
 
 <template>
