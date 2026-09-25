@@ -33,6 +33,7 @@ import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
 import { useTreeFlatten, type FlattenNode } from '@/components/_internal/useTreeFlatten'
 import { useSelectDatePanel } from './useSelectDatePanel'
+import { useSelectOption } from './useSelectOption'
 import DatePanel from './date-panel/DatePanel.vue'
 import TimeColumns from './date-panel/TimeColumns.vue'
 import type { Option, MenuItem, CascaderOption } from '@/components/shared/types'
@@ -481,60 +482,23 @@ function removeComboTag(tag: { value: string | number | boolean; label: string }
 }
 
 /* ════════════════════════════════════════
-   选项选择
+   选项选择（选中/提交/清除下沉 useSelectOption；selectedValueKeys 查表优化口径见模块 JSDoc）
    ════════════════════════════════════════ */
-/** 已选值集合 —— 归一口径与原先的逐值 String() 比较完全一致，只是把 O(k) 扫描换成 O(1) 查表。
- *  不这么做的代价（实测）：10k 选项 × 5k 已选时，一次 patch 里 4 处调用 × 10k 选项 × 5k 扫描
- *  = 1456ms，点开下拉即卡死。非数组值（单选标量）返回 null，由单选分支自行判定。 */
-const selectedValueKeys = computed<Set<string> | null>(() => {
-  const mv = props.modelValue
-  if (!Array.isArray(mv)) return null
-  return new Set((mv as (string | number | boolean)[]).map((v) => String(v)))
+const { selectedValueKeys, isSelected, selectOption, onClear } = useSelectOption({
+  modelValue: () => props.modelValue ?? null,
+  multiple: () => props.multiple,
+  isInputable: () => isInputable.value,
+  comboText,
+  focusCombo: () => nextTick(() => comboInputRef.value?.focus()),
+  blurCombo: () => nextTick(() => comboInputRef.value?.blur()),
+  closePanel,
+  markTouched,
+  emit: (ev, v) => {
+    const val = v as SelectModelValue
+    if (ev === 'change') emit('change', val)
+    else emit('update:modelValue', val)
+  },
 })
-
-function isSelected(opt: Option) {
-  if (props.multiple) return selectedValueKeys.value?.has(String(opt.value)) ?? false
-  // 单选：未输入时按当前值高亮；输入中按输入内容匹配（便于看到即将提交的项）
-  if (!comboText.value) return String(props.modelValue) === String(opt.value)
-  return opt.label === comboText.value || String(opt.value) === comboText.value
-}
-
-function selectOption(opt: Option) {
-  if (opt.disabled) return
-  markTouched()
-  if (props.multiple) {
-    const vals = [...((props.modelValue || []) as (string | number | boolean)[])]
-    const idx = vals.findIndex((v) => String(v) === String(opt.value))
-    if (idx >= 0) vals.splice(idx, 1)
-    else vals.push(opt.value)
-    emit('update:modelValue', vals)
-    emit('change', vals)
-    if (isInputable.value) {
-      comboText.value = ''
-      nextTick(() => comboInputRef.value?.focus())
-    }
-  } else {
-    closePanel()
-    emit('update:modelValue', opt.value as SelectModelValue)
-    emit('change', opt.value as SelectModelValue)
-    if (isInputable.value) {
-      comboText.value = ''
-      nextTick(() => comboInputRef.value?.blur())
-    }
-  }
-}
-
-/* ════════════════════════════════════════
-   清除按钮
-   ════════════════════════════════════════ */
-/** 清空值统一 emit null：此前单选清空发 ''、多选/树/区间发 null，同组件两种"空"导致消费方判断漏网 */
-function onClear(e: MouseEvent) {
-  e.stopPropagation()
-  markTouched()
-  comboText.value = ''
-  emit('update:modelValue', null)
-  emit('change', null)
-}
 
 /* ════════════════════════════════════════
    菜单模式
