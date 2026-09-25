@@ -24,7 +24,7 @@ const FLOORS = {
   data: [64, 50, 63], // 2026-09-25 四批抬升：①useTableColumns 20+useTableTooltip 11 ②cell-clipboard 18+cell-keyboard 19+canvas-screenshot 5 ③filter/extras 补测 25（跨列计数/render 异常/四向排序/externalFilters 同步/CSV 公式注入/Excel 惰性导出/右键菜单/全局事件）；实测 67.6/53.9/66.0；DataTable 主文件交互细节仍靠 e2e
   'form-builder': [55, 46, 48],
   layout: [61, 38, 52],
-  storage: [48, 32, 42], // 洼地：indexedDB.ts 环境性死角（happy-dom 无原生 IDB），靠 e2e
+  storage: [64, 54, 50], // 2026-09-25 抬升：contract-storage 补测 18 条（纯 helper/IndexedDBBackend mock/假 transport 直测 ObjectCloudBackend 对象名解析+墓碑+上传删除/工厂路由+env 默认），51.9/35.6/46.4 → 67.7/57.1/53.6；indexedDB.ts 仍环境死角（happy-dom 无 IDB）靠 e2e
   amap: [48, 38, 45],
   'route-planner': [58, 42, 44], // 2026-09-24 抬升：三个 composables 编排/持久化测试 22 条（时序 enrich→navLinks/失败兜底/防抖写盘/脏数据清洗），49/39/29 → 61.4/45.7/47.3
   form: [51, 47, 47], // 2026-09-20 晚抬升：date-utils/slider-utils 20 条 + DatePanel 20 条 + CodeCapture 扫码状态机 10 条（去重/emit/自动关闭/finish/连扫暂停/坐标换算），48.3/43.4/43.7 → 53.3/49.1/49.4
