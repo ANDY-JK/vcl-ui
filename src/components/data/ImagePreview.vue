@@ -3,10 +3,10 @@ import { ref, watch, computed, nextTick, onMounted, onUnmounted, toRef } from 'v
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Toast from '@/components/feedback/Toast.vue'
 import { boostZTop } from '@/components/_internal/z-top'
-import type { Annotation, AnnoType } from './composables/annotation-types'
-import { paintAnno } from './composables/image-anno-paint'
+import type { AnnoType } from './composables/annotation-types'
 import { useImageExport } from './composables/useImageExport'
 import { useImageTransform } from './composables/useImageTransform'
+import { useImageAnnotation } from './composables/useImageAnnotation'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useToastNotify } from '@/components/_internal/useToastNotify'
 import { useT } from '@/components/_internal/i18n'
@@ -75,51 +75,94 @@ function toggleThumbs() {
   showThumbs.value = !showThumbs.value
 }
 
-// ---- 标注工具切换/取消（统一入口） ----
-// 再次点击已激活的工具 = 取消；切换工具互斥。取消/切换时必须清理全部绘制状态
-// （_annoDrawing/_annoCurrent/_annoDrag 等），否则 touchcancel 等中断残留会让
-// 「取消后再次触摸仍画出幽灵标注」——取消失效的根因。
-function setAnnoTool(t: AnnoType | null) {
-  annoTool.value = annoTool.value === t ? null : t
-  annoSelected.value = null
-  _annoCurrent = null
-  _annoDrawing.value = false
-  _annoDrag = false
-  _annoDragOrig = null
-  unbindAnnoWindow()
-  renderAnnos()
-}
-
-// ---- 标注系统（仅保留矩形 / 圆形 / 画笔；类型族下沉 composables/annotation-types） ----
-const annotations = ref<Annotation[]>([])
-const annoTool = ref<AnnoType | null>(null)
-const annoColor = ref('#f43f5e')
-const annoWidth = ref(2)
-const annoSelected = ref<string | null>(null)
-const annoColors = ['#f43f5e', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ffffff']
-const annoWidths = [2, 4, 6]
+// ---- 标注 + 变换/手势子系统下沉 useImageAnnotation / useImageTransform（M3 第七/八刀）----
+// 标注引擎（状态/渲染/命中/工具/键盘）与变换手势已整体抽离；本文件保留接线 + 键盘回落、
+// 色点自适应裁减 fitAnnoColors（顶栏布局知识，依赖 .ip-color-dot 与 annoToolsRef）。
+// 标注画布模板 ref（渲染/命中/坐标换算下沉 useImageAnnotation 内部消费）
 const annoCanvas = ref<HTMLCanvasElement | null>(null)
-let _annoId = 0
-const _annoDrawing = ref(false)
-let _annoDrag = false
-let _annoStart = { x: 0, y: 0 }
-let _annoCurrent: Annotation | null = null
-let _annoDragOrig: { x: number; y: number } | null = null
-function uid() {
-  return 'a' + ++_annoId
-}
-watch(currentIndex, () => {
-  annotations.value = []
-  annoTool.value = null
-  annoSelected.value = null
-  _annoCurrent = null
-  _annoDrawing.value = false
-  _annoDrag = false
-  unbindAnnoWindow()
+
+const {
+  annotations,
+  annoTool,
+  annoColor,
+  annoWidth,
+  annoColors,
+  annoWidths,
+  setAnnoTool,
+  renderAnnos,
+  hitTest,
+  stagePoint,
+  stageCoords,
+  annoStartAt,
+  annoMoveAt,
+  onAnnoMouseDown,
+  onAnnoMouseMove,
+  onAnnoMouseUp,
+  onKeydown,
+  resetAnnoGestures,
+  isAnnoDrawing,
+  isAnnoDragging,
+} = useImageAnnotation(annoCanvas, {
+  currentIndex,
+  // 无标注态时的键盘回落：Escape 关弹层；多图时 ←→ 切图
+  // （工具快捷键 R/P/C 由 composable 先处理，此处只处理「无标注工具」路径）
+  onKeydownFallback: (e) => {
+    if (e.key === 'Escape') {
+      if (annoTool.value) {
+        setAnnoTool(null)
+        return
+      }
+      emit('close')
+      return
+    }
+    if (isMulti.value && !annoTool.value) {
+      if (e.key === 'ArrowLeft') {
+        goPrev()
+        return
+      }
+      if (e.key === 'ArrowRight') {
+        goNext()
+        return
+      }
+    }
+  },
 })
 
-// Canvas 自适应：stage 尺寸变化时重新渲染标注
-let _ro: ResizeObserver | null = null
+const {
+  scale,
+  dragging,
+  rotation,
+  flipH,
+  imgTransform,
+  resetTransform,
+  setScale,
+  rotateCW,
+  rotateCCW,
+  toggleFlip,
+  onWheel,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
+  onDblClick,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+  onTouchCancel,
+} = useImageTransform(annoCanvas, {
+  isMulti: () => isMulti.value,
+  annoActive: () => !!annoTool.value,
+  isAnnoDrawing,
+  isAnnoDragging,
+  startAnnoAt: annoStartAt,
+  moveAnnoAt: annoMoveAt,
+  endAnnoDraw: () => onAnnoMouseUp(),
+  cancelAnnoGestures: resetAnnoGestures,
+  stagePoint: (x, y) => stagePoint(x, y),
+  stageCoords: (e) => stageCoords(e),
+  hitTest: (p) => hitTest(p),
+  onSwipe: (dir) => (dir === 'prev' ? goPrev() : goNext()),
+})
+
 // 预览弹层（--z-lightbox 10000）高于全局 Toast（--z-top 9999）：挂载期间临时提升 --z-top 至 10001，让内嵌 Toast 显示在弹层之上
 // boostZTop 模块级引用计数（_internal/z-top.ts），多组件/多实例共享
 let _releaseZTop: (() => void) | null = null
@@ -133,7 +176,7 @@ const { activate: activateTrap, deactivate: deactivateTrap } = useFocusTrap({
   autofocus: 'container',
 })
 
-// ---- 顶栏标注工具行：色点按可用空间逐步裁减 ----
+// ---- 顶栏标注工具行：色点按可用空间逐步裁减（顶栏 UI 布局知识，留在宿主）----
 // 单行布局下，窄屏空间不足时从最后一个色点往前逐个隐藏，保证所有控件一行放下（不换行/不横滚）。
 // 选中色始终保留可见（用户当前在用的颜色不因裁减而丢失）。桌面端宽屏空间充足，全部显示。
 const annoToolsRef = ref<HTMLElement | null>(null)
@@ -166,7 +209,6 @@ function fitAnnoColors() {
 watch(annoColor, () => fitAnnoColors())
 
 onMounted(() => {
-  if (typeof ResizeObserver !== 'undefined') _ro = new ResizeObserver(() => renderAnnos())
   if (typeof ResizeObserver !== 'undefined' && annoToolsRef.value) {
     _annoToolsRo = new ResizeObserver(() => fitAnnoColors())
     _annoToolsRo.observe(annoToolsRef.value)
@@ -178,250 +220,11 @@ onMounted(() => {
   activateTrap()
 })
 onUnmounted(() => {
-  if (_renderRAF != null) {
-    cancelAnimationFrame(_renderRAF)
-    _renderRAF = null
-  }
-  _ro?.disconnect()
   _annoToolsRo?.disconnect()
-  unbindAnnoWindow()
   deactivateTrap()
   _releaseZTop?.()
 })
-watch(annoCanvas, (cvs) => {
-  _ro?.disconnect()
-  if (cvs?.parentElement) _ro?.observe(cvs.parentElement)
-})
 
-// 屏幕坐标 → stage 坐标（像素）
-function stagePoint(x: number, y: number) {
-  const stage = annoCanvas.value?.parentElement
-  if (!stage) return { x: 0, y: 0 }
-  const r = stage.getBoundingClientRect()
-  return { x: x - r.left, y: y - r.top }
-}
-function stageCoords(e: MouseEvent) {
-  return stagePoint(e.clientX, e.clientY)
-}
-
-// ---- Canvas 渲染 ----
-// renderAnnos rAF 节流：避免 mousemove 高频调用导致全量重绘卡顿
-let _renderRAF: number | null = null
-function renderAnnos() {
-  if (_renderRAF != null) return // 已排队，跳过
-  _renderRAF = requestAnimationFrame(() => {
-    _renderRAF = null
-    _renderAnnosNow()
-  })
-}
-function _renderAnnosNow() {
-  const cvs = annoCanvas.value
-  if (!cvs) return
-  const stage = cvs.parentElement
-  if (!stage) return
-  cvs.width = stage.clientWidth
-  cvs.height = stage.clientHeight
-  const ctx = cvs.getContext('2d')!
-  ctx.clearRect(0, 0, cvs.width, cvs.height)
-
-  const all = _annoCurrent ? [...annotations.value, _annoCurrent] : annotations.value
-  for (const a of all) {
-    paintAnno(ctx, a, annoSelected.value === a.id, 1)
-  }
-}
-
-// ---- 命中检测 ----
-function hitTest(p: { x: number; y: number }): Annotation | null {
-  const pad = 6
-  for (let i = annotations.value.length - 1; i >= 0; i--) {
-    const a = annotations.value[i]
-    if (a.type === 'rect') {
-      const [rx, ry, rw, rh] = a.w >= 0 ? [a.x, a.y, a.w, a.h] : [a.x + a.w, a.y + a.h, -a.w, -a.h]
-      if (p.x >= rx - pad && p.x <= rx + rw + pad && p.y >= ry - pad && p.y <= ry + rh + pad) return a
-    } else if (a.type === 'circle') {
-      const cx = a.x + a.w / 2
-      const cy = a.y + a.h / 2
-      const rx = Math.abs(a.w) / 2 + pad
-      const ry = Math.abs(a.h) / 2 + pad
-      const dx = (p.x - cx) / rx
-      const dy = (p.y - cy) / ry
-      if (dx * dx + dy * dy <= 1) return a
-    } else if (a.type === 'pen') {
-      for (const pt of a.points) {
-        if (Math.abs(p.x - pt.x) <= pad + a.lw && Math.abs(p.y - pt.y) <= pad + a.lw) return a
-      }
-    }
-  }
-  return null
-}
-
-// 触摸被系统中断时标注侧的状态清理（由 useImageTransform.onTouchCancel 经注入调用）
-// ——否则 _annoDrawing/_annoCurrent 残留，取消工具后再次触摸仍会画出幽灵标注
-function cancelAnnoGestures() {
-  _annoCurrent = null
-  _annoDrawing.value = false
-  _annoDrag = false
-  _annoDragOrig = null
-  unbindAnnoWindow()
-  renderAnnos()
-}
-
-// ---- 变换 + 触摸手势子系统下沉 useImageTransform（M3 第七刀）----
-// 图片手势对标注的让位判定（工具激活/命中）经注入；轻扫切图经 onSwipe（宿主 goTo 已 resetTransform）
-const {
-  scale,
-  dragging,
-  rotation,
-  flipH,
-  imgTransform,
-  resetTransform,
-  setScale,
-  rotateCW,
-  rotateCCW,
-  toggleFlip,
-  onWheel,
-  onMouseDown,
-  onMouseMove,
-  onMouseUp,
-  onDblClick,
-  onTouchStart,
-  onTouchMove,
-  onTouchEnd,
-  onTouchCancel,
-} = useImageTransform(annoCanvas, {
-  isMulti: () => isMulti.value,
-  annoActive: () => !!annoTool.value,
-  isAnnoDrawing: () => _annoDrawing.value,
-  isAnnoDragging: () => _annoDrag,
-  startAnnoAt: (p) => annoStartAt(p),
-  moveAnnoAt: (p) => annoMoveAt(p),
-  endAnnoDraw: () => onAnnoMouseUp(),
-  cancelAnnoGestures,
-  stagePoint: (x, y) => stagePoint(x, y),
-  stageCoords: (e) => stageCoords(e),
-  hitTest: (p) => hitTest(p),
-  onSwipe: (dir) => (dir === 'prev' ? goPrev() : goNext()),
-})
-
-// ---- 标注删除 ----
-function deleteAnno(id: string) {
-  annotations.value = annotations.value.filter((a) => a.id !== id)
-  if (annoSelected.value === id) annoSelected.value = null
-  renderAnnos()
-}
-
-// ---- 鼠标交互 ----
-// 绘制/拖动标注期间挂 window mouseup，防止鼠标移出 stage 释放导致状态卡死
-function bindAnnoWindow() {
-  window.addEventListener('mouseup', onAnnoMouseUp)
-}
-function unbindAnnoWindow() {
-  window.removeEventListener('mouseup', onAnnoMouseUp)
-}
-// 标注开始（stage 坐标）：工具激活 → 开始绘制；否则命中检测 → 选中/拖动
-function annoStartAt(p: { x: number; y: number }) {
-  // 标注工具激活 → 开始绘制
-  if (annoTool.value) {
-    _annoDrawing.value = true
-    _annoStart = p
-    const c = annoColor.value
-    const lw = annoWidth.value
-    const id = uid()
-    if (annoTool.value === 'rect') {
-      _annoCurrent = { type: 'rect', id, x: p.x, y: p.y, w: 0, h: 0, color: c, lw }
-    } else if (annoTool.value === 'circle') {
-      _annoCurrent = { type: 'circle', id, x: p.x, y: p.y, w: 0, h: 0, color: c, lw }
-    } else if (annoTool.value === 'pen') {
-      _annoCurrent = { type: 'pen', id, points: [p], color: c, lw }
-    }
-    bindAnnoWindow()
-    return
-  }
-  // 无工具 → 检测选中
-  const hit = hitTest(p)
-  if (hit) {
-    annoSelected.value = hit.id
-    _annoDrag = true
-    _annoDragOrig =
-      hit.type === 'rect' ? { x: hit.x, y: hit.y } : hit.type === 'circle' ? { x: hit.x, y: hit.y } : { x: 0, y: 0 }
-    _annoStart = p
-    bindAnnoWindow()
-    renderAnnos()
-    return
-  }
-  annoSelected.value = null
-  renderAnnos()
-}
-
-// 标注移动（stage 坐标）：拖动已有标注 / 更新绘制
-function annoMoveAt(p: { x: number; y: number }) {
-  // 移动已有标注
-  if (_annoDrag && annoSelected.value && _annoDragOrig) {
-    const dx = p.x - _annoStart.x
-    const dy = p.y - _annoStart.y
-    const a = annotations.value.find((x) => x.id === annoSelected.value)
-    if (!a) return
-    if (a.type === 'rect') {
-      a.x = _annoDragOrig.x + dx
-      a.y = _annoDragOrig.y + dy
-    } else if (a.type === 'circle') {
-      a.x = _annoDragOrig.x + dx
-      a.y = _annoDragOrig.y + dy
-    }
-    annotations.value = [...annotations.value]
-    renderAnnos()
-    return
-  }
-  // 绘制中
-  if (!_annoDrawing.value || !_annoCurrent) return
-  if (_annoCurrent.type === 'rect') {
-    _annoCurrent.w = p.x - _annoStart.x
-    _annoCurrent.h = p.y - _annoStart.y
-  } else if (_annoCurrent.type === 'circle') {
-    _annoCurrent.w = p.x - _annoStart.x
-    _annoCurrent.h = p.y - _annoStart.y
-  } else if (_annoCurrent.type === 'pen') {
-    _annoCurrent.points.push(p)
-  }
-  renderAnnos()
-}
-
-function onAnnoMouseDown(e: MouseEvent) {
-  annoStartAt(stageCoords(e))
-}
-function onAnnoMouseMove(e: MouseEvent) {
-  annoMoveAt(stageCoords(e))
-}
-
-function onAnnoMouseUp() {
-  if (_annoDrag) {
-    _annoDrag = false
-    _annoDragOrig = null
-    unbindAnnoWindow()
-    _renderAnnosNow()
-    return
-  }
-  if (!_annoDrawing.value) {
-    unbindAnnoWindow()
-    return
-  }
-  _annoDrawing.value = false
-  unbindAnnoWindow()
-  if (_annoCurrent) {
-    // 防止添加零尺寸标注
-    const skip =
-      (_annoCurrent.type === 'rect' && (_annoCurrent.w === 0 || _annoCurrent.h === 0)) ||
-      (_annoCurrent.type === 'circle' && (_annoCurrent.w === 0 || _annoCurrent.h === 0)) ||
-      (_annoCurrent.type === 'pen' && _annoCurrent.points.length < 2)
-    if (!skip) {
-      annotations.value = [...annotations.value, _annoCurrent]
-    }
-  }
-  _annoCurrent = null
-  renderAnnos()
-}
-
-// ---- 导航 ----
 function goTo(idx: number) {
   if (idx < 0 || idx >= total.value || idx === currentIndex.value) return
   currentIndex.value = idx
@@ -436,59 +239,7 @@ function goNext() {
   goTo(currentIndex.value + 1)
 }
 
-// ---- 键盘 ----
-function onKeydown(e: KeyboardEvent) {
-  // 标注键盘操作优先
-  if (annoTool.value || annoSelected.value) {
-    if (e.key === 'Escape') {
-      if (_annoDrawing.value) {
-        _annoDrawing.value = false
-        _annoCurrent = null
-        renderAnnos()
-        return
-      }
-      if (annoSelected.value) {
-        annoSelected.value = null
-        renderAnnos()
-        return
-      }
-      setAnnoTool(null)
-      return // 取消工具并清理绘制残留
-    }
-    if ((e.key === 'Delete' || e.key === 'Backspace') && annoSelected.value) {
-      deleteAnno(annoSelected.value)
-      return
-    }
-  }
-  // 工具快捷键：再按同一工具键 = 取消（与点击按钮同语义）
-  const k = e.key.toLowerCase()
-  if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-    const map: Record<string, AnnoType> = { r: 'rect', p: 'pen', c: 'circle' }
-    if (k in map) {
-      setAnnoTool(map[k])
-      return
-    }
-  }
-  if (e.key === 'Escape') {
-    // 取消当前标注工具并清理绘制残留（与点击按钮取消一致）
-    if (annoTool.value) {
-      setAnnoTool(null)
-      return
-    }
-    emit('close')
-    return
-  }
-  if (isMulti.value && !annoTool.value) {
-    if (e.key === 'ArrowLeft') {
-      goPrev()
-      return
-    }
-    if (e.key === 'ArrowRight') {
-      goNext()
-      return
-    }
-  }
-}
+// ---- 键盘：onKeydown 由 useImageAnnotation 提供（标注操作优先，无标注态回落 onKeydownFallback）----
 
 // ---- 加载状态 ----
 type LoadState = 'loading' | 'loaded' | 'error'
