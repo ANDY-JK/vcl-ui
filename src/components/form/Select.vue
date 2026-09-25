@@ -23,17 +23,15 @@ const t = useT()
  *
  * 支持模式：select | combobox | menu | cascader | tree-select | date | date-range | time
  */
-import { ref, computed, nextTick, watch, onMounted, onUnmounted, useSlots } from 'vue'
-import { useListVirtual } from './utils/useListVirtual'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
-import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
-import { useDebounceFn } from '@/components/_internal/useDebounce'
 import { useTreeFlatten, type FlattenNode } from '@/components/_internal/useTreeFlatten'
 import { useSelectDatePanel } from './useSelectDatePanel'
 import { useSelectOption } from './useSelectOption'
+import { useSelectFiltering } from './useSelectFiltering'
 import DatePanel from './date-panel/DatePanel.vue'
 import TimeColumns from './date-panel/TimeColumns.vue'
 import type { Option, MenuItem, CascaderOption } from '@/components/shared/types'
@@ -323,107 +321,18 @@ function onTriggerClick(e: MouseEvent) {
 }
 
 /* ════════════════════════════════════════
-   拼音搜索 — 预计算索引 + 缓存
-   每个选项的拼音在全量拼音和首字母只计算一次，存入 Map
-   搜索时直接从缓存读取，避免重复调用 pinyin()
+   拼音过滤 + 防抖搜索 + 下拉虚拟化（编排下沉 useSelectFiltering；
+   共享拼音匹配器：全量拼音/首字母各算一次存 Map，搜索直接读缓存避免重复 pinyin()）
    ════════════════════════════════════════ */
-
-/** 复用共享拼音匹配器（usePinyinSearch.createPinyinMatcher，原 Select 本地实现已迁移并去空格修复） */
-const _pinyinMatcher = createPinyinMatcher(() => props.pinyinEnabled)
-
-/** 选项变化时清理过期缓存项（防止内存泄漏） */
-watch(
-  () => props.options,
-  () => {
-    // 选项列表变化时，清理不在新选项中的缓存项
-    if (!props.options || props.options.length === 0) {
-      _pinyinMatcher.clearCache()
-      return
-    }
-    _pinyinMatcher.pruneCache(new Set(props.options.map((o) => o.label)))
-  },
-)
-
-// select/combobox：comboText 只在有用户输入时非空 → 打开面板（comboText 为空）恒展示全部选项，
-// 选中内容不会把面板过滤成只剩匹配项；tree-select 用面板内搜索框的 searchText
-const filterKeyword = computed(() => (isInputable.value ? comboText.value : searchText.value))
-
-/** 同步匹配：按关键词过滤选项（不走防抖），供 Enter 提交等需要"即时结果"的路径使用 */
-function matchOptions(kw: string): Option[] {
-  if (!props.options) return []
-  if (!kw) return props.options
-  return props.options.filter(
-    (o) =>
-      _pinyinMatcher.match(o.label, kw) ||
-      _pinyinMatcher.match(String(o.value), kw) ||
-      (o._search ? _pinyinMatcher.match(o._search, kw) : false),
-  )
-}
-
-/** Debounced 搜索关键词：200ms 防抖后再生效，避免 1000+ 选项时每次按键全量过滤卡顿 */
-const _debouncedKeyword = ref(filterKeyword.value)
-const { run: _debounceSearch } = useDebounceFn((val: string) => {
-  _debouncedKeyword.value = val
-}, 200)
-watch(filterKeyword, (val) => {
-  // 空值立即生效（清除搜索时无需等待）
-  if (!val) {
-    _debouncedKeyword.value = val
-    return
-  }
-  _debounceSearch(val)
-})
-
-const filteredOptions = computed(() => matchOptions(_debouncedKeyword.value))
-
-/* ── 下拉窗口化（虚拟化）──────────────────────────────
-   .panel-list 只有 200px 可视高，但过去把 filteredOptions 全量渲染成 <button>，
-   1 万选项就是 1 万个看不见的节点。这里只渲染可视窗口 ± overscan。
-   行高必须一致才能用等系数学：带 desc 或用了 #option 插槽的行更高，
-   那种列表直接不启用（宁可全渲染，也不能滚到后面错行）。 */
-const panelListRef = ref<HTMLElement | null>(null)
-/** 实测出的单行高度；0 = 还没测到，此时不启用 */
-const optRowH = ref(0)
-const _slots = useSlots()
-const uniformOptionRows = computed(() => !_slots.option && !filteredOptions.value.some((opt) => !!opt.desc))
-const optVirtual = useListVirtual({
-  container: () => panelListRef.value,
-  itemCount: () => filteredOptions.value.length,
-  rowHeight: () => (uniformOptionRows.value ? optRowH.value : 0),
-})
-/** 窗口内的切片 —— 保留**绝对下标**，因为 option 的 id 与 aria-activedescendant 都按下标对应 */
-const windowedOptions = computed(() => {
-  const all = filteredOptions.value
-  if (!optVirtual.enabled.value) return all.map((opt, index) => ({ opt, index }))
-  return all.slice(optVirtual.start.value, optVirtual.end.value).map((opt, i) => ({
-    opt,
-    index: optVirtual.start.value + i,
-  }))
-})
-
-/** 面板打开、行渲染出来后测一次行高（有界容器才有 clientHeight 可读） */
-async function measureOptionRow() {
-  await nextTick()
-  const el = panelListRef.value?.querySelector('.panel-item') as HTMLElement | null
-  if (el) {
-    const h = el.offsetHeight
-    if (h > 0) {
-      optRowH.value = h
-      // 顺便把可视高取准，首帧就能算出正确窗口
-      if (panelListRef.value) optVirtual.onScroll({ target: panelListRef.value } as unknown as Event)
-    }
-  }
-}
-
-watch(filteredOptions, () => {
-  highlightIdx.value = -1
-  optVirtual.reset()
-})
-
-// 键盘上下键走出窗口时把那一行滚进可视区
-watch(highlightIdx, (i) => {
-  if (i >= 0) optVirtual.scrollToIndex(i)
-})
+const { filteredOptions, matchOptions, panelListRef, optVirtual, windowedOptions, measureOptionRow } =
+  useSelectFiltering({
+    options: () => props.options,
+    pinyinEnabled: () => props.pinyinEnabled,
+    isInputable: () => isInputable.value,
+    comboText,
+    searchText,
+    highlightIdx,
+  })
 
 /* ════════════════════════════════════════
    显示文本

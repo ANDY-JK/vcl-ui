@@ -400,8 +400,8 @@ console.log(`[6] 原生 color 输入值归一 出现=${colorSites} 未登记=${c
 // 只拦增长不追溯存量，止涨后再随重构逐步回收。抬线必须带新实测值；超线提交＝拆分信号。
 const LINE_LIMITS = {
   'form-builder': 800, // 09-04 收官纪律
-  data: 3150, // DataTable.vue 3047（截图/全屏机械层下沉后）止涨，余量 103
-  form: 1650, // Select.vue 1581 现状止涨
+  data: 3150, // DataTable.vue 3049（截图/全屏机械层下沉后）止涨，余量 101
+  form: 1500, // Select.vue 1399（过滤/虚拟化下沉 useSelectFiltering 后）止涨，余量 101
   layout: 950, // AppLayout.vue 896 现状止涨
   'route-planner': 850, // utils/route-planning.ts 811 现状止涨
 }
