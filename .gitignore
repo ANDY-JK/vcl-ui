@@ -82,3 +82,4 @@ tests/playwright.localport.config.ts
 # VitePress 文档站产物（Q9）
 docs-site/.vitepress/dist
 docs-site/.vitepress/cache
+theme.config.json

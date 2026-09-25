@@ -39,6 +39,7 @@
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:demo-props": "node scripts/check-demo-props.mjs",
     "gen:docs": "node scripts/gen-docs.mjs",
+    "gen:theme": "node scripts/gen-theme.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "docs:dev": "vitepress dev docs-site",
     "docs:build": "vitepress build docs-site",

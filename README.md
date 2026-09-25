@@ -71,6 +71,30 @@ import { Input, Select } from 'vcl-ui/form'
 > 引了域 CSS 就不必再引全量。注意：全量 CSS 产物按 chunk 碎片组装于 build 后
 > （`scripts/emit-css.mjs`），改动构建配置时留意该脚本的映射守卫。
 
+### 主题定制（令牌覆盖 → 产物 CSS）
+
+主题 = 设计令牌（`src/components/tokens.css` 的 `:root` / `:root[data-theme='dark']` 双块）
++ `useTheme()` 运行时切换。定制主题走「覆盖令牌」，不碰库 CSS：
+
+```bash
+# 1) 生成配置模板（light/dark 双块，示例注释说明主色 4 联动令牌）
+node scripts/gen-theme.mjs --init        # → theme.config.json
+# 2) 填入覆盖（令牌名必须 ∈ tokens.css 声明集，打错直接报错并给近似候选）
+# 3) 生成产物
+npm run gen:theme                         # → dist/theme.css
+```
+
+宿主引入顺序（产物追加在库 CSS 之后才覆盖得动）：
+
+```ts
+import 'vcl-ui/dist/vcl-ui.css'
+import 'vcl-ui/dist/theme.css'   // 或本地开发路径
+```
+
+- 配置分 `light` / `dark` 双块：暗色块漏写时，切暗色后定制值会被库的暗色令牌盖回——工具按暗色块**单独**出 `:root[data-theme='dark']` 段，避免只改亮色的隐形失效
+- 空配置也生成占位产物（`/* 空主题 */`），宿主可无条件引入，定制与否不改变引入代码
+- 值含 `;{}"` 注入字符、键非 `--kebab-case`、令牌未在 tokens.css 声明——一律报错不出产物（`check:css-tokens` 只查库内引用，宿主侧靠这道闸）
+
 ### 基本使用
 
 ```vue
