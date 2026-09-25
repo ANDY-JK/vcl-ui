@@ -21,7 +21,7 @@ const FLOORS = {
   _internal: [78, 73, 80], // 工具层，最接近 100 的域
   basic: [78, 68, 84],
   feedback: [80, 73, 77], // 2026-09-25 抬升：useBeep/useNotify 17 条（提示音四配方/无 ctx 兜底/closed 重置/解锁幂等 · 通知权限三态/点击行为/autoClose/拒绝路径），73+/65+/72+ → 83.8/76.2/80.4
-  data: [61, 49, 60], // 2026-09-25 三批抬升：①useTableColumns 20+useTableTooltip 11（58/46/59）②cell-clipboard 18+cell-keyboard 19+canvas-screenshot 5（64.5/52.1/63.7）；DataTable 主文件交互细节仍靠 e2e
+  data: [64, 50, 63], // 2026-09-25 四批抬升：①useTableColumns 20+useTableTooltip 11 ②cell-clipboard 18+cell-keyboard 19+canvas-screenshot 5 ③filter/extras 补测 25（跨列计数/render 异常/四向排序/externalFilters 同步/CSV 公式注入/Excel 惰性导出/右键菜单/全局事件）；实测 67.6/53.9/66.0；DataTable 主文件交互细节仍靠 e2e
   'form-builder': [55, 46, 48],
   layout: [61, 38, 52],
   storage: [48, 32, 42], // 洼地：indexedDB.ts 环境性死角（happy-dom 无原生 IDB），靠 e2e
