@@ -2,8 +2,10 @@
 import { ref, watch, computed, nextTick, onMounted, onUnmounted, toRef } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Toast from '@/components/feedback/Toast.vue'
-import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_internal/useScreenshot'
 import { boostZTop } from '@/components/_internal/z-top'
+import type { Annotation, AnnoType } from './composables/annotation-types'
+import { paintAnno } from './composables/image-anno-paint'
+import { useImageExport } from './composables/useImageExport'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useToastNotify } from '@/components/_internal/useToastNotify'
 import { useT } from '@/components/_internal/i18n'
@@ -87,34 +89,7 @@ function setAnnoTool(t: AnnoType | null) {
   renderAnnos()
 }
 
-// ---- 标注系统（仅保留矩形 / 圆形 / 画笔） ----
-type AnnoType = 'rect' | 'circle' | 'pen'
-interface AnnoBase {
-  type: AnnoType
-  id: string
-  color: string
-  lw: number
-}
-interface RectAnno extends AnnoBase {
-  type: 'rect'
-  x: number
-  y: number
-  w: number
-  h: number
-}
-interface CircleAnno extends AnnoBase {
-  type: 'circle'
-  x: number
-  y: number
-  w: number
-  h: number
-}
-interface PenAnno extends AnnoBase {
-  type: 'pen'
-  points: { x: number; y: number }[]
-}
-type Annotation = RectAnno | CircleAnno | PenAnno
-
+// ---- 标注系统（仅保留矩形 / 圆形 / 画笔；类型族下沉 composables/annotation-types） ----
 const annotations = ref<Annotation[]>([])
 const annoTool = ref<AnnoType | null>(null)
 const annoColor = ref('#f43f5e')
@@ -229,83 +204,6 @@ function stageCoords(e: MouseEvent) {
 }
 
 // ---- Canvas 渲染 ----
-// 绘制单条标注；s 为缩放因子（导出合成图时按图片像素重绘），sel 为选中高亮
-function paintAnno(ctx: CanvasRenderingContext2D, a: Annotation, sel: boolean, s = 1) {
-  // 导出时线宽保底 2px：过细描边（如 1.5px）抗锯齿后几乎不可见
-  const lw = Math.max(2, a.lw * s)
-  ctx.strokeStyle = a.color
-  ctx.fillStyle = a.color
-  ctx.lineWidth = lw
-
-  if (a.type === 'rect') {
-    const [rx, ry, rw, rh] = a.w >= 0 ? [a.x, a.y, a.w, a.h] : [a.x + a.w, a.y + a.h, -a.w, -a.h]
-    if (sel) ctx.setLineDash([5, 3])
-    else ctx.setLineDash([])
-    ctx.strokeRect(rx, ry, rw, rh)
-    if (sel) {
-      const corners = [
-        { x: rx, y: ry },
-        { x: rx + rw, y: ry },
-        { x: rx, y: ry + rh },
-        { x: rx + rw, y: ry + rh },
-      ]
-      ctx.setLineDash([])
-      ctx.fillStyle = '#fff'
-      ctx.strokeStyle = '#000'
-      ctx.lineWidth = 1
-      for (const c of corners) {
-        ctx.fillRect(c.x - 4, c.y - 4, 8, 8)
-        ctx.strokeRect(c.x - 4, c.y - 4, 8, 8)
-      }
-    }
-  } else if (a.type === 'circle') {
-    const cx = a.x + a.w / 2
-    const cy = a.y + a.h / 2
-    const rx = Math.abs(a.w) / 2
-    const ry = Math.abs(a.h) / 2
-    if (sel) ctx.setLineDash([5, 3])
-    else ctx.setLineDash([])
-    ctx.beginPath()
-    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2)
-    ctx.stroke()
-    if (sel) {
-      ctx.setLineDash([])
-      const corners = [
-        { x: a.x, y: a.y },
-        { x: a.x + a.w, y: a.y },
-        { x: a.x, y: a.y + a.h },
-        { x: a.x + a.w, y: a.y + a.h },
-      ]
-      ctx.fillStyle = '#fff'
-      ctx.strokeStyle = '#000'
-      ctx.lineWidth = 1
-      for (const c of corners) {
-        ctx.fillRect(c.x - 4, c.y - 4, 8, 8)
-        ctx.strokeRect(c.x - 4, c.y - 4, 8, 8)
-      }
-    }
-  } else if (a.type === 'pen') {
-    ctx.lineCap = 'round'
-    ctx.setLineDash([])
-    ctx.beginPath()
-    if (sel) {
-      ctx.strokeStyle = '#fff'
-      ctx.lineWidth = lw + 2 * s
-    }
-    for (let i = 0; i < a.points.length; i++) {
-      const p = a.points[i]
-      if (i === 0) {
-        ctx.moveTo(p.x, p.y)
-      } else {
-        ctx.lineTo(p.x, p.y)
-      }
-    }
-    ctx.stroke()
-  }
-  ctx.setLineDash([])
-  ctx.globalAlpha = 1
-}
-
 // renderAnnos rAF 节流：避免 mousemove 高频调用导致全量重绘卡顿
 let _renderRAF: number | null = null
 function renderAnnos() {
@@ -763,99 +661,18 @@ const imgEl = ref<HTMLImageElement | null>(null)
 // 操作反馈走 Toast 通知（右下角弹窗），不用工具栏小字（复用共享 notify）
 const { toastRef, notify } = useToastNotify()
 
-// 标注坐标从 stage 像素换算为图片像素（基于当前显示比例；旋转/翻转时标注不联动，与画布行为一致）
-// offX/offY = 图片显示区域左/上边缘相对 stage 的偏移（getBoundingClientRect 含 transform，映射跟随缩放平移）
-function mapAnnoToImage(a: Annotation, sx: number, sy: number, offX: number, offY: number): Annotation {
-  if (a.type === 'pen') return { ...a, points: a.points.map((p) => ({ x: (p.x - offX) * sx, y: (p.y - offY) * sy })) }
-  return { ...a, x: (a.x - offX) * sx, y: (a.y - offY) * sy, w: a.w * sx, h: a.h * sy }
-}
-
-async function buildExportCanvas(): Promise<HTMLCanvasElement | null> {
-  const img = imgEl.value
-  const stage = annoCanvas.value?.parentElement
-  if (!img || !stage || !img.naturalWidth || !img.naturalHeight) return null
-  // 跨域图片直接 drawImage 会污染 canvas 导致 toBlob 失败，改用 CORS fetch 取图
-  let source: CanvasImageSource = img
-  try {
-    const res = await fetch(img.src, { mode: 'cors', cache: 'force-cache' })
-    if (res.ok) {
-      const blob = await res.blob()
-      try {
-        source = await createImageBitmap(blob)
-      } catch {
-        // SVG 等 createImageBitmap 不支持的格式：blob URL + Image（同源绘制不污染）
-        const url = URL.createObjectURL(blob)
-        const bmpImg = new Image()
-        await new Promise<void>((resolve, reject) => {
-          bmpImg.onload = () => resolve()
-          bmpImg.onerror = () => reject(new Error('blob decode fail'))
-          bmpImg.src = url
-        })
-        URL.revokeObjectURL(url)
-        source = bmpImg
-      }
-    }
-  } catch {
-    /* 服务端无 CORS 头时退回直接绘制，toBlob 阶段会失败并提示 */
-  }
-  const cvs = document.createElement('canvas')
-  cvs.width = img.naturalWidth
-  cvs.height = img.naturalHeight
-  const ctx = cvs.getContext('2d')
-  if (!ctx) return null
-  ctx.drawImage(source, 0, 0, cvs.width, cvs.height)
-  // getBoundingClientRect 含 transform，映射跟随当前缩放平移
-  const imgR = img.getBoundingClientRect()
-  const stageR = stage.getBoundingClientRect()
-  const offX = imgR.left - stageR.left
-  const offY = imgR.top - stageR.top
-  const sx = cvs.width / imgR.width
-  const sy = cvs.height / imgR.height
-  const sAvg = (sx + sy) / 2
-  for (const a of annotations.value) {
-    paintAnno(ctx, mapAnnoToImage(a, sx, sy, offX, offY), false, sAvg)
-  }
-  return cvs
-}
-
-async function toPngBlob(cvs: HTMLCanvasElement): Promise<Blob | null> {
-  try {
-    return await new Promise((r) => cvs.toBlob((b) => r(b), 'image/png'))
-  } catch {
-    return null // 跨域图片污染 canvas 时抛 SecurityError
-  }
-}
-
-async function downloadImage() {
-  if (_loadState.value !== 'loaded') return
-  const cvs = await buildExportCanvas()
-  if (!cvs) {
-    notify($t('imagePreview.exportFailNotLoaded'), 'error')
-    return
-  }
-  try {
-    const ok = downloadScreenshot(cvs.toDataURL('image/png'), `${displayTitle.value || 'image'}.png`)
-    notify(ok ? $t('imagePreview.downloadOk') : $t('imagePreview.downloadFail'), ok ? 'success' : 'error')
-  } catch {
-    notify($t('imagePreview.exportFailCrossOrigin'), 'error')
-  }
-}
-
-async function copyImage() {
-  if (_loadState.value !== 'loaded') return
-  const cvs = await buildExportCanvas()
-  if (!cvs) {
-    notify($t('imagePreview.exportFailNotLoaded'), 'error')
-    return
-  }
-  const blob = await toPngBlob(cvs)
-  if (!blob) {
-    notify($t('imagePreview.exportFailCrossOrigin'), 'error')
-    return
-  }
-  const ok = await copyScreenshotToClipboard(blob)
-  notify(ok ? $t('imagePreview.copyOk') : $t('imagePreview.copyFail'), ok ? 'success' : 'error')
-}
+// ---- 导出为 PNG（管道下沉 useImageExport；本文件只保留接线）----
+// displayTitle / _loadState 声明在本接线之后，但 downloadImage/copyImage 只在用户点按时
+// 才执行（届时已初始化），运行时读取安全。
+const { downloadImage, copyImage } = useImageExport({
+  imgEl,
+  annoCanvas,
+  annotations,
+  isLoaded: () => _loadState.value === 'loaded',
+  title: () => displayTitle.value,
+  t: $t,
+  notify,
+})
 
 // ---- 标题 ----
 const displayTitle = computed(() => {
