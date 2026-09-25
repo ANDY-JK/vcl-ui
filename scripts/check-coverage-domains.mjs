@@ -20,8 +20,8 @@ const REPORT = path.join(process.cwd(), 'reports/coverage/coverage-final.json')
 const FLOORS = {
   _internal: [78, 73, 80], // 工具层，最接近 100 的域
   basic: [78, 68, 84],
-  feedback: [73, 65, 72],
-  data: [53, 44, 58], // DataTable 3190 行主文件拉低；交互细节靠 e2e
+  feedback: [80, 73, 77], // 2026-09-25 抬升：useBeep/useNotify 17 条（提示音四配方/无 ctx 兜底/closed 重置/解锁幂等 · 通知权限三态/点击行为/autoClose/拒绝路径），73+/65+/72+ → 83.8/76.2/80.4
+  data: [58, 46, 59], // 2026-09-25 抬升：useTableColumns 20 条（显隐/固定级联/拖拽排序/列宽拖拽/autoFit 三分支/卡片视图）+ useTableTooltip 11 条（门禁/转义/上下翻转/取消/键盘），56.4/47.4/60.7 → 61.1/49.9/62.6；DataTable 主文件交互细节仍靠 e2e
   'form-builder': [55, 46, 48],
   layout: [61, 38, 52],
   storage: [48, 32, 42], // 洼地：indexedDB.ts 环境性死角（happy-dom 无原生 IDB），靠 e2e
