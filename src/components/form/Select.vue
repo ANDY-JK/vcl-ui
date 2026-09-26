@@ -971,6 +971,7 @@ const {
 
             <!-- 空选项状态 -->
             <div v-else-if="!filteredOptions.length" class="panel-status">
+              <!-- @slot empty: 下拉面板空选项态内容 -->
               <slot name="empty">
                 <template v-if="isInputable && allowCreate && comboText">{{
                   t('form.enterToUse', { text: comboText })
@@ -1002,6 +1003,7 @@ const {
                 :aria-selected="isSelected(opt)"
                 @click="selectOption(opt)"
               >
+                <!-- @slot option: 单个选项的自定义渲染（作用域：opt、selected） -->
                 <slot name="option" :opt="opt" :selected="isSelected(opt)">
                   <IconSvg v-if="opt.icon" :type="opt.icon" size="sm" />
                   <div class="item-text">

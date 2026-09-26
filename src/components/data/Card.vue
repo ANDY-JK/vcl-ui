@@ -120,12 +120,15 @@ const iconBg = computed(() =>
       <component :is="titleAs" v-if="title" class="grid-title">
         {{ title }}
       </component>
+      <!-- @slot header: 卡片头部区域（自定义标题，与 title 属性并存） -->
       <slot name="header" />
     </div>
     <div class="grid-body">
+      <!-- @slot default: 卡片主体内容 -->
       <slot />
     </div>
     <div v-if="$slots.footer" class="grid-footer">
+      <!-- @slot footer: 卡片底部区域（仅传入时渲染） -->
       <slot name="footer" />
     </div>
   </div>

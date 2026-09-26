@@ -13,6 +13,7 @@
       <div v-if="!props.hideBrand" class="login-left">
         <div class="brand-logo">
           <div class="logo-icon">
+            <!-- @slot logo: 品牌 Logo；不传则回退内置图标（可替换为企业 Logo 图片） -->
             <slot name="logo">
               <IconSvg type="lock" size="lg" color="#fff" />
             </slot>

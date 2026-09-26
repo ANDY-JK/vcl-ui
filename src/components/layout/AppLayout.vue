@@ -252,11 +252,13 @@ function onProgressMouseUp() {
               <button class="topbar-tool-text active">编辑</button>
               <button class="topbar-tool-label"><IconSvg type="download" size="sm" /><span>导出</span></button>
           -->
+          <!-- @slot topbar-tools: 顶栏工具栏左端自定义按钮区 -->
           <slot name="topbar-tools" />
         </div>
 
         <!-- 用户区 -->
         <div class="vcl-topbar-right">
+          <!-- @slot topbar-right: 顶栏右侧用户区；不传则回退基于 username 属性的内置头像 + 用户名 -->
           <slot name="topbar-right">
             <template v-if="username">
               <div class="vcl-user-info">

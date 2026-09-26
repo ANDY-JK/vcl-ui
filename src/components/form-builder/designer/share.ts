@@ -13,6 +13,7 @@
 
 import { FORM_DESIGN_VERSION, type FormDesign } from './types'
 
+/** 设计分享码前缀：FD1.<base64>，指向单份完整表单设计（容量大，与 S.<id> 短链互补） */
 export const SHARE_CODE_PREFIX = 'FD1.'
 /** 短链前缀：S.<formId>，指向 store 中已保存的表单设计 */
 export const SHARE_ID_PREFIX = 'S.'

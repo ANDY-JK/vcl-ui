@@ -115,6 +115,7 @@ const supStyle = computed(() => {
 <template>
   <!-- 角标模式：包裹内容 + 右上角徽标 -->
   <span v-if="isSupMode" class="tag-sup-wrap">
+    <!-- @slot default: 角标模式下被包裹的内容（右上角显示数字/圆点徽标） -->
     <slot />
     <span
       v-if="visible"
@@ -134,6 +135,7 @@ const supStyle = computed(() => {
     :class="[`tag-${variant}`, `tag-${size}`, { rounded, dot, 'tag-has-text': !dot && displayText }]"
     :style="colorStyle"
   >
+    <!-- @slot default: 内联标签显示内容；不传则回退 text 属性 -->
     <slot>{{ displayText }}</slot>
     <button
       v-if="closable && !dot"

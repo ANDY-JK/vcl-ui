@@ -75,6 +75,7 @@ const rowList = computed(() => {
       <span v-for="row in rowList" :key="row.key" class="skel-line" :style="{ width: row.width }" />
     </div>
   </div>
+  <!-- @slot default: 非骨架态的自定义加载内容（即待展示内容本身） -->
   <slot v-else />
 </template>
 

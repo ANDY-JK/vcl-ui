@@ -23,7 +23,10 @@ withDefaults(defineProps<Props>(), {
   fullWidth: false,
 })
 
-const emit = defineEmits<{ /** 点击操作按钮 */ action: [] }>()
+const emit = defineEmits<{
+  /** 点击操作按钮 */
+  action: []
+}>()
 
 const iconMap: Record<string, string> = {
   success: 'circle-check',
@@ -55,8 +58,10 @@ const colorMap: Record<string, string> = {
     </p>
     <div v-if="$slots.extra || actionText" class="result-actions">
       <Button v-if="actionText" :text="actionText" variant="primary" @click="emit('action')" />
+      <!-- @slot extra: 结果区底部追加操作按钮（与 actionText 按钮并存） -->
       <slot name="extra" />
     </div>
+    <!-- @slot default: 结果区底部扩展内容 -->
     <slot />
   </div>
 </template>

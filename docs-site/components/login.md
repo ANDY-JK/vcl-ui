@@ -48,17 +48,17 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `forgot-text` | — | &#123;&#123; t('login.forgotPasswordQ') &#125;&#125; |
-| `logo` | — | — |
-| `register-prompt` | — | &#123;&#123; t('login.registerPrompt') &#125;&#125; &#123;&#123; t('lo |
-| `register-text` | — | &#123;&#123; t('login.registerNow') &#125;&#125; |
-| `remember-text` | — | &#123;&#123; t('login.rememberUsername') &#125;&#125; |
-| `social-phone-text` | — | &#123;&#123; t('login.socialPhone') &#125;&#125; |
-| `subtitle` | — | &#123;&#123; tenantMode ? t('login.welcomeSubtitle |
-| `tenant-footer-text` | — | &#123;&#123; t('login.tenantFooter') &#125;&#125; |
-| `welcome-title` | — | &#123;&#123; t('login.welcomeTitle') &#125;&#125; |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `forgot-text` | — | 忘记密码入口文案区 | &#123;&#123; t('login.forgotPasswordQ') &#125;&#125; |
+| `logo` | — | 品牌 Logo；不传则回退内置图标（可替换为企业 Logo 图片） | — |
+| `register-prompt` | — | 注册提示文案区 | &#123;&#123; t('login.registerPrompt') &#125;&#125; &#123;&#123; t('lo |
+| `register-text` | — | 注册入口文案区 | &#123;&#123; t('login.registerNow') &#125;&#125; |
+| `remember-text` | — | 记住用户名选项文案区 | &#123;&#123; t('login.rememberUsername') &#125;&#125; |
+| `social-phone-text` | — | 社交登录手机号文案区 | &#123;&#123; t('login.socialPhone') &#125;&#125; |
+| `subtitle` | — | 副标题区 | &#123;&#123; tenantMode ? t('login.welcomeSubtitle |
+| `tenant-footer-text` | — | 租户模式底部文案区 | &#123;&#123; t('login.tenantFooter') &#125;&#125; |
+| `welcome-title` | — | 欢迎标题区；不传则回退按 tenantMode 拼接的内置文案 | &#123;&#123; t('login.welcomeTitle') &#125;&#125; |
 
 ## `RegisterPage`
 
@@ -89,10 +89,10 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `extra-fields` | — | — |
-| `logo` | — | — |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `extra-fields` | — | 基础表单之后追加的扩展字段区 | — |
+| `logo` | — | 品牌 Logo；不传则回退内置图标（可替换为企业 Logo 图片） | — |
 
 ## `ForgotPasswordPage`
 
@@ -118,9 +118,9 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `logo` | — | — |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `logo` | — | 品牌 Logo；不传则回退内置图标（可替换为企业 Logo 图片） | — |
 
 ## `PortalLogin`
 
@@ -144,8 +144,8 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `footer` | — | — |
-| `logo` | — | — |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `footer` | — | 底部区域（如版权/帮助链接） | — |
+| `logo` | — | 品牌 Logo；不传则回退内置图标（可替换为企业 Logo 图片） | — |
 

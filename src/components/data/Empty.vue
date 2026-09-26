@@ -29,6 +29,7 @@ withDefaults(defineProps<Props>(), {
       {{ description }}
     </p>
     <div v-if="$slots.default" class="empty-action">
+      <!-- @slot default: 空状态底部操作区（如「刷新/重试」按钮） -->
       <slot />
     </div>
   </div>

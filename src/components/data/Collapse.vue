@@ -121,6 +121,7 @@ function toggle() {
       :style="{ maxHeight: contentMaxH }"
     >
       <div class="collapse-body">
+        <!-- @slot default: 面板主体内容（展开时展示） -->
         <slot />
       </div>
     </div>

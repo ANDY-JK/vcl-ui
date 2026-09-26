@@ -446,6 +446,7 @@ const displayTitle = computed(() => {
               <IconSvg type="copy" size="sm" />
             </button>
             <span v-if="isMulti" class="ip-counter">{{ currentIndex + 1 }} / {{ total }}</span>
+            <!-- @slot actions: 预览顶部工具栏右端追加的操作按钮 -->
             <slot name="actions" />
           </div>
         </div>

@@ -183,6 +183,7 @@ onUnmounted(unmountEsc)
           @click.stop
         >
           <div class="drawer-header">
+            <!-- @slot header: 抽屉头部区域；不传则回退 title 属性标题 -->
             <slot name="header">
               <h4 class="drawer-title">
                 {{ title }}
@@ -193,9 +194,11 @@ onUnmounted(unmountEsc)
             </button>
           </div>
           <div class="drawer-body">
+            <!-- @slot default: 抽屉主体内容 -->
             <slot />
           </div>
           <div v-if="$slots.footer" class="drawer-footer">
+            <!-- @slot footer: 抽屉底部区域（仅传入时渲染，如按钮条） -->
             <slot name="footer" />
           </div>
         </div>

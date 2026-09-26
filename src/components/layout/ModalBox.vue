@@ -182,6 +182,7 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
     @update:visible="emit('update:visible', $event)"
     @close="emit('close')"
   >
+    <!-- @slot default: 模态框主体内容（detail 模式组合详情区另算） -->
     <slot />
 
     <!-- detail 模式 -->
@@ -220,6 +221,7 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
 
     <!-- 底部 -->
     <template v-if="showFooter" #footer>
+      <!-- @slot footer: 模态框底部按钮区；不传则回退按 mode 类型的内置按钮组（form 模式为取消/提交） -->
       <slot name="footer">
         <template v-if="modalType === 'form'">
           <Button :text="t('common.cancel')" variant="secondary" @click="close" />

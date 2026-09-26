@@ -107,7 +107,6 @@ const weeks = computed(() => {
   return rows
 })
 
-
 function cellAria(cell: DateCell, idx: number): string {
   const wd = (tm('form.weekdays') as string[])[idx % 7] ?? ''
   return t('form.dateCellAria', { ymd: cell.iso, weekday: wd })
@@ -183,7 +182,9 @@ function onToday() {
     <button type="button" class="dp-nav-btn" :aria-label="t('form.prevMonth')" @click="prevMonth">
       <IconSvg type="chevron-left" size="sm" />
     </button>
-    <span class="dp-title" role="status" aria-live="polite">{{ t('form.yearMonth', { year: modelMonth.year, month: modelMonth.month }) }}</span>
+    <span class="dp-title" role="status" aria-live="polite">{{
+      t('form.yearMonth', { year: modelMonth.year, month: modelMonth.month })
+    }}</span>
     <button type="button" class="dp-nav-btn" :aria-label="t('form.nextMonth')" @click="nextMonth">
       <IconSvg type="chevron-right" size="sm" />
     </button>
@@ -220,6 +221,7 @@ function onToday() {
   <div class="dp-footer" :class="slots.actions ? 'dp-footer--actions' : 'dp-footer--center'">
     <button type="button" class="dp-today-btn" @click="onToday">{{ t('form.today') }}</button>
     <span v-if="slots.actions" class="dp-footer-spacer" />
+    <!-- @slot actions: 面板底部右侧自定义按钮区 -->
     <slot name="actions" />
   </div>
 </template>

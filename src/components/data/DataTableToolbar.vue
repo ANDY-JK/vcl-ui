@@ -124,20 +124,10 @@ function handleClearSort(): void {
       <div class="toolbar-right">
         <!-- 编辑撤销/重做（仅编辑模式；键盘等价 Ctrl+Z / Ctrl+Y，按钮给触屏与可发现性） -->
         <template v-if="editable">
-          <button
-            class="toolbar-export-btn"
-            :title="t('table.undo')"
-            :disabled="!canUndo"
-            @click="undoFromToolbar()"
-          >
+          <button class="toolbar-export-btn" :title="t('table.undo')" :disabled="!canUndo" @click="undoFromToolbar()">
             <IconSvg type="undo-2" size="sm" />
           </button>
-          <button
-            class="toolbar-export-btn"
-            :title="t('table.redo')"
-            :disabled="!canRedo"
-            @click="redoFromToolbar()"
-          >
+          <button class="toolbar-export-btn" :title="t('table.redo')" :disabled="!canRedo" @click="redoFromToolbar()">
             <IconSvg type="redo-2" size="sm" />
           </button>
         </template>
@@ -233,6 +223,7 @@ function handleClearSort(): void {
           {{ t('table.batchEdit', { n: _selectedKeys.length }) }}
         </button>
         <!-- 自定义工具栏按钮（使用方扩展：刷新/导入等） -->
+        <!-- @slot toolbar-actions: 工具栏右侧自定义操作区（使用方扩展：刷新/导入等） -->
         <slot name="toolbar-actions" />
       </div>
     </div>

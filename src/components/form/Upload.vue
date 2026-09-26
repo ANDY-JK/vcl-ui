@@ -397,6 +397,7 @@ onUnmounted(() => {
 
   <!-- ===== default 变体：标准上传区 ===== -->
   <div v-else class="upload-wrap" @paste="onPaste">
+    <!-- @slot trigger: 上传触发区（作用域：open-file-dialog 手动选择文件入口） -->
     <slot name="trigger" :open-file-dialog="triggerFileInput">
       <div
         class="upload-area"
@@ -436,6 +437,7 @@ onUnmounted(() => {
     </slot>
 
     <div v-if="files.length" class="upload-list">
+      <!-- @slot default: 单个文件项的自定义渲染（作用域：key、file、index） -->
       <slot v-for="(f, idx) in files" :key="f.id" name="file-item" :file="f" :index="idx">
         <div class="upload-item">
           <!-- 图片文件：缩略图可点击进内置预览；非图片保持通用文件图标 -->

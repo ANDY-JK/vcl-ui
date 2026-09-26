@@ -193,10 +193,12 @@ function parseEmits(typeNode, ctx) {
 }
 
 /**
- * 提取 SFC 模板里的 slot 声明 → [{ name, scope, fallback }]
+ * 提取 SFC 模板里的 slot 声明 → [{ name, scope, doc, fallback }]
  * 形态覆盖：`<slot />`（default）、`<slot name="x" />`、带兜底内容的
  * `<slot name="x">…</slot>`、作用域参数 `<slot name="x" :a="1" :b="2">`、
  * 条件/循环分支（`<slot v-if/v-else/v-for … name="x">`）——同名去重取信息最全的一条。
+ * 说明列走 @slot 注释协议：`<!-- @slot <name>: <说明> -->`（无名槽位写 default），
+ * 同名多条取最近一条；Vue 编译器默认丢弃模板注释，零运行时产物。
  */
 function parseSlots(file) {
   const src = read(file)
@@ -210,11 +212,16 @@ function parseSlots(file) {
   if (end < start) return []
   const body = src.slice(start, end)
   const found = new Map()
+  // @slot 注释协议：无名槽位写 default；同名多条取模板里最近一条
+  const slotDocs = new Map()
+  for (const c of body.matchAll(/<!--\s*@slot\s+([A-Za-z][\w-]*)\s*:\s*(.+?)\s*-->/g)) {
+    slotDocs.set(c[1], c[2])
+  }
   const upsert = (slot) => {
     const prev = found.get(slot.name)
-    // 信息量优先：有作用域参数 > 有兜底内容 > 空
-    if (!prev || (slot.scope && !prev.scope) || (slot.fallback && !prev.fallback)) {
-      found.set(slot.name, prev ? { ...prev, ...slot } : slot)
+    // 信息量优先：有作用域参数 > 有兜底内容 > 有 @slot 说明 > 空
+    if (!prev || (slot.scope && !prev.scope) || (slot.fallback && !prev.fallback) || (slot.doc && !prev.doc)) {
+      found.set(slot.name, prev ? { ...prev, ...slot, doc: slot.doc || prev.doc } : slot)
     }
   }
   // 逐个 slot 标签：先判自闭合，非自闭合的取到**最近的** </slot> 为止（slot 不嵌套，
@@ -241,7 +248,7 @@ function parseSlots(file) {
         fallback = fallback.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;')
       }
     }
-    upsert({ name, scope, fallback })
+    upsert({ name, scope, fallback, doc: slotDocs.get(name) ?? '' })
   }
   return [...found.values()].sort((a, b) => (a.name === 'default' ? -1 : b.name === 'default' ? 1 : a.name.localeCompare(b.name)))
 }
@@ -530,10 +537,10 @@ for (const domain of DOMAINS) {
     }
     if (api.slots.length) {
       lines.push('### Slots', '')
-      lines.push(tableRow(['插槽', '作用域参数', '兜底内容预览']))
-      lines.push(tableRow(['---', '---', '---']))
+      lines.push(tableRow(['插槽', '作用域参数', '说明', '兜底内容预览']))
+      lines.push(tableRow(['---', '---', '---', '---']))
       for (const s of api.slots) {
-        lines.push(tableRow([`\`${s.name}\``, s.scope ? '`' + s.scope + '`' : '—', s.fallback || '—']))
+        lines.push(tableRow([`\`${s.name}\``, s.scope ? '`' + s.scope + '`' : '—', s.doc || '—', s.fallback || '—']))
       }
       lines.push('')
     }

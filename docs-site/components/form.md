@@ -120,10 +120,10 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `empty` | — | &#123;&#123; t('form.enterToUse', &#123; text: comboTex |
-| `option` | `opt, selected` | &#123;&#123; opt.label &#125;&#125; &#123;&#123; opt.desc &#125;&#125; |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `empty` | — | 下拉面板空选项态内容 | &#123;&#123; t('form.enterToUse', &#123; text: comboTex |
+| `option` | `opt, selected` | 单个选项的自定义渲染（作用域：opt、selected） | &#123;&#123; opt.label &#125;&#125; &#123;&#123; opt.desc &#125;&#125; |
 
 ## `Group`
 
@@ -220,10 +220,10 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `file-item` | `key, file, index` | &#123;&#123; f.name &#125;&#125; &#123;&#123; formatSize(f.size) &#125;&#125; ✓  |
-| `trigger` | `open-file-dialog` | &#123;&#123; t('form.dropHint') &#125;&#125; &#123;&#123; t('form.drag |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `file-item` | `key, file, index` | — | &#123;&#123; f.name &#125;&#125; &#123;&#123; formatSize(f.size) &#125;&#125; ✓  |
+| `trigger` | `open-file-dialog` | 上传触发区（作用域：open-file-dialog 手动选择文件入口） | &#123;&#123; t('form.dropHint') &#125;&#125; &#123;&#123; t('form.drag |
 
 ## `CameraCapture`
 

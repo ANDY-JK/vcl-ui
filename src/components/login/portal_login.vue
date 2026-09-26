@@ -5,6 +5,7 @@
     <div class="login-container" :style="{ '--login-max-width': props.maxWidth }">
       <div class="logo-section">
         <div class="logo-icon">
+          <!-- @slot logo: 品牌 Logo；不传则回退内置图标（可替换为企业 Logo 图片） -->
           <slot name="logo">
             <IconSvg type="layout-dashboard" size="lg" color="#fff" />
           </slot>
@@ -45,6 +46,7 @@
         />
       </div>
 
+      <!-- @slot footer: 底部区域（如版权/帮助链接） -->
       <slot name="footer" />
     </div>
   </div>

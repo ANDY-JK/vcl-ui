@@ -73,6 +73,7 @@ const labelledBy = computed(() => (ctx ? tabIdOf(ctx.idPrefix, props.value) : un
     :tabindex="active ? 0 : undefined"
     class="vcl-tabpanel"
   >
+    <!-- @slot default: 标签页面板内容 -->
     <slot />
   </div>
 </template>

@@ -187,6 +187,7 @@ function onChartReady(inst: ECharts) {
 <template>
   <div ref="rootRef" class="ct-root">
     <div class="ct-header">
+      <!-- @slot header: 图表头部区域；不传则回退 tableTitle 属性标题 -->
       <slot name="header">
         <span v-if="tableTitle" class="ct-title">{{ tableTitle }}</span>
       </slot>
@@ -238,6 +239,7 @@ function onChartReady(inst: ECharts) {
     </div>
 
     <div v-if="$slots.footer" class="ct-footer">
+      <!-- @slot footer: 图表底部扩展区域（仅传入时渲染） -->
       <slot name="footer" />
     </div>
   </div>

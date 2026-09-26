@@ -81,7 +81,7 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `variant` | `'popover' \| 'tooltip'` | `'popover'` | 否 | 'popover' 卡片弹层 \| 'tooltip' 文字气泡 |
-| `title` | `string` | — | 否 | — |
+| `title` | `string` | — | 否 | 浮层标题（popover 模式非空时展示标题行） |
 | `trigger` | `'click' \| 'hover' \| 'focus'` | `'click'` | 否 | 'click' \| 'hover' \| 'focus' — tooltip 模式（有 text）时强制 hover |
 | `text` | `string` | — | 否 | 纯文字快捷模式 → tooltip 行为 |
 | `position` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | 否 | tooltip 方向 |
@@ -89,10 +89,10 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `default` | — | — |
-| `trigger` | — | — |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `default` | — | tooltip 模式为触发器内容；popover 模式为浮层主体内容 | — |
+| `trigger` | — | 触发器元素（popover 模式必填）；不传则回退自带可访问名的纯图标按钮 | — |
 
 ## `Result`
 
@@ -112,14 +112,14 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `action` | `无` | — |
+| `action` | `无` | 点击操作按钮 |
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `default` | — | — |
-| `extra` | — | — |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `default` | — | 结果区底部扩展内容 | — |
+| `extra` | — | 结果区底部追加操作按钮（与 actionText 按钮并存） | — |
 
 ## `Drawer`
 
@@ -152,11 +152,11 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `default` | — | — |
-| `footer` | — | — |
-| `header` | — | &#123;&#123; title &#125;&#125; |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `default` | — | 抽屉主体内容 | — |
+| `footer` | — | 抽屉底部区域（仅传入时渲染，如按钮条） | — |
+| `header` | — | 抽屉头部区域；不传则回退 title 属性标题 | &#123;&#123; title &#125;&#125; |
 
 ## `OfflineIndicator`
 
@@ -191,10 +191,10 @@
 
 ### Slots
 
-| 插槽 | 作用域参数 | 兜底内容预览 |
-| --- | --- | --- |
-| `default` | `key` | — |
-| `fallback` | `error, retry` | ! &#123;&#123; title \|\| t('errorBoundary.title') &#125; |
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `default` | `key` | 正常态子内容（作用域：key，重置时强制重建） | — |
+| `fallback` | `error, retry` | 自定义错误兜底 UI（作用域：error、retry）；不传则回退内置图标 + 标题 + 重试按钮 | ! &#123;&#123; title \|\| t('errorBoundary.title') &#125; |
 
 ## `ConfirmModal`
 

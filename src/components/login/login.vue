@@ -14,6 +14,7 @@
       <div v-if="!props.hideBrand" class="login-left">
         <div class="brand-logo">
           <div class="logo-icon">
+            <!-- @slot logo: 品牌 Logo；不传则回退内置图标（可替换为企业 Logo 图片） -->
             <slot name="logo">
               <IconSvg :type="tenantMode ? 'house' : 'layout-dashboard'" size="lg" color="#fff" />
             </slot>
@@ -40,9 +41,11 @@
       <div class="login-right">
         <div class="login-header">
           <h1>
+            <!-- @slot welcome-title: 欢迎标题区；不传则回退按 tenantMode 拼接的内置文案 -->
             <slot name="welcome-title">{{ t('login.welcomeTitle') }}</slot>
           </h1>
           <p>
+            <!-- @slot subtitle: 副标题区 -->
             <slot name="subtitle">
               {{ tenantMode ? t('login.welcomeSubtitleTenant') : t('login.welcomeSubtitle') }}
             </slot>
@@ -77,8 +80,9 @@
               <span class="checkbox-icon" :class="{ checked: rememberMe }">
                 <IconSvg v-if="rememberMe" type="circle-check" size="sm" />
               </span>
-              <span
-                ><slot name="remember-text">{{ t('login.rememberUsername') }}</slot></span
+              <span>
+                <!-- @slot remember-text: 记住用户名选项文案区 -->
+                <slot name="remember-text">{{ t('login.rememberUsername') }}</slot></span
               >
             </label>
             <button
@@ -87,6 +91,7 @@
               class="forgot-password"
               @click="emit('forgot-password')"
             >
+              <!-- @slot forgot-text: 忘记密码入口文案区 -->
               <slot name="forgot-text">{{ t('login.forgotPasswordQ') }}</slot>
             </button>
           </div>
@@ -107,8 +112,9 @@
             <div class="social-login">
               <button type="button" class="social-btn" @click="emit('social-login', 'phone')">
                 <IconSvg type="house" size="md" class="social-icon" />
-                <span class="social-text"
-                  ><slot name="social-phone-text">{{ t('login.socialPhone') }}</slot></span
+                <span class="social-text">
+                  <!-- @slot social-phone-text: 社交登录手机号文案区 -->
+                  <slot name="social-phone-text">{{ t('login.socialPhone') }}</slot></span
                 >
               </button>
               <button type="button" class="social-btn" @click="emit('social-login', 'wechat')">
@@ -125,14 +131,17 @@
 
         <div class="footer-text">
           <template v-if="tenantMode">
-            <span
-              ><slot name="tenant-footer-text">{{ t('login.tenantFooter') }}</slot></span
+            <span>
+              <!-- @slot tenant-footer-text: 租户模式底部文案区 -->
+              <slot name="tenant-footer-text">{{ t('login.tenantFooter') }}</slot></span
             >
           </template>
           <template v-else>
             <template v-if="showRegister">
+              <!-- @slot register-prompt: 注册提示文案区 -->
               <slot name="register-prompt">{{ t('login.registerPrompt') }}</slot
               ><button type="button" class="register-link" @click="emit('register')">
+                <!-- @slot register-text: 注册入口文案区 -->
                 <slot name="register-text">{{ t('login.registerNow') }}</slot>
               </button>
             </template>
@@ -145,7 +154,19 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
-import { Input, Button, IconSvg, Toast, Divider, useT, useTm, storageGet, storageSet, storageDelete, SUBMIT_UNLOCK_FALLBACK_MS } from './_shared'
+import {
+  Input,
+  Button,
+  IconSvg,
+  Toast,
+  Divider,
+  useT,
+  useTm,
+  storageGet,
+  storageSet,
+  storageDelete,
+  SUBMIT_UNLOCK_FALLBACK_MS,
+} from './_shared'
 
 /** 锁定倒计时的刷新节拍（只做显示，能不能重试按 lockUntil 时间戳判） */
 const _LOCK_TICK_MS = 1000

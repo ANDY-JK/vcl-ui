@@ -15,6 +15,7 @@ import type { FlipDirection } from '@/components/_internal/useFloating'
 interface Props {
   /** 'popover' 卡片弹层 | 'tooltip' 文字气泡 */
   variant?: 'popover' | 'tooltip'
+  /** 浮层标题（popover 模式非空时展示标题行） */
   title?: string
   /** 'click' | 'hover' | 'focus' — tooltip 模式（有 text）时强制 hover */
   trigger?: 'click' | 'hover' | 'focus'
@@ -213,6 +214,7 @@ onUnmounted(() => {
       @focusin="onFocus"
       @focusout="onBlur"
     >
+      <!-- @slot trigger: 触发器元素（popover 模式必填）；不传则回退自带可访问名的纯图标按钮 -->
       <slot v-if="!isTooltip" name="trigger">
         <!-- 默认触发器是纯图标按钮，必须自带 aria-label（axe button-name）；
              调用方传 trigger slot 时自行负责可访问名 -->
@@ -226,6 +228,7 @@ onUnmounted(() => {
           <IconSvg type="circle-alert" size="md" />
         </button>
       </slot>
+      <!-- @slot default: tooltip 模式下的触发器内容 -->
       <slot v-else />
     </span>
 
@@ -249,6 +252,7 @@ onUnmounted(() => {
           <!-- popover 模式 -->
           <template v-else>
             <div v-if="title" :id="titleId" class="popover-title">{{ title }}</div>
+            <!-- @slot default: tooltip 模式为触发器内容；popover 模式为浮层主体内容 -->
             <div class="popover-body"><slot /></div>
           </template>
         </div>

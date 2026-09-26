@@ -2075,6 +2075,7 @@ provideDataTableContext({
         :auto-height="autoHeight"
         :editable="editable"
       >
+        <!-- @slot toolbar-actions: 工具栏右侧自定义操作区（使用方扩展：刷新/导入等） -->
         <template #toolbar-actions><slot name="toolbar-actions" /></template>
       </DataTableToolbar>
 
@@ -2157,6 +2158,7 @@ provideDataTableContext({
                   @dragend="onColDragEnd"
                 >
                   <div class="th-inner">
+                    <!-- @slot header-cell: 表头单元格自定义渲染（作用域：column） -->
                     <slot name="header-cell" :column="col">
                       <span class="th-title">{{ colTitle(col) }}</span>
                     </slot>
@@ -2250,6 +2252,7 @@ provideDataTableContext({
             <tbody v-else-if="isVirtual ? !virtualTotal : !_effectivePagedData.length">
               <tr>
                 <td :colspan="_totalCols || 1">
+                  <!-- @slot empty: 空状态自定义内容（作用域：filtered 当前是否处于筛选态）；不传则回退内置插图 + Result 组合 -->
                   <slot name="empty" :filtered="!!(activeFilters.length || searchTerm)">
                     <!-- 用防抖后的 searchTerm：与实际过滤口径一致，且逐键输入不再触发整表重渲染 -->
                     <Result
@@ -2426,6 +2429,7 @@ provideDataTableContext({
                       "
                     >
                       <span class="cell-text-inner">
+                        <!-- @slot cell: 单元格内容自定义渲染（作用域：column、row、value） -->
                         <slot name="cell" :column="col" :row="row" :value="cellShow(row, col)">
                           <span
                             v-if="typeof col.cell === 'function'"

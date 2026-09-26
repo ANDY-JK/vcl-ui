@@ -13,6 +13,7 @@
       <div v-if="!props.hideBrand" class="login-left">
         <div class="brand-logo">
           <div class="logo-icon">
+            <!-- @slot logo: 品牌 Logo；不传则回退内置图标（可替换为企业 Logo 图片） -->
             <slot name="logo">
               <IconSvg type="layout-dashboard" size="lg" color="#fff" />
             </slot>
@@ -91,6 +92,7 @@
             />
           </template>
 
+          <!-- @slot extra-fields: 基础表单之后追加的扩展字段区 -->
           <slot name="extra-fields" />
 
           <Button :text="t('login.registerBtn')" variant="primary" :loading="_busy" block @click="handleSubmit" />

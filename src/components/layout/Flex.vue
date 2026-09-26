@@ -63,6 +63,7 @@ const flexStyle = computed<CSSProperties>(() => ({
 
 <template>
   <div class="flex" :style="flexStyle">
+    <!-- @slot default: Flex 布局子元素 -->
     <slot />
   </div>
 </template>

@@ -2,6 +2,7 @@
      需我确认：retry 重试逻辑、错误信息展示格式 -->
 <template>
   <div v-if="hasError" class="error-boundary-fallback" role="alert" aria-live="assertive">
+    <!-- @slot fallback: 自定义错误兜底 UI（作用域：error、retry）；不传则回退内置图标 + 标题 + 重试按钮 -->
     <slot name="fallback" :error="error" :retry="retry">
       <div class="eb-icon">!</div>
       <p class="eb-title">
@@ -15,6 +16,7 @@
       </button>
     </slot>
   </div>
+  <!-- @slot default: 正常态子内容（作用域：key，重置时强制重建） -->
   <slot v-else :key="resetKey" />
 </template>
 

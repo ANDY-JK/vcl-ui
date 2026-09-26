@@ -70,6 +70,7 @@ const emit = defineEmits<{
     </span>
     <IconSvg v-else-if="icon" :type="icon" :size="size" color="currentColor" />
     <span v-if="text" class="btn-text">{{ text }}</span>
+    <!-- @slot default: 按钮内容（文字 + 图标组合亦可） -->
     <slot />
     <svg
       v-if="showArrow"
