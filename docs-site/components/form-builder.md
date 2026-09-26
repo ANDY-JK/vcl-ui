@@ -75,7 +75,7 @@
 | `useFormManager` | 表单管理编排：存储实现选择（宿主注入优先）、列表/草稿/收集数据的增删改查与落库调度 |
 | `encodeShareCode` | FormDesign → 分享码（内容不加密：仅传输编码，敏感表单请勿外发） |
 | `decodeShareCode` | 分享码 → FormDesign；非分享码/损坏内容返回 null（导入面板据此走 JSON 路径或报错） |
-| `SHARE_CODE_PREFIX` | 设计分享码前缀：FD1.<base64>，指向单份完整表单设计（容量大，与 S.<id> 短链互补） |
+| `SHARE_CODE_PREFIX` | 设计分享码前缀：FD1 + base64 串，指向单份完整表单设计（容量大，与 S + id 短链互补） |
 
 ---
 

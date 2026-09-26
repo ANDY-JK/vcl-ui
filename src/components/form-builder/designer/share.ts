@@ -13,9 +13,9 @@
 
 import { FORM_DESIGN_VERSION, type FormDesign } from './types'
 
-/** 设计分享码前缀：FD1.<base64>，指向单份完整表单设计（容量大，与 S.<id> 短链互补） */
+/** 设计分享码前缀：FD1 + base64 串，指向单份完整表单设计（容量大，与 S + id 短链互补） */
 export const SHARE_CODE_PREFIX = 'FD1.'
-/** 短链前缀：S.<formId>，指向 store 中已保存的表单设计 */
+/** 短链前缀：S + formId，指向 store 中已保存的表单设计（JSDoc/文档说明文字忌写裸尖括号，VitePress 会当 HTML 标签） */
 export const SHARE_ID_PREFIX = 'S.'
 
 /** 生成短链标识（设计已存 store，仅带 id） */
