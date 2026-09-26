@@ -22,12 +22,12 @@ npm install vcl-ui
 
 **peer 依赖**（按需安装）：
 
-| 包                    | 版本                 | 说明                                                        |
-| --------------------- | -------------------- | ----------------------------------------------------------- |
-| `vue`                 | `^3.4.0`             | 必需。3.4 / 3.5 均可                                        |
-| `echarts`             | `^5.0.0 \|\| ^6.0.0` | 可选 — 仅使用 `chart` 域时需要                              |
-| `echarts-wordcloud`   | `^2.1.0`             | 可选 — 仅使用词云图表（`wordCloud` 类型）时需要            |
-| `vue-router`          | `^4.3.0`             | 可选 — 仅使用 `layout` / `login` / `route-planner` 域时需要 |
+| 包                  | 版本                 | 说明                                                        |
+| ------------------- | -------------------- | ----------------------------------------------------------- |
+| `vue`               | `^3.4.0`             | 必需。3.4 / 3.5 均可                                        |
+| `echarts`           | `^5.0.0 \|\| ^6.0.0` | 可选 — 仅使用 `chart` 域时需要                              |
+| `echarts-wordcloud` | `^2.1.0`             | 可选 — 仅使用词云图表（`wordCloud` 类型）时需要             |
+| `vue-router`        | `^4.3.0`             | 可选 — 仅使用 `layout` / `login` / `route-planner` 域时需要 |
 
 > 词汇说明：**peer 依赖**（专业词）= 不由本库自带、需要你的项目自己装的那类依赖；**可选** = 用不到对应功能就不用装。
 
@@ -74,7 +74,8 @@ import { Input, Select } from 'vcl-ui/form'
 ### 主题定制（令牌覆盖 → 产物 CSS）
 
 主题 = 设计令牌（`src/components/tokens.css` 的 `:root` / `:root[data-theme='dark']` 双块）
-+ `useTheme()` 运行时切换。定制主题走「覆盖令牌」，不碰库 CSS：
+
+- `useTheme()` 运行时切换。定制主题走「覆盖令牌」，不碰库 CSS：
 
 ```bash
 # 1) 生成配置模板（light/dark 双块，示例注释说明主色 4 联动令牌）
@@ -88,7 +89,7 @@ npm run gen:theme                         # → dist/theme.css
 
 ```ts
 import 'vcl-ui/dist/vcl-ui.css'
-import 'vcl-ui/dist/theme.css'   // 或本地开发路径
+import 'vcl-ui/dist/theme.css' // 或本地开发路径
 ```
 
 - 配置分 `light` / `dark` 双块：暗色块漏写时，切暗色后定制值会被库的暗色令牌盖回——工具按暗色块**单独**出 `:root[data-theme='dark']` 段，避免只改亮色的隐形失效
@@ -116,21 +117,21 @@ const handleClick = () => console.log('clicked')
 
 ## 🧩 组件域总览
 
-| 域              | 主要组件                                                            | 说明       |
-| --------------- | ------------------------------------------------------------------- | ---------- |
-| `basic`         | Button / IconSvg / Tag                                              | 基础组件   |
-| `data`          | DataTable / Tree / Collapse / Image / ProgressBar / Skeleton …      | 数据展示   |
-| `form`          | Input / Select / Group / IconPicker / Upload / CameraCapture        | 表单控件   |
-| `feedback`      | Toast / Loading / Popover / Drawer / ConfirmModal / ErrorBoundary … | 反馈       |
-| `nav`           | Tabs / Steps / Pagination / Breadcrumb / Menu                       | 导航       |
-| `layout`        | AppLayout / ModalBox / Flex / AccordionNav                          | 布局       |
-| `chart`         | Chart / BaseChart / ChartTable / ChartLegend（20+ 图表类型）        | 图表       |
-| `login`         | LoginPage / RegisterPage / ForgotPasswordPage / PortalLogin         | 登录       |
-| `storage`       | storage\*（localStorage）/ db\*（IndexedDB）/ createBackend         | 存储       |
-| `amap`          | AmapWidget + setAmapKey 等工具                                      | 高德地图   |
-| `route-planner` | RouteMap / RouteResult / StorePanel …                               | 路线规划   |
-| `form-builder`  | FormDesigner / FormBuilder / FormCollect / FormRenderer             | 低代码表单 |
-| `wc`            | vc-button / vc-input / vc-toast 等 15 个 Custom Elements             | Web Components 封装 |
+| 域              | 主要组件                                                            | 说明                |
+| --------------- | ------------------------------------------------------------------- | ------------------- |
+| `basic`         | Button / IconSvg / Tag                                              | 基础组件            |
+| `data`          | DataTable / Tree / Collapse / Image / ProgressBar / Skeleton …      | 数据展示            |
+| `form`          | Input / Select / Group / IconPicker / Upload / CameraCapture        | 表单控件            |
+| `feedback`      | Toast / Loading / Popover / Drawer / ConfirmModal / ErrorBoundary … | 反馈                |
+| `nav`           | Tabs / Steps / Pagination / Breadcrumb / Menu                       | 导航                |
+| `layout`        | AppLayout / ModalBox / Flex / AccordionNav                          | 布局                |
+| `chart`         | Chart / BaseChart / ChartTable / ChartLegend（20+ 图表类型）        | 图表                |
+| `login`         | LoginPage / RegisterPage / ForgotPasswordPage / PortalLogin         | 登录                |
+| `storage`       | storage\*（localStorage）/ db\*（IndexedDB）/ createBackend         | 存储                |
+| `amap`          | AmapWidget + setAmapKey 等工具                                      | 高德地图            |
+| `route-planner` | RouteMap / RouteResult / StorePanel …                               | 路线规划            |
+| `form-builder`  | FormDesigner / FormBuilder / FormCollect / FormRenderer             | 低代码表单          |
+| `wc`            | vc-button / vc-input / vc-toast 等 15 个 Custom Elements            | Web Components 封装 |
 
 > 组件用法与可运行示例都在 demo 站点里：`npm run dev` 后打开 http://localhost:3721 ，每个组件一页，含 Props 表与交互示例。
 
@@ -189,7 +190,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 
 - **用法示例**：`src/demos/` — 每个组件一页 demo，`npm run dev` 直接看效果与 Props
 - **API 入口**：`src/components/index.ts` — 全部导出与类型，IDE 里可直接跳转
-- **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 设计令牌断档自检 + 语言包对账 + 单测（全局覆盖率地板 + **按域覆盖地板**）+ 构建 + **发包自检** + **文档漂移自检** + 真实浏览器 e2e
+- **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 设计令牌断档自检 + 语言包对账 + 单测（全局覆盖率地板 + **按域覆盖地板**）+ 构建 + **发包自检** + **文档漂移自检** + **文档说明完整性自检** + 真实浏览器 e2e
 - **常量来源自检**：`npm run check:constants` — 六项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量、截断类必须登记判定且用户数据类要绑 `title`、原生 `color` 输入的值必须经归一
 - **语言包对账**：`npm run check:i18n` — zh-CN / en-US 分块与键集一一对应，缺哪边点哪个键
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
@@ -223,6 +224,9 @@ npm run build       # 构建产物到 dist/
 
 文档站的组件 API 页由 `npm run gen:docs` 从源码自动生成（`docs-site/components/`，提交入库），
 改 props/events 后必须重新生成——`check:docs` 闸口（已串入 quality-check 与 CI）会卡漂移。
+API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：props/事件写 `/** */` JSDoc
+（**内联单行 JSDoc TS 不建节点、提取不到，必须独占一行**），slot 写模板注释
+`<!-- @slot name: 说明 -->`（无名槽写 default，同名取最近一条）。
 
 ## 📐 开发规范（改代码前先看）
 
@@ -249,20 +253,21 @@ npm run build       # 构建产物到 dist/
 
 **公开 API（消费方 ref 可调，只增不改语义）**：
 
-| 组件 | 暴露动词 | 用途 |
-|---|---|---|
-| `Chart` / `BaseChart` | `chart`(getter) / `getOption()` / `setOption(opt, opts?)` | ECharts 实例与 option 读写（setOption 自动注入 toolbox） |
-| `AmapWidget` | `getMap()` / `setZoomAndCenter()` / `clearMarkers()` / `renderMarkers()` / `openInfoWindow()` / `closeInfoWindow()` | 地图实例与标记/信息窗控制 |
-| `Toast` | `show(msg\|opts)` / `remove(id)` | 手动 toast（duration≤0 常驻需手动 remove） |
-| `Select` | `openMenu()` | 程序化展开面板 |
-| `Upload` | `retryFile()` / `triggerFileInput()` | 重试失败上传 / 手动打开文件选择 |
-| `FormBuilder` | `stopSubmit` / `setSubmitting` / `submitting` / `getFormData()` / `validate()` / `errors` | 表单提交与校验全家桶 |
-| `login` / `portal_login` / `register` / `forgot-password` | `resetForm()` | 清表单 |
+| 组件                                                      | 暴露动词                                                                                                            | 用途                                                     |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `Chart` / `BaseChart`                                     | `chart`(getter) / `getOption()` / `setOption(opt, opts?)`                                                           | ECharts 实例与 option 读写（setOption 自动注入 toolbox） |
+| `AmapWidget`                                              | `getMap()` / `setZoomAndCenter()` / `clearMarkers()` / `renderMarkers()` / `openInfoWindow()` / `closeInfoWindow()` | 地图实例与标记/信息窗控制                                |
+| `Toast`                                                   | `show(msg\|opts)` / `remove(id)`                                                                                    | 手动 toast（duration≤0 常驻需手动 remove）               |
+| `Select`                                                  | `openMenu()`                                                                                                        | 程序化展开面板                                           |
+| `Upload`                                                  | `retryFile()` / `triggerFileInput()`                                                                                | 重试失败上传 / 手动打开文件选择                          |
+| `FormBuilder`                                             | `stopSubmit` / `setSubmitting` / `submitting` / `getFormData()` / `validate()` / `errors`                           | 表单提交与校验全家桶                                     |
+| `login` / `portal_login` / `register` / `forgot-password` | `resetForm()`                                                                                                       | 清表单                                                   |
 
 **内部区块 expose（⛔ 非公开 API，仅 DataTable 主文件经 ref 驱动，消费方勿依赖）**：
 `DataTableBatchDialog`（`show` / `open` / `close`）、`DataTableColumnSettings`（`show` / `toggle` / `close` / `unfixFromMenu`）、`CaptureFallbackPanel`（`reset`）、`TimeColumns`（`scrollToValue`）。契约类型在 `data/composables/context.ts` 的 `*Expose` interface，随区块拆分演进。
 
 **v2.0 已收敛项（原 v1 破坏性改名/删除，从 1.x 升级需对照）**：
+
 1. ~~`FormBuilder` 的 `validate` / `validateForm` / `validateAndGet` 三个近义入口收敛为单一动词~~ —— ✅ 已删后两个，只留 `validate()`；要数据用 `getFormData()`、要错误明细用 `errors`。
 2. ~~`login` 的 `notifyFailed` / `recordFailedAttempt` 是宿主回写钩子而非组件行为~~ —— ✅ 已删两个暴露方法，改 `authResult` prop（`{ ok, message? }`，watch 驱动同一套锁定计数）。
 3. 审查报告 09-20 曾记「BatchDialog 六近义名 / ColumnSettings 八名」——那是扫描正则把 `show: _batchShow` 的键与源标识符重复计数所致，实际暴露面就是上表 3/4 个动词，以本条为准。
@@ -273,10 +278,10 @@ npm run build       # 构建产物到 dist/
 
 **1. DataTable 宿主联动回调 prop 删了，改事件（Q5）**
 
-| v1 | v2 |
-|---|---|
-| `:on-export="fn"` | `@export="fn"`（语义不变：挂了监听=服务端导出，内置 CSV/Excel 整个跳过） |
-| `:on-toggle-sidebar="fn"` | `@toggle-sidebar="fn"`（没挂监听仍降级 `inject('toggleCollapse')`） |
+| v1                        | v2                                                                       |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `:on-export="fn"`         | `@export="fn"`（语义不变：挂了监听=服务端导出，内置 CSV/Excel 整个跳过） |
+| `:on-toggle-sidebar="fn"` | `@toggle-sidebar="fn"`（没挂监听仍降级 `inject('toggleCollapse')`）      |
 
 **2. 多词事件名统一 kebab-case（N8）** —— 模板监听无需改，仅文档/测试断言口径变化：
 

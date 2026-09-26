@@ -69,6 +69,11 @@ jobs:
       - name: Check docs drift
         run: npm run check:docs
 
+      # 文档说明完整性闸口（M6 回归防线）：新增 prop/事件/slot 忘了写注释，
+      # 「说明」列变「—」会红（props/事件写 /** */ JSDoc，slot 写 <!-- @slot name: 说明 -->）
+      - name: Check doc completeness
+        run: npm run check:doc-completeness
+
       # 文档站构建（Q9）：check:docs 只比对源码层，markdown 里的 Vue 模板语法错误
       # （如未转义的 {{ }}）只有真构建才暴露——曾出现「构建坏了但闸口全绿」
       - name: Build docs site

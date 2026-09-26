@@ -222,7 +222,7 @@
 
 | 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
 | --- | --- | --- | --- |
-| `file-item` | `key, file, index` | — | &#123;&#123; f.name &#125;&#125; &#123;&#123; formatSize(f.size) &#125;&#125; ✓  |
+| `file-item` | `key, file, index` | 单个文件项的自定义渲染（作用域：key、file、index） | &#123;&#123; f.name &#125;&#125; &#123;&#123; formatSize(f.size) &#125;&#125; ✓  |
 | `trigger` | `open-file-dialog` | 上传触发区（作用域：open-file-dialog 手动选择文件入口） | &#123;&#123; t('form.dropHint') &#125;&#125; &#123;&#123; t('form.drag |
 
 ## `CameraCapture`

@@ -24,7 +24,7 @@
     "test:watch": "vitest",
     "test:unit": "vitest run --coverage",
     "bench": "node scripts/bench.mjs",
-    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:css-tokens && npm run check:i18n && npm run check:demo-props && npm run test:unit && npm run check:coverage-domains && npm run build && npm run smoke:entries && npm run verify:pkg && npm run docs:build && npm run check:docs && npm run test:e2e",
+    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:css-tokens && npm run check:i18n && npm run check:demo-props && npm run test:unit && npm run check:coverage-domains && npm run build && npm run smoke:entries && npm run verify:pkg && npm run docs:build && npm run check:docs && npm run check:doc-completeness && npm run test:e2e",
     "prepare": "husky",
     "report:audit": "npm audit --registry=https://registry.npmjs.org",
     "release:dry-run": "npm publish --dry-run --registry https://registry.npmjs.org",
@@ -45,7 +45,8 @@
     "docs:build": "vitepress build docs-site",
     "docs:preview": "vitepress preview docs-site",
     "check:coverage-domains": "node scripts/check-coverage-domains.mjs",
-    "smoke:entries": "node scripts/smoke-entries.mjs"
+    "smoke:entries": "node scripts/smoke-entries.mjs",
+    "check:doc-completeness": "node scripts/check-doc-completeness.mjs"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",
