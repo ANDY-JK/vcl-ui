@@ -3,7 +3,9 @@
    ================================ */
 .ldc-canvas {
   flex: 1;
-  min-width: 0;
+  /* 画布可读下限：更窄时提示文字逐字竖排、字段无编辑意义；
+     超出部分由 .ld-body 的 overflow-x 兜底（min-width:0 是空态竖排的根因） */
+  min-width: 260px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
