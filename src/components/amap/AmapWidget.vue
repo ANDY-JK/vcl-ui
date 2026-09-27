@@ -98,11 +98,20 @@ if (typeof window !== 'undefined') {
 const mapReady = ref(false)
 let mapInstance: AmapMapInstance | null = null
 
-/** 颜色映射到图标 URL */
+/** 颜色映射到图标 URL。
+ *  ⚠️ 高德官方主题图 mark_g.png 已 404 下线（mark_r/mark_b/start 仍存活，2026-09-27 实测）——
+ *  green 改用内联 SVG data URI 自绘水滴（同款形状），不依赖任何网络资源。 */
 const ICON_MAP: Record<string, string> = {
   red: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png',
   blue: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
-  green: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_g.png',
+  green:
+    'data:image/svg+xml,' +
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">' +
+        '<path d="M12 2C7.9 2 4.5 5.4 4.5 9.5c0 5.2 6.4 11.6 6.7 11.9.2.2.5.4.8.4s.6-.1.8-.4c.3-.3 6.7-6.7 6.7-11.9C19.5 5.4 16.1 2 12 2z" fill="#1aaf5d"/>' +
+        '<circle cx="12" cy="9.5" r="3.2" fill="#fff"/>' +
+        '</svg>',
+    ),
 }
 
 /** 标记实例列表 */

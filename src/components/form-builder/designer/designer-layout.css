@@ -5,6 +5,9 @@
   display: flex;
   height: 640px;
   min-height: 340px;
+  /* 窄视口下画布列被 min-width:0 压到极窄（空态提示逐字竖排）——
+     画布有 260px 下限，总宽超出时在主体内横向滚动，不挤破页面 */
+  overflow-x: auto;
 }
 
 /** 拖拽调宽中：禁掉文本选中，避免拖到面板上选中文字 */

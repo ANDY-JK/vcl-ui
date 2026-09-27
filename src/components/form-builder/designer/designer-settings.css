@@ -51,6 +51,10 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  /* 按钮组整块 ~1290px，窄视口下超容器时整体被推出视口外（无横向滚动不可达）——
+     允许组内折行，配合外层 .ld-toolbar 的 wrap 逐行下移 */
+  flex-wrap: wrap;
+  row-gap: 4px;
 }
 
 /* 工具按钮 — 复用 .ld-tb-btn */

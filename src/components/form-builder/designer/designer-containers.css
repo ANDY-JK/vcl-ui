@@ -13,11 +13,15 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  /* 窄画布下面包屑容器被压到极窄，条目逐字竖排——单行 + 溢出省略 */
+  min-width: 0;
+  overflow: hidden;
 }
 .ldc-crumb-item {
   padding: 2px 6px;
   border-radius: 4px;
   cursor: pointer;
+  white-space: nowrap;
 }
 .ldc-crumb-item:hover {
   background: var(--color-bg-soft, #f1f5f9);
