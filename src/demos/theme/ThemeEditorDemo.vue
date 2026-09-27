@@ -100,8 +100,30 @@ const dirty = computed(() => Object.keys(overrides.value.light).length + Object.
 const previewInput = ref('')
 
 async function copy(text: string) {
-  await navigator.clipboard.writeText(text)
+  try {
+    await navigator.clipboard.writeText(text)
+    copyState.value = 'ok'
+  } catch {
+    // 剪贴板 API 不可用（文档失焦/权限拒绝）——降级 execCommand，再失败只提示不抛
+    // （此前裸调 writeText 异常上抛进 ErrorBoundary，切 tab 后回来点复制即崩）
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    try {
+      copyState.value = document.execCommand('copy') ? 'ok' : 'fail'
+    } catch {
+      copyState.value = 'fail'
+    }
+    ta.remove()
+  }
+  setTimeout(() => (copyState.value = ''), 2000)
 }
+
+// 复制结果反馈（成功/失败 2 秒后自动消失）
+const copyState = ref<'' | 'ok' | 'fail'>('')
 
 function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides.value))
@@ -174,6 +196,9 @@ watch(overrides, persist, { deep: true })
             <div class="te-out-head">
               theme.config.json
               <Button size="sm" variant="ghost" @click="copy(exportConfig)">复制</Button>
+              <span v-if="copyState" class="te-copy-state" :class="copyState">{{
+                copyState === 'ok' ? '已复制 ✓' : '复制失败，请手动选择文本复制'
+              }}</span>
             </div>
             <textarea :value="exportConfig" readonly rows="6" class="te-cfg" aria-label="theme.config.json 内容" />
           </div>
@@ -181,6 +206,9 @@ watch(overrides, persist, { deep: true })
             <div class="te-out-head">
               theme.css
               <Button size="sm" variant="ghost" @click="copy(exportCss)">复制</Button>
+              <span v-if="copyState" class="te-copy-state" :class="copyState">{{
+                copyState === 'ok' ? '已复制 ✓' : '复制失败，请手动选择文本复制'
+              }}</span>
             </div>
             <pre class="te-css">{{ exportCss }}</pre>
           </div>
@@ -312,6 +340,16 @@ watch(overrides, persist, { deep: true })
   color: var(--color-text);
   field-sizing: content;
   max-width: 220px;
+}
+.te-copy-state {
+  font-size: 11px;
+  margin-left: var(--space-2);
+}
+.te-copy-state.ok {
+  color: var(--color-success-text, #16a34a);
+}
+.te-copy-state.fail {
+  color: var(--color-danger-text, #dc2626);
 }
 .te-ro-note {
   font-size: 11px;
