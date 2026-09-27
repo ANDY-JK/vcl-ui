@@ -394,10 +394,12 @@ describe('主题适配护栏 · 表格选中按可编辑性分色', () => {
 
     // ① 判定函数存在且语义正确（整表 editable + 列未禁用）
     //  ⚠️ 签名可能跨行（含类型谓词），故用宽松定位 + 取到函数体再断言
-    const fnIdx = dt.indexOf('function isOptionDroppable')
+    //  （M3 第十刀后 isOptionDroppable 下沉至 useTableCellMenus.ts，模板消费仍在 DataTable.vue）
+    const menusSrc = readFileSync(join(SRC, 'components', 'data', 'composables', 'useTableCellMenus.ts'), 'utf8')
+    const fnIdx = menusSrc.indexOf('function isOptionDroppable')
     expect(fnIdx, '缺少 isOptionDroppable 判定函数').toBeGreaterThan(-1)
-    const fnEnd = dt.indexOf('\n}', fnIdx)
-    const fnBlock = dt.slice(fnIdx, fnEnd > fnIdx ? fnEnd : undefined)
+    const fnEnd = menusSrc.indexOf('\n}', fnIdx)
+    const fnBlock = menusSrc.slice(fnIdx, fnEnd > fnIdx ? fnEnd : undefined)
     expect(fnBlock, 'isOptionDroppable 应要求 col.options').toContain('col.options')
     expect(fnBlock, 'isOptionDroppable 应要求整表 editable').toContain('props.editable')
     expect(fnBlock, 'isOptionDroppable 应排除列级 editable:false').toContain('col.editable !== false')
