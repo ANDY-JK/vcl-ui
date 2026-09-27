@@ -12,9 +12,13 @@ export function computePageButtons(current: number, total: number): number[] {
     return pages
   }
   pages.push(1)
-  if (current > 4) pages.push(-1)
+  // 省略号条件按「邻域与首/尾页之间是否存在被吞页码」判定：
+  // 邻域起点 current-1 与首页 1 之间差 >1 页才需要 -1（旧条件 current>4 会在
+  // current=4 时静默吞掉页码 2）；右侧对偶（旧条件 current<total-3 在
+  // current=total-3 时吞掉 total-1 页）
+  if (current - 1 > 2) pages.push(-1)
   for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i)
-  if (current < total - 3) pages.push(-1)
+  if (current + 1 < total - 1) pages.push(-1)
   pages.push(total)
   return pages
 }
