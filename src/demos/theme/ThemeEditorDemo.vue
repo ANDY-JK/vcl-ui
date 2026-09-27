@@ -136,8 +136,9 @@ watch(overrides, persist, { deep: true })
           <span v-if="g.readOnly" class="te-readonly">只读</span>
         </div>
         <div v-for="t in g.tokens" :key="t" class="te-row">
-          <code class="te-name">{{ t }}</code>
-          <span class="te-current">{{ initialValues[t] || '—' }}</span>
+          <code class="te-name" :title="t">{{ t }}</code>
+          <!-- 长值（rgba/clamp/shadow）列内截断，悬停 title 看全值 -->
+          <span class="te-current" :title="initialValues[t] || '—'">{{ initialValues[t] || '—' }}</span>
           <span v-if="activeBlock[t]" class="te-override">已覆盖</span>
           <div class="te-inputs">
             <input
@@ -152,6 +153,7 @@ watch(overrides, persist, { deep: true })
               type="text"
               class="te-text"
               :placeholder="initialValues[t] || '自定义'"
+              :title="`当前：${initialValues[t] || '—'}`"
               :value="activeBlock[t] ?? ''"
               @input="setToken(t, ($event.target as HTMLInputElement).value || null)"
             />
@@ -297,7 +299,10 @@ watch(overrides, persist, { deep: true })
   background: var(--color-surface);
 }
 .te-text {
-  flex: 1;
+  /* basis auto（非 0）让 field-sizing: content 的内容尺寸参与分配——
+     短值框由 min-width 兜底等宽，rgba/clamp/shadow 长值框自动放宽（≤220px）；
+     不支持 field-sizing 的浏览器 basis auto = size 属性宽度，min-width 兜底 */
+  flex: 1 1 auto;
   min-width: 80px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
@@ -305,6 +310,8 @@ watch(overrides, persist, { deep: true })
   font-size: 12px;
   background: var(--color-surface);
   color: var(--color-text);
+  field-sizing: content;
+  max-width: 220px;
 }
 .te-ro-note {
   font-size: 11px;

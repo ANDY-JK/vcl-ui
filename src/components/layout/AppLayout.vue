@@ -232,10 +232,14 @@ function onProgressMouseUp() {
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
-        <span class="vcl-topbar-prompt">~</span>
-        <span class="vcl-topbar-category">{{ categoryName }}</span>
-        <span class="vcl-topbar-sep">/</span>
-        <span class="vcl-topbar-title">{{ nav.current ? navLabel(nav.current.label) : '' }}</span>
+        <template v-if="categoryName || nav.current">
+          <span class="vcl-topbar-prompt">~</span>
+          <template v-if="categoryName">
+            <span class="vcl-topbar-category">{{ categoryName }}</span>
+            <span class="vcl-topbar-sep">/</span>
+          </template>
+          <span v-if="nav.current" class="vcl-topbar-title">{{ navLabel(nav.current.label) }}</span>
+        </template>
 
         <div class="vcl-topbar-spacer" />
         <div class="topbar-tools">
@@ -508,18 +512,28 @@ function onProgressMouseUp() {
   font-weight: 600;
   color: var(--color-primary);
   letter-spacing: 0.3px;
+  /* 分类名被右侧工具挤压时竖排换行（「表单输/入」）——单行 + 不收缩，长标题由 title 出省略号兜底 */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .vcl-topbar-sep {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: var(--ctrl-font-size);
   color: var(--color-text-secondary);
   font-weight: 300;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .vcl-topbar-title {
   font-size: var(--ctrl-font-size);
   font-weight: 500;
   color: var(--color-sidebar-text-active);
   letter-spacing: 0.2px;
+  /* 标题过长不换行：空间不足时省略号，绝不竖排 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /* ---- 顶栏工具 + 用户区 ---- */
