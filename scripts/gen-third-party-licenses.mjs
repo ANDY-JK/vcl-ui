@@ -116,10 +116,14 @@ export function policyFindings(entries) {
 /**
  * 进包件的使用附注。只写**有出处**的事实：
  * 高德那条取自 node_modules/@vuemap/amap-jsapi-loader/dist/index.mjs 里的
- * `https://webapi.amap.com/maps?...` 运行时 <script> 注入；xlsx 的 tarball 来源取自本仓 package.json。
+ * `https://webapi.amap.com/maps?...` 运行时 <script> 注入；xlsx 那条取自仓内 vendor 目录与 VENDOR.json。
  */
 const PKG_NOTES = {
-  'xlsx': '版本 0.20.3 取自 SheetJS 官方 `cdn.sheetjs.com` tarball（npm registry 停在 0.18.5，SheetJS 自 2023 起不再向 registry 发布），许可仍为 Apache-2.0。',
+  'xlsx':
+    '版本 0.20.3 的发布物**已搬进本仓**（`src/components/_internal/xlsx/`，逐字节登记在 `VENDOR.json`，' +
+    '校验＝`node scripts/vendor-sheetjs.mjs --check`）。SheetJS 自 2023 年起不再向 npm registry 发布' +
+    '（registry 停在 0.18.5），此前依赖写成 `cdn.sheetjs.com` 的 tarball，装机要联网且绕过 registry 审计；' +
+    '2026-09-28 起改为仓内 vendor，许可仍为 Apache-2.0，全文随仓走（第 6 节）。',
   '@vuemap/vue-amap':
     '高德 JS API 本体**不在本包里**——由浏览器运行时向 `webapi.amap.com` 注入 `<script>` 加载。随包的只是 Vue 侧封装与加载器；使用需自备高德 key 并遵守高德开放平台服务条款。',
   'jszip': '进包的是其 `dist/jszip.min.js` 单文件，因此依赖树里的 pako/lie/readable-stream/setimmediate 并未进入产物（不列入本清单，列入即虚报）。',
@@ -386,7 +390,13 @@ function walkFiles(dir, exts = /\.(ts|vue|js|mjs|cjs)$/, out = [], depth = 0) {
 /** 源码里引用的第三方包名（含动态 import），只看库范围 src/components */
 function referencedRootsFromSrc(selfName) {
   const out = new Set()
+  // 仓内 vendor 的上游代码不参与"源码引用"判定：它自己就是被引进来的第三方件，
+  // 且其发布物里满是**注释掉**的 import（SheetJS 的 types.d.ts 就写着 // import * as CFB from "cfb"），
+  // 拿它去判"本库引用了 cfb/ssf 却没进包"是假话。它自己的许可走 §1 的 vendor 行。
+  const skip = VENDOR_SOURCES.map((s) => s.dir)
   for (const f of walkFiles(SRC)) {
+    const rel = f.replaceAll('\\', '/')
+    if (skip.some((d) => rel.includes(d))) continue
     for (const r of externalRootsInCode(readFileSync(f, 'utf8'))) out.add(r)
   }
   out.delete(selfName) // 域 barrel 之间用包名互引（vcl-ui/xxx），不是第三方
@@ -505,6 +515,58 @@ export function vendorBinaryProbe(specs, { root, distDir, exists = existsSync, r
   })
 }
 
+/**
+ * **仓内 vendor 的上游代码**：不在 node_modules 里（构建证据看不见），但确实打进产物。
+ * 2026-09-28 起 SheetJS 走这条路（装机不再依赖 `cdn.sheetjs.com`，见 scripts/vendor-sheetjs.mjs）。
+ * rollup 的 `chunk.modules` 只记 node_modules 下的模块，所以这类件必须单独登记并逐字复核——
+ * 漏登记就是"随包分发 Apache-2.0 代码却不声明"，正是 F1 要防的那件事。
+ */
+export const VENDOR_SOURCES = [
+  {
+    pkg: 'xlsx',
+    dir: 'src/components/_internal/xlsx',
+    manifest: 'src/components/_internal/xlsx/VENDOR.json',
+    codeFile: 'xlsx.mjs',
+    // 进包判定键：产物被压缩后标识符会改名（`XLSX.version` → `i0.version`），所以取**字符串字面量**——
+    // 前者是 SheetJS 代码里的固定路径串（本仓自己的源码零出现），后者带版本，两枚都在才算进包。
+    probes: (version) => ['file:///C:/SheetJS/', `"${version}"`],
+  },
+]
+
+/**
+ * 读仓内 vendor 件，产出与 §1 表同形的条目（许可文本从**仓内那份**读，不再依赖安装物）。
+ * @param {{root: string, readJson: Function, read: Function, names: Function, distHasAll: (arr:string[])=>boolean}} io
+ */
+export function vendorSourceEntries(spec, io) {
+  return spec.map((s) => {
+    const man = io.readJson(join(io.root, s.manifest))
+    if (!man) return { pkg: s.pkg, missing: `${s.manifest} 读不到` }
+    const names = io.names(s.dir)
+    const { license: textFile } = pickLicenseFile(names)
+    const parsed = parseSpdx(man.license)
+    const { chosen, needsElection } = electLicense(parsed)
+    const probes = s.probes(man.version)
+    return {
+      pkg: s.pkg,
+      version: man.version,
+      raw: man.license,
+      parsed,
+      chosen,
+      needsElection,
+      textFile: textFile || null,
+      textBody: textFile ? io.read(join(s.dir, textFile)) : null,
+      hasNotice: false,
+      repo: `仓内 vendor（正源 ${man.vendoredFrom}，${man.upstreamSource}）`,
+      modules: 1,
+      vendored: true,
+      vendorDir: s.dir,
+      sha256: (man.files || []).find((f) => f.path === s.codeFile)?.sha256 || null,
+      probeKey: probes.join(' + '),
+      inBundle: io.distHasAll(probes),
+    }
+  })
+}
+
 /** 取数据文件里的键名清单（图标名），供挑唯一判定键 */
 function keysOfData(abs, keysAt) {
   const data = readJson(abs)
@@ -601,6 +663,40 @@ function buildContext() {
     })
     .sort((a, b) => a.pkg.localeCompare(b.pkg))
 
+  // 仓内 vendor 的上游代码：构建证据里没有它们（不在 node_modules），但确实打进产物，
+  // 所以按内容判定键去产物里搜，搜到才算进包，然后与 rollup 那批并成同一张 §1 表。
+  let distBlobCache = null
+  const distText = () => {
+    if (distBlobCache === null) {
+      distBlobCache = walkFiles(DIST, /\.js$/)
+        .map((f) => {
+          try {
+            return readFileSync(f, 'utf8')
+          } catch {
+            return ''
+          }
+        })
+        .join('\n')
+    }
+    return distBlobCache
+  }
+  const distHasAll = (needles) => needles.every((n) => distText().includes(n))
+  bundled.push(
+    ...vendorSourceEntries(VENDOR_SOURCES, {
+      root: ROOT,
+      readJson,
+      read: (rel) => {
+        try {
+          return readFileSync(join(ROOT, rel), 'utf8')
+        } catch {
+          return null
+        }
+      },
+      names: (rel) => (existsSync(join(ROOT, rel)) ? readdirSync(join(ROOT, rel)) : []),
+      distHasAll,
+    }),
+  )
+
   const externalRoots = externalRootsFromDist()
   const externals = externalRoots.map((root) => {
     const meta = readJson(join(NM, root, 'package.json')) || {}
@@ -666,6 +762,9 @@ function generate() {
       licenseFile: b.textFile,
       noticeFile: b.hasNotice,
       modules: b.modules,
+      ...(b.vendored
+        ? { vendored: true, vendoredPath: b.vendorDir, sha256: b.sha256, probeKey: b.probeKey, inBundle: b.inBundle }
+        : {}),
       files: b.files,
     })),
     derivedData: ctx.derived.map((d) => ({
@@ -726,19 +825,24 @@ function check() {
 
   // [2] 双向对账：已声明集 == 产物证据集（多一个少一个都红），且 .md 与 .json 说的是同一批
   const declaredSbom = jsonExists ? (readJson(DOC_JSON)?.bundled || []).map((b) => b.name).sort() : []
-  const evidencePkgs = ctx.bundled.map((b) => b.pkg).sort()
-  const missing = evidencePkgs.filter((p) => !declaredSbom.includes(p))
-  const extra = declaredSbom.filter((p) => !evidencePkgs.includes(p))
+  // 证据集＝rollup 记到的（node_modules 里的）；仓内 vendor 件走内容判定键，另算一路
+  const evidencePkgs = ctx.bundled.filter((b) => !b.vendored).map((b) => b.pkg)
+  const vendoredPkgs = ctx.bundled.filter((b) => b.vendored).map((b) => b.pkg)
+  const declaredAll = [...evidencePkgs, ...vendoredPkgs].sort()
+  const missing = declaredAll.filter((p) => !declaredSbom.includes(p))
+  const extra = declaredSbom.filter((p) => !declaredAll.includes(p))
   // 只看 §1 的表体（整篇匹配会被 §3 外部件的同名行糊弄过去）
   const mdText = mdExists ? readFileSync(DOC_MD, 'utf8') : ''
   const sec1 = mdText.slice(mdText.indexOf('## 1.'), mdText.indexOf('## 2.'))
   const mdNames = [...sec1.matchAll(/^\| `([^`]+)` \|/gm)].map((m) => m[1])
   const mdSet = new Set(mdNames)
-  const mdMissing = evidencePkgs.filter((p) => !mdSet.has(p))
+  const mdMissing = declaredAll.filter((p) => !mdSet.has(p))
   if (missing.length) L_RED.push(`证据里有 ${missing.length} 个包没进清单：${missing.join(', ')}`)
   if (extra.length) L_RED.push(`清单里声明了 ${extra.length} 个产物里没有的包（虚报）：${extra.join(', ')}`)
   if (mdMissing.length) L_RED.push(`md 正文缺表行：${mdMissing.join(', ')}`)
-  console.log(`[2] 双向对账 证据=${evidencePkgs.length} 声明=${declaredSbom.length} 漏=${missing.length} 多=${extra.length} md缺行=${mdMissing.length}`)
+  console.log(
+    `[2] 双向对账 证据=${evidencePkgs.length} 仓内vendor=${vendoredPkgs.length}(${vendoredPkgs.join(',') || '—'}) 声明=${declaredSbom.length} 漏=${missing.length} 多=${extra.length} md缺行=${mdMissing.length}`,
+  )
 
   // [3] 许可政策：白名单 + 可解析 + 有依据
   const policy = policyFindings(ctx.bundled.map((b) => ({ ...b })))
@@ -755,7 +859,11 @@ function check() {
     const m = readJson(join(NM, name, 'package.json'))
     return (m && m.dependencies) || {}
   }
-  const undeclBundled = undeclaredBundled(ctx.bundled.map((b) => b.pkg), readDeps, Object.keys(pkg.dependencies || {}))
+  const undeclBundled = undeclaredBundled(
+    ctx.bundled.filter((b) => !b.vendored).map((b) => b.pkg),
+    readDeps,
+    Object.keys(pkg.dependencies || {}),
+  )
   if (undeclBundled.length) {
     L_RED.push(
       `进包件不在本库运行期依赖闭包内（消费方 npm install 装不到，本地只是靠提升侥幸解析）：${undeclBundled.join(', ')}`,
@@ -763,6 +871,14 @@ function check() {
   }
   const derivedIn = ctx.derived.filter((d) => d.inBundle)
   const derivedGone = ctx.derived.filter((d) => !d.exists || !d.inBundle)
+  // 仓内 vendor 的上游代码：登记、许可文本、"确实打进产物"三条缺一不可
+  const srcRows = ctx.bundled.filter((b) => b.vendored)
+  const srcNoManifest = srcRows.filter((v) => v.missing).map((v) => `${v.pkg}：${v.missing}`)
+  const srcNoLicense = srcRows.filter((v) => !v.missing && !v.textFile).map((v) => `${v.pkg}：仓内目录里没有许可文件`)
+  const srcNotBundle = srcRows.filter((v) => !v.missing && !v.inBundle).map((v) => `${v.pkg}（判定键 ${v.probeKey}）`)
+  if (srcNoManifest.length) L_RED.push(`仓内 vendor 件缺登记文件，版本与字节无从对账：${srcNoManifest.join(', ')}`)
+  if (srcNoLicense.length) L_RED.push(`仓内 vendor 件缺许可全文（Apache-2.0 §4(a) 要求随附）：${srcNoLicense.join(', ')}`)
+  if (srcNotBundle.length) L_RED.push(`清单说仓内 vendor 件随包分发、产物里却搜不到它的代码：${srcNotBundle.join(', ')}`)
   // 随包第三方二进制：三条 sha 全等（登记＝base64 现场重算＝安装物正源）且确实出现在产物里
   const vMissingFile = ctx.vendors.filter((v) => !v.exists).map((v) => v.file)
   const vNotBundle = ctx.vendors.filter((v) => v.exists && !v.inBundle).map((v) => v.file)
@@ -782,7 +898,7 @@ function check() {
   if (ambiguous.length) L_RED.push(`图标数据找不到"只有它才有"的图标名当判定键，进包结论无法证伪：${ambiguous.join(', ')}`)
   if (!derivedIn.length) L_RED.push('三份图标几何数据一个都没在产物里找到 —— 判定键或打包边界变了，先修判定')
   console.log(
-    `[4] 独立复核 外部件=${ctx.externalRoots.length}(未声明 ${undeclExt.length}) 进包=${evidencePkgs.length}(闭包外 ${undeclBundled.length}) 图标数据进包=${derivedIn.length}/3${derivedGone.length ? '（不在包：' + derivedGone.map((d) => d.file.split('/').pop()).join(', ') + '）' : ''} 随包二进制=${ctx.vendors.length}(进包 ${ctx.vendors.filter((v) => v.inBundle).length}·字节对账不过 ${vBadSha.length + vBadBytes.length})`,
+    `[4] 独立复核 外部件=${ctx.externalRoots.length}(未声明 ${undeclExt.length}) 进包=${evidencePkgs.length}(闭包外 ${undeclBundled.length}) 仓内vendor=${srcRows.length}(缺登记 ${srcNoManifest.length}·缺许可 ${srcNoLicense.length}·不在产物 ${srcNotBundle.length}) 图标数据进包=${derivedIn.length}/3${derivedGone.length ? '（不在包：' + derivedGone.map((d) => d.file.split('/').pop()).join(', ') + '）' : ''} 随包二进制=${ctx.vendors.length}(进包 ${ctx.vendors.filter((v) => v.inBundle).length}·字节对账不过 ${vBadSha.length + vBadBytes.length})`,
   )
   const vPolicy = ctx.vendors.filter((v) => !ALLOWED_SPDX.has(v.spdx)).map((v) => `${v.file} 声明的 ${v.spdx} 不在允许随包分发的白名单内`)
   if (vPolicy.length) L_RED.push(...vPolicy)

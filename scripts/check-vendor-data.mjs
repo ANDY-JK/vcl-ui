@@ -11,6 +11,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { VENDOR_BINARIES, readVendoredBinaryModule } from './gen-third-party-licenses.mjs'
+import { checkVendored } from './vendor-sheetjs.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const RED = []
@@ -65,9 +66,20 @@ for (const spec of VENDOR_BINARIES) {
   )
 }
 
+// 仓内 vendor 的上游代码（SheetJS）：与 VENDOR.json 登记逐字节对账（不读 node_modules）
+try {
+  const { bad, summary } = checkVendored(ROOT)
+  if (bad.length) RED.push(...bad.map((b) => `vendor(xlsx) ${b}`))
+  else console.log(`[vendor] ${summary}`)
+} catch (e) {
+  RED.push(`vendor(xlsx) 校验跑不起来：${e && e.message ? e.message : e}`)
+}
+
 if (RED.length) {
   console.error(`\n❌ check:vendor-data 未通过（${RED.length} 项）`)
   for (const r of RED) console.error(`   - ${r}`)
   process.exit(1)
 }
-console.log(`\n✅ check:vendor-data 通过（随包第三方件 ${VENDOR_BINARIES.length} 份，与正源及上游声明三方一致）`)
+console.log(
+  `\n✅ check:vendor-data 通过（随包二进制 ${VENDOR_BINARIES.length} 份与正源及上游声明三方一致；仓内 vendor 代码 1 份与 VENDOR.json 逐字节一致）`,
+)

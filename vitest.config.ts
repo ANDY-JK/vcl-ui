@@ -30,6 +30,8 @@ export default defineConfig({
       include: ['src/components/**/*.{ts,vue}'],
       exclude: [
         'src/components/_internal/pinyin-pro/**',
+        // 仓内 vendor 的上游代码不算本库的覆盖分母（与 eslint/prettier 同口径排除）
+        'src/components/_internal/xlsx/**',
         'src/components/_internal/solar-icons.ts',
         'src/components/wc/**',
       ],

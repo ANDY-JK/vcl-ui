@@ -1,6 +1,7 @@
 dist/
 node_modules/
 src/components/_internal/pinyin-pro/
+src/components/_internal/xlsx/
 notes/
 backup/
 *.min.js

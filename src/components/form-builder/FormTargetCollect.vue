@@ -308,9 +308,7 @@ async function onUpload(targetId: number, slotKey: string, files: UploadFile[]):
 const SEARCH_KEY = 'form-target-collect-search'
 // SSR 安全：setup 期裸读 localStorage 在服务端渲染直接 ReferenceError（对照 Select 的 typeof 守卫）
 const keyword = ref(
-  typeof localStorage !== 'undefined'
-    ? (localStorage.getItem(SEARCH_KEY) as string | null) || ''
-    : '',
+  typeof localStorage !== 'undefined' ? (localStorage.getItem(SEARCH_KEY) as string | null) || '' : '',
 )
 watch(keyword, (v) => {
   try {
@@ -429,7 +427,7 @@ async function buildZipAndDownload(): Promise<void> {
     putCol(row, t('fbTarget.lastUpload'), up?.ts ? formatTs(up.ts) : '')
     return row
   })
-  const XLSX = await import('xlsx')
+  const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
   const ws = XLSX.utils.json_to_sheet(rows)
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, props.schema.title || t('fbTarget.title'))

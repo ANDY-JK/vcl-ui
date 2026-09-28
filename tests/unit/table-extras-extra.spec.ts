@@ -19,7 +19,7 @@ vi.mock('@/components/_internal/utils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components/_internal/utils')>()
   return { ...actual, downloadBlob: vi.fn() }
 })
-vi.mock('xlsx', () => ({
+vi.mock('@/components/_internal/xlsx/xlsx.mjs', () => ({
   utils: {
     aoa_to_sheet: vi.fn(() => ({})),
     book_new: vi.fn(() => ({})),
@@ -105,7 +105,7 @@ describe('CSV 导出细节', () => {
 
 describe('Excel 导出（惰性 xlsx）', () => {
   it('无 @export 监听：aoa=表头+body、列宽自适应（中文 2 字宽估算）、sheet 名走 i18n', async () => {
-    const xlsx = (await import('xlsx')) as unknown as XlsxMock
+    const xlsx = (await import('@/components/_internal/xlsx/xlsx.mjs')) as unknown as XlsxMock
     const { api } = makeExtras()
     await api.exportExcel()
     const aoa = xlsx.utils.aoa_to_sheet.mock.calls[0][0] as unknown[][]

@@ -386,7 +386,7 @@ async function exportExcel(): Promise<void> {
   }
   exporting.value = true
   try {
-    const XLSX = await import('xlsx')
+    const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
     // 优先使用自定义列配置，否则按 fields 自动生成
     const headers: { key: string; label: string }[] =
       props.exportColumns ??

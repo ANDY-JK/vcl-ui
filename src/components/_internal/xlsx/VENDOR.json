@@ -1,0 +1,28 @@
+{
+  "package": "xlsx",
+  "version": "0.20.3",
+  "license": "Apache-2.0",
+  "upstreamSource": "https://git.sheetjs.com/SheetJS/sheetjs",
+  "vendoredFrom": "node_modules/xlsx",
+  "versionMarkerInCode": "0.20.3",
+  "files": [
+    {
+      "path": "xlsx.mjs",
+      "source": "xlsx.mjs",
+      "bytes": 1008308,
+      "sha256": "1a0fb062ee9781b13f6687371b202aaefc53b6ce55b530c027e01f9c087b77db"
+    },
+    {
+      "path": "types.d.ts",
+      "source": "types/index.d.ts",
+      "bytes": 27917,
+      "sha256": "191e4e6aceae3602aa3a1e9a6bc0e98821d6d5fb787e2bc16e250439482bddb6"
+    },
+    {
+      "path": "LICENSE",
+      "source": "LICENSE",
+      "bytes": 11355,
+      "sha256": "4d2a38ac35cda06a555c84074a819d413339cd3691b822cae50f8f322fe01f64"
+    }
+  ]
+}

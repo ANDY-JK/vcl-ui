@@ -155,6 +155,9 @@ export default defineConfig({
           // 与真实跨域边（storage→form→data）合成 chunk 环（2026-09-20 多入口改造实测）。
           // 判据取「src/components/ 直属 .css」= 全库共享的根级样式。
           if (/\/src\/components\/[^/]+\.css$/.test(id)) return 'core-chunk'
+          // 仓内 vendor 的 SheetJS（2026-09-28 起不再从 node_modules 走）：路径里没有 node_modules，
+          // 不显式点名就会被下面的 /_internal/ 规则收进 core-chunk，1MB 的表格读写库随主链加载
+          if (id.includes('/_internal/xlsx/')) return 'vendor-heavy'
           // 依赖库（echarts 等已 external，这里是剩余的重型依赖）
           if (id.includes('node_modules')) {
             // 把 xlsx/zxing-wasm 等重型动态依赖拆出主链

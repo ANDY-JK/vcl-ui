@@ -15,6 +15,9 @@ import {
   undeclaredBundled,
   pickLicenseFile,
   ALLOWED_SPDX,
+  vendorSourceEntries,
+  VENDOR_SOURCES,
+  readVendoredBinaryModule,
 } from '../../scripts/gen-third-party-licenses.mjs'
 import { classifyModuleId } from '../../scripts/third-party-evidence.mjs'
 
@@ -237,5 +240,91 @@ describe('classifyModuleId：rollup 模块 id → 包归属', () => {
 
   it('构建根之外的 node_modules（全局安装/上层目录）也能归属到包名', () => {
     expect(classifyModuleId(`C:/elsewhere/node_modules/other/x.js`, ROOT)).toMatchObject({ pkg: 'other' })
+  })
+})
+
+describe('vendorSourceEntries：仓内 vendor 的上游代码（构建证据看不见的那一路）', () => {
+  const MAN = {
+    package: 'xlsx',
+    version: '0.20.3',
+    license: 'Apache-2.0',
+    vendoredFrom: 'node_modules/xlsx',
+    upstreamSource: 'https://git.sheetjs.com/sheetjs/sheetjs',
+    files: [
+      { path: 'xlsx.mjs', sha256: 'aaa', bytes: 1008308 },
+      { path: 'LICENSE', sha256: 'bbb', bytes: 11355 },
+    ],
+  }
+  const SPEC = { pkg: 'xlsx', dir: 'src/components/_internal/xlsx', manifest: 'm.json', codeFile: 'xlsx.mjs', probes: (v) => ['NEEDLE-A', `"${v}"`] }
+
+  const io = (over = {}) => ({
+    root: '/repo',
+    readJson: () => MAN,
+    read: () => 'MIT-TEXT',
+    names: () => ['LICENSE', 'xlsx.mjs', 'VENDOR.json'],
+    distHasAll: () => true,
+    ...over,
+  })
+
+  it('登记文件读不到时只报缺登记，不拿假数据拼一行声明', () => {
+    const [row] = vendorSourceEntries([SPEC], io({ readJson: () => null }))
+    expect(row).toEqual({ pkg: 'xlsx', missing: 'm.json 读不到' })
+  })
+
+  it('许可文本从仓内目录挑，版本与 sha 取自登记（不读 node_modules）', () => {
+    const [row] = vendorSourceEntries([SPEC], io())
+    expect(row).toMatchObject({
+      pkg: 'xlsx',
+      version: '0.20.3',
+      chosen: 'Apache-2.0',
+      textFile: 'LICENSE',
+      vendored: true,
+      sha256: 'aaa',
+      modules: 1,
+    })
+  })
+
+  it('判定键少命中一枚就算没进包（防止"命中一半"被读成随包分发）', () => {
+    const seen: string[][] = []
+    const [row] = vendorSourceEntries([SPEC], io({ distHasAll: (arr) => (seen.push(arr), false) }))
+    expect(row.inBundle).toBe(false)
+    expect(seen[0]).toEqual(['NEEDLE-A', '"0.20.3"'])
+  })
+
+  it('真实登记表：每份 vendor 件都要有可证伪的判定键，且版本无关的那枚是字面常量', () => {
+    expect(VENDOR_SOURCES.length).toBeGreaterThan(0)
+    for (const s of VENDOR_SOURCES) {
+      const keys = s.probes('9.9.9')
+      expect(keys.length).toBeGreaterThan(1)
+      expect(new Set(keys).size).toBe(keys.length)
+      expect(keys[0]).not.toContain('9.9.9')
+    }
+  })
+})
+
+describe('readVendoredBinaryModule：从生成文件里取随包二进制的登记字段', () => {
+  const TEXT = `export const ZXING_WASM_DATA_VERSION = '3.1.4'
+export const ZXING_WASM_DATA_SHA256 = '${'a'.repeat(64)}'
+export const ZXING_WASM_DATA_BYTES = 953527
+export const ZXING_WASM_DATA_BASE64 =
+  'AAECAwQ='
+`
+  it('四个字段都按名取，不靠行号', () => {
+    expect(readVendoredBinaryModule(TEXT)).toEqual({
+      version: '3.1.4',
+      sha256: 'a'.repeat(64),
+      bytes: 953527,
+      base64: 'AAECAwQ=',
+    })
+  })
+
+  it('字段缺失时返回 null/NaN 而不是猜一个', () => {
+    const got = readVendoredBinaryModule('export const 什么都没有 = 1')
+    expect(got).toEqual({ version: null, sha256: null, bytes: NaN, base64: null })
+  })
+
+  it('sha256 必须是 64 位十六进制，被截断的登记值不认', () => {
+    const got = readVendoredBinaryModule(TEXT.replace('a'.repeat(64), 'a'.repeat(20)))
+    expect(got.sha256).toBeNull()
   })
 })

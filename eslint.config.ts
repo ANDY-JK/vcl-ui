@@ -132,6 +132,9 @@ export default [
       'dist/**',
       'node_modules/**',
       'src/components/_internal/pinyin-pro/**',
+      // 仓内 vendor 的上游代码（SheetJS）：不是本库写的，lint/prettier 一律不碰——
+      // 一旦被 --fix 改写过，`VENDOR.json` 的逐字节登记就对不上了（check:vendor-data 会红）
+      'src/components/_internal/xlsx/**',
       'backup/**',
       'notes/**',
       '.playwright-cli/**',

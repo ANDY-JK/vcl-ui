@@ -2,7 +2,7 @@
 // 背景：坐标列曾按数值均值猜测（80~180 猜经度、0~90 猜纬度），会把任意数字列误认成经纬度；
 // 且表头只做精确匹配，"经度(°)" / "LNG" 这类写法直接漏掉。
 import { describe, it, expect } from 'vitest'
-import * as XLSX from 'xlsx'
+import * as XLSX from '@/components/_internal/xlsx/xlsx.mjs'
 import { parseExcel } from '@/components/route-planner/utils/excel-import'
 
 function makeBuf(aoa: unknown[][]): ArrayBuffer {

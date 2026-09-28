@@ -647,7 +647,7 @@ async function exportZip(): Promise<void> {
       开始日期: s.startDate,
     }
   })
-  const XLSX = await import('xlsx')
+  const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
   const ws = XLSX.utils.json_to_sheet(rows)
   // 设置列宽
   ws['!cols'] = [{ wch: 10 }, { wch: 35 }, { wch: 25 }, { wch: 45 }, { wch: 14 }, { wch: 12 }, { wch: 18 }, { wch: 12 }]

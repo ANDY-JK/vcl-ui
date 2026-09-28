@@ -195,16 +195,18 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **语言包对账**：`npm run check:i18n` — zh-CN / en-US 分块与键集一一对应，缺哪边点哪个键
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
 - **第三方许可闸口**：`npm run check:licenses` — 产物里真进了哪些第三方件（构建期由 rollup 记录到 `dist/third-party-modules.json`），逐条双向对账：漏报、虚报、许可文本缺失、copyleft 命中、外部件没在 `dependencies/peerDependencies` 声明、进包件不在运行期依赖闭包内——任一即红。清单正文随包发布：`vcl-ui/dist/THIRD-PARTY-LICENSES.md`
+- **随包第三方件的正源对账**：`npm run check:vendor-data` — rollup 的证据只记 `node_modules` 里的 JS 模块，两类件它看不见：① 仓内 vendor 的上游代码（SheetJS `xlsx@0.20.3`，见《依赖选型记录》）逐字节对 `VENDOR.json` 登记；② 随包分发的解码 wasm 二进制（`zxing-wasm`）按「登记＝base64 现场重算＝安装物正源＝上游 JS 自己声称的 `ZXING_WASM_SHA256`」四路对齐。搬进仓的东西一旦漂了没人会发现，所以这道放在整链前段（build 之前）先红
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
 
 ### 依赖选型记录（评估过的，不是没看）
 
-- **`xlsx`（SheetJS）— 维持 CDN tarball，不迁 exceljs**（2026-09-20 实测，登记 Q6）：
-  - 现状：SheetJS 自 2023 起停止向 npm registry 发布新版本（registry 停在 0.18.5），官方唯一新版本通道是 `cdn.sheetjs.com` 的 tarball，本库锁 0.20.3。
-  - 代价如实记录：**CDN tarball 绕过 registry 审计**——`npm audit` 扫不到它（实测 audit 报告 0 条 xlsx 相关）；安装需能访问 `cdn.sheetjs.com`；供应链面比 registry 依赖宽。
-  - 缓解：`package.json` 锁精确版本 tarball URL（不带 `^`），lockfile 同步；只动态 `import`（不进首屏 chunk，落 `vendor-heavy` 惰性块，受体积预算闸口管）。
-  - 为何不迁 exceljs（PoC 实测）：① **exceljs 读不了 legacy `.xls`**（load 直接报 `Can't find end of central directory`），而 form-builder / route-planner 的导入面明确收 `.xls`（FormCollect 的 `accept=".json,.csv,.xlsx,.xls"`）——迁移 = 用户可见的能力损失；② exceljs 4.4.0（2024-12 最后发布）并非高频维护项；③ 读出口径要把 `sheet_to_json({ header: 1, raw: false })` 换成逐格 `cell.text` 遍历（写侧 `addRows`/`writeBuffer` 双向互通已验证可行）。
-  - 结论：1.0 维持 xlsx；v2 若决定放弃 `.xls` 兼容再迁，读写两侧 API 映射已在本轮 PoC 跑通。
+- **`xlsx`（SheetJS）— 0.20.3 已搬进仓（vendor），不再装机制品取件；也不迁 exceljs**（2026-09-20 评估登记 Q6，2026-09-28 改判落仓）：
+  - 现状：SheetJS 自 2023 起停止向 npm registry 发布新版本（registry 停在 0.18.5），官方唯一新版本通道是 `cdn.sheetjs.com` 的 tarball。**0.20.3 的发布物已逐字节搬进 `src/components/_internal/xlsx/`**（`xlsx.mjs` 1,008,308 字节 + 类型 + Apache-2.0 全文，登记在 `VENDOR.json`），`package.json` 里那条 tarball URL 已删除。
+  - 改判理由：搬进仓之后 ① `npm install` 不再需要能访问 `cdn.sheetjs.com`（离线/内网可装机）；② 原来"绕过 registry 审计"的盲区从**每次装机**收敛成**一次换版**（换版时由人装一次并跑 `scripts/vendor-sheetjs.mjs`，仓内字节从此固定可审）。
+  - 代价如实记录：仓库多 1.0MB 上游代码；升级 SheetJS 要人工重搬（`node scripts/vendor-sheetjs.mjs` + 跑整链），不会再被 `npm update` 自动带到。
+  - 缓解（防漂移）：`npm run check:vendor-data` 逐字节核对仓内件与 `VENDOR.json` 登记（含代码内 `XLSX.version` 标记），已进 `quality-check`、`ci.yml`、`release.yml`；`check:licenses` 另按内容判定键证明这份代码确实打进产物，并保留 Apache-2.0 全文声明。
+  - 打包位置不变：只动态 `import`，落 `vendor-heavy` 惰性块（受体积预算闸口管），不进首屏。
+  - 为何不迁 exceljs（2026-09-20 PoC 实测，结论仍成立）：① **exceljs 读不了 legacy `.xls`**（load 直接报 `Can't find end of central directory`），而 form-builder / route-planner 的导入面明确收 `.xls`（FormCollect 的 `accept=".json,.csv,.xlsx,.xls"`）——迁移 = 用户可见的能力损失；② exceljs 4.4.0（2024-12 最后发布）并非高频维护项；③ 读出口径要把 `sheet_to_json({ header: 1, raw: false })` 换成逐格 `cell.text` 遍历（写侧 `addRows`/`writeBuffer` 双向互通已验证可行）。
 - **`html2canvas`（截图）— 维持，不迁 modern-screenshot**（2026-09-20 实测，登记 Q11）：
   - 现状：html2canvas 1.4.1（2023-07 后无发布），本库经 `_internal/useScreenshot.ts` 的 `captureElement` **动态** `import`（惰性，不进首屏 chunk）。该函数当前无库内调用方，能力随库保留。
   - modern-screenshot（4.7.0，2026-04 活跃维护，MIT，186KB）实测更快（同元素 27ms vs 4175ms，约 154 倍），亮色主题下与 html2canvas 渲染目视等价。
@@ -346,7 +348,7 @@ npm run release:dry-run    # = npm publish --dry-run --registry https://registry
 
 | 随包分发 | 许可 | 备注 |
 | --- | --- | --- |
-| `xlsx` | Apache-2.0 | 按 §4 保留许可全文；上游发布物无 NOTICE 文件，故无额外 NOTICE 义务 |
+| `xlsx` | Apache-2.0 | 0.20.3 的发布物已搬进仓（`src/components/_internal/xlsx/`，随包 vendor 件），按 §4 保留许可全文；上游发布物无 NOTICE 文件，故无额外 NOTICE 义务 |
 | `jszip` | **MIT**（择优） | 上游是 `(MIT OR GPL-3.0-or-later)` 双许可，本库明确按 MIT 条款分发，不用 GPLv3 |
 | `vue-i18n` + `@intlify/*` + `@vue/devtools-api` | MIT | 语言包能力，打进 core chunk |
 | `@vuemap/vue-amap` 系 + `lodash-es` | MIT | 高德地图组件；JS SDK 本体仍由浏览器运行时从 CDN 取，不在包里。标记图钉不取高德主题图——2026-09-28 起为本库自绘内联 SVG（`_internal/map-marker.ts`，官方 `mark_g.png` 已 404 下线） |

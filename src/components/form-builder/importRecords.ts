@@ -247,7 +247,7 @@ export async function readFileToRows(
   }
   if (name.endsWith('.csv')) return parseCsvRecords(text)
   // Excel（.xlsx/.xls）：动态加载 xlsx 库
-  const XLSX = await import('xlsx')
+  const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
   const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
   const ws = wb.Sheets[wb.SheetNames[0]]
   if (!ws) return []

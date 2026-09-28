@@ -134,7 +134,7 @@ export function useTableExtras(
     }
 
     // 惰性加载 xlsx，避免首屏包体增加（与 DynamicForm 同一策略）
-    const XLSX = await import('xlsx')
+    const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
     const { cols, body } = buildExportPayload()
     const aoa: (string | number)[][] = [cols.map((c) => c.title), ...body]
     const ws = XLSX.utils.aoa_to_sheet(aoa)
@@ -316,7 +316,11 @@ export function useTableExtras(
     _selectedKeys.value = keys
     emit('update:selectedKeys', keys)
     const keySet = new Set(keys)
-    emit('selection-change', keys, props.data.filter((r) => keySet.has(resolveRowKey(r, props.rowKey))))
+    emit(
+      'selection-change',
+      keys,
+      props.data.filter((r) => keySet.has(resolveRowKey(r, props.rowKey))),
+    )
   }
 
   // ==================== 持久化（提取至 useTablePersistence） ====================

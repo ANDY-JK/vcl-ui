@@ -38,7 +38,7 @@ const HEADER_MAP: Record<string, string> = {
 
 export async function parseExcel(file: File | ArrayBuffer): Promise<ImportResult> {
   const buffer = file instanceof File ? await file.arrayBuffer() : file
-  const XLSX = await import('xlsx')
+  const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
   const workbook = XLSX.read(buffer, { type: 'array' })
   const sheet = workbook.Sheets[workbook.SheetNames[0]]
   const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown as unknown[][]
