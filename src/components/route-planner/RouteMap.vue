@@ -11,6 +11,7 @@ import { getAmapJsKey, getAmapSecurityCode } from '@/components/amap'
 import { amapLoader } from '@/components/amap/amap-loader'
 import { useT } from '@/components/_internal/i18n'
 import { sanitizeHTML } from '@/components/_internal/sanitize'
+import { mapMarkerIcon, MAP_MARKER_BLUE } from '@/components/_internal/map-marker'
 import type { AmapMapInstance } from '@/components/amap/types'
 
 /** 规划结果连发时合并渲染的防抖 */
@@ -107,7 +108,10 @@ function renderAll(): void {
       title: t('routePlanner.startEnd'),
       icon: new AMap.Icon({
         size: new AMap.Size(30, 30),
-        image: 'https://webapi.amap.com/theme/v1.3/markers/n/start.png',
+        // 起点针：原指 webapi.amap.com/theme/v1.3/markers/n/start.png（运行时向高德取件，
+        // 该主题图族已在掉件——mark_g.png 09-27 实测 404）。2026-09-28 改自绘；
+        // 实测 start.png 主体色与蓝针同色（rgb 65,150,252），故取 MAP_MARKER_BLUE 保持观感
+        image: mapMarkerIcon(MAP_MARKER_BLUE),
         imageSize: new AMap.Size(30, 30),
       }),
       offset: new AMap.Pixel(-15, -15),

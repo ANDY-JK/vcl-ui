@@ -21,6 +21,7 @@ import { getAmapJsKey, getAmapSecurityCode } from './amap-key'
 import { amapLoader } from './amap-loader'
 import { sanitizeHTML } from '@/components/_internal/sanitize'
 import { useT } from '@/components/_internal/i18n'
+import { mapMarkerIcon, MAP_MARKER_BLUE, MAP_MARKER_GREEN, MAP_MARKER_RED } from '@/components/_internal/map-marker'
 import type {
   AmapCtor,
   AmapInfoWindow,
@@ -98,20 +99,14 @@ if (typeof window !== 'undefined') {
 const mapReady = ref(false)
 let mapInstance: AmapMapInstance | null = null
 
-/** 颜色映射到图标 URL。
- *  ⚠️ 高德官方主题图 mark_g.png 已 404 下线（mark_r/mark_b/start 仍存活，2026-09-27 实测）——
- *  green 改用内联 SVG data URI 自绘水滴（同款形状），不依赖任何网络资源。 */
+/** 颜色映射到图标 URL：三枚全部走本库自绘的内联 SVG 水滴（`_internal/map-marker.ts`）。
+ *  ⚠️ 原先这里是指向 `webapi.amap.com/theme/v1.3/markers/n/*.png` 的运行时取件——
+ *  高德官方主题图已经在掉件（`mark_g.png` 于 2026-09-27 实测 404 下线），外链留着就是一颗
+ *  随时可能空掉的针。09-28 把 red/blue 也收进自绘，取色与尺寸按实测值来，形状与 09-27 那颗 green 同款。 */
 const ICON_MAP: Record<string, string> = {
-  red: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png',
-  blue: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
-  green:
-    'data:image/svg+xml,' +
-    encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">' +
-        '<path d="M12 2C7.9 2 4.5 5.4 4.5 9.5c0 5.2 6.4 11.6 6.7 11.9.2.2.5.4.8.4s.6-.1.8-.4c.3-.3 6.7-6.7 6.7-11.9C19.5 5.4 16.1 2 12 2z" fill="#1aaf5d"/>' +
-        '<circle cx="12" cy="9.5" r="3.2" fill="#fff"/>' +
-        '</svg>',
-    ),
+  red: mapMarkerIcon(MAP_MARKER_RED),
+  blue: mapMarkerIcon(MAP_MARKER_BLUE),
+  green: mapMarkerIcon(MAP_MARKER_GREEN),
 }
 
 /** 标记实例列表 */

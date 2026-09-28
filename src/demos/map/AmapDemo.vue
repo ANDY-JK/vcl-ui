@@ -14,6 +14,7 @@ import {
   getAmapSecurityCode,
 } from '@/components'
 import ModalBox from '@/components/layout/ModalBox.vue'
+import { mapMarkerIcon, MAP_MARKER_BLUE, MAP_MARKER_RED } from '@/components/_internal/map-marker'
 import { ElAmap, initAMapApiLoader } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import type { PoiItem } from '@/components'
@@ -48,7 +49,12 @@ const calcRes = ref<{ distance: number; amapLat: number; amapLon: number; exceed
 const detailPoi = ref<(PoiItem & { distanceM: number }) | null>(null)
 const detailVisible = computed({
   get: () => detailPoi.value !== null,
-  set: (v) => { if (!v) { detailPoi.value = null; lightboxSrc.value = '' } },
+  set: (v) => {
+    if (!v) {
+      detailPoi.value = null
+      lightboxSrc.value = ''
+    }
+  },
 })
 const lightboxSrc = ref('')
 
@@ -86,7 +92,7 @@ function highlightMarker(idx: number, on: boolean) {
       m.setIcon(
         new AMap.Icon({
           size: [28, 28],
-          image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png',
+          image: mapMarkerIcon(MAP_MARKER_RED),
           imageSize: [28, 28],
         }),
       )
@@ -94,7 +100,7 @@ function highlightMarker(idx: number, on: boolean) {
       m.setIcon(
         new AMap.Icon({
           size: [24, 24],
-          image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+          image: mapMarkerIcon(MAP_MARKER_BLUE),
           imageSize: [24, 24],
         }),
       )
@@ -147,7 +153,7 @@ function renderMap(center: { latitude: number; longitude: number }, list: (PoiIt
       zIndex: 90,
       icon: new AMap.Icon({
         size: [24, 24],
-        image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+        image: mapMarkerIcon(MAP_MARKER_BLUE),
         imageSize: [24, 24],
       }),
     })
@@ -167,7 +173,8 @@ function renderMap(center: { latitude: number; longitude: number }, list: (PoiIt
       iwAddr.style.cssText = 'color:var(--color-text-muted);margin-bottom:4px;'
       iwAddr.textContent = '📍 ' + p.address
       const iwFooter = document.createElement('div')
-      iwFooter.style.cssText = 'display:flex;align-items:center;gap:8px;padding-top:4px;border-top:1px solid var(--color-border);'
+      iwFooter.style.cssText =
+        'display:flex;align-items:center;gap:8px;padding-top:4px;border-top:1px solid var(--color-border);'
       const iwDist = document.createElement('span')
       iwDist.style.cssText = 'font-weight:700;font-size:16px;color:var(--color-danger);'
       iwDist.textContent = fm(p.distanceM)

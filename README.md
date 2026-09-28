@@ -349,7 +349,7 @@ npm run release:dry-run    # = npm publish --dry-run --registry https://registry
 | `xlsx` | Apache-2.0 | 按 §4 保留许可全文；上游发布物无 NOTICE 文件，故无额外 NOTICE 义务 |
 | `jszip` | **MIT**（择优） | 上游是 `(MIT OR GPL-3.0-or-later)` 双许可，本库明确按 MIT 条款分发，不用 GPLv3 |
 | `vue-i18n` + `@intlify/*` + `@vue/devtools-api` | MIT | 语言包能力，打进 core chunk |
-| `@vuemap/vue-amap` 系 + `lodash-es` | MIT | 高德地图组件；JS SDK 本体仍由浏览器运行时从 CDN 取，不在包里 |
+| `@vuemap/vue-amap` 系 + `lodash-es` | MIT | 高德地图组件；JS SDK 本体仍由浏览器运行时从 CDN 取，不在包里。标记图钉不取高德主题图——2026-09-28 起为本库自绘内联 SVG（`_internal/map-marker.ts`，官方 `mark_g.png` 已 404 下线） |
 | `qrcode` + `dijkstrajs` | MIT | 二维码生成 |
 | `zxing-wasm` 的解码 wasm 二进制 | MIT | 953,527 字节的 `zxing_reader.wasm`（base64 内联，独立懒加载 chunk）；上游 JS 仍是外部件，见下方说明 |
 | Solar 图标几何数据 | CC BY 4.0 | 集合作者 **480 Design**，本库取 `linear` 变体子集未改图形；许可页 <https://creativecommons.org/licenses/by/4.0/> |
