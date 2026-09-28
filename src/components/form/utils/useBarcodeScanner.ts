@@ -1,6 +1,7 @@
 import { ref, isRef, onUnmounted, type Ref } from 'vue'
 import {
   readBarcodes,
+  prepareZXingModule,
   LINEAR_BARCODE_FORMATS,
   MATRIX_BARCODE_FORMATS,
   type ReadResult,
@@ -12,6 +13,44 @@ import { classifyCaptureError, type CaptureFailReason } from './capture-fallback
 
 /** 模块级 t：供各函数直接取当前语言文案 */
 const t = useT()
+
+/**
+ * 静图识别的等待上限。来源＝上面那段分段实测：热路径 36ms、冷启动最坏 3.39s（4 并发），
+ * 再给一个整机繁忙的量级取 20s——它比 e2e 的 45s 断言预算先结算，
+ * 保证「识别中…」加全灰不会长期锁死界面，同时不会误伤本来能成功的慢机器。
+ */
+const PHOTO_DECODE_TIMEOUT_MS = 20_000
+
+/**
+ * 解码器预热：把 wasm 的下载与编译从「用户点了上传之后」挪到「采集界面一打开」。
+ *
+ * 为什么需要（2026-09-28 e2e 分段实测，同页两次上传对比）：静图本身不值钱——
+ * 取 Blob、解图、读像素合计 ≤13ms；热路径整次识别 24~36ms。差的全是**首次**
+ * `readBarcodes` 触发的模块启动：空载 842ms、4 并发 3.39s，整机繁忙时实测能拖过
+ * 45s 且不返回——期间界面停在「识别中…」且按钮全灰，用户只能关掉重来。
+ * 预热失败不抛：真要用时仍会走原来的惰性路径。
+ */
+let decoderBoot: Promise<unknown> | null = null
+export function warmBarcodeDecoder(): Promise<unknown> {
+  if (!decoderBoot) {
+    decoderBoot = prepareZXingModule({ fireImmediately: true }).catch(() => null) as Promise<unknown>
+  }
+  return decoderBoot
+}
+
+/**
+ * 给在途 Promise 套硬上限：到期不返回就用 fallback 结算，原 Promise 的失败语义不变
+ * （照常 reject，调用方 catch 分支照旧），只是不再让调用方无限等。
+ * 定时器必须在 finally 里清掉——连扫场景下每张图留一个悬挂 timer 会累积。
+ */
+export async function withHardTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([p, new Promise<T>((r) => (timer = setTimeout(() => r(fallback), ms)))])
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 /** 截图区域（占画面比例，0-1） */
 export interface CaptureRegion {
@@ -201,6 +240,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     error.value = ''
     failReason.value = ''
     confirmHits.clear()
+    // 取景与解码互不依赖：取流期间就把解码器启动起来，首帧解码不用再等模块
+    void warmBarcodeDecoder()
     try {
       const s = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -483,9 +524,13 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
           c.height = s < 1 ? Math.round(img.height * s) : img.height
           const pctx = c.getContext('2d', { willReadFrequently: true })!
           pctx.drawImage(img, 0, 0, c.width, c.height)
-          const results = await readBarcodes(
-            pctx.getImageData(0, 0, c.width, c.height),
-            buildReaderOptions(options.formats, 5) as Parameters<typeof readBarcodes>[1],
+          const results = await withHardTimeout(
+            readBarcodes(
+              pctx.getImageData(0, 0, c.width, c.height),
+              buildReaderOptions(options.formats, 5) as Parameters<typeof readBarcodes>[1],
+            ),
+            PHOTO_DECODE_TIMEOUT_MS,
+            [] as ReadResult[],
           )
           resolve(results.map((r) => r.text).filter(ok))
         } catch (e) {

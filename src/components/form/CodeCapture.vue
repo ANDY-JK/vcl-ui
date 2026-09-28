@@ -14,7 +14,7 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
-import { useBarcodeScanner, type BarcodeFormats } from './utils/useBarcodeScanner'
+import { useBarcodeScanner, warmBarcodeDecoder, type BarcodeFormats } from './utils/useBarcodeScanner'
 import {
   detectCaptureCapability,
   openSystemCapture,
@@ -249,6 +249,9 @@ function openSheet() {
   paused.value = false
   sheetVisible.value = true
   phase.value = 'sheet'
+  // 走不到取景的兜底链路（无摄像头/非安全上下文）在这里第一次需要解码器：
+  // 提前起模块，用户选完图不再等它（实测冷启动首解 0.84s，4 并发 3.39s，繁忙时更久）
+  void warmBarcodeDecoder()
 }
 
 const sheetBusy = ref(false)

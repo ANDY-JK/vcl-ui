@@ -41,18 +41,45 @@ test('相机不可用：扫码入口自动翻到「上传识别 + 手工输入�
 test('兜底页：上传一张含二维码的图片也能识别', async ({ page }) => {
   // 解码走 ZXing WASM，CPU 密集；并行/连跑时会被其他用例抢 CPU → 用与扫码用例同一档时间预算
   test.setTimeout(SCAN_TEST_TIMEOUT)
-  // Node 侧生成带二维码的 PNG（复用 e2e 的 qrcode 依赖），喂给选图入口直接走「上传识别」
-  const dataUrl = await QRCode.toDataURL('UPLOAD-888')
-  const buf = Buffer.from(dataUrl.split(',')[1]!, 'base64')
+
+  const mkQr = async (text: string) => {
+    const dataUrl = await QRCode.toDataURL(text)
+    return Buffer.from(dataUrl.split(',')[1]!, 'base64')
+  }
+  /** 走一遍「入口 → 自动翻兜底页 → 选图 → 等识别收尾」，返回本次是否出结果 */
+  const upload = async (text: string, waitMs: number) => {
+    if (
+      !(await page
+        .locator('.capfb-pick')
+        .isVisible()
+        .catch(() => false))
+    ) {
+      await page.getByRole('button', { name: '开始扫码' }).first().click()
+      await expect(page.locator('.codecap-fallback')).toBeVisible({ timeout: 15_000 })
+    }
+    const chooserPromise = page.waitForEvent('filechooser')
+    await page.locator('.capfb-pick').click()
+    const chooser = await chooserPromise
+    await chooser.setFiles({ name: 'qr.png', mimeType: 'image/png', buffer: await mkQr(text) })
+    // 识别结束的标志是转圈消失（命中会连卡片一起关掉，未命中/超时回到可操作态）
+    const settled = await page
+      .locator('.capfb-busy')
+      .waitFor({ state: 'detached', timeout: waitMs })
+      .then(() => true)
+      .catch(() => false)
+    return settled
+  }
 
   await page.goto('/#/capture')
-  await page.getByRole('button', { name: '开始扫码' }).first().click()
-  await expect(page.locator('.codecap-fallback')).toBeVisible({ timeout: 15_000 })
 
-  // 点选图条 → 引擎创建隐藏 file input；用 change 事件把文件喂进去
-  const chooserPromise = page.waitForEvent('filechooser')
-  await page.locator('.capfb-pick').click()
-  const chooser = await chooserPromise
-  await chooser.setFiles({ name: 'qr.png', mimeType: 'image/png', buffer: buf })
+  // **先把解码器焐热，再验语义**：首解的成本几乎全在 zxing-wasm 模块启动上
+  // （2026-09-28 分段实测：取 Blob/解图/读像素 ≤13ms，热路径整次识别 24~46ms，
+  // 而冷启动 0.82s 空载 / 最长 7.5s @4 并发，整链尾段曾 >45s 不返回）。
+  // 这段前置与本用例要验的「兜底页上传能识别」无关，放这里不计入断言预算；
+  // 用另一个值焐热，避免把列表里的旧值当成本次的通过证据；等待档位复用 SCAN_BUDGET，
+  // 库侧 20s 硬上限保证这段一定结算（不会把整条用例拖到 test.setTimeout 之外）。
+  await upload('PRIME-000', SCAN_BUDGET)
+
+  await upload('UPLOAD-888', SCAN_BUDGET)
   await expect(page.locator('.capfb-result')).toContainText('UPLOAD-888', { timeout: SCAN_BUDGET })
 })
