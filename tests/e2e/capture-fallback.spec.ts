@@ -83,3 +83,34 @@ test('兜底页：上传一张含二维码的图片也能识别', async ({ page 
   await upload('UPLOAD-888', SCAN_BUDGET)
   await expect(page.locator('.capfb-result')).toContainText('UPLOAD-888', { timeout: SCAN_BUDGET })
 })
+
+test('扫码零外发：拦掉所有非本机请求后，上传识别照样出结果', async ({ page }) => {
+  // 随包分发解码 wasm 的验收（2026-09-28）：zxing 默认 locateFile 会向 fastly.jsdelivr.net 取
+  // zxing_reader.wasm，CDN 一抖用户就是「识别中…」长挂。本用例把跨源请求全断，
+  // 要求①识别仍然出结果 ②扫码过程一次跨源请求都没发起——两条缺一不算离线。
+  test.setTimeout(SCAN_TEST_TIMEOUT)
+
+  const crossOrigin: string[] = []
+  await page.route(/^(?!http:\/\/localhost).*/i, (route) => {
+    crossOrigin.push(route.request().url())
+    return route.abort()
+  })
+
+  const mkQr = async (text: string) => {
+    const dataUrl = await QRCode.toDataURL(text)
+    return Buffer.from(dataUrl.split(',')[1]!, 'base64')
+  }
+
+  await page.goto('/#/capture')
+  await page.getByRole('button', { name: '开始扫码' }).first().click()
+  await expect(page.locator('.codecap-fallback')).toBeVisible({ timeout: 15_000 })
+
+  const chooserPromise = page.waitForEvent('filechooser')
+  await page.locator('.capfb-pick').click()
+  const chooser = await chooserPromise
+  await chooser.setFiles({ name: 'qr.png', mimeType: 'image/png', buffer: await mkQr('OFFLINE-404') })
+
+  await expect(page.locator('.capfb-result')).toContainText('OFFLINE-404', { timeout: SCAN_BUDGET })
+  // 断网守卫本身要能证伪：上面那次识别真的跑过（结果已在列表里），且没有一次跨源取件
+  expect(crossOrigin).toEqual([])
+})

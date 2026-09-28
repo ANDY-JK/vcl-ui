@@ -16,6 +16,7 @@
 //   node scripts/gen-third-party-licenses.mjs          # 生成（build 末尾自动跑）
 //   node scripts/gen-third-party-licenses.mjs --check   # 闸口：只检不改，四项判定任一不过即非零退出
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -219,9 +220,11 @@ export function renderMarkdown(ctx) {
     for (const e of notes) L.push(`- **${e.pkg}**：${PKG_NOTES[e.pkg]}`)
   }
   L.push('')
-  L.push(`## 2. 随包分发的图标几何数据（${ctx.derived.length} 份）`)
+  L.push(`## 2. 随包分发的第三方数据（图标几何 ${ctx.derived.length} 份 + 二进制 ${ctx.vendors.length} 份）`)
   L.push('')
-  L.push('这些是本仓生成的数据文件，但几何内容取自第三方图标集合，集合各自的许可在**由本库打包分发**时归本库承担。')
+  L.push('这些是本仓生成的数据文件，但内容取自第三方，其许可在**由本库打包分发**时归本库承担。')
+  L.push('')
+  L.push('### 2.1 图标几何数据')
   L.push('')
   L.push('| 数据文件 | 取自集合 | 作者 | 许可 | 进包 | 收录规模（判定键） |')
   L.push('| --- | --- | --- | --- | --- | --- |')
@@ -239,6 +242,23 @@ export function renderMarkdown(ctx) {
       '它们只含图标名标识符，不含几何，许可归属与上表一致。',
   )
   L.push('')
+  if (ctx.vendors.length) {
+    L.push('### 2.2 第三方二进制')
+    L.push('')
+    L.push('rollup 的模块证据只记 JS，这类件按**内容**复算：登记的 sha256 ＝ base64 解码再哈希 ＝ 安装物里正源那份字节，三条全等才算数（判定用 base64 中段 64 字符在产物里检索）。')
+    L.push('')
+    L.push('| 数据文件 | 内容来源 | 许可 | 进包 | 字节（登记／正源） | sha256 对账 |')
+    L.push('| --- | --- | --- | --- | --- | --- |')
+    for (const v of ctx.vendors) {
+      const ok = v.declaredSha && v.declaredSha === v.recalcSha && v.recalcSha === v.originSha
+      L.push(
+        `| \`${v.file.split('/').pop()}\` | \`${v.origin}\`（${v.pkg}@${v.ver ?? '—'}，${v.use}） | ${v.spdx} | ${v.inBundle ? '是' : '否'} | ${v.bytes.toLocaleString('en-US')}／${v.originBytes ? v.originBytes.toLocaleString('en-US') : '正源缺失'} | ${ok ? `一致 ${String(v.declaredSha).slice(0, 16)}…` : `不一致：登记 ${String(v.declaredSha).slice(0, 12)}…／解码 ${String(v.recalcSha).slice(0, 12)}…／正源 ${String(v.originSha).slice(0, 12)}…`} |`,
+      )
+    }
+    L.push('')
+    for (const v of ctx.vendors) L.push(`- **${v.pkg}**（${v.use}）：${v.why}。上游 JS 本体仍是第 3 节的外部件，由宿主安装；本库只分发上面这份二进制。`)
+    L.push('')
+  }
   L.push(`## 3. 由宿主安装的外部件（${ctx.externals.length} 个，本库不再分发）`)
   L.push('')
   L.push('产物对这些件保持裸 `import`/`require`，代码不进本包，许可义务归宿主自己的安装。')
@@ -413,6 +433,78 @@ const DERIVED_SPECS = [
   },
 ]
 
+/**
+ * 随包分发的**第三方二进制**（base64 形态）。
+ * rollup 的 `chunk.modules` 只记 JS 模块，看不见这类件——它们进没进包、字节对不对，必须单独判。
+ * 本库有它是因为 zxing-wasm 的解码 wasm 默认由浏览器向 fastly.jsdelivr.net 取件（CDN 一抖就是
+ * 「识别中…」长挂，见 docs/全量审查报告-2026-09-28.md §9.7），2026-09-28 起改为随包分发。
+ */
+export const VENDOR_BINARIES = [
+  {
+    file: 'src/components/_internal/zxing-wasm-data.ts',
+    pkg: 'zxing-wasm',
+    origin: 'node_modules/zxing-wasm/dist/reader/zxing_reader.wasm',
+    spdx: 'MIT',
+    use: '扫码解码内核（reader wasm）',
+    why: '随包后扫码零外发；不随包则首解必须访问 fastly.jsdelivr.net，内网/离线宿主解不出码',
+  },
+]
+
+/**
+ * 从生成文件文本里取随包二进制的登记字段（不 import 生成物：本脚本要在 node 侧独立复算）。
+ * @returns {{version: string|null, sha256: string|null, bytes: number, base64: string|null}}
+ */
+export function readVendoredBinaryModule(text) {
+  const pick = (re) => (text.match(re) || [])[1] ?? null
+  const base64 = pick(/ZXING_WASM_DATA_BASE64 =\s*\n?\s*'([A-Za-z0-9+/=]+)'/)
+  return {
+    version: pick(/ZXING_WASM_DATA_VERSION = '([^']+)'/),
+    sha256: pick(/ZXING_WASM_DATA_SHA256 = '([0-9a-f]{64})'/),
+    bytes: Number(pick(/ZXING_WASM_DATA_BYTES = (\d+)/) ?? 'NaN'),
+    base64,
+  }
+}
+
+/**
+ * 逐件复算随包二进制：① 文件在不在；② 登记的 sha256 是否等于 base64 现场解码再哈希的值；
+ * ③ 是否等于安装物里正源那份字节（等于＝我们带的就是上游那个文件，不是改写过的）；
+ * ④ 是否真在产物里（拿 base64 的一段**内容**去 dist 里搜，不靠文件名）。
+ * 任何一环不成立都由 check() 判红——这节声明一旦说谎，比不写更糟。
+ */
+export function vendorBinaryProbe(specs, { root, distDir, exists = existsSync, read = (p) => readFileSync(p, 'utf8'), readBuf = (p) => readFileSync(p), hash = (b) => createHash('sha256').update(b).digest('hex'), distFiles = () => walkFiles(distDir, /\.js$/) }) {
+  return specs.map((spec) => {
+    const abs = join(root, spec.file)
+    const originAbs = join(root, spec.origin)
+    const out = { ...spec, exists: exists(abs), inBundle: false, marker: null, declaredSha: null, recalcSha: null, originSha: null, bytes: 0, originBytes: 0, ver: null }
+    if (!out.exists) return out
+    const mod = readVendoredBinaryModule(read(abs))
+    out.declaredSha = mod.sha256
+    out.bytes = Number.isFinite(mod.bytes) ? mod.bytes : 0
+    out.ver = mod.version
+    if (mod.base64) {
+      // 判定键取 base64 中间一段：头尾都可能在压缩/拼接时被改写，中段最能证明"这份字节整份在产物里"
+      out.marker = mod.base64.slice(20_000, 20_064)
+      out.recalcSha = hash(Buffer.from(mod.base64, 'base64'))
+      for (const f of distFiles()) {
+        try {
+          if (read(f).includes(out.marker)) {
+            out.inBundle = true
+            break
+          }
+        } catch {
+          /* 读不到即不算进包 */
+        }
+      }
+    }
+    if (exists(originAbs)) {
+      const buf = readBuf(originAbs)
+      out.originSha = hash(buf)
+      out.originBytes = buf.length
+    }
+    return out
+  })
+}
+
 /** 取数据文件里的键名清单（图标名），供挑唯一判定键 */
 function keysOfData(abs, keysAt) {
   const data = readJson(abs)
@@ -535,6 +627,7 @@ function buildContext() {
       why: '引用它的导出链没有被任何入口触达，构建期按 `sideEffects`（仅 CSS 有副作用）摇掉了，代码不在产物里',
     }))
   const derived = derivedProbe(DERIVED_SPECS)
+  const vendors = vendorBinaryProbe(VENDOR_BINARIES, { root: ROOT, distDir: DIST })
   return {
     selfName: pkg.name,
     selfVersion: pkg.version,
@@ -543,6 +636,7 @@ function buildContext() {
     bundled,
     totalModules: bundled.reduce((s, b) => s + b.modules, 0),
     derived,
+    vendors,
     externals,
     externalRoots,
     referencedNotBundled,
@@ -583,12 +677,27 @@ function generate() {
       probeKey: d.marker,
       stat: plain(d.stat),
     })),
+    vendorBinaries: ctx.vendors.map((v) => ({
+      file: v.file,
+      from: v.origin,
+      originPackage: v.pkg,
+      originVersion: v.ver,
+      license: v.spdx,
+      inBundle: v.inBundle,
+      bytes: v.bytes,
+      originBytes: v.originBytes,
+      sha256: v.declaredSha,
+      sha256OfPayload: v.recalcSha,
+      sha256OfOrigin: v.originSha,
+      probeKey: v.marker,
+      reason: v.why,
+    })),
     externals: ctx.externals,
     referencedNotBundled: ctx.referencedNotBundled.map((r) => r.root),
   }
   writeFileSync(DOC_JSON, JSON.stringify(sbom, null, 2), 'utf8')
   console.log(
-    `[gen:licenses] 进包第三方包=${ctx.bundled.length}（模块 ${ctx.totalModules} 个） 图标数据=${ctx.derived.filter((d) => d.inBundle).length} 外部件=${ctx.externals.length} 引用未进包=${ctx.referencedNotBundled.length}`,
+    `[gen:licenses] 进包第三方包=${ctx.bundled.length}（模块 ${ctx.totalModules} 个） 图标数据=${ctx.derived.filter((d) => d.inBundle).length} 随包二进制=${ctx.vendors.filter((v) => v.inBundle).length} 外部件=${ctx.externals.length} 引用未进包=${ctx.referencedNotBundled.length}`,
   )
   console.log(`[gen:licenses] 写出 dist/THIRD-PARTY-LICENSES.md（${Math.round(readFileSync(DOC_MD).length / 1024)}KB）+ dist/third-party-licenses.json`)
 }
@@ -654,14 +763,29 @@ function check() {
   }
   const derivedIn = ctx.derived.filter((d) => d.inBundle)
   const derivedGone = ctx.derived.filter((d) => !d.exists || !d.inBundle)
+  // 随包第三方二进制：三条 sha 全等（登记＝base64 现场重算＝安装物正源）且确实出现在产物里
+  const vMissingFile = ctx.vendors.filter((v) => !v.exists).map((v) => v.file)
+  const vNotBundle = ctx.vendors.filter((v) => v.exists && !v.inBundle).map((v) => v.file)
+  const vNoOrigin = ctx.vendors.filter((v) => v.exists && !v.originSha).map((v) => `${v.file}（正源 ${v.origin} 不在安装物里）`)
+  const vBadSha = ctx.vendors
+    .filter((v) => v.exists && v.originSha && !(v.declaredSha && v.declaredSha === v.recalcSha && v.recalcSha === v.originSha))
+    .map((v) => `${v.file}：登记 ${String(v.declaredSha).slice(0, 12)}…／解码重算 ${String(v.recalcSha).slice(0, 12)}…／正源 ${String(v.originSha).slice(0, 12)}…`)
+  const vBadBytes = ctx.vendors.filter((v) => v.exists && v.originBytes && v.bytes !== v.originBytes).map((v) => `${v.file}：登记 ${v.bytes} 字节／正源 ${v.originBytes} 字节`)
+  if (vMissingFile.length) L_RED.push(`清单声明的随包二进制文件不存在：${vMissingFile.join(', ')}（生成：node scripts/gen-zxing-wasm-data.mjs）`)
+  if (vNoOrigin.length) L_RED.push(`随包二进制找不到正源，无法证明它没被改过：${vNoOrigin.join(', ')}`)
+  if (vBadSha.length) L_RED.push(`随包二进制与正源字节不一致（声明在说谎或正源漂了），重跑生成脚本：${vBadSha.join('; ')}`)
+  if (vBadBytes.length) L_RED.push(`随包二进制登记的字节数与正源不符：${vBadBytes.join('; ')}`)
+  if (vNotBundle.length) L_RED.push(`清单说随包分发、产物里却搜不到这份二进制（打包边界变了，离线声明不成立）：${vNotBundle.join(', ')}`)
   const missingFile = ctx.derived.filter((d) => !d.exists).map((d) => d.file)
   const ambiguous = ctx.derived.filter((d) => d.ambiguous).map((d) => d.file)
   if (missingFile.length) L_RED.push(`清单声明的图标数据文件已不存在：${missingFile.join(', ')}`)
   if (ambiguous.length) L_RED.push(`图标数据找不到"只有它才有"的图标名当判定键，进包结论无法证伪：${ambiguous.join(', ')}`)
   if (!derivedIn.length) L_RED.push('三份图标几何数据一个都没在产物里找到 —— 判定键或打包边界变了，先修判定')
   console.log(
-    `[4] 独立复核 外部件=${ctx.externalRoots.length}(未声明 ${undeclExt.length}) 进包=${evidencePkgs.length}(闭包外 ${undeclBundled.length}) 图标数据进包=${derivedIn.length}/3${derivedGone.length ? '（不在包：' + derivedGone.map((d) => d.file.split('/').pop()).join(', ') + '）' : ''}`,
+    `[4] 独立复核 外部件=${ctx.externalRoots.length}(未声明 ${undeclExt.length}) 进包=${evidencePkgs.length}(闭包外 ${undeclBundled.length}) 图标数据进包=${derivedIn.length}/3${derivedGone.length ? '（不在包：' + derivedGone.map((d) => d.file.split('/').pop()).join(', ') + '）' : ''} 随包二进制=${ctx.vendors.length}(进包 ${ctx.vendors.filter((v) => v.inBundle).length}·字节对账不过 ${vBadSha.length + vBadBytes.length})`,
   )
+  const vPolicy = ctx.vendors.filter((v) => !ALLOWED_SPDX.has(v.spdx)).map((v) => `${v.file} 声明的 ${v.spdx} 不在允许随包分发的白名单内`)
+  if (vPolicy.length) L_RED.push(...vPolicy)
 
   report('check:licenses', ctx)
 }

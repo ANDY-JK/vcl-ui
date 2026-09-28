@@ -65,6 +65,11 @@ jobs:
       - name: Verify package contract
         run: npm run verify:pkg
 
+      # 随包第三方件的正源对账（扫码解码 wasm 内联件）：仓内字节＝安装物正源＝上游 JS 自己
+      # 声称期望的 sha256，三条全等才放行；升级 zxing-wasm 忘了重跑生成脚本会在这里红
+      - name: Check vendored third-party payload
+        run: npm run check:vendor-data
+
       # 第三方许可闸口：产物实际进包的件都要在 dist/THIRD-PARTY-LICENSES.md 里声明，
       # 且许可必须落在随包分发白名单内（copyleft 命中即红，需人工裁决）
       - name: Check third-party licenses

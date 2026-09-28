@@ -164,6 +164,10 @@ const BUDGET_KB = [
   [/^form-builder\/index\.js$/, 700], // 原 form-builder-chunk 预算随代码内联迁到 entry
   [/^morphicons-icons-data-.*\.js$/, 700],
   [/^solar-icons-data-.*\.js$/, 280],
+  // 随包分发的扫码解码 wasm（base64 文本）：2026-09-28 实测 1271.53KB，+15% 余量。
+  // 它只会随 zxing-wasm 版本重生成而变（正源 node scripts/gen-zxing-wasm-data.mjs），
+  // 拆成独立懒加载 chunk，只有打开扫码界面才下载——不要合并进 form-chunk（预算 180KB）。
+  [/^zxing-wasm-data-.*\.js$/, 1460],
   [/^data-chunk-.*\.js$/, 320],
   [/^form-chunk-.*\.js$/, 180],
   [/^route-planner\/index\.js$/, 100],

@@ -179,6 +179,9 @@ export default defineConfig({
           // 图标数据是 registry 里动态 import 的懒加载资源，收进 core-chunk 会被拉进主链
           if (id.includes('/solar-icons-data')) return undefined
           if (id.includes('/morphicons-icons-data')) return undefined
+          // 随包的扫码解码 wasm（base64）同理：只在打开扫码时动态 import，不显式放行就会被
+          // 下面的 /_internal/ 规则收进 core-chunk（1.2MB 级会拖进主链，所有人一起下载）
+          if (id.includes('/zxing-wasm-data')) return undefined
           if (
             id.includes('/_internal/') ||
             id.includes('/basic/') ||

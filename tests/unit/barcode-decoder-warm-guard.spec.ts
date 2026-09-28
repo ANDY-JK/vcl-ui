@@ -6,23 +6,35 @@
 // （空载 842ms / 4 并发 3.39s，繁忙时不返回）。
 // 两道处置：① 界面一打开就预热模块（warmBarcodeDecoder），② 静图解码套 20s 硬上限
 // （withHardTimeout），到期按「这一次没结果」结算，界面回到可操作态。
+// 2026-09-28 追加：预热的同时把**随包的 wasm 二进制**（base64 → ArrayBuffer）作为 `wasmBinary`
+// 喂给 zxing——它的默认 locateFile 写死向 fastly.jsdelivr.net 取件，CDN 一抖就是那次永久转圈。
 //
-// 本文件只锁这两个接缝的契约：预热只启一次、失败不外抛；硬上限三种结局
-// （按时返回 / 原值透传 / 原失败语义保留）且不留悬挂定时器。
+// 本文件锁这些接缝的契约：预热只启一次、失败不外抛、随包件确实被喂进去、ABI 不配套时不喂；
+// 硬上限三种结局（按时返回 / 原值透传 / 原失败语义保留）且不留悬挂定时器。
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { ZXING_WASM_DATA_BYTES } from '@/components/_internal/zxing-wasm-data'
 
 const state = vi.hoisted(() => ({
   calls: 0,
   // 每次 prepareZXingModule 走哪个假实现；照真上游的失败形态给（返回 Promise / 直接拒）
   behavior: null as null | (() => Promise<unknown>),
+  /** 覆盖上游声称期望的 wasm sha256；null＝用包内真值。用来造「宿主 JS 与随包 wasm 不配套」 */
+  upstreamSha: null as string | null,
+  /** 最近一次 prepareZXingModule 收到的参数 */
+  lastOptions: null as null | Record<string, unknown>,
 }))
 
 vi.mock('zxing-wasm/reader', async (importOriginal) => {
   const actual = await (importOriginal() as Promise<Record<string, unknown>>)
   return {
     ...actual,
-    prepareZXingModule: vi.fn(() => {
+    // getter：让 upstreamSha 在每次读取时生效（不配套场景要在导入后才造）
+    get ZXING_WASM_SHA256() {
+      return state.upstreamSha ?? (actual.ZXING_WASM_SHA256 as string)
+    },
+    prepareZXingModule: vi.fn((options?: Record<string, unknown>) => {
       state.calls++
+      state.lastOptions = options ?? null
       return (state.behavior ?? (() => Promise.resolve({})))()
     }),
   }
@@ -41,6 +53,26 @@ describe('warmBarcodeDecoder 解码器预热', () => {
   beforeEach(() => {
     state.calls = 0
     state.behavior = null
+    state.upstreamSha = null
+    state.lastOptions = null
+  })
+
+  it('把随包 wasm 作为 wasmBinary 喂给解码器（扫码不再向外部 CDN 取件）', async () => {
+    const { warmBarcodeDecoder } = await freshApi()
+    await warmBarcodeDecoder()
+    const overrides = (state.lastOptions as { overrides?: { wasmBinary?: ArrayBuffer } }).overrides
+    expect(overrides?.wasmBinary).toBeInstanceOf(ArrayBuffer)
+    // 字节数＝随包件登记的正源大小；解码器拿到的就是这个，不是空壳也不是截断
+    expect(overrides!.wasmBinary!.byteLength).toBe(ZXING_WASM_DATA_BYTES)
+    expect((state.lastOptions as { fireImmediately?: boolean }).fireImmediately).toBe(true)
+  })
+
+  it('宿主装的 zxing JS 期望别的 wasm 字节时不喂（宁可联网，也不拿错 ABI 的二进制）', async () => {
+    state.upstreamSha = '非本包 wasm 的 sha256'
+    const { warmBarcodeDecoder } = await freshApi()
+    await warmBarcodeDecoder()
+    expect(state.calls).toBe(1)
+    expect(state.lastOptions?.overrides).toBeUndefined()
   })
 
   it('上游启动失败时吞掉并返回已结算的 promise（预热失败不能把采集界面带崩）', async () => {

@@ -351,14 +351,20 @@ npm run release:dry-run    # = npm publish --dry-run --registry https://registry
 | `vue-i18n` + `@intlify/*` + `@vue/devtools-api` | MIT | 语言包能力，打进 core chunk |
 | `@vuemap/vue-amap` 系 + `lodash-es` | MIT | 高德地图组件；JS SDK 本体仍由浏览器运行时从 CDN 取，不在包里 |
 | `qrcode` + `dijkstrajs` | MIT | 二维码生成 |
+| `zxing-wasm` 的解码 wasm 二进制 | MIT | 953,527 字节的 `zxing_reader.wasm`（base64 内联，独立懒加载 chunk）；上游 JS 仍是外部件，见下方说明 |
 | Solar 图标几何数据 | CC BY 4.0 | 集合作者 **480 Design**，本库取 `linear` 变体子集未改图形；许可页 <https://creativecommons.org/licenses/by/4.0/> |
 | Lucide 图标几何与名录数据 | ISC | 经 `@lucide/vue` 的 `__iconNode` 导出抽取 |
 
 `vue` / `vue-router` / `echarts` / `echarts-wordcloud` / `@lucide/vue` / `@iconify/vue` / `morphicons` / `zxing-wasm`
 在产物里保持裸 `import`，**代码不进本包**，由宿主安装，许可义务归宿主。
 
-> **`zxing-wasm` 的一条运行期外发**：它的解码 wasm 二进制不在 npm 包的 JS 里，`zxing-wasm@3.1.4` 的默认 `locateFile`
-> 会在**首次识别时**向 `https://fastly.jsdelivr.net/npm/zxing-wasm@3.1.4/dist/reader/zxing_reader.wasm` 发一次请求（约 950KB）。
-> 因此扫码能力依赖宿主能访问该 CDN：取不到时本库在 20s 内按「本次未识别」结算（界面恢复可操作，不会一直转圈），
-> 但**不会**退化成离线可用。本库当前**没有**把 wasm 地址做成可配项（`locateFile` 未透出），要让解码完全自持需按
-> §9.7 的 B 方案先加宿主侧注入口——在那之前，请勿按「离线可用」评估扫码能力。
+> **扫码不联网（2026-09-28 改）**：`zxing-wasm` 的 JS 是外部件，但它的解码 wasm 二进制**不在 JS 里**——
+> 该包默认 `locateFile` 会在首次识别时向 `https://fastly.jsdelivr.net/npm/zxing-wasm@3.1.4/.../zxing_reader.wasm`
+> 取约 950KB，CDN 一抖界面就是「识别中…」长挂（根因与取证见 `docs/全量审查报告-2026-09-28.md` §9.7）。
+> 本库把那个 wasm 按原字节内联进产物（`scripts/gen-zxing-wasm-data.mjs` 生成，正源＝安装物里那份，
+> sha256 三方对账由 `check:licenses` 守），**扫码全程零跨源请求**——e2e 用例
+> `capture-fallback.spec.ts`「扫码零外发」把全部非本机请求拦死仍要求出结果。
+> 唯一例外：宿主装的 `zxing-wasm` 版本与本库内联的字节不配套（sha256 对不上）时，
+> 解码器**不喂**这份 wasm、退回上游默认的联网取件方式——宁可联网也不用错 ABI 的二进制。
+> 这条不会悄悄失效：`check:licenses` 逐条核对「登记＝base64 现场重算＝安装物里正源」三个 sha256，
+> 对不上整链即红；升级 `zxing-wasm` 后重跑 `node scripts/gen-zxing-wasm-data.mjs` 再提交。

@@ -107,6 +107,10 @@ jobs:
       - name: Verify package contract
         run: npm run verify:pkg
 
+      # 随包第三方件（扫码解码 wasm 内联）的正源对账，不过就不 publish
+      - name: Check vendored third-party payload
+        run: npm run check:vendor-data
+
       # 发布前最后一道许可闸口：清单与产物双向对账 + copyleft 白名单判定，
       # 不过就不 publish（许可义务是发出去之后收不回来的）
       - name: Check third-party licenses

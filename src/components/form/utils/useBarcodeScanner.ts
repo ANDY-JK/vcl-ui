@@ -2,6 +2,7 @@ import { ref, isRef, onUnmounted, type Ref } from 'vue'
 import {
   readBarcodes,
   prepareZXingModule,
+  ZXING_WASM_SHA256,
   LINEAR_BARCODE_FORMATS,
   MATRIX_BARCODE_FORMATS,
   type ReadResult,
@@ -21,19 +22,46 @@ const t = useT()
  */
 const PHOTO_DECODE_TIMEOUT_MS = 20_000
 
+/** base64 → ArrayBuffer（zxing 的 `wasmBinary` 收 ArrayBuffer，见 @types/emscripten） */
+function base64ToArrayBuffer(b64: string): ArrayBuffer {
+  const bin = atob(b64)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return bytes.buffer
+}
+
 /**
- * 解码器预热：把 wasm 的下载与编译从「用户点了上传之后」挪到「采集界面一打开」。
+ * 解码器启动：把随包的 wasm 二进制直接喂给 zxing，扫码零外发。
  *
- * 为什么需要（2026-09-28 e2e 分段实测，同页两次上传对比）：静图本身不值钱——
+ * 为什么必须自己带件（2026-09-28 e2e 分段实测，同页两次上传对比）：静图本身不值钱——
  * 取 Blob、解图、读像素合计 ≤13ms；热路径整次识别 24~36ms。差的全是**首次**
  * `readBarcodes` 触发的模块启动：空载 842ms、4 并发 3.39s，整机繁忙时实测能拖过
  * 45s 且不返回——期间界面停在「识别中…」且按钮全灰，用户只能关掉重来。
- * 预热失败不抛：真要用时仍会走原来的惰性路径。
+ * 那段时间花在向第三方 CDN 取 953,527 字节的 wasm（zxing 默认 `locateFile` 写死 jsdelivr，
+ * 根因与取证见 docs/全量审查报告-2026-09-28.md §9.7），所以本包把那个 wasm 带上了。
+ *
+ * 兼容性闸门：比的是 zxing 自己导出的 `ZXING_WASM_SHA256`（它期望的字节）与随包件的 sha256，
+ * 不等就说明宿主装的 zxing JS 与我们带的 wasm 不配套 —— 此时**不传** `wasmBinary`，
+ * 退回 zxing 的默认取件方式，宁可联网也不要拿错 ABI 的二进制。
+ * 启动失败不抛：真要用时仍会走原来的惰性路径。
  */
 let decoderBoot: Promise<unknown> | null = null
+let decoderReady = false
+
 export function warmBarcodeDecoder(): Promise<unknown> {
   if (!decoderBoot) {
-    decoderBoot = prepareZXingModule({ fireImmediately: true }).catch(() => null) as Promise<unknown>
+    const boot = (async () => {
+      const data = await import('@/components/_internal/zxing-wasm-data')
+      const inline = data.ZXING_WASM_DATA_SHA256 === ZXING_WASM_SHA256
+      return prepareZXingModule({
+        fireImmediately: true,
+        ...(inline ? { overrides: { wasmBinary: base64ToArrayBuffer(data.ZXING_WASM_DATA_BASE64) } } : {}),
+      })
+    })().catch(() => null)
+    // 启动也套同一个上限：不让「解码器没起来」把调用方挂死（2026-09-28 那次永久转圈就是这么来的）
+    decoderBoot = withHardTimeout(boot, PHOTO_DECODE_TIMEOUT_MS, null).finally(() => {
+      decoderReady = true
+    })
   }
   return decoderBoot
 }
@@ -445,6 +473,12 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
         sy = Math.round(dh * region.top)
       const sw = Math.round(dw * region.width),
         sh = Math.round(dh * region.height)
+      // 解码器（含随包 wasm）没就位就跳过本帧：既不会让界面卡在 await 上，也不会让
+      // readBarcodes 抢在预热之前用 zxing 的默认设置启动（那会白联网一次并多起一个实例）
+      if (!decoderReady) {
+        void warmBarcodeDecoder()
+        return
+      }
       const results: ReadResult[] = await readBarcodes(
         ctx2d.getImageData(sx, sy, sw, sh),
         buildReaderOptions(options.formats, 5) as Parameters<typeof readBarcodes>[1],
@@ -524,6 +558,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
           c.height = s < 1 ? Math.round(img.height * s) : img.height
           const pctx = c.getContext('2d', { willReadFrequently: true })!
           pctx.drawImage(img, 0, 0, c.width, c.height)
+          // 解码器先就位（内部已带 20s 上限，绝不会把这里挂死）：保证用的是随包 wasm 而不是抢跑默认启动
+          await warmBarcodeDecoder()
           const results = await withHardTimeout(
             readBarcodes(
               pctx.getImageData(0, 0, c.width, c.height),
