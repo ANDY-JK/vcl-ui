@@ -11,7 +11,10 @@ import { AxeBuilder } from '@axe-core/playwright'
  * 豁免必须点名来源（与 site-audit.spec.ts 同口径），不允许"凑数式放过"：
  *
  *   THIRD_PARTY  三方 SDK 自渲染内容（本库改不掉）：
- *     - amap / amap-widget / route-planner 三页的高德 markers 图片 <img>（SDK 内部注入）
+ *     - amap / amap-widget / route-planner 三页的高德 markers 图片 <img>（SDK 内部注入，
+ *       官方主题图 PNG 命中 webapi.amap.com 前缀；本库自绘的 green 图标是百分号编码
+ *       data URI，按 src 形态单独放行）
+ *     - 高德 SDK 自带的 logo 图（同为 webapi.amap.com 前缀）
  *     - amap 页的 <select class="radius-select">、高德 <iframe> 无 title
  *   DEMO_INLINE  demo 页自己写的内联样式（不入库产物，属示例写法）：
  *     - 各页 <span style="color: var(--color-success/danger)"> 统计数字、.result 文本
@@ -33,7 +36,12 @@ const demoSource = fs.readFileSync(path.join(ROOT, 'src/demos/ComponentDemo.vue'
 const ROUTES = [...demoSource.matchAll(/^\s*'?([a-z][a-z0-9-]*)'?:\s*defineAsyncComponent/gm)].map((m) => m[1])
 
 const THIRD_PARTY = [
-  /webapi\.amap\.com/, // 高德 markers 图片
+  /webapi\.amap\.com/, // 高德 markers 图片（官方主题图 PNG）与 SDK 自带的 logo 图
+  // 本库交给高德 SDK 的自绘 marker 图标：AmapWidget 的 green 走 encodeURIComponent 产出的
+  // 百分号编码 data URI（`data:image/svg+xml,%3Csvg…`）。<img> 由 SDK 生成，我们塞不进 alt。
+  // 锚点收到 `,%` 为止是刻意的：全仓只有 AmapWidget.vue:108 产出这一种形态；demo 里手写的
+  // 内联 SVG 用 `data:image/svg+xml;utf8,`（DataTableDemo.vue:702），不在此列，缺 alt 照样红。
+  /src="data:image\/svg\+xml,%/,
   /radius-select/, // 高德 SDK 的半径下拉
   /<iframe/, // 三方库注入的工作 iframe（截图库的透明离屏 iframe，src 为 javascript:void(0)）
 ]
