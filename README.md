@@ -194,6 +194,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **常量来源自检**：`npm run check:constants` — 六项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量、截断类必须登记判定且用户数据类要绑 `title`、原生 `color` 输入的值必须经归一
 - **语言包对账**：`npm run check:i18n` — zh-CN / en-US 分块与键集一一对应，缺哪边点哪个键
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
+- **第三方许可闸口**：`npm run check:licenses` — 产物里真进了哪些第三方件（构建期由 rollup 记录到 `dist/third-party-modules.json`），逐条双向对账：漏报、虚报、许可文本缺失、copyleft 命中、外部件没在 `dependencies/peerDependencies` 声明、进包件不在运行期依赖闭包内——任一即红。清单正文随包发布：`vcl-ui/dist/THIRD-PARTY-LICENSES.md`
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
 
 ### 依赖选型记录（评估过的，不是没看）
@@ -333,4 +334,25 @@ npm run release:dry-run    # = npm publish --dry-run --registry https://registry
 
 ## 📄 License
 
-MIT
+本库本体：**MIT**（见 `LICENSE`）。
+
+本库会把一部分第三方代码与图标几何数据**打进产物一起分发**，它们的许可不是 MIT，因此随包附一份声明清单：
+
+- 人读：`dist/THIRD-PARTY-LICENSES.md`（含每件许可全文、进包模块数、上游地址）
+- 机读：`dist/third-party-licenses.json`（SBOM 片段：包名/版本/SPDX/许可文件/模块清单）
+- 构建期证据：`dist/third-party-modules.json`（rollup 记录的产物模块归属）
+
+要点（清单里逐条有出处）：
+
+| 随包分发 | 许可 | 备注 |
+| --- | --- | --- |
+| `xlsx` | Apache-2.0 | 按 §4 保留许可全文；上游发布物无 NOTICE 文件，故无额外 NOTICE 义务 |
+| `jszip` | **MIT**（择优） | 上游是 `(MIT OR GPL-3.0-or-later)` 双许可，本库明确按 MIT 条款分发，不用 GPLv3 |
+| `vue-i18n` + `@intlify/*` + `@vue/devtools-api` | MIT | 语言包能力，打进 core chunk |
+| `@vuemap/vue-amap` 系 + `lodash-es` | MIT | 高德地图组件；JS SDK 本体仍由浏览器运行时从 CDN 取，不在包里 |
+| `qrcode` + `dijkstrajs` | MIT | 二维码生成 |
+| Solar 图标几何数据 | CC BY 4.0 | 集合作者 **480 Design**，本库取 `linear` 变体子集未改图形；许可页 <https://creativecommons.org/licenses/by/4.0/> |
+| Lucide 图标几何与名录数据 | ISC | 经 `@lucide/vue` 的 `__iconNode` 导出抽取 |
+
+`vue` / `vue-router` / `echarts` / `echarts-wordcloud` / `@lucide/vue` / `@iconify/vue` / `morphicons` / `zxing-wasm`
+在产物里保持裸 `import`，**代码不进本包**，由宿主安装，许可义务归宿主。

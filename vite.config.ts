@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
+import { thirdPartyEvidencePlugin } from './scripts/third-party-evidence.mjs'
 
 /**
  * 声明按最低承诺版本生成时，vue 被解析到构建别名 vue34，
@@ -50,6 +51,9 @@ for (const d of DOMAINS) ENTRY[d] = resolve(__dirname, `src/components/${d}/inde
 export default defineConfig({
   plugins: [
     vue(),
+    // 许可清单的证据来源：产物实际含哪些第三方模块（es/cjs 两次输出并集写
+    // dist/third-party-modules.json），由 scripts/gen-third-party-licenses.mjs 消费
+    thirdPartyEvidencePlugin({ outDir: 'dist', root: __dirname }),
     dts({
       // 逐文件生成 .d.ts；显式加载 vite/client 类型以解析 import.meta.env
       // tsconfig.dts.json = 主配置 + vueCompilerOptions.target 3.4（该 program 的 vue 被别名到 3.4）
