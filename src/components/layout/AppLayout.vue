@@ -238,7 +238,9 @@ function onProgressMouseUp() {
             <span class="vcl-topbar-category">{{ categoryName }}</span>
             <span class="vcl-topbar-sep">/</span>
           </template>
-          <span v-if="nav.current" class="vcl-topbar-title">{{ navLabel(nav.current.label) }}</span>
+          <span v-if="nav.current" class="vcl-topbar-title" :title="navLabel(nav.current.label)">{{
+            navLabel(nav.current.label)
+          }}</span>
         </template>
 
         <div class="vcl-topbar-spacer" />

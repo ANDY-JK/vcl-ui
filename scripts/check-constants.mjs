@@ -183,6 +183,9 @@ const ELLIPSIS_VERDICTS = new Map([
   ['nav-leaf-label', 'title'],
   ['vcl-toolbar-label', 'title'],
   ['vcl-user-name', 'title'],
+  // 顶栏面包屑当前页名：07a4867 加了 nowrap+ellipsis 防挤压竖排，但漏了 :title 绑全值
+  // ——本条由 check:constants 的「用截断类必绑 title」判定拦下，属该判定的正面用例
+  ['vcl-topbar-title', 'title'],
   ['nav-level-text', 'title'],
   ['menu-item-label', 'title'],
   ['day-cities', 'title'],
