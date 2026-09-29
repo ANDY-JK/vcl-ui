@@ -74,13 +74,13 @@ watch(
   width: var(--fb-control-width, 100%);
 }
 .fb-serial-value {
-  font-size: 14px;
+  font-size: var(--fs-14);
   font-weight: 700;
   color: var(--color-primary, #3b82f6);
   font-family: 'Cascadia Code', 'Fira Code', monospace;
 }
 .fb-serial-hint {
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
 }
 </style>

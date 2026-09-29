@@ -576,7 +576,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   background: #000;
 }
 
@@ -617,7 +617,7 @@ onUnmounted(() => {
   border-radius: 16px;
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
-  font-size: clamp(12px, 1.6vw, 14px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
   backdrop-filter: blur(4px);
 }
 .camc-done {
@@ -628,7 +628,7 @@ onUnmounted(() => {
   border-radius: 20px;
   background: #3b82f6;
   color: #fff;
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   font-weight: 600;
   cursor: pointer;
 }
@@ -674,7 +674,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.85);
-  font-size: 11px;
+  font-size: var(--fs-11);
   line-height: 1.3;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
@@ -711,7 +711,7 @@ onUnmounted(() => {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
-  font-size: 28px;
+  font-size: var(--fs-28);
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -736,7 +736,7 @@ onUnmounted(() => {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.16);
   color: #fff;
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   cursor: pointer;
   backdrop-filter: blur(4px);
   display: flex;
@@ -782,7 +782,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 15px;
+  font-size: var(--fs-15);
   font-weight: 600;
 }
 .camc-shutter-confirm::after {

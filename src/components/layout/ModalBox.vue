@@ -251,7 +251,7 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
   justify-content: space-between;
   padding: clamp(var(--space-2), 1.2vw, 10px) 0;
   border-bottom: 1px solid var(--color-border-light);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
 }
 .detail-label {
   color: var(--color-text-muted);
@@ -289,10 +289,10 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
   flex-direction: column;
 }
 .select-item-label {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
 }
 .select-item-desc {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
 }
 </style>

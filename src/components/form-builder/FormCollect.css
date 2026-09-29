@@ -28,13 +28,13 @@
   flex-shrink: 0;
 }
 .ldc-title {
-  font-size: 18px;
+  font-size: var(--fs-18);
   font-weight: 700;
   margin: 0 0 4px;
   color: var(--color-text, #1e293b);
 }
 .ldc-desc {
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-muted, #64748b);
   margin: 0;
   line-height: 1.5;
@@ -44,7 +44,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
   background: var(--color-bg-alt, #f8fafc);
   padding: 5px 12px;
@@ -94,13 +94,13 @@
   gap: 1px;
 }
 .ldc-stat-value {
-  font-size: 18px;
+  font-size: var(--fs-18);
   font-weight: 700;
   color: var(--color-text, #1e293b);
   line-height: 1.1;
 }
 .ldc-stat-label {
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
 }
 
@@ -109,7 +109,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   font-weight: 500;
   padding: 8px 14px;
   border-radius: var(--radius-md, 8px);
@@ -153,7 +153,7 @@
   border-radius: 6px;
   background: var(--color-bg, #fff);
   color: var(--color-text-secondary, #64748b);
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
@@ -180,7 +180,7 @@
   gap: 8px;
   padding: 24px;
   color: var(--color-text-muted, #94a3b8);
-  font-size: 13px;
+  font-size: var(--fs-13);
 }
 
 .ldc-search {
@@ -198,7 +198,7 @@
   border: none;
   outline: none;
   background: transparent;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text, #1e293b);
 }
 .ldc-search-input::placeholder {
@@ -243,7 +243,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
   font-family: 'Cascadia Code', monospace;
 }
@@ -272,7 +272,7 @@
   align-items: flex-start;
   gap: 8px;
   padding: 4px 0;
-  font-size: 12px;
+  font-size: var(--fs-12);
   border-bottom: 1px solid var(--color-border-light, #f8fafc);
 }
 .ldc-detail-row:last-child {
@@ -300,7 +300,7 @@
   background: rgba(59, 130, 246, 0.06);
   color: var(--color-primary, #3b82f6);
   cursor: pointer;
-  font-size: 11.5px;
+  font-size: var(--fs-12);
   font-weight: 500;
   transition: all 0.15s ease;
 }
@@ -329,7 +329,7 @@
   background: var(--color-bg, #fff);
   color: var(--color-text-secondary, #6b7280);
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 500;
   transition: all 0.15s;
 }
@@ -349,11 +349,11 @@
 .ldc-page-ellipsis {
   padding: 0 4px;
   color: var(--color-text-muted, #9ca3af);
-  font-size: 12px;
+  font-size: var(--fs-12);
 }
 .ldc-page-info {
   margin-left: 8px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
 }
 
@@ -432,7 +432,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
 }
 .ldc-share-qr-error {
@@ -444,7 +444,7 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   line-height: 1.6;
   color: var(--color-danger, #dc2626);
   text-align: center;
@@ -452,7 +452,7 @@
 }
 .ldc-share-qr-hint {
   margin: 0;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
   text-align: center;
 }
@@ -486,13 +486,13 @@
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
 }
 .ldc-share-copy-label {
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--color-text, #1e293b);
 }
 .ldc-share-copy-value {
   width: 100%;
-  font-size: 11px;
+  font-size: var(--fs-11);
   line-height: 1.5;
   color: var(--color-text-secondary, #64748b);
   word-break: break-all;
@@ -503,7 +503,7 @@
 }
 .ldc-share-copy-tip {
   margin-top: auto;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-primary, #3b82f6);
 }
 
@@ -520,7 +520,7 @@
   padding: 40px 0;
   min-height: 200px;
   color: var(--color-success, #059669);
-  font-size: 14px;
+  font-size: var(--fs-14);
   font-weight: 500;
 }
 .ldc-record-done p {
@@ -532,7 +532,7 @@
   border-radius: var(--radius-sm, 6px);
   background: var(--color-danger-light, #fef2f2);
   color: var(--color-danger, #dc2626);
-  font-size: 13px;
+  font-size: var(--fs-13);
 }
 
 /* 记录操作列按钮 */

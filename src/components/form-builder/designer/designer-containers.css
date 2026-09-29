@@ -6,7 +6,7 @@
   padding: 6px 12px;
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   background: var(--color-bg-alt, #f8fafc);
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
 }
 .ldc-crumb {
@@ -36,7 +36,7 @@
 }
 .ldc-canvas-tip {
   margin-left: auto;
-  font-size: 10px;
+  font-size: var(--fs-10);
 }
 
 /* ── 画布缩放控制 ── */
@@ -59,7 +59,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: var(--fs-10);
   font-weight: 600;
   transition: all 0.12s;
 }
@@ -136,7 +136,7 @@
   background: var(--color-bg-alt, #f8fafc);
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
-  font-size: 13px;
+  font-size: var(--fs-13);
   font-weight: 700;
   color: var(--color-text, #1e293b);
 }
@@ -144,7 +144,7 @@
   flex: 1;
 }
 .ldc-container-badge {
-  font-size: 9px;
+  font-size: var(--fs-9);
   font-weight: 700;
   color: var(--color-primary);
   background: var(--color-primary-light);
@@ -191,7 +191,7 @@
   justify-content: center;
   min-height: 60px;
   color: var(--color-text-muted, #94a3b8);
-  font-size: 11px;
+  font-size: var(--fs-11);
   border: 2px dashed var(--color-border, #e2e8f0);
   border-radius: var(--radius-sm, 6px);
   margin: 8px;
@@ -206,7 +206,7 @@
 }
 .ldc-container--card > .ldc-container-head {
   background: var(--color-surface, #fff);
-  font-size: 13px;
+  font-size: var(--fs-13);
   font-weight: 600;
 }
 .ldc-container--card > .ldc-container-body {
@@ -226,7 +226,7 @@
   display: inline-flex;
   align-items: center;
   padding: 5px 14px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--color-text-secondary, #6b7280);
   border-radius: var(--radius-sm, 6px);
@@ -269,7 +269,7 @@
   border-color: var(--color-border, #e5e7eb);
 }
 .ldc-slot-label {
-  font-size: 11px;
+  font-size: var(--fs-11);
   font-weight: 600;
   color: var(--color-text-secondary, #6b7280);
   margin-bottom: 6px;
@@ -290,7 +290,7 @@
   height: 14px;
   padding: 0 4px;
   margin-left: 4px;
-  font-size: 9px;
+  font-size: var(--fs-9);
   font-weight: 600;
   line-height: 1;
   color: var(--color-text-muted, #94a3b8);
@@ -337,7 +337,7 @@
 }
 .ldc-collapse-title {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--color-text, #1e293b);
 }
@@ -362,7 +362,7 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--color-text-secondary, #64748b);
   background: var(--color-bg-alt, #fafbfc);
@@ -394,7 +394,7 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   font-weight: 700;
   border-radius: 50%;
   background: var(--color-bg-soft, #e2e8f0);
@@ -425,7 +425,7 @@
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   font-weight: 500;
   color: var(--color-text-secondary, #64748b);
   background: var(--color-bg, #fff);
@@ -443,7 +443,7 @@
   cursor: not-allowed;
 }
 .ldc-steps-indicator {
-  font-size: 11px;
+  font-size: var(--fs-11);
   font-weight: 600;
   color: var(--color-text-muted, #94a3b8);
   margin: 0 auto;

@@ -285,7 +285,7 @@ const stats = computed(() => {
 .stats {
   display: flex;
   gap: var(--space-2);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
 }
 
@@ -365,7 +365,7 @@ const stats = computed(() => {
 }
 
 .group-arrow {
-  font-size: clamp(8px, 1.1vw, 9px);
+  font-size: clamp(8px, calc(8px + var(--vcl-fit) * 1), 9px);
   color: var(--color-text-muted);
   width: clamp(12px, 1.6vw, 14px);
   flex-shrink: 0;
@@ -385,7 +385,7 @@ const stats = computed(() => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   padding: var(--space-1) var(--space-1);
   border-radius: var(--radius-sm);
   opacity: 0.5;
@@ -407,7 +407,7 @@ const stats = computed(() => {
 .group-count {
   font-weight: 400;
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
 }
 
 .store-list {
@@ -453,7 +453,7 @@ const stats = computed(() => {
   display: flex;
   gap: var(--space-2);
   margin-top: var(--space-0);
-  font-size: clamp(10px, 1.3vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   color: var(--color-text-muted);
 }
 
@@ -499,7 +499,7 @@ const stats = computed(() => {
 }
 
 .empty-state .hint {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   margin-top: var(--space-1);
   text-align: center;
   line-height: 1.6;
@@ -526,13 +526,13 @@ const stats = computed(() => {
 }
 
 .confirm-text {
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   color: var(--color-text);
   margin: 0 0 var(--space-1);
 }
 
 .confirm-hint {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
   margin: 0 0 var(--space-4);
 }

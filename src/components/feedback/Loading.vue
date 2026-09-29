@@ -154,7 +154,7 @@ useBodyScrollLock(() => props.fullscreen)
   height: clamp(32px, 5vw, 40px);
 }
 .spinner-text {
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
 }
 

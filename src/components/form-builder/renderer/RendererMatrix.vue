@@ -81,7 +81,7 @@ function selectCell(row: string, col: string): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: var(--fs-11);
   font-weight: 600;
   color: var(--color-text-muted, #64748b);
 }
@@ -98,7 +98,7 @@ function selectCell(row: string, col: string): void {
 .fb-matrix-empty {
   padding: 20px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
   border: 1px dashed var(--color-border, #e2e8f0);
   border-radius: var(--fb-radius, 6px);

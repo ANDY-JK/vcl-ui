@@ -115,7 +115,7 @@ function onKeydown(e: KeyboardEvent) {
   padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 2vw, 16px);
   border: none;
   background: transparent;
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -142,7 +142,7 @@ function onKeydown(e: KeyboardEvent) {
   padding: clamp(var(--space-1), 1vw, 8px) clamp(10px, 2vw, 16px);
   border: none;
   background: transparent;
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   border-radius: var(--radius-md);
@@ -163,7 +163,7 @@ function onKeydown(e: KeyboardEvent) {
   padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 2vw, 16px);
   border: 1.5px solid var(--color-border);
   background: var(--color-bg);
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -199,7 +199,7 @@ function onKeydown(e: KeyboardEvent) {
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: clamp(10px, 1.5vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   color: var(--color-text-muted);
   transition: color var(--transition-fast);
 }

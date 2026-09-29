@@ -13,13 +13,25 @@
 
 /* 下方弹出 → 从上方滑入 */
 @keyframes dt-filterFadeInDown {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 /* 上方弹出 → 从下方滑入 */
 @keyframes dt-filterFadeInUp {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .dt-filter-dropdown {
   animation: dt-filterFadeInDown 0.15s ease;
@@ -33,7 +45,7 @@
   padding: 10px 12px;
   border: none;
   border-bottom: 1px solid var(--color-border-light);
-  font-size: 14px;
+  font-size: var(--fs-14);
   outline: none;
   background: var(--color-surface);
   color: var(--color-text);
@@ -43,7 +55,9 @@
   border-bottom-color: var(--color-primary);
   box-shadow: inset 0 -1px 0 0 var(--color-primary);
 }
-.dt-filter-search::placeholder { color: var(--color-text-muted); }
+.dt-filter-search::placeholder {
+  color: var(--color-text-muted);
+}
 
 /* 选项排序切换 */
 .dt-filter-option-sort {
@@ -54,7 +68,7 @@
   border-bottom: 1px solid var(--color-border-light);
 }
 .dt-filter-option-sort-label {
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
@@ -63,7 +77,7 @@
   align-items: center;
   gap: 2px;
   padding: 3px 10px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -80,7 +94,9 @@
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
-.dt-filter-option-sort-arrow { font-size: 10px; }
+.dt-filter-option-sort-arrow {
+  font-size: var(--fs-10);
+}
 
 .dt-filter-quick-actions {
   display: flex;
@@ -92,7 +108,7 @@
 }
 .dt-filter-quick-btn {
   padding: 4px 10px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -106,7 +122,9 @@
   color: var(--color-primary);
   background: var(--color-primary-light);
 }
-.dt-filter-quick-count { color: var(--color-text-muted); }
+.dt-filter-quick-count {
+  color: var(--color-text-muted);
+}
 
 /* 选项列表 */
 .dt-filter-options-list {
@@ -121,10 +139,12 @@
   padding: 8px 14px;
   cursor: pointer;
   transition: background var(--transition-fast);
-  font-size: 14px;
+  font-size: var(--fs-14);
   color: var(--color-text);
 }
-.dt-filter-option:hover { background: var(--color-bg); }
+.dt-filter-option:hover {
+  background: var(--color-bg);
+}
 .dt-filter-option.selected {
   background: var(--color-primary-light);
   color: var(--color-primary);
@@ -145,13 +165,13 @@
   flex-shrink: 0;
   margin-left: 6px;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--fs-13);
 }
 .dt-filter-no-result {
   padding: 24px 0;
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--fs-13);
 }
 
 /* 滚动进度条：贴在选项列表和操作按钮之间 */
@@ -177,7 +197,7 @@
 }
 .dt-filter-btn {
   padding: 6px 18px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -188,7 +208,9 @@
   color: #fff;
   border-color: var(--color-primary);
 }
-.dt-filter-btn-apply:hover { background: var(--color-primary-hover); }
+.dt-filter-btn-apply:hover {
+  background: var(--color-primary-hover);
+}
 .dt-filter-btn-reset {
   background: var(--color-surface);
   color: var(--color-text-secondary);
@@ -213,7 +235,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -281,7 +303,7 @@
 .dt-col-search {
   width: 100%;
   padding: 6px 10px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -307,7 +329,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: var(--fs-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -343,7 +365,7 @@
 .dt-col-no-result {
   padding: 24px 0;
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-muted);
 }
 .dt-col-footer {
@@ -355,7 +377,7 @@
   border-top: 1px solid var(--color-border-light);
 }
 .dt-col-footer-fixed {
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-primary);
   background: var(--color-primary-light);
   border-radius: var(--radius-sm);
@@ -363,7 +385,7 @@
   white-space: nowrap;
 }
 .dt-col-footer-hint {
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted);
   text-align: right;
   line-height: 1.4;
@@ -374,7 +396,7 @@
   gap: 6px;
   /* 左右留出色条空间，避免固定区域色条与 checkbox/按钮重叠 */
   padding: 3px 6px;
-  font-size: 13px;
+  font-size: var(--fs-13);
 }
 .dt-col-item.hidden .dt-col-title {
   color: var(--color-text-muted);
@@ -408,7 +430,7 @@
   opacity: 0.35;
   cursor: not-allowed;
 }
-.dt-col-item input[type="checkbox"] {
+.dt-col-item input[type='checkbox'] {
   width: 15px;
   height: 15px;
   accent-color: var(--color-primary);
@@ -426,7 +448,7 @@
   align-items: center;
   gap: 2px;
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -434,7 +456,7 @@
   min-width: 20px;
   height: 22px;
   padding: 0 3px;
-  font-size: 12px;
+  font-size: var(--fs-12);
 }
 .dt-col-width span {
   min-width: 30px;
@@ -450,7 +472,7 @@
   min-width: 24px;
   height: 24px;
   padding: 0 6px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -471,25 +493,41 @@
 .dt-cell-tooltip {
   background: var(--color-sidebar, #1e1e2e);
   color: #fff;
-  font-size: 13px;
+  font-size: var(--fs-13);
   line-height: 1.5;
   padding: 8px 12px;
   border-radius: 6px;
   white-space: pre-wrap;
   word-break: break-word;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   pointer-events: auto;
 }
-.dt-cell-tooltip::-webkit-scrollbar { width: 4px; }
-.dt-cell-tooltip::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 2px; }
+.dt-cell-tooltip::-webkit-scrollbar {
+  width: 4px;
+}
+.dt-cell-tooltip::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
 
 /* 打印时隐藏浮层 */
 @media print {
-  .dt-filter-dropdown, .dt-context-menu, .dt-cell-tooltip,
-  .note-tooltip, .note-editor, .image-lightbox { display: none !important; }
+  .dt-filter-dropdown,
+  .dt-context-menu,
+  .dt-cell-tooltip,
+  .note-tooltip,
+  .note-editor,
+  .image-lightbox {
+    display: none !important;
+  }
 }
 
 /* DataTable 全屏：解除 Card 等容器的 overflow/position 裁剪 */
-body.dt-fullscreen-active .content-body { overflow: hidden !important; }
+body.dt-fullscreen-active .content-body {
+  overflow: hidden !important;
+}
 body.dt-fullscreen-active .card,
-body.dt-fullscreen-active .card-body { overflow: visible !important; position: static !important; }
+body.dt-fullscreen-active .card-body {
+  overflow: visible !important;
+  position: static !important;
+}

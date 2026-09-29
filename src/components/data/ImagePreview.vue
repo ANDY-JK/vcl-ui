@@ -545,7 +545,7 @@ const displayTitle = computed(() => {
   border-radius: var(--radius-md);
   background: transparent;
   color: rgba(255, 255, 255, 0.5);
-  font-size: clamp(16px, 2vw, 22px);
+  font-size: clamp(16px, calc(16px + var(--vcl-fit) * 6), 22px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -564,7 +564,7 @@ const displayTitle = computed(() => {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
-  font-size: clamp(16px, 2vw, 22px);
+  font-size: clamp(16px, calc(16px + var(--vcl-fit) * 6), 22px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -678,7 +678,7 @@ const displayTitle = computed(() => {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  font-size: clamp(18px, 3vw, 26px);
+  font-size: clamp(18px, calc(18px + var(--vcl-fit) * 8), 26px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -767,7 +767,7 @@ const displayTitle = computed(() => {
   flex-shrink: 0;
 }
 .ip-thumb-label {
-  font-size: clamp(10px, 1.4vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: rgba(255, 255, 255, 0.55);
   padding: var(--space-1);
   overflow: hidden;
@@ -799,7 +799,7 @@ const displayTitle = computed(() => {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   cursor: pointer;
   display: flex;
   align-items: center;

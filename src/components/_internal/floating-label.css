@@ -15,10 +15,10 @@
 
 .fl-label {
   position: absolute;
-  left: var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
+  left: var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px));
   top: 50%;
   transform: translateY(-50%);
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
   color: var(--color-text-muted);
   pointer-events: none;
   transition: all var(--transition-fast);
@@ -33,10 +33,10 @@
 .fl-label.raised {
   top: 0;
   transform: translateY(-50%);
-  font-size: clamp(10px, 1.5vw, 11px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 1), 11px);
   color: var(--color-primary);
   background: var(--fl-label-bg, var(--color-surface));
   padding: 0 var(--space-1);
-  left: calc(var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)) - 4px);
+  left: calc(var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px)) - 4px);
   z-index: 2;
 }

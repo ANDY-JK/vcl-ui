@@ -1863,7 +1863,7 @@ provideDataTableContext({
     <!-- 内部异常兜底 — 组件内部异常不导致页面崩溃 -->
     <div v-if="_internalError" style="padding: 40px 20px; text-align: center">
       <h3 style="color: var(--color-danger); margin-bottom: 8px">{{ t('table.renderError') }}</h3>
-      <p style="color: var(--color-text-muted); font-size: 13px; margin-bottom: 16px">
+      <p style="color: var(--color-text-muted); font-size: var(--fs-13); margin-bottom: 16px">
         {{ _internalError.message }}
       </p>
       <button class="base-btn btn-primary btn-md" @click="_internalError = null">{{ t('common.retry') }}</button>

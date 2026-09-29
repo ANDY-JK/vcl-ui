@@ -115,7 +115,7 @@
   border-spacing: 0;
   font-family: SimSun, '宋体', serif;
   /* 缩放字体带下限：缩小到 50% 时仍可读（max 取保底 12px） */
-  font-size: max(12px, calc(clamp(12px, 1.8vw, 14px) * var(--dt-zoom-y, 1)));
+  font-size: max(12px, calc(clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px) * var(--dt-zoom-y, 1)));
   table-layout: auto;
 }
 
@@ -261,7 +261,7 @@ tbody td {
 .data-table.dense tbody td {
   padding-top: var(--space-1);
   padding-bottom: var(--space-1);
-  font-size: max(11px, calc(13px * var(--dt-zoom-y, 1)));
+  font-size: max(11px, calc(var(--fs-13) * var(--dt-zoom-y, 1)));
 }
 
 /* ==================== 汇总行 ==================== */
@@ -352,7 +352,7 @@ td.cell-editing.cell-edit-invalid {
   border-radius: var(--radius-sm);
   background: var(--color-danger-solid);
   color: #fff;
-  font-size: 12px;
+  font-size: var(--fs-12);
   line-height: 16px;
   white-space: nowrap;
   z-index: 6;
@@ -525,7 +525,7 @@ td.cell-has-note {
   background: var(--color-bg-inverse, #333);
   color: var(--color-text-inverse, #fff);
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: var(--fs-13);
   line-height: 1.5;
   box-shadow: var(--shadow-lg);
   pointer-events: none;
@@ -543,7 +543,7 @@ td.cell-has-note {
   color: var(--color-warning-text, #d97706);
   border: 1px solid var(--color-warning-border, #fde68a);
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--fs-12);
   line-height: 1.4;
   box-shadow: var(--shadow-md);
   pointer-events: none;
@@ -569,14 +569,14 @@ td.cell-has-note {
   gap: var(--space-3);
 }
 .note-editor-title {
-  font-size: 15px;
+  font-size: var(--fs-15);
   font-weight: 600;
   color: var(--color-text);
 }
 .note-editor-input {
   width: 100%;
   padding: var(--space-2) 12px;
-  font-size: 14px;
+  font-size: var(--fs-14);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   outline: none;
@@ -783,7 +783,7 @@ th.drag-over {
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-2);
-  font-size: 13px;
+  font-size: var(--fs-13);
   position: relative;
 }
 .card-field.card-field-editing {
@@ -866,7 +866,7 @@ th.drag-over {
 .card-edit-select {
   width: 100%;
   padding: var(--space-1) 6px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -913,7 +913,7 @@ th.drag-over {
   gap: var(--space-1);
   padding: var(--space-1) 10px;
   margin: 0 3px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   line-height: 1;
   border: none;
   border-radius: var(--radius-sm);
@@ -962,7 +962,7 @@ th.drag-over {
 }
 .data-table.dense .row-action-btn {
   padding: var(--space-1) 8px;
-  font-size: 11px;
+  font-size: var(--fs-11);
 }
 
 /* 卡片视图操作按钮 */
@@ -1030,7 +1030,7 @@ td.cell-has-options:hover .cell-options-arrow {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 14px;
+  font-size: var(--fs-14);
   line-height: 1.7;
   color: var(--color-text);
   max-height: 65vh;
@@ -1052,7 +1052,7 @@ td.cell-has-options:hover .cell-options-arrow {
   align-items: center;
   justify-content: space-between;
   padding: 7px var(--space-3);
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text);
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -1092,7 +1092,7 @@ td.cell-has-options:hover .cell-options-arrow {
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
-  font-size: 13px;
+  font-size: var(--fs-13);
   cursor: pointer;
   white-space: nowrap;
   transition: background var(--transition-fast);

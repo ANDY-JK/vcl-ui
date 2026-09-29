@@ -128,7 +128,7 @@ onUnmounted(clearEscalation)
   /* 实心底压白色图标：用 solid 令牌（暗色下 --color-warning 被提亮，白字对比度仅 1.67） */
   background: var(--color-warning-solid, var(--color-warning));
   color: white;
-  font-size: clamp(24px, 3.5vw, 36px);
+  font-size: clamp(24px, calc(24px + var(--vcl-fit) * 12), 36px);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -136,13 +136,13 @@ onUnmounted(clearEscalation)
   margin-bottom: var(--space-4);
 }
 .eb-title {
-  font-size: clamp(16px, 2.5vw, 28px);
+  font-size: clamp(16px, calc(16px + var(--vcl-fit) * 12), 28px);
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: var(--space-1);
 }
 .eb-desc {
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   color: var(--color-text-muted);
   margin-bottom: var(--space-4);
   max-width: 400px;
@@ -154,7 +154,7 @@ onUnmounted(clearEscalation)
   border-radius: var(--radius-md);
   background: var(--color-primary);
   color: white;
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   cursor: pointer;
   font-family: inherit;
 }

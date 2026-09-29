@@ -256,7 +256,7 @@ function onToday() {
 .dp-title {
   flex: 1;
   text-align: center;
-  font-size: clamp(12px, 1.8vw, 14px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
   font-weight: 600;
   color: var(--color-text);
 }
@@ -267,7 +267,7 @@ function onToday() {
 }
 .dp-weekday {
   text-align: center;
-  font-size: clamp(10px, 1.5vw, 11px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 1), 11px);
   color: var(--color-text-muted);
   padding: var(--space-1) 0;
   font-weight: 500;
@@ -287,7 +287,7 @@ function onToday() {
   align-items: center;
   justify-content: center;
   height: clamp(28px, 4.5vw, 32px);
-  font-size: clamp(11px, 1.6vw, 12px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 1), 12px);
   border: none;
   background: transparent;
   border-radius: var(--radius-sm);
@@ -366,7 +366,7 @@ function onToday() {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-primary);
-  font-size: clamp(11px, 1.6vw, 12px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 1), 12px);
   cursor: pointer;
   transition: background var(--transition-fast);
 }

@@ -56,7 +56,7 @@ onUnmounted(() => {
   /* 实心底压白字：solid 令牌（暗色下 --color-warning 提亮后白字不可读） */
   background: var(--color-warning-solid, var(--color-warning));
   color: white;
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
 }
 
 .offline-dismiss {

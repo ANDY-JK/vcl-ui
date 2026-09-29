@@ -134,7 +134,7 @@ onUnmounted(() => {})
 }
 .capfb-hint {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fs-13);
   line-height: 1.6;
   color: var(--color-text-muted);
 }
@@ -151,7 +151,7 @@ onUnmounted(() => {})
   border-radius: var(--radius-lg);
   background: var(--color-bg);
   color: var(--color-primary);
-  font-size: 14px;
+  font-size: var(--fs-14);
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -170,7 +170,7 @@ onUnmounted(() => {})
   align-items: center;
   gap: var(--space-2);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--fs-12);
 }
 .capfb-or::before,
 .capfb-or::after {
@@ -190,7 +190,7 @@ onUnmounted(() => {})
 }
 .capfb-err {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-danger);
 }
 .capfb-busy {
@@ -198,7 +198,7 @@ onUnmounted(() => {})
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted);
 }
 .capfb-spinner {

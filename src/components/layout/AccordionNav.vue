@@ -170,7 +170,7 @@ const effectiveExpanded = computed(() => {
 .nav-empty {
   padding: var(--space-4) var(--space-3);
   text-align: center;
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-sidebar-text);
   opacity: 0.6;
 }
@@ -200,7 +200,7 @@ const effectiveExpanded = computed(() => {
   outline: none;
   background: transparent;
   color: var(--color-sidebar-text);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   line-height: 1.5;
 }
 .nav-search-input::placeholder {
@@ -236,7 +236,7 @@ const effectiveExpanded = computed(() => {
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--color-sidebar-text);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   opacity: 0.85;
   cursor: pointer;
   transition:

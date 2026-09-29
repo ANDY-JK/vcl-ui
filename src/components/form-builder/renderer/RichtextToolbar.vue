@@ -522,7 +522,7 @@ function resetForm(): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: var(--fs-12);
   padding: 0 4px;
 }
 .fb-rt-toolbar button:hover {
@@ -572,7 +572,7 @@ function resetForm(): void {
   gap: 6px;
 }
 .fb-rt-panel-label {
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #64748b);
   width: 60px;
   flex-shrink: 0;
@@ -592,7 +592,7 @@ function resetForm(): void {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #64748b);
 }
 .fb-rt-panel-field input[type='text'] {
@@ -600,7 +600,7 @@ function resetForm(): void {
   padding: 0 8px;
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 4px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text, #1e293b);
   background: var(--color-bg, #fff);
   outline: none;
@@ -612,12 +612,12 @@ function resetForm(): void {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #64748b);
   cursor: pointer;
 }
 .fb-rt-panel-hint {
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-warning, #d97706);
 }
 .fb-rt-panel-hint.is-error {
@@ -635,7 +635,7 @@ function resetForm(): void {
   border: 1px solid var(--color-border, #e2e8f0);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);
-  font-size: 12px;
+  font-size: var(--fs-12);
 }
 .fb-rt-panel-actions button:hover {
   border-color: var(--color-primary, #4f46e5);

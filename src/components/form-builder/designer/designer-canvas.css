@@ -60,13 +60,13 @@
 }
 .ldc-empty-title {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fs-13);
   font-weight: 600;
   color: var(--color-text-muted, #94a3b8);
 }
 .ldc-empty-hint {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-muted, #94a3b8);
 }
 
@@ -171,7 +171,7 @@
   align-items: center;
   padding: 2px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   transition: all 0.12s;
 }
 .ldc-drag-handle:hover {
@@ -183,7 +183,7 @@
 }
 
 .ldc-card-type-badge {
-  font-size: 9px;
+  font-size: var(--fs-9);
   font-weight: 700;
   color: var(--color-primary, #4f6ef7);
   background: var(--color-primary-light, #eef1ff);
@@ -194,7 +194,7 @@
   flex-shrink: 0;
 }
 .ldc-card-key {
-  font-size: 10px;
+  font-size: var(--fs-10);
   color: var(--color-text-muted, #94a3b8);
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
   background: var(--color-bg-soft, #f1f5f9);
@@ -261,13 +261,13 @@
   border-bottom: 2px solid var(--color-primary-light, #eef1ff);
 }
 .ldc-form-head h3 {
-  font-size: 18px;
+  font-size: var(--fs-18);
   font-weight: 800;
   color: var(--color-text, #1e293b);
   margin: 0 0 4px;
 }
 .ldc-form-head p {
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-secondary, #475569);
   margin: 0;
 }

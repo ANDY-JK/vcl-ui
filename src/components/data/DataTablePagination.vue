@@ -27,7 +27,12 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
         >{{ t('table.selected') }} <strong>{{ _selectedKeys.length }}</strong> {{ t('table.rows') }} - </template
       >{{ t('table.pageInfo', { current: _currentPage, total: totalPages }) }}
     </span>
-    <button class="page-btn" :disabled="_currentPage <= 1" :aria-label="t('table.prevPage')" @click="setPage(_currentPage - 1)">
+    <button
+      class="page-btn"
+      :disabled="_currentPage <= 1"
+      :aria-label="t('table.prevPage')"
+      @click="setPage(_currentPage - 1)"
+    >
       <IconSvg type="chevron-left" size="sm" />
     </button>
     <template v-for="p in displayPages" :key="p">
@@ -36,7 +41,12 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
       </button>
       <span v-else class="page-ellipsis">...</span>
     </template>
-    <button class="page-btn" :disabled="_currentPage >= totalPages" :aria-label="t('table.nextPage')" @click="setPage(_currentPage + 1)">
+    <button
+      class="page-btn"
+      :disabled="_currentPage >= totalPages"
+      :aria-label="t('table.nextPage')"
+      @click="setPage(_currentPage + 1)"
+    >
       <IconSvg type="chevron-right" size="sm" />
     </button>
   </div>
@@ -60,7 +70,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
 .pagination-status {
   position: absolute;
   left: var(--space-3);
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted);
   white-space: nowrap;
 }
@@ -75,7 +85,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
   min-width: 28px;
   height: 28px;
   padding: 0 var(--space-1);
-  font-size: 12px;
+  font-size: var(--fs-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);

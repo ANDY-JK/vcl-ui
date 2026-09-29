@@ -52,7 +52,7 @@ const percent = (current: number, total: number): number => {
   display: flex;
   justify-content: space-between;
   margin-bottom: var(--space-2);
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   color: var(--color-text);
 }
 

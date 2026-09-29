@@ -168,12 +168,12 @@ const iconBg = computed(() =>
   flex: 1;
 }
 .stat-value {
-  font-size: clamp(18px, 3.2vw, 36px);
+  font-size: clamp(18px, calc(18px + var(--vcl-fit) * 18), 36px);
   font-weight: 700;
   line-height: 1.2;
 }
 .stat-label {
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
@@ -181,7 +181,7 @@ const iconBg = computed(() =>
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 500;
 }
 
@@ -217,7 +217,7 @@ const iconBg = computed(() =>
   border-bottom: 1px solid var(--color-border-light);
 }
 .grid-title {
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   font-weight: 600;
 }
 .grid-body {

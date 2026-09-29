@@ -29,13 +29,13 @@
 }
 .fb-title {
   margin: 0 0 6px;
-  font-size: 18px;
+  font-size: var(--fs-18);
   font-weight: 700;
   color: var(--color-text, #1e293b);
 }
 .fb-desc {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-secondary, #64748b);
   line-height: 1.5;
 }
@@ -140,11 +140,11 @@
   display: flex;
   align-items: baseline;
   gap: 2px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-secondary, #64748b);
 }
 .fb-step-current {
-  font-size: 18px;
+  font-size: var(--fs-18);
   font-weight: 700;
   color: var(--color-primary, #3b82f6);
 }
@@ -156,13 +156,13 @@
 }
 .fb-step-title {
   margin-left: 8px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text, #1e293b);
   font-weight: 500;
 }
 .fb-step-completion {
   margin-left: 4px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
   font-weight: 400;
 }

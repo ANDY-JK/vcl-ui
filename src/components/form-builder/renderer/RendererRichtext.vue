@@ -188,7 +188,7 @@ onUnmounted(() => {
 .fb-richtext-body {
   padding: 8px 12px;
   min-height: 50px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text, #1e293b);
   outline: none;
 }
@@ -199,7 +199,7 @@ onUnmounted(() => {
 .fb-richtext-preview {
   padding: 12px 16px;
   min-height: 50px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   line-height: 1.7;
   color: var(--color-text, #1e293b);
   background: var(--color-surface, #fff);
@@ -248,7 +248,7 @@ onUnmounted(() => {
   padding: 10px 12px;
   overflow-x: auto;
   font-family: var(--fb-rt-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
-  font-size: 12px;
+  font-size: var(--fs-12);
   margin: 8px 0;
 }
 .fb-richtext-body :deep(code),
@@ -304,7 +304,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: flex-end;
   padding: 2px 8px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
   border-top: 1px solid var(--color-border-light, #f1f5f9);
   background: var(--color-bg-alt, #f8fafc);
@@ -338,7 +338,7 @@ onUnmounted(() => {
   max-width: var(--fb-rt-fullscreen-width, 860px);
   margin: 0 auto;
   padding: 24px 32px;
-  font-size: 15px;
+  font-size: var(--fs-15);
 }
 .fb-richtext--fullscreen .fb-rt-status {
   flex-shrink: 0;

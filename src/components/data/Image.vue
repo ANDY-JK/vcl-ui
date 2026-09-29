@@ -208,6 +208,6 @@ function onClick() {
   color: var(--color-danger);
 }
 .v-image-text {
-  font-size: clamp(11px, 1.5vw, 14px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
 }
 </style>

@@ -142,7 +142,7 @@ onMounted(() => {
   border-radius: 4px;
   background: var(--color-bg, #fff);
   color: var(--color-text-muted, #64748b);
-  font-size: 11px;
+  font-size: var(--fs-11);
   cursor: pointer;
 }
 .fb-signature-clear:hover {

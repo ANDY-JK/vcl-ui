@@ -262,7 +262,7 @@ function onChartReady(inst: ECharts) {
   flex-shrink: 0;
 }
 .ct-title {
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   font-weight: 600;
 }
 .ct-toggles {
@@ -279,7 +279,7 @@ function onChartReady(inst: ECharts) {
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  font-size: clamp(11px, 1.5vw, 14px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
   cursor: pointer;
   white-space: nowrap;
 }

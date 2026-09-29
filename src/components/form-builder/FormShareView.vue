@@ -211,13 +211,13 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
 }
 .fsv-title {
   margin: 0 0 4px;
-  font-size: 20px;
+  font-size: var(--fs-20);
   font-weight: 700;
   color: var(--color-text, #1e293b);
 }
 .fsv-desc {
   margin: 0 0 20px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   line-height: 1.7;
   color: var(--color-text-secondary, #64748b);
 }
@@ -227,6 +227,6 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
   border-radius: var(--radius-sm, 6px);
   background: var(--color-danger-light, #fef2f2);
   color: var(--color-danger, #dc2626);
-  font-size: 13px;
+  font-size: var(--fs-13);
 }
 </style>

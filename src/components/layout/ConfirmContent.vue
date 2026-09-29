@@ -124,7 +124,7 @@ function onConfirm() {
 .confirm-msg {
   margin: 0;
   line-height: 1.7;
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   color: var(--color-text);
   flex: 1;
 }
@@ -146,7 +146,7 @@ function onConfirm() {
   padding: var(--space-2) 22px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;

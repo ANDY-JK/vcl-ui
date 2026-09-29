@@ -86,14 +86,14 @@ const colorMap: Record<string, string> = {
 }
 
 .result-title {
-  font-size: clamp(18px, 3vw, 36px);
+  font-size: clamp(18px, calc(18px + var(--vcl-fit) * 18), 36px);
   font-weight: 600;
   margin-bottom: clamp(var(--space-1), 1vw, 8px);
   color: var(--color-text);
 }
 
 .result-desc {
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   color: var(--color-text-secondary);
   max-width: clamp(340px, 64vw, 480px);
   line-height: 1.6;

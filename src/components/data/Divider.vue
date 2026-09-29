@@ -49,7 +49,7 @@ withDefaults(defineProps<Props>(), {
 }
 .divider-text {
   padding: 0 clamp(var(--space-2), 2vw, 16px);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
   white-space: nowrap;
 }

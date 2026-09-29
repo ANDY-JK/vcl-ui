@@ -16,7 +16,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 10px 6px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   font-weight: 700;
   color: var(--color-text-muted, #94a3b8);
   letter-spacing: 0.5px;
@@ -40,7 +40,7 @@
   border: none;
   outline: none;
   background: transparent;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text, #1e293b);
   min-width: 0;
 }
@@ -67,7 +67,7 @@
 .ldp-search-empty {
   padding: 20px 10px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
 }
 
@@ -76,7 +76,7 @@
   margin-bottom: 4px;
 }
 .ldp-group-title {
-  font-size: 10px;
+  font-size: var(--fs-10);
   font-weight: 700;
   color: var(--color-text-muted, #9ca3af);
   padding: 4px 10px 3px;
@@ -96,7 +96,7 @@
   color: var(--color-text-secondary, #475569);
   padding: 7px 10px;
   margin-bottom: 2px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 500;
   cursor: grab;
   transition: all 0.15s ease;
@@ -136,13 +136,13 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: var(--fs-12);
 }
 .ldp-add {
   opacity: 0;
   margin-left: auto;
   color: var(--color-text-muted, #9ca3af);
-  font-size: 13px;
+  font-size: var(--fs-13);
   transition: opacity 0.15s;
   display: flex;
   align-items: center;

@@ -271,7 +271,7 @@ onUnmounted(unbindWindowPointer)
   }
 }
 .progress-text {
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-secondary);
   font-weight: 500;
   min-width: clamp(30px, 4.8vw, 40px);
@@ -296,7 +296,7 @@ onUnmounted(unbindWindowPointer)
   padding: 0 var(--space-1);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   font-family: inherit;
   text-align: center;
   color: var(--color-text);

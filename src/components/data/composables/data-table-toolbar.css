@@ -67,7 +67,7 @@
 }
 
 .toolbar-count {
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
@@ -81,7 +81,7 @@
   align-items: center;
   gap: var(--space-1);
   padding: 3px var(--space-3);
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-primary);
   background: var(--color-primary-light);
   border: 1px solid rgba(79, 110, 247, 0.2);
@@ -104,7 +104,7 @@
 .toolbar-clear {
   margin-left: auto;
   padding: var(--space-1) 10px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-danger);
   background: none;
   border: none;
@@ -141,7 +141,7 @@
 .global-search-input {
   width: clamp(120px, 30vw, 180px);
   padding: var(--space-1) 8px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -199,7 +199,7 @@
 }
 .toolbar-zoom-btn {
   padding: var(--space-1) 8px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-family: inherit;
   font-variant-numeric: tabular-nums;
   min-width: 42px;

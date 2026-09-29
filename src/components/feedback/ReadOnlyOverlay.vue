@@ -122,7 +122,7 @@ onUnmounted(detach)
   align-items: center;
   gap: clamp(var(--space-2), 1.5vw, 12px);
   color: white;
-  font-size: clamp(14px, 2.2vw, 36px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 22), 36px);
   text-align: center;
   padding: clamp(var(--space-3), 2.5vw, 20px);
 }

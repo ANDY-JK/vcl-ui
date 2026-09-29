@@ -300,7 +300,7 @@ defineExpose({
   padding: clamp(9px, 1.5vw, 12px) clamp(var(--space-2), 1.8vw, 14px);
   border-radius: var(--radius-md);
   color: white;
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   box-shadow: var(--shadow-lg);
   pointer-events: auto;
   line-height: 1.4;
@@ -312,7 +312,7 @@ defineExpose({
 
 .toast-msg {
   flex: 1;
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
 }
 
 .toast-undo {
@@ -322,7 +322,7 @@ defineExpose({
   border-radius: var(--radius-sm);
   background: transparent;
   color: white;
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   cursor: pointer;
   font-weight: 500;
   white-space: nowrap;
@@ -370,7 +370,7 @@ defineExpose({
   padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px);
   border-radius: var(--radius-md);
   border: 1px solid;
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
 }
 .toast-inline-icon {
   flex-shrink: 0;

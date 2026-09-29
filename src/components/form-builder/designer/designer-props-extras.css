@@ -7,7 +7,7 @@
   flex: 1;
   padding: 8px 0;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--color-text-muted, #9ca3af);
   cursor: pointer;
@@ -51,12 +51,12 @@
 }
 .ldp-rule-name {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--color-text, #1e293b);
 }
 .ldp-rule-status {
-  font-size: 10px;
+  font-size: var(--fs-10);
   padding: 2px 7px;
   border-radius: 10px;
   font-weight: 700;
@@ -90,7 +90,7 @@
   color: var(--color-primary, #4f6ef7);
 }
 .ldp-event-label {
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 700;
   color: var(--color-text, #1e293b);
 }
@@ -122,7 +122,7 @@
   border: 1px solid var(--color-border, #e5e7eb);
   border-radius: var(--radius-sm, 6px);
   padding: 6px 8px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-family: 'Cascadia Code', monospace;
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);
@@ -146,7 +146,7 @@
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
 }
 .ld-code-title {
-  font-size: 13px;
+  font-size: var(--fs-13);
   font-weight: 700;
   color: var(--color-text, #1e293b);
   display: inline-flex;
@@ -166,7 +166,7 @@
 }
 .ld-code-body pre {
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-  font-size: 13px;
+  font-size: var(--fs-13);
   line-height: 1.65;
   color: #e2e8f0;
   white-space: pre-wrap;
@@ -193,13 +193,13 @@
   background: var(--color-bg-alt, #f8fafc);
 }
 .ld-outline-full-title {
-  font-size: 16px;
+  font-size: var(--fs-16);
   font-weight: 800;
   margin: 0 0 2px;
   color: var(--color-text, #1e293b);
 }
 .ld-outline-full-hint {
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
   margin: 0;
 }
@@ -207,7 +207,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
   background: var(--color-bg, #fff);
   padding: 5px 12px;
@@ -228,13 +228,13 @@
   align-items: flex-start;
   gap: 6px;
   padding: 8px 14px 10px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #9ca3af);
   line-height: 1.5;
 }
 .ldp-linkage-help code {
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-  font-size: 10px;
+  font-size: var(--fs-10);
   background: var(--color-bg-alt, #f1f5f9);
   padding: 1px 5px;
   border-radius: 3px;
@@ -249,7 +249,7 @@
   padding: 32px 0;
   text-align: center;
   color: var(--color-text-secondary, #64748b);
-  font-size: 13px;
+  font-size: var(--fs-13);
 }
 .ld-data-error {
   color: var(--color-danger, #dc2626);
@@ -270,7 +270,7 @@
   gap: 2px;
 }
 .ld-data-stat-num {
-  font-size: 18px;
+  font-size: var(--fs-18);
   font-weight: 700;
   color: var(--color-text, #1e293b);
   white-space: nowrap;
@@ -278,7 +278,7 @@
   text-overflow: ellipsis;
 }
 .ld-data-stat-label {
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
 }
 .ld-data-table-wrap {
@@ -290,7 +290,7 @@
 .ld-data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--fs-12);
 }
 .ld-data-table th,
 .ld-data-table td {
@@ -338,7 +338,7 @@
   border-radius: var(--radius-sm, 6px);
   background: var(--color-surface, #fff);
   color: var(--color-text-secondary, #64748b);
-  font-size: 12px;
+  font-size: var(--fs-12);
   cursor: pointer;
   transition: all 0.15s;
 }

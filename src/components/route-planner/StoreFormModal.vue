@@ -292,14 +292,14 @@ const fldIds = {
 
 .modal-header h3 {
   margin: 0;
-  font-size: clamp(16px, 2.5vw, 28px);
+  font-size: clamp(16px, calc(16px + var(--vcl-fit) * 12), 28px);
   font-weight: 600;
 }
 
 .btn-close {
   background: none;
   border: none;
-  font-size: clamp(18px, 3vw, 28px);
+  font-size: clamp(18px, calc(18px + var(--vcl-fit) * 10), 28px);
   cursor: pointer;
   color: var(--color-text-muted);
   padding: var(--space-1);
@@ -319,7 +319,7 @@ const fldIds = {
 
 .form-row label {
   display: block;
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   font-weight: 500;
   color: var(--color-text-secondary);
   margin-bottom: var(--space-1);
@@ -330,7 +330,7 @@ const fldIds = {
   padding: var(--space-2) 12px;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   outline: none;
   transition: border-color 0.2s;
 }
@@ -354,7 +354,7 @@ const fldIds = {
 }
 
 .form-hint {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   color: var(--color-text-muted);
   margin: var(--space-2) 0 0;
 }
@@ -371,7 +371,7 @@ const fldIds = {
 .btn-save {
   padding: var(--space-2) 20px;
   border-radius: var(--radius-md);
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   cursor: pointer;
   border: 1px solid;
   transition: all 0.2s;
@@ -409,7 +409,7 @@ const fldIds = {
 }
 
 .form-error {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   color: var(--color-danger);
   margin: var(--space-1) 0 0;
 }

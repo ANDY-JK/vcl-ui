@@ -142,7 +142,7 @@ function onJumperKeyup(e: KeyboardEvent) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -168,7 +168,7 @@ function onJumperKeyup(e: KeyboardEvent) {
 
 .page-info {
   margin-left: clamp(var(--space-2), 1.5vw, 12px);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
 }
 
@@ -185,7 +185,7 @@ function onJumperKeyup(e: KeyboardEvent) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-secondary);
   outline: none;
   box-sizing: border-box;

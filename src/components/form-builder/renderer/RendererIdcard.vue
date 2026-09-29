@@ -54,7 +54,7 @@ const idcardTypeIndex = ref(0)
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
   border-radius: var(--fb-radius, 6px);
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);
   outline: none;
@@ -65,7 +65,7 @@ const idcardTypeIndex = ref(0)
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
   border-radius: var(--fb-radius, 6px);
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);
   outline: none;

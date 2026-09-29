@@ -331,7 +331,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .state-empty .hint {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   margin-top: var(--space-1);
 }
 
@@ -344,7 +344,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .empty-step {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
@@ -360,7 +360,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   border-radius: 50%;
   background: var(--color-info-bg);
   color: var(--color-info-text);
-  font-size: clamp(10px, 1.3vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -391,7 +391,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .source-badge {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   font-weight: 500;
   padding: var(--space-0) 6px;
   border-radius: var(--radius-lg);
@@ -421,18 +421,18 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .stat-num {
   display: block;
-  font-size: clamp(14px, 2.2vw, 36px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 22), 36px);
   font-weight: 700;
   color: var(--color-text);
 }
 
 .stat-label {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-muted);
 }
 
 .summary-route {
-  font-size: clamp(10px, 1.3vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   color: var(--color-success-text);
   text-align: center;
   padding-top: var(--space-1);
@@ -440,7 +440,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .enriching-tip {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-primary);
   text-align: center;
   margin: 0 0 var(--space-2);
@@ -500,7 +500,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   border-radius: 50%;
   background: var(--color-border-light);
   color: var(--color-text-secondary);
-  font-size: clamp(10px, 1.3vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -513,7 +513,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-summary-text {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 600;
   color: var(--color-text);
   display: flex;
@@ -524,7 +524,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 /* 门店密度标签 */
 .density-tag {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   font-weight: 500;
   padding: var(--space-1) var(--space-1);
   border-radius: var(--radius-md);
@@ -553,7 +553,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-cities {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-muted);
   max-width: clamp(100px, 12vw, 120px);
   overflow: hidden;
@@ -562,7 +562,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .expand-icon {
-  font-size: clamp(8px, 1.1vw, 9px);
+  font-size: clamp(8px, calc(8px + var(--vcl-fit) * 1), 9px);
   color: var(--color-text-muted);
 }
 
@@ -586,7 +586,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   color: var(--color-surface);
   border: none;
   border-radius: var(--radius-md);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 600;
   cursor: pointer;
 }
@@ -601,7 +601,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   color: var(--color-success-text);
   border: 1px solid var(--color-success-border);
   border-radius: var(--radius-md);
-  font-size: clamp(10px, 1.3vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   cursor: pointer;
 }
 
@@ -618,7 +618,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: clamp(10px, 1.3vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   color: var(--color-text-secondary);
 }
 
@@ -628,7 +628,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .route-arrow {
   text-align: center;
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-muted);
   margin: var(--space-0) 0;
 }
@@ -645,7 +645,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   background: var(--color-info-bg);
   color: var(--color-info-text);
   border-radius: var(--radius-sm);
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   white-space: nowrap;
 }
 
@@ -681,7 +681,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-surface);
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -697,7 +697,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-name {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
@@ -705,7 +705,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-city {
-  font-size: clamp(8px, 1.1vw, 9px);
+  font-size: clamp(8px, calc(8px + var(--vcl-fit) * 1), 9px);
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
@@ -715,7 +715,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .seg-info {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-secondary);
   white-space: nowrap;
   background: var(--color-bg-alt);
@@ -732,7 +732,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   border: 1px solid var(--color-info-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   padding: var(--space-0) 6px;
   flex-shrink: 0;
   color: var(--color-primary-hover);
@@ -755,7 +755,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .skipped-header {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 600;
   color: var(--color-warning-text);
   margin-bottom: var(--space-1);
@@ -769,7 +769,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .skipped-item {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-muted);
   padding: var(--space-0) 6px;
   background: var(--color-warning-bg);
@@ -777,7 +777,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .skipped-hint {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-warning-text);
   margin: var(--space-1) 0 0;
 }

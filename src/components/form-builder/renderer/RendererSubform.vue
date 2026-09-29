@@ -102,12 +102,12 @@ function removeRow(rowIndex: number): void {
   padding: 6px 10px;
   background: var(--color-bg-alt, #f8fafc);
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--color-text-secondary, #64748b);
 }
 .fb-subform-add {
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-primary, #3b82f6);
   cursor: pointer;
   padding: 2px 8px;
@@ -146,7 +146,7 @@ function removeRow(rowIndex: number): void {
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
   border-radius: var(--fb-radius, 4px);
   padding: 5px 8px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);
   outline: none;
@@ -163,7 +163,7 @@ function removeRow(rowIndex: number): void {
   background: transparent;
   color: var(--color-text-muted, #94a3b8);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--fs-14);
 }
 .fb-subform-del:hover {
   background: var(--color-danger-bg);
@@ -172,7 +172,7 @@ function removeRow(rowIndex: number): void {
 .fb-subform-empty {
   padding: 16px 10px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
 }
 </style>

@@ -136,7 +136,7 @@ function renderAll(): void {
         // 点击弹出信息窗（门店名/地址来自 Excel 导入等外部输入，必须消毒防 XSS）
         marker.on('click', () => {
           const infoWin = new AMap.InfoWindow({
-            content: sanitizeHTML(`<div style="padding:4px 2px;font-size:12px;line-height:1.6">
+            content: sanitizeHTML(`<div style="padding:4px 2px;font-size: var(--fs-12);line-height:1.6">
               <strong>${store.name}</strong><br/>
               📍 ${store.address || store.city || ''}<br/>
               📅 ${t('routePlanner.mapInfoWindow', { day: day.day, idx: day.stores.indexOf(store) + 1 })}
@@ -174,7 +174,7 @@ function renderAll(): void {
       })
       marker.on('click', () => {
         const infoWin = new AMap.InfoWindow({
-          content: sanitizeHTML(`<div style="padding:4px 2px;font-size:12px;line-height:1.6">
+          content: sanitizeHTML(`<div style="padding:4px 2px;font-size: var(--fs-12);line-height:1.6">
             <strong>${store.name}</strong><br/>
             📍 ${store.address || ''}<br/>
             🏙️ ${store.city || ''} ${store.district || ''}
@@ -299,7 +299,7 @@ function retryMap(): void {
   justify-content: center;
   background: var(--color-bg);
   color: var(--color-text-muted);
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
 }
 
 .spinner {
@@ -328,7 +328,7 @@ function retryMap(): void {
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-primary);
-  font-size: clamp(12px, 1.6vw, 14px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
   cursor: pointer;
 }
 .map-retry-btn:hover {
@@ -345,13 +345,13 @@ function retryMap(): void {
   justify-content: center;
   background: rgba(248, 250, 252, 0.9);
   color: var(--color-text-muted);
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   z-index: 2;
   pointer-events: none;
 }
 
 .guide-hint {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   margin-top: var(--space-1);
 }
 
@@ -383,7 +383,7 @@ function retryMap(): void {
 }
 
 .legend-text {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-secondary);
 }
 </style>

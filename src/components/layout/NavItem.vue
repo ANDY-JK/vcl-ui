@@ -203,7 +203,7 @@ const navItemClass = computed(() => {
    箭头
    ================================================================ */
 .nav-arrow {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   transition: transform var(--transition-normal);
   opacity: 0.4;
   flex-shrink: 0;

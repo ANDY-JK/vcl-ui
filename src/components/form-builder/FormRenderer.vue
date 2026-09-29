@@ -547,7 +547,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   background: var(--color-bg-alt, #fafbfc);
 }
 .fb-adv-readonly-val {
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text, #1e293b);
   word-break: break-all;
   line-height: 1.6;
@@ -565,7 +565,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 .fb-title {
   margin: 0 0 12px;
   padding-bottom: 8px;
-  font-size: 15px;
+  font-size: var(--fs-15);
   font-weight: 600;
   color: var(--color-text, #1e293b);
   border-bottom: 1px solid var(--color-border, #e2e8f0);
@@ -574,7 +574,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 /* 说明文字字段 */
 .fb-paragraph {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--fs-13);
   line-height: 1.7;
   color: var(--color-text-secondary, #64748b);
   white-space: pre-wrap;
@@ -594,7 +594,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 .fb-upload-label,
 .fb-camera-label,
 .fb-scancode-label {
-  font-size: 13px;
+  font-size: var(--fs-13);
   font-weight: 500;
   color: var(--color-text-secondary, #64748b);
 }
@@ -617,7 +617,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 .fb-scancode-code {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
+  font-size: var(--fs-14);
   font-family: monospace;
   color: var(--color-text, #0f172a);
   word-break: break-all;
@@ -647,7 +647,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 /* 提示文本 */
 .fb-hint {
   margin: 2px 0 0;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
   line-height: 1.4;
 }
@@ -659,7 +659,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   gap: 6px;
 }
 .fb-adv-label {
-  font-size: 13px;
+  font-size: var(--fs-13);
   font-weight: 500;
   color: var(--color-text-secondary, #64748b);
 }
@@ -673,7 +673,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 6px;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-muted, #94a3b8);
   background: var(--color-bg, #fff);
   cursor: pointer;

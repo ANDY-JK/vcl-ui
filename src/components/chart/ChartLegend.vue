@@ -68,7 +68,7 @@ function onToggleAll() {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  font-size: clamp(11px, 1.5vw, 14px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
   padding: var(--space-0) 8px;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -98,7 +98,7 @@ function onToggleAll() {
   background: none;
   cursor: pointer;
   border-radius: var(--radius-sm);
-  font-size: clamp(12px, 1.6vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   color: var(--color-text);
   transition:
     opacity 0.15s,

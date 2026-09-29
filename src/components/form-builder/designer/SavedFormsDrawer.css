@@ -13,7 +13,7 @@
 .ld-forms-state {
   padding: 24px 12px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
 }
 .ld-forms-error {
@@ -41,7 +41,7 @@
   border-radius: 4px;
   background: var(--color-bg, #fff);
   color: var(--color-text-secondary, #475569);
-  font-size: 12px;
+  font-size: var(--fs-12);
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -89,7 +89,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
 }
 .ld-share-qr-error {
@@ -101,7 +101,7 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  font-size: 11px;
+  font-size: var(--fs-11);
   line-height: 1.6;
   color: var(--color-danger, #dc2626);
   text-align: center;
@@ -109,7 +109,7 @@
 }
 .ld-share-qr-hint {
   margin: 0;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
   text-align: center;
 }
@@ -143,13 +143,13 @@
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
 }
 .ld-share-copy-label {
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   color: var(--color-text, #1e293b);
 }
 .ld-share-copy-value {
   width: 100%;
-  font-size: 11px;
+  font-size: var(--fs-11);
   line-height: 1.5;
   color: var(--color-text-secondary, #64748b);
   word-break: break-all;
@@ -160,6 +160,6 @@
 }
 .ld-share-copy-tip {
   margin-top: auto;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-primary, #3b82f6);
 }

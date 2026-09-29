@@ -181,7 +181,7 @@ defineExpose({
   box-shadow: 0 6px 16px rgba(79, 110, 247, 0.3);
 }
 .logo-section h1 {
-  font-size: clamp(24px, 3.5vw, 36px);
+  font-size: clamp(24px, calc(24px + var(--vcl-fit) * 12), 36px);
   font-weight: 600;
   color: var(--color-text);
 }

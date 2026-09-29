@@ -115,7 +115,7 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
   color: var(--color-danger, #dc2626);
 }
 .frv-done {
-  font-size: 16px;
+  font-size: var(--fs-16);
   font-weight: 600;
   color: var(--color-success, #059669);
 }

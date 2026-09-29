@@ -447,7 +447,11 @@ const floatingRaised = computed(() => {
   <div
     v-if="_error"
     class="input-field"
-    style="color: var(--color-danger); padding: var(--space-2); font-size: clamp(11px, 1.5vw, 12px)"
+    style="
+      color: var(--color-danger);
+      padding: var(--space-2);
+      font-size: clamp(11px, calc(11px + var(--vcl-fit) * 1), 12px);
+    "
   >
     ⚠ {{ t('form.inputError') }}
   </div>
@@ -777,7 +781,7 @@ const floatingRaised = computed(() => {
   color: var(--color-text-muted);
 }
 .fl-wrap.has-icon .fl-label:not(.raised) {
-  left: calc(var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)) + 32px);
+  left: calc(var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px)) + 32px);
 }
 .fl-wrap.focused .fl-icon {
   color: var(--color-primary);
@@ -787,7 +791,7 @@ const floatingRaised = computed(() => {
 .fl-suffix {
   flex-shrink: 0;
   padding-right: clamp(var(--space-2), 1.5vw, 12px);
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
+  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
   color: var(--color-text-muted);
   user-select: none;
 }
@@ -807,13 +811,13 @@ const floatingRaised = computed(() => {
 
 /* 错误/帮助文案 */
 .fl-error {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   font-weight: 600;
   color: var(--color-danger);
   padding-left: var(--space-1);
 }
 .fl-hint {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   font-weight: 500;
   color: var(--color-text-muted);
   padding-left: var(--space-1);
@@ -835,7 +839,7 @@ const floatingRaised = computed(() => {
 }
 .input-error-msg {
   color: var(--color-danger);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   margin-top: var(--space-1);
   line-height: 1.4;
 }
@@ -844,17 +848,17 @@ const floatingRaised = computed(() => {
 .f-input {
   flex: 1;
   min-width: 0;
-  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
-  padding: 0 var(--ctrl-padding-x, clamp(8px, 1.5vw, 12px));
+  height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
+  padding: 0 var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px));
   padding-left: clamp(var(--space-1), 1vw, 8px);
   border: none;
   background: transparent;
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
+  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
   color: var(--color-text);
   outline: none;
 }
 .fl-wrap:not(.has-icon) .f-input {
-  padding-left: var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
+  padding-left: var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px));
 }
 
 /* textarea */
@@ -868,7 +872,7 @@ const floatingRaised = computed(() => {
   background: transparent;
   outline: none;
   resize: vertical;
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
+  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
   font-family: inherit;
   color: var(--color-text);
   line-height: 1.5;
@@ -877,8 +881,8 @@ const floatingRaised = computed(() => {
 /* color 取色：色块 + 色值文本 */
 .f-color {
   flex-shrink: 0;
-  width: var(--ctrl-height, clamp(38px, 6vw, 42px));
-  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
+  width: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
+  height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
   padding: 4px;
   margin-left: clamp(var(--space-1), 1vw, 8px);
   border: none;
@@ -901,7 +905,7 @@ const floatingRaised = computed(() => {
   flex: 1;
   min-width: 0;
   padding: 0 clamp(var(--space-1), 1vw, 8px);
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
+  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
   user-select: none;
@@ -966,7 +970,7 @@ const floatingRaised = computed(() => {
 .f-input:autofill ~ .fl-label {
   top: 0;
   transform: translateY(-50%);
-  font-size: clamp(10px, 1.5vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   color: var(--color-primary);
   background: var(--color-surface);
   padding: 0 var(--space-1);
@@ -974,7 +978,7 @@ const floatingRaised = computed(() => {
 }
 .fl-wrap:not(.has-icon) .f-input:-webkit-autofill ~ .fl-label,
 .fl-wrap:not(.has-icon) .f-input:autofill ~ .fl-label {
-  left: calc(var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px)) - 4px);
+  left: calc(var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px)) - 4px);
 }
 .input-field.error .f-input:-webkit-autofill ~ .fl-label,
 .input-field.error .f-input:autofill ~ .fl-label {
@@ -1023,7 +1027,7 @@ const floatingRaised = computed(() => {
   align-self: center;
   margin-right: var(--space-2);
   padding-left: var(--space-3);
-  font-size: 13px;
+  font-size: var(--fs-13);
   color: var(--color-text-secondary);
   white-space: nowrap;
 }
@@ -1034,17 +1038,17 @@ const floatingRaised = computed(() => {
 /* 尺寸 */
 .size-sm .step-input {
   height: 30px;
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   padding: 0 var(--space-2);
 }
 .size-md .step-input {
-  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
-  padding: 0 var(--ctrl-padding-x, clamp(10px, 1.5vw, 14px));
+  height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
+  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
+  padding: 0 var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px));
 }
 .size-lg .step-input {
   height: 46px;
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   padding: 0 var(--space-4);
 }
 

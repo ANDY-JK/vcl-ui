@@ -484,7 +484,7 @@ onUnmounted(unbindWindowPointer)
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   padding: var(--space-2) 0;
   cursor: pointer;
 }
@@ -580,7 +580,7 @@ onUnmounted(unbindWindowPointer)
   transform: translateX(clamp(10px, 1.5vw, 14px));
 }
 .switch-label {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   color: var(--color-text);
 }
 
@@ -687,7 +687,7 @@ onUnmounted(unbindWindowPointer)
   flex-shrink: 0;
   min-width: 34px;
   text-align: right;
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   color: var(--color-text-secondary);

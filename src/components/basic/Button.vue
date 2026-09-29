@@ -54,7 +54,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <span v-if="_e" style="color: var(--color-danger); font-size: 12px">⚠ {{ t('basic.buttonError') }}</span>
+  <span v-if="_e" style="color: var(--color-danger); font-size: var(--fs-12)">⚠ {{ t('basic.buttonError') }}</span>
   <button
     v-else
     type="button"
@@ -113,19 +113,19 @@ const emit = defineEmits<{
 .btn-sm {
   height: clamp(30px, 5vw, 32px);
   padding: 0 clamp(var(--space-2), 1.5vw, 12px);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   border-radius: var(--radius-sm);
 }
 .btn-md {
-  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
-  padding: 0 var(--ctrl-padding-x, clamp(12px, 2vw, 16px));
-  font-size: var(--ctrl-font-size, clamp(12px, 1.8vw, 15px));
+  height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
+  padding: 0 var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px));
+  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
   border-radius: var(--ctrl-radius, var(--radius-md));
 }
 .btn-lg {
-  height: calc(var(--ctrl-height, clamp(38px, 6vw, 42px)) + 6px);
-  padding: 0 calc(var(--ctrl-padding-x, clamp(14px, 2.5vw, 20px)) + 4px);
-  font-size: calc(var(--ctrl-font-size, clamp(13px, 2vw, 15px)) + 1px);
+  height: calc(var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px)) + 6px);
+  padding: 0 calc(var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px)) + 4px);
+  font-size: calc(var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px)) + 1px);
 }
 
 /* 变体 */

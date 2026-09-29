@@ -352,7 +352,7 @@ defineExpose({
 }
 
 .chart-empty-text {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   color: var(--color-text-muted);
 }
 </style>

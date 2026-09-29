@@ -260,7 +260,7 @@ onUnmounted(unmountEsc)
   flex-shrink: 0;
 }
 .drawer-title {
-  font-size: clamp(14px, 2.2vw, 36px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 22), 36px);
   font-weight: 600;
 }
 

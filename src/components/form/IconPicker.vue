@@ -426,7 +426,7 @@ function confirm() {
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   cursor: pointer;
   transition: border-color var(--transition-fast);
   font-family: inherit;
@@ -465,7 +465,7 @@ function confirm() {
 .provider-tab {
   flex: 1;
   padding: var(--space-2) var(--space-3);
-  font-size: clamp(11px, 1.5vw, 14px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -532,7 +532,7 @@ function confirm() {
   flex-shrink: 0;
 }
 .color-label {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-muted);
   white-space: nowrap;
 }
@@ -557,7 +557,7 @@ function confirm() {
   padding: var(--space-1) var(--space-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   font-family: monospace;
   background: var(--color-surface);
   color: var(--color-text-secondary);
@@ -568,7 +568,7 @@ function confirm() {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -610,7 +610,7 @@ function confirm() {
   min-width: 0;
 }
 .preview-hex {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-muted);
   font-weight: 400;
   font-family: monospace;
@@ -645,7 +645,7 @@ function confirm() {
   border-radius: var(--radius-sm);
   background: var(--color-primary);
   color: white;
-  font-size: clamp(11px, 1.5vw, 14px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
   white-space: nowrap;
   cursor: pointer;
   transition: opacity var(--transition-fast);
@@ -698,7 +698,7 @@ function confirm() {
   padding: var(--space-1) var(--space-1);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-text-secondary);
   background: transparent;
   cursor: pointer;
@@ -718,7 +718,7 @@ function confirm() {
   text-align: center;
   color: var(--color-text-muted);
   padding: var(--space-5);
-  font-size: clamp(11px, 1.5vw, 14px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
 }
 
 /* 面板动画：弹性缓动 + 微缩放，进场 200ms 退场 150ms（退场快于进场） */

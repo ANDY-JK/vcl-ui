@@ -564,7 +564,7 @@ onMounted(async () => {
 }
 .ftc-title {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--fs-16);
   white-space: nowrap;
 }
 .ftc-search {
@@ -574,7 +574,7 @@ onMounted(async () => {
 .ftc-stat {
   padding: 2px 10px;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   font-weight: 600;
   background: var(--color-bg-soft);
   color: #94a3b8;
@@ -586,7 +586,7 @@ onMounted(async () => {
 }
 .ftc-fields-more {
   margin: 0 0 6px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--color-text-secondary);
 }
 .ftc-table-wrap {
@@ -597,14 +597,14 @@ onMounted(async () => {
 .ftc-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: var(--fs-12);
   background: var(--color-bg, #fff);
 }
 .ftc-table th {
   text-align: left;
   padding: 8px 10px;
   font-weight: 600;
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--color-text-secondary);
   background: var(--color-surface, #f8fafc);
   border-bottom: 2px solid var(--color-border);
@@ -638,7 +638,7 @@ onMounted(async () => {
   height: 80px !important;
 }
 .ftc-td-upload :deep(.card-label) {
-  font-size: 10px !important;
+  font-size: var(--fs-10) !important;
 }
 .ftc-td-status {
   text-align: center;

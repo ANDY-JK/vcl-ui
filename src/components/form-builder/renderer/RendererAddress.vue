@@ -36,8 +36,7 @@ let lastEmitted = ''
 
 /** 任一段变化 → 拼接四段整体回写（与拆分前内联 handler 行为一致） */
 function emitAddress(): void {
-  lastEmitted =
-    addressProvince.value + addressCity.value + addressDistrict.value + addressDetailText.value
+  lastEmitted = addressProvince.value + addressCity.value + addressDistrict.value + addressDetailText.value
   emit('update:modelValue', lastEmitted)
 }
 
@@ -133,7 +132,7 @@ watch(
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
   border-radius: var(--fb-radius, 6px);
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: var(--fs-13);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);
   outline: none;

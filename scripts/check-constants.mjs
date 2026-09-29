@@ -125,9 +125,7 @@ console.log(`[2] JS/TS 视口断点字面量 ${jsHits.length}`)
 const CSS_EXTRA_BP = new Map([
   [767, 'bp-md 的「小于 768」等价写法：@media 里不能用 var()，只能写 768-1'],
   [480, '登录三页的超窄档（单列输入），刻意早于 --bp-sm'],
-  [600, 'demos 表格演示区的内部分区，非库产物样式'],
-  [900, 'demos 图表演示区的内部分区，非库产物样式'],
-  [1100, 'demos 图表+表格并排区在笔记本屏收成一列，非库产物样式'],
+  [1023, 'bp-lg 的「小于 1024」等价写法：2026-09-29 断点收敛后 demos 双栏折叠档统一到此处'],
 ])
 const allowed = new Map([...[...cssBp.values()].map((v) => [v, 'tokens.css --bp-*']), ...CSS_EXTRA_BP])
 const cssHits = []

@@ -177,7 +177,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 .list-state {
   padding: clamp(24px, 5vw, 40px) clamp(var(--space-3), 2.5vw, 20px);
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
 }
 
 .list-item {
@@ -211,11 +211,11 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   min-width: 0;
 }
 .item-title {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   font-weight: 500;
 }
 .item-desc {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
@@ -225,7 +225,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   gap: clamp(var(--space-2), 2vw, 16px);
 }
 .item-extra {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
 }
 
@@ -287,7 +287,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 .item-action-btn {
   flex-shrink: 0;
   padding: var(--space-1) clamp(10px, 2vw, 14px);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-md);
   background: var(--color-primary);

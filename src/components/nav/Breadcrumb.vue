@@ -62,7 +62,7 @@ function isExternalHttp(p: string) {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   flex-wrap: wrap;
 }
 

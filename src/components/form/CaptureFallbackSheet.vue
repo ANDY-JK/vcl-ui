@@ -173,7 +173,7 @@ function close() {
   justify-content: space-between;
 }
 .capfb-title {
-  font-size: clamp(14px, 2vw, 16px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 2), 16px);
   font-weight: 600;
   color: var(--color-text);
 }

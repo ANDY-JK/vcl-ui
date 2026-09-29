@@ -292,13 +292,13 @@ onUnmounted(() => {
 }
 .popover-title {
   padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 1.8vw, 14px);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 600;
   border-bottom: 1px solid var(--color-border-light);
 }
 .popover-body {
   padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 1.8vw, 14px);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-secondary);
 }
 
@@ -308,7 +308,7 @@ onUnmounted(() => {
   padding: clamp(3px, 0.6vw, var(--space-1)) clamp(5px, 1vw, 10px);
   background: var(--color-sidebar);
   color: white;
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   border-radius: var(--radius-sm);
   white-space: normal;
   word-break: break-word;

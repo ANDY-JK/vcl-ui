@@ -1041,7 +1041,7 @@ const {
 }
 .select-error {
   color: var(--color-danger);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   margin-top: var(--space-1);
   line-height: 1.4;
 }
@@ -1061,12 +1061,12 @@ const {
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  height: var(--ctrl-height, clamp(38px, 6vw, 42px));
-  padding: 0 var(--ctrl-padding-x, clamp(8px, 1.5vw, 12px));
+  height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
+  padding: 0 var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px));
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--ctrl-radius, var(--radius-md));
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
+  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
   transition: border-color var(--transition-fast);
   cursor: pointer;
 }
@@ -1114,7 +1114,7 @@ const {
   border-radius: 50%;
   background: transparent;
   color: var(--color-primary);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;
@@ -1126,7 +1126,7 @@ const {
 }
 .trigger-wrapper.has-tags {
   height: auto;
-  min-height: var(--ctrl-height, clamp(38px, 6vw, 42px));
+  min-height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
   padding-block: 5px;
   flex-wrap: wrap;
 }
@@ -1143,7 +1143,7 @@ const {
   border: none;
   outline: none;
   background: transparent;
-  font-size: var(--ctrl-font-size, clamp(13px, 1.8vw, 15px));
+  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
   color: var(--color-text);
 }
 .trigger-input::placeholder {
@@ -1177,7 +1177,7 @@ const {
   border-radius: 50%;
   background: var(--color-text-muted);
   color: var(--color-surface);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;
@@ -1230,7 +1230,7 @@ const {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   outline: none;
 }
 .panel-list {
@@ -1261,7 +1261,7 @@ const {
   padding: clamp(var(--space-1), 1vw, 8px) clamp(8px, 1.5vw, 12px);
   border: none;
   background: transparent;
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text);
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -1292,10 +1292,10 @@ const {
   flex: 1;
 }
 .item-label {
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
 }
 .item-desc {
-  font-size: clamp(10px, 1.5vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   color: var(--color-text-muted);
 }
 .menu-divider {
@@ -1326,7 +1326,7 @@ const {
   justify-content: center;
   padding: clamp(var(--space-4), 3vw, 24px);
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
 }
 .panel-status svg {
   animation: spin 1s linear infinite;
@@ -1371,7 +1371,7 @@ const {
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: clamp(11px, 1.6vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   cursor: pointer;
   transition: all var(--transition-fast);
 }

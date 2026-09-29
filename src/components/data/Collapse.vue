@@ -150,7 +150,7 @@ function toggle() {
   padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px);
   border: none;
   background: var(--color-surface);
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   font-weight: 500;
   color: var(--color-text);
   cursor: pointer;

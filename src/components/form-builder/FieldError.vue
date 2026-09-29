@@ -32,7 +32,7 @@ defineProps<Props>()
   gap: 4px;
   margin: 4px 0 0;
   padding: 0 2px;
-  font-size: 12px;
+  font-size: var(--fs-12);
   line-height: 1.4;
   color: var(--color-danger, #ef4444);
 }

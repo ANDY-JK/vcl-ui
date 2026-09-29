@@ -180,7 +180,7 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   top: 0;
   z-index: 1;
   text-align: center;
-  font-size: clamp(10px, 1.5vw, 11px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 1), 11px);
   color: var(--color-text-muted);
   font-weight: 600;
   padding: var(--space-1) 0;
@@ -190,7 +190,7 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
 .tp-cell {
   padding: clamp(4px, 0.8vw, 6px) 0;
   text-align: center;
-  font-size: clamp(11px, 1.6vw, 12px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 1), 12px);
   color: var(--color-text);
   cursor: pointer;
   user-select: none;

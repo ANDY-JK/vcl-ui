@@ -411,7 +411,7 @@ function onProgressMouseUp() {
   flex-shrink: 0;
 }
 .vcl-logo-text {
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   font-weight: 600;
   white-space: nowrap;
   letter-spacing: 0.3px;
@@ -635,7 +635,7 @@ function onProgressMouseUp() {
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 500;
   letter-spacing: 0.2px;
   white-space: nowrap;
@@ -691,7 +691,7 @@ function onProgressMouseUp() {
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: var(--color-text-muted);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
@@ -765,7 +765,7 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 600;
   line-height: 1;
 }
@@ -831,7 +831,7 @@ function onProgressMouseUp() {
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
   color: var(--color-sidebar-text);
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -901,7 +901,7 @@ function onProgressMouseUp() {
   pointer-events: none;
 }
 .vcl-nav-percent {
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   color: var(--color-primary);
   font-weight: 600;
   opacity: 0.7;

@@ -161,11 +161,11 @@ const supStyle = computed(() => {
 }
 .tag-sm {
   padding: 1px var(--space-2);
-  font-size: clamp(10px, 1.4vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
 }
 .tag-md {
   padding: var(--space-1) 10px;
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
 }
 .tag.rounded {
   border-radius: 100px;
@@ -269,7 +269,7 @@ const supStyle = computed(() => {
      白字对比度仅 2.77 不达标） */
   background: var(--color-danger-solid, var(--color-danger));
   color: #ffffff;
-  font-size: clamp(10px, 1.4vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;

@@ -320,7 +320,7 @@ onUnmounted(() => {
       align-items: center;
       justify-content: center;
       color: var(--color-danger);
-      font-size: clamp(10px, 1.3vw, 11px);
+      font-size: clamp(10px, calc(10px + var(--vcl-fit) * 1), 11px);
     "
   >
     ⚠ {{ t('form.uploadError') }}
@@ -548,7 +548,7 @@ onUnmounted(() => {
   position: absolute;
   margin: 0;
   text-align: center;
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-primary);
   z-index: 2;
   pointer-events: none;
@@ -604,7 +604,7 @@ onUnmounted(() => {
   bottom: 4px;
   right: 6px;
   z-index: 8;
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   font-weight: 600;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
@@ -622,7 +622,7 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
   background: #ef4444;
   color: #fff;
-  font-size: clamp(10px, 1.3vw, 13px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
   cursor: pointer;
   font-weight: 600;
 }
@@ -665,7 +665,7 @@ onUnmounted(() => {
   cursor: inherit;
 }
 .upload-hint {
-  font-size: clamp(13px, 1.8vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   color: var(--color-text-secondary);
 }
 .upload-link {
@@ -673,7 +673,7 @@ onUnmounted(() => {
   font-weight: 500;
 }
 .upload-limit {
-  font-size: clamp(11px, 1.5vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   color: var(--color-text-muted);
 }
 .upload-list {
@@ -721,7 +721,7 @@ onUnmounted(() => {
   min-width: 0;
 }
 .upload-file-name {
-  font-size: clamp(11px, 1.8vw, 15px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -730,7 +730,7 @@ onUnmounted(() => {
 .upload-file-meta {
   display: flex;
   gap: clamp(var(--space-2), 1.5vw, 12px);
-  font-size: clamp(10px, 1.4vw, 15px);
+  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
@@ -777,7 +777,7 @@ onUnmounted(() => {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
   color: var(--color-text);
   cursor: pointer;
   text-align: center;
