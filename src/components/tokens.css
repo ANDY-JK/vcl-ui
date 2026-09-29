@@ -7,8 +7,27 @@
    - 颜色值 / 圆角 / 阴影 / 动效时长调整
    - 新增或删除 CSS 变量
    - 断点值修改
-   ===== 设计令牌（SaaS 专业蓝灰 — 长时间舒适阅读） ===== */
+   ===== 设计令牌（SaaS 专业蓝灰 — 长时间舒适阅读） =====
+   [2026-09-29 曲线重定]（已获确认）：原 clamp 的 vw 中值在 ~800px 视口即达上限，
+   桌面段（800~1920）排版完全恒定——实测 1024/1366/1920 三档正文字号与控件高逐像素相同，
+   小分辨率可见内容量按视口宽度等比损失。引入归一化进度变量 --vcl-fit
+   （1024px 视口 = 0 → 1920px 视口 = 1，越界由 clamp 收口），尺寸令牌改为线性插值：
+   ≥1920 与旧版逐像素一致、1024~1920 连续缩放、≤1024 取地板（移动端由抽屉布局接管）。 */
 :root {
+  /* 桌面段缩放进度：仅限作为 calc() 代数片段引用（如 calc(4px + var(--vcl-fit) * 4)），
+     禁止直接当长度用（width: var(--vcl-fit) 非法，属性会整体失效） */
+  --vcl-fit: (100vw - 1024px) / 896;
+
+  /* 间距 - 桌面段线性插值连续缩放；地板按比例锚定（1024 视口 ≈ max×53%），≥1920 与旧版一致 */
+  --space-1: clamp(2px, calc(2px + var(--vcl-fit) * 2), 4px);
+  --space-2: clamp(4px, calc(4px + var(--vcl-fit) * 4), 8px);
+  --space-3: clamp(6px, calc(6px + var(--vcl-fit) * 6), 12px);
+  --space-4: clamp(8px, calc(8px + var(--vcl-fit) * 8), 16px);
+  --space-5: clamp(10px, calc(10px + var(--vcl-fit) * 10), 20px);
+  --space-6: clamp(10px, calc(10px + var(--vcl-fit) * 10), 20px);
+  --space-8: clamp(12px, calc(12px + var(--vcl-fit) * 12), 24px);
+  --space-10: clamp(16px, calc(16px + var(--vcl-fit) * 16), 32px);
+  --space-12: clamp(20px, calc(20px + var(--vcl-fit) * 20), 40px);
   /* 主色调 — 稳重蓝 */
   --color-primary: #4f6ef7;
   --color-primary-rgb: 79, 110, 247;
@@ -85,11 +104,30 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
 
-  /* 控件统一尺寸 — 覆盖这些变量可全局调整所有表单控件 */
-  --ctrl-height: clamp(38px, 6vw, 42px);
-  --ctrl-font-size: clamp(13px, 1.8vw, 14px);
+  /* ===== 字体档位族（2026-09-29 新增）=====
+     与间距同尺：--vcl-fit 驱动，≤1024 视口取地板、1024~1920 连续缩放、≥1920 = 现值（零回归）。
+     地板原则：N≤10 已是可读性边缘，恒定不缩；N≥11 地板 ≈ N×88% 取整。
+     组件字号一律引 var(--fs-N)，不要再写 font-size: Npx；自定义端点的大字展示档
+     可保留 clamp(min, calc(min + var(--vcl-fit) * Δ), max) 的 inline 插值形式。 */
+  --fs-9: 9px;
+  --fs-10: 10px;
+  --fs-11: clamp(10px, calc(10px + var(--vcl-fit)), 11px);
+  --fs-12: clamp(11px, calc(11px + var(--vcl-fit)), 12px);
+  --fs-13: clamp(11px, calc(11px + var(--vcl-fit) * 2), 13px);
+  --fs-14: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
+  --fs-15: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  --fs-16: clamp(14px, calc(14px + var(--vcl-fit) * 2), 16px);
+  --fs-18: clamp(16px, calc(16px + var(--vcl-fit) * 2), 18px);
+  --fs-20: clamp(18px, calc(18px + var(--vcl-fit) * 2), 20px);
+  --fs-22: clamp(19px, calc(19px + var(--vcl-fit) * 3), 22px);
+  --fs-28: clamp(25px, calc(25px + var(--vcl-fit) * 3), 28px);
+
+  /* 控件统一尺寸 — 覆盖这些变量可全局调整所有表单控件
+     高度/字号/内距保可用性地板（38px / 13px / 10px），桌面段小幅收缩防小屏控件虚胖 */
+  --ctrl-height: clamp(38px, calc(38px + var(--vcl-fit) * 4), 42px);
+  --ctrl-font-size: clamp(13px, calc(13px + var(--vcl-fit)), 14px);
   --ctrl-radius: var(--radius-md);
-  --ctrl-padding-x: clamp(10px, 1.5vw, 14px);
+  --ctrl-padding-x: clamp(10px, calc(10px + var(--vcl-fit) * 4), 14px);
 
   /* 阴影 */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -119,7 +157,7 @@
   --z-top: 9999; /* 最高优先级通知 */
 
   /* 布局 */
-  --sidebar-width: clamp(220px, 18vw, 280px);
+  --sidebar-width: clamp(220px, calc(220px + var(--vcl-fit) * 60), 280px);
   --content-max-width: 1200px;
 
   /* 响应式断点（给 JS 读取用） */
