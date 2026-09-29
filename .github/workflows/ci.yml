@@ -24,7 +24,9 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
-        run: npx eslint src tests scripts --quiet
+        # 与本地 lint 同一脚本：--max-warnings 棘轮（267 起步）卡 warning 静默增长，
+        # 清掉一批后同步收紧数字
+        run: npm run lint
 
       # 常量来源自检：断点令牌与 JS 常量同值、JS 不写字面量断点、@media 宽度已登记
       - name: Check constants

@@ -92,7 +92,7 @@ describe('useRoutePlanner · generate', () => {
 
   it('非 Error 抛出：error 回退到内置 i18n 文案而非 undefined', async () => {
     vi.mocked(planRoute).mockImplementation(() => {
-      throw 'string-throw' // eslint-disable-line no-throw-literal
+      throw 'string-throw'  
     })
     const p = useRoutePlanner()
     const result = await p.generate(fakeOptions)
