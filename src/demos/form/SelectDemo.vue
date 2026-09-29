@@ -274,7 +274,12 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 树形选择 ══════ -->
-    <Card title="树形选择 — Cascader 级联 / TreeSelect 树（单选 + 多选）" title-as="h2" style="margin-bottom: 24px" overflow-visible>
+    <Card
+      title="树形选择 — Cascader 级联 / TreeSelect 树（单选 + 多选）"
+      title-as="h2"
+      style="margin-bottom: 24px"
+      overflow-visible
+    >
       <p class="demo-hint">
         两者共用 <code>cascader-options</code> 数据结构，区别仅在交互方式：<br />
         <code>type="cascader"</code> — 展开树逐级选择（省→市→区）；<code>type="tree-select"</code> —
@@ -412,7 +417,7 @@ code {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .grid-2-col,
   .grid-3-col {
     grid-template-columns: 1fr;

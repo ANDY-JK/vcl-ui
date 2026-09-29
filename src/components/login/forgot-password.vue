@@ -322,12 +322,12 @@ defineExpose({
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
-  font-size: clamp(32px, 4vw, 36px);
+  font-size: clamp(32px, calc(32px + var(--vcl-fit) * 4), 36px);
   font-weight: 600;
   margin-bottom: var(--space-3);
 }
 .brand-logo p {
-  font-size: clamp(16px, 2.5vw, 28px);
+  font-size: clamp(16px, calc(16px + var(--vcl-fit) * 12), 28px);
   opacity: 0.9;
   line-height: 1.6;
 }
@@ -342,7 +342,7 @@ defineExpose({
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-5);
-  font-size: 15px;
+  font-size: var(--fs-15);
 }
 .features-list li::before {
   content: '\2713';
@@ -353,7 +353,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
   flex-shrink: 0;
 }
 
@@ -370,13 +370,13 @@ defineExpose({
   padding-bottom: var(--space-8);
 }
 .login-header h1 {
-  font-size: 22px;
+  font-size: var(--fs-22);
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: var(--space-2);
 }
 .login-header p {
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   color: var(--color-text-secondary);
 }
 
@@ -388,7 +388,7 @@ defineExpose({
 
 .footer-text {
   text-align: center;
-  font-size: clamp(14px, 1.8vw, 15px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
   color: var(--color-text-muted);
   padding-top: var(--space-8);
 }
@@ -406,7 +406,7 @@ defineExpose({
   text-decoration: underline;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .login-left {
     display: none;
   }
@@ -422,7 +422,7 @@ defineExpose({
     padding: var(--space-8);
   }
   .login-header h1 {
-    font-size: clamp(20px, 3vw, 32px);
+    font-size: clamp(20px, calc(20px + var(--vcl-fit) * 12), 32px);
   }
 }
 </style>

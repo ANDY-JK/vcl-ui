@@ -526,13 +526,13 @@ defineExpose({
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
-  font-size: clamp(28px, 4vw, 36px);
+  font-size: clamp(28px, calc(28px + var(--vcl-fit) * 8), 36px);
   font-weight: 600;
   margin-bottom: var(--space-3);
   letter-spacing: -0.5px;
 }
 .brand-logo p {
-  font-size: clamp(14px, 2.2vw, 18px);
+  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 4), 18px);
   opacity: 0.9;
   line-height: 1.6;
 }
@@ -547,7 +547,7 @@ defineExpose({
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-5);
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
 }
 .features-list li::before {
   content: '\2713';
@@ -558,7 +558,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(11px, 1.5vw, 14px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
   flex-shrink: 0;
 }
 
@@ -576,7 +576,7 @@ defineExpose({
   padding-bottom: var(--space-8);
 }
 .login-header h1 {
-  font-size: 22px;
+  font-size: var(--fs-22);
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: var(--space-2);
@@ -676,7 +676,7 @@ defineExpose({
   color: var(--color-text-muted);
 }
 .social-text {
-  font-size: clamp(11px, 1.5vw, 14px);
+  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
   color: var(--color-text-secondary);
 }
 
@@ -700,7 +700,7 @@ defineExpose({
   text-decoration: underline;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .login-left {
     display: none;
   }
@@ -716,7 +716,7 @@ defineExpose({
     padding: var(--space-8);
   }
   .login-header h1 {
-    font-size: clamp(18px, 3vw, 28px);
+    font-size: clamp(18px, calc(18px + var(--vcl-fit) * 10), 28px);
   }
   .social-btn {
     padding: var(--space-2);

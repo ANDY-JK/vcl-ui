@@ -378,10 +378,12 @@ const trendData = computed(() => {
         <b>{{ (totalSales / 10000).toFixed(0) }}万</b><span>总销量</span>
       </div>
       <div class="kpi">
-        <b>{{ STORES.length }}</b><span>门店</span>
+        <b>{{ STORES.length }}</b
+        ><span>门店</span>
       </div>
       <div class="kpi">
-        <b>{{ MODELS.length }}</b><span>型号</span>
+        <b>{{ MODELS.length }}</b
+        ><span>型号</span>
       </div>
       <div class="kpi"><b>4</b><span>季度</span></div>
       <div class="kpi">
@@ -433,13 +435,15 @@ const trendData = computed(() => {
       <Card class="card-main card-right">
         <template #header>
           <div class="hdr">
-            <span class="hdr-title">📈 季度走势<button
-              class="gr-toggle"
-              :class="{ on: trendGranularity === 'week' }"
-              @click="trendGranularity = trendGranularity === 'quarter' ? 'week' : 'quarter'"
+            <span class="hdr-title"
+              >📈 季度走势<button
+                class="gr-toggle"
+                :class="{ on: trendGranularity === 'week' }"
+                @click="trendGranularity = trendGranularity === 'quarter' ? 'week' : 'quarter'"
+              >
+                {{ trendGranularity === 'quarter' ? '按季度' : '按周(13)' }}
+              </button></span
             >
-              {{ trendGranularity === 'quarter' ? '按季度' : '按周(13)' }}
-            </button></span>
             <div class="pills">
               <button v-for="t in tDims" :key="t.k" :class="['pill', tDim === t.k && 'on']" @click="tDim = t.k">
                 {{ t.l }}
@@ -500,7 +504,7 @@ const trendData = computed(() => {
   gap: 12px;
   align-items: flex-start;
 }
-@media (max-width: 1100px) {
+@media (max-width: 1023px) {
   .main-row {
     flex-direction: column;
   }
@@ -513,7 +517,7 @@ const trendData = computed(() => {
   width: 580px;
   flex-shrink: 0;
 }
-@media (max-width: 1100px) {
+@media (max-width: 1023px) {
   .card-right {
     width: 100%;
   }
@@ -600,7 +604,7 @@ const trendData = computed(() => {
   gap: 12px;
   align-items: flex-start;
 }
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .split-row {
     flex-direction: column;
   }
@@ -614,7 +618,7 @@ const trendData = computed(() => {
   flex: 1;
   height: 420px;
 }
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .split-row {
     height: auto;
   }

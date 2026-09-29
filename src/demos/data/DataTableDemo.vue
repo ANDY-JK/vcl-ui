@@ -628,7 +628,9 @@ const srvSorted = computed(() => {
     (r) =>
       (!kw || `${r.order}${r.customer}`.includes(kw)) &&
       (!srvFilters.value.region || !srvFilters.value.region.length || srvFilters.value.region.includes(r.region)) &&
-      (!srvFilters.value.customer || !srvFilters.value.customer.length || srvFilters.value.customer.includes(r.customer)),
+      (!srvFilters.value.customer ||
+        !srvFilters.value.customer.length ||
+        srvFilters.value.customer.includes(r.customer)),
   )
   if (srvSortKey.value) {
     const k = srvSortKey.value
@@ -699,7 +701,8 @@ const imgRows = [
   { id: 2, avatar: 'https://picsum.photos/seed/dt-b/80/80', name: '同上，地址结尾没有扩展名' },
   {
     id: 3,
-    avatar: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80"/><text x="40" y="46" font-size="14" text-anchor="middle" fill="white">内联</text></svg>',
+    avatar:
+      'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80"/><text x="40" y="46" font-size="14" text-anchor="middle" fill="white">内联</text></svg>',
     name: '内联数据，前缀优先恒判为图',
   },
 ]
@@ -772,8 +775,15 @@ const interCols: Column[] = [
         :data="baseData"
         row-key="id"
         :truncate-threshold="20"
-        :row-style="(row) => (row.status === '在线' ? { background: 'var(--color-success-bg)' } : ({} as Record<string, string>))"
-        :cell-style="(key, row) => (key === 'amount' && row.amount > 15000 ? { color: 'var(--color-danger-hover)', fontWeight: 'bold' } : ({} as Record<string, string>))"
+        :row-style="
+          (row) => (row.status === '在线' ? { background: 'var(--color-success-bg)' } : ({} as Record<string, string>))
+        "
+        :cell-style="
+          (key, row) =>
+            key === 'amount' && row.amount > 15000
+              ? { color: 'var(--color-danger-hover)', fontWeight: 'bold' }
+              : ({} as Record<string, string>)
+        "
       />
     </Card>
 
@@ -799,8 +809,8 @@ const interCols: Column[] = [
     <Card title="编辑模式 — 双击编辑 + 原始值气泡 + 已修改角标" title-as="h2">
       <p class="demo-hint">
         双击单元格编辑（Enter / F2 确认 / Escape 取消 / Tab 切列）。长按单元格拖动可框选区域， Ctrl+C 复制选区 / Ctrl+V
-        粘贴（支持 Excel 表格数据，筛选后只改可见行）。修改后 hover 单元格查看原始值。
-        工具栏<strong>撤销 / 重做</strong>按钮 = Ctrl+Z / Ctrl+Y（无可操作记录时置灰）。
+        粘贴（支持 Excel 表格数据，筛选后只改可见行）。修改后 hover 单元格查看原始值。 工具栏<strong>撤销 / 重做</strong
+        >按钮 = Ctrl+Z / Ctrl+Y（无可操作记录时置灰）。
       </p>
       <DataTable
         namespace="demo-edit"
@@ -838,8 +848,8 @@ const interCols: Column[] = [
       </p>
       <p class="demo-hint">
         <strong>选中颜色即「能否编辑」</strong>：点<strong>员工姓名 / 所属部门</strong>（可编辑）→
-        <span style="color: var(--dt-select)">紫色</span>边框 + 紫色填充柄；
-        点<strong>工号 / 在职状态</strong>（只读）→ 蓝色边框，且无填充柄。
+        <span style="color: var(--dt-select)">紫色</span>边框 + 紫色填充柄； 点<strong>工号 / 在职状态</strong>（只读）→
+        蓝色边框，且无填充柄。
         <br />
         填充柄（右下角小点）= 拖拽批量填充，<strong>只在可编辑单元格出现</strong>。
       </p>
@@ -857,11 +867,11 @@ const interCols: Column[] = [
     <Card title="列值类型 — Excel 式输入归一化" title-as="h2">
       <p class="demo-hint">
         列声明 <code>type</code> 后，<strong>双击编辑提交</strong>会按类型归一化（未声明 type 的列行为完全不变）：
-        日期列输入 <code>9/12</code> → 当年 <code>9月12日</code>；金额列输入 <code>￥1,234.50</code> → <code>1234.5</code>；
-        编码列声明 <code>text</code> 保住前导零 <code>007</code>（number 列的 <code>007</code> 也保原样，不静默改成 7）。
-        金额列默认<strong>右对齐 + 等宽数字</strong>；移动端编辑 number/日期列弹数字键盘。
-        非法值（如日期列输 <code>2026-02-31</code>、金额列输 <code>abc</code>）不落库 →
-        Enter 提交时<strong>该格红圈 + 气泡提示</strong>并保持编辑态待修正（继续输入提示即消失）；失焦提交则丢弃并全局提示。
+        日期列输入 <code>9/12</code> → 当年 <code>9月12日</code>；金额列输入 <code>￥1,234.50</code> →
+        <code>1234.5</code>； 编码列声明 <code>text</code> 保住前导零 <code>007</code>（number 列的
+        <code>007</code> 也保原样，不静默改成 7）。 金额列默认<strong>右对齐 + 等宽数字</strong>；移动端编辑
+        number/日期列弹数字键盘。 非法值（如日期列输 <code>2026-02-31</code>、金额列输 <code>abc</code>）不落库 → Enter
+        提交时<strong>该格红圈 + 气泡提示</strong>并保持编辑态待修正（继续输入提示即消失）；失焦提交则丢弃并全局提示。
       </p>
       <DataTable
         namespace="demo-cell-type"
@@ -950,8 +960,8 @@ const interCols: Column[] = [
     <!-- ===== 紧凑密度 ===== -->
     <Card title="紧凑密度 — dense 是初值，不是受控开关" title-as="h2">
       <p class="demo-hint">
-        <code>dense</code> 只在挂载时读一次作为初值，渲染后密度归工具栏的紧凑按钮管，再改 prop 不会回灌
-        —— 这是组件的固定行为，所以这里给两张表对照，而不是做一个拨了没反应的开关。
+        <code>dense</code> 只在挂载时读一次作为初值，渲染后密度归工具栏的紧凑按钮管，再改 prop 不会回灌 ——
+        这是组件的固定行为，所以这里给两张表对照，而不是做一个拨了没反应的开关。
       </p>
       <div class="demo-two-col">
         <div>
@@ -989,9 +999,10 @@ const interCols: Column[] = [
         <label class="demo-ck"><input v-model="textCfg.pinyinSearch" type="checkbox" /> pinyinSearch 拼音搜索</label>
       </div>
       <p class="demo-hint">
-        打开工具栏搜索框输 <code>zs</code> 或 <code>zhangsan</code>：pinyinSearch 开着才能命中「张三」，关掉就只能整字匹配。
-        备注列演示空白口径 —— <code>null / undefined / 空串 / 纯空白串</code> 都吃
-        <code>blankText</code>；<code>0</code> 与 <code>false</code> 是合法值不占位。
+        打开工具栏搜索框输 <code>zs</code> 或 <code>zhangsan</code>：pinyinSearch
+        开着才能命中「张三」，关掉就只能整字匹配。 备注列演示空白口径 ——
+        <code>null / undefined / 空串 / 纯空白串</code> 都吃 <code>blankText</code>；<code>0</code> 与
+        <code>false</code> 是合法值不占位。
         占位<strong>只作用于展示层</strong>是固定的：导出、筛选候选、列宽测量一律按原值，没有开关能改这条。
       </p>
       <DataTable
@@ -1054,8 +1065,8 @@ const interCols: Column[] = [
         </label>
       </div>
       <p class="demo-hint">
-        函数入参是 <code>props.data</code> <strong>全量</strong>，不是当前页 —— 这条口径是固定的。
-        返回值按列 key 对齐，没给 key 的列留空；汇总行永远贴在表尾，不随行滚动重叠。
+        函数入参是 <code>props.data</code> <strong>全量</strong>，不是当前页 —— 这条口径是固定的。 返回值按列 key
+        对齐，没给 key 的列留空；汇总行永远贴在表尾，不随行滚动重叠。
       </p>
       <DataTable
         namespace="demo-summary"
@@ -1070,8 +1081,8 @@ const interCols: Column[] = [
     <!-- ===== 备注模式 ===== -->
     <Card title="备注模式 — noteMode / notes / cell-note 事件" title-as="h2">
       <p class="demo-hint">
-        开着 <code>noteMode</code> 时，有备注的单元格右上角有标记，hover 看内容、点击填备注。
-        填完组件只 <code>emit('cell-note')</code>，<strong>不写回 notes</strong> —— 落不落库、落到哪，是使用方的事
+        开着 <code>noteMode</code> 时，有备注的单元格右上角有标记，hover 看内容、点击填备注。 填完组件只
+        <code>emit('cell-note')</code>，<strong>不写回 notes</strong> —— 落不落库、落到哪，是使用方的事
         （这条是固定的）。下面把回调写回 ref，所以刷新前一直留着。
       </p>
       <DataTable
@@ -1094,10 +1105,10 @@ const interCols: Column[] = [
     <!-- ===== 日期输入顺序 ===== -->
     <Card title="日期输入顺序 — dateInputOrder（MDY / DMY 必须自己声明）" title-as="h2">
       <p class="demo-hint">
-        两张表数据完全一样，只换 <code>date-input-order</code>。双击日期格输
-        <code>9/12</code> 再按 Enter：左表 → <code>2026-09-12</code>，右表 →
-        <code>2026-12-09</code>。月、日都 ≤12 时组件<strong>不可能</strong>自己猜出你要哪个，
-        所以这个 prop 是使用方的义务，不声明就按默认 MDY 走（固定行为）。
+        两张表数据完全一样，只换 <code>date-input-order</code>。双击日期格输 <code>9/12</code> 再按 Enter：左表 →
+        <code>2026-09-12</code>，右表 → <code>2026-12-09</code>。月、日都 ≤12
+        时组件<strong>不可能</strong>自己猜出你要哪个， 所以这个 prop 是使用方的义务，不声明就按默认 MDY
+        走（固定行为）。
       </p>
       <div class="demo-two-col">
         <div>
@@ -1128,13 +1139,13 @@ const interCols: Column[] = [
     <!-- ===== 虚拟滚动 ===== -->
     <Card title="虚拟滚动 — virtualScroll / pageVirtualMin" title-as="h2">
       <p class="demo-hint">
-        下面这张表喂 {{ VIRTUAL_ROWS }} 行。开与关都渲染得动，但关掉之后 DOM 里就是
-        {{ VIRTUAL_ROWS }} 个 <code>&lt;tr&gt;</code>，滚动会明显发涩 —— 按 F12 数一下
+        下面这张表喂 {{ VIRTUAL_ROWS }} 行。开与关都渲染得动，但关掉之后 DOM 里就是 {{ VIRTUAL_ROWS }} 个
+        <code>&lt;tr&gt;</code>，滚动会明显发涩 —— 按 F12 数一下
         <code>document.querySelectorAll('.table-scroll tbody tr').length</code> 对比最直观。
       </p>
       <p class="demo-hint">
-        启用判据是<strong>实测出来的、固定不可配</strong>：总行数 &gt; 可视行数 + 上下各
-        overscan 10 行才开虚拟化，所以面板高矮、dense、浏览器缩放都能自适应；
+        启用判据是<strong>实测出来的、固定不可配</strong>：总行数 &gt; 可视行数 + 上下各 overscan 10
+        行才开虚拟化，所以面板高矮、dense、浏览器缩放都能自适应；
         <code>pageVirtualMin</code> 只能在此基础上<strong>额外抬高</strong>启用门槛，不能反过来强制开启。
         页面滚动态的虚拟化另有前置条件（固定）：没设 <code>maxHeight</code> 且没分页。
       </p>
@@ -1167,9 +1178,8 @@ const interCols: Column[] = [
     <!-- ===== 类名定制 ===== -->
     <Card title="类名定制 — rowClass / cellClass（与 rowStyle / cellStyle 并列）" title-as="h2">
       <p class="demo-hint">
-        回调签名固定的两对：行级 <code>(row, index)</code>、单元格级
-        <code>(colKey, row, index)</code>，各有一个 class 版和一个 style 版。
-        本项目样式走 CSS 变量，硬编码色值在暗色主题下会看不见。
+        回调签名固定的两对：行级 <code>(row, index)</code>、单元格级 <code>(colKey, row, index)</code>，各有一个 class
+        版和一个 style 版。 本项目样式走 CSS 变量，硬编码色值在暗色主题下会看不见。
       </p>
       <DataTable
         namespace="demo-class"
@@ -1189,9 +1199,9 @@ const interCols: Column[] = [
       </p>
       <p class="demo-hint">
         设了 <code>searchMode='server'</code> 后，组件<strong>不再本地过滤</strong>，只把关键词
-        <code>emit('search')</code> 抛出来；<code>filterMode='server'</code> 同理只抛
-        <code>filter</code>；受控 <code>sortKey</code> 非空时组件也跳过本地排序
-        （这三条互斥是固定的，不能既要本地筛又要服务端筛）。总条数得靠 <code>total</code>
+        <code>emit('search')</code> 抛出来；<code>filterMode='server'</code> 同理只抛 <code>filter</code>；受控
+        <code>sortKey</code> 非空时组件也跳过本地排序 （这三条互斥是固定的，不能既要本地筛又要服务端筛）。总条数得靠
+        <code>total</code>
         告诉组件 —— 它手里只有当前页，猜不出全量。
       </p>
       <div class="demo-ck-row">
@@ -1235,9 +1245,7 @@ const interCols: Column[] = [
             srvSay(`filter → ${JSON.stringify(f)}`)
           }
         "
-        @page-change="
-          (p, s) => srvSay(`page-change → 第 ${p} 页 / 每页 ${s} 条`)
-        "
+        @page-change="(p, s) => srvSay(`page-change → 第 ${p} 页 / 每页 ${s} 条`)"
       />
       <div class="demo-log">
         <p v-for="(l, i) in srvLog" :key="i">{{ l }}</p>
@@ -1263,8 +1271,8 @@ const interCols: Column[] = [
         </label>
       </div>
       <p class="demo-hint">
-        把它调成 3 再点截图，就能看到超限拦截。截图口径里还有一条固定的硬阈值：表格
-        scrollHeight 超 8000px 一律不出图（浏览器 canvas 尺寸上限决定的，不开放配置）。
+        把它调成 3 再点截图，就能看到超限拦截。截图口径里还有一条固定的硬阈值：表格 scrollHeight 超 8000px
+        一律不出图（浏览器 canvas 尺寸上限决定的，不开放配置）。
       </p>
       <DataTable
         namespace="demo-shot"
@@ -1285,10 +1293,10 @@ const interCols: Column[] = [
     <Card title="存储适配器 — storage / namespace / persistence" title-as="h2">
       <p class="demo-hint">
         持久化存的是<strong>布局</strong>：列宽、列顺序、隐藏列、固定列、密度。
-        <code>storage</code> / <code>namespace</code> / <code>persistence</code> 三个都在挂载时读一次，
-        换档位靠 <code>:key</code> 重建表格（下面已经替你接上了）。
-        <code>persistence='auto'</code> 下有一条固定豁免：受控 <code>sortKey</code> 时排序不持久化、
-        <code>filterMode='server'</code> 时筛选不持久化 —— 数据归使用方管，组件不越权记。
+        <code>storage</code> / <code>namespace</code> / <code>persistence</code> 三个都在挂载时读一次， 换档位靠
+        <code>:key</code> 重建表格（下面已经替你接上了）。 <code>persistence='auto'</code> 下有一条固定豁免：受控
+        <code>sortKey</code> 时排序不持久化、 <code>filterMode='server'</code> 时筛选不持久化 ——
+        数据归使用方管，组件不越权记。
       </p>
       <div class="demo-ck-row">
         <label class="demo-ck">
@@ -1327,8 +1335,8 @@ const interCols: Column[] = [
         —— 本站宿主就是 AppLayout，它两样都给了，所以两条路径都通。
       </p>
       <p class="demo-hint">
-        再记一条固定行为：全屏时若有分页，组件会<strong>忽略分页</strong>把过滤后的数据全铺出来
-        —— 全屏的语义就是「看全部」，这个不开放配置。
+        再记一条固定行为：全屏时若有分页，组件会<strong>忽略分页</strong>把过滤后的数据全铺出来 ——
+        全屏的语义就是「看全部」，这个不开放配置。
       </p>
       <p v-if="fsLog" class="demo-hint" style="color: var(--color-primary)">{{ fsLog }}</p>
       <DataTable
@@ -1345,15 +1353,14 @@ const interCols: Column[] = [
     <!-- ===== 图片域名白名单 ===== -->
     <Card title="图片域名白名单 — imageDomains" title-as="h2">
       <p class="demo-hint">
-        组件靠 <code>isImageUrl</code> 判断一个字符串是文本还是图，顺序固定：内联数据前缀 →
-        图片扩展名 → 域名白名单 → 路径启发式兜底。<code>imageDomains</code> 传了就是
-        <strong>整表替换</strong>默认清单而不是追加 —— 所以下面勾上之后，两张走内置清单才认出的图会退回成文本，
-        而内联数据那格照旧是图（它排在域名之前）。
+        组件靠 <code>isImageUrl</code> 判断一个字符串是文本还是图，顺序固定：内联数据前缀 → 图片扩展名 → 域名白名单 →
+        路径启发式兜底。<code>imageDomains</code> 传了就是 <strong>整表替换</strong>默认清单而不是追加 ——
+        所以下面勾上之后，两张走内置清单才认出的图会退回成文本， 而内联数据那格照旧是图（它排在域名之前）。
       </p>
       <p class="demo-hint" style="color: var(--color-warning)">
         踩过的坑，写表格数据时注意：域名匹配<strong>不锚定</strong>，单元格里只是
-        <em>提到</em>某个内置域名（比如讲解文字里写了那个图床的域名）也会被当成图片渲染成碎图。
-        列上想钉死内容类型，用 <code>Column.accept: 'image'</code> 比白名单可靠。
+        <em>提到</em>某个内置域名（比如讲解文字里写了那个图床的域名）也会被当成图片渲染成碎图。 列上想钉死内容类型，用
+        <code>Column.accept: 'image'</code> 比白名单可靠。
       </p>
       <div class="demo-ck-row">
         <label class="demo-ck">
@@ -1361,7 +1368,13 @@ const interCols: Column[] = [
           把 imageDomains 换成 <code>example.internal-cdn.invalid</code>（默认清单随即失效）
         </label>
       </div>
-      <DataTable namespace="demo-imgdomain" :columns="imgCols" :data="imgRows" row-key="id" :image-domains="imgDomains" />
+      <DataTable
+        namespace="demo-imgdomain"
+        :columns="imgCols"
+        :data="imgRows"
+        row-key="id"
+        :image-domains="imgDomains"
+      />
     </Card>
 
     <!-- ===== 插槽 ===== -->
@@ -1373,7 +1386,9 @@ const interCols: Column[] = [
       </p>
       <DataTable namespace="demo-slots" :columns="slotCols" :data="slotData" row-key="id">
         <template #header-cell="{ column }">
-          <span class="demo-slot-th">{{ column.title }}<i class="demo-slot-badge">{{ column.key }}</i></span>
+          <span class="demo-slot-th"
+            >{{ column.title }}<i class="demo-slot-badge">{{ column.key }}</i></span
+          >
         </template>
         <template #cell="{ column, value }">
           <span v-if="column.key === 'amount'" class="demo-slot-money">￥{{ Number(value).toLocaleString() }}</span>
@@ -1387,9 +1402,8 @@ const interCols: Column[] = [
       <p class="demo-hint">
         四项默认全开。四个都是真开关，当场生效：
         <strong>colSettings</strong> 管工具栏的列设置按钮；
-        <strong>cellSelection</strong> 管长按拖选矩形区（注意它的前置条件是 <code>editable</code>，
-        不开 editable 时它无处可施 —— 这条依赖是固定的）；
-        <strong>keyboardNav</strong> 管方向键/Enter/Delete/Ctrl+Home；
+        <strong>cellSelection</strong> 管长按拖选矩形区（注意它的前置条件是 <code>editable</code>， 不开 editable
+        时它无处可施 —— 这条依赖是固定的）； <strong>keyboardNav</strong> 管方向键/Enter/Delete/Ctrl+Home；
         <strong>cellContextMenu</strong> 管单元格右键的复制/粘贴/清空。
       </p>
       <div class="demo-ck-row">
@@ -1414,14 +1428,15 @@ const interCols: Column[] = [
     <!-- ===== 事件 ===== -->
     <Card title="事件一览 — 15 个 emit 的回显" title-as="h2">
       <p class="demo-hint">
-        操作下面这张表，右半边会打出组件真正抛出的事件与载荷。
-        带 <code>update:</code> 前缀的三个（<code>update:selectedKeys</code> /
-        <code>update:currentPage</code> / <code>update:filters</code>）就是
+        操作下面这张表，右半边会打出组件真正抛出的事件与载荷。 带 <code>update:</code> 前缀的三个（<code
+          >update:selectedKeys</code
+        >
+        / <code>update:currentPage</code> / <code>update:filters</code>）就是
         <code>v-model</code> 的另一半，下面已经双向绑上了。
       </p>
       <p class="demo-hint">
-        这张表顺手把 <code>autoHeight</code> 关了（默认开启，会把父容器剩余空间填满）——
-        开着的话这里只有 4 行数据也会被撑出一大片空白，正是这个 prop 的作用面。
+        这张表顺手把 <code>autoHeight</code> 关了（默认开启，会把父容器剩余空间填满）—— 开着的话这里只有 4
+        行数据也会被撑出一大片空白，正是这个 prop 的作用面。
       </p>
       <div class="demo-two-col demo-two-col--wide-left">
         <div>
@@ -1472,7 +1487,9 @@ const interCols: Column[] = [
           </tr>
         </thead>
         <tbody>
-          <tr class="api-group"><td colspan="4">数据与列</td></tr>
+          <tr class="api-group">
+            <td colspan="4">数据与列</td>
+          </tr>
           <tr>
             <td><code>columns</code></td>
             <td><code>Column[]</code></td>
@@ -1491,7 +1508,9 @@ const interCols: Column[] = [
             <td><code>'seq'</code></td>
             <td>行唯一键字段名；选行、编辑回执、备注都按它寻址</td>
           </tr>
-          <tr class="api-group"><td colspan="4">外观与布局</td></tr>
+          <tr class="api-group">
+            <td colspan="4">外观与布局</td>
+          </tr>
           <tr>
             <td><code>striped</code></td>
             <td><code>boolean</code></td>
@@ -1528,7 +1547,9 @@ const interCols: Column[] = [
             <td><code>'-'</code></td>
             <td>空白占位文本，传空串关闭；仅展示层，导出与筛选按原值</td>
           </tr>
-          <tr class="api-group"><td colspan="4">排序 · 筛选 · 搜索</td></tr>
+          <tr class="api-group">
+            <td colspan="4">排序 · 筛选 · 搜索</td>
+          </tr>
           <tr>
             <td><code>sortKey</code></td>
             <td><code>string</code></td>
@@ -1553,7 +1574,9 @@ const interCols: Column[] = [
             <td><code>0</code></td>
             <td>超长判定字数；0 表示交给列宽实测决定，不按字数</td>
           </tr>
-          <tr class="api-group"><td colspan="4">行选择与导出</td></tr>
+          <tr class="api-group">
+            <td colspan="4">行选择与导出</td>
+          </tr>
           <tr>
             <td><code>selectable</code></td>
             <td><code>boolean</code></td>
@@ -1590,7 +1613,9 @@ const interCols: Column[] = [
             <td><code>'all'</code></td>
             <td>导出范围：筛选后全量 / 仅当前页</td>
           </tr>
-          <tr class="api-group"><td colspan="4">分页与虚拟化</td></tr>
+          <tr class="api-group">
+            <td colspan="4">分页与虚拟化</td>
+          </tr>
           <tr>
             <td><code>pageSize</code></td>
             <td><code>number</code></td>
@@ -1657,7 +1682,9 @@ const interCols: Column[] = [
             <td><code>false</code></td>
             <td>紧凑密度<strong>初值</strong>；挂载后归工具栏紧凑按钮管，改 prop 不回灌</td>
           </tr>
-          <tr class="api-group"><td colspan="4">交互开关</td></tr>
+          <tr class="api-group">
+            <td colspan="4">交互开关</td>
+          </tr>
           <tr>
             <td><code>colSettings</code></td>
             <td><code>boolean</code></td>
@@ -1682,7 +1709,9 @@ const interCols: Column[] = [
             <td><code>true</code></td>
             <td>单元格右键菜单（复制/粘贴/清空）</td>
           </tr>
-          <tr class="api-group"><td colspan="4">汇总与持久化</td></tr>
+          <tr class="api-group">
+            <td colspan="4">汇总与持久化</td>
+          </tr>
           <tr>
             <td><code>summary</code></td>
             <td><code>(rows: T[]) =&gt; Record</code> / <code>Record</code></td>
@@ -1707,7 +1736,9 @@ const interCols: Column[] = [
             <td><code>'auto'</code></td>
             <td>none 强制不落存储；auto 下受控排序与服务端筛选自动豁免</td>
           </tr>
-          <tr class="api-group"><td colspan="4">编辑与备注</td></tr>
+          <tr class="api-group">
+            <td colspan="4">编辑与备注</td>
+          </tr>
           <tr>
             <td><code>editable</code></td>
             <td><code>boolean</code></td>
@@ -1732,7 +1763,9 @@ const interCols: Column[] = [
             <td><code>{}</code></td>
             <td>外部备注数据源；组件不自行写回</td>
           </tr>
-          <tr class="api-group"><td colspan="4">行 / 单元格自定义</td></tr>
+          <tr class="api-group">
+            <td colspan="4">行 / 单元格自定义</td>
+          </tr>
           <tr>
             <td><code>rowActions</code></td>
             <td><code>RowAction[]</code></td>
@@ -1808,7 +1841,9 @@ const interCols: Column[] = [
             <td>—</td>
             <td>单元格级内联样式</td>
           </tr>
-          <tr class="api-group"><td colspan="4">截图</td></tr>
+          <tr class="api-group">
+            <td colspan="4">截图</td>
+          </tr>
           <tr>
             <td><code>shotMode</code></td>
             <td><code>'preview' | 'download' | 'copy'</code></td>
@@ -2058,9 +2093,8 @@ const interCols: Column[] = [
 
       <p class="demo-hint" style="margin-top: 12px">
         插槽四个：<code>toolbar-actions</code>（工具栏追加按钮，无作用域）、
-        <code>header-cell</code>（作用域 <code>column</code>）、
-        <code>cell</code>（作用域 <code>column / row / value</code>）、
-        <code>empty</code>（作用域 <code>filtered</code>）。
+        <code>header-cell</code>（作用域 <code>column</code>）、 <code>cell</code>（作用域
+        <code>column / row / value</code>）、 <code>empty</code>（作用域 <code>filtered</code>）。
       </p>
       <p class="demo-hint">
         <code>defineExpose</code> 另有 imperative 面（撤销/重做/清空筛选/退出全屏等），
@@ -2197,7 +2231,7 @@ const interCols: Column[] = [
 .demo-two-col--wide-left {
   grid-template-columns: minmax(0, 2fr) minmax(200px, 1fr);
 }
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .demo-two-col--wide-left {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2287,7 +2321,7 @@ const interCols: Column[] = [
   gap: 12px;
   margin-bottom: 8px;
 }
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .modal-grid {
     grid-template-columns: repeat(2, 1fr);
   }
