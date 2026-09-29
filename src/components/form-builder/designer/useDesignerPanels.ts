@@ -14,10 +14,21 @@ const PANEL_MAX_W = 420
 /** 主体宽度小于此值时自动收起大纲列，优先保证画布可用 */
 const NARROW_W = 1080
 
+/**
+ * 首开默认宽随视口收放：小屏少占面板、画布优先。
+ * 尺子与 tokens.css --vcl-fit 镜像（1024px 视口 → 0，1920px 视口 → 1），
+ * 缩放带内取 base 的 78%~100%；用户拖过/存过布局则由 restorePanels 覆盖，永不强行改。
+ */
+function fittedDefault(base: number, min: number): number {
+  if (typeof window === 'undefined') return base
+  const fit = Math.min(1, Math.max(0, (window.innerWidth - 1024) / 896))
+  return Math.max(min, Math.round(base * (0.78 + 0.22 * fit)))
+}
+
 export function useDesignerPanels(bodyRef: Ref<HTMLElement | null>) {
-  const paletteW = ref(220)
-  const outlineW = ref(190)
-  const propsW = ref(290)
+  const paletteW = ref(fittedDefault(220, PANEL_MIN_W))
+  const outlineW = ref(fittedDefault(190, PANEL_MIN_W))
+  const propsW = ref(fittedDefault(290, PANEL_MIN_W))
   const showPalette = ref(true)
   const showOutline = ref(true)
   const showProps = ref(true)
