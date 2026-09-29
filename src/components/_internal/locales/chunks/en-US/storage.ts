@@ -32,6 +32,6 @@ export default {
     panelSupabaseTip:
       "Files go to the bucket (create a public bucket in Supabase console first). Object name {'{'}appleId{'}'}-{'{'}file{'}'}; switching backends does not migrate existing data.",
     panelS3Tip:
-      "Object name {'{'}appleId{'}'}-{'{'}file{'}'}; switching backends does not migrate existing data. AK/SK ships to the browser — internal tools / private deploys only.",
+      "Object name {'{'}appleId{'}'}-{'{'}file{'}'}; switching backends does not migrate existing data. AK/SK ships to the browser — internal tools / private deploys only. The Secret Key lives in this session's memory only and is never written to browser storage; re-enter it after a refresh.",
   },
 }

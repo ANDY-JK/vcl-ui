@@ -25,13 +25,13 @@ import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
 import type { FormSchema, FormField } from './types'
 import {
   createBackend,
-  validateStorageConfig,
   defaultStorageConfigFromEnv,
   getSlotFile,
   setSlotFile,
   allSlotsFilled,
 } from '@/components/storage/contract-storage'
 import type { StorageBackend, StorageConfig, StoreUploadState, StoreFile } from '@/components/storage/contract-storage'
+import { loadPersistedStorageConfig, persistStorageConfig } from './storage-config-persist'
 import JSZip from 'jszip'
 
 const t = useT()
@@ -124,37 +124,15 @@ function cellText(v: unknown): string {
 // 存储
 // ════════════════════════════════════════
 
-const CONFIG_KEY = 'form-target-collect-storage-config'
-// SSR 安全：loadConfig 内已 try，但 localStorage 访问本身在无 window 环境会 ReferenceError，先于 try 拦截
+// 存储配置的读写走 ./storage-config-persist：落盘脱敏 secretAccessKey（F3），
+// SSR 安全仍在此拦截——持久化模块直接访问 localStorage，无 window 环境会 ReferenceError
 const cfg = ref<StorageConfig>(
-  props.storageConfig ?? (typeof localStorage !== 'undefined' ? loadConfig() : defaultStorageConfigFromEnv()),
+  props.storageConfig ??
+    (typeof localStorage !== 'undefined' ? loadPersistedStorageConfig() : defaultStorageConfigFromEnv()),
 )
 const showStoragePanel = ref(false)
 const saving = ref(false)
 let backendInstance: StorageBackend | null = null
-
-function loadConfig(): StorageConfig {
-  try {
-    const raw = localStorage.getItem(CONFIG_KEY)
-    if (raw) {
-      const c = JSON.parse(raw) as StorageConfig
-      const valid =
-        c &&
-        (c.backend === 'local' ||
-          (c.backend === 'supabase' && !validateStorageConfig(c)) ||
-          (c.backend === 's3' && !validateStorageConfig(c)))
-      if (valid) return c
-    }
-  } catch {
-    /* 损坏配置回退默认 */
-  }
-  // 环境变量默认：S3 兼容（缤纷云等）优先 → Supabase → 本地
-  return defaultStorageConfigFromEnv()
-}
-
-function persistConfig(): void {
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg.value))
-}
 
 function applyBackend(): StorageBackend {
   if (!backendInstance) {
@@ -199,7 +177,7 @@ async function onStorageConfigSave(next: StorageConfig): Promise<void> {
   cfg.value = next
   saving.value = true
   try {
-    persistConfig()
+    persistStorageConfig(cfg.value)
     resetBackend()
     await reloadFromBackend()
     showStoragePanel.value = false
