@@ -253,6 +253,25 @@ function onChartReady(inst: ECharts) {
   min-height: 240px;
   width: 100%;
   container-type: inline-size;
+  container-name: chart-table;
+}
+
+/* 纯 CSS 兜底：容器过窄时纵向堆叠（JS 动态阈值检测为主，此为无 JS 时的降级） */
+@container chart-table (max-width: 600px) {
+  .ct-body {
+    flex-direction: column;
+  }
+  .ct-body .ct-chart {
+    width: 100% !important;
+    height: 50%;
+    min-width: 0;
+  }
+  .ct-body .ct-table {
+    width: 100% !important;
+    height: 50%;
+    padding-left: 0;
+    padding-top: var(--space-2);
+  }
 }
 .ct-header {
   display: flex;

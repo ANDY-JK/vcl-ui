@@ -1,18 +1,17 @@
 /**
  * useDesignerPanels — 设计器三面板宽度 / 显隐管理（拆分自 FormDesigner.vue，超 800 行整改）
  *
- * 职责：面板拖拽调宽 + localStorage 持久化 + 主体窄屏自动收起大纲列。
+ * 职责：面板拖拽调宽 + localStorage 持久化。
+ * 窄屏自动收起大纲列已由 CSS @container 替代（designer-layout.css），不再需要 JS 检测。
  * FormDesigner 只保留调用与模板绑定，宽度语义与持久化细节收口在此。
  */
-import { ref, computed, watch, onUnmounted, type Ref } from 'vue'
+import { ref, computed } from 'vue'
 
 /** 宽度与显隐的持久化 key（同一浏览器记住用户调过的布局） */
 const PANEL_STORE_KEY = 'vcl-designer-panels'
 /** 面板宽度下限/上限：再窄放不下内容，再宽会把画布挤没 */
 const PANEL_MIN_W = 150
 const PANEL_MAX_W = 420
-/** 主体宽度小于此值时自动收起大纲列，优先保证画布可用 */
-const NARROW_W = 1080
 
 /**
  * 首开默认宽随视口收放：小屏少占面板、画布优先。
@@ -25,19 +24,16 @@ function fittedDefault(base: number, min: number): number {
   return Math.max(min, Math.round(base * (0.78 + 0.22 * fit)))
 }
 
-export function useDesignerPanels(bodyRef: Ref<HTMLElement | null>) {
+export function useDesignerPanels() {
   const paletteW = ref(fittedDefault(220, PANEL_MIN_W))
   const outlineW = ref(fittedDefault(190, PANEL_MIN_W))
   const propsW = ref(fittedDefault(290, PANEL_MIN_W))
   const showPalette = ref(true)
   const showOutline = ref(true)
   const showProps = ref(true)
-  /** 主体实测宽度（0 = 尚未测量） */
-  const bodyW = ref(0)
   const resizing = ref<'palette' | 'outline' | 'props' | null>(null)
-  const narrow = computed(() => bodyW.value > 0 && bodyW.value < NARROW_W)
-  /** 大纲列实际可见性 = 用户开关 && 非窄屏 */
-  const outlineVisible = computed(() => showOutline.value && !narrow.value)
+  /** 大纲列实际可见性 = 用户开关（窄屏自动收起由 CSS @container 控制） */
+  const outlineVisible = computed(() => showOutline.value)
 
   function clampPanelW(w: number): number {
     return Math.min(PANEL_MAX_W, Math.max(PANEL_MIN_W, Math.round(w)))
@@ -118,27 +114,6 @@ export function useDesignerPanels(bodyRef: Ref<HTMLElement | null>) {
     persistPanels()
   }
 
-  /** 主体宽度实测：窄屏自动收起大纲列 */
-  let bodyObserver: ResizeObserver | null = null
-  watch(
-    bodyRef,
-    (el) => {
-      bodyObserver?.disconnect()
-      bodyObserver = null
-      if (!el) return
-      bodyObserver = new ResizeObserver(() => {
-        bodyW.value = el.clientWidth
-      })
-      bodyObserver.observe(el)
-      bodyW.value = el.clientWidth
-    },
-    { flush: 'post' },
-  )
-  onUnmounted(() => {
-    bodyObserver?.disconnect()
-    bodyObserver = null
-  })
-
   return {
     paletteW,
     outlineW,
@@ -146,9 +121,7 @@ export function useDesignerPanels(bodyRef: Ref<HTMLElement | null>) {
     showPalette,
     showOutline,
     showProps,
-    bodyW,
     resizing,
-    narrow,
     outlineVisible,
     startResize,
     togglePanel,

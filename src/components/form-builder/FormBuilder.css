@@ -64,6 +64,8 @@
   display: grid;
   grid-template-columns: repeat(var(--fb-cols, 2), 1fr);
   gap: 12px 16px;
+  container-type: inline-size;
+  container-name: form-builder;
 }
 /* .fb-field 由 FieldList（多根片段）渲染，不继承本组件 scope id，必须 :deep 穿透 */
 .fb-fields :deep(.fb-field) {
@@ -87,7 +89,7 @@
 }
 
 /* 移动端响应式：单列布局 */
-@media (max-width: 640px) {
+@container form-builder (max-width: 639px) {
   .fb-grid {
     grid-template-columns: 1fr;
   }

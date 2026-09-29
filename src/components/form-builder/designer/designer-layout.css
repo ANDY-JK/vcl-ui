@@ -8,6 +8,17 @@
   /* 窄视口下画布列被 min-width:0 压到极窄（空态提示逐字竖排）——
      画布有 260px 下限，总宽超出时在主体内横向滚动，不挤破页面 */
   overflow-x: auto;
+  /* 容器查询：窄屏时自动收起大纲列（替代 JS ResizeObserver 检测） */
+  container-type: inline-size;
+  container-name: designer;
+}
+
+/* 窄屏（<1080px）自动收起大纲列及其分隔条 — 纯 CSS 布局响应，无 JS 开销 */
+@container designer (max-width: 1079px) {
+  .ldo-panel,
+  .ldo-panel + .ld-splitter {
+    display: none;
+  }
 }
 
 /** 拖拽调宽中：禁掉文本选中，避免拖到面板上选中文字 */

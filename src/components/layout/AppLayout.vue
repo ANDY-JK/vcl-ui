@@ -354,7 +354,7 @@ function onProgressMouseUp() {
   contain: layout style;
 }
 
-@media (max-width: 767px) {
+@container layout (max-width: 767px) {
   .sidebar {
     position: fixed;
     top: 0;
@@ -805,6 +805,8 @@ function onProgressMouseUp() {
   border-left: 1px solid var(--color-border-light);
   border-right: 1px solid var(--color-border-light);
   scrollbar-width: none;
+  container-type: inline-size;
+  container-name: layout;
 }
 .content-body::-webkit-scrollbar {
   display: none;

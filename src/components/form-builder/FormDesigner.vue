@@ -129,19 +129,8 @@ const device = ref<'desktop' | 'tablet' | 'mobile'>('desktop')
 
 // ══ 面板宽度 / 显隐（可拖拽调宽并记忆；主体过窄时自动收起大纲列）— 逻辑在 useDesignerPanels ══
 
-const bodyRef = ref<HTMLElement | null>(null)
-const {
-  paletteW,
-  outlineW,
-  propsW,
-  showPalette,
-  showProps,
-  resizing,
-  narrow,
-  outlineVisible,
-  startResize,
-  togglePanel,
-} = useDesignerPanels(bodyRef)
+const { paletteW, outlineW, propsW, showPalette, showProps, resizing, outlineVisible, startResize, togglePanel } =
+  useDesignerPanels()
 
 const selectedNode = computed(() => {
   if (!selectedId.value) return null
@@ -413,8 +402,7 @@ const fldIds = {
         <button
           class="ld-btn ld-btn-icon"
           :class="{ active: outlineVisible }"
-          :disabled="narrow"
-          :title="narrow ? t('fbd.outlineAutoHidden') : t('fbd.toggleOutline')"
+          :title="t('fbd.toggleOutline')"
           @click="togglePanel('outline')"
         >
           <IconSvg type="list-tree" size="xs" />
@@ -523,13 +511,7 @@ const fldIds = {
     </div>
 
     <!-- ═══ 设计标签页 ═══ -->
-    <div
-      v-if="activeTab === 'design'"
-      ref="bodyRef"
-      class="ld-body"
-      :class="{ 'is-resizing': resizing }"
-      :style="{ height }"
-    >
+    <div v-if="activeTab === 'design'" class="ld-body" :class="{ 'is-resizing': resizing }" :style="{ height }">
       <!-- 左栏：字段面板 -->
       <DesignerPanel v-if="showPalette" :style="{ width: `${paletteW}px` }" @add="addNode" />
       <div

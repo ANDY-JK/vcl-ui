@@ -271,6 +271,8 @@ defineExpose({
   background: var(--color-surface);
   animation: slideUp 0.5s ease-out;
   z-index: 1;
+  container-type: inline-size;
+  container-name: login;
 }
 
 @keyframes slideUp {
@@ -406,7 +408,7 @@ defineExpose({
   text-decoration: underline;
 }
 
-@media (max-width: 767px) {
+@container login (max-width: 767px) {
   .login-left {
     display: none;
   }
@@ -417,7 +419,7 @@ defineExpose({
     padding: var(--space-10);
   }
 }
-@media (max-width: 480px) {
+@container login (max-width: 479px) {
   .login-right {
     padding: var(--space-8);
   }
