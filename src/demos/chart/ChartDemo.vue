@@ -425,7 +425,11 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 新增图表类型 -->
-    <Card title="🆕 新增 — waterfall / pictorialBar / tree / wordCloud / timeline" title-as="h2" style="margin-bottom: 20px">
+    <Card
+      title="🆕 新增 — waterfall / pictorialBar / tree / wordCloud / timeline"
+      title-as="h2"
+      style="margin-bottom: 20px"
+    >
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>瀑布图 waterfall — 财务收支</h2>
@@ -1405,7 +1409,9 @@ const mixedSeries = [
       />
       <div style="margin-top: 12px; font-size: 13px; color: var(--color-text-muted)">
         <span v-for="item in legendItems" :key="item.name" style="margin-right: 12px">
-          <span :style="{ opacity: item.visible ? 1 : 0.3 }">{{ item.name }}: {{ item.visible ? '显示' : '隐藏' }}</span>
+          <span :style="{ opacity: item.visible ? 1 : 0.3 }"
+            >{{ item.name }}: {{ item.visible ? '显示' : '隐藏' }}</span
+          >
         </span>
       </div>
       <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 12px">
@@ -1417,10 +1423,9 @@ const mixedSeries = [
     <!-- BaseChart：原始 option 直通 -->
     <Card title="BaseChart — 直接喂 ECharts 原始 option" title-as="h2" style="margin-top: 20px">
       <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
-        <code>Chart</code> 的 props 覆盖不到的图形（仪表盘、桑基、自定义 series 等）用
-        <code>BaseChart</code>：只吃 <code>option</code> / <code>height</code> / <code>width</code> /
-        <code>darkMode</code> / <code>loading</code> / <code>emptyText</code> / <code>toolbar</code>，
-        其余全部交给 ECharts 自己。
+        <code>Chart</code> 的 props 覆盖不到的图形（仪表盘、桑基、自定义 series 等）用 <code>BaseChart</code>：只吃
+        <code>option</code> / <code>height</code> / <code>width</code> / <code>darkMode</code> / <code>loading</code> /
+        <code>emptyText</code> / <code>toolbar</code>， 其余全部交给 ECharts 自己。
       </p>
       <BaseChart :option="rawGaugeOption" :dark-mode="darkMode" height="220px" />
     </Card>
@@ -1516,7 +1521,7 @@ const mixedSeries = [
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
-@media (max-width: 767px) {
+@container demo (max-width: 767px) {
   .chart-grid {
     grid-template-columns: 1fr;
   }

@@ -245,7 +245,7 @@ watch(overrides, persist, { deep: true })
   gap: var(--space-6);
   padding: var(--space-6);
 }
-@media (max-width: 1023px) {
+@container demo (max-width: 1023px) {
   .theme-editor {
     grid-template-columns: 1fr;
   }

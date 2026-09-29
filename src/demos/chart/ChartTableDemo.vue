@@ -504,7 +504,7 @@ const trendData = computed(() => {
   gap: 12px;
   align-items: flex-start;
 }
-@media (max-width: 1023px) {
+@container demo (max-width: 1023px) {
   .main-row {
     flex-direction: column;
   }
@@ -517,7 +517,7 @@ const trendData = computed(() => {
   width: 580px;
   flex-shrink: 0;
 }
-@media (max-width: 1023px) {
+@container demo (max-width: 1023px) {
   .card-right {
     width: 100%;
   }
@@ -604,7 +604,7 @@ const trendData = computed(() => {
   gap: 12px;
   align-items: flex-start;
 }
-@media (max-width: 1023px) {
+@container demo (max-width: 1023px) {
   .split-row {
     flex-direction: column;
   }
@@ -618,7 +618,7 @@ const trendData = computed(() => {
   flex: 1;
   height: 420px;
 }
-@media (max-width: 1023px) {
+@container demo (max-width: 1023px) {
   .split-row {
     height: auto;
   }

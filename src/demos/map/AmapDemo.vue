@@ -835,7 +835,7 @@ function onImgFail(e: Event) {
   color: var(--color-danger-hover);
   font-weight: 600;
 }
-@media (max-width: 767px) {
+@container demo (max-width: 767px) {
   .map-panel {
     width: 280px;
   }

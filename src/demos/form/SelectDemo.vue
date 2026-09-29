@@ -417,7 +417,7 @@ code {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
-@media (max-width: 767px) {
+@container demo (max-width: 767px) {
   .grid-2-col,
   .grid-3-col {
     grid-template-columns: 1fr;
