@@ -169,6 +169,9 @@ t('common.confirm') // → '确认' / 'Confirm'
 - **反过来不成立**：不要用 vcl-ui 的 `i18n` 实例去承载宿主业务文案——它只对组件库文案负责，
   混用会让两套文案的升级与覆盖边界变得不可推演。
 
+**RTL 硬边界**：当前不支持 RTL 布局。组件样式未做逻辑属性（`margin-inline` 等）收敛，
+`setLocale` 也只接受 `zh-CN` / `en-US` 两个值——有 RTL 需求请先提 issue 讨论，不要假设可用。
+
 ## 🧱 Web Components（跨框架）
 
 ```ts
@@ -197,6 +200,8 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **第三方许可闸口**：`npm run check:licenses` — 产物里真进了哪些第三方件（构建期由 rollup 记录到 `dist/third-party-modules.json`），逐条双向对账：漏报、虚报、许可文本缺失、copyleft 命中、外部件没在 `dependencies/peerDependencies` 声明、进包件不在运行期依赖闭包内——任一即红。清单正文随包发布：`vcl-ui/dist/THIRD-PARTY-LICENSES.md`
 - **随包第三方件的正源对账**：`npm run check:vendor-data` — rollup 的证据只记 `node_modules` 里的 JS 模块，两类件它看不见：① 仓内 vendor 的上游代码（SheetJS `xlsx@0.20.3`，见《依赖选型记录》）逐字节对 `VENDOR.json` 登记；② 随包分发的解码 wasm 二进制（`zxing-wasm`）按「登记＝base64 现场重算＝安装物正源＝上游 JS 自己声称的 `ZXING_WASM_SHA256`」四路对齐。搬进仓的东西一旦漂了没人会发现，所以这道放在整链前段（build 之前）先红
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
+- **凭据不落盘**：库内唯一持久化云端存储配置的位置（form-builder 收集目标的存储面板，`storage-config-persist.ts`）已脱敏——`secretAccessKey` 只存会话内存、不写 localStorage，刷新后需在面板重填（endpoint/bucket/AK 等其余字段照常恢复）；Supabase 的 `anonKey` 属公开密钥，按设计照存。下游应用自建配置持久化时，凭据字段请照此口径自理
+- **密钥扫描路径**：仓库无 `scan:secrets`/`scan:deps` 本地脚本（历史上是跑不起来的死入口，已删除）。真实扫描走两条：CI 的 gitleaks 官方 action（阻断级，见 `.github/workflows/ci.yml`）与 `npm run report:audit`（官方源 npm audit；注意 vendor 落仓的 xlsx 不在 npm audit 依赖图内，其公告需盯上游 `cdn.sheetjs.com`）
 
 ### 依赖选型记录（评估过的，不是没看）
 
