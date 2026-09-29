@@ -495,17 +495,19 @@ const displayTitle = computed(() => {
 
 /* ===== 浮动面板（按视口比例居中） ===== */
 .ip-overlay {
-  width: clamp(360px, 92vw, 1400px);
+  width: clamp(360px, 92cqw, 1400px);
   height: clamp(280px, 90vh, 95vh);
   display: flex;
   flex-direction: column;
   background: rgba(20, 20, 22, 0.96);
-  border-radius: clamp(var(--radius-md), 1.2vw, 14px);
+  border-radius: clamp(var(--radius-md), 1.2cqw, 14px);
   overflow: hidden;
   box-shadow:
-    0 var(--space-2) clamp(28px, 5vw, 40px) rgba(0, 0, 0, 0.5),
+    0 var(--space-2) clamp(28px, 5cqw, 40px) rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.08);
   outline: none;
+  container-type: inline-size;
+  container-name: image-preview;
 }
 
 /* ===== 顶部栏 ===== */
@@ -539,7 +541,7 @@ const displayTitle = computed(() => {
   white-space: nowrap;
 }
 .ip-hdr-btn {
-  width: clamp(28px, 4vw, 36px);
+  width: clamp(28px, 4cqw, 36px);
   height: var(--ctrl-height);
   border: none;
   border-radius: var(--radius-md);
@@ -558,7 +560,7 @@ const displayTitle = computed(() => {
   background: rgba(255, 255, 255, 0.12);
 }
 .ip-close {
-  width: clamp(28px, 4vw, 36px);
+  width: clamp(28px, 4cqw, 36px);
   height: var(--ctrl-height);
   border: none;
   border-radius: 50%;
@@ -632,8 +634,8 @@ const displayTitle = computed(() => {
   gap: var(--space-1);
 }
 .ip-color-dot {
-  width: clamp(14px, 2vw, 18px);
-  height: clamp(14px, 2vw, 18px);
+  width: clamp(14px, 2cqw, 18px);
+  height: clamp(14px, 2cqw, 18px);
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -650,8 +652,8 @@ const displayTitle = computed(() => {
   transform: scale(1.15);
 }
 .ip-spinner {
-  width: clamp(32px, 5vw, 40px);
-  height: clamp(32px, 5vw, 40px);
+  width: clamp(32px, 5cqw, 40px);
+  height: clamp(32px, 5cqw, 40px);
   border: 3px solid rgba(255, 255, 255, 0.2);
   border-top-color: #fff;
   border-radius: 50%;
@@ -672,8 +674,8 @@ const displayTitle = computed(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: clamp(32px, 5vw, 44px);
-  height: clamp(32px, 5vw, 44px);
+  width: clamp(32px, 5cqw, 44px);
+  height: clamp(32px, 5cqw, 44px);
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
@@ -708,7 +710,7 @@ const displayTitle = computed(() => {
 
 /* ===== 缩略图面板 ===== */
 .ip-thumbs {
-  width: clamp(80px, 10vw, 110px);
+  width: clamp(80px, 10cqw, 110px);
   flex-shrink: 0;
   overflow-y: auto;
   overflow-x: hidden;
@@ -733,7 +735,7 @@ const displayTitle = computed(() => {
   background: none;
   font: inherit;
   color: inherit;
-  width: clamp(72px, 8vw, 98px);
+  width: clamp(72px, 8cqw, 98px);
   flex-shrink: 0;
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -761,7 +763,7 @@ const displayTitle = computed(() => {
 }
 .ip-thumb img {
   width: 100%;
-  height: clamp(48px, 6vw, 62px);
+  height: clamp(48px, 6cqw, 62px);
   object-fit: cover;
   display: block;
   flex-shrink: 0;
@@ -786,14 +788,14 @@ const displayTitle = computed(() => {
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  height: clamp(44px, 7vw, 56px);
+  height: clamp(44px, 7cqw, 56px);
   padding: 0 var(--space-4);
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.04);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .ip-toolbar > button {
-  width: clamp(28px, 4vw, 36px);
+  width: clamp(28px, 4cqw, 36px);
   height: var(--ctrl-height);
   border: none;
   border-radius: 50%;
@@ -814,7 +816,7 @@ const displayTitle = computed(() => {
 }
 .ip-toolbar-sep {
   width: 1px;
-  height: clamp(16px, 3vw, 20px);
+  height: clamp(16px, 3cqw, 20px);
   background: rgba(255, 255, 255, 0.15);
   margin: 0 var(--space-1);
 }
@@ -825,22 +827,22 @@ const displayTitle = computed(() => {
 }
 
 /* ===== 移动端适配（窄视口） ===== */
-@media (max-width: 640px) {
+@container image-preview (max-width: 639px) {
   /* 弹层收窄、降低高度，避免顶天立地 */
   .ip-overlay {
-    width: calc(100vw - var(--space-4));
+    width: calc(100cqw - var(--space-4));
     height: 80vh;
     border-radius: var(--radius-lg);
   }
   /* 顶栏单行：标题（封顶，让位给工具行）+ 工具（flex:1 拿剩余空间，色点按空间自适应裁减）+ 缩略图/关闭 */
   .ip-header {
-    height: clamp(38px, 6vw, 44px);
+    height: clamp(38px, 6cqw, 44px);
     padding: 0 var(--space-2) 0 var(--space-3);
   }
   .ip-title {
     flex: 0 1 auto;
     min-width: 0;
-    max-width: 15vw;
+    max-width: 15cqw;
   }
   .ip-header-right {
     flex-shrink: 1;
@@ -864,24 +866,24 @@ const displayTitle = computed(() => {
   }
   /* 工具/线宽按钮固定不压缩（保证可点尺寸）；色点可压缩但最小 14px，压缩到底仍放不下才由 fitAnnoColors 裁减 */
   .ip-anno-tools .ip-hdr-btn {
-    width: clamp(24px, 4vw, 26px);
-    height: clamp(24px, 4vw, 26px);
+    width: clamp(24px, 4cqw, 26px);
+    height: clamp(24px, 4cqw, 26px);
     flex-shrink: 0;
   }
   .ip-header-right .ip-hdr-btn {
-    width: clamp(28px, 5vw, 30px);
-    height: clamp(28px, 5vw, 30px);
+    width: clamp(28px, 5cqw, 30px);
+    height: clamp(28px, 5cqw, 30px);
     flex-shrink: 0;
   }
   .ip-close {
-    width: clamp(32px, 5vw, 40px);
-    height: clamp(32px, 5vw, 40px);
+    width: clamp(32px, 5cqw, 40px);
+    height: clamp(32px, 5cqw, 40px);
     flex-shrink: 0;
   }
   .ip-color-dot {
-    width: clamp(14px, 2.5vw, 16px);
-    height: clamp(14px, 2.5vw, 16px);
-    min-width: clamp(12px, 2vw, 14px);
+    width: clamp(14px, 2.5cqw, 16px);
+    height: clamp(14px, 2.5cqw, 16px);
+    min-width: clamp(12px, 2cqw, 14px);
     flex-shrink: 1;
   }
   .ip-toolbar {
@@ -889,14 +891,14 @@ const displayTitle = computed(() => {
     padding: 0 var(--space-2);
   }
   .ip-toolbar > button {
-    width: clamp(32px, 5vw, 40px);
-    height: clamp(32px, 5vw, 40px);
+    width: clamp(32px, 5cqw, 40px);
+    height: clamp(32px, 5cqw, 40px);
   }
   /* 左右箭头移动端无 hover，改为常显 */
   .ip-arrow {
     opacity: 0.8;
-    width: clamp(32px, 5vw, 40px);
-    height: clamp(32px, 5vw, 40px);
+    width: clamp(32px, 5cqw, 40px);
+    height: clamp(32px, 5cqw, 40px);
   }
   /* 缩略图面板改为底部横排（文档流内），不挤占主图宽度也不遮挡主图 */
   .ip-body {
@@ -908,7 +910,7 @@ const displayTitle = computed(() => {
   .ip-thumbs {
     position: static;
     width: auto;
-    height: clamp(64px, 12vw, 86px);
+    height: clamp(64px, 12cqw, 86px);
     flex-direction: row;
     overflow-x: auto;
     overflow-y: hidden;
@@ -918,10 +920,10 @@ const displayTitle = computed(() => {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
   .ip-thumb {
-    width: clamp(64px, 8vw, 84px);
+    width: clamp(64px, 8cqw, 84px);
   }
   .ip-thumb img {
-    height: clamp(44px, 6vw, 56px);
+    height: clamp(44px, 6cqw, 56px);
   }
   .ip-thumb-label {
     padding: var(--space-1);
