@@ -2321,7 +2321,7 @@ const interCols: Column[] = [
   gap: 12px;
   margin-bottom: 8px;
 }
-@container demo (max-width: 639px) {
+@container demo (max-width: 640px) {
   .modal-grid {
     grid-template-columns: repeat(2, 1fr);
   }

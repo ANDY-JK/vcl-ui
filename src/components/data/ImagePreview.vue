@@ -827,7 +827,7 @@ const displayTitle = computed(() => {
 }
 
 /* ===== 移动端适配（窄视口） ===== */
-@container image-preview (max-width: 639px) {
+@container image-preview (max-width: 640px) {
   /* 弹层收窄、降低高度，避免顶天立地 */
   .ip-overlay {
     width: calc(100cqw - var(--space-4));

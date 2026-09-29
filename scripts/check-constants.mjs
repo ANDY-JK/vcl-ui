@@ -126,6 +126,8 @@ const CSS_EXTRA_BP = new Map([
   [767, 'bp-md 的「小于 768」等价写法：@media 里不能用 var()，只能写 768-1'],
   [480, '登录三页的超窄档（单列输入），刻意早于 --bp-sm'],
   [1023, 'bp-lg 的「小于 1024」等价写法：2026-09-29 断点收敛后 demos 双栏折叠档统一到此处'],
+  [600, 'ChartTable 纵向堆叠 CSS 兜底阈值（rootMinW 动态计算，600px 为固定近似）'],
+  [1079, '设计器 narrow 阈值（NARROW_W=1080，@container designer 匹配 <1080px）'],
 ])
 const allowed = new Map([...[...cssBp.values()].map((v) => [v, 'tokens.css --bp-*']), ...CSS_EXTRA_BP])
 const cssHits = []

@@ -419,7 +419,7 @@ defineExpose({
     padding: var(--space-10);
   }
 }
-@container login (max-width: 479px) {
+@container login (max-width: 480px) {
   .login-right {
     padding: var(--space-8);
   }

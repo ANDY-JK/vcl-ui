@@ -89,7 +89,7 @@
 }
 
 /* 移动端响应式：单列布局 */
-@container form-builder (max-width: 639px) {
+@container form-builder (max-width: 640px) {
   .fb-grid {
     grid-template-columns: 1fr;
   }
