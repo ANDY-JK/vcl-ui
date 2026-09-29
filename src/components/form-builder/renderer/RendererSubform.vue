@@ -2,6 +2,7 @@
 // 子表单字段 — 列定义来自 props.subformColumns（"label|key|type" 换行分隔），值为行对象数组
 import { computed } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import IconSvg from '@/components/basic/IconSvg.vue'
 import type { FormField } from '../types'
 
 const t = useT()
@@ -80,7 +81,10 @@ function removeRow(rowIndex: number): void {
             @input="updateSubformCell(ri, col.key, ($event.target as HTMLInputElement).value)"
           />
         </div>
-        <button class="fb-subform-del" type="button" @click="removeRow(ri)">×</button>
+        <button class="fb-subform-del" type="button" :aria-label="t('common.delete')" @click="removeRow(ri)">
+          <!-- SVG 图标代替文本 ×：文本字形受字体度量摆布、垂直光学居中不可控（同 Select tag-close 的修复口径） -->
+          <IconSvg type="x" size="xs" />
+        </button>
       </div>
     </div>
     <div v-else class="fb-subform-empty">{{ t('formBuilder.subformEmpty') }}</div>
@@ -156,14 +160,17 @@ function removeRow(rowIndex: number): void {
 }
 .fb-subform-del {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: calc(22px * var(--vcl-scale));
   height: calc(22px * var(--vcl-scale));
+  padding: 0;
   border: none;
   border-radius: calc(4px * var(--vcl-scale));
   background: transparent;
   color: var(--color-text-muted, #94a3b8);
   cursor: pointer;
-  font-size: var(--fs-14);
 }
 .fb-subform-del:hover {
   background: var(--color-danger-bg);

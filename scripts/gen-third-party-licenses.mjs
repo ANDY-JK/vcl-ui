@@ -60,8 +60,10 @@ export function parseSpdx(raw) {
   const orParts = body.split(/\s+OR\s+/i)
   const andParts = body.split(/\s+AND\s+/i)
   const clean = (x) => x.replace(/[()]/g, '').trim()
-  if (orParts.length > 1 && andParts.length === 1) return { atoms: orParts.map(clean).filter(Boolean), op: 'OR', raw: s }
-  if (andParts.length > 1 && orParts.length === 1) return { atoms: andParts.map(clean).filter(Boolean), op: 'AND', raw: s }
+  if (orParts.length > 1 && andParts.length === 1)
+    return { atoms: orParts.map(clean).filter(Boolean), op: 'OR', raw: s }
+  if (andParts.length > 1 && orParts.length === 1)
+    return { atoms: andParts.map(clean).filter(Boolean), op: 'AND', raw: s }
   if (orParts.length > 1 || andParts.length > 1) return { atoms: [body], op: 'unknown', raw: s } // 混用 OR/AND，交人判定
   if (/^SEE LICENSE/i.test(s) || /\s/i.test(body)) return { atoms: [body], op: 'unknown', raw: s }
   return { atoms: [body], op: 'single', raw: s }
@@ -73,7 +75,8 @@ export function parseSpdx(raw) {
  */
 export function electLicense(parsed) {
   const atoms = parsed.atoms
-  if (!atoms.length || parsed.op === 'unknown') return { chosen: parsed.raw || 'NOASSERTION', needsElection: false, disallowed: atoms }
+  if (!atoms.length || parsed.op === 'unknown')
+    return { chosen: parsed.raw || 'NOASSERTION', needsElection: false, disallowed: atoms }
   const disallowed = atoms.filter((a) => !ALLOWED_SPDX.has(a))
   if (parsed.op === 'OR') {
     const allowed = atoms.filter((a) => ALLOWED_SPDX.has(a))
@@ -119,21 +122,48 @@ export function policyFindings(entries) {
  * `https://webapi.amap.com/maps?...` 运行时 <script> 注入；xlsx 那条取自仓内 vendor 目录与 VENDOR.json。
  */
 const PKG_NOTES = {
-  'xlsx':
+  xlsx:
     '版本 0.20.3 的发布物**已搬进本仓**（`src/components/_internal/xlsx/`，逐字节登记在 `VENDOR.json`，' +
     '校验＝`node scripts/vendor-sheetjs.mjs --check`）。SheetJS 自 2023 年起不再向 npm registry 发布' +
     '（registry 停在 0.18.5），此前依赖写成 `cdn.sheetjs.com` 的 tarball，装机要联网且绕过 registry 审计；' +
     '2026-09-28 起改为仓内 vendor，许可仍为 Apache-2.0，全文随仓走（第 6 节）。',
   '@vuemap/vue-amap':
     '高德 JS API 本体**不在本包里**——由浏览器运行时向 `webapi.amap.com` 注入 `<script>` 加载。随包的只是 Vue 侧封装与加载器；使用需自备高德 key 并遵守高德开放平台服务条款。',
-  'jszip': '进包的是其 `dist/jszip.min.js` 单文件，因此依赖树里的 pako/lie/readable-stream/setimmediate 并未进入产物（不列入本清单，列入即虚报）。',
+  jszip:
+    '进包的是其 `dist/jszip.min.js` 单文件，因此依赖树里的 pako/lie/readable-stream/setimmediate 并未进入产物（不列入本清单，列入即虚报）。',
 }
 
 /** 合法 npm 包名形态的裸说明符（滤掉产物字符串里的噪声，如 require("util") 之类 Node 内建） */
 export const NODE_BUILTINS = new Set([
-  'assert', 'buffer', 'child_process', 'constants', 'crypto', 'dns', 'domain', 'events', 'fs', 'http', 'http2',
-  'https', 'module', 'net', 'os', 'path', 'process', 'punycode', 'querystring', 'readline', 'stream', 'string_decoder',
-  'sys', 'timers', 'tty', 'url', 'util', 'vm', 'zlib',
+  'assert',
+  'buffer',
+  'child_process',
+  'constants',
+  'crypto',
+  'dns',
+  'domain',
+  'events',
+  'fs',
+  'http',
+  'http2',
+  'https',
+  'module',
+  'net',
+  'os',
+  'path',
+  'process',
+  'punycode',
+  'querystring',
+  'readline',
+  'stream',
+  'string_decoder',
+  'sys',
+  'timers',
+  'tty',
+  'url',
+  'util',
+  'vm',
+  'zlib',
 ])
 
 /** '@scope/name/sub' → '@scope/name'；'name/sub' → 'name' */
@@ -151,7 +181,8 @@ export function packageRootOf(spec) {
  * @returns {string[]} 包名级说明符
  */
 export function externalRootsInCode(code) {
-  const RE = /(?:\bfrom\s*|(?<![\w.])import\s+|(?<![\w.$])import\s*\(\s*|\brequire\s*\(\s*)['"]([A-Za-z@][A-Za-z0-9@._\-/]{0,80})['"]/g
+  const RE =
+    /(?:\bfrom\s*|(?<![\w.])import\s+|(?<![\w.$])import\s*\(\s*|\brequire\s*\(\s*)['"]([A-Za-z@][A-Za-z0-9@._\-/]{0,80})['"]/g
   const out = new Set()
   for (const m of code.matchAll(RE)) {
     const root = packageRootOf(m[1])
@@ -168,7 +199,11 @@ export function externalRootsInCode(code) {
  * @returns {string[]}
  */
 export function undeclaredExternals(externalRoots, pkg) {
-  const known = new Set([...Object.keys(pkg.peerDependencies || {}), ...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.devDependencies || {})])
+  const known = new Set([
+    ...Object.keys(pkg.peerDependencies || {}),
+    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.devDependencies || {}),
+  ])
   return externalRoots.filter((r) => !known.has(r))
 }
 
@@ -186,7 +221,11 @@ export function undeclaredBundled(bundledRoots, readDeps, declaredDeps) {
   while (queue.length) {
     const cur = queue.pop()
     const deps = Object.keys(readDeps(cur) || {})
-    for (const d of deps) if (!reach.has(d)) { reach.add(d); queue.push(d) }
+    for (const d of deps)
+      if (!reach.has(d)) {
+        reach.add(d)
+        queue.push(d)
+      }
   }
   return bundledRoots.filter((r) => !reach.has(r))
 }
@@ -204,7 +243,9 @@ export function renderMarkdown(ctx) {
   )
   L.push('')
   L.push(`- 本库：\`${ctx.selfName}\` ${ctx.selfVersion}，本体以 **${ctx.selfLicense}** 发布（见包内 \`LICENSE\`）`)
-  L.push(`- 证据来源：rollup 构建期记录的产物模块归属（\`dist/third-party-modules.json\`），共 ${ctx.bundled.length} 个第三方包 / ${ctx.totalModules} 个模块文件`)
+  L.push(
+    `- 证据来源：rollup 构建期记录的产物模块归属（\`dist/third-party-modules.json\`），共 ${ctx.bundled.length} 个第三方包 / ${ctx.totalModules} 个模块文件`,
+  )
   L.push('- 口径：**只列代码或数据真进了产物的第三方件**。npm 依赖树里但被 tree-shaking 掉的件不列（列了是虚报）；')
   L.push('  以裸说明符形式留给宿主安装的件见第 3 节，本库不分发其代码。')
   L.push('')
@@ -214,7 +255,9 @@ export function renderMarkdown(ctx) {
   L.push('| --- | --- | --- | --- | --- | --- |')
   for (const e of ctx.bundled) {
     const text = e.textFile ? `\`${e.textFile}\`` : '上游发布物未附文本，仅 `package.json` 的 `license` 字段'
-    L.push(`| \`${e.pkg}\` | ${e.version} | ${e.chosen}${e.needsElection ? '（择优，见 §5）' : ''} | ${text} | ${e.modules} | ${e.repo || '—'} |`)
+    L.push(
+      `| \`${e.pkg}\` | ${e.version} | ${e.chosen}${e.needsElection ? '（择优，见 §5）' : ''} | ${text} | ${e.modules} | ${e.repo || '—'} |`,
+    )
   }
   const notes = ctx.bundled.filter((e) => PKG_NOTES[e.pkg])
   if (notes.length) {
@@ -238,8 +281,12 @@ export function renderMarkdown(ctx) {
     )
   }
   L.push('')
-  L.push('> CC-BY-4.0 要求署名并许可指向：Solar 图标集合由 **480 Design** 创作，许可页 <https://creativecommons.org/licenses/by/4.0/>；')
-  L.push('> 本库只取其 `linear` 变体子集（未改几何），按集合数据接口 `https://api.iconify.design/collections?prefix=solar` 核对过作者与许可字段。')
+  L.push(
+    '> CC-BY-4.0 要求署名并许可指向：Solar 图标集合由 **480 Design** 创作，许可页 <https://creativecommons.org/licenses/by/4.0/>；',
+  )
+  L.push(
+    '> 本库只取其 `linear` 变体子集（未改几何），按集合数据接口 `https://api.iconify.design/collections?prefix=solar` 核对过作者与许可字段。',
+  )
   L.push('>')
   L.push(
     '> 同一上游许可还覆盖库内由导出名生成的**名录模块**（`_internal/lucide-subset.ts`、`_internal/solar-icons.ts`）：' +
@@ -249,7 +296,9 @@ export function renderMarkdown(ctx) {
   if (ctx.vendors.length) {
     L.push('### 2.2 第三方二进制')
     L.push('')
-    L.push('rollup 的模块证据只记 JS，这类件按**内容**复算：登记的 sha256 ＝ base64 解码再哈希 ＝ 安装物里正源那份字节，三条全等才算数（判定用 base64 中段 64 字符在产物里检索）。')
+    L.push(
+      'rollup 的模块证据只记 JS，这类件按**内容**复算：登记的 sha256 ＝ base64 解码再哈希 ＝ 安装物里正源那份字节，三条全等才算数（判定用 base64 中段 64 字符在产物里检索）。',
+    )
     L.push('')
     L.push('| 数据文件 | 内容来源 | 许可 | 进包 | 字节（登记／正源） | sha256 对账 |')
     L.push('| --- | --- | --- | --- | --- | --- |')
@@ -260,7 +309,10 @@ export function renderMarkdown(ctx) {
       )
     }
     L.push('')
-    for (const v of ctx.vendors) L.push(`- **${v.pkg}**（${v.use}）：${v.why}。上游 JS 本体仍是第 3 节的外部件，由宿主安装；本库只分发上面这份二进制。`)
+    for (const v of ctx.vendors)
+      L.push(
+        `- **${v.pkg}**（${v.use}）：${v.why}。上游 JS 本体仍是第 3 节的外部件，由宿主安装；本库只分发上面这份二进制。`,
+      )
     L.push('')
   }
   L.push(`## 3. 由宿主安装的外部件（${ctx.externals.length} 个，本库不再分发）`)
@@ -269,7 +321,8 @@ export function renderMarkdown(ctx) {
   L.push('')
   L.push('| 包 | 声明位置 | 许可 | 本库开发期版本 |')
   L.push('| --- | --- | --- | --- |')
-  for (const x of ctx.externals) L.push(`| \`${x.root}\` | ${x.declaredIn} | ${x.license || '—'} | ${x.version || '—'} |`)
+  for (const x of ctx.externals)
+    L.push(`| \`${x.root}\` | ${x.declaredIn} | ${x.license || '—'} | ${x.version || '—'} |`)
   L.push('')
   if (ctx.referencedNotBundled.length) {
     L.push(`## 4. 源码引用但未进包（${ctx.referencedNotBundled.length} 个，不随包分发）`)
@@ -465,12 +518,14 @@ export const VENDOR_BINARIES = [
  * @returns {{version: string|null, sha256: string|null, bytes: number, base64: string|null}}
  */
 export function readVendoredBinaryModule(text) {
+  // 生成物里的常量带 `: string` / `: number` 标注（不标会把 1.27MB base64 抄进 .d.ts），
+  // 所以取值时标注可有可无都要认
   const pick = (re) => (text.match(re) || [])[1] ?? null
-  const base64 = pick(/ZXING_WASM_DATA_BASE64 =\s*\n?\s*'([A-Za-z0-9+/=]+)'/)
+  const base64 = pick(/ZXING_WASM_DATA_BASE64(?:\s*:\s*string)?\s*=\s*\n?\s*'([A-Za-z0-9+/=]+)'/)
   return {
-    version: pick(/ZXING_WASM_DATA_VERSION = '([^']+)'/),
-    sha256: pick(/ZXING_WASM_DATA_SHA256 = '([0-9a-f]{64})'/),
-    bytes: Number(pick(/ZXING_WASM_DATA_BYTES = (\d+)/) ?? 'NaN'),
+    version: pick(/ZXING_WASM_DATA_VERSION(?:\s*:\s*string)?\s*=\s*'([^']+)'/),
+    sha256: pick(/ZXING_WASM_DATA_SHA256(?:\s*:\s*string)?\s*=\s*'([0-9a-f]{64})'/),
+    bytes: Number(pick(/ZXING_WASM_DATA_BYTES(?:\s*:\s*number)?\s*=\s*(\d+)/) ?? 'NaN'),
     base64,
   }
 }
@@ -481,11 +536,33 @@ export function readVendoredBinaryModule(text) {
  * ④ 是否真在产物里（拿 base64 的一段**内容**去 dist 里搜，不靠文件名）。
  * 任何一环不成立都由 check() 判红——这节声明一旦说谎，比不写更糟。
  */
-export function vendorBinaryProbe(specs, { root, distDir, exists = existsSync, read = (p) => readFileSync(p, 'utf8'), readBuf = (p) => readFileSync(p), hash = (b) => createHash('sha256').update(b).digest('hex'), distFiles = () => walkFiles(distDir, /\.js$/) }) {
+export function vendorBinaryProbe(
+  specs,
+  {
+    root,
+    distDir,
+    exists = existsSync,
+    read = (p) => readFileSync(p, 'utf8'),
+    readBuf = (p) => readFileSync(p),
+    hash = (b) => createHash('sha256').update(b).digest('hex'),
+    distFiles = () => walkFiles(distDir, /\.js$/),
+  },
+) {
   return specs.map((spec) => {
     const abs = join(root, spec.file)
     const originAbs = join(root, spec.origin)
-    const out = { ...spec, exists: exists(abs), inBundle: false, marker: null, declaredSha: null, recalcSha: null, originSha: null, bytes: 0, originBytes: 0, ver: null }
+    const out = {
+      ...spec,
+      exists: exists(abs),
+      inBundle: false,
+      marker: null,
+      declaredSha: null,
+      recalcSha: null,
+      originSha: null,
+      bytes: 0,
+      originBytes: 0,
+      ver: null,
+    }
     if (!out.exists) return out
     const mod = readVendoredBinaryModule(read(abs))
     out.declaredSha = mod.sha256
@@ -618,7 +695,14 @@ function derivedProbe(specs) {
         }
       }
     }
-    return { ...l.spec, exists: l.exists, inBundle, marker, ambiguous: !marker, stat: l.exists ? statOfData(join(ROOT, l.spec.file), l.spec.keysAt) : '文件缺失' }
+    return {
+      ...l.spec,
+      exists: l.exists,
+      inBundle,
+      marker,
+      ambiguous: !marker,
+      stat: l.exists ? statOfData(join(ROOT, l.spec.file), l.spec.keysAt) : '文件缺失',
+    }
   })
 }
 
@@ -719,7 +803,12 @@ function buildContext() {
     .filter((r) => !evRoots.includes(r) && !externalRoots.includes(r))
     .map((r) => ({
       root: r,
-      declaredIn: pkg.dependencies && pkg.dependencies[r] ? 'dependencies' : pkg.peerDependencies && pkg.peerDependencies[r] ? 'peerDependencies' : '未声明',
+      declaredIn:
+        pkg.dependencies && pkg.dependencies[r]
+          ? 'dependencies'
+          : pkg.peerDependencies && pkg.peerDependencies[r]
+            ? 'peerDependencies'
+            : '未声明',
       why: '引用它的导出链没有被任何入口触达，构建期按 `sideEffects`（仅 CSS 有副作用）摇掉了，代码不在产物里',
     }))
   const derived = derivedProbe(DERIVED_SPECS)
@@ -798,14 +887,19 @@ function generate() {
   console.log(
     `[gen:licenses] 进包第三方包=${ctx.bundled.length}（模块 ${ctx.totalModules} 个） 图标数据=${ctx.derived.filter((d) => d.inBundle).length} 随包二进制=${ctx.vendors.filter((v) => v.inBundle).length} 外部件=${ctx.externals.length} 引用未进包=${ctx.referencedNotBundled.length}`,
   )
-  console.log(`[gen:licenses] 写出 dist/THIRD-PARTY-LICENSES.md（${Math.round(readFileSync(DOC_MD).length / 1024)}KB）+ dist/third-party-licenses.json`)
+  console.log(
+    `[gen:licenses] 写出 dist/THIRD-PARTY-LICENSES.md（${Math.round(readFileSync(DOC_MD).length / 1024)}KB）+ dist/third-party-licenses.json`,
+  )
 }
 
 const L_RED = []
 
 function check() {
   const ctx = buildContext()
-  if (ctx.evidenceMissing) L_RED.push('缺 dist/third-party-modules.json —— 证据插件没跑（vite.config 的 thirdPartyEvidencePlugin 被摘了？），先 npm run build')
+  if (ctx.evidenceMissing)
+    L_RED.push(
+      '缺 dist/third-party-modules.json —— 证据插件没跑（vite.config 的 thirdPartyEvidencePlugin 被摘了？），先 npm run build',
+    )
   if (!existsSync(EVIDENCE)) {
     report('check:licenses')
     return
@@ -818,10 +912,13 @@ function check() {
   if (!jsonExists) L_RED.push('缺 dist/third-party-licenses.json')
   const files = pkg.files || []
   const covered = files.some((f) => f === 'dist' || f === 'dist/' || f === './dist')
-  if (!covered) L_RED.push(`package.json 的 files=${JSON.stringify(files)} 不含 dist —— 许可清单不会被 npm publish 带上`)
+  if (!covered)
+    L_RED.push(`package.json 的 files=${JSON.stringify(files)} 不含 dist —— 许可清单不会被 npm publish 带上`)
   if (!existsSync(join(ROOT, 'LICENSE'))) L_RED.push('包根缺 LICENSE 文件 —— 本库自身的 MIT 声明无处可查')
   if (!pkg.license) L_RED.push('package.json 缺 license 字段')
-  console.log(`[1] 清单在位与随包发布 md=${mdExists} sbom=${jsonExists} files覆盖dist=${covered} 自身LICENSE=${existsSync(join(ROOT, 'LICENSE'))}`)
+  console.log(
+    `[1] 清单在位与随包发布 md=${mdExists} sbom=${jsonExists} files覆盖dist=${covered} 自身LICENSE=${existsSync(join(ROOT, 'LICENSE'))}`,
+  )
 
   // [2] 双向对账：已声明集 == 产物证据集（多一个少一个都红），且 .md 与 .json 说的是同一批
   const declaredSbom = jsonExists ? (readJson(DOC_JSON)?.bundled || []).map((b) => b.name).sort() : []
@@ -850,7 +947,9 @@ function check() {
   if (noBasis.length) L_RED.push(`既无许可文本也无 license 字段：${noBasis.join(', ')}`)
   if (policy.length) L_RED.push(...policy)
   const onlyField = ctx.bundled.filter((b) => !b.textFile).map((b) => b.pkg)
-  console.log(`[3] 许可政策 红项=${policy.length} 无文本仅字段=${onlyField.length}${onlyField.length ? '（' + onlyField.join(', ') + '）' : ''}`)
+  console.log(
+    `[3] 许可政策 红项=${policy.length} 无文本仅字段=${onlyField.length}${onlyField.length ? '（' + onlyField.join(', ') + '）' : ''}`,
+  )
 
   // [4] 独立复核：外部件必须已声明；进包件必须在运行期依赖闭包内；图标数据进包状态与产物一致
   const undeclExt = undeclaredExternals(ctx.externalRoots, pkg)
@@ -877,30 +976,50 @@ function check() {
   const srcNoLicense = srcRows.filter((v) => !v.missing && !v.textFile).map((v) => `${v.pkg}：仓内目录里没有许可文件`)
   const srcNotBundle = srcRows.filter((v) => !v.missing && !v.inBundle).map((v) => `${v.pkg}（判定键 ${v.probeKey}）`)
   if (srcNoManifest.length) L_RED.push(`仓内 vendor 件缺登记文件，版本与字节无从对账：${srcNoManifest.join(', ')}`)
-  if (srcNoLicense.length) L_RED.push(`仓内 vendor 件缺许可全文（Apache-2.0 §4(a) 要求随附）：${srcNoLicense.join(', ')}`)
-  if (srcNotBundle.length) L_RED.push(`清单说仓内 vendor 件随包分发、产物里却搜不到它的代码：${srcNotBundle.join(', ')}`)
+  if (srcNoLicense.length)
+    L_RED.push(`仓内 vendor 件缺许可全文（Apache-2.0 §4(a) 要求随附）：${srcNoLicense.join(', ')}`)
+  if (srcNotBundle.length)
+    L_RED.push(`清单说仓内 vendor 件随包分发、产物里却搜不到它的代码：${srcNotBundle.join(', ')}`)
   // 随包第三方二进制：三条 sha 全等（登记＝base64 现场重算＝安装物正源）且确实出现在产物里
   const vMissingFile = ctx.vendors.filter((v) => !v.exists).map((v) => v.file)
   const vNotBundle = ctx.vendors.filter((v) => v.exists && !v.inBundle).map((v) => v.file)
-  const vNoOrigin = ctx.vendors.filter((v) => v.exists && !v.originSha).map((v) => `${v.file}（正源 ${v.origin} 不在安装物里）`)
+  const vNoOrigin = ctx.vendors
+    .filter((v) => v.exists && !v.originSha)
+    .map((v) => `${v.file}（正源 ${v.origin} 不在安装物里）`)
   const vBadSha = ctx.vendors
-    .filter((v) => v.exists && v.originSha && !(v.declaredSha && v.declaredSha === v.recalcSha && v.recalcSha === v.originSha))
-    .map((v) => `${v.file}：登记 ${String(v.declaredSha).slice(0, 12)}…／解码重算 ${String(v.recalcSha).slice(0, 12)}…／正源 ${String(v.originSha).slice(0, 12)}…`)
-  const vBadBytes = ctx.vendors.filter((v) => v.exists && v.originBytes && v.bytes !== v.originBytes).map((v) => `${v.file}：登记 ${v.bytes} 字节／正源 ${v.originBytes} 字节`)
-  if (vMissingFile.length) L_RED.push(`清单声明的随包二进制文件不存在：${vMissingFile.join(', ')}（生成：node scripts/gen-zxing-wasm-data.mjs）`)
+    .filter(
+      (v) =>
+        v.exists && v.originSha && !(v.declaredSha && v.declaredSha === v.recalcSha && v.recalcSha === v.originSha),
+    )
+    .map(
+      (v) =>
+        `${v.file}：登记 ${String(v.declaredSha).slice(0, 12)}…／解码重算 ${String(v.recalcSha).slice(0, 12)}…／正源 ${String(v.originSha).slice(0, 12)}…`,
+    )
+  const vBadBytes = ctx.vendors
+    .filter((v) => v.exists && v.originBytes && v.bytes !== v.originBytes)
+    .map((v) => `${v.file}：登记 ${v.bytes} 字节／正源 ${v.originBytes} 字节`)
+  if (vMissingFile.length)
+    L_RED.push(
+      `清单声明的随包二进制文件不存在：${vMissingFile.join(', ')}（生成：node scripts/gen-zxing-wasm-data.mjs）`,
+    )
   if (vNoOrigin.length) L_RED.push(`随包二进制找不到正源，无法证明它没被改过：${vNoOrigin.join(', ')}`)
-  if (vBadSha.length) L_RED.push(`随包二进制与正源字节不一致（声明在说谎或正源漂了），重跑生成脚本：${vBadSha.join('; ')}`)
+  if (vBadSha.length)
+    L_RED.push(`随包二进制与正源字节不一致（声明在说谎或正源漂了），重跑生成脚本：${vBadSha.join('; ')}`)
   if (vBadBytes.length) L_RED.push(`随包二进制登记的字节数与正源不符：${vBadBytes.join('; ')}`)
-  if (vNotBundle.length) L_RED.push(`清单说随包分发、产物里却搜不到这份二进制（打包边界变了，离线声明不成立）：${vNotBundle.join(', ')}`)
+  if (vNotBundle.length)
+    L_RED.push(`清单说随包分发、产物里却搜不到这份二进制（打包边界变了，离线声明不成立）：${vNotBundle.join(', ')}`)
   const missingFile = ctx.derived.filter((d) => !d.exists).map((d) => d.file)
   const ambiguous = ctx.derived.filter((d) => d.ambiguous).map((d) => d.file)
   if (missingFile.length) L_RED.push(`清单声明的图标数据文件已不存在：${missingFile.join(', ')}`)
-  if (ambiguous.length) L_RED.push(`图标数据找不到"只有它才有"的图标名当判定键，进包结论无法证伪：${ambiguous.join(', ')}`)
+  if (ambiguous.length)
+    L_RED.push(`图标数据找不到"只有它才有"的图标名当判定键，进包结论无法证伪：${ambiguous.join(', ')}`)
   if (!derivedIn.length) L_RED.push('三份图标几何数据一个都没在产物里找到 —— 判定键或打包边界变了，先修判定')
   console.log(
     `[4] 独立复核 外部件=${ctx.externalRoots.length}(未声明 ${undeclExt.length}) 进包=${evidencePkgs.length}(闭包外 ${undeclBundled.length}) 仓内vendor=${srcRows.length}(缺登记 ${srcNoManifest.length}·缺许可 ${srcNoLicense.length}·不在产物 ${srcNotBundle.length}) 图标数据进包=${derivedIn.length}/3${derivedGone.length ? '（不在包：' + derivedGone.map((d) => d.file.split('/').pop()).join(', ') + '）' : ''} 随包二进制=${ctx.vendors.length}(进包 ${ctx.vendors.filter((v) => v.inBundle).length}·字节对账不过 ${vBadSha.length + vBadBytes.length})`,
   )
-  const vPolicy = ctx.vendors.filter((v) => !ALLOWED_SPDX.has(v.spdx)).map((v) => `${v.file} 声明的 ${v.spdx} 不在允许随包分发的白名单内`)
+  const vPolicy = ctx.vendors
+    .filter((v) => !ALLOWED_SPDX.has(v.spdx))
+    .map((v) => `${v.file} 声明的 ${v.spdx} 不在允许随包分发的白名单内`)
   if (vPolicy.length) L_RED.push(...vPolicy)
 
   report('check:licenses', ctx)

@@ -388,7 +388,8 @@ function onContextMenu(e: MouseEvent) {
         "
       >
         <Select type="menu" :items="menuItems" label="操作" />
-        <span class="demo-hint">← 点击查看菜单效果</span>
+        <!-- margin-bottom:0：demo-hint 的下边距是纵向排版用的，放进 align-items:center 的横排会按 margin box 居中、把文字顶高 -->
+        <span class="demo-hint" style="margin-bottom: 0">← 点击查看菜单效果</span>
       </div>
       <div class="context-menu-area" @contextmenu="onContextMenu">在此区域右键 → 弹出菜单</div>
       <Select ref="contextMenuRef" type="menu" :items="menuItems" label="操作" style="display: none" />

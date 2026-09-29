@@ -57,16 +57,20 @@ function render(src) {
 // tests/unit/zxing-wasm-data.spec.ts 做同源断言，对不上就是正源被换过（会红，别改断言迁就）。
 
 /** 随包 wasm 来自哪个 zxing-wasm 版本（版本与宿主装的 JS 不一致时，运行时退回默认取件方式） */
-export const ZXING_WASM_DATA_VERSION = '${src.version}'
+export const ZXING_WASM_DATA_VERSION: string = '${src.version}'
 
 /** 随包 wasm 的 sha256 —— 与 zxing-wasm 包内导出的 ZXING_WASM_SHA256 同值 */
-export const ZXING_WASM_DATA_SHA256 = '${src.sha}'
+export const ZXING_WASM_DATA_SHA256: string = '${src.sha}'
 
 /** 随包 wasm 的原始字节数（base64 解码后必须正好是这个数） */
-export const ZXING_WASM_DATA_BYTES = ${src.buf.length}
+export const ZXING_WASM_DATA_BYTES: number = ${src.buf.length}
 
-/** zxing_reader.wasm 的 base64（无 data: 前缀，解码见 useBarcodeScanner.ts） */
-export const ZXING_WASM_DATA_BASE64 =
+/**
+ * zxing_reader.wasm 的 base64（无 data: 前缀，解码见 useBarcodeScanner.ts）。
+ * 四个常量都显式标了类型：不标的话 vite-plugin-dts 会把这 1.27MB 当字面量类型抄进
+ * \`dist/_internal/zxing-wasm-data.d.ts\`，同一份 base64 在发布包里白带两遍。
+ */
+export const ZXING_WASM_DATA_BASE64: string =
   '${src.base64}'
 `
   return header
@@ -84,13 +88,19 @@ if (CHECK) {
   const cur = readFileSync(outPath, 'utf8')
   if (cur !== out) {
     const curSha = cur.match(/ZXING_WASM_DATA_SHA256 = '([0-9a-f]+)'/)?.[1] ?? '(读不到)'
-    console.error(`[zxing-wasm-data] 与正源漂移：仓内登记 sha256=${curSha.slice(0, 16)}…，正源 sha256=${src.sha.slice(0, 16)}…`)
+    console.error(
+      `[zxing-wasm-data] 与正源漂移：仓内登记 sha256=${curSha.slice(0, 16)}…，正源 sha256=${src.sha.slice(0, 16)}…`,
+    )
     console.error(`  修法：node scripts/gen-zxing-wasm-data.mjs 重新生成（正源 ${WASM_REL}，版本 ${src.version}）`)
     process.exit(1)
   }
-  console.log(`[zxing-wasm-data] 与正源一致（v${src.version}，${src.buf.length} 字节，sha256 ${src.sha.slice(0, 16)}…）`)
+  console.log(
+    `[zxing-wasm-data] 与正源一致（v${src.version}，${src.buf.length} 字节，sha256 ${src.sha.slice(0, 16)}…）`,
+  )
   process.exit(0)
 }
 
 writeFileSync(outPath, out, { encoding: 'utf8', newline: 'lf' })
-console.log(`[zxing-wasm-data] 已生成 ${OUT_REL}：v${src.version} ${src.buf.length} 字节 → base64 ${src.base64.length} 字符`)
+console.log(
+  `[zxing-wasm-data] 已生成 ${OUT_REL}：v${src.version} ${src.buf.length} 字节 → base64 ${src.base64.length} 字符`,
+)

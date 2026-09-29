@@ -772,8 +772,10 @@ const {
         <!-- 已选 tag（单选 0-1 个 / 多选 0-N 个，格式统一） -->
         <span v-for="tag in comboTags" :key="String(tag.value)" class="combobox-tag">
           <span class="tag-text" :title="tag.label">{{ tag.label }}</span>
+          <!-- 关闭钮用 SVG 图标不用文本 ×：文本字形受字体度量摆布（Arial 的 × 整体坐基线上方，
+               墨迹中心比盒子中心高 ~1px），小尺寸 tag 里与文本肉眼可见不齐；IconSvg 由 flex 精确居中 -->
           <button type="button" class="tag-close" tabindex="-1" @mousedown.prevent @click.stop="removeComboTag(tag)">
-            ×
+            <IconSvg type="x" size="xs" />
           </button>
         </span>
 
@@ -1114,8 +1116,6 @@ const {
   border-radius: 50%;
   background: transparent;
   color: var(--color-primary);
-  font-size: calc(15px * var(--vcl-scale));
-  line-height: 1;
   cursor: pointer;
   opacity: 0.6;
   transition: opacity var(--transition-fast);
