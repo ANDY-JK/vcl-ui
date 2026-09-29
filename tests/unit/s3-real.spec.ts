@@ -19,8 +19,7 @@ describe.skipIf(!run)('S3Backend · 真实云端 CRUD（缤纷云实桶）', () 
   })
   // 测试专用 appleId（与真实数据隔离；结束清空）
   const TEST_ID = 999_999_901
-  const pngB64 =
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+  const pngB64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 
   const stateWith = (slotKey: string, name: string): StoreUploadState => ({
     slots: { [slotKey]: { name, dataUrl: `data:image/png;base64,${pngB64}`, size: 95, type: 'image/png' } },

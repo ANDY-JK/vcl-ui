@@ -83,9 +83,15 @@ interface Hit {
 /** 解析 #hex / rgb() / rgba() → {r,g,b,a} */
 function parseColor(v: string): { r: number; g: number; b: number; a: number } | null {
   let m = v.match(/^#([0-9a-fA-F]{6})\b/)
-  if (m) { const n = parseInt(m[1], 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 1 } }
+  if (m) {
+    const n = parseInt(m[1], 16)
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 1 }
+  }
   m = v.match(/^#([0-9a-fA-F]{3})\b/)
-  if (m) { const [r, g, b] = m[1].split(''); return { r: parseInt(r + r, 16), g: parseInt(g + g, 16), b: parseInt(b + b, 16), a: 1 } }
+  if (m) {
+    const [r, g, b] = m[1].split('')
+    return { r: parseInt(r + r, 16), g: parseInt(g + g, 16), b: parseInt(b + b, 16), a: 1 }
+  }
   m = v.match(/^rgba?\(([^)]+)\)/)
   if (m) {
     const p = m[1].split(',').map((x) => parseFloat(x.trim()))
@@ -96,7 +102,10 @@ function parseColor(v: string): { r: number; g: number; b: number; a: number } |
 
 /** 相对亮度 0-1（WCAG 公式） */
 function luminance({ r, g, b }: { r: number; g: number; b: number }): number {
-  const f = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4) }
+  const f = (v: number) => {
+    v /= 255
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+  }
   return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
 }
 
@@ -140,7 +149,13 @@ function scan(files: string[]): Hit[] {
       // 深色场景（光箱/取景器/渐变浮层）内不判
       const hay = `${rel} ${selector}`
       if (DARK_CONTEXT_RE.test(hay)) return
-      if (ALLOWED.some((a) => hay.toLowerCase().includes(a.file.toLowerCase()) && hay.toLowerCase().includes(a.selector.toLowerCase()))) return
+      if (
+        ALLOWED.some(
+          (a) =>
+            hay.toLowerCase().includes(a.file.toLowerCase()) && hay.toLowerCase().includes(a.selector.toLowerCase()),
+        )
+      )
+        return
 
       const prop = (line.match(COLOR_PROP_RE) || [''])[0].replace(':', '').trim().toLowerCase()
       const isBg = /^background/.test(prop)
@@ -152,9 +167,21 @@ function scan(files: string[]): Hit[] {
         if (!c || c.a < 0.9) continue // 半透明：叠加后相容，不判
         const L = luminance(c)
         if (isBg && L > 0.6) {
-          hits.push({ file: rel, line: i + 1, text: line.trim(), selector, reason: `不透明浅底(${raw}, 亮度${L.toFixed(2)}) 在暗色主题下会变成白底` })
+          hits.push({
+            file: rel,
+            line: i + 1,
+            text: line.trim(),
+            selector,
+            reason: `不透明浅底(${raw}, 亮度${L.toFixed(2)}) 在暗色主题下会变成白底`,
+          })
         } else if (isFg && L < 0.25) {
-          hits.push({ file: rel, line: i + 1, text: line.trim(), selector, reason: `不透明深字(${raw}, 亮度${L.toFixed(2)}) 在暗色主题下会看不见` })
+          hits.push({
+            file: rel,
+            line: i + 1,
+            text: line.trim(),
+            selector,
+            reason: `不透明深字(${raw}, 亮度${L.toFixed(2)}) 在暗色主题下会看不见`,
+          })
         }
       }
     })
@@ -231,9 +258,7 @@ describe('主题适配护栏 · 组件样式禁止硬编码颜色', () => {
 
     // 暗色块必须覆盖亮色声明的**所有颜色令牌**，否则暗色下会残留亮色值
     const exemptNames = new Set(DARK_EXEMPT.map((e) => e.name))
-    const missing = [...lightSet].filter(
-      (n) => /^--color-/.test(n) && !darkSet.has(n) && !exemptNames.has(n),
-    )
+    const missing = [...lightSet].filter((n) => /^--color-/.test(n) && !darkSet.has(n) && !exemptNames.has(n))
     expect(
       missing,
       `暗色块未覆写这些颜色令牌，暗色下会残留亮色值` +
@@ -242,7 +267,9 @@ describe('主题适配护栏 · 组件样式禁止硬编码颜色', () => {
 
     // 豁免清单不得含「暗色块其实已覆写」或「已不存在」的令牌，避免豁免腐化成垃圾桶
     const stale = DARK_EXEMPT.filter((e) => darkSet.has(e.name) || !lightSet.has(e.name)).map((e) => e.name)
-    expect(stale, `DARK_EXEMPT 中这些令牌已无需豁免（暗色已覆写或令牌已不存在），请移除：${stale.join(', ')}`).toEqual([])
+    expect(stale, `DARK_EXEMPT 中这些令牌已无需豁免（暗色已覆写或令牌已不存在），请移除：${stale.join(', ')}`).toEqual(
+      [],
+    )
   })
 })
 
@@ -273,7 +300,10 @@ describe('主题适配护栏 · 实心语义底色与白字对比度', () => {
   function contrastWithWhite(hex: string): number {
     const n = parseInt(hex.slice(1), 16)
     const rgb = { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }
-    const f = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4) }
+    const f = (v: number) => {
+      v /= 255
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+    }
     const l = 0.2126 * f(rgb.r) + 0.7152 * f(rgb.g) + 0.0722 * f(rgb.b)
     return (1.0 + 0.05) / (l + 0.05)
   }
@@ -411,7 +441,7 @@ describe('主题适配护栏 · 表格选中按可编辑性分色', () => {
     expect(dt, '下拉箭头不应再由裸 col.options 渲染').not.toMatch(/v-if="col\.options"[\s\S]{0,60}cell-options-arrow/)
 
     // ③ cell-has-options（cursor:pointer）同理
-    expect(dt, "cell-has-options 应绑定 isOptionDroppable(col)").toContain("'cell-has-options': isOptionDroppable(col)")
-    expect(dt, "cell-has-options 不应再由裸 col.options 绑定").not.toContain("'cell-has-options': col.options")
+    expect(dt, 'cell-has-options 应绑定 isOptionDroppable(col)').toContain("'cell-has-options': isOptionDroppable(col)")
+    expect(dt, 'cell-has-options 不应再由裸 col.options 绑定').not.toContain("'cell-has-options': col.options")
   })
 })

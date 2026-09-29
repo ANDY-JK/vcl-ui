@@ -21,7 +21,9 @@ describe('DatePanel · 42 格日历构建', () => {
 
   it('当月 30 天全部在列，且标记为当前月', () => {
     const w = mountDP() // 2026-09 有 30 天
-    const cur = w.findAll('.dp-cell').filter((c) => c.classes().includes('is-current') || !c.classes().includes('other-month'))
+    const cur = w
+      .findAll('.dp-cell')
+      .filter((c) => c.classes().includes('is-current') || !c.classes().includes('other-month'))
     expect(cur).toHaveLength(30)
     expect(cur.map((c) => c.text())).toEqual(Array.from({ length: 30 }, (_, i) => String(i + 1)))
   })

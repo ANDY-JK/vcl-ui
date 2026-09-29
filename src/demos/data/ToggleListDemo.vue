@@ -45,7 +45,7 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
     <h1 class="demo-title">ToggleList 开关列表</h1>
     <p class="demo-desc">两种模式：开关切换列表、操作按钮列表。支持图标、描述、额外列。</p>
 
-    <Card title="系统设置（switch 变体）" title-as="h2" style="margin-bottom: 16px">
+    <Card title="系统设置（switch 变体）" title-as="h2" style="margin-bottom: calc(16px * var(--vcl-scale))">
       <ToggleList
         :items="switchItems"
         variant="switch"
@@ -54,7 +54,7 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
       />
     </Card>
 
-    <Card title="通知设置（switch 变体）" title-as="h2" style="margin-bottom: 16px">
+    <Card title="通知设置（switch 变体）" title-as="h2" style="margin-bottom: calc(16px * var(--vcl-scale))">
       <ToggleList :items="notifyItems" variant="switch" toggle-field="is_enabled" @toggle="onToggle" />
     </Card>
 
@@ -64,80 +64,238 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
 
     <Toast ref="toastRef" position="bottom-right" />
 
-    <Card title="Props" title-as="h2" style="margin-top: 24px">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+    <Card title="Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 6px 8px">Prop</th>
-            <th style="padding: 6px 8px">类型</th>
-            <th style="padding: 6px 8px">默认值</th>
-            <th style="padding: 6px 8px">说明</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认值</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>items</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               Record&lt;string, any&gt;[]
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">列表数据</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              —
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              列表数据
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>variant</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'switch' | 'button'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'switch'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">变体：开关 / 操作按钮</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              'switch' | 'button'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              'switch'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              变体：开关 / 操作按钮
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>titleField</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'display_name'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">标题字段映射</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              'display_name'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              标题字段映射
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>descriptionField</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'description'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">描述字段映射</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              'description'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              描述字段映射
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>toggleField</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'is_enabled'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">开关值字段映射</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              'is_enabled'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              开关值字段映射
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>buttonLabel</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'发快递'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              '发快递'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               按钮文字（variant='button'）
             </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px">
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
               <code>extraColumns</code>
             </td>
-            <td style="padding: 6px 8px">ExtraColumn[]</td>
-            <td style="padding: 6px 8px">[]</td>
-            <td style="padding: 6px 8px">额外信息列</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">ExtraColumn[]</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">[]</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">额外信息列</td>
           </tr>
         </tbody>
       </table>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-top: calc(8px * var(--vcl-scale));
+        "
+      >
         Events: <code>@toggle(item, value)</code> | <code>@item-click(item)</code> |
         <code>@button-click({ name, phone, address, item })</code>
       </p>
@@ -147,20 +305,20 @@ function onButtonClick(payload: { name: string; phone: string; address: string }
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

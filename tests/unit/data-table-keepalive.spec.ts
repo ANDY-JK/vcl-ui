@@ -47,7 +47,9 @@ describe('全屏期间被 KeepAlive 失活', () => {
       setup() {
         return () =>
           h('div', { class: 'host-wrap' }, [
-            h(KeepAlive, null, [showTable.value ? h(DataTable, { ...MINIMAL, key: 'dt' }) : h('div', { key: 'other' })]),
+            h(KeepAlive, null, [
+              showTable.value ? h(DataTable, { ...MINIMAL, key: 'dt' }) : h('div', { key: 'other' }),
+            ]),
           ])
       },
     })

@@ -118,17 +118,17 @@ onUnmounted(clearEscalation)
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(var(--space-12), 6vw, 64px);
+  padding: calc(64px * var(--vcl-scale));
   text-align: center;
 }
 .eb-icon {
-  width: 48px;
-  height: 48px;
+  width: calc(48px * var(--vcl-scale));
+  height: calc(48px * var(--vcl-scale));
   border-radius: 50%;
   /* 实心底压白色图标：用 solid 令牌（暗色下 --color-warning 被提亮，白字对比度仅 1.67） */
   background: var(--color-warning-solid, var(--color-warning));
   color: white;
-  font-size: clamp(24px, calc(24px + var(--vcl-fit) * 12), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -136,25 +136,25 @@ onUnmounted(clearEscalation)
   margin-bottom: var(--space-4);
 }
 .eb-title {
-  font-size: clamp(16px, calc(16px + var(--vcl-fit) * 12), 28px);
+  font-size: calc(28px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: var(--space-1);
 }
 .eb-desc {
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin-bottom: var(--space-4);
-  max-width: 400px;
+  max-width: calc(400px * var(--vcl-scale));
   word-break: break-all;
 }
 .eb-btn {
-  padding: var(--space-2) 24px;
+  padding: var(--space-2) calc(24px * var(--vcl-scale));
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-md);
   background: var(--color-primary);
   color: white;
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
   font-family: inherit;
 }

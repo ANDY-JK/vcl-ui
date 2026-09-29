@@ -5,8 +5,14 @@
 // 3. 查询 API 对未注册类型有安全回退
 import { describe, it, expect } from 'vitest'
 import {
-  getFieldRegistration, getComponentCategory, getComponentType, getFieldComponent,
-  getRegisteredTypes, registerField, isFieldRegistered, isLayoutField,
+  getFieldRegistration,
+  getComponentCategory,
+  getComponentType,
+  getFieldComponent,
+  getRegisteredTypes,
+  registerField,
+  isFieldRegistered,
+  isLayoutField,
 } from '@/components/form-builder/fieldRegistry'
 import type { FieldRegistration } from '@/components/form-builder/fieldRegistry'
 

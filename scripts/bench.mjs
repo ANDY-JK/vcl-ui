@@ -41,7 +41,6 @@ const [
 // 注：form-builder 节点树操作不进基准——domain.ts → fieldRegistry 拖 7 个 .vue 组件
 // 映射（jiti 无法加载 SFC），且树操作是元数据层而非渲染热点。
 
-
 const results = []
 function bench(name, fn, { iterations = 10, warmup = 3 } = {}) {
   for (let i = 0; i < warmup; i++) fn()
@@ -127,26 +126,38 @@ const labels = Array.from({ length: 10_000 }, (_, i) => `长沙${i}号店`)
 const matcher = createPinyinMatcher(() => true)
 for (const l of labels) matcher.getIndex(l) // 预热：量缓存命中路径（裸转换另有 matchPinyin 基线）
 
-bench('拼音 缓存命中路径 · 1 万条匹配', () => {
-  let hit = 0
-  for (const l of labels) if (matcher.match(l, 'cs')) hit++
-  if (hit === 0) throw new Error('拼音匹配全落空')
-}, { iterations: 5 })
+bench(
+  '拼音 缓存命中路径 · 1 万条匹配',
+  () => {
+    let hit = 0
+    for (const l of labels) if (matcher.match(l, 'cs')) hit++
+    if (hit === 0) throw new Error('拼音匹配全落空')
+  },
+  { iterations: 5 },
+)
 
 bench('拼音 裸转换路径 · 500 条（无缓存 matchPinyin）', () => {
   for (let i = 0; i < 500; i++) matchPinyin(`长沙${i}号店`, 'cs')
 })
 
 // ══════════ cell-input · 列类型归一化 ══════════
-bench('归一化 number（含全角/千分位）×3', () => {
-  normalizeCellInput('１,２３４.５６', { type: 'number' })
-  normalizeCellInput('1,234.56', { type: 'number' })
-  normalizeCellInput('-42', { type: 'number' })
-}, { iterations: 2000 })
-bench('归一化 date（MDY 两段数字）×2', () => {
-  normalizeCellInput('9/24', { type: 'date', dateOrder: 'MDY' })
-  normalizeCellInput('2025-9-24', { type: 'date' })
-}, { iterations: 2000 })
+bench(
+  '归一化 number（含全角/千分位）×3',
+  () => {
+    normalizeCellInput('１,２３４.５６', { type: 'number' })
+    normalizeCellInput('1,234.56', { type: 'number' })
+    normalizeCellInput('-42', { type: 'number' })
+  },
+  { iterations: 2000 },
+)
+bench(
+  '归一化 date（MDY 两段数字）×2',
+  () => {
+    normalizeCellInput('9/24', { type: 'date', dateOrder: 'MDY' })
+    normalizeCellInput('2025-9-24', { type: 'date' })
+  },
+  { iterations: 2000 },
+)
 
 // ══════════ route-planner · planRoute（60 门店）══════════
 const mkStore = (id, lon, lat) => ({
@@ -179,9 +190,13 @@ const routeOptions = {
   defaultVisitMinutes: 30,
   maxDrivingMinutesPerDay: 240,
 }
-bench('路线规划 聚类+2-opt+分天（60 门店）', () => {
-  planRoute(routeOptions)
-}, { iterations: 5 })
+bench(
+  '路线规划 聚类+2-opt+分天（60 门店）',
+  () => {
+    planRoute(routeOptions)
+  },
+  { iterations: 5 },
+)
 
 // ══════════ 输出 ══════════
 const nameW = Math.max(...results.map((r) => r.name.length)) + 2
@@ -193,6 +208,8 @@ for (const r of results) {
     group = g
     console.log(`├─ ${'─'.repeat(nameW + 20)}`)
   }
-  console.log(`│ ${r.name.padEnd(nameW)} ${r.mean.toFixed(2).padStart(9)} / ${r.min.toFixed(2).padStart(9)}  ×${r.iterations}`)
+  console.log(
+    `│ ${r.name.padEnd(nameW)} ${r.mean.toFixed(2).padStart(9)} / ${r.min.toFixed(2).padStart(9)}  ×${r.iterations}`,
+  )
 }
 console.log('└' + '─'.repeat(nameW + 24) + '┘')

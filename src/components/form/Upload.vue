@@ -319,8 +319,8 @@ onUnmounted(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-danger);
-      font-size: clamp(10px, calc(10px + var(--vcl-fit) * 1), 11px);
+      color: var(--color-danger-on-surface);
+      font-size: calc(11px * var(--vcl-scale));
     "
   >
     ⚠ {{ t('form.uploadError') }}
@@ -460,7 +460,7 @@ onUnmounted(() => {
               <span v-if="f.status === 'done'" style="color: var(--color-success)"
                 >✓ {{ t('form.uploadSuccess') }}</span
               >
-              <span v-else-if="f.status === 'error'" style="color: var(--color-danger)"
+              <span v-else-if="f.status === 'error'" style="color: var(--color-danger-on-surface)"
                 >✗ {{ t('form.uploadFailed') }}</span
               >
             </div>
@@ -510,8 +510,8 @@ onUnmounted(() => {
 /* ===== card 变体（精确对标旧项目 drop-zone） ===== */
 .card-wrap {
   position: relative;
-  width: 110px;
-  height: 110px;
+  width: calc(110px * var(--vcl-scale));
+  height: calc(110px * var(--vcl-scale));
   border: 2px dashed var(--color-border);
   background: var(--color-surface);
   overflow: hidden;
@@ -548,7 +548,7 @@ onUnmounted(() => {
   position: absolute;
   margin: 0;
   text-align: center;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-primary);
   z-index: 2;
   pointer-events: none;
@@ -574,8 +574,8 @@ onUnmounted(() => {
   top: 50%;
   transform: translateY(-50%);
   z-index: 8;
-  width: 22px;
-  height: 22px;
+  width: calc(22px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
   border: none;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.35);
@@ -593,36 +593,36 @@ onUnmounted(() => {
   opacity: 1;
 }
 .card-arrow-left {
-  left: 4px;
+  left: calc(4px * var(--vcl-scale));
 }
 .card-arrow-right {
-  right: 4px;
+  right: calc(4px * var(--vcl-scale));
 }
 /* 计数标记 */
 .card-count {
   position: absolute;
-  bottom: 4px;
-  right: 6px;
+  bottom: calc(4px * var(--vcl-scale));
+  right: calc(6px * var(--vcl-scale));
   z-index: 8;
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
-  padding: 1px 5px;
+  padding: 1px calc(5px * var(--vcl-scale));
   border-radius: var(--radius-md);
 }
 /* 删除按钮 */
 .card-clear {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: calc(5px * var(--vcl-scale));
+  right: calc(5px * var(--vcl-scale));
   z-index: 10;
-  padding: var(--space-1) 5px;
+  padding: var(--space-1) calc(5px * var(--vcl-scale));
   border: none;
   border-radius: var(--radius-sm);
   background: #ef4444;
   color: #fff;
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   cursor: pointer;
   font-weight: 600;
 }
@@ -639,7 +639,7 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  padding: clamp(var(--space-6), 4vw, 36px);
+  padding: calc(36px * var(--vcl-scale));
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-bg);
@@ -665,7 +665,7 @@ onUnmounted(() => {
   cursor: inherit;
 }
 .upload-hint {
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
 }
 .upload-link {
@@ -673,19 +673,19 @@ onUnmounted(() => {
   font-weight: 500;
 }
 .upload-limit {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 .upload-list {
   display: flex;
   flex-direction: column;
-  gap: clamp(var(--space-1), 1vw, 8px);
+  gap: calc(8px * var(--vcl-scale));
 }
 .upload-item {
   display: flex;
   align-items: center;
-  gap: clamp(7px, 1.2vw, var(--space-2));
-  padding: clamp(7px, 1.2vw, 10px) clamp(var(--space-2), 1.5vw, 12px);
+  gap: var(--space-2);
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -697,8 +697,8 @@ onUnmounted(() => {
 /* 图片文件缩略图（default 变体）：可点击进全屏预览 */
 .upload-thumb {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
   padding: 0;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
@@ -721,7 +721,7 @@ onUnmounted(() => {
   min-width: 0;
 }
 .upload-file-name {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -729,8 +729,8 @@ onUnmounted(() => {
 }
 .upload-file-meta {
   display: flex;
-  gap: clamp(var(--space-2), 1.5vw, 12px);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  gap: calc(12px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
@@ -745,7 +745,7 @@ onUnmounted(() => {
 }
 .upload-remove:hover {
   background: var(--color-bg-alt);
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
 }
 </style>
 
@@ -762,10 +762,10 @@ onUnmounted(() => {
 }
 .up-sheet {
   width: 100%;
-  max-width: 480px;
+  max-width: calc(480px * var(--vcl-scale));
   background: var(--color-bg);
-  border-radius: 14px 14px 0 0;
-  padding: var(--space-3) var(--space-4) calc(16px + env(safe-area-inset-bottom));
+  border-radius: calc(14px * var(--vcl-scale)) calc(14px * var(--vcl-scale)) 0 0;
+  padding: var(--space-3) var(--space-4) calc(16px * var(--vcl-scale) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -777,7 +777,7 @@ onUnmounted(() => {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text);
   cursor: pointer;
   text-align: center;

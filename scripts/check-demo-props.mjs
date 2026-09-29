@@ -255,11 +255,19 @@ function componentsOfDemo(file) {
     const barrel = read(resolved)
     const names = m[1].startsWith('{') ? m[1].slice(1, -1) : m[1]
     for (const raw of names.split(',')) {
-      const nm = raw.trim().split(/\s+as\s+/).pop().trim()
+      const nm = raw
+        .trim()
+        .split(/\s+as\s+/)
+        .pop()
+        .trim()
       if (!nm) continue
-      const ex = new RegExp(`export\\s+(?:default\\s+as|type\\s+)?\\{?[^\\n]*?\\b${nm}\\b[^\\n]*?from\\s*['"]([^'"]+)['"]`).exec(barrel)
+      const ex = new RegExp(
+        `export\\s+(?:default\\s+as|type\\s+)?\\{?[^\\n]*?\\b${nm}\\b[^\\n]*?from\\s*['"]([^'"]+)['"]`,
+      ).exec(barrel)
       if (!ex) {
-        const def = new RegExp(`export\\s*\\{\\s*default\\s+as\\s+${nm}\\s*,?\\s*\\}?\\s*from\\s*['"]([^'"]+)['"]`).exec(barrel)
+        const def = new RegExp(
+          `export\\s*\\{\\s*default\\s+as\\s+${nm}\\s*,?\\s*\\}?\\s*from\\s*['"]([^'"]+)['"]`,
+        ).exec(barrel)
         if (def) {
           const r = resolveSpec(resolved, def[1])
           if (r && r.endsWith('.vue')) files.add(r)
@@ -285,7 +293,10 @@ function tableRows(file) {
   for (const tr of src.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)) {
     const cells = [...tr[1].matchAll(/<t([hd])[^>]*>([\s\S]*?)<\/t\1>/g)].map((m) => ({
       tag: m[1],
-      text: m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+      text: m[2]
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim(),
     }))
     if (!cells.length) continue
     if (cells.every((c) => c.tag === 'h')) {
@@ -325,7 +336,8 @@ for (const d of demos) {
     const p = propsOf(c)
     if (p && p.size) propSets.push({ c, p })
     // 组件本身不声明任何 prop（纯事件驱动）是正常形态，不算判据没覆盖到
-    else if (read(c).includes('defineProps') || read(c).includes('props:')) unparsed.push(`${c}（被 ${d} 引用，props 没解析出来）`)
+    else if (read(c).includes('defineProps') || read(c).includes('props:'))
+      unparsed.push(`${c}（被 ${d} 引用，props 没解析出来）`)
   }
   if (!propSets.length) {
     unparsed.push(`${d}：表有 ${rows.length} 行，但一个组件 props 都没解析到 —— 判据在此空转`)

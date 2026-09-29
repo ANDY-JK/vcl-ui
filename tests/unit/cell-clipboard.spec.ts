@@ -25,7 +25,15 @@ const cols = [
   { key: 'ro', title: '只读', editable: false as const },
 ]
 
-function makeDeps(overrides: { rangeSel?: unknown; selectedCell?: unknown; selectedColKey?: string; multiKeys?: string[]; pasteRowKeys?: string[] } = {}) {
+function makeDeps(
+  overrides: {
+    rangeSel?: unknown
+    selectedCell?: unknown
+    selectedColKey?: string
+    multiKeys?: string[]
+    pasteRowKeys?: string[]
+  } = {},
+) {
   const changes: WriteEntry[][] = []
   const singles: WriteEntry[] = []
   const write: CellClipboardDeps['write'] = {
@@ -46,7 +54,7 @@ function makeDeps(overrides: { rangeSel?: unknown; selectedCell?: unknown; selec
     displayCols: ref<string[]>(['a', 'img', 'opt', 'ro']),
     splitCellKey: (key: string) => {
       const [rk, ck] = key.split('|')
-      return rk && ck ? [rk, ck] as [string, string] : null
+      return rk && ck ? ([rk, ck] as [string, string]) : null
     },
     displayValue: (_rk: string, ck: string) => 'V' + ck,
   } as never
@@ -103,7 +111,14 @@ describe('pasteText：矩阵 vs 单值', () => {
   })
 
   it('选项列拒收选项外的值（数据约束保护）', () => {
-    const { api, changes } = makeDeps({ rangeSel: { rows: ['r1'], cols: ['opt'], anchor: { rowIndex: 0, colIndex: 0 }, focus: { rowIndex: 0, colIndex: 0 } } })
+    const { api, changes } = makeDeps({
+      rangeSel: {
+        rows: ['r1'],
+        cols: ['opt'],
+        anchor: { rowIndex: 0, colIndex: 0 },
+        focus: { rowIndex: 0, colIndex: 0 },
+      },
+    })
     api.pasteText('nope')
     expect(changes[0]).toEqual([]) // 被拒 → 空 entries 仍是一条记录（无写入）
     api.pasteText('y')
@@ -144,12 +159,24 @@ describe('pasteValue 四种目标', () => {
 
 describe('clearSelection（Delete/Backspace）', () => {
   it('editable=false 时任何清空都是 no-op', () => {
-    const { changes, singles } = makeDeps({ rangeSel: { rows: ['r1'], cols: ['a'], anchor: { rowIndex: 0, colIndex: 0 }, focus: { rowIndex: 0, colIndex: 0 } } })
+    const { changes, singles } = makeDeps({
+      rangeSel: {
+        rows: ['r1'],
+        cols: ['a'],
+        anchor: { rowIndex: 0, colIndex: 0 },
+        focus: { rowIndex: 0, colIndex: 0 },
+      },
+    })
     const api2 = useCellClipboard({
       props: { editable: false, columns: cols },
       write: { applyChanges: () => {}, applyChange: () => {} },
       select: {
-        rangeSel: ref({ rows: ['r1'], cols: ['a'], anchor: { rowIndex: 0, colIndex: 0 }, focus: { rowIndex: 0, colIndex: 0 } }),
+        rangeSel: ref({
+          rows: ['r1'],
+          cols: ['a'],
+          anchor: { rowIndex: 0, colIndex: 0 },
+          focus: { rowIndex: 0, colIndex: 0 },
+        }),
       },
       editingCell: ref(null),
     } as never)
@@ -160,7 +187,12 @@ describe('clearSelection（Delete/Backspace）', () => {
 
   it('矩形清空：跳过只读/图片列，一条记录；有写入才 preventDefault', () => {
     const { api, changes } = makeDeps({
-      rangeSel: { rows: ['r1'], cols: ['a', 'ro', 'img'], anchor: { rowIndex: 0, colIndex: 0 }, focus: { rowIndex: 0, colIndex: 2 } },
+      rangeSel: {
+        rows: ['r1'],
+        cols: ['a', 'ro', 'img'],
+        anchor: { rowIndex: 0, colIndex: 0 },
+        focus: { rowIndex: 0, colIndex: 2 },
+      },
     })
     const e = { preventDefault: vi.fn() } as unknown as KeyboardEvent
     api.clearSelection(e)
@@ -273,7 +305,11 @@ describe('onCellPaste / 图片拖拽', () => {
       select: {} as never,
       editingCell: ref({ rowKey: 'r1', colKey: 'a' }),
     } as never)
-    const e = { target: input, clipboardData: { getData: () => '原生粘贴' }, preventDefault: vi.fn() } as unknown as ClipboardEvent
+    const e = {
+      target: input,
+      clipboardData: { getData: () => '原生粘贴' },
+      preventDefault: vi.fn(),
+    } as unknown as ClipboardEvent
     await api.onCellPaste(e, 'r1', 'a', 'text')
     expect(write.applyChange).not.toHaveBeenCalled() // 放行 → 原生写 input
     expect(e.preventDefault).not.toHaveBeenCalled()
@@ -287,7 +323,11 @@ describe('onCellPaste / 图片拖拽', () => {
       select: {} as never,
       editingCell: ref(null),
     } as never)
-    const e = { target: document.createElement('td'), clipboardData: { getData: () => '直贴' }, preventDefault: vi.fn() } as unknown as ClipboardEvent
+    const e = {
+      target: document.createElement('td'),
+      clipboardData: { getData: () => '直贴' },
+      preventDefault: vi.fn(),
+    } as unknown as ClipboardEvent
     await api.onCellPaste(e, 'r1', 'a', 'text')
     expect(write.applyChange).toHaveBeenCalledWith('r1', 'a', '直贴')
     expect(e.preventDefault).toHaveBeenCalled()
@@ -329,12 +369,20 @@ describe('onCellPaste / 图片拖拽', () => {
       editingCell: ref(null),
     } as never)
 
-    const over = { currentTarget: target, dataTransfer: { dropEffect: '' }, preventDefault: vi.fn() } as unknown as DragEvent
+    const over = {
+      currentTarget: target,
+      dataTransfer: { dropEffect: '' },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent
     api.onImageDragOver(over)
     expect(td.classList.contains('drag-over-image')).toBe(true)
     expect(over.dataTransfer!.dropEffect).toBe('copy')
 
-    const drop = { currentTarget: target, dataTransfer: { files: [{}] }, preventDefault: vi.fn() } as unknown as DragEvent
+    const drop = {
+      currentTarget: target,
+      dataTransfer: { files: [{}] },
+      preventDefault: vi.fn(),
+    } as unknown as DragEvent
     await api.onImageDrop(drop, 'r1', 'a')
     expect(write.applyChange).toHaveBeenCalledWith('r1', 'a', 'data:image/png;base64,MOCK')
     expect(td.classList.contains('drag-over-image')).toBe(false)

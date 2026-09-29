@@ -42,7 +42,7 @@
 
 .dt-filter-search {
   width: 100%;
-  padding: 10px 12px;
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border: none;
   border-bottom: 1px solid var(--color-border-light);
   font-size: var(--fs-14);
@@ -63,8 +63,8 @@
 .dt-filter-option-sort {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: calc(4px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 .dt-filter-option-sort-label {
@@ -76,7 +76,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 3px 10px;
+  padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-size: var(--fs-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -100,14 +100,14 @@
 
 .dt-filter-quick-actions {
   display: flex;
-  gap: 4px;
-  padding: 6px 8px;
+  gap: calc(4px * var(--vcl-scale));
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   flex-wrap: nowrap;
   border-bottom: 1px solid var(--color-border-light);
   width: fit-content;
 }
 .dt-filter-quick-btn {
-  padding: 4px 10px;
+  padding: calc(4px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-size: var(--fs-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -130,13 +130,13 @@
 .dt-filter-options-list {
   flex: 1;
   overflow-y: auto;
-  max-height: 200px;
-  padding: 4px 0;
+  max-height: calc(200px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) 0;
 }
 .dt-filter-option {
   display: flex;
   align-items: center;
-  padding: 8px 14px;
+  padding: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   cursor: pointer;
   transition: background var(--transition-fast);
   font-size: var(--fs-14);
@@ -163,12 +163,12 @@
 }
 .dt-filter-option-count {
   flex-shrink: 0;
-  margin-left: 6px;
+  margin-left: calc(6px * var(--vcl-scale));
   color: var(--color-text-muted);
   font-size: var(--fs-13);
 }
 .dt-filter-no-result {
-  padding: 24px 0;
+  padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
   color: var(--color-text-muted);
   font-size: var(--fs-13);
@@ -176,7 +176,7 @@
 
 /* 滚动进度条：贴在选项列表和操作按钮之间 */
 .dt-filter-scroll-progress {
-  height: 3px;
+  height: calc(3px * var(--vcl-scale));
   background: var(--color-border-light);
   flex-shrink: 0;
 }
@@ -190,13 +190,13 @@
 /* 操作按钮 */
 .dt-filter-actions {
   display: flex;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   justify-content: flex-end;
   border-top: 1px solid var(--color-border-light);
 }
 .dt-filter-btn {
-  padding: 6px 18px;
+  padding: calc(6px * var(--vcl-scale)) calc(18px * var(--vcl-scale));
   font-size: var(--fs-13);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -226,15 +226,15 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  min-width: 120px;
-  padding: 4px 0;
+  min-width: calc(120px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) 0;
   animation: dt-filterFadeInDown 0.12s ease;
 }
 .dt-context-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   font-size: var(--fs-13);
   color: var(--color-text);
   cursor: pointer;
@@ -249,12 +249,12 @@
   cursor: not-allowed;
 }
 .dt-context-item.ctx-danger {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger-on-surface);
 }
 .dt-context-item.ctx-danger:hover:not(.disabled) {
   /* 走 danger 三元组令牌：两套主题各自声明 --color-danger-rgb，硬编码会锁死亮色红 */
   background: rgba(var(--color-danger-rgb, 239 68 68), 0.08);
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger-on-surface);
 }
 .dt-context-item.menu-focused {
   background: var(--color-primary-light);
@@ -262,25 +262,25 @@
 }
 .dt-context-divider {
   height: 1px;
-  margin: 4px 8px;
+  margin: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   background: var(--color-border-light);
 }
 
 /* ==================== 列设置面板 ==================== */
 .dt-col-settings {
   position: fixed;
-  width: min(380px, 92vw);
+  width: min(380px * var(--vcl-scale), 92vw);
   max-height: 70vh;
   overflow: hidden;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  padding: 10px;
+  padding: calc(10px * var(--vcl-scale));
   z-index: var(--z-dropdown, 2000);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   animation: dt-filterFadeInDown 0.15s ease;
 }
 .dt-col-settings.dt-dropdown-above {
@@ -288,7 +288,7 @@
 }
 .dt-col-settings::-webkit-scrollbar {
   display: block;
-  width: 6px;
+  width: calc(6px * var(--vcl-scale));
 }
 .dt-col-settings::-webkit-scrollbar-track {
   background: transparent;
@@ -302,7 +302,7 @@
 }
 .dt-col-search {
   width: 100%;
-  padding: 6px 10px;
+  padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-size: var(--fs-13);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -320,11 +320,11 @@
 }
 .dt-col-quick-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
-  gap: 4px;
+  grid-template-columns: repeat(auto-fit, minmax(calc(96px * var(--vcl-scale)), 1fr));
+  gap: calc(4px * var(--vcl-scale));
 }
 .dt-col-quick-actions button {
-  padding: 3px 10px;
+  padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -363,7 +363,7 @@
   padding: var(--space-1) 0;
 }
 .dt-col-no-result {
-  padding: 24px 0;
+  padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
   font-size: var(--fs-13);
   color: var(--color-text-muted);
@@ -373,7 +373,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding-top: 6px;
+  padding-top: calc(6px * var(--vcl-scale));
   border-top: 1px solid var(--color-border-light);
 }
 .dt-col-footer-fixed {
@@ -393,9 +393,9 @@
 .dt-col-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   /* 左右留出色条空间，避免固定区域色条与 checkbox/按钮重叠 */
-  padding: 3px 6px;
+  padding: calc(3px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
   font-size: var(--fs-13);
 }
 .dt-col-item.hidden .dt-col-title {
@@ -418,8 +418,8 @@
   gap: 2px;
 }
 .dt-col-fixed-group button {
-  min-width: 26px;
-  padding: 0 4px;
+  min-width: calc(26px * var(--vcl-scale));
+  padding: 0 calc(4px * var(--vcl-scale));
 }
 .dt-col-fixed-group button.active {
   background: var(--color-primary-light);
@@ -431,8 +431,8 @@
   cursor: not-allowed;
 }
 .dt-col-item input[type='checkbox'] {
-  width: 15px;
-  height: 15px;
+  width: calc(15px * var(--vcl-scale));
+  height: calc(15px * var(--vcl-scale));
   accent-color: var(--color-primary);
   cursor: pointer;
 }
@@ -453,25 +453,25 @@
   font-variant-numeric: tabular-nums;
 }
 .dt-col-width button {
-  min-width: 20px;
-  height: 22px;
-  padding: 0 3px;
+  min-width: calc(20px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
+  padding: 0 calc(3px * var(--vcl-scale));
   font-size: var(--fs-12);
 }
 .dt-col-width span {
-  min-width: 30px;
+  min-width: calc(30px * var(--vcl-scale));
   text-align: center;
 }
 .dt-col-ops {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
   flex-shrink: 0;
 }
 .dt-col-ops button {
-  min-width: 24px;
-  height: 24px;
-  padding: 0 6px;
+  min-width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
+  padding: 0 calc(6px * var(--vcl-scale));
   font-size: var(--fs-12);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -495,15 +495,15 @@
   color: #fff;
   font-size: var(--fs-13);
   line-height: 1.5;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  border-radius: calc(6px * var(--vcl-scale));
   white-space: pre-wrap;
   word-break: break-word;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   pointer-events: auto;
 }
 .dt-cell-tooltip::-webkit-scrollbar {
-  width: 4px;
+  width: calc(4px * var(--vcl-scale));
 }
 .dt-cell-tooltip::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.3);

@@ -70,7 +70,9 @@ describe('applyRemoteDefaults · 拉取与取值', () => {
           text: async () => 'plain-text',
         }) as unknown as Response,
     )
-    const out = await applyRemoteDefaults([field({ defaultMeta: { type: 'api', apiUrl: 'https://x/txt' } })], { fetcher })
+    const out = await applyRemoteDefaults([field({ defaultMeta: { type: 'api', apiUrl: 'https://x/txt' } })], {
+      fetcher,
+    })
     expect(out.f1).toBe('plain-text')
   })
 })
@@ -80,7 +82,9 @@ describe('applyRemoteDefaults · 防御', () => {
     const fetcher = vi.fn(async () => {
       throw new Error('boom')
     })
-    const out = await applyRemoteDefaults([field({ defaultMeta: { type: 'api', apiUrl: 'https://x/api' } })], { fetcher })
+    const out = await applyRemoteDefaults([field({ defaultMeta: { type: 'api', apiUrl: 'https://x/api' } })], {
+      fetcher,
+    })
     expect(out).toEqual({})
   })
 
@@ -126,12 +130,20 @@ describe('FormBuilder · api 默认值挂载接线', () => {
   const schema: FormSchema = {
     meta: { title: '' },
     fields: [
-      { key: 'k', label: 'K', type: 'text', defaultMeta: { type: 'api', apiUrl: 'https://x/api', dataPath: 'data.value' } },
+      {
+        key: 'k',
+        label: 'K',
+        type: 'text',
+        defaultMeta: { type: 'api', apiUrl: 'https://x/api', dataPath: 'data.value' },
+      },
     ],
   }
 
   it('挂载后异步回填 api 默认值', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ data: { value: 'API默认' } })))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => jsonResponse({ data: { value: 'API默认' } })),
+    )
     const w = mount(FormBuilder, { props: { schema, modelValue: {} } })
     await flushPromises()
     const last = w.emitted('update:modelValue')!.at(-1)![0] as Record<string, unknown>
@@ -140,7 +152,10 @@ describe('FormBuilder · api 默认值挂载接线', () => {
   })
 
   it('宿主/用户已填的值不被覆盖', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ data: { value: 'API默认' } })))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => jsonResponse({ data: { value: 'API默认' } })),
+    )
     const w = mount(FormBuilder, { props: { schema, modelValue: { k: '用户已填' } } })
     await flushPromises()
     // 守卫生效时无新变更（可能一次 emit 都没有）；若有 emit，最后一条也必须保持用户已填

@@ -86,6 +86,10 @@ export default defineConfig({
     // qrcode 为纯 CJS：显式预构建为 ESM，dev 下 import 才能被 vite 解析（含浏览器端子路径）
     include: ['qrcode', 'qrcode/lib/browser.js'],
   },
+  // demo 专用静态资源（`scripts/gen-demo-assets.mjs` 生成的无扩展名 PNG）。
+  // 不叫默认的 public/ 是刻意的：那两个名字太容易被当成「站点资源」而顺手放东西，
+  // 且下一条 copyPublicDir:false 的用意也需要一个显式名字来提示「这是 demo 的，不是库的」。
+  publicDir: 'demo-public',
   server: {
     port: 3721,
     host: '0.0.0.0',
@@ -109,6 +113,9 @@ export default defineConfig({
           })(),
   },
   build: {
+    // demo-public/ 是演示站点的图片素材，绝不能拷进 dist——
+    // 那是要发布到 npm 的库产物，塞进 demo 资源只会白涨包体积与许可清单。
+    copyPublicDir: false,
     lib: {
       entry: ENTRY,
       name: 'VclUi',

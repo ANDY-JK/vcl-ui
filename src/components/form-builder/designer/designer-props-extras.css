@@ -5,7 +5,7 @@
 }
 .ldp-prop-tab {
   flex: 1;
-  padding: 8px 0;
+  padding: calc(8px * var(--vcl-scale)) 0;
   text-align: center;
   font-size: var(--fs-12);
   font-weight: 600;
@@ -30,14 +30,14 @@
 .ldp-validation-rule {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
 }
 .ldp-rule-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
+  width: calc(20px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
+  border-radius: calc(4px * var(--vcl-scale));
   background: var(--color-bg-soft, #f1f5f9);
   color: var(--color-text-muted, #9ca3af);
   display: flex;
@@ -57,8 +57,8 @@
 }
 .ldp-rule-status {
   font-size: var(--fs-10);
-  padding: 2px 7px;
-  border-radius: 10px;
+  padding: 2px calc(7px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   font-weight: 700;
 }
 .ldp-rule-status.on {
@@ -72,21 +72,21 @@
 
 /* ── 事件配置卡片 ── */
 .ldp-event-card {
-  margin: 8px 14px;
-  padding: 12px;
+  margin: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-bg-alt, #fafbfc);
 }
 .ldp-event-head {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: calc(6px * var(--vcl-scale));
+  margin-bottom: calc(8px * var(--vcl-scale));
 }
 .ldp-event-icon {
-  width: 18px;
-  height: 18px;
+  width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
   color: var(--color-primary, #4f6ef7);
 }
 .ldp-event-label {
@@ -100,28 +100,28 @@
 .ldp-event-body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
 }
 
 /* ── 数据源配置 ── */
 .ldp-datasource-card {
-  margin: 8px 14px;
-  padding: 12px;
+  margin: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-bg-alt, #fafbfc);
 }
 .ldp-datasource-url {
   display: flex;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   align-items: center;
-  margin-top: 6px;
+  margin-top: calc(6px * var(--vcl-scale));
 }
 .ldp-datasource-input {
   flex: 1;
   border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-sm, 6px);
-  padding: 6px 8px;
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   font-size: var(--fs-12);
   font-family: 'Cascadia Code', monospace;
   background: var(--color-bg, #fff);
@@ -132,7 +132,7 @@
 /* ── Schema 代码查看 ── */
 .ld-code-panel {
   background: var(--color-bg, #fff);
-  border-radius: var(--radius-lg, 10px);
+  border-radius: var(--radius-lg, calc(10px * var(--vcl-scale)));
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   overflow: hidden;
   border: 1px solid var(--color-border, #e5e7eb);
@@ -140,8 +140,8 @@
 .ld-code-toolbar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: calc(6px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   background: var(--color-bg, #fff);
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
 }
@@ -151,18 +151,18 @@
   color: var(--color-text, #1e293b);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
 }
 .ld-code-actions {
   margin-left: auto;
   display: flex;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
 }
 .ld-code-body {
-  padding: 20px;
+  padding: calc(20px * var(--vcl-scale));
   background: #1e293b;
   overflow: auto;
-  max-height: 680px;
+  max-height: calc(680px * var(--vcl-scale));
 }
 .ld-code-body pre {
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
@@ -176,11 +176,11 @@
 
 /* ── 大纲全屏标签页 ── */
 .ld-outline-full {
-  max-width: 680px;
+  max-width: calc(680px * var(--vcl-scale));
   margin: 0 auto;
   background: var(--color-bg, #fff);
   border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-lg, 10px);
+  border-radius: var(--radius-lg, calc(10px * var(--vcl-scale)));
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
@@ -188,7 +188,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   background: var(--color-bg-alt, #f8fafc);
 }
@@ -206,28 +206,28 @@
 .ld-outline-full-stats {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
   background: var(--color-bg, #fff);
-  padding: 5px 12px;
-  border-radius: 20px;
+  padding: calc(5px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  border-radius: calc(20px * var(--vcl-scale));
   white-space: nowrap;
   flex-shrink: 0;
 }
 .ld-outline-full-dot {
-  margin: 0 4px;
+  margin: 0 calc(4px * var(--vcl-scale));
 }
 .ld-outline-full-body {
-  padding: 12px;
+  padding: calc(12px * var(--vcl-scale));
 }
 
 /* ── 联动帮助提示 ── */
 .ldp-linkage-help {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
-  padding: 8px 14px 10px;
+  gap: calc(6px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-size: var(--fs-11);
   color: var(--color-text-muted, #9ca3af);
   line-height: 1.5;
@@ -236,34 +236,34 @@
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
   font-size: var(--fs-10);
   background: var(--color-bg-alt, #f1f5f9);
-  padding: 1px 5px;
-  border-radius: 3px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
   color: var(--color-primary, #3b82f6);
 }
 
 /* ── FormDataSummary 数据汇总弹窗 ── */
 .ld-data-summary {
-  min-height: 120px;
+  min-height: calc(120px * var(--vcl-scale));
 }
 .ld-data-state {
-  padding: 32px 0;
+  padding: calc(32px * var(--vcl-scale)) 0;
   text-align: center;
   color: var(--color-text-secondary, #64748b);
   font-size: var(--fs-13);
 }
 .ld-data-error {
-  color: var(--color-danger, #dc2626);
+  color: var(--color-danger-on-surface);
 }
 .ld-data-stats {
   display: flex;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: calc(12px * var(--vcl-scale));
+  margin-bottom: calc(14px * var(--vcl-scale));
 }
 .ld-data-stat {
   flex: 1;
-  padding: 10px 12px;
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, 8px);
+  border-radius: var(--radius-sm, calc(8px * var(--vcl-scale)));
   background: var(--color-bg-alt, #f8fafc);
   display: flex;
   flex-direction: column;
@@ -282,10 +282,10 @@
   color: var(--color-text-muted, #94a3b8);
 }
 .ld-data-table-wrap {
-  max-height: 300px;
+  max-height: calc(300px * var(--vcl-scale));
   overflow: auto;
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
 }
 .ld-data-table {
   width: 100%;
@@ -294,11 +294,11 @@
 }
 .ld-data-table th,
 .ld-data-table td {
-  padding: 6px 10px;
+  padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border, #eef2f7);
   text-align: left;
   white-space: nowrap;
-  max-width: 220px;
+  max-width: calc(220px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -322,20 +322,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 10px 0 2px;
+  gap: calc(4px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) 0 2px;
   border-top: 1px solid var(--color-border-light, #f1f5f9);
-  margin-top: 8px;
+  margin-top: calc(8px * var(--vcl-scale));
 }
 .ld-data-page-btn {
-  min-width: 26px;
-  height: 26px;
-  padding: 0 6px;
+  min-width: calc(26px * var(--vcl-scale));
+  height: calc(26px * var(--vcl-scale));
+  padding: 0 calc(6px * var(--vcl-scale));
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-surface, #fff);
   color: var(--color-text-secondary, #64748b);
   font-size: var(--fs-12);

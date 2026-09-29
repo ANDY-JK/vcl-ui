@@ -22,8 +22,6 @@ export const DRAFT_STORE = 'form-designer-drafts'
 /** 草稿存储键（单设计器全局一份：恢复「最近一次未保存的设计」语义） */
 export const DRAFT_KEY = 'designer-autosave'
 
-
-
 /** 设计草稿数据结构 */
 export interface DesignerDraft {
   nodes: DesignerNode[]

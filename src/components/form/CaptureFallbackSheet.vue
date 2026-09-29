@@ -142,12 +142,12 @@ function close() {
 }
 .capfb-sheet {
   width: 100%;
-  max-width: 480px;
+  max-width: calc(480px * var(--vcl-scale));
   max-height: 92vh;
   overflow-y: auto;
   background: var(--color-bg);
-  border-radius: 14px 14px 0 0;
-  padding: var(--space-3) var(--space-4) calc(16px + env(safe-area-inset-bottom));
+  border-radius: calc(14px * var(--vcl-scale)) calc(14px * var(--vcl-scale)) 0 0;
+  padding: var(--space-3) var(--space-4) calc(16px * var(--vcl-scale) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -160,9 +160,9 @@ function close() {
     background: rgba(0, 0, 0, 0.45);
   }
   .capfb-sheet {
-    width: min(420px, calc(100vw - 32px));
-    max-height: min(600px, calc(100vh - 48px));
-    border-radius: 16px;
+    width: min(420px * var(--vcl-scale), calc(100vw - 32px * var(--vcl-scale)));
+    max-height: min(600px * var(--vcl-scale), calc(100vh - 48px * var(--vcl-scale)));
+    border-radius: calc(16px * var(--vcl-scale));
     padding: var(--space-3) var(--space-4) var(--space-4);
     box-shadow: var(--shadow-lg);
   }
@@ -173,13 +173,13 @@ function close() {
   justify-content: space-between;
 }
 .capfb-title {
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 2), 16px);
+  font-size: calc(16px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text);
 }
 .capfb-x {
-  width: 32px;
-  height: 32px;
+  width: calc(32px * var(--vcl-scale));
+  height: calc(32px * var(--vcl-scale));
   display: flex;
   align-items: center;
   justify-content: center;

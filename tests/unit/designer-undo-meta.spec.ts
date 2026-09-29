@@ -58,7 +58,10 @@ describe('撤销栈 · meta 覆盖', () => {
   it('混合栈：加节点 → 改标题 → 撤销先恢复标题再恢复节点', async () => {
     const w = mountControlled([], { title: '原标题' })
     // 加一个节点（面板点击）
-    await w.findAll('aside button').find((b) => b.text().includes('单行输入'))!.trigger('click')
+    await w
+      .findAll('aside button')
+      .find((b) => b.text().includes('单行输入'))!
+      .trigger('click')
     await nextTick()
     expect((w.vm as unknown as { nodes: DesignerNode[] }).nodes).toHaveLength(1)
     await openSettings(w)

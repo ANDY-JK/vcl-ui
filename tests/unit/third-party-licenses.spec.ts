@@ -255,7 +255,13 @@ describe('vendorSourceEntries：仓内 vendor 的上游代码（构建证据看�
       { path: 'LICENSE', sha256: 'bbb', bytes: 11355 },
     ],
   }
-  const SPEC = { pkg: 'xlsx', dir: 'src/components/_internal/xlsx', manifest: 'm.json', codeFile: 'xlsx.mjs', probes: (v) => ['NEEDLE-A', `"${v}"`] }
+  const SPEC = {
+    pkg: 'xlsx',
+    dir: 'src/components/_internal/xlsx',
+    manifest: 'm.json',
+    codeFile: 'xlsx.mjs',
+    probes: (v) => ['NEEDLE-A', `"${v}"`],
+  }
 
   const io = (over = {}) => ({
     root: '/repo',

@@ -144,8 +144,8 @@ function save(): void {
 }
 .scp-label {
   flex-shrink: 0;
-  width: 88px;
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
+  width: calc(88px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   color: var(--color-text-secondary);
   text-align: right;
 }
@@ -153,22 +153,22 @@ function save(): void {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
+  font-size: calc(14px * var(--vcl-scale));
   cursor: pointer;
 }
 .scp-input {
   flex: 1;
-  min-width: 200px;
+  min-width: calc(200px * var(--vcl-scale));
 }
 .scp-tip {
   margin: 0;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 2), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
   line-height: 1.5;
 }
 .scp-error {
-  color: var(--color-danger);
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
+  color: var(--color-danger-on-surface);
+  font-size: calc(14px * var(--vcl-scale));
 }
 .scp-actions {
   display: flex;

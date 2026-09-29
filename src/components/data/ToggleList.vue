@@ -175,16 +175,16 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 }
 
 .list-state {
-  padding: clamp(24px, 5vw, 40px) clamp(var(--space-3), 2.5vw, 20px);
+  padding: calc(40px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   color: var(--color-text-muted);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 
 .list-item {
   display: flex;
   align-items: center;
-  gap: clamp(var(--space-2), 1.5vw, 12px);
-  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px);
+  gap: calc(12px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -197,8 +197,8 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 }
 
 .item-icon {
-  width: clamp(30px, 5.5vw, 38px);
-  height: clamp(30px, 5.5vw, 38px);
+  width: calc(38px * var(--vcl-scale));
+  height: calc(38px * var(--vcl-scale));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -211,21 +211,21 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   min-width: 0;
 }
 .item-title {
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
 }
 .item-desc {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
 
 .item-extras {
   display: flex;
-  gap: clamp(var(--space-2), 2vw, 16px);
+  gap: calc(16px * var(--vcl-scale));
 }
 .item-extra {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
@@ -252,8 +252,8 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   outline-offset: 2px;
 }
 .toggle-switch {
-  width: clamp(40px, 6vw, 46px);
-  height: clamp(22px, 3.2vw, 26px);
+  width: calc(46px * var(--vcl-scale));
+  height: calc(26px * var(--vcl-scale));
   background: var(--color-border);
   border-radius: var(--radius-lg);
   position: relative;
@@ -269,8 +269,8 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: clamp(18px, 2.8vw, 22px);
-  height: clamp(18px, 2.8vw, 22px);
+  width: calc(22px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
   background: white;
   border-radius: 50%;
   transition: transform var(--transition-fast);
@@ -286,8 +286,8 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 /* 操作按钮 */
 .item-action-btn {
   flex-shrink: 0;
-  padding: var(--space-1) clamp(10px, 2vw, 14px);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  padding: var(--space-1) calc(14px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-md);
   background: var(--color-primary);

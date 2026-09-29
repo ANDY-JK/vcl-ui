@@ -29,16 +29,16 @@ defineProps<Props>()
 .fb-field-error {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin: 4px 0 0;
+  gap: calc(4px * var(--vcl-scale));
+  margin: calc(4px * var(--vcl-scale)) 0 0;
   padding: 0 2px;
   font-size: var(--fs-12);
   line-height: 1.4;
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger-on-surface);
 }
 .fb-error-icon {
-  width: 13px;
-  height: 13px;
+  width: calc(13px * var(--vcl-scale));
+  height: calc(13px * var(--vcl-scale));
   flex-shrink: 0;
 }
 

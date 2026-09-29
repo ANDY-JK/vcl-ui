@@ -39,7 +39,14 @@ const emit = defineEmits<{
           { value: 'currentUser', label: t('fbp.currentUser') },
           { value: 'currentTime', label: t('fbp.currentTime') },
         ]"
-        @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, defaultType: $event as 'none' | 'fixed' | 'formula' | 'api' | 'currentUser' | 'currentTime' } })"
+        @update:model-value="
+          emit('update', {
+            dataConfig: {
+              ...node.dataConfig,
+              defaultType: $event as 'none' | 'fixed' | 'formula' | 'api' | 'currentUser' | 'currentTime',
+            },
+          })
+        "
       />
     </div>
     <template v-if="node.dataConfig?.defaultType === 'formula'">
@@ -90,11 +97,18 @@ const emit = defineEmits<{
             { value: 'userList', label: t('fbp.srcUserList') },
             { value: 'deptList', label: t('fbp.srcDeptList') },
           ]"
-          @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, sourceType: $event as 'none' | 'api' | 'database' | 'userList' | 'deptList' } })"
+          @update:model-value="
+            emit('update', {
+              dataConfig: {
+                ...node.dataConfig,
+                sourceType: $event as 'none' | 'api' | 'database' | 'userList' | 'deptList',
+              },
+            })
+          "
         />
       </div>
       <template v-if="node.dataConfig?.sourceType === 'api'">
-        <div class="ldp-prop" style="padding: 0; border: none; margin-top: 8px">
+        <div class="ldp-prop" style="padding: 0; border: none; margin-top: calc(8px * var(--vcl-scale))">
           <label>{{ t('fbp.apiUrl') }}</label>
         </div>
         <div class="ldp-datasource-url">
@@ -109,9 +123,9 @@ const emit = defineEmits<{
             "
           />
         </div>
-        <div class="ldp-prop" style="padding: 0; border: none; margin-top: 8px">
+        <div class="ldp-prop" style="padding: 0; border: none; margin-top: calc(8px * var(--vcl-scale))">
           <label>{{ t('fbp.dataMapping') }}</label>
-          <div style="display: flex; gap: 6px">
+          <div style="display: flex; gap: calc(6px * var(--vcl-scale))">
             <Input
               :model-value="node.dataConfig?.labelField ?? ''"
               :placeholder="t('fbp.labelFieldPh')"
@@ -142,7 +156,11 @@ const emit = defineEmits<{
           { value: 'deptList', label: t('fbp.srcDeptList') },
           { value: 'roleList', label: t('fbp.srcRoleList') },
         ]"
-        @update:model-value="emit('update', { dataConfig: { ...node.dataConfig, linkageSource: $event as 'none' | 'userList' | 'deptList' | 'roleList' } })"
+        @update:model-value="
+          emit('update', {
+            dataConfig: { ...node.dataConfig, linkageSource: $event as 'none' | 'userList' | 'deptList' | 'roleList' },
+          })
+        "
       />
     </div>
     <div v-if="node.dataConfig?.linkageSource && node.dataConfig.linkageSource !== 'none'" class="ldp-prop">

@@ -117,14 +117,14 @@ function onConfirm() {
   align-items: flex-start;
   gap: var(--space-3);
   margin: var(--space-1) 0 0;
-  padding: var(--space-4) 16px;
+  padding: var(--space-4) calc(16px * var(--vcl-scale));
   border-radius: var(--radius-md);
   border-left: 4px solid;
 }
 .confirm-msg {
   margin: 0;
   line-height: 1.7;
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text);
   flex: 1;
 }
@@ -136,17 +136,17 @@ function onConfirm() {
   gap: var(--space-3);
   width: 100%;
   margin-top: var(--space-3);
-  padding: clamp(var(--space-2), 2vw, 16px) 0 0;
+  padding: calc(16px * var(--vcl-scale)) 0 0;
   border-top: 1px solid var(--color-border-light);
 }
 .confirm-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) 22px;
+  padding: var(--space-2) calc(22px * var(--vcl-scale));
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;

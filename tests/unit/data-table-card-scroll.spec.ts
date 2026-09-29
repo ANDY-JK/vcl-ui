@@ -32,7 +32,11 @@ function stubScroller(w: VueWrapper, scrollHeight: number, clientHeight: number)
 const cards = (w: VueWrapper) => w.findAll('.card-view-item').length
 
 function scrollToRemaining(el: HTMLElement, remaining: number, scrollHeight: number) {
-  Object.defineProperty(el, 'scrollTop', { configurable: true, writable: true, value: scrollHeight - el.clientHeight - remaining })
+  Object.defineProperty(el, 'scrollTop', {
+    configurable: true,
+    writable: true,
+    value: scrollHeight - el.clientHeight - remaining,
+  })
   el.dispatchEvent(new Event('scroll'))
 }
 

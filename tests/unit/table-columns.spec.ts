@@ -71,12 +71,13 @@ describe('useTableColumns 静态固定列同步', () => {
       autoFit: true,
       selectable: false,
     })
-    const api = useTableColumns(props as never, { value: null } as never, computed(() => emptyData.value))
+    const api = useTableColumns(
+      props as never,
+      { value: null } as never,
+      computed(() => emptyData.value),
+    )
     expect(api.dynamicFixedRight.value.size).toBe(0)
-    props.columns = [
-      ...props.columns,
-      { key: 'ops', title: '操作', fixed: 'right' as const },
-    ]
+    props.columns = [...props.columns, { key: 'ops', title: '操作', fixed: 'right' as const }]
     await nextTick()
     expect(api.dynamicFixedLeft.value.has('id')).toBe(true)
     expect(api.dynamicFixedRight.value.has('ops')).toBe(true)
@@ -187,7 +188,12 @@ describe('useTableColumns 列宽拖拽', () => {
       return document
     })
 
-    const ev = { clientX: 100, preventDefault: vi.fn(), stopPropagation: vi.fn(), target: cell } as unknown as MouseEvent
+    const ev = {
+      clientX: 100,
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      target: cell,
+    } as unknown as MouseEvent
     api.startResize(cols[0], ev)
     expect(ev.preventDefault).toHaveBeenCalled()
     expect(api.resizing.value).toEqual({ colKey: 'id', startX: 100, startW: 120 })
@@ -230,7 +236,11 @@ describe('useTableColumns autoFit', () => {
     // 802 - 2(边框) - 8(padding) = 792 可用；三列各 71 → 213 总最小宽，余量 579 均分
     const wrap = { getBoundingClientRect: () => ({ width: 802 }) }
     const p = { columns: cols, autoFit: true, selectable: false, bordered: false }
-    const api2 = useTableColumns(p as never, { value: wrap } as never, computed(() => emptyData.value))
+    const api2 = useTableColumns(
+      p as never,
+      { value: wrap } as never,
+      computed(() => emptyData.value),
+    )
     api2.applyAutoFit()
     await settleAutoFit()
     const widths = Object.values(api2.columnWidths.value)
@@ -241,7 +251,11 @@ describe('useTableColumns autoFit', () => {
   it('装不下：保持表头最小宽自然溢出（不压缩到 60 以下）', async () => {
     const wrap = { getBoundingClientRect: () => ({ width: 150 }) } // 可用 140 < 三列 213
     const p = { columns: cols, autoFit: true, selectable: false, bordered: false }
-    const api = useTableColumns(p as never, { value: wrap } as never, computed(() => emptyData.value))
+    const api = useTableColumns(
+      p as never,
+      { value: wrap } as never,
+      computed(() => emptyData.value),
+    )
     api.applyAutoFit()
     await settleAutoFit()
     expect(api.columnWidths.value).toEqual({ id: 71, name: 71, city: 71 })
@@ -250,7 +264,11 @@ describe('useTableColumns autoFit', () => {
   it('用户手动拖过的列宽不被 autoFit 覆盖', async () => {
     const wrap = { getBoundingClientRect: () => ({ width: 802 }) }
     const p = { columns: cols, autoFit: true, selectable: false, bordered: false }
-    const api = useTableColumns(p as never, { value: wrap } as never, computed(() => emptyData.value))
+    const api = useTableColumns(
+      p as never,
+      { value: wrap } as never,
+      computed(() => emptyData.value),
+    )
     api._userResizedCols.value.add('name')
     api.columnWidths.value = { name: 999 }
     api.applyAutoFit()
@@ -261,7 +279,11 @@ describe('useTableColumns autoFit', () => {
   it('autoFit=false 时 applyAutoFit 不计算', async () => {
     const wrap = { getBoundingClientRect: () => ({ width: 802 }) }
     const p = { columns: cols, autoFit: false, selectable: false, bordered: false }
-    const api = useTableColumns(p as never, { value: wrap } as never, computed(() => emptyData.value))
+    const api = useTableColumns(
+      p as never,
+      { value: wrap } as never,
+      computed(() => emptyData.value),
+    )
     api.applyAutoFit()
     await settleAutoFit()
     expect(api.columnWidths.value).toEqual({})
@@ -271,7 +293,11 @@ describe('useTableColumns autoFit', () => {
 describe('useTableColumns 固定列偏移', () => {
   it('fixedLeftOffsets：selectable 时首列起点含 40 复选框宽，后续列累加实际列宽', () => {
     const p = { columns: cols, selectable: true, bordered: false }
-    const api = useTableColumns(p as never, { value: null } as never, computed(() => emptyData.value))
+    const api = useTableColumns(
+      p as never,
+      { value: null } as never,
+      computed(() => emptyData.value),
+    )
     api.fixLeftCascade('name')
     expect(api.fixedLeftOffsets.value.id).toBe(40)
     expect(api.fixedLeftOffsets.value.name).toBe(40 + 71) // id 无用户列宽 → 表头最小宽 71
@@ -279,7 +305,12 @@ describe('useTableColumns 固定列偏移', () => {
 
   it('fixedRightOffsets：右侧固定列先让出操作列宽度（actionsWidth）', () => {
     const p = { columns: cols, selectable: false, bordered: false }
-    const api = useTableColumns(p as never, { value: null } as never, computed(() => emptyData.value), computed(() => 80))
+    const api = useTableColumns(
+      p as never,
+      { value: null } as never,
+      computed(() => emptyData.value),
+      computed(() => 80),
+    )
     api.fixRightCascade('city')
     expect(api.fixedRightOffsets.value.city).toBe(80)
   })
@@ -295,12 +326,20 @@ describe('useTableColumns 双击单列自适应与卡片视图', () => {
 
   it('isCardView：cardBreakpoint 未设恒 false；设了则按窗口宽判定', () => {
     const p = { columns: cols, cardBreakpoint: 0 }
-    const api = useTableColumns(p as never, { value: null } as never, computed(() => emptyData.value))
+    const api = useTableColumns(
+      p as never,
+      { value: null } as never,
+      computed(() => emptyData.value),
+    )
     api._windowWidth.value = 320
     expect(api.isCardView.value).toBe(false)
 
     const p2 = { columns: cols, cardBreakpoint: 768 }
-    const api2 = useTableColumns(p2 as never, { value: null } as never, computed(() => emptyData.value))
+    const api2 = useTableColumns(
+      p2 as never,
+      { value: null } as never,
+      computed(() => emptyData.value),
+    )
     api2._windowWidth.value = 320
     expect(api2.isCardView.value).toBe(true)
     api2._windowWidth.value = 1024
@@ -309,7 +348,11 @@ describe('useTableColumns 双击单列自适应与卡片视图', () => {
 
   it('onWindowResizeCard：回写 window.innerWidth 并触发 autoFit 重算', async () => {
     const p = { columns: cols, cardBreakpoint: 768 }
-    const api = useTableColumns(p as never, { value: null } as never, computed(() => emptyData.value))
+    const api = useTableColumns(
+      p as never,
+      { value: null } as never,
+      computed(() => emptyData.value),
+    )
     api.onWindowResizeCard()
     expect(api._windowWidth.value).toBe(window.innerWidth)
     await settleAutoFit() // 双 RAF 收敛

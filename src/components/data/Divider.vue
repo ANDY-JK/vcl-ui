@@ -48,8 +48,8 @@ withDefaults(defineProps<Props>(), {
   border-top-style: dashed;
 }
 .divider-text {
-  padding: 0 clamp(var(--space-2), 2vw, 16px);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  padding: 0 calc(16px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   white-space: nowrap;
 }
@@ -58,7 +58,7 @@ withDefaults(defineProps<Props>(), {
   display: inline-block;
   width: 1px;
   height: 100%;
-  min-height: clamp(12px, 2vw, 16px);
+  min-height: calc(16px * var(--vcl-scale));
   border-left: 1px solid var(--color-border);
   align-self: stretch;
 }

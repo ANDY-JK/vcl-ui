@@ -34,19 +34,19 @@
 | `getComponentType` | 获取透传给原子组件的 type prop 值 |
 | `getFieldComponent` | 获取渲染组件 |
 | `getRegisteredTypes` | 获取所有已注册的字段类型列表 |
-| `registerField` | 注册自定义字段类型使用示例：```tsimport { registerField } from '@/components/form-builder'import MyRichText from './MyRichText.vue'registerField({  type: 'rich-text',  category: 'input',       // 复用 Input 分支（需有 v-model + label + props）  component: MyRichText,  componentType: 'rich-text',  isLayout: false,  label: '自定义富文本',   // 原始文案或 i18n key 均可  icon: 'type',  group: '高级字段',})```注册后可在 FormSchema 中使用 `type: 'rich-text'` 字段 |
+| `registerField` | 注册自定义字段类型 |
 | `isFieldRegistered` | 判断字段类型是否已注册 |
 | `toDynamicFormSchema` | 旧版 DynamicForm 配置 → 新版 FormSchema |
 | `contractCollectionSchema` | 预置模板：合同收集表单 Schema（返利函/合同类场景的字段编排） |
 | `containerDemoNodes` | 预置模板：容器演示节点树（grid/flex/tabs/collapse/steps 五类容器的编排示例） |
 | `containerDemoMeta` | 预置模板：容器演示的表单元信息（标题/描述等 meta） |
 | `storeReportSchema` | 预置模板：门店提报表单 Schema（陈列检查/提报类场景的字段编排） |
-| `getFieldTypes` | 节点类型注册表 — 从 fieldRegistry 派生（单一事实源）新增/修改字段类型只需改 fieldRegistry，此处自动同步。label/group 在调用时翻译（fieldRegistry 存 i18n key），函数形式保证响应语言切换。 |
+| `getFieldTypes` | 节点类型注册表 — 从 fieldRegistry 派生（单一事实源） |
 | `createField` | 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） |
 | `genFieldId` | 生成节点实例 id |
 | `genRecordId` | 生成收集记录 id |
-| `collectStorageKey` | 收集记录存储 key：基于字段结构指纹。 仅用于无表单 id 的场景（FormCollect 独立嵌入、完整分享码）， 已保存表单一律用 formCollectStorageKey(id)——指纹相同会让不同表单共用一个数据桶。 |
-| `toFormSchema` | 设计数据 → FormSchema（FormBuilder 可渲染格式）v3 变化：- 支持 nodes 树形结构（优先）- 兼容旧版 fields 平铺结构- 容器节点转换为字段的 container 归属信息（不再丢弃） |
+| `collectStorageKey` | 收集记录存储 key：基于字段结构指纹。 |
+| `toFormSchema` | 设计数据 → FormSchema（FormBuilder 可渲染格式） |
 | `parseCascaderOptions` | 解析 cascader JSON 文本；失败返回 null（原在 domain.ts，随 schema 转换职责迁入本文件） |
 | `getTypeLabel` | 节点类型 → 中文标签（委托 fieldRegistry，单一事实源） |
 | `flattenNodes` | 深度优先遍历节点树，返回所有节点（扁平化） |
@@ -54,7 +54,7 @@
 | `findParent` | 查找节点的父节点和索引 |
 | `updateNodeInTree` | 不可变更新：替换节点树中指定 id 的节点 |
 | `removeNodeFromTree` | 不可变更新：删除节点树中指定 id 的节点 |
-| `insertNode` | 不可变更新：在指定位置插入节点@param nodes 节点列表@param node 要插入的节点@param index 插入位置（-1 或超出长度则追加到末尾） |
+| `insertNode` | 不可变更新：在指定位置插入节点 |
 | `insertChildNode` | 不可变更新：在容器节点的 children 中插入子节点 |
 | `moveNodeInTree` | 不可变更新：移动节点（从原位置移到新位置） |
 | `isContainerNode` | 判断节点是否为容器节点 |

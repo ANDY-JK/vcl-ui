@@ -20,14 +20,18 @@ import { execFileSync } from 'node:child_process'
 
 const OUT = 'CHANGELOG.md'
 const PKG = JSON.parse(readFileSync('package.json', 'utf8'))
-const since = process.argv.includes('--since')
-  ? process.argv[process.argv.indexOf('--since') + 1]
-  : null
+const since = process.argv.includes('--since') ? process.argv[process.argv.indexOf('--since') + 1] : null
 
 const SEP = '\x1f'
 const log = execFileSync(
   'git',
-  ['log', '--no-merges', '--pretty=format:%h' + SEP + '%s' + SEP + '%ad', '--date=short', ...(since ? [since + '..HEAD'] : [])],
+  [
+    'log',
+    '--no-merges',
+    '--pretty=format:%h' + SEP + '%s' + SEP + '%ad',
+    '--date=short',
+    ...(since ? [since + '..HEAD'] : []),
+  ],
   { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
 ).trim()
 
@@ -74,7 +78,9 @@ lines.push(
     ? '本文件由 `npm run changelog` 从 conventional commits 增量重生成（`--since`），历史版本段原样保留，请勿手改。'
     : '本文件由 `npm run changelog` 从 conventional commits 全量重生成，请勿手改。',
 )
-lines.push(`格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。`)
+lines.push(
+  `格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。`,
+)
 lines.push('')
 lines.push('## [Unreleased]')
 lines.push('')

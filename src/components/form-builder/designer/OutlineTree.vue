@@ -304,11 +304,11 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
   cursor: pointer;
   flex-shrink: 0;
-  border-radius: 3px;
+  border-radius: calc(3px * var(--vcl-scale));
   transition: background 0.15s;
 }
 .ldo-expand-toggle:hover {
@@ -317,7 +317,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
 /* 无子节点时的占位（保持对齐） */
 .ldo-expand-placeholder {
   display: inline-block;
-  width: 16px;
+  width: calc(16px * var(--vcl-scale));
   flex-shrink: 0;
 }
 
@@ -337,8 +337,8 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
 .ldo-node.ldo-drop-after::after {
   content: '';
   position: absolute;
-  left: 4px;
-  right: 4px;
+  left: calc(4px * var(--vcl-scale));
+  right: calc(4px * var(--vcl-scale));
   height: 2px;
   background: var(--color-primary, #3b82f6);
   border-radius: 1px;

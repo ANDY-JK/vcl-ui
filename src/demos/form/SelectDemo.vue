@@ -196,7 +196,7 @@ function onContextMenu(e: MouseEvent) {
     </p>
 
     <!-- ══════ 基础选择 ══════ -->
-    <Card title="基础选择 — 单选 / 多选 / 拼音搜索" title-as="h2" style="margin-bottom: 24px">
+    <Card title="基础选择 — 单选 / 多选 / 拼音搜索" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <p class="demo-hint">
         <code>type="select"</code>（默认）— 拼音搜索标配（<code>pinyinEnabled=true</code>）。输入
         <code>bj</code> 可搜到北京。<br />
@@ -231,7 +231,11 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 多选 tag 溢出场景 ══════ -->
-    <Card title="多选 tag 溢出 — 选项很多时 tag 区域可滚动" title-as="h2" style="margin-bottom: 24px">
+    <Card
+      title="多选 tag 溢出 — 选项很多时 tag 区域可滚动"
+      title-as="h2"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
+    >
       <p class="demo-hint">
         当多选选项很多时（如全国 32 个城市），tag 区域不会无限撑高。<br />
         <strong>防截断策略：</strong>trigger 最大高度限制 + 内部滚动；单个 tag 文本过长时
@@ -246,7 +250,11 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 可输入选择 ══════ -->
-    <Card title="可输入选择 — Combobox（本质 = select + 可输入）" title-as="h2" style="margin-bottom: 24px">
+    <Card
+      title="可输入选择 — Combobox（本质 = select + 可输入）"
+      title-as="h2"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
+    >
       <p class="demo-hint">
         <code>type="combobox"</code> —
         输入文字自动搜索匹配项，回车选中；无匹配时回车创建新选项（<code>allowCreate=true</code>）。 多选时以 tag
@@ -277,7 +285,7 @@ function onContextMenu(e: MouseEvent) {
     <Card
       title="树形选择 — Cascader 级联 / TreeSelect 树（单选 + 多选）"
       title-as="h2"
-      style="margin-bottom: 24px"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
       overflow-visible
     >
       <p class="demo-hint">
@@ -338,7 +346,12 @@ function onContextMenu(e: MouseEvent) {
     </Card>
 
     <!-- ══════ 日期 / 时间 ══════ -->
-    <Card title="日期 / 时间 — Date / DateRange / Time" title-as="h2" style="margin-bottom: 24px" overflow-visible>
+    <Card
+      title="日期 / 时间 — Date / DateRange / Time"
+      title-as="h2"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
+      overflow-visible
+    >
       <p class="demo-hint">
         <code>type="date"</code> 单日期 · <code>type="date-range"</code> 日期范围 ·
         <code>type="time"</code> 时间选择。<br />
@@ -366,7 +379,14 @@ function onContextMenu(e: MouseEvent) {
         <code>type="menu"</code> + <code>items</code> —
         操作菜单，支持分隔线（<code>divided</code>）、危险项（<code>danger</code>）、禁用项。
       </p>
-      <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px">
+      <div
+        style="
+          display: flex;
+          gap: calc(16px * var(--vcl-scale));
+          align-items: center;
+          margin-bottom: calc(16px * var(--vcl-scale));
+        "
+      >
         <Select type="menu" :items="menuItems" label="操作" />
         <span class="demo-hint">← 点击查看菜单效果</span>
       </div>
@@ -380,42 +400,42 @@ function onContextMenu(e: MouseEvent) {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 .demo-hint {
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-muted);
-  margin-bottom: 12px;
+  margin-bottom: calc(12px * var(--vcl-scale));
   line-height: 1.6;
 }
 .demo-val {
-  margin-top: 6px;
-  font-size: 12px;
+  margin-top: calc(6px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 .grid-2-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: calc(16px * var(--vcl-scale));
 }
 .grid-3-col {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
+  gap: calc(16px * var(--vcl-scale));
 }
 @container demo (max-width: 767px) {
   .grid-2-col,
@@ -427,11 +447,11 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100px;
+  height: calc(100px * var(--vcl-scale));
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   cursor: context-menu;
 }
 </style>

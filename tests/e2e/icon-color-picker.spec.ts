@@ -38,7 +38,9 @@ test('取色器收到解析后的主题色，且不再刷格式警告', async ({
   await expect(pickers).toHaveCount(6)
 
   const themeHex = (await readThemeHex(page)).toLowerCase()
-  const values: string[] = await pickers.evaluateAll((els) => els.map((el) => (el as HTMLInputElement).value.toLowerCase()))
+  const values: string[] = await pickers.evaluateAll((els) =>
+    els.map((el) => (el as HTMLInputElement).value.toLowerCase()),
+  )
 
   for (const v of values) expect(v).toMatch(HEX6)
   // 主题色本身不是黑：值为 #000000 说明令牌没解析出来（改动前浏览器拒收后就是这个值）

@@ -66,14 +66,31 @@ const cases: Array<[string, unknown, Record<string, unknown>]> = [
   ['ConfirmContent', ConfirmContent, { message: '确定删除？', variant: 'danger' }],
   ['Toast', Toast, { visible: false, message: '提示' }],
   ['Popover', Popover, { title: '说明', content: '内容' }],
-  ['Tabs', Tabs, { modelValue: 'a', tabs: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }] }],
+  [
+    'Tabs',
+    Tabs,
+    {
+      modelValue: 'a',
+      tabs: [
+        { key: 'a', label: 'A' },
+        { key: 'b', label: 'B' },
+      ],
+    },
+  ],
   ['Steps', Steps, { current: 1, steps: [{ title: '一' }, { title: '二' }] }],
   ['Pagination', Pagination, { current: 1, total: 10 }],
   ['Breadcrumb', Breadcrumb, { items: [{ label: '首页' }, { label: '列表' }] }],
   ['Chart', Chart, { type: 'bar', data: { x: ['A'], series: [{ name: 's', data: [1] }] } }],
   ['BaseChart', BaseChart, { option: { xAxis: { type: 'category' }, yAxis: {}, series: [] } }],
   ['FormBuilder', FormBuilder, { schema: { schemaVersion: 1, meta: { title: 't' }, fields: [] } }],
-  ['FormRenderer', FormRenderer, { schema: { schemaVersion: 1, meta: { title: 't' }, fields: [] }, field: { id: 'f1', type: 'text', label: '字段' } }],
+  [
+    'FormRenderer',
+    FormRenderer,
+    {
+      schema: { schemaVersion: 1, meta: { title: 't' }, fields: [] },
+      field: { id: 'f1', type: 'text', label: '字段' },
+    },
+  ],
   ['AmapWidget', AmapWidget, { lng: 116, lat: 39 }],
 ]
 

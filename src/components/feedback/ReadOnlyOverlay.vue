@@ -120,11 +120,11 @@ onUnmounted(detach)
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(var(--space-2), 1.5vw, 12px);
+  gap: calc(12px * var(--vcl-scale));
   color: white;
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 22), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   text-align: center;
-  padding: clamp(var(--space-3), 2.5vw, 20px);
+  padding: calc(20px * var(--vcl-scale));
 }
 
 .fade-enter-active,

@@ -233,9 +233,7 @@ describe('installErrorGuard · 异步链错误', () => {
 
     expect(seen).toHaveLength(1)
     expect(seen[0].detail).toBe('img:https://cdn.example.com/assets/a.png')
-    expect((seen[0].error as Error).message).toBe(
-      '资源加载失败：<img> https://cdn.example.com/assets/a.png',
-    )
+    expect((seen[0].error as Error).message).toBe('资源加载失败：<img> https://cdn.example.com/assets/a.png')
   })
 
   it('同页多份拷贝（多 bundle）：后装实例接管，不重复上报', async () => {

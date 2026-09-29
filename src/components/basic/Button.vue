@@ -54,7 +54,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <span v-if="_e" style="color: var(--color-danger); font-size: var(--fs-12)">⚠ {{ t('basic.buttonError') }}</span>
+  <span v-if="_e" style="color: var(--color-danger-on-surface); font-size: var(--fs-12)"
+    >⚠ {{ t('basic.buttonError') }}</span
+  >
   <button
     v-else
     type="button"
@@ -111,21 +113,21 @@ const emit = defineEmits<{
 
 /* 尺寸 — 弹性高度，移动端不小于 44px 触控标准 */
 .btn-sm {
-  height: clamp(30px, 5vw, 32px);
-  padding: 0 clamp(var(--space-2), 1.5vw, 12px);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  height: calc(32px * var(--vcl-scale));
+  padding: 0 calc(12px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
   border-radius: var(--radius-sm);
 }
 .btn-md {
-  height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
-  padding: 0 var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px));
-  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
+  height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
+  padding: 0 var(--ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
   border-radius: var(--ctrl-radius, var(--radius-md));
 }
 .btn-lg {
-  height: calc(var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px)) + 6px);
-  padding: 0 calc(var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px)) + 4px);
-  font-size: calc(var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px)) + 1px);
+  height: calc(var(--ctrl-height, calc(42px * var(--vcl-scale))) + 6px * var(--vcl-scale));
+  padding: 0 calc(var(--ctrl-padding-x, calc(14px * var(--vcl-scale))) + 4px * var(--vcl-scale));
+  font-size: calc(var(--ctrl-font-size, calc(14px * var(--vcl-scale))) + 1px);
 }
 
 /* 变体 */
@@ -151,11 +153,13 @@ const emit = defineEmits<{
 }
 
 .btn-outline {
-  /* 描边按钮的文字/边框用 solid 档：主色基色在白底上实测对比度 4.28（低于 AA 4.5）；
-     solid 档 5.84 达标且仍在同一主色相，视觉无感差 */
+  /* 描边按钮的文字用主题自适应主色：亮色压白底 5.84、暗色压暗底 4.83，两端都过 AA。
+     直接用 --color-primary 在亮底只有 4.28；用 -solid 则在暗底掉到 2.89
+     （-solid 是为实心底压白字设计的，不随主题提亮，见 tokens.css 注释） */
   background: transparent;
-  color: var(--color-primary-solid);
-  border-color: var(--color-primary-solid);
+  color: var(--color-primary-on-surface);
+  /* 描边跟文字同色，暗色下才不会出现「亮文字 + 深描边」的割裂感 */
+  border-color: var(--color-primary-on-surface);
 }
 .btn-outline:hover:not(:disabled) {
   background: var(--color-primary-light);

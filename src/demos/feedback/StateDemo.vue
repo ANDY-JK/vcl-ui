@@ -13,8 +13,14 @@ const readonlyVisible = ref(false)
     <h1 class="demo-title">State 状态 / 离线 & 只读</h1>
     <p class="demo-desc">离线提示 / 只读遮罩。</p>
 
-    <Card title="OfflineIndicator - 离线提示" title-as="h2" style="margin-bottom: 24px">
-      <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
+    <Card title="OfflineIndicator - 离线提示" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <p
+        style="
+          font-size: calc(13px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         断网时顶部自动显示黄色横幅。你可以断开网络测试，或查看页面顶部。
       </p>
       <OfflineIndicator />
@@ -27,33 +33,63 @@ const readonlyVisible = ref(false)
         v-if="readonlyVisible"
         text="关闭遮罩"
         variant="primary"
-        style="margin-top: 8px; display: block"
+        style="margin-top: calc(8px * var(--vcl-scale)); display: block"
         @click="readonlyVisible = false"
       />
     </Card>
 
-    <Card title="Props — ReadOnlyOverlay" title-as="h2" style="margin-top: 24px">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+    <Card title="Props — ReadOnlyOverlay" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 6px 8px">Prop</th>
-            <th style="padding: 6px 8px">类型</th>
-            <th style="padding: 6px 8px">默认值</th>
-            <th style="padding: 6px 8px">说明</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认值</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)"><code>visible</code></td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">显示/隐藏</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>visible</code>
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              boolean
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              —
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              显示/隐藏
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px"><code>reason</code></td>
-            <td style="padding: 6px 8px">string</td>
-            <td style="padding: 6px 8px">'系统维护中，当前为只读模式'</td>
-            <td style="padding: 6px 8px">只读原因说明</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))"><code>reason</code></td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              '系统维护中，当前为只读模式'
+            </td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">只读原因说明</td>
           </tr>
         </tbody>
       </table>
@@ -63,13 +99,13 @@ const readonlyVisible = ref(false)
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 </style>

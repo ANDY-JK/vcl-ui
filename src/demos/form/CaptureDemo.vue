@@ -39,24 +39,24 @@ import BarcodeScannerDemo from './BarcodeScannerDemo.vue'
 <style scoped>
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: calc(8px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.7;
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 /* 段落分隔：虚线 + 大间距（各段自带 h2 标题，这里只做视觉切分） */
 .cap-section {
-  padding-top: 28px;
-  margin-top: 20px;
+  padding-top: calc(28px * var(--vcl-scale));
+  margin-top: calc(20px * var(--vcl-scale));
   border-top: 1px dashed var(--color-border);
 }
 .cap-section:first-of-type {
-  padding-top: 12px;
+  padding-top: calc(12px * var(--vcl-scale));
   margin-top: 0;
   border-top: none;
 }

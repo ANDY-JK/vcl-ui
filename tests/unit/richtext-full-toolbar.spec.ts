@@ -45,7 +45,17 @@ describe('richtext full 工具栏（文章场景）', () => {
 
   it('full 档渲染文章命令集与字数条', () => {
     const wrapper = mountRichtext({ richtextToolbar: 'full' })
-    for (const label of ['一级标题', '引用', '插入链接', '插入图片', '插入表格', '撤销', '清除格式', '预览', '全屏编辑']) {
+    for (const label of [
+      '一级标题',
+      '引用',
+      '插入链接',
+      '插入图片',
+      '插入表格',
+      '撤销',
+      '清除格式',
+      '预览',
+      '全屏编辑',
+    ]) {
       expect(btn(wrapper, label).exists(), label).toBe(true)
     }
     expect(wrapper.find('.fb-rt-status').text()).toBe('4 字')

@@ -2,10 +2,10 @@
    左栏：组件选择器 — IDE 风格
    ================================ */
 .ldp-panel {
-  width: 220px;
+  width: calc(220px * var(--vcl-scale));
   flex-shrink: 0;
   overflow-y: auto;
-  padding: 10px 8px;
+  padding: calc(10px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   background: var(--color-bg-alt, #f8fafc);
   border-right: 1px solid var(--color-border-light, #f1f5f9);
 }
@@ -14,8 +14,8 @@
 .ldp-panel-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 10px 6px;
+  gap: calc(6px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
   font-size: var(--fs-11);
   font-weight: 700;
   color: var(--color-text-muted, #94a3b8);
@@ -28,11 +28,11 @@
 .ldp-search {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  margin: 0 8px 6px;
+  gap: calc(5px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+  margin: 0 calc(8px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
   border: 1px solid var(--color-border-light, #e5e7eb);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-bg, #fff);
 }
 .ldp-search-input {
@@ -51,8 +51,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: calc(20px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
   border: none;
   border-radius: 50%;
   background: var(--color-bg-alt, #f1f5f9);
@@ -62,10 +62,10 @@
 }
 .ldp-search-clear:hover {
   background: var(--color-danger-bg);
-  color: var(--color-danger, #dc2626);
+  color: var(--color-danger-on-surface);
 }
 .ldp-search-empty {
-  padding: 20px 10px;
+  padding: calc(20px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   text-align: center;
   font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
@@ -73,13 +73,13 @@
 
 /** 分组标题 */
 .ldp-group {
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .ldp-group-title {
   font-size: var(--fs-10);
   font-weight: 700;
   color: var(--color-text-muted, #9ca3af);
-  padding: 4px 10px 3px;
+  padding: calc(4px * var(--vcl-scale)) calc(10px * var(--vcl-scale)) calc(3px * var(--vcl-scale));
   letter-spacing: 0.4px;
   user-select: none;
 }
@@ -88,13 +88,13 @@
 .ldp-field-item {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: calc(7px * var(--vcl-scale));
   width: 100%;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-surface);
   color: var(--color-text-secondary, #475569);
-  padding: 7px 10px;
+  padding: calc(7px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   margin-bottom: 2px;
   font-size: var(--fs-12);
   font-weight: 500;
@@ -119,9 +119,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 5px;
+  width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
+  border-radius: calc(5px * var(--vcl-scale));
   background: var(--color-bg-soft, #f1f5f9);
   color: var(--color-text-muted, #94a3b8);
   flex-shrink: 0;

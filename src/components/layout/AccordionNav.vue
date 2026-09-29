@@ -170,7 +170,7 @@ const effectiveExpanded = computed(() => {
 .nav-empty {
   padding: var(--space-4) var(--space-3);
   text-align: center;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-sidebar-text);
   opacity: 0.6;
 }
@@ -200,7 +200,7 @@ const effectiveExpanded = computed(() => {
   outline: none;
   background: transparent;
   color: var(--color-sidebar-text);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   line-height: 1.5;
 }
 .nav-search-input::placeholder {
@@ -236,7 +236,7 @@ const effectiveExpanded = computed(() => {
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--color-sidebar-text);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   opacity: 0.85;
   cursor: pointer;
   transition:
@@ -278,9 +278,9 @@ const effectiveExpanded = computed(() => {
 .nav-leaf-root.active::before {
   content: '';
   position: absolute;
-  left: 6px;
-  top: 4px;
-  bottom: 4px;
+  left: calc(6px * var(--vcl-scale));
+  top: calc(4px * var(--vcl-scale));
+  bottom: calc(4px * var(--vcl-scale));
   width: 2px;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
@@ -294,9 +294,9 @@ const effectiveExpanded = computed(() => {
   padding: var(--space-2) 0;
 }
 .collapsed .nav-leaf-root.active::before {
-  left: 4px;
-  top: 3px;
-  bottom: 3px;
+  left: calc(4px * var(--vcl-scale));
+  top: calc(3px * var(--vcl-scale));
+  bottom: calc(3px * var(--vcl-scale));
   width: 1.5px;
 }
 </style>

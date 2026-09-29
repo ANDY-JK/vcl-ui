@@ -112,10 +112,10 @@ function onKeydown(e: KeyboardEvent) {
   border-bottom: 1.5px solid var(--color-border);
 }
 .tabs-underline .tab-btn {
-  padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 2vw, 16px);
+  padding: var(--space-2) calc(16px * var(--vcl-scale));
   border: none;
   background: transparent;
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -126,23 +126,23 @@ function onKeydown(e: KeyboardEvent) {
   color: var(--color-text);
 }
 .tabs-underline .tab-btn.active {
-  color: var(--color-primary-solid); /* AA：主色基色压白底实测仅 4.28，solid 档 5.84 */
+  color: var(--color-primary-on-surface); /* AA：主色基色压白底实测仅 4.28，solid 档 5.84 */
   border-bottom-color: var(--color-primary);
   font-weight: 500;
 }
 
 /* pills */
 .tabs-pills {
-  gap: clamp(3px, 0.5vw, var(--space-1));
-  padding: clamp(3px, 0.5vw, var(--space-1));
+  gap: var(--space-1);
+  padding: var(--space-1);
   background: var(--color-bg-alt);
   border-radius: var(--radius-lg);
 }
 .tabs-pills .tab-btn {
-  padding: clamp(var(--space-1), 1vw, 8px) clamp(10px, 2vw, 16px);
+  padding: calc(8px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border: none;
   background: transparent;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
   cursor: pointer;
   border-radius: var(--radius-md);
@@ -160,10 +160,10 @@ function onKeydown(e: KeyboardEvent) {
 
 /* card */
 .tabs-card .tab-btn {
-  padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 2vw, 16px);
+  padding: var(--space-2) calc(16px * var(--vcl-scale));
   border: 1.5px solid var(--color-border);
   background: var(--color-bg);
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -180,7 +180,7 @@ function onKeydown(e: KeyboardEvent) {
 .tabs-card .tab-btn.active {
   background: var(--color-primary-light);
   border-color: var(--color-primary);
-  color: var(--color-primary-solid);
+  color: var(--color-primary-on-surface);
   z-index: 1;
 }
 
@@ -195,11 +195,11 @@ function onKeydown(e: KeyboardEvent) {
   flex-direction: column;
   align-items: center;
   gap: var(--space-1);
-  padding: clamp(6px, 1vw, 8px) clamp(3px, 0.5vw, var(--space-1));
+  padding: calc(8px * var(--vcl-scale)) var(--space-1);
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   transition: color var(--transition-fast);
 }

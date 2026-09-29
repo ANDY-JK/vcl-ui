@@ -11,7 +11,12 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { ZXING_WASM_SHA256, ZXING_WASM_VERSION } from 'zxing-wasm/reader'
-import { ZXING_WASM_DATA_BASE64, ZXING_WASM_DATA_BYTES, ZXING_WASM_DATA_SHA256, ZXING_WASM_DATA_VERSION } from '@/components/_internal/zxing-wasm-data'
+import {
+  ZXING_WASM_DATA_BASE64,
+  ZXING_WASM_DATA_BYTES,
+  ZXING_WASM_DATA_SHA256,
+  ZXING_WASM_DATA_VERSION,
+} from '@/components/_internal/zxing-wasm-data'
 
 const repoRoot = process.cwd()
 const decoded = Uint8Array.from(atob(ZXING_WASM_DATA_BASE64), (c) => c.charCodeAt(0))
@@ -30,9 +35,7 @@ describe('随包 zxing wasm 二进制', () => {
   })
 
   it('仓内件现场重算的 sha256 ＝ 文件头登记的 sha256', () => {
-    const recalc = createHash('sha256')
-      .update(Buffer.from(ZXING_WASM_DATA_BASE64, 'base64'))
-      .digest('hex')
+    const recalc = createHash('sha256').update(Buffer.from(ZXING_WASM_DATA_BASE64, 'base64')).digest('hex')
     expect(recalc).toBe(ZXING_WASM_DATA_SHA256)
   })
 

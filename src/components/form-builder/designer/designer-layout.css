@@ -3,8 +3,8 @@
    ================================ */
 .ld-body {
   display: flex;
-  height: 640px;
-  min-height: 340px;
+  height: calc(640px * var(--vcl-scale));
+  min-height: calc(340px * var(--vcl-scale));
   /* 窄视口下画布列被 min-width:0 压到极窄（空态提示逐字竖排）——
      画布有 260px 下限，总宽超出时在主体内横向滚动，不挤破页面 */
   overflow-x: auto;
@@ -31,7 +31,7 @@
 .ld-splitter {
   position: relative;
   flex: 0 0 6px;
-  margin: 0 -3px;
+  margin: 0 calc(-3px * var(--vcl-scale));
   cursor: col-resize;
   z-index: 2;
   background: transparent;

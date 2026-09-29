@@ -10,9 +10,7 @@ const ROOT = process.cwd()
 
 // 从 demoMap 解析路由 key，避免手写清单与源码漂移
 const demoSource = fs.readFileSync(path.join(ROOT, 'src/demos/ComponentDemo.vue'), 'utf8')
-const ROUTES = [...demoSource.matchAll(/^\s*'?([a-z][a-z0-9-]*)'?:\s*defineAsyncComponent/gm)].map(
-  (m) => m[1],
-)
+const ROUTES = [...demoSource.matchAll(/^\s*'?([a-z][a-z0-9-]*)'?:\s*defineAsyncComponent/gm)].map((m) => m[1])
 
 // 噪音分两档，两档都不许扩散：
 // 1) THIRD_PARTY —— 内核/三方渲染产生的，本库改不掉（WebGL 驱动提示等）。
@@ -40,8 +38,10 @@ const THIRD_PARTY = [
 ]
 
 const BY_DESIGN: Record<string, RegExp[]> = {
-  // IconPicker 面板枚举 lucide 全量名，未进子集的名字必然走 IconSvg 的一次性兜底告警
-  icon: [/lucide 图标未收录/],
+  // [2026-09-29 豁免已撤] icon 页曾因「IconPicker 枚举 lucide 全量名、未进子集的名字必然兜底告警」
+  // 而整页放行 /lucide 图标未收录/ —— 这条豁免把真缺陷盖住了：面板 96% 的格子点不出图。
+  // 现已改为名录=可渲染子集（IconPicker 直接读 lucideSubset 的键），告警理应绝迹，
+  // 故撤掉豁免：该告警在本页再出现即为真回退（有人又把全量名录接回来），必须红。
   // 本页就是错误边界演示：点「触发异常」必然打出捕获日志
   'error-boundary': [/\[ErrorBoundary\] 捕获组件错误/],
   // 无头浏览器里通知权限恒为 denied，演示「发系统通知」只能打出这条
@@ -117,12 +117,10 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
       // 关掉可能残留的遮罩，避免下一次点击被挡住
       await page
         .evaluate(() => {
-          document
-            .querySelectorAll('.modal-overlay, .drawer-overlay, .popover-mask, .vcl-modal-mask')
-            .forEach((el) => {
-              const e = el as HTMLElement
-              if (e.style.display !== 'none') e.style.display = 'none'
-            })
+          document.querySelectorAll('.modal-overlay, .drawer-overlay, .popover-mask, .vcl-modal-mask').forEach((el) => {
+            const e = el as HTMLElement
+            if (e.style.display !== 'none') e.style.display = 'none'
+          })
         })
         .catch(() => {})
     }
@@ -184,6 +182,8 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
   }
 
   // 只打印不判红的审计等于没有审计：此前本用例零断言，44 页里 4 页有噪音也照样"通过"
-  const verdict = bad.map(([k, v]) => `${k}: ${v.boundary ? '错误边界接管 ' : ''}${v.msgs.map((m) => `${m.type}«${m.text}»`).join(' | ')}`)
+  const verdict = bad.map(
+    ([k, v]) => `${k}: ${v.boundary ? '错误边界接管 ' : ''}${v.msgs.map((m) => `${m.type}«${m.text}»`).join(' | ')}`,
+  )
   expect(verdict, `${bad.length} 页存在非豁免噪音，详见 reports/site-audit.json`).toEqual([])
 })

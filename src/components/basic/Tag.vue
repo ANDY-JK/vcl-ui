@@ -161,20 +161,20 @@ const supStyle = computed(() => {
 }
 .tag-sm {
   padding: 1px var(--space-2);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 .tag-md {
-  padding: var(--space-1) 10px;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  padding: var(--space-1) calc(10px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
 }
 .tag.rounded {
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
 }
 
 /* dot 模式：纯圆点 */
 .tag.dot {
-  width: 8px;
-  height: 8px;
+  width: calc(8px * var(--vcl-scale));
+  height: calc(8px * var(--vcl-scale));
   padding: 0;
   border-radius: 50%;
   border: none;
@@ -182,12 +182,12 @@ const supStyle = computed(() => {
   min-height: 0;
 }
 .tag.dot.tag-sm {
-  width: 6px;
-  height: 6px;
+  width: calc(6px * var(--vcl-scale));
+  height: calc(6px * var(--vcl-scale));
 }
 .tag.dot.tag-md {
-  width: 8px;
-  height: 8px;
+  width: calc(8px * var(--vcl-scale));
+  height: calc(8px * var(--vcl-scale));
 }
 /* 有文字时恢复正常尺寸 */
 .tag-has-text {
@@ -205,7 +205,7 @@ const supStyle = computed(() => {
   /* 同其它语义色口径：浅底上的文字用深档令牌。--color-primary 基色压在
      --color-primary-light 上实测对比度不足 AA；solid 档（5.84）达标 */
   background: var(--color-primary-light);
-  color: var(--color-primary-solid);
+  color: var(--color-primary-on-surface);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-sm);
 }
@@ -217,7 +217,7 @@ const supStyle = computed(() => {
 }
 .tag-danger {
   background: var(--color-danger-bg);
-  color: var(--color-danger-hover);
+  color: var(--color-danger-on-surface);
   border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-sm);
 }
@@ -261,15 +261,15 @@ const supStyle = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: clamp(16px, 2vw, 18px);
-  height: clamp(16px, 2vw, 18px);
-  padding: 0 clamp(var(--space-1), 0.8vw, 6px);
-  border-radius: 100px;
+  min-width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
+  padding: 0 calc(6px * var(--vcl-scale));
+  border-radius: calc(100px * var(--vcl-scale));
   /* 实心底压白字：用 --color-danger-solid（暗色下 --color-danger 被提亮为 #f87171，
      白字对比度仅 2.77 不达标） */
   background: var(--color-danger-solid, var(--color-danger));
   color: #ffffff;
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
@@ -284,9 +284,9 @@ const supStyle = computed(() => {
 
 /* 红点模式 */
 .tag-sup.tag-dot {
-  width: clamp(8px, 1vw, 10px);
-  min-width: clamp(8px, 1vw, 10px);
-  height: clamp(8px, 1vw, 10px);
+  width: calc(10px * var(--vcl-scale));
+  min-width: calc(10px * var(--vcl-scale));
+  height: calc(10px * var(--vcl-scale));
   padding: 0;
   border-radius: 50%;
 }

@@ -82,7 +82,10 @@ test.describe('ImagePreview 变换/手势语义', () => {
     await expect(page.locator('.ip-counter')).toHaveText('1 / 4')
     await page.locator('.ip-arrow-right').click()
     await expect(page.locator('.ip-counter')).toHaveText('2 / 4')
+    // 断言「切到了下一张」而不是写死某个图床路径：
+    // 素材已改为本地内联 SVG（见 demo-images.ts），断言具体 URL 会随素材来源变化而假红。
     const src2 = await page.locator('.ip-img').getAttribute('src')
-    expect(src2).toContain('seed/b2')
+    expect(src2).not.toContain('seed/a1')
+    expect(src2?.length ?? 0).toBeGreaterThan(0)
   })
 })

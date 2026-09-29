@@ -17,7 +17,12 @@ function mockTouch() {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     writable: true,
-    value: (q: string) => ({ matches: q.includes('coarse'), media: q, addEventListener() {}, removeEventListener() {} }),
+    value: (q: string) => ({
+      matches: q.includes('coarse'),
+      media: q,
+      addEventListener() {},
+      removeEventListener() {},
+    }),
   })
 }
 const originalMatchMedia = window.matchMedia
@@ -26,7 +31,9 @@ function mockPermissionDenied() {
   Object.defineProperty(navigator, 'mediaDevices', {
     configurable: true,
     value: {
-      getUserMedia: vi.fn().mockRejectedValue(Object.assign(new Error('Permission denied'), { name: 'NotAllowedError' })),
+      getUserMedia: vi
+        .fn()
+        .mockRejectedValue(Object.assign(new Error('Permission denied'), { name: 'NotAllowedError' })),
       enumerateDevices: vi.fn().mockResolvedValue([]),
     },
   })

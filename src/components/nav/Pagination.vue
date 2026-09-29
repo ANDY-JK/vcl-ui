@@ -136,13 +136,13 @@ function onJumperKeyup(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: clamp(30px, 4.5vw, 34px);
-  height: clamp(30px, 4.5vw, 34px);
+  min-width: calc(34px * var(--vcl-scale));
+  height: calc(34px * var(--vcl-scale));
   padding: 0 var(--space-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -167,8 +167,8 @@ function onJumperKeyup(e: KeyboardEvent) {
 }
 
 .page-info {
-  margin-left: clamp(var(--space-2), 1.5vw, 12px);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  margin-left: calc(12px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
@@ -179,13 +179,13 @@ function onJumperKeyup(e: KeyboardEvent) {
 }
 
 .jumper-input {
-  width: clamp(48px, 7vw, 56px);
-  height: clamp(30px, 4.5vw, 34px);
+  width: calc(56px * var(--vcl-scale));
+  height: calc(34px * var(--vcl-scale));
   padding: 0 var(--space-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
   outline: none;
   box-sizing: border-box;

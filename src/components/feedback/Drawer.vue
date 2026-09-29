@@ -255,12 +255,12 @@ onUnmounted(unmountEsc)
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(var(--space-2), 2vw, 16px) clamp(12px, 2.5vw, 20px);
+  padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 .drawer-title {
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 22), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
 }
 
@@ -280,12 +280,12 @@ onUnmounted(unmountEsc)
 .drawer-body {
   flex: 1;
   overflow-y: auto;
-  padding: clamp(var(--space-3), 2.5vw, 20px);
+  padding: calc(20px * var(--vcl-scale));
 }
 
 .drawer-footer {
   flex-shrink: 0;
-  padding: clamp(var(--space-2), 2vw, 16px) clamp(12px, 2.5vw, 20px);
+  padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   border-top: 1px solid var(--color-border-light);
 }
 

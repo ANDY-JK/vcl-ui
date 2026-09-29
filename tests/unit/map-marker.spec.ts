@@ -9,12 +9,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { describe, it, expect } from 'vitest'
-import {
-  mapMarkerIcon,
-  MAP_MARKER_BLUE,
-  MAP_MARKER_GREEN,
-  MAP_MARKER_RED,
-} from '@/components/_internal/map-marker'
+import { mapMarkerIcon, MAP_MARKER_BLUE, MAP_MARKER_GREEN, MAP_MARKER_RED } from '@/components/_internal/map-marker'
 
 const SRC = path.join(process.cwd(), 'src')
 

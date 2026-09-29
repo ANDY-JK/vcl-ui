@@ -14,14 +14,34 @@ import ts from 'typescript'
 const ROOT = process.cwd()
 const OUT = path.join(ROOT, 'docs-site/components')
 const DOMAINS = [
-  'basic', 'data', 'form', 'feedback', 'nav', 'layout', 'chart', 'login',
-  'storage', 'wc', 'form-builder', 'amap', 'route-planner',
+  'basic',
+  'data',
+  'form',
+  'feedback',
+  'nav',
+  'layout',
+  'chart',
+  'login',
+  'storage',
+  'wc',
+  'form-builder',
+  'amap',
+  'route-planner',
 ]
 const DOMAIN_TITLES = {
-  basic: '基础组件', data: '数据展示', form: '表单输入', feedback: '反馈提示',
-  nav: '导航', layout: '布局', chart: '图表', login: '登录',
-  storage: '存储', wc: 'Web Components', 'form-builder': '低代码表单',
-  amap: '地图', 'route-planner': '路线规划',
+  basic: '基础组件',
+  data: '数据展示',
+  form: '表单输入',
+  feedback: '反馈提示',
+  nav: '导航',
+  layout: '布局',
+  chart: '图表',
+  login: '登录',
+  storage: '存储',
+  wc: 'Web Components',
+  'form-builder': '低代码表单',
+  amap: '地图',
+  'route-planner': '路线规划',
 }
 
 // ---------- 工具 ----------
@@ -85,7 +105,18 @@ function membersOfDecl(decl) {
     if (!ts.isPropertySignature(m) || !m.name) continue
     const name = m.name.getText?.() ?? String(m.name.text ?? '')
     const type = m.type ? m.type.getText() : 'unknown'
-    const doc = ts.getJSDocCommentsAndTags(m).filter((t) => ts.isJSDoc(t)).map((t) => t.getText().replace(/^\/\*\*|\*\/$/g, '').replace(/^\s*\*\s?/gm, '').trim()).join(' ').replace(/\s+/g, ' ')
+    const doc = ts
+      .getJSDocCommentsAndTags(m)
+      .filter((t) => ts.isJSDoc(t))
+      .map((t) =>
+        t
+          .getText()
+          .replace(/^\/\*\*|\*\/$/g, '')
+          .replace(/^\s*\*\s?/gm, '')
+          .trim(),
+      )
+      .join(' ')
+      .replace(/\s+/g, ' ')
     members.push({ name, optional: !!m.questionToken, type: compactType(type), doc })
   }
   return members
@@ -169,11 +200,19 @@ function parseEmits(typeNode, ctx) {
           name = firstType.literal.text
         }
         if (!name) continue
-        const rest = member.parameters.slice(1).map((p) => `${p.name.getText()}: ${p.type ? p.type.getText() : 'unknown'}`).join(', ')
+        const rest = member.parameters
+          .slice(1)
+          .map((p) => `${p.name.getText()}: ${p.type ? p.type.getText() : 'unknown'}`)
+          .join(', ')
         // 调用签名成员的 JSDoc 同样提取（此前硬编码空串，StorePanel 六事件等文档列恒为「—」）
         const js = ts.getJSDocCommentsAndTags(member).filter((t) => ts.isJSDoc(t))
         const doc = js.length
-          ? js[0].getText().replace(/^\/\*\*|\*\/$/g, '').replace(/^\s*\*\s?/gm, '').trim().split('\n')[0]
+          ? js[0]
+              .getText()
+              .replace(/^\/\*\*|\*\/$/g, '')
+              .replace(/^\s*\*\s?/gm, '')
+              .trim()
+              .split('\n')[0]
           : ''
         out.push({ name, payload: compactType(rest || '无'), doc })
         continue
@@ -186,7 +225,11 @@ function parseEmits(typeNode, ctx) {
     let payload = m.type
     const tuple = /^\[(.*)\]$/.exec(payload)
     if (tuple) payload = tuple[1]
-    else payload = payload.replace(/\)\s*=>\s*void$/, ')').replace(/^\(/, '').replace(/\)$/, '')
+    else
+      payload = payload
+        .replace(/\)\s*=>\s*void$/, ')')
+        .replace(/^\(/, '')
+        .replace(/\)$/, '')
     out.push({ name: m.name, payload: compactType(payload || '无'), doc: m.doc })
   }
   return out
@@ -250,7 +293,9 @@ function parseSlots(file) {
     }
     upsert({ name, scope, fallback, doc: slotDocs.get(name) ?? '' })
   }
-  return [...found.values()].sort((a, b) => (a.name === 'default' ? -1 : b.name === 'default' ? 1 : a.name.localeCompare(b.name)))
+  return [...found.values()].sort((a, b) =>
+    a.name === 'default' ? -1 : b.name === 'default' ? 1 : a.name.localeCompare(b.name),
+  )
 }
 
 /** 主解析：一个 .vue → { props, defaults, emits, slots, declared } */
@@ -406,7 +451,13 @@ function namedDoc(file, name, depth = 0) {
     }
     if (names.includes(name)) {
       const js = ts.getJSDocCommentsAndTags(node).filter((t) => ts.isJSDoc(t))
-      if (js.length) doc = js[0].getText().replace(/^\/\*\*|\*\/$/g, '').replace(/^\s*\*\s?/gm, '').trim().split('\n')[0]
+      if (js.length)
+        doc = js[0]
+          .getText()
+          .replace(/^\/\*\*|\*\/$/g, '')
+          .replace(/^\s*\*\s?/gm, '')
+          .trim()
+          .split('\n')[0]
     }
     ts.forEachChild(node, visit)
   }
@@ -441,119 +492,136 @@ function namedDoc(file, name, depth = 0) {
 // ---------- 生成 ----------
 /** 生成到指定目录，返回 manifest（check-docs 用临时目录调它做漂移比对） */
 export function generate(outDir) {
-const manifest = { domains: {}, unparsed: [], totalComponents: 0, totalNamed: 0 }
+  const manifest = { domains: {}, unparsed: [], totalComponents: 0, totalNamed: 0 }
 
-function mdEscape(s) {
-  return s.replace(/\|/g, '\\|').replace(/\n/g, ' ')
-}
-
-function tableRow(cells) {
-  return '| ' + cells.map((c) => mdEscape(c ?? '')).join(' | ') + ' |'
-}
-
-fs.rmSync(outDir, { recursive: true, force: true })
-fs.mkdirSync(outDir, { recursive: true })
-
-for (const domain of DOMAINS) {
-  const entries = barrelExports(domain)
-  const lines = []
-  lines.push(`# ${DOMAIN_TITLES[domain]}（${domain}）`)
-  lines.push('')
-  lines.push(`> 本页由 \`npm run gen:docs\` 从源码自动生成，请勿手改；改源码后重新生成（\`check:docs\` 闸口会卡漂移）。`)
-  lines.push('')
-  const components = entries.filter((e) => e.kind === 'component')
-  const named = entries.filter((e) => e.kind === 'named')
-  manifest.totalComponents += components.length
-  manifest.totalNamed += named.length
-  manifest.domains[domain] = { components: components.length, named: named.length }
-
-  if (components.length) {
-    lines.push('## 组件一览', '')
-    lines.push(tableRow(['组件', 'Props 数', 'Events 数', 'Slots 数']))
-    lines.push(tableRow(['---', '---', '---', '---']))
+  function mdEscape(s) {
+    return s.replace(/\|/g, '\\|').replace(/\n/g, ' ')
   }
-  for (const c of components) {
-    const api = parseComponent(c.srcFile)
-    if (!api.declared) {
-      lines.push(tableRow([`\`${c.name}\``, '0', '0', '0']))
-      continue
-    }
-    if (!api.props && !api.emits.length && !api.slots.length) {
-      manifest.unparsed.push(`${domain}/${c.name}`)
-      lines.push(tableRow([`\`${c.name}\``, '解析失败', '解析失败', '解析失败']))
-      continue
-    }
+
+  function tableRow(cells) {
+    return '| ' + cells.map((c) => mdEscape(c ?? '')).join(' | ') + ' |'
+  }
+
+  fs.rmSync(outDir, { recursive: true, force: true })
+  fs.mkdirSync(outDir, { recursive: true })
+
+  for (const domain of DOMAINS) {
+    const entries = barrelExports(domain)
+    const lines = []
+    lines.push(`# ${DOMAIN_TITLES[domain]}（${domain}）`)
+    lines.push('')
     lines.push(
-      tableRow([`\`${c.name}\``, String(api.props?.length ?? 0), String(api.emits.length), String(api.slots.length)]),
+      `> 本页由 \`npm run gen:docs\` 从源码自动生成，请勿手改；改源码后重新生成（\`check:docs\` 闸口会卡漂移）。`,
     )
-  }
-  if (named.length) {
-    lines.push('', '## 组合式函数 / 工具导出', '')
-    lines.push(tableRow(['导出', '说明']))
-    lines.push(tableRow(['---', '---']))
-    for (const n of named) {
-      const doc = namedDoc(n.srcFile, n.local)
-      lines.push(tableRow([`\`${n.name}\``, doc || '—']))
-    }
-  }
-  lines.push('', '---', '')
-  const routes = demoRoutes()
-  for (const c of components) {
-    const api = parseComponent(c.srcFile)
-    lines.push(`## \`${c.name}\``, '')
-    const route = demoRouteFor(c.name, routes)
-    if (route) {
-      lines.push(`> 🔗 在线示例：\`npm run dev\` 启动 demo 站后访问 \`#/${route}\`（Props 表与交互行为以 demo 页为准）`, '')
-    }
-    if (!api.declared) {
-      lines.push('> 该组件无 props / events / slots API（纯展示组件）。', '')
-      continue
-    }
-    if (!api.props && !api.emits.length) {
-      lines.push('> ⚠️ 自动解析失败（props 非常规形态），请直接阅读源码：`src/components/' + domain + '/' + path.basename(c.srcFile) + '`', '')
-      continue
-    }
-    if (api.props?.length) {
-      lines.push('### Props', '')
-      lines.push(tableRow(['属性', '类型', '默认值', '必填', '说明']))
-      lines.push(tableRow(['---', '---', '---', '---', '---']))
-      for (const p of api.props) {
-        const def = api.defaults.get(p.name)
-        const required = p.optional ? '否' : '是'
-        lines.push(tableRow([`\`${p.name}\``, '`' + p.type + '`', def ? '`' + def + '`' : '—', required, p.doc || '—']))
-      }
-      lines.push('')
-    } else {
-      lines.push('### Props', '', '无 props。', '')
-    }
-    if (api.emits.length) {
-      lines.push('### Events', '')
-      lines.push(tableRow(['事件', '载荷', '说明']))
-      lines.push(tableRow(['---', '---', '---']))
-      for (const e of api.emits) {
-        lines.push(tableRow([`\`${e.name}\``, '`' + e.payload + '`', e.doc || '—']))
-      }
-      lines.push('')
-    }
-    if (api.slots.length) {
-      lines.push('### Slots', '')
-      lines.push(tableRow(['插槽', '作用域参数', '说明', '兜底内容预览']))
-      lines.push(tableRow(['---', '---', '---', '---']))
-      for (const s of api.slots) {
-        lines.push(tableRow([`\`${s.name}\``, s.scope ? '`' + s.scope + '`' : '—', s.doc || '—', s.fallback || '—']))
-      }
-      lines.push('')
-    }
-  }
-  fs.writeFileSync(path.join(outDir, `${domain}.md`), lines.join('\n') + '\n')
-}
+    lines.push('')
+    const components = entries.filter((e) => e.kind === 'component')
+    const named = entries.filter((e) => e.kind === 'named')
+    manifest.totalComponents += components.length
+    manifest.totalNamed += named.length
+    manifest.domains[domain] = { components: components.length, named: named.length }
 
-fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
-return manifest
+    if (components.length) {
+      lines.push('## 组件一览', '')
+      lines.push(tableRow(['组件', 'Props 数', 'Events 数', 'Slots 数']))
+      lines.push(tableRow(['---', '---', '---', '---']))
+    }
+    for (const c of components) {
+      const api = parseComponent(c.srcFile)
+      if (!api.declared) {
+        lines.push(tableRow([`\`${c.name}\``, '0', '0', '0']))
+        continue
+      }
+      if (!api.props && !api.emits.length && !api.slots.length) {
+        manifest.unparsed.push(`${domain}/${c.name}`)
+        lines.push(tableRow([`\`${c.name}\``, '解析失败', '解析失败', '解析失败']))
+        continue
+      }
+      lines.push(
+        tableRow([`\`${c.name}\``, String(api.props?.length ?? 0), String(api.emits.length), String(api.slots.length)]),
+      )
+    }
+    if (named.length) {
+      lines.push('', '## 组合式函数 / 工具导出', '')
+      lines.push(tableRow(['导出', '说明']))
+      lines.push(tableRow(['---', '---']))
+      for (const n of named) {
+        const doc = namedDoc(n.srcFile, n.local)
+        lines.push(tableRow([`\`${n.name}\``, doc || '—']))
+      }
+    }
+    lines.push('', '---', '')
+    const routes = demoRoutes()
+    for (const c of components) {
+      const api = parseComponent(c.srcFile)
+      lines.push(`## \`${c.name}\``, '')
+      const route = demoRouteFor(c.name, routes)
+      if (route) {
+        lines.push(
+          `> 🔗 在线示例：\`npm run dev\` 启动 demo 站后访问 \`#/${route}\`（Props 表与交互行为以 demo 页为准）`,
+          '',
+        )
+      }
+      if (!api.declared) {
+        lines.push('> 该组件无 props / events / slots API（纯展示组件）。', '')
+        continue
+      }
+      if (!api.props && !api.emits.length) {
+        lines.push(
+          '> ⚠️ 自动解析失败（props 非常规形态），请直接阅读源码：`src/components/' +
+            domain +
+            '/' +
+            path.basename(c.srcFile) +
+            '`',
+          '',
+        )
+        continue
+      }
+      if (api.props?.length) {
+        lines.push('### Props', '')
+        lines.push(tableRow(['属性', '类型', '默认值', '必填', '说明']))
+        lines.push(tableRow(['---', '---', '---', '---', '---']))
+        for (const p of api.props) {
+          const def = api.defaults.get(p.name)
+          const required = p.optional ? '否' : '是'
+          lines.push(
+            tableRow([`\`${p.name}\``, '`' + p.type + '`', def ? '`' + def + '`' : '—', required, p.doc || '—']),
+          )
+        }
+        lines.push('')
+      } else {
+        lines.push('### Props', '', '无 props。', '')
+      }
+      if (api.emits.length) {
+        lines.push('### Events', '')
+        lines.push(tableRow(['事件', '载荷', '说明']))
+        lines.push(tableRow(['---', '---', '---']))
+        for (const e of api.emits) {
+          lines.push(tableRow([`\`${e.name}\``, '`' + e.payload + '`', e.doc || '—']))
+        }
+        lines.push('')
+      }
+      if (api.slots.length) {
+        lines.push('### Slots', '')
+        lines.push(tableRow(['插槽', '作用域参数', '说明', '兜底内容预览']))
+        lines.push(tableRow(['---', '---', '---', '---']))
+        for (const s of api.slots) {
+          lines.push(tableRow([`\`${s.name}\``, s.scope ? '`' + s.scope + '`' : '—', s.doc || '—', s.fallback || '—']))
+        }
+        lines.push('')
+      }
+    }
+    fs.writeFileSync(path.join(outDir, `${domain}.md`), lines.join('\n') + '\n')
+  }
+
+  fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
+  return manifest
 }
 
 // 直接运行 = 生成到 docs-site/components；被 import = 由调用方指定目录（check-docs 漂移比对）
-if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/').replace(/^.*\/scripts\//, 'scripts/'))) {
+if (
+  process.argv[1] &&
+  import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/').replace(/^.*\/scripts\//, 'scripts/'))
+) {
   const m = generate(OUT)
   console.log(
     `[gen:docs] ${DOMAINS.length} 域 / 组件 ${m.totalComponents} / 命名导出 ${m.totalNamed}；` +

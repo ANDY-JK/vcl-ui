@@ -11,7 +11,10 @@ import { nextTick } from 'vue'
 import FormRenderer from '@/components/form-builder/FormRenderer.vue'
 import { sanitizeHTML } from '@/components/_internal/sanitize'
 
-const rendererSrc = readFileSync(resolve(import.meta.dirname, '../../src/components/form-builder/FormRenderer.vue'), 'utf-8')
+const rendererSrc = readFileSync(
+  resolve(import.meta.dirname, '../../src/components/form-builder/FormRenderer.vue'),
+  'utf-8',
+)
 // v3.1 拆分后富文本逻辑迁至 renderer/RendererRichtext.vue（源码锁定向导随迁；挂载行为测试仍走 FormRenderer 集成路径）
 // 2026-09 full 工具栏：逻辑再下沉 renderer/useRichtext.ts、UI 拆 renderer/RichtextToolbar.vue，锁定向覆盖全部四个文件
 const richtextDir = resolve(import.meta.dirname, '../../src/components/form-builder/renderer')
@@ -153,7 +156,9 @@ describe('富文本挂载行为（composition 感知受控 contenteditable）', 
     expect(ev.defaultPrevented).toBe(true)
     expect(el.innerHTML).not.toContain('onerror')
     expect(el.innerHTML).toContain('<b>加粗</b>')
-    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([sanitizeHTML('<b>加粗</b><img src="x" onerror="alert(1)">')])
+    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([
+      sanitizeHTML('<b>加粗</b><img src="x" onerror="alert(1)">'),
+    ])
   })
 
   it('组件可正常挂载（富文本字段渲染不抛错）', () => {

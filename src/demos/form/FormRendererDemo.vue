@@ -48,14 +48,14 @@ const minChars = 20
 }
 .fr-demo-tip {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted, #94a3b8);
 }
 .fr-demo-value {
   padding: var(--space-2);
   border: 1px dashed var(--color-border, #e2e8f0);
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   word-break: break-all;
 }
 </style>

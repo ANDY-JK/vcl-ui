@@ -28,7 +28,9 @@ export function buildScatter(p: BuildParams): EChartsOption {
   const common = buildCommonChrome(p)
   return {
     ...common,
-    tooltip: p.showTooltip ? { trigger: 'item' as const, formatter: (params: unknown) => scatterTip(params as ScatterTooltipParam) } : undefined,
+    tooltip: p.showTooltip
+      ? { trigger: 'item' as const, formatter: (params: unknown) => scatterTip(params as ScatterTooltipParam) }
+      : undefined,
     // 散点图是 value 轴：覆盖 buildXAxis 的 category 默认（axis data 本就只对 category 有意义，
     // 原本写 data: undefined 是 any 时代的冗余字段，收窄后已删）
     xAxis: { ...buildXAxis(p), type: 'value' as const },

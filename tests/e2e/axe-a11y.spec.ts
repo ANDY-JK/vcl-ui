@@ -79,9 +79,16 @@ const TRADEOFF: Record<string, Set<string>> = {
 // 基线总取舍条数（2026-09-20 修复后，按「规则 × 页面」的 violation 条数计）：
 // 第一轮 axe 首扫 153 条，清零标题层级/可访问名/组件配色后剩 36 条节点级违规；
 // 其中三方（amap 自渲染 img/select/iframe）与 demo 内联样式两条线在扫描循环里
-// 直接放行不计数，剩下 15 条进 TRADEOFF 基线——降了说明又修好一批（改小这个数），
+// 直接放行不计数，剩下 14 条进 TRADEOFF 基线——降了说明又修好一批（改小这个数），
 // 升了说明回退或新增（判红）。
-const BASELINE_TOTAL = 15
+//
+// [2026-09-29 由 15 降为 14] 全站等比缩放落地后重扫，divider 页的
+// scrollable-region-focusable 不再命中。逐项查证：该条针对的是 .content-body
+// 这个可滚动容器，divider 页内容随缩放变短后溢出量只剩 4px（scrollHeight 608 /
+// clientHeight 604），落到 axe 判定阈值之下——不是我们修好了这条，是内容变短了。
+// divider 仍留在下面的登记集内：内容哪天回涨到再溢出，总数变 15 会被断言拦下，
+// 提示重新核对，而不是静默放过。
+const BASELINE_TOTAL = 14
 // 基线里各「规则 × 页面」条数（升即红；仅覆盖 TRADEOFF 类别，三方/demo 内联不计入）
 const BASELINE_BY_RULE: Record<string, number> = {
   'nested-interactive': 2,
@@ -136,7 +143,7 @@ test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) =
         continue
       }
       const nodeTexts = ((v.nodes ?? []) as Array<string | { html?: string }>)
-        .map((n) => (typeof n === 'string' ? n : n?.html ?? ''))
+        .map((n) => (typeof n === 'string' ? n : (n?.html ?? '')))
         .filter(Boolean)
       if (nodeTexts.length === 0) {
         // 无节点明细的结构类规则：未登记的才是回退
@@ -162,13 +169,63 @@ test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) =
   const newRules = Object.keys(byRule).filter((r) => !(r in BASELINE_BY_RULE))
   if (newRules.length) regressions.push(`新规则类别（未登记）：${newRules.join(', ')}`)
 
-  expect(
-    regressions,
-    `无障碍基线回退（豁免未覆盖的违规 ${total} 条：${unexempted.slice(0, 12).join(', ')}）`,
-  ).toEqual([])
+  expect(regressions, `无障碍基线回退（豁免未覆盖的违规 ${total} 条：${unexempted.slice(0, 12).join(', ')}）`).toEqual(
+    [],
+  )
   expect(
     tradeoffCount,
     `已知取舍条数应为 ${BASELINE_TOTAL}（当前 ${tradeoffCount}）——基线数字变了要同步 BASELINE_*`,
   ).toBe(BASELINE_TOTAL)
   console.log(`axe 全站扫描：路由 ${ROUTES.length}，已知取舍 ${tradeoffCount}，未豁免违规 ${total}`)
+})
+
+/**
+ * 暗色主题对比度值守（2026-09-29 新增）
+ *
+ * 为什么单开一条：上面那条只扫**亮色**——暗色从建库起就没进过 axe 覆盖，
+ * 于是「暗底上对比度不足」这类缺陷一路漏网。实测一次抓出 395 处
+ * （--color-text-muted 在暗底仅 3.17~3.78、--color-primary-solid 当文字色仅 2.62~3.13，
+ * 两者都是既有的、被亮色扫描掩盖的真缺陷）。
+ *
+ * 本用例只盯 color-contrast：暗色下别的规则与亮色同源，重复扫描只是拖慢全链。
+ * 不设条数基线——对比度是硬指标，有违规就该修，没有「已知取舍」的空间；
+ * 上限只用来兜住「一次回归几百处」的极端情形，避免输出刷屏。
+ */
+test('暗色主题对比度值守：全站 color-contrast 不新增', async ({ page }) => {
+  test.setTimeout(15 * 60_000)
+  const offenders: string[] = []
+  let nodes = 0
+
+  for (const route of ROUTES) {
+    await page.goto(`${BASE}/#/${route}`)
+    await page.locator('h1').first().waitFor({ state: 'visible', timeout: 15_000 })
+    // 手动切暗色（走 data-theme，与用户点「暗色」同一条路径；不依赖系统偏好）
+    await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'))
+    await page.waitForFunction(() =>
+      document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getTiming().iterations === Infinity),
+    )
+    let violations: Array<{ id: string; nodes: unknown[] }>
+    try {
+      violations = (await new AxeBuilder({ page }).withRules(['color-contrast']).analyze()).violations
+    } catch {
+      continue
+    }
+    for (const v of violations) {
+      if (v.id !== 'color-contrast') continue
+      const list = (v.nodes ?? []) as Array<string | { html?: string }>
+      const texts = list.map((n) => (typeof n === 'string' ? n : (n?.html ?? ''))).filter(Boolean)
+      // 三方 SDK 自渲染内容与 demo 私有类仍按亮色那条的口径放行
+      const residual = texts.filter((t) => !isThirdParty(t) && !isDemoInline(t))
+      if (!residual.length) continue
+      nodes += residual.length
+      offenders.push(`${route}(${residual.length})`)
+    }
+  }
+
+  expect(
+    offenders,
+    `暗色下对比度不足 ${nodes} 处——涉及 ${offenders.slice(0, 10).join(', ')}。` +
+      `改法优先调 tokens.css 的颜色令牌（两套暗色块同值），别在组件里写死色值。`,
+  ).toEqual([])
+  console.log(`axe 暗色扫描：路由 ${ROUTES.length}，对比度违规 0`)
 })

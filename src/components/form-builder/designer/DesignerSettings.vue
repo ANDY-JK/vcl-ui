@@ -118,7 +118,7 @@ const fldIds = {
     </button>
     <div v-show="openGroups.layout" class="ld-set-group-body">
       <div class="ld-settings">
-        <div class="ld-settings-row" style="max-width: 200px">
+        <div class="ld-settings-row" style="max-width: calc(200px * var(--vcl-scale))">
           <label>{{ t('fbd.layoutMode') }}</label>
           <div class="ld-layout-preview">
             <div
@@ -160,7 +160,7 @@ const fldIds = {
             </div>
           </div>
         </div>
-        <div class="ld-settings-row" style="max-width: 140px">
+        <div class="ld-settings-row" style="max-width: calc(140px * var(--vcl-scale))">
           <label :for="fldIds.f3">{{ t('fbp.labelPosition') }}</label>
           <select
             :id="fldIds.f3"
@@ -177,7 +177,7 @@ const fldIds = {
             <option value="hidden">{{ t('fbp.posHidden') }}</option>
           </select>
         </div>
-        <div class="ld-settings-row" style="max-width: 140px">
+        <div class="ld-settings-row" style="max-width: calc(140px * var(--vcl-scale))">
           <label :for="fldIds.f4">{{ t('fbp.labelWidth') }}</label>
           <select
             :id="fldIds.f4"
@@ -212,7 +212,7 @@ const fldIds = {
     </button>
     <div v-show="openGroups.validation" class="ld-set-group-body">
       <div class="ld-settings">
-        <div class="ld-settings-row" style="max-width: 160px">
+        <div class="ld-settings-row" style="max-width: calc(160px * var(--vcl-scale))">
           <label :for="fldIds.f5">{{ t('fbd.realtimeValidate') }}</label>
           <select
             :id="fldIds.f5"
@@ -236,7 +236,7 @@ const fldIds = {
     </button>
     <div v-show="openGroups.submit" class="ld-set-group-body">
       <div class="ld-settings">
-        <div class="ld-settings-row" style="max-width: 200px">
+        <div class="ld-settings-row" style="max-width: calc(200px * var(--vcl-scale))">
           <label :for="fldIds.f6">{{ t('fbd.collectType') }}</label>
           <select
             :id="fldIds.f6"
@@ -268,7 +268,7 @@ const fldIds = {
             <span class="ld-settings-hint">{{ t('fbd.targetListHint') }}</span>
           </div>
         </template>
-        <div class="ld-settings-row" style="max-width: 200px">
+        <div class="ld-settings-row" style="max-width: calc(200px * var(--vcl-scale))">
           <label :for="fldIds.f8">{{ t('fbd.submitBtnText') }}</label>
           <input
             :id="fldIds.f8"
@@ -278,7 +278,7 @@ const fldIds = {
             @input="emit('patch-meta', { submitText: ($event.target as HTMLInputElement).value })"
           />
         </div>
-        <div class="ld-settings-row" style="max-width: 140px">
+        <div class="ld-settings-row" style="max-width: calc(140px * var(--vcl-scale))">
           <label :for="fldIds.f9">{{ t('fbd.resetBtnText') }}</label>
           <input
             :id="fldIds.f9"
@@ -288,7 +288,7 @@ const fldIds = {
             @input="emit('patch-meta', { resetText: ($event.target as HTMLInputElement).value })"
           />
         </div>
-        <div class="ld-settings-row" style="max-width: 140px">
+        <div class="ld-settings-row" style="max-width: calc(140px * var(--vcl-scale))">
           <label :for="fldIds.f10">{{ t('fbd.submitMode') }}</label>
           <select
             :id="fldIds.f10"
@@ -333,9 +333,14 @@ const fldIds = {
     </button>
     <div v-show="openGroups.storage" class="ld-set-group-body">
       <div class="ld-settings">
-        <div class="ld-settings-row" style="max-width: 200px">
+        <div class="ld-settings-row" style="max-width: calc(200px * var(--vcl-scale))">
           <label :for="fldIds.f11">{{ t('fbd.storageMode') }}</label>
-          <select :id="fldIds.f11" class="ld-settings-textarea" :value="manager.storageMode" @change="manager.onModeChange">
+          <select
+            :id="fldIds.f11"
+            class="ld-settings-textarea"
+            :value="manager.storageMode"
+            @change="manager.onModeChange"
+          >
             <option value="local">{{ t('fbd.storageLocal') }}</option>
             <option value="cloud">{{ t('fbd.storageCloud') }}</option>
           </select>
@@ -363,7 +368,7 @@ const fldIds = {
               autocomplete="off"
             />
           </div>
-          <div class="ld-settings-row" style="max-width: 200px">
+          <div class="ld-settings-row" style="max-width: calc(200px * var(--vcl-scale))">
             <label :for="fldIds.f14">{{ t('fbd.storageCloudBucket') }}</label>
             <input
               :id="fldIds.f14"

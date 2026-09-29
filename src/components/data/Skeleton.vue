@@ -33,17 +33,28 @@ const props = withDefaults(defineProps<Props>(), {
   title: true,
 })
 
-const AVATAR_MAP: Record<string, string> = { sm: '32px', md: '40px', lg: '56px' }
+// 内置档位（sm/md/lg）是组件自己的设计尺寸，走等比缩放——由 CSS 类承载而不是内联 style：
+// 内联的 `calc(Npx * var(--vcl-scale))` 在部分测试环境（happy-dom）解析不了会被整条丢弃，
+// 断言无从下手；落成类名既可测，也让尺寸与其余样式同处一张表。
+// 宿主显式传的长度（数字串 / 任意 CSS 长度）是宿主自己的尺寸，原样走内联 style 透传。
+const AVATAR_NAMED = new Set(['sm', 'md', 'lg'])
+
+const avatarNamed = computed(() => {
+  const a = props.avatar
+  if (a === true) return 'md'
+  return typeof a === 'string' && AVATAR_NAMED.has(a) ? a : ''
+})
 
 const avatarSize = computed(() => {
   const a = props.avatar
+  if (avatarNamed.value) return ''
   if (typeof a === 'number') return `${a}px`
   if (typeof a === 'string') {
     // '48' 这类无单位数字串是模板里 avatar="48" 的常见写法，直接透传会得到非法 CSS 使骨架块塌成 0×0
     if (/^\d+(\.\d+)?$/.test(a)) return `${a}px`
-    return AVATAR_MAP[a] ?? a
+    return a
   }
-  return a ? '40px' : ''
+  return ''
 })
 
 const blockStyle = computed(() => {
@@ -69,7 +80,12 @@ const rowList = computed(() => {
     role="status"
     :aria-label="t('skeleton.loading')"
   >
-    <span v-if="avatarSize" class="skel-avatar" :style="{ width: avatarSize, height: avatarSize }" />
+    <span
+      v-if="avatarNamed || avatarSize"
+      class="skel-avatar"
+      :class="avatarNamed ? `skel-avatar-${avatarNamed}` : ''"
+      :style="avatarSize ? { width: avatarSize, height: avatarSize } : undefined"
+    />
     <div class="skel-body">
       <span v-if="title" class="skel-line skel-title" />
       <span v-for="row in rowList" :key="row.key" class="skel-line" :style="{ width: row.width }" />
@@ -83,30 +99,44 @@ const rowList = computed(() => {
 /* 灰阶骨架块 — 全 scoped，无 :deep 泄漏 */
 .skel {
   display: flex;
-  gap: clamp(var(--space-2), 1.5vw, 14px);
+  gap: calc(14px * var(--vcl-scale));
   width: 100%;
 }
 .skel-body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(var(--space-2), 1.5vw, 12px);
+  gap: calc(12px * var(--vcl-scale));
   min-width: 0;
 }
 .skel-line {
   display: block;
-  height: clamp(12px, 1.6vw, 14px);
+  height: calc(14px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   background: var(--color-bg-alt);
 }
 .skel-title {
   width: 40%;
-  height: clamp(14px, 1.8vw, 16px);
+  height: calc(16px * var(--vcl-scale));
 }
 .skel-avatar {
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--color-bg-alt);
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
+}
+.skel-avatar-sm {
+  width: calc(32px * var(--vcl-scale));
+  height: calc(32px * var(--vcl-scale));
+}
+.skel-avatar-md {
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
+}
+.skel-avatar-lg {
+  width: calc(56px * var(--vcl-scale));
+  height: calc(56px * var(--vcl-scale));
 }
 
 /* 流光动画 — linear-gradient 背景位移 */

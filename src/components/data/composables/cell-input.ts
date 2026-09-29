@@ -99,12 +99,7 @@ function parseCompactDigits(digits: string, order: DateOrder, now: Date): Ymd | 
     }
   }
   if (digits.length === 4) {
-    return resolveMd(
-      Number(digits.slice(0, 2)),
-      Number(digits.slice(2, 4)),
-      order,
-      now.getFullYear(),
-    )
+    return resolveMd(Number(digits.slice(0, 2)), Number(digits.slice(2, 4)), order, now.getFullYear())
   }
   return null
 }
@@ -181,11 +176,7 @@ function formatYmd(ymd: Ymd): string {
 }
 
 /** 解析日期时间：`9/12 14:30` / `2026-09-12T14:30` / 仅时间 `14:30`（补今天）；非法返回 null */
-function parseDateTime(
-  raw: string,
-  order: DateOrder,
-  now: Date,
-): { ymd: Ymd; hm: Hm } | null {
+function parseDateTime(raw: string, order: DateOrder, now: Date): { ymd: Ymd; hm: Hm } | null {
   const s = raw.trim()
   if (!s) return null
 
@@ -214,10 +205,7 @@ function parseDateTime(
 function numToPlainString(n: number): string | null {
   const s = String(n)
   if (!/[eE]/.test(s)) return s
-  const plain = n
-    .toFixed(20)
-    .replace(/0+$/, '')
-    .replace(/\.$/, '')
+  const plain = n.toFixed(20).replace(/0+$/, '').replace(/\.$/, '')
   if (/[eE]/.test(plain) || Number(plain) !== n) return null
   return plain
 }

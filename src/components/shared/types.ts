@@ -7,7 +7,7 @@ export interface Option {
   disabled?: boolean
   icon?: string
   desc?: string
-  _search?: string  // 隐藏搜索文本，label 简洁时通过此字段匹配
+  _search?: string // 隐藏搜索文本，label 简洁时通过此字段匹配
 }
 
 /** 菜单项结构 */

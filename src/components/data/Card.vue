@@ -139,8 +139,8 @@ const iconBg = computed(() =>
 .stat-card {
   display: flex;
   align-items: center;
-  gap: clamp(var(--space-3), 2vw, 16px);
-  padding: clamp(var(--space-3), 2.5vw, 20px);
+  gap: calc(16px * var(--vcl-scale));
+  padding: calc(20px * var(--vcl-scale));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -157,8 +157,8 @@ const iconBg = computed(() =>
   border-left: 3px solid var(--color-primary);
 }
 .stat-icon {
-  width: clamp(36px, 6vw, 44px);
-  height: clamp(36px, 6vw, 44px);
+  width: calc(44px * var(--vcl-scale));
+  height: calc(44px * var(--vcl-scale));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,12 +168,12 @@ const iconBg = computed(() =>
   flex: 1;
 }
 .stat-value {
-  font-size: clamp(18px, calc(18px + var(--vcl-fit) * 18), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 700;
   line-height: 1.2;
 }
 .stat-label {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
@@ -181,7 +181,7 @@ const iconBg = computed(() =>
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
 }
 
@@ -213,22 +213,22 @@ const iconBg = computed(() =>
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(var(--space-2), 1.5vw, 14px) clamp(10px, 1.8vw, 16px);
+  padding: calc(14px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 .grid-title {
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
 }
 .grid-body {
   flex: 1;
-  padding: clamp(var(--space-1), 1.8vw, 8px);
+  padding: calc(8px * var(--vcl-scale));
 }
 .grid-footer {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2);
-  padding: clamp(var(--space-1), 1vw, 10px) clamp(10px, 1.8vw, 16px);
+  padding: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border-top: 1px solid var(--color-border-light);
   background: var(--color-bg-alt);
 }

@@ -49,7 +49,9 @@ describe('useTableCore 大数据性能基线', () => {
     expect(meta.size).toBe(ROWS)
 
     // eslint-disable-next-line no-console
-    console.log(`[perf] displayData: ${(t1 - t0).toFixed(1)}ms, rowMetaMap(${ROWS}行): ${(t2 - t1).toFixed(1)}ms, 合计: ${(t2 - t0).toFixed(1)}ms`)
+    console.log(
+      `[perf] displayData: ${(t1 - t0).toFixed(1)}ms, rowMetaMap(${ROWS}行): ${(t2 - t1).toFixed(1)}ms, 合计: ${(t2 - t0).toFixed(1)}ms`,
+    )
   })
 
   it(`全局搜索在 ${ROWS} 行下的耗时（渲染文本 + 拼音匹配）`, () => {

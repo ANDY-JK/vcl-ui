@@ -42,57 +42,86 @@ function onBatchFinish(files: File[]) {
       质量控制。相机不可用时自动降级调起系统相机。
     </p>
 
-    <Card title="拍照演示" title-as="h2" style="margin-bottom: 24px">
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+    <Card title="拍照演示" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <div style="display: flex; gap: calc(12px * var(--vcl-scale)); align-items: center; flex-wrap: wrap">
         <Button text="打开相机" variant="primary" icon="camera" @click="showCamera = true" />
         <Button text="关闭相机" variant="ghost" :disabled="!showCamera" @click="showCamera = false" />
       </div>
 
       <!-- 拍照结果 -->
-      <div v-if="capturedPhoto" style="margin-top: 16px">
-        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 8px">拍照结果：</p>
+      <div v-if="capturedPhoto" style="margin-top: calc(16px * var(--vcl-scale))">
+        <p
+          style="
+            font-size: calc(13px * var(--vcl-scale));
+            color: var(--color-text-muted);
+            margin-bottom: calc(8px * var(--vcl-scale));
+          "
+        >
+          拍照结果：
+        </p>
         <img
           :src="capturedPhoto"
           alt="photo"
-          style="max-width: 300px; border-radius: 8px; border: 1px solid var(--color-border)"
+          style="
+            max-width: calc(300px * var(--vcl-scale));
+            border-radius: calc(8px * var(--vcl-scale));
+            border: 1px solid var(--color-border);
+          "
         />
-        <div style="margin-top: 8px">
+        <div style="margin-top: calc(8px * var(--vcl-scale))">
           <Button text="预览照片" variant="outline" size="sm" @click="showPreview = true" />
           <ImagePreview v-if="showPreview" :src="capturedPhoto!" @close="showPreview = false" />
         </div>
       </div>
-      <p v-else style="margin-top: 16px; font-size: 13px; color: var(--color-text-muted)">
+      <p
+        v-else
+        style="
+          margin-top: calc(16px * var(--vcl-scale));
+          font-size: calc(13px * var(--vcl-scale));
+          color: var(--color-text-muted);
+        "
+      >
         尚无拍照结果，点击「打开相机」拍照。
       </p>
     </Card>
 
     <!-- ══════ 多张连拍 ══════ -->
-    <Card title="多张连拍 — 拍完一张接着拍，胶卷回看/重拍" title-as="h2" style="margin-bottom: 24px">
-      <p class="demo-hint" style="margin-bottom: 12px">
+    <Card
+      title="多张连拍 — 拍完一张接着拍，胶卷回看/重拍"
+      title-as="h2"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
+    >
+      <p class="demo-hint" style="margin-bottom: calc(12px * var(--vcl-scale))">
         <code>multiple</code> — 快门确认后不关相机，照片进队列继续拍下一张；顶部「完成(n)」交付，底部缩略图回看， 大图 ‹
         › 切换上一张/下一张，侧键「重拍」替换该张、「删除」移除。取消时已拍照片会先确认防误丢。<br />
         <code>shotNames</code> — 计划照片名称（按拍摄顺序对应），顶部提示当前要拍哪张、缩略图/回看显示名称，
         并写入交付文件名（如「现场全景-1730….jpg」）；未传自动「照片1、照片2…」。表单里 multiple
         上传字段的「拍照」入口即此模式（组件内已接通）。
       </p>
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+      <div style="display: flex; gap: calc(12px * var(--vcl-scale)); align-items: center; flex-wrap: wrap">
         <Button text="打开连拍相机" variant="primary" icon="camera" @click="batchOpen = true" />
       </div>
-      <div v-if="batchUrls.length" style="margin-top: 16px">
-        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 8px">
+      <div v-if="batchUrls.length" style="margin-top: calc(16px * var(--vcl-scale))">
+        <p
+          style="
+            font-size: calc(13px * var(--vcl-scale));
+            color: var(--color-text-muted);
+            margin-bottom: calc(8px * var(--vcl-scale));
+          "
+        >
           连拍交付 {{ batchPhotos.length }} 张：
         </p>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <div style="display: flex; gap: calc(8px * var(--vcl-scale)); flex-wrap: wrap">
           <img
             v-for="(u, i) in batchUrls"
             :key="u"
             :src="u"
             :alt="`shot-${i + 1}`"
             style="
-              width: 96px;
-              height: 72px;
+              width: calc(96px * var(--vcl-scale));
+              height: calc(72px * var(--vcl-scale));
               object-fit: cover;
-              border-radius: 6px;
+              border-radius: calc(6px * var(--vcl-scale));
               border: 1px solid var(--color-border);
             "
           />
@@ -101,86 +130,200 @@ function onBatchFinish(files: File[]) {
     </Card>
 
     <Card title="Props" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 6px 8px">Prop</th>
-            <th style="padding: 6px 8px">类型</th>
-            <th style="padding: 6px 8px">默认</th>
-            <th style="padding: 6px 8px">说明</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>modelValue</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">false</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">v-model 控制显隐</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              boolean
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              false
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              v-model 控制显隐
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>quality</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">number</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">0.9</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">JPEG 输出质量 0-1</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              number
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              0.9
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              JPEG 输出质量 0-1
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>fallbackOnError</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">true</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              boolean
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              true
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               相机不可用时降级调起系统相机
             </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px">
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
               <code>multiple</code>
             </td>
-            <td style="padding: 6px 8px">boolean</td>
-            <td style="padding: 6px 8px">false</td>
-            <td style="padding: 6px 8px">多张连拍：胶卷回看/重拍某张，完成时 finish 交付 File[]</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              多张连拍：胶卷回看/重拍某张，完成时 finish 交付 File[]
+            </td>
           </tr>
         </tbody>
       </table>
     </Card>
 
-    <Card title="Events" title-as="h2" style="margin-top: 24px">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+    <Card title="Events" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 6px 8px">事件</th>
-            <th style="padding: 6px 8px">参数</th>
-            <th style="padding: 6px 8px">说明</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">事件</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">参数</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>capture</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">File</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              File
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               确认拍照，返回 File 对象
             </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>cancel</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">取消/关闭</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              —
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              取消/关闭
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px">
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
               <code>error</code>
             </td>
-            <td style="padding: 6px 8px">string</td>
-            <td style="padding: 6px 8px">相机不可用提示信息</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">相机不可用提示信息</td>
           </tr>
         </tbody>
       </table>
@@ -201,20 +344,20 @@ function onBatchFinish(files: File[]) {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

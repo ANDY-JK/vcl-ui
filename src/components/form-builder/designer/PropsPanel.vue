@@ -546,7 +546,11 @@ watch(
               { value: '120px', label: '120px' },
               { value: 'auto', label: t('fbp.auto') },
             ]"
-            @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, labelWidth: $event as 'default' | '80px' | '120px' | 'auto' } })"
+            @update:model-value="
+              emit('update', {
+                styleConfig: { ...node.styleConfig, labelWidth: $event as 'default' | '80px' | '120px' | 'auto' },
+              })
+            "
           />
         </div>
         <div class="ldp-prop">
@@ -558,7 +562,11 @@ watch(
               { value: 'top', label: t('fbp.posTop') },
               { value: 'hidden', label: t('fbp.posHidden') },
             ]"
-            @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, labelPosition: $event as 'left' | 'top' | 'hidden' } })"
+            @update:model-value="
+              emit('update', {
+                styleConfig: { ...node.styleConfig, labelPosition: $event as 'left' | 'top' | 'hidden' },
+              })
+            "
           />
         </div>
 
@@ -572,7 +580,9 @@ watch(
               { value: '50%', label: '50%' },
               { value: 'auto', label: t('fbp.fit') },
             ]"
-            @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, controlWidth: $event as '100%' | '50%' | 'auto' } })"
+            @update:model-value="
+              emit('update', { styleConfig: { ...node.styleConfig, controlWidth: $event as '100%' | '50%' | 'auto' } })
+            "
           />
         </div>
         <div class="ldp-prop">
@@ -584,7 +594,9 @@ watch(
               { value: 'default', label: t('fbp.sizeDefault') },
               { value: 'large', label: t('fbp.sizeLarge') },
             ]"
-            @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, size: $event as 'small' | 'default' | 'large' } })"
+            @update:model-value="
+              emit('update', { styleConfig: { ...node.styleConfig, size: $event as 'small' | 'default' | 'large' } })
+            "
           />
         </div>
         <div class="ldp-prop">
@@ -597,7 +609,11 @@ watch(
               { value: '12px', label: t('fbp.radius12') },
               { value: '20px', label: t('fbp.radius20') },
             ]"
-            @update:model-value="emit('update', { styleConfig: { ...node.styleConfig, radius: $event as 'default' | '0px' | '12px' | '20px' } })"
+            @update:model-value="
+              emit('update', {
+                styleConfig: { ...node.styleConfig, radius: $event as 'default' | '0px' | '12px' | '20px' },
+              })
+            "
           />
         </div>
 

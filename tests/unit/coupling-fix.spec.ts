@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createLocalFormStore } from '@/components/form-builder/designer/store'
 import {
-  collectStorageKey, createField, getFieldTypes, FIELD_NODE_TYPES,
+  collectStorageKey,
+  createField,
+  getFieldTypes,
+  FIELD_NODE_TYPES,
 } from '@/components/form-builder/designer/types'
 import type { FormDesign, DesignerNode } from '@/components/form-builder/designer/types'
 import Toast from '@/components/feedback/Toast.vue'
@@ -131,8 +134,16 @@ describe('H2: Toast id 全局唯一（多实例不冲突）', () => {
 describe('H8: 字段类型注册表与设计器元数据对齐', () => {
   // REGISTRY 已注册但 FIELD_TYPES 曾缺失的 10 个类型（补齐后 createField 不再崩溃）
   const extendedTypes = [
-    'password', 'tel', 'email', 'url', 'search',
-    'combobox', 'tree-select', 'date-range', 'image-upload', 'camera',
+    'password',
+    'tel',
+    'email',
+    'url',
+    'search',
+    'combobox',
+    'tree-select',
+    'date-range',
+    'image-upload',
+    'camera',
   ] as const
 
   it('createField 对扩展类型可创建节点（含 label/icon/defaults）', () => {

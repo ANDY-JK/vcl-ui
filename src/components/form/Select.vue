@@ -889,7 +889,7 @@ const {
                     disabled: flatNode.node.disabled,
                     highlighted: idx === highlightIdx,
                   }"
-                  :style="{ paddingLeft: `${12 + flatNode.depth * 20}px` }"
+                  :style="{ paddingLeft: `calc(${12 + flatNode.depth * 20}px * var(--vcl-scale))` }"
                   :disabled="flatNode.node.disabled"
                   role="treeitem"
                   :aria-selected="flatNode.isLeaf ? isTreeSelected(flatNode) : undefined"
@@ -1037,11 +1037,11 @@ const {
   overflow: visible;
 }
 .select-dropdown-root.error .trigger-wrapper {
-  border-color: var(--color-danger);
+  border-color: var(--color-danger-on-surface);
 }
 .select-error {
-  color: var(--color-danger);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  color: var(--color-danger-on-surface);
+  font-size: calc(15px * var(--vcl-scale));
   margin-top: var(--space-1);
   line-height: 1.4;
 }
@@ -1052,7 +1052,7 @@ const {
   line-height: normal;
 }
 .select-dropdown-root.error .fl-label.raised {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
 }
 
 .trigger-wrapper {
@@ -1061,12 +1061,12 @@ const {
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
-  padding: 0 var(--ctrl-padding-x, clamp(10px, calc(10px + (100vw - 1024px) / 896 * 4), 14px));
+  height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
+  padding: 0 var(--ctrl-padding-x, calc(14px * var(--vcl-scale)));
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--ctrl-radius, var(--radius-md));
-  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
+  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
   transition: border-color var(--transition-fast);
   cursor: pointer;
 }
@@ -1088,7 +1088,7 @@ const {
   max-width: 100%;
   min-width: 0;
   overflow: hidden;
-  height: 28px;
+  height: calc(28px * var(--vcl-scale));
   padding: 0 var(--space-2);
   background: var(--color-primary-light);
   border-radius: var(--radius-sm);
@@ -1107,14 +1107,14 @@ const {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: calc(14px * var(--vcl-scale));
+  height: calc(14px * var(--vcl-scale));
   padding: 0;
   border: none;
   border-radius: 50%;
   background: transparent;
   color: var(--color-primary);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;
@@ -1126,8 +1126,8 @@ const {
 }
 .trigger-wrapper.has-tags {
   height: auto;
-  min-height: var(--ctrl-height, clamp(38px, calc(38px + (100vw - 1024px) / 896 * 4), 42px));
-  padding-block: 5px;
+  min-height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
+  padding-block: calc(5px * var(--vcl-scale));
   flex-wrap: wrap;
 }
 /* 有 tag 时内容顶到 padding 上缘，骑缝浮标题下半截会咬进首行 tag 左上角。
@@ -1143,7 +1143,7 @@ const {
   border: none;
   outline: none;
   background: transparent;
-  font-size: var(--ctrl-font-size, clamp(13px, calc(13px + (100vw - 1024px) / 896), 14px));
+  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
   color: var(--color-text);
 }
 .trigger-input::placeholder {
@@ -1169,15 +1169,15 @@ const {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
   padding: 0;
   flex-shrink: 0;
   border: none;
   border-radius: 50%;
   background: var(--color-text-muted);
   color: var(--color-surface);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;
@@ -1195,7 +1195,7 @@ const {
 
 .dropdown-panel:has(> .dp-header),
 .dropdown-panel:has(> .tp-columns) {
-  width: clamp(264px, 44vw, 300px);
+  width: calc(300px * var(--vcl-scale));
   max-height: none;
   padding: var(--space-3);
   box-sizing: border-box;
@@ -1207,8 +1207,8 @@ const {
   /* 面板 Teleport 到 body 后是 z-auto —— 后续卡片内任何正层级元素都会盖住选项，
      必须显式挂全库下拉层令牌 */
   z-index: var(--z-dropdown, 2000);
-  min-width: clamp(160px, 26vw, 220px);
-  max-height: clamp(200px, 36vw, 280px);
+  min-width: calc(220px * var(--vcl-scale));
+  max-height: calc(280px * var(--vcl-scale));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -1221,7 +1221,7 @@ const {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: clamp(var(--space-1), 1vw, 8px) clamp(8px, 1.5vw, 12px);
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-muted);
   flex-shrink: 0;
@@ -1230,18 +1230,18 @@ const {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   outline: none;
 }
 .panel-list {
   flex: 1;
-  max-height: clamp(140px, 26vw, 200px);
+  max-height: calc(200px * var(--vcl-scale));
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
 .panel-list::-webkit-scrollbar {
-  width: 5px;
+  width: calc(5px * var(--vcl-scale));
 }
 .panel-list::-webkit-scrollbar-track {
   background: transparent;
@@ -1258,10 +1258,10 @@ const {
   align-items: center;
   gap: var(--space-2);
   width: 100%;
-  padding: clamp(var(--space-1), 1vw, 8px) clamp(8px, 1.5vw, 12px);
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border: none;
   background: transparent;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text);
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -1281,7 +1281,7 @@ const {
   cursor: not-allowed;
 }
 .panel-item.danger {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
 }
 .panel-item.danger:hover {
   background: var(--color-danger-bg);
@@ -1292,10 +1292,10 @@ const {
   flex: 1;
 }
 .item-label {
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 .item-desc {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 .menu-divider {
@@ -1312,7 +1312,7 @@ const {
   transform: rotate(90deg);
 }
 .tree-node-item .expand-placeholder {
-  width: 16px;
+  width: calc(16px * var(--vcl-scale));
   flex-shrink: 0;
 }
 .tree-node-item .item-label {
@@ -1324,9 +1324,9 @@ const {
 .panel-status {
   display: flex;
   justify-content: center;
-  padding: clamp(var(--space-4), 3vw, 24px);
+  padding: calc(24px * var(--vcl-scale));
   color: var(--color-text-muted);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 .panel-status svg {
   animation: spin 1s linear infinite;
@@ -1366,12 +1366,12 @@ const {
   margin-top: var(--space-3);
 }
 .dd-btn {
-  padding: clamp(var(--space-1), 0.8vw, 6px) clamp(12px, 2vw, 16px);
+  padding: calc(6px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
   transition: all var(--transition-fast);
 }

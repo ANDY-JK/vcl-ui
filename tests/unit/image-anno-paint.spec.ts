@@ -99,7 +99,16 @@ describe('paintAnno · 绘制契约', () => {
 
   it('pen：moveTo 首点 + lineTo 后续，选中加粗白描边', () => {
     const { ctx, calls } = mockCtx()
-    const pen = { type: 'pen' as const, id: 'p', color: '#000', lw: 2, points: [{ x: 1, y: 1 }, { x: 2, y: 2 }] }
+    const pen = {
+      type: 'pen' as const,
+      id: 'p',
+      color: '#000',
+      lw: 2,
+      points: [
+        { x: 1, y: 1 },
+        { x: 2, y: 2 },
+      ],
+    }
     paintAnno(ctx, pen, false)
     expect(calls).toContain('moveTo:1,1')
     expect(calls).toContain('lineTo:2,2')

@@ -413,7 +413,7 @@ defineExpose({
 }
 .chart-canvas-area {
   flex: 1;
-  min-height: clamp(80px, 20vw, 120px);
+  min-height: calc(120px * var(--vcl-scale));
   min-width: 0;
 }
 </style>

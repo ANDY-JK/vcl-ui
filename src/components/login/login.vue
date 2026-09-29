@@ -422,7 +422,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 50%, #e54545 100%);
-  padding: clamp(var(--space-3), 3vw, 20px);
+  padding: calc(20px * var(--vcl-scale));
   position: relative;
   overflow-x: hidden;
 }
@@ -440,26 +440,26 @@ defineExpose({
   background: rgba(255, 255, 255, 0.08);
 }
 .shape:nth-child(1) {
-  width: 80px;
-  height: 80px;
+  width: calc(80px * var(--vcl-scale));
+  height: calc(80px * var(--vcl-scale));
   left: 10%;
   top: 20%;
 }
 .shape:nth-child(2) {
-  width: 120px;
-  height: 120px;
+  width: calc(120px * var(--vcl-scale));
+  height: calc(120px * var(--vcl-scale));
   right: 15%;
   top: 60%;
 }
 .shape:nth-child(3) {
-  width: 60px;
-  height: 60px;
+  width: calc(60px * var(--vcl-scale));
+  height: calc(60px * var(--vcl-scale));
   left: 25%;
   bottom: 15%;
 }
 .shape:nth-child(4) {
-  width: 100px;
-  height: 100px;
+  width: calc(100px * var(--vcl-scale));
+  height: calc(100px * var(--vcl-scale));
   right: 30%;
   top: 10%;
 }
@@ -467,7 +467,7 @@ defineExpose({
 .login-container {
   display: flex;
   width: 100%;
-  max-width: var(--login-max-width, 960px);
+  max-width: var(--login-max-width, calc(960px * var(--vcl-scale)));
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   background: var(--color-surface);
@@ -493,7 +493,7 @@ defineExpose({
   flex: 1;
   background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 100%);
   border-radius: var(--radius-xl) 0 0 var(--radius-xl);
-  padding: var(--space-12) 44px;
+  padding: var(--space-12) calc(44px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -517,8 +517,8 @@ defineExpose({
   margin-bottom: var(--space-12);
 }
 .logo-icon {
-  width: 64px;
-  height: 64px;
+  width: calc(64px * var(--vcl-scale));
+  height: calc(64px * var(--vcl-scale));
   background: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-xl);
   display: flex;
@@ -528,13 +528,13 @@ defineExpose({
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
-  font-size: clamp(28px, calc(28px + var(--vcl-fit) * 8), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
   margin-bottom: var(--space-3);
   letter-spacing: -0.5px;
 }
 .brand-logo p {
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 4), 18px);
+  font-size: calc(18px * var(--vcl-scale));
   opacity: 0.9;
   line-height: 1.6;
 }
@@ -549,18 +549,18 @@ defineExpose({
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-5);
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 .features-list li::before {
   content: '\2713';
-  width: clamp(20px, 3vw, 24px);
-  height: clamp(20px, 3vw, 24px);
+  width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
+  font-size: calc(14px * var(--vcl-scale));
   flex-shrink: 0;
 }
 
@@ -621,8 +621,8 @@ defineExpose({
   border: 0;
 }
 .checkbox-icon {
-  width: 16px;
-  height: 16px;
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   display: flex;
@@ -678,7 +678,7 @@ defineExpose({
   color: var(--color-text-muted);
 }
 .social-text {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
+  font-size: calc(14px * var(--vcl-scale));
   color: var(--color-text-secondary);
 }
 
@@ -707,7 +707,7 @@ defineExpose({
     display: none;
   }
   .login-container {
-    max-width: min(var(--login-max-width, 960px), 440px);
+    max-width: min(var(--login-max-width, 960px * var(--vcl-scale)), 440px * var(--vcl-scale));
   }
   .login-right {
     padding: var(--space-10);
@@ -718,7 +718,7 @@ defineExpose({
     padding: var(--space-8);
   }
   .login-header h1 {
-    font-size: clamp(18px, calc(18px + var(--vcl-fit) * 10), 28px);
+    font-size: calc(28px * var(--vcl-scale));
   }
   .social-btn {
     padding: var(--space-2);

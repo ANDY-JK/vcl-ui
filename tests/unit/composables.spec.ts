@@ -20,7 +20,7 @@ describe('useTreeFlatten', () => {
   it('初始只展平根节点', () => {
     const { flatNodes } = useTreeFlatten<TreeNode>({ data: () => tree })
     expect(flatNodes.value).toHaveLength(2)
-    expect(flatNodes.value.map(n => n.node.key)).toEqual(['a', 'b'])
+    expect(flatNodes.value.map((n) => n.node.key)).toEqual(['a', 'b'])
     expect(flatNodes.value[0].isLeaf).toBe(false)
     expect(flatNodes.value[1].isLeaf).toBe(true)
   })
@@ -46,7 +46,7 @@ describe('useTreeFlatten', () => {
     const { filterByKeyword } = useTreeFlatten<TreeNode>({ data: () => tree })
     const res = filterByKeyword('A1')
     expect(res.length).toBeGreaterThan(0)
-    expect(res.some(n => n.node.key === 'a1')).toBe(true)
+    expect(res.some((n) => n.node.key === 'a1')).toBe(true)
   })
 
   it('filterByKeyword 空关键词返回全部', () => {
@@ -137,7 +137,7 @@ describe('blankPlaceholder（空白占位：展示层 - 替代）', () => {
     expect(blankPlaceholder('', '暂无')).toBe('暂无')
   })
 
-  it("blankText 传空串 → 关闭占位（空值回落空串）", () => {
+  it('blankText 传空串 → 关闭占位（空值回落空串）', () => {
     expect(blankPlaceholder(null, '')).toBe('')
     expect(blankPlaceholder(undefined, '')).toBe('')
     expect(blankPlaceholder('  ', '')).toBe('  ')

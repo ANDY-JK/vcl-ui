@@ -1,6 +1,6 @@
 /* ── 大纲树面板 ── */
 .ldo-panel {
-  width: 190px;
+  width: calc(190px * var(--vcl-scale));
   flex-shrink: 0;
   overflow-y: auto;
   background: var(--color-bg, #fff);
@@ -9,8 +9,8 @@
 .ldo-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 12px;
+  gap: calc(6px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   font-size: var(--fs-11);
   font-weight: 700;
   color: var(--color-text-muted, #9ca3af);
@@ -25,11 +25,11 @@
 .ldo-search {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  margin: 6px 8px 4px;
+  gap: calc(5px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+  margin: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale)) calc(4px * var(--vcl-scale));
   border: 1px solid var(--color-border-light, #e5e7eb);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-bg, #fff);
 }
 .ldo-search-input {
@@ -45,10 +45,10 @@
   color: var(--color-text-muted, #9ca3af);
 }
 .ldo-tree {
-  padding: 6px 4px;
+  padding: calc(6px * var(--vcl-scale)) calc(4px * var(--vcl-scale));
 }
 .ldo-empty {
-  padding: 20px 10px;
+  padding: calc(20px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   text-align: center;
   font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
@@ -56,9 +56,9 @@
 .ldo-node {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm, 6px);
+  gap: calc(4px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   font-size: var(--fs-12);
   color: var(--color-text-secondary, #6b7280);
   cursor: pointer;
@@ -81,8 +81,8 @@
   color: var(--color-primary, #4f6ef7);
 }
 .ldo-tree-icon {
-  width: 14px;
-  height: 14px;
+  width: calc(14px * var(--vcl-scale));
+  height: calc(14px * var(--vcl-scale));
   flex-shrink: 0;
   color: var(--color-text-muted, #9ca3af);
 }
@@ -95,8 +95,8 @@
   font-size: var(--fs-9);
   color: var(--color-text-muted, #9ca3af);
   background: var(--color-bg-soft, #f1f5f9);
-  padding: 1px 5px;
-  border-radius: 8px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(8px * var(--vcl-scale));
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -116,10 +116,10 @@
   opacity: 1;
 }
 .ldo-del-btn {
-  width: 26px;
-  height: 26px;
+  width: calc(26px * var(--vcl-scale));
+  height: calc(26px * var(--vcl-scale));
   border: none;
-  border-radius: 3px;
+  border-radius: calc(3px * var(--vcl-scale));
   background: transparent;
   color: var(--color-text-muted, #9ca3af);
   cursor: pointer;
@@ -129,5 +129,5 @@
 }
 .ldo-del-btn:hover {
   background: var(--color-danger-bg);
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger-on-surface);
 }

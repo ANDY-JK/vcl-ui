@@ -134,17 +134,31 @@ describe('Skeleton', () => {
     expect(w.find('.skel-avatar').exists()).toBe(true)
   })
 
-  // 模板里写 avatar="48" 传进来的是字符串，原样落到内联 width 会得到非法 CSS → 头像块塌成 0×0
-  it('avatar 无单位数字串归一为 px，具名挡位与 CSS 尺寸各走各的', () => {
-    const cases: [string | number, string][] = [
+  // 模板里写 avatar="48" 传进来的是字符串，原样落到内联 width 会得到非法 CSS → 头像块塌成 0×0。
+  // 具名档位（sm/md/lg）是组件自己的设计尺寸，走 --vcl-scale 等比缩放（CSS 类承载）；
+  // 宿主显式给的长度（数字串 / 任意 CSS 长度）是宿主自己的尺寸，原样内联透传不代缩放。
+  it('avatar 无单位数字串归一为 px，具名挡位走等比缩放，宿主显式值原样透传', () => {
+    const inlineCases: [string | number, string][] = [
       ['48', '48px'],
       [64, '64px'],
-      ['sm', '32px'],
       ['2.5rem', '2.5rem'],
     ]
-    for (const [avatar, expected] of cases) {
+    for (const [avatar, expected] of inlineCases) {
       const w = mount(Skeleton, { props: { loading: true, avatar } })
       expect(w.find('.skel-avatar').attributes('style'), `avatar=${String(avatar)}`).toContain(`width: ${expected}`)
+    }
+
+    const namedCases: [string | boolean, string][] = [
+      ['sm', 'skel-avatar-sm'],
+      [true, 'skel-avatar-md'],
+      ['lg', 'skel-avatar-lg'],
+    ]
+    for (const [avatar, cls] of namedCases) {
+      const w = mount(Skeleton, { props: { loading: true, avatar } })
+      const el = w.find('.skel-avatar')
+      expect(el.classes(), `avatar=${String(avatar)}`).toContain(cls)
+      // 具名档位的尺寸由 CSS 类给出，内联不再重复写死 px（否则 CSS 缩放被内联覆盖）
+      expect(el.attributes('style') ?? '').not.toContain('px')
     }
   })
 })

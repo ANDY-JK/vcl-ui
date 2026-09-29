@@ -63,7 +63,7 @@ const missing = []
 for (const [name, uses] of references) {
   // 只要有一处引用带了 fallback 就算「有降级通道」？不——按引用逐处判：
   // 无 fallback 且全库无声明的引用才是断档（同文件内局部声明已并入 declared，自动豁免）
-  const hard = uses.filter(u => !u.hasFallback && !declared.has(name))
+  const hard = uses.filter((u) => !u.hasFallback && !declared.has(name))
   if (hard.length) missing.push({ name, hard })
 }
 

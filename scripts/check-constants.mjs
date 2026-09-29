@@ -70,7 +70,8 @@ for (const [k, v] of cssBp) {
   if (!jsBp.has(k)) fail.push(`tokens.css 有 --bp-${k.toLowerCase()}=${v}px，breakpoints.ts 缺 BP_${k}`)
   else if (jsBp.get(k) !== v) fail.push(`BP_${k}=${jsBp.get(k)} 与 --bp-${k.toLowerCase()}:${v}px 不一致`)
 }
-for (const [k, v] of jsBp) if (!cssBp.has(k)) fail.push(`breakpoints.ts 有 BP_${k}=${v}，tokens.css 无 --bp-${k.toLowerCase()} 令牌`)
+for (const [k, v] of jsBp)
+  if (!cssBp.has(k)) fail.push(`breakpoints.ts 有 BP_${k}=${v}，tokens.css 无 --bp-${k.toLowerCase()} 令牌`)
 console.log(`[1] 断点令牌一致 css=${cssBp.size} ts=${jsBp.size}`)
 
 // ---------- [2] JS/TS 不得写视口断点字面量 ----------
@@ -144,7 +145,9 @@ for (const [rel, text] of styleTexts) {
       for (const m of l.matchAll(/\((?:max|min)-width:\s*(\d+(?:\.\d+)?)px\s*\)/g)) {
         const v = Number(m[1])
         if (!allowed.has(v))
-          cssHits.push(`${rel}:${i + 1} @media 宽度 ${v}px 未登记（已登记：${[...allowed.keys()].sort((a, b) => a - b).join('/')}）`)
+          cssHits.push(
+            `${rel}:${i + 1} @media 宽度 ${v}px 未登记（已登记：${[...allowed.keys()].sort((a, b) => a - b).join('/')}）`,
+          )
       }
     })
   }
@@ -209,7 +212,10 @@ for (const f of files.filter((x) => relOf(x).startsWith('src/components/'))) {
   if (!/\.(css|vue)$/.test(f) || f.endsWith('.d.ts')) continue
   const text = readFileSync(f, 'utf8')
   for (const m of text.matchAll(/([^{}]+)\{[^{}]*text-overflow:\s*ellipsis[^{}]*\}/g)) {
-    const selector = m[1].replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ').trim()
+    const selector = m[1]
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
     for (const c of selector.matchAll(/\.([A-Za-z][\w-]*)/g)) ellipsisClasses.add(c[1])
   }
 }
@@ -385,13 +391,16 @@ for (const f of files.filter((x) => x.endsWith('.vue') && relOf(x).startsWith('s
     colorSeen.set(key, (colorSeen.get(key) ?? 0) + 1)
     if (!COLOR_VALUE_VERDICTS.has(key)) {
       const line = text.slice(0, t.index).split('\n').length
-      colorHits.push(`${rel}:${line} <input type="color"> 的值没走 toNativeColorValue —— 就地归一，或绕层 computed 时登记判定（键：${key}）`)
+      colorHits.push(
+        `${rel}:${line} <input type="color"> 的值没走 toNativeColorValue —— 就地归一，或绕层 computed 时登记判定（键：${key}）`,
+      )
     }
   }
 }
 for (const [key, { n }] of COLOR_VALUE_VERDICTS) {
   const got = colorSeen.get(key) ?? 0
-  if (got !== n) colorHits.push(`登记与实际对不上：${key} 登记 ${n} 处、实际 ${got} 处（改了 class/挪了文件就要同步这张表）`)
+  if (got !== n)
+    colorHits.push(`登记与实际对不上：${key} 登记 ${n} 处、实际 ${got} 处（改了 class/挪了文件就要同步这张表）`)
 }
 // 扫不到任何取色器说明这条整块空转（正则失效 / 写法变了），不能当成通过
 if (!colorSites) fail.push('一条 <input type="color"> 都没扫到 —— [6] 的匹配失效了，先修判定再看绿')
@@ -436,7 +445,6 @@ for (const [domain, limit] of Object.entries(LINE_LIMITS)) {
   }
   console.log(`[7] ${domain} 域行数 文件=${count} 止涨线=${limit} 超线=${oversized.length}`)
 }
-
 
 if (fail.length) {
   console.error('\n❌ check:constants 未通过 —— 尺寸/断点常量必须有来源')

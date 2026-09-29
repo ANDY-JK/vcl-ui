@@ -13,7 +13,9 @@ function setCapability(opts: { userMedia?: boolean; rejectWith?: { name: string;
   if (opts.userMedia === false) {
     // 模拟不支持的内核：mediaDevices 在场但没有 getUserMedia
   } else if (opts.rejectWith) {
-    md.getUserMedia = vi.fn().mockRejectedValue(Object.assign(new Error(opts.rejectWith.message), { name: opts.rejectWith.name }))
+    md.getUserMedia = vi
+      .fn()
+      .mockRejectedValue(Object.assign(new Error(opts.rejectWith.message), { name: opts.rejectWith.name }))
   } else {
     md.getUserMedia = vi.fn().mockResolvedValue({ getTracks: () => [] })
   }
@@ -34,7 +36,12 @@ function mockTouch() {
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     writable: true,
-    value: (q: string) => ({ matches: q.includes('coarse'), media: q, addEventListener() {}, removeEventListener() {} }),
+    value: (q: string) => ({
+      matches: q.includes('coarse'),
+      media: q,
+      addEventListener() {},
+      removeEventListener() {},
+    }),
   })
 }
 const originalMatchMedia = window.matchMedia
@@ -106,4 +113,3 @@ describe('CodeCapture 自动兜底链', () => {
     w.unmount()
   })
 })
-

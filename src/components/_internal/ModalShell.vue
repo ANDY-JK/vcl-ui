@@ -196,33 +196,33 @@ function onPanelMousedown() {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  width: clamp(320px, 92vw, 520px);
+  width: calc(520px * var(--vcl-scale));
   max-height: 85vh;
   max-height: 85dvh;
 }
 .modal-sm {
-  width: clamp(280px, 38vw, 420px);
+  width: calc(420px * var(--vcl-scale));
 }
 .modal-md {
-  width: clamp(380px, 52vw, 580px);
+  width: calc(580px * var(--vcl-scale));
 }
 .modal-lg {
-  width: clamp(480px, 66vw, 760px);
+  width: calc(760px * var(--vcl-scale));
 }
 .modal-xl {
-  width: clamp(580px, 82vw, 980px);
+  width: calc(980px * var(--vcl-scale));
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: clamp(var(--space-1), 1.2vw, 10px) clamp(8px, 1.5vw, 12px);
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 
 .modal-title {
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 22), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
 }
 
@@ -245,13 +245,13 @@ function onPanelMousedown() {
   max-width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: clamp(var(--space-1), 1.2vw, 10px);
+  padding: calc(10px * var(--vcl-scale));
 }
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: clamp(var(--space-1), 1vw, 8px);
-  padding: clamp(var(--space-2), 2vw, 16px) clamp(12px, 2.5vw, 20px);
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   border-top: 1px solid var(--color-border-light);
 }
 

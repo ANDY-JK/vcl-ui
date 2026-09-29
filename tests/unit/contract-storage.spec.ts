@@ -3,8 +3,10 @@
 // 若 indexedDB.ts 的 StoreItem 包装格式变更，或 contract-storage 的 LocalRecord 形状变更，此处立即红。
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
-  CompositeBackend, sanitizeObjectKeyPart,
-  type StorageBackend, type StoreUploadState,
+  CompositeBackend,
+  sanitizeObjectKeyPart,
+  type StorageBackend,
+  type StoreUploadState,
 } from '@/components/storage/contract-storage'
 
 // 本测试故意触发云端故障/降级路径，预期 console.warn/error 输出——静默避免污染测试日志
@@ -40,10 +42,18 @@ class FakeLocalBackend implements StorageBackend {
       ts: state.ts,
     })
   }
-  async clearAll() { this.rows.clear() }
-  get size() { return this.rows.size }
-  has(id: number) { return this.rows.has(id) }
-  get(id: number) { return this.rows.get(id) }
+  async clearAll() {
+    this.rows.clear()
+  }
+  get size() {
+    return this.rows.size
+  }
+  has(id: number) {
+    return this.rows.has(id)
+  }
+  get(id: number) {
+    return this.rows.get(id)
+  }
 }
 
 /** 假云端后端：记录墓碑与图片对象，模拟 SupabaseBackend 行为 */
@@ -66,9 +76,15 @@ class FakeCloudBackend {
     if (hasAny) this.objects.set(appleId, state)
     else this.objects.delete(appleId)
   }
-  async clearAll() { this.objects.clear() }
-  get size() { return this.objects.size }
-  has(id: number) { return this.objects.has(id) }
+  async clearAll() {
+    this.objects.clear()
+  }
+  get size() {
+    return this.objects.size
+  }
+  has(id: number) {
+    return this.objects.has(id)
+  }
 }
 
 /** 构造 CompositeBackend 并注入假后端 */
@@ -236,7 +252,9 @@ describe('M9 contract-storage 契约锁定', () => {
       // 慢上传：记录云端 saveRecord 调用顺序
       const calls: string[] = []
       let releaseUpload: (() => void) | null = null
-      const gate = new Promise<void>((r) => { releaseUpload = r })
+      const gate = new Promise<void>((r) => {
+        releaseUpload = r
+      })
       vi.spyOn(cloud, 'saveRecord').mockImplementation(async (id, state) => {
         if (state.slots && Object.keys(state.slots).length > 0) {
           calls.push('upload')

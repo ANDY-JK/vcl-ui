@@ -16,7 +16,13 @@ const data = [
   { city: '广州', status: 'active' },
 ]
 
-function makeFilter(overrides: { externalFilters?: () => Record<string, string[]> | undefined; columns?: Column[]; data?: Record<string, unknown>[] } = {}) {
+function makeFilter(
+  overrides: {
+    externalFilters?: () => Record<string, string[]> | undefined
+    columns?: Column[]
+    data?: Record<string, unknown>[]
+  } = {},
+) {
   const emitted: Record<string, string[]>[] = []
   const emit = (e: string, filters: Record<string, string[]>) => {
     if (e === 'filter') emitted.push(filters)
@@ -192,7 +198,10 @@ describe('applyFilter 全选边界与清除', () => {
     api.activeFilterKey.value = 'city'
     api.resetFilter()
     expect(api.filterState.value.city).toBeUndefined()
-    api.filterState.value = { city: { searchText: '', selectedValues: ['北京'] }, status: { searchText: '', selectedValues: ['active'] } }
+    api.filterState.value = {
+      city: { searchText: '', selectedValues: ['北京'] },
+      status: { searchText: '', selectedValues: ['active'] },
+    }
     api.clearAllFilters()
     expect(api.filterState.value).toEqual({})
     expect(emitted.at(-1)).toEqual({})

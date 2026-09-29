@@ -55,7 +55,7 @@ function onToggleAll() {
 <style scoped>
 .cl-root {
   flex-shrink: 0;
-  padding: var(--space-2) 12px 4px;
+  padding: var(--space-2) calc(12px * var(--vcl-scale)) calc(4px * var(--vcl-scale));
   border-top: 1px solid var(--color-border-light);
   margin-top: var(--space-1);
 }
@@ -68,8 +68,8 @@ function onToggleAll() {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-secondary);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
-  padding: var(--space-0) 8px;
+  font-size: calc(14px * var(--vcl-scale));
+  padding: var(--space-0) calc(8px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s;
@@ -77,17 +77,17 @@ function onToggleAll() {
 }
 .cl-toggle-all:hover {
   border-color: var(--color-primary);
-  color: var(--color-primary-solid);
+  color: var(--color-primary-on-surface);
 }
 .cl-toggle-all--active {
   border-color: var(--color-primary);
-  color: var(--color-primary-solid); /* AA：浅主色底上基色 3.8 不达标 */
+  color: var(--color-primary-on-surface); /* AA：浅主色底上基色 3.8 不达标 */
   background: var(--color-primary-light);
 }
 .cl-list {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) 16px;
+  gap: var(--space-1) calc(16px * var(--vcl-scale));
 }
 .cl-item {
   display: inline-flex;
@@ -98,7 +98,7 @@ function onToggleAll() {
   background: none;
   cursor: pointer;
   border-radius: var(--radius-sm);
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text);
   transition:
     opacity 0.15s,
@@ -112,8 +112,8 @@ function onToggleAll() {
   opacity: 0.3;
 }
 .cl-dot {
-  width: clamp(8px, 1.5vw, 10px);
-  height: clamp(8px, 1.5vw, 10px);
+  width: calc(10px * var(--vcl-scale));
+  height: calc(10px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
@@ -121,6 +121,6 @@ function onToggleAll() {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: clamp(100px, 18vw, 140px);
+  max-width: calc(140px * var(--vcl-scale));
 }
 </style>

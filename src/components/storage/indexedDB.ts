@@ -380,7 +380,6 @@ export async function dbBatch(ops: BatchOp[]): Promise<void> {
   return idbBatch(ops)
 }
 
-
 // ======================== Storage 轻量 API（localStorage） ========================
 // 物理拆到 local-storage.ts（2026-09-20，Q17：本文件名只对应 IndexedDB 家族，
 // storage* 走 localStorage，按文件名找不到这批同步 API）。此处保留 re-export ——

@@ -27,8 +27,8 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
     <h1 class="demo-title">Toast 通知</h1>
     <p class="demo-desc">内联提示 + 顶部通知条，四种类型。</p>
 
-    <Card title="Toast 内联提示 (variant=&quot;inline&quot;)" title-as="h2" style="margin-bottom: 24px">
-      <div style="display: flex; flex-direction: column; gap: 8px">
+    <Card title='Toast 内联提示 (variant="inline")' title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <div style="display: flex; flex-direction: column; gap: calc(8px * var(--vcl-scale))">
         <Toast variant="inline" type="circle-alert" message="这是一条普通信息提示" />
         <Toast variant="inline" type="success" message="操作成功！数据已保存" title="成功" />
         <Toast variant="inline" type="warning" message="您的存储空间即将不足，请及时清理" :closable="true" />
@@ -37,59 +37,85 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
     </Card>
 
     <Card title="Toast 通知提示" title-as="h2">
-      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <div style="display: flex; gap: calc(8px * var(--vcl-scale)); flex-wrap: wrap">
         <Button text="信息提示" size="sm" @click="showToast('info')" />
         <Button text="成功提示" variant="primary" size="sm" @click="showToast('success')" />
         <Button text="警告提示" variant="secondary" size="sm" @click="showToast('warning')" />
         <Button text="错误提示" variant="danger" size="sm" @click="showToast('error')" />
-        <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px; width: 100%">
+        <p
+          style="
+            font-size: calc(12px * var(--vcl-scale));
+            color: var(--color-text-muted);
+            margin-top: calc(4px * var(--vcl-scale));
+            width: 100%;
+          "
+        >
           点击按钮查看顶部通知
         </p>
       </div>
     </Card>
 
     <Card title="Props" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-        <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-          <th style="padding: 4px 8px">Prop</th>
-          <th style="padding: 4px 8px">类型</th>
-          <th style="padding: 4px 8px">默认</th>
-          <th style="padding: 4px 8px">说明</th>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
-            <code>variant</code>
-          </td>
-          <td style="padding: 3px 8px">string</td>
-          <td style="padding: 3px 8px">toast</td>
-          <td style="padding: 3px 8px">toast | inline</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
-            <code>type</code>
-          </td>
-          <td style="padding: 3px 8px">string</td>
-          <td style="padding: 3px 8px">info</td>
-          <td style="padding: 3px 8px">info | success | warning | error</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
-            <code>title</code>
-          </td>
-          <td style="padding: 3px 8px">string</td>
-          <td style="padding: 3px 8px">—</td>
-          <td style="padding: 3px 8px">标题（inline 模式）</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px">
-            <code>closable</code>
-          </td>
-          <td style="padding: 3px 8px">boolean</td>
-          <td style="padding: 3px 8px">false</td>
-          <td style="padding: 3px 8px">显示关闭按钮（inline 模式）</td>
-        </tr>
-      </tbody>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>variant</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">toast</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">toast | inline</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>type</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">info</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              info | success | warning | error
+            </td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>title</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">标题（inline 模式）</td>
+          </tr>
+          <tr>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              <code>closable</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              显示关闭按钮（inline 模式）
+            </td>
+          </tr>
+        </tbody>
       </table>
     </Card>
   </div>
@@ -99,19 +125,19 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

@@ -102,7 +102,9 @@ export function useCellSelect(deps: CellSelectDeps) {
     if (isInRange(rowKey, colKey)) return true
     if (selectedColKey.value === colKey) return true
     if (multiSelection.value.has(cellKey(rowKey, colKey))) return true
-    return selectedCell.value?.rowKey === rowKey && selectedCell.value?.colKey === colKey && multiSelection.value.size === 0
+    return (
+      selectedCell.value?.rowKey === rowKey && selectedCell.value?.colKey === colKey && multiSelection.value.size === 0
+    )
   }
 
   /** 判断单元格是否在矩形选区（按显示顺序的行列索引）。

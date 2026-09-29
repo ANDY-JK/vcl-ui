@@ -49,11 +49,7 @@ export interface UseTreeFlattenReturn<T> {
 /**
  * 从树中收集所有节点 key
  */
-function collectAllKeys<T>(
-  nodes: T[],
-  childrenKey: string,
-  keyFn: (node: T) => string | number,
-): (string | number)[] {
+function collectAllKeys<T>(nodes: T[], childrenKey: string, keyFn: (node: T) => string | number): (string | number)[] {
   const keys: (string | number)[] = []
   for (const n of nodes) {
     keys.push(keyFn(n))
@@ -84,32 +80,20 @@ function flattenTree<T>(
     const path = [...parentPath, node]
     result.push({ node, depth, parent, isLeaf, path })
     if (!isLeaf && expandKeys.has(keyFn(node))) {
-      result.push(
-        ...flattenTree(children, childrenKey, keyFn, expandKeys, depth + 1, node, path),
-      )
+      result.push(...flattenTree(children, childrenKey, keyFn, expandKeys, depth + 1, node, path))
     }
   }
   return result
 }
 
-export function useTreeFlatten<T>(
-  options: UseTreeFlattenOptions<T>,
-): UseTreeFlattenReturn<T> {
+export function useTreeFlatten<T>(options: UseTreeFlattenOptions<T>): UseTreeFlattenReturn<T> {
   const childrenKey = options.childrenKey ?? 'children'
   const keyFn = options.keyExtractor ?? ((n: T) => (n as Record<string, unknown>)['key'] as string | number)
 
   const expandKeys = ref<Set<string | number>>(new Set())
 
   const flatNodes = computed<FlattenNode<T>[]>(() =>
-    flattenTree(
-      options.data(),
-      childrenKey,
-      keyFn,
-      expandKeys.value,
-      0,
-      null,
-      [],
-    ),
+    flattenTree(options.data(), childrenKey, keyFn, expandKeys.value, 0, null, []),
   )
 
   function toggleExpand(key: string | number) {
@@ -141,12 +125,7 @@ export function useTreeFlatten<T>(
     const matched: FlattenNode<T>[] = []
     const matchedKeys = new Set<string | number>()
 
-    function walk(
-      nodes: T[],
-      depth: number,
-      parent: T | null,
-      parentPath: T[],
-    ) {
+    function walk(nodes: T[], depth: number, parent: T | null, parentPath: T[]) {
       for (const node of nodes) {
         const children = (node as Record<string, unknown>)[childrenKey] as T[] | undefined
         const isLeaf = !children?.length

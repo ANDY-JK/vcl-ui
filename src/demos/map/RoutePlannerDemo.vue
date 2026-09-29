@@ -642,14 +642,14 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: calc(12px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   background: var(--color-surface);
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 }
 
 .header h1 {
-  font-size: 18px;
+  font-size: calc(18px * var(--vcl-scale));
   font-weight: 700;
   color: var(--color-text);
   margin: 0;
@@ -657,7 +657,7 @@ onMounted(async () => {
 
 .header-actions {
   display: flex;
-  gap: 10px;
+  gap: calc(10px * var(--vcl-scale));
 }
 
 .btn-template,
@@ -665,9 +665,9 @@ onMounted(async () => {
 .btn-import,
 .btn-key,
 .btn-clear {
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   cursor: pointer;
   border: 1px solid #e2e8f0;
   background: var(--color-surface);
@@ -687,9 +687,9 @@ onMounted(async () => {
 }
 
 .btn-export {
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   cursor: pointer;
   border: 1px solid #e2e8f0;
   background: var(--color-surface);
@@ -741,33 +741,33 @@ onMounted(async () => {
 .key-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
+  gap: calc(10px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   background: var(--color-warning-bg);
   border-bottom: 1px solid #fef08a;
 }
 
 .key-bar input {
   flex: 1;
-  padding: 6px 12px;
+  padding: calc(6px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border: 1px solid #fde047;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   outline: none;
 }
 
 .key-bar button {
-  padding: 6px 16px;
+  padding: calc(6px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   background: #f59e0b;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: calc(6px * var(--vcl-scale));
   cursor: pointer;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
 }
 
 .key-hint {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-warning-text);
   margin: 0;
   white-space: nowrap;
@@ -778,31 +778,31 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 20px;
+  padding: calc(8px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   background: var(--color-danger-bg);
   border-bottom: 1px solid #fecaca;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-danger);
 }
 
 .locate-error-bar button {
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: calc(16px * var(--vcl-scale));
   cursor: pointer;
   color: var(--color-danger);
 }
 
 /* 起点提示 */
 .start-point-bar {
-  padding: 6px 20px;
+  padding: calc(6px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   background: var(--color-success-bg);
   border-bottom: 1px solid #bbf7d0;
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-success-text);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
   flex-wrap: wrap;
 }
 
@@ -815,20 +815,20 @@ onMounted(async () => {
 .start-input-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   flex: 1;
-  min-width: 280px;
+  min-width: calc(280px * var(--vcl-scale));
 }
 
 .start-input {
   flex: 1;
-  padding: 5px 10px;
+  padding: calc(5px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border: 1px solid #d1d5db;
-  border-radius: 5px;
-  font-size: 12px;
+  border-radius: calc(5px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   outline: none;
   transition: border-color 0.15s;
-  min-width: 200px;
+  min-width: calc(200px * var(--vcl-scale));
 }
 
 .start-input:focus {
@@ -837,12 +837,12 @@ onMounted(async () => {
 }
 
 .btn-start-set {
-  padding: 5px 12px;
+  padding: calc(5px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   background: #3b82f6;
   color: #fff;
   border: none;
-  border-radius: 5px;
-  font-size: 12px;
+  border-radius: calc(5px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s;
@@ -860,7 +860,7 @@ onMounted(async () => {
 .btn-start-reset {
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: calc(14px * var(--vcl-scale));
   cursor: pointer;
   color: #94a3b8;
   padding: 0 2px;
@@ -872,13 +872,13 @@ onMounted(async () => {
 }
 
 .import-bar {
-  padding: 8px 20px;
+  padding: calc(8px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   background: var(--color-surface);
   border-bottom: 1px solid #e2e8f0;
 }
 
 .import-status {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin: 0;
 }
@@ -894,7 +894,7 @@ onMounted(async () => {
 }
 
 .left-panel {
-  width: 300px;
+  width: calc(300px * var(--vcl-scale));
   flex-shrink: 0;
   border-right: 1px solid #e2e8f0;
   background: var(--color-surface);
@@ -909,13 +909,13 @@ onMounted(async () => {
 
 /* 折叠按钮 */
 .collapse-btn {
-  width: 20px;
+  width: calc(20px * var(--vcl-scale));
   flex-shrink: 0;
   background: var(--color-bg-soft);
   border: none;
   border-right: 1px solid #e2e8f0;
   cursor: pointer;
-  font-size: 10px;
+  font-size: calc(10px * var(--vcl-scale));
   color: #94a3b8;
   padding: 0;
   display: flex;
@@ -936,7 +936,7 @@ onMounted(async () => {
 }
 
 .right-panel {
-  width: 340px;
+  width: calc(340px * var(--vcl-scale));
   flex-shrink: 0;
   border-left: 1px solid #e2e8f0;
   background: var(--color-surface);
@@ -947,20 +947,20 @@ onMounted(async () => {
 
 .result-actions {
   display: flex;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border-bottom: 1px solid #e2e8f0;
   flex-shrink: 0;
 }
 
 .btn-generate {
   flex: 1;
-  padding: 8px 16px;
+  padding: calc(8px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   background: #3b82f6;
   color: #fff;
   border: none;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
@@ -978,25 +978,25 @@ onMounted(async () => {
 .target-days {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 0 4px;
+  gap: calc(3px * var(--vcl-scale));
+  padding: 0 calc(4px * var(--vcl-scale));
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: calc(6px * var(--vcl-scale));
   background: var(--color-surface);
 }
 
 .days-label {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: #94a3b8;
   white-space: nowrap;
 }
 
 .days-input {
-  width: 36px;
-  padding: 5px 2px;
+  width: calc(36px * var(--vcl-scale));
+  padding: calc(5px * var(--vcl-scale)) 2px;
   border: none;
   outline: none;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text);
   text-align: center;
@@ -1006,21 +1006,21 @@ onMounted(async () => {
 .days-input::placeholder {
   color: #cbd5e1;
   font-weight: 400;
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
 }
 
 .days-suffix {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: #94a3b8;
 }
 
 .btn-replan {
-  padding: 8px 12px;
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   background: var(--color-success-bg);
   color: var(--color-success-text);
   border: 1px solid #bbf7d0;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;

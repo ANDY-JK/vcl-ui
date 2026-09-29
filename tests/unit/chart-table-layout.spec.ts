@@ -7,10 +7,31 @@ import { mount } from '@vue/test-utils'
 
 // ── stubs： Chart 与 DataTable 都不真加载（前者拽 echarts，后者是异步大家伙） ──
 const chartProps = [
-  'type', 'option', 'data', 'categories', 'series', 'darkMode', 'colors', 'title',
-  'showLegend', 'showTooltip', 'smooth', 'showSymbol', 'showDataLabel', 'horizontal',
-  'stacked', 'stacked100', 'legendPosition', 'xAxis', 'yAxis', 'animation',
-  'animationDuration', 'toolbar', 'palette', 'markLine', 'markArea',
+  'type',
+  'option',
+  'data',
+  'categories',
+  'series',
+  'darkMode',
+  'colors',
+  'title',
+  'showLegend',
+  'showTooltip',
+  'smooth',
+  'showSymbol',
+  'showDataLabel',
+  'horizontal',
+  'stacked',
+  'stacked100',
+  'legendPosition',
+  'xAxis',
+  'yAxis',
+  'animation',
+  'animationDuration',
+  'toolbar',
+  'palette',
+  'markLine',
+  'markArea',
 ]
 vi.mock('@/components/chart/Chart.vue', async () => {
   const { defineComponent } = await import('vue')

@@ -323,12 +323,18 @@ function onProgressMouseUp() {
    - vcl-*：组件内部业务类，宿主不应依赖
    - .sidebar / .content-body：跨组件契约类（DataTable 全屏按类名查询），改名会静默破坏全屏定位
    - .topbar-tool-*：文档化预设类（topbar-tools 插槽用），宿主按注释示例直接引用 */
+/* 容器声明必须在 sidebar 与 content-body 的**共同祖先**上：
+   容器查询按「查询容器的后代」匹配，此前把它挂在 .content-body，而 .sidebar 是它的兄弟节点，
+   @container layout 永远不匹配——移动端抽屉规则整段失效（汉堡按钮点了没反应、侧栏仍占位）。
+   挂到根节点后查询宽度 = 视口宽，与 JS 侧 `innerWidth < BP_MD` 的移动端判定同源。 */
 .vcl-app-layout {
   display: flex;
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
   contain: layout style;
+  container-type: inline-size;
+  container-name: layout;
 }
 
 .vcl-sidebar-overlay {
@@ -360,7 +366,7 @@ function onProgressMouseUp() {
     top: 0;
     left: 0;
     bottom: 0;
-    width: min(260px, 85vw);
+    width: min(260px * var(--vcl-scale), 85vw);
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
     transition: transform var(--transition-normal);
@@ -369,7 +375,7 @@ function onProgressMouseUp() {
     transform: translateX(0);
   }
   .sidebar.collapsed {
-    width: min(260px, 85vw);
+    width: min(260px * var(--vcl-scale), 85vw);
   }
 }
 
@@ -378,21 +384,21 @@ function onProgressMouseUp() {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-5) var(--space-4);
-  min-height: 56px;
+  min-height: calc(56px * var(--vcl-scale));
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--color-sidebar-text-active);
 }
 
 .sidebar.collapsed {
-  width: 72px;
-  min-width: 72px;
+  width: calc(72px * var(--vcl-scale));
+  min-width: calc(72px * var(--vcl-scale));
 }
 .sidebar.collapsed .vcl-sidebar-header {
   flex-direction: column;
   gap: var(--space-2);
   justify-content: center;
   padding: var(--space-4) var(--space-2);
-  min-height: 72px;
+  min-height: calc(72px * var(--vcl-scale));
 }
 .sidebar.collapsed .vcl-collapse-btn {
   margin-left: 0;
@@ -402,16 +408,16 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
+  width: calc(34px * var(--vcl-scale));
+  min-width: calc(34px * var(--vcl-scale));
+  height: calc(34px * var(--vcl-scale));
   background: var(--color-primary);
   border-radius: var(--radius-md);
   color: white;
   flex-shrink: 0;
 }
 .vcl-logo-text {
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   white-space: nowrap;
   letter-spacing: 0.3px;
@@ -421,8 +427,8 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: calc(26px * var(--vcl-scale));
+  height: calc(26px * var(--vcl-scale));
   margin-left: auto;
   padding: 0;
   border: none;
@@ -457,7 +463,7 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3) clamp(12px, 2vw, 16px);
+  padding: var(--space-3) calc(16px * var(--vcl-scale));
   background:
     linear-gradient(180deg, rgba(var(--color-primary-rgb), 0.03) 0%, transparent 2px),
     linear-gradient(90deg, rgba(var(--color-primary-rgb), 0.015) 1px, transparent 1px) 0 0 / 3px 100%,
@@ -486,8 +492,8 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: calc(28px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
   margin-right: var(--space-1);
   border: none;
   border-radius: var(--radius-sm);
@@ -535,7 +541,11 @@ function onProgressMouseUp() {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
+  /* 给标题留地板，而不是让它被工具区挤成 0 宽整段消失：
+     一个页面连自己叫什么名字都看不见，比省略号难受得多。
+     地板取 min(6em, 26%)——窄屏按比例让位，宽屏不抢工具的位。 */
+  min-width: min(6em, 26%);
+  flex-shrink: 1;
 }
 
 /* ---- 顶栏工具 + 用户区 ---- */
@@ -546,11 +556,19 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  flex-shrink: 0;
+  /* 装不下时收缩为可横向滚动的工具条，而不是被顶栏的 overflow:hidden 裁掉——
+     被裁掉的按钮用户既看不见也点不到（实测 360px 下 8 个按钮只有 4 个可达）。
+     宽屏空间充足，不触发滚动，观感不变。 */
+  flex-shrink: 1;
+  min-width: 0;
+  overflow-x: auto;
   /* 子元素可引用以下预设类名获得标准工具栏按钮样式：
      .topbar-tool-btn     → 图标按钮（32×32 暗色半透明）
      .topbar-tool-btn.active → 激活态（主色背景描边）
      .topbar-tool-sep     → 按钮组之间的竖线分隔 */
+}
+.topbar-tools > * {
+  flex-shrink: 0; /* 收缩交给容器滚动，按钮自身不被压扁 */
 }
 .vcl-topbar-right {
   display: flex;
@@ -564,8 +582,8 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(28px, 4vw, 32px);
-  height: clamp(28px, 4vw, 32px);
+  width: calc(32px * var(--vcl-scale));
+  height: calc(32px * var(--vcl-scale));
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.08); /* 微弱亮边，框出按钮区域 */
   border-radius: var(--radius-sm);
@@ -605,12 +623,12 @@ function onProgressMouseUp() {
 }
 /* 危险操作变体 — 红色激活 */
 .topbar-tool-btn.is-danger:hover {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-btn.is-danger.active {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -618,7 +636,7 @@ function onProgressMouseUp() {
 /* 工具栏按钮组之间的竖线分隔 */
 .topbar-tool-sep {
   width: 1px;
-  height: 18px;
+  height: calc(18px * var(--vcl-scale));
   margin: 0 var(--space-1);
   background: rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
@@ -629,13 +647,13 @@ function onProgressMouseUp() {
 .topbar-tool-text {
   display: flex;
   align-items: center;
-  height: clamp(28px, 4vw, 32px);
+  height: calc(32px * var(--vcl-scale));
   padding: 0 var(--space-3);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: var(--color-text-muted);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   letter-spacing: 0.2px;
   white-space: nowrap;
@@ -669,12 +687,12 @@ function onProgressMouseUp() {
 }
 /* 文字按钮 — 危险红色 */
 .topbar-tool-text.is-danger:hover {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-text.is-danger.active {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -685,13 +703,13 @@ function onProgressMouseUp() {
   align-items: center;
   gap: var(--space-2);
   flex-wrap: nowrap; /* 绝不换行 —— 图标和文字始终同排 */
-  height: clamp(28px, 4vw, 32px);
+  height: calc(32px * var(--vcl-scale));
   padding: 0 var(--space-3) 0 var(--space-2);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: var(--color-text-muted);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
@@ -705,8 +723,8 @@ function onProgressMouseUp() {
 /* SVG 图标：固定 16px，block 消除 inline 基线偏移 */
 .topbar-tool-label > svg {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
   flex-shrink: 0;
 }
 .topbar-tool-label:hover {
@@ -738,15 +756,15 @@ function onProgressMouseUp() {
 }
 /* 图标+文字按钮 — 危险红色 */
 .topbar-tool-label.is-danger:hover {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-label.is-danger:hover > svg {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
 }
 .topbar-tool-label.is-danger.active {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -757,22 +775,22 @@ function onProgressMouseUp() {
   gap: var(--space-2);
 }
 .vcl-user-avatar {
-  width: 28px;
-  height: 28px;
+  width: calc(28px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   line-height: 1;
 }
 .vcl-user-name {
   font-size: var(--ctrl-font-size);
   color: var(--color-text-muted);
-  max-width: 100px;
+  max-width: calc(100px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -781,8 +799,8 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: calc(30px * var(--vcl-scale));
+  height: calc(30px * var(--vcl-scale));
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
@@ -791,7 +809,7 @@ function onProgressMouseUp() {
   transition: all var(--transition-normal);
 }
 .vcl-logout-btn:hover {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   border-color: rgba(239, 68, 68, 0.3);
   background: rgba(239, 68, 68, 0.06);
 }
@@ -805,8 +823,6 @@ function onProgressMouseUp() {
   border-left: 1px solid var(--color-border-light);
   border-right: 1px solid var(--color-border-light);
   scrollbar-width: none;
-  container-type: inline-size;
-  container-name: layout;
 }
 .content-body::-webkit-scrollbar {
   display: none;
@@ -819,7 +835,7 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-2) clamp(12px, 2vw, 16px);
+  padding: var(--space-2) calc(16px * var(--vcl-scale));
   background: linear-gradient(0deg, rgba(var(--color-primary-rgb), 0.02) 0%, transparent 2px), var(--color-sidebar);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   border-top: 1px solid rgba(var(--color-primary-rgb), 0.12);
@@ -828,12 +844,12 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 7px var(--space-4);
+  padding: calc(7px * var(--vcl-scale)) var(--space-4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
   color: var(--color-sidebar-text);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-normal);
@@ -855,7 +871,7 @@ function onProgressMouseUp() {
 .vcl-toolbar-label {
   font-weight: 500;
   letter-spacing: 0.2px;
-  max-width: clamp(80px, 14vw, 160px);
+  max-width: calc(160px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -867,13 +883,13 @@ function onProgressMouseUp() {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: clamp(80px, 16vw, 140px);
+  width: calc(140px * var(--vcl-scale));
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
 }
 .vcl-nav-center:hover .vcl-nav-progress-track {
-  height: 4px;
+  height: calc(4px * var(--vcl-scale));
   border-radius: var(--radius-sm);
 }
 .vcl-nav-center:hover .vcl-nav-progress {
@@ -903,11 +919,11 @@ function onProgressMouseUp() {
   pointer-events: none;
 }
 .vcl-nav-percent {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-primary);
   font-weight: 600;
   opacity: 0.7;
-  min-width: clamp(28px, 4vw, 32px);
+  min-width: calc(32px * var(--vcl-scale));
   text-align: right;
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   pointer-events: none;

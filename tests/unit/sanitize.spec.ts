@@ -38,13 +38,17 @@ describe('sanitizeHTML · HTML 白名单消毒', () => {
 
   it('拦截 CSS 外链资源（绝对地址/协议相对地址）', () => {
     expect(sanitizeHTML('<div style="background: url(https://evil.com/track.png)">x</div>')).toBe('<div>x</div>')
-    expect(sanitizeHTML('<div style="background: url(&quot;https://evil.com/x.png&quot;)">x</div>')).toBe('<div>x</div>')
+    expect(sanitizeHTML('<div style="background: url(&quot;https://evil.com/x.png&quot;)">x</div>')).toBe(
+      '<div>x</div>',
+    )
     expect(sanitizeHTML('<div style="background: url(//evil.com/track.png)">x</div>')).toBe('<div>x</div>')
     expect(sanitizeHTML('<div style="list-style: url(http://evil.com/b.gif)">x</div>')).toBe('<div>x</div>')
   })
 
   it('保留 CSS 相对路径与 data:image 资源', () => {
-    expect(sanitizeHTML('<div style="background: url(img/bg.png)">x</div>')).toBe('<div style="background: url(img/bg.png)">x</div>')
+    expect(sanitizeHTML('<div style="background: url(img/bg.png)">x</div>')).toBe(
+      '<div style="background: url(img/bg.png)">x</div>',
+    )
     expect(sanitizeHTML('<div style="background: url(data:image/png;base64,iVBOR)">x</div>')).toBe(
       '<div style="background: url(data:image/png;base64,iVBOR)">x</div>',
     )
@@ -58,7 +62,9 @@ describe('sanitizeHTML · HTML 白名单消毒', () => {
     expect(sanitizeHTML('<a href="https://example.com" rel="opener" target="_blank">覆写</a>')).toBe(
       '<a href="https://example.com" target="_blank" rel="noopener noreferrer">覆写</a>',
     )
-    expect(sanitizeHTML('<a href="https://example.com">普通链接</a>')).toBe('<a href="https://example.com">普通链接</a>')
+    expect(sanitizeHTML('<a href="https://example.com">普通链接</a>')).toBe(
+      '<a href="https://example.com">普通链接</a>',
+    )
   })
 
   it('保留安全 style', () => {
@@ -197,7 +203,8 @@ describe('sanitizeHTML · 对抗性回归（M10：攻击向量冻结）', () => 
   })
 
   it('良性复杂 HTML 原样保留（防误杀回归）', () => {
-    const good = '<table><thead><tr><th>列</th></tr></thead><tbody><tr><td><b>粗</b><img src="https://a.com/b.png" alt="图"></td></tr></tbody></table>'
+    const good =
+      '<table><thead><tr><th>列</th></tr></thead><tbody><tr><td><b>粗</b><img src="https://a.com/b.png" alt="图"></td></tr></tbody></table>'
     expect(sanitizeHTML(good)).toBe(good)
   })
 })

@@ -61,20 +61,32 @@ function onCamError(msg: string) {
     <h2 class="title">CodeCapture · 采集兜底链</h2>
     <p class="desc">
       用户只点一次「扫码」，之后自动下探，不需要在来源之间做选择：<br />
-      <b>页面内相机</b>（不切后台、无刷新）→ 失败/被拒 → <b>系统相机拍照识别</b> →
-      仍不成 → <b>上传图片识别</b> / <b>手工输入</b>。拍照组件同理，最末一级是上传面板。
+      <b>页面内相机</b>（不切后台、无刷新）→ 失败/被拒 → <b>系统相机拍照识别</b> → 仍不成 → <b>上传图片识别</b> /
+      <b>手工输入</b>。拍照组件同理，最末一级是上传面板。
     </p>
 
     <!-- 能力探测 -->
     <Card title="环境能力探测（detectCaptureCapability）" title-as="h2">
       <p class="card-hint">
-        入口级由能力决定：不具备页面内取流条件（非 HTTPS / 无 getUserMedia）时，直接跳到系统相机，避免注定失败的权限纠缠。
+        入口级由能力决定：不具备页面内取流条件（非 HTTPS / 无
+        getUserMedia）时，直接跳到系统相机，避免注定失败的权限纠缠。
       </p>
       <ul v-if="cap" class="cap-list">
-        <li><span>安全上下文（HTTPS / localhost）</span><Tag :variant="cap.secure ? 'success' : 'danger'" :text="cap.secure ? '是' : '否'" /></li>
-        <li><span>getUserMedia 可用</span><Tag :variant="cap.hasUserMedia ? 'success' : 'danger'" :text="cap.hasUserMedia ? '是' : '否'" /></li>
-        <li><span>微信内置浏览器</span><Tag :variant="cap.isWeChat ? 'warning' : 'default'" :text="cap.isWeChat ? '是' : '否'" /></li>
-        <li><span>触屏设备</span><Tag :variant="cap.isTouch ? 'warning' : 'default'" :text="cap.isTouch ? '是' : '否'" /></li>
+        <li>
+          <span>安全上下文（HTTPS / localhost）</span
+          ><Tag :variant="cap.secure ? 'success' : 'danger'" :text="cap.secure ? '是' : '否'" />
+        </li>
+        <li>
+          <span>getUserMedia 可用</span
+          ><Tag :variant="cap.hasUserMedia ? 'success' : 'danger'" :text="cap.hasUserMedia ? '是' : '否'" />
+        </li>
+        <li>
+          <span>微信内置浏览器</span
+          ><Tag :variant="cap.isWeChat ? 'warning' : 'default'" :text="cap.isWeChat ? '是' : '否'" />
+        </li>
+        <li>
+          <span>触屏设备</span><Tag :variant="cap.isTouch ? 'warning' : 'default'" :text="cap.isTouch ? '是' : '否'" />
+        </li>
       </ul>
       <div class="chain-row">
         <span class="chain-label">本次实际链路：</span>
@@ -86,10 +98,10 @@ function onCamError(msg: string) {
     </Card>
 
     <!-- 扫码 -->
-    <Card title="扫码（自动兜底）" title-as="h2" style="margin-top: 16px">
+    <Card title="扫码（自动兜底）" title-as="h2" style="margin-top: calc(16px * var(--vcl-scale))">
       <p class="card-hint">
-        点「开始扫码」后链路自动运行。想复现兜底：在浏览器里拒绝摄像头权限 → 会自动走系统相机；
-        无线程环境/桌面无摄像头 → 直接弹「上传识别 + 手工输入」面板。底部也可随时手动切上传/输入。
+        点「开始扫码」后链路自动运行。想复现兜底：在浏览器里拒绝摄像头权限 → 会自动走系统相机； 无线程环境/桌面无摄像头
+        → 直接弹「上传识别 + 手工输入」面板。底部也可随时手动切上传/输入。
       </p>
       <div class="row">
         <Button text="开始扫码" icon="scan" @click="scanOpen = true" />
@@ -99,16 +111,12 @@ function onCamError(msg: string) {
           <label><input v-model="scanFormats" type="radio" value="barcode" /> 仅条码</label>
         </div>
       </div>
-      <div v-if="scanLog.length" class="capfb-result">
-        已识别 {{ scanLog.length }} 条：{{ scanLog.join(', ') }}
-      </div>
+      <div v-if="scanLog.length" class="capfb-result">已识别 {{ scanLog.length }} 条：{{ scanLog.join(', ') }}</div>
     </Card>
 
     <!-- 拍照 -->
-    <Card title="拍照（自动兜底）" title-as="h2" style="margin-top: 16px">
-      <p class="card-hint">
-        页面内取景 → 相机不可用自动调系统相机 → 系统相机也拿不到（取消/不可用）→ 自动弹上传面板。
-      </p>
+    <Card title="拍照（自动兜底）" title-as="h2" style="margin-top: calc(16px * var(--vcl-scale))">
+      <p class="card-hint">页面内取景 → 相机不可用自动调系统相机 → 系统相机也拿不到（取消/不可用）→ 自动弹上传面板。</p>
       <Button text="打开拍照" icon="camera" @click="camOpen = true" />
       <div v-if="camShot" class="result">已拍：{{ camShot }}</div>
       <div v-if="camMsg" class="result err">{{ camMsg }}</div>
@@ -121,35 +129,35 @@ function onCamError(msg: string) {
 
 <style scoped>
 .title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.7;
 }
 .card-hint {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
-  margin-bottom: 12px;
+  margin-bottom: calc(12px * var(--vcl-scale));
   line-height: 1.6;
 }
 .cap-list {
   list-style: none;
-  margin: 0 0 12px;
+  margin: 0 0 calc(12px * var(--vcl-scale));
   padding: 0;
 }
 .cap-list li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 6px 0;
+  gap: calc(12px * var(--vcl-scale));
+  padding: calc(6px * var(--vcl-scale)) 0;
   border-bottom: 1px solid var(--color-border-light);
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
 }
 .cap-list li:last-child {
   border-bottom: none;
@@ -158,8 +166,8 @@ function onCamError(msg: string) {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  font-size: 13px;
+  gap: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
 }
 .chain-label {
   color: var(--color-text-muted);
@@ -170,24 +178,24 @@ function onCamError(msg: string) {
 .row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: calc(16px * var(--vcl-scale));
   flex-wrap: wrap;
 }
 .fmt {
   display: flex;
-  gap: 12px;
-  font-size: 13px;
+  gap: calc(12px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 .fmt label {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
   cursor: pointer;
 }
 .capfb-result {
-  margin-top: 12px;
-  font-size: 13px;
+  margin-top: calc(12px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-secondary);
   word-break: break-all;
 }

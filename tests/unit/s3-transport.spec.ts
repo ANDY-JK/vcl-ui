@@ -59,10 +59,7 @@ describe('S3Transport · URL 构建与配置校验', () => {
   })
 
   it('路径式：forcePathStyle 时桶在路径段', () => {
-    const tr = new S3Transport(
-      { ...CFG, endpoint: 'https://s3.example.com', forcePathStyle: true },
-      () => FIXED,
-    )
+    const tr = new S3Transport({ ...CFG, endpoint: 'https://s3.example.com', forcePathStyle: true }, () => FIXED)
     const url = tr.presignGet('k.jpg', 60)
     expect(new URL(url).host).toBe('s3.example.com')
     expect(new URL(url).pathname).toBe('/test-bucket/k.jpg')

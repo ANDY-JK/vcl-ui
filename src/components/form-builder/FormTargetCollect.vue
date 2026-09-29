@@ -491,10 +491,10 @@ onMounted(async () => {
       <table class="ftc-table">
         <thead>
           <tr>
-            <th style="width: 90px">ID</th>
+            <th style="width: calc(90px * var(--vcl-scale))">ID</th>
             <th v-for="k in displayKeys" :key="k">{{ k }}</th>
             <th v-for="f in slotFields" :key="f.key">{{ f.label }}</th>
-            <th style="width: 60px">{{ t('fbTarget.status') }}</th>
+            <th style="width: calc(60px * var(--vcl-scale))">{{ t('fbTarget.status') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -547,20 +547,20 @@ onMounted(async () => {
 
 <style scoped>
 .ftc-wrap {
-  padding: 16px;
+  padding: calc(16px * var(--vcl-scale));
   max-width: 1200px;
   margin: 0 auto;
 }
 .ftc-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: calc(12px * var(--vcl-scale));
   flex-wrap: wrap;
-  padding: 12px 16px;
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   background: var(--color-surface, #f8fafc);
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 8px;
-  margin-bottom: 16px;
+  border-radius: calc(8px * var(--vcl-scale));
+  margin-bottom: calc(16px * var(--vcl-scale));
 }
 .ftc-title {
   margin: 0;
@@ -569,11 +569,11 @@ onMounted(async () => {
 }
 .ftc-search {
   flex: 1;
-  min-width: 200px;
+  min-width: calc(200px * var(--vcl-scale));
 }
 .ftc-stat {
-  padding: 2px 10px;
-  border-radius: 10px;
+  padding: 2px calc(10px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   font-size: var(--fs-12);
   font-weight: 600;
   background: var(--color-bg-soft);
@@ -585,14 +585,14 @@ onMounted(async () => {
   color: var(--color-success-text);
 }
 .ftc-fields-more {
-  margin: 0 0 6px;
+  margin: 0 0 calc(6px * var(--vcl-scale));
   font-size: var(--fs-12);
   color: var(--color-text-secondary);
 }
 .ftc-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--vcl-scale));
 }
 .ftc-table {
   width: 100%;
@@ -602,7 +602,7 @@ onMounted(async () => {
 }
 .ftc-table th {
   text-align: left;
-  padding: 8px 10px;
+  padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
   font-size: var(--fs-11);
   color: var(--color-text-secondary);
@@ -611,7 +611,7 @@ onMounted(async () => {
   white-space: nowrap;
 }
 .ftc-table td {
-  padding: 6px 10px;
+  padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
 }
@@ -624,18 +624,18 @@ onMounted(async () => {
   white-space: nowrap;
 }
 .ftc-td-val {
-  max-width: 160px;
+  max-width: calc(160px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .ftc-td-upload {
-  width: 90px;
-  padding: 4px !important;
+  width: calc(90px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) !important;
 }
 .ftc-td-upload :deep(.card-wrap) {
-  width: 80px !important;
-  height: 80px !important;
+  width: calc(80px * var(--vcl-scale)) !important;
+  height: calc(80px * var(--vcl-scale)) !important;
 }
 .ftc-td-upload :deep(.card-label) {
   font-size: var(--fs-10) !important;
@@ -653,7 +653,7 @@ onMounted(async () => {
 }
 .ftc-empty {
   text-align: center;
-  padding: 40px;
+  padding: calc(40px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 </style>

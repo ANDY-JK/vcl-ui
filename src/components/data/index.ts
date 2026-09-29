@@ -14,5 +14,16 @@ export { default as Skeleton } from './Skeleton.vue'
 export { default as Tree } from './Tree.vue'
 export { default as Empty } from './Empty.vue'
 export { createLocalStorage } from './composables/types'
-export type { Column, ColumnOption, RowAction, RowContextAction, ColumnFilterState, FilterOption, RowMeta, OptionSort, TableStorage, Emits } from './composables/types'
+export type {
+  Column,
+  ColumnOption,
+  RowAction,
+  RowContextAction,
+  ColumnFilterState,
+  FilterOption,
+  RowMeta,
+  OptionSort,
+  TableStorage,
+  Emits,
+} from './composables/types'
 export type { ImageItem, ImageSrc } from './ImagePreview.vue'

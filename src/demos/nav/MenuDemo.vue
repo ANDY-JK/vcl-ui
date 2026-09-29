@@ -101,13 +101,24 @@ function onSelect(item: { key: string | number; label: string }) {
     </p>
 
     <!-- ========== Vertical Sidebar ========== -->
-    <Card title="Vertical 侧边栏菜单" title-as="h2" style="margin-bottom: 24px" overflow-visible>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+    <Card
+      title="Vertical 侧边栏菜单"
+      title-as="h2"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
+      overflow-visible
+    >
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         <code>mode="vertical"</code> — 点击展开子菜单，内联缩进 + 滑动动画，支持多级嵌套
       </p>
       <div
         style="
-          max-width: 260px;
+          max-width: calc(260px * var(--vcl-scale));
           background: var(--color-sidebar);
           border-radius: var(--radius-lg);
           padding: var(--space-3) var(--space-1);
@@ -118,13 +129,24 @@ function onSelect(item: { key: string | number; label: string }) {
     </Card>
 
     <!-- ========== Collapsed Vertical ========== -->
-    <Card title="Collapsed 图标模式" title-as="h2" style="margin-bottom: 24px" overflow-visible>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+    <Card
+      title="Collapsed 图标模式"
+      title-as="h2"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
+      overflow-visible
+    >
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         <code>:collapsed="true"</code> — 仅显示图标，子菜单 hover 时以浮层弹出
       </p>
       <div
         style="
-          max-width: 60px;
+          max-width: calc(60px * var(--vcl-scale));
           background: var(--color-sidebar);
           border-radius: var(--radius-lg);
           padding: var(--space-3) var(--space-1);
@@ -143,7 +165,13 @@ function onSelect(item: { key: string | number; label: string }) {
 
     <!-- ========== Horizontal Topbar ========== -->
     <Card title="Horizontal 顶部导航" overflow-visible>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         <code>mode="horizontal"</code> — 横向排列，hover 展开下拉面板（150ms 延迟），选中值：<code>{{
           hSelectedKey
         }}</code>
@@ -162,170 +190,449 @@ function onSelect(item: { key: string | number; label: string }) {
 
     <!-- ========== API Table ========== -->
     <Card title="Props" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 4px 8px">Prop</th>
-            <th style="padding: 4px 8px">类型</th>
-            <th style="padding: 4px 8px">默认</th>
-            <th style="padding: 4px 8px">说明</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>items</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">MenuItem[]</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              MenuItem[]
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              —
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               菜单项数组（支持 children 递归）
             </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>mode</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               'vertical' | 'horizontal'
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">'vertical'</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">布局方向</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              'vertical'
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              布局方向
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>selectedKey</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">string | number</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string | number
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              —
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               当前选中项的 key（支持 v-model）
             </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>collapsed</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">false</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              boolean
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              false
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               折叠为仅图标模式（vertical 下有效）
             </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px">
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
               <code>multiple</code>
             </td>
-            <td style="padding: 3px 8px">boolean</td>
-            <td style="padding: 3px 8px">false</td>
-            <td style="padding: 3px 8px">是否允许多个子菜单同时展开</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              是否允许多个子菜单同时展开
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px">
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
               <code>theme</code>
             </td>
-            <td style="padding: 3px 8px">'light' | 'dark'</td>
-            <td style="padding: 3px 8px">'light'</td>
-            <td style="padding: 3px 8px">主题色（dark 用于深色侧边栏）</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">'light' | 'dark'</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">'light'</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              主题色（dark 用于深色侧边栏）
+            </td>
           </tr>
         </tbody>
       </table>
     </Card>
 
     <Card title="Events" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 4px 8px">事件</th>
-            <th style="padding: 4px 8px">参数</th>
-            <th style="padding: 4px 8px">说明</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">事件</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">参数</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>select</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">MenuItem</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">点击叶子节点时触发</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              MenuItem
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              点击叶子节点时触发
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px">
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
               <code>update:selectedKey</code>
             </td>
-            <td style="padding: 3px 8px">string | number</td>
-            <td style="padding: 3px 8px">选中 key 变更（支持 v-model:selectedKey）</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string | number</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              选中 key 变更（支持 v-model:selectedKey）
+            </td>
           </tr>
         </tbody>
       </table>
     </Card>
 
     <Card title="MenuItem 接口" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 4px 8px">字段</th>
-            <th style="padding: 4px 8px">类型</th>
-            <th style="padding: 4px 8px">必填</th>
-            <th style="padding: 4px 8px">说明</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">字段</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">必填</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>key</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">string | number</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">是</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">唯一标识</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string | number
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              是
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              唯一标识
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>label</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">是</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">显示文本</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              是
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              显示文本
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>icon</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">否</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">IconSvg 图标名</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              否
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              IconSvg 图标名
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>children</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">MenuItem[]</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">否</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">子菜单项（递归渲染）</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              MenuItem[]
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              否
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              子菜单项（递归渲染）
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>disabled</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">否</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">禁用该项</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              boolean
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              否
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              禁用该项
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>divided</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">否</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">在此项前显示分隔线</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              boolean
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              否
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              在此项前显示分隔线
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px">
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
               <code>action</code>
             </td>
-            <td style="padding: 3px 8px">() => void</td>
-            <td style="padding: 3px 8px">否</td>
-            <td style="padding: 3px 8px">自定义点击回调（触发时同时 emit select）</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">() => void</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">否</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              自定义点击回调（触发时同时 emit select）
+            </td>
           </tr>
         </tbody>
       </table>
@@ -335,20 +642,20 @@ function onSelect(item: { key: string | number; label: string }) {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

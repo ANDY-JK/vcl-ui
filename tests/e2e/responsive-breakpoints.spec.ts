@@ -20,8 +20,7 @@ const bp = (name: string) => {
 const MD = bp('BP_MD')
 const LG = bp('BP_LG')
 
-const setWidth = (page: import('@playwright/test').Page, width: number) =>
-  page.setViewportSize({ width, height: 820 })
+const setWidth = (page: import('@playwright/test').Page, width: number) => page.setViewportSize({ width, height: 820 })
 
 test('侧栏三档判定跟随 BP_MD / BP_LG（从宽到窄，避开"从移动端回来不自动收起"的既有分支）', async ({ page }) => {
   await page.goto(`${BASE}/#/`)

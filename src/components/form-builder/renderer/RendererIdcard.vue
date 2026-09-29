@@ -44,16 +44,16 @@ const idcardTypeIndex = ref(0)
 <style scoped>
 .fb-idcard {
   display: flex;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   width: var(--fb-control-width, 100%);
 }
 .fb-idcard-type {
-  width: 110px;
+  width: calc(110px * var(--vcl-scale));
   flex-shrink: 0;
   border: 1px solid var(--color-border, #e2e8f0);
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
-  border-radius: var(--fb-radius, 6px);
-  padding: 7px 10px;
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
+  padding: calc(7px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-size: var(--fs-13);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);
@@ -63,8 +63,8 @@ const idcardTypeIndex = ref(0)
   flex: 1;
   border: 1px solid var(--color-border, #e2e8f0);
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
-  border-radius: var(--fb-radius, 6px);
-  padding: 7px 10px;
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
+  padding: calc(7px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-size: var(--fs-13);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);

@@ -205,9 +205,9 @@ function onClick() {
   color: var(--color-text-muted);
 }
 .v-image-error {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
 }
 .v-image-text {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
+  font-size: calc(14px * var(--vcl-scale));
 }
 </style>

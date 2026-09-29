@@ -18,7 +18,9 @@ describe('createInitialData · 动态默认值', () => {
   })
 
   it('currentUser 用 userContext.name（未注入时占位 currentUser）', () => {
-    expect(createInitialData([field({ defaultMeta: { type: 'currentUser' } })], { userContext: { name: '张三' } }).f1).toBe('张三')
+    expect(
+      createInitialData([field({ defaultMeta: { type: 'currentUser' } })], { userContext: { name: '张三' } }).f1,
+    ).toBe('张三')
     expect(createInitialData([field({ defaultMeta: { type: 'currentUser' } })]).f1).toBe('currentUser')
   })
 
@@ -30,7 +32,9 @@ describe('createInitialData · 动态默认值', () => {
   })
 
   it('静态 default 优先于 defaultMeta 不生效（default 存在时不求值）', () => {
-    const data = createInitialData([field({ key: 'f1', label: 'F', type: 'text', default: '静态', defaultMeta: { type: 'currentTime' } })])
+    const data = createInitialData([
+      field({ key: 'f1', label: 'F', type: 'text', default: '静态', defaultMeta: { type: 'currentTime' } }),
+    ])
     expect(data.f1).toBe('静态')
   })
 
@@ -96,7 +100,14 @@ describe('toFormSchema · dataConfig → defaultMeta 映射', () => {
   it('defaultType=none/fixed 不映射 defaultMeta', () => {
     const nodes: DesignerNode[] = [
       { id: 'n1', type: 'text', label: 'A', key: 'a', dataConfig: { defaultType: 'none' } } as DesignerNode,
-      { id: 'n2', type: 'text', label: 'B', key: 'b', defaultValue: 'x', dataConfig: { defaultType: 'fixed' } } as DesignerNode,
+      {
+        id: 'n2',
+        type: 'text',
+        label: 'B',
+        key: 'b',
+        defaultValue: 'x',
+        dataConfig: { defaultType: 'fixed' },
+      } as DesignerNode,
     ]
     const schema = toFormSchema(nodes)
     expect(schema.fields[0].defaultMeta).toBeUndefined()

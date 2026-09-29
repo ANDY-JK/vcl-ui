@@ -57,12 +57,13 @@ const levelStyle = computed(() => {
   const indent = 4 + 4 * (lv - 1)
   const opacity = Math.max(0.3, 1.0 - 0.15 * (lv - 1))
   const iconOpacity = Math.max(0.3, 0.65 - 0.1 * (lv - 1))
-  // 所有层级统一按公式缩进，每级 +4px
-  const marginLeft = `${indent}px`
+  // 层级字号/缩进是设计尺寸，必须与全站同尺——否则侧栏缩放时深层文字恒定，
+  // 与父级行高错位（字大行小）。层级公式本身不变，只把 px 换算进缩放曲线。
+  const marginLeft = `calc(${indent}px * var(--vcl-scale))`
   const marginRight = lv === 1 ? 'var(--space-4)' : 'var(--space-5)'
   return {
-    '--nav-font-size': `${fontSize}px`,
-    '--nav-indent': `${indent}px`,
+    '--nav-font-size': `calc(${fontSize}px * var(--vcl-scale))`,
+    '--nav-indent': `calc(${indent}px * var(--vcl-scale))`,
     '--nav-opacity': String(opacity),
     '--nav-icon-opacity': String(iconOpacity),
     '--nav-ml': marginLeft,
@@ -203,7 +204,7 @@ const navItemClass = computed(() => {
    箭头
    ================================================================ */
 .nav-arrow {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   transition: transform var(--transition-normal);
   opacity: 0.4;
   flex-shrink: 0;
@@ -238,9 +239,9 @@ const navItemClass = computed(() => {
 .nav-level.active::before {
   content: '';
   position: absolute;
-  left: 4px;
-  top: 4px;
-  bottom: 4px;
+  left: calc(4px * var(--vcl-scale));
+  top: calc(4px * var(--vcl-scale));
+  bottom: calc(4px * var(--vcl-scale));
   width: 2px;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
@@ -259,9 +260,9 @@ const navItemClass = computed(() => {
   padding: var(--space-2) 0;
 }
 .collapsed .nav-level.active::before {
-  left: 4px;
-  top: 3px;
-  bottom: 3px;
+  left: calc(4px * var(--vcl-scale));
+  top: calc(3px * var(--vcl-scale));
+  bottom: calc(3px * var(--vcl-scale));
   width: 1.5px;
 }
 </style>

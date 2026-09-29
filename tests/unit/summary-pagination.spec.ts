@@ -22,7 +22,11 @@ async function seedStore(count: number) {
   const store = createLocalFormStore()
   const item = makeItem()
   for (let i = 0; i < count; i++) {
-    await store.appendRecord(item.collectKey, { id: `r${i}`, time: `2026/9/5 10:${String(i % 60).padStart(2, '0')}`, data: { name: `用户${i}` } })
+    await store.appendRecord(item.collectKey, {
+      id: `r${i}`,
+      time: `2026/9/5 10:${String(i % 60).padStart(2, '0')}`,
+      data: { name: `用户${i}` },
+    })
   }
   return { store, item }
 }
@@ -60,7 +64,10 @@ describe('FormDataSummary · 大数据量分页', () => {
     await nextTick()
     const firstPageFirstTime = w.find('.ld-data-table tbody tr .ld-data-time').text()
     // 点第 2 页
-    await w.findAll('.ld-data-page-btn').find((b) => b.text() === '2')!.trigger('click')
+    await w
+      .findAll('.ld-data-page-btn')
+      .find((b) => b.text() === '2')!
+      .trigger('click')
     await nextTick()
     const secondPageFirstTime = w.find('.ld-data-table tbody tr .ld-data-time').text()
     expect(secondPageFirstTime).not.toBe(firstPageFirstTime)

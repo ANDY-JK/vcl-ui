@@ -152,7 +152,7 @@ export function useFocusTrap(options: UseFocusTrapOptions): UseFocusTrapReturn {
   // immediate：挂载时就已 visible=true（条件渲染 / 初始即打开）的弹层同样要接管焦点
   watch(
     visible,
-    v => {
+    (v) => {
       if (v) activate()
       else deactivate()
     },

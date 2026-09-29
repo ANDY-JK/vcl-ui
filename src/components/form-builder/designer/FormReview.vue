@@ -104,15 +104,15 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
 
 <style scoped>
 .frv {
-  min-height: 200px;
+  min-height: calc(200px * var(--vcl-scale));
 }
 .frv-state {
-  padding: 40px 0;
+  padding: calc(40px * var(--vcl-scale)) 0;
   text-align: center;
   color: var(--color-text-muted, #94a3b8);
 }
 .frv-error {
-  color: var(--color-danger, #dc2626);
+  color: var(--color-danger-on-surface);
 }
 .frv-done {
   font-size: var(--fs-16);

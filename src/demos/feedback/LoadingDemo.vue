@@ -19,7 +19,7 @@ const loading = ref(true)
     <!-- ══════════════ Spinner ══════════════ -->
     <div class="grid-2-col">
       <Card title="Spinner — 三种尺寸" title-as="h2">
-        <div style="display: flex; align-items: center; gap: 24px">
+        <div style="display: flex; align-items: center; gap: calc(24px * var(--vcl-scale))">
           <Loading variant="spinner" size="sm" text="小" />
           <Loading variant="spinner" size="md" text="中" />
           <Loading variant="spinner" size="lg" />
@@ -36,7 +36,7 @@ const loading = ref(true)
       </Card>
 
       <Card title="Loading skeleton-text — 文字骨架" title-as="h2">
-        <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: calc(8px * var(--vcl-scale))">
           <Loading variant="skeleton-text" width="100%" />
           <Loading variant="skeleton-text" width="80%" />
           <Loading variant="skeleton-text" width="60%" />
@@ -48,7 +48,7 @@ const loading = ref(true)
       </Card>
 
       <Card title="Loading skeleton — 自定义宽高 + 间距" title-as="h2">
-        <div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: calc(16px * var(--vcl-scale))">
           <Loading variant="skeleton-text" width="100%" height="20px" />
           <Loading variant="skeleton-text" width="70%" height="12px" />
           <Loading variant="skeleton-text" width="40%" height="12px" />
@@ -57,18 +57,33 @@ const loading = ref(true)
     </div>
 
     <!-- ══════════════ Skeleton 组件（高级骨架屏） ══════════════ -->
-    <div class="grid-2-col" style="margin-top: 24px">
+    <div class="grid-2-col" style="margin-top: calc(24px * var(--vcl-scale))">
       <Card title="Skeleton — 加载切换（骨架 ↔ 真实内容）" title-as="h2">
-        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px">
+        <div
+          style="
+            display: flex;
+            gap: calc(12px * var(--vcl-scale));
+            align-items: center;
+            margin-bottom: calc(16px * var(--vcl-scale));
+          "
+        >
           <Button size="sm" :text="loading ? '加载中…' : '显示骨架'" @click="loading = !loading" />
         </div>
         <Skeleton :loading="loading" :avatar="true" :rows="3">
           <div>
-            <h2 style="font-size: 16px; margin-bottom: 6px">用户信息卡片</h2>
-            <p style="font-size: 13px; color: var(--color-text-secondary); margin-bottom: 4px">
+            <h2 style="font-size: calc(16px * var(--vcl-scale)); margin-bottom: calc(6px * var(--vcl-scale))">
+              用户信息卡片
+            </h2>
+            <p
+              style="
+                font-size: calc(13px * var(--vcl-scale));
+                color: var(--color-text-secondary);
+                margin-bottom: calc(4px * var(--vcl-scale));
+              "
+            >
               姓名：张三 · 角色：管理员
             </p>
-            <p style="font-size: 13px; color: var(--color-text-muted)">
+            <p style="font-size: calc(13px * var(--vcl-scale)); color: var(--color-text-muted)">
               简介：这是加载完成后展示的真实内容，用于演示 <code>:loading</code> 切换。
             </p>
           </div>
@@ -76,17 +91,29 @@ const loading = ref(true)
       </Card>
 
       <Card title="Skeleton — 基础骨架（默认）" title-as="h2">
-        <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+        <p
+          style="
+            font-size: calc(12px * var(--vcl-scale));
+            color: var(--color-text-muted);
+            margin-bottom: calc(12px * var(--vcl-scale));
+          "
+        >
           默认 <code>title</code> 加宽首行 + <code>rows=3</code> 文本行
         </p>
         <Skeleton />
       </Card>
 
       <Card title="Skeleton — 头像组合" title-as="h2">
-        <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+        <p
+          style="
+            font-size: calc(12px * var(--vcl-scale));
+            color: var(--color-text-muted);
+            margin-bottom: calc(12px * var(--vcl-scale));
+          "
+        >
           <code>avatar</code>：true 默认 40px | 'sm'/'md'/'lg' | 任意数字或 CSS 尺寸
         </p>
-        <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: calc(20px * var(--vcl-scale))">
           <Skeleton avatar="sm" :rows="2" />
           <Skeleton avatar :rows="2" />
           <Skeleton avatar="lg" :rows="3" />
@@ -95,10 +122,16 @@ const loading = ref(true)
       </Card>
 
       <Card title="Skeleton — 自定义" title-as="h2">
-        <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+        <p
+          style="
+            font-size: calc(12px * var(--vcl-scale));
+            color: var(--color-text-muted);
+            margin-bottom: calc(12px * var(--vcl-scale));
+          "
+        >
           <code>rows=5</code> | <code>title=false</code> | <code>animated=false</code> | <code>width/height</code>
         </p>
-        <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: calc(20px * var(--vcl-scale))">
           <Skeleton :rows="5" />
           <Skeleton :title="false" :rows="2" />
           <Skeleton :animated="false" :rows="2" />
@@ -108,7 +141,7 @@ const loading = ref(true)
     </div>
 
     <!-- ══════════════ Props ══════════════ -->
-    <Card title="Loading Props" title-as="h2" style="margin-top: 24px">
+    <Card title="Loading Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -147,7 +180,7 @@ const loading = ref(true)
       </table>
     </Card>
 
-    <Card title="Skeleton Props" title-as="h2" style="margin-top: 24px">
+    <Card title="Skeleton Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -202,34 +235,34 @@ const loading = ref(true)
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 .props-table {
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   border-collapse: collapse;
 }
 .props-table th {
-  padding: 4px 8px;
+  padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 2px solid var(--color-border);
   text-align: left;
 }
 .props-table td {
-  padding: 3px 8px;
+  padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 </style>

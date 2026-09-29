@@ -51,13 +51,17 @@ for (const spec of VENDOR_BINARIES) {
   try {
     upstream = await import(`${spec.pkg}/reader`)
   } catch (e) {
-    RED.push(`读不到 ${spec.pkg}/reader 导出的期望字节：${e && e.code ? e.code + ' ' : ''}${e && e.message ? e.message : e}`)
+    RED.push(
+      `读不到 ${spec.pkg}/reader 导出的期望字节：${e && e.code ? e.code + ' ' : ''}${e && e.message ? e.message : e}`,
+    )
   }
   if (upstream && upstream.ZXING_WASM_SHA256) {
     if (upstream.ZXING_WASM_SHA256 !== originSha)
       RED.push(`${spec.pkg}/reader 导出的 ZXING_WASM_SHA256 与它自己的 wasm 文件不一致（安装物被动过？）`)
     if (upstream.ZXING_WASM_SHA256 !== payloadSha)
-      RED.push(`${spec.pkg}/reader 期望 sha256 ${String(upstream.ZXING_WASM_SHA256).slice(0, 12)}…，随包件是 ${payloadSha.slice(0, 12)}…，ABI 不配套`)
+      RED.push(
+        `${spec.pkg}/reader 期望 sha256 ${String(upstream.ZXING_WASM_SHA256).slice(0, 12)}…，随包件是 ${payloadSha.slice(0, 12)}…，ABI 不配套`,
+      )
     if (mod.version && upstream.ZXING_WASM_VERSION && mod.version !== upstream.ZXING_WASM_VERSION)
       RED.push(`随包件登记版本 ${mod.version} 与 ${spec.pkg} 自述 ${upstream.ZXING_WASM_VERSION} 不一致`)
   }

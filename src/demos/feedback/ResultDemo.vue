@@ -21,7 +21,7 @@ const lastAction = ref('')
       下方三个结果页的主行动按钮都会把点击回抛到 <code>@action</code>：
       <strong>最近一次点击：{{ lastAction || '（还没点过）' }}</strong>
     </p>
-    <Card title="Result — 成功" title-as="h2" style="margin-bottom: 24px">
+    <Card title="Result — 成功" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <Result
         status="success"
         title="操作成功"
@@ -31,7 +31,7 @@ const lastAction = ref('')
       />
     </Card>
 
-    <Card title="Result — 失败" title-as="h2" style="margin-bottom: 24px">
+    <Card title="Result — 失败" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <Result
         status="error"
         title="提交失败"
@@ -41,7 +41,7 @@ const lastAction = ref('')
       />
     </Card>
 
-    <Card title="Result — 警告" title-as="h2" style="margin-bottom: 24px">
+    <Card title="Result — 警告" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <Result
         status="warning"
         title="注意"
@@ -51,8 +51,8 @@ const lastAction = ref('')
       />
     </Card>
 
-    <Card title="Result — 404 / 空状态" title-as="h2" style="margin-bottom: 24px">
-      <div style="display: flex; gap: 16px">
+    <Card title="Result — 404 / 空状态" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <div style="display: flex; gap: calc(16px * var(--vcl-scale))">
         <Result status="404" title="页面不存在" description="您访问的页面可能已删除或迁移。" />
         <Result status="empty" title="暂无数据" />
       </div>
@@ -82,7 +82,7 @@ const lastAction = ref('')
     </div>
 
     <!-- ══════════════ Props ══════════════ -->
-    <Card title="Result Props" title-as="h2" style="margin-top: 24px">
+    <Card title="Result Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -121,7 +121,7 @@ const lastAction = ref('')
       </table>
     </Card>
 
-    <Card title="Empty Props" title-as="h2" style="margin-top: 24px">
+    <Card title="Empty Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -152,7 +152,13 @@ const lastAction = ref('')
           </tr>
         </tbody>
       </table>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-top: calc(8px * var(--vcl-scale));
+        "
+      >
         Slot: <code>default</code> — 操作按钮区域
       </p>
     </Card>
@@ -161,33 +167,33 @@ const lastAction = ref('')
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 .props-table {
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   border-collapse: collapse;
 }
 .props-table th {
-  padding: 4px 8px;
+  padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 2px solid var(--color-border);
   text-align: left;
 }
 .props-table td {
-  padding: 3px 8px;
+  padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 </style>

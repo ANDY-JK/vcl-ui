@@ -5,7 +5,8 @@ import { mount } from '@vue/test-utils'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 
 // happy-dom 无真实图片加载，用 data URL 避免网络请求
-const IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+const IMG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 
 describe('ImagePreview 行为锁定', () => {
   it('src 为单个字符串时归一化为单图', () => {

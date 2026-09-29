@@ -46,9 +46,20 @@ for (const [file, cov] of Object.entries(j)) {
   const m = /\/src\/components\/([^/]+)\//.exec(f)
   if (!m) continue // src/components 根级文件（index.ts/i18n.ts）归全局地板管
   const a = (agg[m[1]] ??= { s: [0, 0], b: [0, 0], f: [0, 0] })
-  for (const hit of Object.values(cov.s)) { a.s[1]++; if (hit > 0) a.s[0]++ }
-  for (const arr of Object.values(cov.b)) { for (const hit of arr) { a.b[1]++; if (hit > 0) a.b[0]++ } }
-  for (const hit of Object.values(cov.f)) { a.f[1]++; if (hit > 0) a.f[0]++ }
+  for (const hit of Object.values(cov.s)) {
+    a.s[1]++
+    if (hit > 0) a.s[0]++
+  }
+  for (const arr of Object.values(cov.b)) {
+    for (const hit of arr) {
+      a.b[1]++
+      if (hit > 0) a.b[0]++
+    }
+  }
+  for (const hit of Object.values(cov.f)) {
+    a.f[1]++
+    if (hit > 0) a.f[0]++
+  }
 }
 const pct = (x) => (x[1] === 0 ? NaN : (x[0] / x[1]) * 100)
 

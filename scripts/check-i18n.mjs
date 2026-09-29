@@ -42,10 +42,18 @@ for (const file of chunks['zh-CN']) {
   const onlyZh = [...a].filter((k) => !b.has(k))
   const onlyEn = [...b].filter((k) => !a.has(k))
   total += a.size
-  if (onlyZh.length) fail.push(`${file} 缺 en-US 键 ${onlyZh.length} 个: ${onlyZh.slice(0, 8).join(', ')}${onlyZh.length > 8 ? ' …' : ''}`)
-  if (onlyEn.length) fail.push(`${file} 缺 zh-CN 键 ${onlyEn.length} 个: ${onlyEn.slice(0, 8).join(', ')}${onlyEn.length > 8 ? ' …' : ''}`)
+  if (onlyZh.length)
+    fail.push(
+      `${file} 缺 en-US 键 ${onlyZh.length} 个: ${onlyZh.slice(0, 8).join(', ')}${onlyZh.length > 8 ? ' …' : ''}`,
+    )
+  if (onlyEn.length)
+    fail.push(
+      `${file} 缺 zh-CN 键 ${onlyEn.length} 个: ${onlyEn.slice(0, 8).join(', ')}${onlyEn.length > 8 ? ' …' : ''}`,
+    )
 }
-console.log(`[i18n] 分块 ${chunks['zh-CN'].length}/${LOCALES.length === 2 ? chunks['zh-CN'].length : '?'} 同集，zh-CN 键 ${total} 个，与 en-US 逐块比对`)
+console.log(
+  `[i18n] 分块 ${chunks['zh-CN'].length}/${LOCALES.length === 2 ? chunks['zh-CN'].length : '?'} 同集，zh-CN 键 ${total} 个，与 en-US 逐块比对`,
+)
 
 if (fail.length) {
   console.error('\n❌ check:i18n 未通过 —— 语言包两侧不对等')

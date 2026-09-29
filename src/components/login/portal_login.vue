@@ -146,7 +146,7 @@ defineExpose({
 
 .login-container {
   width: 100%;
-  max-width: var(--login-max-width, 380px);
+  max-width: var(--login-max-width, calc(380px * var(--vcl-scale)));
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   padding: var(--space-12);
@@ -170,8 +170,8 @@ defineExpose({
   margin-bottom: var(--space-8);
 }
 .logo-icon {
-  width: 64px;
-  height: 64px;
+  width: calc(64px * var(--vcl-scale));
+  height: calc(64px * var(--vcl-scale));
   margin: 0 auto var(--space-4);
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
   border-radius: var(--radius-xl);
@@ -181,7 +181,7 @@ defineExpose({
   box-shadow: 0 6px 16px rgba(79, 110, 247, 0.3);
 }
 .logo-section h1 {
-  font-size: clamp(24px, calc(24px + var(--vcl-fit) * 12), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text);
 }

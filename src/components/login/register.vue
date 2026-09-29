@@ -339,26 +339,26 @@ defineExpose({
   background: rgba(255, 255, 255, 0.08);
 }
 .shape:nth-child(1) {
-  width: 80px;
-  height: 80px;
+  width: calc(80px * var(--vcl-scale));
+  height: calc(80px * var(--vcl-scale));
   left: 10%;
   top: 20%;
 }
 .shape:nth-child(2) {
-  width: 120px;
-  height: 120px;
+  width: calc(120px * var(--vcl-scale));
+  height: calc(120px * var(--vcl-scale));
   right: 15%;
   top: 60%;
 }
 .shape:nth-child(3) {
-  width: 60px;
-  height: 60px;
+  width: calc(60px * var(--vcl-scale));
+  height: calc(60px * var(--vcl-scale));
   left: 25%;
   bottom: 15%;
 }
 .shape:nth-child(4) {
-  width: 100px;
-  height: 100px;
+  width: calc(100px * var(--vcl-scale));
+  height: calc(100px * var(--vcl-scale));
   right: 30%;
   top: 10%;
 }
@@ -366,8 +366,8 @@ defineExpose({
 .login-container {
   display: flex;
   width: 100%;
-  max-width: var(--login-max-width, 960px);
-  min-height: clamp(380px, 55vh, 600px);
+  max-width: var(--login-max-width, calc(960px * var(--vcl-scale)));
+  min-height: clamp(380px * var(--vcl-scale), 55vh, 600px * var(--vcl-scale));
   max-height: 85vh;
   border-radius: var(--radius-xl);
   /* 移除 overflow:hidden —— 会裁掉 Input 浮动标签（top:0 translateY(-50%)） */
@@ -395,7 +395,7 @@ defineExpose({
   flex: 1;
   background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 100%);
   border-radius: var(--radius-xl) 0 0 var(--radius-xl);
-  padding: var(--space-12) 44px;
+  padding: var(--space-12) calc(44px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -419,8 +419,8 @@ defineExpose({
   margin-bottom: var(--space-12);
 }
 .logo-icon {
-  width: 64px;
-  height: 64px;
+  width: calc(64px * var(--vcl-scale));
+  height: calc(64px * var(--vcl-scale));
   background: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-xl);
   display: flex;
@@ -430,12 +430,12 @@ defineExpose({
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
-  font-size: clamp(32px, calc(32px + var(--vcl-fit) * 4), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
   margin-bottom: var(--space-3);
 }
 .brand-logo p {
-  font-size: clamp(16px, calc(16px + var(--vcl-fit) * 12), 28px);
+  font-size: calc(28px * var(--vcl-scale));
   opacity: 0.9;
   line-height: 1.6;
 }
@@ -460,7 +460,7 @@ defineExpose({
   margin-bottom: var(--space-2);
 }
 .login-header p {
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
 }
 
@@ -473,7 +473,7 @@ defineExpose({
 
 .footer-text {
   text-align: center;
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   padding-top: var(--space-8);
 }
@@ -496,7 +496,7 @@ defineExpose({
     display: none;
   }
   .login-container {
-    max-width: min(var(--login-max-width, 960px), 440px);
+    max-width: min(var(--login-max-width, 960px * var(--vcl-scale)), 440px * var(--vcl-scale));
   }
   .login-right {
     padding: var(--space-10);
@@ -507,7 +507,7 @@ defineExpose({
     padding: var(--space-8);
   }
   .login-header h1 {
-    font-size: clamp(20px, calc(20px + var(--vcl-fit) * 12), 32px);
+    font-size: calc(32px * var(--vcl-scale));
   }
 }
 </style>

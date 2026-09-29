@@ -161,7 +161,11 @@ describe('P2-12 · 表单设置分组折叠', () => {
 describe('P2-13 · 设计器草稿自动保存接线', () => {
   it('空画布挂载：读到草稿 → 写回节点与 meta + 提示已恢复', async () => {
     const draftNodes = [createField('text', 1), createField('number', 2)]
-    draftStubs.load.mockResolvedValue({ nodes: draftNodes, meta: { title: '草稿表单' }, savedAt: '2026-09-05 10:00:00' })
+    draftStubs.load.mockResolvedValue({
+      nodes: draftNodes,
+      meta: { title: '草稿表单' },
+      savedAt: '2026-09-05 10:00:00',
+    })
     const w = mountControlled([], {})
     await flushPromises()
     await nextTick()

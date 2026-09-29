@@ -52,7 +52,7 @@ const percent = (current: number, total: number): number => {
   display: flex;
   justify-content: space-between;
   margin-bottom: var(--space-2);
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text);
 }
 
@@ -62,16 +62,16 @@ const percent = (current: number, total: number): number => {
 }
 
 .progress-bar {
-  height: 6px;
+  height: calc(6px * var(--vcl-scale));
   background: var(--color-border);
-  border-radius: 3px;
+  border-radius: calc(3px * var(--vcl-scale));
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: var(--color-primary);
-  border-radius: 3px;
+  border-radius: calc(3px * var(--vcl-scale));
   transition: width 0.3s ease;
 }
 </style>

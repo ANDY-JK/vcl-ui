@@ -81,9 +81,7 @@ export function useListVirtual(o: ListVirtualOptions): ListVirtualApi {
   })
 
   const topPad = computed(() => (enabled.value ? start.value * o.rowHeight() : 0))
-  const bottomPad = computed(() =>
-    enabled.value ? Math.max(0, (o.itemCount() - end.value) * o.rowHeight()) : 0,
-  )
+  const bottomPad = computed(() => (enabled.value ? Math.max(0, (o.itemCount() - end.value) * o.rowHeight()) : 0))
 
   let raf = 0
   function onScroll(e: Event) {

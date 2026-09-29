@@ -257,50 +257,50 @@ defineExpose({
 <style>
 .toast-container {
   position: fixed;
-  top: clamp(10px, 2vw, 16px);
+  top: calc(16px * var(--vcl-scale));
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--z-top, 9999);
   display: flex;
   flex-direction: column;
-  gap: clamp(var(--space-1), 1vw, 8px);
+  gap: calc(8px * var(--vcl-scale));
   pointer-events: none;
-  width: calc(100% - clamp(16px, 4vw, 32px));
-  max-width: clamp(320px, 64vw, 480px);
+  width: calc(100% - calc(32px * var(--vcl-scale)));
+  max-width: calc(480px * var(--vcl-scale));
 }
 /* position 变体 — 覆盖居中默认值 */
 .toast-top-right {
   left: auto;
-  right: clamp(10px, 2vw, 16px);
+  right: calc(16px * var(--vcl-scale));
   transform: none;
 }
 .toast-top-left {
-  left: clamp(10px, 2vw, 16px);
+  left: calc(16px * var(--vcl-scale));
   transform: none;
 }
 .toast-bottom-right {
   top: auto;
   left: auto;
-  right: clamp(10px, 2vw, 16px);
-  bottom: clamp(10px, 2vw, 16px);
+  right: calc(16px * var(--vcl-scale));
+  bottom: calc(16px * var(--vcl-scale));
   transform: none;
 }
 .toast-bottom-left {
   top: auto;
   right: auto;
-  bottom: clamp(10px, 2vw, 16px);
-  left: clamp(10px, 2vw, 16px);
+  bottom: calc(16px * var(--vcl-scale));
+  left: calc(16px * var(--vcl-scale));
   transform: none;
 }
 
 .toast-item {
   display: flex;
   align-items: center;
-  gap: clamp(var(--space-1), 1vw, 8px);
-  padding: clamp(9px, 1.5vw, 12px) clamp(var(--space-2), 1.8vw, 14px);
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   border-radius: var(--radius-md);
   color: white;
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   box-shadow: var(--shadow-lg);
   pointer-events: auto;
   line-height: 1.4;
@@ -312,17 +312,17 @@ defineExpose({
 
 .toast-msg {
   flex: 1;
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 
 .toast-undo {
   flex-shrink: 0;
-  padding: clamp(var(--space-0), 0.4vw, 3px) clamp(7px, 1.2vw, 10px);
+  padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--radius-sm);
   background: transparent;
   color: white;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
   font-weight: 500;
   white-space: nowrap;
@@ -366,11 +366,11 @@ defineExpose({
 .toast-inline {
   display: flex;
   align-items: flex-start;
-  gap: clamp(var(--space-2), 1.5vw, 12px);
-  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px);
+  gap: calc(12px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border-radius: var(--radius-md);
   border: 1px solid;
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 .toast-inline-icon {
   flex-shrink: 0;

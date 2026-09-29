@@ -86,10 +86,7 @@ describe('planRoute · 绕路跳过', () => {
   it('绕路成本随 maxDetourKm 放大而容忍远店（阈值依赖绕路差而非单段距离）', () => {
     // 算法跳过依据是"闭环绕路差"（到店+离店-直连）：起点旁 1 家近店 + 1 家远店，
     // 远店插在起点→近店之间时绕路差大 → maxDetourKm 大则不跳、小则跳
-    const stores = [
-      mkStore('near', 116.401, 39.901),
-      mkStore('far', 117.0, 40.0),
-    ]
+    const stores = [mkStore('near', 116.401, 39.901), mkStore('far', 117.0, 40.0)]
     const strict = planRoute(opts(stores, { maxDetourKm: 30 }))
     const loose = planRoute(opts(stores, { maxDetourKm: 300 }))
     // loose 至少不比 strict 规划得少（更大的绕路容忍不应跳过更多门店）

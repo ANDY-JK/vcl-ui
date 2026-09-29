@@ -14,6 +14,24 @@ import { warnOnce } from '@/components/_internal/warnOnce'
 
 const sizeMap: Record<string, number> = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 }
 
+/** 渲染尺寸 → 尺寸类名。兜底函数只拿得到渲染尺寸（拿不到 props），故按数值反查 */
+const PX_CLASS: Record<number, string> = {
+  12: 'icon-sz-xs',
+  16: 'icon-sz-sm',
+  20: 'icon-sz-md',
+  24: 'icon-sz-lg',
+  28: 'icon-sz-xl',
+}
+
+/**
+ * 图标的渲染尺寸走 CSS 而非 width/height 属性：属性值只能是 SVG 用户单位，塞不进
+ * calc()，图标就会在整体等比缩放时保持恒定——按钮缩了、图标没缩，正是「头大身子小」。
+ * 这里保留属性（库内部按它算 viewBox 与描边比例），再由 .icon-svg 的 CSS 覆盖实际尺寸。
+ */
+function sizeClass(size: string): string {
+  return `icon-svg ${PX_CLASS[sizeMap[size] ?? 20] ?? 'icon-sz-md'}`
+}
+
 /** kebab-case → PascalCase（容忍空段如 foo--bar，避免 w[0] undefined 崩溃） */
 function toPascal(kebab: string): string {
   return kebab
@@ -28,7 +46,7 @@ function renderFallback(sz: number, clr: string) {
   return h(
     'svg',
     {
-      class: 'icon-svg',
+      class: `icon-svg ${PX_CLASS[sz] ?? 'icon-sz-md'}`,
       width: sz,
       height: sz,
       color: clr,
@@ -97,7 +115,7 @@ export default defineComponent({
           width: sz,
           height: sz,
           color: clr,
-          class: 'icon-svg',
+          class: sizeClass(props.size),
           'aria-hidden': true,
         })
       }
@@ -124,7 +142,7 @@ export default defineComponent({
             size: sz,
             color: clr,
             strokeWidth: 2,
-            class: 'icon-svg',
+            class: sizeClass(props.size),
             'aria-hidden': true,
           })
         }
@@ -142,7 +160,7 @@ export default defineComponent({
           size: sz,
           color: clr,
           'stroke-width': 2,
-          class: 'icon-svg',
+          class: sizeClass(props.size),
           'aria-hidden': true,
         })
       }
@@ -162,5 +180,28 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 覆盖 width/height 属性：属性塞不进 calc()，图标会在全站等比缩放里掉队 */
+  width: calc(20px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
+}
+.icon-sz-xs {
+  width: calc(12px * var(--vcl-scale));
+  height: calc(12px * var(--vcl-scale));
+}
+.icon-sz-sm {
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
+}
+.icon-sz-md {
+  width: calc(20px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
+}
+.icon-sz-lg {
+  width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
+}
+.icon-sz-xl {
+  width: calc(28px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
 }
 </style>

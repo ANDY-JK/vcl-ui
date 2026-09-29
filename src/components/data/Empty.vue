@@ -41,10 +41,10 @@ withDefaults(defineProps<Props>(), {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(24px, 5vw, 48px) clamp(var(--space-3), 3vw, 24px);
+  padding: calc(48px * var(--vcl-scale)) calc(24px * var(--vcl-scale));
   text-align: center;
   gap: var(--space-2);
-  min-height: clamp(120px, 20vh, 200px);
+  min-height: clamp(120px * var(--vcl-scale), 20vh, 200px * var(--vcl-scale));
   width: 100%;
 }
 
@@ -56,14 +56,14 @@ withDefaults(defineProps<Props>(), {
 
 .empty-title {
   margin: 0;
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 22), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 500;
   color: var(--color-text);
 }
 
 .empty-description {
   margin: 0;
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
   line-height: 1.5;
 }

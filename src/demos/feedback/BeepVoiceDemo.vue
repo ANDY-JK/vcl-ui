@@ -120,11 +120,17 @@ function doNotifyClick() {
       通知中心）。浏览器要求用户交互后才能播放音频。
     </p>
 
-    <Card title="蜂鸣音（Beep）" title-as="h2" style="margin-bottom: 24px">
-      <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
+    <Card title="蜂鸣音（Beep）" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <p
+        style="
+          font-size: calc(13px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         ⚠️ 浏览器限制：首次播放前需用户交互。点击「解锁音频」按钮后才能播放。
       </p>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <div style="display: flex; gap: calc(8px * var(--vcl-scale)); flex-wrap: wrap">
         <Button
           text="解锁音频"
           variant="ghost"
@@ -139,8 +145,15 @@ function doNotifyClick() {
       </div>
     </Card>
 
-    <Card title="语音播报（Voice / TTS）" title-as="h2" style="margin-bottom: 24px">
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px">
+    <Card title="语音播报（Voice / TTS）" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <div
+        style="
+          display: flex;
+          gap: calc(8px * var(--vcl-scale));
+          flex-wrap: wrap;
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         <Button
           text="解锁语音"
           variant="ghost"
@@ -175,13 +188,19 @@ function doNotifyClick() {
       </div>
     </Card>
 
-    <Card title="系统通知（Notify）" title-as="h2" style="margin-bottom: 24px">
-      <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
+    <Card title="系统通知（Notify）" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <p
+        style="
+          font-size: calc(13px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         Windows / macOS 通知中心。首次调用 notify() 会弹权限请求，授权后永久生效。当前权限：<code>{{
           notifyPerm
         }}</code>
       </p>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <div style="display: flex; gap: calc(8px * var(--vcl-scale)); flex-wrap: wrap">
         <Button
           text="基础通知"
           variant="primary"
@@ -195,90 +214,240 @@ function doNotifyClick() {
     </Card>
 
     <Card title="操作日志" title-as="h2">
-      <div v-if="log.length" style="font-size: 13px; font-family: monospace; line-height: 1.8">
+      <div v-if="log.length" style="font-size: calc(13px * var(--vcl-scale)); font-family: monospace; line-height: 1.8">
         <div v-for="(item, i) in log" :key="i" style="color: var(--color-text-muted)">
           {{ item }}
         </div>
       </div>
-      <p v-else style="font-size: 13px; color: var(--color-text-muted)">暂无操作记录</p>
+      <p v-else style="font-size: calc(13px * var(--vcl-scale)); color: var(--color-text-muted)">暂无操作记录</p>
     </Card>
 
-    <Card title="API" title-as="h2" style="margin-top: 24px">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+    <Card title="API" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 6px 8px">函数</th>
-            <th style="padding: 6px 8px">来源</th>
-            <th style="padding: 6px 8px">说明</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">函数</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">来源</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>unlockAudio()</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useBeep</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">解锁 AudioContext</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              useBeep
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              解锁 AudioContext
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>beepSuccess()</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useBeep</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">成功提示音</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              useBeep
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              成功提示音
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>beepError()</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useBeep</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">错误提示音</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              useBeep
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              错误提示音
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>beepNotify()</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useBeep</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">通知提示音</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              useBeep
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              通知提示音
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>unlockVoice()</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useVoice</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">解锁 SpeechSynthesis</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              useVoice
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              解锁 SpeechSynthesis
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>speak(text, rate?, pitch?, lang?)</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useVoice</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              useVoice
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               朗读文字；rate 0.1~10、pitch 0~2、lang 指定语言（'auto' 自动检测）。无完成回调，播放状态见下方按钮
             </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>stopSpeak()</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useVoice</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">停止播报</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              useVoice
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              停止播报
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>notify(title, bodyOrOptions?)</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">useNotify</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              useNotify
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               发送系统通知，首次自动请求权限。支持 <code>{ body, url, autoClose, onClick }</code>
             </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px">
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
               <code>getNotifyStatus()</code>
             </td>
-            <td style="padding: 6px 8px">useNotify</td>
-            <td style="padding: 6px 8px">返回 'granted' | 'denied' | 'prompt' | 'unsupported'</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">useNotify</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              返回 'granted' | 'denied' | 'prompt' | 'unsupported'
+            </td>
           </tr>
         </tbody>
       </table>
@@ -290,20 +459,20 @@ function doNotifyClick() {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

@@ -285,7 +285,8 @@ function onNodeDrop(e: DragEvent, node: DesignerNode): void {
         const before = pos !== 'after'
         const loc = findParent(props.nodes, node.id)
         // 嵌套子字段：插到它所在容器内的相对位置；否则会落到根级末尾（扁平索引对嵌套节点无意义）
-        const container = loc && loc.parent !== props.nodes ? canvasFindContainerOfChildren(props.nodes, loc.parent) : null
+        const container =
+          loc && loc.parent !== props.nodes ? canvasFindContainerOfChildren(props.nodes, loc.parent) : null
         if (container) {
           emit(
             'insert-into-container',

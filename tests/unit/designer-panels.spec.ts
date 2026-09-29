@@ -1,6 +1,8 @@
 // useDesignerPanels · 首开默认宽随视口收放（小屏画布优先）
-// 锁定：≤1024 收至 78% 地板、1920 与旧常数默认逐像素一致、>1920 封顶、
-//       1366 常见小笔记本取中档、存过布局的用户值优先、损坏存档回落收放默认
+// 锁定：≤1024 收至 88% 地板、1920 与旧常数默认逐像素一致、>1920 封顶、
+//       1366 常见小笔记本取中档、存过布局的用户值优先、损坏存档回落收放默认。
+// 曲线与 tokens.css 的 --vcl-scale 同源（1024 → 0.88，1920 → 1）：
+// 面板若走自己的曲线，缩到一半时与面板内的字号/控件脱节。
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { ref, defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
@@ -38,11 +40,11 @@ afterEach(() => {
 })
 
 describe('useDesignerPanels · 首开默认宽随视口收放', () => {
-  it('1024 视口：三面板收到 78% 地板（大纲不低于拖拽下限 150）', () => {
+  it('1024 视口：三面板收到 88% 地板（大纲不低于拖拽下限 150）', () => {
     const api = mountPanels()
-    expect(api.paletteW.value).toBe(172) // 220×0.78=171.6 → 172
-    expect(api.outlineW.value).toBe(150) // 190×0.78=148.2 → 拖拽下限 150
-    expect(api.propsW.value).toBe(226) // 290×0.78=226.2 → 226
+    expect(api.paletteW.value).toBe(194) // 220×0.88=193.6 → 194
+    expect(api.outlineW.value).toBe(167) // 190×0.88=167.2 → 167
+    expect(api.propsW.value).toBe(255) // 290×0.88=255.2 → 255
   })
 
   it('1920 视口：与旧常数默认一致（220/190/290），大屏零变化', () => {
@@ -60,12 +62,13 @@ describe('useDesignerPanels · 首开默认宽随视口收放', () => {
     expect(api.propsW.value).toBe(290)
   })
 
-  it('1366 视口（常见小笔记本）：取 ~86% 中档', () => {
+  it('1366 视口（常见小笔记本）：取 ~93.6% 中档', () => {
     stubInnerWidth(1366)
     const api = mountPanels()
-    expect(api.paletteW.value).toBe(190) // 220×0.864=190.1
-    expect(api.outlineW.value).toBe(164) // 190×0.864=164.2
-    expect(api.propsW.value).toBe(251) // 290×0.864=250.6 → 251
+    // fit = (1366-1024)/896 = 0.3817；scale = 0.88 + 0.12×0.3817 = 0.9258
+    expect(api.paletteW.value).toBe(204) // 220×0.9258=203.7 → 204
+    expect(api.outlineW.value).toBe(176) // 190×0.9258=175.9 → 176
+    expect(api.propsW.value).toBe(268) // 290×0.9258=268.5 → 268（Math.round 半数进位）
   })
 
   it('存过布局：用户值优先，视口收放不覆盖', () => {
@@ -78,6 +81,6 @@ describe('useDesignerPanels · 首开默认宽随视口收放', () => {
   it('存档损坏：回落视口收放默认', () => {
     localStorage.setItem(STORE_KEY, '{broken json')
     const api = mountPanels()
-    expect(api.paletteW.value).toBe(172)
+    expect(api.paletteW.value).toBe(194)
   })
 })

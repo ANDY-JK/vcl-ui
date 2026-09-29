@@ -8,7 +8,9 @@ describe('login 国际化', () => {
 
   it('中文默认：用户名/密码/登录按钮', () => {
     setLocale('zh-CN')
-    const w = mount(Login, { props: { hideBrand: true, showSocialLogin: false, showRegister: false, showForgotPassword: false } })
+    const w = mount(Login, {
+      props: { hideBrand: true, showSocialLogin: false, showRegister: false, showForgotPassword: false },
+    })
     expect(w.text()).toContain('用户名')
     expect(w.text()).toContain('密码')
     expect(w.text()).toContain('登 录')
@@ -17,7 +19,9 @@ describe('login 国际化', () => {
 
   it('英文：Username/Password/Sign In', () => {
     setLocale('en-US')
-    const w = mount(Login, { props: { hideBrand: true, showSocialLogin: false, showRegister: false, showForgotPassword: false } })
+    const w = mount(Login, {
+      props: { hideBrand: true, showSocialLogin: false, showRegister: false, showForgotPassword: false },
+    })
     expect(w.text()).toContain('Username')
     expect(w.text()).toContain('Password')
     expect(w.text()).toContain('Sign In')

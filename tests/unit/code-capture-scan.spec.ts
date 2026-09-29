@@ -50,8 +50,7 @@ vi.mock('@/components/form/utils/useBarcodeScanner', async () => {
 
 const CodeCapture = (await import('@/components/form/CodeCapture.vue')).default
 
-const mountCC = (props = {}) =>
-  mount(CodeCapture, { props: { modelValue: true, ...props }, attachTo: document.body })
+const mountCC = (props = {}) => mount(CodeCapture, { props: { modelValue: true, ...props }, attachTo: document.body })
 
 const scan = (code: string) => h.onScan!(code)
 /** 结果列表里的码（去重后的 codes） */

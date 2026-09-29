@@ -178,10 +178,13 @@ describe('右键菜单', () => {
 describe('筛选下拉键盘导航', () => {
   it('ArrowDown/Up 游标移动与上下限夹紧；Enter 切换选项选中；无选项时 no-op', () => {
     const filterDraft = ref<ColumnFilterState | null>({ searchText: '', selectedValues: [] })
-    const { api } = makeExtras({}, {
-      filteredOptions: computed(() => [{ value: '甲' }, { value: '乙' }]),
-      filterDraft,
-    })
+    const { api } = makeExtras(
+      {},
+      {
+        filteredOptions: computed(() => [{ value: '甲' }, { value: '乙' }]),
+        filterDraft,
+      },
+    )
     const kd = (key: string) => {
       const e = { key, preventDefault: vi.fn() } as unknown as KeyboardEvent
       api.onFilterKeydown(e)
@@ -286,16 +289,20 @@ describe('行选择补充面', () => {
   it('selectedKeys prop watch：外部受控变化同步内部（reactive props 对齐宿主）', async () => {
     const emitted: unknown[][] = []
     const props = reactive({ columns: cols, data, rowKey: 'id', selectedKeys: ['1'] as string[] })
-    const api = useTableExtras(props as never, ((...args: unknown[]) => emitted.push(args)) as never, {
-      displayData: computed(() => data),
-      tableWrapRef: { value: null },
-      filteredOptions: computed(() => []),
-      filterDraft: ref(null),
-      hiddenColumns: ref(new Set<string>()),
-      filterState: ref({}),
-      pagedData: computed(() => data),
-      hasExportListener: () => false,
-    } as never)
+    const api = useTableExtras(
+      props as never,
+      ((...args: unknown[]) => emitted.push(args)) as never,
+      {
+        displayData: computed(() => data),
+        tableWrapRef: { value: null },
+        filteredOptions: computed(() => []),
+        filterDraft: ref(null),
+        hiddenColumns: ref(new Set<string>()),
+        filterState: ref({}),
+        pagedData: computed(() => data),
+        hasExportListener: () => false,
+      } as never,
+    )
     expect(api._selectedKeys.value).toEqual(['1'])
     props.selectedKeys = ['1', '2']
     await nextTick()

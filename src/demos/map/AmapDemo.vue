@@ -467,55 +467,55 @@ function onImgFail(e: Event) {
 .demo {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 16px 40px;
+  padding: 0 calc(16px * var(--vcl-scale)) calc(40px * var(--vcl-scale));
 }
 .demo-title {
-  font-size: 18px;
+  font-size: calc(18px * var(--vcl-scale));
   margin-bottom: 2px;
 }
 .demo-desc {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
-  margin-bottom: 16px;
+  margin-bottom: calc(16px * var(--vcl-scale));
 }
 
 .toolbar {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
+  border-radius: calc(10px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+  margin-bottom: calc(12px * var(--vcl-scale));
 }
 .toolbar-inputs {
   display: flex;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
   flex-wrap: wrap;
 }
 .inp {
   flex: 1;
-  min-width: 140px;
-  padding: 7px 10px;
+  min-width: calc(140px * var(--vcl-scale));
+  padding: calc(7px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   background: var(--color-bg);
 }
 .inp-sm {
   flex: 0.5;
-  min-width: 120px;
+  min-width: calc(120px * var(--vcl-scale));
 }
 .toolbar-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 10px;
+  gap: calc(8px * var(--vcl-scale));
+  margin-top: calc(10px * var(--vcl-scale));
   flex-wrap: wrap;
 }
 .btn {
-  padding: 7px 18px;
+  padding: calc(7px * var(--vcl-scale)) calc(18px * var(--vcl-scale));
   border: none;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
 }
@@ -532,52 +532,52 @@ function onImgFail(e: Event) {
   color: #fff;
 }
 .gps-display {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-primary);
   font-weight: 500;
 }
 .radius-label {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
-  margin-left: 4px;
+  margin-left: calc(4px * var(--vcl-scale));
 }
 .radius-select {
-  padding: 5px 8px;
+  padding: calc(5px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   background: var(--color-bg);
 }
 .calc-info {
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: calc(8px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
 /* ② 地图 + 卡片列表 */
 .map-shell {
   position: relative;
-  height: 500px;
-  margin-bottom: 14px;
-  border-radius: 10px;
+  height: calc(500px * var(--vcl-scale));
+  margin-bottom: calc(14px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   border: 1px solid var(--color-border);
 }
 .map-shell :deep(.el-vue-amap-container),
 .map-shell :deep(.el-vue-amap) {
   width: 100% !important;
   height: 100% !important;
-  border-radius: 10px;
+  border-radius: calc(10px * var(--vcl-scale));
   overflow: hidden;
 }
 .map-panel {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  bottom: 8px;
-  width: 340px;
+  top: calc(8px * var(--vcl-scale));
+  left: calc(8px * var(--vcl-scale));
+  bottom: calc(8px * var(--vcl-scale));
+  width: calc(340px * var(--vcl-scale));
   background: var(--color-surface);
   backdrop-filter: blur(10px);
-  border-radius: 10px;
+  border-radius: calc(10px * var(--vcl-scale));
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   z-index: 1;
   display: flex;
@@ -586,11 +586,11 @@ function onImgFail(e: Event) {
 .map-panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 0;
+  padding: calc(6px * var(--vcl-scale)) 0;
 }
 .panel-head {
-  padding: 10px 14px;
-  font-size: 13px;
+  padding: calc(10px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border-light);
@@ -600,7 +600,7 @@ function onImgFail(e: Event) {
   flex-shrink: 0;
 }
 .panel-gps {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   font-weight: 400;
   color: var(--color-text-muted);
   font-family: monospace;
@@ -610,8 +610,8 @@ function onImgFail(e: Event) {
 .poi-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: calc(10px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   cursor: pointer;
   border-bottom: 1px solid var(--color-border-light);
   transition: background 0.12s;
@@ -625,13 +625,13 @@ function onImgFail(e: Event) {
 .poi-card.active {
   background: var(--color-info-bg);
   border-left: 3px solid var(--color-danger-hover);
-  padding-left: 11px;
+  padding-left: calc(11px * var(--vcl-scale));
 }
 
 .poi-card-img {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
+  width: calc(56px * var(--vcl-scale));
+  height: calc(56px * var(--vcl-scale));
+  border-radius: calc(8px * var(--vcl-scale));
   overflow: hidden;
   flex-shrink: 0;
   cursor: pointer;
@@ -651,7 +651,7 @@ function onImgFail(e: Event) {
   border-color: var(--color-primary);
 }
 .poi-card-noimg {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   opacity: 0.5;
 }
 
@@ -661,7 +661,7 @@ function onImgFail(e: Event) {
   overflow: hidden;
 }
 .poi-card-name {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text);
   white-space: nowrap;
@@ -669,7 +669,7 @@ function onImgFail(e: Event) {
   text-overflow: ellipsis;
 }
 .poi-card-addr {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin-top: 2px;
   white-space: nowrap;
@@ -679,24 +679,24 @@ function onImgFail(e: Event) {
 .poi-card-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 4px;
+  gap: calc(6px * var(--vcl-scale));
+  margin-top: calc(4px * var(--vcl-scale));
 }
 .poi-card-type {
-  font-size: 10px;
+  font-size: calc(10px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
 .poi-card-detail {
   background: none;
   border: none;
-  padding: 4px 6px;
+  padding: calc(4px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
   cursor: pointer;
-  font-size: 16px;
+  font-size: calc(16px * var(--vcl-scale));
   line-height: 1;
   opacity: 0.4;
   transition: opacity 0.12s;
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   align-self: flex-start;
   margin-top: 2px;
 }
@@ -708,10 +708,10 @@ function onImgFail(e: Event) {
 }
 
 .badge {
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   font-weight: 700;
-  padding: 1px 8px;
-  border-radius: 10px;
+  padding: 1px calc(8px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   background: var(--color-info-bg);
   color: var(--color-info-text);
   white-space: nowrap;
@@ -726,14 +726,14 @@ function onImgFail(e: Event) {
 .poi-detail-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: calc(12px * var(--vcl-scale));
+  margin-bottom: calc(8px * var(--vcl-scale));
 }
 .poi-detail-dist {
-  font-size: 14px;
+  font-size: calc(14px * var(--vcl-scale));
   font-weight: 700;
-  padding: 2px 10px;
-  border-radius: 10px;
+  padding: 2px calc(10px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   background: var(--color-info-bg);
   color: var(--color-info-text);
   white-space: nowrap;
@@ -743,46 +743,46 @@ function onImgFail(e: Event) {
   color: var(--color-warning-text);
 }
 .poi-detail-addr {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .poi-detail-cord {
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-muted);
   font-family: monospace;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .poi-detail-type {
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: calc(12px * var(--vcl-scale));
 }
 .poi-detail-loading {
-  padding: 24px 0;
+  padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
 }
 
 /* 图片画廊 */
 .poi-detail-photos {
-  margin: 16px 0;
+  margin: calc(16px * var(--vcl-scale)) 0;
 }
 .poi-detail-photos-label {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: calc(8px * var(--vcl-scale));
 }
 .poi-detail-photos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(calc(140px * var(--vcl-scale)), 1fr));
+  gap: calc(8px * var(--vcl-scale));
 }
 .poi-detail-photo-item {
   position: relative;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--vcl-scale));
   overflow: hidden;
   cursor: pointer;
   background: var(--color-bg-alt);
@@ -804,8 +804,8 @@ function onImgFail(e: Event) {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 4px 6px;
-  font-size: 10px;
+  padding: calc(4px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
+  font-size: calc(10px * var(--vcl-scale));
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
   white-space: nowrap;
@@ -813,19 +813,19 @@ function onImgFail(e: Event) {
   text-overflow: ellipsis;
 }
 .poi-detail-no-photos {
-  padding: 24px 0;
+  padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
 }
 /* 空状态 */
 .empty-hint {
-  height: 500px;
+  height: calc(500px * var(--vcl-scale));
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: calc(14px * var(--vcl-scale));
 }
 .ok {
   color: var(--color-success-text);
@@ -837,7 +837,7 @@ function onImgFail(e: Event) {
 }
 @container demo (max-width: 767px) {
   .map-panel {
-    width: 280px;
+    width: calc(280px * var(--vcl-scale));
   }
 }
 </style>

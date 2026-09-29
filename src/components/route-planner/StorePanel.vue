@@ -269,7 +269,7 @@ const stats = computed(() => {
 }
 
 .btn-add {
-  padding: var(--space-1) 14px;
+  padding: var(--space-1) calc(14px * var(--vcl-scale));
   background: var(--color-primary);
   color: var(--color-surface);
   border: none;
@@ -285,7 +285,7 @@ const stats = computed(() => {
 .stats {
   display: flex;
   gap: var(--space-2);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
@@ -365,9 +365,9 @@ const stats = computed(() => {
 }
 
 .group-arrow {
-  font-size: clamp(8px, calc(8px + var(--vcl-fit) * 1), 9px);
+  font-size: calc(9px * var(--vcl-scale));
   color: var(--color-text-muted);
-  width: clamp(12px, 1.6vw, 14px);
+  width: calc(14px * var(--vcl-scale));
   flex-shrink: 0;
 }
 
@@ -385,7 +385,7 @@ const stats = computed(() => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   padding: var(--space-1) var(--space-1);
   border-radius: var(--radius-sm);
   opacity: 0.5;
@@ -407,7 +407,7 @@ const stats = computed(() => {
 .group-count {
   font-weight: 400;
   color: var(--color-text-muted);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 
 .store-list {
@@ -453,7 +453,7 @@ const stats = computed(() => {
   display: flex;
   gap: var(--space-2);
   margin-top: var(--space-0);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
@@ -499,7 +499,7 @@ const stats = computed(() => {
 }
 
 .empty-state .hint {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   margin-top: var(--space-1);
   text-align: center;
   line-height: 1.6;
@@ -522,17 +522,17 @@ const stats = computed(() => {
   padding: var(--space-8) var(--space-8);
   text-align: center;
   box-shadow: var(--shadow-lg);
-  max-width: clamp(280px, 35vw, 340px);
+  max-width: calc(340px * var(--vcl-scale));
 }
 
 .confirm-text {
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text);
   margin: 0 0 var(--space-1);
 }
 
 .confirm-hint {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin: 0 0 var(--space-4);
 }
@@ -544,7 +544,7 @@ const stats = computed(() => {
 }
 
 .btn-cancel {
-  padding: var(--space-2) 20px;
+  padding: var(--space-2) calc(20px * var(--vcl-scale));
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
@@ -558,7 +558,7 @@ const stats = computed(() => {
 }
 
 .btn-confirm-delete {
-  padding: var(--space-2) 20px;
+  padding: var(--space-2) calc(20px * var(--vcl-scale));
   background: var(--color-danger);
   color: var(--color-surface);
   border: none;

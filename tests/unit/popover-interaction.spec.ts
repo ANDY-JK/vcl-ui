@@ -97,7 +97,10 @@ describe('Popover · hover 路径', () => {
 
 describe('Popover · focus 路径', () => {
   it('焦点移入浮层内容不关闭，移出两者才关闭', async () => {
-    const w = mountPopover({ variant: 'popover', trigger: 'focus' }, '<button class="inside" type="button">点我</button>')
+    const w = mountPopover(
+      { variant: 'popover', trigger: 'focus' },
+      '<button class="inside" type="button">点我</button>',
+    )
     const trg = w.find('.trg')
 
     await trg.trigger('focusin')

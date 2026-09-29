@@ -147,10 +147,10 @@ function toggle() {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px);
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border: none;
   background: var(--color-surface);
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   color: var(--color-text);
   cursor: pointer;
@@ -193,7 +193,7 @@ function toggle() {
 }
 
 .collapse-body {
-  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 2vw, 16px) clamp(10px, 2vw, 16px);
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border-top: 1px solid var(--color-border-light);
   background: var(--color-bg);
 }

@@ -77,7 +77,9 @@ describe('useListVirtual', () => {
     expect(api.start.value).toBeLessThan(100)
     expect(api.end.value).toBeLessThanOrEqual(100)
     // 关键不变式：窗口至少渲染一屏，否则用户看到的是"莫名其妙空掉"的下拉
-    expect(api.end.value - api.start.value, `窗口空了：start=${api.start.value} end=${api.end.value}`).toBeGreaterThan(0)
+    expect(api.end.value - api.start.value, `窗口空了：start=${api.start.value} end=${api.end.value}`).toBeGreaterThan(
+      0,
+    )
     expect(api.bottomPad.value).toBeGreaterThanOrEqual(0)
     // 占位 + 渲染行仍等于全量高
     const renderedH = (api.end.value - api.start.value) * ROW

@@ -4,7 +4,7 @@
 .ldp-panel::-webkit-scrollbar,
 .ldp-props::-webkit-scrollbar,
 .ldc-canvas-content::-webkit-scrollbar {
-  width: 4px;
+  width: calc(4px * var(--vcl-scale));
 }
 .ldp-panel::-webkit-scrollbar-track,
 .ldp-props::-webkit-scrollbar-track,
@@ -35,15 +35,15 @@
    ================================ */
 .ld-settings-steps {
   border: 1px solid var(--color-border-light, #f1f5f9);
-  border-radius: var(--radius-md, 8px);
-  padding: 12px;
+  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
+  padding: calc(12px * var(--vcl-scale));
   background: var(--color-bg-alt, #fafbfc);
 }
 .ld-steps-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: calc(10px * var(--vcl-scale));
 }
 .ld-steps-header label {
   font-weight: 600;
@@ -51,22 +51,22 @@
   color: var(--color-text, #1e293b);
 }
 .ld-btn-sm {
-  padding: 3px 8px !important;
+  padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale)) !important;
   font-size: var(--fs-11) !important;
-  border-radius: 5px !important;
+  border-radius: calc(5px * var(--vcl-scale)) !important;
 }
 .ld-step-item {
   border: 1px solid var(--color-border-light, #f1f5f9);
-  border-radius: var(--radius-sm, 6px);
-  padding: 10px;
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
+  padding: calc(10px * var(--vcl-scale));
   background: var(--color-bg, #fff);
-  margin-bottom: 8px;
+  margin-bottom: calc(8px * var(--vcl-scale));
 }
 .ld-step-head {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: calc(6px * var(--vcl-scale));
+  margin-bottom: calc(8px * var(--vcl-scale));
 }
 .ld-step-title {
   flex: 1;
@@ -74,7 +74,7 @@
 }
 .ld-step-btns {
   display: flex;
-  gap: 3px;
+  gap: calc(3px * var(--vcl-scale));
   flex-shrink: 0;
 }
 .ld-step-fields {
@@ -82,22 +82,22 @@
 }
 .ld-step-fields-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: calc(6px * var(--vcl-scale));
   color: var(--color-text-muted, #64748b);
   font-weight: 500;
 }
 .ld-step-field-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
 }
 .ld-step-field-chk {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  gap: calc(4px * var(--vcl-scale));
+  padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border: 1px solid var(--color-border-light, #e2e8f0);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--vcl-scale));
   font-size: var(--fs-11);
   cursor: pointer;
   transition: all 0.15s;
@@ -112,8 +112,8 @@
   color: var(--color-primary, #4f6ef7);
 }
 .ld-step-field-chk input {
-  width: 12px;
-  height: 12px;
+  width: calc(12px * var(--vcl-scale));
+  height: calc(12px * var(--vcl-scale));
   margin: 0;
   accent-color: var(--color-primary, #4f6ef7);
 }
@@ -131,13 +131,13 @@
 .ld-settings-advanced {
   border-top: 1px solid var(--color-border-light, #f1f5f9);
   background: var(--color-bg, #fff);
-  padding-top: 10px;
+  padding-top: calc(10px * var(--vcl-scale));
 }
 .ld-settings-switch-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 140px;
+  gap: calc(8px * var(--vcl-scale));
+  min-width: calc(140px * var(--vcl-scale));
 }
 .ld-settings-switch-row label {
   font-size: var(--fs-11);
@@ -153,11 +153,11 @@
 .ld-device-switch {
   display: inline-flex;
   border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   overflow: hidden;
 }
 .ld-device-btn {
-  padding: 5px 10px;
+  padding: calc(5px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border: none;
   background: var(--color-bg, #fff);
   color: var(--color-text-muted, #9ca3af);
@@ -165,7 +165,7 @@
   font-size: var(--fs-12);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
   transition: all 0.15s;
 }
 .ld-device-btn:hover {
@@ -194,10 +194,10 @@
   color: var(--color-primary);
 }
 .ldp-group-cnt {
-  margin-left: 4px;
+  margin-left: calc(4px * var(--vcl-scale));
   font-size: var(--fs-9);
   background: var(--color-bg-soft, #f1f5f9);
-  padding: 1px 5px;
-  border-radius: 8px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(8px * var(--vcl-scale));
   font-weight: 600;
 }

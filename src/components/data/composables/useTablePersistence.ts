@@ -65,7 +65,11 @@ export function useTablePersistence(
   // 多张表共用一个存储空间 → 排序/筛选/列宽/显隐互相串数据
   const _getColumns = typeof columns === 'function' ? columns : () => columns
   const _ns = computed(() => (namespace ? `-${namespace}` : `-i${_colHash(_getColumns())}`))
-  const _colKey = computed(() => _getColumns().map((c) => c.key).join('|'))
+  const _colKey = computed(() =>
+    _getColumns()
+      .map((c) => c.key)
+      .join('|'),
+  )
 
   /** auto namespace 就绪判定：有 namespace 恒就绪；无 namespace 需列已到达（列空时 ns 恒为 -i0） */
   const _nsReady = (): boolean => !!namespace || _getColumns().length > 0
@@ -178,7 +182,10 @@ export function useTablePersistence(
     if (_nsReady()) _loadAndApply<T>(def.key, (cached) => def.restore(cached))
     // 流式恢复：列可能在数据到达后才逐步出现，列变化时补恢复
     watch(
-      () => _getColumns().map((c) => c.key).join(','),
+      () =>
+        _getColumns()
+          .map((c) => c.key)
+          .join(','),
       () => {
         if (!_nsReady()) return
         _loadAndApply<T>(def.key, (cached) => def.restore(cached))

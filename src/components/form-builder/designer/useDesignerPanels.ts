@@ -15,13 +15,19 @@ const PANEL_MAX_W = 420
 
 /**
  * 首开默认宽随视口收放：小屏少占面板、画布优先。
- * 尺子与 tokens.css --vcl-fit 镜像（1024px 视口 → 0，1920px 视口 → 1），
- * 缩放带内取 base 的 78%~100%；用户拖过/存过布局则由 restorePanels 覆盖，永不强行改。
+ * 尺子＝tokens.css --vcl-scale 的 JS 镜像（1024px 视口 → 0.88，1920px → 1），
+ * 与全站同一条曲线——面板若走自己的曲线，缩到一半时与面板内的字号/控件脱节。
+ * 用户拖过/存过布局则由 restorePanels 覆盖，永不强行改。
+ * 注：拖动下限 PANEL_MIN_W 是可用性地板，不随缩放走（再窄放不下内容）。
  */
+const SCALE_MIN = 0.88
+const SCALE_MAX = 1
+const SCALE_SPAN_VW = 896
+
 function fittedDefault(base: number, min: number): number {
   if (typeof window === 'undefined') return base
-  const fit = Math.min(1, Math.max(0, (window.innerWidth - 1024) / 896))
-  return Math.max(min, Math.round(base * (0.78 + 0.22 * fit)))
+  const fit = Math.min(1, Math.max(0, (window.innerWidth - 1024) / SCALE_SPAN_VW))
+  return Math.max(min, Math.round(base * (SCALE_MIN + (SCALE_MAX - SCALE_MIN) * fit)))
 }
 
 export function useDesignerPanels() {

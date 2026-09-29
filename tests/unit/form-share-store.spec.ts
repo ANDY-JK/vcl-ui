@@ -1,11 +1,7 @@
 // 分享码编解码 + 存储模式/云端配置持久化 + 活动 store 单例 — 行为锁定
 // 背景：FormDesigner 增强轮新增 designer/share.ts 与 store 模式层（本地/云端切换），挂载前纯函数护栏
 import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  encodeShareCode,
-  decodeShareCode,
-  SHARE_CODE_PREFIX,
-} from '@/components/form-builder/designer/share'
+import { encodeShareCode, decodeShareCode, SHARE_CODE_PREFIX } from '@/components/form-builder/designer/share'
 import {
   createLocalFormStore,
   createCloudFormStore,
@@ -41,7 +37,11 @@ describe('分享码编解码（share.ts）', () => {
   })
 
   it('v2 旧格式（fields）导入端兼容还原为 nodes', () => {
-    const code = encodeShareCode({ schemaVersion: 2, meta: { title: '旧' }, fields: design.nodes } as unknown as FormDesign)
+    const code = encodeShareCode({
+      schemaVersion: 2,
+      meta: { title: '旧' },
+      fields: design.nodes,
+    } as unknown as FormDesign)
     const back = decodeShareCode(code)
     expect(back!.nodes).toEqual(design.nodes)
   })

@@ -22,9 +22,16 @@ function memoryStore(initial: CollectRecord[] = []): FormStore & { records: Coll
     renameForm: () => {},
     deleteForm: () => {},
     loadRecords: (_k) => records,
-    appendRecord: (_k, r) => { records.unshift(r) },
-    removeRecord: (_k, id) => { const i = records.findIndex((r) => r.id === id); if (i >= 0) records.splice(i, 1) },
-    clearRecords: (_k) => { records.length = 0 },
+    appendRecord: (_k, r) => {
+      records.unshift(r)
+    },
+    removeRecord: (_k, id) => {
+      const i = records.findIndex((r) => r.id === id)
+      if (i >= 0) records.splice(i, 1)
+    },
+    clearRecords: (_k) => {
+      records.length = 0
+    },
   }
 }
 

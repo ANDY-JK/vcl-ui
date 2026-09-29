@@ -72,7 +72,7 @@ const colorMap: Record<string, string> = {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: clamp(40px, 8vw, 64px) var(--space-5);
+  padding: calc(64px * var(--vcl-scale)) var(--space-5);
 }
 
 .result.fullWidth {
@@ -80,28 +80,28 @@ const colorMap: Record<string, string> = {
 }
 
 .result-icon {
-  width: clamp(48px, 8vw, 64px);
-  height: clamp(48px, 8vw, 64px);
-  margin-bottom: clamp(var(--space-3), 2.5vw, 20px);
+  width: calc(64px * var(--vcl-scale));
+  height: calc(64px * var(--vcl-scale));
+  margin-bottom: calc(20px * var(--vcl-scale));
 }
 
 .result-title {
-  font-size: clamp(18px, calc(18px + var(--vcl-fit) * 18), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
-  margin-bottom: clamp(var(--space-1), 1vw, 8px);
+  margin-bottom: calc(8px * var(--vcl-scale));
   color: var(--color-text);
 }
 
 .result-desc {
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
-  max-width: clamp(340px, 64vw, 480px);
+  max-width: calc(480px * var(--vcl-scale));
   line-height: 1.6;
 }
 
 .result-actions {
   display: flex;
-  gap: clamp(var(--space-2), 1.5vw, 12px);
-  margin-top: clamp(var(--space-4), 3vw, 24px);
+  gap: calc(12px * var(--vcl-scale));
+  margin-top: calc(24px * var(--vcl-scale));
 }
 </style>

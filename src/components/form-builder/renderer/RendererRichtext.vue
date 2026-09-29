@@ -175,7 +175,7 @@ onUnmounted(() => {
 <style scoped>
 .fb-richtext {
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--fb-radius, 6px);
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
   overflow: hidden;
   width: var(--fb-control-width, 100%);
@@ -186,19 +186,19 @@ onUnmounted(() => {
 
 /* ── 编辑区 / 预览区 ── */
 .fb-richtext-body {
-  padding: 8px 12px;
-  min-height: 50px;
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  min-height: calc(50px * var(--vcl-scale));
   font-size: var(--fs-13);
   color: var(--color-text, #1e293b);
   outline: none;
 }
 .fb-richtext--full .fb-richtext-body {
-  min-height: var(--fb-rt-min-height-full, 160px);
+  min-height: var(--fb-rt-min-height-full, calc(160px * var(--vcl-scale)));
   line-height: 1.7;
 }
 .fb-richtext-preview {
-  padding: 12px 16px;
-  min-height: 50px;
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
+  min-height: calc(50px * var(--vcl-scale));
   font-size: var(--fs-13);
   line-height: 1.7;
   color: var(--color-text, #1e293b);
@@ -237,26 +237,26 @@ onUnmounted(() => {
 .fb-richtext-body :deep(blockquote),
 .fb-richtext-preview :deep(blockquote) {
   border-left: 3px solid var(--color-border, #e2e8f0);
-  margin: 8px 0;
-  padding: 2px 12px;
+  margin: calc(8px * var(--vcl-scale)) 0;
+  padding: 2px calc(12px * var(--vcl-scale));
   color: var(--color-text-muted, #64748b);
 }
 .fb-richtext-body :deep(pre),
 .fb-richtext-preview :deep(pre) {
   background: var(--color-bg-soft, #f1f5f9);
-  border-radius: 4px;
-  padding: 10px 12px;
+  border-radius: calc(4px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   overflow-x: auto;
   font-family: var(--fb-rt-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
   font-size: var(--fs-12);
-  margin: 8px 0;
+  margin: calc(8px * var(--vcl-scale)) 0;
 }
 .fb-richtext-body :deep(code),
 .fb-richtext-preview :deep(code) {
   font-family: var(--fb-rt-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
   background: var(--color-bg-soft, #f1f5f9);
-  border-radius: 3px;
-  padding: 1px 5px;
+  border-radius: calc(3px * var(--vcl-scale));
+  padding: 1px calc(5px * var(--vcl-scale));
   font-size: 0.92em;
 }
 .fb-richtext-body :deep(pre code),
@@ -268,25 +268,25 @@ onUnmounted(() => {
 .fb-richtext-preview :deep(hr) {
   border: none;
   border-top: 1px solid var(--color-border, #e2e8f0);
-  margin: 14px 0;
+  margin: calc(14px * var(--vcl-scale)) 0;
 }
 .fb-richtext-body :deep(img),
 .fb-richtext-preview :deep(img) {
   max-width: 100%;
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
 }
 .fb-richtext-body :deep(table),
 .fb-richtext-preview :deep(table) {
   border-collapse: collapse;
-  margin: 8px 0;
+  margin: calc(8px * var(--vcl-scale)) 0;
 }
 .fb-richtext-body :deep(th),
 .fb-richtext-body :deep(td),
 .fb-richtext-preview :deep(th),
 .fb-richtext-preview :deep(td) {
   border: 1px solid var(--color-border, #e2e8f0);
-  padding: 4px 10px;
-  min-width: 32px;
+  padding: calc(4px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
+  min-width: calc(32px * var(--vcl-scale));
 }
 .fb-richtext-body :deep(a),
 .fb-richtext-preview :deep(a) {
@@ -303,7 +303,7 @@ onUnmounted(() => {
 .fb-rt-status {
   display: flex;
   justify-content: flex-end;
-  padding: 2px 8px;
+  padding: 2px calc(8px * var(--vcl-scale));
   font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
   border-top: 1px solid var(--color-border-light, #f1f5f9);
@@ -335,9 +335,9 @@ onUnmounted(() => {
   min-height: 0;
   overflow: auto;
   width: 100%;
-  max-width: var(--fb-rt-fullscreen-width, 860px);
+  max-width: var(--fb-rt-fullscreen-width, calc(860px * var(--vcl-scale)));
   margin: 0 auto;
-  padding: 24px 32px;
+  padding: calc(24px * var(--vcl-scale)) calc(32px * var(--vcl-scale));
   font-size: var(--fs-15);
 }
 .fb-richtext--fullscreen .fb-rt-status {

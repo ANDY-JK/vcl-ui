@@ -106,7 +106,7 @@ const linkageHelpText = computed(() => {
             node.eventConfig?.onChange?.action === 'setValue' || node.eventConfig?.onChange?.action === 'toggleVisible'
           "
           class="ldp-prop"
-          style="padding: 0; border: none; margin-top: 8px"
+          style="padding: 0; border: none; margin-top: calc(8px * var(--vcl-scale))"
         >
           <label>{{ t('fbp.targetField') }}</label>
           <Select
@@ -131,7 +131,7 @@ const linkageHelpText = computed(() => {
         <div
           v-if="node.eventConfig?.onChange?.action === 'callApi'"
           class="ldp-prop"
-          style="padding: 0; border: none; margin-top: 8px"
+          style="padding: 0; border: none; margin-top: calc(8px * var(--vcl-scale))"
         >
           <label>{{ t('fbp.apiUrl') }}</label>
           <Input
@@ -228,7 +228,14 @@ const linkageHelpText = computed(() => {
           { value: 'followOptions', label: t('fbp.linkageFollowOptions') },
           { value: 'showHide', label: t('fbp.linkageShowHide') },
         ]"
-        @update:model-value="emit('update', { eventConfig: { ...node.eventConfig, linkageType: $event as 'none' | 'followValue' | 'followOptions' | 'showHide' } })"
+        @update:model-value="
+          emit('update', {
+            eventConfig: {
+              ...node.eventConfig,
+              linkageType: $event as 'none' | 'followValue' | 'followOptions' | 'showHide',
+            },
+          })
+        "
       />
     </div>
     <template v-if="node.eventConfig?.linkageType && node.eventConfig.linkageType !== 'none'">

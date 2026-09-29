@@ -60,7 +60,7 @@ function selectCell(row: string, col: string): void {
 .fb-matrix {
   border: 1px solid var(--color-border, #e2e8f0);
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
-  border-radius: var(--fb-radius, 6px);
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   overflow: hidden;
   width: var(--fb-control-width, 100%);
 }
@@ -77,7 +77,7 @@ function selectCell(row: string, col: string): void {
 }
 .fb-matrix-cell {
   flex: 1;
-  padding: 6px 8px;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,17 +91,17 @@ function selectCell(row: string, col: string): void {
   color: var(--color-text, #1e293b);
 }
 .fb-matrix-cell input[type='radio'] {
-  width: 16px;
-  height: 16px;
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
   cursor: pointer;
 }
 .fb-matrix-empty {
-  padding: 20px;
+  padding: calc(20px * var(--vcl-scale));
   text-align: center;
   font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
   border: 1px dashed var(--color-border, #e2e8f0);
-  border-radius: var(--fb-radius, 6px);
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   width: var(--fb-control-width, 100%);
 }
 </style>

@@ -202,31 +202,31 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
 
 <style scoped>
 .fsv {
-  max-width: 720px;
+  max-width: calc(720px * var(--vcl-scale));
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: calc(24px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
 }
 .fsv-state {
-  padding: 48px 0;
+  padding: calc(48px * var(--vcl-scale)) 0;
 }
 .fsv-title {
-  margin: 0 0 4px;
+  margin: 0 0 calc(4px * var(--vcl-scale));
   font-size: var(--fs-20);
   font-weight: 700;
   color: var(--color-text, #1e293b);
 }
 .fsv-desc {
-  margin: 0 0 20px;
+  margin: 0 0 calc(20px * var(--vcl-scale));
   font-size: var(--fs-13);
   line-height: 1.7;
   color: var(--color-text-secondary, #64748b);
 }
 .fsv-error {
-  margin: 0 0 12px;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm, 6px);
+  margin: 0 0 calc(12px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-danger-light, #fef2f2);
-  color: var(--color-danger, #dc2626);
+  color: var(--color-danger-on-surface);
   font-size: var(--fs-13);
 }
 </style>

@@ -752,7 +752,11 @@ onUnmounted(() => {
     <div class="cc-toolbar">
       <h1 class="cc-title">📋 门店合同收集</h1>
       <div class="cc-search">
-        <Input v-model="keyword" placeholder="输入 Apple ID 或营业执照名称搜索…" style="width: 320px" />
+        <Input
+          v-model="keyword"
+          placeholder="输入 Apple ID 或营业执照名称搜索…"
+          style="width: calc(320px * var(--vcl-scale))"
+        />
       </div>
       <div class="cc-stats">
         <span class="cc-stat-badge cc-stat-contract" :class="{ done: uploadCount.contract > 0 }">
@@ -781,10 +785,10 @@ onUnmounted(() => {
       <table class="cc-table">
         <thead>
           <tr>
-            <th style="width: 90px">Apple ID</th>
-            <th style="width: 140px">营业执照名称</th>
-            <th style="width: 110px">柜机协议</th>
-            <th style="width: 60px">状态</th>
+            <th style="width: calc(90px * var(--vcl-scale))">Apple ID</th>
+            <th style="width: calc(140px * var(--vcl-scale))">营业执照名称</th>
+            <th style="width: calc(110px * var(--vcl-scale))">柜机协议</th>
+            <th style="width: calc(60px * var(--vcl-scale))">状态</th>
           </tr>
         </thead>
         <tbody>
@@ -816,7 +820,12 @@ onUnmounted(() => {
             </td>
           </tr>
           <tr v-if="filteredStores.length === 0">
-            <td colspan="4" style="text-align: center; padding: 40px; color: var(--color-text-muted)">无匹配门店</td>
+            <td
+              colspan="4"
+              style="text-align: center; padding: calc(40px * var(--vcl-scale)); color: var(--color-text-muted)"
+            >
+              无匹配门店
+            </td>
           </tr>
         </tbody>
       </table>
@@ -831,7 +840,7 @@ onUnmounted(() => {
 
 <style scoped>
 .cc-wrap {
-  padding: 16px;
+  padding: calc(16px * var(--vcl-scale));
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -840,34 +849,34 @@ onUnmounted(() => {
 .cc-toolbar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: calc(16px * var(--vcl-scale));
   flex-wrap: wrap;
-  padding: 12px 16px;
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   background: var(--color-surface, #f8fafc);
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 8px;
-  margin-bottom: 16px;
+  border-radius: calc(8px * var(--vcl-scale));
+  margin-bottom: calc(16px * var(--vcl-scale));
   position: sticky;
   top: 0;
   z-index: 10;
 }
 .cc-title {
   margin: 0;
-  font-size: 16px;
+  font-size: calc(16px * var(--vcl-scale));
   white-space: nowrap;
 }
 .cc-search {
   flex: 1;
-  min-width: 200px;
+  min-width: calc(200px * var(--vcl-scale));
 }
 .cc-stats {
   display: flex;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
 }
 .cc-stat-badge {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 11px;
+  padding: 2px calc(8px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
+  font-size: calc(11px * var(--vcl-scale));
   font-weight: 600;
   background: var(--color-bg-soft);
   color: #94a3b8;
@@ -883,12 +892,12 @@ onUnmounted(() => {
   color: var(--color-primary);
 }
 .cc-btn {
-  padding: 5px 14px;
+  padding: calc(5px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: calc(6px * var(--vcl-scale));
   background: var(--color-surface);
   cursor: pointer;
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   white-space: nowrap;
 }
 .cc-btn:hover {
@@ -914,19 +923,19 @@ onUnmounted(() => {
 .cc-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--vcl-scale));
 }
 .cc-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   background: var(--color-bg, #fff);
 }
 .cc-table th {
   text-align: left;
-  padding: 8px 10px;
+  padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-text-secondary);
   background: var(--color-surface, #f8fafc);
   border-bottom: 2px solid var(--color-border);
@@ -935,7 +944,7 @@ onUnmounted(() => {
   top: 0;
 }
 .cc-table td {
-  padding: 6px 10px;
+  padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
 }
@@ -949,22 +958,22 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 .cc-td-license {
-  max-width: 140px;
+  max-width: calc(140px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .cc-td-upload {
-  width: 90px;
-  padding: 4px !important;
+  width: calc(90px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) !important;
   /* Upload card 默认 110×110，缩小适配表格 */
 }
 .cc-td-upload :deep(.card-wrap) {
-  width: 80px !important;
-  height: 80px !important;
+  width: calc(80px * var(--vcl-scale)) !important;
+  height: calc(80px * var(--vcl-scale)) !important;
 }
 .cc-td-upload :deep(.card-label) {
-  font-size: 10px !important;
+  font-size: calc(10px * var(--vcl-scale)) !important;
 }
 
 .cc-td-status {

@@ -72,7 +72,10 @@ describe('Select · 单选与多选', () => {
   })
 
   it('disabled 选项点击不触发', async () => {
-    const opts = [{ label: 'A', value: 'a' }, { label: 'B', value: 'b', disabled: true }]
+    const opts = [
+      { label: 'A', value: 'a' },
+      { label: 'B', value: 'b', disabled: true },
+    ]
     const w = mountSelect({ options: opts })
     await w.find('input.trigger-input').trigger('click')
     await w.findAll('.panel-item')[1].trigger('click')

@@ -474,9 +474,7 @@ export interface ValidationRuleSpec {
  * - 声明对象：ValidationRuleSpec（新写法，取值口径显式声明）
  */
 export type ValidationRule =
-  | ((v: string) => string | undefined)
-  | ((v: unknown, data: FormData) => string | undefined)
-  | ValidationRuleSpec
+  ((v: string) => string | undefined) | ((v: unknown, data: FormData) => string | undefined) | ValidationRuleSpec
 
 /** 表单值类型联合（供外部类型推导） */
 export type FieldValue =

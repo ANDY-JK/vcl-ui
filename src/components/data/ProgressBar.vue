@@ -223,18 +223,18 @@ onUnmounted(unbindWindowPointer)
 .progress-wrap {
   display: flex;
   align-items: center;
-  gap: clamp(7px, 1.2vw, var(--space-2));
+  gap: var(--space-2);
   width: 100%;
 }
 .progress-track {
   flex: 1;
   background: var(--color-bg-alt);
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
   transition: width var(--transition-slow);
 }
 .fill-primary {
@@ -260,21 +260,21 @@ onUnmounted(unbindWindowPointer)
     transparent 75%,
     transparent
   );
-  background-size: 16px 16px;
+  background-size: calc(16px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
 }
 .progress-fill.animated.striped {
   animation: progress-stripe 0.6s linear infinite;
 }
 @keyframes progress-stripe {
   to {
-    background-position: 16px 0;
+    background-position: calc(16px * var(--vcl-scale)) 0;
   }
 }
 .progress-text {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
   font-weight: 500;
-  min-width: clamp(30px, 4.8vw, 40px);
+  min-width: calc(40px * var(--vcl-scale));
   text-align: right;
 }
 
@@ -284,19 +284,19 @@ onUnmounted(unbindWindowPointer)
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  --thumb-size: 14px;
-  --track-height: 6px;
+  --thumb-size: calc(14px * var(--vcl-scale));
+  --track-height: calc(6px * var(--vcl-scale));
 }
 
 /* 输入框 — 与滑块视觉协调 */
 .slider-input {
-  width: 42px;
+  width: calc(42px * var(--vcl-scale));
   flex-shrink: 0;
-  height: 26px;
+  height: calc(26px * var(--vcl-scale));
   padding: 0 var(--space-1);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-family: inherit;
   text-align: center;
   color: var(--color-text);
@@ -317,7 +317,7 @@ onUnmounted(unbindWindowPointer)
   margin: calc(var(--thumb-size) / 2) 0;
   cursor: pointer;
   touch-action: none;
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
 }
 .slider-track.dragging {
   cursor: grabbing;
@@ -328,7 +328,7 @@ onUnmounted(unbindWindowPointer)
   position: absolute;
   inset: 0;
   background: var(--color-bg-alt);
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
 }
 
 /* 填充条 */
@@ -338,7 +338,7 @@ onUnmounted(unbindWindowPointer)
   bottom: 0;
   left: 0;
   background: var(--color-primary);
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
   pointer-events: none;
 }
 
@@ -351,8 +351,8 @@ onUnmounted(unbindWindowPointer)
 .slider-stop {
   position: absolute;
   top: 50%;
-  width: 5px;
-  height: 5px;
+  width: calc(5px * var(--vcl-scale));
+  height: calc(5px * var(--vcl-scale));
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: var(--color-surface);

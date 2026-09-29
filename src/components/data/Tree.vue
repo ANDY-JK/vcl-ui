@@ -366,8 +366,9 @@ function isExpanded(key: string | number) {
 
 // 层级深度系统（对齐 AccordionNav 的视觉层次）
 // 字号: 14px × 0.85^(level)，下限 10px  透明度: 1 - 0.12 × level，下限 0.4
+// 字号与缩进是设计尺寸，同样走 --vcl-scale；层级公式不变，只换算进缩放曲线
 const levelStyle = computed(() => {
-  const fontSize = `${Math.max(10, 14 * Math.pow(0.85, props.level))}px`
+  const fontSize = `calc(${Math.max(10, 14 * Math.pow(0.85, props.level)).toFixed(1)}px * var(--vcl-scale))`
   const opacity = Math.max(0.4, 1 - 0.12 * props.level)
   const paddingLeft = `calc(${props.level} * var(--space-4))`
   return { fontSize, opacity, paddingLeft }
@@ -472,7 +473,7 @@ const levelStyle = computed(() => {
   cursor: pointer;
   border-radius: var(--radius-sm);
   transition: background var(--transition-fast);
-  min-height: clamp(28px, 4.5vw, 34px);
+  min-height: calc(34px * var(--vcl-scale));
   user-select: none;
   position: relative;
 }
@@ -496,8 +497,8 @@ const levelStyle = computed(() => {
   content: '';
   position: absolute;
   left: 0;
-  top: 4px;
-  bottom: 4px;
+  top: calc(4px * var(--vcl-scale));
+  bottom: calc(4px * var(--vcl-scale));
   width: 2px;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
@@ -508,8 +509,8 @@ const levelStyle = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: clamp(18px, 3vw, 24px);
-  height: clamp(18px, 3vw, 24px);
+  width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
   color: var(--color-text-muted);
   transition: transform var(--transition-normal);
   flex-shrink: 0;
@@ -526,8 +527,8 @@ const levelStyle = computed(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: clamp(18px, 3vw, 24px);
-  height: clamp(18px, 3vw, 24px);
+  width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -549,8 +550,8 @@ const levelStyle = computed(() => {
   outline-offset: 1px;
 }
 .tree-check-box {
-  width: clamp(14px, 2.2vw, 16px);
-  height: clamp(14px, 2.2vw, 16px);
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
   display: flex;
@@ -565,16 +566,16 @@ const levelStyle = computed(() => {
 }
 .tree-check-input:checked + .tree-check-box::after {
   content: '';
-  width: 4px;
-  height: 8px;
+  width: calc(4px * var(--vcl-scale));
+  height: calc(8px * var(--vcl-scale));
   border: solid #fff;
   border-width: 0 1.5px 1.5px 0;
   transform: rotate(45deg) translate(-1px, -1px);
   position: absolute;
   top: 50%;
   left: 50%;
-  margin-left: -3px;
-  margin-top: -4px;
+  margin-left: calc(-3px * var(--vcl-scale));
+  margin-top: calc(-4px * var(--vcl-scale));
 }
 .tree-check-input--indeterminate + .tree-check-box {
   background: var(--color-primary);
@@ -582,7 +583,7 @@ const levelStyle = computed(() => {
 }
 .tree-check-input--indeterminate + .tree-check-box::after {
   content: '';
-  width: 8px;
+  width: calc(8px * var(--vcl-scale));
   height: 2px;
   background: #fff;
   border-radius: 1px;
@@ -599,8 +600,8 @@ const levelStyle = computed(() => {
 .tree-node-icon {
   flex-shrink: 0;
   color: var(--color-text-muted);
-  width: clamp(16px, 2.5vw, 20px);
-  height: clamp(16px, 2.5vw, 20px);
+  width: calc(20px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
 }
 .tree-node-label {
   white-space: nowrap;

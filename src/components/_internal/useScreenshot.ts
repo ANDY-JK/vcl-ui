@@ -58,7 +58,7 @@ export async function captureElement(
     s.contain = 'none'
     s.flex = 'none'
     // 递归清理所有子元素的裁剪约束
-    clonedElement.querySelectorAll('*').forEach(el => {
+    clonedElement.querySelectorAll('*').forEach((el) => {
       if (el instanceof HTMLElement) {
         const cs = el.style
         cs.overflow = 'visible'
@@ -101,7 +101,7 @@ export async function captureElement(
 
     const dataUrl = canvas.toDataURL('image/png')
     const blob = await new Promise<Blob>((resolve, reject) =>
-      canvas!.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png'),
+      canvas!.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png'),
     )
 
     return { dataUrl, canvas, blob }
@@ -133,9 +133,7 @@ export function downloadScreenshot(dataUrl: string, filename?: string): boolean 
 export async function copyScreenshotToClipboard(blob: Blob, dataUrl?: string): Promise<boolean> {
   try {
     if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob }),
-      ])
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
       return true
     }
   } catch {

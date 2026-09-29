@@ -9,7 +9,7 @@ import Card from '@/components/data/Card.vue'
     <p class="demo-desc">水平/垂直分割线，支持文字、虚线。</p>
 
     <Card title="Divider 分割线" title-as="h2">
-      <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: calc(16px * var(--vcl-scale))">
         <p>默认分割线</p>
         <Divider />
         <p>带文字</p>
@@ -17,7 +17,14 @@ import Card from '@/components/data/Card.vue'
         <p>虚线</p>
         <Divider dashed />
         <p>水平和垂直</p>
-        <div style="display: flex; align-items: center; height: 40px; gap: 12px">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            height: calc(40px * var(--vcl-scale));
+            gap: calc(12px * var(--vcl-scale));
+          "
+        >
           <span>左</span>
           <Divider direction="vertical" />
           <span>中</span>
@@ -28,39 +35,49 @@ import Card from '@/components/data/Card.vue'
     </Card>
 
     <Card title="Props" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-        <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-          <th style="padding: 4px 8px">Prop</th>
-          <th style="padding: 4px 8px">类型</th>
-          <th style="padding: 4px 8px">默认</th>
-          <th style="padding: 4px 8px">说明</th>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
-            <code>direction</code>
-          </td>
-          <td style="padding: 3px 8px">string</td>
-          <td style="padding: 3px 8px">horizontal</td>
-          <td style="padding: 3px 8px">horizontal | vertical</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
-            <code>text</code>
-          </td>
-          <td style="padding: 3px 8px">string</td>
-          <td style="padding: 3px 8px">—</td>
-          <td style="padding: 3px 8px">分割线文字</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px">
-            <code>dashed</code>
-          </td>
-          <td style="padding: 3px 8px">boolean</td>
-          <td style="padding: 3px 8px">false</td>
-          <td style="padding: 3px 8px">虚线样式</td>
-        </tr>
-      </tbody>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>direction</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">horizontal</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">horizontal | vertical</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>text</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">分割线文字</td>
+          </tr>
+          <tr>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              <code>dashed</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">虚线样式</td>
+          </tr>
+        </tbody>
       </table>
     </Card>
   </div>
@@ -68,19 +85,19 @@ import Card from '@/components/data/Card.vue'
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

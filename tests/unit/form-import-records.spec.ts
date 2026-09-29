@@ -104,9 +104,7 @@ describe('dedupeRecords', () => {
       { name: '张三', age: 30 },
       { name: '李四', age: 25 },
     ]
-    const existing: CollectRecord[] = [
-      { id: 'r1', time: '2026-08-30 10:00', data: { name: '张三', age: 30 } },
-    ]
+    const existing: CollectRecord[] = [{ id: 'r1', time: '2026-08-30 10:00', data: { name: '张三', age: 30 } }]
     const { toImport, skipped } = dedupeRecords(records, existing)
     expect(skipped).toBe(1)
     expect(toImport.map((r) => r.name)).toEqual(['李四'])

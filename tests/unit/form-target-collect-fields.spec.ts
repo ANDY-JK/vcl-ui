@@ -6,7 +6,14 @@ import FormTargetCollect from '@/components/form-builder/FormTargetCollect.vue'
 import type { FormSchema } from '@/components/form-builder/types'
 
 const targets = [
-  { id: 1, name: '东街口店', license: '91350100MA0', addr: '福州市鼓楼区东街口 12 号', phone: '0591-1234', town: '东街' },
+  {
+    id: 1,
+    name: '东街口店',
+    license: '91350100MA0',
+    addr: '福州市鼓楼区东街口 12 号',
+    phone: '0591-1234',
+    town: '东街',
+  },
   { id: 2, name: '西湖店', license: '91350100MB11', addr: '福州市鼓楼区湖滨路 8 号', phone: '0591-5678', town: '西湖' },
 ]
 

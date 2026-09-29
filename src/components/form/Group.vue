@@ -475,7 +475,7 @@ onUnmounted(unbindWindowPointer)
 .direction-horizontal {
   flex-direction: row;
   flex-wrap: wrap;
-  gap: clamp(var(--space-2), 1.8vw, 16px);
+  gap: calc(16px * var(--vcl-scale));
 }
 .direction-vertical {
   flex-direction: column;
@@ -484,7 +484,7 @@ onUnmounted(unbindWindowPointer)
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   padding: var(--space-2) 0;
   cursor: pointer;
 }
@@ -499,14 +499,14 @@ onUnmounted(unbindWindowPointer)
   transition: all var(--transition-fast);
 }
 .is-radio {
-  width: 18px;
-  height: 18px;
+  width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
   border-radius: 50%;
   border: 2px solid var(--color-border);
 }
 .is-checkbox {
-  width: 18px;
-  height: 18px;
+  width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   border: 2px solid var(--color-border);
 }
@@ -538,18 +538,18 @@ onUnmounted(unbindWindowPointer)
 .switch-track {
   position: relative;
   display: inline-block;
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
   background: var(--color-border);
   transition: background var(--transition-fast);
   cursor: pointer;
 }
 .track-md {
-  width: clamp(40px, 6vw, 44px);
-  height: clamp(22px, 3vw, 24px);
+  width: calc(44px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
 }
 .track-sm {
-  width: clamp(28px, 4vw, 32px);
-  height: clamp(16px, 2vw, 18px);
+  width: calc(32px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
 }
 .switch-track.on {
   background: var(--color-primary);
@@ -564,14 +564,14 @@ onUnmounted(unbindWindowPointer)
   box-shadow: var(--shadow-sm);
 }
 .thumb-md {
-  width: 20px;
-  height: 20px;
-  margin-top: -10px;
+  width: calc(20px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
+  margin-top: calc(-10px * var(--vcl-scale));
 }
 .thumb-sm {
-  width: 14px;
-  height: 14px;
-  margin-top: -7px;
+  width: calc(14px * var(--vcl-scale));
+  height: calc(14px * var(--vcl-scale));
+  margin-top: calc(-7px * var(--vcl-scale));
 }
 .thumb-md.on {
   transform: translateX(clamp(16px, 2.5vw, 20px));
@@ -580,7 +580,7 @@ onUnmounted(unbindWindowPointer)
   transform: translateX(clamp(10px, 1.5vw, 14px));
 }
 .switch-label {
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text);
 }
 
@@ -621,8 +621,8 @@ onUnmounted(unbindWindowPointer)
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  --thumb-size: 16px;
-  --track-height: 6px;
+  --thumb-size: calc(16px * var(--vcl-scale));
+  --track-height: calc(6px * var(--vcl-scale));
 }
 .slider-track {
   flex: 1;
@@ -631,20 +631,20 @@ onUnmounted(unbindWindowPointer)
   margin: calc(var(--thumb-size) / 2) 0;
   cursor: pointer;
   touch-action: none;
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
 }
 .slider-rail {
   position: absolute;
   inset: 0;
   background: var(--color-bg-alt);
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
 }
 .slider-fill {
   position: absolute;
   top: 0;
   bottom: 0;
   background: var(--color-primary);
-  border-radius: 100px;
+  border-radius: calc(100px * var(--vcl-scale));
   pointer-events: none;
   transition:
     left var(--transition-fast),
@@ -685,9 +685,9 @@ onUnmounted(unbindWindowPointer)
 }
 .slider-value {
   flex-shrink: 0;
-  min-width: 34px;
+  min-width: calc(34px * var(--vcl-scale));
   text-align: right;
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   color: var(--color-text-secondary);

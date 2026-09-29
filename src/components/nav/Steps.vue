@@ -94,7 +94,7 @@ function onStepClick(idx: number, step: Step) {
 .step {
   display: flex;
   align-items: flex-start;
-  gap: clamp(var(--space-1), 1.2vw, 10px);
+  gap: calc(10px * var(--vcl-scale));
   position: relative;
   flex: 1;
 }
@@ -107,13 +107,13 @@ function onStepClick(idx: number, step: Step) {
 }
 
 .step-num {
-  width: clamp(24px, 3.5vw, 28px);
-  height: clamp(24px, 3.5vw, 28px);
+  width: calc(28px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   background: var(--color-bg-alt);
   color: var(--color-text-muted);
@@ -135,7 +135,7 @@ function onStepClick(idx: number, step: Step) {
   padding-top: var(--space-1);
 }
 .step-label {
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   color: var(--color-text-muted);
 }
@@ -147,17 +147,17 @@ function onStepClick(idx: number, step: Step) {
 }
 
 .step-desc {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin-top: var(--space-1);
 }
 
 .step-line {
   flex: 1;
-  min-width: clamp(16px, 3vw, 24px);
+  min-width: calc(24px * var(--vcl-scale));
   min-height: 2px;
   background: var(--color-border);
-  margin-top: clamp(var(--space-2), 1.6vw, 13px);
+  margin-top: calc(13px * var(--vcl-scale));
   transition: background var(--transition-fast);
 }
 .step-line.filled {
@@ -182,11 +182,11 @@ function onStepClick(idx: number, step: Step) {
 }
 .steps-vertical .step-line {
   position: absolute;
-  left: clamp(10px, 1.6vw, 13px);
-  top: clamp(24px, 4vw, 32px);
+  left: calc(13px * var(--vcl-scale));
+  top: calc(32px * var(--vcl-scale));
   bottom: 0;
   width: 2px;
   min-width: 2px;
-  height: calc(100% - clamp(24px, 4vw, 32px));
+  height: calc(100% - calc(32px * var(--vcl-scale)));
 }
 </style>

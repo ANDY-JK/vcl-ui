@@ -97,7 +97,7 @@ function resetCurrentForm() {
     </p>
 
     <!-- ===== 控制面板 ===== -->
-    <Card title="配置开关" title-as="h2" style="margin-bottom: 20px">
+    <Card title="配置开关" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="control-bar">
         <div class="control-group">
           <label class="ctrl-label">当前组件</label>
@@ -236,7 +236,11 @@ function resetCurrentForm() {
     </div>
 
     <!-- ===== Props 说明表 ===== -->
-    <Card title="通用布局 Props（LoginPage / RegisterPage / ForgotPasswordPage）" title-as="h2" style="margin-top: 24px">
+    <Card
+      title="通用布局 Props（LoginPage / RegisterPage / ForgotPasswordPage）"
+      title-as="h2"
+      style="margin-top: calc(24px * var(--vcl-scale))"
+    >
       <table class="props-table">
         <thead>
           <tr>
@@ -269,7 +273,7 @@ function resetCurrentForm() {
       </table>
     </Card>
 
-    <Card title="LoginPage 独有 Props" title-as="h2" style="margin-top: 24px">
+    <Card title="LoginPage 独有 Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -332,7 +336,7 @@ function resetCurrentForm() {
       </table>
     </Card>
 
-    <Card title="Events" title-as="h2" style="margin-top: 24px">
+    <Card title="Events" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -391,7 +395,7 @@ function resetCurrentForm() {
       </table>
     </Card>
 
-    <Card title="Exposed Methods" title-as="h2" style="margin-top: 24px">
+    <Card title="Exposed Methods" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -408,7 +412,7 @@ function resetCurrentForm() {
           </tr>
         </tbody>
       </table>
-      <p class="demo-hint" style="margin-top: 12px">
+      <p class="demo-hint" style="margin-top: calc(12px * var(--vcl-scale))">
         v2（Q18）起宿主登录结果回写改走 <code>authResult</code> prop（<code>{ ok, message? }</code>，
         每次回写传新对象），不再经暴露方法：<code>{ ok: false, message }</code> 记一次失败尝试并透传服务端文案，
         <code>{ ok: true }</code> 清错误/计数/锁定。
@@ -419,14 +423,14 @@ function resetCurrentForm() {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 
 /* ---- 控制面板 ---- */
@@ -434,18 +438,18 @@ function resetCurrentForm() {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: calc(12px * var(--vcl-scale));
 }
 .control-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
 }
 .ctrl-label {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: calc(4px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-secondary);
   cursor: pointer;
   user-select: none;
@@ -455,11 +459,11 @@ function resetCurrentForm() {
 }
 .ctrl-btns {
   display: flex;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
 }
 .ctrl-select {
-  padding: 2px 6px;
-  font-size: 12px;
+  padding: 2px calc(6px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -467,11 +471,11 @@ function resetCurrentForm() {
 
 /* 事件日志 */
 .event-log {
-  margin-top: 10px;
-  padding: 8px 10px;
+  margin-top: calc(10px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   background: var(--color-bg-alt);
   border-radius: var(--radius-md);
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
 }
 .event-log code {
   color: var(--color-primary);
@@ -489,7 +493,7 @@ function resetCurrentForm() {
 /* ---- Props 表 ---- */
 .props-table {
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   border-collapse: collapse;
 }
 .props-table thead tr {
@@ -497,17 +501,17 @@ function resetCurrentForm() {
   text-align: left;
 }
 .props-table th {
-  padding: 6px 8px;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
 }
 .props-table td {
-  padding: 6px 8px;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 .props-table code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
+  padding: 1px calc(5px * var(--vcl-scale));
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-primary);
 }
 </style>

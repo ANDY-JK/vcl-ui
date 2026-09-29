@@ -158,7 +158,7 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   flex: 1;
   min-width: 0;
   position: relative; /* 作为子项 offsetTop 的定位参照 */
-  max-height: clamp(150px, 30vw, 200px);
+  max-height: calc(200px * var(--vcl-scale));
   overflow-y: auto; /* 原生滚轮滚动 */
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
@@ -166,7 +166,7 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   scrollbar-color: var(--color-border) transparent;
 }
 .tp-column::-webkit-scrollbar {
-  width: 4px;
+  width: calc(4px * var(--vcl-scale));
 }
 .tp-column::-webkit-scrollbar-track {
   background: transparent;
@@ -180,7 +180,7 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   top: 0;
   z-index: 1;
   text-align: center;
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 1), 11px);
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-text-muted);
   font-weight: 600;
   padding: var(--space-1) 0;
@@ -188,9 +188,9 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   border-bottom: 1px solid var(--color-border-light);
 }
 .tp-cell {
-  padding: clamp(4px, 0.8vw, 6px) 0;
+  padding: calc(6px * var(--vcl-scale)) 0;
   text-align: center;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 1), 12px);
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text);
   cursor: pointer;
   user-select: none;

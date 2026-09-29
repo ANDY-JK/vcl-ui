@@ -97,7 +97,14 @@ describe('renderThemeCss', () => {
 
 describe('编辑器分组与取值判定', () => {
   it('groupTokens：命中组归位、只读组标记、未命中进 other（未来新增令牌不失踪）', () => {
-    const names = new Set(['--color-primary', '--color-danger', '--space-4', '--bp-lg', '--z-modal', '--brand-new-token'])
+    const names = new Set([
+      '--color-primary',
+      '--color-danger',
+      '--space-4',
+      '--bp-lg',
+      '--z-modal',
+      '--brand-new-token',
+    ])
     const groups = groupTokens(names)
     const byKey = Object.fromEntries(groups.map((g) => [g.key, g]))
     expect(byKey.primary.tokens).toEqual(['--color-primary'])

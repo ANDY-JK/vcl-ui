@@ -59,7 +59,11 @@ describe('ssr-guard', () => {
   })
 
   it('safeRun 异常时返回 fallback', () => {
-    expect(safeRun(() => { throw new Error('x') }, 'fallback')).toBe('fallback')
+    expect(
+      safeRun(() => {
+        throw new Error('x')
+      }, 'fallback'),
+    ).toBe('fallback')
   })
 
   it('safeDocument 返回 document（happy-dom）', () => {
@@ -70,21 +74,33 @@ describe('ssr-guard', () => {
 describe('useEscClose', () => {
   it('ESC 键触发关闭（可见且可关闭）', () => {
     const onClose = vi.fn()
-    const { onKeydown } = useEscClose(() => true, () => true, onClose)
+    const { onKeydown } = useEscClose(
+      () => true,
+      () => true,
+      onClose,
+    )
     onKeydown({ key: 'Escape' } as KeyboardEvent)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('非 ESC 键不触发', () => {
     const onClose = vi.fn()
-    const { onKeydown } = useEscClose(() => true, () => true, onClose)
+    const { onKeydown } = useEscClose(
+      () => true,
+      () => true,
+      onClose,
+    )
     onKeydown({ key: 'Enter' } as KeyboardEvent)
     expect(onClose).not.toHaveBeenCalled()
   })
 
   it('不可关闭时不触发', () => {
     const onClose = vi.fn()
-    const { onKeydown } = useEscClose(() => true, () => false, onClose)
+    const { onKeydown } = useEscClose(
+      () => true,
+      () => false,
+      onClose,
+    )
     onKeydown({ key: 'Escape' } as KeyboardEvent)
     expect(onClose).not.toHaveBeenCalled()
   })

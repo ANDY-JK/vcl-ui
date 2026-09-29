@@ -108,7 +108,8 @@ export default {
     noFileExport: 'No files uploaded to export (summary sheet still included)',
     exported: 'Exported',
     noMatch: 'No matching targets',
-    fieldsMore: 'Only the first few columns fit in this table — {n} field(s) are hidden (the exported summary includes all of them)',
+    fieldsMore:
+      'Only the first few columns fit in this table — {n} field(s) are hidden (the exported summary includes all of them)',
     clearTitle: 'Confirm clear',
     clearMessage: 'This deletes upload records of all {n} targets (local and cloud) and cannot be undone. Clear?',
     targetId: 'Target ID',

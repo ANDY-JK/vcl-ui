@@ -101,7 +101,10 @@ describe('useTableCore 数据管道（P2-3 拆分安全网）', () => {
   })
 
   it('displayPages 省略号逻辑（>9 页）', () => {
-    const { core } = makeCore({ data: Array.from({ length: 100 }, (_, i) => ({ name: `r${i}`, age: i, city: 'x' })), pageSize: 10 })
+    const { core } = makeCore({
+      data: Array.from({ length: 100 }, (_, i) => ({ name: `r${i}`, age: i, city: 'x' })),
+      pageSize: 10,
+    })
     core.setPage(5)
     expect(core.displayPages.value).toEqual([1, '...', 4, 5, 6, '...', 10])
   })

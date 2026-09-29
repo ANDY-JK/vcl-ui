@@ -315,8 +315,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .spinner {
-  width: clamp(28px, 4vw, 32px);
-  height: clamp(28px, 4vw, 32px);
+  width: calc(32px * var(--vcl-scale));
+  height: calc(32px * var(--vcl-scale));
   border: 3px solid var(--color-border-light);
   border-top-color: var(--color-primary);
   border-radius: 50%;
@@ -331,7 +331,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .state-empty .hint {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   margin-top: var(--space-1);
 }
 
@@ -344,7 +344,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .empty-step {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
   display: flex;
   align-items: center;
@@ -355,12 +355,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: clamp(18px, 2.5vw, 20px);
-  height: clamp(18px, 2.5vw, 20px);
+  width: calc(20px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
   border-radius: 50%;
   background: var(--color-info-bg);
   color: var(--color-info-text);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -391,9 +391,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .source-badge {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 500;
-  padding: var(--space-0) 6px;
+  padding: var(--space-0) calc(6px * var(--vcl-scale));
   border-radius: var(--radius-lg);
   white-space: nowrap;
 }
@@ -421,18 +421,18 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .stat-num {
   display: block;
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 22), 36px);
+  font-size: calc(36px * var(--vcl-scale));
   font-weight: 700;
   color: var(--color-text);
 }
 
 .stat-label {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
 .summary-route {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-success-text);
   text-align: center;
   padding-top: var(--space-1);
@@ -440,7 +440,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .enriching-tip {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-primary);
   text-align: center;
   margin: 0 0 var(--space-2);
@@ -495,12 +495,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-badge {
-  width: clamp(20px, 2.8vw, 22px);
-  height: clamp(20px, 2.8vw, 22px);
+  width: calc(22px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
   border-radius: 50%;
   background: var(--color-border-light);
   color: var(--color-text-secondary);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -513,7 +513,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-summary-text {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text);
   display: flex;
@@ -524,7 +524,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 /* 门店密度标签 */
 .density-tag {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 500;
   padding: var(--space-1) var(--space-1);
   border-radius: var(--radius-md);
@@ -543,7 +543,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .density-low {
   background: var(--color-danger-bg);
-  color: var(--color-danger-hover);
+  color: var(--color-danger-on-surface);
 }
 
 .day-header-right {
@@ -553,16 +553,16 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .day-cities {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
-  max-width: clamp(100px, 12vw, 120px);
+  max-width: calc(120px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .expand-icon {
-  font-size: clamp(8px, calc(8px + var(--vcl-fit) * 1), 9px);
+  font-size: calc(9px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
@@ -586,7 +586,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   color: var(--color-surface);
   border: none;
   border-radius: var(--radius-md);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   cursor: pointer;
 }
@@ -601,7 +601,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   color: var(--color-success-text);
   border: 1px solid var(--color-success-border);
   border-radius: var(--radius-md);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
 }
 
@@ -618,7 +618,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 5), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
 }
 
@@ -628,7 +628,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .route-arrow {
   text-align: center;
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin: var(--space-0) 0;
 }
@@ -641,11 +641,11 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-chip {
-  padding: var(--space-0) 6px;
+  padding: var(--space-0) calc(6px * var(--vcl-scale));
   background: var(--color-info-bg);
   color: var(--color-info-text);
   border-radius: var(--radius-sm);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   white-space: nowrap;
 }
 
@@ -666,7 +666,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 5px var(--space-1);
+  padding: calc(5px * var(--vcl-scale)) var(--space-1);
   border-radius: var(--radius-sm);
   background: var(--color-bg);
 }
@@ -676,12 +676,12 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-num {
-  width: clamp(16px, 2.2vw, 18px);
-  height: clamp(16px, 2.2vw, 18px);
+  width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-surface);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -697,7 +697,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-name {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
@@ -705,7 +705,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .store-city {
-  font-size: clamp(8px, calc(8px + var(--vcl-fit) * 1), 9px);
+  font-size: calc(9px * var(--vcl-scale));
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
@@ -715,7 +715,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .seg-info {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-secondary);
   white-space: nowrap;
   background: var(--color-bg-alt);
@@ -732,8 +732,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
   border: 1px solid var(--color-info-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
-  padding: var(--space-0) 6px;
+  font-size: calc(13px * var(--vcl-scale));
+  padding: var(--space-0) calc(6px * var(--vcl-scale));
   flex-shrink: 0;
   color: var(--color-primary-hover);
   font-weight: 500;
@@ -755,7 +755,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .skipped-header {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-warning-text);
   margin-bottom: var(--space-1);
@@ -769,15 +769,15 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .skipped-item {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
-  padding: var(--space-0) 6px;
+  padding: var(--space-0) calc(6px * var(--vcl-scale));
   background: var(--color-warning-bg);
   border-radius: var(--radius-sm);
 }
 
 .skipped-hint {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-warning-text);
   margin: var(--space-1) 0 0;
 }

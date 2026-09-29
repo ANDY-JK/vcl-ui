@@ -250,7 +250,7 @@ function onChartReady(inst: ECharts) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  min-height: 240px;
+  min-height: calc(240px * var(--vcl-scale));
   width: 100%;
   container-type: inline-size;
   container-name: chart-table;
@@ -281,7 +281,7 @@ function onChartReady(inst: ECharts) {
   flex-shrink: 0;
 }
 .ct-title {
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
 }
 .ct-toggles {
@@ -293,12 +293,12 @@ function onChartReady(inst: ECharts) {
 .ct-toggle {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: var(--space-1) 8px;
+  gap: calc(3px * var(--vcl-scale));
+  padding: var(--space-1) calc(8px * var(--vcl-scale));
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
+  font-size: calc(14px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
 }
@@ -317,13 +317,13 @@ function onChartReady(inst: ECharts) {
 }
 .ct-chart {
   height: 100%;
-  min-height: 200px;
-  min-width: 200px;
+  min-height: calc(200px * var(--vcl-scale));
+  min-width: calc(200px * var(--vcl-scale));
 }
 .ct-table {
   height: 100%;
-  min-height: 200px;
-  min-width: 180px;
+  min-height: calc(200px * var(--vcl-scale));
+  min-width: calc(180px * var(--vcl-scale));
   overflow: auto;
   padding-left: var(--space-1);
 }

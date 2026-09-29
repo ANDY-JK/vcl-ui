@@ -576,7 +576,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   background: #000;
 }
 
@@ -585,7 +585,7 @@ onUnmounted(() => {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(28px + env(safe-area-inset-bottom));
+  bottom: calc(28px * var(--vcl-scale) + env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -597,7 +597,7 @@ onUnmounted(() => {
 /* 连拍顶部条（multiple）：左名称/进度提示，右完成按钮 */
 .camc-topbar {
   position: absolute;
-  top: calc(14px + env(safe-area-inset-top));
+  top: calc(14px * var(--vcl-scale) + env(safe-area-inset-top));
   left: 0;
   right: 0;
   display: flex;
@@ -609,26 +609,26 @@ onUnmounted(() => {
 }
 .camc-slot-chip {
   min-width: 0;
-  max-width: calc(100% - 130px);
+  max-width: calc(100% - 130px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 6px 14px;
-  border-radius: 16px;
+  padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+  border-radius: calc(16px * var(--vcl-scale));
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
+  font-size: calc(14px * var(--vcl-scale));
   backdrop-filter: blur(4px);
 }
 .camc-done {
   flex-shrink: 0;
-  height: 40px;
-  padding: 0 18px;
+  height: calc(40px * var(--vcl-scale));
+  padding: 0 calc(18px * var(--vcl-scale));
   border: none;
-  border-radius: 20px;
+  border-radius: calc(20px * var(--vcl-scale));
   background: #3b82f6;
   color: #fff;
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   cursor: pointer;
 }
@@ -645,7 +645,9 @@ onUnmounted(() => {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(28px + 56px + 20px + env(safe-area-inset-bottom));
+  bottom: calc(
+    28px * var(--vcl-scale) + 56px * var(--vcl-scale) + 20px * var(--vcl-scale) + env(safe-area-inset-bottom)
+  );
   padding: 0 var(--space-5);
   z-index: 2;
 }
@@ -655,7 +657,7 @@ onUnmounted(() => {
   gap: var(--space-2);
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 4px;
+  padding: calc(4px * var(--vcl-scale));
 }
 .camc-thumbs::-webkit-scrollbar {
   display: none;
@@ -665,11 +667,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  max-width: 72px;
+  gap: calc(3px * var(--vcl-scale));
+  max-width: calc(72px * var(--vcl-scale));
 }
 .camc-shot-name {
-  max-width: 72px;
+  max-width: calc(72px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -680,8 +682,8 @@ onUnmounted(() => {
 }
 .camc-thumb {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: calc(48px * var(--vcl-scale));
+  height: calc(48px * var(--vcl-scale));
   padding: 0;
   border: 2px solid transparent;
   border-radius: var(--radius-sm);
@@ -704,8 +706,8 @@ onUnmounted(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
+  width: calc(44px * var(--vcl-scale));
+  height: calc(44px * var(--vcl-scale));
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -723,20 +725,20 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.65);
 }
 .camc-nav-prev {
-  left: 12px;
+  left: calc(12px * var(--vcl-scale));
 }
 .camc-nav-next {
-  right: 12px;
+  right: calc(12px * var(--vcl-scale));
 }
 /* 左右侧键：同一尺寸占位，保证快门绝对居中 */
 .camc-side {
-  width: 56px;
-  height: 56px;
+  width: calc(56px * var(--vcl-scale));
+  height: calc(56px * var(--vcl-scale));
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.16);
   color: #fff;
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
   backdrop-filter: blur(4px);
   display: flex;
@@ -752,8 +754,8 @@ onUnmounted(() => {
 }
 /* 中间快门：原生相机风大圆白圈 */
 .camc-shutter {
-  width: 72px;
-  height: 72px;
+  width: calc(72px * var(--vcl-scale));
+  height: calc(72px * var(--vcl-scale));
   border-radius: 50%;
   border: 4px solid #fff;
   background: rgba(255, 255, 255, 0.92);
@@ -764,7 +766,7 @@ onUnmounted(() => {
 .camc-shutter::after {
   content: '';
   position: absolute;
-  inset: 10px;
+  inset: calc(10px * var(--vcl-scale));
   border-radius: 50%;
   background: #fff;
   border: 1px solid rgba(0, 0, 0, 0.12);

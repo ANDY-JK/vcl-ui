@@ -51,12 +51,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(var(--space-1), 1vw, 8px);
-  padding: clamp(var(--space-2), 1.2vw, 10px) clamp(10px, 2vw, 16px);
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   /* 实心底压白字：solid 令牌（暗色下 --color-warning 提亮后白字不可读） */
   background: var(--color-warning-solid, var(--color-warning));
   color: white;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 
 .offline-dismiss {

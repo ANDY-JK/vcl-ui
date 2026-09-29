@@ -12,10 +12,7 @@ const cols: Column[] = [
 
 function setup(over: Record<string, unknown> = {}) {
   const emit = { cellChange: vi.fn(), cellNote: vi.fn() }
-  const edit = useTableEdit(
-    { columns: cols, editable: true, keyboardNav: true, ...over },
-    emit,
-  )
+  const edit = useTableEdit({ columns: cols, editable: true, keyboardNav: true, ...over }, emit)
   // 设置行列矩阵供键盘导航/矩阵粘贴定位
   edit.setDisplayMatrix(['r1', 'r2'], ['name', 'qty', 'status'])
   return { edit, emit }
@@ -260,10 +257,7 @@ describe('useTableEdit · 编辑提交归一化', () => {
   it("dateInputOrder='DMY' 时 9/12 → 12月9日", () => {
     const emit = { cellChange: vi.fn(), cellNote: vi.fn() }
     const dmyCols: Column[] = [{ key: 'day', title: '日期', type: 'date' }]
-    const edit = useTableEdit(
-      { columns: dmyCols, editable: true, keyboardNav: true, dateInputOrder: 'DMY' },
-      emit,
-    )
+    const edit = useTableEdit({ columns: dmyCols, editable: true, keyboardNav: true, dateInputOrder: 'DMY' }, emit)
     edit.startEdit('r1', 'day', '')
     edit.editValue.value = '9/12'
     edit.commitEdit()
@@ -308,7 +302,12 @@ describe('useTableEdit · 编辑框内粘贴不被 td 处理器劫持', () => {
 
   it('非编辑态的单元格直接粘贴：保持既有行为（原样写入）', async () => {
     const { edit, emit } = setupTyped()
-    const tdLike = { target: document.createElement('td'), clipboardData: { getData: () => '9/12' }, preventDefault: vi.fn(), dataTransfer: { files: [] } } as unknown as ClipboardEvent
+    const tdLike = {
+      target: document.createElement('td'),
+      clipboardData: { getData: () => '9/12' },
+      preventDefault: vi.fn(),
+      dataTransfer: { files: [] },
+    } as unknown as ClipboardEvent
     await edit.onCellPaste(tdLike, 'r1', 'day', 'all')
     // 直接粘贴不走归一化（归一化仅绑定编辑模式），行为与改动前一致
     expect(emit.cellChange).toHaveBeenCalledWith('r1', 'day', '9/12')
@@ -583,7 +582,11 @@ describe('useTableEdit · Enter 提交后移动选中', () => {
     const { edit } = setupTyped({ onNormalizeError: vi.fn() })
     edit.startEdit('r1', 'amount', '10')
     edit.editValue.value = 'abc'
-    edit.onEditKeydown({ key: 'Enter', preventDefault: vi.fn() } as unknown as KeyboardEvent, [{ key: 'amount', title: '金额', type: 'number' }], 'r1')
+    edit.onEditKeydown(
+      { key: 'Enter', preventDefault: vi.fn() } as unknown as KeyboardEvent,
+      [{ key: 'amount', title: '金额', type: 'number' }],
+      'r1',
+    )
     await new Promise((r) => setTimeout(r, 0))
     expect(edit.editingCell.value?.rowKey).toBe('r1')
     expect(edit.editingCell.value?.colKey).toBe('amount')

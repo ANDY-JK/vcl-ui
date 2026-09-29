@@ -68,7 +68,7 @@ describe('DataTable 单元格空白占位 — 展示层', () => {
     expect(bodyRowTexts(w)[0]).not.toContain('-')
   })
 
-  it("blankText 传空串 → 关闭占位，空单元格回落为空", async () => {
+  it('blankText 传空串 → 关闭占位，空单元格回落为空', async () => {
     const w = mountTable({ blankText: '' })
     await nextTick()
     const cells = w.findAll('tbody tr')[0].findAll('.cell-text-inner')
@@ -89,9 +89,7 @@ describe('DataTable 空白占位 — 导出不被污染（核心回归锁）', (
     const w = mountTable({ exportable: true })
     await nextTick()
 
-    const exportBtn = w
-      .findAll('button')
-      .find((b) => (b.attributes('title') ?? '').includes('下载 CSV'))
+    const exportBtn = w.findAll('button').find((b) => (b.attributes('title') ?? '').includes('下载 CSV'))
     expect(exportBtn, '导出按钮应存在').toBeTruthy()
     await exportBtn!.trigger('click')
 

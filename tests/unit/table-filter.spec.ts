@@ -20,16 +20,12 @@ const data = [
 
 function makeFilter() {
   const emitted: Record<string, string[]>[] = []
-  const emit = (e: string, filters: Record<string, string[]>) => { if (e === 'filter') emitted.push(filters) }
+  const emit = (e: string, filters: Record<string, string[]>) => {
+    if (e === 'filter') emitted.push(filters)
+  }
   const tableWrapRef = { value: null }
   const hiddenColumns = ref(new Set<string>())
-  const api = useTableFilter(
-    { columns: cols, data } as never,
-    emit as never,
-    tableWrapRef,
-    hiddenColumns,
-    () => {},
-  )
+  const api = useTableFilter({ columns: cols, data } as never, emit as never, tableWrapRef, hiddenColumns, () => {})
   return { api, emitted, hiddenColumns }
 }
 

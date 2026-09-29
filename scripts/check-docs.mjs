@@ -26,9 +26,9 @@ try {
 
   // 逐文件比对（含 manifest.json）
   const list = (d) =>
-    fs.readdirSync(d, { withFileTypes: true }).flatMap((e) =>
-      e.isDirectory() ? list(path.join(d, e.name)) : [path.join(d, e.name)],
-    )
+    fs
+      .readdirSync(d, { withFileTypes: true })
+      .flatMap((e) => (e.isDirectory() ? list(path.join(d, e.name)) : [path.join(d, e.name)]))
   const rel = (p) => path.relative(tmp, p).replaceAll('\\', '/')
   const fresh = new Map(list(tmp).map((f) => [rel(f), fs.readFileSync(f, 'utf8')]))
   const current = new Map(

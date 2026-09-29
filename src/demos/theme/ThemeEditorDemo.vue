@@ -241,7 +241,7 @@ watch(overrides, persist, { deep: true })
 <style scoped>
 .theme-editor {
   display: grid;
-  grid-template-columns: minmax(420px, 1.1fr) minmax(300px, 0.9fr);
+  grid-template-columns: minmax(calc(420px * var(--vcl-scale)), 1.1fr) minmax(calc(300px * var(--vcl-scale)), 0.9fr);
   gap: var(--space-6);
   padding: var(--space-6);
 }
@@ -264,7 +264,7 @@ watch(overrides, persist, { deep: true })
   gap: var(--space-3);
 }
 .te-hint {
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-secondary);
   line-height: 1.6;
 }
@@ -276,28 +276,31 @@ watch(overrides, persist, { deep: true })
   align-items: center;
   gap: var(--space-2);
   font-weight: 600;
-  font-size: 13px;
-  padding-bottom: 4px;
+  font-size: calc(13px * var(--vcl-scale));
+  padding-bottom: calc(4px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 .te-readonly {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 0 4px;
+  border-radius: calc(4px * var(--vcl-scale));
+  padding: 0 calc(4px * var(--vcl-scale));
 }
 .te-row {
   display: grid;
-  grid-template-columns: 190px 1fr 52px minmax(120px, 220px);
+  grid-template-columns: calc(190px * var(--vcl-scale)) 1fr calc(52px * var(--vcl-scale)) minmax(
+      calc(120px * var(--vcl-scale)),
+      calc(220px * var(--vcl-scale))
+    );
   gap: var(--space-2);
   align-items: center;
-  padding: 3px 0;
-  font-size: 12px;
+  padding: calc(3px * var(--vcl-scale)) 0;
+  font-size: calc(12px * var(--vcl-scale));
 }
 .te-name {
   font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -311,7 +314,7 @@ watch(overrides, persist, { deep: true })
 }
 .te-override {
   color: var(--color-primary);
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
 }
 .te-inputs {
   display: flex;
@@ -319,10 +322,10 @@ watch(overrides, persist, { deep: true })
   align-items: center;
 }
 .te-color {
-  width: 30px;
-  height: 26px;
+  width: calc(30px * var(--vcl-scale));
+  height: calc(26px * var(--vcl-scale));
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   padding: 1px;
   background: var(--color-surface);
 }
@@ -331,18 +334,18 @@ watch(overrides, persist, { deep: true })
      短值框由 min-width 兜底等宽，rgba/clamp/shadow 长值框自动放宽（≤220px）；
      不支持 field-sizing 的浏览器 basis auto = size 属性宽度，min-width 兜底 */
   flex: 1 1 auto;
-  min-width: 80px;
+  min-width: calc(80px * var(--vcl-scale));
   border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 3px 6px;
-  font-size: 12px;
+  border-radius: calc(4px * var(--vcl-scale));
+  padding: calc(3px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   background: var(--color-surface);
   color: var(--color-text);
   field-sizing: content;
-  max-width: 220px;
+  max-width: calc(220px * var(--vcl-scale));
 }
 .te-copy-state {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   margin-left: var(--space-2);
 }
 .te-copy-state.ok {
@@ -352,7 +355,7 @@ watch(overrides, persist, { deep: true })
   color: var(--color-danger-text, #dc2626);
 }
 .te-ro-note {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 .te-export {
@@ -367,12 +370,12 @@ watch(overrides, persist, { deep: true })
   flex-wrap: wrap;
 }
 .te-clean {
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 .te-error {
   color: var(--color-danger);
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
 }
 .te-out {
   display: grid;
@@ -385,17 +388,17 @@ watch(overrides, persist, { deep: true })
   justify-content: space-between;
   align-items: center;
   font-family: ui-monospace, monospace;
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .te-cfg,
 .te-css {
   width: 100%;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   font-family: ui-monospace, monospace;
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   background: var(--color-bg);
   color: var(--color-text);
   padding: var(--space-2);
@@ -403,10 +406,10 @@ watch(overrides, persist, { deep: true })
   overflow: auto;
 }
 .te-css {
-  min-height: 100px;
+  min-height: calc(100px * var(--vcl-scale));
 }
 .te-tip {
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-secondary);
   margin-top: var(--space-3);
 }
@@ -425,7 +428,7 @@ watch(overrides, persist, { deep: true })
 }
 .pv-note {
   margin-top: var(--space-3);
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 </style>

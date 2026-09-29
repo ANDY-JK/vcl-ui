@@ -120,32 +120,32 @@ onMounted(() => {
   position: relative;
   border: 1px dashed var(--color-border, #e2e8f0);
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
-  border-radius: var(--fb-radius, 6px);
-  min-height: 80px;
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
+  min-height: calc(80px * var(--vcl-scale));
   background: var(--color-bg-alt, #f8fafc);
   width: var(--fb-control-width, 100%);
 }
 .fb-signature-canvas {
   display: block;
   width: 100%;
-  height: 120px;
+  height: calc(120px * var(--vcl-scale));
   cursor: crosshair;
   /* 手机签名时阻止页面跟随滚动/下拉刷新，否则笔迹中断 */
   touch-action: none;
 }
 .fb-signature-clear {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  padding: 2px 10px;
+  top: calc(6px * var(--vcl-scale));
+  right: calc(6px * var(--vcl-scale));
+  padding: 2px calc(10px * var(--vcl-scale));
   border: none;
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   background: var(--color-bg, #fff);
   color: var(--color-text-muted, #64748b);
   font-size: var(--fs-11);
   cursor: pointer;
 }
 .fb-signature-clear:hover {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger-on-surface);
 }
 </style>

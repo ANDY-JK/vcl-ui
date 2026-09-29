@@ -23,7 +23,10 @@ describe('P0-5 联动求值安全（evaluateFormula 替代 new Function）', () 
       makeField('total', { type: 'followValue', formula: '{{price}} * 2', targetField: 'total' }),
     ])
     const formData = ref<FormData>({ price: 5 })
-    const rp = useFormLinkage(computed(() => fields.value), formData)
+    const rp = useFormLinkage(
+      computed(() => fields.value),
+      formData,
+    )
     rp.setupWatchers() // immediate watch 立即执行一次 processLinkages
     // 此时 price=5 → total = 5*2 = 10
     expect(formData.value.total).toBe(10)
@@ -38,7 +41,10 @@ describe('P0-5 联动求值安全（evaluateFormula 替代 new Function）', () 
       makeField('agree', { type: 'showHide', formula: "{{agree}} == 'yes'", targetField: 'detail' }),
     ])
     const formData = ref<FormData>({ agree: 'no' })
-    const rp = useFormLinkage(computed(() => fields.value), formData)
+    const rp = useFormLinkage(
+      computed(() => fields.value),
+      formData,
+    )
     rp.setupWatchers()
     expect(rp.isHiddenByLinkage('detail')).toBe(true)
     // 条件变 true → 显示
@@ -52,7 +58,10 @@ describe('P0-5 联动求值安全（evaluateFormula 替代 new Function）', () 
       makeField('x', { type: 'followValue', formula: '{{x}}; process.exit(1)', targetField: 'y' }),
     ])
     const formData = ref<FormData>({ x: 'safe' })
-    const rp = useFormLinkage(computed(() => fields.value), formData)
+    const rp = useFormLinkage(
+      computed(() => fields.value),
+      formData,
+    )
     // 不抛错（求值器拒绝非法字符，退化为字符串拼接）
     expect(() => rp.setupWatchers()).not.toThrow()
     await nextTick()

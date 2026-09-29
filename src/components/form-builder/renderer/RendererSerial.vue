@@ -65,11 +65,11 @@ watch(
 .fb-serial {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0);
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
-  border-radius: var(--fb-radius, 6px);
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   background: var(--color-bg-alt, #f8fafc);
   width: var(--fb-control-width, 100%);
 }

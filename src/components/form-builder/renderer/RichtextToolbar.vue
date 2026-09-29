@@ -505,17 +505,17 @@ function resetForm(): void {
   position: relative;
   display: flex;
   gap: 2px;
-  padding: 4px 6px;
+  padding: calc(4px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
   background: var(--color-bg-alt, #f8fafc);
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   flex-wrap: wrap;
   align-items: center;
 }
 .fb-rt-toolbar button {
-  min-width: 24px;
-  height: 24px;
+  min-width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
   border: none;
-  border-radius: 3px;
+  border-radius: calc(3px * var(--vcl-scale));
   background: transparent;
   color: var(--color-text-muted, #64748b);
   cursor: pointer;
@@ -523,7 +523,7 @@ function resetForm(): void {
   align-items: center;
   justify-content: center;
   font-size: var(--fs-12);
-  padding: 0 4px;
+  padding: 0 calc(4px * var(--vcl-scale));
 }
 .fb-rt-toolbar button:hover {
   background: var(--color-bg-soft, #f1f5f9);
@@ -539,7 +539,7 @@ function resetForm(): void {
 }
 .fb-rt-sep {
   width: 1px;
-  height: 16px;
+  height: calc(16px * var(--vcl-scale));
   background: var(--color-border, #e2e8f0);
   margin: 0 2px;
 }
@@ -554,35 +554,35 @@ function resetForm(): void {
 .fb-rt-panel {
   position: absolute;
   top: calc(100% + 2px);
-  left: 6px;
+  left: calc(6px * var(--vcl-scale));
   z-index: 30;
-  min-width: 280px;
-  padding: 10px 12px;
+  min-width: calc(280px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   background: var(--color-bg, #fff);
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--fb-radius, 6px);
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
 }
 .fb-rt-panel-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
 }
 .fb-rt-panel-label {
   font-size: var(--fs-12);
   color: var(--color-text-muted, #64748b);
-  width: 60px;
+  width: calc(60px * var(--vcl-scale));
   flex-shrink: 0;
 }
 .fb-rt-swatch {
-  width: 20px !important;
-  height: 20px !important;
-  min-width: 20px;
+  width: calc(20px * var(--vcl-scale)) !important;
+  height: calc(20px * var(--vcl-scale)) !important;
+  min-width: calc(20px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0) !important;
-  border-radius: 3px !important;
+  border-radius: calc(3px * var(--vcl-scale)) !important;
   padding: 0 !important;
 }
 .fb-rt-swatch:hover {
@@ -591,15 +591,15 @@ function resetForm(): void {
 .fb-rt-panel-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
   font-size: var(--fs-12);
   color: var(--color-text-muted, #64748b);
 }
 .fb-rt-panel-field input[type='text'] {
-  height: 28px;
-  padding: 0 8px;
+  height: calc(28px * var(--vcl-scale));
+  padding: 0 calc(8px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   font-size: var(--fs-13);
   color: var(--color-text, #1e293b);
   background: var(--color-bg, #fff);
@@ -611,7 +611,7 @@ function resetForm(): void {
 .fb-rt-panel-check {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   font-size: var(--fs-12);
   color: var(--color-text-muted, #64748b);
   cursor: pointer;
@@ -621,17 +621,17 @@ function resetForm(): void {
   color: var(--color-warning, #d97706);
 }
 .fb-rt-panel-hint.is-error {
-  color: var(--color-danger, #dc2626);
+  color: var(--color-danger-on-surface);
 }
 .fb-rt-panel-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
 }
 .fb-rt-panel-actions button {
   min-width: auto;
-  height: 26px;
-  padding: 0 12px;
+  height: calc(26px * var(--vcl-scale));
+  padding: 0 calc(12px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);

@@ -147,5 +147,7 @@ function main() {
   writeFileSync(manifestPath(), JSON.stringify(m, null, 2) + '\n', { encoding: 'utf8', newline: 'lf' })
   writeFileSync(join(ROOT, TO, 'xlsx.d.mts'), renderDts(m), { encoding: 'utf8', newline: 'lf' })
   writeFileSync(join(ROOT, TO, 'VENDOR-NOTES.md'), renderReadme(m), { encoding: 'utf8', newline: 'lf' })
-  console.log(`[vendor-sheetjs] 已搬入 ${TO}：xlsx@${m.version}，${m.files.map((f) => `${f.path}(${f.bytes})`).join(' ')}`)
+  console.log(
+    `[vendor-sheetjs] 已搬入 ${TO}：xlsx@${m.version}，${m.files.map((f) => `${f.path}(${f.bytes})`).join(' ')}`,
+  )
 }

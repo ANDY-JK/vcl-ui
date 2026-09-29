@@ -10,29 +10,51 @@
    ===== 设计令牌（SaaS 专业蓝灰 — 长时间舒适阅读） =====
    [2026-09-29 曲线重定]（已获确认）：原 clamp 的 vw 中值在 ~800px 视口即达上限，
    桌面段（800~1920）排版完全恒定——实测 1024/1366/1920 三档正文字号与控件高逐像素相同，
-   小分辨率可见内容量按视口宽度等比损失。引入归一化进度变量 --vcl-fit
-   （1024px 视口 = 0 → 1920px 视口 = 1，越界由 clamp 收口），尺寸令牌改为线性插值：
-   ≥1920 与旧版逐像素一致、1024~1920 连续缩放、≤1024 取地板（移动端由抽屉布局接管）。 */
+   小分辨率可见内容量按视口宽度等比损失。改为单一缩放曲线 --vcl-scale：
+   ≥1920 与旧版逐像素一致、1024~1920 连续缩放、≤1024 取地板 88%（移动端由抽屉布局接管）。
+   [2026-09-29 全站等比]（已获确认）：曲线此前只作用于令牌与部分组件，裸 px 与 demo 层
+   仍恒定，出现「组件缩、外壳不缩」的头大身子小。现全站统一：任何设计尺寸一律
+   calc(Npx * var(--vcl-scale))，由 check:css-scale 闸口卡住漏网。 */
 :root {
-  /* 桌面段缩放进度：仅限作为 calc() 代数片段引用（如 calc(4px + var(--vcl-fit) * 4)），
-     禁止直接当长度用（width: var(--vcl-fit) 非法，属性会整体失效） */
-  --vcl-fit: (100vw - 1024px) / 896;
+  /* ===== 等比缩放因子（2026-09-29 统一）=====
+     全站唯一缩放曲线：1024px 视口 = 0.88 → 1920px 视口 = 1 → 越界由 clamp 收口。
+     分母写成 `896px`（带单位）是刻意的：CSS Values 4 的 length/length 除法产出无单位
+     number，才能与 0.88 相加；写成无单位 896 会得到长度，clamp 立即失效。
+     任何设计尺寸引用它即获得等比缩放：`calc(14px * var(--vcl-scale))`，
+     于是盒子/字号/间距/圆角/图标在所有视口共用同一条曲线，两两比值恒定——
+     不再出现「组件字号跟着缩、demo 标题不缩」的头大身子小。
 
-  /* 间距 - 桌面段线性插值连续缩放；地板按比例锚定（1024 视口 ≈ max×53%），≥1920 与旧版一致 */
-  --space-1: clamp(2px, calc(2px + var(--vcl-fit) * 2), 4px);
-  --space-2: clamp(4px, calc(4px + var(--vcl-fit) * 4), 8px);
-  --space-3: clamp(6px, calc(6px + var(--vcl-fit) * 6), 12px);
-  --space-4: clamp(8px, calc(8px + var(--vcl-fit) * 8), 16px);
-  --space-5: clamp(10px, calc(10px + var(--vcl-fit) * 10), 20px);
-  --space-6: clamp(10px, calc(10px + var(--vcl-fit) * 10), 20px);
-  --space-8: clamp(12px, calc(12px + var(--vcl-fit) * 12), 24px);
-  --space-10: clamp(16px, calc(16px + var(--vcl-fit) * 16), 32px);
-  --space-12: clamp(20px, calc(20px + var(--vcl-fit) * 20), 40px);
+     历史：此前间距/字号/控件三族令牌走插值 clamp（min + 归一化进度 × Δ）、
+     组件内的 vw clamp 走另一条纯 vw 曲线，两条曲线在不同视口取到不同比例，
+     这正是比例失真的来源。该进度变量已整体删除，现全部收敛到 --vcl-scale。
+     （注：注释里不可写通配式的族名缩写——星号紧跟斜杠会提前闭合本注释，
+     紧随其后的声明被解析器当垃圾丢弃，症状是该令牌在浏览器里读值为空。
+     本文件由 check:css-tokens 的注释闭合检查兜底。） */
+  --vcl-scale: clamp(0.88, calc(0.88 + (100vw - 1024px) / 896px * 0.12), 1);
+
+  /* 间距 - 地板 88% 与全站同尺；≥1920 与旧版逐像素一致 */
+  --space-1: calc(4px * var(--vcl-scale));
+  --space-2: calc(8px * var(--vcl-scale));
+  --space-3: calc(12px * var(--vcl-scale));
+  --space-4: calc(16px * var(--vcl-scale));
+  --space-5: calc(20px * var(--vcl-scale));
+  --space-6: calc(20px * var(--vcl-scale));
+  --space-8: calc(24px * var(--vcl-scale));
+  --space-10: calc(32px * var(--vcl-scale));
+  --space-12: calc(40px * var(--vcl-scale));
   /* 主色调 — 稳重蓝 */
   --color-primary: #4f6ef7;
   --color-primary-rgb: 79, 110, 247;
   --color-primary-hover: #3b56e0;
   --color-primary-light: #eef1fe;
+  /* 主色「当文字/图标色用」的自适应取值 —— 组件要写 `color:` 时用这个，不要用 -solid：
+     -solid 的本义是「实心底压白字」（见下方语义色实心底段），亮暗各自只为那个场景保证对比度。
+     可它一旦被拿来当文字色，暗色主题就翻车：背景变深而 -solid 仍是同一个深蓝，
+     实测 2.62~3.13:1，低于正文 AA 线。本令牌按主题切换：
+       亮色 = #3b56e0（压白底 5.84，直接引 --color-primary 的 #4f6ef7 只有 4.28 不达标）
+       暗色 = #6b8af9（压各档暗底 4.83~5.77）
+     于是「同一处 color:」在两套主题下都达标，调用方不必写两套值。 */
+  --color-primary-on-surface: #3b56e0;
 
   /* 中性色 — 干净白/浅灰 */
   --color-surface: #ffffff;
@@ -81,53 +103,48 @@
   --color-primary-solid-hover: #2f4bd8;
   --color-danger-bg: #fef2f2;
   --color-danger-hover: #c81e1e; /* AA：原 #dc2626 压 danger-bg 实测 4.41，加深一档达标 */
+  /* 危险色「当文字/图标色用」的自适应取值——与 --color-primary-on-surface 同规则。
+     --color-danger(#e54545) 压白底仅 3.99、压浅灰仅 3.37，作为错误提示文字偏浅；
+     取 #c81e1e：白底 5.74、浅灰 5.26、浅红底 5.24、浅绿底 5.48（七种常用底全 ≥4.85）。 */
+  --color-danger-on-surface: #c81e1e;
   --color-danger-border: #fecaca;
   --color-info: #4f6ef7;
   --color-info-bg: #eff6ff;
   --color-info-text: #3b82f6;
   --color-info-border: #93c5fd;
 
-  /* 间距 - 使用 clamp 实现流体 */
-  --space-1: clamp(2px, 0.5vw, 4px);
-  --space-2: clamp(4px, 1vw, 8px);
-  --space-3: clamp(8px, 1.5vw, 12px);
-  --space-4: clamp(10px, 2vw, 16px);
-  --space-5: clamp(12px, 2.5vw, 20px);
-  --space-6: clamp(12px, 2vw, 20px);
-  --space-8: clamp(16px, 3vw, 24px);
-  --space-10: clamp(20px, 4vw, 32px);
-  --space-12: clamp(24px, 5vw, 40px);
+  /* [2026-09-29 删除] 此处曾有一份重复的 --space-* 声明（clamp(Apx, Bvw, Cpx) 形态）。
+     CSS 同级声明后者胜出，它把上方 --vcl-scale 驱动的间距整段架空了一轮——
+     上一轮「间距跟着视口缩放」的改造实际从未生效，这正是「看不出变化」的隐形原因之一。 */
 
-  /* 圆角 */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  /* 圆角 — 与盒子同尺：盒子缩小而圆角不变会让小视口控件显得「圆头圆脑」 */
+  --radius-sm: calc(4px * var(--vcl-scale));
+  --radius-md: calc(8px * var(--vcl-scale));
+  --radius-lg: calc(12px * var(--vcl-scale));
+  --radius-xl: calc(16px * var(--vcl-scale));
 
   /* ===== 字体档位族（2026-09-29 新增）=====
-     与间距同尺：--vcl-fit 驱动，≤1024 视口取地板、1024~1920 连续缩放、≥1920 = 现值（零回归）。
-     地板原则：N≤10 已是可读性边缘，恒定不缩；N≥11 地板 ≈ N×88% 取整。
-     组件字号一律引 var(--fs-N)，不要再写 font-size: Npx；自定义端点的大字展示档
-     可保留 clamp(min, calc(min + var(--vcl-fit) * Δ), max) 的 inline 插值形式。 */
+     与全站同尺：--vcl-scale 驱动，≤1024 视口取地板 88%、1024~1920 连续缩放、≥1920 = 现值。
+     地板原则：N≤10 已是可读性边缘，恒定不缩（缩放后不足 9px 会糊）。
+     组件字号一律引 var(--fs-N) 或 calc(Npx * var(--vcl-scale))，不要再写 font-size: Npx。 */
   --fs-9: 9px;
   --fs-10: 10px;
-  --fs-11: clamp(10px, calc(10px + var(--vcl-fit)), 11px);
-  --fs-12: clamp(11px, calc(11px + var(--vcl-fit)), 12px);
-  --fs-13: clamp(11px, calc(11px + var(--vcl-fit) * 2), 13px);
-  --fs-14: clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px);
-  --fs-15: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
-  --fs-16: clamp(14px, calc(14px + var(--vcl-fit) * 2), 16px);
-  --fs-18: clamp(16px, calc(16px + var(--vcl-fit) * 2), 18px);
-  --fs-20: clamp(18px, calc(18px + var(--vcl-fit) * 2), 20px);
-  --fs-22: clamp(19px, calc(19px + var(--vcl-fit) * 3), 22px);
-  --fs-28: clamp(25px, calc(25px + var(--vcl-fit) * 3), 28px);
+  --fs-11: calc(11px * var(--vcl-scale));
+  --fs-12: calc(12px * var(--vcl-scale));
+  --fs-13: calc(13px * var(--vcl-scale));
+  --fs-14: calc(14px * var(--vcl-scale));
+  --fs-15: calc(15px * var(--vcl-scale));
+  --fs-16: calc(16px * var(--vcl-scale));
+  --fs-18: calc(18px * var(--vcl-scale));
+  --fs-20: calc(20px * var(--vcl-scale));
+  --fs-22: calc(22px * var(--vcl-scale));
+  --fs-28: calc(28px * var(--vcl-scale));
 
-  /* 控件统一尺寸 — 覆盖这些变量可全局调整所有表单控件
-     高度/字号/内距保可用性地板（38px / 13px / 10px），桌面段小幅收缩防小屏控件虚胖 */
-  --ctrl-height: clamp(38px, calc(38px + var(--vcl-fit) * 4), 42px);
-  --ctrl-font-size: clamp(13px, calc(13px + var(--vcl-fit)), 14px);
+  /* 控件统一尺寸 — 覆盖这些变量可全局调整所有表单控件 */
+  --ctrl-height: calc(42px * var(--vcl-scale));
+  --ctrl-font-size: calc(14px * var(--vcl-scale));
   --ctrl-radius: var(--radius-md);
-  --ctrl-padding-x: clamp(10px, calc(10px + var(--vcl-fit) * 4), 14px);
+  --ctrl-padding-x: calc(14px * var(--vcl-scale));
 
   /* 阴影 */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -157,8 +174,8 @@
   --z-top: 9999; /* 最高优先级通知 */
 
   /* 布局 */
-  --sidebar-width: clamp(220px, calc(220px + var(--vcl-fit) * 60), 280px);
-  --content-max-width: 1200px;
+  --sidebar-width: calc(280px * var(--vcl-scale));
+  --content-max-width: calc(1200px * var(--vcl-scale));
 
   /* 响应式断点（给 JS 读取用） */
   --bp-sm: 640px;
@@ -169,7 +186,7 @@
      背景：var() 引用未声明令牌时属性整体失效——有兜底的暗色下露出静态亮色，
      无兜底的直接归零（如相机底栏贴边）。rgb 三元组用逗号式，rgba(var(--x), a) 才合法 */
   --space-0: 0px;
-  --radius-xs: 4px;
+  --radius-xs: calc(4px * var(--vcl-scale));
   --bg-secondary: var(--color-bg);
   --color-bg-soft: #f1f5f9;
   --color-bg-hover: #f5f7fa;
@@ -229,6 +246,8 @@
   --color-primary: #6b8af9;
   --color-primary-hover: #8aa5fb;
   --color-primary-light: #1e2433;
+  /* 主色当文字用：暗底取提亮档（各档暗底 4.83~5.77），不能用亮色那支的 #3b56e0 */
+  --color-primary-on-surface: #6b8af9;
   /* rgb 三元组必须跟随主色覆写：它被 rgba(var(--color-primary-rgb), a) 用于
      选中态/表头/描边等半透明底。此前只在亮色声明（79,110,247），
      暗色下会残留亮色蓝，与 --color-primary(#6b8af9) 不一致。值 = #6b8af9 */
@@ -247,7 +266,11 @@
   /* 文字 — 浅色高对比 */
   --color-text: #e8eaf0;
   --color-text-secondary: #a0a6b0;
-  --color-text-muted: #6b7280;
+  /* AA 达标线（2026-09-29）：原 #6b7280 压在暗底上实测 surface 3.49 / bgAlt 3.17，
+     均低于正文 4.5 的 AA 线——而它是 <code>、表单浮标题、统计标签、表格次要单元格
+     等「大段次要文字」的用色，不是装饰。取 #8a929d：最苛刻的 bgAlt 底上 4.87，
+     其余底 5.1~5.5，留出余量。 */
+  --color-text-muted: #8a929d;
 
   /* 边框 — 深色可辨 */
   --color-border: #2d3139;
@@ -291,6 +314,8 @@
   --color-primary-soft: #1e2433;
   --color-danger-light: #2e0f0f;
   --color-danger-rgb: 248, 113, 113;
+  /* 危险色当文字用：暗底取提亮档（surface 6.10 / success-bg 5.33 / danger-bg 5.0+） */
+  --color-danger-on-surface: #f87171;
   /* 暗色下实心底仍用较深色：提亮后的语义色压白字均不可读（见亮色块注释的实测数据） */
   --color-danger-solid: #dc2626;
   --color-danger-solid-hover: #b91c1c;
@@ -313,6 +338,7 @@
     --color-primary: #6b8af9;
     --color-primary-hover: #8aa5fb;
     --color-primary-light: #1e2433;
+    --color-primary-on-surface: #6b8af9;
     /* 与 :root[data-theme='dark'] 保持一致：两套暗色块必须同值，
        否则「跟随系统」与「手动切暗色」会呈现不同配色 */
     --color-primary-rgb: 107, 138, 249;
@@ -327,10 +353,11 @@
     --color-bg: #131519;
     --color-bg-alt: #22252e;
 
-    /* 文字 */
+    /* 文字（与 :root[data-theme='dark'] 同值：两套暗色块必须一致，
+       否则「跟随系统」与「手动切暗色」会呈现不同可读性） */
     --color-text: #e8eaf0;
     --color-text-secondary: #a0a6b0;
-    --color-text-muted: #6b7280;
+    --color-text-muted: #8a929d;
 
     /* 边框 */
     --color-border: #2d3139;
@@ -374,6 +401,8 @@
     --color-primary-soft: #1e2433;
     --color-danger-light: #2e0f0f;
     --color-danger-rgb: 248, 113, 113;
+    /* 与手动暗色块同值 */
+    --color-danger-on-surface: #f87171;
     /* 与手动暗色块同值：实心语义底（压白字） */
     --color-danger-solid: #dc2626;
     --color-danger-solid-hover: #b91c1c;

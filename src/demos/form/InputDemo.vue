@@ -89,67 +89,67 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
     <Card title="Props" title-as="h2">
       <table class="props-table">
         <tbody>
-        <tr class="props-header">
-          <th>Prop</th>
-          <th>类型</th>
-          <th>默认</th>
-          <th>说明</th>
-        </tr>
-        <tr>
-          <td><code>type</code></td>
-          <td>string</td>
-          <td>'text'</td>
-          <td>text | password | email | tel | number | textarea | search | url</td>
-        </tr>
-        <tr>
-          <td><code>modelValue</code></td>
-          <td>string | number | null</td>
-          <td>—</td>
-          <td>v-model 绑定值</td>
-        </tr>
-        <tr>
-          <td><code>label</code></td>
-          <td>string</td>
-          <td>—</td>
-          <td>浮动标签文字</td>
-        </tr>
-        <tr>
-          <td><code>stepper</code></td>
-          <td>boolean</td>
-          <td>false</td>
-          <td>数字步进按钮（type='number'）</td>
-        </tr>
-        <tr>
-          <td><code>min / max</code></td>
-          <td>number</td>
-          <td>null</td>
-          <td>数字模式最值</td>
-        </tr>
-        <tr>
-          <td><code>step</code></td>
-          <td>number</td>
-          <td>1</td>
-          <td>步进值</td>
-        </tr>
-        <tr>
-          <td><code>rows</code></td>
-          <td>number</td>
-          <td>3</td>
-          <td>textarea 行数</td>
-        </tr>
-        <tr>
-          <td><code>rules</code></td>
-          <td>Rule[]</td>
-          <td>[]</td>
-          <td>校验规则</td>
-        </tr>
-        <tr>
-          <td><code>clearable</code></td>
-          <td>boolean</td>
-          <td>false</td>
-          <td>显示清除按钮</td>
-        </tr>
-      </tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>type</code></td>
+            <td>string</td>
+            <td>'text'</td>
+            <td>text | password | email | tel | number | textarea | search | url</td>
+          </tr>
+          <tr>
+            <td><code>modelValue</code></td>
+            <td>string | number | null</td>
+            <td>—</td>
+            <td>v-model 绑定值</td>
+          </tr>
+          <tr>
+            <td><code>label</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>浮动标签文字</td>
+          </tr>
+          <tr>
+            <td><code>stepper</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>数字步进按钮（type='number'）</td>
+          </tr>
+          <tr>
+            <td><code>min / max</code></td>
+            <td>number</td>
+            <td>null</td>
+            <td>数字模式最值</td>
+          </tr>
+          <tr>
+            <td><code>step</code></td>
+            <td>number</td>
+            <td>1</td>
+            <td>步进值</td>
+          </tr>
+          <tr>
+            <td><code>rows</code></td>
+            <td>number</td>
+            <td>3</td>
+            <td>textarea 行数</td>
+          </tr>
+          <tr>
+            <td><code>rules</code></td>
+            <td>Rule[]</td>
+            <td>[]</td>
+            <td>校验规则</td>
+          </tr>
+          <tr>
+            <td><code>clearable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>显示清除按钮</td>
+          </tr>
+        </tbody>
       </table>
     </Card>
   </div>
@@ -157,41 +157,41 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 .result {
-  margin-top: 6px;
-  font-size: 12px;
+  margin-top: calc(6px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 .grid-2-col {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(calc(280px * var(--vcl-scale)), 1fr));
+  gap: calc(16px * var(--vcl-scale));
+  margin-bottom: calc(16px * var(--vcl-scale));
 }
 .disabled-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: calc(12px * var(--vcl-scale));
 }
 .props-table {
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   border-collapse: collapse;
 }
 .props-header {
@@ -200,7 +200,7 @@ code {
 }
 .props-table th,
 .props-table td {
-  padding: 4px 8px;
+  padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 </style>

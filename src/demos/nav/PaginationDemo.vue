@@ -14,50 +14,69 @@ const page2 = ref(3)
 
     <Card title="Pagination 分页" title-as="h2">
       <Pagination v-model="page" :total="86" :page-size="10" />
-      <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">第 {{ page }} 页 / 共 9 页</p>
+      <p
+        style="
+          margin-top: calc(8px * var(--vcl-scale));
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+        "
+      >
+        第 {{ page }} 页 / 共 9 页
+      </p>
     </Card>
 
     <Card title="快速跳页（showQuickJumper）" title-as="h2">
       <Pagination v-model="page2" :total="86" :page-size="10" show-quick-jumper />
-      <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">
+      <p
+        style="
+          margin-top: calc(8px * var(--vcl-scale));
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+        "
+      >
         第 {{ page2 }} 页 — 输入页码后按回车跳转，超出范围自动钳制
       </p>
     </Card>
 
     <Card title="Props" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-        <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-          <th style="padding: 4px 8px">Prop</th>
-          <th style="padding: 4px 8px">类型</th>
-          <th style="padding: 4px 8px">默认</th>
-          <th style="padding: 4px 8px">说明</th>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
-            <code>total</code>
-          </td>
-          <td style="padding: 3px 8px">number</td>
-          <td style="padding: 3px 8px">—</td>
-          <td style="padding: 3px 8px">数据总数</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px">
-            <code>pageSize</code>
-          </td>
-          <td style="padding: 3px 8px">number</td>
-          <td style="padding: 3px 8px">10</td>
-          <td style="padding: 3px 8px">每页条数</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px">
-            <code>showQuickJumper</code>
-          </td>
-          <td style="padding: 3px 8px">boolean</td>
-          <td style="padding: 3px 8px">false</td>
-          <td style="padding: 3px 8px">显示快速跳页输入框</td>
-        </tr>
-      </tbody>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>total</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">number</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">数据总数</td>
+          </tr>
+          <tr>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              <code>pageSize</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">number</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">10</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">每页条数</td>
+          </tr>
+          <tr>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              <code>showQuickJumper</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">显示快速跳页输入框</td>
+          </tr>
+        </tbody>
       </table>
     </Card>
   </div>
@@ -65,19 +84,19 @@ const page2 = ref(3)
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

@@ -13,8 +13,20 @@ const GUOMAO: [number, number] = [116.4585, 39.9087]
 
 /** 三个颜色挡位 + 信息窗内容，覆盖 MarkerItem 的主要字段 */
 const markers = ref<MarkerItem[]>([
-  { longitude: 116.397, latitude: 39.909, title: '王府井', color: 'red', infoWindow: '<b>王府井</b><br/>红色标记 · 地图默认中心' },
-  { longitude: 116.406, latitude: 39.915, title: '东四', color: 'blue', infoWindow: '<b>东四</b><br/>蓝色标记（缺省色）' },
+  {
+    longitude: 116.397,
+    latitude: 39.909,
+    title: '王府井',
+    color: 'red',
+    infoWindow: '<b>王府井</b><br/>红色标记 · 地图默认中心',
+  },
+  {
+    longitude: 116.406,
+    latitude: 39.915,
+    title: '东四',
+    color: 'blue',
+    infoWindow: '<b>东四</b><br/>蓝色标记（缺省色）',
+  },
   { longitude: 116.388, latitude: 39.903, title: '前门', color: 'green', infoWindow: '<b>前门</b><br/>绿色标记' },
 ])
 
@@ -87,7 +99,7 @@ function doPeek() {
       ⚠ 当前环境没配 <code>VITE_AMAP_KEY</code>，地图不会出图 —— 下面的事件区与按钮仍可验证接口是否接得上。
     </p>
 
-    <Card title="标记 + 信息窗 + 事件" title-as="h2" style="margin-bottom: 20px">
+    <Card title="标记 + 信息窗 + 事件" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="amap-host">
         <AmapWidget
           ref="widgetRef"
@@ -102,9 +114,15 @@ function doPeek() {
         />
       </div>
       <div class="echo">
-        <span>初始化：<strong>{{ ready ? 'ready 已触发' : '等待中' }}</strong></span>
-        <span>marker-click：<strong>{{ lastMarker }}</strong></span>
-        <span>map-click：<strong>{{ lastMapClick }}</strong></span>
+        <span
+          >初始化：<strong>{{ ready ? 'ready 已触发' : '等待中' }}</strong></span
+        >
+        <span
+          >marker-click：<strong>{{ lastMarker }}</strong></span
+        >
+        <span
+          >map-click：<strong>{{ lastMapClick }}</strong></span
+        >
       </div>
     </Card>
 
@@ -117,24 +135,26 @@ function doPeek() {
         <Button text="closeInfoWindow" variant="secondary" size="sm" @click="doCloseInfo" />
         <Button text="getMap" variant="ghost" size="sm" @click="doPeek" />
       </div>
-      <p class="echo echo-one">最近调用：<strong>{{ status }}</strong></p>
+      <p class="echo echo-one">
+        最近调用：<strong>{{ status }}</strong>
+      </p>
     </Card>
   </div>
 </template>
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 .amap-host {
-  height: clamp(280px, 45vh, 460px);
+  height: clamp(280px * var(--vcl-scale), 45vh, 460px * var(--vcl-scale));
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -142,17 +162,17 @@ function doPeek() {
 .echo {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
-  margin-top: 12px;
-  font-size: 13px;
+  gap: calc(8px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
+  margin-top: calc(12px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-secondary);
 }
 .echo-one {
-  margin: 12px 0 0;
+  margin: calc(12px * var(--vcl-scale)) 0 0;
 }
 .btn-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
 }
 </style>

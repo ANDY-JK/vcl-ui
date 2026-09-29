@@ -5,11 +5,11 @@
   flex: 1;
   /* 画布可读下限：更窄时提示文字逐字竖排、字段无编辑意义；
      超出部分由 .ld-body 的 overflow-x 兜底（min-width:0 是空态竖排的根因） */
-  min-width: 260px;
+  min-width: calc(260px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 24px 20px;
+  padding: calc(24px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   background: var(--color-surface);
   position: relative;
   outline: none;
@@ -22,9 +22,9 @@
 .ldc-canvas.drag-over::after {
   content: '';
   position: absolute;
-  inset: 8px;
+  inset: calc(8px * var(--vcl-scale));
   border: 2px dashed var(--color-primary, #3b82f6);
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--radius-md, calc(6px * var(--vcl-scale)));
   pointer-events: none;
   animation: dash-spin 1.5s linear infinite;
 }
@@ -40,18 +40,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
+  min-height: calc(200px * var(--vcl-scale));
   color: var(--color-text-muted, #94a3b8);
-  gap: 10px;
+  gap: calc(10px * var(--vcl-scale));
   text-align: center;
-  padding: 40px;
+  padding: calc(40px * var(--vcl-scale));
   border: 2px dashed var(--color-border, #e2e8f0);
-  border-radius: var(--radius-lg, 12px);
-  margin: 20px 0;
+  border-radius: var(--radius-lg, calc(12px * var(--vcl-scale)));
+  margin: calc(20px * var(--vcl-scale)) 0;
 }
 .ldc-empty-icon {
-  width: 40px;
-  height: 40px;
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
   opacity: 0.4;
   display: flex;
   align-items: center;
@@ -75,10 +75,10 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  max-width: 620px;
+  max-width: calc(620px * var(--vcl-scale));
   margin: 0 auto;
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
   overflow: hidden;
   background: var(--color-surface);
 }
@@ -146,10 +146,10 @@
   z-index: 5;
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 2px 6px;
-  min-height: 22px;
-  border-radius: 0 6px 0 6px;
+  gap: calc(7px * var(--vcl-scale));
+  padding: 2px calc(6px * var(--vcl-scale));
+  min-height: calc(22px * var(--vcl-scale));
+  border-radius: 0 calc(6px * var(--vcl-scale)) 0 calc(6px * var(--vcl-scale));
   background: var(--color-primary-50, #f0f4ff);
   /* 窄卡片 / 高缩放时 chrome 不越出卡片左缘（左侧徽章/key 被裁，右侧操作钮保留） */
   max-width: 100%;
@@ -170,7 +170,7 @@
   display: flex;
   align-items: center;
   padding: 2px;
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   font-size: var(--fs-12);
   transition: all 0.12s;
 }
@@ -187,8 +187,8 @@
   font-weight: 700;
   color: var(--color-primary, #4f6ef7);
   background: var(--color-primary-light, #eef1ff);
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 2px calc(8px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   text-transform: uppercase;
   letter-spacing: 0.3px;
   flex-shrink: 0;
@@ -198,8 +198,8 @@
   color: var(--color-text-muted, #94a3b8);
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
   background: var(--color-bg-soft, #f1f5f9);
-  padding: 2px 7px;
-  border-radius: 4px;
+  padding: 2px calc(7px * var(--vcl-scale));
+  border-radius: calc(4px * var(--vcl-scale));
   flex-shrink: 0;
 }
 .ldc-card-actions {
@@ -214,10 +214,10 @@
   opacity: 1;
 }
 .ldc-card-actions button {
-  width: 30px;
-  height: 30px;
+  width: calc(30px * var(--vcl-scale));
+  height: calc(30px * var(--vcl-scale));
   border: none;
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   background: transparent;
   color: var(--color-text-muted, #94a3b8);
   cursor: pointer;
@@ -236,13 +236,13 @@
 }
 .ldc-card-actions .ldc-del:hover:not(:disabled) {
   background: var(--color-danger-bg);
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
 }
 
 /* 行内容 — 真实组件 */
 .ldc-card-body {
-  padding: 8px 12px 10px;
-  min-height: 40px;
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
+  min-height: calc(40px * var(--vcl-scale));
   /* 画布预览中的表单组件设置 pointer-events: none，
      让点击穿透到 ld-card 父元素触发 select 事件，
      避免 Input/Select 等组件拦截点击导致无法选中字段 */
@@ -256,15 +256,15 @@
 /* 表单头 — 对齐原型 canvas-form-head */
 .ldc-form-head {
   text-align: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: calc(20px * var(--vcl-scale));
+  padding-bottom: calc(16px * var(--vcl-scale));
   border-bottom: 2px solid var(--color-primary-light, #eef1ff);
 }
 .ldc-form-head h3 {
   font-size: var(--fs-18);
   font-weight: 800;
   color: var(--color-text, #1e293b);
-  margin: 0 0 4px;
+  margin: 0 0 calc(4px * var(--vcl-scale));
 }
 .ldc-form-head p {
   font-size: var(--fs-13);
@@ -281,5 +281,5 @@
 }
 .ldc-card-body :deep(.fb-title) {
   margin: 0;
-  padding-bottom: 6px;
+  padding-bottom: calc(6px * var(--vcl-scale));
 }

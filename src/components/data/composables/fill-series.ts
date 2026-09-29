@@ -59,7 +59,7 @@ function fmtDate(t: number): string {
 /** 循环取值（支持倒序，用于 up/left 往前补） */
 function cyclic(values: string[], i: number, forward: boolean): string {
   const n = values.length
-  const idx = forward ? i % n : ((n - 1 - i) % n + n) % n
+  const idx = forward ? i % n : (((n - 1 - i) % n) + n) % n
   return values[idx]
 }
 

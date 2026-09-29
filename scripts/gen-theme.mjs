@@ -83,7 +83,9 @@ function main() {
   }
   mkdirSync(dirname(outPath), { recursive: true })
   writeFileSync(outPath, renderThemeCss(normalized))
-  console.log(`✅ 主题产物 ${outPath}（light ${Object.keys(normalized.light).length} / dark ${Object.keys(normalized.dark).length} 项覆盖）`)
+  console.log(
+    `✅ 主题产物 ${outPath}（light ${Object.keys(normalized.light).length} / dark ${Object.keys(normalized.dark).length} 项覆盖）`,
+  )
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {

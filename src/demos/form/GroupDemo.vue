@@ -48,7 +48,7 @@ const fruitOptions = [
     <!-- Switch -->
     <section class="demo-section">
       <h2>type="switch" — 开关</h2>
-      <div style="display: flex; gap: 24px; align-items: center">
+      <div style="display: flex; gap: calc(24px * var(--vcl-scale)); align-items: center">
         <Group v-model="switchVal" type="switch" label="默认尺寸" size="md" />
         <Group v-model="switchVal" type="switch" label="小尺寸" size="sm" />
         <Group v-model="switchVal" type="switch" label="禁用" disabled />
@@ -59,7 +59,7 @@ const fruitOptions = [
     <!-- Rate -->
     <section class="demo-section">
       <h2>type="rate" — 评分</h2>
-      <div style="display: flex; gap: 32px; align-items: center">
+      <div style="display: flex; gap: calc(32px * var(--vcl-scale)); align-items: center">
         <Group v-model="rateVal" type="rate" :rate-max="5" />
         <Group v-model="rateVal" type="rate" :rate-max="5" allow-half color="#EF4444" />
         <Group v-model="rateVal" type="rate" :rate-max="10" color="#10B981" />
@@ -83,7 +83,7 @@ const fruitOptions = [
     <!-- 禁用态 -->
     <section class="demo-section">
       <h2>禁用态</h2>
-      <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: calc(16px * var(--vcl-scale))">
         <Group v-model="radioVal" type="radio" :options="fruitOptions" disabled />
         <Group v-model="checkboxVal" type="checkbox" :options="fruitOptions" disabled />
         <Group v-model="rateVal" type="rate" disabled />
@@ -95,26 +95,26 @@ const fruitOptions = [
 
 <style scoped>
 .demo-container {
-  max-width: 640px;
+  max-width: calc(640px * var(--vcl-scale));
 }
 .demo-section {
-  margin-bottom: 24px;
-  padding: 16px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  padding: calc(16px * var(--vcl-scale));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }
 .demo-section h3 {
-  margin: 0 0 12px;
-  font-size: 15px;
+  margin: 0 0 calc(12px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
 }
 .desc {
   color: var(--color-text-muted);
-  font-size: 13px;
-  margin-bottom: 16px;
+  font-size: calc(13px * var(--vcl-scale));
+  margin-bottom: calc(16px * var(--vcl-scale));
 }
 .result {
-  margin: 8px 0 0;
-  font-size: 12px;
+  margin: calc(8px * var(--vcl-scale)) 0 0;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-primary);
 }
 </style>

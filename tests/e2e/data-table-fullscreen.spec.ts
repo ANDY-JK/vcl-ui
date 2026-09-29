@@ -149,5 +149,7 @@ test('全屏期间内容区变窄，全屏框跟着收窄并与内容区对齐',
   await expect
     .poll(() => boxW(), { timeout: 15_000, message: '框没跟着内容区收窄 → 只在进场量过一次，正是本次修的行为' })
     .toBeLessThan(before - 100)
-  await expect.poll(async () => Math.abs((await boxW()) - (await contentW())), { timeout: 15_000 }).toBeLessThanOrEqual(1)
+  await expect
+    .poll(async () => Math.abs((await boxW()) - (await contentW())), { timeout: 15_000 })
+    .toBeLessThanOrEqual(1)
 })

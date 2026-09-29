@@ -347,7 +347,7 @@ function loadPreset(key: string): void {
 <style scoped>
 .lc-demo {
   position: relative;
-  padding: 20px;
+  padding: calc(20px * var(--vcl-scale));
 }
 
 /* ── 能力说明头部 ── */
@@ -356,34 +356,34 @@ function loadPreset(key: string): void {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px 24px;
-  margin-bottom: 16px;
+  gap: calc(12px * var(--vcl-scale)) calc(24px * var(--vcl-scale));
+  margin-bottom: calc(16px * var(--vcl-scale));
 }
 .lc-demo-title {
-  margin: 0 0 4px;
-  font-size: 17px;
+  margin: 0 0 calc(4px * var(--vcl-scale));
+  font-size: calc(17px * var(--vcl-scale));
   font-weight: 700;
   color: var(--color-text, #1e293b);
 }
 .lc-demo-sub {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-secondary, #475569);
 }
 .lc-demo-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .lc-demo-chip {
-  padding: 3px 10px;
+  padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border-radius: 999px;
   border: 1px solid var(--color-border, #e2e8f0);
   background: var(--color-bg-alt, #f8fafc);
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--vcl-scale));
   color: var(--color-text-secondary, #475569);
   white-space: nowrap;
 }
@@ -393,23 +393,23 @@ function loadPreset(key: string): void {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 5px;
+  padding: calc(5px * var(--vcl-scale));
   background: var(--color-bg, #fff);
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-lg, 12px);
-  margin-bottom: 20px;
+  border-radius: var(--radius-lg, calc(12px * var(--vcl-scale)));
+  margin-bottom: calc(20px * var(--vcl-scale));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .lc-demo-tab {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 20px;
+  gap: calc(6px * var(--vcl-scale));
+  padding: calc(9px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   border: none;
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
   background: transparent;
   color: var(--color-text-secondary, #475569);
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   cursor: pointer;
   line-height: 1;
@@ -429,36 +429,36 @@ function loadPreset(key: string): void {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-right: 4px;
+  gap: calc(12px * var(--vcl-scale));
+  padding-right: calc(4px * var(--vcl-scale));
 }
 
 /* 预置模板切换（按「业务模板 / 布局示例」分组） */
 .lc-demo-preset-group {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
 }
 .lc-demo-preset-group-label {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-text-muted, #94a3b8);
   white-space: nowrap;
 }
 .lc-demo-presets {
   display: inline-flex;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
 }
 .lc-demo-preset-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 14px;
+  gap: calc(5px * var(--vcl-scale));
+  padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-bg, #fff);
   color: var(--color-text-secondary, #475569);
   cursor: pointer;
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   font-weight: 600;
   transition: all 0.15s ease;
 }
@@ -481,13 +481,13 @@ function loadPreset(key: string): void {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 360px;
-  gap: 12px;
+  height: calc(360px * var(--vcl-scale));
+  gap: calc(12px * var(--vcl-scale));
 }
 .lc-demo-placeholder-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-lg, 12px);
+  width: calc(56px * var(--vcl-scale));
+  height: calc(56px * var(--vcl-scale));
+  border-radius: var(--radius-lg, calc(12px * var(--vcl-scale)));
   background: var(--color-bg-alt, #f3f4f6);
   display: flex;
   align-items: center;
@@ -496,23 +496,23 @@ function loadPreset(key: string): void {
 }
 .lc-demo-placeholder p {
   margin: 0;
-  font-size: 13.5px;
+  font-size: calc(13.5px * var(--vcl-scale));
   color: var(--color-text-secondary, #6b7280);
 }
 
 /* ── 模板悬浮预览 ── */
 .lc-preset-preview {
   position: absolute;
-  right: 16px;
+  right: calc(16px * var(--vcl-scale));
   z-index: 80;
-  width: 640px;
-  max-width: calc(100vw - 48px);
-  max-height: min(72vh, 680px);
+  width: calc(640px * var(--vcl-scale));
+  max-width: calc(100vw - 48px * var(--vcl-scale));
+  max-height: min(72vh, 680px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
   background: var(--color-surface, #fff);
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.08),
     0 4px 6px -4px rgba(0, 0, 0, 0.04);
@@ -522,25 +522,25 @@ function loadPreset(key: string): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 14px;
+  padding: calc(9px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   background: var(--color-bg-alt, #f8fafc);
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 700;
   color: var(--color-text, #1e293b);
 }
 .lc-preset-preview-head span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
 }
 .lc-preset-preview-close {
   display: flex;
-  padding: 3px;
+  padding: calc(3px * var(--vcl-scale));
   border: none;
   background: none;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   color: var(--color-text-muted, #9ca3af);
   transition: all 0.12s;
 }
@@ -550,7 +550,7 @@ function loadPreset(key: string): void {
 }
 .lc-preset-preview-body {
   overflow-y: auto;
-  padding: 18px 20px;
+  padding: calc(18px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
 }
 /* 悬浮进出场 */
 .lc-fade-enter-active,

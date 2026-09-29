@@ -285,7 +285,7 @@ const levelStyle = computed(() => {
   border-radius: var(--radius-md);
   cursor: pointer;
   color: var(--color-text);
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   line-height: 1.5;
   transition:
     background var(--transition-fast),
@@ -346,7 +346,7 @@ const levelStyle = computed(() => {
 .menu-submenu--overlay {
   position: absolute;
   z-index: var(--z-dropdown, 2000); /* 下拉层：高于弹窗(modal 1000)，不被 Modal 遮挡 */
-  min-width: clamp(140px, 24vw, 200px);
+  min-width: calc(200px * var(--vcl-scale));
   padding: var(--space-1);
   background: var(--color-surface);
   border: 1px solid var(--color-border);

@@ -275,7 +275,7 @@ const fldIds = {
 .modal-box {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  width: clamp(360px, 50vw, 480px);
+  width: calc(480px * var(--vcl-scale));
   max-width: 90vw;
   max-height: 80vh;
   overflow-y: auto;
@@ -286,20 +286,20 @@ const fldIds = {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-4) 20px;
+  padding: var(--space-4) calc(20px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: clamp(16px, calc(16px + var(--vcl-fit) * 12), 28px);
+  font-size: calc(28px * var(--vcl-scale));
   font-weight: 600;
 }
 
 .btn-close {
   background: none;
   border: none;
-  font-size: clamp(18px, calc(18px + var(--vcl-fit) * 10), 28px);
+  font-size: calc(28px * var(--vcl-scale));
   cursor: pointer;
   color: var(--color-text-muted);
   padding: var(--space-1);
@@ -319,7 +319,7 @@ const fldIds = {
 
 .form-row label {
   display: block;
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   color: var(--color-text-secondary);
   margin-bottom: var(--space-1);
@@ -327,10 +327,10 @@ const fldIds = {
 
 .form-row input {
   width: 100%;
-  padding: var(--space-2) 12px;
+  padding: var(--space-2) calc(12px * var(--vcl-scale));
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   outline: none;
   transition: border-color 0.2s;
 }
@@ -354,7 +354,7 @@ const fldIds = {
 }
 
 .form-hint {
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
   margin: var(--space-2) 0 0;
 }
@@ -369,9 +369,9 @@ const fldIds = {
 
 .btn-cancel,
 .btn-save {
-  padding: var(--space-2) 20px;
+  padding: var(--space-2) calc(20px * var(--vcl-scale));
   border-radius: var(--radius-md);
-  font-size: clamp(14px, calc(14px + var(--vcl-fit) * 1), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
   border: 1px solid;
   transition: all 0.2s;
@@ -399,18 +399,18 @@ const fldIds = {
 }
 
 .required {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   font-weight: 700;
 }
 
 .input-error {
-  border-color: var(--color-danger) !important;
+  border-color: var(--color-danger-on-surface) !important;
   background: var(--color-danger-bg);
 }
 
 .form-error {
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
-  color: var(--color-danger);
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--color-danger-on-surface);
   margin: var(--space-1) 0 0;
 }
 </style>

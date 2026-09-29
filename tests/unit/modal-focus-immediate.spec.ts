@@ -61,9 +61,7 @@ describe('ModalBox · 初始可见即接管', () => {
 
   it('初始 visible=true 参与互斥：后挂载者关闭先挂载者', async () => {
     const scope = 'c6-modal'
-    const a = track(
-      mount(ModalBox, { props: { visible: true, mutexScope: scope }, attachTo: document.body }),
-    )
+    const a = track(mount(ModalBox, { props: { visible: true, mutexScope: scope }, attachTo: document.body }))
     track(mount(ModalBox, { props: { visible: true, mutexScope: scope }, attachTo: document.body }))
     await nextTick()
 
@@ -86,9 +84,7 @@ describe('Drawer · 初始可见即接管', () => {
 
   it('初始 visible=true 参与互斥：后挂载者关闭先挂载者', async () => {
     const scope = 'c6-drawer'
-    const a = track(
-      mount(Drawer, { props: { visible: true, mutexScope: scope }, attachTo: document.body }),
-    )
+    const a = track(mount(Drawer, { props: { visible: true, mutexScope: scope }, attachTo: document.body }))
     track(mount(Drawer, { props: { visible: true, mutexScope: scope }, attachTo: document.body }))
     await nextTick()
 

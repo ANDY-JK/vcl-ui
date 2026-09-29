@@ -4,12 +4,12 @@
 .ld-toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 18px;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale)) calc(18px * var(--vcl-scale));
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   flex-wrap: wrap;
-  min-height: 48px;
+  min-height: calc(48px * var(--vcl-scale));
 }
 .ld-title {
   font-size: var(--fs-14);
@@ -17,22 +17,22 @@
   color: var(--color-text, #1e293b);
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: calc(7px * var(--vcl-scale));
 }
 .ld-count {
   font-size: var(--fs-11);
   color: var(--color-text-muted, #94a3b8);
   background: var(--color-bg-alt, #f8fafc);
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
+  border-radius: calc(12px * var(--vcl-scale));
   font-weight: 600;
 }
 .ld-tip {
   font-size: var(--fs-12);
   color: var(--color-success-text);
   background: var(--color-success-bg);
-  padding: 4px 12px;
-  border-radius: 12px;
+  padding: calc(4px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  border-radius: calc(12px * var(--vcl-scale));
   font-weight: 600;
   animation: tip-in 0.2s ease-out;
 }
@@ -50,11 +50,11 @@
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
   /* 按钮组整块 ~1290px，窄视口下超容器时整体被推出视口外（无横向滚动不可达）——
      允许组内折行，配合外层 .ld-toolbar 的 wrap 逐行下移 */
   flex-wrap: wrap;
-  row-gap: 4px;
+  row-gap: calc(4px * var(--vcl-scale));
 }
 
 /* 工具按钮 — 复用 .ld-tb-btn */
@@ -63,10 +63,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 6px 14px;
+  gap: calc(5px * var(--vcl-scale));
+  padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--color-surface);
   color: var(--color-text-secondary, #475569);
   font-size: var(--fs-12);
@@ -94,8 +94,8 @@
 
 /** 图标按钮（面板显隐等）：方形，只放图标 */
 .ld-btn-icon {
-  padding: 6px;
-  width: 30px;
+  padding: calc(6px * var(--vcl-scale));
+  width: calc(30px * var(--vcl-scale));
 }
 .ld-btn.active,
 .ld-tb-btn.active {
@@ -108,34 +108,34 @@
 .ld-tb-btn.ld-danger:hover:not(:disabled) {
   background: var(--color-danger-bg);
   border-color: #fca5a5;
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
 }
 .ld-sep {
   width: 1px;
-  height: 20px;
+  height: calc(20px * var(--vcl-scale));
   background: var(--color-border-light, #f1f5f9);
-  margin: 0 3px;
+  margin: 0 calc(3px * var(--vcl-scale));
 }
 
 /* ================================
    表单设置面板
    ================================ */
 .ld-settings {
-  padding: 14px 18px;
+  padding: calc(14px * var(--vcl-scale)) calc(18px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   background: var(--color-bg-alt, #f8fafc);
   display: flex;
-  gap: 18px;
+  gap: calc(18px * var(--vcl-scale));
   flex-wrap: wrap;
   align-items: flex-end;
 }
 .ld-settings-row {
   flex: 1;
-  min-width: 160px;
+  min-width: calc(160px * var(--vcl-scale));
 }
 .ld-settings-row.wide {
   flex: 1;
-  min-width: 220px;
+  min-width: calc(220px * var(--vcl-scale));
 }
 .ld-settings-row label {
   display: block;
@@ -144,14 +144,14 @@
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--color-text-muted, #94a3b8);
-  margin-bottom: 5px;
+  margin-bottom: calc(5px * var(--vcl-scale));
 }
 .ld-settings-textarea {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, 6px);
-  padding: 7px 10px;
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
+  padding: calc(7px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-size: var(--fs-13);
   font-family: inherit;
   resize: vertical;
@@ -168,7 +168,7 @@
 /* 设置项辅助说明 */
 .ld-settings-hint {
   display: block;
-  margin-top: 5px;
+  margin-top: calc(5px * var(--vcl-scale));
   font-size: var(--fs-11);
   line-height: 1.5;
   color: var(--color-text-muted, #94a3b8);
@@ -182,11 +182,11 @@
 .ld-storage-test-row {
   align-items: flex-end;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
 }
 .ld-storage-test {
   font-size: var(--fs-11);
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger-on-surface);
 }
 .ld-storage-test.ok {
   color: var(--color-success, #16a34a);
@@ -195,20 +195,20 @@
 /* 布局缩略图预览 */
 .ld-layout-preview {
   display: flex;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
   flex-wrap: wrap;
 }
 .ld-layout-thumb {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 10px;
+  gap: calc(4px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border: 2px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
   cursor: pointer;
   transition: all 0.15s ease;
-  min-width: 60px;
+  min-width: calc(60px * var(--vcl-scale));
 }
 .ld-layout-thumb:hover {
   border-color: var(--color-primary, #3b82f6);
@@ -229,9 +229,9 @@
 .ld-thumb-bars {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  width: 28px;
-  height: 20px;
+  gap: calc(3px * var(--vcl-scale));
+  width: calc(28px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
 }
 .ld-thumb-bars > div {
   flex: 1;
@@ -243,9 +243,9 @@
 .ld-thumb-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3px;
-  width: 28px;
-  height: 20px;
+  gap: calc(3px * var(--vcl-scale));
+  width: calc(28px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
 }
 .ld-thumb-grid > div {
   background: currentColor;
@@ -257,12 +257,12 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  width: 28px;
-  height: 20px;
+  width: calc(28px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
 }
 .ld-thumb-steps > div {
   flex: 1;
-  height: 6px;
+  height: calc(6px * var(--vcl-scale));
   background: currentColor;
   border-radius: 2px;
   opacity: 0.4;
@@ -281,7 +281,7 @@
    导入面板
    ================================ */
 .ld-import {
-  padding: 12px 16px;
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   background: var(--color-bg-alt, #fafbfc);
 }
@@ -289,8 +289,8 @@
   width: 100%;
   box-sizing: border-box;
   border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-md, 6px);
-  padding: 10px;
+  border-radius: var(--radius-md, calc(6px * var(--vcl-scale)));
+  padding: calc(10px * var(--vcl-scale));
   font-size: var(--fs-12);
   line-height: 1.55;
   background: var(--color-surface);
@@ -305,11 +305,11 @@
 .ld-import-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: calc(8px * var(--vcl-scale));
+  margin-top: calc(8px * var(--vcl-scale));
 }
 .ld-import-error {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   font-size: var(--fs-12);
 }
 
@@ -319,11 +319,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 16px;
-  margin-bottom: 8px;
+  gap: calc(6px * var(--vcl-scale));
+  padding: calc(16px * var(--vcl-scale));
+  margin-bottom: calc(8px * var(--vcl-scale));
   border: 2px dashed var(--color-border, #cbd5e1);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
   background: var(--color-bg, #fff);
   color: var(--color-text-muted, #94a3b8);
   font-size: var(--fs-12);
@@ -358,9 +358,9 @@
 .ld-set-group-head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   width: 100%;
-  padding: 10px 18px;
+  padding: calc(10px * var(--vcl-scale)) calc(18px * var(--vcl-scale));
   border: none;
   background: transparent;
   cursor: pointer;

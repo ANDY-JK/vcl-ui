@@ -172,27 +172,53 @@ function onNodeClick(node: TreeNode) {
       <strong>禁用</strong>。
     </p>
 
-    <div class="grid-2-col" style="margin-bottom: 24px">
+    <div class="grid-2-col" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <!-- Basic tree -->
       <Card title="基础用法" title-as="h2" overflow-visible>
-        <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">点击箭头或标签展开/折叠子节点</p>
+        <p
+          style="
+            margin-bottom: calc(8px * var(--vcl-scale));
+            font-size: calc(12px * var(--vcl-scale));
+            color: var(--color-text-muted);
+          "
+        >
+          点击箭头或标签展开/折叠子节点
+        </p>
         <Tree :data="treeData" @node-click="onNodeClick" />
       </Card>
 
       <!-- Checkable tree -->
       <Card title="多选联动" title-as="h2" overflow-visible>
-        <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
+        <p
+          style="
+            margin-bottom: calc(8px * var(--vcl-scale));
+            font-size: calc(12px * var(--vcl-scale));
+            color: var(--color-text-muted);
+          "
+        >
           勾选父节点自动选中所有子节点，半选状态自动计算
         </p>
         <Tree :data="checkableData" checkable @check-change="onCheckChange" />
-        <p style="margin-top: 8px; font-size: 11px; color: var(--color-text-muted)">
+        <p
+          style="
+            margin-top: calc(8px * var(--vcl-scale));
+            font-size: calc(11px * var(--vcl-scale));
+            color: var(--color-text-muted);
+          "
+        >
           已选中: {{ checkedKeys.length > 0 ? checkedKeys.join(', ') : '无' }}
         </p>
       </Card>
 
       <!-- Selectable tree -->
       <Card title="单选模式" title-as="h2" overflow-visible>
-        <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
+        <p
+          style="
+            margin-bottom: calc(8px * var(--vcl-scale));
+            font-size: calc(12px * var(--vcl-scale));
+            color: var(--color-text-muted);
+          "
+        >
           点击节点高亮选中，不会自动展开/折叠
         </p>
         <Tree
@@ -201,14 +227,26 @@ function onNodeClick(node: TreeNode) {
           :selected-key="selectedKey"
           @update:selected-key="(k) => (selectedKey = k)"
         />
-        <p style="margin-top: 8px; font-size: 11px; color: var(--color-text-muted)">
+        <p
+          style="
+            margin-top: calc(8px * var(--vcl-scale));
+            font-size: calc(11px * var(--vcl-scale));
+            color: var(--color-text-muted);
+          "
+        >
           当前选中: {{ selectedKey ?? '无' }}
         </p>
       </Card>
 
       <!-- Expand all / default expanded -->
       <Card title="默认展开" title-as="h2" overflow-visible>
-        <p style="margin-bottom: 8px; font-size: 12px; color: var(--color-text-muted)">
+        <p
+          style="
+            margin-bottom: calc(8px * var(--vcl-scale));
+            font-size: calc(12px * var(--vcl-scale));
+            color: var(--color-text-muted);
+          "
+        >
           通过 defaultExpandedKeys 指定初始展开的节点
         </p>
         <Tree :data="treeData" :default-expanded-keys="['1', '2']" />
@@ -216,95 +254,239 @@ function onNodeClick(node: TreeNode) {
     </div>
 
     <Card title="API" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 4px 8px">属性</th>
-            <th style="padding: 4px 8px">类型</th>
-            <th style="padding: 4px 8px">默认值</th>
-            <th style="padding: 4px 8px">说明</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">属性</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认值</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>data</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>TreeNode[]</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">树形数据源</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              —
+            </td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              树形数据源
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>checkable</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>boolean</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>false</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">是否显示复选框</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              是否显示复选框
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>selectable</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>boolean</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>false</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">点击节点高亮选中</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              点击节点高亮选中
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>selectedKey</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>string | number | null</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>null</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">当前选中的节点 key</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              当前选中的节点 key
+            </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>defaultExpandedKeys</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>(string | number)[]</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>[]</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               初始展开的节点 key 列表
             </td>
           </tr>
           <tr>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>expandAll</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>boolean</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>false</code>
             </td>
-            <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">是否展开所有节点</td>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              是否展开所有节点
+            </td>
           </tr>
         </tbody>
       </table>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 12px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-top: calc(12px * var(--vcl-scale));
+        "
+      >
         <strong>TreeNode 接口：</strong><code>key</code> · <code>label</code> · <code>children?</code> ·
         <code>disabled?</code> · <code>checked?</code> · <code>icon?</code>
       </p>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-top: calc(8px * var(--vcl-scale));
+        "
+      >
         <strong>Events：</strong><code>@node-click(node)</code> · <code>@check-change(keys, node)</code> ·
         <code>@update:selectedKey(key)</code>
       </p>
@@ -314,19 +496,19 @@ function onNodeClick(node: TreeNode) {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

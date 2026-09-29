@@ -21,7 +21,9 @@ describe('sortColumnsByOrder', () => {
     // 旧实现（?? 999）在这份数据上的实际落点，用来说明这条断言不是空转：
     // 'late' 与第 999 位同权重，被稳定排序夹在已登记列中间
     const legacy = new Map(order.map((k, i) => [k, i]))
-    const legacyOut = keysOf([...cols([...order, 'late'])].sort((a, b) => (legacy.get(a.key) ?? 999) - (legacy.get(b.key) ?? 999)))
+    const legacyOut = keysOf(
+      [...cols([...order, 'late'])].sort((a, b) => (legacy.get(a.key) ?? 999) - (legacy.get(b.key) ?? 999)),
+    )
     expect(legacyOut.indexOf('late')).toBe(1000)
   })
 

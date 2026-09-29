@@ -414,7 +414,7 @@ const trendData = computed(() => {
             </div>
           </div>
         </template>
-        <div style="height: 420px">
+        <div style="height: calc(420px * var(--vcl-scale))">
           <ChartTable
             type="pie"
             :data="{ pieData }"
@@ -455,7 +455,7 @@ const trendData = computed(() => {
             </div>
           </div>
         </template>
-        <div style="height: 580px">
+        <div style="height: calc(580px * var(--vcl-scale))">
           <Chart
             type="line"
             :categories="trendData.categories"
@@ -477,31 +477,31 @@ const trendData = computed(() => {
 }
 .kpi-bar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: calc(8px * var(--vcl-scale));
+  margin-bottom: calc(12px * var(--vcl-scale));
 }
 .kpi {
   flex: 1;
-  padding: 12px 8px;
+  padding: calc(12px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   text-align: center;
   background: var(--color-bg);
   border: 1px solid var(--color-border-light);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--vcl-scale));
 }
 .kpi b {
   display: block;
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
   line-height: 1.2;
 }
 .kpi span {
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
 .main-row {
   display: flex;
-  gap: 12px;
+  gap: calc(12px * var(--vcl-scale));
   align-items: flex-start;
 }
 @container demo (max-width: 1023px) {
@@ -514,7 +514,7 @@ const trendData = computed(() => {
   min-width: 0;
 }
 .card-right {
-  width: 580px;
+  width: calc(580px * var(--vcl-scale));
   flex-shrink: 0;
 }
 @container demo (max-width: 1023px) {
@@ -527,34 +527,34 @@ const trendData = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: calc(12px * var(--vcl-scale));
   flex-wrap: wrap;
   width: 100%;
 }
 .hdr-title {
-  font-size: 14px;
+  font-size: calc(14px * var(--vcl-scale));
   font-weight: 600;
   white-space: nowrap;
 }
 .hdr-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
 }
 
 .pills {
   display: flex;
-  gap: 3px;
+  gap: calc(3px * var(--vcl-scale));
   align-items: center;
   flex-wrap: wrap;
 }
 .pill {
-  padding: 2px 9px;
-  border-radius: 10px;
+  padding: 2px calc(9px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   border: 1px solid var(--color-border);
   background: var(--color-bg);
   color: var(--color-text);
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.12s;
@@ -570,20 +570,20 @@ const trendData = computed(() => {
   font-weight: 600;
 }
 .pill.sm {
-  padding: 1px 7px;
-  font-size: 10px;
-  border-radius: 8px;
+  padding: 1px calc(7px * var(--vcl-scale));
+  font-size: calc(10px * var(--vcl-scale));
+  border-radius: calc(8px * var(--vcl-scale));
 }
 
 .tbl-toggle {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 8px;
-  border-radius: 10px;
+  gap: calc(3px * var(--vcl-scale));
+  padding: 2px calc(8px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.12s;
@@ -595,13 +595,13 @@ const trendData = computed(() => {
   opacity: 0.4;
 }
 .tbl-toggle span {
-  font-size: 10px;
+  font-size: calc(10px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
 .split-row {
   display: flex;
-  gap: 12px;
+  gap: calc(12px * var(--vcl-scale));
   align-items: flex-start;
 }
 @container demo (max-width: 1023px) {
@@ -610,13 +610,13 @@ const trendData = computed(() => {
   }
 }
 .split-chart {
-  width: 340px;
+  width: calc(340px * var(--vcl-scale));
   flex-shrink: 0;
-  height: 420px;
+  height: calc(420px * var(--vcl-scale));
 }
 .split-chart-full {
   flex: 1;
-  height: 420px;
+  height: calc(420px * var(--vcl-scale));
 }
 @container demo (max-width: 1023px) {
   .split-row {
@@ -625,7 +625,7 @@ const trendData = computed(() => {
   .split-chart,
   .split-chart-full {
     width: 100%;
-    height: 320px;
+    height: calc(320px * var(--vcl-scale));
   }
   .split-table {
     height: auto;
@@ -634,23 +634,23 @@ const trendData = computed(() => {
 .split-table {
   flex: 1;
   min-width: 0;
-  height: 420px;
+  height: calc(420px * var(--vcl-scale));
   overflow: auto;
 }
 
 .hint {
   text-align: center;
-  font-size: 11px;
+  font-size: calc(11px * var(--vcl-scale));
   color: var(--color-text-muted);
-  margin: 12px 0 0;
+  margin: calc(12px * var(--vcl-scale)) 0 0;
 }
 .gr-toggle {
-  margin-left: 8px;
-  padding: 1px 8px;
-  border-radius: 10px;
+  margin-left: calc(8px * var(--vcl-scale));
+  padding: 1px calc(8px * var(--vcl-scale));
+  border-radius: calc(10px * var(--vcl-scale));
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  font-size: 10px;
+  font-size: calc(10px * var(--vcl-scale));
   cursor: pointer;
 }
 .gr-toggle.on {

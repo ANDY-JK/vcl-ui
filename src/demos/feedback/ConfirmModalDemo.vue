@@ -26,18 +26,18 @@ function onCancel(variant: string): void {
     <div
       v-if="lastAction"
       style="
-        margin-bottom: 16px;
-        padding: 8px 14px;
+        margin-bottom: calc(16px * var(--vcl-scale));
+        padding: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
         background: var(--color-bg-alt);
-        border-radius: 6px;
-        font-size: 13px;
+        border-radius: calc(6px * var(--vcl-scale));
+        font-size: calc(13px * var(--vcl-scale));
       "
     >
       {{ lastAction }}
     </div>
 
-    <Card title="变体演示" title-as="h2" style="margin-bottom: 24px">
-      <div style="display: flex; gap: 12px; flex-wrap: wrap">
+    <Card title="变体演示" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <div style="display: flex; gap: calc(12px * var(--vcl-scale)); flex-wrap: wrap">
         <Button text="danger 危险删除" variant="danger" @click="dangerVisible = true" />
         <Button text="warning 警告提醒" variant="outline" @click="warningVisible = true" />
         <Button text="primary 普通确认" variant="primary" @click="primaryVisible = true" />
@@ -78,76 +78,228 @@ function onCancel(variant: string): void {
     </Card>
 
     <Card title="Props" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 6px 8px">Prop</th>
-            <th style="padding: 6px 8px">类型</th>
-            <th style="padding: 6px 8px">默认值</th>
-            <th style="padding: 6px 8px">说明</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认值</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)"><code>visible</code></td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">boolean</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">显示/隐藏（v-model）</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>visible</code>
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              boolean
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              —
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              显示/隐藏（v-model）
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)"><code>title</code></td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'确认操作'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">弹窗标题</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>title</code>
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              '确认操作'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              弹窗标题
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)"><code>message</code></td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">—</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">提示内容（必填）</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>message</code>
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              —
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              提示内容（必填）
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>confirmText</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'确定'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">确认按钮文案</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              '确定'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              确认按钮文案
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
               <code>cancelText</code>
             </td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">string</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">'取消'</td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">取消按钮文案</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              string
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              '取消'
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              取消按钮文案
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px"><code>variant</code></td>
-            <td style="padding: 6px 8px">'danger' | 'warning' | 'primary'</td>
-            <td style="padding: 6px 8px">'danger'</td>
-            <td style="padding: 6px 8px">确认按钮风格</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))"><code>variant</code></td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              'danger' | 'warning' | 'primary'
+            </td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">'danger'</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">确认按钮风格</td>
           </tr>
         </tbody>
       </table>
     </Card>
 
-    <Card title="Events" title-as="h2" style="margin-top: 24px">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+    <Card title="Events" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
           <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-            <th style="padding: 6px 8px">Event</th>
-            <th style="padding: 6px 8px">说明</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Event</th>
+            <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)"><code>confirm</code></td>
-            <td style="padding: 6px 8px; border-bottom: 1px solid var(--color-border-light)">点击确认按钮</td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>confirm</code>
+            </td>
+            <td
+              style="
+                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              点击确认按钮
+            </td>
           </tr>
           <tr>
-            <td style="padding: 6px 8px"><code>cancel</code></td>
-            <td style="padding: 6px 8px">点击取消按钮</td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))"><code>cancel</code></td>
+            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">点击取消按钮</td>
           </tr>
         </tbody>
       </table>
@@ -157,19 +309,19 @@ function onCancel(variant: string): void {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

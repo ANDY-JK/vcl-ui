@@ -30,9 +30,15 @@ vi.mock('@/components/storage/indexedDB', () => ({
 vi.mock('@/components/_internal/env-guard', () => ({ envValue: vi.fn() }))
 
 beforeEach(() => {
-  vi.mocked(dbPut).mockReset().mockResolvedValue(undefined as never)
-  vi.mocked(dbGetAll).mockReset().mockResolvedValue([] as never)
-  vi.mocked(dbClear).mockReset().mockResolvedValue(undefined as never)
+  vi.mocked(dbPut)
+    .mockReset()
+    .mockResolvedValue(undefined as never)
+  vi.mocked(dbGetAll)
+    .mockReset()
+    .mockResolvedValue([] as never)
+  vi.mocked(dbClear)
+    .mockReset()
+    .mockResolvedValue(undefined as never)
   vi.mocked(envValue).mockReset().mockReturnValue(undefined)
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
@@ -113,13 +119,20 @@ describe('IndexedDBBackend', () => {
 
     vi.mocked(dbPut).mockRejectedValue(new Error('quota'))
     await backend.saveRecord(7, { slots: {}, ts: 9 }) // 失败只 warn 不抛
-    expect(vi.mocked(console.warn)).toHaveBeenCalledWith(expect.stringContaining('IndexedDB 保存失败'), 7, expect.any(Error))
+    expect(vi.mocked(console.warn)).toHaveBeenCalledWith(
+      expect.stringContaining('IndexedDB 保存失败'),
+      7,
+      expect.any(Error),
+    )
   })
 
   it('clearAll：dbClear 失败 warn 不抛', async () => {
     vi.mocked(dbClear).mockRejectedValue(new Error('no'))
     await expect(new IndexedDBBackend().clearAll()).resolves.toBeUndefined()
-    expect(vi.mocked(console.warn)).toHaveBeenCalledWith(expect.stringContaining('IndexedDB 清空失败'), expect.any(Error))
+    expect(vi.mocked(console.warn)).toHaveBeenCalledWith(
+      expect.stringContaining('IndexedDB 清空失败'),
+      expect.any(Error),
+    )
   })
 })
 
@@ -304,7 +317,13 @@ describe('工厂路由与校验', () => {
     expect(validateStorageConfig(emptyStorageConfig())).toBeNull()
     expect(validateStorageConfig({ ...emptyStorageConfig(), backend: 's3', ...validS3 })).toBeNull()
     expect(validateStorageConfig({ ...emptyStorageConfig(), backend: 's3', ...validS3, endpoint: '' })).toBeTruthy()
-    const sb = { ...emptyStorageConfig(), backend: 'supabase' as const, url: 'https://x.supabase.co', anonKey: 'k', bucket: 'b' }
+    const sb = {
+      ...emptyStorageConfig(),
+      backend: 'supabase' as const,
+      url: 'https://x.supabase.co',
+      anonKey: 'k',
+      bucket: 'b',
+    }
     expect(validateStorageConfig(sb)).toBeNull()
     expect(validateStorageConfig({ ...sb, url: '' })).toBeTruthy()
   })

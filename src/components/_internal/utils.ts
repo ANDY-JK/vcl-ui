@@ -462,11 +462,11 @@ export function chunk<T>(arr: T[], size: number): T[][] {
  * 不必在每个调用点写 instanceof 链。
  */
 export function errMessage(err: unknown): string {
-  if (typeof err === "string") return err
+  if (typeof err === 'string') return err
   if (err instanceof Error) return err.message
   if (isPlainObject(err)) {
     const m = err.message ?? err.name
-    if (typeof m === "string") return m
+    if (typeof m === 'string') return m
   }
   return String(err)
 }

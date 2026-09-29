@@ -82,8 +82,8 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
-  height: 28px;
+  min-width: calc(28px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
   padding: 0 var(--space-1);
   font-size: var(--fs-12);
   border: 1px solid var(--color-border);
@@ -108,7 +108,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
 }
 
 .page-ellipsis {
-  width: 32px;
+  width: calc(32px * var(--vcl-scale));
   text-align: center;
   color: var(--color-text-muted);
 }

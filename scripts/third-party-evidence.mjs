@@ -49,7 +49,8 @@ export function classifyModuleId(id, rootCwd) {
   if (!fileRel) return null // 只到包目录、没有具体文件：不是模块
   // 包目录在磁盘上的位置：模块在本仓内时按 rootCwd 拼，否则 norm 本身就是绝对路径
   const upToPkg = parts.slice(0, nm + (scoped ? 3 : 2))
-  const pkgDirAbs = rel === norm ? norm.split('/').slice(0, upToPkg.length).join('/') : join(rootCwd || process.cwd(), ...upToPkg)
+  const pkgDirAbs =
+    rel === norm ? norm.split('/').slice(0, upToPkg.length).join('/') : join(rootCwd || process.cwd(), ...upToPkg)
   const realName = installedPackageName(pkgDirAbs) || dirName
   return {
     pkg: realName,

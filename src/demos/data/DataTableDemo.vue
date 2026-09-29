@@ -5,6 +5,8 @@ import Card from '@/components/data/Card.vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
 import { createLocalStorage } from '@/components/data/composables/types'
 import type { Column, RowAction, RowContextAction, TableStorage } from '@/components/data/composables/types'
+// 演示头像：本地内联 SVG（见 demo-images.ts），不再依赖在线图床
+import { demoAvatars } from '@/demos/demo-images'
 
 // ========== 基础数据 ==========
 const baseCols = [
@@ -290,7 +292,7 @@ const imageCols = [
 const imageData = [
   {
     id: 1,
-    avatar: 'https://picsum.photos/seed/alice/88/88',
+    avatar: demoAvatars[0],
     name: 'Alice',
     role: '前端开发',
     mail: 'alice@company.com',
@@ -299,7 +301,7 @@ const imageData = [
   { id: 2, avatar: '', name: 'Bob', role: '产品经理', mail: 'bob@company.com', status: '在线' },
   {
     id: 3,
-    avatar: 'https://picsum.photos/seed/charlie/88/88',
+    avatar: demoAvatars[1],
     name: 'Charlie',
     role: 'UI 设计师',
     mail: 'charlie@company.com',
@@ -307,7 +309,7 @@ const imageData = [
   },
   {
     id: 4,
-    avatar: 'https://picsum.photos/seed/diana/88/88',
+    avatar: demoAvatars[2],
     name: 'Diana',
     role: '后端开发',
     mail: 'diana@company.com',
@@ -693,12 +695,21 @@ const imgCols: Column[] = [
   { key: 'avatar', title: '这一格', imageSize: 40, align: 'center' },
   { key: 'name', title: '被怎么判' },
 ]
-/** 只用一个真能访问的图床（本站图片列本来就在用）：演示「传了 imageDomains 就整表替换默认清单」，
- *  靠的是默认清单失效，不需要再造一个不存在的域名去发真请求 —— 那样只会在审计里留下连接超时。
- *  ⚠️ 单元格文本别写域名或 data: 前缀字样：isImageUrl 的域名匹配不锚定，提一句就会被当成图片渲染成碎图。 */
+/**
+ * 图片域名白名单演示（素材全在 `demo-public/demo-assets/picsum.photos/`，仓内自带，无外链）。
+ *
+ * 为什么路径里要带 `picsum.photos`：isImageUrl 的域名判定是**正则字面匹配**（非 URL 解析），
+ * 所以只要路径里含内置清单中的域名串，就被判为图片——演示的是判定机制本身。
+ * 为什么用**相对路径**：路径启发式那条是 `^https?://` 锚定的，相对路径跳过它，
+ * 于是这两行的「是不是图」就**只取决于域名清单**，白名单开关才能干净地演示出差异。
+ * 为什么素材**无扩展名**：判定顺序里扩展名规则在域名之前，带 `.png` 就直接命中扩展名，
+ * 白名单开关失效、演示不出效果（故 gen-demo-assets 产出的是无扩展名 PNG，浏览器按内容嗅探照常渲染）。
+ *
+ * ⚠️ 单元格文本别写域名或 data: 前缀字样：isImageUrl 的域名匹配不锚定，提一句就会被当成图片渲染成碎图。
+ */
 const imgRows = [
-  { id: 1, avatar: 'https://picsum.photos/seed/dt-a/80/80', name: '内置域名清单命中' },
-  { id: 2, avatar: 'https://picsum.photos/seed/dt-b/80/80', name: '同上，地址结尾没有扩展名' },
+  { id: 1, avatar: '/demo-assets/picsum.photos/demo-a', name: '内置域名清单命中' },
+  { id: 2, avatar: '/demo-assets/picsum.photos/demo-b', name: '同上，地址结尾没有扩展名' },
   {
     id: 3,
     avatar:
@@ -706,7 +717,7 @@ const imgRows = [
     name: '内联数据，前缀优先恒判为图',
   },
 ]
-/** 换成一个本站不会去请求的域名：作用只是让默认清单失效 */
+/** 换成一个本站不会去请求的域名：作用只是让默认清单失效（上两行随之退回文本形态） */
 const IMG_REPLACEMENT = ['example.internal-cdn.invalid']
 const imgWhitelistOn = ref(false)
 const imgDomains = computed(() => (imgWhitelistOn.value ? IMG_REPLACEMENT : []))
@@ -781,7 +792,7 @@ const interCols: Column[] = [
         :cell-style="
           (key, row) =>
             key === 'amount' && row.amount > 15000
-              ? { color: 'var(--color-danger-hover)', fontWeight: 'bold' }
+              ? { color: 'var(--color-danger-on-surface)', fontWeight: 'bold' }
               : ({} as Record<string, string>)
         "
       />
@@ -926,7 +937,11 @@ const interCols: Column[] = [
         editable
         @row-action="onRowAction"
       />
-      <div v-if="actionLog" class="demo-hint" style="color: var(--color-primary); margin-top: 8px">
+      <div
+        v-if="actionLog"
+        class="demo-hint"
+        style="color: var(--color-primary); margin-top: calc(8px * var(--vcl-scale))"
+      >
         {{ actionLog }}
       </div>
       <button class="demo-add-btn" @click="addRow">+ 添加行</button>
@@ -1042,7 +1057,7 @@ const interCols: Column[] = [
         :is-loading="stateCfg.isLoading"
         empty-text="这里没有一行数据"
       />
-      <p class="demo-sub" style="margin-top: 16px">用 #empty 插槽整块接管空态：</p>
+      <p class="demo-sub" style="margin-top: calc(16px * var(--vcl-scale))">用 #empty 插槽整块接管空态：</p>
       <DataTable namespace="demo-empty-slot" :columns="stateCols" :data="[]" row-key="id">
         <template #empty="{ filtered }">
           <div class="demo-empty-slot">
@@ -1859,7 +1874,9 @@ const interCols: Column[] = [
         </tbody>
       </table>
 
-      <p class="demo-sub" style="margin-top: 20px">列配置（columns 数组的元素，即 Column 接口）</p>
+      <p class="demo-sub" style="margin-top: calc(20px * var(--vcl-scale))">
+        列配置（columns 数组的元素，即 Column 接口）
+      </p>
       <table class="api-table">
         <thead>
           <tr>
@@ -1975,7 +1992,7 @@ const interCols: Column[] = [
         </tbody>
       </table>
 
-      <p class="demo-sub" style="margin-top: 20px">事件（defineEmits）</p>
+      <p class="demo-sub" style="margin-top: calc(20px * var(--vcl-scale))">事件（defineEmits）</p>
       <table class="api-table">
         <thead>
           <tr>
@@ -2091,7 +2108,7 @@ const interCols: Column[] = [
         </tbody>
       </table>
 
-      <p class="demo-hint" style="margin-top: 12px">
+      <p class="demo-hint" style="margin-top: calc(12px * var(--vcl-scale))">
         插槽四个：<code>toolbar-actions</code>（工具栏追加按钮，无作用域）、
         <code>header-cell</code>（作用域 <code>column</code>）、 <code>cell</code>（作用域
         <code>column / row / value</code>）、 <code>empty</code>（作用域 <code>filtered</code>）。
@@ -2115,7 +2132,13 @@ const interCols: Column[] = [
         <Card type="stat" value="156" label="商品种类" icon="package" color="#F59E0B" />
         <Card type="stat" value="↓ 5.2%" label="退货率" icon="trending-down" color="var(--color-danger)" />
       </div>
-      <p style="margin: 16px 0 8px; color: var(--color-text-secondary); font-size: 14px">
+      <p
+        style="
+          margin: calc(16px * var(--vcl-scale)) 0 calc(8px * var(--vcl-scale));
+          color: var(--color-text-secondary);
+          font-size: calc(14px * var(--vcl-scale));
+        "
+      >
         以下为各商品库存及销售明细：
       </p>
       <DataTable namespace="demo-modal2" :columns="modal2Cols" :data="modal2Data" row-key="id" :page-size="4" />
@@ -2134,7 +2157,15 @@ const interCols: Column[] = [
         <Card type="stat" value="5" label="品类" icon="grid" color="#F59E0B" />
         <Card type="stat" value="↑ 12%" label="环比增长" icon="trending-up" color="var(--color-success)" />
       </div>
-      <p style="margin: 16px 0 8px; color: var(--color-text-secondary); font-size: 14px">滚动查看更多数据：</p>
+      <p
+        style="
+          margin: calc(16px * var(--vcl-scale)) 0 calc(8px * var(--vcl-scale));
+          color: var(--color-text-secondary);
+          font-size: calc(14px * var(--vcl-scale));
+        "
+      >
+        滚动查看更多数据：
+      </p>
       <DataTable namespace="demo-modal4" :columns="modalLargeCols" :data="modalLargeData" row-key="id" />
     </ModalBox>
   </div>
@@ -2142,86 +2173,86 @@ const interCols: Column[] = [
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 .demo-hint {
-  margin: 0 0 12px 0;
-  font-size: 13px;
+  margin: 0 0 calc(12px * var(--vcl-scale)) 0;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 .demo-add-btn {
-  margin-top: 8px;
-  padding: 6px 16px;
+  margin-top: calc(8px * var(--vcl-scale));
+  padding: calc(6px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border: 1px dashed var(--color-primary);
   border-radius: var(--radius-sm);
   background: var(--color-primary-light);
   color: var(--color-primary);
   cursor: pointer;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
 }
 .demo-modal-row {
   display: flex;
-  gap: 12px;
+  gap: calc(12px * var(--vcl-scale));
 }
 .demo-ck-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 18px;
+  gap: calc(8px * var(--vcl-scale)) calc(18px * var(--vcl-scale));
   align-items: center;
-  margin: 0 0 10px;
+  margin: 0 0 calc(10px * var(--vcl-scale));
 }
 .demo-ck {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-secondary);
   cursor: pointer;
 }
 .demo-ck input[type='checkbox'] {
-  width: 14px;
-  height: 14px;
+  width: calc(14px * var(--vcl-scale));
+  height: calc(14px * var(--vcl-scale));
   margin: 0;
   accent-color: var(--color-primary);
 }
 .demo-ck select {
-  height: 26px;
-  padding: 0 6px;
+  height: calc(26px * var(--vcl-scale));
+  padding: 0 calc(6px * var(--vcl-scale));
   font: inherit;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: inherit;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
 }
 .demo-num {
-  width: 72px;
-  height: 26px;
-  padding: 0 6px;
+  width: calc(72px * var(--vcl-scale));
+  height: calc(26px * var(--vcl-scale));
+  padding: 0 calc(6px * var(--vcl-scale));
   font: inherit;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text);
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
 }
 .demo-sub {
-  margin: 0 0 6px;
-  font-size: 13px;
+  margin: 0 0 calc(6px * var(--vcl-scale));
+  font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text-secondary);
 }
 .demo-two-col {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(calc(320px * var(--vcl-scale)), 1fr));
+  gap: calc(16px * var(--vcl-scale));
   align-items: start;
 }
 .demo-two-col > * {
@@ -2229,7 +2260,7 @@ const interCols: Column[] = [
 }
 /* 表格列数多的对照块给表格那侧多留宽，否则五列表在 50% 宽下要横向滚 */
 .demo-two-col--wide-left {
-  grid-template-columns: minmax(0, 2fr) minmax(200px, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(calc(200px * var(--vcl-scale)), 1fr);
 }
 @container demo (max-width: 1023px) {
   .demo-two-col--wide-left {
@@ -2237,10 +2268,10 @@ const interCols: Column[] = [
   }
 }
 .demo-log {
-  min-height: 96px;
-  padding: 8px 10px;
+  min-height: calc(96px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 12px;
+  font-size: calc(12px * var(--vcl-scale));
   line-height: 1.7;
   color: var(--color-text-secondary);
   background: var(--color-bg-soft);
@@ -2254,9 +2285,9 @@ const interCols: Column[] = [
 .demo-empty-slot {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
   align-items: center;
-  padding: 22px 0;
+  padding: calc(22px * var(--vcl-scale)) 0;
   color: var(--color-text-muted);
 }
 .demo-empty-slot strong {
@@ -2264,13 +2295,13 @@ const interCols: Column[] = [
 }
 .demo-slot-th {
   display: inline-flex;
-  gap: 6px;
+  gap: calc(6px * var(--vcl-scale));
   align-items: center;
 }
 .demo-slot-badge {
-  padding: 0 5px;
+  padding: 0 calc(5px * var(--vcl-scale));
   font-family: ui-monospace, monospace;
-  font-size: 10px;
+  font-size: calc(10px * var(--vcl-scale));
   font-style: normal;
   color: var(--color-primary);
   background: var(--color-primary-light);
@@ -2282,12 +2313,12 @@ const interCols: Column[] = [
 }
 .api-table {
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   border-collapse: collapse;
 }
 .api-table th,
 .api-table td {
-  padding: 4px 8px;
+  padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   text-align: left;
   vertical-align: top;
   border-bottom: 1px solid var(--color-border-light);
@@ -2297,7 +2328,7 @@ const interCols: Column[] = [
 }
 /* props 分组行（与 defineProps 内的分组注释同口径；文本行不参与 check:demo-props 对账） */
 .api-group td {
-  padding-top: 10px;
+  padding-top: calc(10px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-primary);
   border-bottom: 1px solid var(--color-border);
@@ -2318,8 +2349,8 @@ const interCols: Column[] = [
 .modal-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: calc(12px * var(--vcl-scale));
+  margin-bottom: calc(8px * var(--vcl-scale));
 }
 @container demo (max-width: 640px) {
   .modal-grid {

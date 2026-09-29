@@ -28,6 +28,12 @@ test('合同收集页：Input 已解析、存储提示完整渲染且无 i18n �
   await page.locator('input[type=radio][value=supabase]').click({ force: true })
   await expect(page.locator('.scp-tip').first()).toContainText(TIP)
 
-  expect(logs.filter((l) => /Message compilation error/.test(l)), 'i18n 编译报错').toHaveLength(0)
-  expect(logs.filter((l) => /Failed to resolve component/.test(l)), '未解析组件告警').toHaveLength(0)
+  expect(
+    logs.filter((l) => /Message compilation error/.test(l)),
+    'i18n 编译报错',
+  ).toHaveLength(0)
+  expect(
+    logs.filter((l) => /Failed to resolve component/.test(l)),
+    '未解析组件告警',
+  ).toHaveLength(0)
 })

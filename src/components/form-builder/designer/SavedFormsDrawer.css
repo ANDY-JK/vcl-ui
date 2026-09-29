@@ -6,18 +6,18 @@
 }
 .ld-forms-table :deep(.dt-wrap) {
   border: none;
-  border-radius: 6px;
+  border-radius: calc(6px * var(--vcl-scale));
 }
 
 /* 列表加载 / 空 / 错误态 */
 .ld-forms-state {
-  padding: 24px 12px;
+  padding: calc(24px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   text-align: center;
   font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);
 }
 .ld-forms-error {
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger-on-surface);
 }
 
 /* 表单名称：可点击打开收集列表 */
@@ -33,12 +33,12 @@
 /* 操作列按钮（分享/查看/审核） */
 .ld-table-actions {
   display: inline-flex;
-  gap: 4px;
+  gap: calc(4px * var(--vcl-scale));
 }
 .ld-table-act {
-  padding: 3px 10px;
+  padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border: 1px solid var(--color-border, #d1d5db);
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   background: var(--color-bg, #fff);
   color: var(--color-text-secondary, #475569);
   font-size: var(--fs-12);
@@ -64,7 +64,7 @@
 /* 分享弹窗：左二维码 + 右点击复制卡片 */
 .ld-share {
   display: flex;
-  gap: 16px;
+  gap: calc(16px * var(--vcl-scale));
   align-items: stretch;
 }
 .ld-share-qr {
@@ -72,20 +72,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale));
   border: 1px solid var(--color-border-light, #f1f5f9);
-  border-radius: 10px;
+  border-radius: calc(10px * var(--vcl-scale));
   background: var(--color-bg-alt, #fafbfc);
 }
 .ld-share-qr-img {
-  width: 180px;
-  height: 180px;
+  width: calc(180px * var(--vcl-scale));
+  height: calc(180px * var(--vcl-scale));
   display: block;
 }
 .ld-share-qr-placeholder {
-  width: 180px;
-  height: 180px;
+  width: calc(180px * var(--vcl-scale));
+  height: calc(180px * var(--vcl-scale));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,17 +93,17 @@
   color: var(--color-text-muted, #94a3b8);
 }
 .ld-share-qr-error {
-  width: 180px;
-  height: 180px;
+  width: calc(180px * var(--vcl-scale));
+  height: calc(180px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale));
   font-size: var(--fs-11);
   line-height: 1.6;
-  color: var(--color-danger, #dc2626);
+  color: var(--color-danger-on-surface);
   text-align: center;
   box-sizing: border-box;
 }
@@ -118,18 +118,18 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: calc(10px * var(--vcl-scale));
 }
 .ld-share-copy {
   flex: 1;
-  min-height: 96px;
+  min-height: calc(96px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  padding: 10px 14px;
+  gap: calc(6px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--vcl-scale));
   background: var(--color-bg, #fff);
   cursor: pointer;
   text-align: left;

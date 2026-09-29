@@ -197,7 +197,10 @@ describe('useCoordinateResolver · resolveBatch', () => {
     vi.mocked(batchResolveCoordinates).mockImplementation(async (_stores, onProgress) => {
       onProgress?.(1, 2)
       onProgress?.(2, 2)
-      return [mkStore('ok', { coordSource: 'manual' }), mkStore('fail', { coordSource: 'none', longitude: null, latitude: null })]
+      return [
+        mkStore('ok', { coordSource: 'manual' }),
+        mkStore('fail', { coordSource: 'none', longitude: null, latitude: null }),
+      ]
     })
     const r = useCoordinateResolver()
     const promise = r.resolveBatch([mkStore('1'), mkStore('2')] as Partial<Store>[])

@@ -31,22 +31,40 @@ const panelItems = [
     <h1 class="demo-title">Tabs 标签页</h1>
     <p class="demo-desc">underline / pills / card / tabbar 四种变体。</p>
 
-    <Card title="Tabs 标签页" title-as="h2" style="margin-bottom: 24px">
-      <div style="display: flex; flex-direction: column; gap: 24px">
+    <Card title="Tabs 标签页" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <div style="display: flex; flex-direction: column; gap: calc(24px * var(--vcl-scale))">
         <div>
-          <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px">
+          <p
+            style="
+              font-size: calc(12px * var(--vcl-scale));
+              color: var(--color-text-muted);
+              margin-bottom: calc(8px * var(--vcl-scale));
+            "
+          >
             <code>variant="underline"</code>
           </p>
           <Tabs v-model="activeTab" :items="tabItems" variant="underline" />
         </div>
         <div>
-          <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px">
+          <p
+            style="
+              font-size: calc(12px * var(--vcl-scale));
+              color: var(--color-text-muted);
+              margin-bottom: calc(8px * var(--vcl-scale));
+            "
+          >
             <code>variant="pills"</code>
           </p>
           <Tabs v-model="activeTab" :items="tabItems.slice(0, 3)" variant="pills" />
         </div>
         <div>
-          <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 8px">
+          <p
+            style="
+              font-size: calc(12px * var(--vcl-scale));
+              color: var(--color-text-muted);
+              margin-bottom: calc(8px * var(--vcl-scale));
+            "
+          >
             <code>variant="card"</code>
           </p>
           <Tabs v-model="activeTab" :items="tabItems.slice(0, 3)" variant="card" />
@@ -54,21 +72,29 @@ const panelItems = [
       </div>
     </Card>
 
-    <Card title="TabPanel 内容面板" title-as="h2" style="margin-bottom: 24px">
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+    <Card title="TabPanel 内容面板" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         与 Tabs 配套的内容区：点哪个标签显示哪个面板。<code>lazy</code> 面板首次点开才渲染（重内容推荐）；
         切走默认保留状态（下面的输入框填一半切回来还在）。
       </p>
       <Tabs v-model="panelTab" :items="panelItems" variant="underline" />
-      <div style="padding-top: 16px">
+      <div style="padding-top: calc(16px * var(--vcl-scale))">
         <TabPanel value="info">
-          <div style="display: flex; flex-direction: column; gap: 8px">
-            <p style="margin: 0; font-size: 13px">基本信息面板 — 切走再切回来，输入框内容不会丢。</p>
+          <div style="display: flex; flex-direction: column; gap: calc(8px * var(--vcl-scale))">
+            <p style="margin: 0; font-size: calc(13px * var(--vcl-scale))">
+              基本信息面板 — 切走再切回来，输入框内容不会丢。
+            </p>
             <input
               placeholder="在这里随便输入点什么，再切到「明细」再回来"
               style="
-                height: 34px;
-                padding: 0 10px;
+                height: calc(34px * var(--vcl-scale));
+                padding: 0 calc(10px * var(--vcl-scale));
                 border: 1px solid var(--color-border);
                 border-radius: var(--radius-md);
                 background: var(--color-surface);
@@ -78,7 +104,7 @@ const panelItems = [
           </div>
         </TabPanel>
         <TabPanel value="detail" lazy>
-          <p style="margin: 0; font-size: 13px">
+          <p style="margin: 0; font-size: calc(13px * var(--vcl-scale))">
             明细面板（lazy）— 首次点开才渲染这段文字；重内容/异步数据推荐这种写法。
           </p>
         </TabPanel>
@@ -86,12 +112,18 @@ const panelItems = [
     </Card>
 
     <Card title="TabBar 底部导航" title-as="h2">
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         <code>variant="tabbar"</code> 移动端底部标签栏
       </p>
       <div
         style="
-          max-width: 375px;
+          max-width: calc(375px * var(--vcl-scale));
           margin: 0 auto;
           border: 1px solid var(--color-border);
           border-radius: var(--radius-lg);
@@ -101,13 +133,13 @@ const panelItems = [
       >
         <div
           style="
-            min-height: 140px;
+            min-height: calc(140px * var(--vcl-scale));
             background: var(--color-bg);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--color-text-muted);
-            font-size: 13px;
+            font-size: calc(13px * var(--vcl-scale));
           "
         >
           {{ mobileTab }}
@@ -117,31 +149,38 @@ const panelItems = [
     </Card>
 
     <Card title="Props" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-        <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-          <th style="padding: 4px 8px">Prop</th>
-          <th style="padding: 4px 8px">类型</th>
-          <th style="padding: 4px 8px">默认</th>
-          <th style="padding: 4px 8px">说明</th>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
-            <code>variant</code>
-          </td>
-          <td style="padding: 3px 8px">string</td>
-          <td style="padding: 3px 8px">underline</td>
-          <td style="padding: 3px 8px">underline | pills | card | tabbar</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px">
-            <code>items</code>
-          </td>
-          <td style="padding: 3px 8px">TabItem[]</td>
-          <td style="padding: 3px 8px">—</td>
-          <td style="padding: 3px 8px">标签项数组</td>
-        </tr>
-      </tbody>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>variant</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">underline</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              underline | pills | card | tabbar
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              <code>items</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">TabItem[]</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">标签项数组</td>
+          </tr>
+        </tbody>
       </table>
     </Card>
   </div>
@@ -149,20 +188,20 @@ const panelItems = [
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

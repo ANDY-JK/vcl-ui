@@ -1,7 +1,13 @@
 // useFormSchema 行为锁定测试（form-builder 核心 schema 处理）
 import { describe, it, expect } from 'vitest'
 import { ref } from 'vue'
-import { normalizeSchema, createInitialData, isFieldVisible, useFormSchema, SCHEMA_VERSION } from '@/components/form-builder/useFormSchema'
+import {
+  normalizeSchema,
+  createInitialData,
+  isFieldVisible,
+  useFormSchema,
+  SCHEMA_VERSION,
+} from '@/components/form-builder/useFormSchema'
 import type { FormSchema, FormField } from '@/components/form-builder/types'
 
 function field(type: string, key: string, extra: Record<string, unknown> = {}): FormField {
@@ -84,11 +90,7 @@ describe('isFieldVisible', () => {
 describe('useFormSchema composable', () => {
   it('fieldMap / groupedFields / initialData / defaultSpan 派生正确', () => {
     const schema = ref<FormSchema>({
-      fields: [
-        field('text', 'name'),
-        field('number', 'age', { group: '基础' }),
-        field('divider', 'd'),
-      ],
+      fields: [field('text', 'name'), field('number', 'age', { group: '基础' }), field('divider', 'd')],
       layout: 'grid',
     })
     const s = useFormSchema(schema)

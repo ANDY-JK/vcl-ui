@@ -18,7 +18,9 @@ test('分页脚注：翻页生效、页码文案跟着走、末页禁用下一�
     .locator('.grid-card')
     .filter({ has: page.locator('h2.grid-title', { hasText: '全功能' }) })
     .first()
-  const bar = hostCard.locator('.table-pagination').filter({ has: page.getByRole('button', { name: '4', exact: true }) })
+  const bar = hostCard
+    .locator('.table-pagination')
+    .filter({ has: page.getByRole('button', { name: '4', exact: true }) })
   await expect(bar, '锚点表应当正好有一个带 4 个页码按钮的脚注').toHaveCount(1)
   await expect(bar).toContainText('第 1 / 4 页') // 前提：起始在第 1 页
   const host: Locator = bar.locator('xpath=..')

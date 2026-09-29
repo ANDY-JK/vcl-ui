@@ -90,88 +90,168 @@ describe('校验', () => {
 describe('parseRegion — 省市区镇拆分', () => {
   it('普通省/市/区/详细地址', () => {
     expect(parseRegion('广东省深圳市南山区科技园路1号')).toEqual({
-      province: '广东省', city: '深圳市', district: '南山区', town: '', detail: '科技园路1号',
+      province: '广东省',
+      city: '深圳市',
+      district: '南山区',
+      town: '',
+      detail: '科技园路1号',
     })
   })
 
   it('直辖市：无省后缀，按「市」归入 city', () => {
     expect(parseRegion('北京市朝阳区三里屯街道工体北路')).toEqual({
-      province: '', city: '北京市', district: '朝阳区', town: '三里屯街道', detail: '工体北路',
+      province: '',
+      city: '北京市',
+      district: '朝阳区',
+      town: '三里屯街道',
+      detail: '工体北路',
     })
     expect(parseRegion('重庆市渝北区')).toEqual({
-      province: '', city: '重庆市', district: '渝北区', town: '', detail: '',
+      province: '',
+      city: '重庆市',
+      district: '渝北区',
+      town: '',
+      detail: '',
     })
   })
 
   it('自治区（含 4 字/3 字）', () => {
     expect(parseRegion('内蒙古自治区呼和浩特市新城区')).toEqual({
-      province: '内蒙古自治区', city: '呼和浩特市', district: '新城区', town: '', detail: '',
+      province: '内蒙古自治区',
+      city: '呼和浩特市',
+      district: '新城区',
+      town: '',
+      detail: '',
     })
     expect(parseRegion('新疆维吾尔自治区乌鲁木齐市天山区')).toEqual({
-      province: '新疆维吾尔自治区', city: '乌鲁木齐市', district: '天山区', town: '', detail: '',
+      province: '新疆维吾尔自治区',
+      city: '乌鲁木齐市',
+      district: '天山区',
+      town: '',
+      detail: '',
     })
     expect(parseRegion('广西壮族自治区南宁市青秀区')).toEqual({
-      province: '广西壮族自治区', city: '南宁市', district: '青秀区', town: '', detail: '',
+      province: '广西壮族自治区',
+      city: '南宁市',
+      district: '青秀区',
+      town: '',
+      detail: '',
     })
   })
 
   it('特别行政区', () => {
     expect(parseRegion('香港特别行政区中西区')).toEqual({
-      province: '香港特别行政区', city: '', district: '中西区', town: '', detail: '',
+      province: '香港特别行政区',
+      city: '',
+      district: '中西区',
+      town: '',
+      detail: '',
     })
   })
 
   it('无省级前缀也能正确落入对应层级', () => {
     expect(parseRegion('深圳市南山区')).toEqual({
-      province: '', city: '深圳市', district: '南山区', town: '', detail: '',
+      province: '',
+      city: '深圳市',
+      district: '南山区',
+      town: '',
+      detail: '',
     })
     expect(parseRegion('南山区')).toEqual({
-      province: '', city: '', district: '南山区', town: '', detail: '',
+      province: '',
+      city: '',
+      district: '南山区',
+      town: '',
+      detail: '',
     })
   })
 
   it('无区县的市（东莞/中山）直接辖镇', () => {
     expect(parseRegion('广东省东莞市长安镇')).toEqual({
-      province: '广东省', city: '东莞市', district: '', town: '长安镇', detail: '',
+      province: '广东省',
+      city: '东莞市',
+      district: '',
+      town: '长安镇',
+      detail: '',
     })
   })
 
   it('省市同名（吉林省吉林市）', () => {
     expect(parseRegion('吉林省吉林市昌邑区')).toEqual({
-      province: '吉林省', city: '吉林市', district: '昌邑区', town: '', detail: '',
+      province: '吉林省',
+      city: '吉林市',
+      district: '昌邑区',
+      town: '',
+      detail: '',
     })
   })
 
   it('城市名以「州」结尾（州市 是城市名，不是地级后缀）', () => {
     expect(parseRegion('广州市天河区体育西路')).toEqual({
-      province: '', city: '广州市', district: '天河区', town: '', detail: '体育西路',
+      province: '',
+      city: '广州市',
+      district: '天河区',
+      town: '',
+      detail: '体育西路',
     })
     expect(parseRegion('杭州市西湖区文三路')).toEqual({
-      province: '', city: '杭州市', district: '西湖区', town: '', detail: '文三路',
+      province: '',
+      city: '杭州市',
+      district: '西湖区',
+      town: '',
+      detail: '文三路',
     })
     expect(parseRegion('苏州市姑苏区观前街')).toEqual({
-      province: '', city: '苏州市', district: '姑苏区', town: '', detail: '观前街',
+      province: '',
+      city: '苏州市',
+      district: '姑苏区',
+      town: '',
+      detail: '观前街',
     })
     expect(parseRegion('郑州市金水区')).toEqual({
-      province: '', city: '郑州市', district: '金水区', town: '', detail: '',
+      province: '',
+      city: '郑州市',
+      district: '金水区',
+      town: '',
+      detail: '',
     })
     expect(parseRegion('福州市鼓楼区')).toEqual({
-      province: '', city: '福州市', district: '鼓楼区', town: '', detail: '',
+      province: '',
+      city: '福州市',
+      district: '鼓楼区',
+      town: '',
+      detail: '',
     })
     expect(parseRegion('江苏省苏州市昆山市玉山镇')).toEqual({
-      province: '江苏省', city: '苏州市', district: '昆山市', town: '玉山镇', detail: '',
+      province: '江苏省',
+      city: '苏州市',
+      district: '昆山市',
+      town: '玉山镇',
+      detail: '',
     })
   })
 
   it('单字「州」地级（恩施州）：州 是地级，后面的市/县是县级', () => {
     expect(parseRegion('恩施州利川市解放路')).toEqual({
-      province: '', city: '恩施州', district: '利川市', town: '', detail: '解放路',
+      province: '',
+      city: '恩施州',
+      district: '利川市',
+      town: '',
+      detail: '解放路',
     })
     expect(parseRegion('恩施州巴东县信陵镇')).toEqual({
-      province: '', city: '恩施州', district: '巴东县', town: '信陵镇', detail: '',
+      province: '',
+      city: '恩施州',
+      district: '巴东县',
+      town: '信陵镇',
+      detail: '',
     })
     expect(parseRegion('湘西州吉首市')).toEqual({
-      province: '', city: '湘西州', district: '吉首市', town: '', detail: '',
+      province: '',
+      city: '湘西州',
+      district: '吉首市',
+      town: '',
+      detail: '',
     })
   })
 
@@ -179,7 +259,11 @@ describe('parseRegion — 省市区镇拆分', () => {
     expect(parseRegion('')).toEqual({ province: '', city: '', district: '', town: '', detail: '' })
     expect(parseRegion(null)).toEqual({ province: '', city: '', district: '', town: '', detail: '' })
     expect(parseRegion('广东省 深圳市 南山区')).toEqual({
-      province: '广东省', city: '深圳市', district: '南山区', town: '', detail: '',
+      province: '广东省',
+      city: '深圳市',
+      district: '南山区',
+      town: '',
+      detail: '',
     })
   })
 
@@ -200,12 +284,15 @@ describe('formatRegion / splitRegionDetail', () => {
   })
 
   it('withTown / withDetail 扩展', () => {
-    expect(formatRegion('北京市朝阳区三里屯街道工体北路', { withTown: true, withDetail: true })).toBe('北京市朝阳区三里屯街道工体北路')
+    expect(formatRegion('北京市朝阳区三里屯街道工体北路', { withTown: true, withDetail: true })).toBe(
+      '北京市朝阳区三里屯街道工体北路',
+    )
   })
 
   it('拆出区域与详细地址', () => {
     expect(splitRegionDetail('广东省深圳市南山区科技园路1号')).toEqual({
-      region: '广东省深圳市南山区', detail: '科技园路1号',
+      region: '广东省深圳市南山区',
+      detail: '科技园路1号',
     })
   })
 })
@@ -388,7 +475,11 @@ describe('uniqueBy / chunk', () => {
   })
 
   it('uniqueBy 支持函数取值', () => {
-    const arr = [{ a: 1, b: 2 }, { a: 1, b: 3 }, { a: 2, b: 2 }]
+    const arr = [
+      { a: 1, b: 2 },
+      { a: 1, b: 3 },
+      { a: 2, b: 2 },
+    ]
     expect(uniqueBy(arr, (x) => x.a)).toHaveLength(2)
   })
 
@@ -545,7 +636,7 @@ describe('isPlainObject / isNumeric / isEmpty', () => {
 describe('escapeHtml / unescapeHtml', () => {
   it('转义特殊字符', () => {
     expect(escapeHtml('<script>alert("x")</script>')).toBe('&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;')
-    expect(escapeHtml("a & b")).toBe('a &amp; b')
+    expect(escapeHtml('a & b')).toBe('a &amp; b')
   })
 
   it('反转义还原', () => {

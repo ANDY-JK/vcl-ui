@@ -31,14 +31,12 @@ function editDistance(a, b) {
   if (!m) return n
   if (!n) return m
   // dp[i][j] = 前 i 个字符与前 j 个字符的距离；基线 dp[i][0]=i、dp[0][j]=j
-  const dp = Array.from({ length: m + 1 }, (_, i) => new Array(n + 1).fill(0).map((_, j) => (i === 0 ? j : j === 0 ? i : 0)))
+  const dp = Array.from({ length: m + 1 }, (_, i) =>
+    new Array(n + 1).fill(0).map((_, j) => (i === 0 ? j : j === 0 ? i : 0)),
+  )
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      dp[i][j] = Math.min(
-        dp[i - 1][j] + 1,
-        dp[i][j - 1] + 1,
-        dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
-      )
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
     }
   }
   return dp[m][n]
@@ -67,7 +65,9 @@ export function validateThemeConfig(config, tokenNames) {
       }
       if (!tokenNames.has(name)) {
         const near = suggestTokens(name, tokenNames)
-        errors.push(`「${name}」未在 tokens.css 声明${near.length ? `（相近：${near.join('、')}）` : ''}——打错的令牌 var() 会静默失效`)
+        errors.push(
+          `「${name}」未在 tokens.css 声明${near.length ? `（相近：${near.join('、')}）` : ''}——打错的令牌 var() 会静默失效`,
+        )
         continue
       }
       if (typeof value !== 'string' || !value.trim()) {
@@ -86,7 +86,10 @@ export function validateThemeConfig(config, tokenNames) {
 
 /** 渲染主题 CSS：light → :root；dark → :root[data-theme='dark']（暗色块与库的暗色块同特异性靠后覆盖）。
  *  header 默认通用（纯函数不写死调用方路径；CLI/编辑器各自按需传入） */
-export function renderThemeCss(normalized, header = '/* vcl-ui theme override — 由主题工具生成，勿手改（改配置重新生成） */') {
+export function renderThemeCss(
+  normalized,
+  header = '/* vcl-ui theme override — 由主题工具生成，勿手改（改配置重新生成） */',
+) {
   const lines = [header]
   const seg = (sel, vars) => {
     if (!Object.keys(vars).length) return []

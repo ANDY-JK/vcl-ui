@@ -67,7 +67,7 @@ function onCancel(variant: string) {
     </p>
 
     <!-- ══════════════ ModalBox 模式 ══════════════ -->
-    <Card title="ModalBox — 点击按钮查看各种模式" title-as="h2" style="margin-bottom: 24px">
+    <Card title="ModalBox — 点击按钮查看各种模式" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <div class="demo-row">
         <Button text="默认弹窗" variant="primary" @click="visibleDefault = true" />
         <Button text="确认删除" variant="danger" @click="visibleConfirm = true" />
@@ -75,7 +75,7 @@ function onCancel(variant: string) {
         <Button text="选择项" variant="outline" @click="visibleSelect = true" />
         <Button text="表单弹窗" variant="secondary" @click="visibleForm = true" />
       </div>
-      <p v-if="selectEcho" class="demo-desc" style="margin-top: 12px">
+      <p v-if="selectEcho" class="demo-desc" style="margin-top: calc(12px * var(--vcl-scale))">
         <strong>{{ selectEcho }}</strong>
       </p>
     </Card>
@@ -112,20 +112,44 @@ function onCancel(variant: string) {
 
     <!-- 表单 -->
     <ModalBox v-model:visible="visibleForm" modal-type="form" title="编辑信息" @form-submit="visibleForm = false">
-      <div style="display: flex; flex-direction: column; gap: 12px">
-        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px">
+      <div style="display: flex; flex-direction: column; gap: calc(12px * var(--vcl-scale))">
+        <label
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: calc(4px * var(--vcl-scale));
+            font-size: calc(13px * var(--vcl-scale));
+          "
+        >
           姓名
           <input
             v-model="formData.name"
-            style="height: 36px; padding: 0 10px; border: 1px solid var(--color-border); border-radius: 6px"
+            style="
+              height: calc(36px * var(--vcl-scale));
+              padding: 0 calc(10px * var(--vcl-scale));
+              border: 1px solid var(--color-border);
+              border-radius: calc(6px * var(--vcl-scale));
+            "
             placeholder="请输入"
           />
         </label>
-        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 13px">
+        <label
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: calc(4px * var(--vcl-scale));
+            font-size: calc(13px * var(--vcl-scale));
+          "
+        >
           邮箱
           <input
             v-model="formData.email"
-            style="height: 36px; padding: 0 10px; border: 1px solid var(--color-border); border-radius: 6px"
+            style="
+              height: calc(36px * var(--vcl-scale));
+              padding: 0 calc(10px * var(--vcl-scale));
+              border: 1px solid var(--color-border);
+              border-radius: calc(6px * var(--vcl-scale));
+            "
             placeholder="请输入"
           />
         </label>
@@ -133,20 +157,24 @@ function onCancel(variant: string) {
     </ModalBox>
 
     <!-- ══════════════ ConfirmModal 独立变体 ══════════════ -->
-    <Card title="ConfirmModal — danger / warning / primary 三种变体" title-as="h2" style="margin-bottom: 24px">
+    <Card
+      title="ConfirmModal — danger / warning / primary 三种变体"
+      title-as="h2"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
+    >
       <div
         v-if="lastAction"
         style="
-          margin-bottom: 16px;
-          padding: 8px 14px;
+          margin-bottom: calc(16px * var(--vcl-scale));
+          padding: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
           background: var(--color-bg-alt);
-          border-radius: 6px;
-          font-size: 13px;
+          border-radius: calc(6px * var(--vcl-scale));
+          font-size: calc(13px * var(--vcl-scale));
         "
       >
         {{ lastAction }}
       </div>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap">
+      <div style="display: flex; gap: calc(12px * var(--vcl-scale)); flex-wrap: wrap">
         <Button text="danger 危险删除" variant="danger" @click="dangerVisible = true" />
         <Button text="warning 警告提醒" variant="outline" @click="warningVisible = true" />
         <Button text="primary 普通确认" variant="primary" @click="primaryVisible = true" />
@@ -236,13 +264,19 @@ function onCancel(variant: string) {
           </tr>
         </tbody>
       </table>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-top: calc(8px * var(--vcl-scale));
+        "
+      >
         Events: <code>@confirm</code> | <code>@cancel</code> | <code>@select-confirm</code> |
         <code>@form-submit</code> | <code>@close</code>
       </p>
     </Card>
 
-    <Card title="ConfirmModal Props" title-as="h2" style="margin-top: 24px">
+    <Card title="ConfirmModal Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -291,7 +325,13 @@ function onCancel(variant: string) {
           </tr>
         </tbody>
       </table>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 8px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-top: calc(8px * var(--vcl-scale));
+        "
+      >
         Events: <code>@confirm</code> | <code>@cancel</code>
       </p>
     </Card>
@@ -300,38 +340,38 @@ function onCancel(variant: string) {
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 .demo-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: calc(10px * var(--vcl-scale));
 }
 .props-table {
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   border-collapse: collapse;
 }
 .props-table th {
-  padding: 6px 8px;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 2px solid var(--color-border);
   text-align: left;
 }
 .props-table td {
-  padding: 6px 8px;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 </style>

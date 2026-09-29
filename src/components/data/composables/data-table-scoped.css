@@ -86,7 +86,7 @@
 /* 只保留横向滚动条，纵向彻底隐藏（Firefox 不支持单轴隐藏，纵向也会显示） */
 .table-scroll::-webkit-scrollbar {
   display: block;
-  height: var(--dt-scrollbar-size, 10px);
+  height: var(--dt-scrollbar-size, calc(10px * var(--vcl-scale)));
 }
 .table-scroll::-webkit-scrollbar:vertical {
   width: 0;
@@ -94,11 +94,11 @@
 /* 滚动条配色走令牌：此前硬编码 rgba(15,23,42,.05)/#b7bcc4 是亮色专用，暗色下轨道会发灰 */
 .table-scroll::-webkit-scrollbar-track {
   background: var(--color-bg-alt);
-  border-radius: 5px;
+  border-radius: calc(5px * var(--vcl-scale));
 }
 .table-scroll::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 5px;
+  border-radius: calc(5px * var(--vcl-scale));
 }
 .table-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
@@ -115,7 +115,7 @@
   border-spacing: 0;
   font-family: SimSun, '宋体', serif;
   /* 缩放字体带下限：缩小到 50% 时仍可读（max 取保底 12px） */
-  font-size: max(12px, calc(clamp(12px, calc(12px + var(--vcl-fit) * 2), 14px) * var(--dt-zoom-y, 1)));
+  font-size: max(12px * var(--vcl-scale), calc(calc(14px * var(--vcl-scale)) * var(--dt-zoom-y, 1)));
   table-layout: auto;
 }
 
@@ -125,7 +125,7 @@ thead th {
   top: 0;
   z-index: 10;
   will-change: scroll-position;
-  padding: clamp(6px, 1vw, 10px) clamp(6px, 1vw, 10px);
+  padding: calc(10px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text-secondary);
   background: var(--color-bg-alt);
@@ -182,7 +182,7 @@ th.filter-active {
   opacity: 0.35;
   transition: opacity var(--transition-fast);
   /* padding/border-radius 常驻，避免激活态宽度突变导致列内容偏移 */
-  padding: var(--space-1) 4px;
+  padding: var(--space-1) calc(4px * var(--vcl-scale));
   border-radius: var(--radius-sm);
 }
 th.sort-active .sort-arrows {
@@ -209,17 +209,17 @@ th.sort-active {
   opacity: 0.4;
 }
 .sort-asc {
-  margin-bottom: -4px;
+  margin-bottom: calc(-4px * var(--vcl-scale));
 }
 .sort-desc {
-  margin-top: -4px;
+  margin-top: calc(-4px * var(--vcl-scale));
 }
 
 /* 筛选图标 */
 .th-filter-icon {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-1) 4px;
+  padding: var(--space-1) calc(4px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   cursor: pointer;
   opacity: 0.45;
@@ -240,15 +240,15 @@ th.sort-active {
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 6px;
-  height: 6px;
+  width: calc(6px * var(--vcl-scale));
+  height: calc(6px * var(--vcl-scale));
   border-radius: 50%;
   background: var(--color-danger);
 }
 
 /* ==================== 单元格 ==================== */
 tbody td {
-  padding: clamp(4px, 0.8vw, 8px) clamp(6px, 1vw, 10px);
+  padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text);
 }
@@ -261,7 +261,7 @@ tbody td {
 .data-table.dense tbody td {
   padding-top: var(--space-1);
   padding-bottom: var(--space-1);
-  font-size: max(11px, calc(var(--fs-13) * var(--dt-zoom-y, 1)));
+  font-size: max(11px * var(--vcl-scale), calc(var(--fs-13) * var(--dt-zoom-y, 1)));
 }
 
 /* ==================== 汇总行 ==================== */
@@ -269,7 +269,7 @@ tfoot th {
   position: sticky;
   bottom: 0;
   z-index: 10;
-  padding: clamp(6px, 1vw, 10px) clamp(6px, 1vw, 10px);
+  padding: calc(10px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
   color: var(--color-text);
   background: var(--color-bg-alt);
@@ -317,7 +317,7 @@ tfoot th.col-fixed-right {
 /* 编辑模式 */
 .cell-edit-input {
   width: 100%;
-  padding: var(--space-1) 6px;
+  padding: var(--space-1) calc(6px * var(--vcl-scale));
   font-size: inherit;
   font-family: inherit;
   border: none;
@@ -327,7 +327,7 @@ tfoot th.col-fixed-right {
   box-sizing: border-box;
 }
 td.cell-editing {
-  padding: var(--space-1) 4px;
+  padding: var(--space-1) calc(4px * var(--vcl-scale));
   /* 编辑中：补上视觉标识（此前只有 padding，编辑态无颜色提示）——
      用选中紫的虚线内描边，与「已选中」的实线区分 */
   box-shadow: inset 0 0 0 2px var(--dt-select, #7c5cf0);
@@ -348,12 +348,12 @@ td.cell-editing.cell-edit-invalid {
   top: 100%;
   transform: translateX(-50%);
   margin-top: 2px;
-  padding: 2px 8px;
+  padding: 2px calc(8px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   background: var(--color-danger-solid);
   color: #fff;
   font-size: var(--fs-12);
-  line-height: 16px;
+  line-height: calc(16px * var(--vcl-scale));
   white-space: nowrap;
   z-index: 6;
   pointer-events: none;
@@ -414,10 +414,10 @@ td.cell-fill-corner {
 }
 .cell-fill-handle {
   position: absolute;
-  right: -3px;
-  bottom: -3px;
-  width: 8px;
-  height: 8px;
+  right: calc(-3px * var(--vcl-scale));
+  bottom: calc(-3px * var(--vcl-scale));
+  width: calc(8px * var(--vcl-scale));
+  height: calc(8px * var(--vcl-scale));
   border-radius: 50%;
   background: var(--dt-select, #7c5cf0);
   border: 1px solid var(--color-surface);
@@ -430,7 +430,7 @@ td.cell-fill-corner {
 .cell-fill-handle::before {
   content: '';
   position: absolute;
-  inset: -6px;
+  inset: calc(-6px * var(--vcl-scale));
 }
 /* 固定列（sticky，z-index:5）会盖住相邻格突出的填充柄：
    这些列的填充柄改为向内收，保证可点、不被遮挡 */
@@ -520,8 +520,8 @@ td.cell-has-note {
 
 /* 备注浮窗 */
 .note-tooltip {
-  max-width: min(280px, 85vw);
-  padding: var(--space-2) 12px;
+  max-width: min(280px * var(--vcl-scale), 85vw);
+  padding: var(--space-2) calc(12px * var(--vcl-scale));
   background: var(--color-bg-inverse, #333);
   color: var(--color-text-inverse, #fff);
   border-radius: var(--radius-sm);
@@ -537,8 +537,8 @@ td.cell-has-note {
    ⚠️ 配色必须走 warning 语义令牌：此前硬编码 #fff8e1/#5d4037 是亮色主题专有色，
    暗色下会变成「亮黄卡片」，与整表暗色风格割裂（同文件的 .note-tooltip 已用令牌，此处对齐） */
 .original-tooltip {
-  max-width: min(320px, 85vw);
-  padding: var(--space-2) 10px;
+  max-width: min(320px * var(--vcl-scale), 85vw);
+  padding: var(--space-2) calc(10px * var(--vcl-scale));
   background: var(--color-warning-bg, #fffbeb);
   color: var(--color-warning-text, #d97706);
   border: 1px solid var(--color-warning-border, #fde68a);
@@ -558,7 +558,7 @@ td.cell-has-note {
 
 /* 备注编辑弹窗 */
 .note-editor {
-  width: min(360px, 90vw);
+  width: min(360px * var(--vcl-scale), 90vw);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -575,7 +575,7 @@ td.cell-has-note {
 }
 .note-editor-input {
   width: 100%;
-  padding: var(--space-2) 12px;
+  padding: var(--space-2) calc(12px * var(--vcl-scale));
   font-size: var(--fs-14);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -641,15 +641,15 @@ td.cell-has-note {
 /* 选择框列 */
 .th-checkbox,
 .td-checkbox {
-  width: calc(var(--dt-checkbox-w, 40px) * var(--dt-zoom-x, 1)) !important;
-  min-width: calc(var(--dt-checkbox-w, 40px) * var(--dt-zoom-x, 1)) !important;
+  width: calc(var(--dt-checkbox-w, 40px * var(--vcl-scale)) * var(--dt-zoom-x, 1)) !important;
+  min-width: calc(var(--dt-checkbox-w, 40px * var(--vcl-scale)) * var(--dt-zoom-x, 1)) !important;
   text-align: center !important;
   padding: 0 !important;
 }
 .th-checkbox input,
 .td-checkbox input {
-  width: 16px;
-  height: 16px;
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
   cursor: pointer;
   accent-color: var(--color-primary);
 }
@@ -701,7 +701,7 @@ thead .col-fixed-right {
   right: 0;
   top: 0;
   bottom: 0;
-  width: 8px;
+  width: calc(8px * var(--vcl-scale));
   cursor: col-resize;
   background: transparent;
   z-index: 1;
@@ -710,10 +710,10 @@ thead .col-fixed-right {
 .resize-handle::before {
   content: '';
   position: absolute;
-  left: -4px;
+  left: calc(-4px * var(--vcl-scale));
   top: 0;
   bottom: 0;
-  width: 12px;
+  width: calc(12px * var(--vcl-scale));
 }
 .resize-handle:hover {
   background: var(--color-primary);
@@ -748,7 +748,7 @@ th.drag-over {
 /* 卡片滚动条样式：窄滚动条，与表格模式统一 */
 .card-view-scroll::-webkit-scrollbar {
   display: block;
-  width: var(--dt-scrollbar-size, 6px);
+  width: var(--dt-scrollbar-size, calc(6px * var(--vcl-scale)));
 }
 .card-view-scroll::-webkit-scrollbar-track {
   background: var(--color-bg-alt);
@@ -790,7 +790,7 @@ th.drag-over {
   /* 编辑态与桌面表 cell-editing 同色（--dt-select） */
   background: var(--dt-select-soft, #f1ecfe);
   box-shadow: inset 0 0 0 2px var(--dt-select, #7c5cf0);
-  margin: -4px;
+  margin: calc(-4px * var(--vcl-scale));
   padding: var(--space-1);
   border-radius: var(--radius-sm);
 }
@@ -830,8 +830,8 @@ th.drag-over {
   color: var(--color-primary);
 }
 .card-filter-icon .filter-dot {
-  width: 5px;
-  height: 5px;
+  width: calc(5px * var(--vcl-scale));
+  height: calc(5px * var(--vcl-scale));
   border-radius: 50%;
   background: var(--color-primary);
   position: absolute;
@@ -865,7 +865,7 @@ th.drag-over {
 .card-edit-input,
 .card-edit-select {
   width: 100%;
-  padding: var(--space-1) 6px;
+  padding: var(--space-1) calc(6px * var(--vcl-scale));
   font-size: var(--fs-13);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-sm);
@@ -884,8 +884,8 @@ th.drag-over {
   margin-bottom: var(--space-1);
 }
 .card-checkbox input {
-  width: 18px;
-  height: 18px;
+  width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
   accent-color: var(--color-primary);
 }
 
@@ -896,7 +896,7 @@ th.drag-over {
 /* ==================== 操作按钮列 ==================== */
 .th-actions-col {
   width: auto;
-  min-width: 60px;
+  min-width: calc(60px * var(--vcl-scale));
   text-align: center;
   white-space: nowrap;
 }
@@ -904,15 +904,15 @@ th.drag-over {
 .td-actions {
   text-align: center;
   white-space: nowrap;
-  padding: clamp(4px, 1vw, 8px) 8px !important;
+  padding: calc(8px * var(--vcl-scale)) calc(8px * var(--vcl-scale)) !important;
 }
 
 .row-action-btn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1) 10px;
-  margin: 0 3px;
+  padding: var(--space-1) calc(10px * var(--vcl-scale));
+  margin: 0 calc(3px * var(--vcl-scale));
   font-size: var(--fs-12);
   line-height: 1;
   border: none;
@@ -937,10 +937,10 @@ th.drag-over {
   background: rgba(var(--color-primary-rgb, 64 158 255), 0.12);
 }
 .row-action-danger {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
 }
 .row-action-danger:hover {
-  color: var(--color-danger);
+  color: var(--color-danger-on-surface);
   background: rgba(var(--color-danger-rgb, 239 68 68), 0.08);
 }
 .row-action-success {
@@ -958,10 +958,10 @@ th.drag-over {
 
 /* 紧凑模式操作按钮 */
 .data-table.dense .td-actions {
-  padding: var(--space-1) 6px !important;
+  padding: var(--space-1) calc(6px * var(--vcl-scale)) !important;
 }
 .data-table.dense .row-action-btn {
-  padding: var(--space-1) 8px;
+  padding: var(--space-1) calc(8px * var(--vcl-scale));
   font-size: var(--fs-11);
 }
 
@@ -985,7 +985,7 @@ td.cell-has-options {
 }
 .cell-options-arrow {
   position: absolute;
-  right: 6px;
+  right: calc(6px * var(--vcl-scale));
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-text-muted);
@@ -1011,7 +1011,7 @@ td.cell-has-options:hover .cell-options-arrow {
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: var(--space-1) 3px;
+  padding: var(--space-1) calc(3px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   transition: opacity var(--transition-fast);
@@ -1043,7 +1043,7 @@ td.cell-has-options:hover .cell-options-arrow {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  max-height: clamp(180px, 36vh, 360px);
+  max-height: clamp(180px * var(--vcl-scale), 36vh, 360px * var(--vcl-scale));
   overflow-y: auto;
   padding: var(--space-1) 0;
 }
@@ -1051,7 +1051,7 @@ td.cell-has-options:hover .cell-options-arrow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px var(--space-3);
+  padding: calc(7px * var(--vcl-scale)) var(--space-3);
   font-size: var(--fs-13);
   color: var(--color-text);
   cursor: pointer;
@@ -1087,9 +1087,9 @@ td.cell-has-options:hover .cell-options-arrow {
   align-items: center;
   gap: var(--space-2);
   padding: 0 var(--space-4);
-  height: 36px;
+  height: calc(36px * var(--vcl-scale));
   border: none;
-  border-radius: 20px;
+  border-radius: calc(20px * var(--vcl-scale));
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
   font-size: var(--fs-13);

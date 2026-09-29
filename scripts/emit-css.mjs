@@ -48,7 +48,8 @@ for (const d of DOMAINS) {
 }
 // 有独立 chunk CSS 的域数应符合预期：太少说明 Vite 产物形态变了（映射失效）
 const withCss = domainParts.filter((p) => p.css)
-if (withCss.length < 8) fail.push(`仅 ${withCss.length} 个域找到独立 CSS（预期 ≥8）——Vite 产物命名变了，核对 domainCssPath 映射`)
+if (withCss.length < 8)
+  fail.push(`仅 ${withCss.length} 个域找到独立 CSS（预期 ≥8）——Vite 产物命名变了，核对 domainCssPath 映射`)
 
 if (fail.length) {
   console.error('\n❌ emit-css 未通过：')
@@ -65,4 +66,6 @@ for (const { domain, css } of domainParts) {
   writeFileSync(join(DIST, 'css', `${domain}.css`), css ? `${coreCss}\n${css}` : coreCss)
 }
 
-console.log(`[emit-css] vcl-ui.css + dist/css/ 下 ${domainParts.length} 个域自包含 CSS（core ${Math.round(coreCss.length / 1024)}KB）`)
+console.log(
+  `[emit-css] vcl-ui.css + dist/css/ 下 ${domainParts.length} 个域自包含 CSS（core ${Math.round(coreCss.length / 1024)}KB）`,
+)

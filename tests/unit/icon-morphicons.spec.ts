@@ -123,6 +123,46 @@ describe('IconSvg · provider 默认值与静态链路不受影响', () => {
   })
 })
 
+// Lucide 子集契约（2026-09-29）：IconPicker 的 lucide 名录 = lucideSubset 的键。
+//
+// 背景两笔，都真出过故障：
+// ① 面板曾读 lucide-icons.json 全量名录（3965 个），而随包只具名导入 182 个——
+//    面板里 96% 的格子点了画不出来，渲染成兜底方块（用户看到「lucide 图标全变默认图标」）。
+// ② 生成器正则有缺陷（`[^>]*?type=` 会吃掉冒号），把 `<IconSvg :type="icon" />` 的
+//    **prop 名** `icon` 当成图标收了进来；而 `Icon` 恰是 lucide 导出的通用渲染器
+//    （要求 iconNode prop，不传就 `iconNode.map` 抛 TypeError），导致 icon 页直接崩。
+// 本测试锁住三条：键都渲染得出来、不含通用导出、生成器不漏真实引用。
+describe('lucideSubset · 子集即面板名录（可渲染集）', () => {
+  it('不含通用导出（Icon/createLucideIcon 等不是图标，渲染必崩）', async () => {
+    const { lucideSubset } = await import('@/components/_internal/lucide-subset')
+    const bogus = ['icon', 'create-lucide-icon', 'icons', 'lucide-context', 'default'].filter((k) => k in lucideSubset)
+    expect(bogus, `子集混入非图标导出：${bogus.join(', ')}——检查 gen-lucide-subset 的收集正则`).toEqual([])
+  })
+
+  it('每个键都能从 @lucide/vue 解析到组件（列出的都渲染得出来）', async () => {
+    const { lucideSubset } = await import('@/components/_internal/lucide-subset')
+    const names = Object.keys(lucideSubset)
+    expect(names.length).toBeGreaterThan(100)
+    const broken = names.filter((k) => {
+      const c = lucideSubset[k] as unknown
+      return typeof c !== 'function' && typeof c !== 'object'
+    })
+    expect(broken, `子集里有 ${broken.length} 个名字解析不到组件`).toEqual([])
+  })
+
+  it('IconPicker 的 lucide 名录与子集键完全一致（面板不列画不出的名字）', async () => {
+    const { lucideSubset } = await import('@/components/_internal/lucide-subset')
+    const { readFileSync } = await import('node:fs')
+    const pickerSrc = readFileSync('src/components/form/IconPicker.vue', 'utf8')
+    // 名录直接由子集派生；若有人改回读全量 JSON，这里立刻红
+    expect(pickerSrc, 'IconPicker 应读 lucideSubset 的键作为名录').toContain('Object.keys(lucideSubset)')
+    expect(pickerSrc, 'IconPicker 不应再读全量名录 lucide-icons.json').not.toMatch(
+      /import\s+\w+\s+from\s+['"]@\/components\/_internal\/lucide-icons\.json['"]/,
+    )
+    expect(Object.keys(lucideSubset).length).toBeGreaterThan(0)
+  })
+})
+
 // Solar 名录契约（2026-09-20）：IconPicker 的 solar 列表 = 本地可渲染集，
 // 曾优先 fetch Iconify CDN 全量名录——CDN 名录里大多数名字不在随包几何数据里，
 // 列出也只能渲染兜底占位图；手抄精选还与数据 17 stale / 5 漏名双向漂移。

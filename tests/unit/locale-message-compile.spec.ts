@@ -55,4 +55,3 @@ describe('语言包消息编译守卫 · 自检', () => {
     expect(log).toContain('Message compilation error')
   })
 })
-

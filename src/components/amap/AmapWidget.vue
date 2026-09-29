@@ -249,7 +249,7 @@ defineExpose({
   <div
     class="amap-widget"
     :class="customClass"
-    style="width: 100%; height: 100%; min-height: 300px; position: relative"
+    style="width: 100%; height: 100%; min-height: calc(300px * var(--vcl-scale)); position: relative"
     role="region"
     :aria-label="t('amap.mapWithMarkers', { n: markers.length })"
   >

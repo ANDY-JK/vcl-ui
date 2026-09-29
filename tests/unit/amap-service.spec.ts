@@ -1,7 +1,13 @@
 // amap-service 纯函数行为锁定测试
 // 覆盖：坐标校验、中国经纬度归一化（互换纠正）、球面距离、平台检测、导航链接构建
 import { describe, it, expect } from 'vitest'
-import { isValidLatLon, normalizeChinaLatLon, calcDistance, detectPlatform, buildNavLink } from '@/components/amap/amap-service'
+import {
+  isValidLatLon,
+  normalizeChinaLatLon,
+  calcDistance,
+  detectPlatform,
+  buildNavLink,
+} from '@/components/amap/amap-service'
 
 describe('isValidLatLon', () => {
   it('合法坐标通过', () => {

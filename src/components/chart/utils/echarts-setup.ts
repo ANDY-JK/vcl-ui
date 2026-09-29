@@ -48,7 +48,7 @@ export async function ensureWordCloud(): Promise<void> {
     await import('echarts-wordcloud')
     _wordCloudLoaded = true
   } catch {
-    warnOnce('Chart', "wordCloud 图表类型需安装 echarts-wordcloud：npm i echarts-wordcloud（当前渲染将留空）")
+    warnOnce('Chart', 'wordCloud 图表类型需安装 echarts-wordcloud：npm i echarts-wordcloud（当前渲染将留空）')
   }
 }
 

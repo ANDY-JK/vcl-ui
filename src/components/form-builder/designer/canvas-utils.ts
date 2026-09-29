@@ -7,11 +7,7 @@
 import { isContainerNode, type DesignerNode } from './types'
 
 /** 选中态判定：单选命中 或 在多选集合内 */
-export function isSelected(
-  id: string,
-  selectedId: string | null,
-  selectedIds: string[],
-): boolean {
+export function isSelected(id: string, selectedId: string | null, selectedIds: string[]): boolean {
   return id === selectedId || selectedIds.includes(id)
 }
 
@@ -42,10 +38,7 @@ export function gridColSpan(node: DesignerNode, child: DesignerNode): number {
 }
 
 /** 找到 children 数组 === 目标数组的容器节点（面板字段拖到嵌套子字段上时，定位应插入的容器） */
-export function findContainerOfChildren(
-  list: DesignerNode[],
-  children: DesignerNode[],
-): DesignerNode | null {
+export function findContainerOfChildren(list: DesignerNode[], children: DesignerNode[]): DesignerNode | null {
   for (const n of list) {
     if (n.children === children) return n
     if (n.children?.length) {
@@ -60,11 +53,7 @@ export function findContainerOfChildren(
  * 根据鼠标纵向位置算出落点：容器 25/50/25 分三区，字段 50/50 分两区。
  * sortDrag = 字段排序拖拽（true）还是面板新字段拖入（false）。
  */
-export function resolveDropPos(
-  e: DragEvent,
-  node: DesignerNode,
-  sortDrag: boolean,
-): 'before' | 'after' | 'inside' {
+export function resolveDropPos(e: DragEvent, node: DesignerNode, sortDrag: boolean): 'before' | 'after' | 'inside' {
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
   const ratio = rect.height > 0 ? (e.clientY - rect.top) / rect.height : 0
   if (isContainerNode(node)) {

@@ -265,29 +265,29 @@ const mixedSeries = [
     </div>
 
     <!-- 趋势类 -->
-    <Card title="趋势类 — line / area / bar / mixed" title-as="h2" style="margin-bottom: 14px">
+    <Card title="趋势类 — line / area / bar / mixed" title-as="h2" style="margin-bottom: calc(14px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>折线图 line — 平滑 + 图例 + 标题</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart type="line" :categories="months" :series="lineSeries" :dark-mode="darkMode" title="月度访问趋势" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>面积图 area — 填充渐变</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart type="area" :categories="months" :series="areaSeries" :dark-mode="darkMode" title="PV / UV" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>柱状图 bar — 多系列对比</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart type="bar" :categories="days" :series="barSeries" :dark-mode="darkMode" title="水果销量" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>混合图表 mixed — 柱状 + 折线双轴</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="mixed"
               :categories="months"
@@ -301,23 +301,23 @@ const mixedSeries = [
     </Card>
 
     <!-- 分布类 -->
-    <Card title="分布类 — pie / scatter / radar" title-as="h2" style="margin-bottom: 20px">
+    <Card title="分布类 — pie / scatter / radar" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>饼图 pie — 环形 + 标签</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" title="流量来源" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>散点图 scatter — 无平滑</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart type="scatter" :series="scatterSeries" :dark-mode="darkMode" title="身高-体重" :smooth="false" />
           </div>
         </div>
         <div class="chart-cell" style="grid-column: 1 / -1">
           <h2>雷达图 radar — 双系列对比</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="radar"
               :data="{ radarIndicators }"
@@ -331,11 +331,11 @@ const mixedSeries = [
     </Card>
 
     <!-- 业务类 -->
-    <Card title="业务类 — gauge / funnel / heatmap" title-as="h2" style="margin-bottom: 20px">
+    <Card title="业务类 — gauge / funnel / heatmap" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>仪表盘 gauge</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="gauge"
               :data="{ gaugeData: [{ value: 72, name: '完成率' }] }"
@@ -346,13 +346,13 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>漏斗图 funnel</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart type="funnel" :series="funnelSeries" :dark-mode="darkMode" title="转化漏斗" />
           </div>
         </div>
         <div class="chart-cell" style="grid-column: 1 / -1">
           <h2>热力图 heatmap — 24h × 7d</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart
               type="heatmap"
               :data="{ heatmapData, heatmapXCategories: heatmapXCats, heatmapYCategories: heatmapYCats }"
@@ -365,17 +365,17 @@ const mixedSeries = [
     </Card>
 
     <!-- 层次类 -->
-    <Card title="层次类 — treemap / sunburst" title-as="h2" style="margin-bottom: 20px">
+    <Card title="层次类 — treemap / sunburst" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>矩形树图 treemap — 可下钻</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="treemap" :data="{ treeData: treemapData }" :dark-mode="darkMode" title="销售分布" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>旭日图 sunburst — 层级展示</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="sunburst" :data="{ treeData: sunburstData }" :dark-mode="darkMode" title="组织架构" />
           </div>
         </div>
@@ -383,17 +383,17 @@ const mixedSeries = [
     </Card>
 
     <!-- 流程类 -->
-    <Card title="流程类 — sankey / graph" title-as="h2" style="margin-bottom: 20px">
+    <Card title="流程类 — sankey / graph" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>桑基图 sankey — 流向分析</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart type="sankey" :data="{ sankeyNodes, sankeyLinks }" :dark-mode="darkMode" title="用户流转" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>关系图 graph — 力导向布局</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="graph" :data="{ graphNodes, graphLinks }" :dark-mode="darkMode" title="社交网络" />
           </div>
         </div>
@@ -401,11 +401,11 @@ const mixedSeries = [
     </Card>
 
     <!-- 金融类 -->
-    <Card title="金融类 — candlestick / boxplot" title-as="h2" style="margin-bottom: 20px">
+    <Card title="金融类 — candlestick / boxplot" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>K 线图 candlestick — 红涨绿跌</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="candlestick"
               :categories="months"
@@ -417,7 +417,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>箱线图 boxplot — 分布特征</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart type="boxplot" :categories="days" :data="{ boxplotData }" :dark-mode="darkMode" title="周数据分布" />
           </div>
         </div>
@@ -428,12 +428,12 @@ const mixedSeries = [
     <Card
       title="🆕 新增 — waterfall / pictorialBar / tree / wordCloud / timeline"
       title-as="h2"
-      style="margin-bottom: 20px"
+      style="margin-bottom: calc(20px * var(--vcl-scale))"
     >
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>瀑布图 waterfall — 财务收支</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="waterfall"
               :categories="['起始', '营收', '成本', '利润', '税费', '净利']"
@@ -445,7 +445,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>象形柱状 pictorialBar — 符号柱</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="pictorialBar"
               :categories="['Q1', 'Q2', 'Q3', 'Q4']"
@@ -460,7 +460,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>树图 tree — 组织架构</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart
               type="tree"
               :data="{
@@ -482,7 +482,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>词云 wordCloud — 文本分析</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart
               type="wordCloud"
               :series="[
@@ -511,7 +511,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell" style="grid-column: 1 / -1">
           <h2>时间轴 timeline — 时序播放</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="timeline"
               :data="{
@@ -531,11 +531,15 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 高级功能演示 -->
-    <Card title="🆕 高级功能 — 堆叠 / 条形 / 数据标签 / 百分比堆叠" title-as="h2" style="margin-bottom: 20px">
+    <Card
+      title="🆕 高级功能 — 堆叠 / 条形 / 数据标签 / 百分比堆叠"
+      title-as="h2"
+      style="margin-bottom: calc(20px * var(--vcl-scale))"
+    >
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>堆叠柱状图 stacked</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -549,7 +553,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>百分比堆叠 stacked100</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -562,7 +566,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>条形图 horizontal</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="['苹果', '橙子', '香蕉', '葡萄', '西瓜', '芒果', '草莓']"
@@ -576,7 +580,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>折线图 + 数据标签</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="line"
               :categories="days"
@@ -589,7 +593,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>堆叠面积图 stacked</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="area"
               :categories="months"
@@ -602,7 +606,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>图例左侧 + Y轴范围</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="line"
               :categories="days"
@@ -618,17 +622,21 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 极简推断模式 -->
-    <Card title="🆕 极简模式 — 裸数据自动推断，无需传 type/categories/series" title-as="h2" style="margin-bottom: 20px">
+    <Card
+      title="🆕 极简模式 — 裸数据自动推断，无需传 type/categories/series"
+      title-as="h2"
+      style="margin-bottom: calc(20px * var(--vcl-scale))"
+    >
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>一维数组 :data="[12, 18, 24, 30, 36]"</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart :data="[12, 18, 24, 30, 36]" :dark-mode="darkMode" title="极简一维" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>二维数组 :data="[[12,18,24], [8,12,15]]"</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               :data="[
                 [12, 18, 24],
@@ -641,7 +649,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>对象数组 :data="[{name:'Q1',value:12},...]"</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               :data="[
                 { name: 'Q1', value: 12 },
@@ -656,7 +664,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>长标签自动旋转（>4字自动45°）</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="['第一季度', '第二季度', '第三季度', '第四季度', '全年汇总']"
@@ -670,11 +678,15 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 标注线 + 标注区 -->
-    <Card title="🆕 标注线 markLine / 标注区 markArea" title-as="h2" style="margin-bottom: 20px">
+    <Card
+      title="🆕 标注线 markLine / 标注区 markArea"
+      title-as="h2"
+      style="margin-bottom: calc(20px * var(--vcl-scale))"
+    >
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>均值线 + 目标线</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -690,7 +702,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>标注区域 — 绿区标正常范围</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="line"
               :categories="days"
@@ -707,7 +719,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>柱状图 + 均值线</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="months"
@@ -723,7 +735,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>堆叠 + 标注区（红色警戒带）</h2>
-          <div class="chart-wrap" style="height: 320px">
+          <div class="chart-wrap" style="height: calc(320px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -739,41 +751,45 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 色板预设 -->
-    <Card title="🆕 色板预设 palette — 一键换皮（5套内置方案）" title-as="h2" style="margin-bottom: 20px">
+    <Card
+      title="🆕 色板预设 palette — 一键换皮（5套内置方案）"
+      title-as="h2"
+      style="margin-bottom: calc(20px * var(--vcl-scale))"
+    >
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>ocean 海洋</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="ocean" title="海洋色" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>forest 森林</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="forest" title="森林色" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>sunset 日落</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="sunset" title="日落色" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>midnight 午夜</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="midnight" title="午夜色" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>pastel 马卡龙</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="pie" :data="{ pieData }" :dark-mode="darkMode" palette="pastel" title="马卡龙色" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>midnight 柱状图效果</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -788,11 +804,15 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 组合演示 -->
-    <Card title="🆕 多属性组合 — 堆叠+色板+标注+数据标签同时使用" title-as="h2" style="margin-bottom: 20px">
+    <Card
+      title="🆕 多属性组合 — 堆叠+色板+标注+数据标签同时使用"
+      title-as="h2"
+      style="margin-bottom: calc(20px * var(--vcl-scale))"
+    >
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>堆叠条形 + 数据标签 + ocean 色板</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -808,7 +828,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>折线 + 标注线 + 数据标签 + sunset + 区间</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart
               type="line"
               :categories="months"
@@ -824,7 +844,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>面积图 + 堆叠 + forest 色板</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart
               type="area"
               :categories="months"
@@ -838,7 +858,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>百分比堆叠 + 左侧图例 + pastel</h2>
-          <div class="chart-wrap" style="height: 380px">
+          <div class="chart-wrap" style="height: calc(380px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -855,11 +875,11 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 暗色全体验 -->
-    <Card title="🆕 暗色模式 — 深色背景下各色板效果" title-as="h2" style="margin-bottom: 20px">
+    <Card title="🆕 暗色模式 — 深色背景下各色板效果" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>默认色板 dark</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -875,7 +895,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>ocean dark</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -891,7 +911,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>sunset dark</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -907,7 +927,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>midnight dark</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="days"
@@ -925,11 +945,11 @@ const mixedSeries = [
     </Card>
 
     <!-- 🆕 散点图 + 标注结合 -->
-    <Card title="🆕 散点图 + 标注 — 体重分布参考" title-as="h2" style="margin-bottom: 20px">
+    <Card title="🆕 散点图 + 标注 — 体重分布参考" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>散点图 + 均值十字线</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="scatter"
               :series="[
@@ -973,7 +993,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>散点 + 标注区（标准体重范围）</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="scatter"
               :series="[
@@ -1014,11 +1034,11 @@ const mixedSeries = [
     </Card>
 
     <!-- 状态 & 参数演示 -->
-    <Card title="参数演示" title-as="h2" style="margin-bottom: 20px">
+    <Card title="参数演示" title-as="h2" style="margin-bottom: calc(20px * var(--vcl-scale))">
       <div class="chart-grid">
         <div class="chart-cell">
           <h2>Loading 加载态</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="bar"
               :categories="months"
@@ -1031,13 +1051,13 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>空数据 emptyText</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart type="line" :dark-mode="darkMode" empty-text="暂无可用数据" />
           </div>
         </div>
         <div class="chart-cell">
           <h2>自定义色板 colors + 无图例 showLegend=false</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="pie"
               :data="{ pieData }"
@@ -1050,7 +1070,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>无标题无图例 + 阶梯折线 smooth=false</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="line"
               :categories="days"
@@ -1063,7 +1083,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>隐藏数据点 showSymbol=false</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               type="area"
               :categories="months"
@@ -1076,7 +1096,7 @@ const mixedSeries = [
         </div>
         <div class="chart-cell">
           <h2>完整 option 模式 — 直接传入 ECharts 配置</h2>
-          <div class="chart-wrap" style="height: 360px">
+          <div class="chart-wrap" style="height: calc(360px * var(--vcl-scale))">
             <Chart
               :dark-mode="darkMode"
               :option="{
@@ -1270,7 +1290,7 @@ const mixedSeries = [
     </Card>
 
     <!-- 图表类型速查 -->
-    <Card title="图表类型速查" title-as="h2" style="margin-top: 20px">
+    <Card title="图表类型速查" title-as="h2" style="margin-top: calc(20px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -1390,11 +1410,17 @@ const mixedSeries = [
     </Card>
 
     <!-- 独立图例组件 -->
-    <Card title="ChartLegend 独立图例组件" title-as="h2" style="margin-top: 20px">
-      <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 12px">
+    <Card title="ChartLegend 独立图例组件" title-as="h2" style="margin-top: calc(20px * var(--vcl-scale))">
+      <p
+        style="
+          font-size: calc(13px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         flex-wrap + gap 自然撑高，永不重叠。图例点击切换显隐，适合与 BaseChart 配合使用。
       </p>
-      <div style="margin-bottom: 12px; display: flex; gap: 8px">
+      <div style="margin-bottom: calc(12px * var(--vcl-scale)); display: flex; gap: calc(8px * var(--vcl-scale))">
         <Button text="全选" variant="ghost" size="sm" @click="legendItems.forEach((i) => (i.visible = true))" />
         <Button text="全不选" variant="ghost" size="sm" @click="legendItems.forEach((i) => (i.visible = false))" />
       </div>
@@ -1407,22 +1433,44 @@ const mixedSeries = [
           }
         "
       />
-      <div style="margin-top: 12px; font-size: 13px; color: var(--color-text-muted)">
-        <span v-for="item in legendItems" :key="item.name" style="margin-right: 12px">
+      <div
+        style="
+          margin-top: calc(12px * var(--vcl-scale));
+          font-size: calc(13px * var(--vcl-scale));
+          color: var(--color-text-muted);
+        "
+      >
+        <span v-for="item in legendItems" :key="item.name" style="margin-right: calc(12px * var(--vcl-scale))">
           <span :style="{ opacity: item.visible ? 1 : 0.3 }"
             >{{ item.name }}: {{ item.visible ? '显示' : '隐藏' }}</span
           >
         </span>
       </div>
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 12px">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-top: calc(12px * var(--vcl-scale));
+        "
+      >
         <code>ChartLegend</code> Props: <code>items: { name, color, visible }[]</code> | Events:
         <code>@toggle(name: string)</code>
       </p>
     </Card>
 
     <!-- BaseChart：原始 option 直通 -->
-    <Card title="BaseChart — 直接喂 ECharts 原始 option" title-as="h2" style="margin-top: 20px">
-      <p style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 12px">
+    <Card
+      title="BaseChart — 直接喂 ECharts 原始 option"
+      title-as="h2"
+      style="margin-top: calc(20px * var(--vcl-scale))"
+    >
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
         <code>Chart</code> 的 props 覆盖不到的图形（仪表盘、桑基、自定义 series 等）用 <code>BaseChart</code>：只吃
         <code>option</code> / <code>height</code> / <code>width</code> / <code>darkMode</code> / <code>loading</code> /
         <code>emptyText</code> / <code>toolbar</code>， 其余全部交给 ECharts 自己。
@@ -1431,7 +1479,7 @@ const mixedSeries = [
     </Card>
 
     <!-- Events -->
-    <Card title="Events" title-as="h2" style="margin-top: 20px">
+    <Card title="Events" title-as="h2" style="margin-top: calc(20px * var(--vcl-scale))">
       <table class="props-table">
         <thead>
           <tr>
@@ -1489,37 +1537,37 @@ const mixedSeries = [
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: calc(8px * var(--vcl-scale));
 }
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 16px;
-  font-size: 14px;
+  margin-bottom: calc(16px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 .demo-desc code {
   background: var(--color-bg-alt);
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(6px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 .dark-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--vcl-scale));
   cursor: pointer;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   white-space: nowrap;
 }
 
 .chart-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: calc(10px * var(--vcl-scale));
 }
 @container demo (max-width: 767px) {
   .chart-grid {
@@ -1528,7 +1576,7 @@ const mixedSeries = [
 }
 
 .chart-cell {
-  padding: 8px 10px;
+  padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   background: var(--color-bg);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
@@ -1536,8 +1584,8 @@ const mixedSeries = [
   overflow: hidden;
 }
 .chart-cell h4 {
-  margin: 0 0 4px 0;
-  font-size: 12px;
+  margin: 0 0 calc(4px * var(--vcl-scale)) 0;
+  font-size: calc(12px * var(--vcl-scale));
   color: var(--color-text-secondary);
   font-weight: 600;
 }
@@ -1550,22 +1598,22 @@ const mixedSeries = [
 
 .props-table {
   width: 100%;
-  font-size: 13px;
+  font-size: calc(13px * var(--vcl-scale));
   border-collapse: collapse;
 }
 .props-table th {
   text-align: left;
-  padding: 6px 8px;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 2px solid var(--color-border);
 }
 .props-table td {
-  padding: 6px 8px;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light);
 }
 .props-table code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>

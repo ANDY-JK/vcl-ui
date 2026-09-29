@@ -282,8 +282,8 @@ onUnmounted(() => {
 <style>
 /* ===== popover 卡片 ===== */
 .popover-card {
-  min-width: clamp(160px, 26vw, 220px);
-  max-width: clamp(280px, 42vw, 380px);
+  min-width: calc(220px * var(--vcl-scale));
+  max-width: calc(380px * var(--vcl-scale));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -291,24 +291,24 @@ onUnmounted(() => {
   overflow: hidden;
 }
 .popover-title {
-  padding: clamp(7px, 1.2vw, var(--space-2)) clamp(var(--space-2), 1.8vw, 14px);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  padding: var(--space-2) calc(14px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   border-bottom: 1px solid var(--color-border-light);
 }
 .popover-body {
-  padding: clamp(var(--space-2), 1.5vw, 12px) clamp(10px, 1.8vw, 14px);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  padding: calc(12px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-secondary);
 }
 
 /* ===== tooltip 气泡 ===== */
 .tooltip-pop {
-  max-width: clamp(180px, 32vw, 320px);
-  padding: clamp(3px, 0.6vw, var(--space-1)) clamp(5px, 1vw, 10px);
+  max-width: calc(320px * var(--vcl-scale));
+  padding: var(--space-1) calc(10px * var(--vcl-scale));
   background: var(--color-sidebar);
   color: white;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   white-space: normal;
   word-break: break-word;

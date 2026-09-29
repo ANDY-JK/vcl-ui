@@ -13,7 +13,10 @@ function makeItem(over: Partial<FormMetaItem> = {}): FormMetaItem {
     id: 'f_test',
     name: '测试表单',
     updatedAt: '2026/8/30 10:00',
-    collectKey: collectStorageKey([{ key: 'name', type: 'text' }, { key: 'age', type: 'number' }]),
+    collectKey: collectStorageKey([
+      { key: 'name', type: 'text' },
+      { key: 'age', type: 'number' },
+    ]),
     ...over,
   }
 }
@@ -67,7 +70,11 @@ describe('FormDataSummary · CSV 导出', () => {
   it('导出 CSV 含 BOM + 表头 + 数据行', async () => {
     const store = createLocalFormStore()
     const item = makeItem()
-    await store.appendRecord(item.collectKey, { id: 'r1', time: 't1', data: { name: '张三', age: 30, tags: ['a', 'b'] } })
+    await store.appendRecord(item.collectKey, {
+      id: 'r1',
+      time: 't1',
+      data: { name: '张三', age: 30, tags: ['a', 'b'] },
+    })
 
     const w = mountSummary(item)
     await flushPromises()

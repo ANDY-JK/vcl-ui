@@ -3,7 +3,14 @@
 // 锁定目标：buildChartOption 对每种类型产出正确 series.type 与关键配置；common 智能默认行为
 import { describe, it, expect } from 'vitest'
 import { buildChartOption } from '@/components/chart/options'
-import { buildCommonChrome, autoLabelRotate, autoDataZoom, smartLegend, buildMarkLine, buildMarkArea } from '@/components/chart/options/common'
+import {
+  buildCommonChrome,
+  autoLabelRotate,
+  autoDataZoom,
+  smartLegend,
+  buildMarkLine,
+  buildMarkArea,
+} from '@/components/chart/options/common'
 import type { BuildParams, ChartType } from '@/components/chart/utils/types'
 
 /** 构造最小 BuildParams */
@@ -36,11 +43,22 @@ describe('buildChartOption · 21 种图表类型', () => {
     { type: 'bar', seriesType: 'bar' },
     { type: 'area', seriesType: 'line' }, // area 内部是 line + areaStyle
     { type: 'scatter', seriesType: 'scatter' },
-    { type: 'mixed', seriesType: 'mixed', series: [{ name: 's1', type: 'line', data: [1, 2, 3] }, { name: 's2', type: 'bar', data: [1, 2, 3] }] },
+    {
+      type: 'mixed',
+      seriesType: 'mixed',
+      series: [
+        { name: 's1', type: 'line', data: [1, 2, 3] },
+        { name: 's2', type: 'bar', data: [1, 2, 3] },
+      ],
+    },
     { type: 'radar', seriesType: 'radar', data: { radarIndicators: [{ name: '指标', max: 100 }] } },
     { type: 'gauge', seriesType: 'gauge', data: { gaugeData: [{ value: 50, name: '表' }] } },
     { type: 'funnel', seriesType: 'funnel' },
-    { type: 'heatmap', seriesType: 'heatmap', data: { heatmapData: [[0, 0, 1]], heatmapXCategories: ['x1'], heatmapYCategories: ['y1'] } },
+    {
+      type: 'heatmap',
+      seriesType: 'heatmap',
+      data: { heatmapData: [[0, 0, 1]], heatmapXCategories: ['x1'], heatmapYCategories: ['y1'] },
+    },
     { type: 'treemap', seriesType: 'treemap', data: { treeData: [{ name: '根', children: [] }] } },
     { type: 'candlestick', seriesType: 'candlestick', data: { candlestickData: [[1, 2, 3, 4]] } },
     { type: 'sankey', seriesType: 'sankey', data: { sankeyNodes: [{ name: 'a' }], sankeyLinks: [] } },
@@ -50,13 +68,20 @@ describe('buildChartOption · 21 种图表类型', () => {
     { type: 'waterfall', seriesType: 'bar' }, // 瀑布用 bar 模拟
     { type: 'pictorialBar', seriesType: 'pictorialBar' },
     { type: 'tree', seriesType: 'tree', data: { treeData: [{ name: '根', children: [] }] } },
-    { type: 'timeline', seriesType: 'bar', data: { timelineData: [{ time: '2026', categories: ['a'], series: [{ name: 's', data: [1] }] }] } },
+    {
+      type: 'timeline',
+      seriesType: 'bar',
+      data: { timelineData: [{ time: '2026', categories: ['a'], series: [{ name: 's', data: [1] }] }] },
+    },
     { type: 'wordCloud', seriesType: 'wordCloud' },
     { type: 'pie', seriesType: 'pie', data: { pieData: [{ name: 'x', value: 1 }] } },
   ]
 
   it.each(cases)('$type → series.type 正确', ({ type, seriesType, data, series }) => {
-    const opt = buildChartOption(type, baseParams(type, { data: data ?? {}, ...(series ? { series } : {}) })) as Record<string, any>
+    const opt = buildChartOption(type, baseParams(type, { data: data ?? {}, ...(series ? { series } : {}) })) as Record<
+      string,
+      any
+    >
     if (type === 'mixed') {
       // mixed：series 数组同时含 line 与 bar（首个按实现为 bar）
       const types = (opt.series as Record<string, any>[]).map((s) => s.type)
@@ -124,7 +149,10 @@ describe('common 智能默认', () => {
   })
 
   it('buildMarkLine：type 模式与数值模式', () => {
-    const ml = buildMarkLine([{ type: 'average', label: '均值' }, { value: 10, label: '线' }])
+    const ml = buildMarkLine([
+      { type: 'average', label: '均值' },
+      { value: 10, label: '线' },
+    ])
     expect(ml?.data).toHaveLength(2)
     expect(ml?.data[0]).toMatchObject({ type: 'average', name: '均值' })
     expect(ml?.data[1]).toMatchObject({ yAxis: 10, name: '线' })
@@ -140,7 +168,10 @@ describe('common 智能默认', () => {
 
 describe('bar/line 高级控制', () => {
   it('horizontal + stacked100：x/y 互换且 y 轴 0-100', () => {
-    const opt = buildChartOption('bar', baseParams('bar', { horizontal: true, stacked100: true })) as Record<string, any>
+    const opt = buildChartOption('bar', baseParams('bar', { horizontal: true, stacked100: true })) as Record<
+      string,
+      any
+    >
     expect(opt.xAxis.type).toBe('value')
     expect(opt.yAxis.type).toBe('category')
     expect(opt.series[0].stack).toBe('total')

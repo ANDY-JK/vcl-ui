@@ -106,7 +106,7 @@ useBodyScrollLock(() => props.fullscreen)
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  padding: clamp(var(--space-5), 4vw, 32px) clamp(24px, 5vw, 40px);
+  padding: calc(32px * var(--vcl-scale)) calc(40px * var(--vcl-scale));
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-lg);
@@ -142,26 +142,26 @@ useBodyScrollLock(() => props.fullscreen)
   animation: spin 0.8s linear infinite;
 }
 .spinner-sm .spinner-ring {
-  width: clamp(14px, 2vw, 16px);
-  height: clamp(14px, 2vw, 16px);
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
 }
 .spinner-md .spinner-ring {
-  width: clamp(20px, 3vw, 24px);
-  height: clamp(20px, 3vw, 24px);
+  width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
 }
 .spinner-lg .spinner-ring {
-  width: clamp(32px, 5vw, 40px);
-  height: clamp(32px, 5vw, 40px);
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
 }
 .spinner-text {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 
 /* ===== skeleton ===== */
 .skel-line,
 .skel-text {
-  height: clamp(12px, 1.8vw, 14px);
+  height: calc(14px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   background: linear-gradient(90deg, var(--color-bg-alt) 25%, var(--color-border) 50%, var(--color-bg-alt) 75%);
   background-size: 200% 100%;
@@ -170,8 +170,8 @@ useBodyScrollLock(() => props.fullscreen)
 .skel-card {
   display: flex;
   flex-direction: column;
-  gap: clamp(var(--space-2), 1.5vw, 12px);
-  padding: clamp(var(--space-2), 1.8vw, 16px);
+  gap: calc(12px * var(--vcl-scale));
+  padding: calc(16px * var(--vcl-scale));
 }
 .skel-text {
   display: block;
@@ -179,7 +179,7 @@ useBodyScrollLock(() => props.fullscreen)
 .skel-lines {
   display: flex;
   flex-direction: column;
-  gap: clamp(var(--space-2), 1.5vw, 12px);
+  gap: calc(12px * var(--vcl-scale));
 }
 
 /* 动效敏感用户豁免（对齐 Skeleton 先例）：spinner/shimmer 降为慢速，避免持续高频动画 */

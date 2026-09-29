@@ -75,6 +75,9 @@ describe('useUploadQueue 并发闸门', () => {
       resolvers.shift()!()
       await flush(3)
     }
-    expect(q.files.value.every((f) => f.status === 'done'), '全部应完成').toBe(true)
+    expect(
+      q.files.value.every((f) => f.status === 'done'),
+      '全部应完成',
+    ).toBe(true)
   })
 })

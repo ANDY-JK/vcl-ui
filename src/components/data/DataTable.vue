@@ -1861,9 +1861,14 @@ provideDataTableContext({
     @wheel="onTableWheel"
   >
     <!-- 内部异常兜底 — 组件内部异常不导致页面崩溃 -->
-    <div v-if="_internalError" style="padding: 40px 20px; text-align: center">
-      <h3 style="color: var(--color-danger); margin-bottom: 8px">{{ t('table.renderError') }}</h3>
-      <p style="color: var(--color-text-muted); font-size: var(--fs-13); margin-bottom: 16px">
+    <div
+      v-if="_internalError"
+      style="padding: calc(40px * var(--vcl-scale)) calc(20px * var(--vcl-scale)); text-align: center"
+    >
+      <h3 style="color: var(--color-danger-on-surface); margin-bottom: calc(8px * var(--vcl-scale))">
+        {{ t('table.renderError') }}
+      </h3>
+      <p style="color: var(--color-text-muted); font-size: var(--fs-13); margin-bottom: calc(16px * var(--vcl-scale))">
         {{ _internalError.message }}
       </p>
       <button class="base-btn btn-primary btn-md" @click="_internalError = null">{{ t('common.retry') }}</button>

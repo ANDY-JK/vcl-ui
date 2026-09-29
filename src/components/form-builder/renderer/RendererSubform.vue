@@ -91,7 +91,7 @@ function removeRow(rowIndex: number): void {
 .fb-subform {
   border: 1px solid var(--color-border, #e2e8f0);
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
-  border-radius: var(--fb-radius, 6px);
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   overflow: hidden;
   width: var(--fb-control-width, 100%);
 }
@@ -99,7 +99,7 @@ function removeRow(rowIndex: number): void {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
+  padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   background: var(--color-bg-alt, #f8fafc);
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   font-size: var(--fs-12);
@@ -110,13 +110,13 @@ function removeRow(rowIndex: number): void {
   font-size: var(--fs-11);
   color: var(--color-primary, #3b82f6);
   cursor: pointer;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 2px calc(8px * var(--vcl-scale));
+  border-radius: calc(4px * var(--vcl-scale));
   border: 1px solid var(--color-border, #e2e8f0);
   background: var(--color-bg, #fff);
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: calc(3px * var(--vcl-scale));
 }
 .fb-subform-add:hover {
   background: var(--color-primary-light);
@@ -128,8 +128,8 @@ function removeRow(rowIndex: number): void {
 }
 .fb-subform-row {
   display: flex;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: calc(6px * var(--vcl-scale));
+  padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border-bottom: 1px solid var(--color-border-light, #f1f5f9);
   align-items: center;
 }
@@ -144,8 +144,8 @@ function removeRow(rowIndex: number): void {
   width: 100%;
   border: 1px solid var(--color-border, #e2e8f0);
   border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
-  border-radius: var(--fb-radius, 4px);
-  padding: 5px 8px;
+  border-radius: var(--fb-radius, calc(4px * var(--vcl-scale)));
+  padding: calc(5px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   font-size: var(--fs-12);
   background: var(--color-bg, #fff);
   color: var(--color-text, #1e293b);
@@ -156,10 +156,10 @@ function removeRow(rowIndex: number): void {
 }
 .fb-subform-del {
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: calc(22px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
   border: none;
-  border-radius: 4px;
+  border-radius: calc(4px * var(--vcl-scale));
   background: transparent;
   color: var(--color-text-muted, #94a3b8);
   cursor: pointer;
@@ -167,10 +167,10 @@ function removeRow(rowIndex: number): void {
 }
 .fb-subform-del:hover {
   background: var(--color-danger-bg);
-  color: var(--color-danger, #ef4444);
+  color: var(--color-danger-on-surface);
 }
 .fb-subform-empty {
-  padding: 16px 10px;
+  padding: calc(16px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   text-align: center;
   font-size: var(--fs-12);
   color: var(--color-text-muted, #94a3b8);

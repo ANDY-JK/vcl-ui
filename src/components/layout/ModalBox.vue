@@ -249,9 +249,9 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
 .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: clamp(var(--space-2), 1.2vw, 10px) 0;
+  padding: calc(10px * var(--vcl-scale)) 0;
   border-bottom: 1px solid var(--color-border-light);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 .detail-label {
   color: var(--color-text-muted);
@@ -271,7 +271,7 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  padding: var(--space-3) 8px;
+  padding: var(--space-3) calc(8px * var(--vcl-scale));
   border: none;
   background: transparent;
   border-radius: var(--radius-md);
@@ -289,10 +289,10 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
   flex-direction: column;
 }
 .select-item-label {
-  font-size: clamp(12px, calc(12px + var(--vcl-fit) * 3), 15px);
+  font-size: calc(15px * var(--vcl-scale));
 }
 .select-item-desc {
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 4), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   color: var(--color-text-muted);
 }
 </style>

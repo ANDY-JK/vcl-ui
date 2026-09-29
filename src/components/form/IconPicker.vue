@@ -31,14 +31,23 @@ import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { SOLAR_ICONS } from '@/components/_internal/solar-icons'
 import { ensureSolarIcons } from '@/components/_internal/solar-icons-registry'
-import lucideIconNames from '@/components/_internal/lucide-icons.json'
+import { lucideSubset } from '@/components/_internal/lucide-subset'
 import { ensureMorphicons, isMorphiconsReady, getMorphIconNames } from '@/components/_internal/morphicons-registry'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { toNativeColorValue } from '@/components/_internal/utils'
 
-/** Lucide 全量图标名（kebab-case），从预构建 JSON 加载，避免运行时 Object.keys + map 1500+ 项 */
-const allIcons = lucideIconNames as string[]
+/**
+ * Lucide 可选图标名（kebab-case）＝ 随包具名子集的键，即「名录 = 可渲染集」。
+ *
+ * 此前这里读的是 _internal/lucide-icons.json 全量名录（3965 个），而随包只具名导入
+ * 182 个（要摇树就不能全量进包）——面板里 96% 的格子点了画不出来，渲染成兜底方块，
+ * 用户看到的就是「lucide 图标全变成默认图标了」。列出选不中的名字不是「选择更多」，
+ * 是坏掉的选项；故与 solar 侧同口径（SOLAR_ICONS 亦等于本地可渲染集）。
+ * 要扩充可选图标：在 src 里用上该图标名后跑 `node scripts/gen-lucide-subset.mjs`
+ * 重新生成子集（付体积代价），面板会随之自动多出该图标。
+ */
+const allIcons = Object.keys(lucideSubset)
 
 /** 等 rAF 的兜底上限：后台标签页不跑 rAF，超过这个时长就先按当前位置打开 */
 const RAF_FALLBACK_MS = 100
@@ -421,12 +430,12 @@ function confirm() {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  height: clamp(38px, 6vw, 42px);
-  padding: 0 clamp(var(--space-2), 1.5vw, 12px);
+  height: calc(42px * var(--vcl-scale));
+  padding: 0 calc(12px * var(--vcl-scale));
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
-  font-size: clamp(13px, calc(13px + var(--vcl-fit) * 2), 15px);
+  font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
   transition: border-color var(--transition-fast);
   font-family: inherit;
@@ -438,8 +447,8 @@ function confirm() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: clamp(22px, 4vw, 28px);
-  height: clamp(22px, 4vw, 28px);
+  width: calc(28px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   background: var(--color-bg-alt);
 }
@@ -465,7 +474,7 @@ function confirm() {
 .provider-tab {
   flex: 1;
   padding: var(--space-2) var(--space-3);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
+  font-size: calc(14px * var(--vcl-scale));
   border: none;
   background: transparent;
   cursor: pointer;
@@ -486,8 +495,8 @@ function confirm() {
 
 <style>
 .picker-panel {
-  width: clamp(300px, 48vw, 380px);
-  max-height: clamp(400px, 64vw, 520px);
+  width: calc(380px * var(--vcl-scale));
+  max-height: calc(520px * var(--vcl-scale));
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -532,13 +541,13 @@ function confirm() {
   flex-shrink: 0;
 }
 .color-label {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
   white-space: nowrap;
 }
 .native-picker {
-  width: clamp(18px, 3vw, 22px);
-  height: clamp(18px, 3vw, 22px);
+  width: calc(22px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -552,23 +561,23 @@ function confirm() {
   border-radius: var(--radius-sm);
 }
 .hex-input {
-  width: clamp(52px, 8vw, 62px);
-  height: clamp(18px, 3vw, 22px);
+  width: calc(62px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
   padding: var(--space-1) var(--space-1);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   font-family: monospace;
   background: var(--color-surface);
   color: var(--color-text-secondary);
 }
 .transparent-btn {
   padding: var(--space-1) var(--space-2);
-  height: clamp(18px, 3vw, 22px);
+  height: calc(22px * var(--vcl-scale));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: transparent;
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -596,8 +605,8 @@ function confirm() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(32px, 5vw, 40px);
-  height: clamp(32px, 5vw, 40px);
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
   border-radius: var(--radius-md);
   flex-shrink: 0;
 }
@@ -610,7 +619,7 @@ function confirm() {
   min-width: 0;
 }
 .preview-hex {
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-muted);
   font-weight: 400;
   font-family: monospace;
@@ -624,8 +633,8 @@ function confirm() {
   align-items: center;
 }
 .preset-dot {
-  width: clamp(12px, 2vw, 16px);
-  height: clamp(12px, 2vw, 16px);
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -640,12 +649,12 @@ function confirm() {
 }
 .panel-preview .confirm-btn {
   padding: var(--space-1) var(--space-3);
-  height: clamp(22px, 4vw, 28px);
+  height: calc(28px * var(--vcl-scale));
   border: none;
   border-radius: var(--radius-sm);
   background: var(--color-primary);
   color: white;
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
+  font-size: calc(14px * var(--vcl-scale));
   white-space: nowrap;
   cursor: pointer;
   transition: opacity var(--transition-fast);
@@ -660,7 +669,7 @@ function confirm() {
   overflow-y: auto;
   background: var(--color-bg);
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(clamp(44px, 6vw, 54px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(calc(54px * var(--vcl-scale)), 1fr));
   gap: var(--space-1);
   padding: var(--space-1);
   overscroll-behavior: contain;
@@ -685,8 +694,8 @@ function confirm() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(22px, 4vw, 28px);
-  height: clamp(22px, 4vw, 28px);
+  width: calc(28px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
   border-radius: var(--radius-sm);
   transition: background var(--transition-fast);
 }
@@ -698,7 +707,7 @@ function confirm() {
   padding: var(--space-1) var(--space-1);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-size: clamp(10px, calc(10px + var(--vcl-fit) * 3), 13px);
+  font-size: calc(13px * var(--vcl-scale));
   color: var(--color-text-secondary);
   background: transparent;
   cursor: pointer;
@@ -718,7 +727,7 @@ function confirm() {
   text-align: center;
   color: var(--color-text-muted);
   padding: var(--space-5);
-  font-size: clamp(11px, calc(11px + var(--vcl-fit) * 3), 14px);
+  font-size: calc(14px * var(--vcl-scale));
 }
 
 /* 面板动画：弹性缓动 + 微缩放，进场 200ms 退场 150ms（退场快于进场） */

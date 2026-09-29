@@ -32,15 +32,15 @@ describe('capture-fallback 采集兜底引擎', () => {
   })
 
   it('入口级：能页面内取流从 inpage 起步，否则直接 system', () => {
-    expect(resolveEntryLevel({ secure: true, hasUserMedia: true, isWeChat: false, canInpage: true, isTouch: false })).toBe(
-      'inpage',
-    )
-    expect(resolveEntryLevel({ secure: false, hasUserMedia: true, isWeChat: false, canInpage: false, isTouch: false })).toBe(
-      'system',
-    )
-    expect(resolveEntryLevel({ secure: true, hasUserMedia: false, isWeChat: false, canInpage: false, isTouch: false })).toBe(
-      'system',
-    )
+    expect(
+      resolveEntryLevel({ secure: true, hasUserMedia: true, isWeChat: false, canInpage: true, isTouch: false }),
+    ).toBe('inpage')
+    expect(
+      resolveEntryLevel({ secure: false, hasUserMedia: true, isWeChat: false, canInpage: false, isTouch: false }),
+    ).toBe('system')
+    expect(
+      resolveEntryLevel({ secure: true, hasUserMedia: false, isWeChat: false, canInpage: false, isTouch: false }),
+    ).toBe('system')
   })
 
   it('链路裁剪：可从任意一级起步，并可按开关裁掉上传/手工输入', () => {
@@ -78,12 +78,10 @@ describe('openSystemCapture 系统采集', () => {
   let clickSpy: ReturnType<typeof vi.spyOn>
   beforeEach(() => {
     // jsdom 不会真的弹文件框：拦截 click，手动派发 change/cancel 事件驱动结果
-    clickSpy = vi
-      .spyOn(HTMLInputElement.prototype, 'click')
-      .mockImplementation(function (this: HTMLInputElement) {
-        // 保留引用以便测试内取用
-        ;(window as unknown as { __lastInput?: HTMLInputElement }).__lastInput = this
-      })
+    clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(function (this: HTMLInputElement) {
+      // 保留引用以便测试内取用
+      ;(window as unknown as { __lastInput?: HTMLInputElement }).__lastInput = this
+    })
   })
   afterEach(() => {
     clickSpy.mockRestore()

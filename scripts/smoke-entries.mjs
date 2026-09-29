@@ -64,7 +64,15 @@ async function smokeEntry(label, jsFile, cjsFile, expected) {
 
 // ── 主入口 ──
 await smokeEntry('main', 'dist/vcl-ui.js', 'dist/vcl-ui.cjs', [
-  'Button', 'DataTable', 'Select', 'FormBuilder', 'Chart', 'AmapWidget', 'Toast', 'i18n', 'useT',
+  'Button',
+  'DataTable',
+  'Select',
+  'FormBuilder',
+  'Chart',
+  'AmapWidget',
+  'Toast',
+  'i18n',
+  'useT',
 ])
 
 // ── 13 个域 entry（期望面 = barrel 源码导出名） ──

@@ -34,7 +34,9 @@ const srcTs = walk(join('src', 'components'))
 // .vue → Foo.vue.d.ts；.ts → Foo.d.ts（去扩展名，不是叠加）
 const missingTs = srcTs.filter((r) => !existsSync(join('dist', r.replace(/\.ts$/, '')) + '.d.ts'))
 if (missingTs.length) fail.push(`.ts 缺声明文件 ${missingTs.length}/${srcTs.length}: ${missingTs.join(', ')}`)
-console.log(`[1] 声明完整性 vue=${srcVue.length - missing.length}/${srcVue.length}  ts=${srcTs.length - missingTs.length}/${srcTs.length}`)
+console.log(
+  `[1] 声明完整性 vue=${srcVue.length - missing.length}/${srcVue.length}  ts=${srcTs.length - missingTs.length}/${srcTs.length}`,
+)
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
 const targets = []

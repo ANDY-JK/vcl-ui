@@ -12,42 +12,63 @@ const crumbs = [{ label: '首页', path: '/' }, { label: '组件库', path: '/co
 
     <Card title="Breadcrumb 面包屑" title-as="h2">
       <Breadcrumb :items="crumbs" />
-      <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">显示页面层级路径</p>
+      <p
+        style="
+          margin-top: calc(8px * var(--vcl-scale));
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+        "
+      >
+        显示页面层级路径
+      </p>
     </Card>
 
     <Card title="自定义分隔符（separator）" title-as="h2">
       <Breadcrumb :items="crumbs" separator="›" />
-      <p style="margin-top: 8px; font-size: 12px; color: var(--color-text-muted)">
+      <p
+        style="
+          margin-top: calc(8px * var(--vcl-scale));
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--color-text-muted);
+        "
+      >
         传入 separator 后以文本替代默认箭头图标
       </p>
     </Card>
 
     <Card title="Props" title-as="h2">
-      <table style="width: 100%; font-size: 13px; border-collapse: collapse">
+      <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-        <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
-          <th style="padding: 4px 8px">Prop</th>
-          <th style="padding: 4px 8px">类型</th>
-          <th style="padding: 4px 8px">默认</th>
-          <th style="padding: 4px 8px">说明</th>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px">
-            <code>items</code>
-          </td>
-          <td style="padding: 3px 8px">Crumb[]</td>
-          <td style="padding: 3px 8px">—</td>
-          <td style="padding: 3px 8px">面包屑路径数组</td>
-        </tr>
-        <tr>
-          <td style="padding: 3px 8px; border-bottom: 1px solid var(--color-border-light)">
-            <code>separator</code>
-          </td>
-          <td style="padding: 3px 8px">string</td>
-          <td style="padding: 3px 8px">—</td>
-          <td style="padding: 3px 8px">自定义分隔符文本（默认箭头图标）</td>
-        </tr>
-      </tbody>
+          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
+            <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
+          </tr>
+          <tr>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              <code>items</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Crumb[]</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">面包屑路径数组</td>
+          </tr>
+          <tr>
+            <td
+              style="
+                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+                border-bottom: 1px solid var(--color-border-light);
+              "
+            >
+              <code>separator</code>
+            </td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
+            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
+              自定义分隔符文本（默认箭头图标）
+            </td>
+          </tr>
+        </tbody>
       </table>
     </Card>
   </div>
@@ -55,19 +76,19 @@ const crumbs = [{ label: '首页', path: '/' }, { label: '组件库', path: '/co
 
 <style scoped>
 .demo-title {
-  font-size: 22px;
+  font-size: calc(22px * var(--vcl-scale));
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
   color: var(--color-text-muted);
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: calc(24px * var(--vcl-scale));
+  font-size: calc(14px * var(--vcl-scale));
 }
 code {
   background: var(--color-bg-alt);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 12px;
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: calc(3px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
 }
 </style>
