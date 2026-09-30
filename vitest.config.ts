@@ -13,6 +13,10 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
+    // vmThreads：happy-dom 环境按 worker 复用而非每文件重建（threads 池下实测创建 171 次、
+    // 占 tracked time 44%）。per-file 隔离由默认 isolate:true 保持在 VM 上下文层，
+    // 模块级单例（useTheme 等）不跨文件泄漏——2026-09-30 F11 实测 1628 用例全绿后启用。
+    pool: 'vmThreads',
     // 单条用例上限 20s —— 默认 5s 在「带覆盖率插桩 + 全库并行」下会误伤大数据挂载用例：
     // 实测 1000~2000 行的 DataTable 挂载单条 2~4s，并行时越过 5s 判失败（不放开就是偶发红），
     // 而真挂死的用例照样会在 20s 处报错，探测能力没丢。
