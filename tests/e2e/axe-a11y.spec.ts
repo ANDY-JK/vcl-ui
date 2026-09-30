@@ -63,7 +63,7 @@ const DEMO_INLINE = [
   /class="[^"]*\bftc-stat\b/,
   /class="[^"]*\bld-btn\b/,
   /class="[^"]*\bbtn\b/,
-  /style="color: var\(--color-/,
+  /style="color: var\(--(vcl-)?color-/,
 ]
 // 已知取舍：规则 × 页面（命中即放行），条数被 countTradeoff 计数
 const TRADEOFF: Record<string, Set<string>> = {
