@@ -34,7 +34,7 @@
   top: 0;
   transform: translateY(-50%);
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--fl-label-bg, var(--vcl-color-surface));
   padding: 0 var(--vcl-space-1);
   left: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));

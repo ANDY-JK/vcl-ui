@@ -313,7 +313,7 @@ watch(overrides, persist, { deep: true })
   font-family: ui-monospace, monospace;
 }
 .te-override {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-size: calc(11px * var(--vcl-scale));
 }
 .te-inputs {

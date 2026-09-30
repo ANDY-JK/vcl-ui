@@ -785,7 +785,7 @@ const floatingRaised = computed(() => {
   left: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) + 32px * var(--vcl-scale));
 }
 .fl-wrap.focused .fl-icon {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 
 /* 后缀文字（单位等固定提示） */
@@ -972,7 +972,7 @@ const floatingRaised = computed(() => {
   top: 0;
   transform: translateY(-50%);
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-surface);
   padding: 0 var(--vcl-space-1);
   left: calc(calc(40px * var(--vcl-scale)) - 4px * var(--vcl-scale));
@@ -987,7 +987,7 @@ const floatingRaised = computed(() => {
 }
 .fl-wrap:has(.f-input:-webkit-autofill) .fl-icon,
 .fl-wrap:has(.f-input:autofill) .fl-icon {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 
 /* ===== 数字步进器 ===== */
@@ -1080,7 +1080,7 @@ const floatingRaised = computed(() => {
 }
 .step-btn:active:not(:disabled) {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .step-btn:disabled {
   opacity: 0.3;

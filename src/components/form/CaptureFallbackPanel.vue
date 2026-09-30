@@ -150,7 +150,7 @@ onUnmounted(() => {})
   border: 2px dashed var(--vcl-color-border);
   border-radius: var(--vcl-radius-lg);
   background: var(--vcl-color-bg);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-size: var(--vcl-fs-14);
   font-weight: 500;
   font-family: inherit;

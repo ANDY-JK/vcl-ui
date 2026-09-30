@@ -127,7 +127,7 @@ function onStepClick(idx: number, step: Step) {
 }
 .step.done .step-num {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   border-color: var(--vcl-color-primary);
 }
 
@@ -169,7 +169,7 @@ function onStepClick(idx: number, step: Step) {
 }
 .step.clickable:hover .step-num {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .step.clickable:focus-visible {
   outline: 2px solid var(--vcl-color-primary);

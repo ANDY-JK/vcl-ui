@@ -550,7 +550,7 @@ onUnmounted(() => {
   margin: 0;
   text-align: center;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   z-index: 2;
   pointer-events: none;
   top: 50%;
@@ -670,7 +670,7 @@ onUnmounted(() => {
   color: var(--vcl-color-text-secondary);
 }
 .upload-link {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 500;
 }
 .upload-limit {

@@ -157,13 +157,13 @@ th.sortable {
   cursor: pointer;
 }
 th.sortable:hover {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 th.sortable:active {
   background: rgba(var(--vcl-color-primary-rgb, 59 130 246), 0.08);
 }
 th.filter-active {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 
 /* 图标区：靠右对齐，flex-shrink: 0 保证不被压缩 */
@@ -192,7 +192,7 @@ th.sort-active .sort-arrows {
 }
 th.sort-active {
   /* 列头文字加粗着色 + 醒目背景，不透明避免 sticky 滚动时下方内容穿透 */
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 600;
   background: var(--vcl-color-primary-light);
 }
@@ -202,10 +202,10 @@ th.sort-active {
   transition: color var(--vcl-transition-fast);
 }
 .sort-icon.active {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .sort-icon.history {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   opacity: 0.4;
 }
 .sort-asc {
@@ -232,7 +232,7 @@ th.sort-active {
 }
 .th-filter-icon.has-filter {
   opacity: 1;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 
 /* 筛选激活指示点 */
@@ -827,7 +827,7 @@ th.drag-over {
 }
 .card-filter-icon.has-filter {
   opacity: 1;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .card-filter-icon .filter-dot {
   width: calc(5px * var(--vcl-scale));
@@ -924,13 +924,13 @@ th.drag-over {
   white-space: nowrap;
 }
 .row-action-btn:hover {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
 }
 
 /* 操作按钮变体 */
 .row-action-primary {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 500;
 }
 .row-action-primary:hover {
@@ -996,7 +996,7 @@ td.cell-has-options {
 }
 td.cell-has-options:hover .cell-options-arrow {
   opacity: 0.8;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 
 /* 截断长文本展开图标 */
@@ -1006,7 +1006,7 @@ td.cell-has-options:hover .cell-options-arrow {
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   opacity: 0.5;
   cursor: pointer;
   display: flex;
@@ -1061,11 +1061,11 @@ td.cell-has-options:hover .cell-options-arrow {
    下拉是统一的交互组件，配色不随单元格状态变化（用户明确要求不改下拉颜色）。 */
 .opt-drop-item:hover {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .opt-drop-item.active {
   background: rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.08);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 500;
 }
 .opt-drop-item.focused {
@@ -1076,7 +1076,7 @@ td.cell-has-options:hover .cell-options-arrow {
   background: rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.08);
 }
 .opt-drop-check {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   flex-shrink: 0;
   margin-left: var(--vcl-space-2);
 }

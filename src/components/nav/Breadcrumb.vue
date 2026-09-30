@@ -72,7 +72,7 @@ function isExternalHttp(p: string) {
   transition: color var(--vcl-transition-fast);
 }
 .crumb-link:hover {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 
 .crumb-current {

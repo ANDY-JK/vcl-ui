@@ -459,7 +459,7 @@ function onCamError(msg: string) {
         style="
           margin-left: calc(8px * var(--vcl-scale));
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--vcl-color-primary);
+          color: var(--vcl-color-primary-on-surface);
         "
         >{{ modalCodes.length }} 条</span
       >
@@ -1711,7 +1711,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   font-family: inherit;
 }
 .tab-bar button.active {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .tab-bar button:active {
   transform: scale(0.95);

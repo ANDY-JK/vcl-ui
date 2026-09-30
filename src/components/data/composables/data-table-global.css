@@ -87,12 +87,12 @@
 }
 .dt-filter-option-sort-btn:hover {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dt-filter-option-sort-btn.active {
   background: var(--vcl-color-primary-light);
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dt-filter-option-sort-arrow {
   font-size: var(--vcl-fs-10);
@@ -119,7 +119,7 @@
 }
 .dt-filter-quick-btn:hover {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
 }
 .dt-filter-quick-count {
@@ -147,7 +147,7 @@
 }
 .dt-filter-option.selected {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 500;
 }
 .dt-filter-option.focused:not(.selected) {
@@ -242,7 +242,7 @@
 }
 .dt-context-item:hover:not(.disabled) {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dt-context-item.disabled {
   color: var(--vcl-color-text-muted);
@@ -258,7 +258,7 @@
 }
 .dt-context-item.menu-focused {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dt-context-divider {
   height: 1px;
@@ -339,7 +339,7 @@
 }
 .dt-col-quick-actions button:hover {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dt-col-quick-actions button:disabled {
   opacity: 0.45;
@@ -352,7 +352,7 @@
 }
 .dt-col-quick-actions button.dt-reset-width-btn:not(:disabled) {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
 }
 .dt-col-list {
@@ -378,7 +378,7 @@
 }
 .dt-col-footer-fixed {
   font-size: var(--vcl-fs-12);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
   border-radius: var(--vcl-radius-sm);
   padding: var(--vcl-space-1) var(--vcl-space-2);
@@ -424,7 +424,7 @@
 .dt-col-fixed-group button.active {
   background: var(--vcl-color-primary-light);
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dt-col-fixed-group.disabled button {
   opacity: 0.35;
@@ -482,7 +482,7 @@
 }
 .dt-col-ops button:hover:not(:disabled) {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dt-col-ops button:disabled {
   opacity: 0.35;

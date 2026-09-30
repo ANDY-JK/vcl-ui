@@ -482,7 +482,7 @@ const levelStyle = computed(() => {
 }
 .tree-node--selected {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .tree-node--selected:hover {
   background: var(--vcl-color-primary-light);

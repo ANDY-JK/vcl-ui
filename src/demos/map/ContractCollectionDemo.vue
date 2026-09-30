@@ -889,7 +889,7 @@ onUnmounted(() => {
 .cc-stat-contract.done {
   background: var(--vcl-color-primary-soft);
   /* 深蓝字在 --vcl-color-primary-soft 上：暗色下该令牌是深底 → 深蓝字不可见，改为随主题 */
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .cc-btn {
   padding: calc(5px * var(--vcl-scale)) calc(14px * var(--vcl-scale));

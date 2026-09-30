@@ -149,7 +149,7 @@ function onJumperKeyup(e: KeyboardEvent) {
 }
 .page-btn:hover:not(:disabled):not(.active) {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .page-btn.active {
   background: var(--vcl-color-primary);

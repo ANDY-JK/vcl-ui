@@ -75,7 +75,7 @@
   font-weight: 600;
 }
 .ldo-node.container .ldo-tree-icon {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .ldo-node.selected .ldo-tree-icon {
   color: var(--vcl-color-primary, #4f6ef7);

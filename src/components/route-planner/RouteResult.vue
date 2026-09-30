@@ -441,7 +441,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 
 .enriching-tip {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   text-align: center;
   margin: 0 0 var(--vcl-space-2);
 }

@@ -72,7 +72,7 @@
   flex-shrink: 0;
 }
 .toolbar-count strong {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 600;
 }
 
@@ -82,7 +82,7 @@
   gap: var(--vcl-space-1);
   padding: calc(3px * var(--vcl-scale)) var(--vcl-space-3);
   font-size: var(--vcl-fs-12);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
   border: 1px solid rgba(79, 110, 247, 0.2);
   border-radius: 999px;
@@ -167,11 +167,11 @@
   transition: all var(--vcl-transition-fast);
 }
 .global-search-toggle:hover {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
 }
 .global-search-wrap.active .global-search-toggle {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 
 /* CSV 导出按钮 */
@@ -187,7 +187,7 @@
   transition: all var(--vcl-transition-fast);
 }
 .toolbar-export-btn:hover {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
 }
 /* 撤销/重做无可操作记录时：禁用态明示「没有可撤销/重做」，不藏按钮 */

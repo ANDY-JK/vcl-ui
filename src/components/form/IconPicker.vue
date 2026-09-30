@@ -488,7 +488,7 @@ function confirm() {
   border-bottom: 2px solid transparent;
 }
 .provider-tab.active {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   border-bottom-color: var(--vcl-color-primary);
   font-weight: 600;
 }
@@ -590,9 +590,10 @@ function confirm() {
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-/* 光学垂直居中补偿（同 Tag.vue .tag-text：13px 级 CJK 墨迹实测 +0.1275em） */
+/* 垂直光学对齐：不写死补偿值，引 --vcl-ink-dy（inkCenter.ts 运行期量字体墨迹算出，
+   标准字体≈0、异常字体自适应）；未接入回落 0 = 纯 flex 居中基线 */
 .transparent-btn-text {
-  transform: translateY(-0.12em);
+  transform: translateY(var(--vcl-ink-dy, 0));
 }
 .transparent-btn:hover {
   border-color: var(--vcl-color-text-muted);
@@ -600,7 +601,7 @@ function confirm() {
 }
 .transparent-btn.active {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
 }
 

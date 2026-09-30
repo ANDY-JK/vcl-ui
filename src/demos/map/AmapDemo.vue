@@ -533,7 +533,7 @@ function onImgFail(e: Event) {
 }
 .gps-display {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 500;
 }
 .radius-label {

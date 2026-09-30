@@ -637,7 +637,7 @@ defineExpose({
   border-color: var(--vcl-color-primary);
 }
 .forgot-password {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   text-decoration: none;
   font-weight: 500;
   background: none;
@@ -689,7 +689,7 @@ defineExpose({
   padding-top: var(--vcl-space-8);
 }
 .register-link {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   text-decoration: none;
   font-weight: 500;
   background: none;

@@ -478,7 +478,7 @@ function resetCurrentForm() {
   font-size: calc(12px * var(--vcl-scale));
 }
 .event-log code {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
@@ -512,6 +512,6 @@ function resetCurrentForm() {
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: var(--vcl-radius-sm);
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 </style>

@@ -298,7 +298,7 @@ const levelStyle = computed(() => {
 }
 .menu-item--active {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 500;
 }
 .menu-item--disabled {

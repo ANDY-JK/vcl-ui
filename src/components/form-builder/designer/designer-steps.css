@@ -182,16 +182,16 @@
 }
 .ldp-field-item-container:hover {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   box-shadow: 0 1px 6px rgba(139, 92, 246, 0.08);
 }
 .ldp-field-icon-container {
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .ldp-field-item-container:hover .ldp-field-icon {
   background: var(--vcl-color-primary-soft);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .ldp-group-cnt {
   margin-left: calc(4px * var(--vcl-scale));

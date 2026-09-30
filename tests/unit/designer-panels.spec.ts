@@ -1,7 +1,7 @@
 // useDesignerPanels · 首开默认宽随视口收放（小屏画布优先）
-// 锁定：≤1024 收至 88% 地板、1920 与旧常数默认逐像素一致、>1920 封顶、
-//       1366 常见小笔记本取中档、存过布局的用户值优先、损坏存档回落收放默认。
-// 曲线与 tokens.css 的 --vcl-scale 同源（1024 → 0.88，1920 → 1）：
+// 锁定：≤1024 收至拖拽下限 150、1920 与旧常数默认逐像素一致、>1920 按比例放大、
+//       1366 常见小笔记本取 71.1% 等比档、存过布局的用户值优先、损坏存档回落收放默认。
+// 曲线与 tokens.css 的 --vcl-scale 同源（100vw/1920px 纯连续等比，无固定段）：
 // 面板若走自己的曲线，缩到一半时与面板内的字号/控件脱节。
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { ref, defineComponent, h } from 'vue'
@@ -32,7 +32,7 @@ function stubInnerWidth(w: number): void {
 
 beforeEach(() => {
   localStorage.removeItem(STORE_KEY)
-  stubInnerWidth(1024)
+  stubInnerWidth(1920)
 })
 
 afterEach(() => {
@@ -40,11 +40,13 @@ afterEach(() => {
 })
 
 describe('useDesignerPanels · 首开默认宽随视口收放', () => {
-  it('1024 视口：三面板收到 88% 地板（大纲不低于拖拽下限 150）', () => {
+  it('1024 视口：纯等比收到 53.3%，三面板全部触到拖拽下限 150', () => {
+    stubInnerWidth(1024)
     const api = mountPanels()
-    expect(api.paletteW.value).toBe(194) // 220×0.88=193.6 → 194
-    expect(api.outlineW.value).toBe(167) // 190×0.88=167.2 → 167
-    expect(api.propsW.value).toBe(255) // 290×0.88=255.2 → 255
+    // 1024/1920 = 0.5333：220×0.5333=117.3、190×0.5333=101.3、290×0.5333=154.7
+    expect(api.paletteW.value).toBe(150) // 117 < 下限 150 → 150
+    expect(api.outlineW.value).toBe(150) // 101 < 下限 150 → 150
+    expect(api.propsW.value).toBe(155) // 154.7 → 155
   })
 
   it('1920 视口：与旧常数默认一致（220/190/290），大屏零变化', () => {
@@ -55,20 +57,22 @@ describe('useDesignerPanels · 首开默认宽随视口收放', () => {
     expect(api.propsW.value).toBe(290)
   })
 
-  it('>1920 封顶：2560 与 1920 同值', () => {
+  it('>1920 放大：2560 按 133.3% 等比放大（无封顶，与设计稿同构）', () => {
     stubInnerWidth(2560)
     const api = mountPanels()
-    expect(api.paletteW.value).toBe(220)
-    expect(api.propsW.value).toBe(290)
+    // 2560/1920 = 1.3333
+    expect(api.paletteW.value).toBe(293) // 220×1.3333=293.3 → 293
+    expect(api.outlineW.value).toBe(253) // 190×1.3333=253.3 → 253
+    expect(api.propsW.value).toBe(387) // 290×1.3333=386.7 → 387
   })
 
-  it('1366 视口（常见小笔记本）：取 ~93.6% 中档', () => {
+  it('1366 视口（常见小笔记本）：纯等比收到 71.1%', () => {
     stubInnerWidth(1366)
     const api = mountPanels()
-    // fit = (1366-1024)/896 = 0.3817；scale = 0.88 + 0.12×0.3817 = 0.9258
-    expect(api.paletteW.value).toBe(204) // 220×0.9258=203.7 → 204
-    expect(api.outlineW.value).toBe(176) // 190×0.9258=175.9 → 176
-    expect(api.propsW.value).toBe(268) // 290×0.9258=268.5 → 268（Math.round 半数进位）
+    // 1366/1920 = 0.71146：220→156.5、190→135.2（触到下限 150）、290→206.3
+    expect(api.paletteW.value).toBe(157) // 220×0.71146=156.5 → 157
+    expect(api.outlineW.value).toBe(150) // 190×0.71146=135.2 < 下限 150 → 150
+    expect(api.propsW.value).toBe(206) // 290×0.71146=206.3 → 206
   })
 
   it('存过布局：用户值优先，视口收放不覆盖', () => {
@@ -78,9 +82,9 @@ describe('useDesignerPanels · 首开默认宽随视口收放', () => {
     expect(api.propsW.value).toBe(180)
   })
 
-  it('存档损坏：回落视口收放默认', () => {
+  it('存档损坏：回落视口等比默认（1920 基准 = 220）', () => {
     localStorage.setItem(STORE_KEY, '{broken json')
     const api = mountPanels()
-    expect(api.paletteW.value).toBe(194)
+    expect(api.paletteW.value).toBe(220)
   })
 })

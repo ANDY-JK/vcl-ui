@@ -75,7 +75,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
   white-space: nowrap;
 }
 .pagination-status strong {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 
 .page-btn {
@@ -95,7 +95,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
 }
 .page-btn:hover:not(:disabled) {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .page-btn.active {
   background: var(--vcl-color-primary);

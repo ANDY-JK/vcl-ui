@@ -676,7 +676,7 @@ onMounted(async () => {
 }
 
 .btn-template {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   border-color: #bfdbfe;
   background: var(--vcl-color-primary-light);
 }

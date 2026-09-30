@@ -1097,15 +1097,16 @@ const {
   font-size: var(--vcl-ctrl-font-size);
   /* 行高不可压成 1：tag-text 带省略号必需的 overflow:hidden，负半行距会把 g/y 下伸尾巴裁掉 */
   line-height: normal;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .combobox-tag .tag-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
-  /* 光学垂直居中补偿（同 Tag.vue .tag-text）：13.1px chip 实测墨迹 +1.67px = 0.1275em */
-  transform: translateY(-0.12em);
+  /* 垂直光学对齐：不写死补偿值，引 --vcl-ink-dy（inkCenter.ts 运行期量字体墨迹算出，
+     标准字体≈0、异常字体自适应）；未接入回落 0 = 纯 flex 行盒居中基线 */
+  transform: translateY(var(--vcl-ink-dy, 0));
 }
 .tag-close {
   display: flex;
@@ -1117,7 +1118,7 @@ const {
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   cursor: pointer;
   opacity: 0.6;
   transition: opacity var(--vcl-transition-fast);
@@ -1379,7 +1380,7 @@ const {
 }
 .dd-btn:hover {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dd-btn:disabled {
   opacity: 0.4;

@@ -505,12 +505,12 @@ function onProgressMouseUp() {
 }
 .vcl-topbar-hamburger:hover {
   background: rgba(var(--vcl-color-primary-rgb), 0.08);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .vcl-topbar-prompt {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: var(--vcl-ctrl-font-size);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   opacity: 0.7;
   margin-right: var(--vcl-space-1);
 }
@@ -518,7 +518,7 @@ function onProgressMouseUp() {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: var(--vcl-ctrl-font-size);
   font-weight: 600;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   letter-spacing: 0.3px;
   /* 分类名被右侧工具挤压时竖排换行（「表单输/入」）——单行 + 不收缩，长标题由 title 出省略号兜底 */
   white-space: nowrap;
@@ -595,7 +595,7 @@ function onProgressMouseUp() {
   position: relative;
 }
 .topbar-tool-btn:hover {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: rgba(var(--vcl-color-primary-rgb), 0.08);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.15);
 }
@@ -613,7 +613,7 @@ function onProgressMouseUp() {
 }
 /* 激活/选中态 — 有主色边框 + 微亮底色 */
 .topbar-tool-btn.active {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: rgba(var(--vcl-color-primary-rgb), 0.12);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
 }
@@ -676,7 +676,7 @@ function onProgressMouseUp() {
 }
 /* 文字按钮 — 主色高亮态 */
 .topbar-tool-text.active {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: rgba(var(--vcl-color-primary-rgb), 0.12);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
@@ -733,7 +733,7 @@ function onProgressMouseUp() {
   border-color: rgba(255, 255, 255, 0.15);
 }
 .topbar-tool-label:hover > svg {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .topbar-tool-label:active {
   transform: scale(0.97);
@@ -745,7 +745,7 @@ function onProgressMouseUp() {
 }
 /* 图标+文字按钮 — 主色高亮态 */
 .topbar-tool-label.active {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: rgba(var(--vcl-color-primary-rgb), 0.12);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
@@ -921,7 +921,7 @@ function onProgressMouseUp() {
 }
 .vcl-nav-percent {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 600;
   opacity: 0.7;
   min-width: calc(32px * var(--vcl-scale));

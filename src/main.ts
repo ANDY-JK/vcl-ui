@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './demos/router'
-import { installErrorGuard } from '@/components'
+import { installErrorGuard, autoApplyInkCentering } from '@/components'
 // 组件库设计令牌（CSS 变量）
 import '@/components/tokens.css'
 // Demo 站点全局重置 + 工具类
@@ -9,6 +9,9 @@ import './demos/site.css'
 
 const app = createApp(App)
 app.use(router)
+
+// 动态光学居中：量当前字体墨迹写 --vcl-ink-dy（webfont 晚加载会自动重算）
+autoApplyInkCentering()
 
 /** 逃逸错误现场快照：控制台执行 __errorGuard 取最新一条（含组件链 + 堆栈），用于定位「页面加载异常」来源 */
 const guardLog: Array<{ source: string; message: string; trace?: string; stack?: string; at: string }> = []

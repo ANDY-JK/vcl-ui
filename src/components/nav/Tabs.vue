@@ -204,7 +204,7 @@ function onKeydown(e: KeyboardEvent) {
   transition: color var(--vcl-transition-fast);
 }
 .tabs-tabbar .tab-btn.active {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 500;
 }
 </style>

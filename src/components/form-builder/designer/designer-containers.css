@@ -147,7 +147,7 @@
 .ldc-container-badge {
   font-size: var(--vcl-fs-9);
   font-weight: 700;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
   padding: 2px calc(7px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));

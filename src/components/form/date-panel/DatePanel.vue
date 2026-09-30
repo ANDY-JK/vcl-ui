@@ -305,7 +305,7 @@ function onToday() {
   opacity: 0.35;
 }
 .dp-cell.today {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-weight: 700;
 }
 .dp-cell.today.selected,
@@ -325,7 +325,7 @@ function onToday() {
   border-radius: 0;
 }
 .dp-cell.in-range.today {
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .dp-cell.range-start {
   background: var(--vcl-color-primary);
@@ -365,7 +365,7 @@ function onToday() {
   border: none;
   border-radius: var(--vcl-radius-sm);
   background: transparent;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-size: calc(12px * var(--vcl-scale));
   cursor: pointer;
   transition: background var(--vcl-transition-fast);

@@ -2194,7 +2194,7 @@ const interCols: Column[] = [
   border: 1px dashed var(--vcl-color-primary);
   border-radius: var(--vcl-radius-sm);
   background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   cursor: pointer;
   font-size: calc(13px * var(--vcl-scale));
 }
@@ -2304,7 +2304,7 @@ const interCols: Column[] = [
   font-family: ui-monospace, monospace;
   font-size: calc(10px * var(--vcl-scale));
   font-style: normal;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
   border-radius: var(--vcl-radius-sm);
 }
@@ -2331,7 +2331,7 @@ const interCols: Column[] = [
 .api-group td {
   padding-top: calc(10px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   border-bottom: 1px solid var(--vcl-color-border);
 }
 .api-table code {

@@ -94,6 +94,10 @@ export { default as ConfirmModal } from './feedback/ConfirmModal.vue'
 export { installErrorGuard, uninstallErrorGuard } from './feedback/composables/useErrorGuard'
 export type { ErrorGuardOptions, ErrorGuardPayload, ErrorGuardSource } from './feedback/composables/useErrorGuard'
 
+// 动态光学居中：运行期量当前字体墨迹写 --vcl-ink-dy（替代写死的 translateY 补偿）。
+// 宿主在入口调用 autoApplyInkCentering() 即全程自适应；不调用则组件回落 0 = 纯 flex 居中基线。
+export { applyInkCentering, autoApplyInkCentering } from './_internal/inkCenter'
+
 // 导航
 export { default as Tabs } from './nav/Tabs.vue'
 export { default as TabPanel } from './nav/TabPanel.vue'

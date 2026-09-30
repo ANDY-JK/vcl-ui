@@ -88,7 +88,12 @@ const TRADEOFF: Record<string, Set<string>> = {
 // clientHeight 604），落到 axe 判定阈值之下——不是我们修好了这条，是内容变短了。
 // divider 仍留在下面的登记集内：内容哪天回涨到再溢出，总数变 15 会被断言拦下，
 // 提示重新核对，而不是静默放过。
-const BASELINE_TOTAL = 14
+// [2026-09-30 由 14 降为 13] 等比缩放全量动态化（--vcl-scale = 100vw/1920 无地板）后，
+// 1280 视口缩放 0.88→0.667，demo 内容更短：avatar 页的 scrollable-region-focusable
+// 不再溢出（与 09-29 divider 同理），取舍总数 14→13。逐项查证：divider 与 avatar 两条
+// scrollable 均已 0 命中（探针实测），其余 13 条不变。avatar 仍留在登记集内：
+// 内容哪天回涨到再溢出会被拦下提示重核，而不是静默放过。
+const BASELINE_TOTAL = 13
 // 基线里各「规则 × 页面」条数（升即红；仅覆盖 TRADEOFF 类别，三方/demo 内联不计入）
 const BASELINE_BY_RULE: Record<string, number> = {
   'nested-interactive': 2,

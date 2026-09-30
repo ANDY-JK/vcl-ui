@@ -163,9 +163,10 @@ const supStyle = computed(() => {
   transition: all var(--vcl-transition-fast);
 }
 .tag-label {
-  /* 光学垂直居中补偿：Segoe UI 系 CJK 墨迹中心比盒中心低，13.1px chip 实测 +1.67px
-     （=0.1275em，2026-09-30 探针取证），用 em 随字号/缩放联动；几何路径（flex）不动 */
-  transform: translateY(-0.12em);
+  /* 垂直光学对齐：flex 把 em 盒居中，但字体真实墨迹范围略小于 1em，残差随字体变。
+     不写死补偿值——改引 --vcl-ink-dy（_internal/inkCenter.ts 运行期量当前字体墨迹
+     算出，标准字体≈0、异常字体自适应），未接入时 var() 回落 0 = 纯 flex 居中基线 */
+  transform: translateY(var(--vcl-ink-dy, 0));
 }
 .tag-sm {
   padding: 1px var(--vcl-space-2);

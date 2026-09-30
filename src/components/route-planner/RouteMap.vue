@@ -329,7 +329,7 @@ function retryMap(): void {
   border: 1px solid var(--vcl-color-border);
   border-radius: var(--vcl-radius-md);
   background: var(--vcl-color-surface);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   font-size: calc(14px * var(--vcl-scale));
   cursor: pointer;
 }

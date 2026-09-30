@@ -115,6 +115,6 @@ const fruitOptions = [
 .result {
   margin: calc(8px * var(--vcl-scale)) 0 0;
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 </style>

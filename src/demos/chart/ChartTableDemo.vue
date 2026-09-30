@@ -561,7 +561,7 @@ const trendData = computed(() => {
 }
 .pill:hover {
   border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .pill.on {
   background: var(--vcl-color-primary);

@@ -556,7 +556,8 @@ onMounted(async () => {
   font-size: var(--vcl-fs-12);
   font-weight: 600;
   background: var(--vcl-color-bg-soft);
-  color: #94a3b8;
+  /* 未完成态：原写死 #94a3b8（浅灰）压 bg-soft 对比不足 4.5 AA，改用文字二级色 */
+  color: var(--vcl-color-text-secondary);
   white-space: nowrap;
 }
 .ftc-stat.done {
