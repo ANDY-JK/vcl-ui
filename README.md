@@ -247,6 +247,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
   - modern-screenshot（4.7.0，2026-04 活跃维护，MIT，186KB）实测更快（同元素 27ms vs 4175ms，约 154 倍），亮色主题下与 html2canvas 渲染目视等价。
   - **阻断项：暗色主题渲染错误**。本库全套令牌走 CSS 自定义属性 + `:root[data-theme]` 切换，modern-screenshot 的 foreignObject 克隆丢失该上下文 —— 真实页面实测暗色截图 60.87% 像素偏差、卡片底/标题/按钮颜色全错（地面真相 `rgb(26,29,36)` 底 vs 截图白底）。html2canvas + 现有 `onclone` 复制自定义属性的方案渲染正确。
   - 结论：1.0 维持 html2canvas（+ 既有 onclone hack）；re-evaluate 条件：modern-screenshot 能正确捕获 `:root[data-theme]` 令牌主题（如经其 `style` 注入选项把解析后的变量写进克隆文档），或截图能力改为不再依赖变量令牌。
+  - **[2026-09-30 复评执行] 结论维持，且阻断项比原判更深一层**：以 Playwright 元素截图为地面真相、逐像素比对暗色 `/#/data` 主内容区（1440×1200）——modern-screenshot 裸跑偏差 **23.9%**；README 假设的修复通道实测**走不通**：其 `style` 选项的语义是「拷贝到 node.style」（`Partial<CSSStyleDeclaration>` 赋值通道），而自定义属性必须走 `setProperty`，116 个解析后令牌注入后输出与裸跑**逐位相同**（选项结构上装不进 `--*` 键）；同口径下 html2canvas 不带 onclone hack 也有 24.27%，说明偏差来自「foreignObject 克隆丢失样式表选择器上下文」这一机制本身，与库快慢无关。复评条件改写为：① modern-screenshot 支持经 `setProperty` 通道注入自定义属性，或 ② `useScreenshot` 改为内联化全量计算样式（代价：丢失伪元素/继承链），二者任一落地再重启评估。
 
 ## 🛠 本地开发
 
