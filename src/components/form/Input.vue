@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { reportError } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 统一输入组件，禁止：clamp() → px，浮动标签动画时序，type 枚举修改
 //    需我确认：校验规则接口、新增 type
 // ⭐ 统一上浮骑缝（floating）样式 — 标签上浮骑缝，视觉统一，节省空间
@@ -8,7 +9,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, onErrorCaptured } from 'vue'
 const _error = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
-  console.error('[Input] 内部异常已隔离:', e.message)
+  reportError('[Input] 内部异常已隔离:', e.message)
   _error.value = e
   return false
 })

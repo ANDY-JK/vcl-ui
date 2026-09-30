@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends Record<string, any> = Record<string, any>">
+import { reportError } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 禁止：clamp() → px，table-layout:fixed 删除，列宽计算链路，结构层级
 //    允许：autoFit 开启时外部 col.width 已被禁止，列宽完全由内部动态管理
 //    需我确认：props 增删、默认值修改、模板结构变更、CSS 变量替换
@@ -70,7 +71,7 @@ const _RANGE_CLICK_GUARD_MS = 200
 const _internalError = ref<Error | null>(null)
 
 onErrorCaptured((err: Error) => {
-  console.error('[DataTable] 内部异常已隔离:', err.message)
+  reportError('[DataTable] 内部异常已隔离:', err.message)
   _internalError.value = err
   return false // 阻止向上传播
 })

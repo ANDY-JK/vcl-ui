@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { reportError } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 文件上传，禁止：clamp() → px，拖拽区尺寸比例，进度条动画
 //    需我确认：accept 文件类型、multiple 多文件逻辑、预览图尺寸
 import { ref, watch, computed, onUnmounted, onErrorCaptured } from 'vue'
@@ -9,7 +10,7 @@ import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 const t = useT()
 const _error = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
-  console.error('[Upload] 内部异常已隔离:', e.message)
+  reportError('[Upload] 内部异常已隔离:', e.message)
   _error.value = e
   return false
 })

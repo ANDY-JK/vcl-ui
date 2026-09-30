@@ -1,3 +1,4 @@
+import { reportError } from '@/components/_internal/runtime-observer'
 /**
  * 全局错误兜底 —— 补齐 ErrorBoundary 覆盖不到的四类逃逸口
  *
@@ -72,7 +73,7 @@ function setSharedOff(off: (() => void) | undefined): void {
 let inReporting = false
 
 function emit(options: ErrorGuardOptions, payload: ErrorGuardPayload, log: boolean) {
-  if (log) console.error(`[ErrorGuard:${payload.source}]`, payload.error, payload.detail ?? '', payload.trace ?? '')
+  if (log) reportError(`[ErrorGuard:${payload.source}]`, payload.error, payload.detail ?? '', payload.trace ?? '')
   if (inReporting) return
   inReporting = true
   try {
@@ -80,12 +81,12 @@ function emit(options: ErrorGuardOptions, payload: ErrorGuardPayload, log: boole
     // 异步上报钩子返回 rejected promise 时，不能让拒绝冒到 window.unhandledrejection 再触发一次上报
     if (ret && typeof (ret as PromiseLike<unknown>).then === 'function') {
       void Promise.resolve(ret).catch((reportErr) => {
-        console.error('[ErrorGuard] report 钩子异常:', reportErr)
+        reportError('[ErrorGuard] report 钩子异常:', reportErr)
       })
     }
   } catch (reportErr) {
     // 上报钩子自身抛错不能再把兜底链路带崩
-    console.error('[ErrorGuard] report 钩子异常:', reportErr)
+    reportError('[ErrorGuard] report 钩子异常:', reportErr)
   } finally {
     inReporting = false
   }

@@ -111,6 +111,23 @@ import 'vcl-ui/dist/theme.css' // 或本地开发路径
 机制：`--transition-*` 令牌域内重定义 + 关键帧时长/次数归零，不碰布局与终态透明度；
 实现集中在 `tokens.css` 的减弱动效块（组件内不各留本地 `@media` 块，回归锁见 `tests/unit/motion-tokens.spec.ts`）。
 
+### 运行时可观测性
+
+库内警告/错误默认走 console（未注入时行为与从前逐字一致）；宿主可注入自有管道接进监控系统：
+
+```ts
+import { setRuntimeObserver } from 'vcl-ui'
+
+setRuntimeObserver({
+  warn: (...args) => myTracker.warn(...args), // 库内非致命警告
+  error: (...args) => myTracker.error(...args), // 库内已捕获的组件级错误
+})
+```
+
+- 参数语义与 `console.warn` / `console.error` 一致，原样透传；传 `null` 恢复默认
+- observer 自身抛异常不会打断组件：向 console.error 报告一次后降级 console 输出
+- 覆盖面：`warnOnce` 中央警告出口（重复警告全经它）+ 全部已捕获错误（ErrorBoundary / Upload / Input / DataTable 等内部隔离点、useErrorGuard、useBarcodeScanner）；零散一次性 `console.warn` 渐进迁移，新库代码一律走 `reportWarn` / `reportError`
+
 ### 基本使用
 
 ```vue

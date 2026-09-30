@@ -21,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+import { reportError } from '@/components/_internal/runtime-observer'
 import { ref, watch, onUnmounted, onErrorCaptured } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 
@@ -82,7 +83,7 @@ onErrorCaptured((err: Error) => {
   if (lastRetryAt && Date.now() - lastRetryAt < RECURRING_WINDOW_MS) deadEnd = true
   hasError.value = true
   error.value = err
-  console.error('[ErrorBoundary] 捕获组件错误:', err.message)
+  reportError('[ErrorBoundary] 捕获组件错误:', err.message)
   emit('error', err)
   return false
 })

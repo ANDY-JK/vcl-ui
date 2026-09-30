@@ -1,3 +1,4 @@
+import { reportError } from '@/components/_internal/runtime-observer'
 import { ref, isRef, onUnmounted, type Ref } from 'vue'
 import {
   readBarcodes,
@@ -570,7 +571,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
           )
           resolve(results.map((r) => r.text).filter(ok))
         } catch (e) {
-          console.error('scanPhoto error:', e)
+          reportError('scanPhoto error:', e)
           reject(new Error(t('form.scanNotRecognized')))
         }
       }

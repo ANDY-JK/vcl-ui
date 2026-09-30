@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { reportError } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 按钮，禁止：clamp() 尺寸 → px，variant/size 枚举修改
 //    需我确认：新增 variant、loading 状态行为
 import { ref, watch, onErrorCaptured } from 'vue'
@@ -8,7 +9,7 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 const _e = ref<Error | null>(null)
 onErrorCaptured((e: Error) => {
-  console.error('[Button] 异常:', e.message)
+  reportError('[Button] 异常:', e.message)
   _e.value = e
   return false
 })
