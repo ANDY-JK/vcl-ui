@@ -116,7 +116,9 @@ const emit = defineEmits<{
 .btn-sm {
   height: calc(32px * var(--vcl-scale));
   padding: 0 calc(12px * var(--vcl-scale));
-  font-size: calc(15px * var(--vcl-scale));
+  /* 2026-10-01：原 15px 与 btn-md 的 ctrl-font-size(14) 倒挂（小按钮字比中按钮大），
+     档位递减正序 sm13 < md14 < lg15 */
+  font-size: var(--vcl-fs-13);
   border-radius: var(--vcl-radius-sm);
 }
 .btn-md {

@@ -178,6 +178,9 @@
 .toolbar-export-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
+  /* 2026-10-01：高度原由内容驱动（纯图标钮 22.4 与带字钮 24 设计值并排不齐），固定 24 等高 */
+  height: calc(24px * var(--vcl-scale));
   padding: var(--vcl-space-1);
   border: none;
   border-radius: var(--vcl-radius-sm);

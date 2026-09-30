@@ -404,7 +404,7 @@ function loadPreset(key: string): void {
   display: inline-flex;
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
-  padding: calc(9px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   border: none;
   border-radius: var(--vcl-radius-md, calc(8px * var(--vcl-scale)));
   background: transparent;

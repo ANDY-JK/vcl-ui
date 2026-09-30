@@ -261,14 +261,20 @@ const PROBE = () => {
     if (out.o7.length > 300) break
   }
 
-  // ---------- F1 文字过小 ----------
+  // ---------- F1 文字过小（设计值口径：computed/scale，避免缩放档误报）----------
   const mobile = document.documentElement.clientWidth < 600
+  const probeEl = document.createElement('i')
+  probeEl.style.cssText = 'position:absolute;visibility:hidden;font-size:calc(1px * var(--vcl-scale))'
+  document.body.appendChild(probeEl)
+  const scl = parseFloat(getComputedStyle(probeEl).fontSize) || 1
+  probeEl.remove()
   for (const el of document.querySelectorAll('body *')) {
     if (!inShell(el) || !isVisible(el) || isSrOnly(el) || el.children.length) continue
     const txt = (el.textContent || '').trim()
     if (txt.length < 2) continue
-    const fs = parseFloat(getComputedStyle(el).fontSize)
-    if (fs > 0 && fs < (mobile ? 11 : 11.5)) out.f1.push({ at: descOf(el, txt.slice(0, 18)), fs })
+    const fsRaw = parseFloat(getComputedStyle(el).fontSize)
+    const fs = Math.round((fsRaw / scl) * 100) / 100
+    if (fsRaw > 0 && fs < (mobile ? 11 : 11.5)) out.f1.push({ at: descOf(el, txt.slice(0, 18)), fs })
     if (out.f1.length > 200) break
   }
 
