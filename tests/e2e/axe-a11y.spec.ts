@@ -93,7 +93,11 @@ const TRADEOFF: Record<string, Set<string>> = {
 // 不再溢出（与 09-29 divider 同理），取舍总数 14→13。逐项查证：divider 与 avatar 两条
 // scrollable 均已 0 命中（探针实测），其余 13 条不变。avatar 仍留在登记集内：
 // 内容哪天回涨到再溢出会被拦下提示重核，而不是静默放过。
-const BASELINE_TOTAL = 13
+// [2026-09-30 由 13 升为 15] 缩放基准 1440→1280 后，1280 视口缩放 0.889→1.0，demo 内容
+// 变长：divider 与 avatar 两条 scrollable 登记对重新溢出命中（即 09-20 登记集的上限 15，
+// 与 BASELINE_BY_RULE 的 scrollable:2 上限一致），取舍总数 13→15。属内容随等比缩放
+// 自然变长的已知取舍回归，非新增缺陷；两条仍留登记集内作回涨探针。
+const BASELINE_TOTAL = 15
 // 基线里各「规则 × 页面」条数（升即红；仅覆盖 TRADEOFF 类别，三方/demo 内联不计入）
 const BASELINE_BY_RULE: Record<string, number> = {
   'nested-interactive': 2,

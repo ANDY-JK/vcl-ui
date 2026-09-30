@@ -15,12 +15,12 @@ const PANEL_MAX_W = 420
 
 /**
  * 首开默认宽随视口收放：小屏少占面板、画布优先。
- * 尺子＝tokens.css --vcl-scale 的 JS 镜像（100vw/1440px 纯连续等比，无固定段），
+ * 尺子＝tokens.css --vcl-scale 的 JS 镜像（100vw/1280px 纯连续等比，无固定段），
  * 与全站同一条曲线——面板若走自己的曲线，缩到一半时与面板内的字号/控件脱节。
  * 用户拖过/存过布局则由 restorePanels 覆盖，永不强行改。
  * 注：拖动下限 PANEL_MIN_W 是可用性地板，不随缩放走（再窄放不下内容）。
  */
-const DESIGN_BASE_VW = 1440
+const DESIGN_BASE_VW = 1280
 
 /**
  * 真实渲染值探针：借一个隐藏元素把 --vcl-scale 落进布局的结果量出来。
@@ -28,7 +28,7 @@ const DESIGN_BASE_VW = 1440
  * 只有落到布局里才能拿到真值——这是与 CSS 唯一不会失步的镜子，
  * 曲线怎么改它都自动跟。
  * 探针不可用（SSR / 测试环境不解析 CSS 变量布局，量到 0）时回落
- * JS 曲线镜像（同一条 100vw/1440px 曲线，视口量不到按 1440 设计基准 = 1），
+ * JS 曲线镜像（同一条 100vw/1280px 曲线，视口量不到按 1280 设计基准 = 1），
  * 与 CSS 保持同一口径。
  */
 function renderedScale(): number {
