@@ -337,7 +337,10 @@ onUnmounted(unbindWindowPointer)
         @change="onClick(opt)"
       />
       <span class="choice-box is-radio" :class="{ checked: isChecked(opt.value) }">
-        <IconSvg v-if="isChecked(opt.value)" type="circle-check-big" size="sm" color="var(--vcl-color-primary)" />
+        <!-- 选中态=经典内实心点。不用 circle-check-big：开口圆环+勾尾的墨迹集中在右侧，
+             与外圈边框叠成双环后肉眼可见「右厚」（2026-09-30 实测几何居中 ±0.02px 仍被判歪，
+             根因是字形墨迹分布而非定位），纯 CSS 圆点彻底规避 -->
+        <span v-if="isChecked(opt.value)" class="radio-dot" aria-hidden="true" />
       </span>
       <span class="choice-label">{{ opt.label }}</span>
     </label>
@@ -366,7 +369,8 @@ onUnmounted(unbindWindowPointer)
         @change="onClick(opt)"
       />
       <span class="choice-box is-checkbox" :class="{ checked: isChecked(opt.value) }">
-        <IconSvg v-if="isChecked(opt.value)" type="circle-check-big" size="sm" color="white" />
+        <!-- 纯对勾（同 radio 定案：circle-check-big 的开口环+勾尾在实心底上同样右偏墨） -->
+        <IconSvg v-if="isChecked(opt.value)" type="check" size="sm" color="white" />
       </span>
       <span class="choice-label">{{ opt.label }}</span>
     </label>
@@ -514,6 +518,13 @@ onUnmounted(unbindWindowPointer)
   border-color: var(--vcl-color-primary);
 }
 .is-checkbox.checked {
+  background: var(--vcl-color-primary);
+}
+/* radio 选中内点：8px 实心圆，与 18px 外圈留出均匀 3px 环隙（14px 内容区居中） */
+.radio-dot {
+  width: calc(8px * var(--vcl-scale));
+  height: calc(8px * var(--vcl-scale));
+  border-radius: 50%;
   background: var(--vcl-color-primary);
 }
 .choice-label {

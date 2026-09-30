@@ -135,8 +135,11 @@ const supStyle = computed(() => {
     :class="[`tag-${variant}`, `tag-${size}`, { rounded, dot, 'tag-has-text': !dot && displayText }]"
     :style="colorStyle"
   >
-    <!-- @slot default: 内联标签显示内容；不传则回退 text 属性 -->
-    <slot>{{ displayText }}</slot>
+    <!-- @slot default: 内联标签显示内容；不传则回退 text 属性。
+         文本走 .tag-text 光学补偿（Segoe UI 系 CJK 墨迹中心比盒中心低，13~15px 实测 +1.67px，
+         2026-09-30 用户实测可见）——纯文本路径包 span 才能单独位移；slot 路径内容自洽不动 -->
+    <span v-if="!dot && !$slots.default && displayText" class="tag-label">{{ displayText }}</span>
+    <slot v-else />
     <button
       v-if="closable && !dot"
       type="button"
@@ -158,6 +161,11 @@ const supStyle = computed(() => {
   font-weight: 500;
   white-space: nowrap;
   transition: all var(--vcl-transition-fast);
+}
+.tag-label {
+  /* 光学垂直居中补偿：Segoe UI 系 CJK 墨迹中心比盒中心低，13.1px chip 实测 +1.67px
+     （=0.1275em，2026-09-30 探针取证），用 em 随字号/缩放联动；几何路径（flex）不动 */
+  transform: translateY(-0.12em);
 }
 .tag-sm {
   padding: 1px var(--vcl-space-2);

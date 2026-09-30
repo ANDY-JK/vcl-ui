@@ -1104,6 +1104,8 @@ const {
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  /* 光学垂直居中补偿（同 Tag.vue .tag-text）：13.1px chip 实测墨迹 +1.67px = 0.1275em */
+  transform: translateY(-0.12em);
 }
 .tag-close {
   display: flex;

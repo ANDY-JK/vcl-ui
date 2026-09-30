@@ -36,7 +36,9 @@
   display: flex;
   align-items: center;
   gap: var(--vcl-space-2);
-  padding: calc(10px * var(--vcl-scale) + env(safe-area-inset-top)) var(--vcl-space-4) calc(10px * var(--vcl-scale));
+  /* 上 14 / 左右 20（2026-09-30 用户走查：原 10/16 偏紧，左与上加厚） */
+  padding: calc(14px * var(--vcl-scale) + env(safe-area-inset-top)) calc(20px * var(--vcl-scale))
+    calc(10px * var(--vcl-scale));
   z-index: 3;
 }
 .codecap-iconbtn {

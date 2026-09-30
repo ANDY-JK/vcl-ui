@@ -364,7 +364,7 @@ function confirm() {
                 :class="{ active: localBgColor === 'transparent' }"
                 @click="setTransparentBg()"
               >
-                {{ t('form.none') }}
+                <span class="transparent-btn-text">{{ t('form.none') }}</span>
               </button>
             </div>
           </div>
@@ -576,7 +576,11 @@ function confirm() {
   color: var(--vcl-color-text-secondary);
 }
 .transparent-btn {
-  padding: var(--vcl-space-1) var(--vcl-space-2);
+  /* flex 居中：22px 定高 + 常规流排版时内容盒被压偏，文本视觉沉底 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--vcl-space-2);
   height: calc(22px * var(--vcl-scale));
   border: 1px solid var(--vcl-color-border);
   border-radius: var(--vcl-radius-sm);
@@ -585,6 +589,10 @@ function confirm() {
   color: var(--vcl-color-text-muted);
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
+}
+/* 光学垂直居中补偿（同 Tag.vue .tag-text：13px 级 CJK 墨迹实测 +0.1275em） */
+.transparent-btn-text {
+  transform: translateY(-0.12em);
 }
 .transparent-btn:hover {
   border-color: var(--vcl-color-text-muted);
