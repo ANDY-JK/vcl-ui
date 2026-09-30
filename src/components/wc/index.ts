@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // 设计令牌必须先于本域组件样式（Q3 域级 CSS 自包含；与主入口 index.ts 同口径）
 import '../tokens.css'
 /**
@@ -90,7 +91,7 @@ const componentMap: Record<string, MappedComponent> = {
 export function registerWebComponents(prefix = 'vc'): void {
   // SSR/Node 环境（自定义元素注册表不存在）：跳过并告警，不让库入口直接炸
   if (typeof customElements === 'undefined') {
-    console.warn('[wc] 当前环境无 customElements（SSR/Node），跳过 Web Components 注册')
+    reportWarn('[wc] 当前环境无 customElements（SSR/Node），跳过 Web Components 注册')
     return
   }
   for (const [tagName, component] of Object.entries(componentMap)) {
@@ -104,7 +105,7 @@ export function registerWebComponents(prefix = 'vc'): void {
 /** 单独注册一个组件为 Custom Element */
 export function defineWC(name: string, component: Parameters<typeof defineCustomElement>[0]): void {
   if (typeof customElements === 'undefined') {
-    console.warn('[wc] 当前环境无 customElements（SSR/Node），跳过注册:', name)
+    reportWarn('[wc] 当前环境无 customElements（SSR/Node），跳过注册:', name)
     return
   }
   if (!customElements.get(name)) {

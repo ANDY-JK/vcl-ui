@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * utils — 通用工具函数统一入口
  *
@@ -196,7 +197,7 @@ export function downloadBlob(blob: Blob, filename: string): boolean {
 
     return false
   } catch (e) {
-    console.warn('[utils] 下载失败:', e)
+    reportWarn('[utils] 下载失败:', e)
     return false
   }
 }

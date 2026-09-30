@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // 复制工具 — Clipboard API 优先，execCommand 降级，适应 HTTP/HTTPS/移动端
 
 /**
@@ -16,7 +17,7 @@ export async function copyText(text: string): Promise<boolean> {
       return true
     }
   } catch (e) {
-    console.warn('[useCopy] Clipboard API 失败，降级到 execCommand:', e)
+    reportWarn('[useCopy] Clipboard API 失败，降级到 execCommand:', e)
   }
 
   // 方案 2：execCommand 降级（HTTP、旧浏览器、部分 WebView 均支持）

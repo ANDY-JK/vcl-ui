@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 设计器草稿存取（P2-13）
  *
@@ -49,13 +50,13 @@ export function useDesignerDraft() {
       const raw = await dbGet<unknown>(DRAFT_STORE, DRAFT_KEY)
       if (raw === null || raw === undefined) return null
       if (!isValidDraft(raw)) {
-        console.warn('[FormDesigner] 设计草稿数据无效，自动清除')
+        reportWarn('[FormDesigner] 设计草稿数据无效，自动清除')
         await dbDelete(DRAFT_STORE, DRAFT_KEY).catch(() => {})
         return null
       }
       return raw
     } catch (err) {
-      console.warn('[FormDesigner] 设计草稿加载失败:', err)
+      reportWarn('[FormDesigner] 设计草稿加载失败:', err)
       return null
     }
   }
@@ -72,13 +73,13 @@ export function useDesignerDraft() {
         /* Blob 不可用时跳过容量检查 */
       }
       if (size > DRAFT_MAX_SIZE) {
-        console.warn(`[FormDesigner] 设计草稿过大 (${(size / 1024 / 1024).toFixed(1)}MB)，跳过保存`)
+        reportWarn(`[FormDesigner] 设计草稿过大 (${(size / 1024 / 1024).toFixed(1)}MB)，跳过保存`)
         return
       }
       const draft: DesignerDraft = { nodes: plain.nodes, meta: plain.meta, savedAt: new Date().toISOString() }
       await dbPut(DRAFT_STORE, DRAFT_KEY, draft, DRAFT_TTL)
     } catch (err) {
-      console.warn('[FormDesigner] 设计草稿保存失败:', err)
+      reportWarn('[FormDesigner] 设计草稿保存失败:', err)
     }
   }
 
@@ -86,7 +87,7 @@ export function useDesignerDraft() {
     try {
       await dbDelete(DRAFT_STORE, DRAFT_KEY)
     } catch {
-      console.warn('[FormDesigner] 设计草稿清除失败')
+      reportWarn('[FormDesigner] 设计草稿清除失败')
     }
   }
 

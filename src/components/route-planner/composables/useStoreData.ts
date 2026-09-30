@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 门店数据管理 — CRUD + localStorage 持久化
  */
@@ -40,7 +41,7 @@ function saveToStorage(stores: Store[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stores))
   } catch (e) {
-    console.warn('[useStoreData] 门店数据保存失败（隐私模式/配额满）:', e)
+    reportWarn('[useStoreData] 门店数据保存失败（隐私模式/配额满）:', e)
   }
 }
 

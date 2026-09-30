@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 字段注册表 — 统一管理 FieldType → 组件映射 + 设计器元数据（单一事实源）
  *
@@ -703,7 +704,7 @@ export function registerField(reg: Omit<FieldRegistration, 'isLayout'> & { isLay
 export function unregisterField(type: string): void {
   // 不允许注销内置类型
   if (BUILTIN_TYPES.has(type)) {
-    console.warn(`[fieldRegistry] 不能注销内置类型: ${type}`)
+    reportWarn(`[fieldRegistry] 不能注销内置类型: ${type}`)
     return
   }
   delete REGISTRY[type]

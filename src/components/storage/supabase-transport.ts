@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * Supabase REST 传输层 —— 两套云端存储的共用底座（合并第一步：传输下沉，行为不变）
  *
@@ -250,7 +251,7 @@ export class SupabaseKVAdapter {
     // 清洗丢信息 = 不同键可能映射同一对象静默互相覆盖（如两个纯中文键都变 file），
     // 库内 key 全 ASCII 不触发；外部消费者需自查
     if (/[^\x20-\x7E]/.test(key)) {
-      console.warn(
+      reportWarn(
         `[supabase-kv] key 含非 ASCII 字符，清洗为 "${KV_PREFIX}${clean}"（与其他同类键可能同名互相覆盖），建议改用 ASCII key: ${key}`,
       )
     }
@@ -264,7 +265,7 @@ export class SupabaseKVAdapter {
       return JSON.parse(await resp.text()) as T
     } catch (e) {
       // 云端数据损坏：按 miss 处理并留痕（下次 set 会覆盖修复），不让坏数据崩掉读取链
-      console.warn('[supabase-kv] 云端 KV 解析失败，按 miss 处理:', key, e)
+      reportWarn('[supabase-kv] 云端 KV 解析失败，按 miss 处理:', key, e)
       return null
     }
   }
@@ -278,7 +279,7 @@ export class SupabaseKVAdapter {
       await this.tr.deleteObjectWithRetry(this.objectName(key))
     } catch (e) {
       // 幂等删除：对象不存在（bucket 未建/已删）视同成功，不向调用方报错
-      console.warn('[supabase-kv] 云端删除忽略（对象可能不存在）:', key, e)
+      reportWarn('[supabase-kv] 云端删除忽略（对象可能不存在）:', key, e)
     }
   }
 }

@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 合同收集存储适配层
  *
@@ -132,7 +133,7 @@ export class IndexedDBBackend implements StorageBackend {
         }
       }
     } catch (e) {
-      console.warn('[contract-storage] IndexedDB 加载失败:', e)
+      reportWarn('[contract-storage] IndexedDB 加载失败:', e)
     }
     return map
   }
@@ -147,7 +148,7 @@ export class IndexedDBBackend implements StorageBackend {
         appleId,
       })
     } catch (e) {
-      console.warn('[contract-storage] IndexedDB 保存失败:', appleId, e)
+      reportWarn('[contract-storage] IndexedDB 保存失败:', appleId, e)
     }
   }
 
@@ -155,7 +156,7 @@ export class IndexedDBBackend implements StorageBackend {
     try {
       await dbClear(STORE_NAME)
     } catch (e) {
-      console.warn('[contract-storage] IndexedDB 清空失败:', e)
+      reportWarn('[contract-storage] IndexedDB 清空失败:', e)
     }
   }
 }
@@ -276,7 +277,7 @@ export class ObjectCloudBackend implements StorageBackend {
         const tb = this.tombstones.get(appleId)!
         this.tombstones.delete(appleId)
         this.tr.deleteObjectWithRetry(tb.name).catch(() => {})
-        console.warn('[contract-storage] 删除后重新上传成功，清理残留墓碑:', appleId)
+        reportWarn('[contract-storage] 删除后重新上传成功，清理残留墓碑:', appleId)
       }
       // bucket 被外部写入含裸 % 的对象名时 decodeURIComponent 会抛 URIError——
       // 跳过该条并告警，不让单个污染对象崩掉整次 loadAll
@@ -284,7 +285,7 @@ export class ObjectCloudBackend implements StorageBackend {
       try {
         name = decodeURIComponent(rest)
       } catch {
-        console.warn('[contract-storage] 对象名 URI 解码失败，跳过:', obj.name)
+        reportWarn('[contract-storage] 对象名 URI 解码失败，跳过:', obj.name)
       }
       if (!this.paths.get(appleId)) this.paths.set(appleId, new Map())
       this.paths.get(appleId)!.set(slotKey, obj.name)
@@ -365,7 +366,7 @@ export class ObjectCloudBackend implements StorageBackend {
         await this.tr.deleteObjectWithRetry(oldTb.name)
         this.tombstones.delete(appleId)
       } catch (e) {
-        console.warn('[contract-storage] 墓碑清理失败（图片已上传，下次对账自动清理）:', appleId, e)
+        reportWarn('[contract-storage] 墓碑清理失败（图片已上传，下次对账自动清理）:', appleId, e)
       }
     }
   }
@@ -378,7 +379,7 @@ export class ObjectCloudBackend implements StorageBackend {
         await this.tr.deleteObjectWithRetry(obj.name)
       } catch (e) {
         failed.push(obj.name)
-        console.warn('[contract-storage] 云端删除失败:', obj.name, e)
+        reportWarn('[contract-storage] 云端删除失败:', obj.name, e)
       }
     }
     if (failed.length) throw new Error(t('storage.clearPartialFail', { n: failed.length }))
@@ -485,7 +486,7 @@ export class CompositeBackend implements StorageBackend {
     try {
       cloudMap = await this.cloud.loadAll(slotKeys)
     } catch (e) {
-      console.warn('[contract-storage] 云端对账失败，仅恢复本地:', e)
+      reportWarn('[contract-storage] 云端对账失败，仅恢复本地:', e)
       return localMap
     }
     // 同步云端墓碑集合（appleId → 删除时间戳），决定对账时哪些门店「已删除」
@@ -508,7 +509,7 @@ export class CompositeBackend implements StorageBackend {
       if (hasRef && !cloudMap.has(id)) {
         this.local.saveRecord(id, { slots: {}, ts: state.ts }).catch(() => {})
         localMap.delete(id)
-        console.warn('[contract-storage] 清理失效的云端引用:', id)
+        reportWarn('[contract-storage] 清理失效的云端引用:', id)
       }
     }
     // 清理云端已删除门店的本地残留字节：墓碑表明该门店在别的设备上被删过，
@@ -520,7 +521,7 @@ export class CompositeBackend implements StorageBackend {
       if (localTs > tbTs) continue
       this.local.saveRecord(id, { slots: {}, ts: Date.now() }).catch(() => {})
       localMap.delete(id)
-      console.warn('[contract-storage] 清理已删除门店的本地残留:', id)
+      reportWarn('[contract-storage] 清理已删除门店的本地残留:', id)
     }
     // 对账补传：本地有真实字节而云端既没有对象也没有「有效的」墓碑（上次上传中断/失败），
     // 后台补传不阻塞；墓碑门店且本地数据不新（删除残留）跳过——那是其他设备主动删的，不能补。
@@ -532,7 +533,7 @@ export class CompositeBackend implements StorageBackend {
         const tbTs = this.tombstones.get(id)
         if (tbTs !== undefined && (state.ts ?? 0) <= tbTs) continue
         this.cloud.saveRecord(id, state).catch((e) => {
-          console.warn('[contract-storage] 对账补传失败:', e)
+          reportWarn('[contract-storage] 对账补传失败:', e)
           this.onSyncError?.(id, e)
         })
       }
@@ -550,7 +551,7 @@ export class CompositeBackend implements StorageBackend {
     if (!hasAny) {
       await this.waitPending(appleId)
       const p = this.cloud.saveRecord(appleId, state).catch((e) => {
-        console.warn('[contract-storage] 云端删除失败:', e)
+        reportWarn('[contract-storage] 云端删除失败:', e)
         throw e
       })
       this.trackPending(appleId, p)
@@ -560,7 +561,7 @@ export class CompositeBackend implements StorageBackend {
     // 上传场景：云端后台同步（不阻塞 UI，但记录在飞 Promise 供删除/清空等待）。
     // 同步失败不能静默：本地已记录但云端没传上，其他设备打开就是空的，用户必须知道
     const p = this.cloud.saveRecord(appleId, state).catch((e) => {
-      console.warn('[contract-storage] 云端同步失败:', e)
+      reportWarn('[contract-storage] 云端同步失败:', e)
       this.onSyncError?.(appleId, e)
     })
     this.trackPending(appleId, p)

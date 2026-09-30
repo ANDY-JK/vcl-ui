@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 统一存储门面 —— 调用方只声明意图，内部按场景自动路由后端
  *
@@ -102,7 +103,7 @@ async function set<T = unknown>(key: string, value: T, opts: StorageWriteOptions
       // （写失败静默 = 调用方无感知的数据丢失，必须让失败可见）
       try {
         storageSet(key, value, opts.ttl)
-        console.warn('[storage] IndexedDB 写入失败，已降级 localStorage:', key, e)
+        reportWarn('[storage] IndexedDB 写入失败，已降级 localStorage:', key, e)
       } catch {
         throw e
       }
@@ -116,10 +117,10 @@ async function set<T = unknown>(key: string, value: T, opts: StorageWriteOptions
         await cloudAdapter.set(key, value)
       } catch (e) {
         // 本地已写成功：云端失败不应让整个 set 变 rejected（与 get 的云端降级对称）
-        console.warn('[storage] 云端写入失败（本地已保存）:', key, e)
+        reportWarn('[storage] 云端写入失败（本地已保存）:', key, e)
       }
     } else {
-      console.warn('[storage] 未注入云端适配器（setCloudAdapter），cloud 选项已忽略:', key)
+      reportWarn('[storage] 未注入云端适配器（setCloudAdapter），cloud 选项已忽略:', key)
     }
   }
 }
@@ -134,7 +135,7 @@ async function get<T = unknown>(key: string): Promise<T | null> {
   try {
     idb = await dbGet<T>(KV_STORE, key)
   } catch (e) {
-    console.warn('[storage] IndexedDB 读取失败，跳过继续降级:', key, e)
+    reportWarn('[storage] IndexedDB 读取失败，跳过继续降级:', key, e)
   }
   if (idb !== null) return idb
 
@@ -148,7 +149,7 @@ async function get<T = unknown>(key: string): Promise<T | null> {
         return cloud
       }
     } catch (e) {
-      console.warn('[storage] 云端读取失败，降级为本地:', key, e)
+      reportWarn('[storage] 云端读取失败，降级为本地:', key, e)
     }
   }
   return null
@@ -161,7 +162,7 @@ async function remove(key: string): Promise<void> {
     try {
       await cloudAdapter.remove(key)
     } catch (e) {
-      console.warn('[storage] 云端删除失败:', key, e)
+      reportWarn('[storage] 云端删除失败:', key, e)
     }
   }
 }

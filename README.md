@@ -126,7 +126,7 @@ setRuntimeObserver({
 
 - 参数语义与 `console.warn` / `console.error` 一致，原样透传；传 `null` 恢复默认
 - observer 自身抛异常不会打断组件：向 console.error 报告一次后降级 console 输出
-- 覆盖面：`warnOnce` 中央警告出口（重复警告全经它）+ 全部已捕获错误（ErrorBoundary / Upload / Input / DataTable 等内部隔离点、useErrorGuard、useBarcodeScanner）；零散一次性 `console.warn` 渐进迁移，新库代码一律走 `reportWarn` / `reportError`
+- 覆盖面：库内**全部** `console.warn` / `console.error` 点位（warnOnce 中央出口、ErrorBoundary / Upload / Input / DataTable 等内部隔离点、useErrorGuard、useBarcodeScanner、图表与地图服务层等 28 文件 83 处），`src/components` 内除 observer 自身实现外零 console 直调——新库代码一律走 `reportWarn` / `reportError`
 
 ### 基本使用
 

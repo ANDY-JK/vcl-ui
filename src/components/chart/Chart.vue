@@ -1,4 +1,5 @@
 <script lang="ts">
+import { reportWarn } from '@/components/_internal/runtime-observer'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：emptyText 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
@@ -109,7 +110,7 @@ function inferChartData(raw: unknown): { categories: string[]; series: ChartSeri
 function validateData(categories: string[], series: ChartSeriesItem[]): void {
   for (const s of series) {
     if (s.data && Array.isArray(s.data) && categories.length > 0 && s.data.length !== categories.length) {
-      console.warn(
+      reportWarn(
         `[Chart] 系列 "${s.name}" 数据长度(${s.data.length})与分类数(${categories.length})不一致，ECharts 将自动处理不等长数据`,
       )
     }

@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // 纯 Web Audio API 蜂鸣——无外部音频文件依赖
 let ctx: AudioContext | null = null
 let unlocked = false
@@ -90,7 +91,7 @@ function play(freqs: number[], type: OscillatorType, vol: number): void {
       o.stop(t + i * 0.08 + 0.12)
     })
   } catch {
-    console.warn('[useBeep] 播放失败')
+    reportWarn('[useBeep] 播放失败')
   }
 }
 

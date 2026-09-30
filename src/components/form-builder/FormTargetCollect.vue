@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * FormTargetCollect — 目标收集（按门店等目标聚合上传）
  *
@@ -157,7 +158,7 @@ async function reloadFromBackend(): Promise<void> {
     uploadMap.clear()
     for (const [id, state] of map) uploadMap.set(id, state)
   } catch (e) {
-    console.warn('[FormTargetCollect] 存储加载失败:', e)
+    reportWarn('[FormTargetCollect] 存储加载失败:', e)
     toast(backend.kind !== 'local' ? t('fbTarget.loadCloudFail') : t('fbTarget.loadLocalFail'), 'error')
   }
 }
@@ -167,7 +168,7 @@ async function saveToBackend(targetId: number): Promise<void> {
   try {
     await applyBackend().saveRecord(targetId, raw ?? { slots: {}, ts: Date.now() })
   } catch (e) {
-    console.warn('[FormTargetCollect] 存储保存失败:', targetId, e)
+    reportWarn('[FormTargetCollect] 存储保存失败:', targetId, e)
     toast(t('fbTarget.saveFail'), 'error')
   }
 }
@@ -203,7 +204,7 @@ async function onConfirmClear(): Promise<void> {
     uploadMap.clear()
     toast(t('fbTarget.cleared'), 'success')
   } catch (e) {
-    console.warn('[FormTargetCollect] 清空失败:', e)
+    reportWarn('[FormTargetCollect] 清空失败:', e)
     toast(t('fbTarget.clearFail'), 'error')
   }
 }
@@ -371,7 +372,7 @@ async function buildZipAndDownload(): Promise<void> {
         if (typeof file.dataUrl === 'string') {
           const resp = await fetch(file.dataUrl)
           if (!resp.ok) {
-            console.warn('[FormTargetCollect] 跳过失效引用:', zipPath)
+            reportWarn('[FormTargetCollect] 跳过失效引用:', zipPath)
             continue
           }
           blob = await resp.blob()
@@ -381,7 +382,7 @@ async function buildZipAndDownload(): Promise<void> {
         zip.file(zipPath, blob)
         fileCount++
       } catch {
-        console.warn('[FormTargetCollect] 跳过损坏文件:', zipPath)
+        reportWarn('[FormTargetCollect] 跳过损坏文件:', zipPath)
       }
     }
   }

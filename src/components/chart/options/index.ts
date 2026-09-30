@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 图表选项构建入口，禁止：修改 builder 映射表键名、buildChartOption 签名
 //    需我确认：新增 chartType 支持
 import type { EChartsOption } from 'echarts'
@@ -58,7 +59,7 @@ const builders: Record<ChartType, (p: BuildParams) => EChartsOption> = {
 export function buildChartOption(type: ChartType, params: BuildParams): EChartsOption {
   const builder = builders[type]
   if (!builder) {
-    console.warn(`[Chart] 未知图表类型 "${type}"，回退为柱状图`)
+    reportWarn(`[Chart] 未知图表类型 "${type}"，回退为柱状图`)
     return buildBar(params)
   }
   return builder(params)

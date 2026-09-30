@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // 截图工具 — 基于 html2canvas，适应 HTTP/HTTPS/跨域图片等环境
 
 export interface ScreenshotOptions {
@@ -106,7 +107,7 @@ export async function captureElement(
 
     return { dataUrl, canvas, blob }
   } catch (e) {
-    console.warn('[useScreenshot] 截图失败:', e)
+    reportWarn('[useScreenshot] 截图失败:', e)
     return null
   }
 }
@@ -120,7 +121,7 @@ export function downloadScreenshot(dataUrl: string, filename?: string): boolean 
     a.click()
     return true
   } catch (e) {
-    console.warn('[useScreenshot] 下载截图失败:', e)
+    reportWarn('[useScreenshot] 下载截图失败:', e)
     return false
   }
 }

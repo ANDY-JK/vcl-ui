@@ -1,4 +1,5 @@
 <script lang="ts">
+import { reportWarn } from '@/components/_internal/runtime-observer'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
@@ -147,7 +148,7 @@ async function loadMorphIcons() {
     await ensureMorphicons()
     morphIcons.value = isMorphiconsReady() ? getMorphIconNames() : []
   } catch (e) {
-    if (import.meta.env.DEV) console.warn('[IconPicker] morphicons 加载失败', e)
+    if (import.meta.env.DEV) reportWarn('[IconPicker] morphicons 加载失败', e)
     morphIcons.value = []
   } finally {
     morphLoading.value = false

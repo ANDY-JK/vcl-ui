@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 轻量存储 API（localStorage）—— 从 indexedDB.ts 物理拆出（2026-09-20，Q17）
  *
@@ -22,7 +23,7 @@ export function storageSet<T>(key: string, value: T, ttl?: number): void {
     const item: StoreItem<T> = { key, value, _ts: now, _exp: ttl ? now + ttl : 0 }
     localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(item))
   } catch {
-    console.warn('[Storage] 写入失败:', key)
+    reportWarn('[Storage] 写入失败:', key)
   }
 }
 
@@ -49,7 +50,7 @@ export function storageDelete(key: string): void {
   try {
     localStorage.removeItem(STORAGE_PREFIX + key)
   } catch {
-    console.warn('[Storage] localStorage.removeItem 失败:', key)
+    reportWarn('[Storage] localStorage.removeItem 失败:', key)
   }
 }
 

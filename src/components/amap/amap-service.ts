@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * amap-service.ts — 高德地图 REST API 统一服务层
  *
@@ -187,7 +188,7 @@ export async function keywordSearch(
     // Key 无效/QPS 超限/配额耗尽时高德返回 status:'0' + 错误 infocode，pois 为空——
     // 显式暴露错误（此前静默返回 null，调用方无法区分“无结果”与“API 报错”）
     if (data.infocode && data.infocode !== '10000') {
-      console.warn(`[amap] 关键词搜索 API 错误: infocode=${data.infocode} info=${data.info ?? ''}`, keywords)
+      reportWarn(`[amap] 关键词搜索 API 错误: infocode=${data.infocode} info=${data.info ?? ''}`, keywords)
       return { latitude: null, longitude: null }
     }
     const location = data.pois?.[0]?.location || ''
@@ -195,7 +196,7 @@ export async function keywordSearch(
     const [longitude, latitude] = location.split(',')
     return { latitude: parseFloat(latitude), longitude: parseFloat(longitude) }
   } catch {
-    console.warn('[amap] 关键词搜索失败:', keywords, city ? `城市: ${city}` : '')
+    reportWarn('[amap] 关键词搜索失败:', keywords, city ? `城市: ${city}` : '')
     return { latitude: null, longitude: null }
   }
 }
@@ -218,7 +219,7 @@ async function parseAroundResp(resp: Response): Promise<PoiItem[]> {
   }
   // API 错误（Key 无效/QPS 超限）显式暴露，避免与“无结果”混淆
   if (data.infocode && data.infocode !== '10000') {
-    console.warn(`[amap] 周边/搜索 API 错误: infocode=${data.infocode} info=${data.info ?? ''}`)
+    reportWarn(`[amap] 周边/搜索 API 错误: infocode=${data.infocode} info=${data.info ?? ''}`)
     return []
   }
   return (data.pois || [])
@@ -259,7 +260,7 @@ async function searchNearbyPage(
       : `https://restapi.amap.com/v5/place/around?${base}`
     return await parseAroundResp(await safeFetch(url))
   } catch {
-    console.warn('[amap] 周边搜索失败')
+    reportWarn('[amap] 周边搜索失败')
     return []
   }
 }

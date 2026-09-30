@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 表单存储适配 composable
  *
@@ -90,13 +91,13 @@ export function useFormStorage() {
       if (data === null || data === undefined) return null
       // 数据有效性校验
       if (!isValidDraft(data)) {
-        console.warn('[FormBuilder] 草稿数据格式无效，自动清除:', key)
+        reportWarn('[FormBuilder] 草稿数据格式无效，自动清除:', key)
         await dbDelete(STORE_NAME, key).catch(() => {})
         return null
       }
       return data
     } catch (err) {
-      console.warn('[FormBuilder] 草稿加载失败，尝试清除:', key, err)
+      reportWarn('[FormBuilder] 草稿加载失败，尝试清除:', key, err)
       // 加载失败时清除损坏的草稿，避免下次还报错
       await dbDelete(STORE_NAME, key).catch(() => {})
       return null
@@ -122,12 +123,12 @@ export function useFormStorage() {
         /* Blob 不可用时跳过 */
       }
       if (size > DRAFT_MAX_SIZE) {
-        console.warn(`[FormBuilder] 草稿数据过大 (${(size / 1024 / 1024).toFixed(1)}MB)，跳过保存:`, key)
+        reportWarn(`[FormBuilder] 草稿数据过大 (${(size / 1024 / 1024).toFixed(1)}MB)，跳过保存:`, key)
         return
       }
       await dbPut(STORE_NAME, key, plain, DRAFT_TTL)
     } catch {
-      console.warn('[FormBuilder] 草稿保存失败:', key)
+      reportWarn('[FormBuilder] 草稿保存失败:', key)
     }
   }
 
@@ -140,7 +141,7 @@ export function useFormStorage() {
     try {
       await dbDelete(STORE_NAME, key)
     } catch {
-      console.warn('[FormBuilder] 草稿清除失败:', key)
+      reportWarn('[FormBuilder] 草稿清除失败:', key)
     }
   }
 

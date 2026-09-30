@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // Web Notification API — Windows / macOS 系统通知
 
 export interface NotifyOptions {
@@ -24,7 +25,7 @@ export async function notify(title: string, bodyOrOptions?: string | NotifyOptio
   try {
     if (!(await ensure())) {
       if (getNotifyStatus() === 'denied') {
-        console.warn('[useNotify] 通知权限已被拒绝，请在浏览器设置中开启')
+        reportWarn('[useNotify] 通知权限已被拒绝，请在浏览器设置中开启')
       }
       return
     }
@@ -49,12 +50,12 @@ export async function notify(title: string, bodyOrOptions?: string | NotifyOptio
         try {
           n.close()
         } catch {
-          console.warn('[useNotify] 自动关闭通知失败')
+          reportWarn('[useNotify] 自动关闭通知失败')
         }
       }, opts.autoClose)
     }
   } catch {
-    console.warn('[useNotify] 通知发送失败')
+    reportWarn('[useNotify] 通知发送失败')
   }
 }
 

@@ -5,8 +5,9 @@
  * console.warn/error 的 spy 不受影响）。宿主经 setRuntimeObserver() 注入自有管道
  * （埋点/Sentry 等）后，走 reportWarn/reportError 的点位改投宿主管道。
  *
- * 迁移口径：warnOnce 是中央咽喉（重复警告都经它）已接；console.error 9 处全接；
- * 直接调 console.warn 的零散点位（多为一次性提示）渐进迁移，新代码一律走本模块。
+ * 迁移口径（2026-09-30 收尾）：warnOnce 中央咽喉与全部 console.error / console.warn 点位
+ * 均已接入——src/components 内除本模块自身实现外零 console 直调（回归由 grep 口径的
+ * check 闸口外另靠 eslint no-console 允许表兜底）。新代码一律走 reportWarn/reportError。
  *
  * observer 抛异常视为宿主管道自身故障：对 console.error 报一次后降级 console 输出，
  * 绝不让可观测性管道打断组件数据流（故障可见，不静默吞）。

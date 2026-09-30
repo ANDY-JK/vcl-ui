@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // Web Speech API 语音播报
 let preWarmed = false
 const KEY = 'vue-lib-voice-unlocked'
@@ -14,10 +15,10 @@ function doWarm(): void {
     try {
       localStorage.setItem(KEY, '1')
     } catch {
-      console.warn('[useVoice] localStorage 不可用，静默降级')
+      reportWarn('[useVoice] localStorage 不可用，静默降级')
     }
   } catch {
-    console.warn('[useVoice] SpeechSynthesis 预热失败')
+    reportWarn('[useVoice] SpeechSynthesis 预热失败')
   }
 }
 
@@ -96,7 +97,7 @@ function onVoicesReady(): void {
   try {
     doSpeak(p.text, p.rate, p.pitch, p.lang)
   } catch {
-    console.warn('[useVoice] 语音播报失败')
+    reportWarn('[useVoice] 语音播报失败')
   }
 }
 
@@ -117,7 +118,7 @@ export function speak(text: string, rate = 1, pitch = 1, lang: VoiceLang = 'zh')
     }
     doSpeak(text, rate, pitch, lang)
   } catch {
-    console.warn('[useVoice] 语音播报失败')
+    reportWarn('[useVoice] 语音播报失败')
   }
 }
 
@@ -139,6 +140,6 @@ export function stopSpeak(): void {
   try {
     speechSynthesis.cancel()
   } catch {
-    console.warn('[useVoice] speechSynthesis.cancel 失败')
+    reportWarn('[useVoice] speechSynthesis.cancel 失败')
   }
 }

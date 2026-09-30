@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * S3 兼容对象存储传输层（缤纷云 Bitiful / AWS / 其它 S3 兼容端点）——零 SDK
  *
@@ -271,7 +272,7 @@ export class S3Transport {
         try {
           rawKey = decodeURIComponent(rawKey)
         } catch {
-          console.warn('[s3-transport] 对象键解码失败，跳过:', rawKey)
+          reportWarn('[s3-transport] 对象键解码失败，跳过:', rawKey)
           continue
         }
         const name = decodeXml(rawKey)

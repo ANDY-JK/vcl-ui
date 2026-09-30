@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * amap-loader.ts — 高德地图 SDK 加载协调器
  *
@@ -66,7 +67,7 @@ export const amapLoader = createAmapLoader()
 onAmapKeyChange((keys) => {
   if (amapLoader.isInitialized()) {
     if (keys.jsKey) {
-      console.warn('[amap] 高德地图已用旧 Key 初始化，新 Key 需刷新页面才能生效（JS SDK 无法热换）')
+      reportWarn('[amap] 高德地图已用旧 Key 初始化，新 Key 需刷新页面才能生效（JS SDK 无法热换）')
     }
     return
   }

@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 表单联动引擎 composable
  *
@@ -72,7 +73,7 @@ export function useFormLinkage(fields: ComputedRef<FormField[]> | Ref<FormField[
         if (f.linkage?.type === 'followOptions' && f.linkage.formula) sources.push('followOptions')
         if (f.dataSource?.type === 'api' && f.dataSource.apiUrl) sources.push('dataSource.api')
         if (sources.length > 1) {
-          console.warn(
+          reportWarn(
             `[FormLinkage] 字段 "${f.key}" 同时配置了多个选项来源（${sources.join(' + ')}），` +
               '仅一个会生效（按求值顺序覆盖），请只保留一个。',
           )

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 页面内拍照组件，参照原生相机布局：中间快门键，取消/重拍/翻转等
 //    侧键左右按需显示。替代系统相机调起（避免页面切后台被浏览器杀进程重建刷新）。
 //    需我确认：布局结构、采集参数（4:3 高清）、拍照后交付方式（capture 事件）
@@ -246,7 +247,7 @@ async function openStream(kind: 'environment' | 'user') {
     // 摄像头权限已授予，此时设备列表才完整（iOS 未授权时 enumerateDevices 返回不全）→ 刷新翻转键
     await refreshFlipAvailable()
   } catch (e) {
-    console.warn('[CameraCapture] 相机不可用:', e)
+    reportWarn('[CameraCapture] 相机不可用:', e)
     handleCameraUnavailable(cameraErrorToChinese(e))
   }
 }

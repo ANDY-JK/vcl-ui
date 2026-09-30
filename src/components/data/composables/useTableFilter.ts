@@ -1,3 +1,4 @@
+import { reportWarn } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 禁止修改 filterState 数据结构，禁止删除拼音搜索支持
 //    需我确认：OptionSort 排序策略、筛选下拉定位算法
 // ==================== 筛选全链路（状态 / 选项计算 / 拼音 / 下拉定位 / 开关） ====================
@@ -91,7 +92,7 @@ export function useTableFilter(
         try {
           labels.set(val, col!.render!(row[colKey], row, 0))
         } catch {
-          console.warn('[DataTable] render 异常，放弃 label:', colKey)
+          reportWarn('[DataTable] render 异常，放弃 label:', colKey)
         }
       }
     }

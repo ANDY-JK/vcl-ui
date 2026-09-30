@@ -1,4 +1,4 @@
-import { reportError } from '@/components/_internal/runtime-observer'
+import { reportError, reportWarn } from '@/components/_internal/runtime-observer'
 import { ref, isRef, onUnmounted, type Ref } from 'vue'
 import {
   readBarcodes,
@@ -520,7 +520,7 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
       }
     } catch (e) {
       // ZXing 解码失败（模糊/无条码）属正常；WASM 级错误需记录
-      if (e instanceof Error && e.message?.includes('WASM')) console.warn('[Barcode] 扫描异常:', e.message)
+      if (e instanceof Error && e.message?.includes('WASM')) reportWarn('[Barcode] 扫描异常:', e.message)
       onScanResult(false)
     } finally {
       busy = false
