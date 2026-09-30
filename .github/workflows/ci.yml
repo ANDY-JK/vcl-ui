@@ -72,6 +72,12 @@ jobs:
       - name: Check vendored third-party payload
         run: npm run check:vendor-data
 
+      # F2 收口：xlsx 走 CDN tarball 不在 npm audit 依赖图，CVE 盲区由 OSV 单件监测补上。
+      # npm 生态对 SheetJS 永无 fixed 事件（registry 停更于 0.18.5），两条已知 CVE 走登记豁免
+      # （上游 0.19.6/0.20.2 已修，vendored 0.20.3 高于修复版）；出现新 id 即红，无 continue-on-error。
+      - name: Check vendored xlsx against OSV
+        run: npm run check:vendor-vulns
+
       # 第三方许可闸口：产物实际进包的件都要在 dist/THIRD-PARTY-LICENSES.md 里声明，
       # 且许可必须落在随包分发白名单内（copyleft 命中即红，需人工裁决）
       - name: Check third-party licenses

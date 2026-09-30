@@ -231,7 +231,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **随包第三方件的正源对账**：`npm run check:vendor-data` — rollup 的证据只记 `node_modules` 里的 JS 模块，两类件它看不见：① 仓内 vendor 的上游代码（SheetJS `xlsx@0.20.3`，见《依赖选型记录》）逐字节对 `VENDOR.json` 登记；② 随包分发的解码 wasm 二进制（`zxing-wasm`）按「登记＝base64 现场重算＝安装物正源＝上游 JS 自己声称的 `ZXING_WASM_SHA256`」四路对齐。搬进仓的东西一旦漂了没人会发现，所以这道放在整链前段（build 之前）先红
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
 - **凭据不落盘**：库内唯一持久化云端存储配置的位置（form-builder 收集目标的存储面板，`storage-config-persist.ts`）已脱敏——`secretAccessKey` 只存会话内存、不写 localStorage，刷新后需在面板重填（endpoint/bucket/AK 等其余字段照常恢复）；Supabase 的 `anonKey` 属公开密钥，按设计照存。下游应用自建配置持久化时，凭据字段请照此口径自理
-- **密钥扫描路径**：仓库无 `scan:secrets`/`scan:deps` 本地脚本（历史上是跑不起来的死入口，已删除）。真实扫描走两条：CI 的 gitleaks 官方 action（阻断级，见 `.github/workflows/ci.yml`）与 `npm run report:audit`（官方源 npm audit；注意 vendor 落仓的 xlsx 不在 npm audit 依赖图内，其公告需盯上游 `cdn.sheetjs.com`）
+- **密钥扫描路径**：仓库无 `scan:secrets`/`scan:deps` 本地脚本（历史上是跑不起来的死入口，已删除）。真实扫描走三条：CI 的 gitleaks 官方 action（阻断级，见 `.github/workflows/ci.yml`）、`npm run report:audit`（官方源 npm audit）、`npm run check:vendor-vulns`（vendor 落仓的 xlsx 不在 npm audit 依赖图内——对 OSV 做单件全量查询，npm 生态对 SheetJS 永无修复版事件，两条已知 CVE（上游 0.19.6/0.20.2 已修）走登记豁免，新 id 即红）
 
 ### 依赖选型记录（评估过的，不是没看）
 
