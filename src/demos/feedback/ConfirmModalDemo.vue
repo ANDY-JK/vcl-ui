@@ -28,7 +28,7 @@ function onCancel(variant: string): void {
       style="
         margin-bottom: calc(16px * var(--vcl-scale));
         padding: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-        background: var(--color-bg-alt);
+        background: var(--vcl-color-bg-alt);
         border-radius: calc(6px * var(--vcl-scale));
         font-size: calc(13px * var(--vcl-scale));
       "
@@ -80,7 +80,7 @@ function onCancel(variant: string): void {
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认值</th>
@@ -92,7 +92,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>visible</code>
@@ -100,7 +100,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               boolean
@@ -108,7 +108,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -116,7 +116,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               显示/隐藏（v-model）
@@ -126,7 +126,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>title</code>
@@ -134,7 +134,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -142,7 +142,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               '确认操作'
@@ -150,7 +150,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               弹窗标题
@@ -160,7 +160,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>message</code>
@@ -168,7 +168,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -176,7 +176,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -184,7 +184,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               提示内容（必填）
@@ -194,7 +194,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>confirmText</code>
@@ -202,7 +202,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -210,7 +210,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               '确定'
@@ -218,7 +218,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               确认按钮文案
@@ -228,7 +228,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>cancelText</code>
@@ -236,7 +236,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -244,7 +244,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               '取消'
@@ -252,7 +252,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               取消按钮文案
@@ -273,7 +273,7 @@ function onCancel(variant: string): void {
     <Card title="Events" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Event</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
@@ -283,7 +283,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>confirm</code>
@@ -291,7 +291,7 @@ function onCancel(variant: string): void {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               点击确认按钮
@@ -314,12 +314,12 @@ function onCancel(variant: string): void {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

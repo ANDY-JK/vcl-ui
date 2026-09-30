@@ -11,24 +11,24 @@ test('theme-editor：覆盖记录/双主题块/实时预览/导出/重置全链�
 
   const editor = page.locator('.theme-editor')
   await expect(editor).toBeVisible()
-  // 分组面板：主色组里有 --color-primary（text-is 精确匹配——--color-primary 是 9 个派生令牌的前缀），只读组带「只读」标
-  const primaryRow = editor.locator('.te-row:has(code.te-name:text-is("--color-primary"))')
+  // 分组面板：主色组里有 --vcl-color-primary（text-is 精确匹配——--vcl-color-primary 是 9 个派生令牌的前缀），只读组带「只读」标
+  const primaryRow = editor.locator('.te-row:has(code.te-name:text-is("--vcl-color-primary"))')
   await expect(primaryRow).toBeVisible()
   await expect(editor.locator('.te-readonly').first()).toBeVisible()
 
-  // 覆盖亮色块 --color-primary → 行内出现「已覆盖」，动态 style 出 :root 段
+  // 覆盖亮色块 --vcl-color-primary → 行内出现「已覆盖」，动态 style 出 :root 段
   await primaryRow.locator('.te-text').fill('#0f766e')
   await expect(primaryRow.locator('.te-override')).toBeVisible()
   // <style> 的 CSS 源码不是文本节点——textContent 走 evaluate 读
   const liveCss = async () => (await page.locator('#vcl-theme-live-preview').evaluate((el) => el.textContent)) || ''
-  await expect.poll(liveCss).toContain('--color-primary: #0f766e')
+  await expect.poll(liveCss).toContain('--vcl-color-primary: #0f766e')
 
   // 切暗色：覆盖记录面换到 dark 块（亮色块保留）
   await editor.getByRole('group', { name: '主题切换' }).getByRole('button', { name: '暗色' }).click()
-  const dangerRow = editor.locator('.te-row:has(code.te-name:text-is("--color-danger"))')
+  const dangerRow = editor.locator('.te-row:has(code.te-name:text-is("--vcl-color-danger"))')
   await dangerRow.locator('.te-text').fill('#f04444')
   await expect.poll(liveCss).toContain(":root[data-theme='dark']")
-  await expect.poll(liveCss).toContain('--color-danger: #f04444')
+  await expect.poll(liveCss).toContain('--vcl-color-danger: #f04444')
 
   // 导出区：JSON 双块齐全（textarea 读 value）；CSS 双段齐全（pre 读 innerText）
   await expect(editor.locator('.te-cfg')).toHaveValue(/"light"/)

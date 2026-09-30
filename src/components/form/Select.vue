@@ -913,7 +913,7 @@ const {
                     v-if="flatNode.isLeaf && isTreeSelected(flatNode)"
                     type="circle-check-big"
                     size="sm"
-                    color="var(--color-primary)"
+                    color="var(--vcl-color-primary)"
                   />
                 </button>
               </template>
@@ -1013,7 +1013,7 @@ const {
                     <span v-if="opt.desc" class="item-desc">{{ opt.desc }}</span>
                   </div>
                 </slot>
-                <IconSvg v-if="isSelected(opt)" type="circle-check-big" size="sm" color="var(--color-primary)" />
+                <IconSvg v-if="isSelected(opt)" type="circle-check-big" size="sm" color="var(--vcl-color-primary)" />
               </button>
               <div
                 v-if="optVirtual.enabled.value"
@@ -1039,12 +1039,12 @@ const {
   overflow: visible;
 }
 .select-dropdown-root.error .trigger-wrapper {
-  border-color: var(--color-danger-on-surface);
+  border-color: var(--vcl-color-danger-on-surface);
 }
 .select-error {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   font-size: calc(15px * var(--vcl-scale));
-  margin-top: var(--space-1);
+  margin-top: var(--vcl-space-1);
   line-height: 1.4;
 }
 
@@ -1054,50 +1054,50 @@ const {
   line-height: normal;
 }
 .select-dropdown-root.error .fl-label.raised {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 
 .trigger-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   width: 100%;
-  height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
-  padding: 0 var(--ctrl-padding-x, calc(14px * var(--vcl-scale)));
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--ctrl-radius, var(--radius-md));
-  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
-  transition: border-color var(--transition-fast);
+  height: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
+  padding: 0 var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  background: var(--vcl-color-surface);
+  border: 1.5px solid var(--vcl-color-border);
+  border-radius: var(--vcl-ctrl-radius, var(--vcl-radius-md));
+  font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
+  transition: border-color var(--vcl-transition-fast);
   cursor: pointer;
 }
 .trigger-wrapper.open {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  box-shadow: 0 0 0 3px var(--vcl-color-primary-light);
 }
 .trigger-wrapper.disabled {
   opacity: 1;
-  background: var(--bg-secondary, #f4f5f7);
+  background: var(--vcl-bg-secondary, #f4f5f7);
   cursor: not-allowed;
 }
 
 .combobox-tag {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   flex-shrink: 0;
   max-width: 100%;
   min-width: 0;
   overflow: hidden;
   height: calc(28px * var(--vcl-scale));
-  padding: 0 var(--space-2);
-  background: var(--color-primary-light);
-  border-radius: var(--radius-sm);
-  font-size: var(--ctrl-font-size);
+  padding: 0 var(--vcl-space-2);
+  background: var(--vcl-color-primary-light);
+  border-radius: var(--vcl-radius-sm);
+  font-size: var(--vcl-ctrl-font-size);
   /* 行高不可压成 1：tag-text 带省略号必需的 overflow:hidden，负半行距会把 g/y 下伸尾巴裁掉 */
   line-height: normal;
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 .combobox-tag .tag-text {
   overflow: hidden;
@@ -1115,10 +1115,10 @@ const {
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   cursor: pointer;
   opacity: 0.6;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--vcl-transition-fast);
 }
 .tag-close:hover {
   opacity: 1;
@@ -1126,7 +1126,7 @@ const {
 }
 .trigger-wrapper.has-tags {
   height: auto;
-  min-height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
+  min-height: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
   padding-block: calc(5px * var(--vcl-scale));
   flex-wrap: wrap;
 }
@@ -1143,22 +1143,22 @@ const {
   border: none;
   outline: none;
   background: transparent;
-  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
-  color: var(--color-text);
+  font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
+  color: var(--vcl-color-text);
 }
 .trigger-input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .trigger-input:disabled {
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   cursor: not-allowed;
 }
 .trigger-input.readonly {
   cursor: pointer;
 }
 .trigger-arrow {
-  color: var(--color-text-muted);
-  transition: transform var(--transition-fast);
+  color: var(--vcl-color-text-muted);
+  transition: transform var(--vcl-transition-fast);
   flex-shrink: 0;
 }
 .trigger-arrow.rotated {
@@ -1175,29 +1175,29 @@ const {
   flex-shrink: 0;
   border: none;
   border-radius: 50%;
-  background: var(--color-text-muted);
-  color: var(--color-surface);
+  background: var(--vcl-color-text-muted);
+  color: var(--vcl-color-surface);
   font-size: calc(15px * var(--vcl-scale));
   line-height: 1;
   cursor: pointer;
   opacity: 0.6;
   transition:
-    opacity var(--transition-fast),
-    background var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    background var(--vcl-transition-fast);
 }
 .select-clear:hover {
   opacity: 1;
-  background: var(--color-text);
+  background: var(--vcl-color-text);
 }
 .trigger-wrapper .select-clear {
-  margin-right: var(--space-1);
+  margin-right: var(--vcl-space-1);
 }
 
 .dropdown-panel:has(> .dp-header),
 .dropdown-panel:has(> .tp-columns) {
   width: calc(300px * var(--vcl-scale));
   max-height: none;
-  padding: var(--space-3);
+  padding: var(--vcl-space-3);
   box-sizing: border-box;
 }
 </style>
@@ -1206,13 +1206,13 @@ const {
 .dropdown-panel {
   /* 面板 Teleport 到 body 后是 z-auto —— 后续卡片内任何正层级元素都会盖住选项，
      必须显式挂全库下拉层令牌 */
-  z-index: var(--z-dropdown, 2000);
+  z-index: var(--vcl-z-dropdown, 2000);
   min-width: calc(220px * var(--vcl-scale));
   max-height: calc(280px * var(--vcl-scale));
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  box-shadow: var(--vcl-shadow-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1220,10 +1220,10 @@ const {
 .dropdown-panel .panel-search {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
-  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--vcl-color-border-light);
+  color: var(--vcl-color-text-muted);
   flex-shrink: 0;
 }
 .dropdown-panel .panel-input {
@@ -1238,7 +1238,7 @@ const {
   max-height: calc(200px * var(--vcl-scale));
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+  scrollbar-color: var(--vcl-color-border) transparent;
 }
 .panel-list::-webkit-scrollbar {
   width: calc(5px * var(--vcl-scale));
@@ -1247,44 +1247,44 @@ const {
   background: transparent;
 }
 .panel-list::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-lg);
+  background: var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
 }
 .panel-list::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: var(--vcl-color-text-muted);
 }
 .panel-item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   width: 100%;
   padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border: none;
   background: transparent;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
   text-align: left;
 }
 .panel-item:hover:not(.disabled) {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .panel-item.selected {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 .panel-item.highlighted {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .panel-item.disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 .panel-item.danger {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .panel-item.danger:hover {
-  background: var(--color-danger-bg);
+  background: var(--vcl-color-danger-bg);
 }
 .item-text {
   display: flex;
@@ -1296,17 +1296,17 @@ const {
 }
 .item-desc {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .menu-divider {
-  margin: var(--space-1) 0;
-  border-top: 1px solid var(--color-border-light);
+  margin: var(--vcl-space-1) 0;
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 
 .tree-node-item .expand-icon {
   flex-shrink: 0;
-  color: var(--color-text-muted);
-  transition: transform var(--transition-fast);
+  color: var(--vcl-color-text-muted);
+  transition: transform var(--vcl-transition-fast);
 }
 .tree-node-item .expand-icon.expanded {
   transform: rotate(90deg);
@@ -1325,7 +1325,7 @@ const {
   display: flex;
   justify-content: center;
   padding: calc(24px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(15px * var(--vcl-scale));
 }
 .panel-status svg {
@@ -1336,13 +1336,13 @@ const {
    与 IconPicker 的同名 transition 类都在非 scoped 块里，不限定会互相覆盖。 */
 .dropdown-panel.drop-enter-active {
   transition:
-    opacity var(--transition-normal),
-    transform var(--transition-normal);
+    opacity var(--vcl-transition-normal),
+    transform var(--vcl-transition-normal);
 }
 .dropdown-panel.drop-leave-active {
   transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
 }
 .dropdown-panel.drop-enter-from {
   opacity: 0;
@@ -1362,30 +1362,30 @@ const {
 .dd-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
+  gap: var(--vcl-space-2);
+  margin-top: var(--vcl-space-3);
 }
 .dd-btn {
   padding: calc(6px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
   font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .dd-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .dd-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 .dd-btn-primary {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
   color: #fff;
 }
 .dd-btn-primary:hover {

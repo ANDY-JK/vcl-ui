@@ -56,7 +56,7 @@ import Button from '@/components/basic/Button.vue'
           gap="8px"
           style="
             height: calc(100px * var(--vcl-scale));
-            background: var(--color-bg-alt);
+            background: var(--vcl-color-bg-alt);
             border-radius: calc(6px * var(--vcl-scale));
           "
         >
@@ -71,7 +71,7 @@ import Button from '@/components/basic/Button.vue'
           justify="between"
           align="center"
           style="
-            background: var(--color-bg-alt);
+            background: var(--vcl-color-bg-alt);
             border-radius: calc(6px * var(--vcl-scale));
             padding: 0 calc(8px * var(--vcl-scale));
           "
@@ -110,7 +110,7 @@ import Button from '@/components/basic/Button.vue'
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -120,7 +120,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>direction</code>
@@ -128,7 +128,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'row' | 'column' | 'horizontal' | 'vertical'
@@ -136,7 +136,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'row'
@@ -144,7 +144,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               主轴方向（horizontal/vertical 为 Space 兼容）
@@ -154,7 +154,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>justify</code>
@@ -162,7 +162,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'
@@ -170,7 +170,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'start'
@@ -178,7 +178,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               主轴对齐
@@ -188,7 +188,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>align</code>
@@ -196,7 +196,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'start' | 'center' | 'end' | 'stretch' | 'baseline'
@@ -204,7 +204,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'stretch'
@@ -212,7 +212,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               交叉轴对齐
@@ -222,7 +222,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>gap</code>
@@ -230,7 +230,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -238,15 +238,15 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
-              'var(--space-2)'
+              'var(--vcl-space-2)'
             </td>
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               子项间距（CSS 值）
@@ -256,7 +256,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>wrap</code>
@@ -264,7 +264,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               boolean
@@ -272,7 +272,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               false
@@ -280,7 +280,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               是否换行
@@ -290,7 +290,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>flex</code>
@@ -298,7 +298,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -306,7 +306,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               '1'
@@ -314,7 +314,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               flex 属性值
@@ -341,13 +341,13 @@ import Button from '@/components/basic/Button.vue'
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
@@ -358,7 +358,7 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: white;
   border-radius: calc(6px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));

@@ -60,7 +60,7 @@ const levelStyle = computed(() => {
   // 层级字号/缩进是设计尺寸，必须与全站同尺——否则侧栏缩放时深层文字恒定，
   // 与父级行高错位（字大行小）。层级公式本身不变，只把 px 换算进缩放曲线。
   const marginLeft = `calc(${indent}px * var(--vcl-scale))`
-  const marginRight = lv === 1 ? 'var(--space-4)' : 'var(--space-5)'
+  const marginRight = lv === 1 ? 'var(--vcl-space-4)' : 'var(--vcl-space-5)'
   return {
     '--nav-font-size': `calc(${fontSize}px * var(--vcl-scale))`,
     '--nav-indent': `calc(${indent}px * var(--vcl-scale))`,
@@ -130,13 +130,13 @@ const navItemClass = computed(() => {
   display: flex;
   align-items: center;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   background: transparent;
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
   cursor: pointer;
   transition:
-    background var(--transition-fast),
-    color var(--transition-fast),
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast),
     opacity 120ms ease;
   position: relative;
   white-space: nowrap;
@@ -146,11 +146,11 @@ const navItemClass = computed(() => {
   margin-left: var(--nav-ml);
   margin-right: var(--nav-mr);
   /* 上下 padding 提供呼吸感 */
-  padding: var(--space-2) var(--space-3);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
   /* 公式驱动：字号/透明度由 JS 计算 */
   font-size: var(--nav-font-size);
   opacity: var(--nav-opacity);
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 
 /* 图标 */
@@ -182,9 +182,9 @@ const navItemClass = computed(() => {
    L1 分组标题 — 独立样式
    ================================================================ */
 .nav-l1 {
-  margin-top: var(--space-2);
+  margin-top: var(--vcl-space-2);
   margin-bottom: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   font-weight: 700;
   color: #dde0e8;
 }
@@ -205,7 +205,7 @@ const navItemClass = computed(() => {
    ================================================================ */
 .nav-arrow {
   font-size: calc(13px * var(--vcl-scale));
-  transition: transform var(--transition-normal);
+  transition: transform var(--vcl-transition-normal);
   opacity: 0.4;
   flex-shrink: 0;
 }
@@ -217,7 +217,7 @@ const navItemClass = computed(() => {
    hover / active 状态
    ================================================================ */
 .nav-level:hover {
-  background: var(--color-sidebar-hover);
+  background: var(--vcl-color-sidebar-hover);
   color: #fff;
   opacity: 1;
 }
@@ -226,8 +226,8 @@ const navItemClass = computed(() => {
 }
 
 .nav-level.active {
-  background: var(--color-sidebar-active);
-  color: var(--color-sidebar-text-active);
+  background: var(--vcl-color-sidebar-active);
+  color: var(--vcl-color-sidebar-text-active);
   font-weight: 500;
   opacity: 1;
 }
@@ -243,8 +243,8 @@ const navItemClass = computed(() => {
   top: calc(4px * var(--vcl-scale));
   bottom: calc(4px * var(--vcl-scale));
   width: 2px;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-primary);
 }
 .nav-l1.active::before {
   display: none;
@@ -255,9 +255,9 @@ const navItemClass = computed(() => {
    ================================================================ */
 .collapsed .nav-level {
   justify-content: center;
-  width: calc(100% - var(--space-2) * 2);
-  margin: 0 var(--space-2);
-  padding: var(--space-2) 0;
+  width: calc(100% - var(--vcl-space-2) * 2);
+  margin: 0 var(--vcl-space-2);
+  padding: var(--vcl-space-2) 0;
 }
 .collapsed .nav-level.active::before {
   left: calc(4px * var(--vcl-scale));

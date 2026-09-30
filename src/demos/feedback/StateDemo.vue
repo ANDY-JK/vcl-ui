@@ -17,7 +17,7 @@ const readonlyVisible = ref(false)
       <p
         style="
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -41,7 +41,7 @@ const readonlyVisible = ref(false)
     <Card title="Props — ReadOnlyOverlay" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认值</th>
@@ -53,7 +53,7 @@ const readonlyVisible = ref(false)
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>visible</code>
@@ -61,7 +61,7 @@ const readonlyVisible = ref(false)
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               boolean
@@ -69,7 +69,7 @@ const readonlyVisible = ref(false)
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -77,7 +77,7 @@ const readonlyVisible = ref(false)
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               显示/隐藏
@@ -104,7 +104,7 @@ const readonlyVisible = ref(false)
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }

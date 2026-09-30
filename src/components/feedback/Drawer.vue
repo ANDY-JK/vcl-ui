@@ -211,7 +211,7 @@ onUnmounted(unmountEsc)
 .drawer-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal, 1000);
+  z-index: var(--vcl-z-modal, 1000);
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(2px);
 }
@@ -225,8 +225,8 @@ onUnmounted(unmountEsc)
   max-width: 90vw;
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  box-shadow: var(--vcl-shadow-lg);
 }
 .drawer-right {
   top: 0;
@@ -256,7 +256,7 @@ onUnmounted(unmountEsc)
   align-items: center;
   justify-content: space-between;
   padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--vcl-color-border);
   flex-shrink: 0;
 }
 .drawer-title {
@@ -266,15 +266,15 @@ onUnmounted(unmountEsc)
 
 .drawer-close {
   display: flex;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 .drawer-close:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 
 .drawer-body {
@@ -286,17 +286,17 @@ onUnmounted(unmountEsc)
 .drawer-footer {
   flex-shrink: 0;
   padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
-  border-top: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 
 /* 动画 */
 .drawer-enter-active,
 .drawer-leave-active {
-  transition: opacity var(--transition-normal);
+  transition: opacity var(--vcl-transition-normal);
 }
 .drawer-enter-active .drawer-panel,
 .drawer-leave-active .drawer-panel {
-  transition: transform var(--transition-normal);
+  transition: transform var(--vcl-transition-normal);
 }
 
 .drawer-enter-from,

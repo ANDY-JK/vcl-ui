@@ -163,7 +163,7 @@ const {
   onSwipe: (dir) => (dir === 'prev' ? goPrev() : goNext()),
 })
 
-// 预览弹层（--z-lightbox 10000）高于全局 Toast（--z-top 9999）：挂载期间临时提升 --z-top 至 10001，让内嵌 Toast 显示在弹层之上
+// 预览弹层（--vcl-z-lightbox 10000）高于全局 Toast（--vcl-z-top 9999）：挂载期间临时提升 --vcl-z-top 至 10001，让内嵌 Toast 显示在弹层之上
 // boostZTop 模块级引用计数（_internal/z-top.ts），多组件/多实例共享
 let _releaseZTop: (() => void) | null = null
 const overlayRef = ref<HTMLElement | null>(null)
@@ -485,9 +485,9 @@ const displayTitle = computed(() => {
 .ip-backdrop {
   position: fixed;
   inset: 0;
-  z-index: var(--z-lightbox, 10000);
+  z-index: var(--vcl-z-lightbox, 10000);
   background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(var(--space-1));
+  backdrop-filter: blur(var(--vcl-space-1));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -500,10 +500,10 @@ const displayTitle = computed(() => {
   display: flex;
   flex-direction: column;
   background: rgba(20, 20, 22, 0.96);
-  border-radius: clamp(var(--radius-md), 1.2cqw, 14px * var(--vcl-scale));
+  border-radius: clamp(var(--vcl-radius-md), 1.2cqw, 14px * var(--vcl-scale));
   overflow: hidden;
   box-shadow:
-    0 var(--space-2) clamp(28px, 5cqw, 40px) rgba(0, 0, 0, 0.5),
+    0 var(--vcl-space-2) clamp(28px, 5cqw, 40px) rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.08);
   outline: none;
   container-type: inline-size;
@@ -515,14 +515,14 @@ const displayTitle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--ctrl-height);
-  padding: 0 var(--space-3) 0 var(--space-4);
+  height: var(--vcl-ctrl-height);
+  padding: 0 var(--vcl-space-3) 0 var(--vcl-space-4);
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.04);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .ip-title {
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
   color: rgba(255, 255, 255, 0.9);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -532,19 +532,19 @@ const displayTitle = computed(() => {
 .ip-header-right {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   flex-shrink: 0;
 }
 .ip-counter-header {
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
   color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
 }
 .ip-hdr-btn {
   width: clamp(28px * var(--vcl-scale), 4cqw, 36px * var(--vcl-scale));
-  height: var(--ctrl-height);
+  height: var(--vcl-ctrl-height);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   background: transparent;
   color: rgba(255, 255, 255, 0.5);
   font-size: calc(22px * var(--vcl-scale));
@@ -552,7 +552,7 @@ const displayTitle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .ip-hdr-btn:hover,
 .ip-hdr-btn.active {
@@ -561,7 +561,7 @@ const displayTitle = computed(() => {
 }
 .ip-close {
   width: clamp(28px * var(--vcl-scale), 4cqw, 36px * var(--vcl-scale));
-  height: var(--ctrl-height);
+  height: var(--vcl-ctrl-height);
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
@@ -571,7 +571,7 @@ const displayTitle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
 }
 .ip-close:hover {
   background: rgba(255, 255, 255, 0.3);
@@ -631,7 +631,7 @@ const displayTitle = computed(() => {
 .ip-anno-tools {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
 }
 .ip-color-dot {
   width: clamp(14px * var(--vcl-scale), 2cqw, 18px * var(--vcl-scale));
@@ -640,8 +640,8 @@ const displayTitle = computed(() => {
   border: 2px solid transparent;
   cursor: pointer;
   transition:
-    transform var(--transition-fast),
-    border-color var(--transition-fast);
+    transform var(--vcl-transition-fast),
+    border-color var(--vcl-transition-fast);
   flex-shrink: 0;
 }
 .ip-color-dot:hover {
@@ -666,7 +666,7 @@ const displayTitle = computed(() => {
 }
 .ip-error {
   color: rgba(255, 255, 255, 0.5);
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
 }
 
 /* 左右箭头 */
@@ -686,8 +686,8 @@ const displayTitle = computed(() => {
   align-items: center;
   justify-content: center;
   transition:
-    background var(--transition-normal),
-    opacity var(--transition-normal);
+    background var(--vcl-transition-normal),
+    opacity var(--vcl-transition-normal);
   opacity: 0;
   z-index: 1;
 }
@@ -702,10 +702,10 @@ const displayTitle = computed(() => {
   cursor: default;
 }
 .ip-arrow-left {
-  left: var(--space-3);
+  left: var(--vcl-space-3);
 }
 .ip-arrow-right {
-  right: var(--space-3);
+  right: var(--vcl-space-3);
 }
 
 /* ===== 缩略图面板 ===== */
@@ -714,20 +714,20 @@ const displayTitle = computed(() => {
   flex-shrink: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: var(--space-2) var(--space-1);
+  padding: var(--vcl-space-2) var(--vcl-space-1);
   background: rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
 .ip-thumbs::-webkit-scrollbar {
-  width: var(--space-1);
+  width: var(--vcl-space-1);
 }
 .ip-thumbs::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 .ip-thumb {
   /* button 重置（div → button 后消除 UA 默认样式） */
@@ -737,13 +737,13 @@ const displayTitle = computed(() => {
   color: inherit;
   width: clamp(72px * var(--vcl-scale), 8cqw, 98px * var(--vcl-scale));
   flex-shrink: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   overflow: hidden;
   border: 2px solid transparent;
   cursor: pointer;
   transition:
-    border-color var(--transition-fast),
-    opacity var(--transition-fast);
+    border-color var(--vcl-transition-fast),
+    opacity var(--vcl-transition-fast);
   opacity: 0.55;
   display: flex;
   flex-direction: column;
@@ -771,7 +771,7 @@ const displayTitle = computed(() => {
 .ip-thumb-label {
   font-size: calc(13px * var(--vcl-scale));
   color: rgba(255, 255, 255, 0.55);
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -787,16 +787,16 @@ const displayTitle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   height: clamp(44px * var(--vcl-scale), 7cqw, 56px * var(--vcl-scale));
-  padding: 0 var(--space-4);
+  padding: 0 var(--vcl-space-4);
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.04);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .ip-toolbar > button {
   width: clamp(28px * var(--vcl-scale), 4cqw, 36px * var(--vcl-scale));
-  height: var(--ctrl-height);
+  height: var(--vcl-ctrl-height);
   border: none;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
@@ -806,7 +806,7 @@ const displayTitle = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
 }
 .ip-toolbar > button:hover {
   background: rgba(255, 255, 255, 0.25);
@@ -818,26 +818,26 @@ const displayTitle = computed(() => {
   width: 1px;
   height: clamp(16px * var(--vcl-scale), 3cqw, 20px * var(--vcl-scale));
   background: rgba(255, 255, 255, 0.15);
-  margin: 0 var(--space-1);
+  margin: 0 var(--vcl-space-1);
 }
 .ip-counter {
   color: rgba(255, 255, 255, 0.45);
-  font-size: var(--ctrl-font-size);
-  margin: 0 var(--space-2);
+  font-size: var(--vcl-ctrl-font-size);
+  margin: 0 var(--vcl-space-2);
 }
 
 /* ===== 移动端适配（窄视口） ===== */
 @container image-preview (max-width: 640px) {
   /* 弹层收窄、降低高度，避免顶天立地 */
   .ip-overlay {
-    width: calc(100cqw - var(--space-4));
+    width: calc(100cqw - var(--vcl-space-4));
     height: 80vh;
-    border-radius: var(--radius-lg);
+    border-radius: var(--vcl-radius-lg);
   }
   /* 顶栏单行：标题（封顶，让位给工具行）+ 工具（flex:1 拿剩余空间，色点按空间自适应裁减）+ 缩略图/关闭 */
   .ip-header {
     height: clamp(38px * var(--vcl-scale), 6cqw, 44px * var(--vcl-scale));
-    padding: 0 var(--space-2) 0 var(--space-3);
+    padding: 0 var(--vcl-space-2) 0 var(--vcl-space-3);
   }
   .ip-title {
     flex: 0 1 auto;
@@ -856,12 +856,12 @@ const displayTitle = computed(() => {
   .ip-anno-tools {
     flex: 1 1 auto;
     min-width: 0;
-    gap: var(--space-1);
+    gap: var(--vcl-space-1);
     overflow: visible;
     justify-content: center;
   }
   .ip-anno-tools .ip-toolbar-sep {
-    margin: 0 var(--space-1);
+    margin: 0 var(--vcl-space-1);
     flex-shrink: 0;
   }
   /* 工具/线宽按钮固定不压缩（保证可点尺寸）；色点可压缩但最小 14px，压缩到底仍放不下才由 fitAnnoColors 裁减 */
@@ -887,8 +887,8 @@ const displayTitle = computed(() => {
     flex-shrink: 1;
   }
   .ip-toolbar {
-    height: var(--ctrl-height);
-    padding: 0 var(--space-2);
+    height: var(--vcl-ctrl-height);
+    padding: 0 var(--vcl-space-2);
   }
   .ip-toolbar > button {
     width: clamp(32px * var(--vcl-scale), 5cqw, 40px * var(--vcl-scale));
@@ -915,8 +915,8 @@ const displayTitle = computed(() => {
     overflow-x: auto;
     overflow-y: hidden;
     background: rgba(0, 0, 0, 0.55);
-    padding: var(--space-2);
-    gap: var(--space-2);
+    padding: var(--vcl-space-2);
+    gap: var(--vcl-space-2);
     border-top: 1px solid rgba(255, 255, 255, 0.06);
   }
   .ip-thumb {
@@ -926,7 +926,7 @@ const displayTitle = computed(() => {
     height: clamp(44px * var(--vcl-scale), 6cqw, 56px * var(--vcl-scale));
   }
   .ip-thumb-label {
-    padding: var(--space-1);
+    padding: var(--vcl-space-1);
   }
 }
 </style>

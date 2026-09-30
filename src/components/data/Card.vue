@@ -64,17 +64,17 @@ const trendUi = computed(() => ({
   style: {
     color:
       trendNum.value > 0
-        ? 'var(--color-success)'
+        ? 'var(--vcl-color-success)'
         : trendNum.value < 0
-          ? 'var(--color-danger)'
-          : 'var(--color-text-muted)',
+          ? 'var(--vcl-color-danger)'
+          : 'var(--vcl-color-text-muted)',
   },
 }))
 
 /** 图标底色：color-mix 兼容任意 CSS 颜色格式（旧写法 color+'20' 只对 6 位 hex 成立，
     传 rgb()/8 位 hex/CSS 变量会生成非法颜色，背景静默丢失） */
 const iconBg = computed(() =>
-  props.color ? `color-mix(in srgb, ${props.color} 12%, transparent)` : 'var(--color-primary-light)',
+  props.color ? `color-mix(in srgb, ${props.color} 12%, transparent)` : 'var(--vcl-color-primary-light)',
 )
 </script>
 
@@ -95,7 +95,7 @@ const iconBg = computed(() =>
       class="stat-icon"
       :style="{
         background: iconBg,
-        color: color || 'var(--color-primary)',
+        color: color || 'var(--vcl-color-primary)',
       }"
     >
       <IconSvg :type="icon" size="md" color="currentColor" />
@@ -141,20 +141,20 @@ const iconBg = computed(() =>
   align-items: center;
   gap: calc(16px * var(--vcl-scale));
   padding: calc(20px * var(--vcl-scale));
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
   cursor: pointer;
   transition:
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
+    box-shadow var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
 }
 .stat-card:hover {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--vcl-shadow-sm);
   transform: translateY(-1px);
 }
 .stat-card.highlight {
-  border-left: 3px solid var(--color-primary);
+  border-left: 3px solid var(--vcl-color-primary);
 }
 .stat-icon {
   width: calc(44px * var(--vcl-scale));
@@ -162,7 +162,7 @@ const iconBg = computed(() =>
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
 }
 .stat-body {
   flex: 1;
@@ -174,13 +174,13 @@ const iconBg = computed(() =>
 }
 .stat-label {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  margin-top: var(--space-1);
+  color: var(--vcl-color-text-muted);
+  margin-top: var(--vcl-space-1);
 }
 .stat-trend {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
 }
@@ -189,21 +189,21 @@ const iconBg = computed(() =>
 .grid-card {
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
   overflow: hidden;
-  transition: box-shadow var(--transition-fast);
+  transition: box-shadow var(--vcl-transition-fast);
 }
 .grid-card:hover {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--vcl-shadow-sm);
 }
 .grid-card.highlight {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  box-shadow: 0 0 0 1px var(--vcl-color-primary);
 }
 .grid-card.summary {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
   border-color: transparent;
 }
 .grid-card--overflow-visible {
@@ -214,7 +214,7 @@ const iconBg = computed(() =>
   align-items: center;
   justify-content: space-between;
   padding: calc(14px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .grid-title {
   font-size: calc(15px * var(--vcl-scale));
@@ -227,9 +227,9 @@ const iconBg = computed(() =>
 .grid-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   padding: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  border-top: 1px solid var(--color-border-light);
-  background: var(--color-bg-alt);
+  border-top: 1px solid var(--vcl-color-border-light);
+  background: var(--vcl-color-bg-alt);
 }
 </style>

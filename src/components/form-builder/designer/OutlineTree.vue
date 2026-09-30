@@ -312,7 +312,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
   transition: background 0.15s;
 }
 .ldo-expand-toggle:hover {
-  background: var(--color-bg-hover, rgba(0, 0, 0, 0.06));
+  background: var(--vcl-color-bg-hover, rgba(0, 0, 0, 0.06));
 }
 /* 无子节点时的占位（保持对齐） */
 .ldo-expand-placeholder {
@@ -340,7 +340,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
   left: calc(4px * var(--vcl-scale));
   right: calc(4px * var(--vcl-scale));
   height: 2px;
-  background: var(--color-primary, #3b82f6);
+  background: var(--vcl-color-primary, #3b82f6);
   border-radius: 1px;
 }
 .ldo-node.ldo-drop-before::before {
@@ -350,7 +350,7 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
   bottom: -1px;
 }
 .ldo-node.ldo-drop-inside {
-  box-shadow: inset 0 0 0 2px var(--color-primary, #3b82f6);
-  background: var(--color-primary-light, #eef1ff);
+  box-shadow: inset 0 0 0 2px var(--vcl-color-primary, #3b82f6);
+  background: var(--vcl-color-primary-light, #eef1ff);
 }
 </style>

@@ -340,22 +340,22 @@ function onProgressMouseUp() {
 .vcl-sidebar-overlay {
   position: fixed;
   inset: 0;
-  z-index: calc(var(--z-sticky, 100) - 10);
+  z-index: calc(var(--vcl-z-sticky, 100) - 10);
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(2px);
 }
 
 .sidebar {
-  width: var(--sidebar-width);
-  min-width: var(--sidebar-width);
-  background: var(--color-sidebar);
+  width: var(--vcl-sidebar-width);
+  min-width: var(--vcl-sidebar-width);
+  background: var(--vcl-color-sidebar);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  z-index: var(--z-sticky, 100);
+  z-index: var(--vcl-z-sticky, 100);
   transition:
-    width var(--transition-normal),
-    min-width var(--transition-normal);
+    width var(--vcl-transition-normal),
+    min-width var(--vcl-transition-normal);
   will-change: width;
   contain: layout style;
 }
@@ -368,8 +368,8 @@ function onProgressMouseUp() {
     bottom: 0;
     width: min(260px * var(--vcl-scale), 85vw);
     transform: translateX(-100%);
-    box-shadow: var(--shadow-lg);
-    transition: transform var(--transition-normal);
+    box-shadow: var(--vcl-shadow-lg);
+    transition: transform var(--vcl-transition-normal);
   }
   .sidebar.open {
     transform: translateX(0);
@@ -382,11 +382,11 @@ function onProgressMouseUp() {
 .vcl-sidebar-header {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-4);
+  gap: var(--vcl-space-3);
+  padding: var(--vcl-space-5) var(--vcl-space-4);
   min-height: calc(56px * var(--vcl-scale));
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--color-sidebar-text-active);
+  color: var(--vcl-color-sidebar-text-active);
 }
 
 .sidebar.collapsed {
@@ -395,9 +395,9 @@ function onProgressMouseUp() {
 }
 .sidebar.collapsed .vcl-sidebar-header {
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   justify-content: center;
-  padding: var(--space-4) var(--space-2);
+  padding: var(--vcl-space-4) var(--vcl-space-2);
   min-height: calc(72px * var(--vcl-scale));
 }
 .sidebar.collapsed .vcl-collapse-btn {
@@ -411,8 +411,8 @@ function onProgressMouseUp() {
   width: calc(34px * var(--vcl-scale));
   min-width: calc(34px * var(--vcl-scale));
   height: calc(34px * var(--vcl-scale));
-  background: var(--color-primary);
-  border-radius: var(--radius-md);
+  background: var(--vcl-color-primary);
+  border-radius: var(--vcl-radius-md);
   color: white;
   flex-shrink: 0;
 }
@@ -432,18 +432,18 @@ function onProgressMouseUp() {
   margin-left: auto;
   padding: 0;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: transparent;
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
   cursor: pointer;
   transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast);
   flex-shrink: 0;
 }
 .vcl-collapse-btn:hover {
-  background: var(--color-sidebar-hover);
-  color: var(--color-sidebar-text-active);
+  background: var(--vcl-color-sidebar-hover);
+  color: var(--vcl-color-sidebar-text-active);
 }
 
 .vcl-content {
@@ -452,8 +452,8 @@ function onProgressMouseUp() {
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  background: var(--color-bg);
-  padding: var(--space-2);
+  background: var(--vcl-color-bg);
+  padding: var(--vcl-space-2);
 }
 
 /* ---- 顶栏 ---- */
@@ -462,14 +462,14 @@ function onProgressMouseUp() {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) calc(16px * var(--vcl-scale));
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-3) calc(16px * var(--vcl-scale));
   background:
-    linear-gradient(180deg, rgba(var(--color-primary-rgb), 0.03) 0%, transparent 2px),
-    linear-gradient(90deg, rgba(var(--color-primary-rgb), 0.015) 1px, transparent 1px) 0 0 / 3px 100%,
-    var(--color-sidebar);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  border-bottom: 1px solid rgba(var(--color-primary-rgb), 0.15);
+    linear-gradient(180deg, rgba(var(--vcl-color-primary-rgb), 0.03) 0%, transparent 2px),
+    linear-gradient(90deg, rgba(var(--vcl-color-primary-rgb), 0.015) 1px, transparent 1px) 0 0 / 3px 100%,
+    var(--vcl-color-sidebar);
+  border-radius: var(--vcl-radius-md) var(--vcl-radius-md) 0 0;
+  border-bottom: 1px solid rgba(var(--vcl-color-primary-rgb), 0.15);
   overflow: hidden;
 }
 .vcl-topbar-glow {
@@ -481,9 +481,9 @@ function onProgressMouseUp() {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--color-primary) 20%,
-    var(--color-primary) 50%,
-    var(--color-primary) 80%,
+    var(--vcl-color-primary) 20%,
+    var(--vcl-color-primary) 50%,
+    var(--vcl-color-primary) 80%,
     transparent 100%
   );
   opacity: 0.5;
@@ -494,31 +494,31 @@ function onProgressMouseUp() {
   justify-content: center;
   width: calc(28px * var(--vcl-scale));
   height: calc(28px * var(--vcl-scale));
-  margin-right: var(--space-1);
+  margin-right: var(--vcl-space-1);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .vcl-topbar-hamburger:hover {
-  background: rgba(var(--color-primary-rgb), 0.08);
-  color: var(--color-primary);
+  background: rgba(var(--vcl-color-primary-rgb), 0.08);
+  color: var(--vcl-color-primary);
 }
 .vcl-topbar-prompt {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: var(--ctrl-font-size);
-  color: var(--color-primary);
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-primary);
   opacity: 0.7;
-  margin-right: var(--space-1);
+  margin-right: var(--vcl-space-1);
 }
 .vcl-topbar-category {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   letter-spacing: 0.3px;
   /* 分类名被右侧工具挤压时竖排换行（「表单输/入」）——单行 + 不收缩，长标题由 title 出省略号兜底 */
   white-space: nowrap;
@@ -526,16 +526,16 @@ function onProgressMouseUp() {
 }
 .vcl-topbar-sep {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: var(--ctrl-font-size);
-  color: var(--color-text-secondary);
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-text-secondary);
   font-weight: 300;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .vcl-topbar-title {
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
   font-weight: 500;
-  color: var(--color-sidebar-text-active);
+  color: var(--vcl-color-sidebar-text-active);
   letter-spacing: 0.2px;
   /* 标题过长不换行：空间不足时省略号，绝不竖排 */
   white-space: nowrap;
@@ -555,7 +555,7 @@ function onProgressMouseUp() {
 .topbar-tools {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   /* 装不下时收缩为可横向滚动的工具条，而不是被顶栏的 overflow:hidden 裁掉——
      被裁掉的按钮用户既看不见也点不到（实测 360px 下 8 个按钮只有 4 个可达）。
      宽屏空间充足，不触发滚动，观感不变。 */
@@ -573,7 +573,7 @@ function onProgressMouseUp() {
 .vcl-topbar-right {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   flex-shrink: 0;
 }
 
@@ -586,49 +586,49 @@ function onProgressMouseUp() {
   height: calc(32px * var(--vcl-scale));
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.08); /* 微弱亮边，框出按钮区域 */
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: rgba(255, 255, 255, 0.04); /* 默认微白底 — 告知用户这里有功能 */
-  color: var(--color-text-secondary); /* 与 hamburger 一致的暗色图标 */
+  color: var(--vcl-color-text-secondary); /* 与 hamburger 一致的暗色图标 */
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   flex-shrink: 0;
   position: relative;
 }
 .topbar-tool-btn:hover {
-  color: var(--color-primary);
-  background: rgba(var(--color-primary-rgb), 0.08);
-  border-color: rgba(var(--color-primary-rgb), 0.15);
+  color: var(--vcl-color-primary);
+  background: rgba(var(--vcl-color-primary-rgb), 0.08);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.15);
 }
 .topbar-tool-btn:active {
   transform: scale(0.95);
-  background: rgba(var(--color-primary-rgb), 0.12);
+  background: rgba(var(--vcl-color-primary-rgb), 0.12);
   transition:
-    transform var(--transition-fast),
-    background var(--transition-fast);
+    transform var(--vcl-transition-fast),
+    background var(--vcl-transition-fast);
 }
 /* 键盘焦点环 — 保留可访问性 */
 .topbar-tool-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 2px;
 }
 /* 激活/选中态 — 有主色边框 + 微亮底色 */
 .topbar-tool-btn.active {
-  color: var(--color-primary);
-  background: rgba(var(--color-primary-rgb), 0.12);
-  border-color: rgba(var(--color-primary-rgb), 0.25);
+  color: var(--vcl-color-primary);
+  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
 }
 .topbar-tool-btn.active:hover {
-  background: rgba(var(--color-primary-rgb), 0.18);
-  border-color: rgba(var(--color-primary-rgb), 0.35);
+  background: rgba(var(--vcl-color-primary-rgb), 0.18);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
 }
 /* 危险操作变体 — 红色激活 */
 .topbar-tool-btn.is-danger:hover {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-btn.is-danger.active {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -637,7 +637,7 @@ function onProgressMouseUp() {
 .topbar-tool-sep {
   width: 1px;
   height: calc(18px * var(--vcl-scale));
-  margin: 0 var(--space-1);
+  margin: 0 var(--vcl-space-1);
   background: rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
   border-radius: 1px;
@@ -648,51 +648,51 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   height: calc(32px * var(--vcl-scale));
-  padding: 0 var(--space-3);
+  padding: 0 var(--vcl-space-3);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: rgba(255, 255, 255, 0.04);
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   letter-spacing: 0.2px;
   white-space: nowrap;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   flex-shrink: 0;
 }
 .topbar-tool-text:hover {
-  color: var(--color-sidebar-text-active);
+  color: var(--vcl-color-sidebar-text-active);
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.15);
 }
 .topbar-tool-text:active {
   transform: scale(0.97);
-  transition: transform var(--transition-fast);
+  transition: transform var(--vcl-transition-fast);
 }
 .topbar-tool-text:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 2px;
 }
 /* 文字按钮 — 主色高亮态 */
 .topbar-tool-text.active {
-  color: var(--color-primary);
-  background: rgba(var(--color-primary-rgb), 0.12);
-  border-color: rgba(var(--color-primary-rgb), 0.25);
+  color: var(--vcl-color-primary);
+  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
 }
 .topbar-tool-text.active:hover {
-  background: rgba(var(--color-primary-rgb), 0.18);
-  border-color: rgba(var(--color-primary-rgb), 0.35);
+  background: rgba(var(--vcl-color-primary-rgb), 0.18);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
 }
 /* 文字按钮 — 危险红色 */
 .topbar-tool-text.is-danger:hover {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-text.is-danger.active {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -701,19 +701,19 @@ function onProgressMouseUp() {
 .topbar-tool-label {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   flex-wrap: nowrap; /* 绝不换行 —— 图标和文字始终同排 */
   height: calc(32px * var(--vcl-scale));
-  padding: 0 var(--space-3) 0 var(--space-2);
+  padding: 0 var(--vcl-space-3) 0 var(--vcl-space-2);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: rgba(255, 255, 255, 0.04);
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   flex-shrink: 0;
 }
 /* 文字 span：行高=字号，靠 flex align-items:center 居中，避免 line-height 撑高干扰对齐 */
@@ -728,43 +728,43 @@ function onProgressMouseUp() {
   flex-shrink: 0;
 }
 .topbar-tool-label:hover {
-  color: var(--color-sidebar-text-active);
+  color: var(--vcl-color-sidebar-text-active);
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.15);
 }
 .topbar-tool-label:hover > svg {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 .topbar-tool-label:active {
   transform: scale(0.97);
-  transition: transform var(--transition-fast);
+  transition: transform var(--vcl-transition-fast);
 }
 .topbar-tool-label:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 2px;
 }
 /* 图标+文字按钮 — 主色高亮态 */
 .topbar-tool-label.active {
-  color: var(--color-primary);
-  background: rgba(var(--color-primary-rgb), 0.12);
-  border-color: rgba(var(--color-primary-rgb), 0.25);
+  color: var(--vcl-color-primary);
+  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
 }
 .topbar-tool-label.active:hover {
-  background: rgba(var(--color-primary-rgb), 0.18);
-  border-color: rgba(var(--color-primary-rgb), 0.35);
+  background: rgba(var(--vcl-color-primary-rgb), 0.18);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
 }
 /* 图标+文字按钮 — 危险红色 */
 .topbar-tool-label.is-danger:hover {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   background: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-label.is-danger:hover > svg {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .topbar-tool-label.is-danger.active {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.25);
 }
@@ -772,14 +772,14 @@ function onProgressMouseUp() {
 .vcl-user-info {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 .vcl-user-avatar {
   width: calc(28px * var(--vcl-scale));
   height: calc(28px * var(--vcl-scale));
   border-radius: 50%;
-  background: var(--color-primary);
-  color: var(--color-surface);
+  background: var(--vcl-color-primary);
+  color: var(--vcl-color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -788,8 +788,8 @@ function onProgressMouseUp() {
   line-height: 1;
 }
 .vcl-user-name {
-  font-size: var(--ctrl-font-size);
-  color: var(--color-text-muted);
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-text-muted);
   max-width: calc(100px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
@@ -802,14 +802,14 @@ function onProgressMouseUp() {
   width: calc(30px * var(--vcl-scale));
   height: calc(30px * var(--vcl-scale));
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   background: rgba(255, 255, 255, 0.03);
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--vcl-transition-normal);
 }
 .vcl-logout-btn:hover {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   border-color: rgba(239, 68, 68, 0.3);
   background: rgba(239, 68, 68, 0.06);
 }
@@ -819,9 +819,9 @@ function onProgressMouseUp() {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  background: var(--color-surface);
-  border-left: 1px solid var(--color-border-light);
-  border-right: 1px solid var(--color-border-light);
+  background: var(--vcl-color-surface);
+  border-left: 1px solid var(--vcl-color-border-light);
+  border-right: 1px solid var(--vcl-color-border-light);
   scrollbar-width: none;
 }
 .content-body::-webkit-scrollbar {
@@ -835,27 +835,28 @@ function onProgressMouseUp() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-2) calc(16px * var(--vcl-scale));
-  background: linear-gradient(0deg, rgba(var(--color-primary-rgb), 0.02) 0%, transparent 2px), var(--color-sidebar);
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
-  border-top: 1px solid rgba(var(--color-primary-rgb), 0.12);
+  padding: var(--vcl-space-2) calc(16px * var(--vcl-scale));
+  background:
+    linear-gradient(0deg, rgba(var(--vcl-color-primary-rgb), 0.02) 0%, transparent 2px), var(--vcl-color-sidebar);
+  border-radius: 0 0 var(--vcl-radius-md) var(--vcl-radius-md);
+  border-top: 1px solid rgba(var(--vcl-color-primary-rgb), 0.12);
 }
 .vcl-nav-btn {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: calc(7px * var(--vcl-scale)) var(--space-4);
+  gap: var(--vcl-space-2);
+  padding: calc(7px * var(--vcl-scale)) var(--vcl-space-4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   background: rgba(255, 255, 255, 0.03);
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--vcl-transition-normal);
 }
 .vcl-nav-btn:hover {
-  color: var(--color-surface);
+  color: var(--vcl-color-surface);
   border-color: rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.06);
@@ -879,7 +880,7 @@ function onProgressMouseUp() {
 .vcl-nav-center {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -890,37 +891,37 @@ function onProgressMouseUp() {
 }
 .vcl-nav-center:hover .vcl-nav-progress-track {
   height: calc(4px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 .vcl-nav-center:hover .vcl-nav-progress {
-  box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.6);
+  box-shadow: 0 0 10px rgba(var(--vcl-color-primary-rgb), 0.6);
 }
 .vcl-nav-center:active .vcl-nav-progress {
-  box-shadow: 0 0 14px rgba(var(--color-primary-rgb), 0.75);
+  box-shadow: 0 0 14px rgba(var(--vcl-color-primary-rgb), 0.75);
 }
 .vcl-nav-progress-track {
   flex: 1;
   height: 2px;
-  background: rgba(var(--color-primary-rgb), 0.12);
-  border-radius: var(--radius-sm);
+  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  border-radius: var(--vcl-radius-sm);
   transition:
-    height var(--transition-fast),
-    border-radius var(--transition-fast);
+    height var(--vcl-transition-fast),
+    border-radius var(--vcl-transition-fast);
   overflow: hidden;
 }
 .vcl-nav-progress {
   height: 100%;
-  background: var(--color-primary);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 0 6px rgba(var(--color-primary-rgb), 0.4);
+  background: var(--vcl-color-primary);
+  border-radius: var(--vcl-radius-sm);
+  box-shadow: 0 0 6px rgba(var(--vcl-color-primary-rgb), 0.4);
   transition:
-    width var(--transition-normal),
-    box-shadow var(--transition-fast);
+    width var(--vcl-transition-normal),
+    box-shadow var(--vcl-transition-fast);
   pointer-events: none;
 }
 .vcl-nav-percent {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-weight: 600;
   opacity: 0.7;
   min-width: calc(32px * var(--vcl-scale));
@@ -931,7 +932,7 @@ function onProgressMouseUp() {
 
 .vcl-fade-enter-active,
 .vcl-fade-leave-active {
-  transition: opacity var(--transition-normal);
+  transition: opacity var(--vcl-transition-normal);
 }
 .vcl-fade-enter-from,
 .vcl-fade-leave-to {

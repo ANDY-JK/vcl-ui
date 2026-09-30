@@ -23,7 +23,7 @@ interface Props {
   text?: string
   /** tooltip 方向 */
   position?: 'top' | 'bottom' | 'left' | 'right'
-  /** 浮层 z-index（数字或 CSS 变量字符串）；默认走 --z-dropdown 变量 */
+  /** 浮层 z-index（数字或 CSS 变量字符串）；默认走 --vcl-z-dropdown 变量 */
   zIndex?: number | string
 }
 
@@ -271,10 +271,10 @@ onUnmounted(() => {
 }
 .popover-btn {
   display: flex;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
 }
 </style>
@@ -284,32 +284,32 @@ onUnmounted(() => {
 .popover-card {
   min-width: calc(220px * var(--vcl-scale));
   max-width: calc(380px * var(--vcl-scale));
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  box-shadow: var(--vcl-shadow-lg);
   overflow: hidden;
 }
 .popover-title {
-  padding: var(--space-2) calc(14px * var(--vcl-scale));
+  padding: var(--vcl-space-2) calc(14px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .popover-body {
   padding: calc(12px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 
 /* ===== tooltip 气泡 ===== */
 .tooltip-pop {
   max-width: calc(320px * var(--vcl-scale));
-  padding: var(--space-1) calc(10px * var(--vcl-scale));
-  background: var(--color-sidebar);
+  padding: var(--vcl-space-1) calc(10px * var(--vcl-scale));
+  background: var(--vcl-color-sidebar);
   color: white;
   font-size: calc(15px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   white-space: normal;
   word-break: break-word;
   line-height: 1.4;
@@ -320,36 +320,36 @@ onUnmounted(() => {
 /* popover 卡片：弹性缓动 + 微缩放，进场 200ms 退场 150ms */
 .pop-enter-active {
   transition:
-    opacity var(--transition-normal),
-    transform var(--transition-normal);
+    opacity var(--vcl-transition-normal),
+    transform var(--vcl-transition-normal);
 }
 .pop-leave-active {
   transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
 }
 .pop-enter-from {
   opacity: 0;
-  transform: translateY(calc(-1 * var(--space-2))) scale(0.97);
+  transform: translateY(calc(-1 * var(--vcl-space-2))) scale(0.97);
 }
 .pop-leave-to {
   opacity: 0;
-  transform: translateY(calc(-1 * var(--space-1))) scale(0.97);
+  transform: translateY(calc(-1 * var(--vcl-space-1))) scale(0.97);
 }
 /* 向上展开时动画方向反转 */
 .flip-up.pop-enter-from {
-  transform: translateY(var(--space-2)) scale(0.97);
+  transform: translateY(var(--vcl-space-2)) scale(0.97);
 }
 .flip-up.pop-leave-to {
-  transform: translateY(var(--space-1)) scale(0.97);
+  transform: translateY(var(--vcl-space-1)) scale(0.97);
 }
 
 /* tooltip：纯淡入淡出，轻量快速 */
 .tip-enter-active {
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--vcl-transition-fast);
 }
 .tip-leave-active {
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--vcl-transition-fast);
 }
 .tip-enter-from,
 .tip-leave-to {

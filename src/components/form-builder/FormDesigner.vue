@@ -592,7 +592,7 @@ const fldIds = {
     <div
       v-else-if="activeTab === 'preview'"
       class="ld-body"
-      :style="{ height, display: 'block', padding: '24px', background: 'var(--color-bg-alt, #f8fafc)' }"
+      :style="{ height, display: 'block', padding: '24px', background: 'var(--vcl-color-bg-alt, #f8fafc)' }"
     >
       <div class="ld-preview">
         <FormBuilder
@@ -607,7 +607,7 @@ const fldIds = {
     <div
       v-else-if="activeTab === 'outline'"
       class="ld-body"
-      :style="{ height, display: 'block', padding: '24px', background: 'var(--color-bg-alt, #f8fafc)' }"
+      :style="{ height, display: 'block', padding: '24px', background: 'var(--vcl-color-bg-alt, #f8fafc)' }"
     >
       <div class="ld-outline-full">
         <div class="ld-outline-full-header">

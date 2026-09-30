@@ -448,7 +448,11 @@ const floatingRaised = computed(() => {
   <div
     v-if="_error"
     class="input-field"
-    style="color: var(--color-danger-on-surface); padding: var(--space-2); font-size: calc(12px * var(--vcl-scale))"
+    style="
+      color: var(--vcl-color-danger-on-surface);
+      padding: var(--vcl-space-2);
+      font-size: calc(12px * var(--vcl-scale));
+    "
   >
     ⚠ {{ t('form.inputError') }}
   </div>
@@ -723,7 +727,7 @@ const floatingRaised = computed(() => {
 .input-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   overflow: visible;
 }
 
@@ -733,7 +737,7 @@ const floatingRaised = computed(() => {
 .fl-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   min-width: 0;
   max-width: 100%;
 }
@@ -743,29 +747,29 @@ const floatingRaised = computed(() => {
   display: flex;
   align-items: center;
   min-width: 0;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-md);
+  background: var(--vcl-color-surface);
+  border: 1.5px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
   transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    border-color var(--vcl-transition-fast),
+    box-shadow var(--vcl-transition-fast);
 }
 .fl-wrap.focused {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  box-shadow: 0 0 0 3px var(--vcl-color-primary-light);
 }
 .fl-wrap.has-error {
-  border-color: var(--color-danger-on-surface);
+  border-color: var(--vcl-color-danger-on-surface);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 .fl-wrap.disabled {
   opacity: 0.5;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .fl-wrap.disabled input,
 .fl-wrap.disabled textarea {
   cursor: not-allowed;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 .fl-wrap.is-textarea {
   align-items: flex-start;
@@ -775,27 +779,27 @@ const floatingRaised = computed(() => {
 .fl-icon {
   flex-shrink: 0;
   margin-left: calc(12px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .fl-wrap.has-icon .fl-label:not(.raised) {
-  left: calc(var(--ctrl-padding-x, calc(14px * var(--vcl-scale))) + 32px * var(--vcl-scale));
+  left: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) + 32px * var(--vcl-scale));
 }
 .fl-wrap.focused .fl-icon {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 
 /* 后缀文字（单位等固定提示） */
 .fl-suffix {
   flex-shrink: 0;
   padding-right: calc(12px * var(--vcl-scale));
-  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
-  color: var(--color-text-muted);
+  font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
+  color: var(--vcl-color-text-muted);
   user-select: none;
 }
 
 /* 浮动标签 — 基础样式见 @import floating-label.css，以下为 Input 专属覆写 */
 .fl-wrap.has-error .fl-label.raised {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .fl-wrap.is-textarea .fl-label {
   top: calc(14px * var(--vcl-scale));
@@ -810,34 +814,34 @@ const floatingRaised = computed(() => {
 .fl-error {
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-danger-on-surface);
-  padding-left: var(--space-1);
+  color: var(--vcl-color-danger-on-surface);
+  padding-left: var(--vcl-space-1);
 }
 .fl-hint {
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
-  color: var(--color-text-muted);
-  padding-left: var(--space-1);
+  color: var(--vcl-color-text-muted);
+  padding-left: var(--vcl-space-1);
 }
 
 /* ── 错误态边框覆盖 ── */
 .input-field.error .fl-wrap {
-  border-color: var(--color-danger-on-surface);
+  border-color: var(--vcl-color-danger-on-surface);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 .input-field.disabled .fl-wrap {
   opacity: 1;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .input-field.disabled .fl-wrap input,
 .input-field.disabled .fl-wrap textarea {
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   cursor: not-allowed;
 }
 .input-error-msg {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   font-size: calc(15px * var(--vcl-scale));
-  margin-top: var(--space-1);
+  margin-top: var(--vcl-space-1);
   line-height: 1.4;
 }
 
@@ -845,17 +849,17 @@ const floatingRaised = computed(() => {
 .f-input {
   flex: 1;
   min-width: 0;
-  height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
-  padding: 0 var(--ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  height: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
+  padding: 0 var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
   padding-left: calc(8px * var(--vcl-scale));
   border: none;
   background: transparent;
-  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
-  color: var(--color-text);
+  font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
+  color: var(--vcl-color-text);
   outline: none;
 }
 .fl-wrap:not(.has-icon) .f-input {
-  padding-left: var(--ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  padding-left: var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
 }
 
 /* textarea */
@@ -869,21 +873,21 @@ const floatingRaised = computed(() => {
   background: transparent;
   outline: none;
   resize: vertical;
-  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
+  font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
   font-family: inherit;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   line-height: 1.5;
 }
 
 /* color 取色：色块 + 色值文本 */
 .f-color {
   flex-shrink: 0;
-  width: var(--ctrl-height, calc(42px * var(--vcl-scale)));
-  height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
+  width: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
+  height: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
   padding: calc(4px * var(--vcl-scale));
   margin-left: calc(8px * var(--vcl-scale));
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   background: transparent;
   cursor: pointer;
 }
@@ -891,8 +895,8 @@ const floatingRaised = computed(() => {
   padding: 0;
 }
 .f-color::-webkit-color-swatch {
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-sm);
 }
 .f-color:disabled {
   opacity: 0.5;
@@ -902,8 +906,8 @@ const floatingRaised = computed(() => {
   flex: 1;
   min-width: 0;
   padding: 0 calc(8px * var(--vcl-scale));
-  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
-  color: var(--color-text-muted);
+  font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
+  color: var(--vcl-color-text-muted);
   font-variant-numeric: tabular-nums;
   user-select: none;
 }
@@ -913,10 +917,10 @@ const floatingRaised = computed(() => {
   position: absolute;
   right: calc(8px * var(--vcl-scale));
   display: flex;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
 }
 /* 清除按钮 */
@@ -924,10 +928,10 @@ const floatingRaised = computed(() => {
   position: absolute;
   right: calc(8px * var(--vcl-scale));
   display: flex;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
 }
 .fl-wrap:has(.f-toggle-pwd) .f-input,
@@ -946,9 +950,9 @@ const floatingRaised = computed(() => {
 .f-input:-webkit-autofill,
 .f-input:-webkit-autofill:hover,
 .f-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
-  -webkit-text-fill-color: var(--color-text);
-  caret-color: var(--color-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--vcl-color-surface) inset;
+  -webkit-text-fill-color: var(--vcl-color-text);
+  caret-color: var(--vcl-color-text);
   transition: background-color 5000s ease-in-out 0s;
 }
 .f-input:-webkit-autofill {
@@ -968,22 +972,22 @@ const floatingRaised = computed(() => {
   top: 0;
   transform: translateY(-50%);
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-primary);
-  background: var(--color-surface);
-  padding: 0 var(--space-1);
+  color: var(--vcl-color-primary);
+  background: var(--vcl-color-surface);
+  padding: 0 var(--vcl-space-1);
   left: calc(calc(40px * var(--vcl-scale)) - 4px * var(--vcl-scale));
 }
 .fl-wrap:not(.has-icon) .f-input:-webkit-autofill ~ .fl-label,
 .fl-wrap:not(.has-icon) .f-input:autofill ~ .fl-label {
-  left: calc(var(--ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));
+  left: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));
 }
 .input-field.error .f-input:-webkit-autofill ~ .fl-label,
 .input-field.error .f-input:autofill ~ .fl-label {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .fl-wrap:has(.f-input:-webkit-autofill) .fl-icon,
 .fl-wrap:has(.f-input:autofill) .fl-icon {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 
 /* ===== 数字步进器 ===== */
@@ -991,21 +995,21 @@ const floatingRaised = computed(() => {
   display: inline-flex;
   align-items: stretch;
   width: calc(160px * var(--vcl-scale));
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--ctrl-radius, var(--radius-md));
-  background: var(--color-surface);
+  border: 1.5px solid var(--vcl-color-border);
+  border-radius: var(--vcl-ctrl-radius, var(--vcl-radius-md));
+  background: var(--vcl-color-surface);
   overflow: hidden;
   transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    border-color var(--vcl-transition-fast),
+    box-shadow var(--vcl-transition-fast);
 }
 .stepper-wrap.focused {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  box-shadow: 0 0 0 3px var(--vcl-color-primary-light);
 }
 .stepper-wrap.disabled {
   opacity: 0.5;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   pointer-events: none;
 }
 .step-input {
@@ -1015,45 +1019,45 @@ const floatingRaised = computed(() => {
   border: none;
   background: transparent;
   outline: none;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   font-family: inherit;
   text-align: center;
 }
 /* stepper 模式的静态标签（关联 inputId；stepper-wrap 是 inline-flex，标签独占一行在上方） */
 .step-label {
   align-self: center;
-  margin-right: var(--space-2);
-  padding-left: var(--space-3);
-  font-size: var(--fs-13);
-  color: var(--color-text-secondary);
+  margin-right: var(--vcl-space-2);
+  padding-left: var(--vcl-space-3);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text-secondary);
   white-space: nowrap;
 }
 .step-input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 /* 尺寸 */
 .size-sm .step-input {
   height: calc(30px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  padding: 0 var(--space-2);
+  padding: 0 var(--vcl-space-2);
 }
 .size-md .step-input {
-  height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
-  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
-  padding: 0 var(--ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  height: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
+  font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
+  padding: 0 var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
 }
 .size-lg .step-input {
   height: calc(46px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  padding: 0 var(--space-4);
+  padding: 0 var(--vcl-space-4);
 }
 
 /* 步进按钮（上下排） */
 .step-controls {
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--color-border-light);
+  border-left: 1px solid var(--vcl-color-border-light);
   flex-shrink: 0;
 }
 .step-btn {
@@ -1064,19 +1068,19 @@ const floatingRaised = computed(() => {
   width: calc(26px * var(--vcl-scale));
   border: none;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
 }
 .step-btn + .step-btn {
-  border-top: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 .step-btn:hover:not(:disabled) {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .step-btn:active:not(:disabled) {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
 }
 .step-btn:disabled {
   opacity: 0.3;

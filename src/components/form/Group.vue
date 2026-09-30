@@ -337,7 +337,7 @@ onUnmounted(unbindWindowPointer)
         @change="onClick(opt)"
       />
       <span class="choice-box is-radio" :class="{ checked: isChecked(opt.value) }">
-        <IconSvg v-if="isChecked(opt.value)" type="circle-check-big" size="sm" color="var(--color-primary)" />
+        <IconSvg v-if="isChecked(opt.value)" type="circle-check-big" size="sm" color="var(--vcl-color-primary)" />
       </span>
       <span class="choice-label">{{ opt.label }}</span>
     </label>
@@ -418,13 +418,13 @@ onUnmounted(unbindWindowPointer)
     >
       <template v-if="stars[i].half">
         <span class="half-wrap">
-          <IconSvg type="star" size="lg" color="var(--color-border)" />
+          <IconSvg type="star" size="lg" color="var(--vcl-color-border)" />
           <span class="half-clip">
             <IconSvg type="star" size="lg" :color="color" />
           </span>
         </span>
       </template>
-      <IconSvg v-else type="star" size="lg" :color="stars[i].full ? color : 'var(--color-border)'" />
+      <IconSvg v-else type="star" size="lg" :color="stars[i].full ? color : 'var(--vcl-color-border)'" />
     </button>
   </div>
 
@@ -470,7 +470,7 @@ onUnmounted(unbindWindowPointer)
 .group-radio,
 .group-checkbox {
   display: flex;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
 }
 .direction-horizontal {
   flex-direction: row;
@@ -483,9 +483,9 @@ onUnmounted(unbindWindowPointer)
 .choice-item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   font-size: calc(15px * var(--vcl-scale));
-  padding: var(--space-2) 0;
+  padding: var(--vcl-space-2) 0;
   cursor: pointer;
 }
 .choice-item.disabled {
@@ -496,35 +496,35 @@ onUnmounted(unbindWindowPointer)
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .is-radio {
   width: calc(18px * var(--vcl-scale));
   height: calc(18px * var(--vcl-scale));
   border-radius: 50%;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--vcl-color-border);
 }
 .is-checkbox {
   width: calc(18px * var(--vcl-scale));
   height: calc(18px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--color-border);
+  border-radius: var(--vcl-radius-sm);
+  border: 2px solid var(--vcl-color-border);
 }
 .choice-box.checked {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .is-checkbox.checked {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
 }
 .choice-label {
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 
 /* ===== switch ===== */
 .switch {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   cursor: pointer;
 }
 .switch.disabled {
@@ -532,15 +532,15 @@ onUnmounted(unbindWindowPointer)
   cursor: not-allowed;
 }
 .switch:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 2px;
 }
 .switch-track {
   position: relative;
   display: inline-block;
   border-radius: calc(100px * var(--vcl-scale));
-  background: var(--color-border);
-  transition: background var(--transition-fast);
+  background: var(--vcl-color-border);
+  transition: background var(--vcl-transition-fast);
   cursor: pointer;
 }
 .track-md {
@@ -552,7 +552,7 @@ onUnmounted(unbindWindowPointer)
   height: calc(18px * var(--vcl-scale));
 }
 .switch-track.on {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
 }
 .switch-thumb {
   position: absolute;
@@ -560,8 +560,8 @@ onUnmounted(unbindWindowPointer)
   left: 2px;
   border-radius: 50%;
   background: white;
-  transition: transform var(--transition-fast);
-  box-shadow: var(--shadow-sm);
+  transition: transform var(--vcl-transition-fast);
+  box-shadow: var(--vcl-shadow-sm);
 }
 .thumb-md {
   width: calc(20px * var(--vcl-scale));
@@ -581,13 +581,13 @@ onUnmounted(unbindWindowPointer)
 }
 .switch-label {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 
 /* ===== rate ===== */
 .rate {
   display: inline-flex;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
 }
 .rate-btn {
   display: flex;
@@ -595,7 +595,7 @@ onUnmounted(unbindWindowPointer)
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: transform var(--transition-fast);
+  transition: transform var(--vcl-transition-fast);
 }
 .rate-btn:not(:disabled):hover {
   transform: scale(1.15);
@@ -619,7 +619,7 @@ onUnmounted(unbindWindowPointer)
 .slider-root {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   width: 100%;
   --thumb-size: calc(16px * var(--vcl-scale));
   --track-height: calc(6px * var(--vcl-scale));
@@ -636,19 +636,19 @@ onUnmounted(unbindWindowPointer)
 .slider-rail {
   position: absolute;
   inset: 0;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   border-radius: calc(100px * var(--vcl-scale));
 }
 .slider-fill {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   border-radius: calc(100px * var(--vcl-scale));
   pointer-events: none;
   transition:
-    left var(--transition-fast),
-    width var(--transition-fast);
+    left var(--vcl-transition-fast),
+    width var(--vcl-transition-fast);
 }
 .slider-track.dragging .slider-fill {
   transition: none;
@@ -660,14 +660,14 @@ onUnmounted(unbindWindowPointer)
   height: var(--thumb-size);
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: var(--color-surface);
-  border: 2px solid var(--color-primary);
-  box-shadow: var(--shadow-sm);
+  background: var(--vcl-color-surface);
+  border: 2px solid var(--vcl-color-primary);
+  box-shadow: var(--vcl-shadow-sm);
   cursor: grab;
   z-index: 2;
   transition:
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
+    box-shadow var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
 }
 .slider-thumb:hover {
   transform: translate(-50%, -50%) scale(1.1);
@@ -675,12 +675,12 @@ onUnmounted(unbindWindowPointer)
 .slider-thumb:focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 3px var(--color-primary-light),
-    var(--shadow-sm);
+    0 0 0 3px var(--vcl-color-primary-light),
+    var(--vcl-shadow-sm);
 }
 .slider-thumb.dragging {
   cursor: grabbing;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--vcl-shadow-md);
   transform: translate(-50%, -50%) scale(1.15);
 }
 .slider-value {
@@ -690,7 +690,7 @@ onUnmounted(unbindWindowPointer)
   font-size: calc(15px * var(--vcl-scale));
   font-variant-numeric: tabular-nums;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 .slider-root.disabled {
   opacity: 0.5;

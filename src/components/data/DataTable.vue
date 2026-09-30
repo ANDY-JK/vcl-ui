@@ -580,7 +580,7 @@ function onTableWheel(e: WheelEvent) {
 
 // 操作反馈：组件内 Toast 实例（不依赖全局单例约定，复用共享 notify）
 const { toastRef, notify } = useToastNotify()
-// 截图反馈可能发生在全屏态（全屏层级高于全局 Toast）：挂载期间提升 --z-top
+// 截图反馈可能发生在全屏态（全屏层级高于全局 Toast）：挂载期间提升 --vcl-z-top
 let _releaseZTop: (() => void) | null = null
 
 // 全屏切换
@@ -1866,10 +1866,16 @@ provideDataTableContext({
       v-if="_internalError"
       style="padding: calc(40px * var(--vcl-scale)) calc(20px * var(--vcl-scale)); text-align: center"
     >
-      <h3 style="color: var(--color-danger-on-surface); margin-bottom: calc(8px * var(--vcl-scale))">
+      <h3 style="color: var(--vcl-color-danger-on-surface); margin-bottom: calc(8px * var(--vcl-scale))">
         {{ t('table.renderError') }}
       </h3>
-      <p style="color: var(--color-text-muted); font-size: var(--fs-13); margin-bottom: calc(16px * var(--vcl-scale))">
+      <p
+        style="
+          color: var(--vcl-color-text-muted);
+          font-size: var(--vcl-fs-13);
+          margin-bottom: calc(16px * var(--vcl-scale));
+        "
+      >
         {{ _internalError.message }}
       </p>
       <button class="base-btn btn-primary btn-md" @click="_internalError = null">{{ t('common.retry') }}</button>
@@ -2724,7 +2730,7 @@ provideDataTableContext({
               left: noteTooltip.x + 'px',
               top: noteTooltip.y - 8 + 'px',
               transform: 'translateY(-100%)',
-              zIndex: 'var(--z-tooltip, 3000)',
+              zIndex: 'var(--vcl-z-tooltip, 3000)',
             }"
           >
             {{ noteTooltip.text }}
@@ -2739,7 +2745,7 @@ provideDataTableContext({
               left: originalTooltip.x + 'px',
               top: originalTooltip.y - 8 + 'px',
               transform: 'translateY(-100%)',
-              zIndex: 'var(--z-tooltip, 3000)',
+              zIndex: 'var(--vcl-z-tooltip, 3000)',
             }"
           >
             <span class="original-tooltip-label">{{ t('table.originalValue') }}</span
@@ -2756,7 +2762,7 @@ provideDataTableContext({
               left: '50%',
               top: '50%',
               transform: 'translate(-50%,-50%)',
-              zIndex: 'var(--z-tooltip, 3000)',
+              zIndex: 'var(--vcl-z-tooltip, 3000)',
             }"
             role="dialog"
             aria-modal="true"
@@ -2790,7 +2796,7 @@ provideDataTableContext({
               left: _optDrop.left + 'px',
               minWidth: _optDrop.width + 'px',
               maxHeight: '320px',
-              zIndex: 'var(--z-tooltip, 3000)',
+              zIndex: 'var(--vcl-z-tooltip, 3000)',
             }"
             role="listbox"
             tabindex="-1"
@@ -2835,7 +2841,7 @@ provideDataTableContext({
         :visible="_cellDetailModal.visible"
         :title="_cellDetailModal.title"
         size="md"
-        :z-index="'var(--z-tooltip, 3000)'"
+        :z-index="'var(--vcl-z-tooltip, 3000)'"
         internal
         @update:visible="_cellDetailModal.visible = $event"
       >

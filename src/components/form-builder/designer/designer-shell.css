@@ -3,7 +3,7 @@
    ══════════════════════════════════════
    
    核心原则：
-   1. 100% 使用项目已有 CSS 变量（--color-primary, --color-border 等）
+   1. 100% 使用项目已有 CSS 变量（--vcl-color-primary, --vcl-color-border 等）
    2. 工具栏用项目 Button 组件的 ghost/outline 变体
    3. 左栏紧凑精致，像 IDE 的组件面板
    4. 画布就是干净的表单预览区
@@ -16,10 +16,10 @@
    ================================ */
 .ld {
   position: relative; /* 快捷键帮助面板等浮层的定位基准 */
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-lg, calc(12px * var(--vcl-scale)));
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-radius: var(--vcl-radius-lg, calc(12px * var(--vcl-scale)));
   overflow: hidden;
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.08),
     0 1px 3px rgba(0, 0, 0, 0.04);
@@ -35,17 +35,17 @@
   z-index: 30;
   width: calc(280px * var(--vcl-scale));
   padding: calc(10px * var(--vcl-scale)) 0 calc(8px * var(--vcl-scale));
-  background: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
+  background: var(--vcl-color-surface, #fff);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-radius: var(--vcl-radius-md, calc(8px * var(--vcl-scale)));
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 .ld-sc-head {
   padding: 0 calc(14px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   font-weight: 700;
-  color: var(--color-text, #1e293b);
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  color: var(--vcl-color-text, #1e293b);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 .ld-sc-row {
   display: flex;
@@ -53,29 +53,29 @@
   justify-content: space-between;
   gap: calc(10px * var(--vcl-scale));
   padding: calc(5px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
 }
 .ld-sc-keys {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: var(--fs-10);
+  font-size: var(--vcl-fs-10);
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
-  background: var(--color-bg-alt, #f8fafc);
-  border: 1px solid var(--color-border-light, #f1f5f9);
+  color: var(--vcl-color-text-secondary, #6b7280);
+  background: var(--vcl-color-bg-alt, #f8fafc);
+  border: 1px solid var(--vcl-color-border-light, #f1f5f9);
   border-radius: calc(4px * var(--vcl-scale));
   padding: 2px calc(6px * var(--vcl-scale));
   white-space: nowrap;
 }
 .ld-sc-label {
-  color: var(--color-text, #1e293b);
+  color: var(--vcl-color-text, #1e293b);
   text-align: right;
 }
 .ld-sc-hint {
   margin-top: calc(4px * var(--vcl-scale));
   padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale)) 0;
-  font-size: var(--fs-10);
-  color: var(--color-text-muted, #94a3b8);
-  border-top: 1px solid var(--color-border-light, #f1f5f9);
+  font-size: var(--vcl-fs-10);
+  color: var(--vcl-color-text-muted, #94a3b8);
+  border-top: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 
 /* ================================
@@ -87,26 +87,26 @@
   gap: calc(6px * var(--vcl-scale));
 }
 .ld-save-label {
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 .ld-save-input {
   width: 100%;
   box-sizing: border-box;
   padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
   font-family: inherit;
-  font-size: var(--fs-13);
-  color: var(--color-text, #1e293b);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text, #1e293b);
   transition: border-color 0.15s;
 }
 .ld-save-input:focus {
   outline: none;
-  border-color: var(--color-primary, #4f6ef7);
+  border-color: var(--vcl-color-primary, #4f6ef7);
   box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.08);
 }
 
@@ -120,26 +120,26 @@
 }
 .ld-share-hint {
   margin: 0;
-  font-size: var(--fs-12);
-  color: var(--color-text-secondary, #475569);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-secondary, #475569);
 }
 .ld-share-code {
   width: 100%;
   box-sizing: border-box;
   padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
-  background: var(--color-bg-alt, #f8fafc);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
+  background: var(--vcl-color-bg-alt, #f8fafc);
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   line-height: 1.5;
-  color: var(--color-text, #1e293b);
+  color: var(--vcl-color-text, #1e293b);
   resize: vertical;
   word-break: break-all;
 }
 .ld-share-code:focus {
   outline: none;
-  border-color: var(--color-primary, #4f6ef7);
+  border-color: var(--vcl-color-primary, #4f6ef7);
 }
 .ld-share-actions {
   display: flex;
@@ -150,5 +150,5 @@
   flex-direction: column;
   gap: calc(6px * var(--vcl-scale));
   padding-top: calc(10px * var(--vcl-scale));
-  border-top: 1px solid var(--color-border-light, #f1f5f9);
+  border-top: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }

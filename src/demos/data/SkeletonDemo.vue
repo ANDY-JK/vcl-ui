@@ -35,13 +35,13 @@ const loading = ref(true)
             <p
               style="
                 font-size: calc(13px * var(--vcl-scale));
-                color: var(--color-text-secondary);
+                color: var(--vcl-color-text-secondary);
                 margin-bottom: calc(4px * var(--vcl-scale));
               "
             >
               姓名：张三 · 角色：管理员
             </p>
-            <p style="font-size: calc(13px * var(--vcl-scale)); color: var(--color-text-muted)">
+            <p style="font-size: calc(13px * var(--vcl-scale)); color: var(--vcl-color-text-muted)">
               简介：这是加载完成后展示的真实内容，用于演示 <code>:loading</code> 切换。
             </p>
           </div>
@@ -52,7 +52,7 @@ const loading = ref(true)
         <p
           style="
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
             margin-bottom: calc(12px * var(--vcl-scale));
           "
         >
@@ -65,7 +65,7 @@ const loading = ref(true)
         <p
           style="
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
             margin-bottom: calc(12px * var(--vcl-scale));
           "
         >
@@ -84,7 +84,7 @@ const loading = ref(true)
         <p
           style="
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
             margin-bottom: calc(12px * var(--vcl-scale));
           "
         >
@@ -103,7 +103,7 @@ const loading = ref(true)
     <Card title="Skeleton Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -113,7 +113,7 @@ const loading = ref(true)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>loading</code>
@@ -128,7 +128,7 @@ const loading = ref(true)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>rows</code>
@@ -141,7 +141,7 @@ const loading = ref(true)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>animated</code>
@@ -154,7 +154,7 @@ const loading = ref(true)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>avatar</code>
@@ -171,7 +171,7 @@ const loading = ref(true)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>title</code>
@@ -201,13 +201,13 @@ const loading = ref(true)
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

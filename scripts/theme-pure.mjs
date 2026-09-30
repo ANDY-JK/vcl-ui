@@ -105,18 +105,18 @@ export function renderThemeCss(
 
 /** 编辑分组（只读组：断点/z-index 改了对组件行为有连锁反应，展示但禁用） */
 export const THEME_GROUPS = [
-  { key: 'primary', label: '主色', match: /^--color-primary/ },
-  { key: 'status', label: '状态色', match: /^--color-(success|warning|danger|info)/ },
-  { key: 'neutral', label: '中性 · 文字 · 边框', match: /^--color-(surface|bg|text|border|badge)/ },
-  { key: 'sidebar', label: '侧边栏', match: /^--(color-sidebar|sidebar-width)/ },
-  { key: 'table', label: '表格选中', match: /^--dt-select/ },
-  { key: 'space', label: '间距（流体）', match: /^--space-/ },
-  { key: 'radius', label: '圆角', match: /^--radius-/ },
-  { key: 'shadow', label: '阴影', match: /^--shadow-/ },
-  { key: 'ctrl', label: '控件度量', match: /^--(ctrl-|focus-)/ },
-  { key: 'motion', label: '动效', match: /^--transition-/ },
-  { key: 'layout', label: '布局度量', match: /^--(content-max-width|bg-secondary)/ },
-  { key: 'readonly', label: '只读（断点 / z-index）', match: /^--(bp-|z-)/, readOnly: true },
+  { key: 'primary', label: '主色', match: /^--vcl-color-primary/ },
+  { key: 'status', label: '状态色', match: /^--vcl-color-(success|warning|danger|info)/ },
+  { key: 'neutral', label: '中性 · 文字 · 边框', match: /^--vcl-color-(surface|bg|text|border|badge)/ },
+  { key: 'sidebar', label: '侧边栏', match: /^--(vcl-color-sidebar|vcl-sidebar-width)/ },
+  { key: 'table', label: '表格选中', match: /^--vcl-dt-select/ },
+  { key: 'space', label: '间距（流体）', match: /^--vcl-space-/ },
+  { key: 'radius', label: '圆角', match: /^--vcl-radius-/ },
+  { key: 'shadow', label: '阴影', match: /^--vcl-shadow-/ },
+  { key: 'ctrl', label: '控件度量', match: /^--(vcl-ctrl-|vcl-focus-)/ },
+  { key: 'motion', label: '动效', match: /^--vcl-transition-/ },
+  { key: 'layout', label: '布局度量', match: /^--(vcl-content-max-width|vcl-bg-secondary)/ },
+  { key: 'readonly', label: '只读（断点 / z-index）', match: /^--(vcl-bp-|vcl-z-)/, readOnly: true },
 ]
 
 /** 令牌按编辑分组归位；未命中任何组的进 other（防未来新增令牌在编辑器里失踪） */

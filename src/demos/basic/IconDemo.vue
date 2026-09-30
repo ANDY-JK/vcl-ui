@@ -75,7 +75,7 @@ function toggleMorph(i: number) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -97,7 +97,7 @@ function toggleMorph(i: number) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -118,16 +118,18 @@ function toggleMorph(i: number) {
             align-items: center;
             gap: calc(6px * var(--vcl-scale));
             padding: calc(12px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-            background: var(--color-surface);
-            border: 1px solid var(--color-border-light);
-            border-radius: var(--radius-md);
+            background: var(--vcl-color-surface);
+            border: 1px solid var(--vcl-color-border-light);
+            border-radius: var(--vcl-radius-md);
             cursor: pointer;
             font-family: inherit;
           "
           @click="toggleMorph(i)"
         >
           <IconSvg :type="morphStates[i] ? p.to : p.from" provider="morphicons" size="xl" color="#6366F1" />
-          <span style="font-size: calc(10px * var(--vcl-scale)); color: var(--color-text-muted)">{{ p.label }}</span>
+          <span style="font-size: calc(10px * var(--vcl-scale)); color: var(--vcl-color-text-muted)">{{
+            p.label
+          }}</span>
         </button>
       </div>
     </Card>
@@ -140,7 +142,9 @@ function toggleMorph(i: number) {
           style="display: flex; flex-direction: column; align-items: center; gap: calc(6px * var(--vcl-scale))"
         >
           <IconSvg type="star" :size="s.value" :color="iconColor" />
-          <span style="font-size: calc(11px * var(--vcl-scale)); color: var(--color-text-muted)">{{ s.label }}</span>
+          <span style="font-size: calc(11px * var(--vcl-scale)); color: var(--vcl-color-text-muted)">{{
+            s.label
+          }}</span>
         </div>
       </div>
     </Card>
@@ -156,7 +160,7 @@ function toggleMorph(i: number) {
             width: calc(36px * var(--vcl-scale));
             height: calc(36px * var(--vcl-scale));
             border: none;
-            border-radius: var(--radius-sm);
+            border-radius: var(--vcl-radius-sm);
             cursor: pointer;
             padding: 0;
           "
@@ -168,7 +172,7 @@ function toggleMorph(i: number) {
             :key="c"
             :style="{
               background: c,
-              borderColor: iconColor === c ? 'var(--color-text)' : 'transparent',
+              borderColor: iconColor === c ? 'var(--vcl-color-text)' : 'transparent',
               transform: iconColor === c ? 'scale(1.2)' : 'none',
             }"
             style="
@@ -177,7 +181,7 @@ function toggleMorph(i: number) {
               border-radius: 50%;
               border: 2px solid transparent;
               cursor: pointer;
-              transition: all var(--transition-fast);
+              transition: all var(--vcl-transition-fast);
             "
             :aria-label="c"
             @click="iconColor = c"
@@ -203,13 +207,13 @@ function toggleMorph(i: number) {
             align-items: center;
             gap: calc(6px * var(--vcl-scale));
             padding: calc(10px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
-            border: 1px solid var(--color-border-light);
-            border-radius: var(--radius-md);
+            border: 1px solid var(--vcl-color-border-light);
+            border-radius: var(--vcl-radius-md);
             font-size: calc(10px * var(--vcl-scale));
-            color: var(--color-text-secondary);
+            color: var(--vcl-color-text-secondary);
           "
         >
-          <IconSvg :type="name" size="md" color="var(--color-text)" />
+          <IconSvg :type="name" size="md" color="var(--vcl-color-text)" />
           <span>{{ name }}</span>
         </div>
       </div>
@@ -226,7 +230,7 @@ function toggleMorph(i: number) {
         style="
           margin-top: calc(6px * var(--vcl-scale));
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         当前选择：{{ pickerIcon1 || '无' }}
@@ -243,7 +247,7 @@ function toggleMorph(i: number) {
         style="
           margin-top: calc(6px * var(--vcl-scale));
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         当前选择：{{ pickerIcon2 || '无' }}
@@ -256,7 +260,7 @@ function toggleMorph(i: number) {
         style="
           margin-top: calc(6px * var(--vcl-scale));
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         当前选择：{{ pickerIcon3 || '无' }}
@@ -357,12 +361,12 @@ function toggleMorph(i: number) {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
@@ -374,11 +378,11 @@ code {
 }
 .props-table th {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--vcl-color-border);
   text-align: left;
 }
 .props-table td {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 </style>

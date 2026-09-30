@@ -28,7 +28,7 @@ export interface Props {
 </script>
 
 <script setup lang="ts">
-// ⛔ 保护 — Toast 通知系统，禁止：clamp() → px，动画时序；z-index 层级 = var(--z-top, 9999)（最高优先级通知，ImagePreview 内嵌时临时提升至 10001）
+// ⛔ 保护 — Toast 通知系统，禁止：clamp() → px，动画时序；z-index 层级 = var(--vcl-z-top, 9999)（最高优先级通知，ImagePreview 内嵌时临时提升至 10001）
 //    需我确认：ToastItem 接口增删、position 定位逻辑
 //    注意：ToastItem / ToastAPI / TOAST_KEY / useToast 已抽到 toast-context.ts，
 //          因为 <script setup> 不能包含 ES module exports
@@ -72,22 +72,22 @@ const iconMap: Record<string, string> = {
 
 const colorMap: Record<string, string> = {
   ...feedbackColorMap,
-  'circle-alert': 'var(--color-text)',
+  'circle-alert': 'var(--vcl-color-text)',
 }
 
 const inlineBgMap: Record<string, string> = {
-  'circle-alert': 'var(--color-bg-alt)',
-  info: 'var(--color-info-bg)',
-  success: 'var(--color-success-bg)',
-  warning: 'var(--color-warning-bg)',
-  error: 'var(--color-danger-bg)',
+  'circle-alert': 'var(--vcl-color-bg-alt)',
+  info: 'var(--vcl-color-info-bg)',
+  success: 'var(--vcl-color-success-bg)',
+  warning: 'var(--vcl-color-warning-bg)',
+  error: 'var(--vcl-color-danger-bg)',
 }
 const inlineBorderMap: Record<string, string> = {
-  'circle-alert': 'var(--color-border)',
-  info: 'var(--color-info-border)',
-  success: 'var(--color-success-border)',
-  warning: 'var(--color-warning-border)',
-  error: 'var(--color-danger-border)',
+  'circle-alert': 'var(--vcl-color-border)',
+  info: 'var(--vcl-color-info-border)',
+  success: 'var(--vcl-color-success-border)',
+  warning: 'var(--vcl-color-warning-border)',
+  error: 'var(--vcl-color-danger-border)',
 }
 
 function removeToast(id: number) {
@@ -260,7 +260,7 @@ defineExpose({
   top: calc(16px * var(--vcl-scale));
   left: 50%;
   transform: translateX(-50%);
-  z-index: var(--z-top, 9999);
+  z-index: var(--vcl-z-top, 9999);
   display: flex;
   flex-direction: column;
   gap: calc(8px * var(--vcl-scale));
@@ -298,10 +298,10 @@ defineExpose({
   align-items: center;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(12px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   color: white;
   font-size: calc(15px * var(--vcl-scale));
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--vcl-shadow-lg);
   pointer-events: auto;
   line-height: 1.4;
 }
@@ -319,7 +319,7 @@ defineExpose({
   flex-shrink: 0;
   padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: transparent;
   color: white;
   font-size: calc(15px * var(--vcl-scale));
@@ -334,7 +334,7 @@ defineExpose({
 .toast-close {
   display: flex;
   flex-shrink: 0;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 50%;
@@ -347,10 +347,10 @@ defineExpose({
 
 /* 过渡动画 */
 .toast-enter-active {
-  transition: all var(--transition-normal);
+  transition: all var(--vcl-transition-normal);
 }
 .toast-leave-active {
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .toast-enter-from {
   opacity: 0;
@@ -368,7 +368,7 @@ defineExpose({
   align-items: flex-start;
   gap: calc(12px * var(--vcl-scale));
   padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   border: 1px solid;
   font-size: calc(15px * var(--vcl-scale));
 }
@@ -381,20 +381,20 @@ defineExpose({
 }
 .toast-inline-title {
   font-weight: 600;
-  margin-bottom: var(--space-1);
-  color: var(--color-text);
+  margin-bottom: var(--vcl-space-1);
+  color: var(--vcl-color-text);
 }
 .toast-inline-msg {
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 .toast-inline-close {
   display: flex;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 .toast-inline-close:hover {
   background: rgba(0, 0, 0, 0.06);

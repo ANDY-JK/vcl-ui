@@ -137,7 +137,7 @@ function renderAll(): void {
         marker.on('click', () => {
           const infoWin = new AMap.InfoWindow({
             content:
-              sanitizeHTML(`<div style="padding: calc(4px * var(--vcl-scale)) 2px;font-size: var(--fs-12);line-height:1.6">
+              sanitizeHTML(`<div style="padding: calc(4px * var(--vcl-scale)) 2px;font-size: var(--vcl-fs-12);line-height:1.6">
               <strong>${store.name}</strong><br/>
               📍 ${store.address || store.city || ''}<br/>
               📅 ${t('routePlanner.mapInfoWindow', { day: day.day, idx: day.stores.indexOf(store) + 1 })}
@@ -176,7 +176,7 @@ function renderAll(): void {
       marker.on('click', () => {
         const infoWin = new AMap.InfoWindow({
           content:
-            sanitizeHTML(`<div style="padding: calc(4px * var(--vcl-scale)) 2px;font-size: var(--fs-12);line-height:1.6">
+            sanitizeHTML(`<div style="padding: calc(4px * var(--vcl-scale)) 2px;font-size: var(--vcl-fs-12);line-height:1.6">
             <strong>${store.name}</strong><br/>
             📍 ${store.address || ''}<br/>
             🏙️ ${store.city || ''} ${store.district || ''}
@@ -299,19 +299,19 @@ function retryMap(): void {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
-  color: var(--color-text-muted);
+  background: var(--vcl-color-bg);
+  color: var(--vcl-color-text-muted);
   font-size: calc(15px * var(--vcl-scale));
 }
 
 .spinner {
   width: calc(28px * var(--vcl-scale));
   height: calc(28px * var(--vcl-scale));
-  border: 3px solid var(--color-border-light);
-  border-top-color: var(--color-primary);
+  border: 3px solid var(--vcl-color-border-light);
+  border-top-color: var(--vcl-color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--vcl-space-2);
 }
 
 @keyframes spin {
@@ -322,19 +322,19 @@ function retryMap(): void {
 
 /* 失败态 + 重试按钮 */
 .map-failed {
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 .map-retry-btn {
-  padding: var(--space-1) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-primary);
+  padding: var(--vcl-space-1) var(--vcl-space-4);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-primary);
   font-size: calc(14px * var(--vcl-scale));
   cursor: pointer;
 }
 .map-retry-btn:hover {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 
 /* 空数据引导 */
@@ -346,7 +346,7 @@ function retryMap(): void {
   align-items: center;
   justify-content: center;
   background: rgba(248, 250, 252, 0.9);
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(15px * var(--vcl-scale));
   z-index: 2;
   pointer-events: none;
@@ -354,38 +354,38 @@ function retryMap(): void {
 
 .guide-hint {
   font-size: calc(15px * var(--vcl-scale));
-  margin-top: var(--space-1);
+  margin-top: var(--vcl-space-1);
 }
 
 /* 图例 */
 .map-legend {
   position: absolute;
-  bottom: var(--space-3);
-  left: var(--space-3);
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-2);
+  bottom: var(--vcl-space-3);
+  left: var(--vcl-space-3);
+  background: var(--vcl-color-surface);
+  border-radius: var(--vcl-radius-md);
+  padding: var(--vcl-space-1) var(--vcl-space-2);
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) var(--space-2);
+  gap: var(--vcl-space-1) var(--vcl-space-2);
   max-width: calc(220px * var(--vcl-scale));
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--vcl-shadow-sm);
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
 }
 
 .legend-color {
   width: calc(10px * var(--vcl-scale));
   height: calc(10px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 
 .legend-text {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 </style>

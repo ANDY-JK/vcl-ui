@@ -126,34 +126,34 @@ onUnmounted(clearEscalation)
   width: calc(48px * var(--vcl-scale));
   height: calc(48px * var(--vcl-scale));
   border-radius: 50%;
-  /* 实心底压白色图标：用 solid 令牌（暗色下 --color-warning 被提亮，白字对比度仅 1.67） */
-  background: var(--color-warning-solid, var(--color-warning));
+  /* 实心底压白色图标：用 solid 令牌（暗色下 --vcl-color-warning 被提亮，白字对比度仅 1.67） */
+  background: var(--vcl-color-warning-solid, var(--vcl-color-warning));
   color: white;
   font-size: calc(36px * var(--vcl-scale));
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--vcl-space-4);
 }
 .eb-title {
   font-size: calc(28px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: var(--space-1);
+  color: var(--vcl-color-text);
+  margin-bottom: var(--vcl-space-1);
 }
 .eb-desc {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-4);
+  color: var(--vcl-color-text-muted);
+  margin-bottom: var(--vcl-space-4);
   max-width: calc(400px * var(--vcl-scale));
   word-break: break-all;
 }
 .eb-btn {
-  padding: var(--space-2) calc(24px * var(--vcl-scale));
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
+  padding: var(--vcl-space-2) calc(24px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-primary);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-primary);
   color: white;
   font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;

@@ -158,7 +158,7 @@ export function useTableExtras(
   }>({ visible: false, x: 0, y: 0, above: false, columnKey: null, rowKey: null, row: null, rowIndex: -1 })
   const contextMenuStyle = computed(() => {
     if (!contextMenu.value.visible) return { display: 'none' }
-    const base = { position: 'fixed' as const, left: `${contextMenu.value.x}px`, zIndex: 'var(--z-dropdown, 2000)' }
+    const base = { position: 'fixed' as const, left: `${contextMenu.value.x}px`, zIndex: 'var(--vcl-z-dropdown, 2000)' }
     // above 模式：菜单底边贴着点击点向上展开（用 bottom 定位）
     // 此时 contextMenu.value.y 存的是原始 clientY
     return contextMenu.value.above

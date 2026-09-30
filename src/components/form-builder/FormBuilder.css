@@ -29,14 +29,14 @@
 }
 .fb-title {
   margin: 0 0 calc(6px * var(--vcl-scale));
-  font-size: var(--fs-18);
+  font-size: var(--vcl-fs-18);
   font-weight: 700;
-  color: var(--color-text, #1e293b);
+  color: var(--vcl-color-text, #1e293b);
 }
 .fb-desc {
   margin: 0;
-  font-size: var(--fs-13);
-  color: var(--color-text-secondary, #64748b);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text-secondary, #64748b);
   line-height: 1.5;
 }
 
@@ -128,13 +128,13 @@
 }
 .fb-step-progress {
   height: calc(4px * var(--vcl-scale));
-  background: var(--color-border-light, #e2e8f0);
+  background: var(--vcl-color-border-light, #e2e8f0);
   border-radius: 2px;
   overflow: hidden;
 }
 .fb-step-progress-bar {
   height: 100%;
-  background: var(--color-primary, #3b82f6);
+  background: var(--vcl-color-primary, #3b82f6);
   border-radius: 2px;
   transition: width 0.3s ease;
 }
@@ -142,30 +142,30 @@
   display: flex;
   align-items: baseline;
   gap: 2px;
-  font-size: var(--fs-13);
-  color: var(--color-text-secondary, #64748b);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text-secondary, #64748b);
 }
 .fb-step-current {
-  font-size: var(--fs-18);
+  font-size: var(--vcl-fs-18);
   font-weight: 700;
-  color: var(--color-primary, #3b82f6);
+  color: var(--vcl-color-primary, #3b82f6);
 }
 .fb-step-sep {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 .fb-step-total {
   font-weight: 500;
 }
 .fb-step-title {
   margin-left: calc(8px * var(--vcl-scale));
-  font-size: var(--fs-13);
-  color: var(--color-text, #1e293b);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text, #1e293b);
   font-weight: 500;
 }
 .fb-step-completion {
   margin-left: calc(4px * var(--vcl-scale));
-  font-size: var(--fs-11);
-  color: var(--color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-muted, #94a3b8);
   font-weight: 400;
 }
 
@@ -175,5 +175,5 @@
   gap: calc(12px * var(--vcl-scale));
   justify-content: flex-end;
   padding-top: calc(12px * var(--vcl-scale));
-  border-top: 1px solid var(--color-border, #e2e8f0);
+  border-top: 1px solid var(--vcl-color-border, #e2e8f0);
 }

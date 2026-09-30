@@ -44,16 +44,16 @@ const minChars = 20
 <style scoped>
 .fr-demo {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
 }
 .fr-demo-tip {
   margin: 0;
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 .fr-demo-value {
-  padding: var(--space-2);
-  border: 1px dashed var(--color-border, #e2e8f0);
+  padding: var(--vcl-space-2);
+  border: 1px dashed var(--vcl-color-border, #e2e8f0);
   border-radius: calc(6px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
   word-break: break-all;

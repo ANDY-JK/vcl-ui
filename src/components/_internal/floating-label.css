@@ -9,19 +9,19 @@
  *
  * 可定制变量：
  *   --fl-label-bg — 骑缝小标签的遮边背景色。
- *     默认 --color-surface（输入框自身底色）；当控件放在非 surface 底色上
- *     （如页面灰底 --color-bg），小白疤会显形，消费方可按容器覆写此变量对齐底色。
+ *     默认 --vcl-color-surface（输入框自身底色）；当控件放在非 surface 底色上
+ *     （如页面灰底 --vcl-color-bg），小白疤会显形，消费方可按容器覆写此变量对齐底色。
  */
 
 .fl-label {
   position: absolute;
-  left: var(--ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  left: var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
   top: 50%;
   transform: translateY(-50%);
   font-size: calc(14px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   pointer-events: none;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   line-height: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -34,9 +34,9 @@
   top: 0;
   transform: translateY(-50%);
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-primary);
-  background: var(--fl-label-bg, var(--color-surface));
-  padding: 0 var(--space-1);
-  left: calc(var(--ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));
+  color: var(--vcl-color-primary);
+  background: var(--fl-label-bg, var(--vcl-color-surface));
+  padding: 0 var(--vcl-space-1);
+  left: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));
   z-index: 2;
 }

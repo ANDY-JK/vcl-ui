@@ -128,17 +128,17 @@ watch(
 }
 .fb-address-select,
 .fb-address-input {
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-color: var(--fb-field-border, var(--vcl-color-border, #e2e8f0));
   border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   padding: calc(7px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  font-size: var(--fs-13);
-  background: var(--color-bg, #fff);
-  color: var(--color-text, #1e293b);
+  font-size: var(--vcl-fs-13);
+  background: var(--vcl-color-bg, #fff);
+  color: var(--vcl-color-text, #1e293b);
   outline: none;
 }
 .fb-address-select:focus,
 .fb-address-input:focus {
-  border-color: var(--fb-field-focus-border, var(--color-primary, #3b82f6));
+  border-color: var(--fb-field-focus-border, var(--vcl-color-primary, #3b82f6));
 }
 </style>

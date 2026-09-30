@@ -242,8 +242,8 @@ watch(overrides, persist, { deep: true })
 .theme-editor {
   display: grid;
   grid-template-columns: minmax(calc(420px * var(--vcl-scale)), 1.1fr) minmax(calc(300px * var(--vcl-scale)), 0.9fr);
-  gap: var(--space-6);
-  padding: var(--space-6);
+  gap: var(--vcl-space-6);
+  padding: var(--vcl-space-6);
 }
 @container demo (max-width: 1023px) {
   .theme-editor {
@@ -252,38 +252,38 @@ watch(overrides, persist, { deep: true })
 }
 .te-panel,
 .te-preview {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-5);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
+  padding: var(--vcl-space-5);
 }
 .te-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
 }
 .te-hint {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   line-height: 1.6;
 }
 .te-group {
-  margin-top: var(--space-4);
+  margin-top: var(--vcl-space-4);
 }
 .te-group-head {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   font-weight: 600;
   font-size: calc(13px * var(--vcl-scale));
   padding-bottom: calc(4px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .te-readonly {
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
+  color: var(--vcl-color-text-muted);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(4px * var(--vcl-scale));
   padding: 0 calc(4px * var(--vcl-scale));
 }
@@ -293,7 +293,7 @@ watch(overrides, persist, { deep: true })
       calc(120px * var(--vcl-scale)),
       calc(220px * var(--vcl-scale))
     );
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   align-items: center;
   padding: calc(3px * var(--vcl-scale)) 0;
   font-size: calc(12px * var(--vcl-scale));
@@ -306,28 +306,28 @@ watch(overrides, persist, { deep: true })
   white-space: nowrap;
 }
 .te-current {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: ui-monospace, monospace;
 }
 .te-override {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-size: calc(11px * var(--vcl-scale));
 }
 .te-inputs {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   align-items: center;
 }
 .te-color {
   width: calc(30px * var(--vcl-scale));
   height: calc(26px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(4px * var(--vcl-scale));
   padding: 1px;
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
 }
 .te-text {
   /* basis auto（非 0）让 field-sizing: content 的内容尺寸参与分配——
@@ -335,53 +335,53 @@ watch(overrides, persist, { deep: true })
      不支持 field-sizing 的浏览器 basis auto = size 属性宽度，min-width 兜底 */
   flex: 1 1 auto;
   min-width: calc(80px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(4px * var(--vcl-scale));
   padding: calc(3px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
   field-sizing: content;
   max-width: calc(220px * var(--vcl-scale));
 }
 .te-copy-state {
   font-size: calc(11px * var(--vcl-scale));
-  margin-left: var(--space-2);
+  margin-left: var(--vcl-space-2);
 }
 .te-copy-state.ok {
-  color: var(--color-success-text, #16a34a);
+  color: var(--vcl-color-success-text, #16a34a);
 }
 .te-copy-state.fail {
   color: var(--color-danger-text, #dc2626);
 }
 .te-ro-note {
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .te-export {
-  margin-top: var(--space-5);
-  border-top: 1px dashed var(--color-border);
-  padding-top: var(--space-4);
+  margin-top: var(--vcl-space-5);
+  border-top: 1px dashed var(--vcl-color-border);
+  padding-top: var(--vcl-space-4);
 }
 .te-export-actions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   align-items: center;
   flex-wrap: wrap;
 }
 .te-clean {
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .te-error {
-  color: var(--color-danger);
+  color: var(--vcl-color-danger);
   font-size: calc(12px * var(--vcl-scale));
 }
 .te-out {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
+  gap: var(--vcl-space-3);
+  margin-top: var(--vcl-space-3);
 }
 .te-out-head {
   display: flex;
@@ -389,19 +389,19 @@ watch(overrides, persist, { deep: true })
   align-items: center;
   font-family: ui-monospace, monospace;
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .te-cfg,
 .te-css {
   width: 100%;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(4px * var(--vcl-scale));
   font-family: ui-monospace, monospace;
   font-size: calc(11px * var(--vcl-scale));
-  background: var(--color-bg);
-  color: var(--color-text);
-  padding: var(--space-2);
+  background: var(--vcl-color-bg);
+  color: var(--vcl-color-text);
+  padding: var(--vcl-space-2);
   white-space: pre;
   overflow: auto;
 }
@@ -410,25 +410,25 @@ watch(overrides, persist, { deep: true })
 }
 .te-tip {
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-secondary);
-  margin-top: var(--space-3);
+  color: var(--vcl-color-text-secondary);
+  margin-top: var(--vcl-space-3);
 }
 .pv-card {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-4);
-  background: var(--color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  box-shadow: var(--vcl-shadow-md);
+  padding: var(--vcl-space-4);
+  background: var(--vcl-color-surface);
 }
 .pv-row {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   flex-wrap: wrap;
-  margin-top: var(--space-3);
+  margin-top: var(--vcl-space-3);
 }
 .pv-note {
-  margin-top: var(--space-3);
+  margin-top: var(--vcl-space-3);
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 </style>

@@ -53,7 +53,7 @@ function onBatchFinish(files: File[]) {
         <p
           style="
             font-size: calc(13px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
             margin-bottom: calc(8px * var(--vcl-scale));
           "
         >
@@ -65,7 +65,7 @@ function onBatchFinish(files: File[]) {
           style="
             max-width: calc(300px * var(--vcl-scale));
             border-radius: calc(8px * var(--vcl-scale));
-            border: 1px solid var(--color-border);
+            border: 1px solid var(--vcl-color-border);
           "
         />
         <div style="margin-top: calc(8px * var(--vcl-scale))">
@@ -78,7 +78,7 @@ function onBatchFinish(files: File[]) {
         style="
           margin-top: calc(16px * var(--vcl-scale));
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         尚无拍照结果，点击「打开相机」拍照。
@@ -105,7 +105,7 @@ function onBatchFinish(files: File[]) {
         <p
           style="
             font-size: calc(13px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
             margin-bottom: calc(8px * var(--vcl-scale));
           "
         >
@@ -122,7 +122,7 @@ function onBatchFinish(files: File[]) {
               height: calc(72px * var(--vcl-scale));
               object-fit: cover;
               border-radius: calc(6px * var(--vcl-scale));
-              border: 1px solid var(--color-border);
+              border: 1px solid var(--vcl-color-border);
             "
           />
         </div>
@@ -132,7 +132,7 @@ function onBatchFinish(files: File[]) {
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -144,7 +144,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>modelValue</code>
@@ -152,7 +152,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               boolean
@@ -160,7 +160,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               false
@@ -168,7 +168,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               v-model 控制显隐
@@ -178,7 +178,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>quality</code>
@@ -186,7 +186,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               number
@@ -194,7 +194,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               0.9
@@ -202,7 +202,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               JPEG 输出质量 0-1
@@ -212,7 +212,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>fallbackOnError</code>
@@ -220,7 +220,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               boolean
@@ -228,7 +228,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               true
@@ -236,7 +236,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               相机不可用时降级调起系统相机
@@ -259,7 +259,7 @@ function onBatchFinish(files: File[]) {
     <Card title="Events" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">事件</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">参数</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
@@ -270,7 +270,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>capture</code>
@@ -278,7 +278,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               File
@@ -286,7 +286,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               确认拍照，返回 File 对象
@@ -296,7 +296,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>cancel</code>
@@ -304,7 +304,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -312,7 +312,7 @@ function onBatchFinish(files: File[]) {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               取消/关闭
@@ -349,13 +349,13 @@ function onBatchFinish(files: File[]) {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

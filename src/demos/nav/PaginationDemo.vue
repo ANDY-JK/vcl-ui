@@ -18,7 +18,7 @@ const page2 = ref(3)
         style="
           margin-top: calc(8px * var(--vcl-scale));
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         第 {{ page }} 页 / 共 9 页
@@ -31,7 +31,7 @@ const page2 = ref(3)
         style="
           margin-top: calc(8px * var(--vcl-scale));
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         第 {{ page2 }} 页 — 输入页码后按回车跳转，超出范围自动钳制
@@ -41,7 +41,7 @@ const page2 = ref(3)
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -51,7 +51,7 @@ const page2 = ref(3)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>total</code>
@@ -89,12 +89,12 @@ const page2 = ref(3)
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

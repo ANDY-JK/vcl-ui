@@ -130,7 +130,7 @@
 | `direction` | `'row' \| 'column' \| 'horizontal' \| 'vertical'` | `'row'` | 否 | 排列方向：'row'/'column'（Flex 原生）或 'horizontal'/'vertical'（Space 兼容） |
 | `justify` | `'start' \| 'center' \| 'end' \| 'between' \| 'around' \| 'evenly'` | `'start'` | 否 | 主轴对齐 |
 | `align` | `'start' \| 'center' \| 'end' \| 'stretch' \| 'baseline'` | `'stretch'` | 否 | 交叉轴对齐 |
-| `gap` | `string` | `'var(--space-2)'` | 否 | 子项间距（CSS 间距值，默认令牌 --space-2） |
+| `gap` | `string` | `'var(--vcl-space-2)'` | 否 | 子项间距（CSS 间距值，默认令牌 --vcl-space-2） |
 | `wrap` | `boolean` | `false` | 否 | 允许换行 |
 | `flex` | `string` | `'1'` | 否 | 自身 flex 值（默认 '1' 撑满剩余空间） |
 | `inline` | `boolean` | `false` | 否 | 行内 flex（inline-flex） |

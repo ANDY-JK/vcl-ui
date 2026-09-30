@@ -30,12 +30,12 @@ const ALLOWED: { file: string; selector: string; reason: string }[] = [
   {
     file: 'data-table-global.css',
     selector: 'dt-cell-tooltip',
-    reason: '.dt-cell-tooltip 底色用 --color-sidebar，该令牌两套主题下都是深色（#1a1f2e/#0f1115），故白字恒正确',
+    reason: '.dt-cell-tooltip 底色用 --vcl-color-sidebar，该令牌两套主题下都是深色（#1a1f2e/#0f1115），故白字恒正确',
   },
   {
     file: 'Tree.vue',
     selector: 'tree-check-box',
-    reason: '复选框白色勾线画在 --color-primary 蓝底之上，与主题无关',
+    reason: '复选框白色勾线画在 --vcl-color-primary 蓝底之上，与主题无关',
   },
   {
     file: 'CameraCapture.vue',
@@ -66,10 +66,10 @@ const COLOR_PROP_RE =
  * - 固定型：刻意不随主题变化
  */
 const DARK_EXEMPT: { name: string; reason: string }[] = [
-  { name: '--color-primary-bg', reason: '派生自 --color-primary-rgb（rgba(var(...), .08)），父令牌已覆写' },
-  { name: '--color-badge-ring', reason: '派生自 --color-surface，父令牌已覆写' },
-  { name: '--color-bg-inverse', reason: '刻意固定反色（源码注明「固定反色，不随主题」），用于深底浮层' },
-  { name: '--color-text-inverse', reason: '与 --color-bg-inverse 配对的固定白字，不随主题' },
+  { name: '--vcl-color-primary-bg', reason: '派生自 --vcl-color-primary-rgb（rgba(var(...), .08)），父令牌已覆写' },
+  { name: '--vcl-color-badge-ring', reason: '派生自 --vcl-color-surface，父令牌已覆写' },
+  { name: '--vcl-color-bg-inverse', reason: '刻意固定反色（源码注明「固定反色，不随主题」），用于深底浮层' },
+  { name: '--vcl-color-text-inverse', reason: '与 --vcl-color-bg-inverse 配对的固定白字，不随主题' },
 ]
 
 interface Hit {
@@ -209,7 +209,7 @@ describe('主题适配护栏 · 组件样式禁止硬编码颜色', () => {
     const hits = scan(files)
     if (hits.length) {
       throw new Error(
-        `发现 ${hits.length} 处硬编码颜色 —— 应改用 CSS 变量令牌（如 var(--color-success-bg)），` +
+        `发现 ${hits.length} 处硬编码颜色 —— 应改用 CSS 变量令牌（如 var(--vcl-color-success-bg)），` +
           `否则暗色主题下可能出现「浅底 + 浅字」不可见。` +
           `确属刻意固定（如深色遮罩上的白字）请登记到 ALLOWED 并写明理由：\n` +
           hits.map((h) => `  · ${h.file}:${h.line}  ${h.text.slice(0, 88)}`).join('\n'),
@@ -280,9 +280,9 @@ describe('主题适配护栏 · 组件样式禁止硬编码颜色', () => {
 // 故实心底必须走 --color-*-solid 专用令牌。本用例守住这条约束。
 describe('主题适配护栏 · 实心语义底色与白字对比度', () => {
   const SOLID_PAIRS: { name: string; solid: string }[] = [
-    { name: 'danger', solid: '--color-danger-solid' },
-    { name: 'warning', solid: '--color-warning-solid' },
-    { name: 'success', solid: '--color-success-solid' },
+    { name: 'danger', solid: '--vcl-color-danger-solid' },
+    { name: 'warning', solid: '--vcl-color-warning-solid' },
+    { name: 'success', solid: '--vcl-color-success-solid' },
   ]
 
   /** 从 tokens.css 的一个块里取某个自定义属性的值。
@@ -371,21 +371,21 @@ describe('主题适配护栏 · 表格选中按可编辑性分色', () => {
     return m ? m[1].trim() : null
   }
 
-  it('只读单元格选中用品牌蓝，可编辑单元格选中用 --dt-select', () => {
+  it('只读单元格选中用品牌蓝，可编辑单元格选中用 --vcl-dt-select', () => {
     const base = ruleBody('td.cell-selected')
     expect(base, '未找到 td.cell-selected 规则').toBeTruthy()
     // 基础规则（即只读场景）的描边必须是品牌蓝 —— 精确到 outline 属性，
-    // 否则同块 background 里的 --color-primary-rgb 会掩盖「outline 被改成紫色」的回退
+    // 否则同块 background 里的 --vcl-color-primary-rgb 会掩盖「outline 被改成紫色」的回退
     const outline = propValue(base!, 'outline') ?? ''
     expect(outline, 'td.cell-selected 的 outline 应为品牌蓝（只读场景），不应改成紫色').toContain(
-      'var(--color-primary)',
+      'var(--vcl-color-primary)',
     )
-    expect(outline, 'td.cell-selected 的 outline 不应使用 --dt-select').not.toContain('--dt-select')
+    expect(outline, 'td.cell-selected 的 outline 不应使用 --vcl-dt-select').not.toContain('--vcl-dt-select')
 
     const editable = ruleBody('td.cell-selected:not(.cell-readonly)')
     expect(editable, '缺少可编辑单元格选中规则（应通过 :not(.cell-readonly) 覆盖为紫色）').toBeTruthy()
     const edOutline = propValue(editable!, 'outline-color') ?? ''
-    expect(edOutline, '可编辑单元格选中应使用 --dt-select').toContain('--dt-select')
+    expect(edOutline, '可编辑单元格选中应使用 --vcl-dt-select').toContain('--vcl-dt-select')
   })
 
   it('行级选中（勾选/标记）用品牌蓝，不与可编辑态混色', () => {
@@ -393,17 +393,17 @@ describe('主题适配护栏 · 表格选中按可编辑性分色', () => {
       const body = ruleBody(sel)
       expect(body, `未找到 ${sel}`).toBeTruthy()
       const bg = propValue(body!, 'background') ?? ''
-      expect(bg, `${sel} 属行选择语义，应为品牌蓝而非 --dt-select`).toContain('--color-primary')
-      expect(bg, `${sel} 不应使用 --dt-select`).not.toContain('--dt-select')
+      expect(bg, `${sel} 属行选择语义，应为品牌蓝而非 --vcl-dt-select`).toContain('--vcl-color-primary')
+      expect(bg, `${sel} 不应使用 --vcl-dt-select`).not.toContain('--vcl-dt-select')
     }
   })
 
-  it('可编辑语义（编辑中/填充/手柄）一律用 --dt-select', () => {
+  it('可编辑语义（编辑中/填充/手柄）一律用 --vcl-dt-select', () => {
     const editableSelectors = ['td.cell-editing', 'td.cell-fill-preview', '.cell-fill-handle']
     for (const sel of editableSelectors) {
       const body = ruleBody(sel)
       expect(body, `未找到 ${sel} 规则`).toBeTruthy()
-      expect(body, `${sel} 属可编辑语义，应使用 --dt-select`).toContain('--dt-select')
+      expect(body, `${sel} 属可编辑语义，应使用 --vcl-dt-select`).toContain('--vcl-dt-select')
     }
   })
 
@@ -412,8 +412,8 @@ describe('主题适配护栏 · 表格选中按可编辑性分色', () => {
     for (const sel of ['.opt-drop-item.active', '.opt-drop-item:hover', '.opt-drop-check']) {
       const body = ruleBody(sel)
       expect(body, `未找到 ${sel} 规则`).toBeTruthy()
-      expect(body, `${sel} 应使用品牌蓝`).toContain('--color-primary')
-      expect(body, `${sel} 不应使用 --dt-select（下拉不改色）`).not.toContain('--dt-select')
+      expect(body, `${sel} 应使用品牌蓝`).toContain('--vcl-color-primary')
+      expect(body, `${sel} 不应使用 --vcl-dt-select（下拉不改色）`).not.toContain('--vcl-dt-select')
     }
   })
 

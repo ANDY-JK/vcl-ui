@@ -6,8 +6,8 @@ import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
 const ErrorFallback = {
   props: ['error'],
   template: `<div style="padding: calc(40px * var(--vcl-scale));text-align:center;">
-    <h2 style="color:var(--color-danger);margin-bottom: calc(8px * var(--vcl-scale));">组件加载失败</h2>
-    <p style="color:var(--color-text-muted);font-size: calc(13px * var(--vcl-scale));">{{ error?.message || '未知错误' }}</p>
+    <h2 style="color:var(--vcl-color-danger);margin-bottom: calc(8px * var(--vcl-scale));">组件加载失败</h2>
+    <p style="color:var(--vcl-color-text-muted);font-size: calc(13px * var(--vcl-scale));">{{ error?.message || '未知错误' }}</p>
   </div>`,
 }
 
@@ -142,7 +142,7 @@ const currentDemo = computed(() => {
    此前只声明在 site.css 的 .grid-2-col 上，而查询主语多是 .grid-2-col 之外的元素
    （.main-row 等），规则整段不匹配——窄屏布局切换从未生效过。 */
 .demo-wrap {
-  padding: var(--space-2) var(--space-2) calc(40px * var(--vcl-scale));
+  padding: var(--vcl-space-2) var(--vcl-space-2) calc(40px * var(--vcl-scale));
   container-type: inline-size;
   container-name: demo;
 }

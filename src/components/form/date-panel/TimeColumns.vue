@@ -152,7 +152,7 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
 /* ===== 时间列（视觉与拆分前一致） ===== */
 .tp-columns {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 .tp-column {
   flex: 1;
@@ -160,10 +160,10 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   position: relative; /* 作为子项 offsetTop 的定位参照 */
   max-height: calc(200px * var(--vcl-scale));
   overflow-y: auto; /* 原生滚轮滚动 */
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-sm);
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+  scrollbar-color: var(--vcl-color-border) transparent;
 }
 .tp-column::-webkit-scrollbar {
   width: calc(4px * var(--vcl-scale));
@@ -172,8 +172,8 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   background: transparent;
 }
 .tp-column::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-md);
+  background: var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
 }
 .tp-col-title {
   position: sticky;
@@ -181,28 +181,28 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   z-index: 1;
   text-align: center;
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-weight: 600;
-  padding: var(--space-1) 0;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border-light);
+  padding: var(--vcl-space-1) 0;
+  background: var(--vcl-color-surface);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .tp-cell {
   padding: calc(6px * var(--vcl-scale)) 0;
   text-align: center;
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   cursor: pointer;
   user-select: none;
   transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast);
 }
 .tp-cell:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .tp-cell.selected {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
   font-weight: 600;
 }

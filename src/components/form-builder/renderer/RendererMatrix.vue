@@ -58,8 +58,8 @@ function selectCell(row: string, col: string): void {
 
 <style scoped>
 .fb-matrix {
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-color: var(--fb-field-border, var(--vcl-color-border, #e2e8f0));
   border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   overflow: hidden;
   width: var(--fb-control-width, 100%);
@@ -69,11 +69,11 @@ function selectCell(row: string, col: string): void {
   display: flex;
 }
 .fb-matrix-head {
-  background: var(--color-bg-alt, #f8fafc);
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--vcl-color-bg-alt, #f8fafc);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 .fb-matrix-row:not(:last-child) {
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 .fb-matrix-cell {
   flex: 1;
@@ -81,14 +81,14 @@ function selectCell(row: string, col: string): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   font-weight: 600;
-  color: var(--color-text-muted, #64748b);
+  color: var(--vcl-color-text-muted, #64748b);
 }
 .fb-matrix-first {
   flex: 1.5;
   justify-content: flex-start;
-  color: var(--color-text, #1e293b);
+  color: var(--vcl-color-text, #1e293b);
 }
 .fb-matrix-cell input[type='radio'] {
   width: calc(16px * var(--vcl-scale));
@@ -98,9 +98,9 @@ function selectCell(row: string, col: string): void {
 .fb-matrix-empty {
   padding: calc(20px * var(--vcl-scale));
   text-align: center;
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #94a3b8);
-  border: 1px dashed var(--color-border, #e2e8f0);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #94a3b8);
+  border: 1px dashed var(--vcl-color-border, #e2e8f0);
   border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   width: var(--fb-control-width, 100%);
 }

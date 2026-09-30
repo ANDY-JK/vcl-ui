@@ -61,32 +61,32 @@ function isExternalHttp(p: string) {
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   font-size: calc(15px * var(--vcl-scale));
   flex-wrap: wrap;
 }
 
 .crumb-link {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: color var(--vcl-transition-fast);
 }
 .crumb-link:hover {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 
 .crumb-current {
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   font-weight: 500;
 }
 
 .crumb-sep {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   flex-shrink: 0;
 }
 
 .crumb-sep-text {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   flex-shrink: 0;
 }
 </style>

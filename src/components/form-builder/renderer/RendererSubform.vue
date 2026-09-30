@@ -93,8 +93,8 @@ function removeRow(rowIndex: number): void {
 
 <style scoped>
 .fb-subform {
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-color: var(--fb-field-border, var(--vcl-color-border, #e2e8f0));
   border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   overflow: hidden;
   width: var(--fb-control-width, 100%);
@@ -104,27 +104,27 @@ function removeRow(rowIndex: number): void {
   align-items: center;
   justify-content: space-between;
   padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  background: var(--color-bg-alt, #f8fafc);
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
-  font-size: var(--fs-12);
+  background: var(--vcl-color-bg-alt, #f8fafc);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  font-size: var(--vcl-fs-12);
   font-weight: 600;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--vcl-color-text-secondary, #64748b);
 }
 .fb-subform-add {
-  font-size: var(--fs-11);
-  color: var(--color-primary, #3b82f6);
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-primary, #3b82f6);
   cursor: pointer;
   padding: 2px calc(8px * var(--vcl-scale));
   border-radius: calc(4px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
-  background: var(--color-bg, #fff);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  background: var(--vcl-color-bg, #fff);
   display: inline-flex;
   align-items: center;
   gap: calc(3px * var(--vcl-scale));
 }
 .fb-subform-add:hover {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary, #3b82f6);
+  background: var(--vcl-color-primary-light);
+  border-color: var(--vcl-color-primary, #3b82f6);
 }
 .fb-subform-rows {
   display: flex;
@@ -134,7 +134,7 @@ function removeRow(rowIndex: number): void {
   display: flex;
   gap: calc(6px * var(--vcl-scale));
   padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
   align-items: center;
 }
 .fb-subform-row:last-child {
@@ -146,17 +146,17 @@ function removeRow(rowIndex: number): void {
 }
 .fb-subform-input {
   width: 100%;
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-color: var(--fb-field-border, var(--vcl-color-border, #e2e8f0));
   border-radius: var(--fb-radius, calc(4px * var(--vcl-scale)));
   padding: calc(5px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  font-size: var(--fs-12);
-  background: var(--color-bg, #fff);
-  color: var(--color-text, #1e293b);
+  font-size: var(--vcl-fs-12);
+  background: var(--vcl-color-bg, #fff);
+  color: var(--vcl-color-text, #1e293b);
   outline: none;
 }
 .fb-subform-input:focus {
-  border-color: var(--fb-field-focus-border, var(--color-primary, #3b82f6));
+  border-color: var(--fb-field-focus-border, var(--vcl-color-primary, #3b82f6));
 }
 .fb-subform-del {
   flex-shrink: 0;
@@ -169,17 +169,17 @@ function removeRow(rowIndex: number): void {
   border: none;
   border-radius: calc(4px * var(--vcl-scale));
   background: transparent;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--vcl-color-text-muted, #94a3b8);
   cursor: pointer;
 }
 .fb-subform-del:hover {
-  background: var(--color-danger-bg);
-  color: var(--color-danger-on-surface);
+  background: var(--vcl-color-danger-bg);
+  color: var(--vcl-color-danger-on-surface);
 }
 .fb-subform-empty {
   padding: calc(16px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   text-align: center;
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 </style>

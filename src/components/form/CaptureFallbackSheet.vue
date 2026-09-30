@@ -134,7 +134,7 @@ function close() {
 .capfb-mask {
   position: fixed;
   inset: 0;
-  z-index: var(--z-top, 9999);
+  z-index: var(--vcl-z-top, 9999);
   background: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: flex-end;
@@ -145,12 +145,12 @@ function close() {
   max-width: calc(480px * var(--vcl-scale));
   max-height: 92vh;
   overflow-y: auto;
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
   border-radius: calc(14px * var(--vcl-scale)) calc(14px * var(--vcl-scale)) 0 0;
-  padding: var(--space-3) var(--space-4) calc(16px * var(--vcl-scale) + env(safe-area-inset-bottom));
+  padding: var(--vcl-space-3) var(--vcl-space-4) calc(16px * var(--vcl-scale) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   outline: none;
 }
 /* 桌面（精确指针）：底部小弹层不合身，改居中对话框；触屏保持底部动作面板（原生习惯） */
@@ -163,8 +163,8 @@ function close() {
     width: min(420px * var(--vcl-scale), calc(100vw - 32px * var(--vcl-scale)));
     max-height: min(600px * var(--vcl-scale), calc(100vh - 48px * var(--vcl-scale)));
     border-radius: calc(16px * var(--vcl-scale));
-    padding: var(--space-3) var(--space-4) var(--space-4);
-    box-shadow: var(--shadow-lg);
+    padding: var(--vcl-space-3) var(--vcl-space-4) var(--vcl-space-4);
+    box-shadow: var(--vcl-shadow-lg);
   }
 }
 .capfb-head {
@@ -175,7 +175,7 @@ function close() {
 .capfb-title {
   font-size: calc(16px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 .capfb-x {
   width: calc(32px * var(--vcl-scale));
@@ -186,10 +186,10 @@ function close() {
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
 }
 .capfb-x:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 </style>

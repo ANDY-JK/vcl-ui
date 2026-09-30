@@ -67,20 +67,20 @@ watch(
   align-items: center;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-color: var(--fb-field-border, var(--vcl-color-border, #e2e8f0));
   border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
-  background: var(--color-bg-alt, #f8fafc);
+  background: var(--vcl-color-bg-alt, #f8fafc);
   width: var(--fb-control-width, 100%);
 }
 .fb-serial-value {
-  font-size: var(--fs-14);
+  font-size: var(--vcl-fs-14);
   font-weight: 700;
-  color: var(--color-primary, #3b82f6);
+  color: var(--vcl-color-primary, #3b82f6);
   font-family: 'Cascadia Code', 'Fira Code', monospace;
 }
 .fb-serial-hint {
-  font-size: var(--fs-11);
-  color: var(--color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 </style>

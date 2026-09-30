@@ -20,8 +20,8 @@ import Button from '@/components/basic/Button.vue'
             placeholder="点击聚焦"
             style="
               padding: calc(6px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-              border: 1.5px solid var(--color-border);
-              border-radius: var(--radius-md);
+              border: 1.5px solid var(--vcl-color-border);
+              border-radius: var(--vcl-radius-md);
               font-size: calc(13px * var(--vcl-scale));
               outline: none;
             "
@@ -35,7 +35,7 @@ import Button from '@/components/basic/Button.vue'
         style="
           margin-top: calc(12px * var(--vcl-scale));
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         <code>trigger="hover"</code> 悬停触发（默认）| <code>trigger="focus"</code> 聚焦触发（适合表单字段提示）
@@ -48,7 +48,7 @@ import Button from '@/components/basic/Button.vue'
           <p>你有 3 条新消息</p>
           <p
             style="
-              color: var(--color-text-muted);
+              color: var(--vcl-color-text-muted);
               font-size: calc(12px * var(--vcl-scale));
               margin-top: calc(4px * var(--vcl-scale));
             "
@@ -65,7 +65,7 @@ import Button from '@/components/basic/Button.vue'
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -75,7 +75,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>variant</code>
@@ -88,7 +88,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>title</code>
@@ -96,7 +96,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -104,7 +104,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -112,7 +112,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               弹窗标题（popover 模式）
@@ -122,7 +122,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>trigger</code>
@@ -130,7 +130,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -138,7 +138,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'click'
@@ -146,7 +146,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               click | hover | focus
@@ -156,7 +156,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>position</code>
@@ -164,7 +164,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -172,7 +172,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'top'
@@ -180,7 +180,7 @@ import Button from '@/components/basic/Button.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               tooltip 方向：top | bottom | left | right
@@ -207,12 +207,12 @@ import Button from '@/components/basic/Button.vue'
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

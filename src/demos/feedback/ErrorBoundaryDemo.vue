@@ -34,7 +34,7 @@ function retry() {
 
     <Card title="正常渲染（无异常）" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <ErrorBoundary title="安全区域">
-        <div style="padding: calc(20px * var(--vcl-scale)); text-align: center; color: var(--color-text-muted)">
+        <div style="padding: calc(20px * var(--vcl-scale)); text-align: center; color: var(--vcl-color-text-muted)">
           这是一个正常渲染的子组件，没有异常。
         </div>
       </ErrorBoundary>
@@ -54,7 +54,10 @@ function retry() {
 
       <ErrorBoundary :key="resetKey" title="子组件崩溃" retry-text="重试加载">
         <Boom v-if="triggerError" />
-        <div v-else style="padding: calc(20px * var(--vcl-scale)); text-align: center; color: var(--color-text-muted)">
+        <div
+          v-else
+          style="padding: calc(20px * var(--vcl-scale)); text-align: center; color: var(--vcl-color-text-muted)"
+        >
           点击「触发异常」按钮，子组件会抛出错误，ErrorBoundary 将捕获并展示降级 UI。
         </div>
       </ErrorBoundary>
@@ -64,7 +67,7 @@ function retry() {
       <p
         style="
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -86,7 +89,7 @@ function retry() {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-top: calc(12px * var(--vcl-scale));
         "
       >
@@ -102,17 +105,17 @@ function retry() {
             style="
               padding: calc(24px * var(--vcl-scale));
               text-align: center;
-              background: var(--color-danger-bg);
+              background: var(--vcl-color-danger-bg);
               border-radius: calc(8px * var(--vcl-scale));
             "
           >
-            <p style="color: var(--color-danger); font-weight: 600; margin-bottom: calc(8px * var(--vcl-scale))">
+            <p style="color: var(--vcl-color-danger); font-weight: 600; margin-bottom: calc(8px * var(--vcl-scale))">
               🚨 自定义错误展示
             </p>
             <p
               style="
                 font-size: calc(13px * var(--vcl-scale));
-                color: var(--color-text-muted);
+                color: var(--vcl-color-text-muted);
                 margin-bottom: calc(12px * var(--vcl-scale));
               "
             >
@@ -121,7 +124,7 @@ function retry() {
             <Button text="自定义重试" variant="primary" size="sm" @click="retry" />
           </div>
         </template>
-        <div style="padding: calc(20px * var(--vcl-scale)); text-align: center; color: var(--color-text-muted)">
+        <div style="padding: calc(20px * var(--vcl-scale)); text-align: center; color: var(--vcl-color-text-muted)">
           这段不会出异常。
         </div>
       </ErrorBoundary>
@@ -130,7 +133,7 @@ function retry() {
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -142,7 +145,7 @@ function retry() {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>title</code>
@@ -150,7 +153,7 @@ function retry() {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -158,7 +161,7 @@ function retry() {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               '页面出错了'
@@ -166,7 +169,7 @@ function retry() {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               错误标题
@@ -187,7 +190,7 @@ function retry() {
     <Card title="Slots" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Slot</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">作用域</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
@@ -198,7 +201,7 @@ function retry() {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>default</code>
@@ -206,7 +209,7 @@ function retry() {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -214,7 +217,7 @@ function retry() {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               正常内容
@@ -240,13 +243,13 @@ function retry() {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

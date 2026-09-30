@@ -17,7 +17,7 @@ import { AxeBuilder } from '@axe-core/playwright'
  *     - 高德 SDK 自带的 logo 图（同为 webapi.amap.com 前缀）
  *     - amap 页的 <select class="radius-select">、高德 <iframe> 无 title
  *   DEMO_INLINE  demo 页自己写的内联样式（不入库产物，属示例写法）：
- *     - 各页 <span style="color: var(--color-success/danger)"> 统计数字、.result 文本
+ *     - 各页 <span style="color: var(--vcl-color-success/danger)"> 统计数字、.result 文本
  *     - .demo-add-btn / .upload-link / .fl-label 等 demo 私有类的对比度
  *   TRADEOFF     解除需改库公开契约、已登记的取舍：
  *     - nested-interactive ×2：ToggleList list-item（role=button 内嵌可聚焦 checkbox，
@@ -184,7 +184,7 @@ test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) =
  *
  * 为什么单开一条：上面那条只扫**亮色**——暗色从建库起就没进过 axe 覆盖，
  * 于是「暗底上对比度不足」这类缺陷一路漏网。实测一次抓出 395 处
- * （--color-text-muted 在暗底仅 3.17~3.78、--color-primary-solid 当文字色仅 2.62~3.13，
+ * （--vcl-color-text-muted 在暗底仅 3.17~3.78、--vcl-color-primary-solid 当文字色仅 2.62~3.13，
  * 两者都是既有的、被亮色扫描掩盖的真缺陷）。
  *
  * 本用例只盯 color-contrast：暗色下别的规则与亮色同源，重复扫描只是拖慢全链。

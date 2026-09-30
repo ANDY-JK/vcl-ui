@@ -85,7 +85,7 @@
 | `trigger` | `'click' \| 'hover' \| 'focus'` | `'click'` | 否 | 'click' \| 'hover' \| 'focus' — tooltip 模式（有 text）时强制 hover |
 | `text` | `string` | — | 否 | 纯文字快捷模式 → tooltip 行为 |
 | `position` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | 否 | tooltip 方向 |
-| `zIndex` | `number \| string` | — | 否 | 浮层 z-index（数字或 CSS 变量字符串）；默认走 --z-dropdown 变量 |
+| `zIndex` | `number \| string` | — | 否 | 浮层 z-index（数字或 CSS 变量字符串）；默认走 --vcl-z-dropdown 变量 |
 
 ### Slots
 

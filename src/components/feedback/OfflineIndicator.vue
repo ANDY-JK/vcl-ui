@@ -47,21 +47,21 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  z-index: var(--z-top, 9999); /* 全局横幅：最高优先级，不被任何弹层/遮罩遮挡 */
+  z-index: var(--vcl-z-top, 9999); /* 全局横幅：最高优先级，不被任何弹层/遮罩遮挡 */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  /* 实心底压白字：solid 令牌（暗色下 --color-warning 提亮后白字不可读） */
-  background: var(--color-warning-solid, var(--color-warning));
+  /* 实心底压白字：solid 令牌（暗色下 --vcl-color-warning 提亮后白字不可读） */
+  background: var(--vcl-color-warning-solid, var(--vcl-color-warning));
   color: white;
   font-size: calc(15px * var(--vcl-scale));
 }
 
 .offline-dismiss {
   display: flex;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
@@ -70,7 +70,7 @@ onUnmounted(() => {
 
 .slide-down-enter-active,
 .slide-down-leave-active {
-  transition: transform var(--transition-normal);
+  transition: transform var(--vcl-transition-normal);
 }
 .slide-down-enter-from,
 .slide-down-leave-to {

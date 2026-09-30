@@ -408,14 +408,14 @@ function onCamError(msg: string) {
           <div class="upload-box" @click="fileInput?.click()">
             <div v-if="photoScanning"><span class="spinner" /><span>识别中...</span></div>
             <template v-else>
-              <IconSvg type="camera" size="lg" color="var(--color-text-muted)" /><span>点击选择照片</span>
+              <IconSvg type="camera" size="lg" color="var(--vcl-color-text-muted)" /><span>点击选择照片</span>
             </template>
           </div>
           <input ref="fileInput" type="file" accept="image/*" style="display: none" @change="onPhoto" />
           <div
             v-if="photoLast"
             class="result"
-            :style="{ color: photoLast === '未识别' ? 'var(--color-danger)' : 'var(--color-text-secondary)' }"
+            :style="{ color: photoLast === '未识别' ? 'var(--vcl-color-danger)' : 'var(--vcl-color-text-secondary)' }"
           >
             {{ photoLast }}
           </div>
@@ -440,7 +440,7 @@ function onCamError(msg: string) {
           align-items: center;
           margin-bottom: calc(8px * var(--vcl-scale));
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         <label style="display: flex; align-items: center; gap: calc(4px * var(--vcl-scale)); cursor: pointer"
@@ -459,7 +459,7 @@ function onCamError(msg: string) {
         style="
           margin-left: calc(8px * var(--vcl-scale));
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--color-primary);
+          color: var(--vcl-color-primary);
         "
         >{{ modalCodes.length }} 条</span
       >
@@ -521,7 +521,7 @@ function onCamError(msg: string) {
       </template>
       <template v-else-if="activeTab === 'input'">
         <div class="input-area">
-          <IconSvg type="edit" size="lg" color="var(--color-text-muted)" /><input
+          <IconSvg type="edit" size="lg" color="var(--vcl-color-text-muted)" /><input
             v-model="manualInput"
             class="input-big"
             placeholder="输入条码编号回车"
@@ -533,7 +533,7 @@ function onCamError(msg: string) {
         <div class="upload-box" @click="modalFileInput?.click()">
           <div v-if="modalPhotoScanning"><span class="spinner" /><span>识别中...</span></div>
           <template v-else>
-            <IconSvg type="camera" size="lg" color="var(--color-text-muted)" /><span>点击拍照识别</span>
+            <IconSvg type="camera" size="lg" color="var(--vcl-color-text-muted)" /><span>点击拍照识别</span>
           </template>
         </div>
         <input ref="modalFileInput" type="file" accept="image/*" style="display: none" @change="onModalPhoto" />
@@ -576,10 +576,10 @@ function onCamError(msg: string) {
       </p>
       <div style="display: flex; align-items: center; gap: calc(12px * var(--vcl-scale)); flex-wrap: wrap">
         <button class="btn" @click="cameraVisible = true">📷 打开拍照</button>
-        <span v-if="camShotName" style="font-size: calc(12px * var(--vcl-scale)); color: var(--color-text-muted)"
+        <span v-if="camShotName" style="font-size: calc(12px * var(--vcl-scale)); color: var(--vcl-color-text-muted)"
           >已拍：{{ camShotName }}</span
         >
-        <span v-if="camError" style="font-size: calc(12px * var(--vcl-scale)); color: var(--color-danger)">{{
+        <span v-if="camError" style="font-size: calc(12px * var(--vcl-scale)); color: var(--vcl-color-danger)">{{
           camError
         }}</span>
       </div>
@@ -729,14 +729,14 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 .card-hint {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(12px * var(--vcl-scale));
 }
 .btn {
@@ -746,14 +746,14 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   padding: calc(8px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border: none;
   border-radius: calc(8px * var(--vcl-scale));
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
   font-size: calc(13px * var(--vcl-scale));
   cursor: pointer;
   font-family: inherit;
 }
 .btn:hover {
-  background: var(--color-primary-hover);
+  background: var(--vcl-color-primary-hover);
 }
 /* ══════ 渐变扫码卡（对齐「小程序通用组件」BarcodeScanner 定版） ══════
    三段式等高：主块 120px（入口/取景/兜底共用）+ 底行 44px（勾选/操作键/手输行）+ 卡内距。
@@ -792,7 +792,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   flex-direction: column;
   align-items: center;
   gap: calc(5px * var(--vcl-scale));
-  background: linear-gradient(160deg, var(--color-primary) 0%, #6d8cff 100%);
+  background: linear-gradient(160deg, var(--vcl-color-primary) 0%, #6d8cff 100%);
   border-radius: calc(14px * var(--vcl-scale));
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
@@ -829,7 +829,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   top: calc(4px * var(--vcl-scale));
   height: 2px;
   border-radius: 1px;
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.9);
   animation: bs-open-sweep 2.2s ease-in-out infinite;
 }
@@ -1102,13 +1102,13 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   border-radius: calc(4px * var(--vcl-scale));
   border: 1.5px solid rgba(255, 255, 255, 0.85);
   transition:
-    background var(--transition-fast),
-    box-shadow var(--transition-fast);
+    background var(--vcl-transition-fast),
+    box-shadow var(--vcl-transition-fast);
 }
 .fmt-check.checked .fmt-check-box {
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
   border-color: #fff;
-  box-shadow: inset 0 0 0 3px var(--color-primary);
+  box-shadow: inset 0 0 0 3px var(--vcl-color-primary);
 }
 .fmt-check-text {
   font-size: calc(11px * var(--vcl-scale));
@@ -1166,14 +1166,14 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   padding: 0 calc(10px * var(--vcl-scale));
   border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: calc(6px * var(--vcl-scale));
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
   font-size: calc(13px * var(--vcl-scale));
   font-family: inherit;
   outline: none;
 }
 .bs-manual-input::placeholder {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .bs-manual-btn {
   flex-shrink: 0;
@@ -1184,14 +1184,14 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   justify-content: center;
   border: none;
   border-radius: calc(6px * var(--vcl-scale));
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
   font-size: calc(12px * var(--vcl-scale));
   font-family: inherit;
   cursor: pointer;
 }
 .bs-manual-btn:hover {
-  background: var(--color-primary-hover);
+  background: var(--vcl-color-primary-hover);
 }
 .bs-manual-retry {
   flex-shrink: 0;
@@ -1216,8 +1216,8 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   max-width: 100%;
   margin: calc(8px * var(--vcl-scale)) auto 0;
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary);
-  background: var(--color-bg-alt);
+  color: var(--vcl-color-text-secondary);
+  background: var(--vcl-color-bg-alt);
   border-radius: calc(10px * var(--vcl-scale));
   padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   box-sizing: border-box;
@@ -1226,7 +1226,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 .result {
   margin-top: calc(8px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   word-break: break-all;
   max-height: calc(48px * var(--vcl-scale));
   overflow-y: auto;
@@ -1250,7 +1250,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   flex-direction: column;
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(12px * var(--vcl-scale));
 }
 .scan-video {
@@ -1267,17 +1267,17 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   flex-direction: column;
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
-  color: var(--color-warning);
+  color: var(--vcl-color-warning);
   font-size: calc(12px * var(--vcl-scale));
   padding: calc(12px * var(--vcl-scale));
   text-align: center;
 }
 .scan-err button {
   padding: calc(4px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  border: 1px solid var(--color-warning);
+  border: 1px solid var(--vcl-color-warning);
   border-radius: calc(6px * var(--vcl-scale));
-  background: var(--color-surface);
-  color: var(--color-warning-text);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-warning-text);
   font-size: calc(12px * var(--vcl-scale));
   cursor: pointer;
   font-family: inherit;
@@ -1324,7 +1324,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 }
 .code-box.primary .code-box-label {
   background: #22c55e;
-  color: var(--color-success-text);
+  color: var(--vcl-color-success-text);
 }
 /* ══════ 定格选码态 ══════ */
 /* 画面压暗：与实时态明确区分，选框/箭头在暗底上更醒目 */
@@ -1358,13 +1358,13 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   justify-content: center;
   border-radius: 50%;
   background: #22c55e;
-  color: var(--color-success-text);
+  color: var(--vcl-color-success-text);
   box-shadow:
-    var(--shadow-md),
+    var(--vcl-shadow-md),
     0 0 0 2px rgba(255, 255, 255, 0.85);
   transition:
-    background var(--transition-fast),
-    transform var(--transition-fast);
+    background var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
 }
 /* 徽章下的箭头尖：指向码中心 */
 .code-marker-tip {
@@ -1426,7 +1426,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   cursor: pointer;
 }
 .frozen-resume:hover {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
 }
 .mask {
   position: absolute;
@@ -1462,7 +1462,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   position: absolute;
   width: calc(18px * var(--vcl-scale));
   height: calc(18px * var(--vcl-scale));
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
   border-style: solid;
   pointer-events: none;
   z-index: 2;
@@ -1496,12 +1496,12 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   left: 17.5%;
   right: 17.5%;
   height: 2px;
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   opacity: 0.5;
   pointer-events: none;
   z-index: 2;
   animation: beam-sweep 2s ease-in-out infinite;
-  box-shadow: 0 0 4px var(--color-primary);
+  box-shadow: 0 0 4px var(--vcl-color-primary);
   top: 35%;
 }
 @keyframes beam-sweep {
@@ -1527,8 +1527,8 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 .spinner {
   width: calc(24px * var(--vcl-scale));
   height: calc(24px * var(--vcl-scale));
-  border: 3px solid var(--color-border-light);
-  border-top-color: var(--color-primary);
+  border: 3px solid var(--vcl-color-border-light);
+  border-top-color: var(--vcl-color-primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -1543,16 +1543,16 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   width: 100%;
   aspect-ratio: 4/3;
   border-radius: calc(10px * var(--vcl-scale));
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: calc(8px * var(--vcl-scale));
   cursor: pointer;
-  border: 2px dashed var(--color-border);
+  border: 2px dashed var(--vcl-color-border);
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(8px * var(--vcl-scale));
 }
 .upload-box:active {
@@ -1567,7 +1567,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   object-fit: cover;
   border-radius: calc(10px * var(--vcl-scale));
   margin-top: calc(12px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
 }
 
 /* 输入 */
@@ -1575,7 +1575,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   width: 100%;
   aspect-ratio: 4/3;
   border-radius: calc(10px * var(--vcl-scale));
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1587,18 +1587,18 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   width: 100%;
   max-width: calc(280px * var(--vcl-scale));
   padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  border: 2px solid var(--color-primary);
+  border: 2px solid var(--vcl-color-primary);
   border-radius: calc(8px * var(--vcl-scale));
   font-size: calc(18px * var(--vcl-scale));
   font-family: monospace;
   letter-spacing: 1px;
   text-align: center;
   outline: none;
-  color: var(--color-text);
-  background: var(--color-surface);
+  color: var(--vcl-color-text);
+  background: var(--vcl-color-surface);
 }
 .input-big:focus {
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow: 0 0 0 3px var(--vcl-color-primary-light);
 }
 .modal-box .upload-box {
   margin-bottom: 0;
@@ -1623,12 +1623,12 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   margin-left: auto;
 }
 .toast.ok {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
+  background: var(--vcl-color-success-bg);
+  color: var(--vcl-color-success-text);
 }
 .toast.fail {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
+  background: var(--vcl-color-danger-bg);
+  color: var(--vcl-color-danger);
 }
 .toast-pop-enter-active {
   animation: p-in 0.25s ease-out;
@@ -1648,13 +1648,13 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   padding: 0 calc(16px * var(--vcl-scale));
   max-height: calc(160px * var(--vcl-scale));
   overflow-y: auto;
-  border-top: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--vcl-color-border-light);
   padding-top: calc(12px * var(--vcl-scale));
 }
 .list-head {
   font-size: calc(13px * var(--vcl-scale));
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   margin-bottom: calc(8px * var(--vcl-scale));
 }
 .code-list ul {
@@ -1672,7 +1672,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   font-family: monospace;
 }
 .code-list li:nth-child(odd) {
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 .code-list li button {
   display: flex;
@@ -1683,18 +1683,18 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   border: none;
   border-radius: calc(6px * var(--vcl-scale));
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
 }
 .code-list li button:hover {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
+  background: var(--vcl-color-danger-bg);
+  color: var(--vcl-color-danger);
 }
 
 /* 标签栏 */
 .tab-bar {
   display: flex;
-  border-top: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 .tab-bar button {
   flex: 1;
@@ -1705,13 +1705,13 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
   padding: calc(12px * var(--vcl-scale)) 0;
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(13px * var(--vcl-scale));
   cursor: pointer;
   font-family: inherit;
 }
 .tab-bar button.active {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 .tab-bar button:active {
   transform: scale(0.95);
@@ -1719,7 +1719,7 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 
 /* 代码块 */
 .code-block {
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
   padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border-radius: calc(8px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
@@ -1740,11 +1740,11 @@ const { start, stop, videoRef, canvasRef, scanning, error } = useBarcodeScanner(
 .doc-table th {
   text-align: left;
   padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--vcl-color-border);
 }
 .doc-table td {
   padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .doc-table tr:last-child td {
   border-bottom: none;

@@ -363,12 +363,12 @@ function loadPreset(key: string): void {
   margin: 0 0 calc(4px * var(--vcl-scale));
   font-size: calc(17px * var(--vcl-scale));
   font-weight: 700;
-  color: var(--color-text, #1e293b);
+  color: var(--vcl-color-text, #1e293b);
 }
 .lc-demo-sub {
   margin: 0;
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary, #475569);
+  color: var(--vcl-color-text-secondary, #475569);
 }
 .lc-demo-chips {
   display: flex;
@@ -381,10 +381,10 @@ function loadPreset(key: string): void {
 .lc-demo-chip {
   padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border-radius: 999px;
-  border: 1px solid var(--color-border, #e2e8f0);
-  background: var(--color-bg-alt, #f8fafc);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  background: var(--vcl-color-bg-alt, #f8fafc);
   font-size: calc(11.5px * var(--vcl-scale));
-  color: var(--color-text-secondary, #475569);
+  color: var(--vcl-color-text-secondary, #475569);
   white-space: nowrap;
 }
 
@@ -394,9 +394,9 @@ function loadPreset(key: string): void {
   align-items: center;
   gap: 2px;
   padding: calc(5px * var(--vcl-scale));
-  background: var(--color-bg, #fff);
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-lg, calc(12px * var(--vcl-scale)));
+  background: var(--vcl-color-bg, #fff);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-radius: var(--vcl-radius-lg, calc(12px * var(--vcl-scale)));
   margin-bottom: calc(20px * var(--vcl-scale));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
@@ -406,9 +406,9 @@ function loadPreset(key: string): void {
   gap: calc(6px * var(--vcl-scale));
   padding: calc(9px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   border: none;
-  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
+  border-radius: var(--vcl-radius-md, calc(8px * var(--vcl-scale)));
   background: transparent;
-  color: var(--color-text-secondary, #475569);
+  color: var(--vcl-color-text-secondary, #475569);
   font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
   cursor: pointer;
@@ -416,8 +416,8 @@ function loadPreset(key: string): void {
   transition: all 0.18s ease;
 }
 .lc-demo-tab:hover {
-  background: var(--color-bg-alt, #f8fafc);
-  color: var(--color-text, #1e293b);
+  background: var(--vcl-color-bg-alt, #f8fafc);
+  color: var(--vcl-color-text, #1e293b);
 }
 .lc-demo-tab.active {
   background: linear-gradient(135deg, #4f6ef7 0%, #3b5de5 100%);
@@ -441,7 +441,7 @@ function loadPreset(key: string): void {
 }
 .lc-demo-preset-group-label {
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--vcl-color-text-muted, #94a3b8);
   white-space: nowrap;
 }
 .lc-demo-presets {
@@ -453,23 +453,23 @@ function loadPreset(key: string): void {
   align-items: center;
   gap: calc(5px * var(--vcl-scale));
   padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
-  background: var(--color-bg, #fff);
-  color: var(--color-text-secondary, #475569);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
+  background: var(--vcl-color-bg, #fff);
+  color: var(--vcl-color-text-secondary, #475569);
   cursor: pointer;
   font-size: calc(12px * var(--vcl-scale));
   font-weight: 600;
   transition: all 0.15s ease;
 }
 .lc-demo-preset-btn:hover {
-  border-color: var(--color-primary, #4f6ef7);
-  color: var(--color-primary, #4f6ef7);
+  border-color: var(--vcl-color-primary, #4f6ef7);
+  color: var(--vcl-color-primary, #4f6ef7);
 }
 .lc-demo-preset-btn.active {
-  background: var(--color-primary-light, #eef1ff);
-  border-color: var(--color-primary, #4f6ef7);
-  color: var(--color-primary, #4f6ef7);
+  background: var(--vcl-color-primary-light, #eef1ff);
+  border-color: var(--vcl-color-primary, #4f6ef7);
+  color: var(--vcl-color-primary, #4f6ef7);
 }
 
 /* ── 内容区 — 满宽，与其它 demo 页一致 ── */
@@ -487,17 +487,17 @@ function loadPreset(key: string): void {
 .lc-demo-placeholder-icon {
   width: calc(56px * var(--vcl-scale));
   height: calc(56px * var(--vcl-scale));
-  border-radius: var(--radius-lg, calc(12px * var(--vcl-scale)));
-  background: var(--color-bg-alt, #f3f4f6);
+  border-radius: var(--vcl-radius-lg, calc(12px * var(--vcl-scale)));
+  background: var(--vcl-color-bg-alt, #f3f4f6);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
 }
 .lc-demo-placeholder p {
   margin: 0;
   font-size: calc(13.5px * var(--vcl-scale));
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--vcl-color-text-secondary, #6b7280);
 }
 
 /* ── 模板悬浮预览 ── */
@@ -510,9 +510,9 @@ function loadPreset(key: string): void {
   max-height: min(72vh, 680px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
-  background: var(--color-surface, #fff);
-  border: 1px solid var(--color-border, #e2e8f0);
-  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
+  background: var(--vcl-color-surface, #fff);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-radius: var(--vcl-radius-md, calc(8px * var(--vcl-scale)));
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.08),
     0 4px 6px -4px rgba(0, 0, 0, 0.04);
@@ -523,11 +523,11 @@ function loadPreset(key: string): void {
   align-items: center;
   justify-content: space-between;
   padding: calc(9px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
-  background: var(--color-bg-alt, #f8fafc);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  background: var(--vcl-color-bg-alt, #f8fafc);
   font-size: calc(13px * var(--vcl-scale));
   font-weight: 700;
-  color: var(--color-text, #1e293b);
+  color: var(--vcl-color-text, #1e293b);
 }
 .lc-preset-preview-head span {
   display: inline-flex;
@@ -541,12 +541,12 @@ function loadPreset(key: string): void {
   background: none;
   cursor: pointer;
   border-radius: calc(4px * var(--vcl-scale));
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
   transition: all 0.12s;
 }
 .lc-preset-preview-close:hover {
-  color: var(--color-text, #1e293b);
-  background: var(--color-bg, #f1f5f9);
+  color: var(--vcl-color-text, #1e293b);
+  background: var(--vcl-color-bg, #f1f5f9);
 }
 .lc-preset-preview-body {
   overflow-y: auto;

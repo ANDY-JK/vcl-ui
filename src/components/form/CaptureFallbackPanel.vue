@@ -130,13 +130,13 @@ onUnmounted(() => {})
 .capfb-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
 }
 .capfb-hint {
   margin: 0;
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
   line-height: 1.6;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 /* 上传条：整宽自适应高度，替代 card 变体的固定方块 */
 .capfb-pick {
@@ -144,22 +144,22 @@ onUnmounted(() => {})
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   min-height: calc(72px * var(--vcl-scale));
-  padding: var(--space-4);
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
-  color: var(--color-primary);
-  font-size: var(--fs-14);
+  padding: var(--vcl-space-4);
+  border: 2px dashed var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  background: var(--vcl-color-bg);
+  color: var(--vcl-color-primary);
+  font-size: var(--vcl-fs-14);
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .capfb-pick:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 .capfb-pick:disabled {
   opacity: 0.5;
@@ -168,21 +168,21 @@ onUnmounted(() => {})
 .capfb-or {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  color: var(--color-text-muted);
-  font-size: var(--fs-12);
+  gap: var(--vcl-space-2);
+  color: var(--vcl-color-text-muted);
+  font-size: var(--vcl-fs-12);
 }
 .capfb-or::before,
 .capfb-or::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--color-border-light);
+  background: var(--vcl-color-border-light);
 }
 .capfb-input {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 .capfb-input > :first-child {
   flex: 1;
@@ -190,22 +190,22 @@ onUnmounted(() => {})
 }
 .capfb-err {
   margin: 0;
-  font-size: var(--fs-12);
-  color: var(--color-danger-on-surface);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-danger-on-surface);
 }
 .capfb-busy {
   margin: 0;
   display: flex;
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
-  font-size: var(--fs-12);
-  color: var(--color-text-muted);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted);
 }
 .capfb-spinner {
   width: calc(14px * var(--vcl-scale));
   height: calc(14px * var(--vcl-scale));
-  border: 2px solid var(--color-border-light);
-  border-top-color: var(--color-primary);
+  border: 2px solid var(--vcl-color-border-light);
+  border-top-color: var(--vcl-color-primary);
   border-radius: 50%;
   animation: capfb-spin 0.7s linear infinite;
 }

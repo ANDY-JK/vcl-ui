@@ -134,14 +134,14 @@ function onCamError(msg: string) {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.7;
 }
 .card-hint {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(12px * var(--vcl-scale));
   line-height: 1.6;
 }
@@ -156,7 +156,7 @@ function onCamError(msg: string) {
   justify-content: space-between;
   gap: calc(12px * var(--vcl-scale));
   padding: calc(6px * var(--vcl-scale)) 0;
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   font-size: calc(13px * var(--vcl-scale));
 }
 .cap-list li:last-child {
@@ -170,10 +170,10 @@ function onCamError(msg: string) {
   font-size: calc(13px * var(--vcl-scale));
 }
 .chain-label {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .chain-arrow {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .row {
   display: flex;
@@ -185,7 +185,7 @@ function onCamError(msg: string) {
   display: flex;
   gap: calc(12px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .fmt label {
   display: flex;
@@ -196,10 +196,10 @@ function onCamError(msg: string) {
 .capfb-result {
   margin-top: calc(12px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   word-break: break-all;
 }
 .capfb-result.err {
-  color: var(--color-danger);
+  color: var(--vcl-color-danger);
 }
 </style>

@@ -2,8 +2,8 @@
 //   #20 Drawer 遮罩改用 mousedown/mouseup 双判（与 ModalBox 一致）——
 //      面板内按下、拖到遮罩松开时浏览器补发的 click 目标是最外层 overlay，
 //      旧的 click.self 会命中并误关抽屉。
-//   #18 Drawer zIndex 默认不再内联硬编 1000，交给 .drawer-overlay 的 var(--z-modal, 1000)；
-//      Popover 暴露 zIndex，useFloating 默认走 --z-dropdown 变量。
+//   #18 Drawer zIndex 默认不再内联硬编 1000，交给 .drawer-overlay 的 var(--vcl-z-modal, 1000)；
+//      Popover 暴露 zIndex，useFloating 默认走 --vcl-z-dropdown 变量。
 import { describe, it, expect, afterEach } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import Drawer from '@/components/feedback/Drawer.vue'
@@ -99,7 +99,7 @@ describe('Drawer · 遮罩误关', () => {
 })
 
 describe('Drawer · zIndex 交给 CSS 变量', () => {
-  it('不传 zIndex：不写内联 z-index，由 var(--z-modal, 1000) 决定', () => {
+  it('不传 zIndex：不写内联 z-index，由 var(--vcl-z-modal, 1000) 决定', () => {
     const w = mountDrawer()
     expect((w.find('.drawer-overlay').element as HTMLElement).style.zIndex).toBe('')
   })
@@ -111,10 +111,10 @@ describe('Drawer · zIndex 交给 CSS 变量', () => {
 })
 
 describe('Popover · zIndex 可配', () => {
-  it('默认走 --z-dropdown 变量（等价 2000）', async () => {
+  it('默认走 --vcl-z-dropdown 变量（等价 2000）', async () => {
     const w = mountPopover()
     await w.find('.trg').trigger('click')
-    expect((w.find('.popover-card').element as HTMLElement).style.zIndex).toBe('var(--z-dropdown, 2000)')
+    expect((w.find('.popover-card').element as HTMLElement).style.zIndex).toBe('var(--vcl-z-dropdown, 2000)')
   })
 
   it('传 zIndex 覆盖默认', async () => {

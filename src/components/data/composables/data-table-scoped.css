@@ -1,9 +1,9 @@
 /* ==================== 容器 ==================== */
 .table-wrap {
   width: 100%;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  background: var(--vcl-color-surface);
+  border-radius: var(--vcl-radius-lg);
+  box-shadow: var(--vcl-shadow-sm);
   position: relative;
 }
 
@@ -42,10 +42,10 @@
 /* 全屏模式：fixed 定位到内容区边界，不受父容器滚动影响 */
 .table-wrap.fullscreen {
   position: fixed;
-  z-index: var(--z-overlay, 1500);
+  z-index: var(--vcl-z-overlay, 1500);
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
   border-radius: 0;
   box-shadow: none;
   overscroll-behavior: contain;
@@ -93,15 +93,15 @@
 }
 /* 滚动条配色走令牌：此前硬编码 rgba(15,23,42,.05)/#b7bcc4 是亮色专用，暗色下轨道会发灰 */
 .table-scroll::-webkit-scrollbar-track {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   border-radius: calc(5px * var(--vcl-scale));
 }
 .table-scroll::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--vcl-color-border);
   border-radius: calc(5px * var(--vcl-scale));
 }
 .table-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: var(--vcl-color-text-muted);
 }
 /* maxHeight 设置后约束容器高度 */
 .table-scroll.table-scroll-fixed {
@@ -127,13 +127,13 @@ thead th {
   will-change: scroll-position;
   padding: calc(10px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-alt);
-  border-bottom: 2px solid var(--color-border);
+  color: var(--vcl-color-text-secondary);
+  background: var(--vcl-color-bg-alt);
+  border-bottom: 2px solid var(--vcl-color-border);
   white-space: nowrap;
   /* user-select 移入 .th-inner，避免 Firefox 阻止 th 上 draggable 拖拽启动 */
   text-align: left;
-  transition: color var(--transition-fast);
+  transition: color var(--vcl-transition-fast);
   /* 防御：祖先 overflow/transform 破坏 sticky 时兜底 */
   isolation: isolate;
   transform: translateZ(0);
@@ -144,7 +144,7 @@ thead th {
   display: flex;
   align-items: center;
   min-width: 0;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   user-select: none;
 }
 
@@ -157,13 +157,13 @@ th.sortable {
   cursor: pointer;
 }
 th.sortable:hover {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 th.sortable:active {
-  background: rgba(var(--color-primary-rgb, 59 130 246), 0.08);
+  background: rgba(var(--vcl-color-primary-rgb, 59 130 246), 0.08);
 }
 th.filter-active {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 
 /* 图标区：靠右对齐，flex-shrink: 0 保证不被压缩 */
@@ -180,32 +180,32 @@ th.filter-active {
   display: inline-flex;
   flex-direction: column;
   opacity: 0.35;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--vcl-transition-fast);
   /* padding/border-radius 常驻，避免激活态宽度突变导致列内容偏移 */
-  padding: var(--space-1) calc(4px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  padding: var(--vcl-space-1) calc(4px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-sm);
 }
 th.sort-active .sort-arrows {
   opacity: 1;
   /* 激活态加强：背景微亮，一眼看出排序列 */
-  background: var(--color-primary-bg, rgba(var(--color-primary-rgb, 59 130 246), 0.08));
+  background: var(--vcl-color-primary-bg, rgba(var(--vcl-color-primary-rgb, 59 130 246), 0.08));
 }
 th.sort-active {
   /* 列头文字加粗着色 + 醒目背景，不透明避免 sticky 滚动时下方内容穿透 */
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-weight: 600;
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 .sort-icon {
   display: block;
-  color: var(--color-text-muted);
-  transition: color var(--transition-fast);
+  color: var(--vcl-color-text-muted);
+  transition: color var(--vcl-transition-fast);
 }
 .sort-icon.active {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 .sort-icon.history {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   opacity: 0.4;
 }
 .sort-asc {
@@ -219,20 +219,20 @@ th.sort-active {
 .th-filter-icon {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-1) calc(4px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  padding: var(--vcl-space-1) calc(4px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-sm);
   cursor: pointer;
   opacity: 0.45;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   position: relative;
 }
 .th-filter-icon:hover {
   opacity: 0.85;
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 .th-filter-icon.has-filter {
   opacity: 1;
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 
 /* 筛选激活指示点 */
@@ -243,25 +243,25 @@ th.sort-active {
   width: calc(6px * var(--vcl-scale));
   height: calc(6px * var(--vcl-scale));
   border-radius: 50%;
-  background: var(--color-danger);
+  background: var(--vcl-color-danger);
 }
 
 /* ==================== 单元格 ==================== */
 tbody td {
   padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
-  color: var(--color-text);
+  border-bottom: 1px solid var(--vcl-color-border-light);
+  color: var(--vcl-color-text);
 }
 
 /* 紧凑模式 */
 .data-table.dense thead th {
-  padding-top: var(--space-2);
-  padding-bottom: var(--space-2);
+  padding-top: var(--vcl-space-2);
+  padding-bottom: var(--vcl-space-2);
 }
 .data-table.dense tbody td {
-  padding-top: var(--space-1);
-  padding-bottom: var(--space-1);
-  font-size: max(11px * var(--vcl-scale), calc(var(--fs-13) * var(--dt-zoom-y, 1)));
+  padding-top: var(--vcl-space-1);
+  padding-bottom: var(--vcl-space-1);
+  font-size: max(11px * var(--vcl-scale), calc(var(--vcl-fs-13) * var(--dt-zoom-y, 1)));
 }
 
 /* ==================== 汇总行 ==================== */
@@ -271,18 +271,18 @@ tfoot th {
   z-index: 10;
   padding: calc(10px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text);
-  background: var(--color-bg-alt);
-  border-top: 2px solid var(--color-border);
+  color: var(--vcl-color-text);
+  background: var(--vcl-color-bg-alt);
+  border-top: 2px solid var(--vcl-color-border);
   white-space: nowrap;
 }
 tfoot th.col-fixed-left,
 tfoot th.col-fixed-right {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .data-table.dense tfoot th {
-  padding-top: var(--space-1);
-  padding-bottom: var(--space-1);
+  padding-top: var(--vcl-space-1);
+  padding-bottom: var(--vcl-space-1);
 }
 
 /* 文本截断：单行省略 */
@@ -317,29 +317,29 @@ tfoot th.col-fixed-right {
 /* 编辑模式 */
 .cell-edit-input {
   width: 100%;
-  padding: var(--space-1) calc(6px * var(--vcl-scale));
+  padding: var(--vcl-space-1) calc(6px * var(--vcl-scale));
   font-size: inherit;
   font-family: inherit;
   border: none;
   outline: none;
   background: transparent;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   box-sizing: border-box;
 }
 td.cell-editing {
-  padding: var(--space-1) calc(4px * var(--vcl-scale));
+  padding: var(--vcl-space-1) calc(4px * var(--vcl-scale));
   /* 编辑中：补上视觉标识（此前只有 padding，编辑态无颜色提示）——
      用选中紫的虚线内描边，与「已选中」的实线区分 */
-  box-shadow: inset 0 0 0 2px var(--dt-select, #7c5cf0);
-  background: rgba(var(--dt-select-rgb, 124 92 240), 0.1);
+  box-shadow: inset 0 0 0 2px var(--vcl-dt-select, #7c5cf0);
+  background: rgba(var(--vcl-dt-select-rgb, 124 92 240), 0.1);
   /* 归一化失败气泡绝对定位在格内；提 z-index 保证气泡盖住下一行内容 */
   position: relative;
   z-index: 4;
 }
 /* 归一化失败（Enter/Tab 提交被拒）：紫圈换成红圈 + 浅红底，就地告诉用户「为什么没落下」 */
 td.cell-editing.cell-edit-invalid {
-  box-shadow: inset 0 0 0 2px var(--color-danger);
-  background: var(--color-danger-bg);
+  box-shadow: inset 0 0 0 2px var(--vcl-color-danger);
+  background: var(--vcl-color-danger-bg);
 }
 /* 失败原因气泡：实心底压白字必须用 -solid 令牌（theme-color-guard 锁定 ≥4.5 对比度） */
 .cell-edit-invalid-hint {
@@ -349,10 +349,10 @@ td.cell-editing.cell-edit-invalid {
   transform: translateX(-50%);
   margin-top: 2px;
   padding: 2px calc(8px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
-  background: var(--color-danger-solid);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-danger-solid);
   color: #fff;
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   line-height: calc(16px * var(--vcl-scale));
   white-space: nowrap;
   z-index: 6;
@@ -361,8 +361,8 @@ td.cell-editing.cell-edit-invalid {
 }
 /* 卡片视图：同一套失败提示（红圈挂在 card-field 上，气泡挂在值区右下角） */
 .card-field.card-field-invalid {
-  background: var(--color-danger-bg);
-  box-shadow: inset 0 0 0 2px var(--color-danger);
+  background: var(--vcl-color-danger-bg);
+  box-shadow: inset 0 0 0 2px var(--vcl-color-danger);
 }
 /* number 类型单元格：等宽数字，多行纵向对齐更整齐（展示层，不影响存储口径） */
 td.cell-numeric .cell-text,
@@ -385,14 +385,14 @@ td.cell-numeric .cell-edit-input {
    紫 = 可编辑（可编辑单元格、编辑中、填充、可下拉）
    ⚠️ 不要把所有选中都统一成一种色 —— 那样就失去了区分能力。 */
 td.cell-selected {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: -2px;
-  background: rgba(var(--color-primary-rgb, 79 110 247), 0.06) !important;
+  background: rgba(var(--vcl-color-primary-rgb, 79 110 247), 0.06) !important;
 }
 /* 可编辑单元格选中 → 紫色 */
 td.cell-selected:not(.cell-readonly) {
-  outline-color: var(--dt-select, #7c5cf0);
-  background: rgba(var(--dt-select-rgb, 124 92 240), 0.08) !important;
+  outline-color: var(--vcl-dt-select, #7c5cf0);
+  background: rgba(var(--vcl-dt-select-rgb, 124 92 240), 0.08) !important;
 }
 /* @patch 2026-08-09 拖选期间禁止文本选择 */
 .dt-range-selecting,
@@ -402,10 +402,10 @@ td.cell-selected:not(.cell-readonly) {
 /* @patch 2026-08-09 矩形选区锚点格（Excel 风格视觉区分）
    锚点格同样按「能否编辑」分色：可编辑列紫、不可编辑列蓝（与 cell-selected 一致） */
 td.cell-range-anchor {
-  background: rgba(var(--color-primary-rgb, 79 110 247), 0.16) !important;
+  background: rgba(var(--vcl-color-primary-rgb, 79 110 247), 0.16) !important;
 }
 td.cell-range-anchor:not(.cell-readonly) {
-  background: rgba(var(--dt-select-rgb, 124 92 240), 0.18) !important;
+  background: rgba(var(--vcl-dt-select-rgb, 124 92 240), 0.18) !important;
 }
 
 /* ==================== 填充柄（拖拽批量填充） ==================== */
@@ -419,8 +419,8 @@ td.cell-fill-corner {
   width: calc(8px * var(--vcl-scale));
   height: calc(8px * var(--vcl-scale));
   border-radius: 50%;
-  background: var(--dt-select, #7c5cf0);
-  border: 1px solid var(--color-surface);
+  background: var(--vcl-dt-select, #7c5cf0);
+  border: 1px solid var(--vcl-color-surface);
   box-sizing: border-box;
   cursor: crosshair;
   z-index: 4;
@@ -440,8 +440,8 @@ td.col-fixed-right.cell-fill-corner .cell-fill-handle {
 }
 /* 拖拽中的目标区域预览：虚线框提示将写入的范围（不改数据，松手才落库） */
 td.cell-fill-preview {
-  background: rgba(var(--dt-select-rgb, 124 92 240), 0.12) !important;
-  box-shadow: inset 0 0 0 1px var(--dt-select, #7c5cf0);
+  background: rgba(var(--vcl-dt-select-rgb, 124 92 240), 0.12) !important;
+  box-shadow: inset 0 0 0 1px var(--vcl-dt-select, #7c5cf0);
 }
 /* 填充拖拽期间禁止文本选择（与拖选同一策略） */
 .dt-fill-dragging,
@@ -464,16 +464,16 @@ td.cell-modified::after {
   border-style: solid;
   border-width: 0 7px 7px 0;
   /* 已修改角标：走 warning 令牌，暗色下自动换色（此前硬编码橙在暗色底上偏暗） */
-  border-color: transparent var(--color-warning, #f59e0b) transparent transparent;
+  border-color: transparent var(--vcl-color-warning, #f59e0b) transparent transparent;
 }
 
 /* 图片列 */
 .cell-image {
   object-fit: cover;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   cursor: pointer;
   display: block;
-  transition: transform var(--transition-fast);
+  transition: transform var(--vcl-transition-fast);
 }
 .cell-image:hover {
   transform: scale(1.1);
@@ -485,19 +485,19 @@ td.cell-modified::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-muted);
+  border: 1px dashed var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--vcl-transition-fast);
 }
 .cell-image-placeholder:hover {
-  border-color: var(--dt-select, #7c5cf0);
-  color: var(--dt-select, #7c5cf0);
+  border-color: var(--vcl-dt-select, #7c5cf0);
+  color: var(--vcl-dt-select, #7c5cf0);
 }
 td.drag-over-image {
-  /* 拖入目标格：属选中/放置语义 → --dt-select */
-  outline: 2px dashed var(--dt-select, #7c5cf0);
+  /* 拖入目标格：属选中/放置语义 → --vcl-dt-select */
+  outline: 2px dashed var(--vcl-dt-select, #7c5cf0);
   outline-offset: -2px;
 }
 
@@ -510,7 +510,7 @@ td.drag-over-image {
   height: 0;
   border-style: solid;
   border-width: 0 8px 8px 0;
-  border-color: transparent var(--color-warning, #f5a623) transparent transparent;
+  border-color: transparent var(--vcl-color-warning, #f5a623) transparent transparent;
   cursor: pointer;
   z-index: 1;
 }
@@ -521,13 +521,13 @@ td.cell-has-note {
 /* 备注浮窗 */
 .note-tooltip {
   max-width: min(280px * var(--vcl-scale), 85vw);
-  padding: var(--space-2) calc(12px * var(--vcl-scale));
-  background: var(--color-bg-inverse, #333);
-  color: var(--color-text-inverse, #fff);
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-13);
+  padding: var(--vcl-space-2) calc(12px * var(--vcl-scale));
+  background: var(--vcl-color-bg-inverse, #333);
+  color: var(--vcl-color-text-inverse, #fff);
+  border-radius: var(--vcl-radius-sm);
+  font-size: var(--vcl-fs-13);
   line-height: 1.5;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--vcl-shadow-lg);
   pointer-events: none;
   white-space: pre-wrap;
   word-break: break-word;
@@ -538,14 +538,14 @@ td.cell-has-note {
    暗色下会变成「亮黄卡片」，与整表暗色风格割裂（同文件的 .note-tooltip 已用令牌，此处对齐） */
 .original-tooltip {
   max-width: min(320px * var(--vcl-scale), 85vw);
-  padding: var(--space-2) calc(10px * var(--vcl-scale));
-  background: var(--color-warning-bg, #fffbeb);
-  color: var(--color-warning-text, #d97706);
-  border: 1px solid var(--color-warning-border, #fde68a);
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-12);
+  padding: var(--vcl-space-2) calc(10px * var(--vcl-scale));
+  background: var(--vcl-color-warning-bg, #fffbeb);
+  color: var(--vcl-color-warning-text, #d97706);
+  border: 1px solid var(--vcl-color-warning-border, #fde68a);
+  border-radius: var(--vcl-radius-sm);
+  font-size: var(--vcl-fs-12);
   line-height: 1.4;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--vcl-shadow-md);
   pointer-events: none;
   white-space: pre-wrap;
   word-break: break-word;
@@ -553,62 +553,62 @@ td.cell-has-note {
 .original-tooltip-label {
   font-weight: 600;
   /* 标签需比正文更强调：用主状态色而非正文色 */
-  color: var(--color-warning, #f59e0b);
+  color: var(--vcl-color-warning, #f59e0b);
 }
 
 /* 备注编辑弹窗 */
 .note-editor {
   width: min(360px * var(--vcl-scale), 90vw);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xl);
-  padding: var(--space-4);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  box-shadow: var(--vcl-shadow-xl);
+  padding: var(--vcl-space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
 }
 .note-editor-title {
-  font-size: var(--fs-15);
+  font-size: var(--vcl-fs-15);
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 .note-editor-input {
   width: 100%;
-  padding: var(--space-2) calc(12px * var(--vcl-scale));
-  font-size: var(--fs-14);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  padding: var(--vcl-space-2) calc(12px * var(--vcl-scale));
+  font-size: var(--vcl-fs-14);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
   outline: none;
   box-sizing: border-box;
 }
 .note-editor-input:focus {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .note-editor-actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 
 /* 条纹 */
 .data-table.striped tbody tr.row-striped td {
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 
 /* 悬浮 */
 .data-table.hoverable tbody tr:hover td {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 
 /* 边框 */
 .data-table.bordered {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
 }
 .data-table.bordered td,
 .data-table.bordered th {
-  border-right: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--vcl-color-border);
+  border-bottom: 1px solid var(--vcl-color-border);
 }
 /* 首列不画左边框（表格已有外框） */
 .data-table.bordered td:first-child,
@@ -627,15 +627,15 @@ td.cell-has-note {
 
 /* 选中行高亮（勾选）：行选择与「能否编辑」无关，沿用品牌蓝（紫只表示可编辑） */
 .data-table tbody tr.row-selected td {
-  background: var(--color-primary-light) !important;
+  background: var(--vcl-color-primary-light) !important;
 }
 
 /* 行点击高亮（Ctrl+点击标记，再次取消） */
 .data-table tbody tr.row-clicked td {
-  background: rgba(var(--color-primary-rgb, 79 110 247), 0.22) !important;
+  background: rgba(var(--vcl-color-primary-rgb, 79 110 247), 0.22) !important;
 }
 .data-table tbody tr.row-clicked {
-  box-shadow: inset 4px 0 0 0 var(--color-primary);
+  box-shadow: inset 4px 0 0 0 var(--vcl-color-primary);
 }
 
 /* 选择框列 */
@@ -651,7 +651,7 @@ td.cell-has-note {
   width: calc(16px * var(--vcl-scale));
   height: calc(16px * var(--vcl-scale));
   cursor: pointer;
-  accent-color: var(--color-primary);
+  accent-color: var(--vcl-color-primary);
 }
 
 /* ==================== 固定列 ==================== */
@@ -659,40 +659,40 @@ td.cell-has-note {
   position: sticky;
   left: 0;
   z-index: 5;
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
 }
 thead .col-fixed-left {
   z-index: 15;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .col-fixed-right {
   position: sticky;
   right: 0;
   z-index: 5;
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
 }
 thead .col-fixed-right {
   z-index: 15;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 /* 条纹行内固定列也跟随背景 */
 .data-table.striped tbody tr.row-striped .col-fixed-left,
 .data-table.striped tbody tr.row-striped .col-fixed-right {
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 .data-table.hoverable tbody tr:hover .col-fixed-left,
 .data-table.hoverable tbody tr:hover .col-fixed-right {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 /* 固定列是 sticky 且自带不透明底，选中/高亮的底色必须与对应行同步，
    否则固定列会露出未选中的底色（视觉上像「选了一半」） */
 .data-table tbody tr.row-selected .col-fixed-left,
 .data-table tbody tr.row-selected .col-fixed-right {
-  background: var(--color-primary-light) !important;
+  background: var(--vcl-color-primary-light) !important;
 }
 .data-table tbody tr.row-clicked .col-fixed-left,
 .data-table tbody tr.row-clicked .col-fixed-right {
-  background: rgba(var(--color-primary-rgb, 79 110 247), 0.22) !important;
+  background: rgba(var(--vcl-color-primary-rgb, 79 110 247), 0.22) !important;
 }
 
 /* ==================== 列宽拖拽手柄 ==================== */
@@ -716,7 +716,7 @@ thead .col-fixed-right {
   width: calc(12px * var(--vcl-scale));
 }
 .resize-handle:hover {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   opacity: 0.25;
 }
 /* 列拖拽排序 */
@@ -724,7 +724,7 @@ th.drag-source {
   opacity: 0.4;
 }
 th.drag-over {
-  box-shadow: inset 2px 0 0 0 var(--color-primary);
+  box-shadow: inset 2px 0 0 0 var(--vcl-color-primary);
 }
 
 /* sticky 已建立包含块，resize-handle 可正常定位 */
@@ -740,8 +740,8 @@ th.drag-over {
 .card-view-scroll {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  gap: var(--vcl-space-3);
+  padding: var(--vcl-space-3);
   overflow-y: auto;
   scrollbar-width: auto;
 }
@@ -751,56 +751,56 @@ th.drag-over {
   width: var(--dt-scrollbar-size, calc(6px * var(--vcl-scale)));
 }
 .card-view-scroll::-webkit-scrollbar-track {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .card-view-scroll::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .card-view-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: var(--vcl-color-text-muted);
 }
 
 .card-view-item {
   content-visibility: auto;
   contain-intrinsic-size: auto 120px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
+  padding: var(--vcl-space-3) var(--vcl-space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 .card-view-item.card-selected {
   /* 整卡片选中＝行级选中语义，与「能否编辑」无关 → 品牌蓝 */
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 
 .card-field {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-2);
-  font-size: var(--fs-13);
+  gap: var(--vcl-space-2);
+  font-size: var(--vcl-fs-13);
   position: relative;
 }
 .card-field.card-field-editing {
-  /* 编辑态与桌面表 cell-editing 同色（--dt-select） */
-  background: var(--dt-select-soft, #f1ecfe);
-  box-shadow: inset 0 0 0 2px var(--dt-select, #7c5cf0);
+  /* 编辑态与桌面表 cell-editing 同色（--vcl-dt-select） */
+  background: var(--vcl-dt-select-soft, #f1ecfe);
+  box-shadow: inset 0 0 0 2px var(--vcl-dt-select, #7c5cf0);
   margin: calc(-4px * var(--vcl-scale));
-  padding: var(--space-1);
-  border-radius: var(--radius-sm);
+  padding: var(--vcl-space-1);
+  border-radius: var(--vcl-radius-sm);
 }
 .card-field-label {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   flex-shrink: 0;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   cursor: default;
   user-select: none;
 }
@@ -809,7 +809,7 @@ th.drag-over {
   flex-direction: column;
   line-height: 0;
   opacity: 0.3;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--vcl-transition-fast);
 }
 .card-field-label .card-sort-arrows.sort-active {
   opacity: 1;
@@ -827,13 +827,13 @@ th.drag-over {
 }
 .card-filter-icon.has-filter {
   opacity: 1;
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 .card-filter-icon .filter-dot {
   width: calc(5px * var(--vcl-scale));
   height: calc(5px * var(--vcl-scale));
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   position: absolute;
   top: 2px;
   right: 2px;
@@ -847,7 +847,7 @@ th.drag-over {
   position: relative;
 }
 .card-field-value {
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   text-align: right;
   word-break: break-all;
   cursor: default;
@@ -858,19 +858,19 @@ th.drag-over {
   width: 0;
   height: 0;
   border-left: 5px solid transparent;
-  border-bottom: 5px solid var(--color-warning, #f59e0b);
+  border-bottom: 5px solid var(--vcl-color-warning, #f59e0b);
   vertical-align: super;
-  margin-left: var(--space-1);
+  margin-left: var(--vcl-space-1);
 }
 .card-edit-input,
 .card-edit-select {
   width: 100%;
-  padding: var(--space-1) calc(6px * var(--vcl-scale));
-  font-size: var(--fs-13);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
+  padding: var(--vcl-space-1) calc(6px * var(--vcl-scale));
+  font-size: var(--vcl-fs-13);
+  border: 1px solid var(--vcl-color-primary);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
   text-align: right;
   box-sizing: border-box;
 }
@@ -881,16 +881,16 @@ th.drag-over {
 .card-checkbox {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--vcl-space-1);
 }
 .card-checkbox input {
   width: calc(18px * var(--vcl-scale));
   height: calc(18px * var(--vcl-scale));
-  accent-color: var(--color-primary);
+  accent-color: var(--vcl-color-primary);
 }
 
 .card-view-empty {
-  padding: var(--space-8) 0;
+  padding: var(--vcl-space-8) 0;
 }
 
 /* ==================== 操作按钮列 ==================== */
@@ -910,69 +910,69 @@ th.drag-over {
 .row-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) calc(10px * var(--vcl-scale));
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-1) calc(10px * var(--vcl-scale));
   margin: 0 calc(3px * var(--vcl-scale));
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   line-height: 1;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   white-space: nowrap;
 }
 .row-action-btn:hover {
-  color: var(--color-primary);
-  background: var(--color-primary-light);
+  color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 
 /* 操作按钮变体 */
 .row-action-primary {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-weight: 500;
 }
 .row-action-primary:hover {
-  background: rgba(var(--color-primary-rgb, 64 158 255), 0.12);
+  background: rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.12);
 }
 .row-action-danger {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .row-action-danger:hover {
-  color: var(--color-danger-on-surface);
-  background: rgba(var(--color-danger-rgb, 239 68 68), 0.08);
+  color: var(--vcl-color-danger-on-surface);
+  background: rgba(var(--vcl-color-danger-rgb, 239 68 68), 0.08);
 }
 .row-action-success {
-  color: var(--color-success);
+  color: var(--vcl-color-success);
 }
 .row-action-success:hover {
-  background: rgba(var(--color-success-rgb, 34 197 94), 0.08);
+  background: rgba(var(--vcl-color-success-rgb, 34 197 94), 0.08);
 }
 .row-action-warning {
-  color: var(--color-warning);
+  color: var(--vcl-color-warning);
 }
 .row-action-warning:hover {
-  background: rgba(var(--color-warning-rgb, 245 158 11), 0.08);
+  background: rgba(var(--vcl-color-warning-rgb, 245 158 11), 0.08);
 }
 
 /* 紧凑模式操作按钮 */
 .data-table.dense .td-actions {
-  padding: var(--space-1) calc(6px * var(--vcl-scale)) !important;
+  padding: var(--vcl-space-1) calc(6px * var(--vcl-scale)) !important;
 }
 .data-table.dense .row-action-btn {
-  padding: var(--space-1) calc(8px * var(--vcl-scale));
-  font-size: var(--fs-11);
+  padding: var(--vcl-space-1) calc(8px * var(--vcl-scale));
+  font-size: var(--vcl-fs-11);
 }
 
 /* 卡片视图操作按钮 */
 .card-actions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   flex-wrap: wrap;
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--color-border-light);
-  margin-top: var(--space-1);
+  padding-top: var(--vcl-space-2);
+  border-top: 1px solid var(--vcl-color-border-light);
+  margin-top: var(--vcl-space-1);
 }
 
 /* 可下拉的选项列单元格 — 视觉提示可下拉。
@@ -988,7 +988,7 @@ td.cell-has-options {
   right: calc(6px * var(--vcl-scale));
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   opacity: 0.45;
   pointer-events: none;
   display: flex;
@@ -996,7 +996,7 @@ td.cell-has-options {
 }
 td.cell-has-options:hover .cell-options-arrow {
   opacity: 0.8;
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 
 /* 截断长文本展开图标 */
@@ -1006,19 +1006,19 @@ td.cell-has-options:hover .cell-options-arrow {
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   opacity: 0.5;
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding: var(--space-1) calc(3px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  transition: opacity var(--transition-fast);
+  padding: var(--vcl-space-1) calc(3px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  transition: opacity var(--vcl-transition-fast);
 }
 .cell-expand-icon:hover {
   opacity: 1;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .cell-expand-icon svg,
 .cell-expand-icon * {
@@ -1030,77 +1030,77 @@ td.cell-has-options:hover .cell-options-arrow {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: var(--fs-14);
+  font-size: var(--vcl-fs-14);
   line-height: 1.7;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   max-height: 65vh;
   overflow-y: auto;
 }
 
 /* 选项列自定义下拉面板 */
 .opt-drop-panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  box-shadow: var(--vcl-shadow-lg);
   max-height: clamp(180px * var(--vcl-scale), 36vh, 360px * var(--vcl-scale));
   overflow-y: auto;
-  padding: var(--space-1) 0;
+  padding: var(--vcl-space-1) 0;
 }
 .opt-drop-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(7px * var(--vcl-scale)) var(--space-3);
-  font-size: var(--fs-13);
-  color: var(--color-text);
+  padding: calc(7px * var(--vcl-scale)) var(--vcl-space-3);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
 }
 /* 选项下拉（options 列的值选择）：**保持品牌蓝**，不参与「可编辑=紫」分色 ——
    下拉是统一的交互组件，配色不随单元格状态变化（用户明确要求不改下拉颜色）。 */
 .opt-drop-item:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
 }
 .opt-drop-item.active {
-  background: rgba(var(--color-primary-rgb, 64 158 255), 0.08);
-  color: var(--color-primary);
+  background: rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.08);
+  color: var(--vcl-color-primary);
   font-weight: 500;
 }
 .opt-drop-item.focused {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 /* 选中+焦点重叠时：用 active 的浅蓝背景，不被 focused 灰色覆盖 */
 .opt-drop-item.active.focused {
-  background: rgba(var(--color-primary-rgb, 64 158 255), 0.08);
+  background: rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.08);
 }
 .opt-drop-check {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   flex-shrink: 0;
-  margin-left: var(--space-2);
+  margin-left: var(--vcl-space-2);
 }
 
 /* ImagePreview 中的下载/复制按钮 */
 .lightbox-action {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-4);
+  gap: var(--vcl-space-2);
+  padding: 0 var(--vcl-space-4);
   height: calc(36px * var(--vcl-scale));
   border: none;
   border-radius: calc(20px * var(--vcl-scale));
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
   cursor: pointer;
   white-space: nowrap;
-  transition: background var(--transition-fast);
-  margin-left: var(--space-2);
+  transition: background var(--vcl-transition-fast);
+  margin-left: var(--vcl-space-2);
 }
 .lightbox-action:hover {
   background: rgba(255, 255, 255, 0.32);
 }
 .lightbox-action:first-child {
-  margin-left: var(--space-1);
+  margin-left: var(--vcl-space-1);
 }

@@ -10,7 +10,7 @@ interface Props {
   justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'
   /** 交叉轴对齐 */
   align?: 'start' | 'center' | 'end' | 'stretch' | 'baseline'
-  /** 子项间距（CSS 间距值，默认令牌 --space-2） */
+  /** 子项间距（CSS 间距值，默认令牌 --vcl-space-2） */
   gap?: string
   /** 允许换行 */
   wrap?: boolean
@@ -24,7 +24,7 @@ const props = withDefaults(defineProps<Props>(), {
   direction: 'row',
   justify: 'start',
   align: 'stretch',
-  gap: 'var(--space-2)',
+  gap: 'var(--vcl-space-2)',
   wrap: false,
   flex: '1',
   inline: false,

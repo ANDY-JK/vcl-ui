@@ -38,12 +38,12 @@ const iconMap: Record<string, string> = {
 }
 
 const colorMap: Record<string, string> = {
-  success: 'var(--color-success)',
-  error: 'var(--color-danger)',
-  info: 'var(--color-info)',
-  warning: 'var(--color-warning)',
-  '404': 'var(--color-text-muted)',
-  empty: 'var(--color-text-muted)',
+  success: 'var(--vcl-color-success)',
+  error: 'var(--vcl-color-danger)',
+  info: 'var(--vcl-color-info)',
+  warning: 'var(--vcl-color-warning)',
+  '404': 'var(--vcl-color-text-muted)',
+  empty: 'var(--vcl-color-text-muted)',
 }
 </script>
 
@@ -72,7 +72,7 @@ const colorMap: Record<string, string> = {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: calc(64px * var(--vcl-scale)) var(--space-5);
+  padding: calc(64px * var(--vcl-scale)) var(--vcl-space-5);
 }
 
 .result.fullWidth {
@@ -89,12 +89,12 @@ const colorMap: Record<string, string> = {
   font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
   margin-bottom: calc(8px * var(--vcl-scale));
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 
 .result-desc {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   max-width: calc(480px * var(--vcl-scale));
   line-height: 1.6;
 }

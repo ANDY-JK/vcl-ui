@@ -69,7 +69,7 @@ defineExpose({
       left: '50%',
       top: '50%',
       transform: 'translate(-50%,-50%)',
-      zIndex: 'var(--z-tooltip, 3000)',
+      zIndex: 'var(--vcl-z-tooltip, 3000)',
     }"
     role="dialog"
     aria-modal="true"

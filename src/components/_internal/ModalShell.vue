@@ -178,7 +178,7 @@ function onPanelMousedown() {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal, 1000);
+  z-index: var(--vcl-z-modal, 1000);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,9 +193,9 @@ function onPanelMousedown() {
 .modal-box {
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  border-radius: var(--vcl-radius-lg);
+  box-shadow: var(--vcl-shadow-lg);
   width: calc(520px * var(--vcl-scale));
   max-height: 85vh;
   max-height: 85dvh;
@@ -218,7 +218,7 @@ function onPanelMousedown() {
   align-items: center;
   justify-content: space-between;
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 
 .modal-title {
@@ -228,15 +228,15 @@ function onPanelMousedown() {
 
 .modal-close {
   display: flex;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 .modal-close:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 
 .modal-body {
@@ -252,17 +252,17 @@ function onPanelMousedown() {
   justify-content: flex-end;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
-  border-top: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 
 /* 过渡动画 */
 .modal-enter-active,
 .modal-leave-active {
-  transition: opacity var(--transition-normal);
+  transition: opacity var(--vcl-transition-normal);
 }
 .modal-enter-active .modal-box,
 .modal-leave-active .modal-box {
-  transition: transform var(--transition-normal);
+  transition: transform var(--vcl-transition-normal);
 }
 .modal-enter-from,
 .modal-leave-to {

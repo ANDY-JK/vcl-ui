@@ -55,7 +55,7 @@ const RAF_FALLBACK_MS = 100
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: 'star',
-  color: 'var(--color-primary)',
+  color: 'var(--vcl-color-primary)',
   bgColor: '#EAECF0',
   placeholder: () => t('form.selectIcon'),
   provider: 'lucide',
@@ -107,7 +107,7 @@ function setTransparentBg() {
 }
 
 /**
- * 喂给两个原生取色器的值：#rrggbb 之外的写法（默认色是 var(--color-primary)、背景可选 transparent）
+ * 喂给两个原生取色器的值：#rrggbb 之外的写法（默认色是 var(--vcl-color-primary)、背景可选 transparent）
  * 会被 Chrome 拒收并刷 console 警告。emit 时仍回原始字符串，主题联动不受影响。
  * 依赖 colorProbeTick 重算：令牌值要现算，切主题后不能把取色块留在旧色上
  * （面板开着时切主题不在处理范围内，下次打开即刷新；图标本身用原值渲染，始终跟主题）
@@ -272,7 +272,10 @@ function confirm() {
 <template>
   <div class="picker-root">
     <button ref="triggerRef" type="button" class="picker-trigger" @click="toggle">
-      <span class="trigger-icon" :style="{ background: bgColor === 'transparent' ? 'var(--color-bg-alt)' : bgColor }">
+      <span
+        class="trigger-icon"
+        :style="{ background: bgColor === 'transparent' ? 'var(--vcl-color-bg-alt)' : bgColor }"
+      >
         <!-- solar 也走 IconSvg（未注册完先兜底、注册完自动重渲）；直接渲染 @iconify 的
            Icon 会在集合注册前向 api.iconify.design 拉几何，离线/限网再回源 unisvg -->
         <IconSvg :type="modelValue" size="md" :color="color" :provider="provider" />
@@ -405,7 +408,7 @@ function confirm() {
                 <!-- solar 预览也走 IconSvg：它有「集合未注册完先渲染兜底、注册完自动重渲」
                  的本地逻辑。直接渲染 @iconify 的 Icon 会在注册完成前向 api.iconify.design
                  逐个拉几何（离线/限网下还会再回源 api.unisvg.com），纯网络抖动面。 -->
-                <IconSvg :type="name" size="md" color="var(--color-text)" :provider="localProvider" />
+                <IconSvg :type="name" size="md" color="var(--vcl-color-text)" :provider="localProvider" />
               </span>
               <span>{{ name }}</span>
             </button>
@@ -430,19 +433,19 @@ function confirm() {
 .picker-trigger {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   height: calc(42px * var(--vcl-scale));
   padding: 0 calc(12px * var(--vcl-scale));
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-md);
+  background: var(--vcl-color-surface);
+  border: 1.5px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
   font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--vcl-transition-fast);
   font-family: inherit;
 }
 .picker-trigger:hover {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .trigger-icon {
   display: inline-flex;
@@ -450,16 +453,16 @@ function confirm() {
   justify-content: center;
   width: calc(28px * var(--vcl-scale));
   height: calc(28px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-alt);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg-alt);
 }
 .trigger-placeholder {
-  color: var(--color-text-muted);
-  font-size: var(--ctrl-font-size);
+  color: var(--vcl-color-text-muted);
+  font-size: var(--vcl-ctrl-font-size);
 }
 .trigger-arrow {
-  color: var(--color-text-muted);
-  transition: transform var(--transition-fast);
+  color: var(--vcl-color-text-muted);
+  transition: transform var(--vcl-transition-fast);
 }
 .trigger-arrow.rotated {
   transform: rotate(180deg);
@@ -469,28 +472,28 @@ function confirm() {
 .provider-switch {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   flex-shrink: 0;
 }
 .provider-tab {
   flex: 1;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
   font-size: calc(14px * var(--vcl-scale));
   border: none;
   background: transparent;
   cursor: pointer;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-family: inherit;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   border-bottom: 2px solid transparent;
 }
 .provider-tab.active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  color: var(--vcl-color-primary);
+  border-bottom-color: var(--vcl-color-primary);
   font-weight: 600;
 }
 .provider-tab:hover:not(.active) {
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 </style>
 
@@ -498,10 +501,10 @@ function confirm() {
 .picker-panel {
   width: calc(380px * var(--vcl-scale));
   max-height: calc(520px * var(--vcl-scale));
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  box-shadow: var(--vcl-shadow-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -510,47 +513,47 @@ function confirm() {
 .picker-panel .panel-search {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--color-border-light);
-  color: var(--color-text-muted);
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-bottom: 1px solid var(--vcl-color-border-light);
+  color: var(--vcl-color-text-muted);
   flex-shrink: 0;
 }
 .picker-panel .panel-input {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
   outline: none;
 }
 
 .panel-colors {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-1);
-  border-bottom: 1px solid var(--color-border-light);
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-2) var(--vcl-space-1);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   flex-shrink: 0;
 }
 .color-group {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-1) var(--vcl-space-2);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg);
   flex-shrink: 0;
 }
 .color-label {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   white-space: nowrap;
 }
 .native-picker {
   width: calc(22px * var(--vcl-scale));
   height: calc(22px * var(--vcl-scale));
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   cursor: pointer;
   padding: 0;
 }
@@ -558,48 +561,48 @@ function confirm() {
   padding: 0;
 }
 .native-picker::-webkit-color-swatch {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .hex-input {
   width: calc(62px * var(--vcl-scale));
   height: calc(22px * var(--vcl-scale));
-  padding: var(--space-1) var(--space-1);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  padding: var(--vcl-space-1) var(--vcl-space-1);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
   font-size: calc(13px * var(--vcl-scale));
   font-family: monospace;
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
 }
 .transparent-btn {
-  padding: var(--space-1) var(--space-2);
+  padding: var(--vcl-space-1) var(--vcl-space-2);
   height: calc(22px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
   background: transparent;
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .transparent-btn:hover {
-  border-color: var(--color-text-muted);
-  color: var(--color-text-secondary);
+  border-color: var(--vcl-color-text-muted);
+  color: var(--vcl-color-text-secondary);
 }
 .transparent-btn.active {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 
 /* 选中预览行 */
 .panel-preview {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--color-border-light);
+  gap: var(--vcl-space-3);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   flex-shrink: 0;
 }
 .preview-icon-bg {
@@ -608,27 +611,27 @@ function confirm() {
   justify-content: center;
   width: calc(40px * var(--vcl-scale));
   height: calc(40px * var(--vcl-scale));
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   flex-shrink: 0;
 }
 .preview-name {
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
 }
 .preview-hex {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-weight: 400;
   font-family: monospace;
   white-space: nowrap;
 }
 .preset-colors {
   display: flex;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   margin-left: auto;
   flex-shrink: 0;
   align-items: center;
@@ -639,26 +642,26 @@ function confirm() {
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .preset-dot:hover {
   transform: scale(1.2);
 }
 .preset-dot.active {
-  border-color: var(--color-text);
+  border-color: var(--vcl-color-text);
   transform: scale(1.25);
 }
 .panel-preview .confirm-btn {
-  padding: var(--space-1) var(--space-3);
+  padding: var(--vcl-space-1) var(--vcl-space-3);
   height: calc(28px * var(--vcl-scale));
   border: none;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-primary);
   color: white;
   font-size: calc(14px * var(--vcl-scale));
   white-space: nowrap;
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--vcl-transition-fast);
   flex-shrink: 0;
 }
 .panel-preview .confirm-btn:hover {
@@ -668,28 +671,28 @@ function confirm() {
 .panel-icons {
   flex: 1;
   overflow-y: auto;
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(calc(54px * var(--vcl-scale)), 1fr));
-  gap: var(--space-1);
-  padding: var(--space-1);
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-1);
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+  scrollbar-color: var(--vcl-color-border) transparent;
 }
 /* 自定义滚动条样式 */
 .panel-icons::-webkit-scrollbar {
-  width: var(--space-1);
+  width: var(--vcl-space-1);
 }
 .panel-icons::-webkit-scrollbar-track {
   background: transparent;
 }
 .panel-icons::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-lg);
+  background: var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
 }
 .panel-icons::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: var(--vcl-color-text-muted);
 }
 .icon-item-bg {
   display: flex;
@@ -697,64 +700,64 @@ function confirm() {
   justify-content: center;
   width: calc(28px * var(--vcl-scale));
   height: calc(28px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+  border-radius: var(--vcl-radius-sm);
+  transition: background var(--vcl-transition-fast);
 }
 .icon-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-1);
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-1) var(--vcl-space-1);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   background: transparent;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   font-family: inherit;
 }
 .icon-item:hover {
-  border-color: var(--color-border);
-  background: var(--color-bg-alt);
+  border-color: var(--vcl-color-border);
+  background: var(--vcl-color-bg-alt);
 }
 .icon-item.selected {
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 .empty-tip {
   grid-column: 1 / -1;
   text-align: center;
-  color: var(--color-text-muted);
-  padding: var(--space-5);
+  color: var(--vcl-color-text-muted);
+  padding: var(--vcl-space-5);
   font-size: calc(14px * var(--vcl-scale));
 }
 
 /* 面板动画：弹性缓动 + 微缩放，进场 200ms 退场 150ms（退场快于进场） */
 .picker-panel.drop-enter-active {
   transition:
-    opacity var(--transition-normal),
-    transform var(--transition-normal);
+    opacity var(--vcl-transition-normal),
+    transform var(--vcl-transition-normal);
 }
 .picker-panel.drop-leave-active {
   transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
 }
 .picker-panel.drop-enter-from {
   opacity: 0;
-  transform: translateY(calc(-1 * var(--space-2))) scale(0.97);
+  transform: translateY(calc(-1 * var(--vcl-space-2))) scale(0.97);
 }
 .picker-panel.drop-leave-to {
   opacity: 0;
-  transform: translateY(calc(-1 * var(--space-1))) scale(0.97);
+  transform: translateY(calc(-1 * var(--vcl-space-1))) scale(0.97);
 }
 /* 向上展开时动画方向反转 */
 .picker-panel.flip-up.drop-enter-from {
-  transform: translateY(var(--space-2)) scale(0.97);
+  transform: translateY(var(--vcl-space-2)) scale(0.97);
 }
 .picker-panel.flip-up.drop-leave-to {
-  transform: translateY(var(--space-1)) scale(0.97);
+  transform: translateY(var(--vcl-space-1)) scale(0.97);
 }
 </style>

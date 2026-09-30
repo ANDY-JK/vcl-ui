@@ -209,7 +209,9 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
           <IconSvg
             :type="internalSelectValue.includes(item.value) ? 'circle-check' : 'circle'"
             size="md"
-            :color="internalSelectValue.includes(item.value) ? 'var(--color-primary)' : 'var(--color-text-muted)'"
+            :color="
+              internalSelectValue.includes(item.value) ? 'var(--vcl-color-primary)' : 'var(--vcl-color-text-muted)'
+            "
           />
           <div class="select-item-text">
             <span class="select-item-label">{{ item.label }}</span>
@@ -250,11 +252,11 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
   display: flex;
   justify-content: space-between;
   padding: calc(10px * var(--vcl-scale)) 0;
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   font-size: calc(15px * var(--vcl-scale));
 }
 .detail-label {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .detail-value.mono {
   font-family: monospace;
@@ -264,25 +266,25 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
 .select-wrap {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
 }
 .select-item {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   width: 100%;
-  padding: var(--space-3) calc(8px * var(--vcl-scale));
+  padding: var(--vcl-space-3) calc(8px * var(--vcl-scale));
   border: none;
   background: transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   cursor: pointer;
   text-align: left;
 }
 .select-item:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .select-item.active {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 .select-item-text {
   display: flex;
@@ -293,6 +295,6 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
 }
 .select-item-desc {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 </style>

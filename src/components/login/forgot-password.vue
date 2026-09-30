@@ -217,8 +217,8 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 50%, #e54545 100%);
-  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #3b56e0 50%, #e54545 100%);
+  padding: var(--vcl-space-5);
   position: relative;
 }
 
@@ -265,10 +265,10 @@ defineExpose({
   max-width: var(--login-max-width, calc(960px * var(--vcl-scale)));
   min-height: clamp(380px * var(--vcl-scale), 55vh, 600px * var(--vcl-scale));
   max-height: 85vh;
-  border-radius: var(--radius-xl);
+  border-radius: var(--vcl-radius-xl);
   /* 移除 overflow:hidden —— 会裁掉 Input 浮动标签（top:0 translateY(-50%)），对齐 register.vue */
-  box-shadow: var(--shadow-lg);
-  background: var(--color-surface);
+  box-shadow: var(--vcl-shadow-lg);
+  background: var(--vcl-color-surface);
   animation: slideUp 0.5s ease-out;
   z-index: 1;
   container-type: inline-size;
@@ -288,8 +288,8 @@ defineExpose({
 
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 100%);
-  padding: var(--space-12) calc(44px * var(--vcl-scale));
+  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #3b56e0 100%);
+  padding: var(--vcl-space-12) calc(44px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -310,23 +310,23 @@ defineExpose({
 .brand-logo {
   position: relative;
   z-index: 1;
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--vcl-space-12);
 }
 .logo-icon {
   width: calc(64px * var(--vcl-scale));
   height: calc(64px * var(--vcl-scale));
   background: rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-xl);
+  border-radius: var(--vcl-radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--vcl-space-5);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
   font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--vcl-space-3);
 }
 .brand-logo p {
   font-size: calc(28px * var(--vcl-scale));
@@ -342,9 +342,9 @@ defineExpose({
 .features-list li {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-5);
-  font-size: var(--fs-15);
+  gap: var(--vcl-space-3);
+  margin-bottom: var(--vcl-space-5);
+  font-size: var(--vcl-fs-15);
 }
 .features-list li::before {
   content: '\2713';
@@ -361,41 +361,41 @@ defineExpose({
 
 .login-right {
   flex: 1;
-  padding: var(--space-12);
+  padding: var(--vcl-space-12);
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
-  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+  background: var(--vcl-color-surface);
+  border-radius: 0 var(--vcl-radius-xl) var(--vcl-radius-xl) 0;
 }
 .login-header {
   flex-shrink: 0;
-  padding-bottom: var(--space-8);
+  padding-bottom: var(--vcl-space-8);
 }
 .login-header h1 {
-  font-size: var(--fs-22);
+  font-size: var(--vcl-fs-22);
   font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: var(--space-2);
+  color: var(--vcl-color-text);
+  margin-bottom: var(--vcl-space-2);
 }
 .login-header p {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 
 .forgot-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--vcl-space-5);
 }
 
 .footer-text {
   text-align: center;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  padding-top: var(--space-8);
+  color: var(--vcl-color-text-muted);
+  padding-top: var(--vcl-space-8);
 }
 .register-link {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   text-decoration: none;
   font-weight: 500;
   background: none;
@@ -416,12 +416,12 @@ defineExpose({
     max-width: min(var(--login-max-width, 960px * var(--vcl-scale)), 440px * var(--vcl-scale));
   }
   .login-right {
-    padding: var(--space-10);
+    padding: var(--vcl-space-10);
   }
 }
 @container login (max-width: 480px) {
   .login-right {
-    padding: var(--space-8);
+    padding: var(--vcl-space-8);
   }
   .login-header h1 {
     font-size: calc(32px * var(--vcl-scale));

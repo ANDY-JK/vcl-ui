@@ -3,21 +3,21 @@
   width: calc(190px * var(--vcl-scale));
   flex-shrink: 0;
   overflow-y: auto;
-  background: var(--color-bg, #fff);
-  border-right: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--vcl-color-bg, #fff);
+  border-right: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 .ldo-header {
   display: flex;
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   font-weight: 700;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  background: var(--color-bg-alt, #fafbfc);
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--vcl-color-bg-alt, #fafbfc);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -28,21 +28,21 @@
   gap: calc(5px * var(--vcl-scale));
   padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   margin: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale)) calc(4px * var(--vcl-scale));
-  border: 1px solid var(--color-border-light, #e5e7eb);
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
-  background: var(--color-bg, #fff);
+  border: 1px solid var(--vcl-color-border-light, #e5e7eb);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
+  background: var(--vcl-color-bg, #fff);
 }
 .ldo-search-input {
   flex: 1;
   border: none;
   outline: none;
   background: transparent;
-  font-size: var(--fs-12);
-  color: var(--color-text, #1e293b);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text, #1e293b);
   min-width: 0;
 }
 .ldo-search-input::placeholder {
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
 }
 .ldo-tree {
   padding: calc(6px * var(--vcl-scale)) calc(4px * var(--vcl-scale));
@@ -50,41 +50,41 @@
 .ldo-empty {
   padding: calc(20px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   text-align: center;
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 .ldo-node {
   display: flex;
   align-items: center;
   gap: calc(4px * var(--vcl-scale));
   padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
-  font-size: var(--fs-12);
-  color: var(--color-text-secondary, #6b7280);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-secondary, #6b7280);
   cursor: pointer;
   transition: all 0.12s;
   white-space: nowrap;
 }
 .ldo-node:hover {
-  background: var(--color-bg-alt, #f8fafc);
-  color: var(--color-text, #1e293b);
+  background: var(--vcl-color-bg-alt, #f8fafc);
+  color: var(--vcl-color-text, #1e293b);
 }
 .ldo-node.selected {
   background: rgba(79, 110, 247, 0.08);
-  color: var(--color-primary, #4f6ef7);
+  color: var(--vcl-color-primary, #4f6ef7);
   font-weight: 600;
 }
 .ldo-node.container .ldo-tree-icon {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 .ldo-node.selected .ldo-tree-icon {
-  color: var(--color-primary, #4f6ef7);
+  color: var(--vcl-color-primary, #4f6ef7);
 }
 .ldo-tree-icon {
   width: calc(14px * var(--vcl-scale));
   height: calc(14px * var(--vcl-scale));
   flex-shrink: 0;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
 }
 .ldo-tree-label {
   flex: 1;
@@ -92,9 +92,9 @@
   text-overflow: ellipsis;
 }
 .ldo-tree-type {
-  font-size: var(--fs-9);
-  color: var(--color-text-muted, #9ca3af);
-  background: var(--color-bg-soft, #f1f5f9);
+  font-size: var(--vcl-fs-9);
+  color: var(--vcl-color-text-muted, #9ca3af);
+  background: var(--vcl-color-bg-soft, #f1f5f9);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(8px * var(--vcl-scale));
   font-weight: 600;
@@ -102,7 +102,7 @@
 }
 .ldo-node.selected .ldo-tree-type {
   background: rgba(79, 110, 247, 0.1);
-  color: var(--color-primary, #4f6ef7);
+  color: var(--vcl-color-primary, #4f6ef7);
 }
 .ldo-tree-actions {
   display: flex;
@@ -121,13 +121,13 @@
   border: none;
   border-radius: calc(3px * var(--vcl-scale));
   background: transparent;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .ldo-del-btn:hover {
-  background: var(--color-danger-bg);
-  color: var(--color-danger-on-surface);
+  background: var(--vcl-color-danger-bg);
+  color: var(--vcl-color-danger-on-surface);
 }

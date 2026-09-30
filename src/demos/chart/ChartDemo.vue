@@ -1414,7 +1414,7 @@ const mixedSeries = [
       <p
         style="
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -1437,7 +1437,7 @@ const mixedSeries = [
         style="
           margin-top: calc(12px * var(--vcl-scale));
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         <span v-for="item in legendItems" :key="item.name" style="margin-right: calc(12px * var(--vcl-scale))">
@@ -1449,7 +1449,7 @@ const mixedSeries = [
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-top: calc(12px * var(--vcl-scale));
         "
       >
@@ -1467,7 +1467,7 @@ const mixedSeries = [
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -1545,12 +1545,12 @@ const mixedSeries = [
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(16px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 .demo-desc code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(6px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
@@ -1577,16 +1577,16 @@ const mixedSeries = [
 
 .chart-cell {
   padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  background: var(--color-bg);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
+  background: var(--vcl-color-bg);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
   min-width: 0;
   overflow: hidden;
 }
 .chart-cell h4 {
   margin: 0 0 calc(4px * var(--vcl-scale)) 0;
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   font-weight: 600;
 }
 
@@ -1604,14 +1604,14 @@ const mixedSeries = [
 .props-table th {
   text-align: left;
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--vcl-color-border);
 }
 .props-table td {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .props-table code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

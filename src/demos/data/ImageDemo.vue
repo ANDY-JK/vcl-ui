@@ -102,7 +102,7 @@ function openMulti(idx: number) {
       <p
         style="
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -157,7 +157,7 @@ function openMulti(idx: number) {
         style="
           margin-top: calc(8px * var(--vcl-scale));
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
         "
       >
         无 src 或 src 加载失败时，取 name 前两个单词首字母大写
@@ -185,7 +185,7 @@ function openMulti(idx: number) {
       <p
         style="
           font-size: calc(13px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(10px * var(--vcl-scale));
         "
       >
@@ -335,7 +335,7 @@ function openMulti(idx: number) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-top: calc(8px * var(--vcl-scale));
         "
       >
@@ -356,17 +356,17 @@ function openMulti(idx: number) {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 .cap {
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-top: calc(4px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
@@ -378,11 +378,11 @@ code {
 }
 .props-table th {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--vcl-color-border);
   text-align: left;
 }
 .props-table td {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 </style>

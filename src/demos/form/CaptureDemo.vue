@@ -38,13 +38,13 @@ import BarcodeScannerDemo from './BarcodeScannerDemo.vue'
 
 <style scoped>
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(8px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.7;
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
@@ -53,7 +53,7 @@ code {
 .cap-section {
   padding-top: calc(28px * var(--vcl-scale));
   margin-top: calc(20px * var(--vcl-scale));
-  border-top: 1px dashed var(--color-border);
+  border-top: 1px dashed var(--vcl-color-border);
 }
 .cap-section:first-of-type {
   padding-top: calc(12px * var(--vcl-scale));

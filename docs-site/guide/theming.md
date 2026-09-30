@@ -6,16 +6,16 @@
 
 ```css
 :root {
-  --color-primary: #4f6ef7;        /* 品牌色 */
-  --color-primary-hover: #3b56e0;
-  --color-bg: #ffffff;             /* 页面底 */
-  --color-bg-soft: #f1f5f9;        /* 次级面 */
-  --color-text: #1e293b;
-  --color-border: #d8dee9;
-  --z-top: 1000;                   /* 浮层层级单源 */
-  --bp-sm: 640px;                  /* 断点（CSS 侧） */
-  --bp-md: 768px;
-  --bp-lg: 1024px;
+  --vcl-color-primary: #4f6ef7;        /* 品牌色 */
+  --vcl-color-primary-hover: #3b56e0;
+  --vcl-color-bg: #ffffff;             /* 页面底 */
+  --vcl-color-bg-soft: #f1f5f9;        /* 次级面 */
+  --vcl-color-text: #1e293b;
+  --vcl-color-border: #d8dee9;
+  --vcl-z-top: 1000;                   /* 浮层层级单源 */
+  --vcl-bp-sm: 640px;                  /* 断点（CSS 侧） */
+  --vcl-bp-md: 768px;
+  --vcl-bp-lg: 1024px;
 }
 ```
 
@@ -44,8 +44,8 @@ setMode('dark')
 
 ```css
 :root {
-  --color-primary: #7c3aed;
-  --color-primary-hover: #6d28d9;
+  --vcl-color-primary: #7c3aed;
+  --vcl-color-primary-hover: #6d28d9;
 }
 ```
 
@@ -55,8 +55,8 @@ setMode('dark')
 
 | 令牌 | 值 | 用途 |
 | --- | --- | --- |
-| `--bp-sm` | 640px | 手机 |
-| `--bp-md` | 768px | 平板（卡片视图切换点） |
-| `--bp-lg` | 1024px | 桌面 |
+| `--vcl-bp-sm` | 640px | 手机 |
+| `--vcl-bp-md` | 768px | 平板（卡片视图切换点） |
+| `--vcl-bp-lg` | 1024px | 桌面 |
 
 JS 侧引用 `src/components/_internal/breakpoints.ts` 的 `BP_SM/BP_MD/BP_LG`，与 CSS 同值由 `check:constants` 机械对账。

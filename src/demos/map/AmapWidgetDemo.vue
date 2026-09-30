@@ -149,14 +149,14 @@ function doPeek() {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 .amap-host {
   height: clamp(280px * var(--vcl-scale), 45vh, 460px * var(--vcl-scale));
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
   overflow: hidden;
 }
 .echo {
@@ -165,7 +165,7 @@ function doPeek() {
   gap: calc(8px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
   margin-top: calc(12px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 .echo-one {
   margin: calc(12px * var(--vcl-scale)) 0 0;

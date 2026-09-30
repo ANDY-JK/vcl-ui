@@ -745,7 +745,7 @@ async function confirmImport(): Promise<void> {
       <div class="ldc-record-modal">
         <!-- 审核完成态（弹窗内反馈，替代 Toast——页面多个 Toast 实例会重复弹） -->
         <div v-if="recordDone" class="ldc-record-done" role="status">
-          <IconSvg type="circle-check" size="lg" color="var(--color-success, #059669)" />
+          <IconSvg type="circle-check" size="lg" color="var(--vcl-color-success, #059669)" />
           <p>{{ t('fbd.reviewRecordDone') }}</p>
           <Button :text="t('common.confirm')" variant="primary" @click="recordModal = null" />
         </div>

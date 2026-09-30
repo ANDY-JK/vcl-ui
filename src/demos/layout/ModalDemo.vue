@@ -82,7 +82,7 @@ function onCancel(variant: string) {
 
     <!-- 默认 -->
     <ModalBox v-model:visible="visibleDefault" title="默认弹窗">
-      <p style="color: var(--color-text-secondary)">这是默认插槽内容，可以放任意 HTML。</p>
+      <p style="color: var(--vcl-color-text-secondary)">这是默认插槽内容，可以放任意 HTML。</p>
     </ModalBox>
 
     <!-- 确认（ModalBox confirm 模式） -->
@@ -127,7 +127,7 @@ function onCancel(variant: string) {
             style="
               height: calc(36px * var(--vcl-scale));
               padding: 0 calc(10px * var(--vcl-scale));
-              border: 1px solid var(--color-border);
+              border: 1px solid var(--vcl-color-border);
               border-radius: calc(6px * var(--vcl-scale));
             "
             placeholder="请输入"
@@ -147,7 +147,7 @@ function onCancel(variant: string) {
             style="
               height: calc(36px * var(--vcl-scale));
               padding: 0 calc(10px * var(--vcl-scale));
-              border: 1px solid var(--color-border);
+              border: 1px solid var(--vcl-color-border);
               border-radius: calc(6px * var(--vcl-scale));
             "
             placeholder="请输入"
@@ -167,7 +167,7 @@ function onCancel(variant: string) {
         style="
           margin-bottom: calc(16px * var(--vcl-scale));
           padding: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-          background: var(--color-bg-alt);
+          background: var(--vcl-color-bg-alt);
           border-radius: calc(6px * var(--vcl-scale));
           font-size: calc(13px * var(--vcl-scale));
         "
@@ -267,7 +267,7 @@ function onCancel(variant: string) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-top: calc(8px * var(--vcl-scale));
         "
       >
@@ -328,7 +328,7 @@ function onCancel(variant: string) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-top: calc(8px * var(--vcl-scale));
         "
       >
@@ -345,12 +345,12 @@ function onCancel(variant: string) {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
@@ -367,11 +367,11 @@ code {
 }
 .props-table th {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--vcl-color-border);
   text-align: left;
 }
 .props-table td {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 </style>

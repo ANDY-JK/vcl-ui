@@ -161,17 +161,17 @@ const effectiveExpanded = computed(() => {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: var(--space-2) 0 var(--space-5);
+  padding: var(--vcl-space-2) 0 var(--vcl-space-5);
   scrollbar-width: none;
 }
 .accordion-nav::-webkit-scrollbar {
   display: none;
 }
 .nav-empty {
-  padding: var(--space-4) var(--space-3);
+  padding: var(--vcl-space-4) var(--vcl-space-3);
   text-align: center;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
   opacity: 0.6;
 }
 
@@ -182,12 +182,12 @@ const effectiveExpanded = computed(() => {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin: var(--space-3) var(--space-3) var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-sidebar-hover);
-  color: var(--color-sidebar-text);
+  gap: var(--vcl-space-2);
+  margin: var(--vcl-space-3) var(--vcl-space-3) var(--vcl-space-2);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-sidebar-hover);
+  color: var(--vcl-color-sidebar-text);
 }
 .nav-search-icon {
   flex-shrink: 0;
@@ -199,12 +199,12 @@ const effectiveExpanded = computed(() => {
   border: none;
   outline: none;
   background: transparent;
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
   font-size: calc(15px * var(--vcl-scale));
   line-height: 1.5;
 }
 .nav-search-input::placeholder {
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
   opacity: 0.55;
 }
 .nav-search-clear {
@@ -213,35 +213,35 @@ const effectiveExpanded = computed(() => {
   align-items: center;
   padding: 2px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: transparent;
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
   opacity: 0.6;
   cursor: pointer;
 }
 .nav-search-clear:hover {
   opacity: 1;
-  background: var(--color-sidebar-active);
+  background: var(--vcl-color-sidebar-active);
 }
 
 /* 根级叶子节点（无 children 的顶级导航项） */
 .nav-leaf-root {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  width: calc(100% - var(--space-3) - var(--space-5));
-  margin: 0 var(--space-5) 0 var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  gap: var(--vcl-space-3);
+  width: calc(100% - var(--vcl-space-3) - var(--vcl-space-5));
+  margin: 0 var(--vcl-space-5) 0 var(--vcl-space-3);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   background: transparent;
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
   font-size: calc(15px * var(--vcl-scale));
   opacity: 0.85;
   cursor: pointer;
   transition:
-    background var(--transition-fast),
-    color var(--transition-fast),
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast),
     opacity 120ms ease;
   position: relative;
   white-space: nowrap;
@@ -259,7 +259,7 @@ const effectiveExpanded = computed(() => {
   min-width: 0;
 }
 .nav-leaf-root:hover {
-  background: var(--color-sidebar-hover);
+  background: var(--vcl-color-sidebar-hover);
   color: #fff;
   opacity: 1;
 }
@@ -267,8 +267,8 @@ const effectiveExpanded = computed(() => {
   opacity: 1;
 }
 .nav-leaf-root.active {
-  background: var(--color-sidebar-active);
-  color: var(--color-sidebar-text-active);
+  background: var(--vcl-color-sidebar-active);
+  color: var(--vcl-color-sidebar-text-active);
   font-weight: 500;
   opacity: 1;
 }
@@ -282,16 +282,16 @@ const effectiveExpanded = computed(() => {
   top: calc(4px * var(--vcl-scale));
   bottom: calc(4px * var(--vcl-scale));
   width: 2px;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-primary);
 }
 
 /* 折叠态 */
 .collapsed .nav-leaf-root {
   justify-content: center;
-  width: calc(100% - var(--space-2) * 2);
-  margin: 0 var(--space-2);
-  padding: var(--space-2) 0;
+  width: calc(100% - var(--vcl-space-2) * 2);
+  margin: 0 var(--vcl-space-2);
+  padding: var(--vcl-space-2) 0;
 }
 .collapsed .nav-leaf-root.active::before {
   left: calc(4px * var(--vcl-scale));

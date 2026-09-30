@@ -67,7 +67,7 @@ watch(
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: white;
   font-weight: 600;
   user-select: none;
@@ -77,7 +77,7 @@ watch(
   border-radius: 50%;
 }
 .shape-rounded {
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
 }
 
 .avatar-img {

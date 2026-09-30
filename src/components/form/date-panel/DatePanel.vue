@@ -231,7 +231,7 @@ function onToday() {
 .dp-header {
   display: flex;
   align-items: center;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--vcl-space-2);
 }
 .dp-nav-btn {
   display: flex;
@@ -242,40 +242,40 @@ function onToday() {
   flex-shrink: 0;
   border: none;
   background: transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   cursor: pointer;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast);
 }
 .dp-nav-btn:hover {
-  background: var(--color-bg-alt);
-  color: var(--color-text);
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text);
 }
 .dp-title {
   flex: 1;
   text-align: center;
   font-size: calc(14px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 .dp-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--vcl-space-1);
 }
 .dp-weekday {
   text-align: center;
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  padding: var(--space-1) 0;
+  color: var(--vcl-color-text-muted);
+  padding: var(--vcl-space-1) 0;
   font-weight: 500;
 }
 .dp-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
 }
 /* 仅为承载 role=row 的语义包装：display:contents 让它不生成盒子，
    格子仍是 .dp-grid 的直接网格项，布局与加行包装前逐像素一致 */
@@ -290,22 +290,22 @@ function onToday() {
   font-size: calc(12px * var(--vcl-scale));
   border: none;
   background: transparent;
-  border-radius: var(--radius-sm);
-  color: var(--color-text);
+  border-radius: var(--vcl-radius-sm);
+  color: var(--vcl-color-text);
   cursor: pointer;
   transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast);
 }
 .dp-cell:hover:not(.disabled):not(.selected):not(.range-start):not(.range-end) {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .dp-cell.other-month {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   opacity: 0.35;
 }
 .dp-cell.today {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-weight: 700;
 }
 .dp-cell.today.selected,
@@ -314,33 +314,33 @@ function onToday() {
   color: #fff;
 }
 .dp-cell.selected {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
   font-weight: 600;
 }
 
 /* 区间高亮：中间段淡蓝、两端主色 + 圆角 */
 .dp-cell.in-range {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
   border-radius: 0;
 }
 .dp-cell.in-range.today {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 .dp-cell.range-start {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
   font-weight: 600;
-  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  border-radius: var(--vcl-radius-sm) 0 0 var(--vcl-radius-sm);
 }
 .dp-cell.range-end {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
   font-weight: 600;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: 0 var(--vcl-radius-sm) var(--vcl-radius-sm) 0;
 }
 .dp-cell.range-start.range-end {
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 .dp-cell.disabled {
   opacity: 0.25;
@@ -351,27 +351,27 @@ function onToday() {
 .dp-footer {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  gap: var(--vcl-space-2);
+  margin-top: var(--vcl-space-2);
 }
 .dp-footer--center {
   justify-content: center;
 }
 .dp-footer--actions {
-  margin-top: var(--space-3);
+  margin-top: var(--vcl-space-3);
 }
 .dp-today-btn {
-  padding: var(--space-1) var(--space-3);
+  padding: var(--vcl-space-1) var(--vcl-space-3);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: transparent;
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-size: calc(12px * var(--vcl-scale));
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
 }
 .dp-today-btn:hover {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 .dp-footer-spacer {
   flex: 1;

@@ -126,7 +126,7 @@ describe('useTableTooltip 展示与样式', () => {
     expect(s.left).toBe('120px')
     expect(s.top).toBe('134px') // anchorBottom(130) + offset(4)
     expect(s.top).not.toBe('auto')
-    expect(s.zIndex).toContain('var(--z-tooltip')
+    expect(s.zIndex).toContain('var(--vcl-z-tooltip')
     expect(s.maxHeight).toBe('200px')
   })
 

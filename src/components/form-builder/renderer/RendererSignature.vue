@@ -118,11 +118,11 @@ onMounted(() => {
 <style scoped>
 .fb-signature-wrap {
   position: relative;
-  border: 1px dashed var(--color-border, #e2e8f0);
-  border-color: var(--fb-field-border, var(--color-border, #e2e8f0));
+  border: 1px dashed var(--vcl-color-border, #e2e8f0);
+  border-color: var(--fb-field-border, var(--vcl-color-border, #e2e8f0));
   border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   min-height: calc(80px * var(--vcl-scale));
-  background: var(--color-bg-alt, #f8fafc);
+  background: var(--vcl-color-bg-alt, #f8fafc);
   width: var(--fb-control-width, 100%);
 }
 .fb-signature-canvas {
@@ -140,12 +140,12 @@ onMounted(() => {
   padding: 2px calc(10px * var(--vcl-scale));
   border: none;
   border-radius: calc(4px * var(--vcl-scale));
-  background: var(--color-bg, #fff);
-  color: var(--color-text-muted, #64748b);
-  font-size: var(--fs-11);
+  background: var(--vcl-color-bg, #fff);
+  color: var(--vcl-color-text-muted, #64748b);
+  font-size: var(--vcl-fs-11);
   cursor: pointer;
 }
 .fb-signature-clear:hover {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 </style>

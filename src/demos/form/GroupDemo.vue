@@ -100,21 +100,21 @@ const fruitOptions = [
 .demo-section {
   margin-bottom: calc(24px * var(--vcl-scale));
   padding: calc(16px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
 }
 .demo-section h3 {
   margin: 0 0 calc(12px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
 }
 .desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(13px * var(--vcl-scale));
   margin-bottom: calc(16px * var(--vcl-scale));
 }
 .result {
   margin: calc(8px * var(--vcl-scale)) 0 0;
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 </style>

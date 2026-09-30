@@ -29,7 +29,7 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   align-items: center;
   width: 100%;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--vcl-color-border);
 }
 .divider-h.dashed {
   border-top-style: dashed;
@@ -41,7 +41,7 @@ withDefaults(defineProps<Props>(), {
 .divider-h.with-text::after {
   content: '';
   flex: 1;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--vcl-color-border);
 }
 .divider-h.with-text.dashed::before,
 .divider-h.with-text.dashed::after {
@@ -50,7 +50,7 @@ withDefaults(defineProps<Props>(), {
 .divider-text {
   padding: 0 calc(16px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   white-space: nowrap;
 }
 
@@ -59,7 +59,7 @@ withDefaults(defineProps<Props>(), {
   width: 1px;
   height: 100%;
   min-height: calc(16px * var(--vcl-scale));
-  border-left: 1px solid var(--color-border);
+  border-left: 1px solid var(--vcl-color-border);
   align-self: stretch;
 }
 .divider-v.dashed {

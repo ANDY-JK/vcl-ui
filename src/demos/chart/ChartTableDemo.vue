@@ -448,7 +448,7 @@ const trendData = computed(() => {
               <button v-for="t in tDims" :key="t.k" :class="['pill', tDim === t.k && 'on']" @click="tDim = t.k">
                 {{ t.l }}
               </button>
-              <span style="color: var(--color-border); margin: 0 2px">|</span>
+              <span style="color: var(--vcl-color-border); margin: 0 2px">|</span>
               <button v-for="n in [4, 6, 8, 10]" :key="n" :class="['pill sm', tTop === n && 'on']" @click="tTop = n">
                 {{ n }}条
               </button>
@@ -484,8 +484,8 @@ const trendData = computed(() => {
   flex: 1;
   padding: calc(12px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   text-align: center;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border-light);
+  background: var(--vcl-color-bg);
+  border: 1px solid var(--vcl-color-border-light);
   border-radius: calc(8px * var(--vcl-scale));
 }
 .kpi b {
@@ -496,7 +496,7 @@ const trendData = computed(() => {
 }
 .kpi span {
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 .main-row {
@@ -551,22 +551,22 @@ const trendData = computed(() => {
 .pill {
   padding: 2px calc(9px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
+  border: 1px solid var(--vcl-color-border);
+  background: var(--vcl-color-bg);
+  color: var(--vcl-color-text);
   font-size: calc(11px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.12s;
 }
 .pill:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .pill.on {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
   font-weight: 600;
 }
 .pill.sm {
@@ -581,22 +581,22 @@ const trendData = computed(() => {
   gap: calc(3px * var(--vcl-scale));
   padding: 2px calc(8px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
+  border: 1px solid var(--vcl-color-border);
+  background: var(--vcl-color-bg);
   font-size: calc(11px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.12s;
 }
 .tbl-toggle:hover {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .tbl-toggle.off {
   opacity: 0.4;
 }
 .tbl-toggle span {
   font-size: calc(10px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 .split-row {
@@ -641,20 +641,20 @@ const trendData = computed(() => {
 .hint {
   text-align: center;
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin: calc(12px * var(--vcl-scale)) 0 0;
 }
 .gr-toggle {
   margin-left: calc(8px * var(--vcl-scale));
   padding: 1px calc(8px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
+  border: 1px solid var(--vcl-color-border);
+  background: var(--vcl-color-bg);
   font-size: calc(10px * var(--vcl-scale));
   cursor: pointer;
 }
 .gr-toggle.on {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
 }
 </style>

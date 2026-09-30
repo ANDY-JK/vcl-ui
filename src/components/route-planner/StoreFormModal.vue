@@ -269,25 +269,25 @@ const fldIds = {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal, 1000);
+  z-index: var(--vcl-z-modal, 1000);
 }
 
 .modal-box {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  background: var(--vcl-color-surface);
+  border-radius: var(--vcl-radius-lg);
   width: calc(480px * var(--vcl-scale));
   max-width: 90vw;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--vcl-shadow-lg);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-4) calc(20px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  padding: var(--vcl-space-4) calc(20px * var(--vcl-scale));
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 
 .modal-header h3 {
@@ -301,48 +301,48 @@ const fldIds = {
   border: none;
   font-size: calc(28px * var(--vcl-scale));
   cursor: pointer;
-  color: var(--color-text-muted);
-  padding: var(--space-1);
+  color: var(--vcl-color-text-muted);
+  padding: var(--vcl-space-1);
 }
 
 .btn-close:hover {
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 
 .modal-body {
-  padding: var(--space-5);
+  padding: var(--vcl-space-5);
 }
 
 .form-row {
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--vcl-space-3);
 }
 
 .form-row label {
   display: block;
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-1);
+  color: var(--vcl-color-text-secondary);
+  margin-bottom: var(--vcl-space-1);
 }
 
 .form-row input {
   width: 100%;
-  padding: var(--space-2) calc(12px * var(--vcl-scale));
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
+  padding: var(--vcl-space-2) calc(12px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
   font-size: calc(15px * var(--vcl-scale));
   outline: none;
   transition: border-color 0.2s;
 }
 
 .form-row input:focus {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 
 .form-grid-2,
 .form-grid-4 {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 
 .form-grid-2 {
@@ -355,22 +355,22 @@ const fldIds = {
 
 .form-hint {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  margin: var(--space-2) 0 0;
+  color: var(--vcl-color-text-muted);
+  margin: var(--vcl-space-2) 0 0;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border-light);
+  gap: var(--vcl-space-2);
+  padding-top: var(--vcl-space-4);
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 
 .btn-cancel,
 .btn-save {
-  padding: var(--space-2) calc(20px * var(--vcl-scale));
-  border-radius: var(--radius-md);
+  padding: var(--vcl-space-2) calc(20px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-md);
   font-size: calc(15px * var(--vcl-scale));
   cursor: pointer;
   border: 1px solid;
@@ -378,39 +378,39 @@ const fldIds = {
 }
 
 .btn-cancel {
-  background: var(--color-surface);
-  border-color: var(--color-border-light);
-  color: var(--color-text-secondary);
+  background: var(--vcl-color-surface);
+  border-color: var(--vcl-color-border-light);
+  color: var(--vcl-color-text-secondary);
 }
 
 .btn-cancel:hover {
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 
 .btn-save {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-surface);
+  background: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-surface);
 }
 
 .btn-save:hover {
-  background: var(--color-primary-hover);
-  border-color: var(--color-primary-hover);
+  background: var(--vcl-color-primary-hover);
+  border-color: var(--vcl-color-primary-hover);
 }
 
 .required {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   font-weight: 700;
 }
 
 .input-error {
-  border-color: var(--color-danger-on-surface) !important;
-  background: var(--color-danger-bg);
+  border-color: var(--vcl-color-danger-on-surface) !important;
+  background: var(--vcl-color-danger-bg);
 }
 
 .form-error {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-danger-on-surface);
-  margin: var(--space-1) 0 0;
+  color: var(--vcl-color-danger-on-surface);
+  margin: var(--vcl-space-1) 0 0;
 }
 </style>

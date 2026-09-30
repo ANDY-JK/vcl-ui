@@ -88,26 +88,26 @@ onMounted(() => {
         "
       >
         <div>
-          <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--color-text-muted)">Key</label>
+          <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--vcl-color-text-muted)">Key</label>
           <input
             v-model="lsKey"
             style="
               width: 100%;
               padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-              border: 1px solid var(--color-border);
+              border: 1px solid var(--vcl-color-border);
               border-radius: calc(4px * var(--vcl-scale));
               font-size: calc(13px * var(--vcl-scale));
             "
           />
         </div>
         <div>
-          <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--color-text-muted)">Value</label>
+          <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--vcl-color-text-muted)">Value</label>
           <input
             v-model="lsValue"
             style="
               width: 100%;
               padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-              border: 1px solid var(--color-border);
+              border: 1px solid var(--vcl-color-border);
               border-radius: calc(4px * var(--vcl-scale));
               font-size: calc(13px * var(--vcl-scale));
             "
@@ -124,7 +124,7 @@ onMounted(() => {
         <p
           style="
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
             margin-bottom: calc(4px * var(--vcl-scale));
           "
         >
@@ -133,7 +133,7 @@ onMounted(() => {
         <pre
           style="
             font-size: calc(13px * var(--vcl-scale));
-            background: var(--color-bg-alt);
+            background: var(--vcl-color-bg-alt);
             padding: calc(8px * var(--vcl-scale));
             border-radius: calc(4px * var(--vcl-scale));
             white-space: pre-wrap;
@@ -145,20 +145,22 @@ onMounted(() => {
         <p
           style="
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
             margin-bottom: calc(4px * var(--vcl-scale));
           "
         >
           当前 localStorage 键（前20个）：
         </p>
-        <div style="font-size: calc(12px * var(--vcl-scale)); font-family: monospace; color: var(--color-text-muted)">
+        <div
+          style="font-size: calc(12px * var(--vcl-scale)); font-family: monospace; color: var(--vcl-color-text-muted)"
+        >
           <span
             v-for="k in lsAllKeys"
             :key="k"
             style="
               margin-right: calc(8px * var(--vcl-scale));
               display: inline-block;
-              background: var(--color-bg-alt);
+              background: var(--vcl-color-bg-alt);
               padding: 2px calc(6px * var(--vcl-scale));
               border-radius: calc(3px * var(--vcl-scale));
             "
@@ -184,20 +186,20 @@ onMounted(() => {
         "
       >
         <div>
-          <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--color-text-muted)">Key</label>
+          <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--vcl-color-text-muted)">Key</label>
           <input
             v-model="dbKey"
             style="
               width: 100%;
               padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-              border: 1px solid var(--color-border);
+              border: 1px solid var(--vcl-color-border);
               border-radius: calc(4px * var(--vcl-scale));
               font-size: calc(13px * var(--vcl-scale));
             "
           />
         </div>
         <div>
-          <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--color-text-muted)"
+          <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--vcl-color-text-muted)"
             >TTL（秒，0=永不过期）</label
           >
           <input
@@ -206,7 +208,7 @@ onMounted(() => {
             style="
               width: 100%;
               padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-              border: 1px solid var(--color-border);
+              border: 1px solid var(--vcl-color-border);
               border-radius: calc(4px * var(--vcl-scale));
               font-size: calc(13px * var(--vcl-scale));
             "
@@ -214,14 +216,16 @@ onMounted(() => {
         </div>
       </div>
       <div style="margin-bottom: calc(12px * var(--vcl-scale))">
-        <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--color-text-muted)">Value（JSON）</label>
+        <label style="font-size: calc(12px * var(--vcl-scale)); color: var(--vcl-color-text-muted)"
+          >Value（JSON）</label
+        >
         <textarea
           v-model="dbValue"
           rows="4"
           style="
             width: 100%;
             padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-            border: 1px solid var(--color-border);
+            border: 1px solid var(--vcl-color-border);
             border-radius: calc(4px * var(--vcl-scale));
             font-size: calc(13px * var(--vcl-scale));
             font-family: monospace;
@@ -238,7 +242,7 @@ onMounted(() => {
         <p
           style="
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
             margin-bottom: calc(4px * var(--vcl-scale));
           "
         >
@@ -247,7 +251,7 @@ onMounted(() => {
         <pre
           style="
             font-size: calc(13px * var(--vcl-scale));
-            background: var(--color-bg-alt);
+            background: var(--vcl-color-bg-alt);
             padding: calc(8px * var(--vcl-scale));
             border-radius: calc(4px * var(--vcl-scale));
             white-space: pre-wrap;
@@ -259,7 +263,7 @@ onMounted(() => {
     </Card>
 
     <Card title="存储架构说明" title-as="h2">
-      <div style="font-size: calc(13px * var(--vcl-scale)); line-height: 1.8; color: var(--color-text-muted)">
+      <div style="font-size: calc(13px * var(--vcl-scale)); line-height: 1.8; color: var(--vcl-color-text-muted)">
         <p><strong>场景路由：</strong></p>
         <ul style="margin-left: calc(20px * var(--vcl-scale)); margin-bottom: calc(12px * var(--vcl-scale))">
           <li><code>storageGet/Set/Delete</code> — 纯 localStorage，同步，跨标签页感知。适合 token、开关、小配置。</li>
@@ -278,7 +282,7 @@ onMounted(() => {
     <Card title="API" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">函数</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">后端</th>
             <th style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
@@ -289,7 +293,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>storageSet(key, value)</code>
@@ -297,7 +301,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               localStorage
@@ -305,7 +309,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               同步写入
@@ -315,7 +319,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>storageGet(key)</code>
@@ -323,7 +327,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               localStorage
@@ -331,7 +335,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               同步读取
@@ -341,7 +345,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>storageDelete(key)</code>
@@ -349,7 +353,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               localStorage
@@ -357,7 +361,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               同步删除
@@ -367,7 +371,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>dbPut(key, value, ttl?)</code>
@@ -375,7 +379,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               IndexedDB
@@ -383,7 +387,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               异步写入，可选 TTL（秒）
@@ -393,7 +397,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>dbGet(key)</code>
@@ -401,7 +405,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               IndexedDB
@@ -409,7 +413,7 @@ onMounted(() => {
             <td
               style="
                 padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               异步读取，过期返回 null
@@ -435,13 +439,13 @@ onMounted(() => {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

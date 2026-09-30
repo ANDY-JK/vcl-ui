@@ -63,7 +63,7 @@ function onStepClick(idx: number, step: Step) {
     >
       <div class="step-indicator">
         <span v-if="idx < current" class="step-check">
-          <IconSvg type="circle-check" size="md" color="var(--color-primary)" />
+          <IconSvg type="circle-check" size="md" color="var(--vcl-color-primary)" />
         </span>
         <span v-else class="step-num">{{ idx + 1 }}</span>
       </div>
@@ -115,66 +115,66 @@ function onStepClick(idx: number, step: Step) {
   border-radius: 50%;
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
-  background: var(--color-bg-alt);
-  color: var(--color-text-muted);
-  border: 2px solid var(--color-border);
-  transition: all var(--transition-fast);
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text-muted);
+  border: 2px solid var(--vcl-color-border);
+  transition: all var(--vcl-transition-fast);
 }
 .step.active .step-num {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: white;
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .step.done .step-num {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
 }
 
 .step-text {
-  padding-top: var(--space-1);
+  padding-top: var(--vcl-space-1);
 }
 .step-label {
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .step.active .step-label {
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 .step.done .step-label {
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 
 .step-desc {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  margin-top: var(--space-1);
+  color: var(--vcl-color-text-muted);
+  margin-top: var(--vcl-space-1);
 }
 
 .step-line {
   flex: 1;
   min-width: calc(24px * var(--vcl-scale));
   min-height: 2px;
-  background: var(--color-border);
+  background: var(--vcl-color-border);
   margin-top: calc(13px * var(--vcl-scale));
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
 }
 .step-line.filled {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
 }
 
 .step.clickable {
   cursor: pointer;
 }
 .step.clickable:hover .step-num {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .step.clickable:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 
 .steps-vertical .step {

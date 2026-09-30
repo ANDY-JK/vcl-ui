@@ -270,14 +270,14 @@ function onChartReady(inst: ECharts) {
     width: 100% !important;
     height: 50%;
     padding-left: 0;
-    padding-top: var(--space-2);
+    padding-top: var(--vcl-space-2);
   }
 }
 .ct-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: var(--space-2);
+  padding-bottom: var(--vcl-space-2);
   flex-shrink: 0;
 }
 .ct-title {
@@ -287,23 +287,23 @@ function onChartReady(inst: ECharts) {
 .ct-toggles {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   margin-left: auto;
 }
 .ct-toggle {
   display: flex;
   align-items: center;
   gap: calc(3px * var(--vcl-scale));
-  padding: var(--space-1) calc(8px * var(--vcl-scale));
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
+  padding: var(--vcl-space-1) calc(8px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-lg);
+  border: 1px solid var(--vcl-color-border);
+  background: var(--vcl-color-bg);
   font-size: calc(14px * var(--vcl-scale));
   cursor: pointer;
   white-space: nowrap;
 }
 .ct-toggle:hover {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .ct-toggle.off {
   opacity: 0.4;
@@ -311,7 +311,7 @@ function onChartReady(inst: ECharts) {
 .ct-body {
   flex: 1;
   display: flex;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   min-height: 0;
   min-width: 0;
 }
@@ -325,16 +325,16 @@ function onChartReady(inst: ECharts) {
   min-height: calc(200px * var(--vcl-scale));
   min-width: calc(180px * var(--vcl-scale));
   overflow: auto;
-  padding-left: var(--space-1);
+  padding-left: var(--vcl-space-1);
 }
 .ct-footer {
   flex-shrink: 0;
-  padding-top: var(--space-2);
+  padding-top: var(--vcl-space-2);
 }
 /* 放不下时纵向堆叠 */
 .ct-body.vertical {
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 .ct-body.vertical .ct-chart {
   width: 100% !important;
@@ -345,6 +345,6 @@ function onChartReady(inst: ECharts) {
   width: 100% !important;
   height: 50%;
   padding-left: 0;
-  padding-top: var(--space-2);
+  padding-top: var(--vcl-space-2);
 }
 </style>

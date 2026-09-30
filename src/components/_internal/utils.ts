@@ -701,7 +701,7 @@ function resolveCssColor(value: string): string {
 
 /**
  * 归一成 <input type="color"> 收得了的 #rrggbb。
- * 原生取色器只认 #rrggbb 一种写法，传 var(--color-primary)、red、#abc、transparent
+ * 原生取色器只认 #rrggbb 一种写法，传 var(--vcl-color-primary)、red、#abc、transparent
  * 浏览器会拒收并刷 console 警告（IconPicker 默认值即命中）。
  * 只影响喂给控件的值，调用方持有的原始颜色字符串不改——图标实际渲染仍走 var() 跟随主题。
  *

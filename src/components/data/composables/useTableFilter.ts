@@ -273,7 +273,7 @@ export function useTableFilter(
           left: `${result.left}px`,
           width: `${ddW}px`,
           maxHeight: `${maxH}px`,
-          zIndex: 'var(--z-dropdown, 2000)',
+          zIndex: 'var(--vcl-z-dropdown, 2000)',
           top: 'auto',
         }
       : {
@@ -282,7 +282,7 @@ export function useTableFilter(
           left: `${result.left}px`,
           width: `${ddW}px`,
           maxHeight: `${maxH}px`,
-          zIndex: 'var(--z-dropdown, 2000)',
+          zIndex: 'var(--vcl-z-dropdown, 2000)',
         }
   }
 

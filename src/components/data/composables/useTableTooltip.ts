@@ -65,7 +65,7 @@ export function useTableTooltip(options: UseTableTooltipOptions): TableTooltipRe
           maxWidth: `${Math.min(400, window.innerWidth - result.left - 16)}px`,
           maxHeight: '200px',
           overflowY: 'auto',
-          zIndex: 'var(--z-tooltip, 3000)',
+          zIndex: 'var(--vcl-z-tooltip, 3000)',
         }
         // above 模式用 bottom 定位，底边贴着单元格顶部
         return result.above

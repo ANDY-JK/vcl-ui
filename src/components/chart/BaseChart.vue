@@ -346,14 +346,14 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
   opacity: 0.85;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   z-index: 1;
 }
 
 .chart-empty-text {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 </style>

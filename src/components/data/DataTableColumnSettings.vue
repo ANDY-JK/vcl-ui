@@ -2,7 +2,7 @@
 // 列设置弹层（列显隐 / 顺序 / 宽度 / 固定面板）— 从 DataTable.vue 区块化抽出（§18-②）
 // 行为约定：共享列状态经 injectDataTableContext 注入（与主文件同一引用）；
 // 面板显隐与定位由本组件持有，主文件经 defineExpose 的 show/toggle/close/unfixFromMenu 驱动。
-// ⛔ 保护语义（z-index var(--z-top)、动画时序、禁 clamp）在 data-table-global.css，原样保留。
+// ⛔ 保护语义（z-index var(--vcl-z-top)、动画时序、禁 clamp）在 data-table-global.css，原样保留。
 import { computed, nextTick, ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'

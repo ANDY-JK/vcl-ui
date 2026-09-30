@@ -428,7 +428,7 @@ function resetCurrentForm() {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
@@ -450,7 +450,7 @@ function resetCurrentForm() {
   align-items: center;
   gap: calc(4px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
   user-select: none;
 }
@@ -464,30 +464,30 @@ function resetCurrentForm() {
 .ctrl-select {
   padding: 2px calc(6px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
 }
 
 /* 事件日志 */
 .event-log {
   margin-top: calc(10px * var(--vcl-scale));
   padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  background: var(--color-bg-alt);
-  border-radius: var(--radius-md);
+  background: var(--vcl-color-bg-alt);
+  border-radius: var(--vcl-radius-md);
   font-size: calc(12px * var(--vcl-scale));
 }
 .event-log code {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
 /* ---- 预览区 ---- */
 .preview-area {
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-lg);
+  border: 2px dashed var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
   overflow: hidden;
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 
 /* ---- Props 表 ---- */
@@ -497,7 +497,7 @@ function resetCurrentForm() {
   border-collapse: collapse;
 }
 .props-table thead tr {
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--vcl-color-border);
   text-align: left;
 }
 .props-table th {
@@ -505,13 +505,13 @@ function resetCurrentForm() {
 }
 .props-table td {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .props-table code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 </style>

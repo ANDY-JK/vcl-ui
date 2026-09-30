@@ -168,15 +168,15 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 
 <style scoped>
 .toggle-list {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  background: var(--vcl-color-surface);
   overflow: hidden;
 }
 
 .list-state {
   padding: calc(40px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(15px * var(--vcl-scale));
 }
 
@@ -185,15 +185,15 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   align-items: center;
   gap: calc(12px * var(--vcl-scale));
   padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
 }
 .list-item:last-child {
   border-bottom: none;
 }
 .list-item:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 
 .item-icon {
@@ -202,9 +202,9 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-alt);
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
+  background: var(--vcl-color-bg-alt);
+  border-radius: var(--vcl-radius-md);
+  color: var(--vcl-color-text-secondary);
 }
 .item-content {
   flex: 1;
@@ -216,8 +216,8 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 }
 .item-desc {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  margin-top: var(--space-1);
+  color: var(--vcl-color-text-muted);
+  margin-top: var(--vcl-space-1);
 }
 
 .item-extras {
@@ -226,7 +226,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 }
 .item-extra {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 /* 开关 */
@@ -248,17 +248,17 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   border: 0;
 }
 .toggle-input:focus-visible + .toggle-switch {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 2px;
 }
 .toggle-switch {
   width: calc(46px * var(--vcl-scale));
   height: calc(26px * var(--vcl-scale));
-  background: var(--color-border);
-  border-radius: var(--radius-lg);
+  background: var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
   position: relative;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--vcl-transition-fast);
 }
 .toggle-switch.disabled {
   opacity: 0.4;
@@ -273,11 +273,11 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   height: calc(22px * var(--vcl-scale));
   background: white;
   border-radius: 50%;
-  transition: transform var(--transition-fast);
-  box-shadow: var(--shadow-sm);
+  transition: transform var(--vcl-transition-fast);
+  box-shadow: var(--vcl-shadow-sm);
 }
 .toggle-input:checked + .toggle-switch {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
 }
 .toggle-input:checked + .toggle-switch::after {
   transform: translateX(20px);
@@ -286,14 +286,14 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 /* 操作按钮 */
 .item-action-btn {
   flex-shrink: 0;
-  padding: var(--space-1) calc(14px * var(--vcl-scale));
+  padding: var(--vcl-space-1) calc(14px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
+  border: 1px solid var(--vcl-color-primary);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-primary);
   color: #fff;
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--vcl-transition-fast);
   white-space: nowrap;
 }
 .item-action-btn:hover {

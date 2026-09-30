@@ -787,12 +787,13 @@ const interCols: Column[] = [
         row-key="id"
         :truncate-threshold="20"
         :row-style="
-          (row) => (row.status === '在线' ? { background: 'var(--color-success-bg)' } : ({} as Record<string, string>))
+          (row) =>
+            row.status === '在线' ? { background: 'var(--vcl-color-success-bg)' } : ({} as Record<string, string>)
         "
         :cell-style="
           (key, row) =>
             key === 'amount' && row.amount > 15000
-              ? { color: 'var(--color-danger-on-surface)', fontWeight: 'bold' }
+              ? { color: 'var(--vcl-color-danger-on-surface)', fontWeight: 'bold' }
               : ({} as Record<string, string>)
         "
       />
@@ -846,7 +847,7 @@ const interCols: Column[] = [
           </button>
         </template>
       </DataTable>
-      <p v-if="editLog" class="demo-hint" style="color: var(--color-primary)">
+      <p v-if="editLog" class="demo-hint" style="color: var(--vcl-color-primary)">
         {{ editLog }}
       </p>
     </Card>
@@ -859,8 +860,8 @@ const interCols: Column[] = [
       </p>
       <p class="demo-hint">
         <strong>选中颜色即「能否编辑」</strong>：点<strong>员工姓名 / 所属部门</strong>（可编辑）→
-        <span style="color: var(--dt-select)">紫色</span>边框 + 紫色填充柄； 点<strong>工号 / 在职状态</strong>（只读）→
-        蓝色边框，且无填充柄。
+        <span style="color: var(--vcl-dt-select)">紫色</span>边框 + 紫色填充柄； 点<strong>工号 / 在职状态</strong
+        >（只读）→ 蓝色边框，且无填充柄。
         <br />
         填充柄（右下角小点）= 拖拽批量填充，<strong>只在可编辑单元格出现</strong>。
       </p>
@@ -893,7 +894,7 @@ const interCols: Column[] = [
         max-height="280px"
         @cell-change="(_rk, ck, nv) => (typedLog = `列「${ck}」→ ${nv}`)"
       />
-      <p v-if="typedLog" class="demo-hint" style="color: var(--color-primary)">
+      <p v-if="typedLog" class="demo-hint" style="color: var(--vcl-color-primary)">
         {{ typedLog }}
       </p>
     </Card>
@@ -911,7 +912,7 @@ const interCols: Column[] = [
         editable
         @batch-change="onImageBatchChange"
       />
-      <p v-if="imageBatchLog" class="demo-hint" style="color: var(--color-primary)">
+      <p v-if="imageBatchLog" class="demo-hint" style="color: var(--vcl-color-primary)">
         {{ imageBatchLog }}
       </p>
     </Card>
@@ -940,7 +941,7 @@ const interCols: Column[] = [
       <div
         v-if="actionLog"
         class="demo-hint"
-        style="color: var(--color-primary); margin-top: calc(8px * var(--vcl-scale))"
+        style="color: var(--vcl-color-primary); margin-top: calc(8px * var(--vcl-scale))"
       >
         {{ actionLog }}
       </div>
@@ -1114,7 +1115,7 @@ const interCols: Column[] = [
           }
         "
       />
-      <p v-if="noteLog" class="demo-hint" style="color: var(--color-primary)">{{ noteLog }}</p>
+      <p v-if="noteLog" class="demo-hint" style="color: var(--vcl-color-primary)">{{ noteLog }}</p>
     </Card>
 
     <!-- ===== 日期输入顺序 ===== -->
@@ -1208,7 +1209,7 @@ const interCols: Column[] = [
 
     <!-- ===== 服务端模式 ===== -->
     <Card title="服务端模式 — searchMode / filterMode / filters / sortKey + sortOrder / total / @export" title-as="h2">
-      <p class="demo-hint" style="color: var(--color-warning)">
+      <p class="demo-hint" style="color: var(--vcl-color-warning)">
         这块是<strong>用本地假数据模拟后端</strong>（共 {{ SRV_ROWS }} 条藏在 <code>srvAll</code> 里）。
         真实项目把「后端」那段换成自己的接口请求即可，组件侧的用法一字不改。
       </p>
@@ -1324,7 +1325,7 @@ const interCols: Column[] = [
         </label>
         <button class="demo-add-btn" @click="dumpStorage">查看当前适配器里存了什么</button>
       </div>
-      <p v-if="storageLog" class="demo-hint" style="color: var(--color-primary)">{{ storageLog }}</p>
+      <p v-if="storageLog" class="demo-hint" style="color: var(--vcl-color-primary)">{{ storageLog }}</p>
       <p class="demo-hint">做法：拖一下下面表格的列宽 → 点上面按钮 → 刷新页面看列宽还在不在。</p>
       <DataTable
         :key="storageKind"
@@ -1353,7 +1354,7 @@ const interCols: Column[] = [
         再记一条固定行为：全屏时若有分页，组件会<strong>忽略分页</strong>把过滤后的数据全铺出来 ——
         全屏的语义就是「看全部」，这个不开放配置。
       </p>
-      <p v-if="fsLog" class="demo-hint" style="color: var(--color-primary)">{{ fsLog }}</p>
+      <p v-if="fsLog" class="demo-hint" style="color: var(--vcl-color-primary)">{{ fsLog }}</p>
       <DataTable
         namespace="demo-fullscreen"
         :columns="evCols"
@@ -1372,7 +1373,7 @@ const interCols: Column[] = [
         路径启发式兜底。<code>imageDomains</code> 传了就是 <strong>整表替换</strong>默认清单而不是追加 ——
         所以下面勾上之后，两张走内置清单才认出的图会退回成文本， 而内联数据那格照旧是图（它排在域名之前）。
       </p>
-      <p class="demo-hint" style="color: var(--color-warning)">
+      <p class="demo-hint" style="color: var(--vcl-color-warning)">
         踩过的坑，写表格数据时注意：域名匹配<strong>不锚定</strong>，单元格里只是
         <em>提到</em>某个内置域名（比如讲解文字里写了那个图床的域名）也会被当成图片渲染成碎图。 列上想钉死内容类型，用
         <code>Column.accept: 'image'</code> 比白名单可靠。
@@ -2127,15 +2128,15 @@ const interCols: Column[] = [
     <!-- 弹窗2：统计 + 栅格 + 分页 -->
     <ModalBox v-model:visible="modal2Visible" title="销售数据概览" size="xl">
       <div class="modal-grid">
-        <Card type="stat" value="1,286" label="总销量" icon="shopping-cart" color="var(--color-primary)" />
-        <Card type="stat" value="¥58.9万" label="销售额" icon="dollar-sign" color="var(--color-success)" />
+        <Card type="stat" value="1,286" label="总销量" icon="shopping-cart" color="var(--vcl-color-primary)" />
+        <Card type="stat" value="¥58.9万" label="销售额" icon="dollar-sign" color="var(--vcl-color-success)" />
         <Card type="stat" value="156" label="商品种类" icon="package" color="#F59E0B" />
-        <Card type="stat" value="↓ 5.2%" label="退货率" icon="trending-down" color="var(--color-danger)" />
+        <Card type="stat" value="↓ 5.2%" label="退货率" icon="trending-down" color="var(--vcl-color-danger)" />
       </div>
       <p
         style="
           margin: calc(16px * var(--vcl-scale)) 0 calc(8px * var(--vcl-scale));
-          color: var(--color-text-secondary);
+          color: var(--vcl-color-text-secondary);
           font-size: calc(14px * var(--vcl-scale));
         "
       >
@@ -2152,15 +2153,15 @@ const interCols: Column[] = [
     <!-- 弹窗4：统计 + 多数据无分页 -->
     <ModalBox v-model:visible="modal4Visible" title="销售数据明细（无分页）" size="xl">
       <div class="modal-grid">
-        <Card type="stat" value="30" label="商品总数" icon="package" color="var(--color-primary)" />
-        <Card type="stat" value="¥12.8万" label="总货值" icon="dollar-sign" color="var(--color-success)" />
+        <Card type="stat" value="30" label="商品总数" icon="package" color="var(--vcl-color-primary)" />
+        <Card type="stat" value="¥12.8万" label="总货值" icon="dollar-sign" color="var(--vcl-color-success)" />
         <Card type="stat" value="5" label="品类" icon="grid" color="#F59E0B" />
-        <Card type="stat" value="↑ 12%" label="环比增长" icon="trending-up" color="var(--color-success)" />
+        <Card type="stat" value="↑ 12%" label="环比增长" icon="trending-up" color="var(--vcl-color-success)" />
       </div>
       <p
         style="
           margin: calc(16px * var(--vcl-scale)) 0 calc(8px * var(--vcl-scale));
-          color: var(--color-text-secondary);
+          color: var(--vcl-color-text-secondary);
           font-size: calc(14px * var(--vcl-scale));
         "
       >
@@ -2178,22 +2179,22 @@ const interCols: Column[] = [
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 .demo-hint {
   margin: 0 0 calc(12px * var(--vcl-scale)) 0;
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .demo-add-btn {
   margin-top: calc(8px * var(--vcl-scale));
   padding: calc(6px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  border: 1px dashed var(--color-primary);
-  border-radius: var(--radius-sm);
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  border: 1px dashed var(--vcl-color-primary);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
   cursor: pointer;
   font-size: calc(13px * var(--vcl-scale));
 }
@@ -2213,14 +2214,14 @@ const interCols: Column[] = [
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
 }
 .demo-ck input[type='checkbox'] {
   width: calc(14px * var(--vcl-scale));
   height: calc(14px * var(--vcl-scale));
   margin: 0;
-  accent-color: var(--color-primary);
+  accent-color: var(--vcl-color-primary);
 }
 .demo-ck select {
   height: calc(26px * var(--vcl-scale));
@@ -2228,9 +2229,9 @@ const interCols: Column[] = [
   font: inherit;
   font-size: calc(13px * var(--vcl-scale));
   color: inherit;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-bg);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .demo-num {
   width: calc(72px * var(--vcl-scale));
@@ -2238,16 +2239,16 @@ const interCols: Column[] = [
   padding: 0 calc(6px * var(--vcl-scale));
   font: inherit;
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  color: var(--vcl-color-text);
+  background: var(--vcl-color-bg);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .demo-sub {
   margin: 0 0 calc(6px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 .demo-two-col {
   display: grid;
@@ -2273,10 +2274,10 @@ const interCols: Column[] = [
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: calc(12px * var(--vcl-scale));
   line-height: 1.7;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-soft);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
+  color: var(--vcl-color-text-secondary);
+  background: var(--vcl-color-bg-soft);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-sm);
 }
 .demo-log p {
   margin: 0;
@@ -2288,10 +2289,10 @@ const interCols: Column[] = [
   gap: calc(4px * var(--vcl-scale));
   align-items: center;
   padding: calc(22px * var(--vcl-scale)) 0;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .demo-empty-slot strong {
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 .demo-slot-th {
   display: inline-flex;
@@ -2303,13 +2304,13 @@ const interCols: Column[] = [
   font-family: ui-monospace, monospace;
   font-size: calc(10px * var(--vcl-scale));
   font-style: normal;
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-  border-radius: var(--radius-sm);
+  color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
+  border-radius: var(--vcl-radius-sm);
 }
 .demo-slot-money {
   font-variant-numeric: tabular-nums;
-  color: var(--color-success);
+  color: var(--vcl-color-success);
 }
 .api-table {
   width: 100%;
@@ -2321,30 +2322,30 @@ const interCols: Column[] = [
   padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   text-align: left;
   vertical-align: top;
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .api-table th {
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--vcl-color-border);
 }
 /* props 分组行（与 defineProps 内的分组注释同口径；文本行不参与 check:demo-props 对账） */
 .api-group td {
   padding-top: calc(10px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-primary);
-  border-bottom: 1px solid var(--color-border);
+  color: var(--vcl-color-primary);
+  border-bottom: 1px solid var(--vcl-color-border);
 }
 .api-table code {
   white-space: nowrap;
 }
 /* rowClass / cellClass 打上的类落在 DataTable 内部节点上，scoped 选择器够不着，只能 :deep() 穿透 */
 :deep(.row-high-salary) {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 :deep(.cell-mono) {
   font-variant-numeric: tabular-nums;
 }
 :deep(.cell-offline) {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .modal-grid {
   display: grid;

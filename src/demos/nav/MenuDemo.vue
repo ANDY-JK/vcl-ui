@@ -110,7 +110,7 @@ function onSelect(item: { key: string | number; label: string }) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -119,9 +119,9 @@ function onSelect(item: { key: string | number; label: string }) {
       <div
         style="
           max-width: calc(260px * var(--vcl-scale));
-          background: var(--color-sidebar);
-          border-radius: var(--radius-lg);
-          padding: var(--space-3) var(--space-1);
+          background: var(--vcl-color-sidebar);
+          border-radius: var(--vcl-radius-lg);
+          padding: var(--vcl-space-3) var(--vcl-space-1);
         "
       >
         <Menu v-model:selected-key="selectedKey" :items="menuItems" mode="vertical" theme="dark" @select="onSelect" />
@@ -138,7 +138,7 @@ function onSelect(item: { key: string | number; label: string }) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -147,9 +147,9 @@ function onSelect(item: { key: string | number; label: string }) {
       <div
         style="
           max-width: calc(60px * var(--vcl-scale));
-          background: var(--color-sidebar);
-          border-radius: var(--radius-lg);
-          padding: var(--space-3) var(--space-1);
+          background: var(--vcl-color-sidebar);
+          border-radius: var(--vcl-radius-lg);
+          padding: var(--vcl-space-3) var(--vcl-space-1);
         "
       >
         <Menu
@@ -168,7 +168,7 @@ function onSelect(item: { key: string | number; label: string }) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-bottom: calc(12px * var(--vcl-scale));
         "
       >
@@ -178,10 +178,10 @@ function onSelect(item: { key: string | number; label: string }) {
       </p>
       <div
         style="
-          background: var(--color-surface);
-          border: 1px solid var(--color-border);
-          border-radius: var(--radius-lg);
-          padding: var(--space-2) var(--space-4);
+          background: var(--vcl-color-surface);
+          border: 1px solid var(--vcl-color-border);
+          border-radius: var(--vcl-radius-lg);
+          padding: var(--vcl-space-2) var(--vcl-space-4);
         "
       >
         <Menu v-model:selected-key="hSelectedKey" :items="hMenuItems" mode="horizontal" @select="onSelect" />
@@ -192,7 +192,7 @@ function onSelect(item: { key: string | number; label: string }) {
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -204,7 +204,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>items</code>
@@ -212,7 +212,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               MenuItem[]
@@ -220,7 +220,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -228,7 +228,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               菜单项数组（支持 children 递归）
@@ -238,7 +238,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>mode</code>
@@ -246,7 +246,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'vertical' | 'horizontal'
@@ -254,7 +254,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               'vertical'
@@ -262,7 +262,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               布局方向
@@ -272,7 +272,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>selectedKey</code>
@@ -280,7 +280,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string | number
@@ -288,7 +288,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -296,7 +296,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               当前选中项的 key（支持 v-model）
@@ -306,7 +306,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>collapsed</code>
@@ -314,7 +314,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               boolean
@@ -322,7 +322,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               false
@@ -330,7 +330,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               折叠为仅图标模式（vertical 下有效）
@@ -363,7 +363,7 @@ function onSelect(item: { key: string | number; label: string }) {
     <Card title="Events" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">事件</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">参数</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
@@ -374,7 +374,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>select</code>
@@ -382,7 +382,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               MenuItem
@@ -390,7 +390,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               点击叶子节点时触发
@@ -412,7 +412,7 @@ function onSelect(item: { key: string | number; label: string }) {
     <Card title="MenuItem 接口" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">字段</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">必填</th>
@@ -424,7 +424,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>key</code>
@@ -432,7 +432,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string | number
@@ -440,7 +440,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               是
@@ -448,7 +448,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               唯一标识
@@ -458,7 +458,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>label</code>
@@ -466,7 +466,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -474,7 +474,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               是
@@ -482,7 +482,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               显示文本
@@ -492,7 +492,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>icon</code>
@@ -500,7 +500,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               string
@@ -508,7 +508,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               否
@@ -516,7 +516,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               IconSvg 图标名
@@ -526,7 +526,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>children</code>
@@ -534,7 +534,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               MenuItem[]
@@ -542,7 +542,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               否
@@ -550,7 +550,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               子菜单项（递归渲染）
@@ -560,7 +560,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>disabled</code>
@@ -568,7 +568,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               boolean
@@ -576,7 +576,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               否
@@ -584,7 +584,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               禁用该项
@@ -594,7 +594,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>divided</code>
@@ -602,7 +602,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               boolean
@@ -610,7 +610,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               否
@@ -618,7 +618,7 @@ function onSelect(item: { key: string | number; label: string }) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               在此项前显示分隔线
@@ -647,13 +647,13 @@ function onSelect(item: { key: string | number; label: string }) {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

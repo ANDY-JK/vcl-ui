@@ -822,7 +822,7 @@ onUnmounted(() => {
           <tr v-if="filteredStores.length === 0">
             <td
               colspan="4"
-              style="text-align: center; padding: calc(40px * var(--vcl-scale)); color: var(--color-text-muted)"
+              style="text-align: center; padding: calc(40px * var(--vcl-scale)); color: var(--vcl-color-text-muted)"
             >
               无匹配门店
             </td>
@@ -852,8 +852,8 @@ onUnmounted(() => {
   gap: calc(16px * var(--vcl-scale));
   flex-wrap: wrap;
   padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  background: var(--color-surface, #f8fafc);
-  border: 1px solid var(--color-border, #e2e8f0);
+  background: var(--vcl-color-surface, #f8fafc);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
   border-radius: calc(8px * var(--vcl-scale));
   margin-bottom: calc(16px * var(--vcl-scale));
   position: sticky;
@@ -878,30 +878,30 @@ onUnmounted(() => {
   border-radius: calc(10px * var(--vcl-scale));
   font-size: calc(11px * var(--vcl-scale));
   font-weight: 600;
-  background: var(--color-bg-soft);
+  background: var(--vcl-color-bg-soft);
   color: #94a3b8;
   white-space: nowrap;
 }
 .cc-stat-badge.done {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
+  background: var(--vcl-color-success-bg);
+  color: var(--vcl-color-success-text);
 }
 .cc-stat-contract.done {
-  background: var(--color-primary-soft);
-  /* 深蓝字在 --color-primary-soft 上：暗色下该令牌是深底 → 深蓝字不可见，改为随主题 */
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-soft);
+  /* 深蓝字在 --vcl-color-primary-soft 上：暗色下该令牌是深底 → 深蓝字不可见，改为随主题 */
+  color: var(--vcl-color-primary);
 }
 .cc-btn {
   padding: calc(5px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(6px * var(--vcl-scale));
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
   cursor: pointer;
   font-size: calc(12px * var(--vcl-scale));
   white-space: nowrap;
 }
 .cc-btn:hover {
-  background: var(--color-bg-alt, #f1f5f9);
+  background: var(--vcl-color-bg-alt, #f1f5f9);
 }
 .cc-btn:disabled {
   opacity: 0.5;
@@ -910,46 +910,46 @@ onUnmounted(() => {
 .cc-btn-export {
   background: #3b82f6;
   color: #fff;
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .cc-btn-export:hover {
   background: #2563eb;
 }
 .cc-btn-clear {
-  color: var(--color-danger);
+  color: var(--vcl-color-danger);
 }
 
 /* 表格 */
 .cc-table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(8px * var(--vcl-scale));
 }
 .cc-table {
   width: 100%;
   border-collapse: collapse;
   font-size: calc(12px * var(--vcl-scale));
-  background: var(--color-bg, #fff);
+  background: var(--vcl-color-bg, #fff);
 }
 .cc-table th {
   text-align: left;
   padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-secondary);
-  background: var(--color-surface, #f8fafc);
-  border-bottom: 2px solid var(--color-border);
+  color: var(--vcl-color-text-secondary);
+  background: var(--vcl-color-surface, #f8fafc);
+  border-bottom: 2px solid var(--vcl-color-border);
   white-space: nowrap;
   position: sticky;
   top: 0;
 }
 .cc-table td {
   padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--vcl-color-border);
   vertical-align: middle;
 }
 .cc-row:hover {
-  background: var(--color-bg-alt, #f8fafc);
+  background: var(--vcl-color-bg-alt, #f8fafc);
 }
 
 .cc-td-id {
@@ -981,7 +981,7 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 .cc-status-done {
-  color: var(--color-success-text);
+  color: var(--vcl-color-success-text);
   font-weight: 600;
 }
 .cc-status-none {

@@ -1,6 +1,6 @@
 // 常量与写死值自检（七项判定，任一不过即非零退出）
 // 规矩本体写在 README「开发规范」一节，这里只负责把它变成机器能拦的那部分：
-// [1] 断点令牌单源一致 —— _internal/breakpoints.ts 的 BP_* 必须与 tokens.css 的 --bp-* 逐个同值，
+// [1] 断点令牌单源一致 —— _internal/breakpoints.ts 的 BP_* 必须与 tokens.css 的 --vcl-bp-* 逐个同值，
 //     否则「改了令牌、JS 判定没跟着改」会静默分叉（侧栏收起和表格卡片视图就是两个判定）
 // [2] JS/TS 里不得出现视口断点字面量 —— 视口宽度比较、matchMedia 宽度查询、*reakpoint 默认值，
 //     一律引 breakpoints.ts 的常量
@@ -60,18 +60,18 @@ function stripComments(lines) {
 // ---------- [1] 令牌与 JS 常量同值 ----------
 const tokensCss = readFileSync(join('src', 'components', 'tokens.css'), 'utf8')
 const cssBp = new Map()
-for (const m of tokensCss.matchAll(/--bp-([a-z]+)\s*:\s*(\d+)px/g)) cssBp.set(m[1].toUpperCase(), Number(m[2]))
+for (const m of tokensCss.matchAll(/--vcl-bp-([a-z]+)\s*:\s*(\d+)px/g)) cssBp.set(m[1].toUpperCase(), Number(m[2]))
 const bpFile = readFileSync(join('src', 'components', '_internal', 'breakpoints.ts'), 'utf8')
 const jsBp = new Map()
 for (const m of bpFile.matchAll(/export const BP_([A-Z]+)\s*=\s*(\d+)/g)) jsBp.set(m[1], Number(m[2]))
 
 if (jsBp.size === 0) fail.push('breakpoints.ts 里没有 BP_* 常量，[2] 的约束将无源可依')
 for (const [k, v] of cssBp) {
-  if (!jsBp.has(k)) fail.push(`tokens.css 有 --bp-${k.toLowerCase()}=${v}px，breakpoints.ts 缺 BP_${k}`)
-  else if (jsBp.get(k) !== v) fail.push(`BP_${k}=${jsBp.get(k)} 与 --bp-${k.toLowerCase()}:${v}px 不一致`)
+  if (!jsBp.has(k)) fail.push(`tokens.css 有 --vcl-bp-${k.toLowerCase()}=${v}px，breakpoints.ts 缺 BP_${k}`)
+  else if (jsBp.get(k) !== v) fail.push(`BP_${k}=${jsBp.get(k)} 与 --vcl-bp-${k.toLowerCase()}:${v}px 不一致`)
 }
 for (const [k, v] of jsBp)
-  if (!cssBp.has(k)) fail.push(`breakpoints.ts 有 BP_${k}=${v}，tokens.css 无 --bp-${k.toLowerCase()} 令牌`)
+  if (!cssBp.has(k)) fail.push(`breakpoints.ts 有 BP_${k}=${v}，tokens.css 无 --vcl-bp-${k.toLowerCase()} 令牌`)
 console.log(`[1] 断点令牌一致 css=${cssBp.size} ts=${jsBp.size}`)
 
 // ---------- [2] JS/TS 不得写视口断点字面量 ----------
@@ -122,15 +122,15 @@ if (jsHits.length) fail.push(...jsHits)
 console.log(`[2] JS/TS 视口断点字面量 ${jsHits.length}`)
 
 // ---------- [3] CSS @media 宽度值登记制 ----------
-// 已登记值 = --bp-* 三个 + 下面这些有明确用途的。新增断点先想清楚能不能复用既有的。
+// 已登记值 = --vcl-bp-* 三个 + 下面这些有明确用途的。新增断点先想清楚能不能复用既有的。
 const CSS_EXTRA_BP = new Map([
   [767, 'bp-md 的「小于 768」等价写法：@media 里不能用 var()，只能写 768-1'],
-  [480, '登录三页的超窄档（单列输入），刻意早于 --bp-sm'],
+  [480, '登录三页的超窄档（单列输入），刻意早于 --vcl-bp-sm'],
   [1023, 'bp-lg 的「小于 1024」等价写法：2026-09-29 断点收敛后 demos 双栏折叠档统一到此处'],
   [600, 'ChartTable 纵向堆叠 CSS 兜底阈值（rootMinW 动态计算，600px 为固定近似）'],
   [1079, '设计器 narrow 阈值（NARROW_W=1080，@container designer 匹配 <1080px）'],
 ])
-const allowed = new Map([...[...cssBp.values()].map((v) => [v, 'tokens.css --bp-*']), ...CSS_EXTRA_BP])
+const allowed = new Map([...[...cssBp.values()].map((v) => [v, 'tokens.css --vcl-bp-*']), ...CSS_EXTRA_BP])
 const cssHits = []
 const styleTexts = []
 for (const f of files) {
@@ -340,7 +340,7 @@ if (delayHits.length) fail.push(...delayHits)
 console.log(`[4] 字面量延时 ${delayHits.length}`)
 
 // ---------- [6] 原生 color 输入的值必须先归一（README 规范第 8 条） ----------
-// <input type="color"> 只认 #rrggbb 一种写法：绑 var(--color-primary)、red、#abc、transparent
+// <input type="color"> 只认 #rrggbb 一种写法：绑 var(--vcl-color-primary)、red、#abc、transparent
 // 会被浏览器静默拒收 —— 刷 "does not conform to the required format" 警告，取色块退成默认黑
 // （IconPicker 的默认色当年就是这个样子，demo 站 icon 页实测 18 条警告）。
 // 判定分两档：值绑定里当场写着 toNativeColorValue( 的算自证合规，不登记；

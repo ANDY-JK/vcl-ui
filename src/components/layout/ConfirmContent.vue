@@ -48,28 +48,28 @@ const emit = defineEmits<{
 }>()
 
 // 每种变体的配色 & 图标（色值全部走设计令牌；danger/warning 实心底用 -solid 令牌压白字，
-// 暗色下 --color-danger 被提亮、压白字对比度仅 2.77 不达标 —— 与 Button 的 .btn-danger 口径同步）
+// 暗色下 --vcl-color-danger 被提亮、压白字对比度仅 2.77 不达标 —— 与 Button 的 .btn-danger 口径同步）
 const variantMeta = computed(() => {
   const map = {
     danger: {
       icon: 'circle-alert',
-      iconColor: 'var(--color-danger)',
-      borderColor: 'var(--color-danger-border)',
-      bg: 'var(--color-danger-bg)',
+      iconColor: 'var(--vcl-color-danger)',
+      borderColor: 'var(--vcl-color-danger-border)',
+      bg: 'var(--vcl-color-danger-bg)',
       btnClass: 'btn-danger',
     },
     warning: {
       icon: 'circle-alert',
-      iconColor: 'var(--color-warning)',
-      borderColor: 'var(--color-warning-border)',
-      bg: 'var(--color-warning-bg)',
+      iconColor: 'var(--vcl-color-warning)',
+      borderColor: 'var(--vcl-color-warning-border)',
+      bg: 'var(--vcl-color-warning-bg)',
       btnClass: 'btn-warning',
     },
     primary: {
       icon: 'info',
-      iconColor: 'var(--color-primary)',
-      borderColor: 'var(--color-info-border)',
-      bg: 'var(--color-primary-light)',
+      iconColor: 'var(--vcl-color-primary)',
+      borderColor: 'var(--vcl-color-info-border)',
+      bg: 'var(--vcl-color-primary-light)',
       btnClass: 'btn-primary',
     },
   }
@@ -115,17 +115,17 @@ function onConfirm() {
 .confirm-body {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-3);
-  margin: var(--space-1) 0 0;
-  padding: var(--space-4) calc(16px * var(--vcl-scale));
-  border-radius: var(--radius-md);
+  gap: var(--vcl-space-3);
+  margin: var(--vcl-space-1) 0 0;
+  padding: var(--vcl-space-4) calc(16px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-md);
   border-left: 4px solid;
 }
 .confirm-msg {
   margin: 0;
   line-height: 1.7;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   flex: 1;
 }
 
@@ -133,25 +133,25 @@ function onConfirm() {
 .confirm-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   width: 100%;
-  margin-top: var(--space-3);
+  margin-top: var(--vcl-space-3);
   padding: calc(16px * var(--vcl-scale)) 0 0;
-  border-top: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 .confirm-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) calc(22px * var(--vcl-scale));
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-2) calc(22px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-md);
+  border: 1px solid var(--vcl-color-border);
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--vcl-color-bg);
+  color: var(--vcl-color-text);
 }
 .confirm-btn:hover {
   filter: brightness(0.95);
@@ -176,42 +176,42 @@ function onConfirm() {
 
 /* 取消 */
 .confirm-btn.cancel {
-  border-color: var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  border-color: var(--vcl-color-border);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
 }
 .confirm-btn.cancel:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 
-/* danger —— 实心底压白字，用 --color-danger-solid（暗色下 --color-danger 被提亮，
+/* danger —— 实心底压白字，用 --vcl-color-danger-solid（暗色下 --vcl-color-danger 被提亮，
    压白字对比度仅 2.77 不达标）；本条优先级高于 Button 的 .btn-danger，必须同步 */
 .confirm-btn.btn-danger {
-  border-color: var(--color-danger-border);
-  background: var(--color-danger-solid, var(--color-danger));
+  border-color: var(--vcl-color-danger-border);
+  background: var(--vcl-color-danger-solid, var(--vcl-color-danger));
   color: #fff;
 }
 .confirm-btn.btn-danger:hover {
-  background: var(--color-danger-solid-hover, var(--color-danger-hover));
+  background: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
 }
 
 /* warning —— 同上，实心底压白字用 solid 令牌 */
 .confirm-btn.btn-warning {
-  border-color: var(--color-warning-border);
-  background: var(--color-warning-solid, var(--color-warning));
+  border-color: var(--vcl-color-warning-border);
+  background: var(--vcl-color-warning-solid, var(--vcl-color-warning));
   color: #fff;
 }
 .confirm-btn.btn-warning:hover {
-  background: var(--color-warning-solid-hover, var(--color-warning-text));
+  background: var(--vcl-color-warning-solid-hover, var(--vcl-color-warning-text));
 }
 
 /* primary */
 .confirm-btn.btn-primary {
-  border-color: var(--color-info-border);
-  background: var(--color-primary);
+  border-color: var(--vcl-color-info-border);
+  background: var(--vcl-color-primary);
   color: #fff;
 }
 .confirm-btn.btn-primary:hover {
-  background: var(--color-primary-hover);
+  background: var(--vcl-color-primary-hover);
 }
 </style>

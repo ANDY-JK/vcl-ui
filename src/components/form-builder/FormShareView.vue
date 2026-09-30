@@ -211,22 +211,22 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
 }
 .fsv-title {
   margin: 0 0 calc(4px * var(--vcl-scale));
-  font-size: var(--fs-20);
+  font-size: var(--vcl-fs-20);
   font-weight: 700;
-  color: var(--color-text, #1e293b);
+  color: var(--vcl-color-text, #1e293b);
 }
 .fsv-desc {
   margin: 0 0 calc(20px * var(--vcl-scale));
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
   line-height: 1.7;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--vcl-color-text-secondary, #64748b);
 }
 .fsv-error {
   margin: 0 0 calc(12px * var(--vcl-scale));
   padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
-  background: var(--color-danger-light, #fef2f2);
-  color: var(--color-danger-on-surface);
-  font-size: var(--fs-13);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
+  background: var(--vcl-color-danger-light, #fef2f2);
+  color: var(--vcl-color-danger-on-surface);
+  font-size: var(--vcl-fs-13);
 }
 </style>

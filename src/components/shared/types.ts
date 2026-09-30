@@ -32,10 +32,10 @@ export const feedbackIconMap: Record<string, string> = {
 
 /** 反馈颜色映射 */
 export const feedbackColorMap: Record<string, string> = {
-  info: 'var(--color-info)',
-  success: 'var(--color-success)',
-  warning: 'var(--color-warning)',
-  error: 'var(--color-danger)',
+  info: 'var(--vcl-color-info)',
+  success: 'var(--vcl-color-success)',
+  warning: 'var(--vcl-color-warning)',
+  error: 'var(--vcl-color-danger)',
 }
 
 /** Tab 项 */

@@ -320,7 +320,7 @@ onUnmounted(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-danger-on-surface);
+      color: var(--vcl-color-danger-on-surface);
       font-size: calc(11px * var(--vcl-scale));
     "
   >
@@ -426,7 +426,7 @@ onUnmounted(() => {
           @change="onInputChange"
           @click="onDefaultInputClick"
         />
-        <IconSvg type="upload" size="lg" color="var(--color-text-muted)" />
+        <IconSvg type="upload" size="lg" color="var(--vcl-color-text-muted)" />
         <p class="upload-hint">
           <template v-if="dragging">{{ t('form.dropHint') }}</template>
           <template v-else
@@ -458,10 +458,10 @@ onUnmounted(() => {
             </div>
             <div class="upload-file-meta">
               <span>{{ formatSize(f.size) }}</span>
-              <span v-if="f.status === 'done'" style="color: var(--color-success)"
+              <span v-if="f.status === 'done'" style="color: var(--vcl-color-success)"
                 >✓ {{ t('form.uploadSuccess') }}</span
               >
-              <span v-else-if="f.status === 'error'" style="color: var(--color-danger-on-surface)"
+              <span v-else-if="f.status === 'error'" style="color: var(--vcl-color-danger-on-surface)"
                 >✗ {{ t('form.uploadFailed') }}</span
               >
             </div>
@@ -470,7 +470,7 @@ onUnmounted(() => {
               :percent="f.progress"
               :show-text="false"
               :height="4"
-              style="margin-top: var(--space-1)"
+              style="margin-top: var(--vcl-space-1)"
             />
           </div>
           <button type="button" class="upload-remove" :aria-label="t('form.removeFile')" @click="removeFile(f)">
@@ -513,14 +513,14 @@ onUnmounted(() => {
   position: relative;
   width: calc(110px * var(--vcl-scale));
   height: calc(110px * var(--vcl-scale));
-  border: 2px dashed var(--color-border);
-  background: var(--color-surface);
+  border: 2px dashed var(--vcl-color-border);
+  background: var(--vcl-color-surface);
   overflow: hidden;
   box-sizing: border-box;
 }
 .card-wrap:hover,
 .card-dragging {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .card-disabled {
   opacity: 0.5;
@@ -550,7 +550,7 @@ onUnmounted(() => {
   margin: 0;
   text-align: center;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   z-index: 2;
   pointer-events: none;
   top: 50%;
@@ -581,7 +581,7 @@ onUnmounted(() => {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.35);
   color: #fff;
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -610,7 +610,7 @@ onUnmounted(() => {
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
   padding: 1px calc(5px * var(--vcl-scale));
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
 }
 /* 删除按钮 */
 .card-clear {
@@ -618,9 +618,9 @@ onUnmounted(() => {
   top: calc(5px * var(--vcl-scale));
   right: calc(5px * var(--vcl-scale));
   z-index: 10;
-  padding: var(--space-1) calc(5px * var(--vcl-scale));
+  padding: var(--vcl-space-1) calc(5px * var(--vcl-scale));
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: #ef4444;
   color: #fff;
   font-size: calc(13px * var(--vcl-scale));
@@ -632,28 +632,28 @@ onUnmounted(() => {
 .upload-wrap {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
 }
 .upload-area {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   padding: calc(36px * var(--vcl-scale));
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
+  border: 2px dashed var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  background: var(--vcl-color-bg);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .upload-area:hover:not(.disabled) {
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 .upload-area.dragging {
-  border-color: var(--color-primary);
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 .upload-area.disabled {
   opacity: 0.5;
@@ -667,15 +667,15 @@ onUnmounted(() => {
 }
 .upload-hint {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 .upload-link {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-weight: 500;
 }
 .upload-limit {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .upload-list {
   display: flex;
@@ -685,15 +685,15 @@ onUnmounted(() => {
 .upload-item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
 }
 .upload-file-icon {
   flex-shrink: 0;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 /* 图片文件缩略图（default 变体）：可点击进全屏预览 */
 .upload-thumb {
@@ -701,9 +701,9 @@ onUnmounted(() => {
   width: calc(40px * var(--vcl-scale));
   height: calc(40px * var(--vcl-scale));
   padding: 0;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-alt);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg-alt);
   cursor: zoom-in;
   overflow: hidden;
 }
@@ -714,7 +714,7 @@ onUnmounted(() => {
   display: block;
 }
 .upload-thumb:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 2px;
 }
 .upload-file-info {
@@ -732,21 +732,21 @@ onUnmounted(() => {
   display: flex;
   gap: calc(12px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  margin-top: var(--space-1);
+  color: var(--vcl-color-text-muted);
+  margin-top: var(--vcl-space-1);
 }
 .upload-remove {
   display: flex;
-  padding: var(--space-1);
+  padding: var(--vcl-space-1);
   border: none;
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: pointer;
   border-radius: 50%;
 }
 .upload-remove:hover {
-  background: var(--color-bg-alt);
-  color: var(--color-danger-on-surface);
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-danger-on-surface);
 }
 </style>
 
@@ -755,7 +755,7 @@ onUnmounted(() => {
 .up-sheet-mask {
   position: fixed;
   inset: 0;
-  z-index: var(--z-top, 9999);
+  z-index: var(--vcl-z-top, 9999);
   background: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: flex-end;
@@ -764,31 +764,31 @@ onUnmounted(() => {
 .up-sheet {
   width: 100%;
   max-width: calc(480px * var(--vcl-scale));
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
   border-radius: calc(14px * var(--vcl-scale)) calc(14px * var(--vcl-scale)) 0 0;
-  padding: var(--space-3) var(--space-4) calc(16px * var(--vcl-scale) + env(safe-area-inset-bottom));
+  padding: var(--vcl-space-3) var(--vcl-space-4) calc(16px * var(--vcl-scale) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 .up-sheet-item,
 .up-sheet-cancel {
   width: 100%;
-  padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  padding: var(--vcl-space-3);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  background: var(--vcl-color-surface);
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   cursor: pointer;
   text-align: center;
 }
 .up-sheet-item:active {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .up-sheet-cancel {
   border-color: transparent;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   background: transparent;
 }
 </style>

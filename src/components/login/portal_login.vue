@@ -137,19 +137,19 @@ defineExpose({
 
 <style scoped>
 .simple-login {
-  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-bg) 35%);
+  background: linear-gradient(180deg, var(--vcl-color-primary) 0%, var(--vcl-color-bg) 35%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-5);
+  padding: var(--vcl-space-5);
 }
 
 .login-container {
   width: 100%;
   max-width: var(--login-max-width, calc(380px * var(--vcl-scale)));
-  background: var(--color-surface);
-  border-radius: var(--radius-xl);
-  padding: var(--space-12);
+  background: var(--vcl-color-surface);
+  border-radius: var(--vcl-radius-xl);
+  padding: var(--vcl-space-12);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   animation: slideUp 0.4s ease-out;
 }
@@ -167,14 +167,14 @@ defineExpose({
 
 .logo-section {
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--vcl-space-8);
 }
 .logo-icon {
   width: calc(64px * var(--vcl-scale));
   height: calc(64px * var(--vcl-scale));
-  margin: 0 auto var(--space-4);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
-  border-radius: var(--radius-xl);
+  margin: 0 auto var(--vcl-space-4);
+  background: linear-gradient(135deg, var(--vcl-color-primary), var(--vcl-color-primary-hover));
+  border-radius: var(--vcl-radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -183,12 +183,12 @@ defineExpose({
 .logo-section h1 {
   font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--vcl-space-5);
 }
 </style>

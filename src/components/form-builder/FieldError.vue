@@ -32,9 +32,9 @@ defineProps<Props>()
   gap: calc(4px * var(--vcl-scale));
   margin: calc(4px * var(--vcl-scale)) 0 0;
   padding: 0 2px;
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   line-height: 1.4;
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .fb-error-icon {
   width: calc(13px * var(--vcl-scale));

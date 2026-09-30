@@ -1,4 +1,4 @@
-/* 品牌色与库令牌对齐（src/components/tokens.css: --color-primary: #4f6ef7） */
+/* 品牌色与库令牌对齐（src/components/tokens.css: --vcl-color-primary: #4f6ef7） */
 :root {
   --vp-c-brand-1: #4f6ef7;
   --vp-c-brand-2: #3b56e0;

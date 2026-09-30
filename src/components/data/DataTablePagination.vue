@@ -59,23 +59,23 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  border-top: 1px solid var(--color-border-light);
-  background: var(--color-bg);
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-top: 1px solid var(--vcl-color-border-light);
+  background: var(--vcl-color-bg);
+  border-radius: 0 0 var(--vcl-radius-lg) var(--vcl-radius-lg);
   position: relative;
 }
 
 .pagination-status {
   position: absolute;
-  left: var(--space-3);
-  font-size: var(--fs-12);
-  color: var(--color-text-muted);
+  left: var(--vcl-space-3);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted);
   white-space: nowrap;
 }
 .pagination-status strong {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
 }
 
 .page-btn {
@@ -84,22 +84,22 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
   justify-content: center;
   min-width: calc(28px * var(--vcl-scale));
   height: calc(28px * var(--vcl-scale));
-  padding: 0 var(--space-1);
-  font-size: var(--fs-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  padding: 0 var(--vcl-space-1);
+  font-size: var(--vcl-fs-12);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .page-btn:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .page-btn.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
   color: #fff;
 }
 .page-btn:disabled {
@@ -110,6 +110,6 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
 .page-ellipsis {
   width: calc(32px * var(--vcl-scale));
   text-align: center;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 </style>

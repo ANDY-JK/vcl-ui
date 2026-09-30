@@ -223,31 +223,31 @@ onUnmounted(unbindWindowPointer)
 .progress-wrap {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   width: 100%;
 }
 .progress-track {
   flex: 1;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   border-radius: calc(100px * var(--vcl-scale));
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
   border-radius: calc(100px * var(--vcl-scale));
-  transition: width var(--transition-slow);
+  transition: width var(--vcl-transition-slow);
 }
 .fill-primary {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
 }
 .fill-success {
-  background: var(--color-success);
+  background: var(--vcl-color-success);
 }
 .fill-warning {
-  background: var(--color-warning);
+  background: var(--vcl-color-warning);
 }
 .fill-danger {
-  background: var(--color-danger);
+  background: var(--vcl-color-danger);
 }
 .progress-fill.striped {
   background-image: linear-gradient(
@@ -272,7 +272,7 @@ onUnmounted(unbindWindowPointer)
 }
 .progress-text {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   font-weight: 500;
   min-width: calc(40px * var(--vcl-scale));
   text-align: right;
@@ -282,7 +282,7 @@ onUnmounted(unbindWindowPointer)
 .progress-slider {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   width: 100%;
   --thumb-size: calc(14px * var(--vcl-scale));
   --track-height: calc(6px * var(--vcl-scale));
@@ -293,20 +293,20 @@ onUnmounted(unbindWindowPointer)
   width: calc(42px * var(--vcl-scale));
   flex-shrink: 0;
   height: calc(26px * var(--vcl-scale));
-  padding: 0 var(--space-1);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  padding: 0 var(--vcl-space-1);
+  border: 1.5px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
   font-size: calc(15px * var(--vcl-scale));
   font-family: inherit;
   text-align: center;
-  color: var(--color-text);
-  background: var(--color-surface);
+  color: var(--vcl-color-text);
+  background: var(--vcl-color-surface);
   outline: none;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--vcl-transition-fast);
 }
 .slider-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  box-shadow: 0 0 0 2px var(--vcl-color-primary-light);
 }
 
 /* 轨道 */
@@ -327,7 +327,7 @@ onUnmounted(unbindWindowPointer)
 .slider-rail {
   position: absolute;
   inset: 0;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   border-radius: calc(100px * var(--vcl-scale));
 }
 
@@ -337,7 +337,7 @@ onUnmounted(unbindWindowPointer)
   top: 0;
   bottom: 0;
   left: 0;
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   border-radius: calc(100px * var(--vcl-scale));
   pointer-events: none;
 }
@@ -355,11 +355,11 @@ onUnmounted(unbindWindowPointer)
   height: calc(5px * var(--vcl-scale));
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+  background: var(--vcl-color-surface);
+  border: 1.5px solid var(--vcl-color-border);
 }
 .slider-stop.active {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 
 /* 滑块拇指 */
@@ -370,22 +370,22 @@ onUnmounted(unbindWindowPointer)
   height: var(--thumb-size);
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: var(--color-surface);
-  border: 2px solid var(--color-primary);
-  box-shadow: var(--shadow-sm);
+  background: var(--vcl-color-surface);
+  border: 2px solid var(--vcl-color-primary);
+  box-shadow: var(--vcl-shadow-sm);
   cursor: grab;
   z-index: 2;
   transition:
-    box-shadow var(--transition-fast),
-    transform var(--transition-fast);
+    box-shadow var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
 }
 .slider-thumb:focus-visible {
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+  box-shadow: 0 0 0 3px var(--vcl-color-primary-light);
   outline: none;
 }
 .slider-thumb.dragging {
   cursor: grabbing;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--vcl-shadow-md);
   transform: translate(-50%, -50%) scale(1.15);
 }
 

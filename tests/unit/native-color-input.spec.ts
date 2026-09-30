@@ -1,5 +1,5 @@
 // 原生 <input type="color"> 只接受 #rrggbb 一种写法。
-// 库内 IconPicker 的默认色是 var(--color-primary)、背景可选 transparent，直接绑进 value
+// 库内 IconPicker 的默认色是 var(--vcl-color-primary)、背景可选 transparent，直接绑进 value
 // 会被 Chrome 拒收：demo 站 icon 页实测刷 18 条 console 警告，取色块也显示成默认黑。
 // 这里锁两件事：① 归一函数永远吐合法 #rrggbb；② 三个绑定点挂上后 value 合法。
 import { describe, it, expect, afterEach } from 'vitest'
@@ -52,7 +52,7 @@ describe('toNativeColorValue', () => {
 
   it('算不出色值的输入一律落到合法兜底，绝不把原串直接交给控件', () => {
     const inputs: unknown[] = [
-      'var(--color-primary)',
+      'var(--vcl-color-primary)',
       'transparent',
       'oklch(0.7 0.1 200)',
       '#12345', // 位数不对
@@ -68,7 +68,7 @@ describe('toNativeColorValue', () => {
 
   it('归一时不给宿主文档树留残留节点', () => {
     const before = { html: document.documentElement.childElementCount, body: document.body.childElementCount }
-    toNativeColorValue('var(--color-primary)')
+    toNativeColorValue('var(--vcl-color-primary)')
     toNativeColorValue('#0f0')
     expect(document.documentElement.childElementCount).toBe(before.html)
     expect(document.body.childElementCount).toBe(before.body)
@@ -94,7 +94,7 @@ describe('IconPicker 的两个取色器', () => {
     // 真浏览器里应拿到解析后的主题色，那条链路由 tests/e2e/icon-color-picker.spec.ts 取证
     for (const p of pickers) expect(p.value.toUpperCase()).toMatch(HEX6)
     const hexTexts = Array.from(document.body.querySelectorAll('.hex-input')) as HTMLInputElement[]
-    expect(hexTexts[0].value).toBe('var(--color-primary)')
+    expect(hexTexts[0].value).toBe('var(--vcl-color-primary)')
   })
 
   it('选「无背景」后背景取色器不接受 transparent', async () => {
@@ -114,8 +114,8 @@ describe('Input type=color', () => {
     wrapper = mount(Input, { props: { type: 'color', modelValue: '#abc' } })
     const el = wrapper.find('input[type="color"]').element as HTMLInputElement
     expect(el.value.toUpperCase()).toBe('#AABBCC')
-    await wrapper.setProps({ modelValue: 'var(--color-primary)' })
+    await wrapper.setProps({ modelValue: 'var(--vcl-color-primary)' })
     expect(el.value.toUpperCase()).toMatch(HEX6)
-    expect(wrapper.find('.f-color-hex').text()).toBe('var(--color-primary)')
+    expect(wrapper.find('.f-color-hex').text()).toBe('var(--vcl-color-primary)')
   })
 })

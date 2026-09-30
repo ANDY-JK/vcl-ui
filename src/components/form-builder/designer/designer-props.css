@@ -6,8 +6,8 @@
   flex-shrink: 0;
   overflow-y: auto;
   padding: 0;
-  background: var(--color-surface);
-  border-left: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--vcl-color-surface);
+  border-left: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 
 /** 面板头部 */
@@ -16,21 +16,21 @@
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  background: var(--color-bg-alt, #fafbfc);
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
-  font-size: var(--fs-12);
+  background: var(--vcl-color-bg-alt, #fafbfc);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  font-size: var(--vcl-fs-12);
   font-weight: 600;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--vcl-color-text-secondary, #6b7280);
   position: sticky;
   top: 0;
   z-index: 1;
 }
 .ldp-props-type-badge {
   margin-left: auto;
-  font-size: var(--fs-10);
+  font-size: var(--vcl-fs-10);
   font-weight: 600;
-  color: var(--color-primary, #3b82f6);
-  background: var(--color-primary-light, #eff6ff);
+  color: var(--vcl-color-primary, #3b82f6);
+  background: var(--vcl-color-primary-light, #eff6ff);
   padding: 1px calc(7px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
 }
@@ -42,7 +42,7 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
   gap: calc(10px * var(--vcl-scale));
   padding: calc(24px * var(--vcl-scale));
   text-align: center;
@@ -51,17 +51,17 @@
   width: calc(48px * var(--vcl-scale));
   height: calc(48px * var(--vcl-scale));
   border-radius: calc(12px * var(--vcl-scale));
-  background: var(--color-bg-alt, #f3f4f6);
+  background: var(--vcl-color-bg-alt, #f3f4f6);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
 }
 .ldp-props-empty p {
   margin: 0;
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
   line-height: 1.6;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
 }
 
 /** 属性编辑体 */
@@ -72,12 +72,12 @@
 
 /** 分节标题 */
 .ldp-section-title {
-  font-size: var(--fs-10);
+  font-size: var(--vcl-fs-10);
   font-weight: 700;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
-  background: var(--color-bg-alt, #fafbfc);
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--vcl-color-bg-alt, #fafbfc);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
   position: sticky;
   top: 0;
   z-index: 1;
@@ -88,23 +88,23 @@
 /** 单个属性 */
 .ldp-prop {
   padding: calc(9px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light, #f3f4f6);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f3f4f6);
   display: flex;
   flex-direction: column;
   gap: calc(4px * var(--vcl-scale));
   transition: background 0.1s;
 }
 .ldp-prop:hover {
-  background: var(--color-bg-alt, #fafbfc);
+  background: var(--vcl-color-bg-alt, #fafbfc);
 }
 .ldp-prop label {
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   font-weight: 600;
-  color: var(--color-text-muted, #9ca3af);
+  color: var(--vcl-color-text-muted, #9ca3af);
   letter-spacing: 0.2px;
 }
 .ldp-prop-readonly {
-  background: var(--color-bg-alt, #f3f4f6);
+  background: var(--vcl-color-bg-alt, #f3f4f6);
 }
 .ldp-prop-switch {
   flex-direction: row;
@@ -117,11 +117,11 @@
 
 /** 只读类型标签 */
 .ldp-type-readonly {
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  background: var(--color-bg-alt, #f3f4f6);
-  border-radius: var(--radius-xs, calc(4px * var(--vcl-scale)));
-  color: var(--color-text-secondary, #6b7280);
+  background: var(--vcl-color-bg-alt, #f3f4f6);
+  border-radius: var(--vcl-radius-xs, calc(4px * var(--vcl-scale)));
+  color: var(--vcl-color-text-secondary, #6b7280);
   font-weight: 500;
   display: inline-flex;
   align-items: center;
@@ -133,7 +133,7 @@
   display: flex;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(9px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light, #f3f4f6);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f3f4f6);
 }
 /* 属性行内联布局（图标选择器 + 清除按钮） */
 .ldp-prop-inline {
@@ -153,16 +153,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
-  background: var(--color-bg, #fff);
-  color: var(--color-text-muted, #94a3b8);
+  border: 1px solid var(--vcl-color-border, #e5e7eb);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
+  background: var(--vcl-color-bg, #fff);
+  color: var(--vcl-color-text-muted, #94a3b8);
   cursor: pointer;
   transition: all 0.15s;
 }
 .ldp-icon-clear:hover {
-  border-color: var(--color-danger-on-surface);
-  color: var(--color-danger-on-surface);
+  border-color: var(--vcl-color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .ldp-prop-row > .ldp-prop {
   padding: 0;
@@ -175,25 +175,25 @@
 .ldp-options-editor {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-xs, calc(4px * var(--vcl-scale)));
+  border: 1px solid var(--vcl-color-border, #e5e7eb);
+  border-radius: var(--vcl-radius-xs, calc(4px * var(--vcl-scale)));
   padding: calc(7px * var(--vcl-scale)) calc(9px * var(--vcl-scale));
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   line-height: 1.55;
-  background: var(--color-surface);
-  color: var(--color-text, #1e293b);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text, #1e293b);
   font-family: inherit;
   resize: vertical;
   transition: border-color 0.15s;
 }
 .ldp-options-editor:focus {
   outline: none;
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--vcl-color-primary, #3b82f6);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.08);
 }
 .ldp-option-count {
-  font-size: var(--fs-10);
-  color: var(--color-text-muted, #9ca3af);
+  font-size: var(--vcl-fs-10);
+  color: var(--vcl-color-text-muted, #9ca3af);
   margin-top: calc(3px * var(--vcl-scale));
 }
 
@@ -207,11 +207,11 @@
   width: calc(36px * var(--vcl-scale));
   height: calc(30px * var(--vcl-scale));
   min-width: calc(36px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e5e7eb);
+  border: 1px solid var(--vcl-color-border, #e5e7eb);
   border-radius: calc(4px * var(--vcl-scale));
   cursor: pointer;
   padding: 2px;
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
   flex-shrink: 0;
 }
 
@@ -220,12 +220,12 @@
   display: flex;
   align-items: center;
   gap: calc(4px * var(--vcl-scale));
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   color: #16a34a;
   margin-top: calc(3px * var(--vcl-scale));
 }
 .ldp-prop-hint:not(.ldp-prop-ok) {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 
 /* ================================
@@ -245,16 +245,16 @@
 }
 .ldc-detail {
   width: 100%;
-  background: var(--color-bg-alt, #f8fafc);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
+  background: var(--vcl-color-bg-alt, #f8fafc);
+  border: 1px solid var(--vcl-color-border, #e5e7eb);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
   padding: calc(12px * var(--vcl-scale));
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   max-width: 100%;
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-all;
   font-family: 'Cascadia Code', monospace;
   line-height: 1.6;
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--vcl-color-text-secondary, #6b7280);
 }

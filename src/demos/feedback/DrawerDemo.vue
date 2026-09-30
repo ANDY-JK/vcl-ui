@@ -21,10 +21,10 @@ const drawerLeftVisible = ref(false)
     </Card>
 
     <Drawer v-model:visible="drawerVisible" title="右侧抽屉" placement="right">
-      <p style="color: var(--color-text-secondary)">这是一个从右侧滑出的抽屉面板。</p>
+      <p style="color: var(--vcl-color-text-secondary)">这是一个从右侧滑出的抽屉面板。</p>
       <p
         style="
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-top: calc(8px * var(--vcl-scale));
           font-size: calc(13px * var(--vcl-scale));
         "
@@ -40,13 +40,13 @@ const drawerLeftVisible = ref(false)
     </Drawer>
 
     <Drawer v-model:visible="drawerLeftVisible" title="左侧导航" placement="left" width="300px">
-      <p style="color: var(--color-text-secondary)">从左侧滑出的面板，常用于移动端导航菜单。</p>
+      <p style="color: var(--vcl-color-text-secondary)">从左侧滑出的面板，常用于移动端导航菜单。</p>
     </Drawer>
 
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -56,7 +56,7 @@ const drawerLeftVisible = ref(false)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>visible</code>
@@ -69,7 +69,7 @@ const drawerLeftVisible = ref(false)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>title</code>
@@ -82,7 +82,7 @@ const drawerLeftVisible = ref(false)
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>placement</code>
@@ -112,12 +112,12 @@ const drawerLeftVisible = ref(false)
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

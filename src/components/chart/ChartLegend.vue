@@ -55,58 +55,58 @@ function onToggleAll() {
 <style scoped>
 .cl-root {
   flex-shrink: 0;
-  padding: var(--space-2) calc(12px * var(--vcl-scale)) calc(4px * var(--vcl-scale));
-  border-top: 1px solid var(--color-border-light);
-  margin-top: var(--space-1);
+  padding: var(--vcl-space-2) calc(12px * var(--vcl-scale)) calc(4px * var(--vcl-scale));
+  border-top: 1px solid var(--vcl-color-border-light);
+  margin-top: var(--vcl-space-1);
 }
 .cl-header {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--vcl-space-1);
 }
 .cl-toggle-all {
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  border: 1px solid var(--vcl-color-border);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
   font-size: calc(14px * var(--vcl-scale));
-  padding: var(--space-0) calc(8px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  padding: var(--vcl-space-0) calc(8px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-sm);
   cursor: pointer;
   transition: all 0.15s;
   line-height: 1.5;
 }
 .cl-toggle-all:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary-on-surface);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
 }
 .cl-toggle-all--active {
-  border-color: var(--color-primary);
-  color: var(--color-primary-on-surface); /* AA：浅主色底上基色 3.8 不达标 */
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface); /* AA：浅主色底上基色 3.8 不达标 */
+  background: var(--vcl-color-primary-light);
 }
 .cl-list {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1) calc(16px * var(--vcl-scale));
+  gap: var(--vcl-space-1) calc(16px * var(--vcl-scale));
 }
 .cl-item {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-1);
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-1) var(--vcl-space-1);
   border: none;
   background: none;
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   transition:
     opacity 0.15s,
     background 0.15s;
   line-height: 1.6;
 }
 .cl-item:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .cl-item.off {
   opacity: 0.3;
@@ -114,7 +114,7 @@ function onToggleAll() {
 .cl-dot {
   width: calc(10px * var(--vcl-scale));
   height: calc(10px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   flex-shrink: 0;
 }
 .cl-text {

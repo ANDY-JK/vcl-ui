@@ -37,128 +37,128 @@
   --vcl-scale: calc(clamp(0.88, calc(0.88 + (100vw - 1024px) / 896px * 0.12), 1) * var(--vcl-zoom));
 
   /* 间距 - 地板 88% 与全站同尺；≥1920 与旧版逐像素一致 */
-  --space-1: calc(4px * var(--vcl-scale));
-  --space-2: calc(8px * var(--vcl-scale));
-  --space-3: calc(12px * var(--vcl-scale));
-  --space-4: calc(16px * var(--vcl-scale));
-  --space-5: calc(20px * var(--vcl-scale));
-  --space-6: calc(20px * var(--vcl-scale));
-  --space-8: calc(24px * var(--vcl-scale));
-  --space-10: calc(32px * var(--vcl-scale));
-  --space-12: calc(40px * var(--vcl-scale));
+  --vcl-space-1: calc(4px * var(--vcl-scale));
+  --vcl-space-2: calc(8px * var(--vcl-scale));
+  --vcl-space-3: calc(12px * var(--vcl-scale));
+  --vcl-space-4: calc(16px * var(--vcl-scale));
+  --vcl-space-5: calc(20px * var(--vcl-scale));
+  --vcl-space-6: calc(20px * var(--vcl-scale));
+  --vcl-space-8: calc(24px * var(--vcl-scale));
+  --vcl-space-10: calc(32px * var(--vcl-scale));
+  --vcl-space-12: calc(40px * var(--vcl-scale));
   /* 主色调 — 稳重蓝 */
-  --color-primary: #4f6ef7;
-  --color-primary-rgb: 79, 110, 247;
-  --color-primary-hover: #3b56e0;
-  --color-primary-light: #eef1fe;
+  --vcl-color-primary: #4f6ef7;
+  --vcl-color-primary-rgb: 79, 110, 247;
+  --vcl-color-primary-hover: #3b56e0;
+  --vcl-color-primary-light: #eef1fe;
   /* 主色「当文字/图标色用」的自适应取值 —— 组件要写 `color:` 时用这个，不要用 -solid：
      -solid 的本义是「实心底压白字」（见下方语义色实心底段），亮暗各自只为那个场景保证对比度。
      可它一旦被拿来当文字色，暗色主题就翻车：背景变深而 -solid 仍是同一个深蓝，
      实测 2.62~3.13:1，低于正文 AA 线。本令牌按主题切换：
-       亮色 = #3b56e0（压白底 5.84，直接引 --color-primary 的 #4f6ef7 只有 4.28 不达标）
+       亮色 = #3b56e0（压白底 5.84，直接引 --vcl-color-primary 的 #4f6ef7 只有 4.28 不达标）
        暗色 = #6b8af9（压各档暗底 4.83~5.77）
      于是「同一处 color:」在两套主题下都达标，调用方不必写两套值。 */
-  --color-primary-on-surface: #3b56e0;
+  --vcl-color-primary-on-surface: #3b56e0;
 
   /* 中性色 — 干净白/浅灰 */
-  --color-surface: #ffffff;
-  --color-bg: #f4f5f7;
-  --color-bg-alt: #eaecf0;
+  --vcl-color-surface: #ffffff;
+  --vcl-color-bg: #f4f5f7;
+  --vcl-color-bg-alt: #eaecf0;
 
   /* 文字 — 高对比深灰 */
-  --color-text: #13161f;
-  --color-text-secondary: #505560;
-  --color-text-muted: #5f6672;
+  --vcl-color-text: #13161f;
+  --vcl-color-text-secondary: #505560;
+  --vcl-color-text-muted: #5f6672;
 
   /* 边框 — 可见分隔 */
-  --color-border: #d5d8de;
-  --color-border-light: #e8eaef;
+  --vcl-color-border: #d5d8de;
+  --vcl-color-border-light: #e8eaef;
 
   /* 侧边栏 — 深灰蓝 */
-  --color-sidebar: #1a1f2e;
-  --color-sidebar-hover: rgba(255, 255, 255, 0.08);
-  --color-sidebar-active: rgba(79, 110, 247, 0.22);
-  --color-sidebar-text: #c0c5cf;
-  --color-sidebar-text-active: #e2e5ed;
+  --vcl-color-sidebar: #1a1f2e;
+  --vcl-color-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --vcl-color-sidebar-active: rgba(79, 110, 247, 0.22);
+  --vcl-color-sidebar-text: #c0c5cf;
+  --vcl-color-sidebar-text-active: #e2e5ed;
 
   /* 状态色 */
-  --color-success: #22ad5f;
-  --color-success-bg: #f0fdf4;
-  --color-success-text: #15803d; /* AA：原 #16a34a 压 success-bg 实测 3.15，加深一档到 4.79 */
-  --color-success-border: #bbf7d0;
-  --color-warning: #f59e0b;
-  --color-warning-bg: #fffbeb;
-  --color-warning-text: #b45309; /* AA：原 #d97706 压 warning-bg 实测 3.07，加深一档到 4.84 */
-  --color-warning-border: #fde68a;
-  --color-danger: #e54545;
+  --vcl-color-success: #22ad5f;
+  --vcl-color-success-bg: #f0fdf4;
+  --vcl-color-success-text: #15803d; /* AA：原 #16a34a 压 success-bg 实测 3.15，加深一档到 4.79 */
+  --vcl-color-success-border: #bbf7d0;
+  --vcl-color-warning: #f59e0b;
+  --vcl-color-warning-bg: #fffbeb;
+  --vcl-color-warning-text: #b45309; /* AA：原 #d97706 压 warning-bg 实测 3.07，加深一档到 4.84 */
+  --vcl-color-warning-border: #fde68a;
+  --vcl-color-danger: #e54545;
   /* ===== 语义色「实心底」专用（压白色文字） =====
      背景：暗色主题下 --color-{primary,success,warning,danger} 都会被**提亮**
      （为在深色底上当文字/图标用），一旦拿它们做实心底再压白字就不可读：
      实测暗色下白字对比度 primary 3.17 / danger 2.77 / success 1.92 / warning 1.67，
      全部低于 4.5 的可读线。故实心底单列一套，亮暗各自保证与白字的对比度。 */
-  --color-danger-solid: #dc2626;
-  --color-danger-solid-hover: #b91c1c;
-  --color-warning-solid: #b45309;
-  --color-warning-solid-hover: #92400e;
-  --color-success-solid: #15803d;
-  --color-success-solid-hover: #166534;
+  --vcl-color-danger-solid: #dc2626;
+  --vcl-color-danger-solid-hover: #b91c1c;
+  --vcl-color-warning-solid: #b45309;
+  --vcl-color-warning-solid-hover: #92400e;
+  --vcl-color-success-solid: #15803d;
+  --vcl-color-success-solid-hover: #166534;
   /* primary 实心底：#4f6ef7 压白字仅 4.28（未达标），故实心场景用更深的蓝 */
-  --color-primary-solid: #3b56e0;
-  --color-primary-solid-hover: #2f4bd8;
-  --color-danger-bg: #fef2f2;
-  --color-danger-hover: #c81e1e; /* AA：原 #dc2626 压 danger-bg 实测 4.41，加深一档达标 */
-  /* 危险色「当文字/图标色用」的自适应取值——与 --color-primary-on-surface 同规则。
-     --color-danger(#e54545) 压白底仅 3.99、压浅灰仅 3.37，作为错误提示文字偏浅；
+  --vcl-color-primary-solid: #3b56e0;
+  --vcl-color-primary-solid-hover: #2f4bd8;
+  --vcl-color-danger-bg: #fef2f2;
+  --vcl-color-danger-hover: #c81e1e; /* AA：原 #dc2626 压 danger-bg 实测 4.41，加深一档达标 */
+  /* 危险色「当文字/图标色用」的自适应取值——与 --vcl-color-primary-on-surface 同规则。
+     --vcl-color-danger(#e54545) 压白底仅 3.99、压浅灰仅 3.37，作为错误提示文字偏浅；
      取 #c81e1e：白底 5.74、浅灰 5.26、浅红底 5.24、浅绿底 5.48（七种常用底全 ≥4.85）。 */
-  --color-danger-on-surface: #c81e1e;
-  --color-danger-border: #fecaca;
-  --color-info: #4f6ef7;
-  --color-info-bg: #eff6ff;
-  --color-info-text: #3b82f6;
-  --color-info-border: #93c5fd;
+  --vcl-color-danger-on-surface: #c81e1e;
+  --vcl-color-danger-border: #fecaca;
+  --vcl-color-info: #4f6ef7;
+  --vcl-color-info-bg: #eff6ff;
+  --vcl-color-info-text: #3b82f6;
+  --vcl-color-info-border: #93c5fd;
 
   /* [2026-09-29 删除] 此处曾有一份重复的 --space-* 声明（clamp(Apx, Bvw, Cpx) 形态）。
      CSS 同级声明后者胜出，它把上方 --vcl-scale 驱动的间距整段架空了一轮——
      上一轮「间距跟着视口缩放」的改造实际从未生效，这正是「看不出变化」的隐形原因之一。 */
 
   /* 圆角 — 与盒子同尺：盒子缩小而圆角不变会让小视口控件显得「圆头圆脑」 */
-  --radius-sm: calc(4px * var(--vcl-scale));
-  --radius-md: calc(8px * var(--vcl-scale));
-  --radius-lg: calc(12px * var(--vcl-scale));
-  --radius-xl: calc(16px * var(--vcl-scale));
+  --vcl-radius-sm: calc(4px * var(--vcl-scale));
+  --vcl-radius-md: calc(8px * var(--vcl-scale));
+  --vcl-radius-lg: calc(12px * var(--vcl-scale));
+  --vcl-radius-xl: calc(16px * var(--vcl-scale));
 
   /* ===== 字体档位族（2026-09-29 新增）=====
      与全站同尺：--vcl-scale 驱动，≤1024 视口取地板 88%、1024~1920 连续缩放、≥1920 = 现值。
      地板原则：N≤10 已是可读性边缘，恒定不缩（缩放后不足 9px 会糊）。
      组件字号一律引 var(--fs-N) 或 calc(Npx * var(--vcl-scale))，不要再写 font-size: Npx。 */
-  --fs-9: 9px;
-  --fs-10: 10px;
-  --fs-11: calc(11px * var(--vcl-scale));
-  --fs-12: calc(12px * var(--vcl-scale));
-  --fs-13: calc(13px * var(--vcl-scale));
-  --fs-14: calc(14px * var(--vcl-scale));
-  --fs-15: calc(15px * var(--vcl-scale));
-  --fs-16: calc(16px * var(--vcl-scale));
-  --fs-18: calc(18px * var(--vcl-scale));
-  --fs-20: calc(20px * var(--vcl-scale));
-  --fs-22: calc(22px * var(--vcl-scale));
-  --fs-28: calc(28px * var(--vcl-scale));
+  --vcl-fs-9: 9px;
+  --vcl-fs-10: 10px;
+  --vcl-fs-11: calc(11px * var(--vcl-scale));
+  --vcl-fs-12: calc(12px * var(--vcl-scale));
+  --vcl-fs-13: calc(13px * var(--vcl-scale));
+  --vcl-fs-14: calc(14px * var(--vcl-scale));
+  --vcl-fs-15: calc(15px * var(--vcl-scale));
+  --vcl-fs-16: calc(16px * var(--vcl-scale));
+  --vcl-fs-18: calc(18px * var(--vcl-scale));
+  --vcl-fs-20: calc(20px * var(--vcl-scale));
+  --vcl-fs-22: calc(22px * var(--vcl-scale));
+  --vcl-fs-28: calc(28px * var(--vcl-scale));
 
   /* 控件统一尺寸 — 覆盖这些变量可全局调整所有表单控件 */
-  --ctrl-height: calc(42px * var(--vcl-scale));
-  --ctrl-font-size: calc(14px * var(--vcl-scale));
-  --ctrl-radius: var(--radius-md);
-  --ctrl-padding-x: calc(14px * var(--vcl-scale));
+  --vcl-ctrl-height: calc(42px * var(--vcl-scale));
+  --vcl-ctrl-font-size: calc(14px * var(--vcl-scale));
+  --vcl-ctrl-radius: var(--vcl-radius-md);
+  --vcl-ctrl-padding-x: calc(14px * var(--vcl-scale));
 
   /* 阴影 */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --vcl-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --vcl-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --vcl-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 
   /* 动效 */
-  --transition-fast: 150ms ease;
-  --transition-normal: 200ms ease;
-  --transition-slow: 300ms ease;
+  --vcl-transition-fast: 150ms ease;
+  --vcl-transition-normal: 200ms ease;
+  --vcl-transition-slow: 300ms ease;
 
   /* ===== 减弱动效（F7，2026-09-30）=====
      两条触发通道：① 宿主在 <html> 显式声明 data-vcl-motion="reduced"（投屏/晕动症等场景，
@@ -170,9 +170,9 @@
      稳定压过 scoped 样式的写法（仓内既有 48 处 !important 先例）。只收时长与次数，
      不碰布局与终态透明度；取代 Loading/Skeleton 各自的本地 reduced 块（单一真源）。 */
   :root[data-vcl-motion='reduced'] {
-    --transition-fast: 0.01ms;
-    --transition-normal: 0.01ms;
-    --transition-slow: 0.01ms;
+    --vcl-transition-fast: 0.01ms;
+    --vcl-transition-normal: 0.01ms;
+    --vcl-transition-slow: 0.01ms;
   }
   :root[data-vcl-motion='reduced'] *,
   :root[data-vcl-motion='reduced'] *::before,
@@ -183,9 +183,9 @@
   }
   @media (prefers-reduced-motion: reduce) {
     :root:not([data-vcl-motion='full']) {
-      --transition-fast: 0.01ms;
-      --transition-normal: 0.01ms;
-      --transition-slow: 0.01ms;
+      --vcl-transition-fast: 0.01ms;
+      --vcl-transition-normal: 0.01ms;
+      --vcl-transition-slow: 0.01ms;
     }
     :root:not([data-vcl-motion='full']) *,
     :root:not([data-vcl-motion='full']) *::before,
@@ -197,69 +197,69 @@
   }
 
   /* 键盘焦点环 — 组件要覆写时引这两个值，不要再各写一套 outline/box-shadow */
-  --focus-ring-color: var(--color-primary);
-  --focus-ring: 2px solid var(--focus-ring-color);
-  --focus-ring-offset: 2px;
+  --vcl-focus-ring-color: var(--vcl-color-primary);
+  --vcl-focus-ring: 2px solid var(--vcl-focus-ring-color);
+  --vcl-focus-ring-offset: 2px;
 
   /* 原生控件与滚动条配色（亮/暗各自声明） */
   color-scheme: light;
 
   /* 层级 — 全局 z-index 变量，组件引用变量而非硬编码数字 */
-  --z-sticky: 100; /* 表头、工具栏等 sticky */
-  --z-overlay: 1500; /* 全屏表格 — 高于弹窗但低于下拉 */
-  --z-dropdown: 2000; /* 筛选下拉、右键菜单 — 高于全屏表格 */
-  --z-readonly: 2500; /* 全屏只读遮罩 — 压 modal/overlay/dropdown */
-  --z-modal: 1000; /* 弹窗蒙板 */
-  --z-tooltip: 3000; /* 提示气泡 */
-  --z-top: 9999; /* 最高优先级通知 */
+  --vcl-z-sticky: 100; /* 表头、工具栏等 sticky */
+  --vcl-z-overlay: 1500; /* 全屏表格 — 高于弹窗但低于下拉 */
+  --vcl-z-dropdown: 2000; /* 筛选下拉、右键菜单 — 高于全屏表格 */
+  --vcl-z-readonly: 2500; /* 全屏只读遮罩 — 压 modal/overlay/dropdown */
+  --vcl-z-modal: 1000; /* 弹窗蒙板 */
+  --vcl-z-tooltip: 3000; /* 提示气泡 */
+  --vcl-z-top: 9999; /* 最高优先级通知 */
 
   /* 布局 */
-  --sidebar-width: calc(280px * var(--vcl-scale));
-  --content-max-width: calc(1200px * var(--vcl-scale));
+  --vcl-sidebar-width: calc(280px * var(--vcl-scale));
+  --vcl-content-max-width: calc(1200px * var(--vcl-scale));
 
   /* 响应式断点（给 JS 读取用） */
-  --bp-sm: 640px;
-  --bp-md: 768px;
-  --bp-lg: 1024px;
+  --vcl-bp-sm: 640px;
+  --vcl-bp-md: 768px;
+  --vcl-bp-lg: 1024px;
 
   /* ===== 补录令牌（2026-09-05 审计：组件引用但此前未声明，值与既有色板对齐） =====
      背景：var() 引用未声明令牌时属性整体失效——有兜底的暗色下露出静态亮色，
      无兜底的直接归零（如相机底栏贴边）。rgb 三元组用逗号式，rgba(var(--x), a) 才合法 */
-  --space-0: 0px;
-  --radius-xs: calc(4px * var(--vcl-scale));
-  --bg-secondary: var(--color-bg);
-  --color-bg-soft: #f1f5f9;
-  --color-bg-hover: #f5f7fa;
-  --color-bg-inverse: #333333; /* 固定反色，不随主题 */
-  --color-text-inverse: #ffffff;
-  --color-border-dark: #94a3b8;
-  --color-primary-50: #f0f4ff;
-  --color-primary-soft: #e0e7ff;
-  --color-primary-bg: rgba(var(--color-primary-rgb), 0.08);
-  --color-danger-light: #fef2f2;
-  --color-danger-rgb: 229, 69, 69;
-  --color-success-rgb: 34, 173, 95;
-  --color-warning-rgb: 245, 158, 11;
-  --color-badge-ring: var(--color-surface);
+  --vcl-space-0: 0px;
+  --vcl-radius-xs: calc(4px * var(--vcl-scale));
+  --vcl-bg-secondary: var(--vcl-color-bg);
+  --vcl-color-bg-soft: #f1f5f9;
+  --vcl-color-bg-hover: #f5f7fa;
+  --vcl-color-bg-inverse: #333333; /* 固定反色，不随主题 */
+  --vcl-color-text-inverse: #ffffff;
+  --vcl-color-border-dark: #94a3b8;
+  --vcl-color-primary-50: #f0f4ff;
+  --vcl-color-primary-soft: #e0e7ff;
+  --vcl-color-primary-bg: rgba(var(--vcl-color-primary-rgb), 0.08);
+  --vcl-color-danger-light: #fef2f2;
+  --vcl-color-danger-rgb: 229, 69, 69;
+  --vcl-color-success-rgb: 34, 173, 95;
+  --vcl-color-warning-rgb: 245, 158, 11;
+  --vcl-color-badge-ring: var(--vcl-color-surface);
   /* ===== DataTable 可编辑态专用色（2026-09-17） =====
      分色规则 —— 用颜色表达「这个格能不能改」，让用户一眼区分：
-       蓝（--color-primary 系列）= **选中**：不可编辑单元格、行勾选、行标记、筛选项
-       紫（--dt-select 系列）    = **可编辑**：可编辑单元格选中、编辑中、填充柄与预览、
+       蓝（--vcl-color-primary 系列）= **选中**：不可编辑单元格、行勾选、行标记、筛选项
+       紫（--vcl-dt-select 系列）    = **可编辑**：可编辑单元格选中、编辑中、填充柄与预览、
                                   可下拉的选项面板与指示箭头、拖动放入图片
      故紫不可用于纯选中语义（否则失去区分能力），蓝也不可用于可编辑语义。
      与语义色不撞：绿=成功、橙=已修改、红=危险，紫未被占用。 */
-  --dt-select: #7c5cf0; /* 可编辑主色（描边、填充柄、inset 高亮条） */
-  --dt-select-rgb: 124, 92, 240; /* 三元组：rgba(var(--dt-select-rgb), a) 用于半透明底 */
-  --dt-select-soft: #f1ecfe; /* 可编辑浅底（编辑中字段、下拉悬停等较大面积着色） */
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
-  --z-lightbox: 10000; /* 图片预览全屏层 — 高于 --z-top */
+  --vcl-dt-select: #7c5cf0; /* 可编辑主色（描边、填充柄、inset 高亮条） */
+  --vcl-dt-select-rgb: 124, 92, 240; /* 三元组：rgba(var(--vcl-dt-select-rgb), a) 用于半透明底 */
+  --vcl-dt-select-soft: #f1ecfe; /* 可编辑浅底（编辑中字段、下拉悬停等较大面积着色） */
+  --vcl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  --vcl-z-lightbox: 10000; /* 图片预览全屏层 — 高于 --vcl-z-top */
 }
 
 /* ===== 移动端变量覆写 ===== */
 @media (max-width: 767px) {
   :root {
-    --sidebar-width: 0px; /* 移动端侧栏变为 overlay */
-    --content-max-width: 100%;
+    --vcl-sidebar-width: 0px; /* 移动端侧栏变为 overlay */
+    --vcl-content-max-width: 100%;
   }
 }
 
@@ -268,7 +268,7 @@
    不动桌面 clamp（响应式比例受保护），只在触屏媒体查询下提到底线值 */
 @media (pointer: coarse) {
   :root {
-    --ctrl-font-size: 16px;
+    --vcl-ctrl-font-size: 16px;
   }
 }
 
@@ -280,94 +280,94 @@
    仅覆写颜色变量，间距/圆角/动效/z-index 继承亮色值 */
 :root[data-theme='dark'] {
   /* 原生控件/滚动条/焦点环底色跟着转暗 —— 否则暗色下 UA 给的 1px 焦点环是黑的，
-     压在 --color-surface 上实测对比度约 1.3:1，等于没有 */
+     压在 --vcl-color-surface 上实测对比度约 1.3:1，等于没有 */
   color-scheme: dark;
   /* 主色调 — 保持品牌蓝一致，hover 提亮 */
-  --color-primary: #6b8af9;
-  --color-primary-hover: #8aa5fb;
-  --color-primary-light: #1e2433;
+  --vcl-color-primary: #6b8af9;
+  --vcl-color-primary-hover: #8aa5fb;
+  --vcl-color-primary-light: #1e2433;
   /* 主色当文字用：暗底取提亮档（各档暗底 4.83~5.77），不能用亮色那支的 #3b56e0 */
-  --color-primary-on-surface: #6b8af9;
-  /* rgb 三元组必须跟随主色覆写：它被 rgba(var(--color-primary-rgb), a) 用于
+  --vcl-color-primary-on-surface: #6b8af9;
+  /* rgb 三元组必须跟随主色覆写：它被 rgba(var(--vcl-color-primary-rgb), a) 用于
      选中态/表头/描边等半透明底。此前只在亮色声明（79,110,247），
-     暗色下会残留亮色蓝，与 --color-primary(#6b8af9) 不一致。值 = #6b8af9 */
-  --color-primary-rgb: 107, 138, 249;
+     暗色下会残留亮色蓝，与 --vcl-color-primary(#6b8af9) 不一致。值 = #6b8af9 */
+  --vcl-color-primary-rgb: 107, 138, 249;
 
   /* DataTable 选中/编辑专用色（暗色变体：提亮 + 深底，与紫主色同调） */
-  --dt-select: #a78bfa;
-  --dt-select-rgb: 167, 139, 250;
-  --dt-select-soft: #241f3d;
+  --vcl-dt-select: #a78bfa;
+  --vcl-dt-select-rgb: 167, 139, 250;
+  --vcl-dt-select-soft: #241f3d;
 
   /* 中性色 — 深底 */
-  --color-surface: #1a1d24;
-  --color-bg: #131519;
-  --color-bg-alt: #22252e;
+  --vcl-color-surface: #1a1d24;
+  --vcl-color-bg: #131519;
+  --vcl-color-bg-alt: #22252e;
 
   /* 文字 — 浅色高对比 */
-  --color-text: #e8eaf0;
-  --color-text-secondary: #a0a6b0;
+  --vcl-color-text: #e8eaf0;
+  --vcl-color-text-secondary: #a0a6b0;
   /* AA 达标线（2026-09-29）：原 #6b7280 压在暗底上实测 surface 3.49 / bgAlt 3.17，
      均低于正文 4.5 的 AA 线——而它是 <code>、表单浮标题、统计标签、表格次要单元格
      等「大段次要文字」的用色，不是装饰。取 #8a929d：最苛刻的 bgAlt 底上 4.87，
      其余底 5.1~5.5，留出余量。 */
-  --color-text-muted: #8a929d;
+  --vcl-color-text-muted: #8a929d;
 
   /* 边框 — 深色可辨 */
-  --color-border: #2d3139;
-  --color-border-light: #232730;
+  --vcl-color-border: #2d3139;
+  --vcl-color-border-light: #232730;
 
   /* 侧边栏 — 更深 */
-  --color-sidebar: #0f1115;
-  --color-sidebar-hover: rgba(255, 255, 255, 0.06);
-  --color-sidebar-active: rgba(107, 138, 249, 0.18);
-  --color-sidebar-text: #8b92a0;
-  --color-sidebar-text-active: #c0c5cf;
+  --vcl-color-sidebar: #0f1115;
+  --vcl-color-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --vcl-color-sidebar-active: rgba(107, 138, 249, 0.18);
+  --vcl-color-sidebar-text: #8b92a0;
+  --vcl-color-sidebar-text-active: #c0c5cf;
 
   /* 状态色 — 暗底调亮 */
-  --color-success: #34d399;
-  --color-success-bg: #0a2e1f;
-  --color-success-text: #6ee7b7;
-  --color-success-border: #0f3d2a;
-  --color-warning: #fbbf24;
-  --color-warning-bg: #2e1f0a;
-  --color-warning-text: #fcd34d;
-  --color-warning-border: #3d2a0f;
-  --color-danger: #f87171;
-  --color-danger-bg: #2e0f0f;
-  --color-danger-hover: #ef4444;
-  --color-danger-border: #3d1515;
-  --color-info: #6b8af9;
-  --color-info-bg: #1a1e2e;
-  --color-info-text: #93b0fd;
-  --color-info-border: #1e2d4d;
+  --vcl-color-success: #34d399;
+  --vcl-color-success-bg: #0a2e1f;
+  --vcl-color-success-text: #6ee7b7;
+  --vcl-color-success-border: #0f3d2a;
+  --vcl-color-warning: #fbbf24;
+  --vcl-color-warning-bg: #2e1f0a;
+  --vcl-color-warning-text: #fcd34d;
+  --vcl-color-warning-border: #3d2a0f;
+  --vcl-color-danger: #f87171;
+  --vcl-color-danger-bg: #2e0f0f;
+  --vcl-color-danger-hover: #ef4444;
+  --vcl-color-danger-border: #3d1515;
+  --vcl-color-info: #6b8af9;
+  --vcl-color-info-bg: #1a1e2e;
+  --vcl-color-info-text: #93b0fd;
+  --vcl-color-info-border: #1e2d4d;
 
   /* 阴影 — 暗底减淡 */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+  --vcl-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --vcl-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --vcl-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
 
   /* 补录令牌 — 暗色覆写（与亮色块同名令牌对应；非颜色项继承亮色） */
-  --color-bg-soft: #191d24;
-  --color-bg-hover: #2a2e38;
-  --color-border-dark: #3d434f;
-  --color-primary-50: #1e2433;
-  --color-primary-soft: #1e2433;
-  --color-danger-light: #2e0f0f;
-  --color-danger-rgb: 248, 113, 113;
+  --vcl-color-bg-soft: #191d24;
+  --vcl-color-bg-hover: #2a2e38;
+  --vcl-color-border-dark: #3d434f;
+  --vcl-color-primary-50: #1e2433;
+  --vcl-color-primary-soft: #1e2433;
+  --vcl-color-danger-light: #2e0f0f;
+  --vcl-color-danger-rgb: 248, 113, 113;
   /* 危险色当文字用：暗底取提亮档（surface 6.10 / success-bg 5.33 / danger-bg 5.0+） */
-  --color-danger-on-surface: #f87171;
+  --vcl-color-danger-on-surface: #f87171;
   /* 暗色下实心底仍用较深色：提亮后的语义色压白字均不可读（见亮色块注释的实测数据） */
-  --color-danger-solid: #dc2626;
-  --color-danger-solid-hover: #b91c1c;
-  --color-warning-solid: #b45309;
-  --color-warning-solid-hover: #92400e;
-  --color-success-solid: #15803d;
-  --color-success-solid-hover: #166534;
-  --color-primary-solid: #3b56e0;
-  --color-primary-solid-hover: #2f4bd8;
-  --color-success-rgb: 52, 211, 153;
-  --color-warning-rgb: 251, 191, 36;
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --vcl-color-danger-solid: #dc2626;
+  --vcl-color-danger-solid-hover: #b91c1c;
+  --vcl-color-warning-solid: #b45309;
+  --vcl-color-warning-solid-hover: #92400e;
+  --vcl-color-success-solid: #15803d;
+  --vcl-color-success-solid-hover: #166534;
+  --vcl-color-primary-solid: #3b56e0;
+  --vcl-color-primary-solid-hover: #2f4bd8;
+  --vcl-color-success-rgb: 52, 211, 153;
+  --vcl-color-warning-rgb: 251, 191, 36;
+  --vcl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
 }
 
 /* ===== 自动跟随系统暗色（无 data-theme 属性时生效） ===== */
@@ -375,86 +375,86 @@
   :root:not([data-theme]) {
     color-scheme: dark;
     /* 主色调 */
-    --color-primary: #6b8af9;
-    --color-primary-hover: #8aa5fb;
-    --color-primary-light: #1e2433;
-    --color-primary-on-surface: #6b8af9;
+    --vcl-color-primary: #6b8af9;
+    --vcl-color-primary-hover: #8aa5fb;
+    --vcl-color-primary-light: #1e2433;
+    --vcl-color-primary-on-surface: #6b8af9;
     /* 与 :root[data-theme='dark'] 保持一致：两套暗色块必须同值，
        否则「跟随系统」与「手动切暗色」会呈现不同配色 */
-    --color-primary-rgb: 107, 138, 249;
+    --vcl-color-primary-rgb: 107, 138, 249;
 
     /* DataTable 选中/编辑专用色（与手动暗色块同值） */
-    --dt-select: #a78bfa;
-    --dt-select-rgb: 167, 139, 250;
-    --dt-select-soft: #241f3d;
+    --vcl-dt-select: #a78bfa;
+    --vcl-dt-select-rgb: 167, 139, 250;
+    --vcl-dt-select-soft: #241f3d;
 
     /* 中性色 */
-    --color-surface: #1a1d24;
-    --color-bg: #131519;
-    --color-bg-alt: #22252e;
+    --vcl-color-surface: #1a1d24;
+    --vcl-color-bg: #131519;
+    --vcl-color-bg-alt: #22252e;
 
     /* 文字（与 :root[data-theme='dark'] 同值：两套暗色块必须一致，
        否则「跟随系统」与「手动切暗色」会呈现不同可读性） */
-    --color-text: #e8eaf0;
-    --color-text-secondary: #a0a6b0;
-    --color-text-muted: #8a929d;
+    --vcl-color-text: #e8eaf0;
+    --vcl-color-text-secondary: #a0a6b0;
+    --vcl-color-text-muted: #8a929d;
 
     /* 边框 */
-    --color-border: #2d3139;
-    --color-border-light: #232730;
+    --vcl-color-border: #2d3139;
+    --vcl-color-border-light: #232730;
 
     /* 侧边栏 */
-    --color-sidebar: #0f1115;
-    --color-sidebar-hover: rgba(255, 255, 255, 0.06);
-    --color-sidebar-active: rgba(107, 138, 249, 0.18);
-    --color-sidebar-text: #8b92a0;
-    --color-sidebar-text-active: #c0c5cf;
+    --vcl-color-sidebar: #0f1115;
+    --vcl-color-sidebar-hover: rgba(255, 255, 255, 0.06);
+    --vcl-color-sidebar-active: rgba(107, 138, 249, 0.18);
+    --vcl-color-sidebar-text: #8b92a0;
+    --vcl-color-sidebar-text-active: #c0c5cf;
 
     /* 状态色 */
-    --color-success: #34d399;
-    --color-success-bg: #0a2e1f;
-    --color-success-text: #6ee7b7;
-    --color-success-border: #0f3d2a;
-    --color-warning: #fbbf24;
-    --color-warning-bg: #2e1f0a;
-    --color-warning-text: #fcd34d;
-    --color-warning-border: #3d2a0f;
-    --color-danger: #f87171;
-    --color-danger-bg: #2e0f0f;
-    --color-danger-hover: #ef4444;
-    --color-danger-border: #3d1515;
-    --color-info: #6b8af9;
-    --color-info-bg: #1a1e2e;
-    --color-info-text: #93b0fd;
-    --color-info-border: #1e2d4d;
+    --vcl-color-success: #34d399;
+    --vcl-color-success-bg: #0a2e1f;
+    --vcl-color-success-text: #6ee7b7;
+    --vcl-color-success-border: #0f3d2a;
+    --vcl-color-warning: #fbbf24;
+    --vcl-color-warning-bg: #2e1f0a;
+    --vcl-color-warning-text: #fcd34d;
+    --vcl-color-warning-border: #3d2a0f;
+    --vcl-color-danger: #f87171;
+    --vcl-color-danger-bg: #2e0f0f;
+    --vcl-color-danger-hover: #ef4444;
+    --vcl-color-danger-border: #3d1515;
+    --vcl-color-info: #6b8af9;
+    --vcl-color-info-bg: #1a1e2e;
+    --vcl-color-info-text: #93b0fd;
+    --vcl-color-info-border: #1e2d4d;
 
     /* 阴影 */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+    --vcl-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --vcl-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --vcl-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.45), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
 
     /* 补录令牌 — 暗色覆写（同 data-theme 块） */
-    --color-bg-soft: #191d24;
-    --color-bg-hover: #2a2e38;
-    --color-border-dark: #3d434f;
-    --color-primary-50: #1e2433;
-    --color-primary-soft: #1e2433;
-    --color-danger-light: #2e0f0f;
-    --color-danger-rgb: 248, 113, 113;
+    --vcl-color-bg-soft: #191d24;
+    --vcl-color-bg-hover: #2a2e38;
+    --vcl-color-border-dark: #3d434f;
+    --vcl-color-primary-50: #1e2433;
+    --vcl-color-primary-soft: #1e2433;
+    --vcl-color-danger-light: #2e0f0f;
+    --vcl-color-danger-rgb: 248, 113, 113;
     /* 与手动暗色块同值 */
-    --color-danger-on-surface: #f87171;
+    --vcl-color-danger-on-surface: #f87171;
     /* 与手动暗色块同值：实心语义底（压白字） */
-    --color-danger-solid: #dc2626;
-    --color-danger-solid-hover: #b91c1c;
-    --color-warning-solid: #b45309;
-    --color-warning-solid-hover: #92400e;
-    --color-success-solid: #15803d;
-    --color-success-solid-hover: #166534;
-    --color-primary-solid: #3b56e0;
-    --color-primary-solid-hover: #2f4bd8;
-    --color-success-rgb: 52, 211, 153;
-    --color-warning-rgb: 251, 191, 36;
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    --vcl-color-danger-solid: #dc2626;
+    --vcl-color-danger-solid-hover: #b91c1c;
+    --vcl-color-warning-solid: #b45309;
+    --vcl-color-warning-solid-hover: #92400e;
+    --vcl-color-success-solid: #15803d;
+    --vcl-color-success-solid-hover: #166534;
+    --vcl-color-primary-solid: #3b56e0;
+    --vcl-color-primary-solid-hover: #2f4bd8;
+    --vcl-color-success-rgb: 52, 211, 153;
+    --vcl-color-warning-rgb: 251, 191, 36;
+    --vcl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -480,6 +480,6 @@
     [role='slider'],
     [tabindex]:not([tabindex='-1'])
   ):not(input, textarea, select, [contenteditable='true'], [role='combobox']):focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
+  outline: var(--vcl-focus-ring);
+  outline-offset: var(--vcl-focus-ring-offset);
 }

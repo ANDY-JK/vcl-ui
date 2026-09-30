@@ -406,24 +406,24 @@ function onContextMenu(e: MouseEvent) {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
   line-height: 1.6;
 }
 .demo-hint {
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(12px * var(--vcl-scale));
   line-height: 1.6;
 }
 .demo-val {
   margin-top: calc(6px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
@@ -449,9 +449,9 @@ code {
   align-items: center;
   justify-content: center;
   height: calc(100px * var(--vcl-scale));
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-muted);
+  border: 2px dashed var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  color: var(--vcl-color-text-muted);
   font-size: calc(13px * var(--vcl-scale));
   cursor: context-menu;
 }

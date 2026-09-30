@@ -129,7 +129,7 @@ function onJumperKeyup(e: KeyboardEvent) {
 .pagination {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
 }
 
 .page-btn {
@@ -138,22 +138,22 @@ function onJumperKeyup(e: KeyboardEvent) {
   justify-content: center;
   min-width: calc(34px * var(--vcl-scale));
   height: calc(34px * var(--vcl-scale));
-  padding: 0 var(--space-1);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  padding: 0 var(--vcl-space-1);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .page-btn:hover:not(:disabled):not(.active) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .page-btn.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
   color: white;
 }
 .page-btn:disabled {
@@ -169,30 +169,30 @@ function onJumperKeyup(e: KeyboardEvent) {
 .page-info {
   margin-left: calc(12px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 .page-jumper {
   display: flex;
   align-items: center;
-  margin-left: var(--space-1);
+  margin-left: var(--vcl-space-1);
 }
 
 .jumper-input {
   width: calc(56px * var(--vcl-scale));
   height: calc(34px * var(--vcl-scale));
-  padding: 0 var(--space-1);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  padding: 0 var(--vcl-space-1);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   outline: none;
   box-sizing: border-box;
   text-align: center;
 }
 .jumper-input:focus {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .jumper-input::-webkit-inner-spin-button,
 .jumper-input::-webkit-outer-spin-button {

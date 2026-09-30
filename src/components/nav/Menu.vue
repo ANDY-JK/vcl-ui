@@ -280,25 +280,25 @@ const levelStyle = computed(() => {
 .menu-item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-radius: var(--vcl-radius-md);
   cursor: pointer;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   font-size: calc(15px * var(--vcl-scale));
   line-height: 1.5;
   transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast);
   user-select: none;
   white-space: nowrap;
 }
 .menu-item:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .menu-item--active {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
   font-weight: 500;
 }
 .menu-item--disabled {
@@ -323,7 +323,7 @@ const levelStyle = computed(() => {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  transition: transform var(--transition-normal);
+  transition: transform var(--vcl-transition-normal);
 }
 .menu-item--expanded > .menu-item-chevron {
   transform: rotate(90deg);
@@ -332,35 +332,35 @@ const levelStyle = computed(() => {
 /* ====== DIVIDER ====== */
 .menu-divider {
   height: 1px;
-  margin: var(--space-1) var(--space-3);
-  background: var(--color-border-light);
+  margin: var(--vcl-space-1) var(--vcl-space-3);
+  background: var(--vcl-color-border-light);
 }
 
 /* ====== SUBMENU — INLINE (vertical click-expand) ====== */
 .menu-submenu--inline {
   overflow: hidden;
-  padding-left: var(--space-4);
+  padding-left: var(--vcl-space-4);
 }
 
 /* ====== SUBMENU — OVERLAY (horizontal dropdown / collapsed floating) ====== */
 .menu-submenu--overlay {
   position: absolute;
-  z-index: var(--z-dropdown, 2000); /* 下拉层：高于弹窗(modal 1000)，不被 Modal 遮挡 */
+  z-index: var(--vcl-z-dropdown, 2000); /* 下拉层：高于弹窗(modal 1000)，不被 Modal 遮挡 */
   min-width: calc(200px * var(--vcl-scale));
-  padding: var(--space-1);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  padding: var(--vcl-space-1);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  box-shadow: var(--vcl-shadow-lg);
   opacity: 0;
   visibility: hidden;
   transition:
-    opacity var(--transition-fast),
-    visibility var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    visibility var(--vcl-transition-fast);
 }
 /* dark 主题浮层用 sidebar 深色背景，避免白底浅灰字看不见 */
 .menu--dark .menu-submenu--overlay {
-  background: var(--color-sidebar);
+  background: var(--vcl-color-sidebar);
   border-color: rgba(255, 255, 255, 0.08);
 }
 .menu-submenu--visible {
@@ -372,7 +372,7 @@ const levelStyle = computed(() => {
 .menu--vertical {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   width: 100%;
 }
 .menu--vertical > .menu-item-wrap > .menu-item {
@@ -382,10 +382,10 @@ const levelStyle = computed(() => {
 /* collapsed: center icon, no label, floating submenu to the right */
 .menu--vertical.menu--collapsed > .menu-item-wrap > .menu-item {
   justify-content: center;
-  padding: var(--space-2);
+  padding: var(--vcl-space-2);
 }
 .menu--vertical.menu--collapsed .menu-submenu--overlay {
-  left: calc(100% + var(--space-1));
+  left: calc(100% + var(--vcl-space-1));
   top: 0;
 }
 
@@ -393,28 +393,28 @@ const levelStyle = computed(() => {
 .menu--horizontal {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
 }
 .menu--horizontal > .menu-item-wrap > .menu-item {
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-radius: var(--vcl-radius-md);
 }
 .menu--horizontal .menu-submenu--overlay {
-  top: calc(100% + var(--space-1));
+  top: calc(100% + var(--vcl-space-1));
   left: 0;
 }
 
 /* ====== DARK THEME ====== */
 .menu--dark .menu-item {
-  color: var(--color-sidebar-text);
+  color: var(--vcl-color-sidebar-text);
 }
 .menu--dark .menu-item:hover {
-  background: var(--color-sidebar-hover);
+  background: var(--vcl-color-sidebar-hover);
   color: #fff;
 }
 .menu--dark .menu-item--active {
-  background: var(--color-sidebar-active);
-  color: var(--color-sidebar-text-active);
+  background: var(--vcl-color-sidebar-active);
+  color: var(--vcl-color-sidebar-text-active);
 }
 .menu--dark .menu-divider {
   background: rgba(255, 255, 255, 0.06);
@@ -423,14 +423,14 @@ const levelStyle = computed(() => {
 /* ====== TRANSITIONS ====== */
 .menu-slide-enter-active {
   transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
   transform-origin: top;
 }
 .menu-slide-leave-active {
   transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
   transform-origin: top;
 }
 .menu-slide-enter-from,

@@ -2,10 +2,10 @@
 
 /* ==================== 筛选下拉框 ==================== */
 .dt-filter-dropdown {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  box-shadow: var(--vcl-shadow-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -44,19 +44,19 @@
   width: 100%;
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border: none;
-  border-bottom: 1px solid var(--color-border-light);
-  font-size: var(--fs-14);
+  border-bottom: 1px solid var(--vcl-color-border-light);
+  font-size: var(--vcl-fs-14);
   outline: none;
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
   box-sizing: border-box;
 }
 .dt-filter-search:focus {
-  border-bottom-color: var(--color-primary);
-  box-shadow: inset 0 -1px 0 0 var(--color-primary);
+  border-bottom-color: var(--vcl-color-primary);
+  box-shadow: inset 0 -1px 0 0 var(--vcl-color-primary);
 }
 .dt-filter-search::placeholder {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 /* 选项排序切换 */
@@ -65,11 +65,11 @@
   align-items: center;
   gap: calc(4px * var(--vcl-scale));
   padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .dt-filter-option-sort-label {
-  font-size: var(--fs-12);
-  color: var(--color-text-muted);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted);
   flex-shrink: 0;
 }
 .dt-filter-option-sort-btn {
@@ -77,25 +77,25 @@
   align-items: center;
   gap: 2px;
   padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  font-size: var(--fs-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  font-size: var(--vcl-fs-12);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .dt-filter-option-sort-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .dt-filter-option-sort-btn.active {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .dt-filter-option-sort-arrow {
-  font-size: var(--fs-10);
+  font-size: var(--vcl-fs-10);
 }
 
 .dt-filter-quick-actions {
@@ -103,27 +103,27 @@
   gap: calc(4px * var(--vcl-scale));
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   flex-wrap: nowrap;
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   width: fit-content;
 }
 .dt-filter-quick-btn {
   padding: calc(4px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  font-size: var(--fs-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  font-size: var(--vcl-fs-12);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   white-space: nowrap;
 }
 .dt-filter-quick-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 .dt-filter-quick-count {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 /* 选项列表 */
@@ -138,21 +138,21 @@
   align-items: center;
   padding: calc(8px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   cursor: pointer;
-  transition: background var(--transition-fast);
-  font-size: var(--fs-14);
-  color: var(--color-text);
+  transition: background var(--vcl-transition-fast);
+  font-size: var(--vcl-fs-14);
+  color: var(--vcl-color-text);
 }
 .dt-filter-option:hover {
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 .dt-filter-option.selected {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
   font-weight: 500;
 }
 .dt-filter-option.focused:not(.selected) {
-  background: var(--color-bg);
-  outline: 1px solid var(--color-primary);
+  background: var(--vcl-color-bg);
+  outline: 1px solid var(--vcl-color-primary);
   outline-offset: -1px;
 }
 .dt-filter-option-text {
@@ -164,25 +164,25 @@
 .dt-filter-option-count {
   flex-shrink: 0;
   margin-left: calc(6px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  font-size: var(--fs-13);
+  color: var(--vcl-color-text-muted);
+  font-size: var(--vcl-fs-13);
 }
 .dt-filter-no-result {
   padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
-  color: var(--color-text-muted);
-  font-size: var(--fs-13);
+  color: var(--vcl-color-text-muted);
+  font-size: var(--vcl-fs-13);
 }
 
 /* 滚动进度条：贴在选项列表和操作按钮之间 */
 .dt-filter-scroll-progress {
   height: calc(3px * var(--vcl-scale));
-  background: var(--color-border-light);
+  background: var(--vcl-color-border-light);
   flex-shrink: 0;
 }
 .dt-filter-scroll-progress-bar {
   height: 100%;
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   border-radius: 0 2px 2px 0;
   transition: width 0.1s ease;
 }
@@ -193,39 +193,39 @@
   gap: calc(8px * var(--vcl-scale));
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   justify-content: flex-end;
-  border-top: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 .dt-filter-btn {
   padding: calc(6px * var(--vcl-scale)) calc(18px * var(--vcl-scale));
-  font-size: var(--fs-13);
-  border-radius: var(--radius-sm);
+  font-size: var(--vcl-fs-13);
+  border-radius: var(--vcl-radius-sm);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  border: 1px solid var(--color-border);
+  transition: all var(--vcl-transition-fast);
+  border: 1px solid var(--vcl-color-border);
 }
 .dt-filter-btn-apply {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .dt-filter-btn-apply:hover {
-  background: var(--color-primary-hover);
+  background: var(--vcl-color-primary-hover);
 }
 .dt-filter-btn-reset {
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
 }
 .dt-filter-btn-reset:hover {
-  border-color: var(--color-text-muted);
-  color: var(--color-text);
+  border-color: var(--vcl-color-text-muted);
+  color: var(--vcl-color-text);
 }
 
 /* ==================== 右键菜单 ==================== */
 .dt-context-menu {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  box-shadow: var(--vcl-shadow-lg);
   min-width: calc(120px * var(--vcl-scale));
   padding: calc(4px * var(--vcl-scale)) 0;
   animation: dt-filterFadeInDown 0.12s ease;
@@ -235,35 +235,35 @@
   align-items: center;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(8px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  font-size: var(--fs-13);
-  color: var(--color-text);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .dt-context-item:hover:not(.disabled) {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
 }
 .dt-context-item.disabled {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   cursor: not-allowed;
 }
 .dt-context-item.ctx-danger {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .dt-context-item.ctx-danger:hover:not(.disabled) {
-  /* 走 danger 三元组令牌：两套主题各自声明 --color-danger-rgb，硬编码会锁死亮色红 */
-  background: rgba(var(--color-danger-rgb, 239 68 68), 0.08);
-  color: var(--color-danger-on-surface);
+  /* 走 danger 三元组令牌：两套主题各自声明 --vcl-color-danger-rgb，硬编码会锁死亮色红 */
+  background: rgba(var(--vcl-color-danger-rgb, 239 68 68), 0.08);
+  color: var(--vcl-color-danger-on-surface);
 }
 .dt-context-item.menu-focused {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
 }
 .dt-context-divider {
   height: 1px;
   margin: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  background: var(--color-border-light);
+  background: var(--vcl-color-border-light);
 }
 
 /* ==================== 列设置面板 ==================== */
@@ -272,12 +272,12 @@
   width: min(380px * var(--vcl-scale), 92vw);
   max-height: 70vh;
   overflow: hidden;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  box-shadow: var(--vcl-shadow-lg);
   padding: calc(10px * var(--vcl-scale));
-  z-index: var(--z-dropdown, 2000);
+  z-index: var(--vcl-z-dropdown, 2000);
   display: flex;
   flex-direction: column;
   gap: calc(6px * var(--vcl-scale));
@@ -294,29 +294,29 @@
   background: transparent;
 }
 .dt-col-settings::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .dt-col-settings::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-dark, #94a3b8);
+  background: var(--vcl-color-border-dark, #94a3b8);
 }
 .dt-col-search {
   width: 100%;
   padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  font-size: var(--fs-13);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
+  font-size: var(--vcl-fs-13);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
   outline: none;
   box-sizing: border-box;
 }
 .dt-col-search:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 64 158 255), 0.12);
+  border-color: var(--vcl-color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.12);
 }
 .dt-col-search::placeholder {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .dt-col-quick-actions {
   display: grid;
@@ -329,64 +329,64 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: var(--fs-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  font-size: var(--vcl-fs-12);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .dt-col-quick-actions button:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .dt-col-quick-actions button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 .dt-col-quick-actions button.active {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
   color: #fff;
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
 }
 .dt-col-quick-actions button.dt-reset-width-btn:not(:disabled) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--color-primary-light);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
 }
 .dt-col-list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   max-height: 30vh;
-  padding: var(--space-1) 0;
+  padding: var(--vcl-space-1) 0;
 }
 .dt-col-no-result {
   padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
-  font-size: var(--fs-13);
-  color: var(--color-text-muted);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text-muted);
 }
 .dt-col-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   padding-top: calc(6px * var(--vcl-scale));
-  border-top: 1px solid var(--color-border-light);
+  border-top: 1px solid var(--vcl-color-border-light);
 }
 .dt-col-footer-fixed {
-  font-size: var(--fs-12);
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-2);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
+  border-radius: var(--vcl-radius-sm);
+  padding: var(--vcl-space-1) var(--vcl-space-2);
   white-space: nowrap;
 }
 .dt-col-footer-hint {
-  font-size: var(--fs-11);
-  color: var(--color-text-muted);
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-muted);
   text-align: right;
   line-height: 1.4;
 }
@@ -396,22 +396,22 @@
   gap: calc(6px * var(--vcl-scale));
   /* 左右留出色条空间，避免固定区域色条与 checkbox/按钮重叠 */
   padding: calc(3px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
 }
 .dt-col-item.hidden .dt-col-title {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   text-decoration: line-through;
 }
 .dt-col-item.in-left-fixed,
 .dt-col-item.in-right-fixed {
-  background: var(--color-primary-light);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-primary-light);
+  border-radius: var(--vcl-radius-sm);
 }
 .dt-col-item.in-left-fixed {
-  box-shadow: inset 3px 0 0 0 var(--color-primary);
+  box-shadow: inset 3px 0 0 0 var(--vcl-color-primary);
 }
 .dt-col-item.in-right-fixed {
-  box-shadow: inset -3px 0 0 0 var(--color-primary);
+  box-shadow: inset -3px 0 0 0 var(--vcl-color-primary);
 }
 .dt-col-fixed-group {
   display: inline-flex;
@@ -422,9 +422,9 @@
   padding: 0 calc(4px * var(--vcl-scale));
 }
 .dt-col-fixed-group button.active {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .dt-col-fixed-group.disabled button {
   opacity: 0.35;
@@ -433,7 +433,7 @@
 .dt-col-item input[type='checkbox'] {
   width: calc(15px * var(--vcl-scale));
   height: calc(15px * var(--vcl-scale));
-  accent-color: var(--color-primary);
+  accent-color: var(--vcl-color-primary);
   cursor: pointer;
 }
 .dt-col-title {
@@ -448,15 +448,15 @@
   align-items: center;
   gap: 2px;
   flex-shrink: 0;
-  font-size: var(--fs-11);
-  color: var(--color-text-muted);
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 .dt-col-width button {
   min-width: calc(20px * var(--vcl-scale));
   height: calc(22px * var(--vcl-scale));
   padding: 0 calc(3px * var(--vcl-scale));
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
 }
 .dt-col-width span {
   min-width: calc(30px * var(--vcl-scale));
@@ -472,17 +472,17 @@
   min-width: calc(24px * var(--vcl-scale));
   height: calc(24px * var(--vcl-scale));
   padding: 0 calc(6px * var(--vcl-scale));
-  font-size: var(--fs-12);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  font-size: var(--vcl-fs-12);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .dt-col-ops button:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
 }
 .dt-col-ops button:disabled {
   opacity: 0.35;
@@ -491,9 +491,9 @@
 
 /* ==================== 截断气泡 ==================== */
 .dt-cell-tooltip {
-  background: var(--color-sidebar, #1e1e2e);
+  background: var(--vcl-color-sidebar, #1e1e2e);
   color: #fff;
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
   line-height: 1.5;
   padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border-radius: calc(6px * var(--vcl-scale));

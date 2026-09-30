@@ -421,7 +421,7 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 50%, #e54545 100%);
+  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #3b56e0 50%, #e54545 100%);
   padding: calc(20px * var(--vcl-scale));
   position: relative;
   overflow-x: hidden;
@@ -468,9 +468,9 @@ defineExpose({
   display: flex;
   width: 100%;
   max-width: var(--login-max-width, calc(960px * var(--vcl-scale)));
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  background: var(--color-surface);
+  border-radius: var(--vcl-radius-xl);
+  box-shadow: var(--vcl-shadow-lg);
+  background: var(--vcl-color-surface);
   animation: slideUp 0.5s ease-out;
   z-index: 1;
   container-type: inline-size;
@@ -491,9 +491,9 @@ defineExpose({
 /* ---- 左侧 ---- */
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #3b56e0 100%);
-  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
-  padding: var(--space-12) calc(44px * var(--vcl-scale));
+  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #3b56e0 100%);
+  border-radius: var(--vcl-radius-xl) 0 0 var(--vcl-radius-xl);
+  padding: var(--vcl-space-12) calc(44px * var(--vcl-scale));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -514,23 +514,23 @@ defineExpose({
 .brand-logo {
   position: relative;
   z-index: 1;
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--vcl-space-12);
 }
 .logo-icon {
   width: calc(64px * var(--vcl-scale));
   height: calc(64px * var(--vcl-scale));
   background: rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-xl);
+  border-radius: var(--vcl-radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--vcl-space-5);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .brand-logo h2 {
   font-size: calc(36px * var(--vcl-scale));
   font-weight: 600;
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--vcl-space-3);
   letter-spacing: -0.5px;
 }
 .brand-logo p {
@@ -547,8 +547,8 @@ defineExpose({
 .features-list li {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-5);
+  gap: var(--vcl-space-3);
+  margin-bottom: var(--vcl-space-5);
   font-size: calc(15px * var(--vcl-scale));
 }
 .features-list li::before {
@@ -567,45 +567,45 @@ defineExpose({
 /* ---- 右侧 ---- */
 .login-right {
   flex: 1;
-  padding: var(--space-12);
+  padding: var(--vcl-space-12);
   display: flex;
   flex-direction: column;
-  background: var(--color-surface);
-  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+  background: var(--vcl-color-surface);
+  border-radius: 0 var(--vcl-radius-xl) var(--vcl-radius-xl) 0;
 }
 .login-header {
   flex-shrink: 0;
-  padding-bottom: var(--space-8);
+  padding-bottom: var(--vcl-space-8);
 }
 .login-header h1 {
-  font-size: var(--fs-22);
+  font-size: var(--vcl-fs-22);
   font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: var(--space-2);
+  color: var(--vcl-color-text);
+  margin-bottom: var(--vcl-space-2);
 }
 .login-header p {
-  font-size: var(--ctrl-font-size);
-  color: var(--color-text-secondary);
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-text-secondary);
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--vcl-space-5);
 }
 
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: var(--ctrl-font-size);
+  font-size: var(--vcl-ctrl-font-size);
 }
 .remember-me {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   cursor: pointer;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   user-select: none;
 }
 /* 真实 checkbox 视觉隐藏但保留键盘焦点与读屏语义 */
@@ -623,21 +623,21 @@ defineExpose({
 .checkbox-icon {
   width: calc(16px * var(--vcl-scale));
   height: calc(16px * var(--vcl-scale));
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  background: var(--color-surface);
-  transition: all var(--transition-fast);
+  background: var(--vcl-color-surface);
+  transition: all var(--vcl-transition-fast);
 }
 .checkbox-icon.checked {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .forgot-password {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   text-decoration: none;
   font-weight: 500;
   background: none;
@@ -647,49 +647,49 @@ defineExpose({
   font-size: inherit;
 }
 .forgot-password:hover {
-  color: var(--color-primary-hover);
+  color: var(--vcl-color-primary-hover);
 }
 
 .social-login {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
 }
 .social-btn {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-3);
+  border: 1.5px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   user-select: none;
   font-family: inherit;
 }
 .social-btn:hover {
-  border-color: var(--color-primary);
-  background: var(--color-bg);
+  border-color: var(--vcl-color-primary);
+  background: var(--vcl-color-bg);
   transform: translateY(-1px);
 }
 .social-icon {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 .social-text {
   font-size: calc(14px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
 }
 
 .footer-text {
   text-align: center;
-  font-size: var(--ctrl-font-size);
-  color: var(--color-text-muted);
-  padding-top: var(--space-8);
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-text-muted);
+  padding-top: var(--vcl-space-8);
 }
 .register-link {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   text-decoration: none;
   font-weight: 500;
   background: none;
@@ -710,18 +710,18 @@ defineExpose({
     max-width: min(var(--login-max-width, 960px * var(--vcl-scale)), 440px * var(--vcl-scale));
   }
   .login-right {
-    padding: var(--space-10);
+    padding: var(--vcl-space-10);
   }
 }
 @container login (max-width: 480px) {
   .login-right {
-    padding: var(--space-8);
+    padding: var(--vcl-space-8);
   }
   .login-header h1 {
     font-size: calc(28px * var(--vcl-scale));
   }
   .social-btn {
-    padding: var(--space-2);
+    padding: var(--vcl-space-2);
   }
 }
 </style>

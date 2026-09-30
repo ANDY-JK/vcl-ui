@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// ⛔ 保护 — 只读遮罩，禁止：遮罩透明度；z-index 层级 = var(--z-readonly, 2500)（压 modal/overlay/dropdown）
+// ⛔ 保护 — 只读遮罩，禁止：遮罩透明度；z-index 层级 = var(--vcl-z-readonly, 2500)（压 modal/overlay/dropdown）
 //    需我确认：visible 触发逻辑、slot 内容区
 import { ref, watch, onUnmounted, nextTick } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
@@ -106,7 +106,7 @@ onUnmounted(detach)
 .readonly-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-readonly, 2500);
+  z-index: var(--vcl-z-readonly, 2500);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,7 +129,7 @@ onUnmounted(detach)
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--transition-slow);
+  transition: opacity var(--vcl-transition-slow);
 }
 .fade-enter-from,
 .fade-leave-to {

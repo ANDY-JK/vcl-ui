@@ -532,8 +532,8 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 /* ── styleConfig 落地：CSS 变量定义（消费在原子组件与 renderer/ 子组件内，变量经 CSS 继承穿透） ── */
 .fb-renderer {
   --fb-radius: calc(6px * var(--vcl-scale));
-  --fb-field-border: var(--color-border, #e2e8f0);
-  --fb-field-focus-border: var(--color-primary, #3b82f6);
+  --fb-field-border: var(--vcl-color-border, #e2e8f0);
+  --fb-field-focus-border: var(--vcl-color-primary, #3b82f6);
   --fb-control-width: 100%;
 }
 /* 查看模式高级字段只读展示 */
@@ -542,13 +542,13 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   flex-direction: column;
   gap: calc(6px * var(--vcl-scale));
   padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  border: 1px solid var(--color-border-light, #f1f5f9);
+  border: 1px solid var(--vcl-color-border-light, #f1f5f9);
   border-radius: calc(6px * var(--vcl-scale));
-  background: var(--color-bg-alt, #fafbfc);
+  background: var(--vcl-color-bg-alt, #fafbfc);
 }
 .fb-adv-readonly-val {
-  font-size: var(--fs-13);
-  color: var(--color-text, #1e293b);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text, #1e293b);
   word-break: break-all;
   line-height: 1.6;
 }
@@ -565,18 +565,18 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 .fb-title {
   margin: 0 0 calc(12px * var(--vcl-scale));
   padding-bottom: calc(8px * var(--vcl-scale));
-  font-size: var(--fs-15);
+  font-size: var(--vcl-fs-15);
   font-weight: 600;
-  color: var(--color-text, #1e293b);
-  border-bottom: 1px solid var(--color-border, #e2e8f0);
+  color: var(--vcl-color-text, #1e293b);
+  border-bottom: 1px solid var(--vcl-color-border, #e2e8f0);
 }
 
 /* 说明文字字段 */
 .fb-paragraph {
   margin: 0;
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
   line-height: 1.7;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--vcl-color-text-secondary, #64748b);
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -594,9 +594,9 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
 .fb-upload-label,
 .fb-camera-label,
 .fb-scancode-label {
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
   font-weight: 500;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--vcl-color-text-secondary, #64748b);
 }
 .fb-camera-trigger {
   align-self: flex-start;
@@ -610,16 +610,16 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   align-items: center;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
   border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
-  background: var(--color-bg-alt, #f8fafc);
+  background: var(--vcl-color-bg-alt, #f8fafc);
 }
 .fb-scancode-code {
   flex: 1;
   min-width: 0;
-  font-size: var(--fs-14);
+  font-size: var(--vcl-fs-14);
   font-family: monospace;
-  color: var(--color-text, #0f172a);
+  color: var(--vcl-color-text, #0f172a);
   word-break: break-all;
 }
 .fb-scancode-clear {
@@ -632,23 +632,23 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   border: none;
   border-radius: calc(6px * var(--vcl-scale));
   background: transparent;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--vcl-color-text-muted, #94a3b8);
   cursor: pointer;
 }
 .fb-scancode-clear:hover {
-  background: var(--color-danger-bg, #fee2e2);
-  color: var(--color-danger-on-surface);
+  background: var(--vcl-color-danger-bg, #fee2e2);
+  color: var(--vcl-color-danger-on-surface);
 }
 .fb-required {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   margin-left: 2px;
 }
 
 /* 提示文本 */
 .fb-hint {
   margin: 2px 0 0;
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #94a3b8);
   line-height: 1.4;
 }
 
@@ -659,9 +659,9 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   gap: calc(6px * var(--vcl-scale));
 }
 .fb-adv-label {
-  font-size: var(--fs-13);
+  font-size: var(--vcl-fs-13);
   font-weight: 500;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--vcl-color-text-secondary, #64748b);
 }
 
 /* 关联选择 */
@@ -670,25 +670,25 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
   align-items: center;
   justify-content: space-between;
   gap: calc(8px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
   border-radius: calc(6px * var(--vcl-scale));
   padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  font-size: var(--fs-13);
-  color: var(--color-text-muted, #94a3b8);
-  background: var(--color-bg, #fff);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text-muted, #94a3b8);
+  background: var(--vcl-color-bg, #fff);
   cursor: pointer;
   transition: border-color 0.15s;
 }
 .fb-relate:hover {
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--vcl-color-primary, #3b82f6);
 }
 .fb-relate-placeholder {
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 .fb-relate-icon {
   width: calc(14px * var(--vcl-scale));
   height: calc(14px * var(--vcl-scale));
-  color: var(--color-primary, #3b82f6);
+  color: var(--vcl-color-primary, #3b82f6);
   flex-shrink: 0;
 }
 </style>

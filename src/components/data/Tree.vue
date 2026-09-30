@@ -370,7 +370,7 @@ function isExpanded(key: string | number) {
 const levelStyle = computed(() => {
   const fontSize = `calc(${Math.max(10, 14 * Math.pow(0.85, props.level)).toFixed(1)}px * var(--vcl-scale))`
   const opacity = Math.max(0.4, 1 - 0.12 * props.level)
-  const paddingLeft = `calc(${props.level} * var(--space-4))`
+  const paddingLeft = `calc(${props.level} * var(--vcl-space-4))`
   return { fontSize, opacity, paddingLeft }
 })
 </script>
@@ -468,24 +468,24 @@ const levelStyle = computed(() => {
 .tree-node {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-1) var(--vcl-space-2);
   cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+  border-radius: var(--vcl-radius-sm);
+  transition: background var(--vcl-transition-fast);
   min-height: calc(34px * var(--vcl-scale));
   user-select: none;
   position: relative;
 }
 .tree-node:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 .tree-node--selected {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
 }
 .tree-node--selected:hover {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 .tree-node--disabled {
   opacity: 0.45;
@@ -500,8 +500,8 @@ const levelStyle = computed(() => {
   top: calc(4px * var(--vcl-scale));
   bottom: calc(4px * var(--vcl-scale));
   width: 2px;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-primary);
 }
 
 /* 展开箭头：右指 → 展开时下转（对齐 AccordionNav 语义） */
@@ -511,8 +511,8 @@ const levelStyle = computed(() => {
   justify-content: center;
   width: calc(24px * var(--vcl-scale));
   height: calc(24px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  transition: transform var(--transition-normal);
+  color: var(--vcl-color-text-muted);
+  transition: transform var(--vcl-transition-normal);
   flex-shrink: 0;
 }
 .tree-arrow--expanded {
@@ -522,7 +522,7 @@ const levelStyle = computed(() => {
   visibility: hidden;
 }
 
-/* 勾选框（圆角对齐项目 --radius-sm） */
+/* 勾选框（圆角对齐项目 --vcl-radius-sm） */
 .tree-check {
   display: inline-flex;
   align-items: center;
@@ -546,23 +546,23 @@ const levelStyle = computed(() => {
   border: 0;
 }
 .tree-check-input:focus-visible + .tree-check-box {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 1px;
 }
 .tree-check-box {
   width: calc(16px * var(--vcl-scale));
   height: calc(16px * var(--vcl-scale));
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
   position: relative;
 }
 .tree-check-input:checked + .tree-check-box {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .tree-check-input:checked + .tree-check-box::after {
   content: '';
@@ -578,8 +578,8 @@ const levelStyle = computed(() => {
   margin-top: calc(-4px * var(--vcl-scale));
 }
 .tree-check-input--indeterminate + .tree-check-box {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .tree-check-input--indeterminate + .tree-check-box::after {
   content: '';
@@ -599,7 +599,7 @@ const levelStyle = computed(() => {
 
 .tree-node-icon {
   flex-shrink: 0;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   width: calc(20px * var(--vcl-scale));
   height: calc(20px * var(--vcl-scale));
 }
@@ -615,14 +615,14 @@ const levelStyle = computed(() => {
 }
 .tree-slide-enter-active {
   transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
   transform-origin: top;
 }
 .tree-slide-leave-active {
   transition:
-    opacity var(--transition-fast),
-    transform var(--transition-fast);
+    opacity var(--vcl-transition-fast),
+    transform var(--vcl-transition-fast);
   transform-origin: top;
 }
 .tree-slide-enter-from {

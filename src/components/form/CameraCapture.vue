@@ -536,7 +536,7 @@ onUnmounted(() => {
 .camc-mask {
   position: fixed;
   inset: 0;
-  z-index: var(--z-top, 9999);
+  z-index: var(--vcl-z-top, 9999);
   background: #000;
   display: flex;
   align-items: center;
@@ -591,7 +591,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   /* 旧版为 0 36px；勿用 --space-7（令牌表无此档，var 失效会归零导致侧键贴边） */
-  padding: 0 var(--space-12);
+  padding: 0 var(--vcl-space-12);
   z-index: 2;
 }
 
@@ -604,8 +604,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: 0 var(--space-5);
+  gap: var(--vcl-space-3);
+  padding: 0 var(--vcl-space-5);
   z-index: 2;
 }
 .camc-slot-chip {
@@ -649,13 +649,13 @@ onUnmounted(() => {
   bottom: calc(
     28px * var(--vcl-scale) + 56px * var(--vcl-scale) + 20px * var(--vcl-scale) + env(safe-area-inset-bottom)
   );
-  padding: 0 var(--space-5);
+  padding: 0 var(--vcl-space-5);
   z-index: 2;
 }
 .camc-thumbs {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   overflow-x: auto;
   scrollbar-width: none;
   padding: calc(4px * var(--vcl-scale));
@@ -677,7 +677,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.85);
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   line-height: 1.3;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
@@ -687,7 +687,7 @@ onUnmounted(() => {
   height: calc(48px * var(--vcl-scale));
   padding: 0;
   border: 2px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.12);
   cursor: pointer;
@@ -699,7 +699,7 @@ onUnmounted(() => {
   object-fit: cover;
 }
 .camc-thumb.active {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 
 /* 回看左右切换箭头（叠在取景框两侧） */
@@ -714,7 +714,7 @@ onUnmounted(() => {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
-  font-size: var(--fs-28);
+  font-size: var(--vcl-fs-28);
   line-height: 1;
   cursor: pointer;
   display: flex;
@@ -779,13 +779,13 @@ onUnmounted(() => {
   opacity: 0.5;
 }
 .camc-shutter-confirm {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
   background: #3b82f6;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: var(--fs-15);
+  font-size: var(--vcl-fs-15);
   font-weight: 600;
 }
 .camc-shutter-confirm::after {

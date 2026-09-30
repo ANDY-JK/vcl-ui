@@ -165,21 +165,21 @@ function renderMap(center: { latitude: number; longitude: number }, list: (PoiIt
       // 使用 DOM API 构建 InfoWindow 内容，避免 XSS
       const iwRoot = document.createElement('div')
       iwRoot.style.cssText =
-        'min-width:180px;padding:10px 12px;font-size:13px;line-height:1.6;background:var(--color-surface);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);'
+        'min-width:180px;padding:10px 12px;font-size:13px;line-height:1.6;background:var(--vcl-color-surface);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);'
       const iwName = document.createElement('div')
-      iwName.style.cssText = 'font-weight:700;font-size:14px;margin-bottom:4px;color:var(--color-text);'
+      iwName.style.cssText = 'font-weight:700;font-size:14px;margin-bottom:4px;color:var(--vcl-color-text);'
       iwName.textContent = p.name
       const iwAddr = document.createElement('div')
-      iwAddr.style.cssText = 'color:var(--color-text-muted);margin-bottom:4px;'
+      iwAddr.style.cssText = 'color:var(--vcl-color-text-muted);margin-bottom:4px;'
       iwAddr.textContent = '📍 ' + p.address
       const iwFooter = document.createElement('div')
       iwFooter.style.cssText =
-        'display:flex;align-items:center;gap:8px;padding-top:4px;border-top:1px solid var(--color-border);'
+        'display:flex;align-items:center;gap:8px;padding-top:4px;border-top:1px solid var(--vcl-color-border);'
       const iwDist = document.createElement('span')
-      iwDist.style.cssText = 'font-weight:700;font-size:16px;color:var(--color-danger);'
+      iwDist.style.cssText = 'font-weight:700;font-size:16px;color:var(--vcl-color-danger);'
       iwDist.textContent = fm(p.distanceM)
       const iwCoord = document.createElement('span')
-      iwCoord.style.cssText = 'font-size:11px;color:var(--color-text-muted);font-family:monospace;'
+      iwCoord.style.cssText = 'font-size:11px;color:var(--vcl-color-text-muted);font-family:monospace;'
       iwCoord.textContent = `${p.latitude.toFixed(6)}, ${p.longitude.toFixed(6)}`
       iwFooter.appendChild(iwDist)
       iwFooter.appendChild(iwCoord)
@@ -475,13 +475,13 @@ function onImgFail(e: Event) {
 }
 .demo-desc {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(16px * var(--vcl-scale));
 }
 
 .toolbar {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(10px * var(--vcl-scale));
   padding: calc(12px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   margin-bottom: calc(12px * var(--vcl-scale));
@@ -495,10 +495,10 @@ function onImgFail(e: Event) {
   flex: 1;
   min-width: calc(140px * var(--vcl-scale));
   padding: calc(7px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(6px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 .inp-sm {
   flex: 0.5;
@@ -524,7 +524,7 @@ function onImgFail(e: Event) {
   cursor: not-allowed;
 }
 .btn-primary {
-  background: var(--color-primary);
+  background: var(--vcl-color-primary);
   color: #fff;
 }
 .btn-secondary {
@@ -533,25 +533,25 @@ function onImgFail(e: Event) {
 }
 .gps-display {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-weight: 500;
 }
 .radius-label {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-left: calc(4px * var(--vcl-scale));
 }
 .radius-select {
   padding: calc(5px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(6px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
-  background: var(--color-bg);
+  background: var(--vcl-color-bg);
 }
 .calc-info {
   margin-top: calc(8px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 /* ② 地图 + 卡片列表 */
@@ -560,7 +560,7 @@ function onImgFail(e: Event) {
   height: calc(500px * var(--vcl-scale));
   margin-bottom: calc(14px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
 }
 .map-shell :deep(.el-vue-amap-container),
 .map-shell :deep(.el-vue-amap) {
@@ -575,7 +575,7 @@ function onImgFail(e: Event) {
   left: calc(8px * var(--vcl-scale));
   bottom: calc(8px * var(--vcl-scale));
   width: calc(340px * var(--vcl-scale));
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
   backdrop-filter: blur(10px);
   border-radius: calc(10px * var(--vcl-scale));
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
@@ -592,8 +592,8 @@ function onImgFail(e: Event) {
   padding: calc(10px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text);
-  border-bottom: 1px solid var(--color-border-light);
+  color: var(--vcl-color-text);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -602,7 +602,7 @@ function onImgFail(e: Event) {
 .panel-gps {
   font-size: calc(11px * var(--vcl-scale));
   font-weight: 400;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-family: monospace;
 }
 
@@ -613,18 +613,18 @@ function onImgFail(e: Event) {
   gap: calc(10px * var(--vcl-scale));
   padding: calc(10px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   cursor: pointer;
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--vcl-color-border-light);
   transition: background 0.12s;
 }
 .poi-card:last-child {
   border-bottom: none;
 }
 .poi-card:hover {
-  background: var(--color-info-bg);
+  background: var(--vcl-color-info-bg);
 }
 .poi-card.active {
-  background: var(--color-info-bg);
-  border-left: 3px solid var(--color-danger-hover);
+  background: var(--vcl-color-info-bg);
+  border-left: 3px solid var(--vcl-color-danger-hover);
   padding-left: calc(11px * var(--vcl-scale));
 }
 
@@ -635,8 +635,8 @@ function onImgFail(e: Event) {
   overflow: hidden;
   flex-shrink: 0;
   cursor: pointer;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-alt);
+  border: 1px solid var(--vcl-color-border);
+  background: var(--vcl-color-bg-alt);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -648,7 +648,7 @@ function onImgFail(e: Event) {
   display: block;
 }
 .poi-card-img:hover {
-  border-color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
 }
 .poi-card-noimg {
   font-size: calc(22px * var(--vcl-scale));
@@ -663,14 +663,14 @@ function onImgFail(e: Event) {
 .poi-card-name {
   font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .poi-card-addr {
   font-size: calc(11px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -684,7 +684,7 @@ function onImgFail(e: Event) {
 }
 .poi-card-type {
   font-size: calc(10px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 .poi-card-detail {
@@ -704,7 +704,7 @@ function onImgFail(e: Event) {
   opacity: 1;
 }
 .poi-card-detail:hover {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
 }
 
 .badge {
@@ -712,14 +712,14 @@ function onImgFail(e: Event) {
   font-weight: 700;
   padding: 1px calc(8px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
-  background: var(--color-info-bg);
-  color: var(--color-info-text);
+  background: var(--vcl-color-info-bg);
+  color: var(--vcl-color-info-text);
   white-space: nowrap;
   flex-shrink: 0;
 }
 .badge.warn {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
+  background: var(--vcl-color-warning-bg);
+  color: var(--vcl-color-warning-text);
 }
 
 /* ④ POI 详情浮层 */
@@ -734,34 +734,34 @@ function onImgFail(e: Event) {
   font-weight: 700;
   padding: 2px calc(10px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
-  background: var(--color-info-bg);
-  color: var(--color-info-text);
+  background: var(--vcl-color-info-bg);
+  color: var(--vcl-color-info-text);
   white-space: nowrap;
 }
 .poi-detail-dist.warn {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
+  background: var(--vcl-color-warning-bg);
+  color: var(--vcl-color-warning-text);
 }
 .poi-detail-addr {
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .poi-detail-cord {
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-family: monospace;
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .poi-detail-type {
   font-size: calc(12px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   margin-bottom: calc(12px * var(--vcl-scale));
 }
 .poi-detail-loading {
   padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   font-size: calc(13px * var(--vcl-scale));
 }
 
@@ -772,7 +772,7 @@ function onImgFail(e: Event) {
 .poi-detail-photos-label {
   font-size: calc(13px * var(--vcl-scale));
   font-weight: 600;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   margin-bottom: calc(8px * var(--vcl-scale));
 }
 .poi-detail-photos-grid {
@@ -785,8 +785,8 @@ function onImgFail(e: Event) {
   border-radius: calc(8px * var(--vcl-scale));
   overflow: hidden;
   cursor: pointer;
-  background: var(--color-bg-alt);
-  border: 1px solid var(--color-border);
+  background: var(--vcl-color-bg-alt);
+  border: 1px solid var(--vcl-color-border);
   aspect-ratio: 4/3;
 }
 .poi-detail-photo-item img {
@@ -815,7 +815,7 @@ function onImgFail(e: Event) {
 .poi-detail-no-photos {
   padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(13px * var(--vcl-scale));
 }
 /* 空状态 */
@@ -824,15 +824,15 @@ function onImgFail(e: Event) {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   font-size: calc(14px * var(--vcl-scale));
 }
 .ok {
-  color: var(--color-success-text);
+  color: var(--vcl-color-success-text);
   font-weight: 600;
 }
 .over {
-  color: var(--color-danger-hover);
+  color: var(--vcl-color-danger-hover);
   font-weight: 600;
 }
 @container demo (max-width: 767px) {

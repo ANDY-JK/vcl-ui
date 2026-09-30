@@ -88,7 +88,7 @@ useBodyScrollLock(() => props.fullscreen)
 .loading-fullscreen {
   position: fixed;
   inset: 0;
-  z-index: var(--z-top, 9999);
+  z-index: var(--vcl-z-top, 9999);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -105,14 +105,14 @@ useBodyScrollLock(() => props.fullscreen)
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   padding: calc(32px * var(--vcl-scale)) calc(40px * var(--vcl-scale));
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--vcl-radius-lg);
+  background: var(--vcl-color-surface);
+  box-shadow: var(--vcl-shadow-lg);
 }
 .loading-fullscreen--overlay .loading-fullscreen__content {
-  background: var(--color-surface);
+  background: var(--vcl-color-surface);
 }
 
 /* 无障碍：仅读屏器可见的兜底文案 */
@@ -133,11 +133,11 @@ useBodyScrollLock(() => props.fullscreen)
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 .spinner-ring {
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-primary);
+  border: 3px solid var(--vcl-color-border);
+  border-top-color: var(--vcl-color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -155,15 +155,20 @@ useBodyScrollLock(() => props.fullscreen)
 }
 .spinner-text {
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 
 /* ===== skeleton ===== */
 .skel-line,
 .skel-text {
   height: calc(14px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
-  background: linear-gradient(90deg, var(--color-bg-alt) 25%, var(--color-border) 50%, var(--color-bg-alt) 75%);
+  border-radius: var(--vcl-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--vcl-color-bg-alt) 25%,
+    var(--vcl-color-border) 50%,
+    var(--vcl-color-bg-alt) 75%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }

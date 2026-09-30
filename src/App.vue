@@ -99,28 +99,28 @@ onMounted(() => {
 .topbar-zoom {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   height: calc(32px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   font-size: calc(12px * var(--vcl-scale));
   flex-shrink: 0;
 }
 .topbar-zoom select {
   height: 100%;
-  padding: 0 var(--space-2);
+  padding: 0 var(--vcl-space-2);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
   background: rgba(255, 255, 255, 0.04);
   color: inherit;
   font-size: inherit;
   cursor: pointer;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--vcl-transition-fast);
 }
 .topbar-zoom select:hover {
-  border-color: rgba(var(--color-primary-rgb), 0.15);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.15);
 }
 .topbar-zoom select:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 1px;
 }
 </style>

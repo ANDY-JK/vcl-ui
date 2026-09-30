@@ -166,7 +166,7 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `modelValue` | `string` | `'star'` | 否 | 受控图标名（kebab-case，默认 'star'） |
-| `color` | `string` | `'var(--color-primary)'` | 否 | 图标颜色（CSS 颜色值或令牌，默认主色令牌） |
+| `color` | `string` | `'var(--vcl-color-primary)'` | 否 | 图标颜色（CSS 颜色值或令牌，默认主色令牌） |
 | `bgColor` | `string` | `'#EAECF0'` | 否 | 触发按钮底色（默认 #EAECF0） |
 | `placeholder` | `string` | `() => t('form.selectIcon')` | 否 | 触发按钮占位文字 |
 | `presetColors` | `string[]` | `() => ['#6366F1', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4']` | 否 | 预定义色板 |

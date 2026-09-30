@@ -112,8 +112,8 @@ const rowList = computed(() => {
 .skel-line {
   display: block;
   height: calc(14px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-alt);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg-alt);
 }
 .skel-title {
   width: 40%;
@@ -122,7 +122,7 @@ const rowList = computed(() => {
 .skel-avatar {
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   width: calc(40px * var(--vcl-scale));
   height: calc(40px * var(--vcl-scale));
 }
@@ -142,7 +142,12 @@ const rowList = computed(() => {
 /* 流光动画 — linear-gradient 背景位移 */
 .skel-animated .skel-line,
 .skel-animated .skel-avatar {
-  background: linear-gradient(90deg, var(--color-bg-alt) 25%, var(--color-border) 50%, var(--color-bg-alt) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--vcl-color-bg-alt) 25%,
+    var(--vcl-color-border) 50%,
+    var(--vcl-color-bg-alt) 75%
+  );
   background-size: 200% 100%;
   animation: skel-shimmer 1.5s infinite;
 }

@@ -11,10 +11,10 @@ import Card from '@/components/data/Card.vue'
     <Card title="Collapse 折叠面板" title-as="h2">
       <div style="display: flex; flex-direction: column; gap: calc(8px * var(--vcl-scale))">
         <Collapse title="什么是 Vue？">
-          <p style="color: var(--color-text-secondary)">Vue 是一套用于构建用户界面的渐进式 JavaScript 框架。</p>
+          <p style="color: var(--vcl-color-text-secondary)">Vue 是一套用于构建用户界面的渐进式 JavaScript 框架。</p>
         </Collapse>
         <Collapse title="什么是对比度？" open>
-          <p style="color: var(--color-text-secondary)">
+          <p style="color: var(--vcl-color-text-secondary)">
             对比度指文本颜色与背景色之间的亮度差异，WCAG 要求至少 4.5:1。
           </p>
         </Collapse>
@@ -27,7 +27,7 @@ import Card from '@/components/data/Card.vue'
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Prop</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认</th>
@@ -37,7 +37,7 @@ import Card from '@/components/data/Card.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>title</code>
@@ -50,7 +50,7 @@ import Card from '@/components/data/Card.vue'
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>open</code>
@@ -80,12 +80,12 @@ import Card from '@/components/data/Card.vue'
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

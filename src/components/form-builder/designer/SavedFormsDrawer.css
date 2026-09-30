@@ -13,16 +13,16 @@
 .ld-forms-state {
   padding: calc(24px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   text-align: center;
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 .ld-forms-error {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 
 /* 表单名称：可点击打开收集列表 */
 .ld-form-link {
-  color: var(--color-primary, #3b82f6);
+  color: var(--vcl-color-primary, #3b82f6);
   cursor: pointer;
   font-weight: 500;
 }
@@ -37,11 +37,11 @@
 }
 .ld-table-act {
   padding: calc(3px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #d1d5db);
+  border: 1px solid var(--vcl-color-border, #d1d5db);
   border-radius: calc(4px * var(--vcl-scale));
-  background: var(--color-bg, #fff);
-  color: var(--color-text-secondary, #475569);
-  font-size: var(--fs-12);
+  background: var(--vcl-color-bg, #fff);
+  color: var(--vcl-color-text-secondary, #475569);
+  font-size: var(--vcl-fs-12);
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -50,15 +50,15 @@
     border-color 0.15s;
 }
 .ld-table-act:hover {
-  background: var(--color-bg-alt, #f1f5f9);
-  border-color: var(--color-primary, #3b82f6);
-  color: var(--color-primary, #3b82f6);
+  background: var(--vcl-color-bg-alt, #f1f5f9);
+  border-color: var(--vcl-color-primary, #3b82f6);
+  color: var(--vcl-color-primary, #3b82f6);
 }
 .ld-table-act[data-act='share'] {
-  color: var(--color-primary, #3b82f6);
+  color: var(--vcl-color-primary, #3b82f6);
 }
 .ld-table-act[data-act='review'] {
-  color: var(--color-warning, #d97706);
+  color: var(--vcl-color-warning, #d97706);
 }
 
 /* 分享弹窗：左二维码 + 右点击复制卡片 */
@@ -74,9 +74,9 @@
   align-items: center;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(12px * var(--vcl-scale));
-  border: 1px solid var(--color-border-light, #f1f5f9);
+  border: 1px solid var(--vcl-color-border-light, #f1f5f9);
   border-radius: calc(10px * var(--vcl-scale));
-  background: var(--color-bg-alt, #fafbfc);
+  background: var(--vcl-color-bg-alt, #fafbfc);
 }
 .ld-share-qr-img {
   width: calc(180px * var(--vcl-scale));
@@ -89,8 +89,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #94a3b8);
 }
 .ld-share-qr-error {
   width: calc(180px * var(--vcl-scale));
@@ -101,16 +101,16 @@
   justify-content: center;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(12px * var(--vcl-scale));
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   line-height: 1.6;
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   text-align: center;
   box-sizing: border-box;
 }
 .ld-share-qr-hint {
   margin: 0;
-  font-size: var(--fs-11);
-  color: var(--color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-muted, #94a3b8);
   text-align: center;
 }
 .ld-share-cols {
@@ -128,9 +128,9 @@
   align-items: flex-start;
   gap: calc(6px * var(--vcl-scale));
   padding: calc(10px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
   border-radius: calc(8px * var(--vcl-scale));
-  background: var(--color-bg, #fff);
+  background: var(--vcl-color-bg, #fff);
   cursor: pointer;
   text-align: left;
   font-family: inherit;
@@ -139,19 +139,19 @@
     box-shadow 0.15s;
 }
 .ld-share-copy:hover {
-  border-color: var(--color-primary, #3b82f6);
+  border-color: var(--vcl-color-primary, #3b82f6);
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
 }
 .ld-share-copy-label {
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   font-weight: 600;
-  color: var(--color-text, #1e293b);
+  color: var(--vcl-color-text, #1e293b);
 }
 .ld-share-copy-value {
   width: 100%;
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   line-height: 1.5;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--vcl-color-text-secondary, #64748b);
   word-break: break-all;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -160,6 +160,6 @@
 }
 .ld-share-copy-tip {
   margin-top: auto;
-  font-size: var(--fs-11);
-  color: var(--color-primary, #3b82f6);
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-primary, #3b82f6);
 }

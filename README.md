@@ -272,7 +272,7 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 ### 常量与断点
 
 1. **数值常量只有两个合法来源**：实测度量（`getBoundingClientRect`、行高、可视区高度这类真实量出来的数）或已声明的设计令牌。不接受"看着合理"的字面量。
-2. **视口断点单源**：CSS 用 `tokens.css` 的 `--bp-sm/md/lg`；JS/TS 引 `src/components/_internal/breakpoints.ts` 的 `BP_SM/BP_MD/BP_LG`。两处必须同值，`check:constants` 会卡。
+2. **视口断点单源**：CSS 用 `tokens.css` 的 `--vcl-bp-sm/md/lg`；JS/TS 引 `src/components/_internal/breakpoints.ts` 的 `BP_SM/BP_MD/BP_LG`。两处必须同值，`check:constants` 会卡。
 3. **CSS `@media` 走登记制**：`@media` 里不能用 `var()`，所以宽度值必须出现在 `scripts/check-constants.mjs` 的登记集合里并注明用途。加新断点前先确认既有断点不能复用。
 4. **上限/阈值默认自适应**：容量类上限按真实度量动态算（上传并发取同源连接数的一半、虚拟化只在"窗口行数确实小于总行数"时启用），同时给调用方留覆写口（`maxConcurrent`、`pageVirtualMin`、`cardBreakpoint`）。
 5. **同一哨兵值不抄两份**：跨文件复用的判定值收进共享常量或共享函数（如列拖拽顺序排序 `sortColumnsByOrder`），改一处全库生效。
@@ -330,6 +330,8 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 - form-builder 内部子组件（`DesignerCanvas` / `RichtextToolbar`，仅经 FormDesigner/RendererRichtext 消费）：`insertAt`→`insert-at`、`insertIntoContainer`→`insert-into-container`、`sortNode`→`sort-node`、`assignSlot`→`assign-slot`、`updateContainer`→`update-container`、`inlineCode`→`inline-code`、`togglePreview`→`toggle-preview`、`toggleFullscreen`→`toggle-fullscreen`
 
 **3. expose 近义入口收敛（Q18）** —— `FormBuilder` 删 `validateForm()` / `validateAndGet()`（只留 `validate()`，数据用 `getFormData()`、错误用 `errors` 拼装）；`login` 删 `notifyFailed()` / `notifySuccess()`，改传 `:auth-result="{ ok, message? }"` prop。
+
+**4. 设计令牌全量加 `--vcl-` 命名空间（2026-09-30，随未发布的 2.0.0 一并生效）** —— 1.x 升级者若在自己的 CSS 里覆盖过库令牌，改名规则只有一条：**旧令牌名前加 `vcl-`**（`--color-primary` → `--vcl-color-primary`、`--space-4` → `--vcl-space-4`、`--z-modal` → `--vcl-z-modal`……tokens.css 声明的全部设计令牌无一例外；`gen-theme` / 主题编辑器的配置键同步换名）。组件内部旋钮（`--fb-*`、`--nav-*` 等声明在组件文件里的）不属公开契约、未改名。升级口诀：宿主 CSS 里 `grep -- '-\-color-\|-\-space-\|-\-fs-\|-\-z-'` 一遍，命中的令牌引用按前缀规则改名即可。
 
 ## 🚀 发版（维护者）
 

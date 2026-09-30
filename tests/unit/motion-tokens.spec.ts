@@ -11,7 +11,7 @@ describe('tokens.css 减弱动效块（F7）', () => {
   it('显式开关：data-vcl-motion="reduced" 重定义过渡令牌并压停关键帧', () => {
     expect(css).toContain(":root[data-vcl-motion='reduced']")
     const reduced = css.slice(css.indexOf(":root[data-vcl-motion='reduced']"))
-    expect(reduced).toContain('--transition-fast: 0.01ms')
+    expect(reduced).toContain('--vcl-transition-fast: 0.01ms')
     expect(reduced).toContain('animation-iteration-count: 1 !important')
   })
 

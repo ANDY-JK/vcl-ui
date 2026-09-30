@@ -43,13 +43,13 @@ withDefaults(defineProps<Props>(), {
   justify-content: center;
   padding: calc(48px * var(--vcl-scale)) calc(24px * var(--vcl-scale));
   text-align: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   min-height: clamp(120px * var(--vcl-scale), 20vh, 200px * var(--vcl-scale));
   width: 100%;
 }
 
 .empty-icon {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   opacity: 0.6;
   flex-shrink: 0;
 }
@@ -58,17 +58,17 @@ withDefaults(defineProps<Props>(), {
   margin: 0;
   font-size: calc(36px * var(--vcl-scale));
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 
 .empty-description {
   margin: 0;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   line-height: 1.5;
 }
 
 .empty-action {
-  margin-top: var(--space-2);
+  margin-top: var(--vcl-space-2);
 }
 </style>

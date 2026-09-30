@@ -109,102 +109,102 @@ function onKeydown(e: KeyboardEvent) {
 
 /* underline */
 .tabs-underline {
-  border-bottom: 1.5px solid var(--color-border);
+  border-bottom: 1.5px solid var(--vcl-color-border);
 }
 .tabs-underline .tab-btn {
-  padding: var(--space-2) calc(16px * var(--vcl-scale));
+  padding: var(--vcl-space-2) calc(16px * var(--vcl-scale));
   border: none;
   background: transparent;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1.5px;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .tabs-underline .tab-btn:hover {
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 .tabs-underline .tab-btn.active {
-  color: var(--color-primary-on-surface); /* AA：主色基色压白底实测仅 4.28，solid 档 5.84 */
-  border-bottom-color: var(--color-primary);
+  color: var(--vcl-color-primary-on-surface); /* AA：主色基色压白底实测仅 4.28，solid 档 5.84 */
+  border-bottom-color: var(--vcl-color-primary);
   font-weight: 500;
 }
 
 /* pills */
 .tabs-pills {
-  gap: var(--space-1);
-  padding: var(--space-1);
-  background: var(--color-bg-alt);
-  border-radius: var(--radius-lg);
+  gap: var(--vcl-space-1);
+  padding: var(--vcl-space-1);
+  background: var(--vcl-color-bg-alt);
+  border-radius: var(--vcl-radius-lg);
 }
 .tabs-pills .tab-btn {
   padding: calc(8px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border: none;
   background: transparent;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  border-radius: var(--vcl-radius-md);
+  transition: all var(--vcl-transition-fast);
 }
 .tabs-pills .tab-btn:hover {
-  color: var(--color-text);
+  color: var(--vcl-color-text);
 }
 .tabs-pills .tab-btn.active {
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
   font-weight: 500;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--vcl-shadow-sm);
 }
 
 /* card */
 .tabs-card .tab-btn {
-  padding: var(--space-2) calc(16px * var(--vcl-scale));
-  border: 1.5px solid var(--color-border);
-  background: var(--color-bg);
+  padding: var(--vcl-space-2) calc(16px * var(--vcl-scale));
+  border: 1.5px solid var(--vcl-color-border);
+  background: var(--vcl-color-bg);
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .tabs-card .tab-btn:first-child {
-  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  border-radius: var(--vcl-radius-md) 0 0 var(--vcl-radius-md);
 }
 .tabs-card .tab-btn:last-child {
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border-radius: 0 var(--vcl-radius-md) var(--vcl-radius-md) 0;
 }
 .tabs-card .tab-btn:not(:first-child) {
   margin-left: -1.5px;
 }
 .tabs-card .tab-btn.active {
-  background: var(--color-primary-light);
-  border-color: var(--color-primary);
-  color: var(--color-primary-on-surface);
+  background: var(--vcl-color-primary-light);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
   z-index: 1;
 }
 
 /* tabbar */
 .tabs-tabbar {
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
+  background: var(--vcl-color-surface);
+  border-top: 1px solid var(--vcl-color-border);
 }
 .tabs-tabbar .tab-btn {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-1);
-  padding: calc(8px * var(--vcl-scale)) var(--space-1);
+  gap: var(--vcl-space-1);
+  padding: calc(8px * var(--vcl-scale)) var(--vcl-space-1);
   border: none;
   background: transparent;
   cursor: pointer;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--color-text-muted);
-  transition: color var(--transition-fast);
+  color: var(--vcl-color-text-muted);
+  transition: color var(--vcl-transition-fast);
 }
 .tabs-tabbar .tab-btn.active {
-  color: var(--color-primary);
+  color: var(--vcl-color-primary);
   font-weight: 500;
 }
 </style>

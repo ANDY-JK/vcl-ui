@@ -211,7 +211,7 @@ export function useFloating(options: FloatingOptions = {}) {
   const optMinSize = () => options.minSize ?? 120
   const optMatchWidth = () => options.matchWidth ?? true
   const optMaxMatchWidth = () => options.maxMatchWidth ?? false
-  const optZIndex = () => options.zIndex ?? 'var(--z-dropdown, 2000)'
+  const optZIndex = () => options.zIndex ?? 'var(--vcl-z-dropdown, 2000)'
 
   function applyStyle(top: number, left: number, dir: FlipDirection, maxH: number | null, triggerWidth: number) {
     const vw = window.innerWidth

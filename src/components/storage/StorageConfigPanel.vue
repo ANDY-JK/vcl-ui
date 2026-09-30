@@ -129,30 +129,30 @@ function save(): void {
 .scp-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  margin: var(--space-2) 0;
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-4);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
+  margin: var(--vcl-space-2) 0;
 }
 .scp-row {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--vcl-space-3);
   flex-wrap: wrap;
 }
 .scp-label {
   flex-shrink: 0;
   width: calc(88px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   text-align: right;
 }
 .scp-option {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   font-size: calc(14px * var(--vcl-scale));
   cursor: pointer;
 }
@@ -163,15 +163,15 @@ function save(): void {
 .scp-tip {
   margin: 0;
   font-size: calc(13px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   line-height: 1.5;
 }
 .scp-error {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
   font-size: calc(14px * var(--vcl-scale));
 }
 .scp-actions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
 }
 </style>

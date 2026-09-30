@@ -55,7 +55,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <span v-if="_e" style="color: var(--color-danger-on-surface); font-size: var(--fs-12)"
+  <span v-if="_e" style="color: var(--vcl-color-danger-on-surface); font-size: var(--vcl-fs-12)"
     >⚠ {{ t('basic.buttonError') }}</span
   >
   <button
@@ -97,14 +97,14 @@ const emit = defineEmits<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--vcl-space-2);
   border: 1.5px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--vcl-radius-md);
   font-weight: 500;
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 
 .base-btn:disabled {
@@ -117,75 +117,75 @@ const emit = defineEmits<{
   height: calc(32px * var(--vcl-scale));
   padding: 0 calc(12px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 .btn-md {
-  height: var(--ctrl-height, calc(42px * var(--vcl-scale)));
-  padding: 0 var(--ctrl-padding-x, calc(14px * var(--vcl-scale)));
-  font-size: var(--ctrl-font-size, calc(14px * var(--vcl-scale)));
-  border-radius: var(--ctrl-radius, var(--radius-md));
+  height: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
+  padding: 0 var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
+  border-radius: var(--vcl-ctrl-radius, var(--vcl-radius-md));
 }
 .btn-lg {
-  height: calc(var(--ctrl-height, calc(42px * var(--vcl-scale))) + 6px * var(--vcl-scale));
-  padding: 0 calc(var(--ctrl-padding-x, calc(14px * var(--vcl-scale))) + 4px * var(--vcl-scale));
-  font-size: calc(var(--ctrl-font-size, calc(14px * var(--vcl-scale))) + 1px);
+  height: calc(var(--vcl-ctrl-height, calc(42px * var(--vcl-scale))) + 6px * var(--vcl-scale));
+  padding: 0 calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) + 4px * var(--vcl-scale));
+  font-size: calc(var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale))) + 1px);
 }
 
 /* 变体 */
 .btn-primary {
   /* 同 btn-danger 口径：实心底用 -solid 令牌而非基色。
      主色基色压白字实测 4.28，低于 AA 4.5；solid 档 5.84 达标。 */
-  background: var(--color-primary-solid);
+  background: var(--vcl-color-primary-solid);
   color: white;
-  border-color: var(--color-primary-solid);
+  border-color: var(--vcl-color-primary-solid);
 }
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-solid-hover);
-  border-color: var(--color-primary-solid-hover);
+  background: var(--vcl-color-primary-solid-hover);
+  border-color: var(--vcl-color-primary-solid-hover);
 }
 
 .btn-secondary {
-  background: var(--color-bg-alt);
-  color: var(--color-text);
-  border-color: var(--color-border);
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text);
+  border-color: var(--vcl-color-border);
 }
 .btn-secondary:hover:not(:disabled) {
-  background: var(--color-border);
+  background: var(--vcl-color-border);
 }
 
 .btn-outline {
   /* 描边按钮的文字用主题自适应主色：亮色压白底 5.84、暗色压暗底 4.83，两端都过 AA。
-     直接用 --color-primary 在亮底只有 4.28；用 -solid 则在暗底掉到 2.89
+     直接用 --vcl-color-primary 在亮底只有 4.28；用 -solid 则在暗底掉到 2.89
      （-solid 是为实心底压白字设计的，不随主题提亮，见 tokens.css 注释） */
   background: transparent;
-  color: var(--color-primary-on-surface);
+  color: var(--vcl-color-primary-on-surface);
   /* 描边跟文字同色，暗色下才不会出现「亮文字 + 深描边」的割裂感 */
-  border-color: var(--color-primary-on-surface);
+  border-color: var(--vcl-color-primary-on-surface);
 }
 .btn-outline:hover:not(:disabled) {
-  background: var(--color-primary-light);
+  background: var(--vcl-color-primary-light);
 }
 
 .btn-danger {
-  /* 用 --color-danger-solid（实心底色专用）而非 --color-danger：
+  /* 用 --vcl-color-danger-solid（实心底色专用）而非 --vcl-color-danger：
      后者在暗色下会被提亮为 #f87171，压白字实测对比度仅 2.77（不达标） */
-  background: var(--color-danger-solid, var(--color-danger));
+  background: var(--vcl-color-danger-solid, var(--vcl-color-danger));
   color: white;
-  border-color: var(--color-danger-solid, var(--color-danger));
+  border-color: var(--vcl-color-danger-solid, var(--vcl-color-danger));
 }
 .btn-danger:hover:not(:disabled) {
-  background: var(--color-danger-solid-hover, var(--color-danger-hover));
-  border-color: var(--color-danger-solid-hover, var(--color-danger-hover));
+  background: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
+  border-color: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
 }
 
 .btn-ghost {
   background: transparent;
-  color: var(--color-text-secondary);
+  color: var(--vcl-color-text-secondary);
   border-color: transparent;
 }
 .btn-ghost:hover:not(:disabled) {
-  background: var(--color-bg-alt);
-  color: var(--color-text);
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text);
 }
 
 /* 通栏 */

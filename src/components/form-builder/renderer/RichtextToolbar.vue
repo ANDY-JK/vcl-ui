@@ -506,8 +506,8 @@ function resetForm(): void {
   display: flex;
   gap: 2px;
   padding: calc(4px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
-  background: var(--color-bg-alt, #f8fafc);
-  border-bottom: 1px solid var(--color-border-light, #f1f5f9);
+  background: var(--vcl-color-bg-alt, #f8fafc);
+  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
   flex-wrap: wrap;
   align-items: center;
 }
@@ -517,21 +517,21 @@ function resetForm(): void {
   border: none;
   border-radius: calc(3px * var(--vcl-scale));
   background: transparent;
-  color: var(--color-text-muted, #64748b);
+  color: var(--vcl-color-text-muted, #64748b);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   padding: 0 calc(4px * var(--vcl-scale));
 }
 .fb-rt-toolbar button:hover {
-  background: var(--color-bg-soft, #f1f5f9);
-  color: var(--color-text, #1e293b);
+  background: var(--vcl-color-bg-soft, #f1f5f9);
+  color: var(--vcl-color-text, #1e293b);
 }
 .fb-rt-toolbar button.is-active {
-  background: var(--color-primary-soft, #e0e7ff);
-  color: var(--color-primary, #4f46e5);
+  background: var(--vcl-color-primary-soft, #e0e7ff);
+  color: var(--vcl-color-primary, #4f46e5);
 }
 .fb-rt-toolbar button:disabled {
   opacity: 0.5;
@@ -540,7 +540,7 @@ function resetForm(): void {
 .fb-rt-sep {
   width: 1px;
   height: calc(16px * var(--vcl-scale));
-  background: var(--color-border, #e2e8f0);
+  background: var(--vcl-color-border, #e2e8f0);
   margin: 0 2px;
 }
 .fb-rt-spacer {
@@ -558,8 +558,8 @@ function resetForm(): void {
   z-index: 30;
   min-width: calc(280px * var(--vcl-scale));
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  background: var(--color-bg, #fff);
-  border: 1px solid var(--color-border, #e2e8f0);
+  background: var(--vcl-color-bg, #fff);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
   border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
   display: flex;
@@ -572,8 +572,8 @@ function resetForm(): void {
   gap: calc(6px * var(--vcl-scale));
 }
 .fb-rt-panel-label {
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #64748b);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #64748b);
   width: calc(60px * var(--vcl-scale));
   flex-shrink: 0;
 }
@@ -581,7 +581,7 @@ function resetForm(): void {
   width: calc(20px * var(--vcl-scale)) !important;
   height: calc(20px * var(--vcl-scale)) !important;
   min-width: calc(20px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0) !important;
+  border: 1px solid var(--vcl-color-border, #e2e8f0) !important;
   border-radius: calc(3px * var(--vcl-scale)) !important;
   padding: 0 !important;
 }
@@ -592,36 +592,36 @@ function resetForm(): void {
   display: flex;
   flex-direction: column;
   gap: calc(4px * var(--vcl-scale));
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #64748b);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #64748b);
 }
 .fb-rt-panel-field input[type='text'] {
   height: calc(28px * var(--vcl-scale));
   padding: 0 calc(8px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
   border-radius: calc(4px * var(--vcl-scale));
-  font-size: var(--fs-13);
-  color: var(--color-text, #1e293b);
-  background: var(--color-bg, #fff);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text, #1e293b);
+  background: var(--vcl-color-bg, #fff);
   outline: none;
 }
 .fb-rt-panel-field input[type='text']:focus {
-  border-color: var(--color-primary, #4f46e5);
+  border-color: var(--vcl-color-primary, #4f46e5);
 }
 .fb-rt-panel-check {
   display: flex;
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
-  font-size: var(--fs-12);
-  color: var(--color-text-muted, #64748b);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-muted, #64748b);
   cursor: pointer;
 }
 .fb-rt-panel-hint {
-  font-size: var(--fs-12);
-  color: var(--color-warning, #d97706);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-warning, #d97706);
 }
 .fb-rt-panel-hint.is-error {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .fb-rt-panel-actions {
   display: flex;
@@ -632,18 +632,18 @@ function resetForm(): void {
   min-width: auto;
   height: calc(26px * var(--vcl-scale));
   padding: 0 calc(12px * var(--vcl-scale));
-  border: 1px solid var(--color-border, #e2e8f0);
-  background: var(--color-bg, #fff);
-  color: var(--color-text, #1e293b);
-  font-size: var(--fs-12);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  background: var(--vcl-color-bg, #fff);
+  color: var(--vcl-color-text, #1e293b);
+  font-size: var(--vcl-fs-12);
 }
 .fb-rt-panel-actions button:hover {
-  border-color: var(--color-primary, #4f46e5);
-  color: var(--color-primary, #4f46e5);
+  border-color: var(--vcl-color-primary, #4f46e5);
+  color: var(--vcl-color-primary, #4f46e5);
 }
 .fb-rt-panel-actions button.is-primary {
-  background: var(--color-primary, #4f46e5);
-  border-color: var(--color-primary, #4f46e5);
+  background: var(--vcl-color-primary, #4f46e5);
+  border-color: var(--vcl-color-primary, #4f46e5);
   color: #fff;
 }
 .fb-rt-panel-actions button.is-primary:hover {

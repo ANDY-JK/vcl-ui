@@ -168,7 +168,7 @@ function onClick() {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   flex-shrink: 0;
   cursor: default;
 }
@@ -179,7 +179,7 @@ function onClick() {
   opacity: 0.9;
 }
 .v-image.clickable:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--vcl-color-primary);
   outline-offset: 2px;
 }
 
@@ -187,7 +187,7 @@ function onClick() {
   width: 100%;
   height: 100%;
   display: block;
-  transition: opacity var(--transition-slow);
+  transition: opacity var(--vcl-transition-slow);
 }
 .v-image-img.invisible {
   opacity: 0;
@@ -201,11 +201,11 @@ function onClick() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  color: var(--color-text-muted);
+  gap: var(--vcl-space-1);
+  color: var(--vcl-color-text-muted);
 }
 .v-image-error {
-  color: var(--color-danger-on-surface);
+  color: var(--vcl-color-danger-on-surface);
 }
 .v-image-text {
   font-size: calc(14px * var(--vcl-scale));

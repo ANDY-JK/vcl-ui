@@ -179,7 +179,7 @@ function onNodeClick(node: TreeNode) {
           style="
             margin-bottom: calc(8px * var(--vcl-scale));
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
           "
         >
           点击箭头或标签展开/折叠子节点
@@ -193,7 +193,7 @@ function onNodeClick(node: TreeNode) {
           style="
             margin-bottom: calc(8px * var(--vcl-scale));
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
           "
         >
           勾选父节点自动选中所有子节点，半选状态自动计算
@@ -203,7 +203,7 @@ function onNodeClick(node: TreeNode) {
           style="
             margin-top: calc(8px * var(--vcl-scale));
             font-size: calc(11px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
           "
         >
           已选中: {{ checkedKeys.length > 0 ? checkedKeys.join(', ') : '无' }}
@@ -216,7 +216,7 @@ function onNodeClick(node: TreeNode) {
           style="
             margin-bottom: calc(8px * var(--vcl-scale));
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
           "
         >
           点击节点高亮选中，不会自动展开/折叠
@@ -231,7 +231,7 @@ function onNodeClick(node: TreeNode) {
           style="
             margin-top: calc(8px * var(--vcl-scale));
             font-size: calc(11px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
           "
         >
           当前选中: {{ selectedKey ?? '无' }}
@@ -244,7 +244,7 @@ function onNodeClick(node: TreeNode) {
           style="
             margin-bottom: calc(8px * var(--vcl-scale));
             font-size: calc(12px * var(--vcl-scale));
-            color: var(--color-text-muted);
+            color: var(--vcl-color-text-muted);
           "
         >
           通过 defaultExpandedKeys 指定初始展开的节点
@@ -256,7 +256,7 @@ function onNodeClick(node: TreeNode) {
     <Card title="API" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <thead>
-          <tr style="border-bottom: 2px solid var(--color-border); text-align: left">
+          <tr style="border-bottom: 2px solid var(--vcl-color-border); text-align: left">
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">属性</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">类型</th>
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认值</th>
@@ -268,7 +268,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>data</code>
@@ -276,7 +276,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>TreeNode[]</code>
@@ -284,7 +284,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               —
@@ -292,7 +292,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               树形数据源
@@ -302,7 +302,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>checkable</code>
@@ -310,7 +310,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>boolean</code>
@@ -318,7 +318,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>false</code>
@@ -326,7 +326,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               是否显示复选框
@@ -336,7 +336,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>selectable</code>
@@ -344,7 +344,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>boolean</code>
@@ -352,7 +352,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>false</code>
@@ -360,7 +360,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               点击节点高亮选中
@@ -370,7 +370,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>selectedKey</code>
@@ -378,7 +378,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>string | number | null</code>
@@ -386,7 +386,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>null</code>
@@ -394,7 +394,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               当前选中的节点 key
@@ -404,7 +404,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>defaultExpandedKeys</code>
@@ -412,7 +412,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>(string | number)[]</code>
@@ -420,7 +420,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>[]</code>
@@ -428,7 +428,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               初始展开的节点 key 列表
@@ -438,7 +438,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>expandAll</code>
@@ -446,7 +446,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>boolean</code>
@@ -454,7 +454,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               <code>false</code>
@@ -462,7 +462,7 @@ function onNodeClick(node: TreeNode) {
             <td
               style="
                 padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--color-border-light);
+                border-bottom: 1px solid var(--vcl-color-border-light);
               "
             >
               是否展开所有节点
@@ -473,7 +473,7 @@ function onNodeClick(node: TreeNode) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-top: calc(12px * var(--vcl-scale));
         "
       >
@@ -483,7 +483,7 @@ function onNodeClick(node: TreeNode) {
       <p
         style="
           font-size: calc(12px * var(--vcl-scale));
-          color: var(--color-text-muted);
+          color: var(--vcl-color-text-muted);
           margin-top: calc(8px * var(--vcl-scale));
         "
       >
@@ -501,12 +501,12 @@ function onNodeClick(node: TreeNode) {
   margin-bottom: calc(4px * var(--vcl-scale));
 }
 .demo-desc {
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
   margin-bottom: calc(24px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
 }
 code {
-  background: var(--color-bg-alt);
+  background: var(--vcl-color-bg-alt);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));

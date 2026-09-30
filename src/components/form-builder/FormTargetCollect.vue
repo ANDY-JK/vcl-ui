@@ -536,14 +536,14 @@ onMounted(async () => {
   gap: calc(12px * var(--vcl-scale));
   flex-wrap: wrap;
   padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
-  background: var(--color-surface, #f8fafc);
-  border: 1px solid var(--color-border, #e2e8f0);
+  background: var(--vcl-color-surface, #f8fafc);
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
   border-radius: calc(8px * var(--vcl-scale));
   margin-bottom: calc(16px * var(--vcl-scale));
 }
 .ftc-title {
   margin: 0;
-  font-size: var(--fs-16);
+  font-size: var(--vcl-fs-16);
   white-space: nowrap;
 }
 .ftc-search {
@@ -553,49 +553,49 @@ onMounted(async () => {
 .ftc-stat {
   padding: 2px calc(10px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   font-weight: 600;
-  background: var(--color-bg-soft);
+  background: var(--vcl-color-bg-soft);
   color: #94a3b8;
   white-space: nowrap;
 }
 .ftc-stat.done {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
+  background: var(--vcl-color-success-bg);
+  color: var(--vcl-color-success-text);
 }
 .ftc-fields-more {
   margin: 0 0 calc(6px * var(--vcl-scale));
-  font-size: var(--fs-12);
-  color: var(--color-text-secondary);
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-secondary);
 }
 .ftc-table-wrap {
   overflow-x: auto;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--vcl-color-border);
   border-radius: calc(8px * var(--vcl-scale));
 }
 .ftc-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--fs-12);
-  background: var(--color-bg, #fff);
+  font-size: var(--vcl-fs-12);
+  background: var(--vcl-color-bg, #fff);
 }
 .ftc-table th {
   text-align: left;
   padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
-  font-size: var(--fs-11);
-  color: var(--color-text-secondary);
-  background: var(--color-surface, #f8fafc);
-  border-bottom: 2px solid var(--color-border);
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-secondary);
+  background: var(--vcl-color-surface, #f8fafc);
+  border-bottom: 2px solid var(--vcl-color-border);
   white-space: nowrap;
 }
 .ftc-table td {
   padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--vcl-color-border);
   vertical-align: middle;
 }
 .ftc-row:hover {
-  background: var(--color-bg-alt, #f8fafc);
+  background: var(--vcl-color-bg-alt, #f8fafc);
 }
 .ftc-td-id {
   font-weight: 600;
@@ -617,14 +617,14 @@ onMounted(async () => {
   height: calc(80px * var(--vcl-scale)) !important;
 }
 .ftc-td-upload :deep(.card-label) {
-  font-size: var(--fs-10) !important;
+  font-size: var(--vcl-fs-10) !important;
 }
 .ftc-td-status {
   text-align: center;
   white-space: nowrap;
 }
 .ftc-status-done {
-  color: var(--color-success-text);
+  color: var(--vcl-color-success-text);
   font-weight: 600;
 }
 .ftc-status-none {
@@ -633,6 +633,6 @@ onMounted(async () => {
 .ftc-empty {
   text-align: center;
   padding: calc(40px * var(--vcl-scale));
-  color: var(--color-text-muted);
+  color: var(--vcl-color-text-muted);
 }
 </style>

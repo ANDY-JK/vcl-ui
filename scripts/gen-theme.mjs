@@ -16,8 +16,8 @@
  *
  * 配置格式（JSON，全量键；空对象 = 该主题块不出产物段）：
  *   {
- *     "light": { "--color-primary": "#0f766e", "--space-4": "12px" },
- *     "dark":  { "--color-primary": "#14b8a6" }
+ *     "light": { "--vcl-color-primary": "#0f766e", "--vcl-space-4": "12px" },
+ *     "dark":  { "--vcl-color-primary": "#14b8a6" }
  *   }
  *
  * 宿主引入顺序（产物追加在库 CSS 之后才覆盖得动）：
@@ -46,10 +46,10 @@ function main() {
     const tpl = {
       light: {
         // 示例（取消注释启用）：换主色只需覆盖 4 个联动令牌，暗色块记得给暗色版
-        // "--color-primary": "#0f766e",
-        // "--color-primary-rgb": "15, 118, 110",
-        // "--color-primary-hover": "#0d5f55",
-        // "--color-primary-light": "#ecfdf5",
+        // "--vcl-color-primary": "#0f766e",
+        // "--vcl-color-primary-rgb": "15, 118, 110",
+        // "--vcl-color-primary-hover": "#0d5f55",
+        // "--vcl-color-primary-light": "#ecfdf5",
       },
       dark: {},
     }

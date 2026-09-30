@@ -14,13 +14,13 @@
 .ldp-panel::-webkit-scrollbar-thumb,
 .ldp-props::-webkit-scrollbar-thumb,
 .ldc-canvas-content::-webkit-scrollbar-thumb {
-  background: var(--color-border, #e5e7eb);
+  background: var(--vcl-color-border, #e5e7eb);
   border-radius: 2px;
 }
 .ldp-panel::-webkit-scrollbar-thumb:hover,
 .ldp-props::-webkit-scrollbar-thumb:hover,
 .ldc-canvas-content::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted, #9ca3af);
+  background: var(--vcl-color-text-muted, #9ca3af);
 }
 
 .ld-canvas-wrap {
@@ -34,10 +34,10 @@
    步骤编辑器
    ================================ */
 .ld-settings-steps {
-  border: 1px solid var(--color-border-light, #f1f5f9);
-  border-radius: var(--radius-md, calc(8px * var(--vcl-scale)));
+  border: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  border-radius: var(--vcl-radius-md, calc(8px * var(--vcl-scale)));
   padding: calc(12px * var(--vcl-scale));
-  background: var(--color-bg-alt, #fafbfc);
+  background: var(--vcl-color-bg-alt, #fafbfc);
 }
 .ld-steps-header {
   display: flex;
@@ -47,19 +47,19 @@
 }
 .ld-steps-header label {
   font-weight: 600;
-  font-size: var(--fs-13);
-  color: var(--color-text, #1e293b);
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text, #1e293b);
 }
 .ld-btn-sm {
   padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale)) !important;
-  font-size: var(--fs-11) !important;
+  font-size: var(--vcl-fs-11) !important;
   border-radius: calc(5px * var(--vcl-scale)) !important;
 }
 .ld-step-item {
-  border: 1px solid var(--color-border-light, #f1f5f9);
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
+  border: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
   padding: calc(10px * var(--vcl-scale));
-  background: var(--color-bg, #fff);
+  background: var(--vcl-color-bg, #fff);
   margin-bottom: calc(8px * var(--vcl-scale));
 }
 .ld-step-head {
@@ -78,12 +78,12 @@
   flex-shrink: 0;
 }
 .ld-step-fields {
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
 }
 .ld-step-fields-label {
   display: block;
   margin-bottom: calc(6px * var(--vcl-scale));
-  color: var(--color-text-muted, #64748b);
+  color: var(--vcl-color-text-muted, #64748b);
   font-weight: 500;
 }
 .ld-step-field-list {
@@ -96,30 +96,30 @@
   align-items: center;
   gap: calc(4px * var(--vcl-scale));
   padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-  border: 1px solid var(--color-border-light, #e2e8f0);
+  border: 1px solid var(--vcl-color-border-light, #e2e8f0);
   border-radius: calc(12px * var(--vcl-scale));
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   cursor: pointer;
   transition: all 0.15s;
   user-select: none;
 }
 .ld-step-field-chk:hover {
-  border-color: var(--color-primary, #4f6ef7);
+  border-color: var(--vcl-color-primary, #4f6ef7);
 }
 .ld-step-field-chk.checked {
   background: rgba(79, 110, 247, 0.08);
-  border-color: var(--color-primary, #4f6ef7);
-  color: var(--color-primary, #4f6ef7);
+  border-color: var(--vcl-color-primary, #4f6ef7);
+  color: var(--vcl-color-primary, #4f6ef7);
 }
 .ld-step-field-chk input {
   width: calc(12px * var(--vcl-scale));
   height: calc(12px * var(--vcl-scale));
   margin: 0;
-  accent-color: var(--color-primary, #4f6ef7);
+  accent-color: var(--vcl-color-primary, #4f6ef7);
 }
 .ld-step-empty {
-  color: var(--color-text-muted, #94a3b8);
-  font-size: var(--fs-12);
+  color: var(--vcl-color-text-muted, #94a3b8);
+  font-size: var(--vcl-fs-12);
   font-style: italic;
 }
 
@@ -129,8 +129,8 @@
 
 /* ── 高级表单设置 ── */
 .ld-settings-advanced {
-  border-top: 1px solid var(--color-border-light, #f1f5f9);
-  background: var(--color-bg, #fff);
+  border-top: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  background: var(--vcl-color-bg, #fff);
   padding-top: calc(10px * var(--vcl-scale));
 }
 .ld-settings-switch-row {
@@ -140,9 +140,9 @@
   min-width: calc(140px * var(--vcl-scale));
 }
 .ld-settings-switch-row label {
-  font-size: var(--fs-11);
+  font-size: var(--vcl-fs-11);
   font-weight: 600;
-  color: var(--color-text-secondary, #475569);
+  color: var(--vcl-color-text-secondary, #475569);
   white-space: nowrap;
   text-transform: none;
   letter-spacing: 0;
@@ -152,27 +152,27 @@
 /* ── 设备切换 ── */
 .ld-device-switch {
   display: inline-flex;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: var(--radius-sm, calc(6px * var(--vcl-scale)));
+  border: 1px solid var(--vcl-color-border, #e5e7eb);
+  border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
   overflow: hidden;
 }
 .ld-device-btn {
   padding: calc(5px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   border: none;
-  background: var(--color-bg, #fff);
-  color: var(--color-text-muted, #9ca3af);
+  background: var(--vcl-color-bg, #fff);
+  color: var(--vcl-color-text-muted, #9ca3af);
   cursor: pointer;
-  font-size: var(--fs-12);
+  font-size: var(--vcl-fs-12);
   display: inline-flex;
   align-items: center;
   gap: calc(4px * var(--vcl-scale));
   transition: all 0.15s;
 }
 .ld-device-btn:hover {
-  background: var(--color-bg-alt, #f8fafc);
+  background: var(--vcl-color-bg-alt, #f8fafc);
 }
 .ld-device-btn.active {
-  background: var(--color-primary, #4f6ef7);
+  background: var(--vcl-color-primary, #4f6ef7);
   color: #fff;
 }
 
@@ -181,22 +181,22 @@
   border-color: rgba(139, 92, 246, 0.2);
 }
 .ldp-field-item-container:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary);
   box-shadow: 0 1px 6px rgba(139, 92, 246, 0.08);
 }
 .ldp-field-icon-container {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary);
 }
 .ldp-field-item-container:hover .ldp-field-icon {
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
+  background: var(--vcl-color-primary-soft);
+  color: var(--vcl-color-primary);
 }
 .ldp-group-cnt {
   margin-left: calc(4px * var(--vcl-scale));
-  font-size: var(--fs-9);
-  background: var(--color-bg-soft, #f1f5f9);
+  font-size: var(--vcl-fs-9);
+  background: var(--vcl-color-bg-soft, #f1f5f9);
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(8px * var(--vcl-scale));
   font-weight: 600;

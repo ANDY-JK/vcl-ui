@@ -91,8 +91,8 @@ const displayText = computed(() => {
 })
 
 /** 背景色覆盖。
- *  ⚠️ color prop 用于「实心底」场景，此前的默认文字色是 --color-text-secondary（灰字），
- *  压在实心底上对比度极低（实测暗色下配 --color-warning 仅 1.47，等同不可见）。
+ *  ⚠️ color prop 用于「实心底」场景，此前的默认文字色是 --vcl-color-text-secondary（灰字），
+ *  压在实心底上对比度极低（实测暗色下配 --vcl-color-warning 仅 1.47，等同不可见）。
  *  故传了 color 时文字自动改为白色 —— 这是实心 tag 唯一可读的默认组合；
  *  需要自定义文字色请用 style/slot 覆盖。 */
 const colorStyle = computed(() => {
@@ -154,17 +154,17 @@ const supStyle = computed(() => {
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--vcl-space-1);
   font-weight: 500;
   white-space: nowrap;
-  transition: all var(--transition-fast);
+  transition: all var(--vcl-transition-fast);
 }
 .tag-sm {
-  padding: 1px var(--space-2);
+  padding: 1px var(--vcl-space-2);
   font-size: calc(15px * var(--vcl-scale));
 }
 .tag-md {
-  padding: var(--space-1) calc(10px * var(--vcl-scale));
+  padding: var(--vcl-space-1) calc(10px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
 }
 .tag.rounded {
@@ -196,54 +196,54 @@ const supStyle = computed(() => {
 }
 
 .tag-default {
-  background: var(--color-bg-alt);
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text-secondary);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .tag-primary {
-  /* 同其它语义色口径：浅底上的文字用深档令牌。--color-primary 基色压在
-     --color-primary-light 上实测对比度不足 AA；solid 档（5.84）达标 */
-  background: var(--color-primary-light);
-  color: var(--color-primary-on-surface);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-sm);
+  /* 同其它语义色口径：浅底上的文字用深档令牌。--vcl-color-primary 基色压在
+     --vcl-color-primary-light 上实测对比度不足 AA；solid 档（5.84）达标 */
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary-on-surface);
+  border: 1px solid var(--vcl-color-primary);
+  border-radius: var(--vcl-radius-sm);
 }
 .tag-success {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-  border: 1px solid var(--color-success-border);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-success-bg);
+  color: var(--vcl-color-success-text);
+  border: 1px solid var(--vcl-color-success-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .tag-danger {
-  background: var(--color-danger-bg);
-  color: var(--color-danger-on-surface);
-  border: 1px solid var(--color-danger-border);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-danger-bg);
+  color: var(--vcl-color-danger-on-surface);
+  border: 1px solid var(--vcl-color-danger-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .tag-warning {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-  border: 1px solid var(--color-warning-border);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-warning-bg);
+  color: var(--vcl-color-warning-text);
+  border: 1px solid var(--vcl-color-warning-border);
+  border-radius: var(--vcl-radius-sm);
 }
 .tag-info {
-  background: var(--color-info-bg);
-  color: var(--color-info-text);
-  border: 1px solid var(--color-info-border);
-  border-radius: var(--radius-sm);
+  background: var(--vcl-color-info-bg);
+  color: var(--vcl-color-info-text);
+  border: 1px solid var(--vcl-color-info-border);
+  border-radius: var(--vcl-radius-sm);
 }
 
 .tag-close {
   display: inline-flex;
   padding: 1px;
-  margin-left: var(--space-1);
+  margin-left: var(--vcl-space-1);
   border: none;
   background: transparent;
   color: inherit;
   opacity: 0.5;
   cursor: pointer;
-  border-radius: var(--radius-sm);
+  border-radius: var(--vcl-radius-sm);
 }
 .tag-close:hover {
   opacity: 1;
@@ -265,9 +265,9 @@ const supStyle = computed(() => {
   height: calc(18px * var(--vcl-scale));
   padding: 0 calc(6px * var(--vcl-scale));
   border-radius: calc(100px * var(--vcl-scale));
-  /* 实心底压白字：用 --color-danger-solid（暗色下 --color-danger 被提亮为 #f87171，
+  /* 实心底压白字：用 --vcl-color-danger-solid（暗色下 --vcl-color-danger 被提亮为 #f87171，
      白字对比度仅 2.77 不达标） */
-  background: var(--color-danger-solid, var(--color-danger));
+  background: var(--vcl-color-danger-solid, var(--vcl-color-danger));
   color: #ffffff;
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
@@ -278,7 +278,7 @@ const supStyle = computed(() => {
   top: 0;
   right: 0;
   transform: translate(50%, -50%);
-  border: 1px solid var(--color-badge-ring, var(--color-surface));
+  border: 1px solid var(--vcl-color-badge-ring, var(--vcl-color-surface));
   z-index: 1;
 }
 
