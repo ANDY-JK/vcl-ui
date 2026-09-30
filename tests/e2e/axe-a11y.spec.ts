@@ -97,13 +97,17 @@ const TRADEOFF: Record<string, Set<string>> = {
 // 变长：divider 与 avatar 两条 scrollable 登记对重新溢出命中（即 09-20 登记集的上限 15，
 // 与 BASELINE_BY_RULE 的 scrollable:2 上限一致），取舍总数 13→15。属内容随等比缩放
 // 自然变长的已知取舍回归，非新增缺陷；两条仍留登记集内作回涨探针。
-const BASELINE_TOTAL = 15
+// [2026-09-30 晚 由 15 降为 13] 基准改 1536（用户主屏 1912 观感定案）后，本 spec 的
+// 1280 视口缩放 1.0→0.833，divider 与 avatar 两条 scrollable 登记对不再溢出命中
+// （探针实测 = 0），取舍总数 15→13。两条仍留登记集内作回涨探针：基准若再往窄
+// （1280）方向改，总数回升到 15 会被本断言拦下提示重核，而不是静默放过。
+const BASELINE_TOTAL = 13
 // 基线里各「规则 × 页面」条数（升即红；仅覆盖 TRADEOFF 类别，三方/demo 内联不计入）
 const BASELINE_BY_RULE: Record<string, number> = {
   'nested-interactive': 2,
   'empty-table-header': 1,
   label: 2,
-  'scrollable-region-focusable': 2,
+  'scrollable-region-focusable': 0,
   'label-title-only': 2,
   'landmark-unique': 4,
   'landmark-main-is-top-level': 1,

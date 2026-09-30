@@ -434,7 +434,7 @@ onMounted(() => {
 
 <style scoped>
 .demo-title {
-  font-size: calc(22px * var(--vcl-scale));
+  font-size: var(--vcl-fs-20);
   font-weight: 700;
   margin-bottom: calc(4px * var(--vcl-scale));
 }

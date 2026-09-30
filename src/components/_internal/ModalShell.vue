@@ -222,7 +222,9 @@ function onPanelMousedown() {
 }
 
 .modal-title {
-  font-size: calc(36px * var(--vcl-scale));
+  /* 2026-09-30：原 36px 用户嫌「太大」、18px 又嫌「太小」，取中间档 24px
+     （介于字阶 22/28 之间，随等比缩放；主屏 1912 @1536 基准 ≈ 30px 观感正常） */
+  font-size: calc(24px * var(--vcl-scale));
   font-weight: 600;
 }
 

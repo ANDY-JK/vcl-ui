@@ -2,6 +2,7 @@
 import Popover from '@/components/feedback/Popover.vue'
 import Card from '@/components/data/Card.vue'
 import Button from '@/components/basic/Button.vue'
+import IconSvg from '@/components/basic/IconSvg.vue'
 </script>
 
 <template>
@@ -45,6 +46,11 @@ import Button from '@/components/basic/Button.vue'
     <Card title="Popover 气泡卡片" title-as="h2">
       <div style="display: flex; gap: calc(16px * var(--vcl-scale)); align-items: center; flex-wrap: wrap">
         <Popover title="通知中心" trigger="click">
+          <template #trigger>
+            <button type="button" class="pop-trigger" title="通知中心" aria-label="通知中心">
+              <IconSvg type="bell" size="sm" />
+            </button>
+          </template>
           <p>你有 3 条新消息</p>
           <p
             style="
@@ -57,6 +63,11 @@ import Button from '@/components/basic/Button.vue'
           </p>
         </Popover>
         <Popover title="帮助信息" trigger="hover">
+          <template #trigger>
+            <button type="button" class="pop-trigger" title="帮助信息" aria-label="帮助信息">
+              <IconSvg type="help-circle" size="sm" />
+            </button>
+          </template>
           <p>悬停即可查看帮助内容</p>
         </Popover>
       </div>
@@ -202,7 +213,7 @@ import Button from '@/components/basic/Button.vue'
 
 <style scoped>
 .demo-title {
-  font-size: calc(22px * var(--vcl-scale));
+  font-size: var(--vcl-fs-20);
   font-weight: 700;
   margin-bottom: calc(4px * var(--vcl-scale));
 }
@@ -216,5 +227,24 @@ code {
   padding: 1px calc(5px * var(--vcl-scale));
   border-radius: calc(3px * var(--vcl-scale));
   font-size: calc(12px * var(--vcl-scale));
+}
+/* 气泡卡片案例的图标触发器：32×32 描边图标按钮（默认 circle-alert 与「通知/帮助」语义不符） */
+.pop-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(32px * var(--vcl-scale));
+  height: calc(32px * var(--vcl-scale));
+  padding: 0;
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
+  cursor: pointer;
+  transition: all var(--vcl-transition-fast);
+}
+.pop-trigger:hover {
+  color: var(--vcl-color-primary-on-surface);
+  border-color: var(--vcl-color-primary);
 }
 </style>
