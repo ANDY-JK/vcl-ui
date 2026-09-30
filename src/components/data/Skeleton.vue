@@ -154,12 +154,4 @@ const rowList = computed(() => {
     background-position: -200% 0;
   }
 }
-
-/* 无障碍：系统关闭动效时停止流光 */
-@media (prefers-reduced-motion: reduce) {
-  .skel-animated .skel-line,
-  .skel-animated .skel-avatar {
-    animation: none;
-  }
-}
 </style>

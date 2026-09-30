@@ -98,6 +98,19 @@ import 'vcl-ui/dist/theme.css' // 或本地开发路径
 
 可视化配置层：demo 站点 `#/theme-editor`（顶栏月亮按钮直达）——分组令牌面板（颜色走原生取色器、断点/z-index 只读）+ 按当前主题记录覆盖 + 全站实时预览（动态 style）+ 一键导出 `theme.config.json` / `theme.css`（导出与 CLI 同一套校验，`scripts/theme-pure.mjs` 单一真源）。草稿存 localStorage。
 
+### 减弱动效（无障碍）
+
+过渡与关键帧动画（弹层出入场、spinner/shimmer 等）跟随系统 `prefers-reduced-motion` 自动压停；
+宿主也可在 `<html>` 上显式控制，优先级高于系统偏好：
+
+```html
+<html data-vcl-motion="reduced"> <!-- 全站关动效（投屏/晕动症场景，开关由宿主 UI 自行提供） -->
+<html data-vcl-motion="full">    <!-- 逃生口：系统开了减弱也保持全动效 -->
+```
+
+机制：`--transition-*` 令牌域内重定义 + 关键帧时长/次数归零，不碰布局与终态透明度；
+实现集中在 `tokens.css` 的减弱动效块（组件内不各留本地 `@media` 块，回归锁见 `tests/unit/motion-tokens.spec.ts`）。
+
 ### 基本使用
 
 ```vue

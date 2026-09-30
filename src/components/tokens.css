@@ -160,6 +160,42 @@
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
 
+  /* ===== 减弱动效（F7，2026-09-30）=====
+     两条触发通道：① 宿主在 <html> 显式声明 data-vcl-motion="reduced"（投屏/晕动症等场景，
+     开关由宿主 UI 自行提供）；② 用户系统开启「减弱动态效果」且未声明 data-vcl-motion="full"
+     逃生口（full = 宿主明确要全动效，压过系统偏好）。不声明时库内动效照常。
+     覆盖两族：transition 走上方 --transition-* 令牌的域内重定义（组件全走令牌，零散改零收益）；
+     关键帧动画（spinner/shimmer/stripe/fade-in 等 15 处，多为 scoped 类）用通用选择器 + !important
+     压成 0.01ms 单次——scoped 编译选择器与外部选择器同特异性且源序在后，!important 是唯一能
+     稳定压过 scoped 样式的写法（仓内既有 48 处 !important 先例）。只收时长与次数，
+     不碰布局与终态透明度；取代 Loading/Skeleton 各自的本地 reduced 块（单一真源）。 */
+  :root[data-vcl-motion='reduced'] {
+    --transition-fast: 0.01ms;
+    --transition-normal: 0.01ms;
+    --transition-slow: 0.01ms;
+  }
+  :root[data-vcl-motion='reduced'] *,
+  :root[data-vcl-motion='reduced'] *::before,
+  :root[data-vcl-motion='reduced'] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-vcl-motion='full']) {
+      --transition-fast: 0.01ms;
+      --transition-normal: 0.01ms;
+      --transition-slow: 0.01ms;
+    }
+    :root:not([data-vcl-motion='full']) *,
+    :root:not([data-vcl-motion='full']) *::before,
+    :root:not([data-vcl-motion='full']) *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   /* 键盘焦点环 — 组件要覆写时引这两个值，不要再各写一套 outline/box-shadow */
   --focus-ring-color: var(--color-primary);
   --focus-ring: 2px solid var(--focus-ring-color);
