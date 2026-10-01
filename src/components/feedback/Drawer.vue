@@ -262,7 +262,8 @@ onUnmounted(unmountEsc)
   flex-shrink: 0;
 }
 .drawer-title {
-  font-size: calc(36px * var(--vcl-scale));
+  /* 与 ModalShell .modal-title 同档（24px 中间档）：弹窗族标题统一，Drawer 原先 36px 漏调 */
+  font-size: calc(24px * var(--vcl-scale));
   font-weight: 600;
 }
 
