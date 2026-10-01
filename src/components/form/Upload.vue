@@ -485,9 +485,15 @@ onUnmounted(() => {
   <Teleport to="body">
     <div v-if="sheetOpen" class="up-sheet-mask" @click="sheetOpen = false">
       <div ref="upSheetRef" class="up-sheet" tabindex="-1" role="menu" :aria-label="t('form.pickSource')" @click.stop>
-        <button type="button" class="up-sheet-item" @click="openCamera">📷 {{ t('form.camera') }}</button>
-        <button type="button" class="up-sheet-item" @click="pickFrom('gallery')">🖼 {{ t('form.gallery') }}</button>
-        <button type="button" class="up-sheet-item" @click="pickFrom('browse')">📄 {{ t('form.browse') }}</button>
+        <button type="button" class="up-sheet-item" @click="openCamera">
+          <IconSvg type="camera" size="sm" />{{ t('form.camera') }}
+        </button>
+        <button type="button" class="up-sheet-item" @click="pickFrom('gallery')">
+          <IconSvg type="image" size="sm" />{{ t('form.gallery') }}
+        </button>
+        <button type="button" class="up-sheet-item" @click="pickFrom('browse')">
+          <IconSvg type="file-text" size="sm" />{{ t('form.browse') }}
+        </button>
         <button type="button" class="up-sheet-cancel" @click="sheetOpen = false">{{ t('form.cancel') }}</button>
       </div>
     </div>
@@ -774,6 +780,10 @@ onUnmounted(() => {
 .up-sheet-item,
 .up-sheet-cancel {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6px * var(--vcl-scale));
   padding: var(--vcl-space-3);
   border: 1px solid var(--vcl-color-border);
   border-radius: var(--vcl-radius-lg);

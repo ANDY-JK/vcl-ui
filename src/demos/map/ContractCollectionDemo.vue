@@ -5,6 +5,7 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick, toRaw
 import { Input, Upload, Toast } from '@/components'
 import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
+import IconSvg from '@/components/basic/IconSvg.vue'
 import type { UploadFile } from '@/components/form/Upload.vue'
 import {
   createBackend,
@@ -769,7 +770,7 @@ onUnmounted(() => {
       <button class="cc-btn" @click="showStoragePanel = !showStoragePanel">
         {{ storageConfig.backend !== 'local' ? '☁ 云端' : '💾 本地' }}
       </button>
-      <button class="cc-btn cc-btn-clear" @click="clearAll">🗑 清空</button>
+      <button class="cc-btn cc-btn-clear" @click="clearAll"><IconSvg type="trash-2" size="sm" /> 清空</button>
     </div>
 
     <!-- 存储设置面板（共享组件） -->
@@ -892,6 +893,9 @@ onUnmounted(() => {
   color: var(--vcl-color-primary-on-surface);
 }
 .cc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(5px * var(--vcl-scale));
   padding: calc(5px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   border: 1px solid var(--vcl-color-border);
   border-radius: calc(6px * var(--vcl-scale));
@@ -899,6 +903,12 @@ onUnmounted(() => {
   cursor: pointer;
   font-size: calc(12px * var(--vcl-scale));
   white-space: nowrap;
+}
+.cc-btn svg {
+  color: var(--vcl-color-text-muted);
+}
+.cc-btn.cc-btn-clear svg {
+  color: var(--vcl-color-danger-on-surface);
 }
 .cc-btn:hover {
   background: var(--vcl-color-bg-alt, #f1f5f9);

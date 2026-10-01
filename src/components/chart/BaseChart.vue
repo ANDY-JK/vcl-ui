@@ -8,6 +8,7 @@ import type { EChartsOption } from 'echarts'
 import type { BaseChartProps } from './utils/types'
 import { toSize } from './utils/chart-utils'
 import { useT } from '@/components/_internal/i18n'
+import IconSvg from '@/components/basic/IconSvg.vue'
 
 const t = useT()
 
@@ -43,6 +44,30 @@ const containerStyle = computed(() => ({
   width: toSize(props.width, '100%'),
   height: toSize(props.height, 'clamp(280px, 50vh, 480px)'),
 }))
+
+/** 工具栏承载方式：默认 saveAsImage/zoom 走「图上方 HTML 行」（不压图）；含 dataView 时保留 ECharts canvas 浮层。
+ *  之前工具栏画在 canvas 内右上角、与图区重叠——改为独立一行上移。 */
+const useHtmlToolbar = computed(() => Array.isArray(props.toolbar) && !props.toolbar.includes('dataView'))
+
+interface ToolBtn {
+  key: string
+  action: 'saveAsImage' | 'zoom' | 'restore'
+  icon: string
+  label: string
+}
+const toolBtns = computed<ToolBtn[]>(() => {
+  if (!useHtmlToolbar.value || !Array.isArray(props.toolbar)) return []
+  const list: ToolBtn[] = []
+  for (const f of props.toolbar) {
+    if (f === 'saveAsImage')
+      list.push({ key: 'save', action: 'saveAsImage', icon: 'download', label: t('chart.saveImage') })
+    if (f === 'zoom') {
+      list.push({ key: 'zoom', action: 'zoom', icon: 'zoom-in', label: t('chart.zoomRegion') })
+      list.push({ key: 'restore', action: 'restore', icon: 'rotate-ccw', label: t('chart.zoomBack') })
+    }
+  }
+  return list
+})
 
 const showEmpty = computed(() => {
   if (props.loading) return false
@@ -80,9 +105,29 @@ const ariaLabel = computed(() => {
   return text ? String(text) : emptyText.value
 })
 
+function onTool(action: ToolBtn['action']) {
+  const inst = chartInstance
+  if (!inst) return
+  if (action === 'saveAsImage') {
+    const bg = props.darkMode ? '#1f2937' : '#ffffff'
+    const url = inst.getDataURL({ pixelRatio: 2, backgroundColor: bg })
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${(ariaLabel.value || 'chart').replace(/[^\w\u4e00-\u9fa5-]/g, '')}.png`
+    a.click()
+  } else if (action === 'zoom') {
+    // 放大：聚焦到中部区域（无 dataZoom 的图无副作用）
+    inst.dispatchAction({ type: 'dataZoom', start: 25, end: 75 })
+  } else {
+    inst.dispatchAction({ type: 'restore' })
+  }
+}
+
 /** 构建 toolbar 配置 */
 function buildToolbox(): import('echarts').ToolboxComponentOption | undefined {
   if (props.toolbar === false) return undefined
+  // HTML 工具行模式（默认 saveAsImage/zoom）：canvas 不画浮层工具栏，改由图上方 HTML 行承载，避免压图
+  if (useHtmlToolbar.value) return undefined
   const buttons = props.toolbar || ['saveAsImage', 'zoom']
   const feature: NonNullable<import('echarts').ToolboxComponentOption['feature']> = {}
   if (buttons.includes('saveAsImage')) feature.saveAsImage = { title: t('chart.saveImage') }
@@ -343,20 +388,74 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="chartRef" class="base-chart" :style="containerStyle" role="img" :aria-label="ariaLabel">
-    <!-- 空数据遮罩 -->
-    <div v-if="showEmpty" class="chart-empty-overlay" role="status">
-      <span class="chart-empty-text">{{ emptyText }}</span>
+  <div class="base-chart-frame" :style="containerStyle" role="img" :aria-label="ariaLabel">
+    <!-- 图上方 HTML 工具行（下载/放大/还原）：与图区分行，不再压在 canvas 上 -->
+    <div v-if="toolBtns.length" class="chart-toolbar">
+      <button
+        v-for="b in toolBtns"
+        :key="b.key"
+        type="button"
+        class="chart-tool-btn"
+        :title="b.label"
+        :aria-label="b.label"
+        @click="onTool(b.action)"
+      >
+        <IconSvg :type="b.icon" size="sm" />
+        <span class="chart-tool-label">{{ b.label }}</span>
+      </button>
+    </div>
+    <div ref="chartRef" class="base-chart">
+      <!-- 空数据遮罩 -->
+      <div v-if="showEmpty" class="chart-empty-overlay" role="status">
+        <span class="chart-empty-text">{{ emptyText }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.base-chart {
+.base-chart-frame {
   position: relative;
-  overflow: visible;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
+}
+/* 图上方工具行 */
+.chart-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: calc(6px * var(--vcl-scale));
+  padding: 0 calc(4px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
+}
+.chart-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
+  padding: 0 calc(8px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
+  font-size: calc(13px * var(--vcl-scale));
+  cursor: pointer;
+  transition: all var(--vcl-transition-fast);
+}
+.chart-tool-btn:hover {
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-primary-on-surface);
+}
+.chart-tool-btn svg {
+  flex-shrink: 0;
+}
+.base-chart {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: visible;
 }
 
 .chart-empty-overlay {

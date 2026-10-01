@@ -31,11 +31,6 @@ function onToggleAll() {
 
 <template>
   <div v-if="items.length > 0" class="cl-root">
-    <div class="cl-header">
-      <button type="button" class="cl-toggle-all" :class="{ 'cl-toggle-all--active': allVisible }" @click="onToggleAll">
-        {{ allVisible ? t('chart.selectNone') : t('chart.selectAll') }}
-      </button>
-    </div>
     <div class="cl-list">
       <button
         v-for="item in items"
@@ -48,6 +43,10 @@ function onToggleAll() {
         <span class="cl-dot" :style="{ backgroundColor: item.color }" />
         <span class="cl-text" :title="item.name">{{ item.name }}</span>
       </button>
+      <!-- 2026-10-02：全不选并入图例行末尾（原独立一行，窄图区会另起一行） -->
+      <button type="button" class="cl-toggle-all" :class="{ 'cl-toggle-all--active': allVisible }" @click="onToggleAll">
+        {{ allVisible ? t('chart.selectNone') : t('chart.selectAll') }}
+      </button>
     </div>
   </div>
 </template>
@@ -59,10 +58,11 @@ function onToggleAll() {
   border-top: 1px solid var(--vcl-color-border-light);
   margin-top: var(--vcl-space-1);
 }
-.cl-header {
+.cl-list {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: var(--vcl-space-1);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vcl-space-1) calc(16px * var(--vcl-scale));
 }
 .cl-toggle-all {
   border: 1px solid var(--vcl-color-border);
@@ -74,6 +74,7 @@ function onToggleAll() {
   cursor: pointer;
   transition: all 0.15s;
   line-height: 1.5;
+  align-self: center;
 }
 .cl-toggle-all:hover {
   border-color: var(--vcl-color-primary);
@@ -83,11 +84,6 @@ function onToggleAll() {
   border-color: var(--vcl-color-primary);
   color: var(--vcl-color-primary-on-surface); /* AA：浅主色底上基色 3.8 不达标 */
   background: var(--vcl-color-primary-light);
-}
-.cl-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--vcl-space-1) calc(16px * var(--vcl-scale));
 }
 .cl-item {
   display: inline-flex;

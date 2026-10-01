@@ -6,6 +6,7 @@ import { ref, computed } from 'vue'
 import type { Store } from '@/components/route-planner/types'
 import { useT } from '@/components/_internal/i18n'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
+import IconSvg from '@/components/basic/IconSvg.vue'
 
 const t = useT()
 
@@ -138,7 +139,7 @@ const stats = computed(() => {
 
     <!-- 搜索框 -->
     <div class="search-bar">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon"><IconSvg type="search" size="sm" /></span>
       <input
         v-model="searchQuery"
         type="text"
@@ -146,7 +147,7 @@ const stats = computed(() => {
         class="search-input"
       />
       <button v-if="searchQuery" class="search-clear" :title="t('routePlanner.clearSearch')" @click="searchQuery = ''">
-        ✕
+        <IconSvg type="x" size="xs" />
       </button>
     </div>
 
@@ -162,19 +163,27 @@ const stats = computed(() => {
           @keydown.enter.prevent="toggleGroup(city)"
           @keydown.space.prevent="toggleGroup(city)"
         >
-          <span class="group-arrow">{{ isExpanded(city) ? '▼' : '▶' }}</span>
+          <span class="group-arrow"
+            ><IconSvg :type="isExpanded(city) ? 'chevron-down' : 'chevron-right'" size="sm"
+          /></span>
           <span class="group-name">{{ city }}</span>
           <span class="group-count">{{ t('routePlanner.storeCountUnit', { count: cityStores.length }) }}</span>
           <div class="group-batch" @click.stop>
-            <button class="btn-batch" :title="t('routePlanner.skipCityTitle')" @click="emit('skip-city', city)">
-              ⏭️
+            <button
+              class="btn-batch"
+              :title="t('routePlanner.skipCityTitle')"
+              :aria-label="t('routePlanner.skipCityTitle')"
+              @click="emit('skip-city', city)"
+            >
+              <IconSvg type="chevron-right" size="sm" />
             </button>
             <button
               class="btn-batch btn-batch-danger"
               :title="t('routePlanner.deleteCityTitle')"
+              :aria-label="t('routePlanner.deleteCityTitle')"
               @click="requestDeleteCity(city, cityStores.length)"
             >
-              🗑️
+              <IconSvg type="trash-2" size="sm" />
             </button>
           </div>
         </div>
@@ -197,16 +206,29 @@ const stats = computed(() => {
               </div>
             </div>
             <div class="store-actions">
-              <button class="btn-icon" :title="t('routePlanner.editTitle')" @click="emit('edit', store)">✏️</button>
+              <button
+                class="btn-icon"
+                :title="t('routePlanner.editTitle')"
+                :aria-label="t('routePlanner.editTitle')"
+                @click="emit('edit', store)"
+              >
+                <IconSvg type="pencil" size="sm" />
+              </button>
               <button
                 class="btn-icon"
                 :title="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
+                :aria-label="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
                 @click="emit('toggle-skip', store.id)"
               >
-                {{ store.skipped ? '↩️' : '⏭️' }}
+                <IconSvg :type="store.skipped ? 'rotate-ccw' : 'chevron-right'" size="sm" />
               </button>
-              <button class="btn-icon btn-danger" :title="t('routePlanner.deleteTitle')" @click="requestDelete(store)">
-                🗑️
+              <button
+                class="btn-icon btn-danger"
+                :title="t('routePlanner.deleteTitle')"
+                :aria-label="t('routePlanner.deleteTitle')"
+                @click="requestDelete(store)"
+              >
+                <IconSvg type="trash-2" size="sm" />
               </button>
             </div>
           </div>
