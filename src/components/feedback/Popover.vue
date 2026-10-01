@@ -68,7 +68,15 @@ const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepa
   matchWidth: false,
 })
 
-// tooltip 的语义关联必须挂在真正被聚焦的元素上：插槽首个子元素可能只是图标/包裹层（不可聚焦），
+// 气泡指向箭头的图标（按实际 flip 方向选 chevron，指向触发器；用图标库而非 CSS 三角）
+const ARROW_ICON: Record<FlipDirection, string> = {
+  right: 'chevron-left', // 卡片在触发器右侧 → 箭头朝左
+  left: 'chevron-right',
+  down: 'chevron-up', // 卡片在下方 → 箭头朝上
+  up: 'chevron-down',
+}
+const arrowIcon = computed(() => ARROW_ICON[direction.value] || ARROW_ICON.down)
+
 // 只给它加 aria-describedby 读屏不会播报。优先找首个可聚焦后代，退化为首个子元素、再退化为宿主。
 const FOCUSABLE_SELECTOR = 'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
 function describedTarget(host: HTMLElement): HTMLElement {
@@ -253,6 +261,10 @@ onUnmounted(() => {
           <template v-if="isTooltip">{{ text }}</template>
           <!-- popover 模式 -->
           <template v-else>
+            <!-- 指向触发器的箭头（图标，随 flip 方向旋转到对应边；装饰，读屏忽略） -->
+            <span class="popover-arrow" :class="`arrow-${direction}`" aria-hidden="true">
+              <IconSvg :type="arrowIcon" size="sm" />
+            </span>
             <div v-if="title" :id="titleId" class="popover-title">{{ title }}</div>
             <!-- @slot default: tooltip 模式为触发器内容；popover 模式为浮层主体内容 -->
             <div class="popover-body"><slot /></div>
@@ -287,13 +299,51 @@ onUnmounted(() => {
 <style>
 /* ===== popover 卡片 ===== */
 .popover-card {
+  position: relative;
   min-width: calc(220px * var(--vcl-scale));
   max-width: calc(380px * var(--vcl-scale));
   background: var(--vcl-color-surface);
   border: 1px solid var(--vcl-color-border);
   border-radius: var(--vcl-radius-lg);
   box-shadow: var(--vcl-shadow-lg);
-  overflow: hidden;
+}
+/* 指向触发器的箭头（图标 chevron，挂到对应边外侧，朝触发器；surface 底小圆片） */
+.popover-arrow {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(2px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  z-index: 1;
+}
+.popover-arrow svg {
+  width: calc(12px * var(--vcl-scale));
+  height: calc(12px * var(--vcl-scale));
+}
+/* 卡片在触发器右侧 → 箭头挂左缘、朝左；垂直居中。其余方向类推 */
+.arrow-right {
+  left: calc(-9px * var(--vcl-scale));
+  top: 50%;
+  transform: translateY(-50%);
+}
+.arrow-left {
+  right: calc(-9px * var(--vcl-scale));
+  top: 50%;
+  transform: translateY(-50%);
+}
+.arrow-down {
+  top: calc(-9px * var(--vcl-scale));
+  left: 50%;
+  transform: translateX(-50%);
+}
+.arrow-up {
+  bottom: calc(-9px * var(--vcl-scale));
+  left: 50%;
+  transform: translateX(-50%);
 }
 .popover-title {
   padding: var(--vcl-space-2) calc(14px * var(--vcl-scale));
