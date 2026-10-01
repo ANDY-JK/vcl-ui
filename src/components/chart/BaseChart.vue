@@ -94,6 +94,19 @@ function buildToolbox(): import('echarts').ToolboxComponentOption | undefined {
 /** 合并 toolbar 到 option（合并而非覆盖用户自定义的 toolbox 配置）
  * 支持 standard option 和 timeline compound option ({ baseOption, options })
  */
+/** 给图区让出工具栏那一行：工具栏画在 canvas 上（right:4 横排 3 图标，顶 ~24px），
+ * 默认图区会顶到工具栏下方 → 重叠。仅当用户未自设 grid.top 时兜底，尊重自定义。
+ * 返回新对象（不 mutate 入参——option 可能是 computed/引用，避免污染源）。 */
+function reserveToolboxBand<T extends Record<string, unknown>>(target: T, toolboxTop: number): T {
+  const needed = Math.round(toolboxTop + 32) // 工具栏行高 ~24 + 8 呼吸
+  const g = target.grid as Record<string, unknown> | undefined
+  if (g && g.top != null) return target // 用户自设 grid.top，不动
+  return { ...target, grid: g ? { ...g, top: needed } : { top: needed } }
+}
+
+const TB_TOP_DEFAULT = 4
+const TB_TOP_TITLED = 36
+
 function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
   if (!opt) return opt
   const toolbox = buildToolbox()
@@ -102,8 +115,9 @@ function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
   // Timeline compound option: toolbox 挂到 baseOption 内部
   const compound = opt as unknown as { baseOption?: Record<string, unknown> }
   if (compound.baseOption) {
-    const bo = compound.baseOption
-    if ('title' in bo) toolbox.top = 36
+    const bo = { ...compound.baseOption }
+    const boToolTop = 'title' in bo ? TB_TOP_TITLED : TB_TOP_DEFAULT
+    if ('title' in bo) toolbox.top = TB_TOP_TITLED
     const userToolbox = bo.toolbox as Record<string, unknown> | undefined
     const mergedToolbox = userToolbox
       ? {
@@ -112,11 +126,16 @@ function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
           feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
         }
       : toolbox
+    reserveToolboxBand(bo, boToolTop)
+    // 各 timeline option 也要让位
+    const options = (bo.options ?? []) as Array<Record<string, unknown>>
+    bo.options = options.map((o) => reserveToolboxBand({ ...o }, 'title' in o ? TB_TOP_TITLED : boToolTop))
     return { ...opt, baseOption: { ...bo, toolbox: mergedToolbox } } as EChartsOption
   }
 
   // Standard option
-  if ('title' in opt) toolbox.top = 36
+  const stdToolTop = 'title' in opt ? TB_TOP_TITLED : TB_TOP_DEFAULT
+  if ('title' in opt) toolbox.top = TB_TOP_TITLED
   const userToolbox = (opt as Record<string, unknown>).toolbox as Record<string, unknown> | undefined
   const mergedToolbox = userToolbox
     ? {
@@ -125,7 +144,7 @@ function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
         feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
       }
     : toolbox
-  return { ...opt, toolbox: mergedToolbox } as EChartsOption
+  return { ...reserveToolboxBand(opt as Record<string, unknown>, stdToolTop), toolbox: mergedToolbox } as EChartsOption
 }
 
 function ensureInstance() {

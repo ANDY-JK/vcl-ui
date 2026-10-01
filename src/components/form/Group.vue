@@ -568,7 +568,8 @@ onUnmounted(unbindWindowPointer)
 .switch-thumb {
   position: absolute;
   top: 50%;
-  left: 2px;
+  /* 2026-10-02：left 随 --vcl-scale 等比（原固定 2px，缩放后与位移口径不一致） */
+  left: calc(2px * var(--vcl-scale));
   border-radius: 50%;
   background: white;
   transition: transform var(--vcl-transition-fast);
@@ -585,10 +586,12 @@ onUnmounted(unbindWindowPointer)
   margin-top: calc(-7px * var(--vcl-scale));
 }
 .thumb-md.on {
-  transform: translateX(clamp(16px, 2.5vw, 20px));
+  /* 2026-10-02：位移随 --vcl-scale 等比（44s 轨 − 20s 滑块 − 2s 边 = 20s）；原 clamp(16px,2.5vw,20px) 固定像素，缩放后高缩放欠走/低缩放越界致变形 */
+  transform: translateX(calc(20px * var(--vcl-scale)));
 }
 .thumb-sm.on {
-  transform: translateX(clamp(10px, 1.5vw, 14px));
+  /* 32s 轨 − 14s 滑块 − 2s 边 = 14s */
+  transform: translateX(calc(14px * var(--vcl-scale)));
 }
 .switch-label {
   font-size: calc(15px * var(--vcl-scale));
