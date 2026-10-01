@@ -68,12 +68,12 @@ const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepa
   matchWidth: false,
 })
 
-// 气泡指向箭头的图标（按实际 flip 方向选 chevron，指向触发器；用图标库而非 CSS 三角）
+// 气泡指向箭头的图标（真箭头 arrow-*，指向触发器；朝上的库无 arrow-up，用 arrow-down 转 180°，见 .arrow-down svg 规则）
 const ARROW_ICON: Record<FlipDirection, string> = {
-  right: 'chevron-left', // 卡片在触发器右侧 → 箭头朝左
-  left: 'chevron-right',
-  down: 'chevron-up', // 卡片在下方 → 箭头朝上
-  up: 'chevron-down',
+  right: 'arrow-left', // 卡片在触发器右侧 → 箭头朝左
+  left: 'arrow-right',
+  down: 'arrow-down', // 卡片在下方 → 需朝上，CSS 里 .arrow-down svg 转 180°
+  up: 'arrow-down', // 卡片在上方 → 箭头朝下
 }
 const arrowIcon = computed(() => ARROW_ICON[direction.value] || ARROW_ICON.down)
 
@@ -344,6 +344,10 @@ onUnmounted(() => {
   bottom: calc(-9px * var(--vcl-scale));
   left: 50%;
   transform: translateX(-50%);
+}
+/* 卡片在下方(direction=down)需朝上指：arrow-down 图标转 180° */
+.popover-arrow.arrow-down svg {
+  transform: rotate(180deg);
 }
 .popover-title {
   padding: var(--vcl-space-2) calc(14px * var(--vcl-scale));
