@@ -166,6 +166,12 @@ function onJumperKeyup(e: KeyboardEvent) {
   background: transparent;
   cursor: default;
 }
+.page-btn:focus-visible {
+  /* 2026-10-01：键盘可聚焦控件须有可见焦点环（对齐通用按钮 2px 主色 outline，原 outline:none 吞掉致键盘用户看不到当前位置） */
+  outline: 2px solid var(--vcl-color-primary);
+  outline-offset: 2px;
+  z-index: 1;
+}
 
 .page-info {
   margin-left: calc(12px * var(--vcl-scale));

@@ -107,6 +107,12 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
   opacity: 0.4;
   cursor: not-allowed;
 }
+.page-btn:focus-visible {
+  /* 2026-10-01：键盘可聚焦控件须有可见焦点环（对齐通用按钮 2px 主色 outline，原被 outline:none 吞掉致键盘用户看不到当前位置） */
+  outline: 2px solid var(--vcl-color-primary);
+  outline-offset: 2px;
+  z-index: 1;
+}
 
 .page-ellipsis {
   width: calc(32px * var(--vcl-scale));
