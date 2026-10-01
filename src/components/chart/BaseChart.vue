@@ -400,8 +400,8 @@ defineExpose({
         :aria-label="b.label"
         @click="onTool(b.action)"
       >
+        <!-- 2026-10-02 纯图标（用户偏好），悬停 title/aria-label 给出语义 -->
         <IconSvg :type="b.icon" size="sm" />
-        <span class="chart-tool-label">{{ b.label }}</span>
       </button>
     </div>
     <div ref="chartRef" class="base-chart">
@@ -421,25 +421,26 @@ defineExpose({
   min-width: 0;
   min-height: 0;
 }
-/* 图上方工具行 */
+/* 图上方工具行（纯图标、右对齐——沿用原 canvas 工具栏右上角的位置，但与图区分行不重叠） */
 .chart-toolbar {
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: calc(6px * var(--vcl-scale));
   padding: 0 calc(4px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
 }
 .chart-tool-btn {
   display: inline-flex;
   align-items: center;
-  gap: calc(4px * var(--vcl-scale));
+  justify-content: center;
+  width: calc(28px * var(--vcl-scale));
   height: calc(28px * var(--vcl-scale));
-  padding: 0 calc(8px * var(--vcl-scale));
+  padding: 0;
   border: 1px solid var(--vcl-color-border);
   border-radius: var(--vcl-radius-sm);
   background: var(--vcl-color-surface);
   color: var(--vcl-color-text-secondary);
-  font-size: calc(13px * var(--vcl-scale));
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }

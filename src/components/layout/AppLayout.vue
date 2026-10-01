@@ -726,6 +726,8 @@ function onProgressMouseUp() {
   width: calc(16px * var(--vcl-scale));
   height: calc(16px * var(--vcl-scale));
   flex-shrink: 0;
+  /* 2026-10-02 光学补偿：图标字形重心偏上，下移 0.5px 与 CJK 文字视觉中线对齐（盒子本已 align-items:center，此为墨迹级微调） */
+  transform: translateY(0.5px);
 }
 .topbar-tool-label:hover {
   color: var(--vcl-color-sidebar-text-active);

@@ -75,6 +75,8 @@ function onToggleAll() {
   transition: all 0.15s;
   line-height: 1.5;
   align-self: center;
+  /* 2026-10-02 靠右：同行末尾推到最右（图例项在左、全不选在右） */
+  margin-left: auto;
 }
 .cl-toggle-all:hover {
   border-color: var(--vcl-color-primary);
