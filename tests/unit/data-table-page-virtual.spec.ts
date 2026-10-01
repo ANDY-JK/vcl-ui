@@ -1,7 +1,7 @@
 // 页面滚动虚拟化 · 组件层护栏（happy-dom 无真实布局，故只断言"该保守"的场景）
 // 正向窗口行为（滚到哪渲染哪几行）在 tests 环境里测不了：scrollHeight/clientHeight 恒为 0，
 // useTableWindowScroll 判不出可滚源 → 按设计退回全量渲染。那条链路靠
-// workspace/probe 的真浏览器取证覆盖；判定逻辑本身另有 use-table-window-scroll.spec.ts。
+// 此前的真浏览器取证已覆盖该链路；判定逻辑本身另有 use-table-window-scroll.spec.ts。
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import DataTable from '@/components/data/DataTable.vue'

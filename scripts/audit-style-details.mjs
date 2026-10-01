@@ -289,7 +289,7 @@ const main = async () => {
     const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 2 })
     for (const route of ROUTES) {
       const page = await ctx.newPage()
-      let data = null
+      let data
       try {
         await page.goto(`${BASE}/#/${route}`, { waitUntil: 'load', timeout: 20000 })
         await page.waitForTimeout(1000)

@@ -8,7 +8,6 @@ import fs from 'node:fs'
 const OUT = 'reports/style-details-audit'
 fs.mkdirSync(OUT, { recursive: true })
 const BASE = 'http://localhost:3721'
-const r1 = (x) => Math.round(x * 100) / 100
 
 /** tag 页：每个徽标胶囊的文本盒 vs 胶囊盒 Y 中心差 + 内联标签分布 */
 const TAGS = () => {

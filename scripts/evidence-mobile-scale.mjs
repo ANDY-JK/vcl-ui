@@ -10,10 +10,6 @@ fs.mkdirSync(OUT, { recursive: true })
 const BASE = 'http://localhost:3721'
 
 const MEASURE = () => {
-  const cs = (sel, prop) => {
-    const el = document.querySelector(sel)
-    return el ? getComputedStyle(el)[prop] : null
-  }
   const fsOf = (sel) => {
     const el = document.querySelector(sel)
     return el ? parseFloat(getComputedStyle(el).fontSize) : null

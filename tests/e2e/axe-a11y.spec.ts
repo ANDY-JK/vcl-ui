@@ -129,7 +129,7 @@ test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) =
     // 等 demo 页真挂载再扫：换页走 defineAsyncComponent 异步 chunk，盲等固定毫秒在
     // 串行全链负载下不够（amap-widget 要拉高德 SDK，实测超 600ms），扫到未挂载的空页
     // 会把「无 h1」误报成 page-has-heading-one —— 09-20 全链假红过一次。
-    // 全量探针（workspace/probe-h1.mjs）证实 45 条路由均有 h1（挂载 100~800ms），
+    // 历史全量探针证实 45 条路由均有 h1（挂载 100~800ms），
     // 等 h1 可见即页面就绪，比固定 sleep 确定。
     await page.locator('h1').first().waitFor({ state: 'visible', timeout: 15_000 })
     // 还要等入场动画收尾：login 卡片带 slideUp 0.5s（库组件 login/login.vue），

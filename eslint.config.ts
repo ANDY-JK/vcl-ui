@@ -126,6 +126,16 @@ export default [
     },
   },
 
+  // scripts/ 的审计/取证脚本是 Node CLI 工具，stdout 就是它们的输出接口，no-console
+  // 对它们是全量误报（曾占 152 条 warning，把棘轮数字撑到失真）。豁免后 package.json
+  // 的 --max-warnings 同步收紧到新的真实值。
+  {
+    files: ['scripts/**'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
   // 忽略文件
   {
     ignores: [

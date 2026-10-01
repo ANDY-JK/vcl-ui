@@ -1,7 +1,6 @@
 // 键盘焦点环可见性审计：Tab 遍历每个可聚焦控件，量聚焦时是否出现可见环（outline/box-shadow/border 变化）
 // 用法：dev server 3721 后  node scripts/audit-focus-rings.mjs [--routes a,b]
 import { chromium } from 'playwright'
-import fs from 'node:fs'
 
 const BASE = 'http://localhost:3721'
 const routes = process.argv.includes('--routes')

@@ -1,5 +1,5 @@
 // useTableWindowScroll 判定逻辑单测：两种滚动源 + 测不出源时的保守兜底。
-// 元素尺寸用桩量测给出（happy-dom 无布局，真实 rect 由 workspace/probe 的真浏览器取证覆盖）。
+// 元素尺寸用桩量测给出（happy-dom 无布局，真实 rect 已由真浏览器取证覆盖）。
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { nextTick, ref } from 'vue'
 import { useTableWindowScroll } from '@/components/data/composables/useTableWindowScroll'
