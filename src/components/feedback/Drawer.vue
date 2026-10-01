@@ -242,12 +242,14 @@ onUnmounted(unmountEsc)
   left: 0;
   right: 0;
   top: 0;
+  max-width: none; /* 上下方位须占满视口宽；面板 max-width:90vw 会退化贴左留右缝 */
   max-height: 90vh;
 }
 .drawer-bottom {
   left: 0;
   right: 0;
   bottom: 0;
+  max-width: none; /* 上下方位须占满视口宽；面板 max-width:90vw 会退化贴左留右缝 */
   max-height: 90vh;
 }
 
