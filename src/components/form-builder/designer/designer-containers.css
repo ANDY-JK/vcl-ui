@@ -68,7 +68,7 @@
   color: var(--vcl-color-text, #1e293b);
 }
 .ldc-zoom button:disabled {
-  opacity: 0.35;
+  opacity: var(--vcl-disabled-opacity);
   cursor: default;
 }
 .ldc-zoom-val {
@@ -440,7 +440,7 @@
   color: var(--vcl-color-primary, #3b82f6);
 }
 .ldc-steps-nav button:disabled {
-  opacity: 0.45;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 .ldc-steps-indicator {

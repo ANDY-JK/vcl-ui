@@ -899,7 +899,7 @@ const floatingRaised = computed(() => {
   border-radius: var(--vcl-radius-sm);
 }
 .f-color:disabled {
-  opacity: 0.5;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 .f-color-hex {
@@ -1083,7 +1083,7 @@ const floatingRaised = computed(() => {
   color: var(--vcl-color-primary-on-surface);
 }
 .step-btn:disabled {
-  opacity: 0.3;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 

@@ -302,7 +302,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   border-color: var(--vcl-color-primary-solid-hover);
 }
 .item-action-btn:disabled {
-  opacity: 0.4;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 </style>

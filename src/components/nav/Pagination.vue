@@ -158,7 +158,7 @@ function onJumperKeyup(e: KeyboardEvent) {
   color: white;
 }
 .page-btn:disabled {
-  opacity: 0.35;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 .page-btn.ellipsis {

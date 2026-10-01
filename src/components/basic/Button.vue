@@ -108,7 +108,7 @@ const emit = defineEmits<{
 }
 
 .base-btn:disabled {
-  opacity: 0.45;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 

@@ -634,7 +634,7 @@ onUnmounted(() => {
   cursor: pointer;
 }
 .camc-done:disabled {
-  opacity: 0.4;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 .camc-done:active {
@@ -776,7 +776,7 @@ onUnmounted(() => {
   transform: scale(0.94);
 }
 .camc-shutter:disabled {
-  opacity: 0.5;
+  opacity: var(--vcl-disabled-opacity);
 }
 .camc-shutter-confirm {
   border-color: var(--vcl-color-primary);

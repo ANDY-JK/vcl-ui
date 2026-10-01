@@ -534,7 +534,7 @@ function resetForm(): void {
   color: var(--vcl-color-primary, #4f46e5);
 }
 .fb-rt-toolbar button:disabled {
-  opacity: 0.5;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 .fb-rt-sep {

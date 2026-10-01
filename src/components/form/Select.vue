@@ -1383,7 +1383,7 @@ const {
   color: var(--vcl-color-primary-on-surface);
 }
 .dd-btn:disabled {
-  opacity: 0.4;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 .dd-btn-primary {

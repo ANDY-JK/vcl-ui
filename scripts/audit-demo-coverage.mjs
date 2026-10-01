@@ -62,6 +62,12 @@ const pairs = [...demoMapSrc.matchAll(/^\s*'?([a-z][a-z0-9-]*)'?:\s*defineAsyncC
   .map((m) => [m[1], m[2] || m[3]])
 const allDemoSources = walk('src/demos').map((p) => read(p))
 
+// 刻意不演示的 prop（route → props）：值在 demo 页内全量铺开会破坏其它 a11y/结构规则，
+// consumer 按 API 文档用即可，不算「漏演示」缺口。
+const EXEMPT_PROPS = {
+  card: ['titleAs'], // 全量演示 h1/h4/h5/h6 会在 demo 页 h2 分组后跳级 → axe heading-order 违规（默认 h3/h2 已演示该 prop）
+}
+
 const rows = []
 for (const [route, demoPath] of pairs) {
   const guess = demoPath.replace('./', '').replace('Demo.vue', '.vue').replace('Demo.ts', '.ts')
@@ -71,8 +77,10 @@ for (const [route, demoPath] of pairs) {
     continue
   }
   const { unions, defaults } = extractUnions(read(compFile))
+  const exempt = new Set(EXEMPT_PROPS[route] || [])
   const missing = {}
   for (const [prop, vals] of Object.entries(unions)) {
+    if (exempt.has(prop)) continue // 刻意不演示
     const used = usedValuesAll(allDemoSources, prop)
     if (used.size === 0) continue // 该 prop 全站未以字面量使用（绑定式用法），跳过避免误报
     const miss = vals.filter((v) => !used.has(v) && defaults[prop] !== v)

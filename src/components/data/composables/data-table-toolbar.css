@@ -195,7 +195,7 @@
 }
 /* 撤销/重做无可操作记录时：禁用态明示「没有可撤销/重做」，不藏按钮 */
 .toolbar-export-btn:disabled {
-  opacity: 0.45;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
   color: var(--vcl-color-text-muted);
   background: none;

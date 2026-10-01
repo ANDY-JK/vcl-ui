@@ -593,7 +593,7 @@ const levelStyle = computed(() => {
   transform: translate(-50%, -50%);
 }
 .tree-check-input:disabled + .tree-check-box {
-  opacity: 0.4;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 

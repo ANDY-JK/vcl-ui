@@ -214,6 +214,11 @@
   --vcl-focus-ring: 2px solid var(--vcl-focus-ring-color);
   --vcl-focus-ring-offset: 2px;
 
+  /* 禁用态统一淡出度 — 核心交互控件（按钮/输入/选择/分页/开关/树）统一引此值，
+     不再各写 0.4/0.45/0.5。刻意离群的两处不收敛：ConfirmContent 0.7=loading 态（还能动）、
+     ImagePreview 0.15 与 designer-canvas 0.25=刻意重度淡出（装饰/画布幽灵态）。 */
+  --vcl-disabled-opacity: 0.5;
+
   /* 原生控件与滚动条配色（亮/暗各自声明） */
   color-scheme: light;
 

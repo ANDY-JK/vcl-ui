@@ -104,7 +104,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
   color: #fff;
 }
 .page-btn:disabled {
-  opacity: 0.4;
+  opacity: var(--vcl-disabled-opacity);
   cursor: not-allowed;
 }
 .page-btn:focus-visible {

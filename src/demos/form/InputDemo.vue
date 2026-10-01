@@ -10,6 +10,8 @@ const textVal = ref('')
 const emailVal = ref('')
 const passwordVal = ref('')
 const searchVal = ref('')
+const telVal = ref('')
+const urlVal = ref('')
 const numVal = ref<number | null>(0)
 const taVal = ref('')
 
@@ -37,6 +39,14 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
       <!-- 邮箱 -->
       <Card title="type='email' — 邮箱 + 图标" title-as="h2">
         <Input v-model="emailVal" label="邮箱" type="email" icon="mail" autocomplete="email" />
+      </Card>
+
+      <!-- 电话 / 网址（tel / url，键盘形态差异演示） -->
+      <Card title="type='tel' / type='url' — 电话、网址" title-as="h2">
+        <div style="display: flex; gap: calc(16px * var(--vcl-scale)); flex-wrap: wrap">
+          <Input v-model="telVal" label="手机号" type="tel" placeholder="请输入手机号" />
+          <Input v-model="urlVal" label="网址" type="url" placeholder="https://" />
+        </div>
       </Card>
 
       <!-- 密码 + 校验 -->
