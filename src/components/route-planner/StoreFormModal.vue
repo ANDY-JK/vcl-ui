@@ -1,12 +1,13 @@
 <script setup lang="ts">
 /**
  * 添加/编辑门店弹窗
+ * 外壳（遮罩/头部/焦点陷阱/ESC/滚动锁/互斥/过渡）统一走 _internal/ModalShell——
+ * 2026-10-02 统一化：此前自绘外壳（还带 28px 标题与文本 ✕ 两处离族样式）。
  */
 import { useIdSafe } from '@/components/_internal/useIdCompat'
-import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
+import { ref, watch, computed } from 'vue'
 import type { Store } from '@/components/route-planner/types'
-import { useEscClose } from '@/components/_internal/useEscClose'
-import { useFocusTrap } from '@/components/_internal/useFocusTrap'
+import ModalShell from '@/components/_internal/ModalShell.vue'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
@@ -24,22 +25,6 @@ const emit = defineEmits<{
   /** 保存：[完整门店数据]（宿主负责落库） */
   (e: 'save', store: Store): void
 }>()
-
-const modalBoxRef = ref<HTMLElement | null>(null)
-
-// 焦点陷阱：打开时聚焦弹窗、Tab 循环、关闭时恢复焦点（内部自动 watch visible）
-useFocusTrap({
-  visible: computed(() => props.visible),
-  getContainer: () => modalBoxRef.value,
-})
-// ESC 关闭
-const { mount: mountEsc, unmount: unmountEsc } = useEscClose(
-  () => props.visible,
-  () => true,
-  () => emit('close'),
-)
-onMounted(mountEsc)
-onUnmounted(unmountEsc)
 
 const form = ref<Partial<Store>>({
   name: '',
@@ -133,184 +118,127 @@ const fldIds = {
   f9: useIdSafe('fld'),
   f10: useIdSafe('fld'),
 }
+/** 表单 id：footer 提交按钮与表体 form 的跨插槽关联（原生 form 属性） */
+const formId = useIdSafe('store-form')
 </script>
 
 <template>
-  <Teleport to="body">
-    <div v-if="visible" class="modal-overlay" @click.self="emit('close')">
-      <div
-        ref="modalBoxRef"
-        class="modal-box"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="isEdit ? t('routePlanner.editStore') : t('routePlanner.addStoreTitle')"
-      >
-        <div class="modal-header">
-          <h3>{{ isEdit ? t('routePlanner.editStore') : t('routePlanner.addStoreTitle') }}</h3>
-          <button class="btn-close" :aria-label="t('routePlanner.cancel')" @click="emit('close')">✕</button>
-        </div>
-
-        <form class="modal-body" @submit.prevent="handleSubmit">
-          <div class="form-row">
-            <label :for="fldIds.f1"><span class="required">*</span> {{ t('routePlanner.storeNameLabel') }}</label>
-            <input
-              :id="fldIds.f1"
-              v-model="form.name"
-              type="text"
-              :placeholder="t('routePlanner.storeNamePlaceholder')"
-              :class="{ 'input-error': nameError && !form.name?.trim() }"
-            />
-          </div>
-
-          <div class="form-row">
-            <label :for="fldIds.f2"><span class="required">*</span> {{ t('routePlanner.addressLabel') }}</label>
-            <input
-              :id="fldIds.f2"
-              v-model="form.address"
-              type="text"
-              :placeholder="t('routePlanner.addressPlaceholder')"
-              :class="{ 'input-error': nameError && !form.address?.trim() }"
-            />
-          </div>
-          <p v-if="nameError" class="form-error">{{ t('routePlanner.nameAddressRequired') }}</p>
-
-          <div class="form-row form-grid-4">
-            <div>
-              <label :for="fldIds.f3">{{ t('routePlanner.province') }}</label>
-              <input
-                :id="fldIds.f3"
-                v-model="form.province"
-                type="text"
-                :placeholder="t('routePlanner.provincePlaceholder')"
-              />
-            </div>
-            <div>
-              <label :for="fldIds.f4">{{ t('routePlanner.city') }}</label>
-              <input :id="fldIds.f4" v-model="form.city" type="text" :placeholder="t('routePlanner.cityPlaceholder')" />
-            </div>
-            <div>
-              <label :for="fldIds.f5">{{ t('routePlanner.district') }}</label>
-              <input
-                :id="fldIds.f5"
-                v-model="form.district"
-                type="text"
-                :placeholder="t('routePlanner.districtPlaceholder')"
-              />
-            </div>
-            <div>
-              <label :for="fldIds.f6">{{ t('routePlanner.town') }}</label>
-              <input :id="fldIds.f6" v-model="form.town" type="text" :placeholder="t('routePlanner.townPlaceholder')" />
-            </div>
-          </div>
-
-          <div class="form-row form-grid-2">
-            <div>
-              <label :for="fldIds.f7">{{ t('routePlanner.contact') }}</label>
-              <input
-                :id="fldIds.f7"
-                v-model="form.contact"
-                type="text"
-                :placeholder="t('routePlanner.contactPlaceholder')"
-              />
-            </div>
-            <div>
-              <label :for="fldIds.f8">{{ t('routePlanner.phone') }}</label>
-              <input
-                :id="fldIds.f8"
-                v-model="form.phone"
-                type="text"
-                :placeholder="t('routePlanner.phonePlaceholder')"
-              />
-            </div>
-          </div>
-
-          <div class="form-row form-grid-2">
-            <div>
-              <label :for="fldIds.f9">{{ t('routePlanner.longitudeOptional') }}</label>
-              <input
-                :id="fldIds.f9"
-                v-model.number="form.longitude"
-                type="number"
-                step="0.000001"
-                placeholder="113.123456"
-              />
-            </div>
-            <div>
-              <label :for="fldIds.f10">{{ t('routePlanner.latitudeOptional') }}</label>
-              <input
-                :id="fldIds.f10"
-                v-model.number="form.latitude"
-                type="number"
-                step="0.000001"
-                placeholder="28.123456"
-              />
-            </div>
-          </div>
-
-          <p class="form-hint">{{ t('routePlanner.coordHint') }}</p>
-
-          <div class="modal-footer">
-            <button type="button" class="btn-cancel" @click="emit('close')">{{ t('routePlanner.cancel') }}</button>
-            <button type="submit" class="btn-save">
-              {{ isEdit ? t('routePlanner.saveEdit') : t('routePlanner.addStoreTitle') }}
-            </button>
-          </div>
-        </form>
+  <ModalShell
+    :visible="visible"
+    :title="isEdit ? t('routePlanner.editStore') : t('routePlanner.addStoreTitle')"
+    size="md"
+    @close="emit('close')"
+  >
+    <form :id="formId" class="store-form" @submit.prevent="handleSubmit">
+      <div class="form-row">
+        <label :for="fldIds.f1"><span class="required">*</span> {{ t('routePlanner.storeNameLabel') }}</label>
+        <input
+          :id="fldIds.f1"
+          v-model="form.name"
+          type="text"
+          :placeholder="t('routePlanner.storeNamePlaceholder')"
+          :class="{ 'input-error': nameError && !form.name?.trim() }"
+        />
       </div>
-    </div>
-  </Teleport>
+
+      <div class="form-row">
+        <label :for="fldIds.f2"><span class="required">*</span> {{ t('routePlanner.addressLabel') }}</label>
+        <input
+          :id="fldIds.f2"
+          v-model="form.address"
+          type="text"
+          :placeholder="t('routePlanner.addressPlaceholder')"
+          :class="{ 'input-error': nameError && !form.address?.trim() }"
+        />
+      </div>
+      <p v-if="nameError" class="form-error">{{ t('routePlanner.nameAddressRequired') }}</p>
+
+      <div class="form-row form-grid-4">
+        <div>
+          <label :for="fldIds.f3">{{ t('routePlanner.province') }}</label>
+          <input
+            :id="fldIds.f3"
+            v-model="form.province"
+            type="text"
+            :placeholder="t('routePlanner.provincePlaceholder')"
+          />
+        </div>
+        <div>
+          <label :for="fldIds.f4">{{ t('routePlanner.city') }}</label>
+          <input :id="fldIds.f4" v-model="form.city" type="text" :placeholder="t('routePlanner.cityPlaceholder')" />
+        </div>
+        <div>
+          <label :for="fldIds.f5">{{ t('routePlanner.district') }}</label>
+          <input
+            :id="fldIds.f5"
+            v-model="form.district"
+            type="text"
+            :placeholder="t('routePlanner.districtPlaceholder')"
+          />
+        </div>
+        <div>
+          <label :for="fldIds.f6">{{ t('routePlanner.town') }}</label>
+          <input :id="fldIds.f6" v-model="form.town" type="text" :placeholder="t('routePlanner.townPlaceholder')" />
+        </div>
+      </div>
+
+      <div class="form-row form-grid-2">
+        <div>
+          <label :for="fldIds.f7">{{ t('routePlanner.contact') }}</label>
+          <input
+            :id="fldIds.f7"
+            v-model="form.contact"
+            type="text"
+            :placeholder="t('routePlanner.contactPlaceholder')"
+          />
+        </div>
+        <div>
+          <label :for="fldIds.f8">{{ t('routePlanner.phone') }}</label>
+          <input :id="fldIds.f8" v-model="form.phone" type="text" :placeholder="t('routePlanner.phonePlaceholder')" />
+        </div>
+      </div>
+
+      <div class="form-row form-grid-2">
+        <div>
+          <label :for="fldIds.f9">{{ t('routePlanner.longitudeOptional') }}</label>
+          <input
+            :id="fldIds.f9"
+            v-model.number="form.longitude"
+            type="number"
+            step="0.000001"
+            placeholder="113.123456"
+          />
+        </div>
+        <div>
+          <label :for="fldIds.f10">{{ t('routePlanner.latitudeOptional') }}</label>
+          <input
+            :id="fldIds.f10"
+            v-model.number="form.latitude"
+            type="number"
+            step="0.000001"
+            placeholder="28.123456"
+          />
+        </div>
+      </div>
+
+      <p class="form-hint">{{ t('routePlanner.coordHint') }}</p>
+    </form>
+
+    <template #footer>
+      <button type="button" class="btn-cancel" @click="emit('close')">{{ t('routePlanner.cancel') }}</button>
+      <button type="submit" :form="formId" class="btn-save">
+        {{ isEdit ? t('routePlanner.saveEdit') : t('routePlanner.addStoreTitle') }}
+      </button>
+    </template>
+  </ModalShell>
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--vcl-z-modal, 1000);
-}
+/* 外壳样式（遮罩/盒/头/脚/关闭钮）由 ModalShell 统一提供，此处只留表单内容 */
 
-.modal-box {
-  background: var(--vcl-color-surface);
-  border-radius: var(--vcl-radius-lg);
-  width: calc(480px * var(--vcl-scale));
-  max-width: 90vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: var(--vcl-shadow-lg);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--vcl-space-4) calc(20px * var(--vcl-scale));
-  border-bottom: 1px solid var(--vcl-color-border-light);
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: calc(28px * var(--vcl-scale));
-  font-weight: 600;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: calc(28px * var(--vcl-scale));
-  cursor: pointer;
-  color: var(--vcl-color-text-muted);
-  padding: var(--vcl-space-1);
-}
-
-.btn-close:hover {
-  color: var(--vcl-color-text-secondary);
-}
-
-.modal-body {
-  padding: var(--vcl-space-5);
+/* 表体留白：外壳 .modal-body 自带 10px 内边距之上再叠原表单的 20px 留白 */
+.store-form {
+  padding: var(--vcl-space-5) calc(20px * var(--vcl-scale));
 }
 
 .form-row {
@@ -357,14 +285,6 @@ const fldIds = {
   font-size: calc(15px * var(--vcl-scale));
   color: var(--vcl-color-text-muted);
   margin: var(--vcl-space-2) 0 0;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--vcl-space-2);
-  padding-top: var(--vcl-space-4);
-  border-top: 1px solid var(--vcl-color-border-light);
 }
 
 .btn-cancel,

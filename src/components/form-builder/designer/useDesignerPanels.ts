@@ -15,7 +15,8 @@ const PANEL_MAX_W = 420
 
 /**
  * 首开默认宽随视口收放：小屏少占面板、画布优先。
- * 尺子＝tokens.css --vcl-scale 的 JS 镜像（max(100vw/1536px, 0.75 地板)），
+ * 尺子＝tokens.css --vcl-scale 的 JS 镜像
+ * （min(max(100vw/1536px, 0.75 地板), 1 封顶)，2026-10-02 大屏封顶同步），
  * 与全站同一条曲线——面板若走自己的曲线，缩到一半时与面板内的字号/控件脱节。
  * 用户拖过/存过布局则由 restorePanels 覆盖，永不强行改。
  * 注：拖动下限 PANEL_MIN_W 是可用性地板，不随缩放走（再窄放不下内容）。
@@ -23,6 +24,8 @@ const PANEL_MAX_W = 420
 const DESIGN_BASE_VW = 1536
 /** 窄端地板：与 tokens.css 的 max(…, 0.75) 同源——再窄也不缩过 0.75（正文 11.25px） */
 const SCALE_FLOOR = 0.75
+/** 大屏封顶：与 tokens.css 的 min(…, 1) 同源——>1536 不再放大（2026-10-02 用户复判） */
+const SCALE_CEIL = 1
 
 /**
  * 真实渲染值探针：借一个隐藏元素把 --vcl-scale 落进布局的结果量出来。
@@ -30,7 +33,7 @@ const SCALE_FLOOR = 0.75
  * 只有落到布局里才能拿到真值——这是与 CSS 唯一不会失步的镜子，
  * 曲线怎么改它都自动跟。
  * 探针不可用（SSR / 测试环境不解析 CSS 变量布局，量到 0）时回落
- * JS 曲线镜像（max(100vw/1536px, 0.75)，视口量不到按 1536 设计基准 = 1），
+ * JS 曲线镜像（min(max(100vw/1536px, 0.75), 1)，视口量不到按 1536 设计基准 = 1），
  * 与 CSS 保持同一口径。
  */
 function renderedScale(): number {
@@ -46,7 +49,7 @@ function renderedScale(): number {
   }
   if (typeof window === 'undefined') return 1
   const vw = window.innerWidth
-  return Number.isFinite(vw) && vw ? Math.max(vw / DESIGN_BASE_VW, SCALE_FLOOR) : 1
+  return Number.isFinite(vw) && vw ? Math.min(Math.max(vw / DESIGN_BASE_VW, SCALE_FLOOR), SCALE_CEIL) : 1
 }
 
 function fittedDefault(base: number, min: number): number {

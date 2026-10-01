@@ -18,15 +18,22 @@ autoApplyInkCentering()
    100vw 翻倍 → 因子翻倍 → 再乘 0.5 物理密度 = 物理尺寸恒定，Ctrl+/- 完全失效。
    这里改用「innerWidth × 相对设备像素比」驱动：乘积是 zoom 不变量（≈窗口物理宽），
    因子只随真实窗口宽度变化，浏览器缩放重新变成有效的大小调节（缩小就真的变小）。
-   基准 1536 与地板 0.75 须与 tokens.css 同源（改基准两处同步）。
-   baseDpr 取加载时刻：浏览器恢复的历史缩放被当作新基线，此后相对调整始终有效。 */
+   基准 1536、地板 0.75 与封顶 1.0 须与 tokens.css 同源（改基准三处同步）。
+   baseDpr 取加载时刻：浏览器恢复的历史缩放被当作新基线，此后相对调整始终有效。
+   2026-10-02 用户复判：大屏（1912）等比放大后「各方面都太大」，而 ≤1536 的
+   机器观感合适——故加封顶 1.0，>1536 视口与 1536 基准屏同尺寸展示、多容纳内容；
+   个体偏好交给浏览器 Ctrl+/-（物理驱动下真实有效），不再全局放大。 */
 const SCALE_REF = 1536
 const SCALE_FLOOR = 0.75
+const SCALE_CEIL = 1
 const baseDpr = window.devicePixelRatio || 1
 const applyPhysicalScale = () => {
   const zoom = (window.devicePixelRatio || 1) / baseDpr
   const physical = window.innerWidth * zoom
-  document.documentElement.style.setProperty('--vcl-scale', Math.max(physical / SCALE_REF, SCALE_FLOOR).toFixed(4))
+  document.documentElement.style.setProperty(
+    '--vcl-scale',
+    Math.min(Math.max(physical / SCALE_REF, SCALE_FLOOR), SCALE_CEIL).toFixed(4),
+  )
 }
 applyPhysicalScale()
 window.addEventListener('resize', applyPhysicalScale)

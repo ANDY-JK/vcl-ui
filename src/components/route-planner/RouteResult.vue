@@ -199,7 +199,9 @@ function densityLabel(density: number | null): { text: string; cls: string } {
             </div>
             <div class="day-header-right">
               <span class="day-cities" :title="dayCitiesLabel(day, dayIdx)">{{ dayCitiesLabel(day, dayIdx) }}</span>
-              <span class="expand-icon">{{ expandedDay === day.day ? '▲' : '▼' }}</span>
+              <span class="expand-icon">
+                <IconSvg :type="expandedDay === day.day ? 'chevron-up' : 'chevron-down'" size="xs" />
+              </span>
             </div>
           </div>
 
@@ -567,7 +569,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .expand-icon {
-  font-size: calc(9px * var(--vcl-scale));
+  display: flex;
   color: var(--vcl-color-text-muted);
 }
 

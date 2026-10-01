@@ -365,8 +365,12 @@ onUnmounted(() => {
 
       <!-- ③ 多张标志：翻页按钮 + 计数 -->
       <template v-if="cardFileCount > 1">
-        <button class="card-arrow card-arrow-left" @click="cardPrev">‹</button>
-        <button class="card-arrow card-arrow-right" @click="cardNext">›</button>
+        <button class="card-arrow card-arrow-left" :aria-label="t('form.prevPhoto')" @click="cardPrev">
+          <IconSvg type="chevron-left" size="xs" />
+        </button>
+        <button class="card-arrow card-arrow-right" :aria-label="t('form.nextPhoto')" @click="cardNext">
+          <IconSvg type="chevron-right" size="xs" />
+        </button>
         <span class="card-count">{{ cardIdx + 1 }}/{{ cardFileCount }}</span>
       </template>
 
@@ -587,8 +591,6 @@ onUnmounted(() => {
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.35);
   color: #fff;
-  font-size: var(--vcl-ctrl-font-size);
-  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;

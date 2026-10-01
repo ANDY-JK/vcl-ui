@@ -1,8 +1,8 @@
 // useDesignerPanels · 首开默认宽随视口收放（小屏画布优先）
-// 曲线与 tokens.css 的 --vcl-scale 同源（100vw/1536px 纯连续等比，无固定段）：
+// 曲线与 tokens.css 的 --vcl-scale 同源（min(max(100vw/1536px, 0.75), 1)：窄端地板 + 大屏封顶）：
 // 面板若走自己的曲线，缩到一半时与面板内的字号/控件脱节。
-// 基准 1536 = 全库设计基准（用户主屏 1912 观感定案，2026-09-30 晚）：
-// 1536 视口零变化、<1536 按比例收、>1536 按比例放。
+// 基准 1536 = 全库设计基准（用户主屏 1912 观感定案，2026-09-30 晚）；
+// 2026-10-02 用户复判大屏偏大 → >1536 封顶 1.0，1912 与 1536 同档。
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { ref, defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
@@ -74,13 +74,20 @@ describe('useDesignerPanels · 首开默认宽随视口收放', () => {
     expect(api.propsW.value).toBe(258)
   })
 
-  it('>1536 放大：1920 按 125% 等比放大（无封顶，与设计稿同构）', () => {
+  it('>1536 封顶：1920/1912 与 1536 同档（2026-10-02 用户复判大屏偏大，不再等比放大）', () => {
     stubInnerWidth(1920)
     const api = mountPanels()
-    // 1920/1536 = 1.25：220→275、190→237.5→238、290→362.5→363
-    expect(api.paletteW.value).toBe(275)
-    expect(api.outlineW.value).toBe(238)
-    expect(api.propsW.value).toBe(363)
+    // 1920/1536 = 1.25 > 封顶 1.0 → 按 1.0：220/190/290 与基准档逐像素一致
+    expect(api.paletteW.value).toBe(220)
+    expect(api.outlineW.value).toBe(190)
+    expect(api.propsW.value).toBe(290)
+
+    stubInnerWidth(1912)
+    const api2 = mountPanels()
+    // 1912/1536 = 1.245 > 封顶 → 同样按 1.0（用户主屏）
+    expect(api2.paletteW.value).toBe(220)
+    expect(api2.outlineW.value).toBe(190)
+    expect(api2.propsW.value).toBe(290)
   })
 
   it('存过布局：用户值优先，视口收放不覆盖', () => {
