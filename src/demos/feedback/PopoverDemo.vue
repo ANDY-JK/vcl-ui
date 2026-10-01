@@ -51,7 +51,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 
     <Card title="Popover 气泡卡片" title-as="h2">
       <div style="display: flex; gap: calc(16px * var(--vcl-scale)); align-items: center; flex-wrap: wrap">
-        <Popover title="通知中心" trigger="click">
+        <Popover title="通知中心" trigger="click" position="right">
           <template #trigger>
             <button type="button" class="pop-trigger" title="通知中心" aria-label="通知中心">
               <IconSvg type="bell" size="sm" />
@@ -68,7 +68,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
             上次查看: 5 分钟前
           </p>
         </Popover>
-        <Popover title="帮助信息" trigger="hover">
+        <Popover title="帮助信息" trigger="hover" position="right">
           <template #trigger>
             <button type="button" class="pop-trigger" title="帮助信息" aria-label="帮助信息">
               <IconSvg type="help-circle" size="sm" />

@@ -55,7 +55,9 @@ const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepa
     return isTooltip.value ? 6 : 8
   },
   get defaultDirection() {
-    return isTooltip.value ? dirMap[props.position] : 'down'
+    // 2026-10-02：气泡(popover 变体)原先写死 'down' 而忽略 position，导致 position=right/left 时不做垂直居中；
+    // 改为两变体都尊重 position（default 值 top→up，与 prop 默认自洽；left/right 走 useFloating 的垂直居中）。
+    return dirMap[props.position]
   },
   get minSize() {
     return isTooltip.value ? 20 : 80
