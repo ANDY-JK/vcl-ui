@@ -7,6 +7,7 @@
  */
 import { ref, computed } from 'vue'
 import { calcDistance as calculateDistance } from '@/components/amap'
+import IconSvg from '@/components/basic/IconSvg.vue'
 import type { RoutePlan, NavLink, Store } from '@/components/route-planner/types'
 import { useT } from '@/components/_internal/i18n'
 import { DEFAULTS } from './utils/route-planning'
@@ -224,13 +225,17 @@ function densityLabel(density: number | null): { text: string; cls: string } {
                     : t('routePlanner.continueStart')
                 }}</span>
               </div>
-              <div class="route-arrow">↓</div>
+              <div class="route-arrow">
+                <IconSvg type="arrow-down" size="sm" />
+              </div>
               <div class="route-stores-brief">
                 <span v-for="s in day.stores" :key="s.id" class="store-chip" :title="s.name">
                   {{ s.name.length > 6 ? s.name.slice(0, 6) + '…' : s.name }}
                 </span>
               </div>
-              <div class="route-arrow">↓</div>
+              <div class="route-arrow">
+                <IconSvg type="arrow-down" size="sm" />
+              </div>
               <div class="route-end">
                 <span class="route-icon">{{ dayIdx === plan.days.length - 1 ? '🏁' : '🏨' }}</span>
                 <span>{{
@@ -627,8 +632,8 @@ function densityLabel(density: number | null): { text: string; cls: string } {
 }
 
 .route-arrow {
-  text-align: center;
-  font-size: calc(13px * var(--vcl-scale));
+  display: flex;
+  justify-content: center;
   color: var(--vcl-color-text-muted);
   margin: var(--vcl-space-0) 0;
 }

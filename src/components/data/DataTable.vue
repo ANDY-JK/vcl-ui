@@ -2563,9 +2563,14 @@ provideDataTableContext({
                 @click="optionSort = optionSort === 'name' ? 'name-desc' : 'name'"
               >
                 {{ t('table.byName') }}
-                <span class="dt-filter-option-sort-arrow">{{
-                  optionSort === 'name' ? '↑' : optionSort === 'name-desc' ? '↓' : '↕'
-                }}</span>
+                <span class="dt-filter-option-sort-arrow">
+                  <IconSvg
+                    :type="
+                      optionSort === 'name' ? 'arrow-up' : optionSort === 'name-desc' ? 'arrow-down' : 'arrow-up-down'
+                    "
+                    size="xs"
+                  />
+                </span>
               </button>
               <button
                 class="dt-filter-option-sort-btn"
@@ -2573,9 +2578,14 @@ provideDataTableContext({
                 @click="optionSort = optionSort === 'count' ? 'count-desc' : 'count'"
               >
                 {{ t('table.byCount') }}
-                <span class="dt-filter-option-sort-arrow">{{
-                  optionSort === 'count' ? '↑' : optionSort === 'count-desc' ? '↓' : '↕'
-                }}</span>
+                <span class="dt-filter-option-sort-arrow">
+                  <IconSvg
+                    :type="
+                      optionSort === 'count' ? 'arrow-up' : optionSort === 'count-desc' ? 'arrow-down' : 'arrow-up-down'
+                    "
+                    size="xs"
+                  />
+                </span>
               </button>
             </div>
 

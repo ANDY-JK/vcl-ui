@@ -13,7 +13,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
     <Card title="Tooltip 文字提示" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <div style="display: flex; gap: calc(16px * var(--vcl-scale)); align-items: center; flex-wrap: wrap">
         <Popover variant="tooltip" text="悬停提示" position="top">
-          <Button text="悬停 ↑" size="sm" variant="outline" />
+          <Button text="悬停" icon="arrow-up" size="sm" variant="outline" />
         </Popover>
         <Popover variant="tooltip" text="聚焦提示" position="top" trigger="focus">
           <input
@@ -29,13 +29,13 @@ import IconSvg from '@/components/basic/IconSvg.vue'
           />
         </Popover>
         <Popover variant="tooltip" text="右侧提示" position="right">
-          <Button text="右 →" size="sm" variant="outline" />
+          <Button text="右" icon="arrow-right" size="sm" variant="outline" />
         </Popover>
         <Popover variant="tooltip" text="下方提示" position="bottom">
-          <Button text="下 ↓" size="sm" variant="outline" />
+          <Button text="下" icon="arrow-down" size="sm" variant="outline" />
         </Popover>
         <Popover variant="tooltip" text="左侧提示" position="left">
-          <Button text="左 ←" size="sm" variant="outline" />
+          <Button text="左" icon="arrow-left" size="sm" variant="outline" />
         </Popover>
       </div>
       <p

@@ -95,7 +95,9 @@
   color: var(--vcl-color-primary-on-surface);
 }
 .dt-filter-option-sort-arrow {
-  font-size: var(--vcl-fs-10);
+  display: inline-flex;
+  align-items: center;
+  color: var(--vcl-color-text-muted);
 }
 
 .dt-filter-quick-actions {
@@ -473,6 +475,9 @@
   height: calc(24px * var(--vcl-scale));
   padding: 0 calc(6px * var(--vcl-scale));
   font-size: var(--vcl-fs-12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--vcl-color-border);
   border-radius: var(--vcl-radius-sm);
   background: var(--vcl-color-surface);

@@ -5,6 +5,7 @@
 // ⛔ 保护语义（z-index var(--vcl-z-top)、动画时序、禁 clamp）在 data-table-global.css，原样保留。
 import { computed, nextTick, ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import IconSvg from '@/components/basic/IconSvg.vue'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 import { markLayerOpen, matchPinyin, colTitle, sortColumnsByOrder } from './composables/utils'
 import { injectDataTableContext } from './composables/context'
@@ -330,13 +331,15 @@ defineExpose({
             <button :title="t('table.wider')" @click="adjustColWidth(col.key, 10)">+</button>
           </span>
           <span class="dt-col-ops">
-            <button :disabled="i === 0" :title="t('table.moveUp')" @click="moveCol(col.key, -1)">↑</button>
+            <button :disabled="i === 0" :title="t('table.moveUp')" @click="moveCol(col.key, -1)">
+              <IconSvg type="arrow-up" size="xs" />
+            </button>
             <button
               :disabled="i === _settingsColumns.length - 1"
               :title="t('table.moveDown')"
               @click="moveCol(col.key, 1)"
             >
-              ↓
+              <IconSvg type="arrow-down" size="xs" />
             </button>
             <span class="dt-col-fixed-group" :class="{ disabled: hiddenColumns.has(col.key) }">
               <button
