@@ -464,12 +464,14 @@ function loadPreset(key: string): void {
 }
 .lc-demo-preset-btn:hover {
   border-color: var(--vcl-color-primary, #4f6ef7);
-  color: var(--vcl-color-primary, #4f6ef7);
+  /* 2026-10-01：主色当文字用 on-surface 档（primary 基色压浅底仅 3.92） */
+  color: var(--vcl-color-primary-on-surface, #3b56e0);
 }
 .lc-demo-preset-btn.active {
   background: var(--vcl-color-primary-light, #eef1ff);
   border-color: var(--vcl-color-primary, #4f6ef7);
-  color: var(--vcl-color-primary, #4f6ef7);
+  /* 2026-10-01：同上，active 亮底深字用 on-surface 档 */
+  color: var(--vcl-color-primary-on-surface, #3b56e0);
 }
 
 /* ── 内容区 — 满宽，与其它 demo 页一致 ── */

@@ -916,7 +916,7 @@ onUnmounted(() => {
   background: #2563eb;
 }
 .cc-btn-clear {
-  color: var(--vcl-color-danger);
+  color: var(--vcl-color-danger-on-surface);
 }
 
 /* 表格 */

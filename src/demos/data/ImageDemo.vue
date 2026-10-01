@@ -95,6 +95,10 @@ function openMulti(idx: number) {
           <Image :src="demoImages.valid" :width="140" :height="80" fit="scale-down" alt="scale-down" />
           <p class="cap">scale-down</p>
         </div>
+        <div style="text-align: center">
+          <Image :src="demoImages.valid" :width="140" :height="80" fit="none" alt="none" />
+          <p class="cap">none（不缩放，居中裁切）</p>
+        </div>
       </div>
     </Card>
 

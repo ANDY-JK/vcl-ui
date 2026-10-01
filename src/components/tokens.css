@@ -126,7 +126,7 @@
   --vcl-color-danger-border: #fecaca;
   --vcl-color-info: #4f6ef7;
   --vcl-color-info-bg: #eff6ff;
-  --vcl-color-info-text: #3b82f6;
+  --vcl-color-info-text: #1d4ed8; /* AA：原 #3b82f6 压 info-bg 实测 3.39，加深一档到 5.94（对齐 success/warning 的加深手法） */
   --vcl-color-info-border: #93c5fd;
 
   /* [2026-09-29 删除] 此处曾有一份重复的 --space-* 声明（clamp(Apx, Bvw, Cpx) 形态）。

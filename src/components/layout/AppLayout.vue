@@ -613,18 +613,18 @@ function onProgressMouseUp() {
 }
 /* 激活/选中态 — 有主色边框 + 微亮底色 */
 .topbar-tool-btn.active {
-  color: var(--vcl-color-primary-on-surface);
-  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
+  background: rgba(var(--vcl-color-primary-rgb), 0.3);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
 }
 .topbar-tool-btn.active:hover {
-  background: rgba(var(--vcl-color-primary-rgb), 0.18);
+  background: rgba(var(--vcl-color-primary-rgb), 0.4);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
 }
 /* 危险操作变体 — 红色激活 */
 .topbar-tool-btn.is-danger:hover {
-  color: var(--vcl-color-danger-on-surface);
-  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
+  background: rgba(248, 113, 113, 0.16);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-btn.is-danger.active {
@@ -676,19 +676,19 @@ function onProgressMouseUp() {
 }
 /* 文字按钮 — 主色高亮态 */
 .topbar-tool-text.active {
-  color: var(--vcl-color-primary-on-surface);
-  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
+  background: rgba(var(--vcl-color-primary-rgb), 0.3);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
 }
 .topbar-tool-text.active:hover {
-  background: rgba(var(--vcl-color-primary-rgb), 0.18);
+  background: rgba(var(--vcl-color-primary-rgb), 0.4);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
 }
 /* 文字按钮 — 危险红色 */
 .topbar-tool-text.is-danger:hover {
-  color: var(--vcl-color-danger-on-surface);
-  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
+  background: rgba(248, 113, 113, 0.16);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-text.is-danger.active {
@@ -745,19 +745,19 @@ function onProgressMouseUp() {
 }
 /* 图标+文字按钮 — 主色高亮态 */
 .topbar-tool-label.active {
-  color: var(--vcl-color-primary-on-surface);
-  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
+  background: rgba(var(--vcl-color-primary-rgb), 0.3);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
 }
 .topbar-tool-label.active:hover {
-  background: rgba(var(--vcl-color-primary-rgb), 0.18);
+  background: rgba(var(--vcl-color-primary-rgb), 0.4);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
 }
 /* 图标+文字按钮 — 危险红色 */
 .topbar-tool-label.is-danger:hover {
-  color: var(--vcl-color-danger-on-surface);
-  background: rgba(239, 68, 68, 0.08);
+  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
+  background: rgba(248, 113, 113, 0.16);
   border-color: rgba(239, 68, 68, 0.2);
 }
 .topbar-tool-label.is-danger:hover > svg {

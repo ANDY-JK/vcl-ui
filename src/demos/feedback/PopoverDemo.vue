@@ -31,6 +31,12 @@ import IconSvg from '@/components/basic/IconSvg.vue'
         <Popover variant="tooltip" text="右侧提示" position="right">
           <Button text="右 →" size="sm" variant="outline" />
         </Popover>
+        <Popover variant="tooltip" text="下方提示" position="bottom">
+          <Button text="下 ↓" size="sm" variant="outline" />
+        </Popover>
+        <Popover variant="tooltip" text="左侧提示" position="left">
+          <Button text="左 ←" size="sm" variant="outline" />
+        </Popover>
       </div>
       <p
         style="

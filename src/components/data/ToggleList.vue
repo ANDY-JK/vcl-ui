@@ -277,7 +277,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   box-shadow: var(--vcl-shadow-sm);
 }
 .toggle-input:checked + .toggle-switch {
-  background: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-solid);
 }
 .toggle-input:checked + .toggle-switch::after {
   transform: translateX(20px);
@@ -288,7 +288,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   flex-shrink: 0;
   padding: var(--vcl-space-1) calc(14px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
-  border: 1px solid var(--vcl-color-primary);
+  border: 1px solid var(--vcl-color-primary-solid);
   border-radius: var(--vcl-radius-md);
   background: var(--vcl-color-primary);
   color: #fff;
@@ -297,7 +297,9 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   white-space: nowrap;
 }
 .item-action-btn:hover {
-  opacity: 0.85;
+  /* 2026-10-01：原 opacity 0.85 会把实心底+白字整体压淡（对比 4.28→跌破），改深一档底色 */
+  background: var(--vcl-color-primary-solid-hover);
+  border-color: var(--vcl-color-primary-solid-hover);
 }
 .item-action-btn:disabled {
   opacity: 0.4;

@@ -82,6 +82,88 @@ import Button from '@/components/basic/Button.vue'
         </Flex>
       </Card>
 
+      <Card title="对齐 — justify=end / around / evenly" title-as="h2">
+        <Flex
+          justify="end"
+          align="center"
+          style="
+            background: var(--vcl-color-bg-alt);
+            border-radius: calc(6px * var(--vcl-scale));
+            padding: 0 calc(8px * var(--vcl-scale));
+            margin-bottom: calc(8px * var(--vcl-scale));
+          "
+        >
+          <div class="flex-block">A</div>
+          <div class="flex-block">B</div>
+          <div class="flex-block">C</div>
+        </Flex>
+        <Flex
+          justify="around"
+          align="center"
+          style="
+            background: var(--vcl-color-bg-alt);
+            border-radius: calc(6px * var(--vcl-scale));
+            padding: 0 calc(8px * var(--vcl-scale));
+            margin-bottom: calc(8px * var(--vcl-scale));
+          "
+        >
+          <div class="flex-block">A</div>
+          <div class="flex-block">B</div>
+          <div class="flex-block">C</div>
+        </Flex>
+        <Flex
+          justify="evenly"
+          align="center"
+          style="
+            background: var(--vcl-color-bg-alt);
+            border-radius: calc(6px * var(--vcl-scale));
+            padding: 0 calc(8px * var(--vcl-scale));
+          "
+        >
+          <div class="flex-block">A</div>
+          <div class="flex-block">B</div>
+          <div class="flex-block">C</div>
+        </Flex>
+      </Card>
+
+      <Card title="对齐 — align=start / end / baseline" title-as="h2">
+        <Flex
+          align="start"
+          style="
+            height: calc(80px * var(--vcl-scale));
+            background: var(--vcl-color-bg-alt);
+            border-radius: calc(6px * var(--vcl-scale));
+            margin-bottom: calc(8px * var(--vcl-scale));
+          "
+        >
+          <div class="flex-block">start</div>
+          <div class="flex-block" style="font-size: calc(24px * var(--vcl-scale))">start</div>
+        </Flex>
+        <Flex
+          align="end"
+          style="
+            height: calc(80px * var(--vcl-scale));
+            background: var(--vcl-color-bg-alt);
+            border-radius: calc(6px * var(--vcl-scale));
+            margin-bottom: calc(8px * var(--vcl-scale));
+          "
+        >
+          <div class="flex-block">end</div>
+          <div class="flex-block" style="font-size: calc(24px * var(--vcl-scale))">end</div>
+        </Flex>
+        <Flex
+          align="baseline"
+          style="
+            height: calc(80px * var(--vcl-scale));
+            background: var(--vcl-color-bg-alt);
+            border-radius: calc(6px * var(--vcl-scale));
+          "
+        >
+          <div class="flex-block">baseline</div>
+          <div class="flex-block" style="font-size: calc(24px * var(--vcl-scale))">baseline</div>
+        </Flex>
+      </Card>
+
       <Card title="间距 — 不同 gap 值" title-as="h2">
         <Flex direction="horizontal" gap="4px" style="margin-bottom: calc(8px * var(--vcl-scale))">
           <Button text="4px" variant="primary" size="sm" />

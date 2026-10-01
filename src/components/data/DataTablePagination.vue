@@ -93,13 +93,14 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.page-btn:hover:not(:disabled) {
+.page-btn:hover:not(:disabled):not(.active) {
   border-color: var(--vcl-color-primary);
   color: var(--vcl-color-primary-on-surface);
 }
 .page-btn.active {
-  background: var(--vcl-color-primary);
-  border-color: var(--vcl-color-primary);
+  /* 2026-10-01：实心底压白字用 solid 档（primary 压白仅 4.28，solid 5.84 达标），与 Pagination 组件对齐 */
+  background: var(--vcl-color-primary-solid);
+  border-color: var(--vcl-color-primary-solid);
   color: #fff;
 }
 .page-btn:disabled {

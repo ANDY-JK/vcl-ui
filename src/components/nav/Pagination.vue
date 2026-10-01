@@ -152,8 +152,9 @@ function onJumperKeyup(e: KeyboardEvent) {
   color: var(--vcl-color-primary-on-surface);
 }
 .page-btn.active {
-  background: var(--vcl-color-primary);
-  border-color: var(--vcl-color-primary);
+  /* 2026-10-01：实心底压白字用 solid 档（primary 压白仅 4.28，solid 5.84 达标） */
+  background: var(--vcl-color-primary-solid);
+  border-color: var(--vcl-color-primary-solid);
   color: white;
 }
 .page-btn:disabled {

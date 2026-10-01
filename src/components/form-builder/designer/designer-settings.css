@@ -101,7 +101,8 @@
 .ld-tb-btn.active {
   background: var(--vcl-color-primary-light, #eef1ff);
   border-color: var(--vcl-color-primary, #4f6ef7);
-  color: var(--vcl-color-primary, #4f6ef7);
+  /* 2026-10-01：主色当文字用 on-surface 档（primary 压浅蓝底仅 3.8，on-surface 4.79+ 达标） */
+  color: var(--vcl-color-primary-on-surface, #3b56e0);
   font-weight: 600;
 }
 .ld-btn.ld-danger:hover,

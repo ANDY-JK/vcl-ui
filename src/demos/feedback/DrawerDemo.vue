@@ -6,6 +6,8 @@ import Button from '@/components/basic/Button.vue'
 
 const drawerVisible = ref(false)
 const drawerLeftVisible = ref(false)
+const drawerTopVisible = ref(false)
+const drawerBottomVisible = ref(false)
 </script>
 
 <template>
@@ -42,6 +44,21 @@ const drawerLeftVisible = ref(false)
     <Drawer v-model:visible="drawerLeftVisible" title="左侧导航" placement="left" width="300px">
       <p style="color: var(--vcl-color-text-secondary)">从左侧滑出的面板，常用于移动端导航菜单。</p>
     </Drawer>
+
+    <Drawer v-model:visible="drawerTopVisible" title="顶部抽屉" placement="top">
+      <p style="color: var(--vcl-color-text-secondary)">从顶部滑下的面板，适合通知横幅、快捷筛选。</p>
+    </Drawer>
+
+    <Drawer v-model:visible="drawerBottomVisible" title="底部抽屉" placement="bottom">
+      <p style="color: var(--vcl-color-text-secondary)">从底部滑出的面板，移动端常用于操作菜单（Action Sheet）。</p>
+    </Drawer>
+
+    <Card title="方向演示" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <div style="display: flex; gap: calc(12px * var(--vcl-scale)); flex-wrap: wrap">
+        <Button text="顶部抽屉" variant="outline" @click="drawerTopVisible = true" />
+        <Button text="底部抽屉" variant="outline" @click="drawerBottomVisible = true" />
+      </div>
+    </Card>
 
     <Card title="Props" title-as="h2">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">

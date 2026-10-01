@@ -53,6 +53,7 @@ const lastAction = ref('')
 
     <Card title="Result — 404 / 空状态" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <div style="display: flex; gap: calc(16px * var(--vcl-scale))">
+        <Result status="info" title="信息提示" description="这是一条中性信息态结果。" />
         <Result status="404" title="页面不存在" description="您访问的页面可能已删除或迁移。" />
         <Result status="empty" title="暂无数据" />
       </div>

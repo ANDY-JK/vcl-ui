@@ -31,6 +31,7 @@ const showHidden = ref(true)
           <Tag>默认</Tag>
           <Tag variant="primary"> Primary </Tag>
           <Tag variant="success"> Success </Tag>
+          <Tag variant="info"> Info </Tag>
           <Tag variant="danger"> Danger </Tag>
           <Tag variant="warning"> Warning </Tag>
           <Tag v-if="showCloseTag" closable @close="showCloseTag = false"> 可关闭 </Tag>

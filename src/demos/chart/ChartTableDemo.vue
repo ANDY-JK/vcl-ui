@@ -560,13 +560,13 @@ const trendData = computed(() => {
   transition: all 0.12s;
 }
 .pill:hover {
-  border-color: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary-solid);
   color: var(--vcl-color-primary-on-surface);
 }
 .pill.on {
-  background: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-solid);
   color: #fff;
-  border-color: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary-solid);
   font-weight: 600;
 }
 .pill.sm {
@@ -589,7 +589,7 @@ const trendData = computed(() => {
   transition: all 0.12s;
 }
 .tbl-toggle:hover {
-  border-color: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary-solid);
 }
 .tbl-toggle.off {
   opacity: 0.4;
@@ -654,7 +654,7 @@ const trendData = computed(() => {
   cursor: pointer;
 }
 .gr-toggle.on {
-  background: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-solid);
   color: #fff;
 }
 </style>

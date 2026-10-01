@@ -5,6 +5,9 @@ import Card from '@/components/data/Card.vue'
 import Button from '@/components/basic/Button.vue'
 
 const toastRef = ref<InstanceType<typeof Toast>>()
+const toastTopLeftRef = ref<InstanceType<typeof Toast>>()
+const toastTopRightRef = ref<InstanceType<typeof Toast>>()
+const toastBottomLeftRef = ref<InstanceType<typeof Toast>>()
 
 function showToast(type: 'info' | 'success' | 'warning' | 'error') {
   toastRef.value?.show(
@@ -29,6 +32,7 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
 
     <Card title="Toast 内联提示 (variant='inline')" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <div style="display: flex; flex-direction: column; gap: calc(8px * var(--vcl-scale))">
+        <Toast variant="inline" type="info" message="这是一条信息（info）提示" />
         <Toast variant="inline" type="circle-alert" message="这是一条普通信息提示" />
         <Toast variant="inline" type="success" message="操作成功！数据已保存" title="成功" />
         <Toast variant="inline" type="warning" message="您的存储空间即将不足，请及时清理" :closable="true" />
@@ -52,6 +56,14 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
         >
           点击按钮查看顶部通知
         </p>
+      </div>
+    </Card>
+
+    <Card title="挂载位置" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <div style="display: flex; gap: calc(8px * var(--vcl-scale)); flex-wrap: wrap">
+        <Button text="左上" size="sm" @click="toastTopLeftRef?.show('出现在左上角的提示', 'info', 2500)" />
+        <Button text="右上" size="sm" @click="toastTopRightRef?.show('出现在右上角的提示', 'info', 2500)" />
+        <Button text="左下" size="sm" @click="toastBottomLeftRef?.show('出现在左下角的提示', 'info', 2500)" />
       </div>
     </Card>
 
@@ -121,6 +133,9 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
   </div>
 
   <Toast ref="toastRef" />
+  <Toast ref="toastTopLeftRef" position="top-left" />
+  <Toast ref="toastTopRightRef" position="top-right" />
+  <Toast ref="toastBottomLeftRef" position="bottom-left" />
 </template>
 
 <style scoped>
