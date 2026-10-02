@@ -1,0 +1,238 @@
+/* ===== card 变体（精确对标旧项目 drop-zone） ===== */
+.card-wrap {
+  position: relative;
+  width: calc(110px * var(--vcl-scale));
+  height: calc(110px * var(--vcl-scale));
+  border: 2px dashed var(--vcl-color-border);
+  background: var(--vcl-color-surface);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.card-wrap:hover,
+.card-dragging {
+  border-color: var(--vcl-color-primary);
+}
+.card-disabled {
+  opacity: 0.5;
+}
+/* 内容容器 */
+.card-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* 点击区（30% 居中，z:3 高于图片和标签） */
+.card-click-area {
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  top: 35%;
+  left: 35%;
+  z-index: 3;
+  cursor: pointer;
+}
+/* 标签文字（对标 .drop-zone p，始终居中，不拦截点击） */
+.card-label {
+  position: absolute;
+  margin: 0;
+  text-align: center;
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-primary-on-surface);
+  z-index: 2;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+}
+/* 预览图（对标 .drop-zone img）：撑满卡片 + cover 裁切。
+   此前 max-width/max-height 只能把宽图缩成细带（object-fit 无尺寸不生效），
+   卡片大片留白、label 文字压图，视觉上像变形 */
+.card-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: relative;
+  z-index: 1;
+}
+/* 多张翻页箭头 */
+.card-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 8;
+  width: calc(22px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.card-wrap:hover .card-arrow {
+  opacity: 1;
+}
+.card-arrow-left {
+  left: calc(4px * var(--vcl-scale));
+}
+.card-arrow-right {
+  right: calc(4px * var(--vcl-scale));
+}
+/* 计数标记 */
+.card-count {
+  position: absolute;
+  bottom: calc(4px * var(--vcl-scale));
+  right: calc(6px * var(--vcl-scale));
+  z-index: 8;
+  font-size: calc(13px * var(--vcl-scale));
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1px calc(5px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-md);
+}
+/* 删除按钮 */
+.card-clear {
+  position: absolute;
+  top: calc(5px * var(--vcl-scale));
+  right: calc(5px * var(--vcl-scale));
+  z-index: 10;
+  padding: var(--vcl-space-1) calc(5px * var(--vcl-scale));
+  border: none;
+  border-radius: var(--vcl-radius-sm);
+  background: #ef4444;
+  color: #fff;
+  font-size: calc(13px * var(--vcl-scale));
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ===== default 变体 ===== */
+.upload-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vcl-space-3);
+}
+.upload-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--vcl-space-2);
+  padding: calc(36px * var(--vcl-scale));
+  border: 2px dashed var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  background: var(--vcl-color-bg);
+  cursor: pointer;
+  transition: all var(--vcl-transition-fast);
+}
+.upload-area:hover:not(.disabled) {
+  border-color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
+}
+.upload-area.dragging {
+  border-color: var(--vcl-color-primary);
+  background: var(--vcl-color-primary-light);
+}
+.upload-area.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.upload-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+.upload-hint {
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-secondary);
+}
+.upload-link {
+  color: var(--vcl-color-primary-on-surface);
+  font-weight: 500;
+}
+.upload-limit {
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+}
+.upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--vcl-scale));
+}
+.upload-item {
+  display: flex;
+  align-items: center;
+  gap: var(--vcl-space-2);
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+}
+.upload-file-icon {
+  flex-shrink: 0;
+  color: var(--vcl-color-text-muted);
+}
+/* 图片文件缩略图（default 变体）：可点击进全屏预览 */
+.upload-thumb {
+  flex-shrink: 0;
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
+  padding: 0;
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg-alt);
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.upload-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.upload-thumb:focus-visible {
+  outline: 2px solid var(--vcl-color-primary);
+  outline-offset: 2px;
+}
+.upload-file-info {
+  flex: 1;
+  min-width: 0;
+}
+.upload-file-name {
+  font-size: calc(15px * var(--vcl-scale));
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.upload-file-meta {
+  display: flex;
+  gap: calc(12px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+  margin-top: var(--vcl-space-1);
+}
+.upload-remove {
+  display: flex;
+  padding: var(--vcl-space-1);
+  border: none;
+  background: transparent;
+  color: var(--vcl-color-text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+}
+.upload-remove:hover {
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-danger-on-surface);
+}
