@@ -1,0 +1,318 @@
+.store-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--vcl-space-3) var(--vcl-space-3);
+  border-bottom: 1px solid var(--vcl-color-border-light);
+  flex-shrink: 0;
+}
+
+.btn-add {
+  padding: var(--vcl-space-1) calc(14px * var(--vcl-scale));
+  background: var(--vcl-color-primary);
+  color: var(--vcl-color-surface);
+  border: none;
+  border-radius: var(--vcl-radius-md);
+  font-size: var(--vcl-ctrl-font-size);
+  cursor: pointer;
+}
+
+.btn-add:hover {
+  background: var(--vcl-color-primary-hover);
+}
+
+.stats {
+  display: flex;
+  gap: var(--vcl-space-2);
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+}
+
+.skip-count {
+  color: var(--vcl-color-warning);
+}
+
+/* 搜索框 */
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-bottom: 1px solid var(--vcl-color-border-light);
+  gap: var(--vcl-space-1);
+  flex-shrink: 0;
+}
+
+.search-icon {
+  font-size: var(--vcl-ctrl-font-size);
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-text);
+  background: transparent;
+}
+
+.search-input::placeholder {
+  color: var(--vcl-color-text-muted);
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-text-muted);
+  cursor: pointer;
+  padding: var(--vcl-space-1) var(--vcl-space-1);
+  border-radius: var(--vcl-radius-sm);
+}
+
+.search-clear:hover {
+  color: var(--vcl-color-text-secondary);
+  background: var(--vcl-color-bg-alt);
+}
+
+.group-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--vcl-space-2);
+}
+
+.group {
+  margin-bottom: var(--vcl-space-2);
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--vcl-space-1) var(--vcl-space-3);
+  background: var(--vcl-color-bg-alt);
+  border-radius: var(--vcl-radius-md);
+  font-size: var(--vcl-ctrl-font-size);
+  font-weight: 600;
+  color: var(--vcl-color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.group-header:hover {
+  background: var(--vcl-color-border-light);
+}
+
+.group-arrow {
+  font-size: calc(9px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+  width: calc(14px * var(--vcl-scale));
+  flex-shrink: 0;
+}
+
+.group-name {
+  flex: 1;
+}
+
+.group-batch {
+  display: flex;
+  gap: var(--vcl-space-0);
+  margin-left: var(--vcl-space-1);
+}
+
+.btn-batch {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: calc(15px * var(--vcl-scale));
+  padding: var(--vcl-space-1) var(--vcl-space-1);
+  border-radius: var(--vcl-radius-sm);
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.group-header:hover .btn-batch {
+  opacity: 1;
+}
+
+.btn-batch:hover {
+  background: var(--vcl-color-border-light);
+}
+
+.btn-batch-danger:hover {
+  background: var(--vcl-color-danger-bg);
+}
+
+.group-count {
+  font-weight: 400;
+  color: var(--vcl-color-text-muted);
+  font-size: calc(15px * var(--vcl-scale));
+}
+
+.store-list {
+  padding: var(--vcl-space-1) 0;
+}
+
+.store-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-radius: var(--vcl-radius-md);
+  transition: background 0.15s;
+}
+
+.store-item:hover {
+  background: var(--vcl-color-bg);
+}
+
+.store-item.skipped {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.store-item.noCoord {
+  border-left: 3px solid var(--vcl-color-warning);
+}
+
+.store-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.store-name {
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.store-meta {
+  display: flex;
+  gap: var(--vcl-space-2);
+  margin-top: var(--vcl-space-0);
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+}
+
+.source-tag {
+  flex-shrink: 0;
+}
+
+.contact {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.store-actions {
+  display: flex;
+  gap: var(--vcl-space-1);
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--vcl-ctrl-font-size);
+  padding: var(--vcl-space-1);
+  border-radius: var(--vcl-radius-sm);
+  transition: background 0.15s;
+}
+
+.btn-icon:hover {
+  background: var(--vcl-color-border-light);
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--vcl-color-text-muted);
+  font-size: var(--vcl-ctrl-font-size);
+  padding: var(--vcl-space-8);
+}
+
+.empty-state .hint {
+  font-size: calc(15px * var(--vcl-scale));
+  margin-top: var(--vcl-space-1);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* 删除确认弹窗 */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--vcl-z-modal, 1000);
+}
+
+.confirm-box {
+  background: var(--vcl-color-surface);
+  border-radius: var(--vcl-radius-lg);
+  padding: var(--vcl-space-8) var(--vcl-space-8);
+  text-align: center;
+  box-shadow: var(--vcl-shadow-lg);
+  max-width: calc(340px * var(--vcl-scale));
+}
+
+.confirm-text {
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text);
+  margin: 0 0 var(--vcl-space-1);
+}
+
+.confirm-hint {
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+  margin: 0 0 var(--vcl-space-4);
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--vcl-space-2);
+  justify-content: center;
+}
+
+.btn-cancel {
+  padding: var(--vcl-space-2) calc(20px * var(--vcl-scale));
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
+  font-size: var(--vcl-ctrl-font-size);
+  color: var(--vcl-color-text-secondary);
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background: var(--vcl-color-bg);
+}
+
+.btn-confirm-delete {
+  padding: var(--vcl-space-2) calc(20px * var(--vcl-scale));
+  background: var(--vcl-color-danger);
+  color: var(--vcl-color-surface);
+  border: none;
+  border-radius: var(--vcl-radius-md);
+  font-size: var(--vcl-ctrl-font-size);
+  cursor: pointer;
+}
+
+.btn-confirm-delete:hover {
+  background: var(--vcl-color-danger-hover);
+}
