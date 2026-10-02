@@ -17,11 +17,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
 import { toNativeColorValue } from '@/components/_internal/utils'
-
-/** 数字步进按钮：按住多久开始连续步进 */
-const _STEP_HOLD_MS = 400
-/** 开始连续步进后的节拍 */
-const _STEP_REPEAT_MS = 100
+import { useInputStepper } from './useInputStepper'
 
 const t = useT()
 
@@ -270,79 +266,28 @@ function onTaInput(e: Event) {
 }
 
 /* ════════════════════════════════════════
-   数字步进模式（原 InputNumber）
+   数字步进模式（原 InputNumber，逻辑下沉 useInputStepper）
+   失焦编排 onStepperBlur 牵涉 focused/touched/validate，留在宿主；
+   数值口径 / 输入 / 提交 / 步进 / 长按由 useInputStepper 提供
    ════════════════════════════════════════ */
-const numText = ref('')
-
-const numPrecision = computed(() => {
-  if (props.precision != null) return Math.max(0, Math.floor(props.precision))
-  const m = /\.(\d+)$/.exec(String(props.step))
-  return m ? m[1].length : 0
-})
-
-function displayNum(v: number | null | undefined): string {
-  return v === null || v === undefined || !Number.isFinite(v) ? '' : String(v)
-}
-
-function roundTo(v: number): number {
-  return Number(v.toFixed(numPrecision.value))
-}
-
-function clampRound(v: number): number {
-  let n = roundTo(v)
-  if (props.min != null && n < props.min) n = props.min
-  if (props.max != null && n > props.max) n = props.max
-  return n
-}
-
-watch(
-  () => props.modelValue,
-  (v) => {
-    if (!isNumber.value) return
-    const parsed = Number(numText.value)
-    if (numText.value === '' && (v === null || v === undefined)) return
-    if (Number.isFinite(parsed) && parsed === v) return
-    numText.value = displayNum(v as number | null)
+const {
+  numText,
+  onNumInput,
+  commitNum,
+  clearNumValue,
+  onNumKeydown,
+  clearHold,
+  onBtnDown,
+  onBtnClick,
+  minusDisabled,
+  plusDisabled,
+} = useInputStepper(props, {
+  emit: (event, value) => {
+    if (event === 'clear') emit('clear')
+    else if (event === 'change') emit('change', value ?? null)
+    else emit('update:modelValue', value ?? null)
   },
-  { immediate: true },
-)
-
-function onNumInput(e: Event) {
-  const raw = (e.target as HTMLInputElement).value
-  if (raw.trim() === '') {
-    numText.value = ''
-    emit('update:modelValue', null)
-    return
-  }
-  if (!/^-?\d*\.?\d*$/.test(raw)) {
-    numText.value = displayNum(props.modelValue as number | null)
-    return
-  }
-  numText.value = raw
-  const n = Number(raw)
-  if (Number.isFinite(n)) {
-    emit('update:modelValue', n)
-    emit('change', n)
-  }
-}
-
-function commitNum() {
-  const raw = numText.value.trim()
-  if (raw === '') {
-    emit('update:modelValue', null)
-    emit('change', null)
-    return
-  }
-  const n = Number(raw)
-  if (!Number.isFinite(n)) {
-    numText.value = displayNum(props.modelValue as number | null)
-    return
-  }
-  const next = clampRound(n)
-  numText.value = displayNum(next)
-  emit('update:modelValue', next)
-  emit('change', next)
-}
+})
 
 function onStepperBlur(e: FocusEvent) {
   focused.value = false
@@ -352,11 +297,6 @@ function onStepperBlur(e: FocusEvent) {
   validate()
   // number 模式此前从不 emit blur（消费方拿得到 focus 拿不到 blur），补齐
   emit('blur', e)
-}
-
-function clearNumValue() {
-  emit('update:modelValue', null)
-  emit('clear')
 }
 
 function clearTaValue() {
@@ -369,74 +309,6 @@ function clearTextValue() {
   emit('clear')
 }
 
-function stepBy(dir: 1 | -1) {
-  const st = props.step > 0 ? props.step : 1
-  const base = (props.modelValue as number) ?? 0
-  const next = clampRound(base + dir * st)
-  numText.value = displayNum(next)
-  emit('update:modelValue', next)
-  emit('change', next)
-}
-
-function onNumKeydown(e: KeyboardEvent) {
-  if (props.disabled) return
-  if (e.key === 'ArrowUp') {
-    e.preventDefault()
-    stepBy(1)
-  } else if (e.key === 'ArrowDown') {
-    e.preventDefault()
-    stepBy(-1)
-  } else if (e.key === 'Enter') {
-    e.preventDefault()
-    commitNum()
-  }
-}
-
-// 长按连加
-let _holdTimer: ReturnType<typeof setTimeout> | null = null
-let _holdInterval: ReturnType<typeof setInterval> | null = null
-let _pointerHandled = false
-
-function clearHold() {
-  if (_holdTimer) {
-    clearTimeout(_holdTimer)
-    _holdTimer = null
-  }
-  if (_holdInterval) {
-    clearInterval(_holdInterval)
-    _holdInterval = null
-  }
-}
-
-function onBtnDown(dir: 1 | -1, e: PointerEvent) {
-  if (props.disabled) return
-  e.preventDefault()
-  _pointerHandled = true
-  stepBy(dir)
-  clearHold()
-  _holdTimer = setTimeout(() => {
-    _holdInterval = setInterval(() => {
-      if (props.disabled) {
-        clearHold()
-        return
-      }
-      stepBy(dir)
-    }, _STEP_REPEAT_MS)
-  }, _STEP_HOLD_MS)
-}
-
-function onBtnClick(dir: 1 | -1) {
-  if (_pointerHandled) {
-    _pointerHandled = false
-    return
-  }
-  stepBy(dir)
-}
-
-const minusDisabled = computed(() => props.min != null && ((props.modelValue as number) ?? 0) <= props.min)
-const plusDisabled = computed(() => props.max != null && ((props.modelValue as number) ?? 0) >= props.max)
-
-/* ----- 浮动标签上浮条件 ----- */
 const floatingRaised = computed(() => {
   if (isTextarea.value) return taFocused.value || hasTaValue.value
   if (isStepper.value) return true // stepper 模式标签固定
