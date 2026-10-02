@@ -28,8 +28,8 @@ import { useIdSafe } from '@/components/_internal/useIdCompat'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
-import { useTreeFlatten, type FlattenNode } from '@/components/_internal/useTreeFlatten'
 import { useSelectDatePanel } from './useSelectDatePanel'
+import { useSelectTree } from './useSelectTree'
 import { useSelectOption } from './useSelectOption'
 import { useSelectFiltering } from './useSelectFiltering'
 import DatePanel from './date-panel/DatePanel.vue'
@@ -440,73 +440,25 @@ defineExpose({ openMenu })
 /* ════════════════════════════════════════
    Tree-select 模式
    ════════════════════════════════════════ */
-const treeFlatten = useTreeFlatten<CascaderOption>({
-  data: () => props.cascaderOptions || [],
-  childrenKey: 'children',
-  keyExtractor: (n) => n.value,
+const {
+  treeFlatten,
+  visibleTreeNodes,
+  treeSelectedPaths,
+  treeDisplayText,
+  isTreeSelected,
+  onTreeNodeClick,
+  hasTreeChildren,
+} = useSelectTree({
+  cascaderOptions: () => props.cascaderOptions,
+  modelValue: () => props.modelValue,
+  searchText,
+  selectedValueKeys,
+  emit: (event, value) => {
+    // TreeModelValue（(string|number)[]）是 SelectModelValue 的子集
+    if (event === 'change') emit('change', value as SelectModelValue)
+    else emit('update:modelValue', value as SelectModelValue)
+  },
 })
-const treeNodes = computed(() => treeFlatten.flatNodes.value)
-
-/** tree-select 搜索：searchText 非空时按 label 过滤（遍历全树含折叠分支），空时回落展开态扁平列表 */
-const visibleTreeNodes = computed(() => {
-  const kw = searchText.value.trim().toLowerCase()
-  if (!kw) return treeNodes.value
-  const out: FlattenNode<CascaderOption>[] = []
-  const walk = (nodes: CascaderOption[], depth: number, path: CascaderOption[], parent: CascaderOption | null) => {
-    for (const n of nodes) {
-      const p = [...path, n]
-      if (String(n.label).toLowerCase().includes(kw)) {
-        out.push({ node: n, depth, parent, path: p, isLeaf: !n.children || n.children.length === 0 })
-      }
-      if (n.children && n.children.length > 0) walk(n.children, depth + 1, p, n)
-    }
-  }
-  walk(props.cascaderOptions || [], 0, [], null)
-  return out
-})
-
-function findTreePath(nodes: CascaderOption[], value: string | number): CascaderOption[] | null {
-  for (const node of nodes) {
-    if (String(node.value) === String(value)) return [node]
-    if (node.children) {
-      const sub = findTreePath(node.children, value)
-      if (sub) return [node, ...sub]
-    }
-  }
-  return null
-}
-
-const treeSelectedPaths = computed((): CascaderOption[][] => {
-  const vals = Array.isArray(props.modelValue) ? (props.modelValue as (string | number)[]) : []
-  return vals
-    .map((v) => findTreePath(props.cascaderOptions || [], v))
-    .filter((p): p is CascaderOption[] => !!p && p.length > 0)
-})
-
-const treeDisplayText = computed(() => treeSelectedPaths.value.map((p) => p.map((n) => n.label).join(' / ')).join(', '))
-
-function isTreeSelected(flatNode: (typeof visibleTreeNodes.value)[number]): boolean {
-  if (!Array.isArray(props.modelValue)) return false
-  return selectedValueKeys.value?.has(String(flatNode.node.value)) ?? false
-}
-
-function onTreeNodeClick(flatNode: (typeof visibleTreeNodes.value)[number]) {
-  if (flatNode.node.disabled) return
-  if (!flatNode.isLeaf) {
-    treeFlatten.toggleExpand(flatNode.node.value)
-    return
-  }
-  const vals = [...(Array.isArray(props.modelValue) ? (props.modelValue as (string | number)[]) : [])]
-  const idx = vals.findIndex((v) => String(v) === String(flatNode.node.value))
-  if (idx >= 0) vals.splice(idx, 1)
-  else vals.push(flatNode.node.value)
-  emit('update:modelValue', vals)
-  emit('change', vals)
-}
-
-function hasTreeChildren(node: CascaderOption): boolean {
-  return !!node.children && node.children.length > 0
-}
 
 /* ════════════════════════════════════════
    Combobox / Select 统一输入事件
