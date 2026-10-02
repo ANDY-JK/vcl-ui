@@ -192,8 +192,10 @@ describe('DesignerCanvas · steps 容器交互', () => {
     const slot = w.find('.ldc-container-body .ldc-slot-body')
     expect(slot.text()).toContain('审批人')
     expect(slot.text()).not.toContain('申请人')
-    // 第一步变为已完成态（✓ 标记）
-    expect(w.findAll('.ldc-step-btn')[0]!.text()).toContain('✓')
+    // 第一步变为已完成态：done 类 + 圆底内渲染 check 真图标（原文本 ✓ 已统一为图标库）
+    const firstBtn = w.findAll('.ldc-step-btn')[0]!
+    expect(firstBtn.classes()).toContain('done')
+    expect(firstBtn.find('.ldc-step-num svg').exists()).toBe(true)
   })
 
   it('步骤头显示字段计数徽章', () => {

@@ -570,7 +570,10 @@ const { ZOOM_MIN, ZOOM_MAX, zoom, zoomPercent, zoomStyle, zoomIn, zoomOut, reset
                         @keydown.enter.prevent="setActiveStep(node, si)"
                         @keydown.space.prevent="setActiveStep(node, si)"
                       >
-                        <span class="ldc-step-num">{{ si < activeStepIndex(node) ? '✓' : si + 1 }}</span>
+                        <span class="ldc-step-num">
+                          <IconSvg v-if="si < activeStepIndex(node)" type="check" size="xs" color="currentColor" />
+                          <template v-else>{{ si + 1 }}</template>
+                        </span>
                         <span class="ldc-step-btn-label" :title="step.title">{{ step.title }}</span>
                         <span
                           class="ldc-tab-count"
