@@ -1,0 +1,114 @@
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--vcl-z-modal, 1000);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+}
+.drawer-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.drawer-panel {
+  position: absolute;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  background: var(--vcl-color-surface);
+  box-shadow: var(--vcl-shadow-lg);
+}
+.drawer-right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
+.drawer-left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+.drawer-top {
+  left: 0;
+  right: 0;
+  top: 0;
+  max-width: none; /* 上下方位须占满视口宽；面板 max-width:90vw 会退化贴左留右缝 */
+  max-height: 90vh;
+}
+.drawer-bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: none; /* 上下方位须占满视口宽；面板 max-width:90vw 会退化贴左留右缝 */
+  max-height: 90vh;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
+  border-bottom: 1px solid var(--vcl-color-border);
+  flex-shrink: 0;
+}
+.drawer-title {
+  /* 与 ModalShell .modal-title 同档（24px 中间档）：弹窗族标题统一，Drawer 原先 36px 漏调 */
+  font-size: calc(24px * var(--vcl-scale));
+  font-weight: 600;
+}
+
+.drawer-close {
+  display: flex;
+  padding: var(--vcl-space-1);
+  border: none;
+  background: transparent;
+  color: var(--vcl-color-text-muted);
+  cursor: pointer;
+  border-radius: var(--vcl-radius-sm);
+}
+.drawer-close:hover {
+  background: var(--vcl-color-bg-alt);
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: calc(20px * var(--vcl-scale));
+}
+
+.drawer-footer {
+  flex-shrink: 0;
+  padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
+  border-top: 1px solid var(--vcl-color-border-light);
+}
+
+/* 动画 */
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: opacity var(--vcl-transition-normal);
+}
+.drawer-enter-active .drawer-panel,
+.drawer-leave-active .drawer-panel {
+  transition: transform var(--vcl-transition-normal);
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  opacity: 0;
+}
+.drawer-enter-from .drawer-right,
+.drawer-leave-to .drawer-right {
+  transform: translateX(100%);
+}
+.drawer-enter-from .drawer-left,
+.drawer-leave-to .drawer-left {
+  transform: translateX(-100%);
+}
+.drawer-enter-from .drawer-top,
+.drawer-leave-to .drawer-top {
+  transform: translateY(-100%);
+}
+.drawer-enter-from .drawer-bottom,
+.drawer-leave-to .drawer-bottom {
+  transform: translateY(100%);
+}
