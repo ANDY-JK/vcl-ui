@@ -1,0 +1,99 @@
+/* 外壳样式（遮罩/盒/头/脚/关闭钮）由 ModalShell 统一提供，此处只留表单内容 */
+
+/* 表体留白：外壳 .modal-body 自带 10px 内边距之上再叠原表单的 20px 留白 */
+.store-form {
+  padding: var(--vcl-space-5) calc(20px * var(--vcl-scale));
+}
+
+.form-row {
+  margin-bottom: var(--vcl-space-3);
+}
+
+.form-row label {
+  display: block;
+  font-size: calc(15px * var(--vcl-scale));
+  font-weight: 500;
+  color: var(--vcl-color-text-secondary);
+  margin-bottom: var(--vcl-space-1);
+}
+
+.form-row input {
+  width: 100%;
+  padding: var(--vcl-space-2) calc(12px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
+  font-size: calc(15px * var(--vcl-scale));
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-row input:focus {
+  border-color: var(--vcl-color-primary);
+}
+
+.form-grid-2,
+.form-grid-4 {
+  display: grid;
+  gap: var(--vcl-space-2);
+}
+
+.form-grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.form-grid-4 {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.form-hint {
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+  margin: var(--vcl-space-2) 0 0;
+}
+
+.btn-cancel,
+.btn-save {
+  padding: var(--vcl-space-2) calc(20px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-md);
+  font-size: calc(15px * var(--vcl-scale));
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.2s;
+}
+
+.btn-cancel {
+  background: var(--vcl-color-surface);
+  border-color: var(--vcl-color-border-light);
+  color: var(--vcl-color-text-secondary);
+}
+
+.btn-cancel:hover {
+  background: var(--vcl-color-bg);
+}
+
+.btn-save {
+  background: var(--vcl-color-primary);
+  border-color: var(--vcl-color-primary);
+  color: var(--vcl-color-surface);
+}
+
+.btn-save:hover {
+  background: var(--vcl-color-primary-hover);
+  border-color: var(--vcl-color-primary-hover);
+}
+
+.required {
+  color: var(--vcl-color-danger-on-surface);
+  font-weight: 700;
+}
+
+.input-error {
+  border-color: var(--vcl-color-danger-on-surface) !important;
+  background: var(--vcl-color-danger-bg);
+}
+
+.form-error {
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-danger-on-surface);
+  margin: var(--vcl-space-1) 0 0;
+}
