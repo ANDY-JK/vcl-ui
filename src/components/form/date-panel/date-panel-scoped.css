@@ -1,0 +1,149 @@
+/* ===== 日历网格（视觉与拆分前一致） ===== */
+.dp-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--vcl-space-2);
+}
+.dp-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(28px * var(--vcl-scale));
+  height: calc(28px * var(--vcl-scale));
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  border-radius: var(--vcl-radius-sm);
+  cursor: pointer;
+  color: var(--vcl-color-text-muted);
+  transition:
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast);
+}
+.dp-nav-btn:hover {
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text);
+}
+.dp-title {
+  flex: 1;
+  text-align: center;
+  font-size: calc(14px * var(--vcl-scale));
+  font-weight: 600;
+  color: var(--vcl-color-text);
+}
+.dp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: var(--vcl-space-1);
+}
+.dp-weekday {
+  text-align: center;
+  font-size: calc(11px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+  padding: var(--vcl-space-1) 0;
+  font-weight: 500;
+}
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--vcl-space-1);
+}
+/* 仅为承载 role=row 的语义包装：display:contents 让它不生成盒子，
+   格子仍是 .dp-grid 的直接网格项，布局与加行包装前逐像素一致 */
+.dp-row {
+  display: contents;
+}
+.dp-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(32px * var(--vcl-scale));
+  font-size: calc(12px * var(--vcl-scale));
+  border: none;
+  background: transparent;
+  border-radius: var(--vcl-radius-sm);
+  color: var(--vcl-color-text);
+  cursor: pointer;
+  transition:
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast);
+}
+.dp-cell:hover:not(.disabled):not(.selected):not(.range-start):not(.range-end) {
+  background: var(--vcl-color-bg-alt);
+}
+.dp-cell.other-month {
+  color: var(--vcl-color-text-muted);
+  opacity: 0.35;
+}
+.dp-cell.today {
+  color: var(--vcl-color-primary-on-surface);
+  font-weight: 700;
+}
+.dp-cell.today.selected,
+.dp-cell.today.range-start,
+.dp-cell.today.range-end {
+  color: #fff;
+}
+.dp-cell.selected {
+  background: var(--vcl-color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 区间高亮：中间段淡蓝、两端主色 + 圆角 */
+.dp-cell.in-range {
+  background: var(--vcl-color-primary-light);
+  border-radius: 0;
+}
+.dp-cell.in-range.today {
+  color: var(--vcl-color-primary-on-surface);
+}
+.dp-cell.range-start {
+  background: var(--vcl-color-primary);
+  color: #fff;
+  font-weight: 600;
+  border-radius: var(--vcl-radius-sm) 0 0 var(--vcl-radius-sm);
+}
+.dp-cell.range-end {
+  background: var(--vcl-color-primary);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0 var(--vcl-radius-sm) var(--vcl-radius-sm) 0;
+}
+.dp-cell.range-start.range-end {
+  border-radius: var(--vcl-radius-sm);
+}
+.dp-cell.disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* 底部操作区：无 actions 槽时今天按钮居中（与 Select type="date" 一致） */
+.dp-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--vcl-space-2);
+  margin-top: var(--vcl-space-2);
+}
+.dp-footer--center {
+  justify-content: center;
+}
+.dp-footer--actions {
+  margin-top: var(--vcl-space-3);
+}
+.dp-today-btn {
+  padding: var(--vcl-space-1) var(--vcl-space-3);
+  border: none;
+  border-radius: var(--vcl-radius-sm);
+  background: transparent;
+  color: var(--vcl-color-primary-on-surface);
+  font-size: calc(12px * var(--vcl-scale));
+  cursor: pointer;
+  transition: background var(--vcl-transition-fast);
+}
+.dp-today-btn:hover {
+  background: var(--vcl-color-primary-light);
+}
+.dp-footer-spacer {
+  flex: 1;
+}
