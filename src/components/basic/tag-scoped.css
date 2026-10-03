@@ -1,0 +1,146 @@
+/* ===== 内联标签模式 ===== */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vcl-space-1);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all var(--vcl-transition-fast);
+}
+.tag-label {
+  /* 垂直光学对齐：flex 把 em 盒居中，但字体真实墨迹范围略小于 1em，残差随字体变。
+     不写死补偿值——改引 --vcl-ink-dy（_internal/inkCenter.ts 运行期量当前字体墨迹
+     算出，标准字体≈0、异常字体自适应），未接入时 var() 回落 0 = 纯 flex 居中基线 */
+  transform: translateY(var(--vcl-ink-dy, 0));
+}
+.tag-sm {
+  padding: 1px var(--vcl-space-2);
+  font-size: calc(15px * var(--vcl-scale));
+}
+.tag-md {
+  padding: var(--vcl-space-1) calc(10px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
+}
+.tag.rounded {
+  border-radius: calc(100px * var(--vcl-scale));
+}
+
+/* dot 模式：纯圆点 */
+.tag.dot {
+  width: calc(8px * var(--vcl-scale));
+  height: calc(8px * var(--vcl-scale));
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  min-width: 0;
+  min-height: 0;
+}
+.tag.dot.tag-sm {
+  width: calc(6px * var(--vcl-scale));
+  height: calc(6px * var(--vcl-scale));
+}
+.tag.dot.tag-md {
+  width: calc(8px * var(--vcl-scale));
+  height: calc(8px * var(--vcl-scale));
+}
+/* 有文字时恢复正常尺寸 */
+.tag-has-text {
+  width: auto;
+  height: auto;
+}
+
+.tag-default {
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text-secondary);
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+}
+.tag-primary {
+  /* 同其它语义色口径：浅底上的文字用深档令牌。--vcl-color-primary 基色压在
+     --vcl-color-primary-light 上实测对比度不足 AA；solid 档（5.84）达标 */
+  background: var(--vcl-color-primary-light);
+  color: var(--vcl-color-primary-on-surface);
+  border: 1px solid var(--vcl-color-primary);
+  border-radius: var(--vcl-radius-sm);
+}
+.tag-success {
+  background: var(--vcl-color-success-bg);
+  color: var(--vcl-color-success-text);
+  border: 1px solid var(--vcl-color-success-border);
+  border-radius: var(--vcl-radius-sm);
+}
+.tag-danger {
+  background: var(--vcl-color-danger-bg);
+  color: var(--vcl-color-danger-on-surface);
+  border: 1px solid var(--vcl-color-danger-border);
+  border-radius: var(--vcl-radius-sm);
+}
+.tag-warning {
+  background: var(--vcl-color-warning-bg);
+  color: var(--vcl-color-warning-text);
+  border: 1px solid var(--vcl-color-warning-border);
+  border-radius: var(--vcl-radius-sm);
+}
+.tag-info {
+  background: var(--vcl-color-info-bg);
+  color: var(--vcl-color-info-text);
+  border: 1px solid var(--vcl-color-info-border);
+  border-radius: var(--vcl-radius-sm);
+}
+
+.tag-close {
+  display: inline-flex;
+  padding: 1px;
+  margin-left: var(--vcl-space-1);
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  border-radius: var(--vcl-radius-sm);
+}
+.tag-close:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* ===== 角标模式（原 Badge） ===== */
+.tag-sup-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* 角标本体 — 圆角胶囊 */
+.tag-sup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
+  padding: 0 calc(6px * var(--vcl-scale));
+  border-radius: calc(100px * var(--vcl-scale));
+  /* 实心底压白字：用 --vcl-color-danger-solid（暗色下 --vcl-color-danger 被提亮为 #f87171，
+     白字对比度仅 2.77 不达标） */
+  background: var(--vcl-color-danger-solid, var(--vcl-color-danger));
+  color: #ffffff;
+  font-size: calc(15px * var(--vcl-scale));
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  /* 绝对定位右上角，中心点骑在内容角上对半跨出边界 */
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  border: 1px solid var(--vcl-color-badge-ring, var(--vcl-color-surface));
+  z-index: 1;
+}
+
+/* 红点模式 */
+.tag-sup.tag-dot {
+  width: calc(10px * var(--vcl-scale));
+  min-width: calc(10px * var(--vcl-scale));
+  height: calc(10px * var(--vcl-scale));
+  padding: 0;
+  border-radius: 50%;
+}
