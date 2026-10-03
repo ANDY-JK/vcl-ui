@@ -1,0 +1,68 @@
+.collapse {
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  overflow: hidden;
+  transition: border-color var(--vcl-transition-fast);
+}
+.collapse.open {
+  border-color: var(--vcl-color-primary);
+}
+.collapse.disabled {
+  opacity: 0.45;
+}
+
+.collapse-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
+  border: none;
+  background: var(--vcl-color-surface);
+  font-size: calc(15px * var(--vcl-scale));
+  font-weight: 500;
+  color: var(--vcl-color-text);
+  cursor: pointer;
+  transition: background var(--vcl-transition-fast);
+}
+.collapse-trigger:hover:not(:disabled) {
+  background: var(--vcl-color-bg-alt);
+}
+.collapse-trigger:disabled {
+  cursor: not-allowed;
+}
+
+.collapse-arrow {
+  color: var(--vcl-color-text-muted);
+  transition: transform var(--vcl-transition-normal);
+}
+.collapse.open .collapse-arrow {
+  transform: rotate(90deg);
+}
+
+.collapse-content {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  /* 收起过程可聚焦问题：max-height:0 + overflow:hidden 后内容仍在 tab 序，
+     用 visibility 延迟生效 — 展开立即恢复、收起动画播完再隐身 */
+  transition:
+    max-height var(--vcl-transition-normal),
+    opacity var(--vcl-transition-fast),
+    visibility 0s linear var(--vcl-transition-normal);
+  visibility: hidden;
+}
+.collapse-content.expanded {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    max-height var(--vcl-transition-normal),
+    opacity var(--vcl-transition-normal) 0.1s,
+    visibility 0s;
+}
+
+.collapse-body {
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
+  border-top: 1px solid var(--vcl-color-border-light);
+  background: var(--vcl-color-bg);
+}
