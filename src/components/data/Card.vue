@@ -146,8 +146,11 @@ const iconBg = computed(() =>
       v-if="corner"
       class="grid-corner"
       :class="[`grid-corner--${cornerVariant}`, `grid-corner--${cornerPosition}`, `grid-corner--${cornerColor}`]"
-      >{{ corner }}</span
     >
+      <!-- 两层结构：外层是 0 尺寸锚点（钉在指定角），内层 mark 以锚点为中心自定位——
+           对称性与文本宽度解耦，单层百分比 translate 做不到这一点 -->
+      <span class="grid-corner-mark">{{ corner }}</span>
+    </span>
     <div v-if="title || $slots.header" class="grid-header">
       <component :is="titleAs" v-if="title" class="grid-title">
         {{ title }}

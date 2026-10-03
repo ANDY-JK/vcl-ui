@@ -145,27 +145,32 @@
   pointer-events: none;
 }
 
-/* --- 四角锚定（ribbon 锚角顶点；pill/dot 内贴 8px） --- */
-.grid-corner--ribbon.grid-corner--top-right {
+/* --- 外层锚点（0 尺寸，钉在指定角）---
+   ribbon 锚在角顶点（丝带中线穿过角，标准折角）；pill/dot 锚点内贴 8px。 */
+.grid-corner {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.grid-corner--top-right {
   top: 0;
   right: 0;
-  transform: translate(32%, -32%) rotate(45deg);
 }
-.grid-corner--ribbon.grid-corner--top-left {
+.grid-corner--top-left {
   top: 0;
   left: 0;
-  transform: translate(-32%, -32%) rotate(-45deg);
 }
-.grid-corner--ribbon.grid-corner--bottom-right {
+.grid-corner--bottom-right {
   bottom: 0;
   right: 0;
-  transform: translate(32%, 32%) rotate(-45deg);
 }
-.grid-corner--ribbon.grid-corner--bottom-left {
+.grid-corner--bottom-left {
   bottom: 0;
   left: 0;
-  transform: translate(-32%, 32%) rotate(45deg);
 }
+/* pill/dot 锚点内贴 8px（ribbon 锚角顶点） */
 .grid-corner--pill.grid-corner--top-right,
 .grid-corner--dot.grid-corner--top-right {
   top: calc(8px * var(--vcl-scale));
@@ -187,8 +192,17 @@
   left: calc(8px * var(--vcl-scale));
 }
 
-/* --- ribbon 形态 --- */
-.grid-corner--ribbon {
+/* --- 内层 mark：以锚点为中心自定位，对称性与文本宽度解耦 --- */
+.grid-corner-mark {
+  position: absolute;
+  white-space: nowrap;
+}
+
+/* ribbon：中心=锚点（translate -50%/-50%），rotate 沿角方向；卡外半段被 overflow:hidden 裁成折角 */
+.grid-corner--ribbon .grid-corner-mark {
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%) rotate(45deg);
   padding: calc(4px * var(--vcl-scale)) calc(30px * var(--vcl-scale));
   font-size: calc(11px * var(--vcl-scale));
   font-weight: 700;
@@ -200,22 +214,33 @@
   background: var(--vcl-color-primary-solid);
   box-shadow: 0 calc(2px * var(--vcl-scale)) calc(6px * var(--vcl-scale)) rgb(0 0 0 / 0.18);
 }
+.grid-corner--top-left.grid-corner--ribbon .grid-corner-mark {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.grid-corner--bottom-right.grid-corner--ribbon .grid-corner-mark {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.grid-corner--bottom-left.grid-corner--ribbon .grid-corner-mark {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
 /* 实心底同 Button 口径用 -solid 令牌（基色压白字暗色下不达标），字恒白 */
-.grid-corner--ribbon.grid-corner--success {
+.grid-corner--ribbon.grid-corner--success .grid-corner-mark {
   background: var(--vcl-color-success-solid);
 }
-.grid-corner--ribbon.grid-corner--warning {
+.grid-corner--ribbon.grid-corner--warning .grid-corner-mark {
   background: var(--vcl-color-warning-solid);
 }
-.grid-corner--ribbon.grid-corner--danger {
+.grid-corner--ribbon.grid-corner--danger .grid-corner-mark {
   background: var(--vcl-color-danger-solid);
 }
-.grid-corner--ribbon.grid-corner--info {
+.grid-corner--ribbon.grid-corner--info .grid-corner-mark {
   background: var(--vcl-color-info-solid);
 }
 
-/* --- pill 形态：透明浅底胶囊，悬浮不遮挡 --- */
-.grid-corner--pill {
+/* pill：透明浅底胶囊，盒右上角贴锚点（锚点已内贴 8px），悬浮不遮挡 */
+.grid-corner--pill .grid-corner-mark {
+  right: 0;
+  top: 0;
   padding: calc(2px * var(--vcl-scale)) calc(9px * var(--vcl-scale));
   font-size: calc(11px * var(--vcl-scale));
   font-weight: 600;
@@ -224,25 +249,28 @@
   background: var(--vcl-color-primary-bg);
   color: var(--vcl-color-primary-on-surface);
 }
-.grid-corner--pill.grid-corner--success {
+.grid-corner--pill.grid-corner--success .grid-corner-mark {
   background: var(--vcl-color-success-bg);
   color: var(--vcl-color-success-text);
 }
-.grid-corner--pill.grid-corner--warning {
+.grid-corner--pill.grid-corner--warning .grid-corner-mark {
   background: var(--vcl-color-warning-bg);
   color: var(--vcl-color-warning-text);
 }
-.grid-corner--pill.grid-corner--danger {
+.grid-corner--pill.grid-corner--danger .grid-corner-mark {
   background: var(--vcl-color-danger-bg);
   color: var(--vcl-color-danger-on-surface);
 }
-.grid-corner--pill.grid-corner--info {
+.grid-corner--pill.grid-corner--info .grid-corner-mark {
   background: var(--vcl-color-info-bg);
   color: var(--vcl-color-info-text);
 }
 
-/* --- dot 形态：状态圆点 + pulse 扩散环（reduced-motion 停） --- */
-.grid-corner--dot {
+/* dot：状态圆点中心=锚点，pulse 扩散环（reduced-motion 停）；文字视觉隐藏、读屏仍读 */
+.grid-corner--dot .grid-corner-mark {
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
   width: calc(9px * var(--vcl-scale));
   height: calc(9px * var(--vcl-scale));
   padding: 0;
@@ -251,19 +279,19 @@
   border-radius: 50%;
   background: var(--vcl-color-primary-solid);
 }
-.grid-corner--dot.grid-corner--success {
+.grid-corner--dot.grid-corner--success .grid-corner-mark {
   background: var(--vcl-color-success-solid);
 }
-.grid-corner--dot.grid-corner--warning {
+.grid-corner--dot.grid-corner--warning .grid-corner-mark {
   background: var(--vcl-color-warning-solid);
 }
-.grid-corner--dot.grid-corner--danger {
+.grid-corner--dot.grid-corner--danger .grid-corner-mark {
   background: var(--vcl-color-danger-solid);
 }
-.grid-corner--dot.grid-corner--info {
+.grid-corner--dot.grid-corner--info .grid-corner-mark {
   background: var(--vcl-color-info-solid);
 }
-.grid-corner--dot::after {
+.grid-corner--dot .grid-corner-mark::after {
   content: '';
   position: absolute;
   inset: calc(-3px * var(--vcl-scale));
@@ -271,27 +299,17 @@
   border: calc(2px * var(--vcl-scale)) solid var(--vcl-color-primary-solid);
   animation: grid-corner-pulse 2s ease-out infinite;
 }
-.grid-corner--dot.grid-corner--success::after {
+.grid-corner--dot.grid-corner--success .grid-corner-mark::after {
   border-color: var(--vcl-color-success-solid);
 }
-.grid-corner--dot.grid-corner--warning::after {
+.grid-corner--dot.grid-corner--warning .grid-corner-mark::after {
   border-color: var(--vcl-color-warning-solid);
 }
-.grid-corner--dot.grid-corner--danger::after {
+.grid-corner--dot.grid-corner--danger .grid-corner-mark::after {
   border-color: var(--vcl-color-danger-solid);
 }
-.grid-corner--dot.grid-corner--info::after {
+.grid-corner--dot.grid-corner--info .grid-corner-mark::after {
   border-color: var(--vcl-color-info-solid);
-}
-@keyframes grid-corner-pulse {
-  from {
-    transform: scale(0.8);
-    opacity: 0.9;
-  }
-  to {
-    transform: scale(1.7);
-    opacity: 0;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .grid-corner--dot::after {
