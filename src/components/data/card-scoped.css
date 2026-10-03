@@ -192,7 +192,9 @@
   padding: calc(4px * var(--vcl-scale)) calc(30px * var(--vcl-scale));
   font-size: calc(11px * var(--vcl-scale));
   font-weight: 700;
-  line-height: 1.4;
+  /* 1.8：雅黑 CJK 字面偏上（墨迹重心高于行盒中心），加大行高把墨迹沿丝带轴下推至视觉居中
+     （2026-10-04 用户目检立案，3x 特写上下留白差 2px；视觉闭环定案非公式定案） */
+  line-height: 1.8;
   letter-spacing: 0.05em;
   color: white;
   background: var(--vcl-color-primary-solid);
