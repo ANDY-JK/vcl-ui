@@ -31,7 +31,7 @@ function mountPopover(props: Record<string, unknown>, defaultSlot: string): VueW
 
 /** v-show 打开判定：display 非 none 即视为可见 */
 function isOpen(w: VueWrapper): boolean {
-  const el = w.find('.popover-card').element as HTMLElement
+  const el = w.find('.pop-floating').element as HTMLElement
   return el.style.display !== 'none'
 }
 
@@ -84,12 +84,12 @@ describe('Popover · hover 路径', () => {
     expect(isOpen(w)).toBe(true)
 
     // 指针进入浮层，取消关闭
-    await w.find('.popover-card').trigger('mouseenter')
+    await w.find('.pop-floating').trigger('mouseenter')
     await wait(200)
     expect(isOpen(w)).toBe(true)
 
     // 真正离开浮层后关闭
-    await w.find('.popover-card').trigger('mouseleave')
+    await w.find('.pop-floating').trigger('mouseleave')
     await wait(200)
     expect(isOpen(w)).toBe(false)
   })
@@ -111,7 +111,7 @@ describe('Popover · focus 路径', () => {
     await nextTick()
     expect(isOpen(w)).toBe(true)
 
-    w.find('.popover-card').element.dispatchEvent(new FocusEvent('focusout', { relatedTarget: null, bubbles: true }))
+    w.find('.pop-floating').element.dispatchEvent(new FocusEvent('focusout', { relatedTarget: null, bubbles: true }))
     await nextTick()
     expect(isOpen(w)).toBe(false)
   })

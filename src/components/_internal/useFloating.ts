@@ -35,6 +35,9 @@ export interface PositionResult {
   direction: FlipDirection
   maxHeight: number | null
   above: boolean
+  /** 指向三角沿浮层主轴的偏移（up/down=距浮层左缘、left/right=距顶缘，已 clamp 到浮层内），
+   *  消费方写进 --vcl-arrow-offset 供 .pop-arrow 定位；无触发器概念（pointer 模式）时指向锚点 */
+  arrowOffset: number
 }
 
 interface PositionInput {
@@ -163,7 +166,18 @@ export function computeFloatingPosition(input: PositionInput): PositionResult {
     }
   }
 
-  return { top, left, direction: dir, maxHeight: maxH, above: dir === 'up' }
+  // 5. 指向三角偏移：触发器中心在浮层主轴上的投影，clamp 到浮层内留 14px 边距（箭头不飘出圆角）
+  const ARROW_PAD = 14
+  let arrowOffset: number
+  if (dir === 'down' || dir === 'up') {
+    const anchorCx = (anchorLeft + anchorRight) / 2
+    arrowOffset = Math.min(Math.max(anchorCx - left, ARROW_PAD), fw - ARROW_PAD)
+  } else {
+    const anchorCy = (anchorTop + anchorBottom) / 2
+    arrowOffset = Math.min(Math.max(anchorCy - top, ARROW_PAD), Math.max(actualH, 28) - ARROW_PAD)
+  }
+
+  return { top, left, direction: dir, maxHeight: maxH, above: dir === 'up', arrowOffset }
 }
 
 /**
@@ -213,7 +227,14 @@ export function useFloating(options: FloatingOptions = {}) {
   const optMaxMatchWidth = () => options.maxMatchWidth ?? false
   const optZIndex = () => options.zIndex ?? 'var(--vcl-z-dropdown, 2000)'
 
-  function applyStyle(top: number, left: number, dir: FlipDirection, maxH: number | null, triggerWidth: number) {
+  function applyStyle(
+    top: number,
+    left: number,
+    dir: FlipDirection,
+    maxH: number | null,
+    triggerWidth: number,
+    arrowOffset?: number,
+  ) {
     const vw = window.innerWidth
     direction.value = dir
     const style: Record<string, string> = {
@@ -222,6 +243,7 @@ export function useFloating(options: FloatingOptions = {}) {
       left: `${left}px`,
       zIndex: optZIndex(),
     }
+    if (arrowOffset != null) style['--vcl-arrow-offset'] = `${Math.round(arrowOffset)}px`
     if (optMatchWidth() && triggerWidth > 0) {
       style.minWidth = `${triggerWidth}px`
       if (optMaxMatchWidth()) {
@@ -241,6 +263,7 @@ export function useFloating(options: FloatingOptions = {}) {
       if (style.minWidth) floating.style.minWidth = style.minWidth
       if (style.maxWidth) floating.style.maxWidth = style.maxWidth
       if (style.maxHeight) floating.style.maxHeight = style.maxHeight
+      if (style['--vcl-arrow-offset']) floating.style.setProperty('--vcl-arrow-offset', style['--vcl-arrow-offset'])
     }
   }
 
@@ -265,7 +288,7 @@ export function useFloating(options: FloatingOptions = {}) {
       offset: optOffset(),
       defaultDirection: optDirection(),
     })
-    applyStyle(result.top, result.left, result.direction, result.maxHeight, r.width)
+    applyStyle(result.top, result.left, result.direction, result.maxHeight, r.width, result.arrowOffset)
   }
 
   /** 打开前预定位到触发器附近，避免从左上角闪现 */
@@ -281,10 +304,10 @@ export function useFloating(options: FloatingOptions = {}) {
 
     if (shouldFlipUp) {
       direction.value = 'up'
-      applyStyle(Math.max(8, r.top - 200 - offset), r.left, 'up', null, r.width)
+      applyStyle(Math.max(8, r.top - 200 - offset), r.left, 'up', null, r.width, r.width / 2)
     } else {
       direction.value = 'down'
-      applyStyle(r.bottom + offset, r.left, 'down', null, r.width)
+      applyStyle(r.bottom + offset, r.left, 'down', null, r.width, r.width / 2)
     }
   }
 

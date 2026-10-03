@@ -51,13 +51,13 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 
     <Card title="Popover 气泡卡片" title-as="h2">
       <div style="display: flex; gap: calc(16px * var(--vcl-scale)); align-items: center; flex-wrap: wrap">
-        <Popover title="通知中心" trigger="click" position="right">
+        <Popover title="通知中心" trigger="click" position="right" arrow>
           <template #trigger>
             <button type="button" class="pop-trigger" title="通知中心" aria-label="通知中心">
               <IconSvg type="bell" size="sm" />
             </button>
           </template>
-          <p>你有 3 条新消息</p>
+          <p>你有 3 条新消息（arrow 开：带指向三角）</p>
           <p
             style="
               color: var(--vcl-color-text-muted);

@@ -101,7 +101,7 @@ describe('useFloating · 尺寸观察', () => {
     await nextTick()
 
     expect(observed).toContain(w.find('.popover-host > span').element)
-    expect(observed).toContain(w.find('.popover-card').element)
+    expect(observed).toContain(w.find('.pop-floating').element)
   })
 })
 

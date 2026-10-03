@@ -25,6 +25,9 @@ interface Props {
   position?: 'top' | 'bottom' | 'left' | 'right'
   /** 浮层 z-index（数字或 CSS 变量字符串）；默认走 --vcl-z-dropdown 变量 */
   zIndex?: number | string
+  /** 指向三角（箭头）：浮层贴触发器一侧渲染 45° 菱形三角并自动对准触发器中心。
+   *  默认 false——2026-10-02 定案气泡无箭头；此开关为需要强指向场景的可选项。 */
+  arrow?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -241,7 +244,7 @@ onUnmounted(() => {
           v-show="open"
           :id="floatingId"
           ref="floatingRef"
-          :class="[isTooltip ? 'tooltip-pop' : 'popover-card', !isTooltip && `flip-${direction}`]"
+          :class="['pop-floating', `flip-${direction}`]"
           :style="floatingStyle"
           :role="isTooltip ? 'tooltip' : 'dialog'"
           :aria-labelledby="!isTooltip && title ? titleId : undefined"
@@ -249,14 +252,18 @@ onUnmounted(() => {
           @mouseleave="onLeave"
           @focusout="onBlur"
         >
-          <!-- tooltip 模式 -->
-          <template v-if="isTooltip">{{ text }}</template>
-          <!-- popover 模式 -->
-          <template v-else>
-            <div v-if="title" :id="titleId" class="popover-title">{{ title }}</div>
-            <!-- @slot default: tooltip 模式为触发器内容；popover 模式为浮层主体内容 -->
-            <div class="popover-body"><slot /></div>
-          </template>
+          <!-- 外壳只管定位与箭头（overflow 可见，箭头露边不被裁）；皮肤类在内层自裁圆角 -->
+          <span v-if="arrow" class="pop-arrow" aria-hidden="true"></span>
+          <div :class="isTooltip ? 'tooltip-pop pop-skin' : 'popover-card pop-skin'">
+            <!-- tooltip 模式 -->
+            <template v-if="isTooltip">{{ text }}</template>
+            <!-- popover 模式 -->
+            <template v-else>
+              <div v-if="title" :id="titleId" class="popover-title">{{ title }}</div>
+              <!-- @slot default: tooltip 模式为触发器内容；popover 模式为浮层主体内容 -->
+              <div class="popover-body"><slot /></div>
+            </template>
+          </div>
         </div>
       </Transition>
     </Teleport>

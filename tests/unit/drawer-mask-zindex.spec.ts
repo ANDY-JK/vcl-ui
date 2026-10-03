@@ -114,13 +114,13 @@ describe('Popover · zIndex 可配', () => {
   it('默认走 --vcl-z-dropdown 变量（等价 2000）', async () => {
     const w = mountPopover()
     await w.find('.trg').trigger('click')
-    expect((w.find('.popover-card').element as HTMLElement).style.zIndex).toBe('var(--vcl-z-dropdown, 2000)')
+    expect((w.find('.pop-floating').element as HTMLElement).style.zIndex).toBe('var(--vcl-z-dropdown, 2000)')
   })
 
   it('传 zIndex 覆盖默认', async () => {
     const w = mountPopover({ zIndex: 3000 })
     await w.find('.trg').trigger('click')
-    expect((w.find('.popover-card').element as HTMLElement).style.zIndex).toBe('3000')
+    expect((w.find('.pop-floating').element as HTMLElement).style.zIndex).toBe('3000')
   })
 })
 

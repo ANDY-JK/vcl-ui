@@ -48,7 +48,7 @@ describe('Popover · tooltip 语义', () => {
     const w = mountTip()
     await nextTick()
 
-    const tip = w.find('.tooltip-pop')
+    const tip = w.find('.pop-floating')
     expect(tip.attributes('role')).toBe('tooltip')
 
     const id = tip.attributes('id')
@@ -67,7 +67,7 @@ describe('Popover · tooltip 语义', () => {
     )
     await nextTick()
 
-    const id = w.find('.tooltip-pop').attributes('id')
+    const id = w.find('.pop-floating').attributes('id')
     expect(id).toBeTruthy()
     expect(w.find('.tip-btn').attributes('aria-describedby')).toBe(id)
     // 不可聚焦的图标 span 挂上去了读屏也不会播报
@@ -78,7 +78,7 @@ describe('Popover · tooltip 语义', () => {
 describe('Popover · dialog 语义', () => {
   it('有 title：标题元素 id 与浮层 aria-labelledby 关联', () => {
     const w = mountCard()
-    const card = w.find('.popover-card')
+    const card = w.find('.pop-floating')
     expect(card.attributes('role')).toBe('dialog')
 
     const labelledby = card.attributes('aria-labelledby')
@@ -88,7 +88,7 @@ describe('Popover · dialog 语义', () => {
 
   it('无 title：不挂 aria-labelledby，避免指向不存在的 id', () => {
     const w = mountCard({ title: '' })
-    expect(w.find('.popover-card').attributes('aria-labelledby')).toBeUndefined()
+    expect(w.find('.pop-floating').attributes('aria-labelledby')).toBeUndefined()
   })
 })
 
@@ -97,10 +97,10 @@ describe('Popover · Esc 关闭', () => {
     const w = mountCard()
     await w.find('.trg').trigger('click')
     await nextTick()
-    expect(isOpen(w, '.popover-card')).toBe(true)
+    expect(isOpen(w, '.pop-floating')).toBe(true)
 
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
     await nextTick()
-    expect(isOpen(w, '.popover-card')).toBe(false)
+    expect(isOpen(w, '.pop-floating')).toBe(false)
   })
 })
