@@ -97,6 +97,25 @@ export const MIN_SCALABLE_PX = 2
 /** 药丸圆角（≥999px）表达「尽可能圆」，与尺寸无关，不参与缩放 */
 export const MAX_SCALABLE_PX = 999
 
+/**
+ * a11y 触控热区豁免标记：声明的前置注释含 `a11y-target` 时该声明不参与缩放。
+ * 依据 WCAG 2.5.8：触控目标 ≥24 CSS px 是**实际渲染值**——热区若走 `calc(Npx * var(--vcl-scale))`，
+ * 窄屏地板 0.75 时只剩 18px，可达性失效；故热区尺寸必须是固定 24px。
+ * 写法（标记注释须与声明同块且紧邻其前，「标记注释」按普通块注释正常闭合）：
+ *   /* a11y-target：热区固定 24px，此注释右端正常闭合
+ *   width: 24px;
+ * 闸口与迁移器同源跳过（迁移幂等：--write 不会改写热区声明）。
+ */
+export const A11Y_TARGET_MARK = 'a11y-target'
+
+/** 判断声明位置之前、同一规则块内的注释是否带 a11y-target 标记 */
+function hasA11yTargetMark(text, declIndex) {
+  const start = Math.max(0, declIndex - 240)
+  const back = text.slice(start, declIndex)
+  const blockStart = Math.max(back.lastIndexOf('}'), 0)
+  return back.slice(blockStart).includes(A11Y_TARGET_MARK)
+}
+
 export const PX_RE = /^-?\d+(?:\.\d+)?px/
 
 /** 紧随 px 之后的缩放乘法：用于识别已迁移 token，保证迁移器二次运行幂等 */
@@ -228,6 +247,7 @@ export function scanDeclarations(text, { allowCustomProps = false } = {}) {
   while ((m = DECL_RE.exec(text)) !== null) {
     const prop = m[2].toLowerCase()
     if (!isScalableProp(prop, { allowCustomProps })) continue
+    if (hasA11yTargetMark(text, m.index)) continue // a11y 热区固定 24px，闸口与迁移器同源跳过
     const raw = m[3]
     if (!/\dpx/.test(raw)) continue
     if (raw.includes(SCALE_REF) && !raw.includes('var(--vcl-fit)')) continue

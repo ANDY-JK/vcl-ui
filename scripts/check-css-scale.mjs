@@ -11,6 +11,8 @@
  *   - tokens.css：令牌定义本身（由 --vcl-scale 显式驱动的正源）
  *   - `--bp-*` 断点令牌与 @media/@container 查询参数：查询条件不属尺寸
  *   - JS/TS 段（.vue 的 <script>）：运行时测量坐标（getBoundingClientRect 等）不属缩放范畴
+ *   - 前置注释带 `a11y-target` 标记的声明：WCAG 2.5.8 触控热区须固定 ≥24px 实际值，
+ *     不得随 --vcl-scale 缩水（详见 scale-rules.mjs 的 A11Y_TARGET_MARK）
  *
  * 用法：node scripts/check-css-scale.mjs [--list]
  */
