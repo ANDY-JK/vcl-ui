@@ -83,6 +83,24 @@ const stats = [
       </Card>
     </div>
 
+    <h2 class="demo-h2" style="margin-top: calc(24px * var(--vcl-scale))">
+      状态竖条（accent）— 标题左侧 3px 竖条标识卡片状态
+    </h2>
+    <div class="grid-2-col">
+      <Card title="主色竖条" accent="primary">
+        <p style="color: var(--vcl-color-text-secondary)">accent=&quot;primary&quot;：常规强调。</p>
+      </Card>
+      <Card title="成功竖条" accent="success">
+        <p style="color: var(--vcl-color-text-secondary)">accent=&quot;success&quot;：通过/正常状态。</p>
+      </Card>
+      <Card title="警告竖条" accent="warning">
+        <p style="color: var(--vcl-color-text-secondary)">accent=&quot;warning&quot;：需要注意。</p>
+      </Card>
+      <Card title="危险竖条" accent="danger">
+        <p style="color: var(--vcl-color-text-secondary)">accent=&quot;danger&quot;：异常/失败状态。</p>
+      </Card>
+    </div>
+
     <Card title="Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>

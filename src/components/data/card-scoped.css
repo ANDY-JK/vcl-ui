@@ -83,6 +83,43 @@
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
 }
+/* 卡片头部状态竖条（accent bar）：标题左侧 3px 竖条，颜色随 accent prop。
+   2026-10-04 用户需求：卡片头部竖条颜色标识。 */
+.grid-card--accent-primary .grid-title,
+.grid-card--accent-success .grid-title,
+.grid-card--accent-warning .grid-title,
+.grid-card--accent-danger .grid-title,
+.grid-card--accent-info .grid-title {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--vcl-scale));
+}
+.grid-card--accent-primary .grid-title::before,
+.grid-card--accent-success .grid-title::before,
+.grid-card--accent-warning .grid-title::before,
+.grid-card--accent-danger .grid-title::before,
+.grid-card--accent-info .grid-title::before {
+  content: '';
+  flex-shrink: 0;
+  width: calc(3px * var(--vcl-scale));
+  height: calc(14px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-sm);
+}
+.grid-card--accent-primary .grid-title::before {
+  background: var(--vcl-color-primary);
+}
+.grid-card--accent-success .grid-title::before {
+  background: var(--vcl-color-success);
+}
+.grid-card--accent-warning .grid-title::before {
+  background: var(--vcl-color-warning);
+}
+.grid-card--accent-danger .grid-title::before {
+  background: var(--vcl-color-danger);
+}
+.grid-card--accent-info .grid-title::before {
+  background: var(--vcl-color-info);
+}
 .grid-body {
   flex: 1;
   padding: calc(8px * var(--vcl-scale));

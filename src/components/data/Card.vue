@@ -22,6 +22,9 @@ interface GridProps {
   summary?: boolean
   /** 允许内容溢出卡片边界（用于包含下拉/弹出组件的场景） */
   overflowVisible?: boolean
+  /** 卡片头部标题左侧的状态竖条颜色（accent bar）。不传 = 无竖条。
+   *  常用于列表/看板里按状态给卡片分类着色（2026-10-04 用户需求）。 */
+  accent?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
 }
 /* ====== stat 模式 Props ====== */
 interface StatProps {
@@ -115,7 +118,16 @@ const iconBg = computed(() =>
   </div>
 
   <!-- grid 模式 -->
-  <div v-else class="grid-card" :class="{ summary, highlight, 'grid-card--overflow-visible': overflowVisible }">
+  <div
+    v-else
+    class="grid-card"
+    :class="{
+      summary,
+      highlight,
+      'grid-card--overflow-visible': overflowVisible,
+      [`grid-card--accent-${accent}`]: accent,
+    }"
+  >
     <div v-if="title || $slots.header" class="grid-header">
       <component :is="titleAs" v-if="title" class="grid-title">
         {{ title }}
