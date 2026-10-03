@@ -209,6 +209,19 @@
   color: var(--vcl-color-text-muted);
   cursor: pointer;
 }
+/* a11y 触控热区（WCAG 2.5.8）：两钮视觉不变，可点区以中心扩到 24px 固定实际值。
+   热区脱流不影响布局；两钮互斥出现、右侧独立角落，24px 圆不相邻钮（O5 v2 台账）。 */
+.f-toggle-pwd::before,
+.f-clear::before {
+  /* a11y-target：热区固定 24px，不得随 --vcl-scale 缩水 */
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+}
 .fl-wrap:has(.f-toggle-pwd) .f-input,
 .fl-wrap:has(.f-clear) .f-input {
   padding-right: calc(34px * var(--vcl-scale));
