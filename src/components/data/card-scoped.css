@@ -133,15 +133,62 @@
   border-top: 1px solid var(--vcl-color-border-light);
   background: var(--vcl-color-bg-alt);
 }
-/* 右上角折角丝带（corner ribbon，2026-10-04 用户需求）：丝带中心锚定卡片右上角顶点
-   （translate 50%/-50% 后 rotate 45°），两端超出被卡片 overflow:hidden 裁切成标准折角，
-   文本宽度变化不影响位置。属装饰性几何三角；语义三角请用 IconSvg。 */
+/* ===== 卡片角标（corner，2026-10-04 用户需求 v2）=====
+   三形态 × 四角 × 五语义色，悬浮定位不占布局空间：
+   - ribbon 45° 折角丝带：实心 -solid 底白字（Button 口径），装饰性几何三角
+   - pill 透明浅底胶囊：-bg 底 + -text 字（令牌自带 AA 对比度），悬浮不遮挡内容
+   - dot 状态圆点：-solid 饱和点 + pulse 扩散环；文字 font-size:0 视觉隐藏、读屏仍读
+   语义三角（排序/涨跌/警告）请用 IconSvg。 */
 .grid-corner {
   position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --- 四角锚定（ribbon 锚角顶点；pill/dot 内贴 8px） --- */
+.grid-corner--ribbon.grid-corner--top-right {
   top: 0;
   right: 0;
-  z-index: 1;
   transform: translate(32%, -32%) rotate(45deg);
+}
+.grid-corner--ribbon.grid-corner--top-left {
+  top: 0;
+  left: 0;
+  transform: translate(-32%, -32%) rotate(-45deg);
+}
+.grid-corner--ribbon.grid-corner--bottom-right {
+  bottom: 0;
+  right: 0;
+  transform: translate(32%, 32%) rotate(-45deg);
+}
+.grid-corner--ribbon.grid-corner--bottom-left {
+  bottom: 0;
+  left: 0;
+  transform: translate(-32%, 32%) rotate(45deg);
+}
+.grid-corner--pill.grid-corner--top-right,
+.grid-corner--dot.grid-corner--top-right {
+  top: calc(8px * var(--vcl-scale));
+  right: calc(8px * var(--vcl-scale));
+}
+.grid-corner--pill.grid-corner--top-left,
+.grid-corner--dot.grid-corner--top-left {
+  top: calc(8px * var(--vcl-scale));
+  left: calc(8px * var(--vcl-scale));
+}
+.grid-corner--pill.grid-corner--bottom-right,
+.grid-corner--dot.grid-corner--bottom-right {
+  bottom: calc(8px * var(--vcl-scale));
+  right: calc(8px * var(--vcl-scale));
+}
+.grid-corner--pill.grid-corner--bottom-left,
+.grid-corner--dot.grid-corner--bottom-left {
+  bottom: calc(8px * var(--vcl-scale));
+  left: calc(8px * var(--vcl-scale));
+}
+
+/* --- ribbon 形态 --- */
+.grid-corner--ribbon {
   padding: calc(4px * var(--vcl-scale)) calc(30px * var(--vcl-scale));
   font-size: calc(11px * var(--vcl-scale));
   font-weight: 700;
@@ -150,18 +197,102 @@
   color: white;
   background: var(--vcl-color-primary-solid);
   box-shadow: 0 calc(2px * var(--vcl-scale)) calc(6px * var(--vcl-scale)) rgb(0 0 0 / 0.18);
-  pointer-events: none;
 }
 /* 实心底同 Button 口径用 -solid 令牌（基色压白字暗色下不达标），字恒白 */
-.grid-corner--success {
+.grid-corner--ribbon.grid-corner--success {
   background: var(--vcl-color-success-solid);
 }
-.grid-corner--warning {
+.grid-corner--ribbon.grid-corner--warning {
   background: var(--vcl-color-warning-solid);
 }
-.grid-corner--danger {
+.grid-corner--ribbon.grid-corner--danger {
   background: var(--vcl-color-danger-solid);
 }
-.grid-corner--info {
+.grid-corner--ribbon.grid-corner--info {
   background: var(--vcl-color-info-solid);
+}
+
+/* --- pill 形态：透明浅底胶囊，悬浮不遮挡 --- */
+.grid-corner--pill {
+  padding: calc(2px * var(--vcl-scale)) calc(9px * var(--vcl-scale));
+  font-size: calc(11px * var(--vcl-scale));
+  font-weight: 600;
+  line-height: 1.5;
+  border-radius: 999px;
+  background: var(--vcl-color-primary-bg);
+  color: var(--vcl-color-primary-on-surface);
+}
+.grid-corner--pill.grid-corner--success {
+  background: var(--vcl-color-success-bg);
+  color: var(--vcl-color-success-text);
+}
+.grid-corner--pill.grid-corner--warning {
+  background: var(--vcl-color-warning-bg);
+  color: var(--vcl-color-warning-text);
+}
+.grid-corner--pill.grid-corner--danger {
+  background: var(--vcl-color-danger-bg);
+  color: var(--vcl-color-danger-on-surface);
+}
+.grid-corner--pill.grid-corner--info {
+  background: var(--vcl-color-info-bg);
+  color: var(--vcl-color-info-text);
+}
+
+/* --- dot 形态：状态圆点 + pulse 扩散环（reduced-motion 停） --- */
+.grid-corner--dot {
+  width: calc(9px * var(--vcl-scale));
+  height: calc(9px * var(--vcl-scale));
+  padding: 0;
+  font-size: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--vcl-color-primary-solid);
+}
+.grid-corner--dot.grid-corner--success {
+  background: var(--vcl-color-success-solid);
+}
+.grid-corner--dot.grid-corner--warning {
+  background: var(--vcl-color-warning-solid);
+}
+.grid-corner--dot.grid-corner--danger {
+  background: var(--vcl-color-danger-solid);
+}
+.grid-corner--dot.grid-corner--info {
+  background: var(--vcl-color-info-solid);
+}
+.grid-corner--dot::after {
+  content: '';
+  position: absolute;
+  inset: calc(-3px * var(--vcl-scale));
+  border-radius: 50%;
+  border: calc(2px * var(--vcl-scale)) solid var(--vcl-color-primary-solid);
+  animation: grid-corner-pulse 2s ease-out infinite;
+}
+.grid-corner--dot.grid-corner--success::after {
+  border-color: var(--vcl-color-success-solid);
+}
+.grid-corner--dot.grid-corner--warning::after {
+  border-color: var(--vcl-color-warning-solid);
+}
+.grid-corner--dot.grid-corner--danger::after {
+  border-color: var(--vcl-color-danger-solid);
+}
+.grid-corner--dot.grid-corner--info::after {
+  border-color: var(--vcl-color-info-solid);
+}
+@keyframes grid-corner-pulse {
+  from {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grid-corner--dot::after {
+    animation: none;
+  }
 }

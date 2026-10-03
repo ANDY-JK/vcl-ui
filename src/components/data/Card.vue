@@ -25,12 +25,17 @@ interface GridProps {
   /** 卡片头部标题左侧的状态竖条颜色（accent bar）。不传 = 无竖条。
    *  常用于列表/看板里按状态给卡片分类着色（2026-10-04 用户需求）。 */
   accent?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
-  /** 右上角折角丝带文案（如「NEW」「热」「推荐」）。传入即渲染，空 = 无丝带。
-   *  折角形态（45° 斜贴丝带）属装饰性几何三角；语义三角（排序/涨跌/警告）请用 IconSvg。
-   *  依赖卡片 overflow:hidden 裁切两端——与 overflowVisible 同用时丝带两端会露出卡外。 */
+  /** 角标文案（如「NEW」「热」「异常」）。传入即渲染；dot 形态下文字视觉隐藏、读屏仍读。
+   *  折角形态属装饰性几何三角；语义三角（排序/涨跌/警告）请用 IconSvg。
+   *  依赖卡片 overflow:hidden 裁切——与 overflowVisible 同用时丝带两端会露出卡外。 */
   corner?: string
-  /** 折角丝带底色（语义色，默认 primary） */
+  /** 角标底色（语义色，默认 primary） */
   cornerColor?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
+  /** 角标形态：ribbon 45° 折角丝带（实心底，装饰三角）| pill 透明浅底胶囊（-bg 底 + -text 字，
+   *  悬浮不遮挡内容）| dot 状态圆点（-solid 饱和点 + pulse 扩散环，文字读屏可读）。默认 ribbon。 */
+  cornerVariant?: 'ribbon' | 'pill' | 'dot'
+  /** 角标位置（默认 top-right）。悬浮定位不占布局空间。 */
+  cornerPosition?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
 }
 /* ====== stat 模式 Props ====== */
 interface StatProps {
@@ -53,6 +58,9 @@ const props = withDefaults(defineProps<GridProps & StatProps>(), {
   type: 'grid',
   icon: 'circle-alert',
   titleAs: 'h3',
+  cornerColor: 'primary',
+  cornerVariant: 'ribbon',
+  cornerPosition: 'top-right',
 })
 
 const emit = defineEmits<{
@@ -134,7 +142,12 @@ const iconBg = computed(() =>
       [`grid-card--accent-${accent}`]: accent,
     }"
   >
-    <span v-if="corner" class="grid-corner" :class="cornerColor && `grid-corner--${cornerColor}`">{{ corner }}</span>
+    <span
+      v-if="corner"
+      class="grid-corner"
+      :class="[`grid-corner--${cornerVariant}`, `grid-corner--${cornerPosition}`, `grid-corner--${cornerColor}`]"
+      >{{ corner }}</span
+    >
     <div v-if="title || $slots.header" class="grid-header">
       <component :is="titleAs" v-if="title" class="grid-title">
         {{ title }}

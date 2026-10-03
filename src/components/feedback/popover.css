@@ -76,38 +76,38 @@
 .pop-arrow {
   position: absolute;
   z-index: 1;
-  width: 10px;
-  height: 10px;
+  width: calc(10px * var(--vcl-scale));
+  height: calc(10px * var(--vcl-scale));
   transform: rotate(45deg);
   background: var(--vcl-color-surface);
   border: 1px solid var(--vcl-color-border);
   pointer-events: none;
 }
 .flip-down .pop-arrow {
-  top: -5px;
+  top: calc(-5px * var(--vcl-scale));
   left: var(--vcl-arrow-offset, 50%);
-  margin-left: -5px;
+  margin-left: calc(-5px * var(--vcl-scale));
   border-top: none;
   border-left: none;
 }
 .flip-up .pop-arrow {
-  bottom: -5px;
+  bottom: calc(-5px * var(--vcl-scale));
   left: var(--vcl-arrow-offset, 50%);
-  margin-left: -5px;
+  margin-left: calc(-5px * var(--vcl-scale));
   border-bottom: none;
   border-right: none;
 }
 .flip-left .pop-arrow {
-  right: -5px;
+  right: calc(-5px * var(--vcl-scale));
   top: var(--vcl-arrow-offset, 50%);
-  margin-top: -5px;
+  margin-top: calc(-5px * var(--vcl-scale));
   border-bottom: none;
   border-left: none;
 }
 .flip-right .pop-arrow {
-  left: -5px;
+  left: calc(-5px * var(--vcl-scale));
   top: var(--vcl-arrow-offset, 50%);
-  margin-top: -5px;
+  margin-top: calc(-5px * var(--vcl-scale));
   border-top: none;
   border-right: none;
 }

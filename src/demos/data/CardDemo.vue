@@ -119,6 +119,55 @@ const stats = [
       </Card>
     </div>
 
+    <h2 class="demo-h2" style="margin-top: calc(24px * var(--vcl-scale))">
+      角标形态（corner-variant）— 透明胶囊悬浮不遮挡 / 状态圆点带脉冲
+    </h2>
+    <p class="demo-hint">
+      <code>corner-variant="pill"</code>：透明浅底胶囊（-bg 底 + -text 字，悬浮不遮挡内容）；
+      <code>corner-variant="dot"</code>：状态圆点 + 脉冲扩散环（文字读屏可读）；
+      <code>corner-position</code>：四角可选，悬浮定位不占布局空间。
+    </p>
+    <div class="grid-2-col">
+      <Card title="透明胶囊 · 四角" corner-variant="pill">
+        <div style="position: relative; min-height: calc(72px * var(--vcl-scale))">
+          <Card
+            corner="运行中"
+            corner-variant="pill"
+            corner-position="top-left"
+            corner-color="info"
+            style="margin-bottom: calc(8px * var(--vcl-scale))"
+          >
+            <p style="color: var(--vcl-color-text-muted); font-size: calc(12px * var(--vcl-scale))">top-left · info</p>
+          </Card>
+          <Card corner="已就绪" corner-variant="pill" corner-position="top-right" corner-color="success">
+            <p style="color: var(--vcl-color-text-muted); font-size: calc(12px * var(--vcl-scale))">
+              top-right · success
+            </p>
+          </Card>
+        </div>
+      </Card>
+      <Card title="状态圆点 · 底部角" corner-variant="dot">
+        <div style="position: relative; min-height: calc(72px * var(--vcl-scale))">
+          <Card
+            corner="同步中"
+            corner-variant="dot"
+            corner-position="bottom-right"
+            corner-color="warning"
+            style="margin-bottom: calc(8px * var(--vcl-scale))"
+          >
+            <p style="color: var(--vcl-color-text-muted); font-size: calc(12px * var(--vcl-scale))">
+              bottom-right · warning
+            </p>
+          </Card>
+          <Card corner="异常" corner-variant="dot" corner-position="bottom-left" corner-color="danger">
+            <p style="color: var(--vcl-color-text-muted); font-size: calc(12px * var(--vcl-scale))">
+              bottom-left · danger
+            </p>
+          </Card>
+        </div>
+      </Card>
+    </div>
+
     <Card title="Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>
