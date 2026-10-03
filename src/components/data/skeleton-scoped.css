@@ -1,0 +1,63 @@
+/* 灰阶骨架块 — 全 scoped，无 :deep 泄漏 */
+.skel {
+  display: flex;
+  gap: calc(14px * var(--vcl-scale));
+  width: 100%;
+}
+.skel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--vcl-scale));
+  min-width: 0;
+}
+.skel-line {
+  display: block;
+  height: calc(14px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg-alt);
+}
+.skel-title {
+  width: 40%;
+  height: calc(16px * var(--vcl-scale));
+}
+.skel-avatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--vcl-color-bg-alt);
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
+}
+.skel-avatar-sm {
+  width: calc(32px * var(--vcl-scale));
+  height: calc(32px * var(--vcl-scale));
+}
+.skel-avatar-md {
+  width: calc(40px * var(--vcl-scale));
+  height: calc(40px * var(--vcl-scale));
+}
+.skel-avatar-lg {
+  width: calc(56px * var(--vcl-scale));
+  height: calc(56px * var(--vcl-scale));
+}
+
+/* 流光动画 — linear-gradient 背景位移 */
+.skel-animated .skel-line,
+.skel-animated .skel-avatar {
+  background: linear-gradient(
+    90deg,
+    var(--vcl-color-bg-alt) 25%,
+    var(--vcl-color-border) 50%,
+    var(--vcl-color-bg-alt) 75%
+  );
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.5s infinite;
+}
+@keyframes skel-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
