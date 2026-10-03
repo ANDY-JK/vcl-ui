@@ -1,0 +1,18 @@
+.popover-host {
+  position: relative;
+  display: inline-flex;
+}
+.popover-host.tooltip {
+  cursor: default;
+}
+.popover-btn {
+  display: flex;
+  /* 图标为固定尺寸：stretch 对齐下不可拉伸的项按 flex-start 贴顶，显式双轴居中 */
+  align-items: center;
+  justify-content: center;
+  padding: var(--vcl-space-1);
+  border: none;
+  background: transparent;
+  color: var(--vcl-color-text-muted);
+  cursor: pointer;
+}
