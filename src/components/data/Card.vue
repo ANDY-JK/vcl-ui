@@ -26,7 +26,8 @@ interface GridProps {
    *  常用于列表/看板里按状态给卡片分类着色（2026-10-04 用户需求）。 */
   accent?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
   /** 右上角折角丝带文案（如「NEW」「热」「推荐」）。传入即渲染，空 = 无丝带。
-   *  折角形态（45° 斜贴丝带）属装饰性几何三角；语义三角（排序/涨跌/警告）请用 IconSvg。 */
+   *  折角形态（45° 斜贴丝带）属装饰性几何三角；语义三角（排序/涨跌/警告）请用 IconSvg。
+   *  依赖卡片 overflow:hidden 裁切两端——与 overflowVisible 同用时丝带两端会露出卡外。 */
   corner?: string
   /** 折角丝带底色（语义色，默认 primary） */
   cornerColor?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
