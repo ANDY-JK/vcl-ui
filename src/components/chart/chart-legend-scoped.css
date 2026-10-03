@@ -11,6 +11,7 @@
   gap: var(--vcl-space-1) calc(16px * var(--vcl-scale));
 }
 .cl-toggle-all {
+  position: relative;
   border: 1px solid var(--vcl-color-border);
   background: var(--vcl-color-surface);
   color: var(--vcl-color-text-secondary);
@@ -23,6 +24,17 @@
   align-self: center;
   /* 2026-10-02 靠右：同行末尾推到最右（图例项在左、全不选在右） */
   margin-left: auto;
+}
+/* a11y 触控热区：同 chart-tool-btn，外扩 2px/侧 */
+.cl-toggle-all::before {
+  /* a11y-target：热区固定 24px，不得随 --vcl-scale 缩水（WCAG 2.5.8） */
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
 }
 .cl-toggle-all:hover {
   border-color: var(--vcl-color-primary);

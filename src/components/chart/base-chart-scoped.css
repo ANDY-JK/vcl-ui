@@ -15,6 +15,7 @@
   padding: 0 calc(4px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
 }
 .chart-tool-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -27,6 +28,17 @@
   color: var(--vcl-color-text-secondary);
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
+}
+/* a11y 触控热区（WCAG 2.5.8）：视觉不变，可点区每侧外扩 2px——窄屏 21+4=25px 达标、大屏 28+4=32 不缩可点区；2px 属闸口渲染细节豁免档。 */
+.chart-tool-btn::before {
+  /* a11y-target：热区固定 24px，不得随 --vcl-scale 缩水（WCAG 2.5.8） */
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
 }
 .chart-tool-btn:hover {
   border-color: var(--vcl-color-primary);
