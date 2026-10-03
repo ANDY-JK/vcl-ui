@@ -108,7 +108,8 @@ describe('Tree · 键盘勾选', () => {
   })
 
   it('勾选框视觉隐藏（clip）而非 display:none，保留可聚焦', () => {
-    const src = readFileSync(resolve(process.cwd(), 'src/components/data/Tree.vue'), 'utf8')
+    // 2026-10-03 CSS 提取：Tree 样式已外置 tree-scoped.css（style src scoped），锁源文件而非渲染样式
+    const src = readFileSync(resolve(process.cwd(), 'src/components/data/tree-scoped.css'), 'utf8')
     const start = src.indexOf('.tree-check-input {')
     const rule = src.slice(start, src.indexOf('}', start))
 

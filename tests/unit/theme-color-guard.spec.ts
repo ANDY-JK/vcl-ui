@@ -33,9 +33,9 @@ const ALLOWED: { file: string; selector: string; reason: string }[] = [
     reason: '.dt-cell-tooltip 底色用 --vcl-color-sidebar，该令牌两套主题下都是深色（#1a1f2e/#0f1115），故白字恒正确',
   },
   {
-    file: 'Tree.vue',
+    file: 'tree-scoped.css',
     selector: 'tree-check-box',
-    reason: '复选框白色勾线画在 --vcl-color-primary 蓝底之上，与主题无关',
+    reason: '复选框白色勾线画在 --vcl-color-primary 蓝底之上，与主题无关（Tree 样式已外置 tree-scoped.css）',
   },
   {
     file: 'CameraCapture.vue',
