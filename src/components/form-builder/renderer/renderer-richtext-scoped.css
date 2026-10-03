@@ -1,0 +1,170 @@
+.fb-richtext {
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  border-radius: var(--fb-radius, calc(6px * var(--vcl-scale)));
+  border-color: var(--fb-field-border, var(--vcl-color-border, #e2e8f0));
+  overflow: hidden;
+  width: var(--fb-control-width, 100%);
+}
+.fb-rt-toolbar-wrap {
+  position: relative;
+}
+
+/* ── 编辑区 / 预览区 ── */
+.fb-richtext-body {
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  min-height: calc(50px * var(--vcl-scale));
+  font-size: var(--vcl-fs-13);
+  color: var(--vcl-color-text, #1e293b);
+  outline: none;
+}
+.fb-richtext--full .fb-richtext-body {
+  min-height: var(--fb-rt-min-height-full, calc(160px * var(--vcl-scale)));
+  line-height: 1.7;
+}
+.fb-richtext-preview {
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
+  min-height: calc(50px * var(--vcl-scale));
+  font-size: var(--vcl-fs-13);
+  line-height: 1.7;
+  color: var(--vcl-color-text, #1e293b);
+  background: var(--vcl-color-surface, #fff);
+}
+.fb-richtext-body:empty::before {
+  content: var(--fb-rt-placeholder);
+  color: var(--vcl-color-text-muted, #94a3b8);
+}
+
+/* 编辑区内容样式（innerHTML 注入的节点无 scoped 标记，须 :deep 下钻） */
+.fb-richtext-body :deep(h1),
+.fb-richtext-preview :deep(h1) {
+  font-size: 1.6em;
+  font-weight: 600;
+  margin: 0.5em 0 0.35em;
+}
+.fb-richtext-body :deep(h2),
+.fb-richtext-preview :deep(h2) {
+  font-size: 1.4em;
+  font-weight: 600;
+  margin: 0.5em 0 0.35em;
+}
+.fb-richtext-body :deep(h3),
+.fb-richtext-preview :deep(h3) {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 0.5em 0 0.35em;
+}
+.fb-richtext-body :deep(h4),
+.fb-richtext-preview :deep(h4) {
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 0.5em 0 0.3em;
+}
+.fb-richtext-body :deep(blockquote),
+.fb-richtext-preview :deep(blockquote) {
+  border-left: 3px solid var(--vcl-color-border, #e2e8f0);
+  margin: calc(8px * var(--vcl-scale)) 0;
+  padding: 2px calc(12px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted, #64748b);
+}
+.fb-richtext-body :deep(pre),
+.fb-richtext-preview :deep(pre) {
+  background: var(--vcl-color-bg-soft, #f1f5f9);
+  border-radius: calc(4px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  overflow-x: auto;
+  font-family: var(--fb-rt-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  font-size: var(--vcl-fs-12);
+  margin: calc(8px * var(--vcl-scale)) 0;
+}
+.fb-richtext-body :deep(code),
+.fb-richtext-preview :deep(code) {
+  font-family: var(--fb-rt-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  background: var(--vcl-color-bg-soft, #f1f5f9);
+  border-radius: calc(3px * var(--vcl-scale));
+  padding: 1px calc(5px * var(--vcl-scale));
+  font-size: 0.92em;
+}
+.fb-richtext-body :deep(pre code),
+.fb-richtext-preview :deep(pre code) {
+  background: transparent;
+  padding: 0;
+}
+.fb-richtext-body :deep(hr),
+.fb-richtext-preview :deep(hr) {
+  border: none;
+  border-top: 1px solid var(--vcl-color-border, #e2e8f0);
+  margin: calc(14px * var(--vcl-scale)) 0;
+}
+.fb-richtext-body :deep(img),
+.fb-richtext-preview :deep(img) {
+  max-width: 100%;
+  border-radius: calc(4px * var(--vcl-scale));
+}
+.fb-richtext-body :deep(table),
+.fb-richtext-preview :deep(table) {
+  border-collapse: collapse;
+  margin: calc(8px * var(--vcl-scale)) 0;
+}
+.fb-richtext-body :deep(th),
+.fb-richtext-body :deep(td),
+.fb-richtext-preview :deep(th),
+.fb-richtext-preview :deep(td) {
+  border: 1px solid var(--vcl-color-border, #e2e8f0);
+  padding: calc(4px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
+  min-width: calc(32px * var(--vcl-scale));
+}
+.fb-richtext-body :deep(a),
+.fb-richtext-preview :deep(a) {
+  color: var(--vcl-color-primary, #4f46e5);
+}
+.fb-richtext-body :deep(ul),
+.fb-richtext-body :deep(ol),
+.fb-richtext-preview :deep(ul),
+.fb-richtext-preview :deep(ol) {
+  padding-left: 1.4em;
+}
+
+/* ── 字数状态条 ── */
+.fb-rt-status {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2px calc(8px * var(--vcl-scale));
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-muted, #94a3b8);
+  border-top: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  background: var(--vcl-color-bg-alt, #f8fafc);
+}
+.fb-rt-status--warn {
+  color: var(--vcl-color-warning, #d97706);
+}
+
+/* ── 全屏编辑：固定覆盖视口，正文限宽居中保阅读节奏 ── */
+.fb-richtext--fullscreen {
+  position: fixed;
+  inset: 0;
+  /* 层级走全库令牌：写死 1000 会被宿主更高层弹层（如 9999）盖住 */
+  z-index: var(--vcl-z-top, 9999);
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  background: var(--vcl-color-bg, #fff);
+  display: flex;
+  flex-direction: column;
+}
+.fb-richtext--fullscreen .fb-rt-toolbar-wrap {
+  flex-shrink: 0;
+}
+.fb-richtext--fullscreen .fb-richtext-body,
+.fb-richtext--fullscreen .fb-richtext-preview {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  width: 100%;
+  max-width: var(--fb-rt-fullscreen-width, calc(860px * var(--vcl-scale)));
+  margin: 0 auto;
+  padding: calc(24px * var(--vcl-scale)) calc(32px * var(--vcl-scale));
+  font-size: var(--vcl-fs-15);
+}
+.fb-richtext--fullscreen .fb-rt-status {
+  flex-shrink: 0;
+}
