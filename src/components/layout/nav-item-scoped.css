@@ -1,0 +1,142 @@
+/* ================================================================
+   共享基础：所有层级导航项通用
+   ================================================================ */
+.nav-level {
+  display: flex;
+  align-items: center;
+  border: none;
+  border-radius: var(--vcl-radius-md);
+  background: transparent;
+  color: var(--vcl-color-sidebar-text);
+  cursor: pointer;
+  transition:
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast),
+    opacity 120ms ease;
+  position: relative;
+  white-space: nowrap;
+  line-height: 1.5;
+  /* 间距：左右 margin 留白 + width 收窄，制造层次感 */
+  width: calc(100% - var(--nav-ml) - var(--nav-mr));
+  margin-left: var(--nav-ml);
+  margin-right: var(--nav-mr);
+  /* 上下 padding 提供呼吸感 */
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  /* 公式驱动：字号/透明度由 JS 计算 */
+  font-size: var(--nav-font-size);
+  opacity: var(--nav-opacity);
+  gap: var(--vcl-space-2);
+}
+
+/* 图标 */
+.nav-level > :deep(svg) {
+  flex-shrink: 0;
+  opacity: var(--nav-icon-opacity);
+}
+
+/* 文字溢出省略 */
+.nav-level-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ================================================================
+   分组标题（有子节点的项）
+   ================================================================ */
+.nav-level.is-group {
+  justify-content: space-between;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* ================================================================
+   L1 分组标题 — 独立样式
+   ================================================================ */
+.nav-l1 {
+  margin-top: var(--vcl-space-2);
+  margin-bottom: 2px;
+  border-radius: var(--vcl-radius-sm);
+  font-weight: 700;
+  color: #dde0e8;
+}
+.nav-l1:hover {
+  color: #fff;
+  background: transparent;
+}
+
+/* ================================================================
+   L2 叶子导航项 — 加粗
+   ================================================================ */
+.nav-l2:not(.is-group) {
+  font-weight: 600;
+}
+
+/* ================================================================
+   箭头
+   ================================================================ */
+.nav-arrow {
+  font-size: calc(13px * var(--vcl-scale));
+  transition: transform var(--vcl-transition-normal);
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+.nav-level.expanded .nav-arrow {
+  transform: rotate(180deg);
+}
+
+/* ================================================================
+   hover / active 状态
+   ================================================================ */
+.nav-level:hover {
+  background: var(--vcl-color-sidebar-hover);
+  color: #fff;
+  opacity: 1;
+}
+.nav-level:hover > :deep(svg) {
+  opacity: 1;
+}
+
+.nav-level.active {
+  background: var(--vcl-color-sidebar-active);
+  color: var(--vcl-color-sidebar-text-active);
+  font-weight: 500;
+  opacity: 1;
+}
+.nav-level.active > :deep(svg) {
+  opacity: 1;
+}
+
+/* 激活指示条 — L1 无，L2+ 有 */
+.nav-level.active::before {
+  content: '';
+  position: absolute;
+  left: calc(4px * var(--vcl-scale));
+  top: calc(4px * var(--vcl-scale));
+  bottom: calc(4px * var(--vcl-scale));
+  width: 2px;
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-primary);
+}
+.nav-l1.active::before {
+  display: none;
+}
+
+/* ================================================================
+   折叠态
+   ================================================================ */
+.collapsed .nav-level {
+  justify-content: center;
+  width: calc(100% - var(--vcl-space-2) * 2);
+  margin: 0 var(--vcl-space-2);
+  padding: var(--vcl-space-2) 0;
+}
+.collapsed .nav-level.active::before {
+  left: calc(4px * var(--vcl-scale));
+  top: calc(3px * var(--vcl-scale));
+  bottom: calc(3px * var(--vcl-scale));
+  width: 1.5px;
+}
