@@ -1,0 +1,138 @@
+.toggle-list {
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  background: var(--vcl-color-surface);
+  overflow: hidden;
+}
+
+.list-state {
+  padding: calc(40px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+  font-size: calc(15px * var(--vcl-scale));
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: calc(12px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
+  border-bottom: 1px solid var(--vcl-color-border-light);
+  cursor: pointer;
+  transition: background var(--vcl-transition-fast);
+}
+.list-item:last-child {
+  border-bottom: none;
+}
+.list-item:hover {
+  background: var(--vcl-color-bg-alt);
+}
+
+.item-icon {
+  width: calc(38px * var(--vcl-scale));
+  height: calc(38px * var(--vcl-scale));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--vcl-color-bg-alt);
+  border-radius: var(--vcl-radius-md);
+  color: var(--vcl-color-text-secondary);
+}
+.item-content {
+  flex: 1;
+  min-width: 0;
+}
+.item-title {
+  font-size: calc(15px * var(--vcl-scale));
+  font-weight: 500;
+}
+.item-desc {
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+  margin-top: var(--vcl-space-1);
+}
+
+.item-extras {
+  display: flex;
+  gap: calc(16px * var(--vcl-scale));
+}
+.item-extra {
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text-muted);
+}
+
+/* 开关 */
+.item-toggle {
+  display: flex;
+  flex-shrink: 0;
+}
+/* 视觉隐藏但保留可聚焦（display:none 会退出 Tab 序，键盘用户无法切换开关） */
+.toggle-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.toggle-input:focus-visible + .toggle-switch {
+  outline: 2px solid var(--vcl-color-primary);
+  outline-offset: 2px;
+}
+.toggle-switch {
+  width: calc(46px * var(--vcl-scale));
+  height: calc(26px * var(--vcl-scale));
+  background: var(--vcl-color-border);
+  border-radius: var(--vcl-radius-lg);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--vcl-transition-fast);
+}
+.toggle-switch.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(22px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
+  background: white;
+  border-radius: 50%;
+  transition: transform var(--vcl-transition-fast);
+  box-shadow: var(--vcl-shadow-sm);
+}
+.toggle-input:checked + .toggle-switch {
+  background: var(--vcl-color-primary-solid);
+}
+.toggle-input:checked + .toggle-switch::after {
+  transform: translateX(20px);
+}
+
+/* 操作按钮 */
+.item-action-btn {
+  flex-shrink: 0;
+  padding: var(--vcl-space-1) calc(14px * var(--vcl-scale));
+  font-size: calc(15px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-primary-solid);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-primary);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity var(--vcl-transition-fast);
+  white-space: nowrap;
+}
+.item-action-btn:hover {
+  /* 2026-10-01：原 opacity 0.85 会把实心底+白字整体压淡（对比 4.28→跌破），改深一档底色 */
+  background: var(--vcl-color-primary-solid-hover);
+  border-color: var(--vcl-color-primary-solid-hover);
+}
+.item-action-btn:disabled {
+  opacity: var(--vcl-disabled-opacity);
+  cursor: not-allowed;
+}
