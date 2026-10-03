@@ -38,9 +38,9 @@ const ALLOWED: { file: string; selector: string; reason: string }[] = [
     reason: '复选框白色勾线画在 --vcl-color-primary 蓝底之上，与主题无关（Tree 样式已外置 tree-scoped.css）',
   },
   {
-    file: 'CameraCapture.vue',
+    file: 'camera-capture-scoped.css',
     selector: 'camc-shutter',
-    reason: '相机快门白圈：相机界面恒为深色取景底，白色是正确表达',
+    reason: '相机快门白圈：相机界面恒为深色取景底，白色是正确表达（样式已外置 camera-capture-scoped.css）',
   },
   {
     file: 'ImagePreview.vue',
