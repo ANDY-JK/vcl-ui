@@ -101,6 +101,24 @@ const stats = [
       </Card>
     </div>
 
+    <h2 class="demo-h2" style="margin-top: calc(24px * var(--vcl-scale))">
+      折角丝带（corner）— 右上角 45° 折角标，装饰性三角
+    </h2>
+    <div class="grid-2-col">
+      <Card title="新款上线" corner="NEW">
+        <p style="color: var(--vcl-color-text-secondary)">corner=&quot;NEW&quot;（默认主色）。</p>
+      </Card>
+      <Card title="热卖商品" corner="热" corner-color="danger">
+        <p style="color: var(--vcl-color-text-secondary)">corner-color=&quot;danger&quot;。</p>
+      </Card>
+      <Card title="限时优惠" corner="荐" corner-color="warning">
+        <p style="color: var(--vcl-color-text-secondary)">corner-color=&quot;warning&quot;。</p>
+      </Card>
+      <Card title="已通过" corner="过" corner-color="success">
+        <p style="color: var(--vcl-color-text-secondary)">corner-color=&quot;success&quot;。</p>
+      </Card>
+    </div>
+
     <Card title="Props" title-as="h2" style="margin-top: calc(24px * var(--vcl-scale))">
       <table style="width: 100%; font-size: calc(13px * var(--vcl-scale)); border-collapse: collapse">
         <tbody>

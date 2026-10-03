@@ -25,6 +25,11 @@ interface GridProps {
   /** 卡片头部标题左侧的状态竖条颜色（accent bar）。不传 = 无竖条。
    *  常用于列表/看板里按状态给卡片分类着色（2026-10-04 用户需求）。 */
   accent?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
+  /** 右上角折角丝带文案（如「NEW」「热」「推荐」）。传入即渲染，空 = 无丝带。
+   *  折角形态（45° 斜贴丝带）属装饰性几何三角；语义三角（排序/涨跌/警告）请用 IconSvg。 */
+  corner?: string
+  /** 折角丝带底色（语义色，默认 primary） */
+  cornerColor?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
 }
 /* ====== stat 模式 Props ====== */
 interface StatProps {
@@ -128,6 +133,7 @@ const iconBg = computed(() =>
       [`grid-card--accent-${accent}`]: accent,
     }"
   >
+    <span v-if="corner" class="grid-corner" :class="cornerColor && `grid-corner--${cornerColor}`">{{ corner }}</span>
     <div v-if="title || $slots.header" class="grid-header">
       <component :is="titleAs" v-if="title" class="grid-title">
         {{ title }}

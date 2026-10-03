@@ -50,6 +50,7 @@
 
 /* ===== grid ===== */
 .grid-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--vcl-color-surface);
@@ -131,4 +132,35 @@
   padding: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
   border-top: 1px solid var(--vcl-color-border-light);
   background: var(--vcl-color-bg-alt);
+}
+/* 右上角折角丝带（corner ribbon，2026-10-04 用户需求）：丝带中心锚定卡片右上角顶点
+   （translate 50%/-50% 后 rotate 45°），两端超出被卡片 overflow:hidden 裁切成标准折角，
+   文本宽度变化不影响位置。属装饰性几何三角；语义三角请用 IconSvg。 */
+.grid-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  transform: translate(32%, -32%) rotate(45deg);
+  padding: calc(4px * var(--vcl-scale)) calc(30px * var(--vcl-scale));
+  font-size: calc(11px * var(--vcl-scale));
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+  color: var(--vcl-color-surface);
+  background: var(--vcl-color-primary);
+  box-shadow: 0 calc(2px * var(--vcl-scale)) calc(6px * var(--vcl-scale)) rgb(0 0 0 / 0.18);
+  pointer-events: none;
+}
+.grid-corner--success {
+  background: var(--vcl-color-success);
+}
+.grid-corner--warning {
+  background: var(--vcl-color-warning);
+}
+.grid-corner--danger {
+  background: var(--vcl-color-danger);
+}
+.grid-corner--info {
+  background: var(--vcl-color-info);
 }
