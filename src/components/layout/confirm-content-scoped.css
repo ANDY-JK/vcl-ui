@@ -1,0 +1,103 @@
+/* 消息体 */
+.confirm-body {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vcl-space-3);
+  margin: var(--vcl-space-1) 0 0;
+  padding: var(--vcl-space-4) calc(16px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-md);
+  border-left: 4px solid;
+}
+.confirm-msg {
+  margin: 0;
+  line-height: 1.7;
+  font-size: calc(15px * var(--vcl-scale));
+  color: var(--vcl-color-text);
+  flex: 1;
+}
+
+/* 底部按钮（自身带顶部分隔线与内边距，宿主把它放进 modal-body 即复刻原 .modal-footer 外观） */
+.confirm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--vcl-space-3);
+  width: 100%;
+  margin-top: var(--vcl-space-3);
+  padding: calc(16px * var(--vcl-scale)) 0 0;
+  border-top: 1px solid var(--vcl-color-border-light);
+}
+.confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-2) calc(22px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-md);
+  border: 1px solid var(--vcl-color-border);
+  font-size: calc(15px * var(--vcl-scale));
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--vcl-color-bg);
+  color: var(--vcl-color-text);
+}
+.confirm-btn:hover {
+  filter: brightness(0.95);
+}
+.confirm-btn:active {
+  transform: scale(0.97);
+}
+.confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* loading 旋转图标 */
+.confirm-loading-icon {
+  animation: confirm-spin 1s linear infinite;
+}
+@keyframes confirm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 取消 */
+.confirm-btn.cancel {
+  border-color: var(--vcl-color-border);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
+}
+.confirm-btn.cancel:hover {
+  background: var(--vcl-color-bg-alt);
+}
+
+/* danger —— 实心底压白字，用 --vcl-color-danger-solid（暗色下 --vcl-color-danger 被提亮，
+   压白字对比度仅 2.77 不达标）；本条优先级高于 Button 的 .btn-danger，必须同步 */
+.confirm-btn.btn-danger {
+  border-color: var(--vcl-color-danger-border);
+  background: var(--vcl-color-danger-solid, var(--vcl-color-danger));
+  color: #fff;
+}
+.confirm-btn.btn-danger:hover {
+  background: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
+}
+
+/* warning —— 同上，实心底压白字用 solid 令牌 */
+.confirm-btn.btn-warning {
+  border-color: var(--vcl-color-warning-border);
+  background: var(--vcl-color-warning-solid, var(--vcl-color-warning));
+  color: #fff;
+}
+.confirm-btn.btn-warning:hover {
+  background: var(--vcl-color-warning-solid-hover, var(--vcl-color-warning-text));
+}
+
+/* primary */
+.confirm-btn.btn-primary {
+  border-color: var(--vcl-color-info-border);
+  background: var(--vcl-color-primary);
+  color: #fff;
+}
+.confirm-btn.btn-primary:hover {
+  background: var(--vcl-color-primary-hover);
+}
