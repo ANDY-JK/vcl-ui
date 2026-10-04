@@ -237,9 +237,10 @@
   background: var(--vcl-color-info-solid);
 }
 
-/* pill：透明浅底胶囊，盒右上角贴锚点（锚点已内贴 8px），悬浮不遮挡 */
+/* pill：透明浅底胶囊，盒「对应角」贴锚点（锚点已内贴 8px），悬浮不遮挡。
+   基准规则只管外观；定位按角定——盒顶左上角贴 top-left 锚、盒顶右上角贴 top-right 锚，
+   统一 right:0/top:0 会让非 top-right 角位的胶囊伸到卡外（top-left 实测越界 39px 被裁切）。 */
 .grid-corner--pill .grid-corner-mark {
-  right: 0;
   top: 0;
   padding: calc(2px * var(--vcl-scale)) calc(9px * var(--vcl-scale));
   font-size: calc(11px * var(--vcl-scale));
@@ -248,6 +249,22 @@
   border-radius: 999px;
   background: var(--vcl-color-primary-bg);
   color: var(--vcl-color-primary-on-surface);
+}
+.grid-corner--pill.grid-corner--top-left .grid-corner-mark {
+  left: 0;
+}
+.grid-corner--pill.grid-corner--top-right .grid-corner-mark {
+  right: 0;
+}
+.grid-corner--pill.grid-corner--bottom-left .grid-corner-mark {
+  left: 0;
+  top: auto;
+  bottom: 0;
+}
+.grid-corner--pill.grid-corner--bottom-right .grid-corner-mark {
+  right: 0;
+  top: auto;
+  bottom: 0;
 }
 .grid-corner--pill.grid-corner--success .grid-corner-mark {
   background: var(--vcl-color-success-bg);
