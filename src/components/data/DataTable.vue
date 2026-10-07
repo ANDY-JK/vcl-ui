@@ -33,7 +33,7 @@ import DataTableBatchDialog from './DataTableBatchDialog.vue'
 import DataTablePagination from './DataTablePagination.vue'
 import DataTableToolbar from './DataTableToolbar.vue'
 import { provideDataTableContext, type ColumnSettingsPanelExpose, type BatchDialogExpose } from './composables/context'
-import type { Column, Emits, RowAction, RowContextAction, TableStorage } from './composables/types'
+import type { Column, Emits, RowAction, RowContextAction, RowLineColor, TableStorage } from './composables/types'
 import type { DateOrder } from './composables/cell-input'
 import type { FillDirection } from './composables/fill-series'
 import { useTableCore } from './composables/useTableCore'
@@ -204,6 +204,13 @@ const props = withDefaults(
     cellClass?: (colKey: string, row: T, index: number) => string
     /** 单元格内联样式回调：(colKey, row, index) => 样式对象 */
     cellStyle?: (colKey: string, row: T, index: number) => Record<string, string>
+    /** 行级左边线回调：(row, index) => 语义色名，该行最左缘画对应颜色竖线；返回 undefined 不显示。
+     *  与 rowLineKey 并存时本回调优先（设置了即接管整行判定，返回 undefined 也不会回落到字段映射） */
+    rowLine?: (row: T, index: number) => RowLineColor | undefined
+    /** 行线字段名：取行数据该字段值查 lineColors 映射，命中语义色名才画线（rowLine 未设置时生效） */
+    rowLineKey?: string
+    /** 行线字段值 → 语义色名映射（配合 rowLineKey） */
+    lineColors?: Record<string, RowLineColor>
     // ────────────────────────────── 截图 ──────────────────────────────
     /** 截图行为模式：'preview' 弹窗预览 | 'download' 直接下载 | 'copy' 直接复制到剪贴板 */
     shotMode?: 'preview' | 'download' | 'copy'
@@ -254,6 +261,8 @@ const props = withDefaults(
     modifiedMark: false,
     shotMode: 'preview' as 'preview' | 'download' | 'copy',
     screenshotMaxRows: 400,
+    rowLineKey: '',
+    lineColors: () => ({}),
   },
 )
 
@@ -268,6 +277,20 @@ const _cellClass = (colKey: string, row: Record<string, any>, idx: number) =>
   props.cellClass?.(colKey, row as T, idx) ?? ''
 const _cellStyle = (colKey: string, row: Record<string, any>, idx: number) =>
   props.cellStyle?.(colKey, row as T, idx) ?? {}
+
+/** 行级左边线：rowLine 回调优先，未设置回调时走 rowLineKey+lineColors 字段映射；
+ *  无命中返回空串（不渲染线）。非法色名照原样返回——CSS 类不命中即无线，天然兜底。
+ *  参数收 object（v-for 行与泛型 T 的公共可赋值面），回调面在内部断言回 T */
+const _rowLineClass = (row: object, idx: number): string => {
+  let color: RowLineColor | undefined
+  if (props.rowLine) {
+    color = props.rowLine(row as T, idx) ?? undefined
+  } else if (props.rowLineKey) {
+    const v = (row as Record<string, unknown>)[props.rowLineKey]
+    color = v == null ? undefined : props.lineColors[String(v)]
+  }
+  return color ? `row-line row-line-${color}` : ''
+}
 
 // ── 命名事件处理器（替代多行内联表达式，兼容测试环境解析） ──
 
@@ -2106,6 +2129,7 @@ provideDataTableContext({
                     'row-clicked': _clickedRowKeys.has(rowMetaMap.get(row)?.key ?? ''),
                   },
                   _rowClass(row, rowDisplayIndex(idx)) ?? '',
+                  _rowLineClass(row, rowDisplayIndex(idx)),
                 ]"
                 :style="[
                   isVirtual ? { height: _effectiveRowHeight + 'px' } : {},

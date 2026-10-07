@@ -638,6 +638,39 @@ td.cell-has-note {
   box-shadow: inset 4px 0 0 0 var(--vcl-color-primary);
 }
 
+/* ==================== 行级左边线（rowLine / rowLineKey+lineColors） ==================== */
+/* 线画在每行最左单元格的伪元素上，而非 tr 的 inset box-shadow：固定左列是 sticky + 不透明底，
+   tr 层的阴影会被盖住；伪元素画在单元格内部两种场景通吃，悬浮/条纹/选中行换底色也不遮线。
+   非 sticky 的首单元格补 position:relative 提供定位上下文（:not 排除固定列，
+   sticky 本身就是定位上下文，写成 relative 反而会顶掉 sticky） */
+.data-table tbody tr.row-line td:first-child:not(.col-fixed-left) {
+  position: relative;
+}
+.data-table tbody tr.row-line td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(3px * var(--vcl-scale));
+  /* 背景色由色名类给出：色名类不命中（非法名）时透明 = 无线，天然兜底 */
+}
+.data-table tbody tr.row-line-primary td:first-child::before {
+  background: var(--vcl-color-primary);
+}
+.data-table tbody tr.row-line-success td:first-child::before {
+  background: var(--vcl-color-success);
+}
+.data-table tbody tr.row-line-warning td:first-child::before {
+  background: var(--vcl-color-warning);
+}
+.data-table tbody tr.row-line-danger td:first-child::before {
+  background: var(--vcl-color-danger);
+}
+.data-table tbody tr.row-line-info td:first-child::before {
+  background: var(--vcl-color-info);
+}
+
 /* 选择框列 */
 .th-checkbox,
 .td-checkbox {

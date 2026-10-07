@@ -121,6 +121,10 @@
   /* primary 实心底：#4f6ef7 压白字仅 4.28（未达标），故实心场景用更深的蓝 */
   --vcl-color-primary-solid: #3b56e0;
   --vcl-color-primary-solid-hover: #2f4bd8;
+  /* info 实心底：基色与 primary 同为 #4f6ef7，深化取 info-text 同款深蓝 #1d4ed8
+     （白字对比达标，且与 primary-solid 区分）。card-scoped 角标 info 变体依赖此令牌 */
+  --vcl-color-info-solid: #1d4ed8;
+  --vcl-color-info-solid-hover: #1e40af;
   --vcl-color-danger-bg: #fef2f2;
   --vcl-color-danger-hover: #c81e1e; /* AA：原 #dc2626 压 danger-bg 实测 4.41，加深一档达标 */
   /* 危险色「当文字/图标色用」的自适应取值——与 --vcl-color-primary-on-surface 同规则。
@@ -387,6 +391,8 @@
   --vcl-color-success-solid-hover: #166534;
   --vcl-color-primary-solid: #3b56e0;
   --vcl-color-primary-solid-hover: #2f4bd8;
+  --vcl-color-info-solid: #1d4ed8;
+  --vcl-color-info-solid-hover: #1e40af;
   --vcl-color-success-rgb: 52, 211, 153;
   --vcl-color-warning-rgb: 251, 191, 36;
   --vcl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
@@ -474,6 +480,8 @@
     --vcl-color-success-solid-hover: #166534;
     --vcl-color-primary-solid: #3b56e0;
     --vcl-color-primary-solid-hover: #2f4bd8;
+    --vcl-color-info-solid: #1d4ed8;
+    --vcl-color-info-solid-hover: #1e40af;
     --vcl-color-success-rgb: 52, 211, 153;
     --vcl-color-warning-rgb: 251, 191, 36;
     --vcl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);

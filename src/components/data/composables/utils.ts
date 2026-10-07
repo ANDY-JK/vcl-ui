@@ -165,15 +165,32 @@ export function isLayerFresh(ms = 200): boolean {
 
 // ==================== 列宽测量 ====================
 
-/** 采样测量某列的内容宽度（多行取最宽行），返回最大宽和平均宽 */
-export function measureColumnWidth(col: Column, sample: Record<string, any>[]): { maxW: number } {
+/** 采样测量某列的内容宽度（多行取最宽行），返回最大宽与 allImage 标记。
+ *  imageDomains：透传 props.imageDomains 给 isImageUrl，测量判图口径与单元格渲染完全一致——
+ *  图片值渲染为 imageSize 缩略图而非文本，量 data-URI 字符串会得出天文数字
+ *  （曾把头像列量到 2212px，整表 2907px 全被一列吞掉，连带横向滚动后拖拽手感错乱）。
+ *  allImage：采样内非空值全为图片（空串不算破坏）——纯图列不参与剩余宽摊派（钉在内容宽，
+ *  缩略图列被摊平会大片留白），富余让给文字列 */
+export function measureColumnWidth(
+  col: Column,
+  sample: Record<string, any>[],
+  imageDomains?: string[],
+): { maxW: number; allImage: boolean } {
   let maxW = 0
+  let sawImage = false
+  let sawNonImage = false
   for (const row of sample) {
     const raw = getCellText(row[col.key], col, row, 0)
+    if (isImageUrl(raw, imageDomains)) {
+      sawImage = true
+      maxW = Math.max(maxW, (col.imageSize ?? 40) + 20) // 缩略图宽 + 单元格左右 padding
+      continue
+    }
+    if (raw.trim() !== '') sawNonImage = true
     const lineW = Math.max(...raw.split('\n').map((l) => measureTextWidth(l, 14)), 0)
     if (lineW > maxW) maxW = lineW
   }
-  return { maxW }
+  return { maxW, allImage: sawImage && !sawNonImage }
 }
 
 // ==================== 文件/DOM 工具 ====================

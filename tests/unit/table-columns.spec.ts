@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { ref, computed, nextTick, reactive } from 'vue'
 import { useTableColumns } from '@/components/data/composables/useTableColumns'
+import { measureColumnWidth } from '@/components/data/composables/utils'
 import type { Column } from '@/components/data/composables/types'
 
 const cols: Column[] = [
@@ -356,5 +357,253 @@ describe('useTableColumns 双击单列自适应与卡片视图', () => {
     api.onWindowResizeCard()
     expect(api._windowWidth.value).toBe(window.innerWidth)
     await settleAutoFit() // 双 RAF 收敛
+  })
+})
+
+// ==================== measureColumnWidth 图片值 ====================
+// 回归：autoFit 曾把头像列的 data-URI 字符串当文本量宽，量出 2212px（整表 2907px 被一列吞掉）
+describe('measureColumnWidth 图片值', () => {
+  it('data URI 图按 imageSize+20 计宽，不量字符串', () => {
+    const col: Column = { key: 'avatar', title: '头像', imageSize: 44 }
+    const { maxW } = measureColumnWidth(col, [{ avatar: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"></svg>' }])
+    expect(maxW).toBe(64)
+  })
+
+  it('http(s) 图片扩展名 URL 同样按缩略图计宽', () => {
+    const col: Column = { key: 'avatar', title: '头像' }
+    const { maxW } = measureColumnWidth(col, [{ avatar: 'https://cdn.example.com/photo.png' }])
+    expect(maxW).toBe(60) // 默认 imageSize 40 + 20
+  })
+
+  it('图文混排列取两者较宽者', () => {
+    const col: Column = { key: 'cell', title: '混合', imageSize: 40 }
+    const { maxW } = measureColumnWidth(col, [{ cell: 'data:image/png;base64,AAAA' }, { cell: '一个挺长的文本内容需要更宽的列来容纳才行' }])
+    expect(maxW).toBeGreaterThan(60) // 文本行比 60 宽 → 取文本宽
+  })
+
+  it('纯文本列行为不变（长串照样量出大宽度）', () => {
+    const col: Column = { key: 'txt', title: '文本' }
+    const { maxW } = measureColumnWidth(col, [{ txt: 'x'.repeat(300) }])
+    expect(maxW).toBeGreaterThan(300)
+  })
+})
+
+// ==================== 判图口径与单元格渲染统一（imageDomains 透传） ====================
+describe('measureColumnWidth · imageDomains 口径', () => {
+  const whitelistUrl = { v: 'https://internal.invalid/media/abc123' }
+
+  it('无白名单：白名单型路径按文本量宽（与单元格渲染一致，渲染层也不判图）', () => {
+    const { maxW } = measureColumnWidth({ key: 'v', title: '值' } as Column, [whitelistUrl])
+    expect(maxW).toBeGreaterThan(300) // 37 字符 × 14px 估算
+  })
+
+  it('传白名单：同一路径按缩略图计宽（imageSize 40 + 20）', () => {
+    const { maxW } = measureColumnWidth({ key: 'v', title: '值' } as Column, [whitelistUrl], ['internal.invalid'])
+    expect(maxW).toBe(60)
+  })
+
+  it('autoFitColumn 透传 props.imageDomains：图片列按 maxW+20 直写而非文本宽', () => {
+    const props = {
+      columns: [{ key: 'v', title: '值' }] as Column[],
+      autoFit: true,
+      selectable: false,
+      cardBreakpoint: 0,
+      bordered: false,
+      imageDomains: ['internal.invalid'],
+    }
+    const data = ref([whitelistUrl])
+    const api = useTableColumns(
+      props as never,
+      { value: null } as never,
+      computed(() => data.value) as never,
+    )
+    api.autoFitColumn({ key: 'v', title: '值' })
+    const w = api.columnWidths.value['v'] as number
+    expect(w).toBeLessThan(120) // 缩略图口径 40+20+20；文本口径会到 500+
+  })
+})
+
+// ==================== 剩余宽分配 · 纯图列不摊派 ====================
+// 回归：图片列虽按缩略图计宽，但仍按 ideal 占比分到大量富余（卡7 头像列 213px / 卡24 625px），
+// 策略改为纯图列钉内容宽、富余全给文字列
+describe('applyAutoFit 剩余宽分配 · 纯图列不摊派', () => {
+  function makeWrap(width: number) {
+    const el = document.createElement('div')
+    el.getBoundingClientRect = () =>
+      ({ width, height: 400, x: 0, y: 0, top: 0, left: 0, right: width, bottom: 400, toJSON: () => ({}) }) as DOMRect
+    return ref(el)
+  }
+
+  it('纯图列钉在内容宽，富余全给文字列', async () => {
+    const cols: Column[] = [
+      { key: 'img', title: '图', imageSize: 40 },
+      { key: 'txt', title: '文本内容' },
+    ]
+    const data = ref([{ img: 'data:image/png;base64,AAAA', txt: 'ab' }])
+    const props = { columns: cols, autoFit: true, selectable: false, cardBreakpoint: 0, bordered: false }
+    const api = useTableColumns(
+      props as never,
+      makeWrap(1000) as never,
+      computed(() => data.value) as never,
+    )
+    api.applyAutoFit() // 触发点在组件挂载层，单测里显式调
+    await settleAutoFit()
+    const wImg = api.columnWidths.value['img'] as number
+    const wTxt = api.columnWidths.value['txt'] as number
+    expect(wImg, '纯图列钉在内容宽（旧策略会摊到 ~590）').toBeLessThan(120)
+    expect(wTxt, '文字列吸收几乎全部富余').toBeGreaterThan(600)
+    expect(wImg + wTxt, '两列仍填满容器（usableW=1000-2-8=990）').toBeGreaterThanOrEqual(985)
+  })
+
+  it('图文混排列照常参与摊派（allImage=false）', async () => {
+    const cols: Column[] = [
+      { key: 'mix', title: '混合', imageSize: 40 },
+      { key: 'txt', title: '文本内容' },
+    ]
+    const data = ref([
+      { mix: 'data:image/png;base64,AAAA', txt: 'ab' },
+      { mix: '一段普通文字', txt: 'cd' },
+    ])
+    const props = { columns: cols, autoFit: true, selectable: false, cardBreakpoint: 0, bordered: false }
+    const api = useTableColumns(
+      props as never,
+      makeWrap(1000) as never,
+      computed(() => data.value) as never,
+    )
+    api.applyAutoFit()
+    await settleAutoFit()
+    const wMix = api.columnWidths.value['mix'] as number
+    expect(wMix, '混排列分到的富余应远多于钉住的纯图列').toBeGreaterThan(120)
+  })
+})
+
+// ==================== 全局列宽下限 60 · 拖拽/双击与压缩口径统一 ====================
+// 回归：拖拽与双击自适应此前没有 60 下限（只有逐列表头最小宽），关排序筛选 + 短标题的列
+// 能被拖到 35px / 写到 21px，与 autoFit 压缩保底（max(hMin, 40%, 60)）口径分裂
+describe('全局列宽下限 60 · 口径统一', () => {
+  /** sortable/filterable 全关 + 1 字标题 → 表头最小宽仅 21（happy-dom 估算），低于全局 60 */
+  function makeTightApi() {
+    const tightCols: Column[] = [{ key: 'n', title: '窄', sortable: false, filterable: false }]
+    const { api } = makeApi({ columns: tightCols })
+    return api
+  }
+
+  function dragTo(api: ReturnType<typeof useTableColumns>, from: number, to: number) {
+    const th = document.createElement('th')
+    vi.spyOn(th, 'getBoundingClientRect').mockReturnValue({ width: 300 } as DOMRect)
+    const cell = document.createElement('span')
+    vi.spyOn(cell, 'closest').mockReturnValue(th)
+    const listeners: Record<string, unknown[]> = {}
+    vi.spyOn(document, 'addEventListener').mockImplementation((ev, fn) => {
+      listeners[ev] = listeners[ev] ?? []
+      listeners[ev].push(fn)
+      return document
+    })
+    vi.spyOn(document, 'removeEventListener').mockImplementation((ev, fn) => {
+      const arr = listeners[ev] ?? []
+      const i = arr.indexOf(fn)
+      if (i >= 0) arr.splice(i, 1)
+      return document
+    })
+    api.startResize({ key: 'n', title: '窄', sortable: false, filterable: false }, {
+      clientX: from,
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      target: cell,
+    } as unknown as MouseEvent)
+    ;(listeners.mousemove?.[0] as (e: { clientX: number }) => void)({ clientX: to })
+    ;(listeners.mouseup?.[0] as () => void)()
+    vi.restoreAllMocks()
+  }
+
+  it('拖拽：短标题列也钉在全局 60，不再随表头最小宽写到 21', () => {
+    const api = makeTightApi()
+    dragTo(api, 100, -900)
+    expect(api.columnWidths.value.n).toBe(60)
+  })
+
+  it('双击自适应：空内容短标题列写入 60 而非 21', () => {
+    const api = makeTightApi()
+    api.autoFitColumn({ key: 'n', title: '窄', sortable: false, filterable: false })
+    expect(api.columnWidths.value.n).toBe(60)
+  })
+})
+
+// ==================== 拖拽防摊还 · 收窄量分摊给其余列 ====================
+// 回归：table-layout:auto + width:100% 下，写入总宽小于容器时浏览器把差额等比摊回各列
+// （实测 JS 写 131px 被渲染成 156px），拖窄被弹回 = 「拖拽不利索」根源。
+// 对策：收窄量 δ 按占比分摊给其余列，写入总宽恒等。
+describe('拖拽防摊还 · 收窄量分摊', () => {
+  function makeFitWrap(width: number, overflow = false) {
+    const el = document.createElement('div')
+    el.getBoundingClientRect = () =>
+      ({ width, height: 400, x: 0, y: 0, top: 0, left: 0, right: width, bottom: 400, toJSON: () => ({}) }) as DOMRect
+    const scroller = document.createElement('div')
+    scroller.className = 'table-scroll'
+    Object.defineProperty(scroller, 'scrollWidth', { configurable: true, value: overflow ? width + 300 : width })
+    Object.defineProperty(scroller, 'clientWidth', { configurable: true, value: width })
+    el.appendChild(scroller)
+    return ref(el)
+  }
+
+  function dragCol(
+    api: ReturnType<typeof useTableColumns>,
+    col: Column,
+    startW: number,
+    from: number,
+    to: number,
+  ) {
+    const th = document.createElement('th')
+    vi.spyOn(th, 'getBoundingClientRect').mockReturnValue({ width: startW } as DOMRect)
+    const cell = document.createElement('span')
+    vi.spyOn(cell, 'closest').mockReturnValue(th)
+    const listeners: Record<string, unknown[]> = {}
+    vi.spyOn(document, 'addEventListener').mockImplementation((ev, fn) => {
+      listeners[ev] = listeners[ev] ?? []
+      listeners[ev].push(fn)
+      return document
+    })
+    vi.spyOn(document, 'removeEventListener').mockImplementation((ev, fn) => {
+      const arr = listeners[ev] ?? []
+      const i = arr.indexOf(fn)
+      if (i >= 0) arr.splice(i, 1)
+      return document
+    })
+    api.startResize(col, { clientX: from, preventDefault: vi.fn(), stopPropagation: vi.fn(), target: cell } as unknown as MouseEvent)
+    ;(listeners.mousemove?.[0] as (e: { clientX: number }) => void)({ clientX: to })
+    ;(listeners.mouseup?.[0] as () => void)()
+    vi.restoreAllMocks()
+  }
+
+  const twoCols: Column[] = [
+    { key: 'a', title: '甲', sortable: false, filterable: false },
+    { key: 'b', title: '乙', sortable: false, filterable: false },
+  ]
+
+  it('容器装得下时收窄 100：δ 全部给邻列，写入总宽恒等', () => {
+    const props = { columns: twoCols, autoFit: true, selectable: false, cardBreakpoint: 0, bordered: false }
+    const api = useTableColumns(
+      props as never,
+      makeFitWrap(1000) as never,
+      computed(() => [{ a: 'x', b: 'y' }]) as never,
+    )
+    api.columnWidths.value = { a: 500, b: 500 }
+    dragCol(api, twoCols[1], 500, 1000, 900) // 乙收窄 100
+    expect(api.columnWidths.value.b).toBe(400)
+    expect(api.columnWidths.value.a).toBe(600)
+    expect(api.columnWidths.value.a + api.columnWidths.value.b).toBe(1000)
+  })
+
+  it('溢出态不介入：已横向滚动时收窄保持 1:1（浏览器尊重写入宽）', () => {
+    const props = { columns: twoCols, autoFit: true, selectable: false, cardBreakpoint: 0, bordered: false }
+    const api = useTableColumns(
+      props as never,
+      makeFitWrap(1000, true) as never,
+      computed(() => [{ a: 'x', b: 'y' }]) as never,
+    )
+    api.columnWidths.value = { a: 600, b: 600 }
+    dragCol(api, twoCols[1], 600, 1200, 1100) // 乙收窄 100
+    expect(api.columnWidths.value.b).toBe(500)
+    expect(api.columnWidths.value.a).toBe(600) // 邻列不动
   })
 })

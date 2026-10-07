@@ -17,6 +17,10 @@ const SORT_ARROW_W = 24 // 排序箭头图标 16 + sort-arrows padding 左右各
 const FILTER_ICON_W = 24 // 筛选图标宽
 const ICON_GAP = 2 // 标题→图标间距（对齐 .th-inner gap）
 const FILTER_GAP = 0 // 图标间微间距
+/** 全局列宽下限：任何路径写入的列宽都不低于此值（表头最小宽是逐列动态底线，
+ *  这是兜底常数）——拖拽、双击自适应、autoFit 压缩、固定列偏移回退四处同口径，
+ *  修复前拖拽/双击缺 60 下限，短标题列（关排序筛选）能写到 35px，与压缩口径分裂 */
+const GLOBAL_MIN_COL_W = 60
 
 export function useTableColumns(
   props: {
@@ -25,6 +29,8 @@ export function useTableColumns(
     selectable?: boolean
     cardBreakpoint?: number
     bordered?: boolean
+    /** 判图白名单：透传给 measureColumnWidth，测量判图口径与单元格渲染一致 */
+    imageDomains?: string[]
   },
   tableWrapRef: Ref<HTMLElement | null>,
   displayData: ComputedRef<Record<string, any>[]>,
@@ -92,8 +98,8 @@ export function useTableColumns(
   function autoFitColumn(col: Column) {
     const sample = displayData.value.slice(0, 60)
     const hW = headerMinW(col)
-    const { maxW } = measureColumnWidth(col, sample)
-    columnWidths.value[col.key] = Math.ceil(Math.max(hW, maxW + 20))
+    const { maxW } = measureColumnWidth(col, sample, props.imageDomains)
+    columnWidths.value[col.key] = Math.ceil(Math.max(hW, maxW + 20, GLOBAL_MIN_COL_W))
     // 双击也是用户主动调整列宽，标记并触发持久化
     _userResizedCols.value.add(col.key)
     columnWidths.value = { ...columnWidths.value }
@@ -121,8 +127,29 @@ export function useTableColumns(
     const diff = e.clientX - resizing.value.startX
     const col = visibleColumns.value.find((c) => c.key === resizing.value!.colKey)
     // 复用 applyAutoFit 同一套动态底线
-    const floor = col ? headerMinW(col) : 60
-    columnWidths.value[resizing.value.colKey] = Math.max(floor, resizing.value.startW + diff)
+    const floor = col ? Math.max(headerMinW(col), GLOBAL_MIN_COL_W) : GLOBAL_MIN_COL_W
+    const target = Math.max(floor, resizing.value.startW + diff)
+    const delta = (columnWidths.value[resizing.value.colKey] ?? target) - target // 收窄为正
+    columnWidths.value[resizing.value.colKey] = target
+    // ★ 防浏览器摊还：table-layout:auto + width:100% 下，写入总宽小于容器宽时，
+    //   浏览器会把差额等比摊回各列填满容器 —— 拖窄被弹回、底线上下不齐（「拖拽不利索」根源）。
+    //   对策：收窄量 δ 按其余列宽占比分摊出去，写入总宽与拖前恒等，浏览器无差可还。
+    //   仅在表格当前无横向滚动时启用；溢出态浏览器尊重写入宽自然溢出，本就 1:1。
+    //   δ ≤ 0（拖宽）不介入：富余态浏览器只会整体放大，拖拽列仍跟手。
+    if (delta <= 0) return
+    const scroller = tableWrapRef.value?.querySelector('.table-scroll') as HTMLElement | null
+    if (!scroller || scroller.scrollWidth > scroller.clientWidth + 1) return
+    const others = visibleColumns.value.filter((c) => c.key !== resizing.value!.colKey)
+    if (others.length === 0) return
+    const baseW = others.map((c) => columnWidths.value[c.key] ?? Math.max(headerMinW(c), GLOBAL_MIN_COL_W))
+    const total = baseW.reduce((s, w) => s + w, 0)
+    let remain = delta
+    others.forEach((c, i) => {
+      // 最后一列兜剩余量，消掉按占比取整的误差
+      const give = i === others.length - 1 ? remain : Math.min(remain, Math.floor((delta * baseW[i]) / total))
+      if (give > 0) columnWidths.value[c.key] = baseW[i] + give
+      remain -= give
+    })
   }
 
   function onResizeEnd() {
@@ -168,7 +195,7 @@ export function useTableColumns(
       if (isColumnFixed(col) === 'left') {
         map[col.key] = offset
         // 与模板 th 宽度公式保持一致（有值 ≥30，无值回退表头最小宽），避免 autoFit=false 时固定列错位
-        offset += Math.max(columnWidths.value[col.key] || Math.max(headerMinW(col), 60), 30)
+        offset += Math.max(columnWidths.value[col.key] || Math.max(headerMinW(col), GLOBAL_MIN_COL_W), 30)
       }
     }
     return map
@@ -182,7 +209,7 @@ export function useTableColumns(
     for (const col of reversed) {
       if (isColumnFixed(col) === 'right') {
         map[col.key] = offset
-        offset += Math.max(columnWidths.value[col.key] || Math.max(headerMinW(col), 60), 30)
+        offset += Math.max(columnWidths.value[col.key] || Math.max(headerMinW(col), GLOBAL_MIN_COL_W), 30)
       }
     }
     return map
@@ -247,16 +274,17 @@ export function useTableColumns(
     const borderOverhead = (props.bordered ? cols.length + 4 : 0) + 8
     const usableW = containerW - borderOverhead - selectW - actionsW
 
-    const minW = 60
+    const minW = GLOBAL_MIN_COL_W
     const sampleN = 60
     const sample = displayData.value.slice(0, sampleN)
 
-    // 1. 计算每列理想宽 + 平均内容宽（用于压缩保底）
-    const ideal: number[] = cols.map((col) => {
+    // 1. 计算每列理想宽 + 平均内容宽（用于压缩保底）；allImage 标记纯图列（不参与剩余宽摊派）
+    const measured = cols.map((col) => {
       const hW = headerMinW(col)
-      const { maxW } = measureColumnWidth(col, sample)
-      return Math.ceil(Math.max(hW, maxW + 20))
+      const m = measureColumnWidth(col, sample, props.imageDomains)
+      return { ideal: Math.ceil(Math.max(hW, m.maxW + 20, GLOBAL_MIN_COL_W)), allImage: m.allImage }
     })
+    const ideal: number[] = measured.map((m) => m.ideal)
 
     const hMins = cols.map((col) => headerMinW(col))
     const totalHMin = hMins.reduce((s, w) => s + w, 0)
@@ -299,13 +327,18 @@ export function useTableColumns(
         columnWidths.value[cols[i].key] = hMins[i]
       }
     }
-    // 不溢出：多余空间按 ideal 占比分配，视觉均匀不集中
+    // 不溢出：多余空间按 ideal 占比分配，视觉均匀不集中。
+    // 纯图列不参与摊派（权重 0，钉在内容宽）——缩略图列被摊平会大片留白，富余让给文字列；
+    // 全部都是纯图列时回退按 ideal 占比（总得有列吸收富余）
     else if (totalIdeal <= usableW) {
       const extra = usableW - totalIdeal
       const map: Record<string, number> = {}
       if (extra > 0) {
+        const weights = ideal.map((w, i) => (measured[i].allImage ? 0 : w))
+        const weightSum = weights.reduce((s, w) => s + w, 0)
+        const denom = weightSum > 0 ? weightSum : totalIdeal
         cols.forEach((col, i) => {
-          map[col.key] = Math.round(ideal[i] + extra * (ideal[i] / totalIdeal))
+          map[col.key] = Math.round(ideal[i] + extra * (weights[i] / denom))
         })
         // 纠正四舍五入误差
         let diff = usableW - Object.values(map).reduce((s: number, w: number) => s + w, 0)

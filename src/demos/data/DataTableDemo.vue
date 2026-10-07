@@ -4,7 +4,13 @@ import DataTable from '@/components/data/DataTable.vue'
 import Card from '@/components/data/Card.vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
 import { createLocalStorage } from '@/components/data/composables/types'
-import type { Column, RowAction, RowContextAction, TableStorage } from '@/components/data/composables/types'
+import type {
+  Column,
+  RowAction,
+  RowContextAction,
+  RowLineColor,
+  TableStorage,
+} from '@/components/data/composables/types'
 // 演示头像：本地内联 SVG（见 demo-images.ts），不再依赖在线图床
 import { demoAvatars } from '@/demos/demo-images'
 
@@ -678,6 +684,18 @@ function dumpStorage() {
   }
 }
 
+/** 清空全站表格布局持久化并刷新复位。
+ *  键形态：默认适配器 saas_-dt{ns}-{feat}；自定义前缀 saas_{prefix}-dt{ns}-{feat}——
+ *  两者都含「-dt」段，fd_*（表单草稿）与地图缓存等无此前缀不受影响 */
+function clearTablePersist() {
+  const keys = Object.keys(localStorage).filter((k) => /^saas_.*-dt/.test(k))
+  keys.forEach((k) => localStorage.removeItem(k))
+  storageLog.value = keys.length
+    ? `已清空 ${keys.length} 个表格布局键（${keys.join(' , ')}），正在刷新复位…`
+    : '没有表格布局键，本来就是干净的'
+  if (keys.length) setTimeout(() => location.reload(), 700)
+}
+
 // ========== 18. 全屏与宿主 ==========
 /** 本 demo 站的宿主就是 AppLayout，它 provide('toggleCollapse') 并渲染 .sidebar。
  *  组件在没挂 @toggle-sidebar 监听时正是降级去找这个 inject，所以两条路径都能当场看到效果。 */
@@ -753,6 +771,48 @@ const interCols: Column[] = [
   { key: 'position', title: '岗位' },
   { key: 'amount', title: '月薪(元)', align: 'right', sortable: true },
 ]
+// ⚠️ 本卡专属数据：曾误引 editData（编辑模式卡的键位），列键对不上导致整表显示空白占位
+const interData = [
+  { id: 'i1', name: '张三', dept: '技术部', position: '前端开发', amount: 15800 },
+  { id: 'i2', name: '李四', dept: '产品部', position: '产品经理', amount: 22000 },
+  { id: 'i3', name: '王五', dept: '设计部', position: 'UI 设计师', amount: 13500 },
+  { id: 'i4', name: '赵六', dept: '技术部', position: '后端开发', amount: 18500 },
+  { id: 'i5', name: '孙七', dept: '市场部', position: '市场专员', amount: 12000 },
+  { id: 'i6', name: '周八', dept: '运营部', position: '内容运营', amount: 10500 },
+]
+
+// ========== 23. 行级左边线（rowLine 回调 / rowLineKey+lineColors 字段映射，两版并存） ==========
+// 行级、没设置不显示：回调/映射未命中的行无线，与未加此功能时渲染完全一致。
+// 线画在行最左缘（含固定列/勾选列场景，见 e2e table-row-line 几何取证），
+// 颜色只收语义色名 → --vcl-color-* 令牌，亮暗主题自动跟随。
+interface LineRow {
+  id: string
+  name: string
+  customer: string
+  type: string
+}
+const lineCols: Column[] = [
+  { key: 'name', title: '订单号', sortable: true, fixed: 'left' },
+  { key: 'customer', title: '客户' },
+  { key: 'type', title: '类型（标注来源）' },
+]
+const lineData: LineRow[] = [
+  { id: 'o1', name: 'ORD-2024-0912', customer: '王芳', type: '重点' },
+  { id: 'o2', name: 'ORD-2024-0913', customer: '李强', type: '未分类' },
+  { id: 'o3', name: 'ORD-2024-0914', customer: '陈晨', type: '风险' },
+  { id: 'o4', name: 'ORD-2024-0915', customer: '赵敏', type: '待审' },
+  { id: 'o5', name: 'ORD-2024-0916', customer: '孙浩', type: '归档' },
+  { id: 'o6', name: 'ORD-2024-0917', customer: '周雨', type: '未分类' },
+]
+/** 字段值 → 语义色名映射：回调与字段映射两种 API 共用同一份映射，演示效果一致 */
+const lineColors: Record<string, RowLineColor> = {
+  重点: 'primary',
+  风险: 'danger',
+  待审: 'warning',
+  归档: 'success',
+}
+const lineByCallback = (row: LineRow): RowLineColor | undefined => lineColors[row.type]
+const lineMode = ref<'callback' | 'key'>('callback')
 </script>
 
 <template>
@@ -1324,6 +1384,7 @@ const interCols: Column[] = [
           </select>
         </label>
         <button class="demo-add-btn" @click="dumpStorage">查看当前适配器里存了什么</button>
+        <button class="demo-add-btn" @click="clearTablePersist">清空全站表格布局存储（复位演示）</button>
       </div>
       <p v-if="storageLog" class="demo-hint" style="color: var(--vcl-color-primary)">{{ storageLog }}</p>
       <p class="demo-hint">做法：拖一下下面表格的列宽 → 点上面按钮 → 刷新页面看列宽还在不在。</p>
@@ -1431,7 +1492,7 @@ const interCols: Column[] = [
       <DataTable
         namespace="demo-inter"
         :columns="interCols"
-        :data="editData"
+        :data="interData"
         row-key="id"
         editable
         :col-settings="inter.colSettings"
@@ -2117,6 +2178,45 @@ const interCols: Column[] = [
       <p class="demo-hint">
         <code>defineExpose</code> 另有 imperative 面（撤销/重做/清空筛选/退出全屏等），
         属组件内部状态的编程入口，与上面的 prop 面互不重复。
+      </p>
+    </Card>
+
+    <!-- ===== 23. 行级左边线 ===== -->
+    <Card title="行级左边线 — rowLine 回调 / rowLineKey 字段映射（并存）" title-as="h2">
+      <p class="demo-hint">
+        行级标注，<b>没设置不显示</b>（"未分类"行无线）；设置了则按类型着色画在行最左缘，
+        与条纹/悬浮/选中行并存不遮线。颜色只收语义色名（primary/success/warning/danger/info）， 映射到
+        <code>--vcl-color-*</code> 令牌，亮暗主题自动跟随。
+      </p>
+      <div class="row-line-demo">
+        <div class="demo-modal-row">
+          <button class="demo-add-btn" @click="lineMode = 'callback'">回调模式 :row-line</button>
+          <button class="demo-add-btn" @click="lineMode = 'key'">字段映射 row-line-key + line-colors</button>
+        </div>
+        <DataTable
+          v-if="lineMode === 'callback'"
+          namespace="demo-rowline"
+          :columns="lineCols"
+          :data="lineData"
+          row-key="id"
+          selectable
+          :row-line="lineByCallback"
+        />
+        <DataTable
+          v-else
+          namespace="demo-rowline"
+          :columns="lineCols"
+          :data="lineData"
+          row-key="id"
+          selectable
+          row-line-key="type"
+          :line-colors="lineColors"
+        />
+      </div>
+      <p class="demo-hint">
+        两版并存：回调 <code>:row-line="(row) =&gt; row.risk ? 'danger' : undefined"</code> 最灵活；
+        数据自带类型字段时用 <code>row-line-key="type"</code> + <code>:line-colors="{...}"</code> 更声明式。
+        同设时回调接管判定（返回 undefined 也不回落字段映射）。
       </p>
     </Card>
 

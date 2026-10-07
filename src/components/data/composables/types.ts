@@ -99,6 +99,9 @@ export interface RowMeta {
   striped: boolean
 }
 
+/** 行级左边线语义色名：映射到 --vcl-color-* 令牌，亮暗主题自动跟随（未列出的名字 CSS 不命中 → 不画线） */
+export type RowLineColor = 'primary' | 'success' | 'warning' | 'danger' | 'info'
+
 export type OptionSort = 'name' | 'name-desc' | 'count' | 'count-desc'
 
 /** 存储适配器：默认 localStorage，可替换为服务端/内存实现。

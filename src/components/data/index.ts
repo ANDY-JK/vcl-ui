@@ -19,6 +19,7 @@ export type {
   ColumnOption,
   RowAction,
   RowContextAction,
+  RowLineColor,
   ColumnFilterState,
   FilterOption,
   RowMeta,
