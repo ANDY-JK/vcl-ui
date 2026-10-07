@@ -80,6 +80,12 @@ export default {
     srDesc:
       'Store report: 48 fields (formulas/conditional visibility/lat-lng validation) + 26 photo upload slots (OTC/O2O groups)',
     srSubmit: 'Submit report',
+    // store-report validation messages (lat/lng range and address-level, field name parameterized)
+    srAddrLevels: '{desc} must contain all 4 administrative levels (province, city, district, township)',
+    srLatAsLng: 'Looks like a longitude; latitude should be 18~54',
+    srLatRange: 'Latitude out of China range (18~54)',
+    srLngAsLat: 'Looks like a latitude; longitude should be 73~135',
+    srLngRange: 'Longitude out of China range (73~135)',
   },
   fbTarget: {
     title: 'Target Collection',

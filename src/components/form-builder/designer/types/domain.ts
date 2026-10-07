@@ -49,6 +49,7 @@ export type DesignerFieldType =
   | 'email'
   | 'url'
   | 'search'
+  | 'color'
   | 'select'
   | 'combobox'
   | 'tree-select'
@@ -530,6 +531,7 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'email',
   'url',
   'search',
+  'color',
   'select',
   'combobox',
   'tree-select',

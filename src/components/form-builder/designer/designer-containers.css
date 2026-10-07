@@ -458,6 +458,9 @@
   padding: calc(12px * var(--vcl-scale));
   min-height: calc(60px * var(--vcl-scale));
   position: relative;
+  /* 与运行时 .fb-grid 同款容器查询：移动设备画布（≤640px）单列化保 WYSIWYG */
+  container-type: inline-size;
+  container-name: fbc;
 }
 .ldc-grid-col {
   grid-column: span var(--col-span, 1);
@@ -473,6 +476,8 @@
   padding: calc(12px * var(--vcl-scale));
   min-height: calc(60px * var(--vcl-scale));
   position: relative;
+  container-type: inline-size;
+  container-name: fbc;
 }
 .ldc-flex-col {
   flex: 0 1 var(--flex-basis, 100%);
@@ -480,6 +485,18 @@
 }
 .ldc-flex-col .ldc-card {
   height: 100%;
+}
+
+/* 窄画布单列化：与 FormBuilder 的运行时降级（640 阈值）同口径。
+   容器查询只样式化后代，故从 .ldc-grid-col/.ldc-flex-col 下手；
+   flex 的不换行模式（wrap=false）保持原占比，尊重设计器「强制一行」意图 */
+@container fbc (max-width: 640px) {
+  .ldc-grid-col {
+    grid-column: 1 / -1;
+  }
+  .ldc-flex-row:not(.ldc-flex-row--nowrap) .ldc-flex-col {
+    flex-basis: 100%;
+  }
 }
 
 /* ── 节点包装 ── */

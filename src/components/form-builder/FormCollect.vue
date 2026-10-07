@@ -260,15 +260,28 @@ const todayCount = computed(() => {
   }).length
 })
 
-/** 统计卡片数据 */
+/** 统计卡片数据（icon/bg 走语义令牌对：亮暗跟随；此前硬编码 hex，暗色下不换底） */
 const stats = computed(() => [
-  { label: t('fbd.statTotal'), value: records.value.length, icon: 'database', color: '#3b82f6' },
-  { label: t('fbd.statToday'), value: todayCount.value, icon: 'calendar', color: '#10b981' },
+  {
+    label: t('fbd.statTotal'),
+    value: records.value.length,
+    icon: 'database',
+    color: 'var(--vcl-color-info-text)',
+    bg: 'var(--vcl-color-info-bg)',
+  },
+  {
+    label: t('fbd.statToday'),
+    value: todayCount.value,
+    icon: 'calendar',
+    color: 'var(--vcl-color-success-text)',
+    bg: 'var(--vcl-color-success-bg)',
+  },
   {
     label: t('fbd.statFields'),
     value: props.fields.filter((f) => !isLayoutField(f.type)).length,
     icon: 'layout-grid',
-    color: '#8b5cf6',
+    color: 'var(--vcl-color-warning-text)',
+    bg: 'var(--vcl-color-warning-bg)',
   },
 ])
 
@@ -572,7 +585,7 @@ async function confirmImport(): Promise<void> {
     <!-- 统计卡片 -->
     <div v-if="records.length || todayCount" class="ldc-stats">
       <div v-for="s in stats" :key="s.label" class="ldc-stat-card">
-        <div class="ldc-stat-icon" :style="{ color: s.color, background: s.color + '15' }">
+        <div class="ldc-stat-icon" :style="{ color: s.color, background: s.bg }">
           <IconSvg :type="s.icon" size="sm" />
         </div>
         <div class="ldc-stat-info">

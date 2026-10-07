@@ -282,8 +282,9 @@ function handleSubmit(): void {
     (f) => isFieldVisibleWithLinkage(f, formData.value) && !isHiddenByEvent(f.key),
   )
 
-  // 提交模式：unique 模式下若已提交过则拦截（防止重复提交）
-  if (normalized.value.submitMode === 'unique' && hasSubmitted.value) {
+  // 提交模式：once/unique 模式下若已提交过则拦截（防止重复提交）；
+  // multiple 模式允许多次提交。此前只拦 unique，once 的「提交后禁用」只剩按钮灰态假设，直接触发提交仍能穿透
+  if (normalized.value.submitMode !== 'multiple' && hasSubmitted.value) {
     toastRef.value?.show(t('formBuilder.submitOnce'), 'warning', 2000)
     return
   }
@@ -341,8 +342,11 @@ function finishSubmit(): void {
 }
 
 let submitTimer: ReturnType<typeof setTimeout> | null = null
-/** 是否已提交过（submitMode=unique 用） */
+/** 是否已提交过（submitMode=once/unique 用） */
 const hasSubmitted = ref(false)
+
+/** 提交按钮锁定：once/unique 提交成功后置灰（与 handleSubmit 入口守卫同一口径，multiple 恒不锁） */
+const submitLocked = computed(() => normalized.value.submitMode !== 'multiple' && hasSubmitted.value)
 
 /** 停止提交 loading 状态 — 供父组件通过 ref 调用 */
 function stopSubmit(): void {
@@ -680,7 +684,11 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
           <Card v-else class="fb-group-card" :title="section.title || undefined" :no-body-padding="false">
             <div
               class="fb-fields"
-              :class="{ 'fb-grid': section.isGrid, 'fb-flex': section.container?.type === 'flex' }"
+              :class="{
+                'fb-grid': section.isGrid,
+                'fb-flex': section.container?.type === 'flex',
+                'fb-flex--nowrap': section.container?.type === 'flex' && section.container.wrap === false,
+              }"
               :style="
                 section.isGrid
                   ? { '--fb-cols': Math.max(1, section.columns) }
@@ -746,7 +754,13 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
           <Button v-if="!isLastStep" variant="primary" @click="nextStep">
             {{ t('formBuilder.nextStep') }}
           </Button>
-          <Button v-if="isLastStep" variant="primary" :loading="submitting" :disabled="disabled" type="submit">
+          <Button
+            v-if="isLastStep"
+            variant="primary"
+            :loading="submitting"
+            :disabled="disabled || submitLocked"
+            type="submit"
+          >
             {{ normalized.submitText }}
           </Button>
           <Button variant="ghost" @click="handleReset">
@@ -756,7 +770,7 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
 
         <!-- 非 steps 模式：提交/重置 -->
         <template v-else>
-          <Button variant="primary" :loading="submitting" :disabled="disabled" type="submit">
+          <Button variant="primary" :loading="submitting" :disabled="disabled || submitLocked" type="submit">
             {{ normalized.submitText }}
           </Button>
           <Button variant="ghost" @click="handleReset">

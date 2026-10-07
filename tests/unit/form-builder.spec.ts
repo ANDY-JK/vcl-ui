@@ -2,6 +2,7 @@
 // 背景：审计发现 FormBuilder（962 行动态表单引擎）挂载级 0 测试，仅 composable 间接覆盖
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import FormBuilder from '@/components/form-builder/FormBuilder.vue'
 import type { FormSchema, FormData } from '@/components/form-builder/types'
 
@@ -71,6 +72,37 @@ describe('FormBuilder · 提交载荷', () => {
     await w.find('form.fb-form').trigger('submit')
     // submitting 立即为 true，3s 后复位（此处仅验证 emit 后不卡死即可）
     expect(w.emitted('submit')!.length).toBe(1)
+  })
+})
+
+describe('FormBuilder · submitMode 提交锁', () => {
+  it('once 模式：首次提交成功，第二次直接调用被拦截（不重复 emit submit）', async () => {
+    const w = mountBuilder(simpleSchema({ submitMode: 'once' }), { name: '张三', age: 18 })
+    await w.find('form.fb-form').trigger('submit')
+    expect(w.emitted('submit')!.length).toBe(1)
+    await w.find('form.fb-form').trigger('submit')
+    expect(w.emitted('submit')!.length).toBe(1) // 第二次被拦
+  })
+
+  it('once 模式：提交成功后提交按钮禁用（UI 与入口守卫同口径）', async () => {
+    const w = mountBuilder(simpleSchema({ submitMode: 'once' }), { name: '张三', age: 18 })
+    const submitBtn = w.findAll('button').find((b) => b.text() === '提交')!
+    expect(submitBtn.attributes('disabled')).toBeUndefined()
+    await w.find('form.fb-form').trigger('submit')
+    expect(submitBtn.attributes('disabled')).toBeDefined()
+  })
+
+  it('multiple 模式：宿主释放 loading 后可再次提交，不锁按钮', async () => {
+    const w = mountBuilder(simpleSchema({ submitMode: 'multiple' }), { name: '张三', age: 18 })
+    await w.find('form.fb-form').trigger('submit')
+    // 首次提交后 submitting=true（3s 兜底窗口内的 in-flight 守卫会拦重复提交，属防双击设计）；
+    // 模拟宿主处理完释放 loading（expose.stopSubmit）后再提交
+    ;(w.vm as unknown as { stopSubmit: () => void }).stopSubmit()
+    await nextTick() // 等 submitting→false 的 DOM 重渲染
+    const submitBtn = w.findAll('button').find((b) => b.text() === '提交')!
+    expect(submitBtn.attributes('disabled')).toBeUndefined()
+    await w.find('form.fb-form').trigger('submit')
+    expect(w.emitted('submit')!.length).toBe(2)
   })
 })
 

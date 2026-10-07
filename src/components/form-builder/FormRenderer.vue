@@ -115,6 +115,13 @@ function onScanClear() {
   emit('update:modelValue', '')
   emit('change')
 }
+/** Upload 文件增删 → 写值 + 发 change（Upload 组件无 change 事件，事件联动/校验依赖 change，在此补齐；
+ *  camera 分支的 Upload 与 finish 路径共用本函数） */
+function onUploadChange(files: UploadFile[]) {
+  emit('update:modelValue', files)
+  emit('change')
+}
+
 /** 拍照交付 → 转 UploadFile[] 写入 formData（与 Upload 字段同构，校验/提交/回显一致） */
 function onCameraFinish(files: File[]) {
   const uploaded: UploadFile[] = files.map((f, i) => ({
@@ -303,7 +310,9 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
     <!-- ═══ Group 系列 ═══ -->
     <template v-else-if="category === 'group'">
       <div class="fb-group-field">
-        <label v-if="field.label" class="fb-group-label">
+        <!-- switch 不渲染本层标题：Group 内部自带 switch-label 可见标签 + aria-label，
+             叠加会双显同一文案（其余 radio/checkbox/rate 由 Group 内部 aria-label 供读屏） -->
+        <label v-if="field.label && field.type !== 'switch'" class="fb-group-label">
           {{ field.label }}
           <span v-if="field.required" class="fb-required">*</span>
         </label>
@@ -319,7 +328,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           {{ field.label }}
           <span v-if="field.required" class="fb-required">*</span>
         </label>
-        <Upload v-model="uploadValue" v-bind="uploadProps" />
+        <Upload :model-value="uploadValue" v-bind="uploadProps" @update:model-value="onUploadChange" />
         <FieldError :message="error ?? ''" />
         <p v-if="field.hint" class="fb-hint">{{ field.hint }}</p>
       </div>
@@ -377,7 +386,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           variant="card"
           accept="image/*"
           :disabled="effectiveDisabled"
-          @update:model-value="emit('update:modelValue', $event)"
+          @update:model-value="onUploadChange"
         />
         <Button
           type="button"
@@ -422,9 +431,9 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <FieldError :message="error ?? ''" />
       </div>
 
-      <!-- 关联选择 -->
+      <!-- 关联选择（透传 change：事件联动/实时校验依赖，此前漏挂致配在 relate 上的动作不执行） -->
       <div v-else-if="field.type === 'relate'" class="fb-advanced-field">
-        <Select v-model="inputValue" v-bind="relateProps" />
+        <Select v-model="inputValue" v-bind="relateProps" @change="emit('change')" />
         <FieldError :message="error ?? ''" />
       </div>
 

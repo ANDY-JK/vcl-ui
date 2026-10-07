@@ -118,12 +118,13 @@
 .ldc-error {
   color: var(--vcl-color-danger-on-surface);
   background: var(--vcl-color-danger-bg);
-  border: 1px solid #fecaca;
+  /* 边框走 rgba(rgb 三元组, α)：亮暗双档 --vcl-color-danger-rgb 自动跟随（硬编码 #fecaca 暗色下刺眼） */
+  border: 1px solid rgba(var(--vcl-color-danger-rgb), 0.32);
 }
 .ldc-ok {
   color: var(--vcl-color-success-text);
   background: var(--vcl-color-success-bg);
-  border: 1px solid #bbf7d0;
+  border: 1px solid rgba(var(--vcl-color-success-rgb), 0.32);
 }
 
 /* ── 操作栏 ── */

@@ -85,18 +85,26 @@
   flex-wrap: var(--fb-flex-wrap, wrap);
   justify-content: var(--fb-flex-justify, flex-start);
   gap: var(--fb-flex-gap, calc(12px * var(--vcl-scale)));
+  container-type: inline-size;
+  container-name: form-builder;
 }
 .fb-flex :deep(.fb-field) {
   flex: 0 1 var(--fb-basis, 100%);
 }
 
-/* 移动端响应式：单列布局 */
+/* 窄屏单列化：容器查询只能样式化容器的「后代」，不能给容器自身换 grid-template——
+   旧写法在查询内改 .fb-grid 自身列数（grid-template-columns: 1fr），因该限制从未生效
+   （390px 实测栅格表单仍双列、每格 138px）。改从后代下手：字段跨满全部轨道 = 视觉单列；
+   flex 横排同理 basis 100% 逐个整行。查询的容器即 .fb-grid/.fb-flex 自身（二者均声明了
+   container-name: form-builder），阈值 640px 用容器宽度而非视口宽度——弹窗/窄卡片内的
+   表单同样能正确塌成单列 */
 @container form-builder (max-width: 640px) {
-  .fb-grid {
-    grid-template-columns: 1fr;
-  }
   .fb-grid :deep(.fb-field) {
-    grid-column: span 1;
+    grid-column: 1 / -1;
+  }
+  /* 不换行模式（wrap=false）保持原占比：设计器「强制一行」的意图优先于移动端降级 */
+  .fb-flex:not(.fb-flex--nowrap) :deep(.fb-field) {
+    flex-basis: 100%;
   }
 }
 

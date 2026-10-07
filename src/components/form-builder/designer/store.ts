@@ -16,6 +16,7 @@ import { uuid } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
 import { envValue } from '@/components/_internal/env-guard'
 import { SupabaseKVAdapter, validateSupabaseConfig, type SupabaseConfig } from '@/components/storage/supabase-transport'
+import { reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 收集记录条数上限（本地与云端同一口径）：收集型表单长跑会无限累积撑爆存储配额，
  * 超限淘汰最旧记录 —— 配额满的表现是"新记录永远写不进去"，比丢旧记录更糟。
@@ -78,8 +79,9 @@ function read<T>(key: string, fallback: T): T {
 function write(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // 容量满静默
+  } catch (err) {
+    // 容量满等写入失败必须发声：静默会让用户以为保存成功，刷新后数据消失（显式失败原则）
+    reportWarn(`[FormStore] 本地写入失败（键 ${key}），此改动未能持久化:`, err)
   }
 }
 

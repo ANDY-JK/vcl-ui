@@ -720,6 +720,7 @@ const BUILTIN_TYPES = new Set<string>([
   'email',
   'url',
   'search',
+  'color',
   'select',
   'combobox',
   'cascader',
@@ -748,6 +749,13 @@ const BUILTIN_TYPES = new Set<string>([
   'idcard',
   'matrix',
   'serial',
+  // 布局容器：同样内置，不允许注销（此前漏登记，unregisterField('card') 会把容器从注册表摘掉）
+  'card',
+  'grid',
+  'flex',
+  'tabs',
+  'collapse',
+  'steps',
 ])
 
 /** 判断字段类型是否已注册 */

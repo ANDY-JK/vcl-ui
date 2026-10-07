@@ -31,23 +31,23 @@ function addressLevels(desc: string) {
       v,
     )
       ? undefined
-      : `${desc}必须包含完整的 4 个行政级别（省级、市级、区县级、乡镇级），请补充完整`
+      : t('fbPre.srAddrLevels', { desc })
   }
 }
 /** 纬度校验（中国范围 18~54，旧版 isLat） */
 const isLat = (v: string) => {
   const n = parseFloat((v || '').replace(/[\s\n\r]+/g, ''))
   if (isNaN(n) || !v.trim()) return undefined
-  if (n > 70) return '疑似输成了经度，纬度应在 18~54 之间'
-  if (n < 18 || n > 54) return '纬度超出中国范围（18~54）'
+  if (n > 70) return t('fbPre.srLatAsLng')
+  if (n < 18 || n > 54) return t('fbPre.srLatRange')
   return undefined
 }
 /** 经度校验（中国范围 73~135，旧版 isLng） */
 const isLng = (v: string) => {
   const n = parseFloat((v || '').replace(/[\s\n\r]+/g, ''))
   if (isNaN(n) || !v.trim()) return undefined
-  if (n < 60) return '疑似输成了纬度，经度应在 73~135 之间'
-  if (n < 73 || n > 135) return '经度超出中国范围（73~135）'
+  if (n < 60) return t('fbPre.srLngAsLat')
+  if (n < 73 || n > 135) return t('fbPre.srLngRange')
   return undefined
 }
 

@@ -79,6 +79,12 @@ export default {
     srTitle: '门店提报',
     srDesc: '门店提报信息登记：48 个字段（含公式/条件显隐/经纬度校验）+ 26 个照片上传位（OTC/O2O 分组）',
     srSubmit: '提交提报',
+    // store-report 校验提示（经纬度/地址级别，参数化字段名）
+    srAddrLevels: '{desc}必须包含完整的 4 个行政级别（省级、市级、区县级、乡镇级），请补充完整',
+    srLatAsLng: '疑似输成了经度，纬度应在 18~54 之间',
+    srLatRange: '纬度超出中国范围（18~54）',
+    srLngAsLat: '疑似输成了纬度，经度应在 73~135 之间',
+    srLngRange: '经度超出中国范围（73~135）',
   },
   fbTarget: {
     title: '目标收集',
