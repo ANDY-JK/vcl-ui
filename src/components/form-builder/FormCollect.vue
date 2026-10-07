@@ -550,9 +550,9 @@ async function confirmImport(): Promise<void> {
       </div>
     </div>
 
-    <!-- 填写区 -->
+    <!-- 填写区（FormCollect 头部已渲染标题/描述，内嵌表单隐藏其头部避免双重标题） -->
     <div class="ldc-form-wrap">
-      <FormBuilder v-model="formData" :schema="formSchema" @submit="handleSubmit" />
+      <FormBuilder v-model="formData" :schema="formSchema" hide-header @submit="handleSubmit" />
     </div>
 
     <!-- 反馈 -->
@@ -756,6 +756,7 @@ async function confirmImport(): Promise<void> {
             v-model="recordFormData"
             :schema="recordSchema"
             :readonly="recordModal === 'view'"
+            hide-header
             @submit="handleRecordSubmit"
           />
         </template>

@@ -121,7 +121,7 @@ function patchNodes(list: DesignerNode[]): void {
 const selectedId = ref<string | null>(null)
 /** 多选集合（Ctrl/Cmd+点选进入；空 = 单选模式） */
 const selectedIds = ref<Set<string>>(new Set())
-const activeTab = ref<'design' | 'preview' | 'outline' | 'schema'>('design')
+const activeTab = ref<'design' | 'preview' | 'schema'>('design')
 const showSettings = ref(false)
 const showShortcuts = ref(false)
 const previewData = ref<Record<string, unknown>>({})
@@ -275,11 +275,6 @@ const {
   updateMeta: (m) => emit('update:meta', m),
   showTip,
 })
-
-function selectFromOutline(id: string) {
-  handleSelect(id)
-  activeTab.value = 'design'
-}
 
 // ══ 删除确认流（容器带子节点 / 多选删除需确认）— 逻辑在 useDesignerRemoveConfirm ══
 
@@ -451,9 +446,6 @@ const fldIds = {
         <button class="ld-btn" :class="{ active: activeTab === 'preview' }" @click="activeTab = 'preview'">
           {{ t('fbd.tabPreview') }}
         </button>
-        <button class="ld-btn" :class="{ active: activeTab === 'outline' }" @click="activeTab = 'outline'">
-          {{ t('fbd.tabOutline') }}
-        </button>
         <button class="ld-btn" :class="{ active: activeTab === 'schema' }" @click="activeTab = 'schema'">
           {{ t('fbd.tabCode') }}
         </button>
@@ -600,36 +592,6 @@ const fldIds = {
           :schema="previewSchema"
           @submit="showTip(t('fbd.previewData', { data: JSON.stringify($event) }))"
         />
-      </div>
-    </div>
-
-    <!-- ═══ 大纲标签页 ═══ -->
-    <div
-      v-else-if="activeTab === 'outline'"
-      class="ld-body"
-      :style="{ height, display: 'block', padding: '24px', background: 'var(--vcl-color-bg-alt, #f8fafc)' }"
-    >
-      <div class="ld-outline-full">
-        <div class="ld-outline-full-header">
-          <div>
-            <h3 class="ld-outline-full-title">{{ meta.title ?? t('fbd.formTitle') }} — {{ t('fbd.structureTree') }}</h3>
-            <p class="ld-outline-full-hint">{{ t('fbd.outlineHint') }}</p>
-          </div>
-          <div class="ld-outline-full-stats">
-            <span>{{ t('fbd.nodesCount', { n: nodeCount }) }}</span>
-            <span class="ld-outline-full-dot">·</span>
-            <span>{{ t('fbd.containersCount', { c: containerCount }) }}</span>
-          </div>
-        </div>
-        <div class="ld-outline-full-body">
-          <OutlineTree
-            :nodes="currentNodes"
-            :selected-id="selectedId"
-            @select="selectFromOutline"
-            @remove="removeNode"
-            @move="sortNode"
-          />
-        </div>
       </div>
     </div>
 

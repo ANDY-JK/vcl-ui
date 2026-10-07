@@ -174,54 +174,6 @@
   margin: 0;
 }
 
-/* ── 大纲全屏标签页 ── */
-.ld-outline-full {
-  max-width: calc(680px * var(--vcl-scale));
-  margin: 0 auto;
-  background: var(--vcl-color-bg, #fff);
-  border: 1px solid var(--vcl-color-border, #e5e7eb);
-  border-radius: var(--vcl-radius-lg, calc(10px * var(--vcl-scale)));
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-}
-.ld-outline-full-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: calc(16px * var(--vcl-scale)) calc(20px * var(--vcl-scale));
-  border-bottom: 1px solid var(--vcl-color-border-light, #f1f5f9);
-  background: var(--vcl-color-bg-alt, #f8fafc);
-}
-.ld-outline-full-title {
-  font-size: var(--vcl-fs-16);
-  font-weight: 800;
-  margin: 0 0 2px;
-  color: var(--vcl-color-text, #1e293b);
-}
-.ld-outline-full-hint {
-  font-size: var(--vcl-fs-12);
-  color: var(--vcl-color-text-muted, #94a3b8);
-  margin: 0;
-}
-.ld-outline-full-stats {
-  display: flex;
-  align-items: center;
-  gap: calc(6px * var(--vcl-scale));
-  font-size: var(--vcl-fs-12);
-  color: var(--vcl-color-text-muted, #94a3b8);
-  background: var(--vcl-color-bg, #fff);
-  padding: calc(5px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
-  border-radius: calc(20px * var(--vcl-scale));
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.ld-outline-full-dot {
-  margin: 0 calc(4px * var(--vcl-scale));
-}
-.ld-outline-full-body {
-  padding: calc(12px * var(--vcl-scale));
-}
-
 /* ── 联动帮助提示 ── */
 .ldp-linkage-help {
   display: flex;

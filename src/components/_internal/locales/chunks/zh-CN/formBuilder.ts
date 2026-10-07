@@ -458,7 +458,6 @@ export default {
     deviceMobile: '手机端',
     tabDesign: '设计',
     tabPreview: '预览',
-    tabOutline: '大纲',
     tabCode: '代码',
     resizePanel: '拖拽调整宽度',
     togglePalette: '显示/隐藏组件库',
@@ -536,9 +535,6 @@ export default {
     emptySelectB: '编辑属性',
     emptySelectTip: '选中节点后编辑属性',
     structureTree: '结构树',
-    outlineHint: '拖拽节点可调整顺序 · 点击节点可跳转到设计器',
-    nodesCount: '{n} 个节点',
-    containersCount: '{c} 个容器',
     designCodeJson: '设计代码 (JSON)',
     previewData: '预览数据：{data}',
     // FormCollect

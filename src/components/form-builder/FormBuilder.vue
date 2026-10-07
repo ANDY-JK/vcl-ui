@@ -56,6 +56,8 @@ interface Props {
   readonly?: boolean
   /** 是否禁用全部字段 */
   disabled?: boolean
+  /** 隐藏标题/描述头部（宿主已自行渲染头部时用，避免双重标题） */
+  hideHeader?: boolean
   /** 当前用户上下文（动态默认值 currentUser 用；宿主注入真实用户信息） */
   userContext?: Record<string, unknown>
 }
@@ -65,6 +67,7 @@ const props = withDefaults(defineProps<Props>(), {
   storageKey: '',
   readonly: false,
   disabled: false,
+  hideHeader: false,
   userContext: () => ({}),
 })
 
@@ -577,9 +580,9 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
 
 <template>
   <div ref="rootEl" class="fb-builder">
-    <!-- 标题与描述 -->
+    <!-- 标题与描述（hideHeader 时由宿主负责渲染，避免双重标题） -->
     <Transition name="fb-header-fade">
-      <div v-if="normalized.title || normalized.description" class="fb-header">
+      <div v-if="!hideHeader && (normalized.title || normalized.description)" class="fb-header">
         <h3 v-if="normalized.title" class="fb-title">{{ normalized.title }}</h3>
         <p v-if="normalized.description" class="fb-desc">{{ normalized.description }}</p>
       </div>

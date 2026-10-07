@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * 低代码表单 Demo — 设计 → 预览 → 收集 全流程
+ * 低代码表单 Demo — 设计 → 收集 两段流程
  *
- * 三标签页：
- * 1. 设计：拖拽设计器，编辑字段属性
- * 2. 预览：实时渲染表单
- * 3. 收集：数据收集 + 记录管理 + Excel 导出
+ * 预览由设计器内置的「预览」页签承担（FormDesigner 自带，demo 层不再重复一份）。
+ * 两标签页：
+ * 1. 设计：拖拽设计器，编辑字段属性（含设计器内预览/大纲/代码视图）
+ * 2. 收集：数据收集 + 记录管理 + Excel 导出
  */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { FormDesigner, FormCollect, FormBuilder, toFormSchema } from '@/components/form-builder'
@@ -21,11 +21,10 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 // ════════════════════════════════════════
 // 标签页
 // ════════════════════════════════════════
-const activeTab = ref<'design' | 'preview' | 'collect'>('design')
+const activeTab = ref<'design' | 'collect'>('design')
 
 const tabs = [
   { key: 'design' as const, label: '设计', icon: 'layout-template' },
-  { key: 'preview' as const, label: '预览', icon: 'eye' },
   { key: 'collect' as const, label: '收集', icon: 'database' },
 ]
 
@@ -42,8 +41,7 @@ const meta = ref<FormMeta>({
   submitText: '提交',
 })
 
-// 预览数据
-const previewData = ref<Record<string, unknown>>({})
+// 收集页空态由 FormCollect 自渲染（其内嵌 FormBuilder 亦隐藏头部，标题/描述只由本组件头部渲染一次）
 
 // ════════════════════════════════════════
 // 设计器高度 — 单屏自适应（不滚动）
@@ -97,9 +95,6 @@ onUnmounted(() => {
   window.removeEventListener('resize', measureBody)
 })
 const designHeight = computed(() => `${Math.max(bodyClientH.value - 157 - headH.value - toolbarH.value, 355)}px`)
-
-/** 预览用 Schema（从设计数据转换） */
-const previewSchema = computed(() => toFormSchema(fields.value, meta.value))
 
 // 预置模板列表：schema 为平铺 FormSchema 工厂，nodes 为含嵌套容器的 DesignerNode 树工厂
 // （全部函数化 — 模块求值早于 setLocale，调用时按当前语言翻译）
@@ -249,7 +244,7 @@ function loadPreset(key: string): void {
     <header class="lc-demo-head">
       <div class="lc-demo-head-text">
         <h1 class="lc-demo-title">低代码表单平台</h1>
-        <p class="lc-demo-sub">拖拽设计 → 实时预览 → 数据收集，一套 Schema 同时驱动设计器与运行端</p>
+        <p class="lc-demo-sub">拖拽设计 → 数据收集，一套 Schema 同时驱动设计器与运行端</p>
       </div>
       <ul class="lc-demo-chips">
         <li v-for="c in capabilities" :key="c" class="lc-demo-chip">{{ c }}</li>
@@ -309,7 +304,7 @@ function loadPreset(key: string): void {
           </button>
         </div>
         <div class="lc-preset-preview-body">
-          <FormBuilder :schema="previewTemplateSchema" />
+          <FormBuilder :schema="previewTemplateSchema" hide-header />
         </div>
       </div>
     </Transition>
@@ -320,17 +315,7 @@ function loadPreset(key: string): void {
       <FormDesigner v-model:fields="fields" v-model:meta="meta" :height="designHeight" />
     </div>
 
-    <!-- 预览 -->
-    <div v-else-if="activeTab === 'preview'" class="lc-demo-preview">
-      <div v-if="!fields.length" class="lc-demo-placeholder">
-        <div class="lc-demo-placeholder-icon">
-          <IconSvg type="mouse-pointer-click" size="xl" />
-        </div>
-        <p>请先在「设计」中添加字段</p>
-      </div>
-      <FormBuilder v-else v-model="previewData" :schema="previewSchema" readonly @submit="previewData = {}" />
-    </div>
-
+    <!-- 预览：设计器内置预览页签承担，demo 层不再重复一份（设计器作为可复用组件自带预览） -->
     <!-- 收集 -->
     <div v-else-if="activeTab === 'collect'" class="lc-demo-preview">
       <div v-if="!fields.length" class="lc-demo-placeholder">

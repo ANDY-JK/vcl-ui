@@ -1,7 +1,9 @@
 /* FormBuilder 组件样式 — 拆分自 SFC（超 800 行约束整改），scoped 语义不变 */
 
 .fb-builder {
-  max-width: calc(800px * var(--vcl-scale));
+  /* 成品填写区上限：1080 让宽屏不再「中间细一条」（大厂填写端多为 640~720 窄列居中，
+     这里按用户口径放宽做差异化；字段 span/栅格已有体系，宽列不塌） */
+  max-width: calc(1080px * var(--vcl-scale));
   margin: 0 auto;
 }
 

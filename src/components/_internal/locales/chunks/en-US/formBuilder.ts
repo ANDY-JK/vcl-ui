@@ -461,7 +461,6 @@ export default {
     deviceMobile: 'Mobile',
     tabDesign: 'Design',
     tabPreview: 'Preview',
-    tabOutline: 'Outline',
     tabCode: 'Code',
     resizePanel: 'Drag to resize',
     togglePalette: 'Show/hide components',
@@ -541,9 +540,6 @@ export default {
     emptySelectB: 'to edit properties',
     emptySelectTip: 'Select a node to edit its properties',
     structureTree: 'structure tree',
-    outlineHint: 'Drag nodes to reorder · Click a node to jump to the designer',
-    nodesCount: '{n} nodes',
-    containersCount: '{c} containers',
     designCodeJson: 'Design code (JSON)',
     previewData: 'Preview data: {data}',
     // FormCollect

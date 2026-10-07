@@ -193,7 +193,14 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
           <h2 v-if="title || formSchema.title" class="fsv-title">{{ title || formSchema.title }}</h2>
           <p v-if="formSchema.description" class="fsv-desc">{{ formSchema.description }}</p>
           <p v-if="error" class="fsv-error" role="alert">{{ error }}</p>
-          <FormBuilder v-model="formData" :schema="formSchema" :storage-key="draftKey" @submit="handleSubmit" />
+          <!-- 本组件已渲染 fsv 标题/描述，内嵌表单隐藏其头部避免双重标题 -->
+          <FormBuilder
+            v-model="formData"
+            :schema="formSchema"
+            :storage-key="draftKey"
+            hide-header
+            @submit="handleSubmit"
+          />
         </template>
       </template>
     </div>
@@ -202,7 +209,8 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
 
 <style scoped>
 .fsv {
-  max-width: calc(720px * var(--vcl-scale));
+  /* 与 FormBuilder 的 1080 成品上限同口径（此前 720 双重收窄，宽屏只剩中间一条） */
+  max-width: calc(1080px * var(--vcl-scale));
   margin: 0 auto;
   padding: calc(24px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
 }
