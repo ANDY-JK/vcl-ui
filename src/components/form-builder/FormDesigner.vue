@@ -508,7 +508,7 @@ const fldIds = {
       <DesignerPanel v-if="showPalette" :style="{ width: `${paletteW}px` }" @add="addNode" />
       <div
         v-if="showPalette"
-        class="ld-splitter"
+        class="ld-splitter ld-splitter--palette"
         :class="{ active: resizing === 'palette' }"
         :title="t('fbd.resizePanel')"
         @mousedown="startResize('palette', $event)"
@@ -526,7 +526,7 @@ const fldIds = {
       />
       <div
         v-if="outlineVisible"
-        class="ld-splitter"
+        class="ld-splitter ld-splitter--outline"
         :class="{ active: resizing === 'outline' }"
         :title="t('fbd.resizePanel')"
         @mousedown="startResize('outline', $event)"
@@ -559,7 +559,7 @@ const fldIds = {
       <!-- 右栏：属性面板 -->
       <template v-if="showProps">
         <div
-          class="ld-splitter"
+          class="ld-splitter ld-splitter--props"
           :class="{ active: resizing === 'props' }"
           :title="t('fbd.resizePanel')"
           @mousedown="startResize('props', $event)"

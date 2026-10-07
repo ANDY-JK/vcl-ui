@@ -6,9 +6,9 @@
 
 | 组件 | Props 数 | Events 数 | Slots 数 |
 | --- | --- | --- | --- |
-| `DataTable` | 56 | 17 | 4 |
+| `DataTable` | 59 | 17 | 4 |
 | `ToggleList` | 13 | 3 | 0 |
-| `Card` | 11 | 1 | 3 |
+| `Card` | 16 | 1 | 3 |
 | `Avatar` | 4 | 0 | 0 |
 | `Collapse` | 5 | 2 | 1 |
 | `Divider` | 3 | 0 | 0 |
@@ -89,6 +89,9 @@
 | `rowStyle` | `(row: T, index: number) => Record<string, string>` | — | 否 | 行内联样式回调：(row, index) => 样式对象 |
 | `cellClass` | `(colKey: string, row: T, index: number) => string` | — | 否 | 单元格类名回调：(colKey, row, index) => class 串 |
 | `cellStyle` | `(colKey: string, row: T, index: number) => Record<string, string>` | — | 否 | 单元格内联样式回调：(colKey, row, index) => 样式对象 |
+| `rowLine` | `(row: T, index: number) => RowLineColor \| undefined` | — | 否 | 行级左边线回调：(row, index) => 语义色名，该行最左缘画对应颜色竖线；返回 undefined 不显示。 与 rowLineKey 并存时本回调优先（设置了即接管整行判定，返回 undefined 也不会回落到字段映射） |
+| `rowLineKey` | `string` | `''` | 否 | 行线字段名：取行数据该字段值查 lineColors 映射，命中语义色名才画线（rowLine 未设置时生效） |
+| `lineColors` | `Record<string, RowLineColor>` | `() => ({})` | 否 | 行线字段值 → 语义色名映射（配合 rowLineKey） |
 | `shotMode` | `'preview' \| 'download' \| 'copy'` | `'preview' as 'preview' \| 'download' \| 'copy'` | 否 | 截图行为模式：'preview' 弹窗预览 \| 'download' 直接下载 \| 'copy' 直接复制到剪贴板 |
 | `screenshotMaxRows` | `number` | `400` | 否 | 截图最大行数（超过提醒用户先筛选，避免生成超大 canvas 卡死） |
 
@@ -167,6 +170,11 @@
 | `highlight` | `boolean` | — | 否 | 高亮描边（强调当前选中/活动卡片） |
 | `summary` | `boolean` | — | 否 | 摘要形态：压缩内边距的紧凑布局 |
 | `overflowVisible` | `boolean` | — | 否 | 允许内容溢出卡片边界（用于包含下拉/弹出组件的场景） |
+| `accent` | `'primary' \| 'success' \| 'warning' \| 'danger' \| 'info'` | — | 否 | 卡片头部标题左侧的状态竖条颜色（accent bar）。不传 = 无竖条。 常用于列表/看板里按状态给卡片分类着色（2026-10-04 用户需求）。 |
+| `corner` | `string` | — | 否 | 角标文案（如「NEW」「热」「异常」）。传入即渲染；dot 形态下文字视觉隐藏、读屏仍读。 折角形态属装饰性几何三角；语义三角（排序/涨跌/警告）请用 IconSvg。 依赖卡片 overflow:hidden 裁切——与 overflowVisible 同用时丝带两端会露出卡外。 |
+| `cornerColor` | `'primary' \| 'success' \| 'warning' \| 'danger' \| 'info'` | `'primary'` | 否 | 角标底色（语义色，默认 primary） |
+| `cornerVariant` | `'ribbon' \| 'pill' \| 'dot'` | `'ribbon'` | 否 | 角标形态：ribbon 45° 折角丝带（实心底，装饰三角）\| pill 透明浅底胶囊（-bg 底 + -text 字， 悬浮不遮挡内容）\| dot 状态圆点（-solid 饱和点 + pulse 扩散环，文字读屏可读）。默认 ribbon。 |
+| `cornerPosition` | `'top-right' \| 'top-left' \| 'bottom-right' \| 'bottom-left'` | `'top-right'` | 否 | 角标位置（默认 top-right）。悬浮定位不占布局空间。 |
 | `value` | `string \| number` | — | 否 | 统计数值 |
 | `label` | `string` | — | 否 | 数值下方的标签文案 |
 | `icon` | `string` | `'circle-alert'` | 否 | 统计图标（IconSvg 图标名） |

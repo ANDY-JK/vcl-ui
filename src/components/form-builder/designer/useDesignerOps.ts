@@ -24,6 +24,7 @@ import {
   type DesignerNodeType,
   type FormMeta,
 } from './types'
+import { collectFieldKeys, uniquifyFieldKey } from './key-utils'
 
 const t = useT()
 
@@ -184,7 +185,7 @@ export function useDesignerOps(host: DesignerOpsHost) {
 
   /** 生成不与现有节点冲突的字段 key 序号（避免删除中间节点后 fieldN 撞 key 串数据） */
   function nextFieldSeq(): number {
-    const used = new Set(flattenNodes(host.nodes()).map((n) => n.key))
+    const used = collectFieldKeys(host.nodes())
     let i = used.size + 1
     while (used.has(`field${i}`)) i++
     return i
@@ -245,12 +246,13 @@ export function useDesignerOps(host: DesignerOpsHost) {
     // 不能循环逐个 patch——受控 props 回写是异步的，循环内 host.nodes() 拿不到上一轮结果，
     // 第二次插入会基于旧树覆盖第一次写入（表现为多选批量复制只 +1）。
     let next = host.nodes()
+    const used = collectFieldKeys(next)
     const copyIds: string[] = []
     const ordered = idList.filter((id) => order.has(id)).sort((a, b) => order.get(a)! - order.get(b)!)
     for (const id of ordered) {
       const node = findNode(next, id)
       if (!node) continue
-      const copy = cloneNode(node)
+      const copy = cloneNode(node, used)
       // 插入到源节点的同父级之后：容器内子字段复制后仍留在原容器（扁平索引插根级会跑到画布末尾）
       const loc = findParent(next, id)
       if (!loc) {
@@ -273,21 +275,27 @@ export function useDesignerOps(host: DesignerOpsHost) {
   /** 被复制的节点（深拷贝数组，避免后续编辑污染剪贴板；id 在粘贴时重新生成） */
   let clipboardNodes: DesignerNode[] = []
 
-  /** 深拷贝节点并生成新 id（key 加 _copy 后缀避免重复） */
-  function cloneNode(node: DesignerNode): DesignerNode {
+  /** 深拷贝节点并生成新 id / 新 key（key 经 uniquifyFieldKey 去重；子字段 key 同样重排——
+   *  旧实现只重排 id，复制带子字段的容器会出现两份相同子 key，formData 互相覆盖） */
+  function cloneNode(node: DesignerNode, used: Set<string>): DesignerNode {
     const copy: DesignerNode = deepClone(node)
     copy.id = uuid('n')
-    if (node.key) copy.key = node.key + '_copy'
-    // 递归重生成子节点 id，避免与新节点 id 冲突
-    if (copy.children?.length) {
-      const rekey = (list: DesignerNode[]): void => {
-        for (const child of list) {
-          child.id = uuid('n')
-          if (child.children?.length) rekey(child.children)
-        }
-      }
-      rekey(copy.children)
+    if (copy.key) {
+      copy.key = uniquifyFieldKey(copy.key + '_copy', used)
+      used.add(copy.key)
     }
+    // 递归重生成子节点 id 与 key，避免与新节点冲突
+    const rekey = (list: DesignerNode[]): void => {
+      for (const child of list) {
+        child.id = uuid('n')
+        if (child.key) {
+          child.key = uniquifyFieldKey(child.key + '_copy', used)
+          used.add(child.key)
+        }
+        if (child.children?.length) rekey(child.children)
+      }
+    }
+    if (copy.children?.length) rekey(copy.children)
     return copy
   }
 
@@ -324,10 +332,11 @@ export function useDesignerOps(host: DesignerOpsHost) {
     }
     snapshot()
     let next = host.nodes()
+    const used = collectFieldKeys(next)
     let anchor = id
     let lastId = ''
     for (const raw of clipboardNodes) {
-      const copy = cloneNode(raw)
+      const copy = cloneNode(raw, used)
       const loc = findParent(next, anchor)
       if (!loc) {
         next = [...next, copy]
@@ -400,19 +409,48 @@ export function useDesignerOps(host: DesignerOpsHost) {
   }
 
   function updateNode(id: string, patchObj: Partial<DesignerNode>): void {
+    // key 统一闸口：非空 + 全树唯一（重复 key 会让 formData 互相覆盖）。
+    // 冲突时丢弃本次 key 修改并提示，其余属性照常写入；label 联动改名路径
+    // 在 onLabelChange 自行降级，不会把冲突 key 递到这里
+    let patch = patchObj
+    if (patch.key !== undefined) {
+      const node = findNode(host.nodes(), id)
+      const nextKey = String(patch.key).trim()
+      const changed = nextKey !== (node?.key ?? '')
+      if (changed && (!nextKey || collectFieldKeys(host.nodes()).has(nextKey))) {
+        host.showTip(nextKey ? t('fbd.keyDuplicate') : t('fbd.keyRequired'))
+        const rest = { ...patch }
+        delete rest.key
+        if (!Object.keys(rest).length) return
+        patch = rest
+      } else if (changed) {
+        patch = { ...patch, key: nextKey }
+      }
+    }
     // 属性编辑进撤销栈：对同一字段的连续编辑合并为一个撤销单元（首次编辑时快照一次）
     if (editingPropId !== id) {
       snapshot()
       editingPropId = id
     }
-    host.patch(updateNodeInTree(host.nodes(), id, patchObj))
+    host.patch(updateNodeInTree(host.nodes(), id, patch))
   }
 
   function onLabelChange(id: string, label: string): void {
     const node = findNode(host.nodes(), id)
     if (!node) return
     const autoKey = /^field\d+$/.test(node.key ?? '') || !node.key
-    updateNode(id, { label, ...(autoKey ? { key: label.trim() || node.key } : {}) })
+    const patch: Partial<DesignerNode> = { label }
+    if (autoKey) {
+      // 标签同步进 key 仅限 \w+（extractFields 的 {{key}} 依赖此格式，中文/连字符 key 会断联动），
+      // 且不与其它字段冲突；不满足则保持自动 key（fieldN）——中文标签不再产出中文 key
+      const candidate = label.trim()
+      if (/^\w+$/.test(candidate)) {
+        const used = collectFieldKeys(host.nodes())
+        used.delete(node.key ?? '')
+        if (!used.has(candidate)) patch.key = candidate
+      }
+    }
+    updateNode(id, patch)
   }
 
   return {

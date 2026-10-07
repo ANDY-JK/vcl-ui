@@ -253,10 +253,8 @@ export interface DesignerValidation {
   signatureRequired?: boolean
 }
 
-/** 样式配置 */
+/** 样式配置（字段级）——仅保留 FormRenderer 实际消费的键；labelWidth/customCss 曾是无消费者的死设置已删 */
 export interface DesignerStyleConfig {
-  /** 标签宽度 */
-  labelWidth?: 'default' | '80px' | '120px' | 'auto'
   /** 标签位置 */
   labelPosition?: 'left' | 'top' | 'hidden'
   /** 控件宽度 */
@@ -271,8 +269,6 @@ export interface DesignerStyleConfig {
   borderColor?: string
   /** 聚焦边框色（十六进制） */
   focusBorderColor?: string
-  /** 自定义 CSS 代码 */
-  customCss?: string
 }
 
 /** 事件配置 */

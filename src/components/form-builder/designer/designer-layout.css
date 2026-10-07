@@ -6,17 +6,34 @@
   height: calc(640px * var(--vcl-scale));
   min-height: calc(340px * var(--vcl-scale));
   /* 窄视口下画布列被 min-width:0 压到极窄（空态提示逐字竖排）——
-     画布有 260px 下限，总宽超出时在主体内横向滚动，不挤破页面 */
+     已由下方 @container 分级收起面板兜住（≤759px 画布独占，760~1079px 保属性），
+     主体内横向滚动仅作最后防线 */
   overflow-x: auto;
   /* 容器查询：窄屏时自动收起大纲列（替代 JS ResizeObserver 检测） */
   container-type: inline-size;
   container-name: designer;
 }
 
-/* 窄屏（<1080px）自动收起大纲列及其分隔条 — 纯 CSS 布局响应，无 JS 开销 */
+/* 窄屏（<1080px）自动收起大纲列及其分隔条 — 纯 CSS 布局响应，无 JS 开销。
+   窄屏保画布分级：≤759px 三面板全收画布独占；760~1079px 收大纲与组件库、保属性编辑
+   （画布最窄 = 容器 − 属性面板上限 420 ≥ 340px）。此前只有大纲有此待遇，
+   390px 手机档组件库+属性面板曾把画布挤成 0 宽（flex min-width:0 被固定宽邻居吃满）。
+   面板显隐 JS 状态不动，恢复宽容器即还原布局 */
+@container designer (max-width: 759px) {
+  .ldp-panel,
+  .ldo-panel,
+  .ldp-props,
+  .ld-splitter--palette,
+  .ldo-panel + .ld-splitter,
+  .ld-splitter--props {
+    display: none;
+  }
+}
+
 @container designer (max-width: 1079px) {
   .ldo-panel,
-  .ldo-panel + .ld-splitter {
+  .ldo-panel + .ld-splitter,
+  .ld-splitter--palette {
     display: none;
   }
 }

@@ -140,17 +140,13 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       if (f.scanLength !== undefined && f.scanLength > 0) base.props = { ...base.props, scanLength: f.scanLength }
     }
 
-    // 条件显示映射
+    // 条件显示映射。条件值原样下发为字符串，不再强转 true/false/数字——
+    // 强转曾把选项值 '1' 与 equals 1 判成永不相等（isFieldVisible 严格比较）；
+    // 匹配统一由运行时 looseEquals 做 String 归一，设计器「所见即所配」
     if (f.visibleWhenField) {
-      let matchValue: unknown = f.visibleWhenValue ?? ''
-      const raw = f.visibleWhenValue?.trim()
-      if (raw === 'true') matchValue = true
-      else if (raw === 'false') matchValue = false
-      else if (raw !== '' && raw !== undefined && !isNaN(Number(raw))) matchValue = Number(raw)
-
       base.visibleWhen = {
         field: f.visibleWhenField,
-        equals: matchValue,
+        equals: f.visibleWhenValue ?? '',
         ...(f.visibleWhenNot ? { not: true } : {}),
       }
     }
@@ -161,14 +157,9 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       [f.disabledWhenField, f.disabledWhenValue, f.disabledWhenNot, 'disabledWhen'],
     ] as const) {
       if (!condField) continue
-      let matchValue: unknown = condValue ?? ''
-      const raw = condValue?.trim()
-      if (raw === 'true') matchValue = true
-      else if (raw === 'false') matchValue = false
-      else if (raw !== '' && raw !== undefined && !isNaN(Number(raw))) matchValue = Number(raw)
       base[target] = {
         field: condField,
-        equals: matchValue,
+        equals: condValue ?? '',
         ...(condNot ? { not: true } : {}),
       }
     }

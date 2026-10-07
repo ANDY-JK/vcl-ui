@@ -7,7 +7,7 @@
 | 组件 | Props 数 | Events 数 | Slots 数 |
 | --- | --- | --- | --- |
 | `FormDesigner` | 5 | 4 | 0 |
-| `FormBuilder` | 6 | 6 | 0 |
+| `FormBuilder` | 7 | 6 | 0 |
 | `FormRenderer` | 5 | 2 | 0 |
 | `FieldError` | 1 | 0 | 0 |
 | `FormCollect` | 6 | 1 | 0 |
@@ -115,6 +115,7 @@
 | `storageKey` | `string` | `''` | 否 | 存储键 — 传入则自动持久化到 IndexedDB（草稿） |
 | `readonly` | `boolean` | `false` | 否 | 只读模式 |
 | `disabled` | `boolean` | `false` | 否 | 是否禁用全部字段 |
+| `hideHeader` | `boolean` | `false` | 否 | 隐藏标题/描述头部（宿主已自行渲染头部时用，避免双重标题） |
 | `userContext` | `Record<string, unknown>` | `() => ({})` | 否 | 当前用户上下文（动态默认值 currentUser 用；宿主注入真实用户信息） |
 
 ### Events

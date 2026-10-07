@@ -110,4 +110,63 @@ describe('useFormSchema composable', () => {
     expect(s.fieldMap.value.has('b')).toBe(true)
     expect(s.fieldMap.value.has('a')).toBe(false)
   })
+
+  it('显式 undefined 键不覆盖默认值（toFormSchema 恒写 submitText/resetText，undefined 曾盖掉兜底）', () => {
+    const baseline = normalizeSchema({ fields: [] })
+    const n = normalizeSchema({
+      fields: [],
+      title: undefined,
+      submitText: undefined,
+      resetText: undefined,
+      hideActions: undefined,
+      validateOnChange: undefined,
+    } as FormSchema)
+    expect(n.submitText).toBe(baseline.submitText)
+    expect(n.resetText).toBe(baseline.resetText)
+    expect(n.hideActions).toBe(baseline.hideActions)
+    expect(n.validateOnChange).toBe(baseline.validateOnChange)
+  })
+
+  it('显式非 undefined 值仍然覆盖默认值', () => {
+    const n = normalizeSchema({ fields: [], submitText: '立即上报', resetText: '' } as FormSchema)
+    expect(n.submitText).toBe('立即上报')
+    expect(n.resetText).toBe('')
+  })
+})
+
+describe('isFieldVisible 宽松匹配（设计器条件值所见即所配）', () => {
+  it('数字字符串互通：条件值 "1" 命中字符串 "1" 与数字 1', () => {
+    const f = field('text', 'b', { visibleWhen: { field: 'type', equals: '1' } })
+    expect(isFieldVisible(f, { type: '1' })).toBe(true)
+    expect(isFieldVisible(f, { type: 1 })).toBe(true)
+    expect(isFieldVisible(f, { type: '2' })).toBe(false)
+  })
+
+  it('旧 schema 数字 equals 向后兼容：equals 1 命中字符串 "1"', () => {
+    const f = field('text', 'b', { visibleWhen: { field: 'type', equals: 1 } })
+    expect(isFieldVisible(f, { type: '1' })).toBe(true)
+    expect(isFieldVisible(f, { type: 1 })).toBe(true)
+  })
+
+  it('布尔互通：equals true 命中 true 与 "true"；"false" 不命中', () => {
+    const f = field('switch', 'b', { visibleWhen: { field: 'on', equals: true } })
+    expect(isFieldVisible(f, { on: true })).toBe(true)
+    expect(isFieldVisible(f, { on: 'true' })).toBe(true)
+    expect(isFieldVisible(f, { on: false })).toBe(false)
+    expect(isFieldVisible(f, { on: 'false' })).toBe(false)
+  })
+
+  it('空串条件不误配 undefined/null（与旧严格语义一致）', () => {
+    const f = field('text', 'b', { visibleWhen: { field: 'type', equals: '' } })
+    expect(isFieldVisible(f, { type: '' })).toBe(true)
+    expect(isFieldVisible(f, {})).toBe(false)
+    expect(isFieldVisible(f, { type: null })).toBe(false)
+  })
+
+  it('not 反向取反在宽松匹配下照常工作', () => {
+    const f = field('text', 'b', { visibleWhen: { field: 'type', equals: '1', not: true } })
+    expect(isFieldVisible(f, { type: '2' })).toBe(true)
+    expect(isFieldVisible(f, { type: '1' })).toBe(false)
+    expect(isFieldVisible(f, { type: 1 })).toBe(false)
+  })
 })

@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | `Toast` | 8 | 0 | 0 |
 | `Loading` | 9 | 0 | 0 |
-| `Popover` | 6 | 0 | 2 |
+| `Popover` | 7 | 0 | 2 |
 | `Result` | 5 | 1 | 2 |
 | `Drawer` | 11 | 4 | 3 |
 | `OfflineIndicator` | 0 | 0 | 0 |
@@ -86,6 +86,7 @@
 | `text` | `string` | — | 否 | 纯文字快捷模式 → tooltip 行为 |
 | `position` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | 否 | tooltip 方向 |
 | `zIndex` | `number \| string` | — | 否 | 浮层 z-index（数字或 CSS 变量字符串）；默认走 --vcl-z-dropdown 变量 |
+| `arrow` | `boolean` | — | 否 | 指向三角（箭头）：浮层贴触发器一侧渲染 45° 菱形三角并自动对准触发器中心。 默认 false——2026-10-02 定案气泡无箭头；此开关为需要强指向场景的可选项。 |
 
 ### Slots
 

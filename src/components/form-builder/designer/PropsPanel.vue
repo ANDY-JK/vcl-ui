@@ -215,6 +215,7 @@ watch(
               :placeholder="t('fbp.fieldKeyPh')"
               @update:model-value="emit('update', { key: $event === null ? '' : String($event) })"
             />
+            <span class="ldp-prop-hint">{{ t('fbp.keyHint') }}</span>
           </div>
 
           <div class="ldp-prop ldp-prop-readonly">
@@ -537,23 +538,6 @@ watch(
       <div v-show="activeTab === 'style' && !isContainer" class="ldp-prop-page">
         <div class="ldp-section-title">{{ t('fbp.sectionLabel') }}</div>
         <div class="ldp-prop">
-          <label>{{ t('fbp.labelWidth') }}</label>
-          <Select
-            :model-value="node.styleConfig?.labelWidth ?? 'default'"
-            :options="[
-              { value: 'default', label: t('fbp.labelWidthDefault') },
-              { value: '80px', label: '80px' },
-              { value: '120px', label: '120px' },
-              { value: 'auto', label: t('fbp.auto') },
-            ]"
-            @update:model-value="
-              emit('update', {
-                styleConfig: { ...node.styleConfig, labelWidth: $event as 'default' | '80px' | '120px' | 'auto' },
-              })
-            "
-          />
-        </div>
-        <div class="ldp-prop">
           <label>{{ t('fbp.labelPosition') }}</label>
           <Select
             :model-value="node.styleConfig?.labelPosition ?? 'left'"
@@ -671,20 +655,6 @@ watch(
             :placeholder="t('fbp.customClassPh')"
             @update:model-value="
               emit('update', { styleConfig: { ...node.styleConfig, customClass: String($event ?? '') } })
-            "
-          />
-        </div>
-        <div class="ldp-prop">
-          <label>{{ t('fbp.customCss') }}</label>
-          <textarea
-            class="ldp-options-editor"
-            :value="node.styleConfig?.customCss ?? ''"
-            :placeholder="t('fbp.customCssPh')"
-            rows="3"
-            @input="
-              emit('update', {
-                styleConfig: { ...node.styleConfig, customCss: ($event.target as HTMLTextAreaElement).value },
-              })
             "
           />
         </div>

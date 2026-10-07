@@ -226,7 +226,6 @@ const uploadProps = computed(() => ({
 // ════════════════════════════════════════
 
 interface StyleConfig {
-  labelWidth?: string
   labelPosition?: 'left' | 'top' | 'hidden'
   controlWidth?: string
   size?: 'small' | 'default' | 'large'
@@ -234,7 +233,6 @@ interface StyleConfig {
   customClass?: string
   borderColor?: string
   focusBorderColor?: string
-  customCss?: string
 }
 
 /** 字段样式配置（来自 field.props.styleConfig） */

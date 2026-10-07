@@ -11,6 +11,7 @@ import { downloadBlob } from '@/components/_internal/utils'
 import { copyText } from '@/components/_internal/useCopy'
 import { decodeShareCode, SHARE_CODE_PREFIX } from './share'
 import { FORM_DESIGN_VERSION, type DesignerNode, type FormDesign, type FormMeta } from './types'
+import { uniquifyFieldKey } from './key-utils'
 
 const t = useT()
 
@@ -137,6 +138,23 @@ export function useFormIO(host: FormIOHost) {
       } else {
         throw new Error(t('fbd.importStructureErr'))
       }
+
+      // key 唯一性兜底：手写/历史 JSON 可能携带重复 key（formData 会互相覆盖）。
+      // 首个出现者保留原 key，后续重复者追加 _2/_3…（含容器子字段）；
+      // used 从空集随遍历累积——预填充会把重复 key 的首个出现者也改名
+      const used = new Set<string>()
+      const dedupeKeys = (list: DesignerNode[]): DesignerNode[] =>
+        list.map((n) => {
+          const copy: DesignerNode = { ...n }
+          if (copy.key) {
+            const unique = uniquifyFieldKey(copy.key, used)
+            if (unique !== copy.key) copy.key = unique
+            used.add(copy.key)
+          }
+          if (copy.children?.length) copy.children = dedupeKeys(copy.children)
+          return copy
+        })
+      nodes = dedupeKeys(nodes)
 
       host.snapshot()
       host.patch(nodes)

@@ -65,7 +65,13 @@ export function normalizeSchema(
     | 'labelWidth'
     | 'submitConfig'
   > {
-  const merged = { ...defaultSchema(), ...schema }
+  const merged: Partial<FormSchema> = { ...defaultSchema() }
+  // 显式 undefined 视为「未设置」保留默认值。toFormSchema 恒写 submitText/resetText 等
+  // 顶层键（meta 未设时值为 undefined），直接展开会让 undefined 盖掉 defaultSchema——
+  // 表现为发布端/收集端提交与重置按钮文字空白（曾复现）。逐键跳过 undefined 才是「缺省」语义。
+  for (const [k, v] of Object.entries(schema)) {
+    if (v !== undefined) (merged as Record<string, unknown>)[k] = v
+  }
   // fields 确保非空数组
   if (!merged.fields || merged.fields.length === 0) {
     merged.fields = []
@@ -303,8 +309,21 @@ export function isFieldVisible(field: FormField, data: FormData): boolean {
   if (!field.visibleWhen) return true
   const { field: refKey, equals, not } = field.visibleWhen
   const actual = data[refKey]
-  const match = actual === equals
+  const match = looseEquals(actual, equals)
   return not ? !match : match
+}
+
+/**
+ * 条件值宽松匹配：严格相等直通，其余按 String 归一比较。
+ * 设计器条件值恒为字符串（用户输入 '1'），而字段值可能是数字 1、字符串 '1' 或布尔——
+ * 严格 === 会把「选项值 '1' × 条件值 '1'」之外的合法组合误判成永不成立
+ * （旧版 toFormSchema 强转数字又造成选项值 '1' × equals 1 失配，两头堵不齐）。
+ * String 归一让 '1'/1/'true'/true 互通：String(true)='true' 恰与设计器输入字面一致；
+ * undefined/null 归一为 'undefined'/'null' 不会误配空串条件（与旧严格语义一致）。
+ */
+function looseEquals(actual: unknown, equals: unknown): boolean {
+  if (actual === equals) return true
+  return String(actual) === String(equals)
 }
 
 // ════════════════════════════════════════
