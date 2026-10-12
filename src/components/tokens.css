@@ -124,6 +124,8 @@
   --vcl-nav-hover-bg: rgba(0, 82, 255, 0.06);
   --vcl-nav-active-bg: var(--vcl-color-primary); /* 暗色两块在各自块尾覆写为深化蓝 */
   --vcl-nav-sep: rgba(19, 22, 31, 0.08);
+  /* 底图压暗度（demo 站 body::after 消费）：亮色不压暗 */
+  --vcl-glass-photo-dim: 0;
 
   /* 状态色 */
   --vcl-color-success: #22ad5f;
@@ -433,6 +435,8 @@
   --vcl-glass-border: rgba(255, 255, 255, 0.1);
   --vcl-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
   --vcl-glass-card: rgba(26, 29, 36, 0.6);
+  /* 底图压暗度（demo 站 body::after 消费）：亮暖图压暗，防棕灰浑浊 */
+  --vcl-glass-photo-dim: 0.62;
   /* 导航自适应族 — 暗色变体（深玻璃上浅字，沿用原 sidebar-text 系） */
   --vcl-nav-text: #8b92a0;
   --vcl-nav-text-muted: #6f7684;
@@ -539,6 +543,8 @@
     --vcl-glass-border: rgba(255, 255, 255, 0.1);
     --vcl-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
     --vcl-glass-card: rgba(26, 29, 36, 0.6);
+    /* 底图压暗度 — 与手动暗色块同值 */
+    --vcl-glass-photo-dim: 0.62;
     /* 导航自适应族 — 与手动暗色块同值 */
     --vcl-nav-text: #8b92a0;
     --vcl-nav-text-muted: #6f7684;
