@@ -6,7 +6,8 @@
  * 逐像素按「垂直渐变天空 + 三层 sin 曲线沙丘（受光亮坡/背光深坡）+ 地平线雾带」
  * 合成出有光影体积的照片感画面，PNG 编码复用 gen-demo-assets.mjs 的实现。
  *
- * 调色原则（对照参考图）：低饱和、高明度、顶部灰雾、地平线最亮；丘面往下加深。
+ * 调色原则（对照参考图采样）：低饱和、高明度、顶部灰雾、地平线最亮；丘面往下加深。
+ * 冷暖分工：天空冷灰蓝（通透）、丘面暖沙（温度），两层不要互相串味。
  * 用法：node scripts/gen-glass-wallpaper.mjs
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -69,13 +70,16 @@ const hex = (h) => {
 }
 const lerp = (a, b, k) => a + (b - a) * Math.min(1, Math.max(0, k))
 
-/** 天空：顶部灰雾 → 地平线暖亮（offset 与颜色对照参考图采样） */
+/** 天空：冷灰蓝 → 雾带近白（采样自参考图 #a6b5bc → #e9e8e1；
+    冷雾调是整张画面的可读性与高级感的关键——第一版误用暖褐灰被用户判土黄味） */
 const SKY = [
-  [0, hex('#a6a29a')],
-  [0.3, hex('#c3b9a8')],
-  [0.52, hex('#e9dcc2')],
-  [0.58, hex('#ecdfc6')],
-  [1, hex('#ecdfc6')],
+  [0, hex('#a6b5bc')],
+  [0.15, hex('#b6c2c0')],
+  [0.3, hex('#c6cec8')],
+  [0.42, hex('#dde0d8')],
+  [0.52, hex('#eae9e2')],
+  [0.58, hex('#e9e8e1')],
+  [1, hex('#e9e8e1')],
 ]
 function skyAt(y) {
   for (let i = 1; i < SKY.length; i++) {
@@ -91,11 +95,12 @@ function skyAt(y) {
 
 const ridgeY = (x, base, amp, freq, phase) => base + amp * Math.sin((x / W) * freq * Math.PI * 2 + phase)
 
-/** 三层沙丘：受光面亮（top）、往画面底部转深（bot）；edge = 沿坡羽化带宽度 */
+/** 三层沙丘：受光面亮（top）、往画面底部转深（bot）；edge = 沿坡羽化带宽度。
+    远层顶亮压灰白（融进雾里），中层受光暖沙主坡，层底转深灰压住画面 */
 const LAYERS = [
-  { base: H * 0.545, amp: H * 0.042, freq: 2.3, phase: 0.8, top: hex('#d9c9a7'), bot: hex('#b9a989'), edge: 10 },
-  { base: H * 0.63, amp: H * 0.052, freq: 1.5, phase: 2.9, top: hex('#efdcb6'), bot: hex('#c9b590'), edge: 14 },
-  { base: H * 0.775, amp: H * 0.068, freq: 1.1, phase: 5.1, top: hex('#e4cd9e'), bot: hex('#a18a6c'), edge: 18 },
+  { base: H * 0.545, amp: H * 0.042, freq: 2.3, phase: 0.8, top: hex('#e6e3d9'), bot: hex('#8a7d6b'), edge: 10 },
+  { base: H * 0.63, amp: H * 0.052, freq: 1.5, phase: 2.9, top: hex('#e4e0d6'), bot: hex('#c9b590'), edge: 14 },
+  { base: H * 0.775, amp: H * 0.068, freq: 1.1, phase: 5.1, top: hex('#e4cd9e'), bot: hex('#8f8270'), edge: 18 },
 ]
 const SUN = { cx: W * 0.66, cy: H * 0.4, r: W * 0.42, color: hex('#f7eedd'), peak: 0.75 }
 const HAZE = { center: H * 0.53, sigma: H * 0.075, peak: 0.5 }
