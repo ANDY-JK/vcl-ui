@@ -15,8 +15,10 @@
   max-width: 90vw;
   display: flex;
   flex-direction: column;
-  background: var(--vcl-color-surface);
-  box-shadow: var(--vcl-shadow-lg);
+  background: var(--vcl-glass-bg-strong); /* 玻璃改版：抽屉面板毛玻璃化 */
+  backdrop-filter: blur(var(--vcl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--vcl-glass-blur));
+  box-shadow: var(--vcl-glass-shadow);
 }
 .drawer-right {
   top: 0;

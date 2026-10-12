@@ -1,5 +1,18 @@
 /* ===== 全局重置 + 工具类 + 动画（Demo 站点用） ===== */
 
+/* ===== 玻璃拟态改版（2026-10-12）：全屏风景底图 =====
+   参考门户效果：暖沙色调摄影感背景（feTurbulence 程序化沙丘纹理 + 分层暖色），
+   玻璃面板（侧栏/顶栏/内容卡）backdrop-filter 模糊悬浮其上。
+   SVG 内联 data URI —— check:offline 的零取件约束（素材随包，不外链）。
+   底图挂在 body 上（AppLayout 之下、所有玻璃层的背后）；配色 fallback 走 --vcl-color-bg。 */
+body {
+  background-color: var(--vcl-color-bg);
+  background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 1536 864%27 preserveAspectRatio=%27xMidYMid slice%27%3E%3Cdefs%3E%3ClinearGradient id=%27sky%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23cfc5b2%27/%3E%3Cstop offset=%270.4%27 stop-color=%27%23e3d5ba%27/%3E%3Cstop offset=%270.55%27 stop-color=%27%23efe0c2%27/%3E%3Cstop offset=%271%27 stop-color=%27%23e6d5b8%27/%3E%3C/linearGradient%3E%3CradialGradient id=%27sun%27 cx=%270.7%27 cy=%270.38%27 r=%270.42%27%3E%3Cstop offset=%270%27 stop-color=%27%23fff3dc%27 stop-opacity=%270.95%27/%3E%3Cstop offset=%271%27 stop-color=%27%23fff3dc%27 stop-opacity=%270%27/%3E%3C/radialGradient%3E%3ClinearGradient id=%27haze%27 x1=%270%27 y1=%270%27 x2=%270%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23efe6d6%27 stop-opacity=%270%27/%3E%3Cstop offset=%271%27 stop-color=%27%23efe6d6%27 stop-opacity=%270.85%27/%3E%3C/linearGradient%3E%3Cfilter id=%27grain%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.9%27 numOctaves=%272%27 seed=%277%27/%3E%3CfeColorMatrix type=%27matrix%27 values=%270 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.28 0 0 0 0.05 0%27/%3E%3C/filter%3E%3C/defs%3E%3Crect width=%271536%27 height=%27864%27 fill=%27url(%23sky)%27/%3E%3Crect width=%271536%27 height=%27864%27 fill=%27url(%23sun)%27/%3E%3Cpath d=%27M0,470 C240,430 480,455 760,440 C1040,425 1280,450 1536,425 L1536,864 L0,864 Z%27 fill=%27%23cdb690%27 opacity=%270.75%27/%3E%3Cpath d=%27M0,560 C300,510 560,585 900,540 C1180,505 1400,570 1536,535 L1536,864 L0,864 Z%27 fill=%27%23d8c19a%27/%3E%3Cpath d=%27M0,560 C300,510 560,585 900,540 C1180,505 1400,570 1536,535%27 stroke=%27%23f0e0c2%27 stroke-width=%273%27 fill=%27none%27 opacity=%270.7%27/%3E%3Cpath d=%27M0,690 C280,640 620,715 980,665 C1240,630 1420,700 1536,672 L1536,864 L0,864 Z%27 fill=%27%23c0a377%27/%3E%3Cpath d=%27M0,690 C280,640 620,715 980,665 C1240,630 1420,700 1536,672%27 stroke=%27%23e8d5ae%27 stroke-width=%272.5%27 fill=%27none%27 opacity=%270.75%27/%3E%3Crect width=%271536%27 height=%27864%27 filter=%27url(%23grain)%27/%3E%3Cpath d=%27M0,300 L1536,300 L1536,470 L0,470 Z%27 fill=%27url(%23haze)%27/%3E%3C/svg%3E');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+}
+
 /* ===== 全局重置 ===== */
 *,
 *::before,
@@ -17,7 +30,8 @@ body {
   font-size: calc(15px * var(--vcl-scale));
   line-height: 1.6;
   color: var(--vcl-color-text);
-  background: var(--vcl-color-bg);
+  /* 背景交给上方玻璃改版 body 块（底图+暖沙 fallback）；此处不再写 background shorthand——
+     shorthand 会把 background-image 重置回 none（吃过一次亏） */
   -webkit-font-smoothing: antialiased;
 }
 

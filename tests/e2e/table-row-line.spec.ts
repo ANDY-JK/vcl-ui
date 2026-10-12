@@ -84,6 +84,16 @@ test('固定列不被行线破坏：勾选列仍 sticky，线画在其左缘伪�
   })
   expect(info.isStickyLeft, '勾选列挂 col-fixed-left').toBe(true)
   expect(info.tdPosition, '回归点：行线不得把 sticky 顶成 relative/static').toBe('sticky')
-  expect(info.lineColor, 'primary 语义色 #4f6ef7').toBe('rgb(79, 110, 247)')
+  // 行线色 = primary 令牌的实测渲染色（2026-10-12 主色换 #0052ff，硬编码旧 hex 会被换肤打回；
+  // 探针 span 引令牌求值，换主色后本断言自动跟随）
+  const expectRgb = await td.evaluate((el) => {
+    const probe = document.createElement('span')
+    probe.style.color = 'var(--vcl-color-primary)'
+    document.body.appendChild(probe)
+    const v = getComputedStyle(probe).color
+    probe.remove()
+    return v
+  })
+  expect(info.lineColor, `行线 = primary 语义色（令牌实测 ${expectRgb}）`).toBe(expectRgb)
   expect(info.lineLeft, '线钉在固定列左缘').toBe(0)
 })

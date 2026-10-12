@@ -6,6 +6,10 @@
    容器查询按「查询容器的后代」匹配，此前把它挂在 .content-body，而 .sidebar 是它的兄弟节点，
    @container layout 永远不匹配——移动端抽屉规则整段失效（汉堡按钮点了没反应、侧栏仍占位）。
    挂到根节点后查询宽度 = 视口宽，与 JS 侧 `innerWidth < BP_MD` 的移动端判定同源。 */
+/* ===== 玻璃拟态改版（2026-10-12，参考 MyBusiness 门户）=====
+   底图由 demo 站 body 提供（site.css）；本壳层四块玻璃浮岛：
+   侧栏（deep 通透）/ 顶栏 / 底栏（strong 更实）/ content-body（大玻璃卡）。
+   侧栏文字色换 --vcl-nav-* 自适应族（原恒深底假设随玻璃化失效）。 */
 .vcl-app-layout {
   display: flex;
   height: 100vh;
@@ -27,7 +31,9 @@
 .sidebar {
   width: var(--vcl-sidebar-width);
   min-width: var(--vcl-sidebar-width);
-  background: var(--vcl-color-sidebar);
+  background: var(--vcl-glass-bg-deep);
+  backdrop-filter: blur(var(--vcl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--vcl-glass-blur));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -64,8 +70,8 @@
   gap: var(--vcl-space-3);
   padding: var(--vcl-space-5) var(--vcl-space-4);
   min-height: calc(56px * var(--vcl-scale));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--vcl-color-sidebar-text-active);
+  border-bottom: 1px solid var(--vcl-nav-sep);
+  color: var(--vcl-color-text);
 }
 
 .sidebar.collapsed {
@@ -113,7 +119,7 @@
   border: none;
   border-radius: var(--vcl-radius-sm);
   background: transparent;
-  color: var(--vcl-color-sidebar-text);
+  color: var(--vcl-nav-text);
   cursor: pointer;
   transition:
     background var(--vcl-transition-fast),
@@ -121,8 +127,8 @@
   flex-shrink: 0;
 }
 .vcl-collapse-btn:hover {
-  background: var(--vcl-color-sidebar-hover);
-  color: var(--vcl-color-sidebar-text-active);
+  background: var(--vcl-nav-hover-bg);
+  color: var(--vcl-color-text);
 }
 
 .vcl-content {
@@ -131,7 +137,7 @@
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  background: var(--vcl-color-bg);
+  background: transparent; /* 玻璃改版：透出 body 风景底图 */
   padding: var(--vcl-space-2);
 }
 
@@ -143,29 +149,12 @@
   align-items: center;
   gap: var(--vcl-space-2);
   padding: var(--vcl-space-3) calc(16px * var(--vcl-scale));
-  background:
-    linear-gradient(180deg, rgba(var(--vcl-color-primary-rgb), 0.03) 0%, transparent 2px),
-    linear-gradient(90deg, rgba(var(--vcl-color-primary-rgb), 0.015) 1px, transparent 1px) 0 0 / 3px 100%,
-    var(--vcl-color-sidebar);
+  background: var(--vcl-glass-bg-strong);
+  backdrop-filter: blur(var(--vcl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--vcl-glass-blur));
   border-radius: var(--vcl-radius-md) var(--vcl-radius-md) 0 0;
-  border-bottom: 1px solid rgba(var(--vcl-color-primary-rgb), 0.15);
+  border-bottom: 1px solid var(--vcl-nav-sep);
   overflow: hidden;
-}
-.vcl-topbar-glow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--vcl-color-primary) 20%,
-    var(--vcl-color-primary) 50%,
-    var(--vcl-color-primary) 80%,
-    transparent 100%
-  );
-  opacity: 0.5;
 }
 .vcl-topbar-hamburger {
   display: flex;
@@ -214,7 +203,7 @@
 .vcl-topbar-title {
   font-size: var(--vcl-ctrl-font-size);
   font-weight: 500;
-  color: var(--vcl-color-sidebar-text-active);
+  color: var(--vcl-color-text);
   letter-spacing: 0.2px;
   /* 标题过长不换行：空间不足时省略号，绝不竖排 */
   white-space: nowrap;
@@ -264,10 +253,10 @@
   width: calc(32px * var(--vcl-scale));
   height: calc(32px * var(--vcl-scale));
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.08); /* 微弱亮边，框出按钮区域 */
+  border: 1px solid var(--vcl-nav-sep); /* 亮玻璃上的发丝边 */
   border-radius: var(--vcl-radius-sm);
-  background: rgba(255, 255, 255, 0.04); /* 默认微白底 — 告知用户这里有功能 */
-  color: var(--vcl-color-text-secondary); /* 与 hamburger 一致的暗色图标 */
+  background: var(--vcl-glass-bg); /* 玻璃底与顶栏同层，靠发丝边框出按钮 */
+  color: var(--vcl-color-text-secondary);
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
   flex-shrink: 0;
@@ -275,8 +264,8 @@
 }
 .topbar-tool-btn:hover {
   color: var(--vcl-color-primary-on-surface);
-  background: rgba(var(--vcl-color-primary-rgb), 0.08);
-  border-color: rgba(var(--vcl-color-primary-rgb), 0.15);
+  background: var(--vcl-glass-bg);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.2);
 }
 .topbar-tool-btn:active {
   transform: scale(0.95);
@@ -292,9 +281,9 @@
 }
 /* 激活/选中态 — 有主色边框 + 微亮底色 */
 .topbar-tool-btn.active {
-  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
-  background: rgba(var(--vcl-color-primary-rgb), 0.3);
-  border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
+  color: var(--vcl-color-primary-on-surface); /* 玻璃改版顶栏变亮，深蓝字对比达标（原亮蓝 #9db1fb 退役） */
+  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.3);
 }
 .topbar-tool-btn.active:hover {
   background: rgba(var(--vcl-color-primary-rgb), 0.4);
@@ -302,9 +291,9 @@
 }
 /* 危险操作变体 — 红色激活 */
 .topbar-tool-btn.is-danger:hover {
-  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(239, 68, 68, 0.2);
+  color: var(--vcl-color-danger-on-surface);
+  background: rgba(229, 69, 69, 0.08);
+  border-color: rgba(229, 69, 69, 0.25);
 }
 .topbar-tool-btn.is-danger.active {
   color: var(--vcl-color-danger-on-surface);
@@ -317,7 +306,7 @@
   width: 1px;
   height: calc(18px * var(--vcl-scale));
   margin: 0 var(--vcl-space-1);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--vcl-nav-sep);
   flex-shrink: 0;
   border-radius: 1px;
 }
@@ -328,10 +317,10 @@
   align-items: center;
   height: calc(32px * var(--vcl-scale));
   padding: 0 var(--vcl-space-3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--vcl-nav-sep);
   border-radius: var(--vcl-radius-sm);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--vcl-color-text-muted);
+  background: var(--vcl-color-bg-hover);
+  color: var(--vcl-color-text-secondary); /* muted 压暗玻璃 4.31 不达 AA，提一档 */
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   letter-spacing: 0.2px;
@@ -341,9 +330,9 @@
   flex-shrink: 0;
 }
 .topbar-tool-text:hover {
-  color: var(--vcl-color-sidebar-text-active);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--vcl-color-text);
+  background: var(--vcl-glass-bg);
+  border-color: var(--vcl-color-border);
 }
 .topbar-tool-text:active {
   transform: scale(0.97);
@@ -355,9 +344,9 @@
 }
 /* 文字按钮 — 主色高亮态 */
 .topbar-tool-text.active {
-  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
-  background: rgba(var(--vcl-color-primary-rgb), 0.3);
-  border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
+  color: var(--vcl-color-primary-on-surface); /* 玻璃改版：亮顶栏深蓝字（原亮蓝 #9db1fb 退役） */
+  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.3);
   font-weight: 600;
 }
 .topbar-tool-text.active:hover {
@@ -366,9 +355,9 @@
 }
 /* 文字按钮 — 危险红色 */
 .topbar-tool-text.is-danger:hover {
-  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(239, 68, 68, 0.2);
+  color: var(--vcl-color-danger-on-surface);
+  background: rgba(229, 69, 69, 0.08);
+  border-color: rgba(229, 69, 69, 0.25);
 }
 .topbar-tool-text.is-danger.active {
   color: var(--vcl-color-danger-on-surface);
@@ -384,10 +373,10 @@
   flex-wrap: nowrap; /* 绝不换行 —— 图标和文字始终同排 */
   height: calc(32px * var(--vcl-scale));
   padding: 0 var(--vcl-space-3) 0 var(--vcl-space-2);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--vcl-nav-sep);
   border-radius: var(--vcl-radius-sm);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--vcl-color-text-muted);
+  background: var(--vcl-color-bg-hover);
+  color: var(--vcl-color-text-secondary); /* muted 压暗玻璃 4.31 不达 AA，提一档 */
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   white-space: nowrap;
@@ -409,9 +398,9 @@
   transform: translateY(0.5px);
 }
 .topbar-tool-label:hover {
-  color: var(--vcl-color-sidebar-text-active);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--vcl-color-text);
+  background: var(--vcl-glass-bg);
+  border-color: var(--vcl-color-border);
 }
 .topbar-tool-label:hover > svg {
   color: var(--vcl-color-primary-on-surface);
@@ -426,9 +415,9 @@
 }
 /* 图标+文字按钮 — 主色高亮态 */
 .topbar-tool-label.active {
-  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
-  background: rgba(var(--vcl-color-primary-rgb), 0.3);
-  border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
+  color: var(--vcl-color-primary-on-surface); /* 玻璃改版：亮顶栏深蓝字（原亮蓝 #9db1fb 退役） */
+  background: rgba(var(--vcl-color-primary-rgb), 0.12);
+  border-color: rgba(var(--vcl-color-primary-rgb), 0.3);
   font-weight: 600;
 }
 .topbar-tool-label.active:hover {
@@ -437,9 +426,9 @@
 }
 /* 图标+文字按钮 — 危险红色 */
 .topbar-tool-label.is-danger:hover {
-  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(239, 68, 68, 0.2);
+  color: var(--vcl-color-danger-on-surface);
+  background: rgba(229, 69, 69, 0.08);
+  border-color: rgba(229, 69, 69, 0.25);
 }
 .topbar-tool-label.is-danger:hover > svg {
   color: var(--vcl-color-danger-on-surface);
@@ -460,7 +449,7 @@
   height: calc(28px * var(--vcl-scale));
   border-radius: 50%;
   background: var(--vcl-color-primary);
-  color: var(--vcl-color-surface);
+  color: #ffffff; /* 头像白字画在实心蓝底上，不随 surface 玻璃化漂移 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -470,7 +459,7 @@
 }
 .vcl-user-name {
   font-size: var(--vcl-ctrl-font-size);
-  color: var(--vcl-color-text-muted);
+  color: var(--vcl-color-text-secondary); /* muted 压暗玻璃 4.31 不达 AA，提一档 */
   max-width: calc(100px * var(--vcl-scale));
   overflow: hidden;
   text-overflow: ellipsis;
@@ -482,9 +471,9 @@
   justify-content: center;
   width: calc(30px * var(--vcl-scale));
   height: calc(30px * var(--vcl-scale));
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--vcl-nav-sep);
   border-radius: var(--vcl-radius-md);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--vcl-glass-bg);
   color: var(--vcl-color-text-secondary);
   cursor: pointer;
   transition: all var(--vcl-transition-normal);
@@ -495,14 +484,16 @@
   background: rgba(239, 68, 68, 0.06);
 }
 
-/* ---- 内容滚动区 ---- */
+/* ---- 内容滚动区 — 玻璃改版：整块成为一张大玻璃卡（透出底图+毛玻璃模糊） ---- */
 .content-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  background: var(--vcl-color-surface);
-  border-left: 1px solid var(--vcl-color-border-light);
-  border-right: 1px solid var(--vcl-color-border-light);
+  background: var(--vcl-glass-bg);
+  backdrop-filter: blur(var(--vcl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--vcl-glass-blur));
+  border: 1px solid var(--vcl-glass-border);
+  border-radius: var(--vcl-radius-lg);
   scrollbar-width: none;
 }
 .content-body::-webkit-scrollbar {
@@ -517,30 +508,31 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--vcl-space-2) calc(16px * var(--vcl-scale));
-  background:
-    linear-gradient(0deg, rgba(var(--vcl-color-primary-rgb), 0.02) 0%, transparent 2px), var(--vcl-color-sidebar);
+  background: var(--vcl-glass-bg-strong);
+  backdrop-filter: blur(var(--vcl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--vcl-glass-blur));
   border-radius: 0 0 var(--vcl-radius-md) var(--vcl-radius-md);
-  border-top: 1px solid rgba(var(--vcl-color-primary-rgb), 0.12);
+  border-top: 1px solid var(--vcl-nav-sep);
 }
 .vcl-nav-btn {
   display: flex;
   align-items: center;
   gap: var(--vcl-space-2);
   padding: calc(7px * var(--vcl-scale)) var(--vcl-space-4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--vcl-nav-sep);
   border-radius: var(--vcl-radius-md);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--vcl-color-sidebar-text);
+  background: var(--vcl-color-bg-hover);
+  color: var(--vcl-color-text-secondary);
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   cursor: pointer;
   transition: all var(--vcl-transition-normal);
 }
 .vcl-nav-btn:hover {
-  color: var(--vcl-color-surface);
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.06);
+  color: var(--vcl-color-text);
+  border-color: var(--vcl-color-border);
+  background: var(--vcl-glass-bg);
+  box-shadow: var(--vcl-glass-shadow);
   transform: translateY(-1px);
 }
 .vcl-nav-btn:active {

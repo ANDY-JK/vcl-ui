@@ -4,8 +4,8 @@
   align-items: center;
   gap: calc(16px * var(--vcl-scale));
   padding: calc(20px * var(--vcl-scale));
-  background: var(--vcl-color-surface);
-  border: 1px solid var(--vcl-color-border);
+  background: var(--vcl-glass-card); /* 玻璃改版：透出 content-body 已模糊的底图 */
+  border: 1px solid var(--vcl-glass-border);
   border-radius: var(--vcl-radius-lg);
   cursor: pointer;
   transition:
@@ -53,8 +53,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--vcl-color-surface);
-  border: 1px solid var(--vcl-color-border);
+  background: var(--vcl-glass-card); /* 玻璃改版：透出 content-body 已模糊的底图 */
+  border: 1px solid var(--vcl-glass-border);
   border-radius: var(--vcl-radius-lg);
   overflow: hidden;
   transition: box-shadow var(--vcl-transition-fast);

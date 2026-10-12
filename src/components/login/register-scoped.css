@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #3b56e0 50%, #e54545 100%);
+  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #0046d8 50%, #e54545 100%);
   padding: var(--vcl-space-5);
   position: relative;
 }
@@ -52,8 +52,10 @@
   max-height: 85vh;
   border-radius: var(--vcl-radius-xl);
   /* 移除 overflow:hidden —— 会裁掉 Input 浮动标签（top:0 translateY(-50%)） */
-  box-shadow: var(--vcl-shadow-lg);
-  background: var(--vcl-color-surface);
+  box-shadow: var(--vcl-glass-shadow);
+  background: var(--vcl-glass-bg-strong); /* 玻璃改版：登录大卡毛玻璃化 */
+  backdrop-filter: blur(var(--vcl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--vcl-glass-blur));
   animation: slideUp 0.5s ease-out;
   z-index: 1;
   container-type: inline-size;
@@ -74,7 +76,7 @@
 /* ---- 左侧 ---- */
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #3b56e0 100%);
+  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #0046d8 100%);
   border-radius: var(--vcl-radius-xl) 0 0 var(--vcl-radius-xl);
   padding: var(--vcl-space-12) calc(44px * var(--vcl-scale));
   display: flex;
@@ -127,7 +129,7 @@
   padding: var(--vcl-space-12);
   display: flex;
   flex-direction: column;
-  background: var(--vcl-color-surface);
+  background: transparent; /* 玻璃改版：右半透明出大卡的毛玻璃 */
   border-radius: 0 var(--vcl-radius-xl) var(--vcl-radius-xl) 0;
 }
 .login-header {

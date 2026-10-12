@@ -1,5 +1,7 @@
 /* ================================================================
    共享基础：所有层级导航项通用
+   2026-10-12 玻璃拟态改版：侧栏从恒深底改亮玻璃，文字色换 --vcl-nav-* 自适应族
+   （亮色玻璃上深字、暗色深玻璃上浅字，令牌双主题各自保证对比度）。
    ================================================================ */
 .nav-level {
   display: flex;
@@ -7,7 +9,7 @@
   border: none;
   border-radius: var(--vcl-radius-md);
   background: transparent;
-  color: var(--vcl-color-sidebar-text);
+  color: var(--vcl-nav-text);
   cursor: pointer;
   transition:
     background var(--vcl-transition-fast),
@@ -61,10 +63,10 @@
   margin-bottom: 2px;
   border-radius: var(--vcl-radius-sm);
   font-weight: 700;
-  color: #dde0e8;
+  color: var(--vcl-color-text);
 }
 .nav-l1:hover {
-  color: #fff;
+  color: var(--vcl-color-primary-on-surface);
   background: transparent;
 }
 
@@ -92,17 +94,18 @@
    hover / active 状态
    ================================================================ */
 .nav-level:hover {
-  background: var(--vcl-color-sidebar-hover);
-  color: #fff;
+  background: var(--vcl-nav-hover-bg);
+  color: var(--vcl-color-text);
   opacity: 1;
 }
 .nav-level:hover > :deep(svg) {
   opacity: 1;
 }
 
+/* 选中态 — 参考门户的实心蓝胶囊白字（--vcl-nav-active-bg 双主题各指实心蓝） */
 .nav-level.active {
-  background: var(--vcl-color-sidebar-active);
-  color: var(--vcl-color-sidebar-text-active);
+  background: var(--vcl-nav-active-bg);
+  color: var(--vcl-nav-text-active);
   font-weight: 500;
   opacity: 1;
 }
@@ -110,16 +113,9 @@
   opacity: 1;
 }
 
-/* 激活指示条 — L1 无，L2+ 有 */
+/* 激活指示条 — 实心胶囊已足够醒目，撤掉叠加竖条 */
 .nav-level.active::before {
-  content: '';
-  position: absolute;
-  left: calc(4px * var(--vcl-scale));
-  top: calc(4px * var(--vcl-scale));
-  bottom: calc(4px * var(--vcl-scale));
-  width: 2px;
-  border-radius: var(--vcl-radius-sm);
-  background: var(--vcl-color-primary);
+  display: none;
 }
 .nav-l1.active::before {
   display: none;
