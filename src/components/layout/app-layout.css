@@ -179,7 +179,7 @@
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: var(--vcl-ctrl-font-size);
   color: var(--vcl-color-primary-on-surface);
-  opacity: 0.7;
+  /* 2026-10-12 去 opacity 洗白：0.7 把令牌色合成后对比跌破 AA（3.84），直接用令牌色即可 */
   margin-right: var(--vcl-space-1);
 }
 .vcl-topbar-category {
@@ -596,7 +596,7 @@
   font-size: calc(13px * var(--vcl-scale));
   color: var(--vcl-color-primary-on-surface);
   font-weight: 600;
-  opacity: 0.7;
+  /* 2026-10-12 去 opacity 洗白：0.7 把令牌色合成后对比跌破 AA（3.84），直接用令牌色即可 */
   min-width: calc(32px * var(--vcl-scale));
   text-align: right;
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;

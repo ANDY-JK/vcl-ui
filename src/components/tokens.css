@@ -81,7 +81,7 @@
   /* 中性色 — 暖沙白（2026-10-12 玻璃改版：冷灰暖化对齐参考门户的沙金气质）
      surface 暖白（玻璃面板上的实底小卡）、bg 暖沙（背景图 fallback 底色）、
      bg-alt 不透明（DataTable 吸顶表头依赖，玻璃化禁入此令牌） */
-  --vcl-color-surface: #fffdf9;
+  --vcl-color-surface: #ffffff;
   --vcl-color-bg: #f2ede6;
   --vcl-color-bg-alt: #ede8df;
 
@@ -107,19 +107,19 @@
      半透明值 + 组件层 backdrop-filter 组合出「浮岛玻璃面板」；
      暗色块须同步覆写（theme-color-guard 只拦不透明色，半透明叠加合法）。
      引用方必须同时写 background 与 backdrop-filter，缺 blur 会文字穿帮。 */
-  --vcl-glass-bg: rgba(255, 255, 255, 0.45);
-  --vcl-glass-bg-strong: rgba(255, 255, 255, 0.72);
-  --vcl-glass-bg-deep: rgba(244, 240, 233, 0.45);
+  --vcl-glass-bg: rgba(255, 255, 255, 0.55);
+  --vcl-glass-bg-strong: rgba(255, 255, 255, 0.8);
+  --vcl-glass-bg-deep: rgba(244, 240, 233, 0.55);
   --vcl-glass-blur: calc(20px * var(--vcl-scale));
   --vcl-glass-border: rgba(255, 255, 255, 0.6);
   --vcl-glass-shadow: 0 8px 32px rgba(90, 74, 50, 0.18);
-  --vcl-glass-card: rgba(255, 255, 255, 0.78);
+  --vcl-glass-card: rgba(255, 255, 255, 0.86);
   /* ===== 导航自适应族（2026-10-12 新增）=====
      壳层侧栏玻璃化后「恒深底浅字」假设失效，导航文字改自适应：
      亮色 = 玻璃上深字；暗色 = 深玻璃上浅字（值沿用原 sidebar-text 系）。
      选中态做成参考门户的实心蓝胶囊白字。 */
   --vcl-nav-text: #3f4450;
-  --vcl-nav-text-muted: #6b7078;
+  --vcl-nav-text-muted: #5d6470;
   --vcl-nav-text-active: #ffffff;
   --vcl-nav-hover-bg: rgba(0, 82, 255, 0.06);
   --vcl-nav-active-bg: var(--vcl-color-primary); /* 暗色两块在各自块尾覆写为深化蓝 */
@@ -284,8 +284,8 @@
   --vcl-space-0: 0px;
   --vcl-radius-xs: calc(4px * var(--vcl-scale));
   --vcl-bg-secondary: var(--vcl-color-bg);
-  --vcl-color-bg-soft: #f1f5f9;
-  --vcl-color-bg-hover: #f5f7fa;
+  --vcl-color-bg-soft: #f0ece4;
+  --vcl-color-bg-hover: #f6f3ec;
   --vcl-color-bg-inverse: #333333; /* 固定反色，不随主题 */
   --vcl-color-text-inverse: #ffffff;
   --vcl-color-border-dark: #94a3b8;
