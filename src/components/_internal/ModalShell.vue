@@ -193,12 +193,11 @@ function onPanelMousedown() {
 .modal-box {
   display: flex;
   flex-direction: column;
-  background: var(--vcl-glass-bg-strong); /* 玻璃改版：面板毛玻璃化，身后是压暗底图 */
+  background: var(--vcl-glass-bg-strong); /* 毛面保留：弹窗面板玻璃化（配色回退后仅弹层存续） */
   backdrop-filter: blur(var(--vcl-glass-blur));
   -webkit-backdrop-filter: blur(var(--vcl-glass-blur));
-  border: 1px solid var(--vcl-glass-border);
   border-radius: var(--vcl-radius-lg);
-  box-shadow: var(--vcl-glass-shadow);
+  box-shadow: var(--vcl-shadow-lg);
   width: calc(520px * var(--vcl-scale));
   max-height: 85vh;
   max-height: 85dvh;

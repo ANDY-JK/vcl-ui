@@ -210,6 +210,7 @@ function onProgressMouseUp() {
 
     <main class="vcl-content">
       <div class="vcl-content-topbar">
+        <div class="vcl-topbar-glow" />
         <button
           v-if="isMobile"
           class="vcl-topbar-hamburger"

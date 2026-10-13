@@ -1,32 +1,5 @@
 /* ===== 全局重置 + 工具类 + 动画（Demo 站点用） ===== */
 
-/* ===== 玻璃拟态改版（2026-10-12）：全屏风景底图 =====
-   参考门户效果：暖沙色调摄影感背景（程序化沙丘光影 + 分层暖色），
-   玻璃面板（侧栏/顶栏/内容卡）backdrop-filter 模糊悬浮其上。
-   底图为程序化合成（scripts/gen-glass-wallpaper.mjs → demo-public/），本地文件零外链。
-   底图挂在 body 的固定伪层上（见下方 ::before/::after）；配色 fallback 走 --vcl-color-bg。 */
-body {
-  background-color: var(--vcl-color-bg);
-}
-
-/* 底图与压暗罩挂在 body 的两个固定伪层上（attachment:fixed 在移动端不可靠，改 fixed 层）：
-   ::before 铺风景图；::after 按 --vcl-glass-photo-dim 压暗——亮色 0 不动，
-   暗色 0.62 把亮暖图压成暗棕，否则亮图透过深玻璃混出浑浊棕灰（v2 截图实测）。 */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  background: var(--vcl-color-bg) url('/vcl-wallpaper.png') center / cover no-repeat;
-}
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: rgba(6, 5, 3, var(--vcl-glass-photo-dim));
-}
-
 /* ===== 全局重置 ===== */
 *,
 *::before,
@@ -44,8 +17,7 @@ body {
   font-size: calc(15px * var(--vcl-scale));
   line-height: 1.6;
   color: var(--vcl-color-text);
-  /* 背景交给上方玻璃改版 body 块（底图+暖沙 fallback）；此处不再写 background shorthand——
-     shorthand 会把 background-image 重置回 none（吃过一次亏） */
+  background: var(--vcl-color-bg);
   -webkit-font-smoothing: antialiased;
 }
 

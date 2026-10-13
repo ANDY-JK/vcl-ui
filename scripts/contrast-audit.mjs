@@ -50,8 +50,6 @@ const lightPairs = [
   ['弱化/表头bg-alt', rgb(B['--vcl-color-text-muted']), rgb(B['--vcl-color-bg-alt'])],
   ['主色文字/卡片面', rgb(B['--vcl-color-primary-on-surface']), rgb(B['--vcl-color-surface'])],
   ['危险文字/卡片面', rgb(B['--vcl-color-danger-on-surface']), rgb(B['--vcl-color-surface'])],
-  ['导航文字/bg兜底', rgb(B['--vcl-nav-text']), rgb(B['--vcl-color-bg'])],
-  ['导航弱化/bg兜底', rgb(B['--vcl-nav-text-muted']), rgb(B['--vcl-color-bg'])],
   ['成功文字/成功底', rgb(B['--vcl-color-success-text']), rgb(B['--vcl-color-success-bg'])],
   ['警示文字/警示底', rgb(B['--vcl-color-warning-text']), rgb(B['--vcl-color-warning-bg'])],
   ['信息文字/信息底', rgb(B['--vcl-color-info-text']), rgb(B['--vcl-color-info-bg'])],
@@ -61,14 +59,12 @@ const solids = [
   ['白字/危险实心', WHITE, rgb(B['--vcl-color-danger-solid'])],
   ['白字/成功实心', WHITE, rgb(B['--vcl-color-success-solid'])],
   ['白字/警示实心', WHITE, rgb(B['--vcl-color-warning-solid'])],
-  ['白字/导航选中胶囊', WHITE, rgb(B['--vcl-color-primary'])],
 ]
 const darkPairs = [
   ['正文/卡片面', rgb(D['--vcl-color-text']), rgb(D['--vcl-color-surface'])],
   ['次要/卡片面', rgb(D['--vcl-color-text-secondary']), rgb(D['--vcl-color-surface'])],
   ['弱化/表头bg-alt', rgb(D['--vcl-color-text-muted']), rgb(D['--vcl-color-bg-alt'])],
   ['主色文字/卡片面', rgb(D['--vcl-color-primary-on-surface']), rgb(D['--vcl-color-surface'])],
-  ['白字/导航胶囊#1d4ed8', WHITE, rgb('#1d4ed8')],
 ]
 
 const show = (title, list) => {

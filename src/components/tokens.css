@@ -62,70 +62,40 @@
   --vcl-space-8: calc(24px * var(--vcl-scale));
   --vcl-space-10: calc(32px * var(--vcl-scale));
   --vcl-space-12: calc(40px * var(--vcl-scale));
-  /* 主色调 — 门户纯蓝（2026-10-12 玻璃拟态改版，用户指令「全部改成参考门户效果」）：
-     原紫蓝 #4f6ef7 换参考图的腾讯系纯蓝，压白底 5.75 达 AA（原 4.28 不达标）。
-     下游 -rgb/-hover/-on-surface/-light/-solid 同步换值。 */
-  --vcl-color-primary: #0052ff;
-  --vcl-color-primary-rgb: 0, 82, 255;
-  --vcl-color-primary-hover: #0046d8;
-  --vcl-color-primary-light: #e9efff;
+  /* 主色调 — 稳重蓝 */
+  --vcl-color-primary: #4f6ef7;
+  --vcl-color-primary-rgb: 79, 110, 247;
+  --vcl-color-primary-hover: #3b56e0;
+  --vcl-color-primary-light: #eef1fe;
   /* 主色「当文字/图标色用」的自适应取值 —— 组件要写 `color:` 时用这个，不要用 -solid：
      -solid 的本义是「实心底压白字」（见下方语义色实心底段），亮暗各自只为那个场景保证对比度。
      可它一旦被拿来当文字色，暗色主题就翻车：背景变深而 -solid 仍是同一个深蓝，
      实测 2.62~3.13:1，低于正文 AA 线。本令牌按主题切换：
-       亮色 = #0046d8（压白底 7.3，压浅暖灰 ≥6.2）
+       亮色 = #3b56e0（压白底 5.84，直接引 --vcl-color-primary 的 #4f6ef7 只有 4.28 不达标）
        暗色 = #6b8af9（压各档暗底 4.83~5.77）
      于是「同一处 color:」在两套主题下都达标，调用方不必写两套值。 */
-  --vcl-color-primary-on-surface: #0046d8;
+  --vcl-color-primary-on-surface: #3b56e0;
 
-  /* 中性色 — 暖沙白（2026-10-12 玻璃改版：冷灰暖化对齐参考门户的沙金气质）
-     surface 暖白（玻璃面板上的实底小卡）、bg 暖沙（背景图 fallback 底色）、
-     bg-alt 不透明（DataTable 吸顶表头依赖，玻璃化禁入此令牌） */
+  /* 中性色 — 干净白/浅灰 */
   --vcl-color-surface: #ffffff;
-  --vcl-color-bg: #f2ede6;
-  --vcl-color-bg-alt: #ede8df;
+  --vcl-color-bg: #f4f5f7;
+  --vcl-color-bg-alt: #eaecf0;
 
   /* 文字 — 高对比深灰 */
   --vcl-color-text: #13161f;
   --vcl-color-text-secondary: #505560;
   --vcl-color-text-muted: #5f6672;
 
-  /* 边框 — 可见分隔（暖灰） */
-  --vcl-color-border: #d8d2c8;
-  --vcl-color-border-light: #eae5dc;
+  /* 边框 — 可见分隔 */
+  --vcl-color-border: #d5d8de;
+  --vcl-color-border-light: #e8eaef;
 
-  /* 侧边栏 — 深灰蓝（保留：Menu 下拉/Popover 气泡/DataTable 提示条仍以它为深色底，
-     玻璃化只动壳层样式，不动本组令牌值） */
+  /* 侧边栏 — 深灰蓝 */
   --vcl-color-sidebar: #1a1f2e;
   --vcl-color-sidebar-hover: rgba(255, 255, 255, 0.08);
-  --vcl-color-sidebar-active: rgba(0, 82, 255, 0.22);
+  --vcl-color-sidebar-active: rgba(79, 110, 247, 0.22);
   --vcl-color-sidebar-text: #c0c5cf;
   --vcl-color-sidebar-text-active: #e2e5ed;
-
-  /* ===== 玻璃拟态族（2026-10-12 新增，参考 MyBusiness 门户）=====
-     backdrop-filter 毛玻璃四件套：底/强底/侧栏通透底、模糊半径、亮描边、悬浮影。
-     半透明值 + 组件层 backdrop-filter 组合出「浮岛玻璃面板」；
-     暗色块须同步覆写（theme-color-guard 只拦不透明色，半透明叠加合法）。
-     引用方必须同时写 background 与 backdrop-filter，缺 blur 会文字穿帮。 */
-  --vcl-glass-bg: rgba(255, 255, 255, 0.55);
-  --vcl-glass-bg-strong: rgba(255, 255, 255, 0.8);
-  --vcl-glass-bg-deep: rgba(244, 240, 233, 0.55);
-  --vcl-glass-blur: calc(20px * var(--vcl-scale));
-  --vcl-glass-border: rgba(255, 255, 255, 0.6);
-  --vcl-glass-shadow: 0 8px 32px rgba(90, 74, 50, 0.18);
-  --vcl-glass-card: rgba(255, 255, 255, 0.86);
-  /* ===== 导航自适应族（2026-10-12 新增）=====
-     壳层侧栏玻璃化后「恒深底浅字」假设失效，导航文字改自适应：
-     亮色 = 玻璃上深字；暗色 = 深玻璃上浅字（值沿用原 sidebar-text 系）。
-     选中态做成参考门户的实心蓝胶囊白字。 */
-  --vcl-nav-text: #3f4450;
-  --vcl-nav-text-muted: #5d6470;
-  --vcl-nav-text-active: #ffffff;
-  --vcl-nav-hover-bg: rgba(0, 82, 255, 0.06);
-  --vcl-nav-active-bg: var(--vcl-color-primary); /* 暗色两块在各自块尾覆写为深化蓝 */
-  --vcl-nav-sep: rgba(19, 22, 31, 0.08);
-  /* 底图压暗度（demo 站 body::after 消费）：亮色不压暗 */
-  --vcl-glass-photo-dim: 0;
 
   /* 状态色 */
   --vcl-color-success: #22ad5f;
@@ -148,13 +118,13 @@
   --vcl-color-warning-solid-hover: #92400e;
   --vcl-color-success-solid: #15803d;
   --vcl-color-success-solid-hover: #166534;
-  /* primary 实心底：#0052ff 压白字 5.75 已达标，实心场景直接用主色 */
-  --vcl-color-primary-solid: #0052ff;
-  --vcl-color-primary-solid-hover: #0046d8;
-  /* info 实心底：基色与 primary 同为 #0052ff，深化取 info-text 同款深蓝 #0046d8
+  /* primary 实心底：#4f6ef7 压白字仅 4.28（未达标），故实心场景用更深的蓝 */
+  --vcl-color-primary-solid: #3b56e0;
+  --vcl-color-primary-solid-hover: #2f4bd8;
+  /* info 实心底：基色与 primary 同为 #4f6ef7，深化取 info-text 同款深蓝 #1d4ed8
      （白字对比达标，且与 primary-solid 区分）。card-scoped 角标 info 变体依赖此令牌 */
-  --vcl-color-info-solid: #0046d8;
-  --vcl-color-info-solid-hover: #003bb5;
+  --vcl-color-info-solid: #1d4ed8;
+  --vcl-color-info-solid-hover: #1e40af;
   --vcl-color-danger-bg: #fef2f2;
   --vcl-color-danger-hover: #c81e1e; /* AA：原 #dc2626 压 danger-bg 实测 4.41，加深一档达标 */
   /* 危险色「当文字/图标色用」的自适应取值——与 --vcl-color-primary-on-surface 同规则。
@@ -162,9 +132,9 @@
      取 #c81e1e：白底 5.74、浅灰 5.26、浅红底 5.24、浅绿底 5.48（七种常用底全 ≥4.85）。 */
   --vcl-color-danger-on-surface: #c81e1e;
   --vcl-color-danger-border: #fecaca;
-  --vcl-color-info: #0052ff;
+  --vcl-color-info: #4f6ef7;
   --vcl-color-info-bg: #eff6ff;
-  --vcl-color-info-text: #0046d8; /* AA：原 #3b82f6 压 info-bg 实测 3.39，加深一档到 5.94（对齐 success/warning 的加深手法） */
+  --vcl-color-info-text: #1d4ed8; /* AA：原 #3b82f6 压 info-bg 实测 3.39，加深一档到 5.94（对齐 success/warning 的加深手法） */
   --vcl-color-info-border: #93c5fd;
 
   /* [2026-09-29 删除] 此处曾有一份重复的 --space-* 声明（clamp(Apx, Bvw, Cpx) 形态）。
@@ -284,13 +254,13 @@
   --vcl-space-0: 0px;
   --vcl-radius-xs: calc(4px * var(--vcl-scale));
   --vcl-bg-secondary: var(--vcl-color-bg);
-  --vcl-color-bg-soft: #f0ece4;
-  --vcl-color-bg-hover: #f6f3ec;
+  --vcl-color-bg-soft: #f1f5f9;
+  --vcl-color-bg-hover: #f5f7fa;
   --vcl-color-bg-inverse: #333333; /* 固定反色，不随主题 */
   --vcl-color-text-inverse: #ffffff;
   --vcl-color-border-dark: #94a3b8;
-  --vcl-color-primary-50: #eef3ff;
-  --vcl-color-primary-soft: #dce6ff;
+  --vcl-color-primary-50: #f0f4ff;
+  --vcl-color-primary-soft: #e0e7ff;
   --vcl-color-primary-bg: rgba(var(--vcl-color-primary-rgb), 0.08);
   --vcl-color-danger-light: #fef2f2;
   --vcl-color-danger-rgb: 229, 69, 69;
@@ -309,6 +279,11 @@
   --vcl-dt-select-soft: #f1ecfe; /* 可编辑浅底（编辑中字段、下拉悬停等较大面积着色） */
   --vcl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
   --vcl-z-lightbox: 10000; /* 图片预览全屏层 — 高于 --vcl-z-top */
+
+  /* ===== 玻璃毛面族（2026-10-12 定稿：仅弹窗/抽屉面板保留毛玻璃，配色回退后壳层/卡片回实底）=====
+     引用方必须同时写 background 与 backdrop-filter，缺 blur 会文字穿帮。 */
+  --vcl-glass-bg-strong: rgba(255, 255, 255, 0.8);
+  --vcl-glass-blur: calc(20px * var(--vcl-scale));
 }
 
 /* ===== 移动端变量覆写 ===== */
@@ -419,32 +394,17 @@
   --vcl-color-warning-solid-hover: #92400e;
   --vcl-color-success-solid: #15803d;
   --vcl-color-success-solid-hover: #166534;
-  --vcl-color-primary-solid: #0052ff;
-  --vcl-color-primary-solid-hover: #0046d8;
-  --vcl-color-info-solid: #0046d8;
-  --vcl-color-info-solid-hover: #003bb5;
+  --vcl-color-primary-solid: #3b56e0;
+  --vcl-color-primary-solid-hover: #2f4bd8;
+  --vcl-color-info-solid: #1d4ed8;
+  --vcl-color-info-solid-hover: #1e40af;
   --vcl-color-success-rgb: 52, 211, 153;
   --vcl-color-warning-rgb: 251, 191, 36;
   --vcl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
 
-  /* 玻璃拟态族 — 暗色变体（深玻璃，压暗底仍可读；blur/描边/影同步加深） */
-  --vcl-glass-bg: rgba(26, 29, 36, 0.55);
+  /* 玻璃毛面族 — 暗色变体（与亮色块同名令牌：仅弹窗/抽屉消费，两套暗色块必须一致） */
   --vcl-glass-bg-strong: rgba(26, 29, 36, 0.78);
-  --vcl-glass-bg-deep: rgba(19, 21, 25, 0.55);
   --vcl-glass-blur: calc(20px * var(--vcl-scale));
-  --vcl-glass-border: rgba(255, 255, 255, 0.1);
-  --vcl-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-  --vcl-glass-card: rgba(26, 29, 36, 0.6);
-  /* 底图压暗度（demo 站 body::after 消费）：亮暖图压暗，防棕灰浑浊 */
-  --vcl-glass-photo-dim: 0.62;
-  /* 导航自适应族 — 暗色变体（深玻璃上浅字，沿用原 sidebar-text 系） */
-  --vcl-nav-text: #8b92a0;
-  --vcl-nav-text-muted: #6f7684;
-  --vcl-nav-text-active: #ffffff;
-  --vcl-nav-hover-bg: rgba(255, 255, 255, 0.08);
-  /* 暗色选中胶囊用深化蓝：白字压暗色提亮 primary(#6b8af9) 仅 3.16，#1d4ed8 压白 8.3 */
-  --vcl-nav-active-bg: #1d4ed8;
-  --vcl-nav-sep: rgba(255, 255, 255, 0.08);
 }
 
 /* ===== 自动跟随系统暗色（无 data-theme 属性时生效） ===== */
@@ -527,32 +487,17 @@
     --vcl-color-warning-solid-hover: #92400e;
     --vcl-color-success-solid: #15803d;
     --vcl-color-success-solid-hover: #166534;
-    --vcl-color-primary-solid: #0052ff;
-    --vcl-color-primary-solid-hover: #0046d8;
-    --vcl-color-info-solid: #0046d8;
-    --vcl-color-info-solid-hover: #003bb5;
+    --vcl-color-primary-solid: #3b56e0;
+    --vcl-color-primary-solid-hover: #2f4bd8;
+    --vcl-color-info-solid: #1d4ed8;
+    --vcl-color-info-solid-hover: #1e40af;
     --vcl-color-success-rgb: 52, 211, 153;
     --vcl-color-warning-rgb: 251, 191, 36;
     --vcl-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
 
-    /* 玻璃拟态族 — 与手动暗色块同值（两套暗色块必须一致） */
-    --vcl-glass-bg: rgba(26, 29, 36, 0.55);
+    /* 玻璃毛面族 — 与手动暗色块同值（两套暗色块必须一致） */
     --vcl-glass-bg-strong: rgba(26, 29, 36, 0.78);
-    --vcl-glass-bg-deep: rgba(19, 21, 25, 0.55);
     --vcl-glass-blur: calc(20px * var(--vcl-scale));
-    --vcl-glass-border: rgba(255, 255, 255, 0.1);
-    --vcl-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-    --vcl-glass-card: rgba(26, 29, 36, 0.6);
-    /* 底图压暗度 — 与手动暗色块同值 */
-    --vcl-glass-photo-dim: 0.62;
-    /* 导航自适应族 — 与手动暗色块同值 */
-    --vcl-nav-text: #8b92a0;
-    --vcl-nav-text-muted: #6f7684;
-    --vcl-nav-text-active: #ffffff;
-    --vcl-nav-hover-bg: rgba(255, 255, 255, 0.08);
-    /* 暗色选中胶囊用深化蓝：白字压暗色提亮 primary(#6b8af9) 仅 3.16，#1d4ed8 压白 8.3 */
-    --vcl-nav-active-bg: #1d4ed8;
-    --vcl-nav-sep: rgba(255, 255, 255, 0.08);
   }
 }
 

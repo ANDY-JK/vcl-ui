@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #0046d8 50%, #e54545 100%);
+  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #3b56e0 50%, #e54545 100%);
   padding: calc(20px * var(--vcl-scale));
   position: relative;
   overflow-x: hidden;
@@ -50,7 +50,7 @@
   width: 100%;
   max-width: var(--login-max-width, calc(960px * var(--vcl-scale)));
   border-radius: var(--vcl-radius-xl);
-  box-shadow: var(--vcl-glass-shadow);
+  box-shadow: var(--vcl-shadow-lg);
   background: var(--vcl-glass-bg-strong); /* 玻璃改版：登录大卡毛玻璃化 */
   backdrop-filter: blur(var(--vcl-glass-blur));
   -webkit-backdrop-filter: blur(var(--vcl-glass-blur));
@@ -74,7 +74,7 @@
 /* ---- 左侧 ---- */
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #0046d8 100%);
+  background: linear-gradient(135deg, var(--vcl-color-primary) 0%, #3b56e0 100%);
   border-radius: var(--vcl-radius-xl) 0 0 var(--vcl-radius-xl);
   padding: var(--vcl-space-12) calc(44px * var(--vcl-scale));
   display: flex;

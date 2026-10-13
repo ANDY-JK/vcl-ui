@@ -20,7 +20,7 @@
   padding: var(--vcl-space-4) var(--vcl-space-3);
   text-align: center;
   font-size: calc(15px * var(--vcl-scale));
-  color: var(--vcl-nav-text);
+  color: var(--vcl-color-sidebar-text);
   opacity: 0.6;
 }
 
@@ -35,8 +35,8 @@
   margin: var(--vcl-space-3) var(--vcl-space-3) var(--vcl-space-2);
   padding: var(--vcl-space-2) var(--vcl-space-3);
   border-radius: var(--vcl-radius-md);
-  background: var(--vcl-nav-hover-bg);
-  color: var(--vcl-nav-text);
+  background: var(--vcl-color-sidebar-hover);
+  color: var(--vcl-color-sidebar-text);
 }
 .nav-search-icon {
   flex-shrink: 0;
@@ -48,12 +48,12 @@
   border: none;
   outline: none;
   background: transparent;
-  color: var(--vcl-nav-text);
+  color: var(--vcl-color-sidebar-text);
   font-size: calc(15px * var(--vcl-scale));
   line-height: 1.5;
 }
 .nav-search-input::placeholder {
-  color: var(--vcl-nav-text);
+  color: var(--vcl-color-sidebar-text);
   opacity: 0.55;
 }
 .nav-search-clear {
@@ -64,13 +64,13 @@
   border: none;
   border-radius: var(--vcl-radius-sm);
   background: transparent;
-  color: var(--vcl-nav-text);
+  color: var(--vcl-color-sidebar-text);
   opacity: 0.6;
   cursor: pointer;
 }
 .nav-search-clear:hover {
   opacity: 1;
-  background: var(--vcl-nav-active-bg);
+  background: var(--vcl-color-sidebar-active);
 }
 
 /* 根级叶子节点（无 children 的顶级导航项） */
@@ -84,7 +84,7 @@
   border: none;
   border-radius: var(--vcl-radius-md);
   background: transparent;
-  color: var(--vcl-nav-text);
+  color: var(--vcl-color-sidebar-text);
   font-size: calc(15px * var(--vcl-scale));
   opacity: 0.85;
   cursor: pointer;
@@ -108,16 +108,16 @@
   min-width: 0;
 }
 .nav-leaf-root:hover {
-  background: var(--vcl-nav-hover-bg);
-  color: var(--vcl-color-text);
+  background: var(--vcl-color-sidebar-hover);
+  color: #fff;
   opacity: 1;
 }
 .nav-leaf-root:hover > :deep(svg) {
   opacity: 1;
 }
 .nav-leaf-root.active {
-  background: var(--vcl-nav-active-bg);
-  color: var(--vcl-nav-text-active);
+  background: var(--vcl-color-sidebar-active);
+  color: var(--vcl-color-sidebar-text-active);
   font-weight: 500;
   opacity: 1;
 }
