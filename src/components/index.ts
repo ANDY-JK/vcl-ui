@@ -255,8 +255,9 @@ export { useTheme } from './_internal/useTheme'
 export type { ThemeMode } from './_internal/useTheme'
 
 // 运行时可观测性（F10）——宿主注入自有监控管道，默认 console，不注入零行为差异
-export { setRuntimeObserver } from './_internal/runtime-observer'
-export type { RuntimeObserver } from './_internal/runtime-observer'
+// reportEvent：结构化事件出口（稳定事件码 + 上下文），宿主据此建告警/聚合（H.1 第 6 项）
+export { setRuntimeObserver, reportEvent, reportWarn, reportError } from './_internal/runtime-observer'
+export type { RuntimeObserver, RuntimeEvent } from './_internal/runtime-observer'
 
 // 国际化 — 公开出口统一走 src/components/i18n.ts（稳定路径垫片，⛔ 契约见该文件头注）
 export { i18n, setLocale, getLocale, useT, useTm, useI18n, registerMessages } from './i18n'

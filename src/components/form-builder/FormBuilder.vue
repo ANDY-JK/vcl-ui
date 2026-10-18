@@ -26,6 +26,7 @@ import { useFormLinkage } from './useFormLinkage'
 import { useFormSteps } from './useFormSteps'
 import { useFormEvents } from './useFormEvents'
 import { useFormRemote } from './useFormRemote'
+import { policyFromOrigins } from './api-url-guard'
 import FormRenderer from './FormRenderer.vue'
 import FieldList from './FieldList.vue'
 import Button from '@/components/basic/Button.vue'
@@ -60,6 +61,8 @@ interface Props {
   hideHeader?: boolean
   /** 当前用户上下文（动态默认值 currentUser 用；宿主注入真实用户信息） */
   userContext?: Record<string, unknown>
+  /** 允许外发的跨域源；**默认空 = 只允许同源**（schema 的 apiUrl 可经无签名分享码流入，默认放行等于把「把填表人输入发到任意域」的能力交给分享者）。 */
+  apiAllowOrigins?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -69,7 +72,11 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   hideHeader: false,
   userContext: () => ({}),
+  apiAllowOrigins: () => [],
 })
+
+/** 外发 URL 策略：默认同源 only（三个 composable 共用同一份策略值） */
+const apiUrlPolicy = policyFromOrigins(props.apiAllowOrigins)
 
 const emit = defineEmits<{
   /** v-model——表单数据（受控回写） */
@@ -139,6 +146,7 @@ const normalizedFields = computed(() => effectiveFields.value)
 const { getFieldOptions, initDataSources, setupWatchers, isFieldVisibleWithLinkage } = useFormLinkage(
   normalizedFields,
   formData,
+  apiUrlPolicy,
 )
 
 /** 是否已完成首帧同步 */
@@ -305,6 +313,7 @@ function handleSubmit(): void {
       })
       .catch((e) => {
         toastRef.value?.show(t('formBuilder.submitFail', { err: String(e?.message ?? e) }), 'error', 2500)
+        // 结构化事件在 useFormRemote（传输层）发出——那里才知道 POST 为何失败
         stopSubmit()
       })
     return
@@ -415,6 +424,7 @@ const { hiddenByEvent, isHiddenByEvent, handleFieldChange } = useFormEvents(
   (msg, type, ms) => toastRef.value?.show(msg, type, ms),
   (key) => validateOne(key),
   () => handleSubmit(),
+  apiUrlPolicy,
 )
 
 // 远程数据链路（GET 回填 + review 防抖自动保存 + api 型动态默认值 + 提交 POST）— 逻辑在 useFormRemote
@@ -431,6 +441,7 @@ const {
   (source) => emit('loaded', source),
   (msg, type, ms) => toastRef.value?.show(msg, type, ms),
   (err) => t('formBuilder.loadFail', { err }),
+  apiUrlPolicy,
 )
 
 /** FieldList 回写字段值 */
@@ -722,6 +733,8 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
               :error="errors[field.key]"
               :disabled="disabled || field.disabled || readonly"
               :dynamic-options="getFieldOptions(field)"
+              :api-url-policy="apiUrlPolicy"
+              :form-data="formData"
               @change="handleFieldChange(field, 'change')"
             />
           </div>

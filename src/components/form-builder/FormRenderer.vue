@@ -27,6 +27,15 @@ import CodeCapture from '@/components/form/CodeCapture.vue'
 import Button from '@/components/basic/Button.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Divider from '@/components/data/Divider.vue'
+// 展示类（2026-10-18）：把组件库的展示能力接进低代码。纯展示、不进提交数据。
+import Image from '@/components/data/Image.vue'
+import Avatar from '@/components/data/Avatar.vue'
+import ProgressBar from '@/components/data/ProgressBar.vue'
+import Tag from '@/components/basic/Tag.vue'
+import Empty from '@/components/data/Empty.vue'
+import Skeleton from '@/components/data/Skeleton.vue'
+import RendererDisplayTable from './renderer/RendererDisplayTable.vue'
+import type { ApiUrlPolicy } from './api-url-guard'
 import FieldError from './FieldError.vue'
 import RendererRichtext from './renderer/RendererRichtext.vue'
 import RendererSignature from './renderer/RendererSignature.vue'
@@ -54,6 +63,13 @@ const props = defineProps<{
   dynamicOptions?: Option[]
   /** 表单级禁用（查看模式/只读表单：FormBuilder effectiveReadonly 传入，与字段级 field.disabled 合并） */
   disabled?: boolean
+  /**
+   * 外发 URL 安全策略（展示类字段的 api 数据源用）。
+   * 不传 = 只允许同源——与提交/联动/远程选项同一套默认值，展示类不开新口子。
+   */
+  apiUrlPolicy?: ApiUrlPolicy
+  /** 整个表单的数据（展示类字段的 `field` 模式据此取值：展示"用户填出来的东西"） */
+  formData?: Record<string, unknown>
 }>()
 
 const emit = defineEmits<{
@@ -293,6 +309,28 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         {{ field.label }}
       </h4>
       <p v-else-if="field.type === 'paragraph'" class="fb-paragraph">{{ field.label }}</p>
+      <!-- 展示类：纯展示元素（isLayout=true，不进提交数据）。
+           alt 缺省回落字段 label —— 图片没有替代文本是无障碍缺陷，不该指望用户自己想起来填。 -->
+      <Image v-else-if="field.type === 'image'" :src="field.src" :alt="field.alt || field.label" />
+      <Avatar v-else-if="field.type === 'avatar'" :src="field.src" :name="field.name" :size="field.size" />
+      <ProgressBar v-else-if="field.type === 'progress'" :percent="field.percent ?? 0" />
+      <!-- Tag 只有 sm/md 两档（与 Avatar 不同），lg 收窄成 md，不把不支持的档位透传下去 -->
+      <Tag
+        v-else-if="field.type === 'tag'"
+        :variant="field.tone ?? 'default'"
+        :size="field.size === 'sm' ? 'sm' : 'md'"
+      >
+        {{ field.text }}
+      </Tag>
+      <!-- 要取数的展示元素：三种数据源在同一层收敛 -->
+      <RendererDisplayTable
+        v-else-if="field.type === 'data-table'"
+        :field="field"
+        :form-data="formData"
+        :api-url-policy="apiUrlPolicy"
+      />
+      <Empty v-else-if="field.type === 'empty'" :description="field.text || undefined" />
+      <Skeleton v-else-if="field.type === 'skeleton'" />
     </template>
 
     <!-- ═══ Input 系列 ═══ -->

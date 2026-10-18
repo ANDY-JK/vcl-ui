@@ -51,8 +51,21 @@ export function useDesignerSave(opts: DesignerSaveHost) {
   const shareVisible = ref(false)
   const shareCode = ref('')
 
-  function openShare(): void {
-    const code = opts.manager.buildShareCode()
+  /**
+   * 打开分享弹窗。
+   *
+   * 走异步版本 `buildShareCodeAsync()`：宿主配了签发者时产出 FD2 已签名码
+   * （本地 HMAC 或将来接的服务端）；没配则与原先一致产出 FD1。
+   * 签名失败**显式提示**，不静默退回未签名码——否则用户以为签了，实际没有。
+   */
+  async function openShare(): Promise<void> {
+    let code: string
+    try {
+      code = await opts.manager.buildShareCodeAsync()
+    } catch (e) {
+      opts.showTip(`${t('fbd.shareSignFail')}：${e instanceof Error ? e.message : String(e)}`)
+      return
+    }
     if (!code) {
       opts.showTip(t('fbd.nothingToSave'))
       return
@@ -66,9 +79,10 @@ export function useDesignerSave(opts: DesignerSaveHost) {
     opts.showTip(ok ? t('fbd.shareCopied') : t('fbd.copyFail'))
   }
 
-  /** 发布链接：宿主应用需注册 `#/form/:code` 路由指向 FormShareView */
+  /** 发布链接：宿主应用需注册 `#/form/:code` 路由指向 FormShareView。SSR 下回落相对链接 */
   function buildShareUrl(): string {
-    return `${location.origin}${location.pathname}#/form/${shareCode.value}`
+    const base = typeof location === 'undefined' || !location.origin ? '' : `${location.origin}${location.pathname}`
+    return `${base}#/form/${shareCode.value}`
   }
 
   async function copyShareLink(): Promise<void> {

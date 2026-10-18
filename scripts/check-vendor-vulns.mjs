@@ -29,18 +29,34 @@ const ALLOWED_VULNS = new Map([
     'GHSA-5pgg-2g8v-p4x9',
     'CVE-2024-22363 ReDoS：上游 0.20.2 修复；npm 生态同上无 fixed 事件；vendored 0.20.3 高于修复版。复核条件：OSV 补 fixed 事件或换版重搬时。',
   ],
+  // ↓ 三条 2021 年的 SheetJS **Pro** 公告。2026-10-17 本闸口首次命中它们（同日入库、当天红），
+  //   经查证与社区版无关，属"OSV 按包名匹配的必然命中"，登记豁免。
+  [
+    'GHSA-3x9f-74h4-2fqr',
+    'SheetJS **Pro** through 0.16.9 的 DoS（crafted .xlsx 内存耗尽，issue 1/2）：影响面是商业版 Pro ≤0.16.9，本仓 vendored 是社区版 0.20.3（高于 0.16.9），且社区版与 Pro 并非同一代码线。公告未登记版本区间（affected.ranges 为空）→ OSV 对任何 xlsx 版本查询都会返回它，故只能登记豁免。复核条件：上游补 ranges / 换版重搬 / 出现带 ranges 的新公告时。',
+  ],
+  [
+    'GHSA-8vcr-vxm8-293m',
+    '同上（issue 2/2）：SheetJS Pro ≤0.16.9 内存耗尽 DoS；vendored 社区版 0.20.3 不受影响；ranges 为空故 OSV 恒命中。复核条件同 GHSA-3x9f-74h4-2fqr。',
+  ],
+  [
+    'GHSA-g973-978j-2c3p',
+    '同上（CPU 耗尽变体）：SheetJS Pro ≤0.16.9。vendored 社区版 0.20.3 不受影响；ranges 为空故 OSV 恒命中。复核条件同 GHSA-3x9f-74h4-2fqr。',
+  ],
 ])
 
 async function queryOsv(name, ver) {
   // 外部调用健壮性（P5）：15s 超时 + 1 次退避重试；两次都失败按显式失败红（osv.dev 不可达
   // 属环境故障，宁可误红也不给供应链监测留静默通道）
+  // ver 省略时按「包名全量通告」查询：用于版本不可考的 vendored 件（pinyin-pro）。
   let lastErr
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
+      const pkg = ver ? { name, ecosystem: 'npm', version: ver } : { name, ecosystem: 'npm' }
       const res = await fetch('https://api.osv.dev/v1/query', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ package: { name, ecosystem: 'npm' }, version: ver }),
+        body: JSON.stringify({ package: pkg }),
         signal: AbortSignal.timeout(15_000),
       })
       if (!res.ok) throw new Error(`OSV HTTP ${res.status}`)
@@ -63,15 +79,29 @@ export function splitVulns(vulns, allowed) {
 
 /** 主流程收拢：单测 import 本模块拿 splitVulns，不得触发网络查询（仅直接执行时跑） */
 async function main() {
-  const vulns = await queryOsv('xlsx', version)
-  const { waived, unknown } = splitVulns(vulns, ALLOWED_VULNS)
+  // 被监测的仓内 vendor 件（2026-10-17 起从「单件 xlsx」推广为清单制，第五轮审查 R5-C24）：
+  //   有 version 的按版本查（能精确判定"该版本是否受影响"）；
+  //   无 version 的按包名查全量通告 —— 任何一条未登记通告即红，逼人裁决。
+  const PINYIN = JSON.parse(readFileSync(resolve(ROOT, 'src/components/_internal/pinyin-pro/VENDOR.json'), 'utf8'))
+  const TARGETS = [
+    { name: 'xlsx', version, allowed: ALLOWED_VULNS },
+    { name: 'pinyin-pro', version: PINYIN.version === 'unknown' ? undefined : PINYIN.version, allowed: new Map() },
+  ]
 
-  if (unknown.length) {
-    console.error(`❌ xlsx@${version} 出现未登记的漏洞通告（${unknown.join(', ')}）：需人裁决——升级重搬 / 加固 / 带理由登记进 ALLOWED_VULNS`)
-    process.exit(1)
+  const lines = []
+  for (const t of TARGETS) {
+    const vulns = await queryOsv(t.name, t.version)
+    const { waived, unknown } = splitVulns(vulns, t.allowed)
+    if (unknown.length) {
+      console.error(
+        `❌ ${t.name}${t.version ? `@${t.version}` : '（版本未知，按包名全量监测）'} 出现未登记的漏洞通告（${unknown.join(', ')}）：需人裁决——升级重搬 / 加固 / 带理由登记进 ALLOWED_VULNS`,
+      )
+      process.exit(1)
+    }
+    for (const id of waived) console.log(`  豁免命中 ${id}（${t.name}）：${t.allowed.get(id).split('；')[0]}；`)
+    lines.push(`${t.name}${t.version ? `@${t.version}` : '(版本未知/按包名)'}=${vulns.length}条通告(豁免${waived.length})`)
   }
-  for (const id of waived) console.log(`  豁免命中 ${id}：${ALLOWED_VULNS.get(id).split('；')[0]}；`)
-  console.log(`✅ check:vendor-vulns 通过 — xlsx@${version} 对 OSV 全量通告完成对账（命中 ${waived.length} 条均在豁免登记内，新 id 即红）`)
+  console.log(`✅ check:vendor-vulns 通过 — ${lines.join('；')}（新 id 即红）`)
 }
 
 const invokedDirectly = (process.argv[1] ?? '').replace(/\\/g, '/').endsWith('check-vendor-vulns.mjs')

@@ -1,9 +1,10 @@
 import type { FormSchema, FormField, FieldContainer, FieldContainerType, FieldType } from '../../types'
+import { reportWarn } from '@/components/_internal/runtime-observer'
 import type { Option } from '@/components/shared/types'
 import type { DesignerNode, DesignerNodeType, FormMeta } from './domain'
 import { isContainerNode, FORM_DESIGN_VERSION } from './domain'
 import type { CascaderOption } from '@/components/shared/types'
-import { getTypeLabel as fbGetTypeLabel, getTypeIcon as fbGetTypeIcon } from '../../fieldRegistry'
+import { getTypeLabel as fbGetTypeLabel, getTypeIcon as fbGetTypeIcon, isLayoutField } from '../../fieldRegistry'
 import { useT } from '@/components/_internal/i18n'
 import { isValidPhone, isValidEmail, isValidIdCard, isValidUrl } from '@/components/_internal/utils'
 import { extractFields } from '../../expression-evaluator'
@@ -60,8 +61,22 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
   const formFields: FormField[] = []
 
   for (const { node: f, container } of pairs) {
-    // 跳过无 key 的字段（divider/title/paragraph 纯布局元素除外）
-    if (!f.key && f.type !== 'divider' && f.type !== 'title' && f.type !== 'paragraph') continue
+    // 布局/展示判定走注册表（单一真源），**不再硬编码类型名列表**。
+    // 2026-10-18（测试发现）：这里原先写死 `divider|title|paragraph`，于是新注册的展示类型
+    // （image/avatar/progress/tag）掉进了"数据字段"分支——纯展示元素被当成待填字段收进提交数据。
+    // 硬编码列表的状态是"新增一个布局类型就静默错一次"，交给注册表才不会漏。
+    const isLayout = isLayoutField(f.type)
+    // 非布局节点必须有可用的数据键：优先 key，退化用 id（节点内唯一）。
+    // 2026-10-17（测试发现）：此前是 `if (!f.key && !isLayout) continue` —— 于是下面那句
+    // `key: f.key ?? f.id` 的兜底**成了死代码**，而表现是「导入外部 schema / 打开分享码时
+    // 字段凭空消失、且不给任何提示」。现在：能兜就兜（用 id），兜不了才跳，且两种都出声。
+    if (!isLayout && !f.key && !f.id) {
+      reportWarn('[form-builder] 节点既无 key 也无 id，已跳过：', String(f.type), String(f.label ?? ''))
+      continue
+    }
+    if (!isLayout && !f.key && f.id) {
+      reportWarn('[form-builder] 节点缺 key，已回退用该字段作为数据键：', String(f.id), String(f.label ?? ''))
+    }
 
     const base: FormField = {
       key: f.key ?? f.id,
@@ -74,6 +89,19 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       hint: f.hint,
       span: f.span,
       group: f.group,
+      // 展示类字段（image/avatar/progress/tag）：纯展示属性原样带出。
+      // 它们 isLayout=true，不参与收集，渲染时只需取得到内容。
+      src: f.src,
+      alt: f.alt,
+      percent: f.percent,
+      text: f.text,
+      tone: f.tone,
+      name: f.name,
+      size: f.size,
+      // 展示类数据源与表格配置（明细表/图表/地图用）
+      displaySource: f.displaySource,
+      columns: f.columns,
+      rowKey: f.rowKey,
     }
 
     // 默认值：静态 defaultValue 直接映射；动态 defaultMeta 由 dataConfig.defaultType 映射

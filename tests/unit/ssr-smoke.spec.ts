@@ -45,6 +45,8 @@ import Chart from '@/components/chart/Chart.vue'
 import BaseChart from '@/components/chart/BaseChart.vue'
 import FormBuilder from '@/components/form-builder/FormBuilder.vue'
 import FormRenderer from '@/components/form-builder/FormRenderer.vue'
+import FormDesigner from '@/components/form-builder/FormDesigner.vue'
+import FormShareView from '@/components/form-builder/FormShareView.vue'
 import AmapWidget from '@/components/amap/AmapWidget.vue'
 import { useTheme } from '@/components/_internal/useTheme'
 
@@ -92,6 +94,11 @@ const cases: Array<[string, unknown, Record<string, unknown>]> = [
     },
   ],
   ['AmapWidget', AmapWidget, { lng: 116, lat: 39 }],
+  // 低代码平台的两个交付面（部署到服务器 / 接入宿主项目时最先被访问的两个页面）：
+  // 设计器虽是 SPA 组件，但 SSR 下**也不能抛错**——宿主在 Nuxt 里 import 本域 barrel 时，
+  // 模块顶层或 setup 顶层碰 DOM 就会把整站打成 500。
+  ['FormDesigner', FormDesigner, {}],
+  ['FormShareView', FormShareView, { code: 'FD1.e30' }],
 ]
 
 describe('SSR 冒烟：组件在无 DOM 环境下可渲染', () => {

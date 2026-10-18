@@ -121,13 +121,16 @@ for (const f of files.filter(isSource)) {
 if (jsHits.length) fail.push(...jsHits)
 console.log(`[2] JS/TS 视口断点字面量 ${jsHits.length}`)
 
-// ---------- [3] CSS @media 宽度值登记制 ----------
+// ---------- [3] CSS 宽度断点登记制（@media 与 @container 同池） ----------
 // 已登记值 = --vcl-bp-* 三个 + 下面这些有明确用途的。新增断点先想清楚能不能复用既有的。
+// 说明：本项按「括号体内的 (max|min)-width」取值，因此容器查询 @container 也被同一张表管
+// （它们同样是"尺寸阈值"，同样会无意识膨胀；差别只在匹配的是视口还是容器）。
 const CSS_EXTRA_BP = new Map([
   [767, 'bp-md 的「小于 768」等价写法：@media 里不能用 var()，只能写 768-1'],
   [480, '登录三页的超窄档（单列输入），刻意早于 --vcl-bp-sm'],
   [1023, 'bp-lg 的「小于 1024」等价写法：2026-09-29 断点收敛后 demos 双栏折叠档统一到此处'],
   [600, 'ChartTable 纵向堆叠 CSS 兜底阈值（rootMinW 动态计算，600px 为固定近似）'],
+  [759, '设计器画布独占档：@container designer 匹配 <760px（≤759 三面板全收、画布独占；760~1079 收大纲与组件库、保属性编辑）。与 767 同理是「760-1」写法'],
   [1079, '设计器 narrow 阈值（NARROW_W=1080，@container designer 匹配 <1080px）'],
 ])
 const allowed = new Map([...[...cssBp.values()].map((v) => [v, 'tokens.css --vcl-bp-*']), ...CSS_EXTRA_BP])
@@ -146,7 +149,7 @@ for (const [rel, text] of styleTexts) {
         const v = Number(m[1])
         if (!allowed.has(v))
           cssHits.push(
-            `${rel}:${i + 1} @media 宽度 ${v}px 未登记（已登记：${[...allowed.keys()].sort((a, b) => a - b).join('/')}）`,
+            `${rel}:${i + 1} 断点宽度 ${v}px 未登记（@media 与 @container 同池；已登记：${[...allowed.keys()].sort((a, b) => a - b).join('/')}）`,
           )
       }
     })

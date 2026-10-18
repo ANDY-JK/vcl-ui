@@ -228,6 +228,20 @@
   color: var(--vcl-color-danger-on-surface);
 }
 
+/** 数据源·静态数据的 JSON 文本框（展示类字段用；形状多变，故不做行编辑器，直接编 JSON） */
+.ldp-display-json {
+  width: 100%;
+  box-sizing: border-box;
+  padding: calc(6px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border, #e5e7eb);
+  border-radius: calc(4px * var(--vcl-scale));
+  background: var(--vcl-color-bg, #fff);
+  color: inherit;
+  font-size: var(--vcl-fs-11);
+  line-height: 1.5;
+  resize: vertical;
+}
+
 /* ================================
    预览区域
    ================================ */

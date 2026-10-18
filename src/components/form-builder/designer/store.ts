@@ -17,6 +17,7 @@ import { useT } from '@/components/_internal/i18n'
 import { envValue } from '@/components/_internal/env-guard'
 import { SupabaseKVAdapter, validateSupabaseConfig, type SupabaseConfig } from '@/components/storage/supabase-transport'
 import { reportWarn } from '@/components/_internal/runtime-observer'
+import { scopedKey } from './storage-scope'
 /**
  * 收集记录条数上限（本地与云端同一口径）：收集型表单长跑会无限累积撑爆存储配额，
  * 超限淘汰最旧记录 —— 配额满的表现是"新记录永远写不进去"，比丢旧记录更糟。
@@ -67,9 +68,14 @@ export interface FormStore {
 
 const FORMS_KEY = 'fd_forms_index'
 
+/**
+ * 存储访问边界统一加**租户/工作区作用域**（H.1 第 4 项）。
+ * 放在 read/write/removeItem 这一层而不是每个键构造处：新增键时不会漏掉隔离。
+ * 作用域为空时 `scopedKey` 原样返回 → 键与改造前逐字一致，老数据不受影响。
+ */
 function read<T>(key: string, fallback: T): T {
   try {
-    const raw = localStorage.getItem(key)
+    const raw = localStorage.getItem(scopedKey(key))
     return raw ? (JSON.parse(raw) as T) : fallback
   } catch {
     return fallback
@@ -78,7 +84,7 @@ function read<T>(key: string, fallback: T): T {
 
 function write(key: string, value: unknown): void {
   try {
-    localStorage.setItem(key, JSON.stringify(value))
+    localStorage.setItem(scopedKey(key), JSON.stringify(value))
   } catch (err) {
     // 容量满等写入失败必须发声：静默会让用户以为保存成功，刷新后数据消失（显式失败原则）
     reportWarn(`[FormStore] 本地写入失败（键 ${key}），此改动未能持久化:`, err)
@@ -110,7 +116,7 @@ export function createLocalFormStore(): FormStore {
       const legacyData = read<CollectRecord[] | null>(legacy, null)
       if (legacyData && read<CollectRecord[] | null>(next, null) === null) {
         write(next, legacyData)
-        if (legacy && usage.get(legacy) === 1) localStorage.removeItem(legacy)
+        if (legacy && usage.get(legacy) === 1) localStorage.removeItem(scopedKey(legacy))
       }
       item.collectKey = next
       changed = true
@@ -173,8 +179,8 @@ export function createLocalFormStore(): FormStore {
       const item = index[itemIndex]
       index.splice(itemIndex, 1)
       saveIndex(index)
-      localStorage.removeItem(`fd_form_${id}`)
-      if (item) localStorage.removeItem(item.collectKey)
+      localStorage.removeItem(scopedKey(`fd_form_${id}`))
+      if (item) localStorage.removeItem(scopedKey(item.collectKey))
     },
 
     async loadRecords(storageKey) {
@@ -204,7 +210,7 @@ export function createLocalFormStore(): FormStore {
     },
 
     async clearRecords(storageKey) {
-      localStorage.removeItem(storageKey)
+      localStorage.removeItem(scopedKey(storageKey))
     },
   }
 }
@@ -228,7 +234,14 @@ const cloudFormKey = (id: string): string => `fd_form_${id}`
 export function createCloudFormStore(cfg: SupabaseConfig): FormStore {
   const err = validateSupabaseConfig(cfg)
   if (err) throw new Error(err)
-  const kv = new SupabaseKVAdapter(cfg)
+  const rawKv = new SupabaseKVAdapter(cfg)
+  // 云端对象键同样按租户隔离：同一个 bucket 被多团队共用时，
+  // 只靠 RLS 是**行级**权限，键撞了仍会互相覆盖。作用域为空时键不变。
+  const kv = {
+    get: <T>(k: string) => rawKv.get<T>(scopedKey(k)),
+    set: (k: string, v: unknown) => rawKv.set(scopedKey(k), v),
+    remove: (k: string) => rawKv.remove(scopedKey(k)),
+  }
 
   async function listForms(): Promise<FormMetaItem[]> {
     return migrateCollectKeys((await kv.get<FormMetaItem[]>(CLOUD_INDEX_KEY)) ?? [])
@@ -362,7 +375,7 @@ const CLOUD_CFG_KEY = 'fd_cloud_cfg_v1'
 /** 读取存储方式偏好（无记录/非法值回退 local） */
 export function loadStoreMode(): FormStoreMode {
   try {
-    const raw = localStorage.getItem(MODE_KEY)
+    const raw = localStorage.getItem(scopedKey(MODE_KEY))
     return raw === 'cloud' ? 'cloud' : 'local'
   } catch {
     return 'local'
@@ -372,7 +385,7 @@ export function loadStoreMode(): FormStoreMode {
 /** 持久化存储模式选择（local / cloud，启动时恢复） */
 export function saveStoreMode(mode: FormStoreMode): void {
   try {
-    localStorage.setItem(MODE_KEY, mode)
+    localStorage.setItem(scopedKey(MODE_KEY), mode)
   } catch {
     /* 配额满忽略 */
   }
@@ -381,7 +394,7 @@ export function saveStoreMode(mode: FormStoreMode): void {
 /** 读取云端配置偏好（未配置返回 null） */
 export function loadCloudConfig(): FormCloudConfig | null {
   try {
-    const raw = localStorage.getItem(CLOUD_CFG_KEY)
+    const raw = localStorage.getItem(scopedKey(CLOUD_CFG_KEY))
     if (!raw) return null
     const cfg = JSON.parse(raw) as Partial<FormCloudConfig>
     if (!cfg.url || !cfg.anonKey || !cfg.bucket) return null
@@ -394,8 +407,8 @@ export function loadCloudConfig(): FormCloudConfig | null {
 /** 持久化云端存储配置（传 null 清除，回落本地模式） */
 export function saveCloudConfig(cfg: FormCloudConfig | null): void {
   try {
-    if (cfg) localStorage.setItem(CLOUD_CFG_KEY, JSON.stringify(cfg))
-    else localStorage.removeItem(CLOUD_CFG_KEY)
+    if (cfg) localStorage.setItem(scopedKey(CLOUD_CFG_KEY), JSON.stringify(cfg))
+    else localStorage.removeItem(scopedKey(CLOUD_CFG_KEY))
   } catch {
     /* 配额满忽略 */
   }

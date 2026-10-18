@@ -381,8 +381,10 @@ function handleRemoveCity(city: string): void {
 // ── 高德 Key ──
 function handleSaveKey(): void {
   if (amapKeyInput.value.trim()) {
+    // 只进内存（setAmapKey 持有本次会话的有效 key）。此前这里还写了一份
+    // localStorage['amap-user-key']，但全仓没有任何读取点 —— 既没起到"刷新后恢复"的作用，
+    // 又在共享电脑上留下持久副本。改用会话内存：刷新后需要重填（demo 站点本就可重填）。
     setAmapKey(amapKeyInput.value.trim())
-    localStorage.setItem('amap-user-key', amapKeyInput.value.trim())
     showKeyInput.value = false
   }
 }

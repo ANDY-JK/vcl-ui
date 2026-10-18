@@ -78,7 +78,7 @@ export function storeReportSchema(): FormSchema {
   const fields: FormField[] = [
     // ─── 门店基础 ───
     { key: 'division', label: '归属分部', type: 'text', default: '湘赣' },
-    { key: 'service_provider', label: '服务商公司名称', type: 'text', default: '天津汇荣达科技有限公司', span: 24 },
+    { key: 'service_provider', label: '服务商公司名称', type: 'text', default: '示例服务商有限公司', span: 24 },
     { key: 'province', label: '省', type: 'text', readonly: true },
     { key: 'city', label: '市', type: 'text', readonly: true },
     { key: 'district', label: '区/县', type: 'text', readonly: true },
@@ -130,7 +130,7 @@ export function storeReportSchema(): FormSchema {
     },
     { key: 'seed_email', label: 'SEED邮箱', type: 'email' },
     { key: 'seed_phone', label: 'SEED手机号', type: 'text', readonly: true },
-    { key: 'email_password', label: '邮箱登陆密码', type: 'password', default: 'Htd20251' },
+    { key: 'email_password', label: '邮箱登陆密码', type: 'password', hint: '由填写人自行输入，模板不预置口令' },
     { key: 'postal_code', label: '邮编', type: 'text' },
     { key: 'contact_name', label: '姓名', type: 'text' },
     { key: 'contact_phone', label: '电话', type: 'tel' },
@@ -139,7 +139,7 @@ export function storeReportSchema(): FormSchema {
     { key: 'verification_result', label: '核验结果', type: 'text', default: '正常' },
     { key: 'htd_account', label: 'HTD账号', type: 'text' },
     { key: 'real_name_verified', label: '实名认证', type: 'text', default: '是' },
-    { key: 'responsible_person', label: '责任铁军', type: 'text', default: '吴哲' },
+    { key: 'responsible_person', label: '责任铁军', type: 'text', default: '示例责任人' },
     { key: 'store_id', label: '门店ID', type: 'text' },
     {
       key: 'is_report',
@@ -223,7 +223,7 @@ export function storeReportSchema(): FormSchema {
       key: 'personnel',
       label: '人员',
       type: 'select',
-      options: ['', '刘汝', '杨万全', '王雷雷', '吴哲'].map((v) => ({ value: v, label: v })),
+      options: ['', '张三', '李四', '王五', '赵六'].map((v) => ({ value: v, label: v })),
     },
     { key: 'distance', label: '高德距离', type: 'text', hint: '由「计算距离」动作写入（设计器事件页可配 callApi）' },
 

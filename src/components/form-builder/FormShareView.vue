@@ -14,7 +14,7 @@
  * <FormShareView :design="design" />
  * ```
  */
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { formatDateTimeZh } from '@/components/form/utils/date-utils'
 import FormBuilder from './FormBuilder.vue'
@@ -22,7 +22,9 @@ import FormTargetCollect from './FormTargetCollect.vue'
 import Result from '@/components/feedback/Result.vue'
 import Button from '@/components/basic/Button.vue'
 import { toFormSchema, collectStorageKey, genRecordId, type FormDesign, type CollectRecord } from './designer/types'
-import { decodeShareCode, parseShareId } from './designer/share'
+import { decodeShareCode, parseShareId, verifyShareCodeWith } from './designer/share'
+import { getActiveShareSigner } from './designer/share-signer'
+import { reportEvent } from '@/components/_internal/runtime-observer'
 import { getActiveFormStore, type FormMetaItem, type FormStore } from './designer/store'
 
 const t = useT()
@@ -60,7 +62,11 @@ const storedItem = ref<FormMetaItem | null>(null)
 
 const activeStore = computed<FormStore>(() => props.store ?? getActiveFormStore())
 
+/** 解码请求序号：路由连续切换时，旧请求的迟到结果不得覆盖新结果 */
+let resolveToken = 0
+
 async function resolveDesign(): Promise<void> {
+  const token = ++resolveToken
   if (props.design) {
     parsed.value = props.design
     return
@@ -75,23 +81,61 @@ async function resolveDesign(): Promise<void> {
   if (formId) {
     loading.value = true
     try {
-      parsed.value = await activeStore.value.loadForm(formId)
+      const design = await activeStore.value.loadForm(formId)
+      const list = await activeStore.value.listForms()
+      if (token !== resolveToken) return // 期间又切了码：丢弃本次结果
+      parsed.value = design
       // 索引项决定 collectKey；按字段指纹重算会与写入端错桶（结构相同的表单更会串台）
-      storedItem.value = (await activeStore.value.listForms()).find((x) => x.id === formId) ?? null
+      storedItem.value = list.find((x) => x.id === formId) ?? null
     } catch {
-      parsed.value = null
+      if (token === resolveToken) parsed.value = null
     } finally {
-      loading.value = false
+      if (token === resolveToken) loading.value = false
     }
     return
   }
-  // 完整分享码
+  // 完整分享码。
+  // 宿主配了签发者时先验签：**签名不对必须拒**（有人改了 schema 再转发）；
+  // 未签名的 FD1 仍放行——保持既有链接可用，不制造破坏性变更。
+  const signer = getActiveShareSigner()
+  if (signer) {
+    const { status, design } = await verifyShareCodeWith(code, signer)
+    if (token !== resolveToken) return
+    parsed.value = status === 'bad-signature' ? null : design
+    if (status === 'bad-signature') {
+      // 「用户说打不开」时宿主最需要知道的两件事：是签名被改还是码本身坏了
+      reportEvent('form-builder/share-signature-invalid', '分享码签名校验未通过，已拒绝渲染', {
+        codeLength: code.length,
+        codePrefix: code.slice(0, 4),
+        signer: signer.name,
+      })
+    }
+    return
+  }
   parsed.value = decodeShareCode(code)
+  if (!parsed.value) {
+    reportEvent('form-builder/share-invalid', '分享码无效或已损坏', {
+      codeLength: code.length,
+      codePrefix: code.slice(0, 4),
+    })
+  }
 }
 
-onMounted(() => {
-  void resolveDesign()
-})
+/**
+ * 解码随 code/design 变化重跑（2026-10-17 实测修复）。
+ *
+ * 此前只有 `onMounted` 解码一次：路由从 `/form/<码A>` 切到 `/form/<码B>` 时，
+ * vue-router **复用同一组件实例、只更新 prop**，于是页面继续显示 A 的表单——
+ * 用户在同一个标签页打开第二条分享链接会看到**错误的表单**并往里填数据。
+ * 改用 immediate watch：首次挂载照旧，后续换码即时重解析。
+ */
+watch(
+  () => [props.code, props.design] as const,
+  () => {
+    void resolveDesign()
+  },
+  { immediate: true },
+)
 
 const invalid = computed(() => !parsed.value)
 const nodes = computed(() => parsed.value?.nodes ?? parsed.value?.fields ?? [])

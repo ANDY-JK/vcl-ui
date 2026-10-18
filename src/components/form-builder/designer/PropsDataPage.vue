@@ -8,12 +8,15 @@
 import Input from '@/components/form/Input.vue'
 import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
+import { computed } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { getFieldDefaults } from '../fieldRegistry'
+import PropsDisplaySource from './PropsDisplaySource.vue'
 import type { DesignerNode } from './types'
 
 const t = useT()
 
-defineProps<{
+const props = defineProps<{
   node: DesignerNode
   /** 可选的联动字段候选（父级 flattenNodes 计算） */
   fieldOptions: { value: string; label: string }[]
@@ -22,10 +25,23 @@ defineProps<{
 const emit = defineEmits<{
   update: [patch: Partial<DesignerNode>]
 }>()
+
+/**
+ * 该字段类型是否支持「展示数据源」。
+ * 判定方式与面板其它编辑行同款：**看注册表的默认值里有没有这个键**——
+ * 于是将来新增要取数的展示类型（图表/地图）只要在 defaults 里写上 displaySource，这里自动出现。
+ */
+const supportsDisplaySource = computed(() => 'displaySource' in getFieldDefaults(props.node.type))
 </script>
 
 <template>
   <div class="ldp-prop-page">
+    <!-- 展示类字段：数据源配置（三模式）。放在最前，因为展示元素第一件要定的事就是"数从哪来" -->
+    <template v-if="supportsDisplaySource">
+      <div class="ldp-section-title">{{ t('fbDisplay.section') }}</div>
+      <PropsDisplaySource :node="node" :field-options="fieldOptions" @update="emit('update', $event)" />
+    </template>
+
     <div class="ldp-section-title">{{ t('fbp.defaultValue') }}</div>
     <div class="ldp-prop">
       <label>{{ t('fbp.defaultType') }}</label>

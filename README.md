@@ -29,6 +29,11 @@ npm install vcl-ui
 | `echarts-wordcloud` | `^2.1.0`             | 可选 — 仅使用词云图表（`wordCloud` 类型）时需要             |
 | `vue-router`        | `^4.3.0`             | 可选 — 仅使用 `layout` / `login` / `route-planner` 域时需要 |
 
+> ⚠ **SSR 场景请用 `vue ≥ 3.5.44`**：`@vue/server-renderer ≤ 3.5.41` 存在属性名黑名单缺 CR 导致的 XSS
+> （[GHSA-g2v6-rqmx-r4w6](https://github.com/advisories/GHSA-g2v6-rqmx-r4w6)），该区间落在上表的
+> `^3.4.0` 支持范围内。本库的 d.ts 仍按 **3.4** 这一最低承诺版本验证（`vue34` 别名跑类型检查），
+> 但仅客户端渲染（CSR）不受该公告影响。
+
 > 词汇说明：**peer 依赖**（专业词）= 不由本库自带、需要你的项目自己装的那类依赖；**可选** = 用不到对应功能就不用装。
 
 **⚠ 必须引入样式**：组件样式打包成独立 CSS 文件，不会自动注入。不引这一句，页面上所有组件都是没样式的裸元素。
@@ -285,6 +290,36 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 10. **CSS 设计令牌不许"无声明又无 fallback"**：`var(--x)` 引用一个全库从未声明的令牌时，浏览器会静默求值为继承/初始值——亮色下常因继承背景碰巧看着正常、切暗色才暴露。`check:css-tokens` 全仓收集两处「有主」信号：① 任何 `.css/.vue/.ts` 里出现的 `--name:` 声明（含 `:style` 内联键、`setProperty('name',…)` 字符串字面量）；② 引用带了 fallback（`var(--x, 默认)`）即视为显式降级、放行。两者都不满足才判红。新增局部变量照第 1 条走「同文件声明 + 引用兜底」即可，全局令牌加进 `tokens.css`。
 
 11. **form-builder 域单文件 ≤800 行**：该域交互密度高，设计器/渲染器/收集端三块各自曾长到近千行。09-04 收官过一次（PropsPanel 五页签、useTableEdit 式拆分），09-20 复查发现 `FormDesigner 979 / DesignerCanvas 881` 已回潮——**靠人工守必然回潮**，所以 `check:constants` 第 [7] 项直接扫该目录（含子目录）的 `.ts/.vue` 行数，超限即红。正确拆法：纯函数归 `.ts`（如 `canvas-utils.ts`）、有状态逻辑归 composable（如 `useDesignerPanels`）、可独立交互的 UI 归子组件；能不拆就别拆——拆错地方比不拆更糟。
+
+### 闸口的本地执行者（2026-10-18 补）
+
+本仓 `git remote` 为空 → `.github/workflows` 里的 ci / release **从来没有执行过**。23 步质量链因此长期只靠"人记得手动跑"，出现过「整链已红 10 天没人知道」（R5-C14）。现在分两档：
+
+1. **快链**：`npm run quick-check` —— 6 步 / 约 80s = `typecheck` + `lint` + `check:constants` + `check:css-tokens` + `check:i18n` + `test:unit`。留痕写 `reports/quick-check-latest.json`（与整链**分开写**，否则跑一次快链就把整链的权威证据覆盖成 6/23 的半份）。
+2. **整链**：`npm run quality-check` —— 23 步 / 约 10 分钟，**唯一权威**，含 `build`、`e2e`、许可清单、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
+
+`.husky/pre-commit` 现在跑「`lint-staged`（暂存区格式化）+ 快链」，把显然会坏的提交挡在落库之前。跳过方式：`git commit --no-verify`，或 `SKIP_QUICK_CHECK=1 git commit ...`。
+
+**钩子生效的前提**：由 husky 安装，**新 clone / 新 worktree 必须先 `npm install`**（本仓 `.husky/` 已入库，但真正生效依赖 `prepare` 脚本设置的 `core.hooksPath`）。
+
+**为什么放 pre-commit 而不是报告建议的 pre-push**：本仓没有远端，`git push` 一次都不会发生，pre-push 等于永不触发。将来若加了远端、觉得每次提交 80s 太久，把快链那段从 `.husky/pre-commit` 挪到 `.husky/pre-push` 即可——**挪的时候同步改这段说明**，别让文档和事实脱节。
+
+### 低代码平台：宿主只搭外壳，其余交给用户（2026-10-18 补）
+
+本库低代码域面向的产品形态是：**宿主只提供一个导航外壳 + 一个低代码入口，其余导航项由用户自助创建、并对接自己的数据库**。三处接缝已经打通，宿主各接一次即可：
+
+| 环节 | 接缝 | 宿主做什么 |
+|---|---|---|
+| **数据存哪** | `FormStore` 接口 | `setActiveFormStore(createRestFormStore({ baseUrl: '/api/lowcode', headers }))` —— 后端按约定实现几条 REST 路由即可（契约见 `designer/rest-form-store.ts` 顶部注释：`GET/POST /forms`、`GET/PATCH/DELETE /forms/{id}`、`GET/POST /records/{key}`、`PATCH/DELETE /records/{key}/{id}`）；也可直接实现 `FormStore` 的 9 个方法 |
+| **表单怎么提交** | `submitConfig.saveUrl` | 指向自己后端的接收端点。**表单设计里不放死地址**，地址由宿主在渲染时注入 |
+| **导航项从哪来** | `useFormNav()` | 外壳里 `const { items, refresh } = useFormNav({ basePath: '/f' })` —— 用户在设计器里存下的**每个表单自动成为一个导航项**；新建/改名/删除后调 `refresh()` |
+
+串起来就是完整闭环：**用户在设计器里建表单 → 表单落进宿主的库 → 自动出现在宿主的导航里 → 用户填写 → 记录落进宿主的库**。全程不改代码、不重新构建。
+
+两条边界（如实声明）：
+
+- `useFormNav` **只产出数据、不渲染导航 UI**——用什么导航组件是宿主的选择；`path` 只是建议值，宿主有自己的路由约定时按稳定锚点 `formId` 自行映射。加载失败时 `error` 有值但 **`items` 保留上一次结果**（导航不该因一次网络抖动整条消失）。
+- **权限过滤与分组不在库内实现**：`useFormNav({ filter })` 由宿主按自己的权限模型提供——库不知道谁该看到哪个表单，硬编码一套反而会挡住宿主真实的权限体系。
 
 ### defineExpose 公开契约（Q18，2026-09-20 盘点 · 2026-09-21 v2.0 收敛）
 

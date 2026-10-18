@@ -24,11 +24,11 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
-        # 与本地 lint 同一脚本：--max-warnings 棘轮（267 起步）卡 warning 静默增长，
-        # 清掉一批后同步收紧数字
+        # 与本地 lint 同一脚本：--max-warnings 棘轮（当前 147，清掉一批就同步收紧）卡 warning
+        # 静默增长。数字只许降不许升；改这里前先看 package.json 的 lint 脚本。
         run: npm run lint
 
-      # 常量来源自检：断点令牌与 JS 常量同值、JS 不写字面量断点、@media 宽度已登记
+      # 常量来源自检：断点令牌与 JS 常量同值、JS 不写字面量断点、断点宽度（@media/@container）已登记
       - name: Check constants
         run: npm run check:constants
 
@@ -115,7 +115,17 @@ jobs:
           fi
           echo "产物未含任何构建期 env 值"
 
-      - name: Audit (official registry)
+      # 依赖漏洞：生产面阻断、开发面只报告。
+      #   --omit=dev ⇒ 只看随包分发的依赖面，必须干净（曾经 4 条 high 里含 brace-expansion：
+      #   本仓 overrides 自钉的 2.1.4 恰好落在受影响区间 2.0.0–2.1.6，已提到 2.1.7）。
+      #   全量审计仍会命中一个**刻意保留**的项：devDependencies.vue34 = npm:vue@~3.4.38 ——
+      #   它用来验证「声明的最低支持版本 vue 3.4」下 d.ts 与运行时是否成立，而该版本在
+      #   GHSA-g2v6-rqmx-r4w6（@vue/server-renderer XSS）的受影响区间内，属登记豁免
+      #   （与 check-vendor-vulns 对 xlsx 两条 CVE 的处置同构）。
+      - name: Audit production deps (blocking)
+        run: npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org
+
+      - name: Audit all deps (report only)
         run: npm audit --registry=https://registry.npmjs.org
         continue-on-error: true
 

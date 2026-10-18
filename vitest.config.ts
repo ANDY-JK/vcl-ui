@@ -21,6 +21,20 @@ export default defineConfig({
     // 实测 1000~2000 行的 DataTable 挂载单条 2~4s，并行时越过 5s 判失败（不放开就是偶发红），
     // 而真挂死的用例照样会在 20s 处报错，探测能力没丢。
     testTimeout: 20_000,
+    // 关掉 worker 端的 console 拦截（2026-10-18）。
+    //
+    // 起因：整链第 14 步 test:unit 反复出现「全绿却退出码 1」——日志显示
+    //   191 files / 1798 tests 全 passed，但 Errors: 1
+    //   EnvironmentTeardownError: [vitest-worker]: Closing rpc while "onUserConsoleLog" was pending
+    // 即 worker 拆除时仍有一条 console 转发 RPC 在途（测试里有大量**预期内**的噪音：
+    // IndexedDB 不可用、组件外调用 composable 等）。vitest 把它记成 unhandled error → 整个
+    // 测试步骤判失败。这是**闸口误报**：用例一条没挂，却报红。
+    //
+    // 为什么用这个开关而不是 onConsoleLog：onConsoleLog 跑在**主进程 reporter** 里，
+    // 是 RPC 到达之后才调用，治不了竞态；disableConsoleIntercept 在 worker 端就跳过
+    // `setupConsoleLogSpy()`（见 vitest 内部 base chunk），RPC 根本不产生。
+    // 代价：测试内 console 输出不再按用例名归属（spy 断言仍在进程内生效，不受影响）。
+    disableConsoleIntercept: true,
     // 全局 setup：静默测试环境噪音（composable 组件外调用的生命周期 warn 等）
     setupFiles: ['tests/unit/setup.ts'],
     // 只收集 tests/unit 下的 vitest 用例，tests/*.spec.mjs 为 Playwright 套件，保持独立

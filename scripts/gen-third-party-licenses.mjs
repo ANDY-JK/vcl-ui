@@ -608,6 +608,18 @@ export const VENDOR_SOURCES = [
     // 前者是 SheetJS 代码里的固定路径串（本仓自己的源码零出现），后者带版本，两枚都在才算进包。
     probes: (version) => ['file:///C:/SheetJS/', `"${version}"`],
   },
+  {
+    // 2026-10-17 补登记（第五轮审查 R5-C24）：这份 vendored 件在仓里躺了两个月而**任何清单都没提它**，
+    // 于是「随包分发 MIT 代码却不带版权声明」在 F1 收口之后又复发了一次。登记后可自动进
+    // dist/THIRD-PARTY-LICENSES.md，并由 check:vendor-vulns 按包名监测 OSV（版本未知，见 VENDOR.json）。
+    pkg: 'pinyin-pro',
+    dir: 'src/components/_internal/pinyin-pro',
+    manifest: 'src/components/_internal/pinyin-pro/VENDOR.json',
+    codeFile: 'index.js',
+    // 版本不可考（与上游任何已发布产物都对不上字节），故不用版本串做探针；
+    // 改用该库独有的标识符：产物压缩后标识符会改名，但**对象键名**（配置项）是字符串字面量，不会被 minify。
+    probes: () => ['toneSandhi', 'initialPattern', 'segmentit', 'surname'],
+  },
 ]
 
 /**

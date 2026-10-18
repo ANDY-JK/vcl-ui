@@ -23,18 +23,27 @@
 
 ## 暗色主题
 
-在 `<html>` 上挂 `data-theme="dark"` 即切换（库内 `useTheme` 的 `auto` 模式跟随系统）：
+在 `<html>` 上挂 `data-theme="dark"` 即切换（库内 `useTheme` 的 `auto` 模式跟随系统）。
 
-```ts
-import { useTheme } from 'vcl-ui'
-
-const { mode, setMode } = useTheme() // 'light' | 'dark' | 'auto'
-setMode('dark')
-```
+**最省事的做法是纯 CSS**（不需要 JS，宿主的 JS 完全不参与）：
 
 ```html
 <html data-theme="dark"></html>
 ```
+
+**需要在 JS 里读写/切换时**用 `useTheme()`（返回值以 `src/components/_internal/useTheme.ts:94-107` 为准）：
+
+```ts
+import { useTheme } from 'vcl-ui'
+
+const { theme, effectiveTheme, setTheme, toggleTheme, getSystemTheme } = useTheme()
+// theme          'light' | 'dark' | 'auto'（用户选择值，ref）
+// effectiveTheme 'light' | 'dark'（auto 时跟随系统，computed）
+// setTheme('dark') / toggleTheme() / getSystemTheme()
+setTheme('dark')
+```
+
+> 别名提醒：这两个字段叫 `theme` 与 `effectiveTheme`（不是 `mode` / `setMode`）。`setTheme` 接受 `'light' | 'dark' | 'auto'`。
 
 暗色不是「反色」，是另一套令牌值：提亮语义色配白字会不可读，涉及 `-solid` 变体的对比度已按 AA 校准。
 

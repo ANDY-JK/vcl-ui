@@ -29,7 +29,7 @@
     "test:watch": "vitest",
     "test:unit": "vitest run --coverage",
     "bench": "node scripts/bench.mjs",
-    "quality-check": "npm run typecheck && npm run lint && npm run check:constants && npm run check:css-tokens && npm run check:css-breakpoints && npm run check:css-fonts && npm run check:css-scale && npm run check:offline && npm run check:i18n && npm run check:demo-props && npm run check:vendor-data && npm run check:vendor-vulns && npm run test:unit && npm run check:coverage-domains && npm run build && npm run smoke:entries && npm run verify:pkg && npm run check:licenses && npm run docs:build && npm run check:docs && npm run check:doc-completeness && npm run test:e2e",
+    "quality-check": "node scripts/quality-check.mjs",
     "prepare": "husky",
     "report:audit": "npm audit --registry=https://registry.npmjs.org",
     "release:dry-run": "npm publish --dry-run --registry https://registry.npmjs.org",
@@ -39,10 +39,12 @@
     "check:constants": "node scripts/check-constants.mjs",
     "changelog": "node scripts/gen-changelog.mjs",
     "check:css-tokens": "node scripts/check-css-tokens.mjs",
+    "check:contrast": "node scripts/contrast-audit.mjs",
     "check:css-breakpoints": "node scripts/check-css-breakpoints.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:demo-props": "node scripts/check-demo-props.mjs",
     "gen:docs": "node scripts/gen-docs.mjs",
+    "gen:governance-index": "node scripts/gen-governance-index.mjs",
     "gen:theme": "node scripts/gen-theme.mjs",
     "check:docs": "node scripts/check-docs.mjs",
     "docs:dev": "vitepress dev docs-site",
@@ -55,7 +57,8 @@
     "check:css-scale": "node scripts/check-css-scale.mjs",
     "check:offline": "node scripts/check-offline.mjs",
     "gen:demo-assets": "node scripts/gen-demo-assets.mjs",
-    "apply-scale": "node scripts/apply-scale.mjs --write"
+    "apply-scale": "node scripts/apply-scale.mjs --write",
+    "quick-check": "node scripts/quality-check.mjs --quick"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",
@@ -199,7 +202,7 @@
     "vite-plugin-dts": "^5.0.3",
     "vitepress": "^1.6.4",
     "vitest": "^5.0.1",
-    "vue": "^3.4.0",
+    "vue": "^3.5.44",
     "vue-eslint-parser": "^10.4.1",
     "vue-router": "^4.3.0",
     "vue-tsc": "^2.0.0",
@@ -208,7 +211,7 @@
   "overrides": {
     "nanoid": "3.3.18",
     "glob": "10.5.0",
-    "brace-expansion": "2.1.4",
+    "brace-expansion": "2.1.7",
     "echarts-wordcloud": {
       "echarts": "$echarts"
     },

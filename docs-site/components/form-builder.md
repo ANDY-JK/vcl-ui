@@ -7,8 +7,8 @@
 | 组件 | Props 数 | Events 数 | Slots 数 |
 | --- | --- | --- | --- |
 | `FormDesigner` | 5 | 4 | 0 |
-| `FormBuilder` | 7 | 6 | 0 |
-| `FormRenderer` | 5 | 2 | 0 |
+| `FormBuilder` | 8 | 6 | 0 |
+| `FormRenderer` | 7 | 2 | 0 |
 | `FieldError` | 1 | 0 | 0 |
 | `FormCollect` | 6 | 1 | 0 |
 | `FormTargetCollect` | 4 | 1 | 0 |
@@ -41,11 +41,11 @@
 | `containerDemoNodes` | 预置模板：容器演示节点树（grid/flex/tabs/collapse/steps 五类容器的编排示例） |
 | `containerDemoMeta` | 预置模板：容器演示的表单元信息（标题/描述等 meta） |
 | `storeReportSchema` | 预置模板：门店提报表单 Schema（陈列检查/提报类场景的字段编排） |
-| `getFieldTypes` | 节点类型注册表 — 从 fieldRegistry 派生（单一事实源） |
+| `getFieldTypes` | 节点类型注册表 — 从 fieldRegistry 派生（单一事实源）新增/修改字段类型只需改 fieldRegistry，此处自动同步。label/group 在调用时翻译（fieldRegistry 存 i18n key），函数形式保证响应语言切换。 |
 | `createField` | 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） |
 | `genFieldId` | 生成节点实例 id |
 | `genRecordId` | 生成收集记录 id |
-| `collectStorageKey` | 收集记录存储 key：基于字段结构指纹。 |
+| `collectStorageKey` | 收集记录存储 key：基于字段结构指纹。 仅用于无表单 id 的场景（FormCollect 独立嵌入、完整分享码）， 已保存表单一律用 formCollectStorageKey(id)——指纹相同会让不同表单共用一个数据桶。 |
 | `toFormSchema` | 设计数据 → FormSchema（FormBuilder 可渲染格式） |
 | `parseCascaderOptions` | 解析 cascader JSON 文本；失败返回 null（原在 domain.ts，随 schema 转换职责迁入本文件） |
 | `getTypeLabel` | 节点类型 → 中文标签（委托 fieldRegistry，单一事实源） |
@@ -54,14 +54,14 @@
 | `findParent` | 查找节点的父节点和索引 |
 | `updateNodeInTree` | 不可变更新：替换节点树中指定 id 的节点 |
 | `removeNodeFromTree` | 不可变更新：删除节点树中指定 id 的节点 |
-| `insertNode` | 不可变更新：在指定位置插入节点 |
+| `insertNode` | 不可变更新：在指定位置插入节点@param nodes 节点列表@param node 要插入的节点@param index 插入位置（-1 或超出长度则追加到末尾） |
 | `insertChildNode` | 不可变更新：在容器节点的 children 中插入子节点 |
 | `moveNodeInTree` | 不可变更新：移动节点（从原位置移到新位置） |
 | `isContainerNode` | 判断节点是否为容器节点 |
 | `isFieldNode` | 判断节点是否为字段节点（非容器） |
 | `migrateFieldsToNodes` | v2 → v3 兼容：将旧版 DesignerField[] 转为 DesignerNode[] |
 | `CONTAINER_TYPES` | 获取所有容器类型 |
-| `FIELD_NODE_TYPES` | 获取所有字段类型（非容器） |
+| `FIELD_NODE_TYPES` | 全部字段类型（顺序即设计器面板的默认分组内顺序） |
 | `createLocalFormStore` | 创建 localStorage 形态的表单存储（草稿/表单列表/收集数据全走本机） |
 | `createCloudFormStore` | 创建云端 FormStore（Supabase Storage bucket 存 JSON 对象）。 |
 | `createFormStore` | 工厂：按模式创建 store（配置非法时抛错，调用方决定降级） |
@@ -72,10 +72,49 @@
 | `loadCloudConfig` | 读取云端配置偏好（未配置返回 null） |
 | `saveCloudConfig` | 持久化云端存储配置（传 null 清除，回落本地模式） |
 | `envCloudConfig` | 云端配置 env 兜底：仅开发期生效（VITE_SUPABASE_* 已配置时「云端」选项免手填），生产构建恒为 null |
+| `createRestFormStore` | 创建一个由 REST 后端支撑的 FormStore |
+| `useFormNav` | 组合式函数：从当前 FormStore 加载表单列表并转成导航项。 |
+| `buildFormNavItems` | 纯函数：表单元信息列表 → 导航项列表。 |
+| `useDisplayData` | 解析展示类字段的数据源。三种模式统一在这里收敛。 |
+| `extractByPath` | 按点路径取值：`dataPath='data.rows'` 从 `{data:{rows:[...]}}` 取出数组。 |
+| `toRows` | 归一化成"行数组"： |
 | `useFormManager` | 表单管理编排：存储实现选择（宿主注入优先）、列表/草稿/收集数据的增删改查与落库调度 |
 | `encodeShareCode` | FormDesign → 分享码（内容不加密：仅传输编码，敏感表单请勿外发） |
 | `decodeShareCode` | 分享码 → FormDesign；非分享码/损坏内容返回 null（导入面板据此走 JSON 路径或报错） |
+| `parseShareCode` | 解析分享码（含签名分段），成功返回结构，失败返回 null。 |
+| `signShareCode` | 把未签名分享码升级为已签名（FD1.⟨content⟩ → FD2.⟨content⟩.⟨sig⟩）；已是签名码则重签 |
+| `decodeShareCodeVerified` | 验签：已签名码必须验过才返回 design；未签名的码返回 null（requireSigned 语义） |
+| `signPayload` | 计算签名（HMAC-SHA256，输出 base64url） |
+| `signShareCodeWith` | 用签发者把分享码升级为 FD2（已是签名码则重签） |
+| `verifyShareCodeWith` | 用签发者验签。 |
+| `shareFullLink` | 完整分享链接（编码全部设计，跨设备可靠但长）；SSR 下返回相对链接 |
+| `shareShortLink` | 短链链接（设计存 store，短到二维码能放下）；SSR 下返回相对链接 |
+| `encodeShareId` | 生成短链标识（设计已存 store，仅带 id） |
+| `parseShareId` | 解析短链标识 → 表单 id；非短链返回 null |
 | `SHARE_CODE_PREFIX` | 设计分享码前缀：FD1 + base64 串，指向单份完整表单设计（容量大，与 S + id 短链互补） |
+| `SHARE_CODE_SIGNED_PREFIX` | 已签名分享码前缀（第二段是内容、第三段是签名） |
+| `SHARE_ID_PREFIX` | 短链前缀：S + formId，指向 store 中已保存的表单设计（JSDoc/文档说明文字忌写裸尖括号，VitePress 会当 HTML 标签） |
+| `createHmacSigner` | 浏览器内 HMAC-SHA256 签发者。 |
+| `createHttpSigner` | 服务端签发者（**接缝**）：密钥留在后端，前端只收发原文/签名。 |
+| `setActiveShareSigner` | 设置当前签发者；传 null 恢复"不签名" |
+| `getActiveShareSigner` | 读取当前签发者（未设置返回 null） |
+| `timingSafeEqualStr` | 定长比较（字符串长度不同直接 false；长度相同逐字符异或累积） |
+| `createIndexedDbDraftStorage` | 本地实现：IndexedDB + TTL（默认，与改造前逐字节同行为） |
+| `createHttpDraftStorage` | 云实现（**接缝**）：把草稿存到后端，实现跨设备续填。 |
+| `setActiveDraftStorage` | 设置当前草稿存储；传 null 恢复默认（本地 IndexedDB） |
+| `getActiveDraftStorage` | 读取当前草稿存储（未显式设置时返回默认的本地实现） |
+| `DRAFT_STORE` | IndexedDB store 名（设计器草稿专用，与运行时 form-drafts 区分） |
+| `DRAFT_KEY` | 草稿存储键（单设计器全局一份：恢复「最近一次未保存的设计」语义） |
+| `setStorageScope` | 设置当前作用域。 |
+| `getStorageScope` | 读取当前作用域（未设置返回空串） |
+| `scopedKey` | 给一个存储键加上当前作用域。 |
+| `createIdempotencyKey` | 生成幂等键。优先 randomUUID（安全上下文），否则退化为时间戳 + 强随机。 |
+| `makeIdempotencyKey` | 取一个幂等键：配了自定义生成器就用它，否则用默认实现 |
+| `setIdempotencyKeyFactory` | 设置自定义幂等键生成器；传 null 恢复默认（randomUUID） |
+| `IDEMPOTENCY_HEADER` | 请求头名（宿主要在服务端读同名头） |
+| `checkApiUrl` | 判定一个 URL 是否允许被 fetch。 |
+| `isApiUrlAllowed` | 便捷判定：只要布尔 |
+| `policyFromOrigins` | 从宿主的 origin 白名单构造策略（空数组 = 同源 only） |
 
 ---
 
@@ -117,6 +156,7 @@
 | `disabled` | `boolean` | `false` | 否 | 是否禁用全部字段 |
 | `hideHeader` | `boolean` | `false` | 否 | 隐藏标题/描述头部（宿主已自行渲染头部时用，避免双重标题） |
 | `userContext` | `Record<string, unknown>` | `() => ({})` | 否 | 当前用户上下文（动态默认值 currentUser 用；宿主注入真实用户信息） |
+| `apiAllowOrigins` | `string[]` | `() => []` | 否 | 允许外发的跨域源；**默认空 = 只允许同源**（schema 的 apiUrl 可经无签名分享码流入，默认放行等于把「把填表人输入发到任意域」的能力交给分享者）。 |
 
 ### Events
 
@@ -142,6 +182,8 @@
 | `error` | `string` | — | 否 | 错误信息 |
 | `dynamicOptions` | `Option[]` | — | 否 | 动态选项（联动 / 远程加载的选项，优先于 field.options） |
 | `disabled` | `boolean` | — | 否 | 表单级禁用（查看模式/只读表单：FormBuilder effectiveReadonly 传入，与字段级 field.disabled 合并） |
+| `apiUrlPolicy` | `ApiUrlPolicy` | — | 否 | 外发 URL 安全策略（展示类字段的 api 数据源用）。 不传 = 只允许同源——与提交/联动/远程选项同一套默认值，展示类不开新口子。 |
+| `formData` | `Record<string, unknown>` | — | 否 | 整个表单的数据（展示类字段的 `field` 模式据此取值：展示"用户填出来的东西"） |
 
 ### Events
 

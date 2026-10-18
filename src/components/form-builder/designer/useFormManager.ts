@@ -25,7 +25,8 @@ import {
   saveCloudConfig,
   envCloudConfig,
 } from './store'
-import { encodeShareCode } from './share'
+import { encodeShareCode, signShareCodeWith } from './share'
+import { getActiveShareSigner } from './share-signer'
 
 const t = useT()
 
@@ -280,6 +281,24 @@ export function useFormManager(host: FormManagerHost) {
     return encodeShareCode(design)
   }
 
+  /**
+   * 分享码（可选签名）。
+   *
+   * 与上面同步版的区别：宿主若通过 `setActiveShareSigner()` 配了签发者，
+   * 这里产出 **FD2** 已签名码（签发者可以是本地 HMAC，也可以是将来接的服务端）；
+   * 没配就与同步版一致，产出 FD1，**保持向后兼容**。
+   * 签名失败**不静默降级为未签名**——那会让"看起来签了"变成假象，直接抛给调用方处置。
+   */
+  async function buildShareCodeAsync(): Promise<string> {
+    const plain = buildShareCode()
+    if (!plain) return ''
+    const signer = getActiveShareSigner()
+    if (!signer) return plain
+    const signed = await signShareCodeWith(plain, signer)
+    if (!signed) throw new Error('分享码签名失败：分享码格式无法解析')
+    return signed
+  }
+
   return reactive({
     activeStore,
     hasInjectedStore,
@@ -313,6 +332,7 @@ export function useFormManager(host: FormManagerHost) {
     deleteForm,
     // 分享
     buildShareCode,
+    buildShareCodeAsync,
   })
 }
 

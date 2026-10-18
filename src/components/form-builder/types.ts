@@ -297,6 +297,36 @@ export interface FormField {
    * - radio 类型：{ direction: 'horizontal' }
    */
   props?: Record<string, unknown>
+
+  // ── 展示类字段（image / avatar / progress / tag，2026-10-18）──
+  // 纯展示（isLayout=true，不进提交数据），所以只需承载内容本身的几个属性。
+  // 若要"展示内容随其它字段变化"，由宿主在生成 schema 时决定——库不在运行时猜数据源。
+  /** 展示类：图片/头像地址（image / avatar） */
+  src?: string
+  /** 展示类：替代文本（image；缺省回落 label） */
+  alt?: string
+  /** 展示类：进度百分比 0–100（progress） */
+  percent?: number
+  /** 展示类：标签文本（tag） */
+  text?: string
+  /** 展示类：标签语义色（tag，映射到 Tag 的 variant） */
+  tone?: 'default' | 'primary' | 'success' | 'warning' | 'danger'
+  /** 展示类：名称（avatar；无 src 时取首字） */
+  name?: string
+  /** 展示类：尺寸（avatar / tag） */
+  size?: 'sm' | 'md' | 'lg'
+  /**
+   * 展示类**数据源**（明细表 / 图表 / 地图这类"要取数"的展示元素用）。
+   * 三模式：static 静态配置 / field 绑定其它字段的值 / api 接口拉取（走同源守卫）。
+   *
+   * 注意与上面的 `dataSource`（FieldDataSource）区分：那个是**选项**数据源
+   * （select/radio 的 options 从哪来），这个是**展示内容**数据源。两者语义不同，故分开命名。
+   */
+  displaySource?: import('./display-data-source').DisplayDataSource
+  /** 展示表格的列定义（不填则按数据首行自动推导） */
+  columns?: { key: string; label?: string }[]
+  /** 展示表格的行唯一键字段名（不填则自动补内部键） */
+  rowKey?: string
 }
 
 // ════════════════════════════════════════

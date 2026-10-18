@@ -1,27 +1,25 @@
-import { reportWarn } from '@/components/_internal/runtime-observer'
+import { reportWarn, reportEvent } from '@/components/_internal/runtime-observer'
 /**
  * 设计器草稿存取（P2-13）
  *
- * 设计 JSON（nodes + meta）按固定键存 IndexedDB（store=form-designer-drafts，TTL 7 天），
- * 防御策略与 useFormStorage 同款：容量保护（2MB）/ 脏数据拒载 / 不可用环境静默降级。
+ * 设计 JSON（nodes + meta）默认存 IndexedDB（TTL 7 天），防御策略与 useFormStorage 同款：
+ * 容量保护（2MB）/ 脏数据拒载 / 不可用环境静默降级。
+ *
+ * **持久化位置可插拔**（2026-10-18，H.1 第 2 项「草稿上云准备」）：
+ *   「存哪儿」交给 `draft-storage.ts` 的 DraftStorage 适配器（默认本地 IndexedDB；
+ *   宿主可 `setActiveDraftStorage(createHttpDraftStorage({...}))` 换成云端，实现跨设备续填）。
+ *   本文件只保留**与存哪儿无关的规则**：纯化、容量上限、脏数据拒载——换存储不会丢任何一道防护。
  *
  * 独立成文件：useDesignerAutosave（接线）跨模块导入本文件，
  * 测试可经 vi.mock 本模块拦截存取而不影响接线逻辑（同文件内部引用不可拦截）。
  */
-import { dbPut, dbGet, dbDelete } from '@/components/storage/indexedDB'
 import { toPlainJson } from '../useFormStorage'
 import type { DesignerNode, FormMeta } from './types'
 import { DRAFT_MAX_SIZE, DRAFT_TTL } from '../draft-policy'
+import { getActiveDraftStorage, DRAFT_STORE, DRAFT_KEY } from './draft-storage'
 
-// ════════════════════════════════════════
-// 常量
-// ════════════════════════════════════════
-
-/** IndexedDB store 名（设计器草稿专用，与运行时 form-drafts 区分） */
-export const DRAFT_STORE = 'form-designer-drafts'
-
-/** 草稿存储键（单设计器全局一份：恢复「最近一次未保存的设计」语义） */
-export const DRAFT_KEY = 'designer-autosave'
+// 常量从适配层再导出（既有引用路径保持不变）
+export { DRAFT_STORE, DRAFT_KEY }
 
 /** 设计草稿数据结构 */
 export interface DesignerDraft {
@@ -46,12 +44,13 @@ function isValidDraft(v: unknown): v is DesignerDraft {
  */
 export function useDesignerDraft() {
   async function loadDraft(): Promise<DesignerDraft | null> {
+    const storage = getActiveDraftStorage(DRAFT_TTL)
     try {
-      const raw = await dbGet<unknown>(DRAFT_STORE, DRAFT_KEY)
+      const raw = await storage.load()
       if (raw === null || raw === undefined) return null
       if (!isValidDraft(raw)) {
         reportWarn('[FormDesigner] 设计草稿数据无效，自动清除')
-        await dbDelete(DRAFT_STORE, DRAFT_KEY).catch(() => {})
+        await storage.clear().catch(() => {})
         return null
       }
       return raw
@@ -62,10 +61,11 @@ export function useDesignerDraft() {
   }
 
   async function saveDraft(nodes: DesignerNode[], meta: FormMeta): Promise<void> {
+    const storage = getActiveDraftStorage(DRAFT_TTL)
     try {
       // 节点树来自响应式 props：Proxy 无法 structuredClone，须先纯化为纯 JSON
       const plain = toPlainJson({ nodes, meta })
-      // 数据大小检查（防止超出 IndexedDB 配额）
+      // 数据大小检查（防止超出存储配额）
       let size = 0
       try {
         size = new Blob([JSON.stringify(plain)]).size
@@ -77,15 +77,27 @@ export function useDesignerDraft() {
         return
       }
       const draft: DesignerDraft = { nodes: plain.nodes, meta: plain.meta, savedAt: new Date().toISOString() }
-      await dbPut(DRAFT_STORE, DRAFT_KEY, draft, DRAFT_TTL)
+      await storage.save(draft)
     } catch (err) {
       reportWarn('[FormDesigner] 设计草稿保存失败:', err)
+      // 结构化事件：草稿丢失是用户可感知的数据损失，值得宿主告警（而非只躺在自由文本日志里）
+      reportEvent(
+        'form-designer/draft-save-failed',
+        '设计草稿保存失败',
+        {
+          storage: storage.name,
+          nodeCount: nodes.length,
+          reason: err instanceof Error ? err.message : String(err),
+        },
+        'error',
+      )
     }
   }
 
   async function clearDraft(): Promise<void> {
+    const storage = getActiveDraftStorage(DRAFT_TTL)
     try {
-      await dbDelete(DRAFT_STORE, DRAFT_KEY)
+      await storage.clear()
     } catch {
       reportWarn('[FormDesigner] 设计草稿清除失败')
     }

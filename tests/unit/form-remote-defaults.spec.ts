@@ -11,6 +11,13 @@ function field(over: Partial<FormField>): FormField {
   return { key: 'f1', label: '字段', type: 'text', ...over }
 }
 
+/**
+ * 本组用例用 `https://x/...` 当跨域占位地址，而 applyRemoteDefaults 现在默认只允许同源
+ * （第五轮审查 R5-C3：defaultMeta.apiUrl 可经无签名分享码跨信任边界流入）。
+ * 宿主合法使用跨域接口是正常场景，故这里显式给策略——**放开跨域是有意为之，不是绕过校验**。
+ */
+const CROSS_ORIGIN_POLICY = { allowCrossOrigin: true, allowlist: ['https://x'] }
+
 function jsonResponse(body: unknown): Response {
   return {
     ok: true,
@@ -29,7 +36,7 @@ describe('applyRemoteDefaults · 拉取与取值', () => {
     const fetcher = vi.fn(async () => jsonResponse({ data: { value: '远程值' } }))
     const out = await applyRemoteDefaults(
       [field({ key: 'k', defaultMeta: { type: 'api', apiUrl: 'https://x/api', dataPath: 'data.value' } })],
-      { fetcher },
+      { fetcher, apiUrlPolicy: CROSS_ORIGIN_POLICY },
     )
     expect(out.k).toBe('远程值')
     expect(fetcher).toHaveBeenCalledTimes(1)
@@ -43,7 +50,7 @@ describe('applyRemoteDefaults · 拉取与取值', () => {
         field({ key: 'a', defaultMeta: { type: 'api', apiUrl: 'https://x/api', dataPath: 'data.a' } }),
         field({ key: 'b', defaultMeta: { type: 'api', apiUrl: 'https://x/api', dataPath: 'data.b' } }),
       ],
-      { fetcher },
+      { fetcher, apiUrlPolicy: CROSS_ORIGIN_POLICY },
     )
     expect(fetcher).toHaveBeenCalledTimes(1)
     expect(out.a).toBe(1)
@@ -54,7 +61,7 @@ describe('applyRemoteDefaults · 拉取与取值', () => {
     const fetcher = vi.fn(async () => jsonResponse(['x', 'y']))
     const out = await applyRemoteDefaults(
       [field({ key: 'k', type: 'checkbox', defaultMeta: { type: 'api', apiUrl: 'https://x/list' } })],
-      { fetcher },
+      { fetcher, apiUrlPolicy: CROSS_ORIGIN_POLICY },
     )
     expect(out.k).toEqual(['x', 'y'])
   })
@@ -71,7 +78,7 @@ describe('applyRemoteDefaults · 拉取与取值', () => {
         }) as unknown as Response,
     )
     const out = await applyRemoteDefaults([field({ defaultMeta: { type: 'api', apiUrl: 'https://x/txt' } })], {
-      fetcher,
+      fetcher, apiUrlPolicy: CROSS_ORIGIN_POLICY,
     })
     expect(out.f1).toBe('plain-text')
   })
@@ -83,7 +90,7 @@ describe('applyRemoteDefaults · 防御', () => {
       throw new Error('boom')
     })
     const out = await applyRemoteDefaults([field({ defaultMeta: { type: 'api', apiUrl: 'https://x/api' } })], {
-      fetcher,
+      fetcher, apiUrlPolicy: CROSS_ORIGIN_POLICY,
     })
     expect(out).toEqual({})
   })
@@ -96,7 +103,7 @@ describe('applyRemoteDefaults · 防御', () => {
         }),
     )
     const out = await applyRemoteDefaults([field({ defaultMeta: { type: 'api', apiUrl: 'https://x/slow' } })], {
-      fetcher,
+      fetcher, apiUrlPolicy: CROSS_ORIGIN_POLICY,
       timeoutMs: 30,
     })
     expect(out).toEqual({})
@@ -110,7 +117,7 @@ describe('applyRemoteDefaults · 防御', () => {
         field({ key: 'b', defaultMeta: { type: 'api', apiUrl: 'https://x/api', dataPath: 'data.empty' } }),
         field({ key: 'c', defaultMeta: { type: 'api', apiUrl: 'https://x/api', dataPath: 'data.miss' } }),
       ],
-      { fetcher },
+      { fetcher, apiUrlPolicy: CROSS_ORIGIN_POLICY },
     )
     expect(out).toEqual({})
   })
@@ -119,7 +126,7 @@ describe('applyRemoteDefaults · 防御', () => {
     const fetcher = vi.fn(async () => jsonResponse({}))
     const out = await applyRemoteDefaults(
       [field({ defaultMeta: { type: 'api' } }), field({ defaultMeta: { type: 'currentTime' } }), field({})],
-      { fetcher },
+      { fetcher, apiUrlPolicy: CROSS_ORIGIN_POLICY },
     )
     expect(out).toEqual({})
     expect(fetcher).not.toHaveBeenCalled()
@@ -144,7 +151,7 @@ describe('FormBuilder · api 默认值挂载接线', () => {
       'fetch',
       vi.fn(async () => jsonResponse({ data: { value: 'API默认' } })),
     )
-    const w = mount(FormBuilder, { props: { schema, modelValue: {} } })
+    const w = mount(FormBuilder, { props: { schema, modelValue: {}, apiAllowOrigins: ['https://x'] } })
     await flushPromises()
     const last = w.emitted('update:modelValue')!.at(-1)![0] as Record<string, unknown>
     expect(last.k).toBe('API默认')
@@ -156,7 +163,7 @@ describe('FormBuilder · api 默认值挂载接线', () => {
       'fetch',
       vi.fn(async () => jsonResponse({ data: { value: 'API默认' } })),
     )
-    const w = mount(FormBuilder, { props: { schema, modelValue: { k: '用户已填' } } })
+    const w = mount(FormBuilder, { props: { schema, modelValue: { k: '用户已填' }, apiAllowOrigins: ['https://x'] } })
     await flushPromises()
     // 守卫生效时无新变更（可能一次 emit 都没有）；若有 emit，最后一条也必须保持用户已填
     const evts = (w.emitted('update:modelValue') ?? []) as [Record<string, unknown>][]

@@ -13,7 +13,9 @@
 import { computed, type Ref } from 'vue'
 import type { FormSchema, FormField, FormData } from './types'
 import { useT } from '@/components/_internal/i18n'
+import { reportWarn } from '@/components/_internal/runtime-observer'
 import { evaluateFormula } from './expression-evaluator'
+import { checkApiUrl, type ApiUrlPolicy } from './api-url-guard'
 // 从注册表重导出，保持向后兼容
 export { getComponentCategory, isLayoutField } from './fieldRegistry'
 export type { ComponentCategory } from './fieldRegistry'
@@ -248,7 +250,7 @@ function isDefaultValue(v: unknown): boolean {
  */
 export async function applyRemoteDefaults(
   fields: FormField[],
-  opts: { fetcher?: typeof fetch; timeoutMs?: number } = {},
+  opts: { fetcher?: typeof fetch; timeoutMs?: number; apiUrlPolicy?: ApiUrlPolicy } = {},
 ): Promise<FormData> {
   const out: FormData = {}
   const targets = fields.filter((f) => !isLayoutField(f.type) && f.defaultMeta?.type === 'api' && f.defaultMeta.apiUrl)
@@ -258,7 +260,15 @@ export async function applyRemoteDefaults(
   const timeoutMs = opts.timeoutMs ?? 10_000
   const urlKeys = new Map<string, string[]>()
   for (const f of targets) {
-    const url = f.defaultMeta!.apiUrl!
+    const raw = f.defaultMeta!.apiUrl!
+    // 外发前置校验：defaultMeta.apiUrl 来自 schema，可经分享码跨信任边界流入。
+    // 默认同源 only（opts.apiUrlPolicy 可放开）；被拒的 URL 直接跳过，不发起请求。
+    const verdict = checkApiUrl(raw, opts.apiUrlPolicy ?? {})
+    if (!verdict.ok) {
+      reportWarn('[form-builder] 动态默认值地址被安全策略拒绝：', verdict.reason, raw)
+      continue
+    }
+    const url = verdict.url
     urlKeys.set(url, [...(urlKeys.get(url) ?? []), f.key])
   }
 

@@ -10,7 +10,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { VENDOR_BINARIES, readVendoredBinaryModule } from './gen-third-party-licenses.mjs'
+import { VENDOR_BINARIES, VENDOR_SOURCES, readVendoredBinaryModule } from './gen-third-party-licenses.mjs'
 import { checkVendored } from './vendor-sheetjs.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -70,13 +70,46 @@ for (const spec of VENDOR_BINARIES) {
   )
 }
 
-// 仓内 vendor 的上游代码（SheetJS）：与 VENDOR.json 登记逐字节对账（不读 node_modules）
+// 仓内 vendor 的上游代码：与各自 VENDOR.json 登记逐字节对账（不读 node_modules）
+// 通用化（2026-10-17，第五轮审查 R5-C24）：原先只对 xlsx 一条硬编码路径做校验，
+// 于是第二份 vendored 件 pinyin-pro 入库两个月无人过问。改为遍历 VENDOR_SOURCES，
+// 新增仓内 vendor 只要登记就自动纳入字节对账与产物覆盖判定。
+let vendoredChecked = 0
+for (const spec of VENDOR_SOURCES) {
+  try {
+    const man = JSON.parse(readFileSync(join(ROOT, spec.manifest), 'utf8'))
+    const files = Array.isArray(man.files) ? man.files : []
+    if (!files.length) {
+      RED.push(`vendor(${spec.pkg}) VENDOR.json 没有 files 清单，无法逐字节对账`)
+      continue
+    }
+    for (const f of files) {
+      const abs = join(ROOT, spec.dir, f.path)
+      if (!existsSync(abs)) {
+        RED.push(`vendor(${spec.pkg}) 缺文件 ${spec.dir}/${f.path}（VENDOR.json 有登记）`)
+        continue
+      }
+      const buf = readFileSync(abs)
+      if (buf.length !== f.bytes) RED.push(`vendor(${spec.pkg}) ${f.path} 字节数 ${buf.length} ≠ 登记 ${f.bytes}`)
+      const h = hash(buf)
+      if (h !== f.sha256) RED.push(`vendor(${spec.pkg}) ${f.path} sha256 ${h.slice(0, 12)}… ≠ 登记 ${String(f.sha256).slice(0, 12)}…`)
+    }
+    if (!RED.some((r) => r.includes(`vendor(${spec.pkg})`))) {
+      vendoredChecked++
+      console.log(`[vendor] ${spec.pkg}@${man.version} 仓内 ${files.length} 份文件与 VENDOR.json 逐字节一致`)
+    }
+  } catch (e) {
+    RED.push(`vendor(${spec.pkg}) 校验跑不起来：${e && e.message ? e.message : e}`)
+  }
+}
+
+// xlsx 另有上游正源 tarball 的可再验证路径（vendor-sheetjs.mjs 的 --check），保持原样调用
 try {
   const { bad, summary } = checkVendored(ROOT)
   if (bad.length) RED.push(...bad.map((b) => `vendor(xlsx) ${b}`))
   else console.log(`[vendor] ${summary}`)
 } catch (e) {
-  RED.push(`vendor(xlsx) 校验跑不起来：${e && e.message ? e.message : e}`)
+  RED.push(`vendor(xlsx) 正源校验跑不起来：${e && e.message ? e.message : e}`)
 }
 
 if (RED.length) {
@@ -85,5 +118,5 @@ if (RED.length) {
   process.exit(1)
 }
 console.log(
-  `\n✅ check:vendor-data 通过（随包二进制 ${VENDOR_BINARIES.length} 份与正源及上游声明三方一致；仓内 vendor 代码 1 份与 VENDOR.json 逐字节一致）`,
+  `\n✅ check:vendor-data 通过（随包二进制 ${VENDOR_BINARIES.length} 份与正源及上游声明三方一致；仓内 vendor ${vendoredChecked} 份与各自 VENDOR.json 逐字节一致）`,
 )

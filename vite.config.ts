@@ -48,9 +48,37 @@ const DOMAINS = [
 const ENTRY: Record<string, string> = { main: resolve(__dirname, 'src/components/index.ts') }
 for (const d of DOMAINS) ENTRY[d] = resolve(__dirname, `src/components/${d}/index.ts`)
 
+/**
+ * 开发期演示接口（**仅 dev server 生效**，不进构建产物）。
+ *
+ * 用途：低代码展示类的 `api` 数据源需要一个真实的 HTTP 往返才能验证——
+ * 「真实网络 → 同源守卫放行 → JSON 解析 → dataPath 取值 → 表格渲染」这条链
+ * 在单测里只能用 stub fetch 模拟，链路是否真的通必须真跑一次。
+ *
+ * 走的是 `/api/` 前缀 → 同源 → 默认策略放行；用来验证跨域拦截时把地址换成外部域即可。
+ */
+function lowcodeDemoApiPlugin() {
+  const rows = [
+    { sku: 'SP-1001', name: '门店 A · 冷藏柜', qty: 12, amount: 3840, updatedAt: '2026-10-18 09:12' },
+    { sku: 'SP-1002', name: '门店 B · 收银台', qty: 3, amount: 1290, updatedAt: '2026-10-18 10:05' },
+    { sku: 'SP-1003', name: '门店 C · 货架区', qty: 27, amount: 8650, updatedAt: '2026-10-18 11:40' },
+  ]
+  return {
+    name: 'vcl-lowcode-demo-api',
+    apply: 'serve' as const,
+    configureServer(server: { middlewares: { use: (p: string, h: (req: unknown, res: { setHeader: (k: string, v: string) => void; end: (b: string) => void }) => void) => void } }) {
+      server.middlewares.use('/api/lowcode-demo/rows', (_req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ code: 0, data: { rows } }))
+      })
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     vue(),
+    lowcodeDemoApiPlugin(),
     // 许可清单的证据来源：产物实际含哪些第三方模块（es/cjs 两次输出并集写
     // dist/third-party-modules.json），由 scripts/gen-third-party-licenses.mjs 消费
     thirdPartyEvidencePlugin({ outDir: 'dist', root: __dirname }),
@@ -92,8 +120,12 @@ export default defineConfig({
   publicDir: 'demo-public',
   server: {
     port: 3721,
-    host: '0.0.0.0',
-    allowedHosts: true,
+    // 默认只监听本机。原先是 '0.0.0.0' + allowedHosts:true（为真机调试方便），
+    // 但本机 .env.local 里放着真实云端凭证，而 envValue() 在 DEV 下会把 VITE_* 注入模块图——
+    // 同网段任何主机都能拉 dev chunk 读到（第五轮审查 R5-C5）。
+    // 需要真机调试时显式开：VITE_DEV_LAN=1 npm run dev（此时才绑 0.0.0.0）。
+    host: process.env.VITE_DEV_LAN === '1' ? '0.0.0.0' : '127.0.0.1',
+    allowedHosts: process.env.VITE_DEV_LAN === '1' ? true : ['localhost', '127.0.0.1'],
     // reports/ 是测试/覆盖率生成物，跑测试时整目录重写；监听它会在文件消失的瞬间抛 lstat 未捕获异常打死 dev server
     watch: { ignored: ['**/reports/**'] },
     https:

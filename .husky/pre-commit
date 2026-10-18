@@ -1,1 +1,20 @@
+# 既有的暂存区格式化（快，只处理本次改动）
 npx lint-staged
+
+# 本地快链：本仓 git remote 为空 → CI/release 从不执行，23 步质量链过去只靠"人记得手动跑"，
+# 曾出现整链已红 10 天无人知晓（R5-C14）。这里放最小充分集合（typecheck / lint / 常量 /
+# 令牌 / i18n / 单测，约 90s），把显然会坏的提交挡在落库之前。
+# 跳过：git commit --no-verify，或 SKIP_QUICK_CHECK=1 git commit -m "..."
+# 整链（含 build/e2e/许可/文档，约 10 分钟）仍是唯一权威：npm run quality-check
+if [ "$SKIP_QUICK_CHECK" = "1" ]; then
+  echo "[pre-commit] SKIP_QUICK_CHECK=1 → 跳过本地快链"
+  exit 0
+fi
+
+echo "[pre-commit] 跑本地快链（约 90s；跳过：git commit --no-verify）"
+npm run quick-check || {
+  echo ""
+  echo "[pre-commit] ✖ 快链未通过，提交已阻止。"
+  echo "           整链：npm run quality-check（明细见 reports/quality-check-logs/）"
+  exit 1
+}

@@ -78,8 +78,8 @@ export function storeProfileFields(): FormField[] {
       required: true,
       placeholder: t('fbPre.scCategoryPh'),
       options: [
-        { value: '汇荣达', label: '汇荣达' },
-        { value: '立炎卓', label: '立炎卓' },
+        { value: '示例客户甲', label: '示例客户甲' },
+        { value: '示例客户乙', label: '示例客户乙' },
       ],
     },
   ]

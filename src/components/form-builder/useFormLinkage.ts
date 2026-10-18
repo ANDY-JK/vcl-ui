@@ -23,6 +23,7 @@ import type { FormField, FormData } from './types'
 import type { Option } from '@/components/shared/types'
 import { isFieldVisible } from './useFormSchema'
 import { evaluateFormula, extractFields } from './expression-evaluator'
+import { checkApiUrl, type ApiUrlPolicy } from './api-url-guard'
 
 // ════════════════════════════════════════
 // 联动 composable
@@ -35,7 +36,12 @@ import { evaluateFormula, extractFields } from './expression-evaluator'
  * @param formData 表单数据（响应式 ref，联动会直接修改此对象）
  * @param externalOptions 外部注入的选项缓存（可选）
  */
-export function useFormLinkage(fields: ComputedRef<FormField[]> | Ref<FormField[]>, formData: Ref<FormData>) {
+export function useFormLinkage(
+  fields: ComputedRef<FormField[]> | Ref<FormField[]>,
+  formData: Ref<FormData>,
+  /** 外发 URL 策略：默认同源 only（dataSource.apiUrl 来自 schema，可经分享码流入） */
+  apiUrlPolicy: ApiUrlPolicy = {},
+) {
   /** 被联动隐藏的字段 key 集合 */
   const hiddenByLinkage = ref<Set<string>>(new Set())
 
@@ -223,6 +229,15 @@ export function useFormLinkage(fields: ComputedRef<FormField[]> | Ref<FormField[
       const sep = url.includes('?') ? '&' : '?'
       url += `${sep}${ds.linkageField}=${encodeURIComponent(String(linkageValue))}`
     }
+
+    // 外发前置校验：dataSource.apiUrl 同样来自 schema（可经分享码跨信任边界流入），
+    // 默认只允许同源；跨域需宿主显式 allowlist。
+    const verdict = checkApiUrl(url, apiUrlPolicy)
+    if (!verdict.ok) {
+      reportWarn('[form-builder] 远程选项地址被安全策略拒绝：', verdict.reason, url)
+      return
+    }
+    url = verdict.url
 
     // 检查缓存
     if (ds.cacheData && apiCache.has(url)) {

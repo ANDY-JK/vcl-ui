@@ -27,8 +27,8 @@ describe('合同收集模板（store-profile 共享资质字段）', () => {
     expect(head[5]).toMatchObject({ key: 'startDate', type: 'date', props: { format: 'YYYY-MM-DD' } })
     expect(head[6]).toMatchObject({ key: 'category', type: 'select', required: true })
     expect(head[6].options).toEqual([
-      { value: '汇荣达', label: '汇荣达' },
-      { value: '立炎卓', label: '立炎卓' },
+      { value: '示例客户甲', label: '示例客户甲' },
+      { value: '示例客户乙', label: '示例客户乙' },
     ])
   })
 

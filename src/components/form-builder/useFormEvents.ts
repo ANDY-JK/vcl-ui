@@ -9,6 +9,7 @@
  */
 import { ref, onScopeDispose, type Ref } from 'vue'
 import type { FormField, FormData } from './types'
+import { checkApiUrl, type ApiUrlPolicy } from './api-url-guard'
 
 /** callApi 防抖窗口：Input 逐键触发 change，无防抖时每个字符发一次 POST（请求风暴） */
 const API_DEBOUNCE_MS = 300
@@ -18,6 +19,8 @@ export function useFormEvents(
   showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info', ms: number) => void,
   onAutoValidate: (key: string) => void,
   onSubmit: () => void,
+  /** 外发 URL 策略：默认同源 only（schema 里的 apiUrl 可能经分享码跨信任边界流入，见 api-url-guard） */
+  apiUrlPolicy: ApiUrlPolicy = {},
 ) {
   /** 事件动作隐藏的字段 key 集合（toggleVisible 用） */
   const hiddenByEvent = ref<Set<string>>(new Set())
@@ -67,6 +70,13 @@ export function useFormEvents(
           showToast(t('formBuilder.eventNoApi'), 'warning', 2000)
           break
         }
+        // 外发前置校验：schema 里的 apiUrl 可能来自分享码（无签名，跨信任边界流入）。
+        // 默认只允许同源；跨域必须由宿主通过 apiUrlPolicy 显式放行，否则拒绝并提示。
+        const verdict = checkApiUrl(url, apiUrlPolicy)
+        if (!verdict.ok) {
+          showToast(t('formBuilder.eventApiBlocked', { field: field.label, reason: verdict.reason }), 'error', 3000)
+          break
+        }
         // 后台调用接口，不阻塞交互；结果作为提示反馈。
         // 300ms 防抖（按字段分桶）：Input 逐键 emit change，连打只发最后一次
         const fieldKey = field.key
@@ -77,7 +87,7 @@ export function useFormEvents(
           setTimeout(() => {
             apiTimers.delete(fieldKey)
             const value = formData.value[fieldKey]
-            fetch(url, {
+            fetch(verdict.url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ field: fieldKey, value }),

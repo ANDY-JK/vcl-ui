@@ -3,12 +3,24 @@
 ## 全量引入
 
 ```ts
+// main.ts —— 注意：本库是**具名导出**，没有默认导出，`import VclUi from 'vcl-ui'` 会拿到 undefined
 import 'vcl-ui/css' // 样式：必须引入（一次即可）
 import { createApp } from 'vue'
-import VclUi from 'vcl-ui'
 import App from './App.vue'
+import { i18n, setLocale } from 'vcl-ui'
 
-createApp(App).use(VclUi).mount('#app')
+const app = createApp(App)
+app.use(i18n) // 可选：库自带一份 i18n 实例，不 use 也能工作（组件内部直连其 global.t）
+setLocale('zh-CN') // 可选，默认中文
+app.mount('#app')
+```
+
+组件里按需具名引入即可（也可走下面的按域子路径）：
+
+```vue
+<script setup lang="ts">
+import { Button } from 'vcl-ui'
+</script>
 ```
 
 ## 按域引入（推荐）

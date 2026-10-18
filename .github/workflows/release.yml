@@ -58,9 +58,11 @@ jobs:
         run: npm run typecheck
 
       - name: Lint
-        run: npx eslint src tests scripts --quiet
+        # 与 CI / 本地同一脚本（含 --max-warnings 棘轮）。原先这里用 `eslint --quiet` 只卡 error，
+        # 等于发布路径比 CI 更松：warning 棘轮被绕过。
+        run: npm run lint
 
-      # 常量来源自检（断点单源一致 / 无字面量断点 / @media 登记）
+      # 常量来源自检（断点单源一致 / 无字面量断点 / 断点宽度 @media+@container 登记）
       - name: Check constants
         run: npm run check:constants
 
