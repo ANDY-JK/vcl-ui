@@ -81,6 +81,18 @@ export const DISPLAY_FIELD_REGISTRATIONS: Record<string, FieldRegistration> = {
     group: 'fbGroup.display',
     defaults: () => ({ span: 24, displaySource: { kind: 'static', staticData: [] } }),
   },
+  // 地图标记：只做展示（选点回填是输入型字段的事，与既有 address 互补）
+  amap: {
+    type: 'amap',
+    category: 'layout',
+    component: Divider,
+    componentType: 'amap',
+    isLayout: true,
+    label: 'fbType.amap',
+    icon: 'map-pin',
+    group: 'fbGroup.display',
+    defaults: () => ({ span: 24, displaySource: { kind: 'static', staticData: [] } }),
+  },
   empty: {
     type: 'empty',
     category: 'layout',

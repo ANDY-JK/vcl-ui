@@ -36,6 +36,7 @@ import Empty from '@/components/data/Empty.vue'
 import Skeleton from '@/components/data/Skeleton.vue'
 import RendererDisplayTable from './renderer/RendererDisplayTable.vue'
 import RendererDisplayChart from './renderer/RendererDisplayChart.vue'
+import RendererDisplayMap from './renderer/RendererDisplayMap.vue'
 import type { ApiUrlPolicy } from './api-url-guard'
 import FieldError from './FieldError.vue'
 import RendererRichtext from './renderer/RendererRichtext.vue'
@@ -332,6 +333,12 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
       />
       <RendererDisplayChart
         v-else-if="field.type === 'chart'"
+        :field="field"
+        :form-data="formData"
+        :api-url-policy="apiUrlPolicy"
+      />
+      <RendererDisplayMap
+        v-else-if="field.type === 'amap'"
         :field="field"
         :form-data="formData"
         :api-url-policy="apiUrlPolicy"

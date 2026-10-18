@@ -159,6 +159,7 @@ export default {
     tag: 'Tag',
     dataTable: 'Data table',
     chart: 'Chart',
+    amap: 'Map markers',
     empty: 'Empty state',
     skeleton: 'Skeleton',
     subform: 'Subform',
@@ -205,6 +206,7 @@ export default {
     dataPathLabel: 'Data path',
     dataPathPh: 'data.rows (empty = whole response)',
     apiHint: 'Same-origin only by default; cross-origin needs the host to allow it via apiAllowOrigins',
+    mapSkipped: '{n} record(s) have no coordinates and were not plotted',
   },
 
   fb: {

@@ -157,6 +157,7 @@ export default {
     tag: '标签',
     dataTable: '明细表',
     chart: '图表',
+    amap: '地图标记',
     empty: '空状态',
     skeleton: '骨架屏',
     subform: '子表单',
@@ -203,6 +204,7 @@ export default {
     dataPathLabel: '取数路径',
     dataPathPh: 'data.rows（不填则取整个响应）',
     apiHint: '默认只允许同源请求；跨域地址需宿主用 apiAllowOrigins 显式放行',
+    mapSkipped: '{n} 条数据缺少经纬度，未在地图上标出',
   },
 
   fb: {
