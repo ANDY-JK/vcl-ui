@@ -158,6 +158,7 @@ export default {
     progress: 'Progress',
     tag: 'Tag',
     dataTable: 'Data table',
+    chart: 'Chart',
     empty: 'Empty state',
     skeleton: 'Skeleton',
     subform: 'Subform',

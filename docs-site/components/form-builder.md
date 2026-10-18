@@ -41,11 +41,11 @@
 | `containerDemoNodes` | 预置模板：容器演示节点树（grid/flex/tabs/collapse/steps 五类容器的编排示例） |
 | `containerDemoMeta` | 预置模板：容器演示的表单元信息（标题/描述等 meta） |
 | `storeReportSchema` | 预置模板：门店提报表单 Schema（陈列检查/提报类场景的字段编排） |
-| `getFieldTypes` | 节点类型注册表 — 从 fieldRegistry 派生（单一事实源）新增/修改字段类型只需改 fieldRegistry，此处自动同步。label/group 在调用时翻译（fieldRegistry 存 i18n key），函数形式保证响应语言切换。 |
+| `getFieldTypes` | 节点类型注册表 — 从 fieldRegistry 派生（单一事实源） |
 | `createField` | 按注册表 defaults 创建新节点实例（defaults 来自 fieldRegistry 单一事实源） |
 | `genFieldId` | 生成节点实例 id |
 | `genRecordId` | 生成收集记录 id |
-| `collectStorageKey` | 收集记录存储 key：基于字段结构指纹。 仅用于无表单 id 的场景（FormCollect 独立嵌入、完整分享码）， 已保存表单一律用 formCollectStorageKey(id)——指纹相同会让不同表单共用一个数据桶。 |
+| `collectStorageKey` | 收集记录存储 key：基于字段结构指纹。 |
 | `toFormSchema` | 设计数据 → FormSchema（FormBuilder 可渲染格式） |
 | `parseCascaderOptions` | 解析 cascader JSON 文本；失败返回 null（原在 domain.ts，随 schema 转换职责迁入本文件） |
 | `getTypeLabel` | 节点类型 → 中文标签（委托 fieldRegistry，单一事实源） |
@@ -54,7 +54,7 @@
 | `findParent` | 查找节点的父节点和索引 |
 | `updateNodeInTree` | 不可变更新：替换节点树中指定 id 的节点 |
 | `removeNodeFromTree` | 不可变更新：删除节点树中指定 id 的节点 |
-| `insertNode` | 不可变更新：在指定位置插入节点@param nodes 节点列表@param node 要插入的节点@param index 插入位置（-1 或超出长度则追加到末尾） |
+| `insertNode` | 不可变更新：在指定位置插入节点 |
 | `insertChildNode` | 不可变更新：在容器节点的 children 中插入子节点 |
 | `moveNodeInTree` | 不可变更新：移动节点（从原位置移到新位置） |
 | `isContainerNode` | 判断节点是否为容器节点 |

@@ -69,8 +69,19 @@ export const DISPLAY_FIELD_REGISTRATIONS: Record<string, FieldRegistration> = {
     group: 'fbGroup.display',
     defaults: () => ({ span: 24, displaySource: { kind: 'static', staticData: [] }, columns: [] }),
   },
-  empty: {
-    type: 'empty',
+  // 图表：与明细表同一套数据源；数据是完整 option 就原样用，否则按行推导 categories/series
+  chart: {
+    type: 'chart',
+    category: 'layout',
+    component: Divider,
+    componentType: 'chart',
+    isLayout: true,
+    label: 'fbType.chart',
+    icon: 'chart-line',
+    group: 'fbGroup.display',
+    defaults: () => ({ span: 24, displaySource: { kind: 'static', staticData: [] } }),
+  },
+  empty: {    type: 'empty',
     category: 'layout',
     component: Divider,
     componentType: 'empty',

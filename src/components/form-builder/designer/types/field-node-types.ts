@@ -54,6 +54,7 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'progress',
   'tag',
   'data-table',
+  'chart',
   'empty',
   'skeleton',
 ]

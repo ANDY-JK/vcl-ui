@@ -85,6 +85,7 @@ export type DesignerFieldType =
   | 'progress' // 进度条
   | 'tag' // 标签
   | 'data-table' // 明细表（数据源：静态 / 绑定字段 / 接口）
+  | 'chart' // 图表（同一套数据源；数据是完整 option 则原样用）
   | 'empty' // 空状态
   | 'skeleton' // 骨架屏
 

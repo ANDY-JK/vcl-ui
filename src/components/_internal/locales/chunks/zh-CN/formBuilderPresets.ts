@@ -156,6 +156,7 @@ export default {
     progress: '进度条',
     tag: '标签',
     dataTable: '明细表',
+    chart: '图表',
     empty: '空状态',
     skeleton: '骨架屏',
     subform: '子表单',

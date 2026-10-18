@@ -35,6 +35,7 @@ import Tag from '@/components/basic/Tag.vue'
 import Empty from '@/components/data/Empty.vue'
 import Skeleton from '@/components/data/Skeleton.vue'
 import RendererDisplayTable from './renderer/RendererDisplayTable.vue'
+import RendererDisplayChart from './renderer/RendererDisplayChart.vue'
 import type { ApiUrlPolicy } from './api-url-guard'
 import FieldError from './FieldError.vue'
 import RendererRichtext from './renderer/RendererRichtext.vue'
@@ -325,6 +326,12 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
       <!-- 要取数的展示元素：三种数据源在同一层收敛 -->
       <RendererDisplayTable
         v-else-if="field.type === 'data-table'"
+        :field="field"
+        :form-data="formData"
+        :api-url-policy="apiUrlPolicy"
+      />
+      <RendererDisplayChart
+        v-else-if="field.type === 'chart'"
         :field="field"
         :form-data="formData"
         :api-url-policy="apiUrlPolicy"
