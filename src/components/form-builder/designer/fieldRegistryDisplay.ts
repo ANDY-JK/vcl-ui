@@ -81,7 +81,8 @@ export const DISPLAY_FIELD_REGISTRATIONS: Record<string, FieldRegistration> = {
     group: 'fbGroup.display',
     defaults: () => ({ span: 24, displaySource: { kind: 'static', staticData: [] } }),
   },
-  empty: {    type: 'empty',
+  empty: {
+    type: 'empty',
     category: 'layout',
     component: Divider,
     componentType: 'empty',
