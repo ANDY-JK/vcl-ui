@@ -50,6 +50,7 @@ import RendererAddress from './renderer/RendererAddress.vue'
 import RendererIdcard from './renderer/RendererIdcard.vue'
 import RendererSerial from './renderer/RendererSerial.vue'
 import RendererMapPicker from './renderer/RendererMapPicker.vue'
+import RendererToggleList from './renderer/RendererToggleList.vue'
 import { getComponentCategory, isLayoutField, getComponentType } from './fieldRegistry'
 import { useT } from '@/components/_internal/i18n'
 import type { FormField } from './types'
@@ -595,6 +596,22 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <RendererMapPicker
           :field="field"
           :model-value="modelValue"
+          @update:model-value="emit('update:modelValue', $event)"
+        />
+        <FieldError :message="error ?? ''" />
+      </div>
+
+      <!-- 开关列表（输入型：值 = 被打开行的 id 数组） -->
+      <div v-else-if="field.type === 'toggle-list'" class="fb-advanced-field">
+        <label v-if="field.label" class="fb-adv-label">
+          {{ field.label }}
+          <span v-if="field.required" class="fb-required">*</span>
+        </label>
+        <RendererToggleList
+          :field="field"
+          :model-value="modelValue"
+          :form-data="formData"
+          :api-url-policy="apiUrlPolicy"
           @update:model-value="emit('update:modelValue', $event)"
         />
         <FieldError :message="error ?? ''" />

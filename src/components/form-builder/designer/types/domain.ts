@@ -80,6 +80,7 @@ export type DesignerFieldType =
   | 'matrix' // 评分矩阵
   | 'serial' // 流水号（自动生成）
   | 'map-picker' // 地图选点（输入型，产出 {lng,lat}）
+  | 'toggle-list' // 开关列表（输入型，值 = 被打开行的 id 数组）
   // ── 展示类（2026-10-18）：纯展示、不进提交数据（isLayout=true） ──
   | 'image' // 图片
   | 'avatar' // 头像

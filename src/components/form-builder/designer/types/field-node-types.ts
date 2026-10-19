@@ -49,6 +49,7 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'matrix',
   'serial',
   'map-picker',
+  'toggle-list',
   // 展示类（2026-10-18）
   'image',
   'avatar',

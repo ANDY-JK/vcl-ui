@@ -172,6 +172,7 @@ export default {
     matrix: '评分矩阵',
     serial: '流水号',
     mapPicker: '地图选点',
+    toggleList: '开关列表',
     card: '分组卡片',
     grid: '栅格行',
     flex: '横排行',

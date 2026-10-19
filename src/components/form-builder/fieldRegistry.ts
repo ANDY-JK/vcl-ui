@@ -25,6 +25,7 @@ import CodeCapture from '@/components/form/CodeCapture.vue'
 import Divider from '@/components/data/Divider.vue'
 import { DISPLAY_FIELD_REGISTRATIONS } from './designer/fieldRegistryDisplay'
 import { DISPLAY_FEEDBACK_REGISTRATIONS } from './designer/fieldRegistryFeedback'
+import { INPUT_EXT_REGISTRATIONS } from './designer/fieldRegistryInputExt'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：label/group 翻译与 defaults thunk 求值均走当前语言 */
@@ -506,24 +507,8 @@ const REGISTRY: Record<string, FieldRegistration> = {
     group: 'fbGroup.advancedFields',
     defaults: () => ({ span: 12, serialPrefix: 'NO', serialDateFormat: 'YYYYMMDD' }),
   },
-  /**
-   * 地图选点（输入型，2026-10-19）：在地图上点击，回填 `{ lng, lat }`。
-   *
-   * 与展示组的 `amap`（只看，isLayout=true）刻意分开：本类型**产出一个值进提交数据**。
-   * 也不与既有 `address` 冲突——address 管"省市区+详情"的文字地址，本类型管精确坐标；
-   * 不在这层做反向地理编码（那需要额外请求，失败时会让"选了点却没值"）。
-   */
-  'map-picker': {
-    type: 'map-picker',
-    category: 'advanced',
-    component: Input,
-    componentType: 'map-picker',
-    isLayout: false,
-    label: 'fbType.mapPicker',
-    icon: 'map-pin',
-    group: 'fbGroup.advancedFields',
-    defaults: () => ({ span: 24 }),
-  },
+  // ── 输入型扩展（map-picker / toggle-list）：见 designer/fieldRegistryInputExt.ts ──
+  ...INPUT_EXT_REGISTRATIONS,
 
   // ── 布局容器 (v3) ──
   card: {

@@ -174,6 +174,7 @@ export default {
     matrix: 'Rating matrix',
     serial: 'Serial number',
     mapPicker: 'Map picker',
+    toggleList: 'Toggle list',
     card: 'Group card',
     grid: 'Grid row',
     flex: 'Flex row',
