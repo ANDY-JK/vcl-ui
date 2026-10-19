@@ -90,6 +90,8 @@ export type DesignerFieldType =
   | 'amap' // 地图标记展示（同一套数据源；行→标记点）
   | 'empty' // 空状态
   | 'skeleton' // 骨架屏
+  | 'result' // 结果态（success/error/info/warning/404/empty，纯静态）
+  | 'loading' // 加载态（spinner/skeleton，纯静态；不透传全屏与遮罩）
 
 /** 容器节点类型 */
 export type DesignerContainerType =
@@ -199,6 +201,10 @@ export interface DesignerNode {
   name?: string
   /** 展示类：尺寸（avatar / tag） */
   size?: 'sm' | 'md' | 'lg'
+  /** 告知型展示：结果态类型（result；取值域与 tone 不同，故单列） */
+  resultStatus?: 'success' | 'error' | 'info' | 'warning' | '404' | 'empty'
+  /** 告知型展示：加载态形态（loading） */
+  loadingVariant?: 'spinner' | 'skeleton'
   /** 展示类数据源（明细表/图表/地图等要取数的元素；三模式见 display-data-source.ts） */
   displaySource?: DisplayDataSource
   /** 展示表格的列定义（不填按数据首行推导） */

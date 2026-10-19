@@ -315,6 +315,10 @@ export interface FormField {
   name?: string
   /** 展示类：尺寸（avatar / tag） */
   size?: 'sm' | 'md' | 'lg'
+  /** 告知型展示：结果态类型（result；取值域与 tone 不同，故单列） */
+  resultStatus?: 'success' | 'error' | 'info' | 'warning' | '404' | 'empty'
+  /** 告知型展示：加载态形态（loading） */
+  loadingVariant?: 'spinner' | 'skeleton'
   /**
    * 展示类**数据源**（明细表 / 图表 / 地图这类"要取数"的展示元素用）。
    * 三模式：static 静态配置 / field 绑定其它字段的值 / api 接口拉取（走同源守卫）。

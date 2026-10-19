@@ -24,6 +24,7 @@ import CameraCapture from '@/components/form/CameraCapture.vue'
 import CodeCapture from '@/components/form/CodeCapture.vue'
 import Divider from '@/components/data/Divider.vue'
 import { DISPLAY_FIELD_REGISTRATIONS } from './designer/fieldRegistryDisplay'
+import { DISPLAY_FEEDBACK_REGISTRATIONS } from './designer/fieldRegistryFeedback'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：label/group 翻译与 defaults thunk 求值均走当前语言 */
@@ -405,6 +406,8 @@ const REGISTRY: Record<string, FieldRegistration> = {
   // ── 展示类（2026-10-18）：见 designer/fieldRegistryDisplay.ts ──
   // 拆出去是因为本文件已贴近 800 行止涨线，而展示能力后续还会继续加（表格/图表/地图…）。
   ...DISPLAY_FIELD_REGISTRATIONS,
+  // ── 告知型展示（2026-10-19）：result / loading，见 designer/fieldRegistryFeedback.ts ──
+  ...DISPLAY_FEEDBACK_REGISTRATIONS,
 
   // ── v3 高级字段（复用 Input 组件做 fallback，实际由 FormRenderer 的 advanced 分支渲染） ──
   subform: {

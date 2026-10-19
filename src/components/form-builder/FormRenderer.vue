@@ -38,6 +38,8 @@ import RendererDisplayTable from './renderer/RendererDisplayTable.vue'
 import RendererDisplayChart from './renderer/RendererDisplayChart.vue'
 import RendererDisplayMap from './renderer/RendererDisplayMap.vue'
 import RendererDisplayChartTable from './renderer/RendererDisplayChartTable.vue'
+import RendererDisplayResult from './renderer/RendererDisplayResult.vue'
+import RendererDisplayLoading from './renderer/RendererDisplayLoading.vue'
 import type { ApiUrlPolicy } from './api-url-guard'
 import FieldError from './FieldError.vue'
 import RendererRichtext from './renderer/RendererRichtext.vue'
@@ -352,6 +354,9 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
       />
       <Empty v-else-if="field.type === 'empty'" :description="field.text || undefined" />
       <Skeleton v-else-if="field.type === 'skeleton'" />
+      <!-- 告知型展示（2026-10-19）：结果态与加载态，纯静态、不进提交数据 -->
+      <RendererDisplayResult v-else-if="field.type === 'result'" :field="field" />
+      <RendererDisplayLoading v-else-if="field.type === 'loading'" :field="field" />
     </template>
 
     <!-- ═══ Input 系列 ═══ -->

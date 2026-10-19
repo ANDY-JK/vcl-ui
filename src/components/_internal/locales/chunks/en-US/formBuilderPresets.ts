@@ -163,6 +163,8 @@ export default {
     amap: 'Map markers',
     empty: 'Empty state',
     skeleton: 'Skeleton',
+    result: 'Result',
+    loading: 'Loading',
     subform: 'Subform',
     relate: 'Relation select',
     richtext: 'Rich text',

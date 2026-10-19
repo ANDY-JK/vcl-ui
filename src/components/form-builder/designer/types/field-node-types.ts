@@ -59,4 +59,7 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'amap',
   'empty',
   'skeleton',
+  // 告知型展示（2026-10-19）
+  'result',
+  'loading',
 ]

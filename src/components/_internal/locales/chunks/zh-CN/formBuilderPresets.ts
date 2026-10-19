@@ -161,6 +161,8 @@ export default {
     amap: '地图标记',
     empty: '空状态',
     skeleton: '骨架屏',
+    result: '结果提示',
+    loading: '加载中',
     subform: '子表单',
     relate: '关联选择',
     richtext: '富文本',

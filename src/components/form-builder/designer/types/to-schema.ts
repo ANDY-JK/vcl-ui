@@ -98,6 +98,9 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       tone: f.tone,
       name: f.name,
       size: f.size,
+      // 告知型展示（result / loading）
+      resultStatus: f.resultStatus,
+      loadingVariant: f.loadingVariant,
       // 展示类数据源与表格配置（明细表/图表/地图用）
       displaySource: f.displaySource,
       columns: f.columns,
