@@ -159,6 +159,7 @@ export default {
     tag: 'Tag',
     dataTable: 'Data table',
     chart: 'Chart',
+    chartTable: 'Chart + table',
     amap: 'Map markers',
     empty: 'Empty state',
     skeleton: 'Skeleton',

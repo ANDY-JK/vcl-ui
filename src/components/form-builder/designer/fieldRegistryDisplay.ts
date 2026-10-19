@@ -81,6 +81,18 @@ export const DISPLAY_FIELD_REGISTRATIONS: Record<string, FieldRegistration> = {
     group: 'fbGroup.display',
     defaults: () => ({ span: 24, displaySource: { kind: 'static', staticData: [] } }),
   },
+  // 图表+表格上下组合：同一份 rows 喂两处（图表按 option/推导，表格按列配置/首行推导）
+  'chart-table': {
+    type: 'chart-table',
+    category: 'layout',
+    component: Divider,
+    componentType: 'chart-table',
+    isLayout: true,
+    label: 'fbType.chartTable',
+    icon: 'chart-bar',
+    group: 'fbGroup.display',
+    defaults: () => ({ span: 24, displaySource: { kind: 'static', staticData: [] } }),
+  },
   // 地图标记：只做展示（选点回填是输入型字段的事，与既有 address 互补）
   amap: {
     type: 'amap',

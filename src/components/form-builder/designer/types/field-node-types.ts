@@ -55,6 +55,7 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'tag',
   'data-table',
   'chart',
+  'chart-table',
   'amap',
   'empty',
   'skeleton',

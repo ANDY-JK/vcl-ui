@@ -157,6 +157,7 @@ export default {
     tag: '标签',
     dataTable: '明细表',
     chart: '图表',
+    chartTable: '图表+表格',
     amap: '地图标记',
     empty: '空状态',
     skeleton: '骨架屏',
