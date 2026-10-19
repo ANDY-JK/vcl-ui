@@ -79,6 +79,7 @@ export type DesignerFieldType =
   | 'idcard' // 证件号码（类型+号码）
   | 'matrix' // 评分矩阵
   | 'serial' // 流水号（自动生成）
+  | 'map-picker' // 地图选点（输入型，产出 {lng,lat}）
   // ── 展示类（2026-10-18）：纯展示、不进提交数据（isLayout=true） ──
   | 'image' // 图片
   | 'avatar' // 头像
@@ -205,6 +206,10 @@ export interface DesignerNode {
   resultStatus?: 'success' | 'error' | 'info' | 'warning' | '404' | 'empty'
   /** 告知型展示：加载态形态（loading） */
   loadingVariant?: 'spinner' | 'skeleton'
+  /** 地图选点：初始中心 [lng, lat]（未选点时用） */
+  mapCenter?: [number, number]
+  /** 地图选点：初始缩放级别 */
+  mapZoom?: number
   /** 展示类数据源（明细表/图表/地图等要取数的元素；三模式见 display-data-source.ts） */
   displaySource?: DisplayDataSource
   /** 展示表格的列定义（不填按数据首行推导） */

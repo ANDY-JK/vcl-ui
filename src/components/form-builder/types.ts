@@ -319,6 +319,10 @@ export interface FormField {
   resultStatus?: 'success' | 'error' | 'info' | 'warning' | '404' | 'empty'
   /** 告知型展示：加载态形态（loading） */
   loadingVariant?: 'spinner' | 'skeleton'
+  /** 地图选点：初始中心 [lng, lat]（未选点时用） */
+  mapCenter?: [number, number]
+  /** 地图选点：初始缩放级别 */
+  mapZoom?: number
   /**
    * 展示类**数据源**（明细表 / 图表 / 地图这类"要取数"的展示元素用）。
    * 三模式：static 静态配置 / field 绑定其它字段的值 / api 接口拉取（走同源守卫）。

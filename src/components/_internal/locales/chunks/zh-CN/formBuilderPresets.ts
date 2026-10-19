@@ -171,6 +171,7 @@ export default {
     idcard: '证件号码',
     matrix: '评分矩阵',
     serial: '流水号',
+    mapPicker: '地图选点',
     card: '分组卡片',
     grid: '栅格行',
     flex: '横排行',
@@ -213,6 +214,8 @@ export default {
   fb: {
     textPlaceholder: '请输入',
     pwdPlaceholder: '请输入密码',
+    mapPickHint: '在地图上点击选择位置',
+    mapPicked: '已选：{pos}',
     telPlaceholder: '请输入电话',
     emailPlaceholder: '请输入邮箱',
     urlPlaceholder: '请输入链接',

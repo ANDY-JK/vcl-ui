@@ -173,6 +173,7 @@ export default {
     idcard: 'ID number',
     matrix: 'Rating matrix',
     serial: 'Serial number',
+    mapPicker: 'Map picker',
     card: 'Group card',
     grid: 'Grid row',
     flex: 'Flex row',
@@ -215,6 +216,8 @@ export default {
   fb: {
     textPlaceholder: 'Enter',
     pwdPlaceholder: 'Enter password',
+    mapPickHint: 'Click on the map to pick a location',
+    mapPicked: 'Picked: {pos}',
     telPlaceholder: 'Enter phone',
     emailPlaceholder: 'Enter email',
     urlPlaceholder: 'Enter URL',

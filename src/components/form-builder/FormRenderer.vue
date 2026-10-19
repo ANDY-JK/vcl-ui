@@ -49,6 +49,7 @@ import RendererMatrix from './renderer/RendererMatrix.vue'
 import RendererAddress from './renderer/RendererAddress.vue'
 import RendererIdcard from './renderer/RendererIdcard.vue'
 import RendererSerial from './renderer/RendererSerial.vue'
+import RendererMapPicker from './renderer/RendererMapPicker.vue'
 import { getComponentCategory, isLayoutField, getComponentType } from './fieldRegistry'
 import { useT } from '@/components/_internal/i18n'
 import type { FormField } from './types'
@@ -578,6 +579,20 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           {{ field.label }}
         </label>
         <RendererSerial
+          :field="field"
+          :model-value="modelValue"
+          @update:model-value="emit('update:modelValue', $event)"
+        />
+        <FieldError :message="error ?? ''" />
+      </div>
+
+      <!-- 地图选点（输入型：产出一个 {lng,lat} 值进提交数据） -->
+      <div v-else-if="field.type === 'map-picker'" class="fb-advanced-field">
+        <label v-if="field.label" class="fb-adv-label">
+          {{ field.label }}
+          <span v-if="field.required" class="fb-required">*</span>
+        </label>
+        <RendererMapPicker
           :field="field"
           :model-value="modelValue"
           @update:model-value="emit('update:modelValue', $event)"

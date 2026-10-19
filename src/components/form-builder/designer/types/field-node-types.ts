@@ -48,6 +48,7 @@ export const FIELD_NODE_TYPES: DesignerFieldType[] = [
   'idcard',
   'matrix',
   'serial',
+  'map-picker',
   // 展示类（2026-10-18）
   'image',
   'avatar',
