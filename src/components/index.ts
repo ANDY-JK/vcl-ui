@@ -57,6 +57,7 @@ export {
   batchFetchPoiPhotos,
   getDrivingRoute,
   geocodeCalc,
+  reverseGeocode,
   detectPlatform,
   buildNavLink,
 } from './amap/amap-service'

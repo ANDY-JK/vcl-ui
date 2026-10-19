@@ -19,7 +19,7 @@
  *   node scripts/quality-check.mjs --list         # 只打印步骤清单
  */
 import { spawn } from 'node:child_process'
-import { mkdirSync, writeFileSync, createWriteStream } from 'node:fs'
+import { mkdirSync, writeFileSync, createWriteStream, readdirSync, unlinkSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 import { join } from 'node:path'
 
@@ -119,6 +119,29 @@ try {
 const results = []
 const t0 = Date.now()
 mkdirSync(LOG_DIR, { recursive: true }) // 必须在跑第一步之前建好，否则日志流打不开
+/**
+ * 每次跑之前清空日志目录（2026-10-19 加）。
+ *
+ * 起因：插入新步骤会让后续步号整体后移，而旧文件按「步号-步骤名」命名留在原地，
+ * 于是同一个编号下可能同时存在两个不同步骤的日志（如 `14-test-unit.log` 是插步前的、
+ * `14-check-deps.log` 是插步后的）。**我自己就被它骗过一轮**：读着插步前的旧
+ * `14-test-unit.log`，得出"新 spec 没被跑到"的错误结论。
+ *
+ * 留痕的价值在于"反映最近一次运行"，混着历史文件就失去了这个性质。
+ */
+const stale = readdirSync(LOG_DIR).filter((f) => f.endsWith('.log'))
+if (stale.length) console.log(`[runner] 清理旧日志：${stale.length} 个`)
+for (const f of stale) {
+  try {
+    // 用 unlinkSync 而不是 rmSync：本机实测（Node 24 / Windows）`rmSync` 对这批文件
+    // **报成功但文件仍在**（`existsSync` 仍为 true，且不抛错），而 `unlinkSync` 确实删掉。
+    // 这正是"以为清了其实没清"的来源，也让旧日志一直混在留痕目录里。
+    unlinkSync(join(LOG_DIR, f))
+  } catch (err) {
+    // 不静默：删不掉就让用户看到
+    console.warn(`[runner] 旧日志清理失败（${f}）：${err?.code ?? err}`)
+  }
+}
 console.log(`\n▶ quality-check：${STEPS.length} 步，HEAD=${head.slice(0, 7)}${quick ? `，快链档位（${QUICK_STEPS.length} 步）` : ''}${skip ? `，跳过含「${skip}」的步骤` : ''}\n`)
 
 let brokenAt = null

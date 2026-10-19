@@ -32,6 +32,8 @@ export {
   getDrivingRoute,
   // 地理编码辅助
   geocodeCalc,
+  // 反向地理编码（坐标 → 结构化地址）
+  reverseGeocode,
   // 导航深度链接
   detectPlatform,
   buildNavLink,

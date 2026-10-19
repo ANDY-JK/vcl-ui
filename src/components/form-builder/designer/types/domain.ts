@@ -15,7 +15,7 @@ import { uuid } from '@/components/_internal/utils'
 import { useT } from '@/components/_internal/i18n'
 import { extractFields } from '../../expression-evaluator'
 import { getFieldMeta, getFieldDefaults, findFieldRegistration } from '../../fieldRegistry'
-import type { DisplayDataSource } from '../../display-data-source'
+import type { DesignerDisplayProps } from './designer-display-props'
 
 /** 模块级 t：FIELD_TYPES 派生与节点默认标签按当前语言 */
 const t = useT()
@@ -114,7 +114,7 @@ export type DesignerContainerType =
  * 字段节点（isContainer=false）：有 key、有数据值
  * 容器节点（isContainer=true）：无 key、无数据值，但有 children 子节点
  */
-export interface DesignerNode {
+export interface DesignerNode extends DesignerDisplayProps {
   /** 实例唯一 id（设计器内部用） */
   id: string
   /** 节点类型（字段类型或容器类型） */
@@ -187,36 +187,6 @@ export interface DesignerNode {
   disabledWhenValue?: string
   /** 条件禁用：是否反向匹配 */
   disabledWhenNot?: boolean
-  // ── 展示类字段（2026-10-18：image / avatar / progress / tag）──
-  // 纯展示、不进提交数据（isLayout=true），故只有承载内容本身的几个属性。
-  /** 展示类：图片/头像地址（image / avatar） */
-  src?: string
-  /** 展示类：替代文本（image；缺省回落 label） */
-  alt?: string
-  /** 展示类：进度百分比 0–100（progress） */
-  percent?: number
-  /** 展示类：标签文本（tag） */
-  text?: string
-  /** 展示类：标签语义色（tag，映射到 Tag 的 variant） */
-  tone?: 'default' | 'primary' | 'success' | 'warning' | 'danger'
-  /** 展示类：名称（avatar；无 src 时取首字） */
-  name?: string
-  /** 展示类：尺寸（avatar / tag） */
-  size?: 'sm' | 'md' | 'lg'
-  /** 告知型展示：结果态类型（result；取值域与 tone 不同，故单列） */
-  resultStatus?: 'success' | 'error' | 'info' | 'warning' | '404' | 'empty'
-  /** 告知型展示：加载态形态（loading） */
-  loadingVariant?: 'spinner' | 'skeleton'
-  /** 地图选点：初始中心 [lng, lat]（未选点时用） */
-  mapCenter?: [number, number]
-  /** 地图选点：初始缩放级别 */
-  mapZoom?: number
-  /** 展示类数据源（明细表/图表/地图等要取数的元素；三模式见 display-data-source.ts） */
-  displaySource?: DisplayDataSource
-  /** 展示表格的列定义（不填按数据首行推导） */
-  columns?: { key: string; label?: string }[]
-  /** 展示表格的行唯一键字段名 */
-  rowKey?: string
   /** 级联选项：依赖字段 key（本字段选项由依赖值在 optionsMap 查出） */
   optionsFrom?: string
   /** 级联选项映射（每行一条：依赖值=选项1,选项2,选项3） */

@@ -46,7 +46,7 @@
     },
     "amap": {
       "components": 1,
-      "named": 16
+      "named": 17
     },
     "route-planner": {
       "components": 5,
@@ -55,5 +55,5 @@
   },
   "unparsed": [],
   "totalComponents": 65,
-  "totalNamed": 165
+  "totalNamed": 166
 }

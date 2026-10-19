@@ -26,6 +26,7 @@
 | `batchFetchPoiPhotos` | 批量获取 POI 照片 |
 | `getDrivingRoute` | 获取驾车路线（支持多途经点） |
 | `geocodeCalc` | 执行高德搜索 + 距离计算（重试策略） |
+| `reverseGeocode` | 反向地理编码：坐标 → 结构化地址（2026-10-19） |
 | `detectPlatform` | 检测当前平台 |
 | `buildNavLink` | 生成单段导航链接（A → B，可选途经点） |
 

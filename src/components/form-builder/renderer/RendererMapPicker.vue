@@ -13,9 +13,11 @@
   回填：外部传入的值会作为初始标记点渲染，于是“编辑已有记录”时能直接看到上次选的位置。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import AmapWidget from '@/components/amap/AmapWidget.vue'
+import { reverseGeocode } from '@/components/amap/amap-service'
 import { useT } from '@/components/_internal/i18n'
+import { reportWarn } from '@/components/_internal/runtime-observer'
 import type { FormField } from '../types'
 
 const t = useT()
@@ -30,6 +32,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   /** 选点后回填 */
   'update:modelValue': [v: unknown]
+  /** 需要把值写进**另一个**字段（反向地理编码回填 address 用） */
+  'update:formDataField': [payload: { key: string; value: unknown }]
 }>()
 
 /** 从当前值里读出坐标；形态不对就当作“未选点”（不猜） */
@@ -56,8 +60,36 @@ const center = computed<[number, number] | undefined>(() => {
 
 const zoom = computed<number | undefined>(() => (props.field as { mapZoom?: number }).mapZoom)
 
-function onMapClick(lng: number, lat: number): void {
+/**
+ * 选点后是否自动回填文字地址（字段配置 `autoAddress: true` 时启用）。
+ *
+ * 为什么做成**可选**而不是默认开：
+ * 反向地理编码是一次额外 REST 请求（还会消耗高德配额），而很多场景只要坐标就够了
+ * （如"取货点"只用于导航）。默认开等于替宿主默默花钱，所以由字段配置显式打开。
+ *
+ * 失败不影响坐标：`reverseGeocode` 失败返回 null，这里就只是不回填地址。
+ */
+const autoAddress = computed(() => (props.field as { autoAddress?: boolean }).autoAddress === true)
+/** 地址回填的目标字段 key（不填则用 `address`） */
+const addressFieldKey = computed(() => (props.field as { addressField?: string }).addressField ?? 'address')
+
+const addressText = ref('')
+
+async function onMapClick(lng: number, lat: number): Promise<void> {
   emit('update:modelValue', { lng, lat })
+  if (!autoAddress.value) return
+  // 自身兜一层 try：`reverseGeocode` 的契约是"失败返回 null"，但那是跨模块的隐式约定。
+  // 事件处理器是 async 且由模板直接调用，一旦它 reject 就会变成 unhandled rejection
+  // （Vue 只报 "Unhandled error during execution of component event handler"）。
+  // 反向地理编码只是锦上添花，**任何情况下都不该让用户已选的坐标受牵连**。
+  try {
+    const geo = await reverseGeocode(lng, lat)
+    if (!geo) return // 反查失败：坐标已经回填了，地址就留空，不打断用户
+    addressText.value = geo.formatted
+    emit('update:formDataField', { key: addressFieldKey.value, value: geo.formatted })
+  } catch (err) {
+    reportWarn('[map-picker] 反向地理编码失败，已忽略（坐标不受影响）:', err)
+  }
 }
 
 /** 展示已选坐标，让"选没选上"当场可见 */
@@ -73,5 +105,7 @@ const pickedText = computed(() =>
       <template v-if="pickedText">{{ t('fb.mapPicked', { pos: pickedText }) }}</template>
       <template v-else>{{ t('fb.mapPickHint') }}</template>
     </p>
+    <!-- 反向地理编码回填的地址：显示出来，让"地址填上了没"当场可见 -->
+    <p v-if="addressText" class="fb-map-picker-address">{{ addressText }}</p>
   </div>
 </template>

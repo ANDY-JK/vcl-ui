@@ -323,6 +323,10 @@ export interface FormField {
   mapCenter?: [number, number]
   /** 地图选点：初始缩放级别 */
   mapZoom?: number
+  /** 地图选点：选点后是否自动回填文字地址（需配置高德 REST key；默认关，避免默默消耗配额） */
+  autoAddress?: boolean
+  /** 地图选点：地址回填的目标字段 key（默认 `address`） */
+  addressField?: string
   /**
    * 展示类**数据源**（明细表 / 图表 / 地图这类"要取数"的展示元素用）。
    * 三模式：static 静态配置 / field 绑定其它字段的值 / api 接口拉取（走同源守卫）。

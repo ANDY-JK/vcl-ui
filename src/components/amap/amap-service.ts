@@ -634,3 +634,78 @@ export function buildNavLink(from: NavPoint, to: NavPoint, waypoints: NavPoint[]
 
   return { label, url, webUrl }
 }
+
+/**
+ * 反向地理编码：坐标 → 结构化地址（2026-10-19）
+ *
+ * 用途：地图选点后自动把文字地址回填给 `address` 字段——用户点一下地图，
+ * 不必再手打一遍省市和街道。
+ *
+ * 与 `geocodeCalc` 的区别：那个是**正向**（地址→坐标，用于核对门店位置是否偏移），
+ * 这个是**反向**（坐标→地址）。两者不共用实现。
+ *
+ * 返回值刻意给**结构化**的省/市/区/街道/门牌，而不是一整串拼好的字符串：
+ * 宿主要拼成什么格式、要不要省略"中国"，是宿主的口径，库不该替它决定。
+ * 同时给 `formatted` 便于直接展示。
+ *
+ * 失败语义：无 key / 网络失败 / 接口返回非 1 → 返回 null（**不抛**）——
+ * 反向地理编码只是"锦上添花"，它失败不该让用户已经选好的坐标作废。
+ */
+export async function reverseGeocode(
+  lng: number,
+  lat: number,
+): Promise<{
+  /** 高德返回的整串地址（如「北京市东城区东华门街道东长安街」） */
+  formatted: string
+  province: string
+  city: string
+  district: string
+  township: string
+  street: string
+  /** 门牌号（可能为空：街道级位置常无门牌） */
+  streetNumber: string
+} | null> {
+  if (!isValidLatLon(lat, lng)) return null
+  const key = getAmapRestKey()
+  if (!key) return null
+
+  const params = new URLSearchParams({
+    key,
+    location: `${lng},${lat}`,
+    extensions: 'base',
+  })
+
+  try {
+    const resp = await safeFetch(`https://restapi.amap.com/v3/geocode/regeo?${params.toString()}`)
+    if (!resp.ok) return null
+    const json = (await resp.json()) as {
+      status?: string
+      regeocode?: {
+        formatted_address?: string
+        addressComponent?: {
+          province?: string
+          city?: string
+          district?: string
+          township?: string
+          streetNumber?: { street?: string; number?: string }
+        }
+      }
+    }
+    // 高德约定 status === '1' 为成功，其余（无 key 权限/超限/坐标无效）都可能返回 '0'
+    if (json.status !== '1' || !json.regeocode) return null
+    const ac = json.regeocode.addressComponent ?? {}
+    // 直辖市（北京/上海/天津/重庆）的 city 字段是空数组，用 province 顶上
+    const city = typeof ac.city === 'string' ? ac.city : (ac.province ?? '')
+    return {
+      formatted: json.regeocode.formatted_address ?? '',
+      province: typeof ac.province === 'string' ? ac.province : '',
+      city,
+      district: typeof ac.district === 'string' ? ac.district : '',
+      township: typeof ac.township === 'string' ? ac.township : '',
+      street: ac.streetNumber?.street ?? '',
+      streetNumber: ac.streetNumber?.number ?? '',
+    }
+  } catch {
+    return null
+  }
+}

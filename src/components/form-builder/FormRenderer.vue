@@ -84,6 +84,8 @@ const emit = defineEmits<{
   'update:modelValue': [v: unknown]
   /** 值变化（透传原子组件 change，供 FormBuilder 执行事件动作） */
   change: []
+  /** 需要写入**另一个**字段的值（如地图选点后反向地理编码回填地址） */
+  'update:form-data-field': [payload: { key: string; value: unknown }]
 }>()
 
 // ════════════════════════════════════════
@@ -597,6 +599,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           :field="field"
           :model-value="modelValue"
           @update:model-value="emit('update:modelValue', $event)"
+          @update:form-data-field="emit('update:form-data-field', $event)"
         />
         <FieldError :message="error ?? ''" />
       </div>

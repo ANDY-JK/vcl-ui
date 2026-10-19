@@ -41,7 +41,6 @@ import type { FormSchema, FormData, FormField, RenderSection, FieldContainer } f
 const _DRAFT_SAVE_DEBOUNCE_MS = 1000
 /** 提交兜底解锁：宿主没接住 submit 时，按钮最迟这么久恢复可点 */
 const _SUBMIT_STUCK_RESET_MS = 3000
-
 const t = useT()
 
 // ══ Props ══
@@ -736,6 +735,7 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
               :api-url-policy="apiUrlPolicy"
               :form-data="formData"
               @change="handleFieldChange(field, 'change')"
+              @update:form-data-field="(p) => (formData[p.key] = p.value)"
             />
           </div>
         </div>
