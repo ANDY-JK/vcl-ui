@@ -78,6 +78,11 @@ jobs:
       - name: Check vendored xlsx against OSV
         run: npm run check:vendor-vulns
 
+      # 依赖树健康闸口（R5-B12）：npm ls 的 invalid 边必须为 0（已知噪音需显式登记理由），
+      # 防止"依赖树悄悄裂开"这类看不见的问题
+      - name: Check dependency tree
+        run: npm run check:deps
+
       # 第三方许可闸口：产物实际进包的件都要在 dist/THIRD-PARTY-LICENSES.md 里声明，
       # 且许可必须落在随包分发白名单内（copyleft 命中即红，需人工裁决）
       - name: Check third-party licenses

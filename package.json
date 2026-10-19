@@ -59,7 +59,8 @@
     "gen:demo-assets": "node scripts/gen-demo-assets.mjs",
     "apply-scale": "node scripts/apply-scale.mjs --write",
     "quick-check": "node scripts/quality-check.mjs --quick",
-    "check:release-consistency": "node scripts/check-release-consistency.mjs"
+    "check:release-consistency": "node scripts/check-release-consistency.mjs",
+    "check:deps": "node scripts/check-deps.mjs"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",

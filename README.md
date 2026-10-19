@@ -293,10 +293,10 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 
 ### 闸口的本地执行者（2026-10-18 补）
 
-本仓 `git remote` 为空 → `.github/workflows` 里的 ci / release **从来没有执行过**。24 步质量链因此长期只靠"人记得手动跑"，出现过「整链已红 10 天没人知道」（R5-C14）。现在分两档：
+本仓 `git remote` 为空 → `.github/workflows` 里的 ci / release **从来没有执行过**。25 步质量链因此长期只靠"人记得手动跑"，出现过「整链已红 10 天没人知道」（R5-C14）。现在分两档：
 
 1. **快链**：`npm run quick-check` —— 6 步 / 约 80s = `typecheck` + `lint` + `check:constants` + `check:css-tokens` + `check:i18n` + `test:unit`。留痕写 `reports/quick-check-latest.json`（与整链**分开写**，否则跑一次快链就把整链的权威证据覆盖成 6/24 的半份）。
-2. **整链**：`npm run quality-check` —— 24 步 / 约 10 分钟，**唯一权威**，含 `build`、`e2e`、许可清单、**版本三件套对齐**、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
+2. **整链**：`npm run quality-check` —— 25 步 / 约 10 分钟，**唯一权威**，含 `build`、`e2e`、许可清单、**版本三件套对齐**、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
 
 `.husky/pre-commit` 现在跑「`lint-staged`（暂存区格式化）+ 快链」，把显然会坏的提交挡在落库之前。跳过方式：`git commit --no-verify`，或 `SKIP_QUICK_CHECK=1 git commit ...`。
 
