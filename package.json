@@ -58,7 +58,8 @@
     "check:offline": "node scripts/check-offline.mjs",
     "gen:demo-assets": "node scripts/gen-demo-assets.mjs",
     "apply-scale": "node scripts/apply-scale.mjs --write",
-    "quick-check": "node scripts/quality-check.mjs --quick"
+    "quick-check": "node scripts/quality-check.mjs --quick",
+    "check:release-consistency": "node scripts/check-release-consistency.mjs"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",

@@ -1,9 +1,293 @@
 # Changelog
 
-本文件由 `npm run changelog` 从 conventional commits 全量重生成，请勿手改。
+本文件由 `npm run changelog` 从 conventional commits 增量重生成（`--since`），历史版本段原样保留，请勿手改。
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
 ## [Unreleased]
+
+### BREAKING CHANGES
+
+- **`tokens`** 设计令牌全量加 --vcl- 命名空间——176 文件改名、5 处闸口与主题编辑器对齐、迁移口诀入档，实测 1646 单测全绿（18042e6）
+
+### Added
+
+- **通用**
+  - 低代码接上开关列表（输入型）——补上"配置型多选列表"（fbd9df8）
+  - 低代码接上地图选点（输入型）——地图从"只能看"变成"能选"（3177c57）
+  - 低代码接上告知型展示（result 结果态 / loading 加载态）（0da5c7b）
+  - 低代码接上图表+表格组合（同一份 rows 喂两处）（801c74a）
+  - 低代码接上地图标记展示元素（复用展示数据源三模式）（f0742eb）
+  - 低代码接上图表展示元素（复用展示数据源三模式）（0c9a3f3）
+  - 低代码展示能力（三数据源）+ 动态导航 + 自带库接缝，并落地第五轮审查短期路线图与工程治理收口（37ede8b）
+  - 新增全站配色清单与简约校准——contrast-audit.mjs 落地为 WCAG 验收正源（22 配对亮暗全 ✓），修唯一不达标 nav-text-muted 4.28→5d6470=5.12，清 bg-hover/bg-soft 冷蓝灰残留暖化对齐暖沙主题，玻璃四令牌提实一档（bg .45→.55/strong .72→.8/deep .45→.55/card .78→.86）令面板与底图对比明显，surface 纯白化，去 vcl-nav-percent 与 topbar-prompt 的 opacity 洗白（合成后 3.84 跌破 AA 已被 axe 抓实）；清单落 reports/design-colors.md；实测 axe 亮暗双扫 0 违规、单测 1701、lint 棘轮 147 全绿（3978065）
+  - 新增玻璃拟态门户皮肤——参考 MyBusiness 仪表盘全面换肤：主色纯蓝 0052ff 联动五令牌（压白 5.75 达 AA，替紫蓝 4f6ef7）、中性色暖沙化、玻璃七变量（bg/strong/deep/blur/边框/悬浮影/卡片底）浅深三主题同步、侧栏亮玻璃+导航自适应六令牌（替恒深底假设）+实心蓝胶囊选中态、顶栏底栏 content-body 毛玻璃化删科技蓝 glow 线、Card/ModalShell/Drawer/登录三页玻璃底；行线断言改令牌实测值跟随换肤；实测 axe 亮暗双扫 0 违规、单测 1701 全绿、typecheck lint 0 error、e2e 67 绿加 popover-arrow 全量负载下单跑复验 5 连绿定案竞态 flake 与换肤无因果（4d512df）
+  - 新增 DataTable 行级左边线双 API 并修列宽三处口径分裂（fd01ba9）
+  - 角标升级 v2——三形态（ribbon 折角丝带/pill 透明浅底胶囊悬浮不遮挡/dot 状态圆点带脉冲扩散环 reduced-motion 停）×四角（corner-position 悬浮不占布局）×五语义色（pill 走 -bg+-text 令牌对暗色自适应、dot 走 -solid 文字读屏可读），顺带修上轮箭头 10 处裸 px 漏检（补跑 css-scale 闸口全绿），e2e 61 单测 1653 全绿（5b08adb）
+  - 新增 Popover 指向三角 arrow 属性（默认关，不破坏无箭头定案）——useFloating 输出 --vcl-arrow-offset（触发器中心投影 clamp 浮层内 14px 边距），浮层分层重构为外壳 .pop-floating 管定位箭头加内层 .pop-skin 管皮肤裁切（overflow hidden 移入内层解箭头被裁），flip 类两变体统一，四方向箭头贴边对准触发器中心（2x 截图取证），单测容器断言迁 .pop-floating，e2e 61 单测 1653 全绿（bf387a8）
+  - 新增 Card 折角丝带 corner 属性（右上角 45° 斜贴丝带，corner 文本加 cornerColor 五语义色，丝带中心锚定角顶点与文本宽度无关，两端由卡片 overflow hidden 裁成标准折角，属装饰性几何三角——语义三角仍归 IconSvg），坑=grid-card 缺 position relative 致丝带锚到页面级、inset 类负偏移会被 border-box 吃掉，CardDemo 补四色折角演示，e2e 61 单测 1653 全绿（0837612）
+  - 新增 Card 卡片头部状态竖条 accent 属性（标题左侧 3px 竖条，primary/success/warning/danger/info 五色随语义令牌走主题，2026-10-04 用户需求），CardDemo 补四色演示，取证实测竖条渲染 2.8px 主题色、e2e 61 单测 1653 全绿（5f12c2b）
+  - 图表工具钮与图例全选钮落地 24px 固定触控热区（每侧仅外扩 1.5px 不与相邻钮重叠，实测 O5 v4 两处误判修正——间距 4.5px 可扩、cl 前缀实为 ChartLegend 非列设置），坑=inset 负值外扩在 border-box 下实测差 1px 须显式 24px 中心定位，热区感知复测 390/1440 双档清零，O5 终局 26/26 全处置（11 修+12 例外+3 达标），e2e 61 单测 1653 css-scale 222 全绿（c160ed8）
+  - 新增 Input 密码显隐/清除钮 24px 固定触控热区（a11y-target 豁免标记首个落地，::before 中心扩区视觉零变化，热区感知复测两类清零），O5 台账 v3 分级处置（step-btn 8 条登记键盘等价例外、chart-tool 窄屏间距 4.5px 待拍板、其余待专项），e2e 61 单测 1653 全绿（b67e7d6）
+  - 新增 css-scale 闸口 a11y-target 豁免标记（scale-rules 共享层实现，闸口与迁移器同源跳过）——WCAG 2.5.8 触控热区须固定 24px 实际值不得随缩放缩水，阳性对照（无标记 24px 仍报、带标记不报）加阴性全库 222 文件全绿双向验证（a4f0a64）
+  - 缩放改随视口等比去地板、删手动旋钮，居中改运行期量字体墨迹，主色文字加深达标，因用户要按分辨率动态缩放不走形，e2e 59 全绿（00d8973）
+- **`a11y`**
+  - 减弱动效双通道开关——data-vcl-motion 属性 + 系统偏好跟随，新增 4 条回归锁实测通过（6a5c36a）
+- **`batch`**
+  - 缩放/容器查询/离线批次收尾——zxing wasm 数据管道、许可清单脚本扩展、App.vue 顶栏与 Select/tokens 等未暂存半边，实测全树单测 1622 通过、typecheck 0 错（2c83398）
+- **`bench`**
+  - 自研性能基准 harness——关键路径基线落地（31397c3）
+- **`build`**
+  - 域级 CSS 落地——cssCodeSplit + emit-css 组装（M7）（43e371f）
+- **`cq`**
+  - ImagePreview 容器查询改造，@media 640 改为 @container image-preview（c859c95）
+  - demo 层全面推广容器查询，11 处 @media 改为 @container demo（d666a3e）
+  - 全面推广容器查询替代视口断点，布局切换跟容器走（238a943）
+- **`designer`**
+  - 设计器三栏首开默认宽随视口收放，小屏画布优先（9423db7）
+- **`gate`**
+  - 行数纪律扩面——form-builder 之外的 4 域上止涨线（M3）（4a96ce4）
+- **`gates`**
+  - check:doc-completeness——「说明」列空缺钉成闸口，防 M6 回退（b0e1f21）
+- **`gen-docs`**
+  - @slot 注释协议 + 52 个槽位说明补齐——文档面「说明」列收口 0/0（77a49af）
+- **`layout`**
+  - AccordionNav 加即时搜索 + aria 语义补全（830c740）
+- **`observability`**
+  - F10 收尾——全部 74 处零散 console.warn 迁入 reportWarn，库内零 console 直调，实测 1643 单测全绿（24f49c9）
+  - setRuntimeObserver 注入口落地——warnOnce 咽喉与 9 处已捕获错误全接，新增 5 条单测实测通过（df6ad82）
+- **`scripts`**
+  - 新增 check:css-scale、check:offline、apply-scale、evidence-* 等工程闸口脚本，实测 typecheck 0 错、单测 1622 通过、build+smoke 全绿（40c2e29）
+- **`supply-chain`**
+  - check:vendor-vulns OSV 单件监测落地——xlsx CVE 盲区收口，F2 从接受风险转机器闸，实测直跑与 3 单测全绿（466a22f）
+- **`test`**
+  - fast-check 属性测试起手——sanitize 六不变式（再解析/幂等/重建）各 300 组构造输入，实测全绿通过（5e0c0d9）
+- **`theme`**
+  - 主题可视化配置层落地（路线图第 15 项收官）——demo 站点 #/theme-editor（c0dffa2）
+  - 主题定制工具化——token 覆盖配置 → 校验 → dist/theme.css（路线图第 15 项 token→产物 段）（45c7598）
+- **`tokens`**
+  - 设计令牌全量加 --vcl- 命名空间——176 文件改名、5 处闸口与主题编辑器对齐、迁移口诀入档，实测 1646 单测全绿（18042e6）
+  - 新增 --vcl-fit 归一化插值与 --fs-* 字体档位族，间距/控件/侧栏曲线重定（79478c8）
+
+### Changed
+
+- **通用**
+  - 提取 ModalBox 58 行 scoped CSS 至 modal-box-scoped.css（style src scoped），ModalBox.vue 300→241 行，单测 1653 e2e 61 全绿（a3aa127）
+  - 提取 CaptureFallbackSheet 61 行全局 CSS 至 capture-fallback-sheet.css（style src 引用保持全局语义），CaptureFallbackSheet.vue 195→133 行，单测 1653 e2e 61 全绿（14e2f5c）
+  - 提取 BaseChart 61 行 scoped CSS 至 base-chart-scoped.css（style src scoped），BaseChart.vue 478→416 行，单测 1653 e2e 61 全绿（f5c9c7e）
+  - 提取 Skeleton 63 行 scoped CSS 至 skeleton-scoped.css（style src scoped），Skeleton.vue 162→98 行，单测 1653 e2e 61 全绿（c5392ca）
+  - 提取 DataTablePagination 64 行 scoped CSS 至 data-table-pagination-scoped.css（style src scoped），DataTablePagination.vue 122→57 行，单测 1653 e2e 61 全绿（2ad74cb）
+  - 提取 Collapse 68 行 scoped CSS 至 collapse-scoped.css（style src scoped），Collapse.vue 200→131 行，单测 1653 e2e 61 全绿（0bd9cc5）
+  - 提取 ChartLegend 69 行 scoped CSS 至 chart-legend-scoped.css（style src scoped），ChartLegend.vue 124→54 行，单测 1653 e2e 61 全绿（fc69994）
+  - 提取 Pagination 83 行 scoped CSS 至 pagination-scoped.css（style src scoped），Pagination.vue 212→128 行，单测 1653 e2e 61 全绿（50343a2）
+  - 提取 CaptureFallbackPanel 87 行全局 CSS 至 capture-fallback-panel.css（style src 引用保持全局语义），CaptureFallbackPanel.vue 217→129 行，单测 1653 e2e 61 全绿（68b3706）
+  - 提取 RendererSubform 90 行 scoped CSS 至 renderer-subform-scoped.css（style src scoped），RendererSubform.vue 185→94 行，单测 1653 e2e 61 全绿（91d4f52）
+  - 提取 Popover 93 行 CSS 至 popover.css（全局 75 行）与 popover-scoped.css（scoped 18 行），Popover.vue 363→268 行，单测 1653 e2e 61 全绿（679abf8）
+  - 提取 Card 97 行 scoped CSS 至 card-scoped.css（style src scoped），Card.vue 235→137 行，单测 1653 e2e 61 全绿（19e6d60）
+  - 提取 StoreFormModal 99 行 scoped CSS 至 store-form-modal-scoped.css（style src scoped），StoreFormModal.vue 336→236 行，单测 1653 e2e 61 全绿（6c7e871）
+  - 提取 ChartTable 101 行 scoped CSS 至 chart-table-scoped.css（style src scoped），ChartTable.vue 350→248 行，单测 1653 e2e 61 全绿（72db10c）
+  - 提取 Loading 102 行 scoped CSS 至 loading-scoped.css（style src scoped），Loading.vue 189→86 行，单测 1653 e2e 61 全绿（30dfcc5）
+  - 提取 ConfirmContent 103 行 scoped CSS 至 confirm-content-scoped.css（style src scoped，confirm-footer 类名不动），ConfirmContent.vue 217→113 行，单测 1653 e2e 61 全绿（7361ac4）
+  - 提取 Tabs 105 行 scoped CSS 至 tabs-scoped.css（style src scoped），Tabs.vue 210→104 行，单测 1653 e2e 61 全绿（a367681）
+  - 提取 RouteMap 107 行 scoped CSS 至 route-map-scoped.css（style src scoped），RouteMap.vue 391→283 行，单测 1653 e2e 61 全绿（7a50c70）
+  - 提取 Steps 108 行 scoped CSS 至 steps-scoped.css（style src scoped），Steps.vue 192→83 行，单测 1653 e2e 61 全绿（6719470）
+  - 提取 FormTargetCollect 111 行 scoped CSS 至 form-target-collect-scoped.css（style src scoped），FormTargetCollect.vue 639→527 行，单测 1653 e2e 61 全绿（f13d06f）
+  - 提取 Button 113 行 scoped CSS 至 button-scoped.css（style src scoped），Button.vue 209→95 行，单测 1653 e2e 61 全绿（2b33cb9）
+  - 提取 Drawer 114 行 scoped CSS 至 drawer-scoped.css（style src scoped），Drawer.vue 325→210 行，单测 1653 e2e 61 全绿（d129061）
+  - 提取 ToggleList 138 行 scoped CSS 至 toggle-list-scoped.css（style src scoped），ToggleList.vue 308→169 行，单测 1653 e2e 61 全绿（2e17cf4）
+  - 提取 NavItem 142 行 scoped CSS 至 nav-item-scoped.css（style src scoped），NavItem.vue 268→125 行，单测 1653 e2e 61 全绿（23e5286）
+  - 提取 Toast 141 行 CSS 至 toast.css（全局 105 行）与 toast-scoped.css（scoped 36 行），Toast.vue 402→259 行，单测 1653 e2e 61 全绿（206c509）
+  - 提取 Tag 146 行 scoped CSS 至 tag-scoped.css（style src scoped），Tag.vue 302→155 行，单测 1653 e2e 61 全绿（8978aff）
+  - 提取 RichtextToolbar 148 行 scoped CSS 至 richtext-toolbar-scoped.css（style src scoped），RichtextToolbar.vue 652→503 行，单测 1653 e2e 61 全绿（c1fe27d）
+  - 提取 DatePanel 149 行 scoped CSS 至 date-panel-scoped.css（style src scoped），DatePanel.vue 379→229 行，单测 1653 e2e 61 全绿（8f287b8）
+  - 提取 AccordionNav 150 行 scoped CSS 至 accordion-nav-scoped.css（style src scoped），AccordionNav.vue 302→151 行，单测 1653 e2e 61 全绿（8d94cb1）
+  - 提取 Tree 172 行 scoped CSS 至 tree-scoped.css（style src scoped），Tree.vue 636→463 行；两处测试改读外置 css（clip 断言、色值守卫白名单条目，语义不变），单测 1653 e2e 61 全绿（294f8ec）
+  - 提取 FormRenderer 166 行 scoped CSS 至 form-renderer-scoped.css（style src scoped），FormRenderer.vue 694→527 行，单测 1653 e2e 61 全绿（79a9c0b）
+  - 提取 RendererRichtext 170 行 scoped CSS 至 renderer-richtext-scoped.css（style src scoped），RendererRichtext.vue 346→175 行，单测 1653 e2e 61 全绿（d5e8adc）
+  - 提取 ProgressBar 174 行 scoped CSS 至 progress-bar-scoped.css（style src scoped），ProgressBar.vue 396→221 行，单测 1653 e2e 61 全绿（2268b42）
+  - 提取 Menu 175 行 scoped CSS 至 menu-scoped.css（style src scoped），Menu.vue 441→265 行，单测 1653 e2e 61 全绿（629f366）
+  - 提取 register 193 行 scoped CSS 至 register-scoped.css（style src scoped），register.vue 513→319 行，单测 1653 e2e 61 全绿（4b91fef）
+  - 提取 forgot-password 214 行 scoped CSS 至 forgot-password-scoped.css（style src scoped），forgot-password.vue 430→215 行，单测 1653 e2e 61 全绿（b26e3c0）
+  - 提取 Group 253 行 scoped CSS 至 group-scoped.css（style src scoped），Group.vue 713→460 行，单测 1653 e2e 61 全绿（71caba3）
+  - 提取 CameraCapture 259 行 scoped CSS 至 camera-capture-scoped.css（style src scoped），CameraCapture.vue 793→534 行，单测 1653 e2e 61 全绿（5702ba0）
+  - 提取 Upload 281 行 CSS 至 upload-scoped.css（scoped 238 行）与 upload.css（全局 43 行），Upload.vue 807→523 行过 800 约束，单测 1653 e2e 61 全绿（06e3256）
+  - 提取 login 307 行 scoped CSS 至 login-scoped.css（style src scoped），login.vue 726→419 行，单测 1653 e2e 61 全绿（98b714c）
+  - 提取 StorePanel 318 行 scoped CSS 至 store-panel-scoped.css（style src scoped），StorePanel.vue 596→276 行，单测 1653 e2e 61 全绿（ffd15fe）
+  - 提取 IconPicker 341 行 CSS 至 icon-picker-scoped.css（scoped 70 行）与 icon-picker.css（全局 271 行），IconPicker.vue 772→429 行过 800 约束，单测 1653 e2e 61 全绿（eecf6ed）
+  - 提取 Select 363 行 CSS 至 select-scoped.css（scoped 174 行）与 select.css（全局 189 行），Select.vue 1351→985 行，单测 1653 e2e 61 全绿（2d1a4b1）
+  - 提取 Input 376 行 scoped CSS 至 input-scoped.css（style src scoped），Input.vue 975→597 行过 800 约束，单测 1653 e2e 61 全绿（cf8e17a）
+  - 提取 AppLayout 621 行全局 CSS 至 app-layout.css（style src 引用；AppLayout 用全局 style 非 scoped，提取保持全局语义），AppLayout.vue 943→321 行，真机实测首页/表格页布局无回退，单测 1653 e2e 61 全绿（46eea13）
+  - 提取 ImagePreview 448 行 scoped CSS 至 image-preview.css（style src scoped，仿 data-table 模式），ImagePreview.vue 932→483 行，check:css-scale 172 单测 1653 e2e 61 全绿（4e6df9c）
+  - 提取 RouteResult 487 行 scoped CSS 至 route-result.css（style src 引用保持 scoped 语义、零泄漏，仿 data-table-scoped.css 既有模式），RouteResult.vue 789→305 行，check:css-scale 171 单测 1653 e2e 61 全绿（3efcd1a）
+  - 拆分 Input 数字步进块下沉 useInputStepper（原 InputNumber：数值口径/输入/提交/步进/长按，onStepperBlur 牵 focused/touched/validate 留宿主），Input.vue 1102→975 行，e2e 61 单测 1653 全绿（a5bb4e6）
+  - 拆分 Select tree/cascader 区块下沉 useSelectTree（对齐 useSelectOption 注入约定，纯遍历 findTreePath/collectTreeMatches 提模块级，Select.vue 1399→1351 行），e2e 61 单测 1653 全绿（c891b87）
+  - 修复 Drawer 标题字号 36px 漏调、对齐 ModalShell 24px 中间档，弹窗族统一标题 24/内容 15，e2e 61 单测 1653 全绿（3344c9e）
+  - 修复气泡卡片误加箭头、改回无箭头原样（撤 1d29ef2/7e2c500），e2e 59 单测 1653 全绿（3d647b2）
+  - 修复列设置/排序指示/路线步骤/气泡按钮残留文本箭头，全部改用图标库 arrow-* 真图标，e2e 59 单测 1653 全绿（6980fdf）
+  - 修复气泡箭头未用真箭头图标、改用图标库 arrow-*，e2e 59 单测 1653 全绿（1d29ef2）
+  - 修复气泡缺指向箭头、未垂直居中，e2e 59 单测 1653 全绿（7e2c500）
+  - 修复图表工具条压图、全不选未靠右、顶栏图标光学未居中，e2e 59 单测 1653 全绿（d4ed2b9）
+  - 修复图表工具栏压图与全不选另起行、emoji 图标换图标库真 SVG，e2e 59 单测 1653 全绿（2d6e00d）
+  - 修复 Popover 气泡忽略 position、不垂直居中，e2e 59 单测 1653 全绿（6e333d2）
+  - 修复 Switch 缩放变形、图表工具栏重叠图区，e2e 59 单测 1653 全绿（99bdf95）
+  - 修复 15 控件禁用态 opacity 不一致、补齐 Input tel/url 演示，e2e 59 单测 1653 全绿（0984cef）
+  - 修复交互态对比度不达标、补齐 7 组件 demo 枚举演示，e2e 59 单测 1653 全绿（a87bac6）
+- **`components`**
+  - 字号迁移到 --fs-* 令牌与 --vcl-fit 插值体系（bc06515）
+- **`data`**
+  - DataTable 浮层菜单域下沉 useTableCellMenus.ts（M3 第十刀）——灯箱/选项面板/单元格右键/键盘导航 3049→2858，data 止涨线收紧 3150→2950；site-audit 补 amap jsapi-data 瓦片三方豁免（离开页 in-flight abort 属 SDK 时序噪音）（0a0abc6）
+  - ImagePreview 标注绘制引擎下沉 useImageAnnotation.ts（M3 第八刀）（60d6f2c）
+  - ImagePreview 变换+触摸手势子系统下沉 useImageTransform.ts（M3 第七刀）（d3b4e49）
+  - ImagePreview 标注类型族 + 绘制/导出管道下沉三模块（M3 第五刀）（c3ae3dd）
+  - DataTable 全屏机械层下沉 useTableFullscreen.ts（M3 持续项第二个动作）（cef9fc0）
+  - DataTable 截图模块下沉 + TSV 构建器纯函数化（M3 持续项首个实质动作）（ca8763a）
+- **`form`**
+  - Select 拼音过滤+防抖搜索+下拉虚拟化下沉 useSelectFiltering.ts（M3 第九刀）（39d898e）
+  - Select 选项提交/清除下沉 useSelectOption.ts（M3 第六刀）+ 键盘提交 e2e 基线（240c5c2）
+  - Select 日期面板逻辑下沉 useSelectDatePanel.ts（M3 持续项）（72f4bc5）
+- **`test`**
+  - 单测池改 vmThreads，happy-dom 按 worker 复用，实测 1637 用例 16.1s 全绿通过（7d03b3d）
+
+### Fixed
+
+- **通用**
+  - 补上新字段的值形态校验（map-picker / toggle-list）（6613256）
+  - 修复壁纸冷暖串味——逐块采样参考图发现天空本为冷灰蓝 a6b5bc 非暖褐灰，误串暖调致整页土黄；生成器改冷雾天七段渐变+丘面降饱和压灰（受光 e6e3d9/背光 8a7d6b 双向），重生成 120.5KB；修复期间生成器脚本被误清空已重写恢复，VCL 沙盘实测 4321 亮暗两态顶栏与卡片观感通透，lint 棘轮 147 全绿（d30cdfe）
+  - 修复玻璃换肤背景图脏米色——第一版 feTurbulence 全屏噪点混出磨砂纸观感被判丑爆，改逐像素合成程序化沙丘壁纸（垂直渐变灰雾天+三层 sin 坡面受光亮背光深+地平线雾带+太阳光晕+全图白 wash，146.9KB），底图移 body::before 固定伪层并落地暗色压暗令牌 glass-photo-dim 0.62 防亮图透深玻璃混棕灰；实测卡片/登录/暗色三页截图观感通透，css-scale 222 css-tokens 164 offline 454 lint 棘轮 147 全绿（c94a298）
+  - 修复低代码表单移动端栅格不塌与提交锁漏拦截——栅格容器查询改从后代单列化、once 补拦、事件链与令牌补齐，390px 实测单列化 288px 整行零溢出，e2e 68 单测 1701 css-scale 222 全绿（cb233b4）
+  - 修复低代码表单条件失配与按钮空白等五项缺陷（d857895）
+  - 修复低代码表单三处重复渲染并放宽成品列宽（2cf484d）
+  - 修复折角丝带未沿角平分线垂直居中——重构为两层锚点结构（外层 0 尺寸锚点钉角、内层 mark translate(-50%,-50%) 自定位），对称性与文本宽度彻底解耦（单层百分比 translate 因丝带宽高不等恒偏平分线），四角 ribbon rotate 方向按角定，3x 特写复测三角两腰对称中线过角顶点，e2e 61 单测 1653 css-scale 222 全绿（bf149b8）
+  - 修复折角丝带文字贴上缘——用户目检 3x 特写立案（上下留白差 2px，雅黑 CJK 字面偏上在紧凑丝带上显现），line-height 1.4→1.8 把墨迹沿丝带轴下推至视觉居中，视觉闭环复测通过，e2e 61 单测 1653 css-scale 222 全绿（2d15642）
+  - 修复 Card 折角丝带暗色主题对比度不达标——字色 surface 随主题变深压提亮语义底（实测 danger 深字红底不可读），改 Button 既定口径 -solid 底加恒白字（danger-solid 220,38,38 压白实测达标），补 JSDoc 说明 corner 依赖 overflow 裁切与 overflowVisible 的互斥约束，暗色取证截图复测通过（b058a75）
+  - 修复 DesignerCanvas 步骤完成态残留文本对勾，换图标库 check 真图标（圆底内 currentColor 贴合主色/白字，单测断言随改 done 类+svg 判定），e2e 61 单测 1653 全绿（4761c68）
+  - 修复大屏等比放大失控——缩放曲线加 1.0 封顶（实测 1912 档 1.245→1.0，1366/1024 档逐像素不变），StoreFormModal 自绘弹窗外壳换 ModalShell（删 28px 离族标题/文本✕/自管焦点陷阱，e2e 无直击用例已真机取证开闭保存链路），Upload 翻页‹›与 RouteResult 展开▲▼残留文本箭头换图标库 chevron 真图标（补 prevPhoto/nextPhoto aria），e2e 61 单测 1653 全绿（d6228be）
+  - 修复 Drawer 顶部/底部方位被 90vw 限宽贴左留右缝，加 e2e 满宽守护，e2e 61 单测 1653 全绿（7bf3299）
+  - 缩放基准 1440 降到 1280，笔记本观感不再偏小且窄宽字号倒挂消除，实测 e2e 59 全绿（49697e4）
+  - 缩放基准 1920 降到 1440，笔记本不再缩太小，实测 e2e 59 全绿（8af6f1c）
+- **`a11y`**
+  - 新增精确豁免条，修复 amap 自绘 marker 图标让 axe 无障碍闸口判红（38f23e6）
+- **`amap`**
+  - 新增自绘标记图钉模块替换高德主题图外链，消除地图点上运行期取件依赖，实测浏览器三枚针渲染正常且 axe 未豁免违规 0（f8d39dc）
+- **`amap/form-builder`**
+  - UI 细节巡检第二轮四修——FormDesigner 工具条窄视口折行可达、画布 min-width 260 防逐字竖排、画布面包屑单行、AmapWidget green marker 404 改内联 SVG（高德已下线 mark_g.png）（d99694e）
+- **`changelog`**
+  - 增量模式改归 Unreleased——修复已发布版本段被覆盖（实测踩到）（3b2674a）
+- **`css`**
+  - 断点收敛到规范档位 480/640/767/1023，修复 768 整宽撕裂（c80ccec）
+- **`data`**
+  - Tree 共享 state 改 prop 显式下传——修深层节点没勾选框等四个同根缺陷（5bde2cf）
+- **`demo`**
+  - ToastDemo 标题内嵌引号改为内单外双，化解 prettier 与 vue/html-quotes 的乒乓改写，实测 lint 通过（fd5c63d）
+- **`demos`**
+  - 三处 demo 的原生 alert() 改库自带 Toast——不再阻塞页面（fee5419）
+- **`deps`**
+  - 新增 SheetJS 仓内 vendor 与逐字节登记闸口，消除装机制品取件依赖，实测整链 17 步 exit 0 且单测 1608 全过（7703e11）
+- **`e2e`**
+  - axe 豁免正则兼容 --vcl- 令牌名——demo 内联色豁免与命名空间对齐，axe 双值守实测 2 用例全绿（f01a689）
+- **`form-builder`**
+  - 补提交 designer-canvas.css——画布 min-width 260（d99694e 第⑤项漏 add， 工作区滞留）（a0d2520）
+- **`gates`**
+  - check-constants 登记 CQ 新阈值 600/1079，639/479 归并到已登记档（2bb7d93）
+- **`layout`**
+  - 修复顶栏面包屑截断类漏绑 title，把 vcl-topbar-title 补进常量闸口登记（ba2dbae）
+- **`layout/theme`**
+  - UI 细节巡检三修——顶栏面包屑 nowrap+ellipsis 防挤压竖排、空分类隐藏面包屑孤壳、主题编辑器长值 field-sizing 自适应+title 全值（07a4867）
+- **`licenses`**
+  - 新增第三方许可声明与 SBOM 闸口，修复 F1 的对外许可义务缺口（624798e）
+- **`scan`**
+  - 新增随包分发解码 wasm 与正源三方对账闸口，消除首解依赖第三方 CDN 的挂起面，实测断网 e2e 出码、单测 1598 与静态闸口全绿（2090546）
+  - 修复兜底上传识别永久转圈，新增解码器预热与 20s 硬上限（84a726a）
+- **`security`**
+  - FormTargetCollect 存储配置落盘前脱敏 secretAccessKey，新增 6 条单测实测全绿（d39ca74）
+- **`share`**
+  - 分享码前缀 JSDoc 去掉裸尖括号——VitePress 把 <base64> 当 HTML 标签致 docs:build 编译失败（9ee511c）
+- **`theme`**
+  - 44 导航项交互巡检收官——theme-editor 复制无剪贴板兜底炸 ErrorBoundary（writeText 失焦即抛），修为 execCommand 降级+结果提示；其余 43 页零报错（ea41ad2）
+- **`ui`**
+  - 按钮小档字号 15 降 13 修倒挂、表格工具栏按钮固定 24 等高、表单平台 demo 标签页内距归 8 网格，实测单测 1653 e2e 59 全绿（9dfe434）
+  - 缩放终案基准 1536 加 0.75 地板改物理视口驱动恢复浏览器缩放，弹窗标题 24 页标题 20 气泡换语义图标修居中，实测单测 1653 e2e 59 全绿（ab85d52）
+  - 用户走查 8 项立案全修——chip 文本光学补偿、Group 选中态换形、无按钮居中、扫码顶栏加厚，实测 e2e 59 全绿（7713988）
+
+### Documentation
+
+- **通用**
+  - README 补凭据不落盘声明、密钥扫描路径与 RTL 硬边界，新增 ADR-001 依赖打包三档制，check:docs 实测绿（0461459）
+- **`basic,storage,amap`**
+  - 三小域扫尾 + gen-docs 再导出链递归解析（M6 第八批）（bc2da8c）
+- **`chart`**
+  - chart 域 Props/Events 说明补齐——文档站空缺 72→1（M6 第五批）（b1bf619）
+- **`data`**
+  - data 域 Props/Events 说明扫尾——文档站空缺 85→10（M6 第三批）（fe3cb06）
+  - DataTable/Tree prop 说明补齐——文档站「说明」列 122→85（M6 第一批）（1c5b5da）
+- **`feedback`**
+  - feedback 域 Props/Events 说明扫尾——文档站空缺 58→9（M6 第六批）（e67dbed）
+- **`form`**
+  - form 域 Props/Events 说明扫尾——文档站空缺 58→0（M6 第四批）（ef6cc02）
+  - Select/Input prop 说明补齐——form.md 空缺 91→58（M6 第二批）（02ffe6c）
+- **`form-builder`**
+  - form-builder 域说明补齐——文档站空缺 36→1（M6 第十一批）（98db343）
+- **`layout`**
+  - logout 与 AccordionNav 单行内联类型改多行——JSDoc 提取生效（45→4）（da8c03c）
+  - layout 域 Props/Events 说明补齐——文档站空缺 45→1（M6 第七批）（0bdc38f）
+- **`login,route-planner`**
+  - 两域 Props/Events 说明补齐（M6 第十批）（a07ebb8）
+- **`nav`**
+  - nav 域 Props/Events 说明补齐——文档站空缺 23→1（M6 第九批）（bc4f127）
+- **`readme`**
+  - 域总览表补 wc 域、域数口径 14→13（vite.config 注释同步）（M8）（9d85a81）
+- **`rtl`**
+  - RTL 立项清单落盘——物理属性全量盘点 261 处水平向需裁决、253 处垂直向免改，三期方案与验证基建先行，实测盘点口径可复跑（cac1c09）
+- **`选型`**
+  - html2canvas 复评执行并维持现状——style 注入通道实测走不通，阻断项实证入档，PoC 三轮取证（63cff31）
+
+### Tests
+
+- **通用**
+  - 补齐角标与气泡箭头回归守护并修 pill 越角 bug——新增 4 测试文件（card-corner 单测 5：两层锚点结构与 class 组合/dot 文字读屏节点保留；popover-arrow 单测 6：arrow 默认关不破无箭头定案+arrowOffset 纯函数三向与 clamp；corner-geometry e2e 2：ribbon 中线过角顶点角平分线对称 3px 容差+pill/dot 卡内 8px 内贴；popover-arrow e2e 2：三角贴 flip 边对准触发器中心+默认关浮层无三角），几何守护首跑即抓出 pill 非 top-right 角位越卡外 39px 被裁切（统一 right:0/top:0 锚定错误），改按角锚定复测四角全卡内，e2e 65 单测 1664 css-scale 222 全绿（f85d9f3）
+- **`coverage`**
+  - M11 覆盖洼地第五批（收官）——contract-storage 补测 18 条，storage 地板 48/32/42 → 64/54/50（7104c81）
+  - M11 覆盖洼地第四批——filter 13 + extras 12 条，data 地板再钉 64/50/63（67e86f2）
+  - M11 覆盖洼地第三批——data 域 42 条（cell-clipboard 18 / cell-keyboard 19 / canvas-screenshot 5），data 地板再钉 61/49/60（0dde856）
+  - M11 覆盖洼地补测——data 域 31 条 + feedback 域 17 条，双域地板抬升（d7e732d）
+- **`route-planner`**
+  - 三个 composables 编排/持久化测试 22 条 + 抬地板（M11）（4e6f7cf）
+- **`sanitize`**
+  - 对抗性向量冻结 + style 剥注释预检（M10）（8c4260a）
+
+### Chores
+
+- **通用**
+  - 收录 DataTable 行级左边线原型 HTML 存档，验证 Git Bash 落盘走提交门后入库（8a0a423）
+  - 读屏走查程序化取证落台账（78 页 5601 可交互元素可朗读名 100%，30 空名经复验全为漏查 label[for] 的假阳性；Tab 22 步全焦点环）+ theme-color-guard 白名单条目随样式外置改指 camera-capture-scoped.css，取证实测 guard 9 用例全绿（ab47110）
+  - CHANGELOG 增量重生成收 55 节点批次与 O5 触控收口（实测 449 条入册，审查记录折叠 65、非规范 3 条如实标注）（0a0e64a）
+  - O5 台账 v4 专项取证收口——裸 button 定位为设计器缩放组缩小/放大钮，与缩放值钮共 4 条登记 Ctrl+滚轮等价例外（aria-label 自证），取证实测 21/26 条已处置，余 5 条待专项（列设置面板取证未遂、图表工具钮窄屏待拍板）（dbed74b）
+  - O5 台账追加 v2 Spacing 判定——真违规实测仅 26 条（步进钮 8 条走键盘等价例外，密码/清除钮 6 条待热区扩大），其余 630 处全部被 Spacing 例外覆盖，热区落地需先给 css-scale 闸口加 a11y-target 豁免标记（7bb7bd2）
+  - 新增 O5 触控目标重建审计台账（Playwright 实测 45 路由×2 视口，<24px 实数 1440 档 655 / 390 档 724，替代已删脚本的旧口径 3580，分级 P1 差 1px 族约 450 / P0 真小族约 100 / checkbox-radio 与滑块属豁免）（518da84）
+  - 清理死代码——workspace 88 个一次性脚本与截图退库（13 份台账保留），修复 lint 棘轮失守（4 error 清零、scripts CLI 豁免 no-console、棘轮 269 收紧至 147）；typecheck/单测 1653 全绿（ff3369d）
+- **`deps`**
+  - zxing-wasm 3.1.4 + @iconify/vue 5——iconExists 更名 iconLoaded（M5）（11cfe1e）
+- **`gates`**
+  - 新增 check:css-breakpoints 与 check:css-fonts 防漂移闸口（23028b0）
+- **`husky`**
+  - 重建 pre-commit 钩子——lint-staged 从死配置回到生效（M1）（bc28f91）
+- **`lint`**
+  - 检查面扩到 tests+scripts——22 处 error 修复 + 格式规则归 Prettier（M9）（c019655）
+- **`quality`**
+  - lint warning 棘轮 --max-warnings 267 接入 CI，删除 scan:deps/scan:secrets 死入口，实测 lint 通过（0619aa5）
+- **`release`**
+  - 发布门禁与 CI 同构——补 demo-props/css-tokens/单测/coverage-domains（M14）（017a503）
+  - npm files 补 CHANGELOG.md——发布包内不再缺变更日志（M13）（0f6b130）
+
+### Other
+
+> 以下提交不符合 conventional 格式，未归类（不丢弃，供补写时参考）。
+
+- style+docs: 修正 empty 条目换行，并补审查报告图表实施记录（#38）与最终数字（fd0bcea）
+- fix(form)/test(coverage): computePageButtons 省略号边界吞页码修复（current=4 吞 2/current=total-3 吞 total-1，条件改邻域缺口判定）+ 四份功能单元补测 36 条（canvas-utils 自述可单测却零覆盖/dynamic-form-adapter 0%/store-report 预设/分页序列）（1724479）
+
+---
+
+生成口径：224 条提交 → 列入 188 条，审查过程记录折叠 34 条，非 conventional 格式 2 条（见 Other）；范围 v2.0.0..HEAD。
 
 ## [2.0.0] - 2026-10-03
 

@@ -83,6 +83,11 @@ jobs:
       - name: Check third-party licenses
         run: npm run check:licenses
 
+      # 版本三件套对齐闸口（R5-C16）：package.json / v<version> tag / CHANGELOG 三处必须对齐，
+      # 且 [Unreleased] 段要与「tag 之后是否有提交」保持一致
+      - name: Check release consistency
+        run: npm run check:release-consistency
+
       # 文档站 API 页漂移闸口（Q9）：改了 props 忘跑 gen:docs 会红
       - name: Check docs drift
         run: npm run check:docs
