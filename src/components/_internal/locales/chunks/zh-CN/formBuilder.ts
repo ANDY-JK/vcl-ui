@@ -35,6 +35,8 @@ export default {
     // 校验错误（useFormValidator）
     thisField: '该字段',
     fieldRequired: '{label}不能为空',
+    mapPickerInvalid: '{label}的位置数据无效，请重新在地图上选点',
+    toggleListInvalid: '{label}的取值必须是列表',
     minLen: '{label}至少 {len} 个字符',
     maxLen: '{label}最多 {len} 个字符',
     phoneInvalid: '请输入正确的手机号',

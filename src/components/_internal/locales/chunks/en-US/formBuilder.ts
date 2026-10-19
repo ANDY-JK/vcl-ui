@@ -35,6 +35,8 @@ export default {
     // 校验错误（useFormValidator）
     thisField: 'This field',
     fieldRequired: '{label} is required',
+    mapPickerInvalid: '{label} has invalid location data — please pick again on the map',
+    toggleListInvalid: '{label} must be a list',
     minLen: '{label} must be at least {len} characters',
     maxLen: '{label} must be at most {len} characters',
     phoneInvalid: 'Please enter a valid phone number',

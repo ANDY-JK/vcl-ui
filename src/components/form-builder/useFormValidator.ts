@@ -48,8 +48,42 @@ function isEmptyValue(_field: FormField, v: unknown): boolean {
   return false
 }
 
-/** 去除 HTML 标签与实体，得到纯文本（richtext 字符数校验 + 编辑器字数统计共用，保证同口径） */
-export function htmlToPlainText(html: string): string {
+/**
+ * 字段值的**形态**校验（2026-10-19）。
+ *
+ * 为什么需要：`isEmptyValue` 只回答"空不空"，不回答"对不对"。
+ * · `map-picker` 收到 `{ foo: 1 }` 是非空对象 → 会被当成"已选点"放行，提交后就得到
+ *   一条没有坐标的记录；
+ * · `toggle-list` 收到 `"a,b"` 是非空字符串 → 会被当成"选了东西"放行，而消费侧拿到的
+ *   不是 id 数组。
+ *
+ * 只校验**非空值**（空值由 required 或"非必填"语义处理），且只在值确实存在时生效——
+ * 于是"没填"仍然可以提交（除非 required），"填错了"才拦。
+ *
+ * @param field 字段定义
+ * @param value 当前值
+ * @returns 错误文案；通过返回空串
+ */
+function validateFieldShape(field: FormField, value: unknown): string {
+  // 空值交给 isEmptyValue 那条路（required 或"非必填放行"），这里只管"填了但填错"
+  if (isEmptyValue(field, value)) return ''
+  if (field.type === 'map-picker') {
+    const ok =
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      typeof (value as Record<string, unknown>).lng === 'number' &&
+      typeof (value as Record<string, unknown>).lat === 'number'
+    return ok ? '' : t('formBuilder.mapPickerInvalid', { label: field.label })
+  }
+  if (field.type === 'toggle-list') {
+    return Array.isArray(value) ? '' : t('formBuilder.toggleListInvalid', { label: field.label })
+  }
+  return ''
+}
+
+/** 去除 HTML 标签与实体，得到纯文本（richtext 字符数校验 + 编辑器字数统计共用，保证同口径） */ export function htmlToPlainText(
+  html: string,
+): string {
   return html
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/g, ' ')
@@ -136,6 +170,13 @@ export function validateField(
   if (field.required && isEmptyValue(field, value)) {
     return t('formBuilder.fieldRequired', { label: field.label })
   }
+
+  // ── 新字段的形态校验（2026-10-19）──
+  // isEmptyValue 只判"空不空"，不看"形态对不对"：一个 `{foo:1}` 对 map-picker 是非空对象，
+  // 会被放行——提交后就得到一条没有坐标的"已选点"记录。这里补上形态判定。
+  // 只在**非空**时检查（空值已由上面的 required 或字段非必填处理）。
+  const shapeErr = validateFieldShape(field, value)
+  if (shapeErr) return shapeErr
 
   // richtext required：仅含标签无文本（如 <p><br></p>）视为空值
   if (field.required && field.type === 'richtext') {
