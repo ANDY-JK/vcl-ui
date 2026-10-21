@@ -101,6 +101,35 @@ if (changelog && tagExists) {
   }
 }
 
+// ── ⑤ 破坏性变更必须有站内迁移指引（审查 R5-D19）──────
+//
+// 为什么需要：CHANGELOG 的 BREAKING CHANGES 段由「带 `!` 的 conventional commit」自动汇总，
+// 两条汇总型提交的 subject 太粗，升级者拿到两行摘要后**仍须翻 README 才能行动**。
+// 而 npm 包里确实带 CHANGELOG（package.json files 含它）—— 若没有迁移页，
+// 等于"包里唯一的破坏性说明是不可执行的"。所以：只要 CHANGELOG 存在 BREAKING CHANGES 段，
+// 文档站就必须有对应的迁移页，否则红。
+{
+  const changelog = readFileSync('CHANGELOG.md', 'utf8')
+  const hasBreaking = /^### BREAKING CHANGES\s*$/m.test(changelog)
+  const migrationPath = 'docs-site/guide/migration-2.0.md'
+  let migrationExists = true
+  try {
+    readFileSync(migrationPath, 'utf8')
+  } catch {
+    migrationExists = false
+  }
+  if (hasBreaking && !migrationExists) {
+    failures.push(
+      `CHANGELOG 有 BREAKING CHANGES 段，但找不到迁移指引 ${migrationPath} ——` +
+        ` 升级者只能拿到摘要，无法行动（带上要改的 prop/方法/令牌名与 grep 命令）`,
+    )
+  } else if (hasBreaking) {
+    notes.push(`破坏性变更已配站内迁移指引（${migrationPath}）`)
+  } else {
+    notes.push('CHANGELOG 无 BREAKING CHANGES 段，跳过迁移指引检查')
+  }
+}
+
 // ── 汇总 ──────────────────────────────────────────────
 console.log('')
 for (const n of notes) console.log(`   ✓ ${n}`)

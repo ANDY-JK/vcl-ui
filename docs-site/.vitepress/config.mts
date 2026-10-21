@@ -31,6 +31,19 @@ export default defineConfig({
         ],
       },
       {
+        // 「升级 / 排障 / 选型」是一等公民，不是附录 —— 破坏性大版本若没有站内迁移文档，
+        // 等于让 1.x 宿主自己翻 README（审查 R5-D5/D19/D22/D23）。
+        text: '升级与排障',
+        collapsed: false,
+        items: [
+          { text: '从 1.x 升级到 2.0', link: '/guide/migration-2.0' },
+          { text: '常见问题', link: '/guide/faq' },
+          { text: '故障排查', link: '/guide/troubleshooting' },
+          { text: '与主流库对照', link: '/guide/comparison' },
+          { text: '术语表', link: '/guide/glossary' },
+        ],
+      },
+      {
         text: '组件 API（自动生成）',
         collapsed: false,
         items: [
