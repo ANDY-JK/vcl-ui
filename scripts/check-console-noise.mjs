@@ -43,6 +43,20 @@ function clearSpool() {
 
 const wantBaseline = process.argv.includes('--baseline')
 const skipRun = process.argv.includes('--no-run')
+const clearOnly = process.argv.includes('--clear')
+
+// `--clear`：只清 spool（供 `pretest:unit` 钩子调用）。
+//
+// 为什么需要它：spool 原来只在「检查成功后」清空 —— 于是**手动跑的 vitest**（比如调试某个 spec、
+// 或修 SSR 时跑了一次失败的全量）留下的 spool 文件会一直累积，下一轮检查就把它们当成
+// "新类别"报红。实测踩过：修 SSR 期间那次失败运行的 `Unhandled error during execution of
+// setup function at <DataTable>` 被留了下来，导致后续链的 check:console-noise 假阳性。
+// 正确做法是**每次全量跑之前先清**（pretest:unit），而不是只在检查后清。
+if (clearOnly) {
+  clearSpool()
+  console.log('[console-noise] spool 已清空')
+  process.exit(0)
+}
 
 // ── 1. 跑全量单测采集噪音（除非 --no-run） ──
 if (!skipRun) {
