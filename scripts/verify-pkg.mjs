@@ -9,6 +9,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import ts from 'typescript'
+import { gzipSync } from 'node:zlib'
 
 const fail = []
 // 目录排除**按 basename 判**，不按完整路径判。
@@ -187,8 +188,9 @@ const BUDGET_KB = [
   [/^vcl-ui\.js$/, 15], // 主入口已是 re-export 薄壳（9KB），壳膨胀即说明隔离被破坏
 ]
 const FALLBACK_BUDGET_KB = 150
-const CSS_BUDGET_KB = 350
 const oversize = []
+/** 主 CSS 的双口径体积（供汇总行打印） */
+let cssStats = null
 for (const f of esmChunks) {
   const name = relName(f)
   const kb = (readFileSync(f).length / 1024) | 0
@@ -196,24 +198,66 @@ for (const f of esmChunks) {
   const budget = hit ? hit[1] : FALLBACK_BUDGET_KB
   if (kb > budget) oversize.push(`${name}=${kb}KB/预算${budget}KB`)
 }
-const cssFile = walk('dist').find((f) => f.endsWith('.css') && /\/dist\/vcl-ui\.css$/.test(f.replaceAll('\\', '/')))
+// ── 6a) 主 CSS 预算：**双口径**（未压缩 + gzip），两个都守 —— 2026-10-21 修正 ──
+//
+// ## 为什么必须改口径（本轮实测得出）
+//
+// 原预算只有 `CSS_BUDGET_KB = 350`（未压缩字节），实测 345.6 KB → 余量 **1.3%**，
+// 技术债台账 TD-01 据此记了「体积闸口接近失效」。
+//
+// 但实测发现这个焦虑建立在**错误口径**上：
+//   · 主 CSS 里注释 **0 KB**、多余空白 **1.2 KB**（构建产物早已压缩过）
+//   · gzip 后仅 **43.2 KB**（压缩率 88%）—— 这才是宿主实际下载的量
+//   · 13 个域 CSS gzip 合计 143.7 KB（宿主只引自己用的那几个）
+//
+// 也就是说：未压缩 345 KB 看着吓人，真实传输 43 KB。**继续按未压缩字节定预算，
+// 会逼着人为了 5 KB 去删有用的样式，而用户根本感觉不到。**
+//
+// 正确做法是**两个口径都守**：
+//   · gzip 预算（主约束）：反映用户真实体验，超了说明真胖了
+//   · 未压缩预算（宽松上限）：防"gzip 好看但原文爆炸"（如大量重复的短规则，
+//     gzip 能压得很好，但解析开销与调试体积是真的）
+const CSS_GZIP_BUDGET_KB = 60 // 实测 43.2 KB，+39% 余量
+const CSS_RAW_BUDGET_KB = 420 // 实测 345.6 KB，+22% 余量（比原来的 350 宽松，因为 gzip 才是主约束）
+// ⚠️ 用 `^dist/` 不是 `/dist/`：walk('dist') 返回的是**相对路径**（`dist/vcl-ui.css`），
+// 没有前导斜杠。写 `/dist/vcl-ui.css$` 会**永远匹配不到** —— 主 CSS 预算就此静默失效。
+// （本轮实测发现：上一轮修 domainCss 时踩的是同一个坑，这里漏改了一处。）
+const cssFile = walk('dist')
+  .map((f) => f.replaceAll('\\', '/'))
+  .find((f) => /^dist\/vcl-ui\.css$/.test(f))
 if (cssFile) {
-  const kb = (readFileSync(cssFile).length / 1024) | 0
-  if (kb > CSS_BUDGET_KB) oversize.push(`vcl-ui.css=${kb}KB/预算${CSS_BUDGET_KB}KB`)
+  const buf = readFileSync(cssFile)
+  const rawKb = (buf.length / 1024) | 0
+  const gzipKb = (gzipSync(buf, { level: 9 }).length / 1024) | 0
+  if (gzipKb > CSS_GZIP_BUDGET_KB) {
+    oversize.push(`vcl-ui.css(gzip)=${gzipKb}KB/预算${CSS_GZIP_BUDGET_KB}KB`)
+  }
+  if (rawKb > CSS_RAW_BUDGET_KB) {
+    oversize.push(`vcl-ui.css(raw)=${rawKb}KB/预算${CSS_RAW_BUDGET_KB}KB`)
+  }
+  cssStats = { rawKb, gzipKb }
 }
+
 // 6b) 每域 CSS 预算 —— 域级 CSS 是本库卖点（宿主只引自己用的域），但没人看就会慢涨。
-//     2026-10-21 实测：form-builder 154KB / data 131KB / form 112KB / route-planner 75KB，
-//     其余 ≤70KB。上限 200KB 留足余量，只拦「某个域悄悄翻倍」。
-const CSS_DOMAIN_BUDGET_KB = 200
+//     同样双口径：gzip 是主约束（实测最大 form-builder 19.9 KB），未压缩是宽松上限。
+//     2026-10-21 实测（gzip）：form-builder 19.9 / data 18.3 / form 15.6 / route-planner 10.8，
+//     其余 ≤10 KB。域 gzip 上限 30 KB（+50% 余量）。
+const CSS_DOMAIN_GZIP_BUDGET_KB = 30
+const CSS_DOMAIN_RAW_BUDGET_KB = 220
 const domainCss = walk('dist')
   .map((f) => f.replaceAll('\\', '/'))
   // ⚠️ 用 `^dist/` 不是 `/dist/`：路径来自 walk('dist') 是相对路径，没有前导斜杠
   .filter((f) => /^dist\/css\/[a-z-]+\.css$/.test(f))
 for (const f of domainCss) {
   const name = relName(f)
-  const kb = (readFileSync(f).length / 1024) | 0
-  if (kb > CSS_DOMAIN_BUDGET_KB) {
-    oversize.push(`${name}=${kb}KB/域预算${CSS_DOMAIN_BUDGET_KB}KB`)
+  const buf = readFileSync(f)
+  const rawKb = (buf.length / 1024) | 0
+  const gzipKb = (gzipSync(buf, { level: 9 }).length / 1024) | 0
+  if (gzipKb > CSS_DOMAIN_GZIP_BUDGET_KB) {
+    oversize.push(`${name}(gzip)=${gzipKb}KB/域预算${CSS_DOMAIN_GZIP_BUDGET_KB}KB`)
+  }
+  if (rawKb > CSS_DOMAIN_RAW_BUDGET_KB) {
+    oversize.push(`${name}(raw)=${rawKb}KB/域预算${CSS_DOMAIN_RAW_BUDGET_KB}KB`)
   }
 }
 
@@ -264,6 +308,13 @@ console.log(
   `[6] 体积预算 超限=${oversize.length} · dist 总计 ${fmt(distBytes)}/${TOTAL_DIST_BUDGET_MB}MB` +
     ` · 域 CSS ${domainCss.length} 个 · 双格式重复 ${fmt(dualBytes)}（${((dualBytes / distBytes) * 100).toFixed(0)}%，仅报告）`,
 )
+// 主 CSS 双口径必须打印出来：只报未压缩值会让人误以为"快撑爆了"（实测 raw 345KB / gzip 43KB）
+if (cssStats) {
+  console.log(
+    `    主 CSS: raw ${cssStats.rawKb}KB/${CSS_RAW_BUDGET_KB}KB · ` +
+      `**gzip ${cssStats.gzipKb}KB/${CSS_GZIP_BUDGET_KB}KB**（gzip 才是宿主实际下载量）`,
+  )
+}
 if (oversize.length) fail.push(`产物超体积预算: ${oversize.join(', ')}`)
 
 if (fail.length) {
