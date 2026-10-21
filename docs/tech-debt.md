@@ -47,7 +47,7 @@
 | TD-16 | **`check:console-noise --no-run` 空 spool 静默判绿** | 加空采集守卫，0 类判红并给出正确操作顺序 | `97e9cad` |
 | TD-17 | **口径三处不一致**（域数 14 vs 13、组件 60+ vs 65） | 建 `facts.md` 生成物 + `check:facts` 双查（漂移 + 正文数字冲突） | `d35b783` |
 | TD-18 | **破坏性变更只有摘要、没有迁移指引** | 建 `migration-2.0.md`；`check:release-consistency` 加"有 BREAKING 段就必须有迁移页" | `1b6f83f` |
-| TD-01 | 主 CSS 体积：口径修正为双轨（gzip 主约束 + raw 宽松上限）；原「余量 1.3% 接近失效」的焦虑建立在错误口径上 | 实测：主 CSS 注释 0 KB、多余空白 1.2 KB（构建产物早已压缩），gzip 后仅 43 KB（压缩率 88%）—— 那才是宿主实际下载量。原预算只看未压缩 345.6 KB。已改为 gzip 60KB / raw 420KB 双守，域 CSS 同理 gzip 30KB / raw 220KB；实测域最大 gzip 19.9 KB。**顺带发现主 CSS 预算此前一直静默失效**（/dist/vcl-ui.css$ 要求前导斜杠，而 walk 返回相对路径 → 永远匹配不到） | PENDING |
+| TD-01 | 主 CSS 体积：口径修正为双轨（gzip 主约束 + raw 宽松上限）；原「余量 1.3% 接近失效」的焦虑建立在错误口径上 | 实测：主 CSS 注释 0 KB、多余空白 1.2 KB（构建产物早已压缩），gzip 后仅 43 KB（压缩率 88%）—— 那才是宿主实际下载量。原预算只看未压缩 345.6 KB。已改为 gzip 60KB / raw 420KB 双守，域 CSS 同理 gzip 30KB / raw 220KB；实测域最大 gzip 19.9 KB。**顺带发现主 CSS 预算此前一直静默失效**（/dist/vcl-ui.css$ 要求前导斜杠，而 walk 返回相对路径 → 永远匹配不到） | 922b194 |
 | TD-06 | **--no-run 与整链的耦合**：整链里 check:console-noise 曾自己跑一遍全量单测，等于同一轮跑两次单测 | package.json 的 check:console-noise 已带 --no-run，复用第 15 步写的 spool；实测第 16 步 0.7s（若自己跑单测要 30s+） | c304666 之前某轮 |
 
 ---
