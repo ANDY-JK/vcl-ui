@@ -19,7 +19,7 @@
  *   node scripts/quality-check.mjs --list         # 只打印步骤清单
  */
 import { spawn } from 'node:child_process'
-import { mkdirSync, writeFileSync, createWriteStream, readdirSync, unlinkSync } from 'node:fs'
+import { mkdirSync, writeFileSync, createWriteStream, readdirSync, unlinkSync, readFileSync } from 'node:fs'
 import { execSync } from 'node:child_process'
 import { join } from 'node:path'
 
@@ -190,10 +190,55 @@ for (let i = 0; i < STEPS.length; i++) {
   const logFile = join(LOG_DIR, logNameFor(no, name))
   const code = await runStep(cmd, logFile)
   const secs = Math.round((Date.now() - started) / 100) / 10
-  results.push({ no, name, cmd, status: code === 0 ? 'pass' : 'fail', exitCode: code, seconds: secs, logFile })
-  if (code !== 0) {
+
+  /**
+   * 空输出守卫（2026-10-21 加，实测驱动）。
+   *
+   * 实测现象：某轮整链第 16 步「check:console-noise」留痕是 `status: pass, exitCode: 0,
+   * seconds: 0.7`，但**日志文件是空的** —— 而手动跑同一条命令会输出 25 行。
+   *
+   * 一个"通过了但什么也没说"的步骤有两种可能：
+   *   1. 它真的没做任何事（spool 已被清空 → 汇总 0 类 → 打印后清空）
+   *   2. 输出在管道里丢了
+   *
+   * 两种情况都**不该判 pass**：闸口的价值在于"它检查了并且说清楚了"，
+   * 一个静默通过的步骤等于没有这一步。宁可让整链红一次让人来看，
+   * 也不要让"什么都没检查"伪装成"检查通过"。
+   *
+   * 排除：明确允许静默的步骤（下面 EMPTY_OK 名单，每条都写明理由）。
+   */
+  const EMPTY_OK = new Set([
+    // 这些命令正常时确实可能不输出（或只输出极短内容），不适用本守卫
+  ])
+  let emptyOutput = false
+  if (code === 0 && !EMPTY_OK.has(name)) {
+    try {
+      emptyOutput = readFileSync(logFile, 'utf8').trim().length === 0
+    } catch {
+      emptyOutput = true
+    }
+  }
+
+  const failed = code !== 0 || emptyOutput
+  results.push({
+    no,
+    name,
+    cmd,
+    status: failed ? 'fail' : 'pass',
+    exitCode: code,
+    seconds: secs,
+    logFile,
+    ...(emptyOutput ? { emptyOutput: true } : {}),
+  })
+  if (failed) {
     brokenAt = no
-    console.error(`\n✖ 第 ${no} 步「${name}」失败（exit=${code}）——后续步骤本轮未执行`)
+    if (emptyOutput) {
+      console.error(`\n✖ 第 ${no} 步「${name}」exit=0 但**日志为空** —— 视为未真正执行`)
+      console.error('   一个"通过了但什么也没说"的闸口等于没有这一步。')
+      console.error(`   手动复跑：${cmd}`)
+    } else {
+      console.error(`\n✖ 第 ${no} 步「${name}」失败（exit=${code}）——后续步骤本轮未执行`)
+    }
     console.error(`   完整输出已留存：${logFile}\n`)
     break
   }

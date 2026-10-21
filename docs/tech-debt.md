@@ -31,7 +31,6 @@
 | TD-03 | 覆盖率最低的域是 **`form`**（语句 56.4% / 分支 52.4% / **函数 52.3%**），而 form 是表单主力域；`chart` 分支 50.0%、`amap` 语句 71.5% 次之 | `node scripts/check-coverage-domains.mjs`（地板：form `[51,47,47]` / chart `[58,45,62]` / amap `[68,56,76]`） | P2 | `open` | v2.1：form 域行为测试，重点补 `form/` 下校验链与字段联动的未覆盖分支 |
 | TD-04 | **`check:console-noise` 依赖 spool 文件**：手动跑过 `check` 而未跑 `test:unit` 会读到空 spool | 已加空采集守卫（0 类判红），但**顺序仍然脆弱** | P3 | `accepted` | 触发条件：再次出现"0 类误判"或 spool 被外部清理 → 改为 `check` 内部强制先跑单测 |
 | TD-05 | **性能闸口在慢机器上只能"未判定"**，无法区分真回归 | `scripts/bench.mjs` 的 `CALIBRATION_TOLERANCE`；实测同代码连跑 6 次 ×1.06–2.75 | P3 | `accepted` | 触发条件：需要严格性能门时 → 上 CI 固定机型或容器化 benchmark |
-| TD-06 | **`--no-run` 与整链的耦合**：整链里 `check:console-noise` 自己跑一遍全量单测，等于**同一轮跑两次单测** | `scripts/quality-check.mjs` 第 15/16 步 | P3 | `open` | v2.1：让第 16 步复用第 15 步的 spool（`--no-run`），省约 35s/轮 |
 | TD-07 | **`docs/` 与 `docs-site/` 是两套叙事**，只有后者进站；前者的审查报告不进站也无法被站内搜索 | `docs/*.md` 共 7 份，`docs-site/` 不含它们 | P3 | `accepted` | 触发条件：需要对外披露审查过程时 → 择要进站，不必全量 |
 | TD-08 | **历史审查报告保留当时数字**，与 `facts.md` 的当前真源必然不一致 | `check:facts` 刻意不扫 `docs/`（脚本内有注释说明） | P3 | `accepted` | 触发条件：有人把历史报告当"当前事实"引用 → 在报告头部加过期横幅 |
 | TD-09 | **`walk()` 类工具函数的目录排除曾按整路径匹配**，导致体积预算只看 9% 文件 | 已修（`scripts/verify-pkg.mjs`，按 basename 判）；**同类写法可能还有** | P3 | `accepted` | 触发条件：新增任何目录遍历脚本时 → 用 basename 判，并写负向对照 |
@@ -49,6 +48,7 @@
 | TD-16 | **`check:console-noise --no-run` 空 spool 静默判绿** | 加空采集守卫，0 类判红并给出正确操作顺序 | `97e9cad` |
 | TD-17 | **口径三处不一致**（域数 14 vs 13、组件 60+ vs 65） | 建 `facts.md` 生成物 + `check:facts` 双查（漂移 + 正文数字冲突） | `d35b783` |
 | TD-18 | **破坏性变更只有摘要、没有迁移指引** | 建 `migration-2.0.md`；`check:release-consistency` 加"有 BREAKING 段就必须有迁移页" | `1b6f83f` |
+| TD-06 | **--no-run 与整链的耦合**：整链里 check:console-noise 曾自己跑一遍全量单测，等于同一轮跑两次单测 | package.json 的 check:console-noise 已带 --no-run，复用第 15 步写的 spool；实测第 16 步 0.7s（若自己跑单测要 30s+） | c304666 之前某轮 |
 
 ---
 
