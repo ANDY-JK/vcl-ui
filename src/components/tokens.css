@@ -526,3 +526,110 @@
   outline: var(--vcl-focus-ring);
   outline-offset: var(--vcl-focus-ring-offset);
 }
+
+/* ===== 打印（2026-10-21 补，审查 6.3 第 3 项 / R5-A19）=====
+ *
+ * 为什么需要：库定位偏「交互式中后台 SPA」，打印从未列入场景 —— 实测全 `src` 只有
+ * data-table 一个文件有 `@media print`（且只隐藏浮层）。企业级中后台的高频真实需求
+ * 恰恰是「把表格/报表打印或另存 PDF」，直接打印会带出侧栏/顶栏/工具栏/操作列，
+ * 暗色主题下还会打出深底（打印不继承 prefers-color-scheme，但 `data-theme='dark'` 会生效）。
+ *
+ * 本块只做**最小可用**的三件事，不试图把库变成报表引擎：
+ *   1. 强制亮色令牌（无论当前是暗色还是亮色）—— 打印在纸上，深底等于浪费墨且不可读
+ *   2. 收敛缩放 `--vcl-scale: 1` —— 屏幕缩放（视口等比）在纸上没有意义
+ *   3. 隐藏交互壳层与浮层（宿主可给不需要打印的元素加 `.vcl-print-hide`）
+ *
+ * 边界（如实声明）：
+ *   - **图表默认不打印**：ECharts 是 canvas，打印时可能空白或截断。要打印图表请走
+ *     `ChartTable`（同一份数据渲染成表格）或宿主导出位图。不做"自动转位图"——
+ *     那需要时序配合（等 canvas 绘制完成再触发打印），在库内做不可靠。
+ *   - **地图不打印**：amap 是第三方 SDK 的 canvas 图层。
+ *   - **分页表格只打印当前页**：展开全量行会让长表格打印失控（几百页），
+ *     且需要库内绕过虚拟滚动，代价与收益不成比例。要打全量请宿主自行取全量数据渲染。
+ */
+@media print {
+  /* ⚠️ 必须 `!important`：`--vcl-scale` 在 L44 的 `:root` 里声明，
+     本块虽然更靠后、特异性相同，但实测（Playwright `emulateMedia('print')`）
+     仍取到屏幕值 0.8333 —— 原因是分组选择器 `:root, :root[data-theme='dark'], …`
+     作为一个规则整体参与层叠，而自定义属性的继承链在 @media 切换时不会重新计算
+     已有声明。加 `!important` 是这里最直接可靠的做法（打印场景也正当：
+     缩放归位是硬要求，不该被任何宿主样式覆盖）。 */
+  :root,
+  :root[data-theme='dark'],
+  :root[data-theme='light'] {
+    /* 缩放归位：屏幕上的视口等比缩放在纸上无意义 */
+    --vcl-scale: 1 !important;
+
+    /* 强制亮色语义（覆盖暗色块）：打印介质一律白底黑字 */
+    --vcl-color-bg: #fff;
+    --vcl-color-bg-soft: #fff;
+    --vcl-color-bg-hover: #fff;
+    --vcl-color-surface: #fff;
+    --vcl-color-text: #000;
+    --vcl-color-text-secondary: #333;
+    --vcl-color-text-muted: #555;
+    --vcl-color-border: #999;
+    --vcl-color-border-strong: #666;
+
+    /* 阴影/玻璃在纸上会变成脏灰块 */
+    --vcl-shadow-sm: none;
+    --vcl-shadow-md: none;
+    --vcl-shadow-lg: none;
+    --vcl-shadow-xl: none;
+    --vcl-glass-blur: 0;
+    --vcl-glass-bg: #fff;
+    --vcl-glass-strong: #fff;
+    --vcl-glass-deep: #fff;
+  }
+
+  /* 交互壳层不打印：宿主侧栏/顶栏/工具栏/分页/操作按钮 */
+  .vcl-print-hide,
+  .vcl-app-layout .sidebar,
+  .vcl-app-layout .vcl-topbar,
+  .vcl-app-layout .vcl-sidebar-overlay,
+  .vcl-app-layout .vcl-collapse-btn {
+    display: none !important;
+  }
+
+  /* 壳层隐藏后，内容区不再需要为侧栏留位 */
+  .vcl-app-layout .vcl-content {
+    margin-inline-start: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  /* 表格：去斑马纹与悬停底色，保留行线（纸上看不清浅底，行线才是有用的分隔）。
+     ⚠️ 类名是 `.data-table`（DataTable.vue:1851 的根元素），不是 `.vcl-data-table` ——
+     本库只有 `--vcl-*` 令牌加前缀，**CSS 类名没有统一前缀**（各域各自命名）。
+     第一版按前缀猜了 `.vcl-data-table`，Playwright 里 `toBeVisible` 直接超时才发现。 */
+  .data-table tbody tr:nth-child(even) > td {
+    background: #fff !important;
+  }
+  .data-table tbody tr > td {
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+  /* 表头重复：跨页时每页都带表头（浏览器支持 thead 自动重复） */
+  .data-table thead {
+    display: table-header-group;
+  }
+  .data-table tr {
+    break-inside: avoid;
+  }
+
+  /* 卡片/面板：去阴影与圆角，避免纸上一圈灰边 */
+  .vcl-card,
+  .vcl-panel {
+    box-shadow: none !important;
+    border: 1px solid #999 !important;
+    break-inside: avoid;
+  }
+
+  /* 链接：打印出 URL 便于纸面追溯（仅限正文链接，按钮/导航不算） */
+  .vcl-prose a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    color: #555;
+  }
+}

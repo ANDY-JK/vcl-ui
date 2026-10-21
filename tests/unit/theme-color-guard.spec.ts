@@ -124,6 +124,42 @@ function luminance({ r, g, b }: { r: number; g: number; b: number }): number {
 const DARK_CONTEXT_RE =
   /lightbox|preview-mask|preview-|camc-|codecap-|gradient|overlay|backdrop|scrim|offline|toast|viewer|carousel|mask|shutter|frozen-badge|thumb-?bar|zoombar|anno-|toolbar-dark/i
 
+/**
+ * 打印介质内的硬编码色（2026-10-21 补，审查 6.3 第 3 项）。
+ *
+ * 为什么它和上面的「深色场景」是**同一类豁免**，而不是新开一个垃圾桶：
+ * 两者的共同点是「**该介质下颜色恒不随主题变化**」——
+ *   · 深色场景（光箱/取景器/渐变浮层）：背景恒深，所以白字恒正确
+ *   · 打印介质：纸恒白，所以黑字恒正确，且**必须**压掉暗色主题（否则深底打印既费墨又不可读）
+ *
+ * 所以打印块里出现 `#fff` / `#000` / `#999` 不是"硬编码色值"这个缺陷，
+ * 而是这条规则的**例外本身**：打印就该是白底黑字，与 `data-theme` 无关。
+ *
+ * 判定方式：从 `@media print {` 起、到下一个顶层 `}` 止的整段视为打印上下文。
+ * （不用正则跨行匹配整个块，是因为块内还有嵌套 `}`，正则数不清层级。）
+ */
+function isInsidePrintBlock(text: string, lineIndex: number): boolean {
+  const lines = text.split('\n')
+  let depth = 0
+  let inPrint = false
+  for (let i = 0; i <= lineIndex; i++) {
+    const line = lines[i]
+    if (!inPrint && /@media\s+print\b/.test(line)) {
+      inPrint = true
+      depth = 0
+    }
+    if (inPrint) {
+      for (const ch of line) {
+        if (ch === '{') depth++
+        else if (ch === '}') depth--
+      }
+      // 打印块已闭合且不是当前行
+      if (depth <= 0 && i < lineIndex) inPrint = false
+    }
+  }
+  return inPrint
+}
+
 function scan(files: string[]): Hit[] {
   const hits: Hit[] = []
   for (const rel of files) {
@@ -149,6 +185,8 @@ function scan(files: string[]): Hit[] {
       // 深色场景（光箱/取景器/渐变浮层）内不判
       const hay = `${rel} ${selector}`
       if (DARK_CONTEXT_RE.test(hay)) return
+      // 打印介质内不判：纸恒白，白底黑字是规则本身的例外（理由见 isInsidePrintBlock 注释）
+      if (isInsidePrintBlock(text, i)) return
       if (
         ALLOWED.some(
           (a) =>

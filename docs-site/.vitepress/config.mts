@@ -28,6 +28,7 @@ export default defineConfig({
           { text: '主题与设计令牌', link: '/guide/theming' },
           { text: '国际化', link: '/guide/i18n' },
           { text: 'Web Components', link: '/guide/web-components' },
+          { text: '打印 / 另存 PDF', link: '/guide/printing' },
         ],
       },
       {
