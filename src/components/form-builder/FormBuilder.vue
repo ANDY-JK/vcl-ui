@@ -28,7 +28,7 @@ import { useFormEvents } from './useFormEvents'
 import { useFormRemote } from './useFormRemote'
 import { policyFromOrigins } from './api-url-guard'
 import FormRenderer from './FormRenderer.vue'
-import FieldList from './FieldList.vue'
+import FormFieldGroup from './FormFieldGroup.vue'
 import Button from '@/components/basic/Button.vue'
 import Steps from '@/components/nav/Steps.vue'
 import Tabs from '@/components/nav/Tabs.vue'
@@ -575,13 +575,14 @@ function fieldsInTab(section: RenderSection, tabName: string): FormField[] {
   })
 }
 
-/** collapse 容器：按槽位过滤某折叠项的字段 */
-function fieldsInCollapse(section: RenderSection, index: number): FormField[] {
-  return section.fields.filter((f) => (f.container?.slot ?? 0) === index)
-}
-
-/** steps 容器：按槽位过滤某步骤的字段 */
-function fieldsInStep(section: RenderSection, index: number): FormField[] {
+/**
+ * 按「容器槽位」过滤字段（collapse 与 steps 共用）。
+ *
+ * 这两个容器此前各有一个**代码完全相同**的函数（`fieldsInCollapse` / `fieldsInStep`），
+ * 只是注释不同 —— 合并成一个，避免改一处忘另一处。
+ * 语义：字段的 `container.slot` 就是它属于第几个折叠项/步骤。
+ */
+function fieldsBySlot(section: RenderSection, index: number): FormField[] {
   return section.fields.filter((f) => (f.container?.slot ?? 0) === index)
 }
 
@@ -623,7 +624,7 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
               @update:model-value="tabStates[section.container!.id ?? ''] = String($event)"
             />
             <div class="fb-fields">
-              <FieldList
+              <FormFieldGroup
                 :fields="fieldsInTab(section, activeTabOf(section))"
                 :section="section"
                 :form-data="formData"
@@ -650,8 +651,8 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
               :open="collapseOpen(section, ci)"
               @update:open="collapseStates[`${section.container!.id ?? ''}:${ci}`] = $event"
             >
-              <FieldList
-                :fields="fieldsInCollapse(section, ci)"
+              <FormFieldGroup
+                :fields="fieldsBySlot(section, ci)"
                 :section="section"
                 :form-data="formData"
                 :errors="errors"
@@ -677,8 +678,8 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
               @step-click="(i: number) => (stepStates[section.container!.id ?? ''] = i)"
             />
             <div class="fb-fields">
-              <FieldList
-                :fields="fieldsInStep(section, stepIndexOf(section))"
+              <FormFieldGroup
+                :fields="fieldsBySlot(section, stepIndexOf(section))"
                 :section="section"
                 :form-data="formData"
                 :errors="errors"
@@ -707,7 +708,7 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
                     : {}
               "
             >
-              <FieldList
+              <FormFieldGroup
                 :fields="section.fields"
                 :section="section"
                 :form-data="formData"
