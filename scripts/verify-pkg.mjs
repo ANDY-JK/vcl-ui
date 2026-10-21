@@ -11,11 +11,19 @@ import { join, relative } from 'node:path'
 import ts from 'typescript'
 
 const fail = []
+// 目录排除**按 basename 判**，不按完整路径判。
+//
+// 为什么：原实现是 `/node_modules|dist|\.git|reports|test-results|tests|docs/.test(p)` 匹配整个路径，
+// 于是 `walk('dist')` 里每个子目录（`dist\amap`、`dist\css`…）都命中 "dist" → **整棵子树被跳过**。
+// 实测：`walk('dist')` 只返回 **36 / 420** 个文件 —— 体积预算因此一直在检查顶层那 36 个，
+// `form-builder\index.js`(660KB)、`dist\css\*` 这些真正会变胖的东西从未被看过（预算规则白写了）。
+// 按 basename 判后，根目录 `dist` 不会被自己排除，排除意图（跳过这些**子**目录）保持不变。
+const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', 'reports', 'test-results', 'tests', 'docs'])
 const walk = (d, out = []) => {
   for (const e of readdirSync(d, { withFileTypes: true })) {
     const p = join(d, e.name)
     if (e.isDirectory()) {
-      if (!/node_modules|dist|\.git|reports|test-results|tests|docs/.test(p)) walk(p, out)
+      if (!SKIP_DIRS.has(e.name)) walk(p, out)
     } else out.push(p)
   }
   return out
@@ -193,8 +201,70 @@ if (cssFile) {
   const kb = (readFileSync(cssFile).length / 1024) | 0
   if (kb > CSS_BUDGET_KB) oversize.push(`vcl-ui.css=${kb}KB/预算${CSS_BUDGET_KB}KB`)
 }
+// 6b) 每域 CSS 预算 —— 域级 CSS 是本库卖点（宿主只引自己用的域），但没人看就会慢涨。
+//     2026-10-21 实测：form-builder 154KB / data 131KB / form 112KB / route-planner 75KB，
+//     其余 ≤70KB。上限 200KB 留足余量，只拦「某个域悄悄翻倍」。
+const CSS_DOMAIN_BUDGET_KB = 200
+const domainCss = walk('dist')
+  .map((f) => f.replaceAll('\\', '/'))
+  // ⚠️ 用 `^dist/` 不是 `/dist/`：路径来自 walk('dist') 是相对路径，没有前导斜杠
+  .filter((f) => /^dist\/css\/[a-z-]+\.css$/.test(f))
+for (const f of domainCss) {
+  const name = relName(f)
+  const kb = (readFileSync(f).length / 1024) | 0
+  if (kb > CSS_DOMAIN_BUDGET_KB) {
+    oversize.push(`${name}=${kb}KB/域预算${CSS_DOMAIN_BUDGET_KB}KB`)
+  }
+}
+
+// 6c) 总包体积 + ESM/CJS 双格式重复 —— 审查 6.3 第 2 项「分发体积治理」。
+//
+// 为什么必须单独设总预算：上面按 chunk 设的预算**看不见「两份一样大的东西」**。
+// 实测镜鉴：zxing wasm base64 在 ESM 与 CJS 各一份 = 2.43 MB；图标数据双份 = 1.17 MB。
+// 单看任何一个文件都没超预算，但它们让「装进来的包」膨胀了一倍。
+//
+// 口径：按**解包字节**（不是 gzip、不是 npm tarball），因为打包器最终读的是解包产物。
+// 基线 2026-10-21：11.74 MB（含刚去掉的 806KB JSON .d.ts）。上限 13.0 MB。
+const TOTAL_DIST_BUDGET_MB = 13.0
+const allFiles = walk('dist').map((f) => f.replaceAll('\\', '/'))
+let distBytes = 0
+const byExt = new Map()
+const esmByStem = new Map()
+const cjsByStem = new Map()
+for (const f of allFiles) {
+  let size
+  try {
+    size = readFileSync(f).length
+  } catch {
+    continue
+  }
+  distBytes += size
+  const ext = f.slice(f.lastIndexOf('.'))
+  byExt.set(ext, (byExt.get(ext) ?? 0) + size)
+  // 同名不同格式：`xxx-HASH.js` 与 `xxx-HASH.cjs`
+  // ⚠️ 必须**先去掉 hash** 再配对：ESM 与 CJS 是两次构建，hash 不同
+  // （如 `zxing-wasm-data-D7EA5GM7.js` vs `zxing-wasm-data-BZmlrd34.cjs`）。
+  // 第一版没去 hash，配对数为 0，把 2.43MB 的真实重复报成 0.60MB。
+  const stem = f.replace(/\.(js|cjs)$/, '').replace(/-[A-Za-z0-9_-]{8}$/, '')
+  if (/\.js$/.test(f)) esmByStem.set(stem, size)
+  else if (/\.cjs$/.test(f)) cjsByStem.set(stem, size)
+}
+const distMB = distBytes / 1024 / 1024
+if (distMB > TOTAL_DIST_BUDGET_MB) {
+  fail.push(`dist 总体积 ${distMB.toFixed(2)}MB 超预算 ${TOTAL_DIST_BUDGET_MB}MB`)
+}
+// 双格式重复量（仅报告，不判失败：双格式是既定产物形态，宿主只用其中一份）
+let dualBytes = 0
+for (const [stem, esm] of esmByStem) {
+  const cjs = cjsByStem.get(stem)
+  if (cjs) dualBytes += Math.min(esm, cjs)
+}
+const fmt = (b) => `${(b / 1024 / 1024).toFixed(2)}MB`
+console.log(
+  `[6] 体积预算 超限=${oversize.length} · dist 总计 ${fmt(distBytes)}/${TOTAL_DIST_BUDGET_MB}MB` +
+    ` · 域 CSS ${domainCss.length} 个 · 双格式重复 ${fmt(dualBytes)}（${((dualBytes / distBytes) * 100).toFixed(0)}%，仅报告）`,
+)
 if (oversize.length) fail.push(`产物超体积预算: ${oversize.join(', ')}`)
-console.log(`[6] 体积预算 超限=${oversize.length}`)
 
 if (fail.length) {
   console.error('\n❌ verify:pkg 未通过')

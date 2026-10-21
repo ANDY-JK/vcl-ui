@@ -89,7 +89,16 @@ export default defineConfig({
       // include 会覆盖 tsconfig 的 include：根目录 env.d.ts 里有 qrcode/lib/browser.js 的
       // 环境声明与 vite/client 引用，不带上的话该子路径会被推成 any（TS7016）
       include: ['src/components', 'env.d.ts'],
-      exclude: ['src/demos', 'src/App.vue', 'src/main.ts'],
+      exclude: [
+        'src/demos',
+        'src/App.vue',
+        'src/main.ts',
+        // JSON 是数据体不是 API：vite-plugin-dts 会为它推断**整份字面量类型**并 emit 成 .d.ts，
+        // 实测 morphicons 570 KB + solar 236 KB = **806 KB 纯浪费**（消费者永远不会 import 数据文件的类型；
+        // 两处都在 `(dataMod as { default?: unknown }).default as Record<...>` 处显式收窄）。
+        // 2026-10-21 审查 6.3 第 2 项「分发体积治理」。
+        '**/*.json',
+      ],
       rollupTypes: false,
       // 声明必须按最低承诺版本（peer: vue ^3.4.0）生成：vue 3.5 的 DefineComponent
       // 在前 13 个参数之后多出 7 个（LC/Directives/Exposed/Provide/...），
