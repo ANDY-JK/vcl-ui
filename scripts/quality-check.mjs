@@ -99,6 +99,9 @@ const STEPS = [
   // RTL 双向守卫（6.3 #3 / R5-A21）：代表路由 × ltr/rtl 各量一遍，
   // 断言零横向溢出、零元素越界、方向确实生效。自起自停 dev server，不依赖外部服务。
   ['check:rtl', 'npm run check:rtl'],
+  // RTL 方向语义守卫（6.3 #3 第二阶段）：定位类属性"看起来对了"不等于"逻辑属性生效" ——
+  // 判据必须是计算样式（RTL 下 left 解析为 auto），位置偏移会被整页翻转掩盖。
+  ['check:rtl-semantics', 'npm run check:rtl-semantics'],
   ['test:e2e', 'npm run test:e2e'],
 ]
 

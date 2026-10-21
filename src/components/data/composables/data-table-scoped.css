@@ -687,10 +687,22 @@ td.cell-has-note {
   accent-color: var(--vcl-color-primary);
 }
 
-/* ==================== 固定列 ==================== */
+/* ==================== 固定列 ====================
+ *
+ * ⚠️ RTL 关键（2026-10-21，审查 6.3 / R5-A21）：
+ * 用 `inset-inline-start/end` 而不是 `left/right`。
+ *
+ * 为什么："固定列"的语义是「钉在**阅读起始侧**」，不是「钉在物理左侧」——
+ * RTL 下用户希望第一列（姓名）钉在右边，因为那才是他开始读的地方。
+ *
+ * 实测证据（scripts/check-rtl-semantics.mjs）：改成物理 `left: 0` 时，
+ * `td.col-fixed-left` 相对容器的偏移在 LTR=0 → RTL=0.972（跑到最右），
+ * 即固定列在 RTL 下**跑到了完全相反的一侧**，而横向溢出/越界断言都测不出来
+ * （它没有越界，只是钉错了边）。
+ */
 .col-fixed-left {
   position: sticky;
-  left: 0;
+  inset-inline-start: 0;
   z-index: 5;
   background: var(--vcl-color-surface);
 }
@@ -700,7 +712,7 @@ thead .col-fixed-left {
 }
 .col-fixed-right {
   position: sticky;
-  right: 0;
+  inset-inline-end: 0;
   z-index: 5;
   background: var(--vcl-color-surface);
 }
