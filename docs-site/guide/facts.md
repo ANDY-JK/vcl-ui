@@ -49,7 +49,7 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 整链步数 | **28** |
+| 整链步数 | **29** |
 
 步清单（顺序即执行顺序）：
 
@@ -80,7 +80,8 @@ title: 事实清单（自动生成）
 25. `check:docs`
 26. `check:doc-completeness`
 27. `check:facts`
-28. `test:e2e`
+28. `check:tech-debt`
+29. `test:e2e`
 
 ## 测试规模（读自最近一次整链留痕）
 

@@ -93,6 +93,9 @@ const STEPS = [
   // 口径单一真源（6.2 #8）：事实页漂移 + 正文手写数字与真源冲突，两件都拦。
   // 放在文档类闸口之后：它依赖 docs-site/guide/facts.md，且比上面两个更"语义"。
   ['check:facts', 'npm run check:facts'],
+  // 台账/ADR 腐化（6.3 #4）：只查机械可验证项（closed 提交号真实存在、ADR 索引无死链）。
+  // 放在文档类闸口末尾 —— 它最便宜（纯读文件 + git cat-file），失败时前面已经验过更重的东西。
+  ['check:tech-debt', 'npm run check:tech-debt'],
   ['test:e2e', 'npm run test:e2e'],
 ]
 

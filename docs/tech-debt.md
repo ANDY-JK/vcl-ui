@@ -42,7 +42,7 @@
 | --- | --- | --- | --- |
 | TD-10 | **P0：真实客户业务预设 + 明文口令默认值随包分发**（公司名/人名/门店资料/表单预填密码） | `store-report.ts` 全量脱敏为示例数据；另发现并转换 **57 条真实门店记录**（含 41 个真实手机号）；加 6 条守护测试 + 阴性对照 | `37ede8b` |
 | TD-11 | **JSON 图标数据的 `.d.ts` 内联整份字面量类型**（570 KB + 236 KB = 806 KB 纯浪费） | `vite-plugin-dts` 的 `exclude` 加 `**/*.json`；两处消费点本就显式收窄 | `92f0959` |
-| TD-12 | **`html2canvas` 常驻 `dependencies`，而唯一导入路径是动态 `import()`** → 消费者白装 3.3 MB | 移到 `peerDependencies` + `peerDependenciesMeta.optional`（与 `echarts` 同一先例）；`dist/THIRD-PARTY-LICENSES.md` 已自动改归类为 peerDependencies 并注明"代码不在产物里" | `PENDING` |
+| TD-12 | **`html2canvas` 常驻 `dependencies`，而唯一导入路径是动态 `import()`** → 消费者白装 3.3 MB | 移到 `peerDependencies` + `peerDependenciesMeta.optional`（与 `echarts` 同一先例）；`dist/THIRD-PARTY-LICENSES.md` 已自动改归类为 peerDependencies 并注明"代码不在产物里" | `b3adb44` |
 | TD-13 | **体积闸口 91% 盲区**：`walk('dist')` 只看到 36/420 个文件 | 目录排除改按 basename 判；修复后可达性从 20→46 | `92f0959` |
 | TD-14 | **性能闸口假阳性**（四轮迭代） | 阈值 2.2 → median 比对 → 可守护门槛 → 二次确认 → **算力校准环境门** | `97e9cad` |
 | TD-15 | **可观测性 API 建好但只有 2 处在用** | 升级 13 个失败点为结构化事件（2→15 码）+ 生成 `observability.md` | `97e9cad` |

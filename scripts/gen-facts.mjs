@@ -96,13 +96,80 @@ function eventCatalog() {
     const lines = text.split('\n')
     for (const [i, line] of lines.entries()) {
       // reportEvent('code', 'message', ctx, 'level')
-      const m = line.match(/reportEvent\(\s*'([^']+)',\s*'([^']*)'(?:,\s*([^,]+))?(?:,\s*'(info|warn|error)')?/)
-      if (!m) continue
+      //
+      // ⚠️ 必须处理**跨行调用**：`reportEvent(` 后换行再写参数是常见写法
+      // （prettier 在参数多时会这么折行）。第一版只按单行正则匹配，
+      // 19 个调用点里只认出 8 个 —— 清单少了 11 个码，而清单是宿主建告警的依据，
+      // 漏码等于"这个告警永远不会被配"。
+      // 做法：把当前行与后续 3 行拼起来（去掉换行与缩进）再匹配。
+      // 窗口取 10 行：实测 context 对象可能跨 5+ 行
+      // （如 useDesignerDraft 的 `{ storage: …, nodeCount: …, reason: … }`）。
+      // 窗口太小会漏码，而漏码等于"这个告警永远不会被配"。
+      const window = lines
+        .slice(i, i + 10)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+      // 只在这一行确实是调用起点时才匹配，避免同一调用被后续行重复计入
+      if (!/reportEvent\(/.test(line)) continue
+      // **排除函数定义**：`export function reportEvent(` 与 TS 类型声明不是调用点。
+      // 第一版没排除，把 `code: string` / `message: string` 当成了事件码 —— 清单里
+      // 多出一个假码，而且"覆盖 6 个域"里混进了 `code: string` 这种噪音。
+      if (/function\s+reportEvent|reportEvent\s*:\s*\(|reportEvent\?:/.test(line)) continue
+      // 解析策略：先截到配对右括号（粗粒度：往后找第一个 `)` 且其前不是嵌套括号），
+      // 再按**顶层逗号**切参数。比一条大正则稳 —— 正则遇到 context 里的逗号就断，
+      // 实测会漏掉 `{ keywords, city }` 这类参数。
+      const startIdx = window.indexOf('reportEvent(')
+      let depth = 0
+      let endIdx = -1
+      for (let k = startIdx + 'reportEvent('.length; k < window.length; k++) {
+        const ch = window[k]
+        if (ch === '(' || ch === '[' || ch === '{') depth++
+        else if (ch === ')' || ch === ']' || ch === '}') {
+          if (depth === 0 && ch === ')') {
+            endIdx = k
+            break
+          }
+          depth--
+        }
+      }
+      if (endIdx < 0) continue
+      const argStr = window.slice(startIdx + 'reportEvent('.length, endIdx)
+      // 按顶层逗号切
+      const args = []
+      let buf = ''
+      let d = 0
+      let inStr = null
+      for (const ch of argStr) {
+        if (inStr) {
+          buf += ch
+          if (ch === inStr) inStr = null
+          continue
+        }
+        if (ch === "'" || ch === '"') {
+          inStr = ch
+          buf += ch
+          continue
+        }
+        if (ch === '(' || ch === '[' || ch === '{') d++
+        if (ch === ')' || ch === ']' || ch === '}') d--
+        if (ch === ',' && d === 0) {
+          args.push(buf.trim())
+          buf = ''
+          continue
+        }
+        buf += ch
+      }
+      if (buf.trim()) args.push(buf.trim())
+      const unq = (s) => (s && /^['"]/.test(s) ? s.slice(1, -1) : s)
+      const code = unq(args[0])
+      const message = unq(args[1])
+      if (!code || !message) continue
+      const lv = unq(args[3])
       rows.push({
-        code: m[1],
-        message: m[2],
-        level: m[4] ?? 'warn',
-        context: m[3] && m[3] !== 'undefined' ? m[3].trim() : '',
+        code,
+        message,
+        level: lv === 'info' || lv === 'warn' || lv === 'error' ? lv : 'warn',
+        context: args[2] && args[2] !== 'undefined' ? args[2] : '',
         at: `${relative(ROOT, f).replaceAll('\\', '/')}:${i + 1}`,
       })
     }
@@ -110,7 +177,6 @@ function eventCatalog() {
   rows.sort((a, b) => a.code.localeCompare(b.code))
   return rows
 }
-
 async function main() {
   // 组件/命名导出数：复用 gen-docs 的解析（它已是「组件清单」的既有真源）
   const tmp = join(ROOT, 'reports', '.facts-tmp')
@@ -204,7 +270,13 @@ async function main() {
 
   // ── observability.md：宿主可用的可观测信号清单 ──
   const events = eventCatalog()
-  const byLevel = (lv) => events.filter((e) => e.level === lv).length
+  // **按唯一码**统计：同一个码可以有多个调用点（如 form-builder/submit-failed
+  // 在「网络层失败」与「服务端拒绝」两处各报一次）。宿主建告警看的是**码**，
+  // 所以对外的"共 N 个事件码"必须是唯一码数，不是调用点数。
+  const uniqCodes = [...new Set(events.map((e) => e.code))].sort()
+  const levelOf = (code) => events.find((e) => e.code === code)?.level ?? 'warn'
+  const byLevel = (lv) => uniqCodes.filter((c) => levelOf(c) === lv).length
+  const callSites = events.length
   const obs = [
     '---',
     'title: 可观测信号清单（自动生成）',
@@ -239,7 +311,8 @@ async function main() {
     '',
     '## 事件码清单',
     '',
-    `共 **${events.length}** 个事件码（error ${byLevel('error')} / warn ${byLevel('warn')} / info ${byLevel('info')}）。`,
+    `共 **${uniqCodes.length}** 个事件码（error ${byLevel('error')} / warn ${byLevel('warn')} / info ${byLevel('info')}），`,
+    `分布在 ${callSites} 个调用点（同一个码可在多处上报，如网络层失败与服务端拒绝各一次）。`,
     '',
     '| 事件码 | 级别 | 触发场景 | context 字段 | 代码位置 |',
     '| --- | --- | --- | --- | --- |',
@@ -252,21 +325,27 @@ async function main() {
     '',
     '**必须告警（error 级）**——用户直接看不到东西：',
     '',
-    ...events
-      .filter((e) => e.level === 'error')
-      .map((e) => `- \`${e.code}\` —— ${e.message.replace(/^\[[^\]]+\]\s*/, '')}`),
+    ...uniqCodes
+      .filter((c) => levelOf(c) === 'error')
+      .map((c) => {
+        const e = events.find((x) => x.code === c)
+        return `- \`${c}\` —— ${(e?.message ?? '').replace(/^\[[^\]]+\]\s*/, '')}`
+      }),
     '',
     '**建议聚合观察（warn 级）**——功能降级但仍可用，按小时聚合看趋势：',
     '',
-    ...events
-      .filter((e) => e.level === 'warn')
-      .map((e) => `- \`${e.code}\` —— ${e.message.replace(/^\[[^\]]+\]\s*/, '')}`),
+    ...uniqCodes
+      .filter((c) => levelOf(c) === 'warn')
+      .map((c) => {
+        const e = events.find((x) => x.code === c)
+        return `- \`${c}\` —— ${(e?.message ?? '').replace(/^\[[^\]]+\]\s*/, '')}`
+      }),
     '',
     '## 边界（如实声明）',
     '',
     '- 这里只列**结构化事件**。库内还有大量 `reportWarn` 自由文本（如墓碑清理、对象名校验），',
     '  它们只能"存下来给人看"，**没有稳定码**，不适合建告警规则。',
-    `- 当前事件覆盖集中在 4 个域（${[...new Set(events.map((e) => e.code.split('/')[0]))].join(' / ')}）；`,
+    `- 当前事件覆盖集中在 ${[...new Set(uniqCodes.map((c) => c.split('/')[0]))].length} 个域（${[...new Set(uniqCodes.map((c) => c.split('/')[0]))].join(' / ')}）；`,
     '  其余域的失败路径仍是自由文本。新增失败路径时优先用 `reportEvent`。',
     '- 事件**不含任何用户数据字段值**（只带 key/id/错误串），避免把 PII 送进监控系统。',
     '',
@@ -275,7 +354,7 @@ async function main() {
 
   console.log(
     `[gen:facts] 域 ${domains.length} / 组件 ${manifest.totalComponents} / 命名导出 ${manifest.totalNamed} / ` +
-      `zh-CN 键 ${keys['zh-CN'].keys} / 整链 ${steps.count} 步 / 事件码 ${events.length} → ${relative(ROOT, OUT)}`,
+      `zh-CN 键 ${keys['zh-CN'].keys} / 整链 ${steps.count} 步 / 事件码 ${uniqCodes.length}（${callSites} 调用点）→ ${relative(ROOT, OUT)}`,
   )
 }
 
