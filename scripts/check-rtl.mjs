@@ -92,7 +92,69 @@ function stopServer() {
  * - `pagination`：首末页按钮顺序
  * - `form-builder`：低代码主力，栅格与嵌套最深
  */
-const ROUTES = ['data-table', 'select', 'menu', 'drawer', 'tabs', 'pagination', 'form-builder']
+const ROUTES = [
+  // ── 首批 7 个（有明确方向语义的代表）──
+  'data-table', // 固定列 / 拖拽手柄 / 横向滚动
+  'select', // 浮层锚定（left/right 定位最多的地方）
+  'menu', // 缩进 / 箭头方向
+  'drawer', // 滑出方向
+  'tabs', // 指示条位置
+  'pagination', // 首末页按钮顺序
+  'form-builder', // 低代码主力，栅格与嵌套最深
+  // ── 2026-10-22 扩面：7 → 42 ──
+  //
+  // 起因：`src/components` 里实测还有 132 处 `left/right` 声明，而闸口只覆盖 7 个路由
+  // —— 没被覆盖的组件，方向问题闸口看不见。
+  //
+  // 选取原则：**纯本地组件优先**。以下 4 个重依赖路由仍然排除：
+  //   chart / amap / amap-widget / route-planner
+  // 理由：依赖 canvas 或高德 SDK，dev server 下加载慢且受网络影响，
+  // 会让闸口偶发超时（超时会被误判成失败）。
+  //
+  // ⚠️ 关于这个闸口的能力边界（2026-10-22 实测查明，此前未记录）：
+  //   demo 站每个页面都包在 `.content-body` 里，而它 `overflow-y: auto`
+  //   按 CSS 规范会把 `overflow-x` 也算成 `auto`（一个方向 auto + 另一个
+  //   visible ⇒ visible 计算为 auto）。于是 `inScroller()` 把页内所有越界
+  //   元素都豁免了 —— **本闸口实际只防 `body` 级溢出**。
+  //   所以"42 路由全绿"只说明它们没造成页面级溢出，
+  //   **不等于方向语义正确**。（想验语义需要镜像对称性判据，
+  //   那条尝试过但负向对照验证不通过，已撤回，见报告 #78。）
+  'button',
+  'icon',
+  'tag',
+  'input',
+  'group',
+  'upload',
+  'capture',
+  'card',
+  'toggle-list',
+  'progress',
+  'divider',
+  'collapse',
+  'image',
+  'tree',
+  'skeleton',
+  'avatar',
+  'toast',
+  'result',
+  'popover',
+  'loading',
+  'error-boundary',
+  'beep-voice',
+  'confirm-modal',
+  'state',
+  'chart-table',
+  'steps',
+  'breadcrumb',
+  'modal',
+  'flex',
+  'login',
+  'contract-collection',
+  'contract-target-collect',
+  'form-designer',
+  'form-renderer',
+  'storage',
+]
 
 /** 在页面内量：横向溢出 + 越界元素 + 方向是否生效 */
 const MEASURE = () => {
