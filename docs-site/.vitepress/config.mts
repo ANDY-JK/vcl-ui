@@ -41,6 +41,7 @@ export default defineConfig({
           { text: '故障排查', link: '/guide/troubleshooting' },
           { text: '与主流库对照', link: '/guide/comparison' },
           { text: '术语表', link: '/guide/glossary' },
+          { text: '事实清单（自动生成）', link: '/guide/facts' },
         ],
       },
       {
