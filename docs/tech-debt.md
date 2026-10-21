@@ -26,7 +26,6 @@
 | 编号 | 一句话 | 证据 | 级别 | 状态 | 目标 |
 | --- | --- | --- | --- | --- | --- |
 | TD-00 | **本台账的维护本身没有闸口**：靠人记得更新，而"记得"是最不可靠的机制 | 本文件无生成器、无 check | P3 | `accepted` | 触发条件：台账超过 2 轮未更新，或出现「已修的项还挂在 open」→ 那时给它加 `check:tech-debt`（校验 closed 项引用的提交确实存在） |
-| TD-02 | `DataTable.vue` **2822 行**，止涨线 2950，余量 128 | `wc -l src/components/data/DataTable.vue`；`scripts/check-constants.mjs` 的 `LINE_LIMITS` | P2 | `open` | 持续：每轮下沉一个内聚块（已做 11 刀，见报告 H 附录） |
 | TD-04 | **`check:console-noise` 依赖 spool 文件**：手动跑过 `check` 而未跑 `test:unit` 会读到空 spool | 已加空采集守卫（0 类判红），但**顺序仍然脆弱** | P3 | `accepted` | 触发条件：再次出现"0 类误判"或 spool 被外部清理 → 改为 `check` 内部强制先跑单测 |
 | TD-05 | **性能闸口在慢机器上只能"未判定"**，无法区分真回归 | `scripts/bench.mjs` 的 `CALIBRATION_TOLERANCE`；实测同代码连跑 6 次 ×1.06–2.75 | P3 | `accepted` | 触发条件：需要严格性能门时 → 上 CI 固定机型或容器化 benchmark |
 | TD-07 | **`docs/` 与 `docs-site/` 是两套叙事**，只有后者进站；前者的审查报告不进站也无法被站内搜索 | `docs/*.md` 共 7 份，`docs-site/` 不含它们 | P3 | `accepted` | 触发条件：需要对外披露审查过程时 → 择要进站，不必全量 |
@@ -46,6 +45,7 @@
 | TD-16 | **`check:console-noise --no-run` 空 spool 静默判绿** | 加空采集守卫，0 类判红并给出正确操作顺序 | `97e9cad` |
 | TD-17 | **口径三处不一致**（域数 14 vs 13、组件 60+ vs 65） | 建 `facts.md` 生成物 + `check:facts` 双查（漂移 + 正文数字冲突） | `d35b783` |
 | TD-18 | **破坏性变更只有摘要、没有迁移指引** | 建 `migration-2.0.md`；`check:release-consistency` 加"有 BREAKING 段就必须有迁移页" | `1b6f83f` |
+| TD-02 | DataTable.vue 2822 行，止涨线 2950，余量 128 | 矩形选区指针编排（163 行：长按判定/拖拽阈值/边缘自动滚动/click 抑制）下沉 useRangePointer（第十二刀）。这 163 行含 12 个模块级可变变量与 7 个 document 监听器，集中后 onUnmounted 能一次性收口。2822 → 2688 行，止涨线收到 2760（留 2.6%）。下沉前补了 6 条覆盖鼠标拖选的测试——现有 28 个 DataTable 测试里没有一个覆盖它，不补的话可以把这段改坏而全链全绿 | PENDING |
 | TD-03 | 覆盖率最低的域是 form（语句 56.4% / 分支 52.4% / 函数 52.3%） | **实际最洼的是 login**（逐文件分析发现 forgot-*.vue 215 行/19 函数、portal_login.vue 194 行/12 函数**完全零测试**，函数覆盖 0%）。补两套行为测试共 26 条，login 域 55.9/52.4/42.2 → **80.3/70.9/61.2**，地板从 52/49/39 抬到 77/68/58。补测中发现并修掉真缺陷：portal_login 完全没有防重复提交（另外三个登录页都有） | 880cdc4 |
 | TD-01 | 主 CSS 体积：口径修正为双轨（gzip 主约束 + raw 宽松上限）；原「余量 1.3% 接近失效」的焦虑建立在错误口径上 | 实测：主 CSS 注释 0 KB、多余空白 1.2 KB（构建产物早已压缩），gzip 后仅 43 KB（压缩率 88%）—— 那才是宿主实际下载量。原预算只看未压缩 345.6 KB。已改为 gzip 60KB / raw 420KB 双守，域 CSS 同理 gzip 30KB / raw 220KB；实测域最大 gzip 19.9 KB。**顺带发现主 CSS 预算此前一直静默失效**（/dist/vcl-ui.css$ 要求前导斜杠，而 walk 返回相对路径 → 永远匹配不到） | 922b194 |
 | TD-06 | **--no-run 与整链的耦合**：整链里 check:console-noise 曾自己跑一遍全量单测，等于同一轮跑两次单测 | package.json 的 check:console-noise 已带 --no-run，复用第 15 步写的 spool；实测第 16 步 0.7s（若自己跑单测要 30s+） | c304666 之前某轮 |

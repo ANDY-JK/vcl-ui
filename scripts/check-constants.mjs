@@ -423,7 +423,7 @@ console.log(`[6] 原生 color 输入值归一 出现=${colorSites} 未登记=${c
 // 并在余量异常时给出提示。想看作数就跑 `npm run check:constants`，永远是最新的。
 const LINE_LIMITS = {
   'form-builder': 800, // 09-04 收官纪律：域内单文件硬上限
-  data: 2950, // 灯箱/选项面板/单元格右键菜单/键盘导航下沉 useTableCellMenus 后的现状止涨线
+  data: 2760, // 矩形选区指针编排下沉 useRangePointer（第十二刀）后的现状止涨线（实测最大 DataTable.vue 2688，留 ~2.7% 余量）
   form: 1140, // Select.vue 下沉 useSelectFiltering 后回收（原 1500，实测最大 985，留 ~15% 余量）
   layout: 370, // AppLayout.vue 回收（原 950，实测最大 321，留 ~15% 余量）
   'route-planner': 850, // utils/route-planning.ts 现状止涨线

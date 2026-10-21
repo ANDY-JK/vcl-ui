@@ -41,6 +41,8 @@ import { useTableFilter } from './composables/useTableFilter'
 import { useTableExtras } from './composables/useTableExtras'
 import { useTableEdit } from './composables/useTableEdit'
 import { useFillHandleDrag } from './composables/useFillHandleDrag'
+// 矩形选区的指针编排（长按判定/拖拽阈值/边缘自动滚动/click 抑制）—— M3 第十二刀下沉
+import { useRangePointer } from './composables/useRangePointer'
 import './composables/data-table-global.css'
 import { sanitizeHTML } from '../_internal/sanitize'
 import { BP_MD } from '@/components/_internal/breakpoints'
@@ -63,9 +65,6 @@ import {
 import { useTableTooltip } from './composables/useTableTooltip'
 import { useTableCellMenus } from './composables/useTableCellMenus'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
-
-/** 拉选结束后抑制紧随的 click（松手那下不能被当成单击行） */
-const _RANGE_CLICK_GUARD_MS = 200
 
 // 内部异常兜底 — 单组件出错不导致页面崩溃
 const _internalError = ref<Error | null>(null)
@@ -726,8 +725,6 @@ function onFullscreenBodyClick(e: MouseEvent) {
   if (_screenshotModal.value.visible) return
   _isFullscreen.value = false
 }
-/** 选区拖到容器边缘时，自动滚动的步进节拍 */
-const _RANGE_SCROLL_TICK_MS = 50
 
 onDeactivated(() => {
   // KeepAlive 失活时不能把全屏态带进缓存：表格节点挂在 body 上、body 的全屏类与全局监听都还在生效，
@@ -1104,18 +1101,9 @@ watch(
 )
 
 // ==================== @patch 2026-08-09 矩形选区：长按/拖拽多选 ====================
-// 选区行/列快照与显示数据一致：筛选/排序/分页后数据变化 → 自动清空，防止误改隐藏行
-let _rangeTimer: ReturnType<typeof setTimeout> | null = null
-let _rangeCandidate: { ri: number; ci: number; rk: string; ck: string; value: string } | null = null
-let _rangeActive = false
-let _rangeSuppressClick = false
-const RANGE_LONGPRESS_MS = 300
-const RANGE_DRAG_THRESHOLD = 6
-let _rangeStartX = 0
-let _rangeStartY = 0
-let _rangeLastX = 0
-let _rangeLastY = 0
-let _rangeScrollTimer: ReturnType<typeof setInterval> | null = null
+// 指针编排（长按判定 / 拖拽阈值 / 边缘自动滚动 / click 抑制）已下沉 → useRangePointer（M3 第十二刀）
+// 选区数据状态机仍在 cell-select.ts（rangeSel / startRange / updateRange / clearRange）。
+// 这里只保留两件事：① 提供给 composable 的快照与取值钩子；② 行显示索引换算。
 
 /** 渲染行显示索引（虚拟滚动/全屏时与 pagedData 对齐） */
 function rowDisplayIndex(idx: number): number {
@@ -1124,148 +1112,30 @@ function rowDisplayIndex(idx: number): number {
   return idx
 }
 
-/** 当前显示行/列快照（与模板渲染顺序一致） */
+/** 行 key 快照（与模板渲染顺序一致） */
 function rangeRowsSnapshot(): string[] {
   return _effectivePagedData.value.map((r) => rowMetaMap.value.get(r)?.key ?? '').filter(Boolean)
 }
+/** 列 key 快照（与模板渲染顺序一致） */
 function rangeColsSnapshot(): string[] {
   return _displayColumns.value.map((c) => c.key)
 }
 
-function onCellMouseDown(e: MouseEvent, row: Record<string, any>, col: Column, ri: number, ci: number) {
-  // cellSelection=false 时不做拖选，也不阻止文本选择（保留浏览器默认行为）
-  if (!props.editable || editingCell.value || !props.cellSelection) return
-  if (e.button !== 0) return
-  // 可交互元素（输入框/按钮/图片/图标等）不参与拖选
-  const t = e.target as HTMLElement
-  if (t.closest('input,button,select,textarea,a,.cell-expand-icon,.cell-note-dot,.cell-options-arrow,.cell-image'))
-    return
-  // 阻止文本选择（click/dblclick 仍正常触发）
-  e.preventDefault()
-  clearRange()
-  _rangeCandidate = {
-    ri,
-    ci,
-    rk: rowMetaMap.value.get(row)?.key ?? '',
-    ck: col.key,
-    value: cellVal(row, col.key, rowMetaMap.value.get(row)?.texts[col.key] ?? ''),
-  }
-  _rangeStartX = e.clientX
-  _rangeStartY = e.clientY
-  _rangeActive = false
-  document.addEventListener('mousemove', onRangeMove)
-  document.addEventListener('mouseup', onRangeUp)
-  _rangeTimer = setTimeout(() => activateRange(), RANGE_LONGPRESS_MS)
-}
-
-/** 长按触发 / 拖拽超过阈值立即激活选区 */
-function activateRange() {
-  if (_rangeTimer) {
-    clearTimeout(_rangeTimer)
-    _rangeTimer = null
-  }
-  if (_rangeActive || !_rangeCandidate) return
-  _rangeActive = true
-  document.body.classList.add('dt-range-selecting')
-  startRange(_rangeCandidate.ri, _rangeCandidate.ci, rangeRowsSnapshot(), rangeColsSnapshot(), _rangeCandidate.value)
-  // 长按未移动时也选中锚点格
-  updateRange(_rangeCandidate.ri, _rangeCandidate.ci)
-}
-
-function onRangeMove(e: MouseEvent) {
-  if (!_rangeCandidate) return
-  _rangeLastX = e.clientX
-  _rangeLastY = e.clientY
-  if (!_rangeActive) {
-    // 按下后直接拖动（无需等长按）：超过阈值即进入选区模式
-    const dx = Math.abs(e.clientX - _rangeStartX)
-    const dy = Math.abs(e.clientY - _rangeStartY)
-    if (Math.max(dx, dy) >= RANGE_DRAG_THRESHOLD) activateRange()
-    if (!_rangeActive) return
-  }
-  if (!rangeSel.value) return
-  const td = (document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null)?.closest(
-    'td[data-row-idx][data-col-idx]',
-  ) as HTMLElement | null
-  if (!td) return
-  const ri = Number(td.dataset.rowIdx)
-  const ci = Number(td.dataset.colIdx)
-  if (!Number.isFinite(ri) || !Number.isFinite(ci)) return
-  updateRange(ri, ci)
-  // 拖到滚动容器边缘 → 自动滚动（继续扩展选区）
-  const el = scrollContainerRef.value
-  if (el) {
-    const rect = el.getBoundingClientRect()
-    const nearEdge =
-      _rangeLastY < rect.top + 30 ||
-      _rangeLastY > rect.bottom - 30 ||
-      _rangeLastX < rect.left + 30 ||
-      _rangeLastX > rect.right - 30
-    if (nearEdge && !_rangeScrollTimer) {
-      _rangeScrollTimer = setInterval(onRangeAutoScrollTick, _RANGE_SCROLL_TICK_MS)
-    } else if (!nearEdge && _rangeScrollTimer) {
-      stopRangeAutoScroll()
-    }
-  }
-}
-
-/** 拖选自动滚动：每帧滚动容器 + 重新定位 focus */
-function onRangeAutoScrollTick() {
-  const el = scrollContainerRef.value
-  if (!el || !_rangeActive) {
-    stopRangeAutoScroll()
-    return
-  }
-  const rect = el.getBoundingClientRect()
-  const speed = 16
-  let dy = 0
-  let dx = 0
-  if (_rangeLastY < rect.top + 30) dy = -speed
-  else if (_rangeLastY > rect.bottom - 30) dy = speed
-  if (_rangeLastX < rect.left + 30) dx = -speed
-  else if (_rangeLastX > rect.right - 30) dx = speed
-  if (!dy && !dx) {
-    stopRangeAutoScroll()
-    return
-  }
-  el.scrollTop += dy
-  el.scrollLeft += dx
-  const td = (document.elementFromPoint(_rangeLastX, _rangeLastY) as HTMLElement | null)?.closest(
-    'td[data-row-idx][data-col-idx]',
-  ) as HTMLElement | null
-  if (td) {
-    const ri = Number(td.dataset.rowIdx)
-    const ci = Number(td.dataset.colIdx)
-    if (Number.isFinite(ri) && Number.isFinite(ci)) updateRange(ri, ci)
-  }
-}
-
-function stopRangeAutoScroll() {
-  if (_rangeScrollTimer) {
-    clearInterval(_rangeScrollTimer)
-    _rangeScrollTimer = null
-  }
-}
-
-function onRangeUp() {
-  document.removeEventListener('mousemove', onRangeMove)
-  document.removeEventListener('mouseup', onRangeUp)
-  stopRangeAutoScroll()
-  if (_rangeTimer) {
-    clearTimeout(_rangeTimer)
-    _rangeTimer = null
-  }
-  if (_rangeActive) {
-    document.body.classList.remove('dt-range-selecting')
-    // 抑制紧随 mouseup 的 click，避免把刚形成的选区清成单选
-    _rangeSuppressClick = true
-  }
-  _rangeCandidate = null
-  _rangeActive = false
-  setTimeout(() => {
-    _rangeSuppressClick = false
-  }, _RANGE_CLICK_GUARD_MS)
-}
+const { onCellMouseDown, shouldSuppressClick } = useRangePointer({
+  editable: () => props.editable,
+  editing: () => !!editingCell.value,
+  cellSelection: () => !!props.cellSelection,
+  rowDisplayIndex,
+  rowsSnapshot: rangeRowsSnapshot,
+  colsSnapshot: rangeColsSnapshot,
+  cellValue: (row, colKey) => cellVal(row, colKey, rowMetaMap.value.get(row)?.texts[colKey] ?? ''),
+  rowKeyOf: (row) => rowMetaMap.value.get(row)?.key,
+  rangeSel,
+  startRange,
+  updateRange,
+  clearRange,
+  scrollContainer: scrollContainerRef,
+})
 
 // ==================== 填充柄拖拽 → useFillHandleDrag（M3 第十一刀下沉） ====================
 // 指针/预览状态机已下沉；此处只保留**取消时机**的编排 ——
@@ -1382,10 +1252,8 @@ const {
  *  @patch 2026-07-15 Ctrl+单击 → 行高亮+进度条标记；普通单击 → 仅单元格选中 */
 function onCellClick(row: Record<string, any>, col: Column, event: MouseEvent) {
   // @patch 2026-08-09 拖选结束的 click 不改变选区（长按/拖拽已建立矩形选区）
-  if (_rangeSuppressClick) {
-    _rangeSuppressClick = false
-    return
-  }
+  // 抑制标志由 useRangePointer 内部管理（M3 第十二刀下沉后不再暴露可变变量）
+  if (shouldSuppressClick()) return
   const rk = rowMetaMap.value.get(row)?.key ?? ''
   // 行高亮/进度条标记：仅 Ctrl+单击时切换
   if (event.ctrlKey || event.metaKey) {
@@ -1632,12 +1500,8 @@ onUnmounted(() => {
   _releaseZTop?.()
   flushWidths()
   _cancelSearchDebounce()
-  // @patch 2026-08-09 清理拖选残留状态
-  if (_rangeTimer) clearTimeout(_rangeTimer)
-  stopRangeAutoScroll()
-  document.removeEventListener('mousemove', onRangeMove)
-  document.removeEventListener('mouseup', onRangeUp)
-  document.body.classList.remove('dt-range-selecting')
+  // @patch 2026-08-09 拖选残留状态
+  // 清理已并入 useRangePointer 的 onUnmounted（第十二刀下沉），此处不再重复
   // 清理填充拖拽残留（监听器 / body 类 / 预览状态）
   cancelFillDrag()
   _closeCallbacks.delete(closeFilter)
