@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { Input, Button, IconSvg, Toast, useT } from './_shared'
+import { Input, Button, IconSvg, Toast, useT, SUBMIT_UNLOCK_FALLBACK_MS } from './_shared'
 
 const t = useT()
 
@@ -109,16 +109,43 @@ const passwordRules = [
 
 // ======================== 提交 ========================
 
+/**
+ * 内部防重复提交（2026-10-21 补，审查 6.3 / TD-03 发现的一致性缺陷）。
+ *
+ * ## 为什么必须补
+ *
+ * 四个登录页里，`login.vue` 有 `internalLoading + lockUntil` 双机制、
+ * `register.vue` 与 `forgot-*.vue` 有 `_submitting` + 超时兜底，
+ * **只有 portal_login.vue 什么都没有** —— 父组件不传 `loading` 时，
+ * 连点两次就会 emit 两次，宿主会收到两个登录请求（在"记住我"关闭、
+ * 后端有幂等保护缺失时，表现为两条登录日志）。
+ *
+ * ## 为什么不能只靠 props.loading
+ *
+ * 那是**父组件的义务**，库不能假定它一定传。也不能永久锁死 ——
+ * 父组件可能既没传 loading 也没在失败后通知，所以必须有超时解锁，
+ * 否则用户点一次失败后就再也点不动了。
+ *
+ * 本实现对齐 `forgot-*.vue`（同一个"父组件可能忘了传 loading"的场景）。
+ */
+const _submitting = ref(false)
+
 const handleEnter = (event: KeyboardEvent) => {
   if (event.key === 'Enter') handleSubmit()
 }
 
 const handleSubmit = () => {
   internalError.value = ''
+  if (_submitting.value) return
   if (!canSubmit.value) {
     internalError.value = t('login.invalidCredentialsFull')
     return
   }
+
+  _submitting.value = true
+  window.setTimeout(() => {
+    _submitting.value = false
+  }, SUBMIT_UNLOCK_FALLBACK_MS)
 
   emit('submit', {
     username: form.username,
