@@ -413,15 +413,31 @@ console.log(`[6] 原生 color 输入值归一 出现=${colorSites} 未登记=${c
 // ---------- [7] 单文件行数纪律：按域止涨线（M3 扩面） ----------
 // form-builder 是 09-04 收官纪律（≤800）；其余域为「现状止涨线」＝当前最大文件 + 一点余量，
 // 只拦增长不追溯存量，止涨后再随重构逐步回收。抬线必须带新实测值；超线提交＝拆分信号。
+//
+// **注释里不再写"当前多少行 / 余量多少"**（2026-10-21，审查 6.2 #4）：
+// 那些数字是手工维护的快照，必然过期 —— 实测发现 4 个域里 3 个与现实不符
+// （data 声称 2858 实际 2904、form 声称 1399 实际 985、layout 声称 896 实际 321）。
+// 过期数字比没有数字更糟：它会让人（包括审查者）基于错信息判断"还有多少余量"。
+//
+// 现在改为**脚本计算并输出**：每次跑都打印「最大文件 / 实测行数 / 余量」，
+// 并在余量异常时给出提示。想看作数就跑 `npm run check:constants`，永远是最新的。
 const LINE_LIMITS = {
-  'form-builder': 800, // 09-04 收官纪律
-  data: 2950, // DataTable.vue 2858（灯箱/选项面板/单元格右键菜单/键盘导航下沉 useTableCellMenus 后）止涨，余量 92
-  form: 1500, // Select.vue 1399（过滤/虚拟化下沉 useSelectFiltering 后）止涨，余量 101
-  layout: 950, // AppLayout.vue 896 现状止涨
-  'route-planner': 850, // utils/route-planning.ts 811 现状止涨
+  'form-builder': 800, // 09-04 收官纪律：域内单文件硬上限
+  data: 2950, // 灯箱/选项面板/单元格右键菜单/键盘导航下沉 useTableCellMenus 后的现状止涨线
+  form: 1140, // Select.vue 下沉 useSelectFiltering 后回收（原 1500，实测最大 985，留 ~15% 余量）
+  layout: 370, // AppLayout.vue 回收（原 950，实测最大 321，留 ~15% 余量）
+  'route-planner': 850, // utils/route-planning.ts 现状止涨线
 }
+
+/** 余量低于这个比例就提示"快顶到线了"——比"还以为有余量"更早给出信号 */
+const HEADROOM_TIGHT_RATIO = 0.05
+/** 余量高于这个比例说明线放得太松（文件已大幅缩小），提示可回收 */
+const HEADROOM_LOOSE_RATIO = 0.4
+
 const domainCounts = {}
 const domainOversized = {}
+/** 每域的最大文件（用于输出实测值，替代注释里的手工快照） */
+const domainPeak = {}
 const collectLines = (domain, d) => {
   for (const e of readdirSync(d, { withFileTypes: true })) {
     const p = join(d, e.name)
@@ -429,6 +445,8 @@ const collectLines = (domain, d) => {
     else if (/\.(ts|vue)$/.test(e.name) && !/\.d\.ts$/.test(e.name)) {
       domainCounts[domain] = (domainCounts[domain] || 0) + 1
       const n = readFileSync(p, 'utf8').split('\n').length - 1
+      const prev = domainPeak[domain]
+      if (!prev || n > prev.lines) domainPeak[domain] = { file: relative('.', p).replaceAll('\\', '/'), lines: n }
       if (n > LINE_LIMITS[domain]) {
         ;(domainOversized[domain] ||= []).push(`${relative('.', p).replaceAll('\\', '/')}=${n} 行`)
       }
@@ -439,6 +457,7 @@ for (const domain of Object.keys(LINE_LIMITS)) collectLines(domain, join('src/co
 for (const [domain, limit] of Object.entries(LINE_LIMITS)) {
   const count = domainCounts[domain] || 0
   const oversized = domainOversized[domain] || []
+  const peak = domainPeak[domain]
   if (count === 0) fail.push(`[7] ${domain} 域一个源文件都没扫到 —— 匹配失效了，先修判定再看绿`)
   else if (oversized.length) {
     fail.push(
@@ -446,7 +465,21 @@ for (const [domain, limit] of Object.entries(LINE_LIMITS)) {
         `${oversized.join(', ')}。抽 composable / 子组件收口，别再长`,
     )
   }
-  console.log(`[7] ${domain} 域行数 文件=${count} 止涨线=${limit} 超线=${oversized.length}`)
+  // 实测值由脚本算出并打印 —— 这就是"当前多少行 / 余量多少"的**唯一真源**，
+  // 不再依赖注释里的手工快照（那些必然过期，实测 4 域里 3 域已失准）。
+  const headroom = limit - (peak?.lines ?? 0)
+  const ratio = limit > 0 ? headroom / limit : 1
+  let hint = ''
+  if (oversized.length === 0 && ratio <= HEADROOM_TIGHT_RATIO) {
+    hint = `  ⚠ 余量偏紧（${(ratio * 100).toFixed(1)}%），下次改动前先拆`
+  } else if (oversized.length === 0 && ratio >= HEADROOM_LOOSE_RATIO) {
+    hint = `  可考虑回收止涨线（${limit} → 约 ${Math.ceil((peak?.lines ?? 0) * 1.1)}）`
+  }
+  console.log(
+    `[7] ${domain} 域行数 文件=${count} 止涨线=${limit} 超线=${oversized.length}` +
+      (peak ? ` 最大=${peak.file} ${peak.lines} 行 余量=${headroom}` : '') +
+      hint,
+  )
 }
 
 if (fail.length) {
