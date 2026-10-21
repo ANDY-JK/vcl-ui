@@ -52,6 +52,12 @@ jobs:
       - name: Unit tests (with coverage floor)
         run: npm run test:unit
 
+      # 性能基准守护（R5-C10）：与入库的 bench-baseline.json 比对，超基线 ×1.6 即红。
+      # 注意：CI 机器与基线生成机器不同，跨机绝对耗时差异大 —— 这一条在 CI 上**可能误报**，
+      # 因此 CI 里保留但允许人工判断；本地 quality-check 里是硬闸口。
+      - name: Bench regression check
+        run: npm run bench:check
+
       # 按域覆盖防回退（Q4）：全局地板掩盖域级洼地（login 35%、nav 41%…）
       - name: Domain coverage floors
         run: npm run check:coverage-domains

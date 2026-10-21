@@ -60,7 +60,9 @@
     "apply-scale": "node scripts/apply-scale.mjs --write",
     "quick-check": "node scripts/quality-check.mjs --quick",
     "check:release-consistency": "node scripts/check-release-consistency.mjs",
-    "check:deps": "node scripts/check-deps.mjs"
+    "check:deps": "node scripts/check-deps.mjs",
+    "bench:baseline": "node scripts/gen-bench-baseline.mjs",
+    "bench:check": "node scripts/bench.mjs --check"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",
