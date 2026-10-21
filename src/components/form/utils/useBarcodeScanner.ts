@@ -149,6 +149,15 @@ export interface BarcodeScannerOptions {
    */
   multiMode?: 'center' | 'manual'
   /**
+   * 外部传入的 `<video>` 模板 ref（推荐用法）。
+   *
+   * 宿主在 `<script setup>` 里用**顶层** `const videoRef = ref<HTMLVideoElement | null>(null)`
+   * 声明后传进来，模板 `<video ref="videoRef">` 才能被编译器静态识别；
+   * 若让宿主从本 composable 解构 `videoRef` 再绑模板，Vue 3.5+ 会在生产构建里判为非 ref
+   * 并告警 `Template ref "videoRef" used on a non-ref value`。
+   */
+  videoRef?: Ref<HTMLVideoElement | null>
+  /**
    * 识别格式分流（默认 'all' 全识别）：'qr' 仅二维码家族、'barcode' 仅一维条码家族。
    * 支持 Ref 实时切换，下一帧生效。
    */
@@ -194,6 +203,18 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
     cooldownMs = 3000,
     adaptiveInterval: useAdaptive = true,
     multiMode = 'center',
+    /**
+     * 外部传入的 `<video>` 模板 ref（2026-10-21 加）。
+     *
+     * **为什么必须能传**：Vue 3.5+ 的 `<script setup>` 编译器要求模板 ref 绑定的变量
+     * 是**顶层 `ref()` 声明**，否则在生产构建里会被当成非 ref 而失效，并报
+     * `Template ref "videoRef" used on a non-ref value. It will not work in the production build.`
+     * —— 而本 composable 的 `videoRef` 若被宿主解构出来再绑到模板，就正好踩中这一点
+     * （实测 `CodeCapture.vue` 每次 mount 都报，29 次/单测轮）。
+     *
+     * 所以宿主应当**自己**用顶层 `ref()` 声明再传进来；不传时仍用内部 ref（兼容旧用法）。
+     */
+    videoRef: externalVideoRef,
   } = options
   // 静态间隔下限 10ms；0 = 启用动态间隔
   const staticInterval = rawInterval > 0 ? Math.max(10, rawInterval) : 0
@@ -226,7 +247,8 @@ export function useBarcodeScanner(options: BarcodeScannerOptions = {}) {
   const error = ref('')
   /** 失败归因（兜底链用）：unsupported/insecure/permission/notfound/occupied/unknown；成功时清空 */
   const failReason = ref<CaptureFailReason | ''>('')
-  const videoRef = ref<HTMLVideoElement | null>(null)
+  // 宿主传入优先（它能被 `<script setup>` 编译器静态识别为模板 ref），否则用内部 ref
+  const videoRef = externalVideoRef ?? ref<HTMLVideoElement | null>(null)
   const canvasRef = ref<HTMLCanvasElement | null>(null)
   /** 当前帧检测到的所有合法码（含框位置）；单码时也填充，供消费方画指针/提示框 */
   const detections = ref<BarcodeDetection[]>([])

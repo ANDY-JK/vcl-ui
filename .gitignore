@@ -83,3 +83,6 @@ tests/playwright.localport.config.ts
 docs-site/.vitepress/dist
 docs-site/.vitepress/cache
 theme.config.json
+
+# 测试噪音采集中间目录（跑完即清，不入库）
+tests/unit/.noise-spool/

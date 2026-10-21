@@ -62,7 +62,10 @@
     "check:release-consistency": "node scripts/check-release-consistency.mjs",
     "check:deps": "node scripts/check-deps.mjs",
     "bench:baseline": "node scripts/gen-bench-baseline.mjs",
-    "bench:check": "node scripts/bench.mjs --check"
+    "bench:check": "node scripts/bench.mjs --check",
+    "test:noise:baseline": "node scripts/check-console-noise.mjs --baseline",
+    "test:noise": "node scripts/check-console-noise.mjs",
+    "check:console-noise": "node scripts/check-console-noise.mjs --no-run"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",

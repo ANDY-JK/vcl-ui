@@ -78,13 +78,22 @@ const title = computed(() => props.title || t('form.scanCode'))
 /** 页面内取流能力（决定 idle 态是否展示「扫码」入口：没有取流能力时它只会把人送回兜底页） */
 const canInpage = computed(() => detectCaptureCapability().canInpage)
 
+/**
+ * `<video>` 的模板 ref —— **必须在宿主顶层用 `ref()` 声明**。
+ *
+ * 为什么不能直接从 useBarcodeScanner 解构：Vue 3.5+ 的 `<script setup>` 编译器要求
+ * 模板 ref 绑定的变量是顶层 `ref()` 声明，解构来的 ref 在生产构建里会被判为非 ref 而失效，
+ * 实测每次 mount 都报 `Template ref "videoRef" used on a non-ref value`（单测一轮 29 次）。
+ * 所以这里自己声明、再作为 options 传进 composable。
+ */
+const videoRef = ref<HTMLVideoElement | null>(null)
+
 const {
   start,
   stop,
   scanPhoto,
   error: scanError,
   failReason,
-  videoRef,
   canvasRef,
   detections,
   triggerDetection,
@@ -103,6 +112,8 @@ const {
     emit('scan', code)
     if (!props.multiple) close()
   },
+  // 传自己声明的顶层 ref（而不是让 composable 内部造一个再解构回来）
+  videoRef,
 })
 
 /** idle=未启动 starting=启动中 live=实时扫描 recognizing=拍照识别中 sheet=兜底页 */

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * quality-check —— 26 步质量链的唯一执行器（含执行留痕）
+ * quality-check —— 27 步质量链的唯一执行器（含执行留痕）
  *
  * 为什么要有这个脚本：
  *   原先 quality-check 是 package.json 里一条 `&&` 串联的长命令。它有两个结构性缺陷
@@ -12,7 +12,7 @@
  *   最后写 reports/quality-check-latest.json，并把「未执行」的步骤显式标出来。
  *
  * 用法：
- *   node scripts/quality-check.mjs                # 跑全部 26 步
+ *   node scripts/quality-check.mjs                # 跑全部 27 步
  *   node scripts/quality-check.mjs --from=13      # 从第 13 步开始（快速复跑用）
  *   node scripts/quality-check.mjs --only=check:constants   # 只跑名字含关键字的步骤
  *   node scripts/quality-check.mjs --skip=e2e     # 跳过匹配关键字的步骤（本地快速链）
@@ -56,7 +56,7 @@ function runStep(cmd, logPath) {
   })
 }
 
-/** 26 步：与审查报告口径一致（顺序即依赖顺序） */
+/** 27 步：与审查报告口径一致（顺序即依赖顺序） */
 const STEPS = [
   ['typecheck', 'npm run typecheck'],
   ['lint', 'npm run lint'],
@@ -73,6 +73,10 @@ const STEPS = [
   ['check:vendor-vulns', 'npm run check:vendor-vulns'],
   ['check:deps', 'npm run check:deps'],
   ['test:unit', 'npm run test:unit'],
+  // console 噪音棘轮（R5-B18 / 路线图 6.2 #5）：紧跟 test:unit —— 单测运行时 setup.ts
+  // 已把各类 warn/error 记进 spool，这里只读不重跑（--no-run）。判据是**类别集合**而非计数，
+  // 所以 spool 有残留也不会误判（集合天然幂等）。
+  ['check:console-noise', 'npm run check:console-noise'],
   // 性能基准守护（R5-C10）：放在 test:unit 之后 —— 此时机器已预热，
   // 更接近基线生成时的状态（冷机跑会因 JIT 未热而虚高）。
   // 定位是"防止悄悄翻倍"，不是精密守护：倍率 1.6 与绝对下限 1.0ms 均来自实测分布。
@@ -98,7 +102,7 @@ const flag = (name) => {
 /**
  * 快链（--quick）：给「本地提交前」用的**最小充分**集合，目标 ≈ 90s。
  *
- * 为什么需要：整链 26 步约 10 分钟，没人会在每次提交前跑它；而本仓 `git remote` 为空、
+ * 为什么需要：整链 27 步约 10 分钟，没人会在每次提交前跑它；而本仓 `git remote` 为空、
  * CI 从不执行 —— 于是「闸口存在」和「闸口执行」是两件事（报告 6.2 #2 / R5-C14）。
  * 快链把显然会坏的提交挡在本地，整链仍是唯一权威（build / e2e / 许可 / 文档都在整链里）。
  * 逃生口：`git commit --no-verify` 或 `SKIP_QUICK_CHECK=1`。
