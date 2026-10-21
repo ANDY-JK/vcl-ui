@@ -91,7 +91,7 @@
 .tag-close {
   display: inline-flex;
   padding: 1px;
-  margin-left: var(--vcl-space-1);
+  margin-inline-start: var(--vcl-space-1);
   border: none;
   background: transparent;
   color: inherit;

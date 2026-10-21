@@ -7,7 +7,7 @@
   overflow-y: auto;
   padding: calc(10px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   background: var(--vcl-color-bg-alt, #f8fafc);
-  border-right: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  border-inline-end: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 
 /** 面板头部 */
@@ -140,7 +140,7 @@
 }
 .ldp-add {
   opacity: 0;
-  margin-left: auto;
+  margin-inline-start: auto;
   color: var(--vcl-color-text-muted, #9ca3af);
   font-size: var(--vcl-fs-13);
   transition: opacity 0.15s;

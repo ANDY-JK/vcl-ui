@@ -53,7 +53,7 @@
 /* 图标 */
 .fl-icon {
   flex-shrink: 0;
-  margin-left: calc(12px * var(--vcl-scale));
+  margin-inline-start: calc(12px * var(--vcl-scale));
   color: var(--vcl-color-text-muted);
 }
 .fl-wrap.has-icon .fl-label:not(.raised) {
@@ -66,7 +66,7 @@
 /* 后缀文字（单位等固定提示） */
 .fl-suffix {
   flex-shrink: 0;
-  padding-right: calc(12px * var(--vcl-scale));
+  padding-inline-end: calc(12px * var(--vcl-scale));
   font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
   color: var(--vcl-color-text-muted);
   user-select: none;
@@ -90,13 +90,13 @@
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 600;
   color: var(--vcl-color-danger-on-surface);
-  padding-left: var(--vcl-space-1);
+  padding-inline-start: var(--vcl-space-1);
 }
 .fl-hint {
   font-size: calc(15px * var(--vcl-scale));
   font-weight: 500;
   color: var(--vcl-color-text-muted);
-  padding-left: var(--vcl-space-1);
+  padding-inline-start: var(--vcl-space-1);
 }
 
 /* ── 错误态边框覆盖 ── */
@@ -126,7 +126,7 @@
   min-width: 0;
   height: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
   padding: 0 var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
-  padding-left: calc(8px * var(--vcl-scale));
+  padding-inline-start: calc(8px * var(--vcl-scale));
   border: none;
   background: transparent;
   font-size: var(--vcl-ctrl-font-size, calc(14px * var(--vcl-scale)));
@@ -134,7 +134,7 @@
   outline: none;
 }
 .fl-wrap:not(.has-icon) .f-input {
-  padding-left: var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  padding-inline-start: var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
 }
 
 /* textarea */
@@ -160,7 +160,7 @@
   width: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
   height: var(--vcl-ctrl-height, calc(42px * var(--vcl-scale)));
   padding: calc(4px * var(--vcl-scale));
-  margin-left: calc(8px * var(--vcl-scale));
+  margin-inline-start: calc(8px * var(--vcl-scale));
   border: none;
   border-radius: var(--vcl-radius-md);
   background: transparent;
@@ -224,7 +224,7 @@
 }
 .fl-wrap:has(.f-toggle-pwd) .f-input,
 .fl-wrap:has(.f-clear) .f-input {
-  padding-right: calc(34px * var(--vcl-scale));
+  padding-inline-end: calc(34px * var(--vcl-scale));
 }
 .f-input::-ms-reveal,
 .f-input::-ms-clear {
@@ -314,8 +314,8 @@
 /* stepper 模式的静态标签（关联 inputId；stepper-wrap 是 inline-flex，标签独占一行在上方） */
 .step-label {
   align-self: center;
-  margin-right: var(--vcl-space-2);
-  padding-left: var(--vcl-space-3);
+  margin-inline-end: var(--vcl-space-2);
+  padding-inline-start: var(--vcl-space-3);
   font-size: var(--vcl-fs-13);
   color: var(--vcl-color-text-secondary);
   white-space: nowrap;
@@ -345,7 +345,7 @@
 .step-controls {
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--vcl-color-border-light);
+  border-inline-start: 1px solid var(--vcl-color-border-light);
   flex-shrink: 0;
 }
 .step-btn {

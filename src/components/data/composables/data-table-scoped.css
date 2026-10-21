@@ -172,7 +172,7 @@ th.filter-active {
   align-items: center;
   gap: 0px;
   flex-shrink: 0;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 /* 排序列不显示箭头 → 占位保留但不可见 */
@@ -607,13 +607,13 @@ td.cell-has-note {
 }
 .data-table.bordered td,
 .data-table.bordered th {
-  border-right: 1px solid var(--vcl-color-border);
+  border-inline-end: 1px solid var(--vcl-color-border);
   border-bottom: 1px solid var(--vcl-color-border);
 }
 /* 首列不画左边框（表格已有外框） */
 .data-table.bordered td:first-child,
 .data-table.bordered th:first-child {
-  border-left: none;
+  border-inline-start: none;
 }
 /* 末行不画下边框（表格已有外框），但当行被选中时保留下边框 */
 .data-table.bordered tbody tr:last-child td {
@@ -890,10 +890,10 @@ th.drag-over {
   display: inline-block;
   width: 0;
   height: 0;
-  border-left: 5px solid transparent;
+  border-inline-start: 5px solid transparent;
   border-bottom: 5px solid var(--vcl-color-warning, #f59e0b);
   vertical-align: super;
-  margin-left: var(--vcl-space-1);
+  margin-inline-start: var(--vcl-space-1);
 }
 .card-edit-input,
 .card-edit-select {
@@ -1111,7 +1111,7 @@ td.cell-has-options:hover .cell-options-arrow {
 .opt-drop-check {
   color: var(--vcl-color-primary-on-surface);
   flex-shrink: 0;
-  margin-left: var(--vcl-space-2);
+  margin-inline-start: var(--vcl-space-2);
 }
 
 /* ImagePreview 中的下载/复制按钮 */
@@ -1129,11 +1129,11 @@ td.cell-has-options:hover .cell-options-arrow {
   cursor: pointer;
   white-space: nowrap;
   transition: background var(--vcl-transition-fast);
-  margin-left: var(--vcl-space-2);
+  margin-inline-start: var(--vcl-space-2);
 }
 .lightbox-action:hover {
   background: rgba(255, 255, 255, 0.32);
 }
 .lightbox-action:first-child {
-  margin-left: var(--vcl-space-1);
+  margin-inline-start: var(--vcl-space-1);
 }

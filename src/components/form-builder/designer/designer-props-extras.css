@@ -95,7 +95,7 @@
   color: var(--vcl-color-text, #1e293b);
 }
 .ldp-event-toggle {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 .ldp-event-body {
   display: flex;
@@ -154,7 +154,7 @@
   gap: calc(6px * var(--vcl-scale));
 }
 .ld-code-actions {
-  margin-left: auto;
+  margin-inline-start: auto;
   display: flex;
   gap: calc(4px * var(--vcl-scale));
 }

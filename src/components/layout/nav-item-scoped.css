@@ -18,8 +18,8 @@
   line-height: 1.5;
   /* 间距：左右 margin 留白 + width 收窄，制造层次感 */
   width: calc(100% - var(--nav-ml) - var(--nav-mr));
-  margin-left: var(--nav-ml);
-  margin-right: var(--nav-mr);
+  margin-inline-start: var(--nav-ml);
+  margin-inline-end: var(--nav-mr);
   /* 上下 padding 提供呼吸感 */
   padding: var(--vcl-space-2) var(--vcl-space-3);
   /* 公式驱动：字号/透明度由 JS 计算 */

@@ -21,7 +21,7 @@
   .ct-body .ct-table {
     width: 100% !important;
     height: 50%;
-    padding-left: 0;
+    padding-inline-start: 0;
     padding-top: var(--vcl-space-2);
   }
 }
@@ -40,7 +40,7 @@
   display: flex;
   align-items: center;
   gap: var(--vcl-space-1);
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 .ct-toggle {
   display: flex;
@@ -77,7 +77,7 @@
   min-height: calc(200px * var(--vcl-scale));
   min-width: calc(180px * var(--vcl-scale));
   overflow: auto;
-  padding-left: var(--vcl-space-1);
+  padding-inline-start: var(--vcl-space-1);
 }
 .ct-footer {
   flex-shrink: 0;
@@ -96,6 +96,6 @@
 .ct-body.vertical .ct-table {
   width: 100% !important;
   height: 50%;
-  padding-left: 0;
+  padding-inline-start: 0;
   padding-top: var(--vcl-space-2);
 }

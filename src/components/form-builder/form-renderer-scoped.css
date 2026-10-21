@@ -114,7 +114,7 @@
 }
 .fb-required {
   color: var(--vcl-color-danger-on-surface);
-  margin-left: 2px;
+  margin-inline-start: 2px;
 }
 
 /* 提示文本 */

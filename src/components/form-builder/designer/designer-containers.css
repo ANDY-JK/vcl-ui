@@ -35,7 +35,7 @@
   color: var(--vcl-color-text-muted, #9ca3af);
 }
 .ldc-canvas-tip {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: var(--vcl-fs-10);
 }
 
@@ -44,7 +44,7 @@
   display: flex;
   align-items: center;
   gap: 1px;
-  margin-left: calc(8px * var(--vcl-scale));
+  margin-inline-start: calc(8px * var(--vcl-scale));
   flex-shrink: 0;
 }
 .ldc-zoom button {
@@ -290,7 +290,7 @@
   min-width: calc(16px * var(--vcl-scale));
   height: calc(14px * var(--vcl-scale));
   padding: 0 calc(4px * var(--vcl-scale));
-  margin-left: calc(4px * var(--vcl-scale));
+  margin-inline-start: calc(4px * var(--vcl-scale));
   font-size: var(--vcl-fs-9);
   font-weight: 600;
   line-height: 1;

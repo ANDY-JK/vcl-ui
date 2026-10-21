@@ -17,7 +17,7 @@
   transform: translateY(-1px);
 }
 .stat-card.highlight {
-  border-left: 3px solid var(--vcl-color-primary);
+  border-inline-start: 3px solid var(--vcl-color-primary);
 }
 .stat-icon {
   width: calc(44px * var(--vcl-scale));

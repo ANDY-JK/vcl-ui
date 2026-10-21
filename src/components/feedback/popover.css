@@ -86,30 +86,30 @@
 .flip-down .pop-arrow {
   top: calc(-5px * var(--vcl-scale));
   left: var(--vcl-arrow-offset, 50%);
-  margin-left: calc(-5px * var(--vcl-scale));
+  margin-inline-start: calc(-5px * var(--vcl-scale));
   border-top: none;
-  border-left: none;
+  border-inline-start: none;
 }
 .flip-up .pop-arrow {
   bottom: calc(-5px * var(--vcl-scale));
   left: var(--vcl-arrow-offset, 50%);
-  margin-left: calc(-5px * var(--vcl-scale));
+  margin-inline-start: calc(-5px * var(--vcl-scale));
   border-bottom: none;
-  border-right: none;
+  border-inline-end: none;
 }
 .flip-left .pop-arrow {
   right: calc(-5px * var(--vcl-scale));
   top: var(--vcl-arrow-offset, 50%);
   margin-top: calc(-5px * var(--vcl-scale));
   border-bottom: none;
-  border-left: none;
+  border-inline-start: none;
 }
 .flip-right .pop-arrow {
   left: calc(-5px * var(--vcl-scale));
   top: var(--vcl-arrow-offset, 50%);
   margin-top: calc(-5px * var(--vcl-scale));
   border-top: none;
-  border-right: none;
+  border-inline-end: none;
 }
 
 /* tooltip：纯淡入淡出，轻量快速 */

@@ -141,7 +141,7 @@
 .preset-colors {
   display: flex;
   gap: var(--vcl-space-1);
-  margin-left: auto;
+  margin-inline-start: auto;
   flex-shrink: 0;
   align-items: center;
 }

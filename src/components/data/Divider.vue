@@ -59,10 +59,10 @@ withDefaults(defineProps<Props>(), {
   width: 1px;
   height: 100%;
   min-height: calc(16px * var(--vcl-scale));
-  border-left: 1px solid var(--vcl-color-border);
+  border-inline-start: 1px solid var(--vcl-color-border);
   align-self: stretch;
 }
 .divider-v.dashed {
-  border-left-style: dashed;
+  border-inline-start-style: dashed;
 }
 </style>

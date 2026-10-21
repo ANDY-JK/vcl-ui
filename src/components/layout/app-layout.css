@@ -80,7 +80,7 @@
   min-height: calc(72px * var(--vcl-scale));
 }
 .sidebar.collapsed .vcl-collapse-btn {
-  margin-left: 0;
+  margin-inline-start: 0;
 }
 
 .vcl-logo {
@@ -108,7 +108,7 @@
   justify-content: center;
   width: calc(26px * var(--vcl-scale));
   height: calc(26px * var(--vcl-scale));
-  margin-left: auto;
+  margin-inline-start: auto;
   padding: 0;
   border: none;
   border-radius: var(--vcl-radius-sm);
@@ -173,7 +173,7 @@
   justify-content: center;
   width: calc(28px * var(--vcl-scale));
   height: calc(28px * var(--vcl-scale));
-  margin-right: var(--vcl-space-1);
+  margin-inline-end: var(--vcl-space-1);
   border: none;
   border-radius: var(--vcl-radius-sm);
   background: transparent;
@@ -191,7 +191,7 @@
   font-size: var(--vcl-ctrl-font-size);
   color: var(--vcl-color-primary-on-surface);
   /* axe 达标增益：原 0.7 洗白令合成对比 3.84 跌破 AA，去 opacity 直接用令牌色 */
-  margin-right: var(--vcl-space-1);
+  margin-inline-end: var(--vcl-space-1);
 }
 .vcl-topbar-category {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
@@ -501,8 +501,8 @@
   min-height: 0;
   overflow-y: auto;
   background: var(--vcl-color-surface);
-  border-left: 1px solid var(--vcl-color-border-light);
-  border-right: 1px solid var(--vcl-color-border-light);
+  border-inline-start: 1px solid var(--vcl-color-border-light);
+  border-inline-end: 1px solid var(--vcl-color-border-light);
   scrollbar-width: none;
 }
 .content-body::-webkit-scrollbar {

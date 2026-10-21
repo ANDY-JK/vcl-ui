@@ -40,7 +40,7 @@
   line-height: 1.5;
 }
 .ldc-meta-badge {
-  margin-left: auto;
+  margin-inline-start: auto;
   display: flex;
   align-items: center;
   gap: calc(6px * var(--vcl-scale));
@@ -353,7 +353,7 @@
   font-size: var(--vcl-fs-12);
 }
 .ldc-page-info {
-  margin-left: calc(8px * var(--vcl-scale));
+  margin-inline-start: calc(8px * var(--vcl-scale));
   font-size: var(--vcl-fs-11);
   color: var(--vcl-color-text-muted, #94a3b8);
 }

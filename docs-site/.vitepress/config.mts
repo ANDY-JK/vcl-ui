@@ -29,6 +29,7 @@ export default defineConfig({
           { text: '国际化', link: '/guide/i18n' },
           { text: 'Web Components', link: '/guide/web-components' },
           { text: '打印 / 另存 PDF', link: '/guide/printing' },
+          { text: 'RTL（从右到左）', link: '/guide/rtl' },
         ],
       },
       {

@@ -194,7 +194,7 @@
   color: var(--vcl-color-primary-on-surface);
 }
 .ldp-group-cnt {
-  margin-left: calc(4px * var(--vcl-scale));
+  margin-inline-start: calc(4px * var(--vcl-scale));
   font-size: var(--vcl-fs-9);
   background: var(--vcl-color-bg-soft, #f1f5f9);
   padding: 1px calc(5px * var(--vcl-scale));

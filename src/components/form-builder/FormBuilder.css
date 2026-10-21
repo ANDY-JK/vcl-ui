@@ -130,7 +130,7 @@
 
 /* 步骤指示器 */
 .fb-step-indicator {
-  margin-right: auto;
+  margin-inline-end: auto;
   display: flex;
   flex-direction: column;
   gap: calc(4px * var(--vcl-scale));
@@ -167,13 +167,13 @@
   font-weight: 500;
 }
 .fb-step-title {
-  margin-left: calc(8px * var(--vcl-scale));
+  margin-inline-start: calc(8px * var(--vcl-scale));
   font-size: var(--vcl-fs-13);
   color: var(--vcl-color-text, #1e293b);
   font-weight: 500;
 }
 .fb-step-completion {
-  margin-left: calc(4px * var(--vcl-scale));
+  margin-inline-start: calc(4px * var(--vcl-scale));
   font-size: var(--vcl-fs-11);
   color: var(--vcl-color-text-muted, #94a3b8);
   font-weight: 400;

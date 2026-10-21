@@ -203,7 +203,7 @@
   flex-shrink: 0;
 }
 .ldc-card-actions {
-  margin-left: auto;
+  margin-inline-start: auto;
   display: flex;
   gap: 1px;
   opacity: 0;

@@ -162,7 +162,7 @@
   background: var(--vcl-color-text);
 }
 .trigger-wrapper .select-clear {
-  margin-right: var(--vcl-space-1);
+  margin-inline-end: var(--vcl-space-1);
 }
 
 .dropdown-panel:has(> .dp-header),

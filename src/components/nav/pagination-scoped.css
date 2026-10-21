@@ -46,7 +46,7 @@
 }
 
 .page-info {
-  margin-left: calc(12px * var(--vcl-scale));
+  margin-inline-start: calc(12px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
   color: var(--vcl-color-text-muted);
 }
@@ -54,7 +54,7 @@
 .page-jumper {
   display: flex;
   align-items: center;
-  margin-left: var(--vcl-space-1);
+  margin-inline-start: var(--vcl-space-1);
 }
 
 .jumper-input {

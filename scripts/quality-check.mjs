@@ -96,6 +96,9 @@ const STEPS = [
   // 台账/ADR 腐化（6.3 #4）：只查机械可验证项（closed 提交号真实存在、ADR 索引无死链）。
   // 放在文档类闸口末尾 —— 它最便宜（纯读文件 + git cat-file），失败时前面已经验过更重的东西。
   ['check:tech-debt', 'npm run check:tech-debt'],
+  // RTL 双向守卫（6.3 #3 / R5-A21）：代表路由 × ltr/rtl 各量一遍，
+  // 断言零横向溢出、零元素越界、方向确实生效。自起自停 dev server，不依赖外部服务。
+  ['check:rtl', 'npm run check:rtl'],
   ['test:e2e', 'npm run test:e2e'],
 ]
 

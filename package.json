@@ -69,7 +69,8 @@
     "pretest:unit": "node scripts/check-console-noise.mjs --clear",
     "gen:facts": "node scripts/gen-facts.mjs",
     "check:facts": "node scripts/check-facts.mjs",
-    "check:tech-debt": "node scripts/check-tech-debt.mjs"
+    "check:tech-debt": "node scripts/check-tech-debt.mjs",
+    "check:rtl": "node scripts/check-rtl.mjs"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",

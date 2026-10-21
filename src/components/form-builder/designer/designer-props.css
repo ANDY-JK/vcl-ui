@@ -7,7 +7,7 @@
   overflow-y: auto;
   padding: 0;
   background: var(--vcl-color-surface);
-  border-left: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  border-inline-start: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 
 /** 面板头部 */
@@ -26,7 +26,7 @@
   z-index: 1;
 }
 .ldp-props-type-badge {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: var(--vcl-fs-10);
   font-weight: 600;
   color: var(--vcl-color-primary, #3b82f6);

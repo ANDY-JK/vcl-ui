@@ -4,7 +4,7 @@
   flex-shrink: 0;
   overflow-y: auto;
   background: var(--vcl-color-bg, #fff);
-  border-right: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  border-inline-end: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
 .ldo-header {
   display: flex;
@@ -107,7 +107,7 @@
 .ldo-tree-actions {
   display: flex;
   gap: 1px;
-  margin-left: auto;
+  margin-inline-start: auto;
   opacity: 0;
   transition: opacity 0.12s;
   flex-shrink: 0;

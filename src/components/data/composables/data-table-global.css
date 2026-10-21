@@ -165,7 +165,7 @@
 }
 .dt-filter-option-count {
   flex-shrink: 0;
-  margin-left: calc(6px * var(--vcl-scale));
+  margin-inline-start: calc(6px * var(--vcl-scale));
   color: var(--vcl-color-text-muted);
   font-size: var(--vcl-fs-13);
 }

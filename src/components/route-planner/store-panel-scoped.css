@@ -124,7 +124,7 @@
 .group-batch {
   display: flex;
   gap: var(--vcl-space-0);
-  margin-left: var(--vcl-space-1);
+  margin-inline-start: var(--vcl-space-1);
 }
 
 .btn-batch {
@@ -179,7 +179,7 @@
 }
 
 .store-item.noCoord {
-  border-left: 3px solid var(--vcl-color-warning);
+  border-inline-start: 3px solid var(--vcl-color-warning);
 }
 
 .store-info {

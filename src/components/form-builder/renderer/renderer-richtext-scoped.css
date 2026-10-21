@@ -61,7 +61,7 @@
 }
 .fb-richtext-body :deep(blockquote),
 .fb-richtext-preview :deep(blockquote) {
-  border-left: 3px solid var(--vcl-color-border, #e2e8f0);
+  border-inline-start: 3px solid var(--vcl-color-border, #e2e8f0);
   margin: calc(8px * var(--vcl-scale)) 0;
   padding: 2px calc(12px * var(--vcl-scale));
   color: var(--vcl-color-text-muted, #64748b);
@@ -121,7 +121,7 @@
 .fb-richtext-body :deep(ol),
 .fb-richtext-preview :deep(ul),
 .fb-richtext-preview :deep(ol) {
-  padding-left: 1.4em;
+  padding-inline-start: 1.4em;
 }
 
 /* ── 字数状态条 ── */

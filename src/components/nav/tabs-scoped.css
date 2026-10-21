@@ -71,7 +71,7 @@
   border-radius: 0 var(--vcl-radius-md) var(--vcl-radius-md) 0;
 }
 .tabs-card .tab-btn:not(:first-child) {
-  margin-left: -1.5px;
+  margin-inline-start: -1.5px;
 }
 .tabs-card .tab-btn.active {
   background: var(--vcl-color-primary-light);
