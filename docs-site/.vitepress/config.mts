@@ -30,6 +30,10 @@ export default defineConfig({
           { text: 'Web Components', link: '/guide/web-components' },
           { text: '打印 / 另存 PDF', link: '/guide/printing' },
           { text: 'RTL（从右到左）', link: '/guide/rtl' },
+          // 低代码一直是"能力齐全但没有使用指南"的状态：
+          // FormDesigner 711 行 + designer/ 12 个子模块约 2000 行，
+          // 用户只能读源码才知道怎么接。补一份从设计到数据落地的完整路径。
+          { text: '低代码（设计器 → 数据落地）', link: '/guide/lowcode' },
         ],
       },
       {

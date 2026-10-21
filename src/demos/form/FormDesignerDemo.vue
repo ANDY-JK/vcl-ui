@@ -17,7 +17,7 @@
 // ③ 设计好的表单如何渲染：用 `FormBuilder` 消费同一份 nodes
 // ④ 「存储方式」切换 UI：不注入 store 时可见（本地 / 云端），注入后隐藏
 import { computed, ref } from 'vue'
-import { FormDesigner, FormBuilder } from '@/components/form-builder'
+import { FormDesigner, FormBuilder, toFormSchema } from '@/components/form-builder'
 import type { DesignerNode, FormMeta } from '@/components/form-builder/designer/types'
 
 /** 设计节点树（设计器的产出） */
@@ -26,39 +26,27 @@ const nodes = ref<DesignerNode[]>([])
 const meta = ref<FormMeta>({ title: '未命名表单' })
 
 /**
- * 把设计器 nodes 转成 FormBuilder 能吃的 schema。
+ * 设计数据 → FormSchema。**用库自带的 `toFormSchema`，不要手写。**
  *
- * 这是接入自己业务的**关键一步**，所以在 demo 里显式写出来而不是藏起来：
- * 设计器产出的是"设计态"节点（含画布坐标、面板分组、条件显示等），
- * 渲染态只需要 fields。真实项目里这一步应该在你的后端做一次转换并存库。
+ * ## 为什么这条注释必须留着（我踩过）
  *
- * ⚠️ 注意 `DesignerNode` 是**扁平结构**（`placeholder` / `options` / `min` 直接挂节点上），
- * 不是 `{ props: {...} }` 嵌套 —— 第一版我就写错了，typecheck 当场拦住。
- * 所以这里是逐字段挑选，而不是整体透传：只传渲染需要的，丢掉画布相关的。
+ * 第一版我在这里手写了一个 `nodes.filter(n => n.key).map(...)` ——
+ * 看起来"就是把字段挑出来"，但漏掉了三件 `toFormSchema` 已经处理好的事：
+ *
+ * ① **容器结构**：手写 map 是扁平的，`card/tabs/collapse/steps` 里的字段
+ *    会全部平铺到顶层，分组和切页全丢。`toFormSchema` 递归遍历并给每个字段
+ *    带上 `container` 归属信息（`flattenWithContainer`）。
+ * ② **布局/展示节点判定**：哪些 type 是纯展示（divider/title/image/progress…）
+ *    必须走字段注册表 `isLayoutField()`，不能硬编码类型名列表 ——
+ *    硬编码的状态是"以后每新增一个展示类型就静默错一次"。
+ * ③ **缺 key 的兜底**：外部导入的 schema 可能没有 key，`toFormSchema` 会
+ *    退化用节点 id 并 `reportWarn` 出声；手写 filter 会把这些字段**直接丢掉且不提示**
+ *    （表现为"导入后字段凭空消失"）。
+ *
+ * 结论：**这层转换是库的公开能力（`@/components/form-builder` 导出），
+ * 业务侧不该自己再写一遍。**
  */
-const renderSchema = computed(() => ({
-  title: meta.value.title,
-  description: meta.value.description,
-  fields: nodes.value
-    // 容器节点（card/grid/flex/tabs/collapse/steps）没有 key，不该当字段渲染
-    .filter((n) => !!n.key)
-    .map((n) => ({
-      key: n.key!,
-      type: n.type,
-      label: n.label,
-      required: n.required,
-      placeholder: n.placeholder,
-      // options：DesignerNode 是 string[]，FormField 要 Option[]（{label, value}）
-      // 这一步转换正是"设计态 → 渲染态"的典型差异，真实项目里应在后端做
-      options: n.options?.map((o) => ({ label: o, value: o })),
-      defaultValue: n.defaultValue,
-      disabled: n.disabled,
-      readonly: n.readonly,
-      hint: n.hint,
-      span: n.span,
-    })),
-  layout: 'single' as const,
-}))
+const renderSchema = computed(() => toFormSchema(nodes.value, meta.value))
 
 /** 渲染用的表单数据 */
 const formData = ref<Record<string, unknown>>({})
