@@ -106,6 +106,12 @@ const demoMap: Record<string, any> = {
     loader: () => import('./form/FormBuilderDemo.vue'),
     errorComponent: ErrorFallback,
   }),
+  // 低代码设计器：此前 711 行组件 + ~2000 行子模块**没有任何演示入口**，
+  // 用户在 45 个路由里翻不到它。补上可发现性（2026-10-21）。
+  'form-designer': defineAsyncComponent({
+    loader: () => import('./form/FormDesignerDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
   'form-renderer': defineAsyncComponent({
     loader: () => import('./form/FormRendererDemo.vue'),
     errorComponent: ErrorFallback,
