@@ -19,6 +19,8 @@ import { join, relative } from 'node:path'
 
 const ROOT = process.cwd()
 const FACTS = join(ROOT, 'docs-site', 'guide', 'facts.md')
+/** 同一批生成物：observability.md 与 facts.md 都由 gen:facts 产出，都要防漂移 */
+const OBS = join(ROOT, 'docs-site', 'guide', 'observability.md')
 const TMP_DIR = join(ROOT, 'reports', '.facts-check')
 
 const failures = []
@@ -28,12 +30,6 @@ const warnings = []
 // 与 check:docs 同款：**生成到临时目录再比**，绝不改动已提交文件。
 // 为什么必须这样：若让生成器直接覆盖 facts.md，闸口就"自我修复"了 ——
 // 第一次跑报红、第二次跑因为文件已被改对反而绿。那它就不是闸口，是自动修复器。
-let committed = null
-try {
-  committed = readFileSync(FACTS, 'utf8')
-} catch {
-  failures.push(`找不到 ${relative(ROOT, FACTS)} —— 先跑 npm run gen:facts 生成`)
-}
 
 const tmpOut = join(TMP_DIR, 'facts.md')
 let fresh
@@ -48,15 +44,35 @@ try {
   failures.push(`gen:facts 执行失败：${e instanceof Error ? e.message : String(e)}`)
 }
 
-if (committed !== null && fresh !== undefined && committed !== fresh) {
-  const cl = committed.split('\n')
-  const fl = fresh.split('\n')
-  const firstDiff = cl.findIndex((l, i) => l !== fl[i])
-  failures.push(
-    `facts.md 与真源不一致（第 ${firstDiff + 1} 行起）—— 跑 npm run gen:facts 重新生成并提交\n` +
-      `      已提交：${(cl[firstDiff] ?? '(缺行)').slice(0, 100)}\n` +
-      `      真  源：${(fl[firstDiff] ?? '(缺行)').slice(0, 100)}`,
-  )
+// 生成器一次产出两份文件：facts.md 与 observability.md。两份都要比。
+for (const [committedPath, tmpPath, label] of [
+  [FACTS, tmpOut, 'facts.md'],
+  [OBS, join(TMP_DIR, 'observability.md'), 'observability.md'],
+]) {
+  let c
+  try {
+    c = readFileSync(committedPath, 'utf8')
+  } catch {
+    failures.push(`找不到 ${relative(ROOT, committedPath)} —— 先跑 npm run gen:facts 生成`)
+    continue
+  }
+  let f
+  try {
+    f = readFileSync(tmpPath, 'utf8')
+  } catch {
+    failures.push(`gen:facts 未产出 ${label}`)
+    continue
+  }
+  if (c !== f) {
+    const cl = c.split('\n')
+    const fl = f.split('\n')
+    const firstDiff = cl.findIndex((l, i) => l !== fl[i])
+    failures.push(
+      `${label} 与真源不一致（第 ${firstDiff + 1} 行起）—— 跑 npm run gen:facts 重新生成并提交\n` +
+        `      已提交：${(cl[firstDiff] ?? '(缺行)').slice(0, 100)}\n` +
+        `      真  源：${(fl[firstDiff] ?? '(缺行)').slice(0, 100)}`,
+    )
+  }
 }
 
 // 真源值从生成结果里读回来（不重复实现一遍计算逻辑）

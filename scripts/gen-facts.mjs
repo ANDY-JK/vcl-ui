@@ -12,7 +12,7 @@
 // ② 是这条链的关键：光有生成页没用，正文里手写的数字才是真正会对不上的地方。
 import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { generate } from './gen-docs.mjs'
 
@@ -20,7 +20,10 @@ const ROOT = process.cwd()
 // 可选输出路径（供 check:facts 生成到临时目录比对用）。
 // 不传就写回仓库里的 facts.md —— 这样闸口不会"自我修复"，
 // 否则第一次跑报红、第二次跑因为文件被改对了反而绿，等于闸口不可幂等。
-const OUT = process.argv[2] ? resolve(process.argv[2]) : join(ROOT, 'docs-site', 'guide', 'facts.md')
+const OUT_ARG = process.argv[2] ? resolve(process.argv[2]) : null
+const OUT = OUT_ARG ?? join(ROOT, 'docs-site', 'guide', 'facts.md')
+// observability.md 与 facts.md 同批产出：两者都是「从源码算出来、不许手写」的事实
+const OUT_OBS = OUT_ARG ? join(resolve(OUT_ARG), '..', 'observability.md') : join(ROOT, 'docs-site', 'guide', 'observability.md')
 
 /** 构建入口口径的域清单（package.json exports 里去掉辅助子路径） */
 function domainEntries() {
@@ -73,6 +76,39 @@ function testScale() {
     /* 没跑过整链 */
   }
   return null
+}
+
+/** 枚举全部结构化事件码（reportEvent 调用点）—— 宿主据此建告警 */
+function eventCatalog() {
+  const files = []
+  const rec = (d) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, e.name)
+      if (e.isDirectory()) rec(p)
+      else if (/\.(ts|vue)$/.test(e.name)) files.push(p)
+    }
+  }
+  rec(join(ROOT, 'src', 'components'))
+
+  const rows = []
+  for (const f of files) {
+    const text = readFileSync(f, 'utf8')
+    const lines = text.split('\n')
+    for (const [i, line] of lines.entries()) {
+      // reportEvent('code', 'message', ctx, 'level')
+      const m = line.match(/reportEvent\(\s*'([^']+)',\s*'([^']*)'(?:,\s*([^,]+))?(?:,\s*'(info|warn|error)')?/)
+      if (!m) continue
+      rows.push({
+        code: m[1],
+        message: m[2],
+        level: m[4] ?? 'warn',
+        context: m[3] && m[3] !== 'undefined' ? m[3].trim() : '',
+        at: `${relative(ROOT, f).replaceAll('\\', '/')}:${i + 1}`,
+      })
+    }
+  }
+  rows.sort((a, b) => a.code.localeCompare(b.code))
+  return rows
 }
 
 async function main() {
@@ -165,9 +201,81 @@ async function main() {
   )
 
   writeFileSync(OUT, lines.join('\n'), 'utf8')
+
+  // ── observability.md：宿主可用的可观测信号清单 ──
+  const events = eventCatalog()
+  const byLevel = (lv) => events.filter((e) => e.level === lv).length
+  const obs = [
+    '---',
+    'title: 可观测信号清单（自动生成）',
+    '---',
+    '',
+    '# 可观测信号清单',
+    '',
+    '> ⚠️ **本页由 `npm run gen:facts` 从源码生成，请勿手改。** 漂移会被 `check:facts` 拦下。',
+    '',
+    '宿主把库内的警告/错误/事件接进自己的监控（埋点、Sentry、告警平台）只需两步：',
+    '',
+    '```ts',
+    "import { setRuntimeObserver } from 'vcl-ui/_internal/runtime-observer'",
+    '',
+    'setRuntimeObserver({',
+    '  event: (e) => {',
+    '    // e.code 是稳定事件码，按它建告警规则；不要用 message（可能本地化）',
+    '    myTelemetry.track(e.code, { level: e.level, ...e.context })',
+    '  },',
+    '  warn: (...args) => myLogger.warn(...args),',
+    '  error: (...args) => myLogger.error(...args),',
+    '})',
+    '```',
+    '',
+    '## 路由规则（只投一次，不重复上报）',
+    '',
+    '1. 宿主实现了 `event` → **只投** `event`（结构化管道，宿主自己决定要不要再落文本日志）',
+    '2. 否则退到 `warn` / `error`（只接了文本管道的宿主也能收到，不丢信息）',
+    '3. 再退到 `console`（未注入 observer 时行为与迁移前逐字一致）',
+    '',
+    '**宿主管道抛异常不会打断组件数据流**：报一次并降级 console（故障可见，不静默吞）。',
+    '',
+    '## 事件码清单',
+    '',
+    `共 **${events.length}** 个事件码（error ${byLevel('error')} / warn ${byLevel('warn')} / info ${byLevel('info')}）。`,
+    '',
+    '| 事件码 | 级别 | 触发场景 | context 字段 | 代码位置 |',
+    '| --- | --- | --- | --- | --- |',
+    ...events.map(
+      (e) =>
+        `| \`${e.code}\` | ${e.level} | ${e.message.replaceAll('|', '\\|')} | ${e.context ? `\`${e.context.replaceAll('|', '\\|')}\`` : '—'} | \`${e.at}\` |`,
+    ),
+    '',
+    '## 该按哪些码建告警',
+    '',
+    '**必须告警（error 级）**——用户直接看不到东西：',
+    '',
+    ...events
+      .filter((e) => e.level === 'error')
+      .map((e) => `- \`${e.code}\` —— ${e.message.replace(/^\[[^\]]+\]\s*/, '')}`),
+    '',
+    '**建议聚合观察（warn 级）**——功能降级但仍可用，按小时聚合看趋势：',
+    '',
+    ...events
+      .filter((e) => e.level === 'warn')
+      .map((e) => `- \`${e.code}\` —— ${e.message.replace(/^\[[^\]]+\]\s*/, '')}`),
+    '',
+    '## 边界（如实声明）',
+    '',
+    '- 这里只列**结构化事件**。库内还有大量 `reportWarn` 自由文本（如墓碑清理、对象名校验），',
+    '  它们只能"存下来给人看"，**没有稳定码**，不适合建告警规则。',
+    `- 当前事件覆盖集中在 4 个域（${[...new Set(events.map((e) => e.code.split('/')[0]))].join(' / ')}）；`,
+    '  其余域的失败路径仍是自由文本。新增失败路径时优先用 `reportEvent`。',
+    '- 事件**不含任何用户数据字段值**（只带 key/id/错误串），避免把 PII 送进监控系统。',
+    '',
+  ]
+  writeFileSync(OUT_OBS, obs.join('\n'), 'utf8')
+
   console.log(
     `[gen:facts] 域 ${domains.length} / 组件 ${manifest.totalComponents} / 命名导出 ${manifest.totalNamed} / ` +
-      `zh-CN 键 ${keys['zh-CN'].keys} / 整链 ${steps.count} 步 → ${OUT.replace(ROOT, '.')}`,
+      `zh-CN 键 ${keys['zh-CN'].keys} / 整链 ${steps.count} 步 / 事件码 ${events.length} → ${relative(ROOT, OUT)}`,
   )
 }
 

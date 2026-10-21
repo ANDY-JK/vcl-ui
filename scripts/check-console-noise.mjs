@@ -96,6 +96,21 @@ const sorted = [...totals.entries()].sort((a, b) => b[1] - a[1])
 console.log(`\n▶ 未静默噪音汇总：${sorted.length} 类 / ${sorted.reduce((a, [, v]) => a + v, 0)} 次`)
 for (const [k, v] of sorted) console.log(`   ×${String(v).padStart(4)}  ${k}`)
 
+// ── 2b. 空采集守卫（2026-10-21 补）──
+//
+// 为什么：`--no-run` 模式下若 spool 是空的（上一次检查成功后会清空、或手动先跑了 check 再跑），
+// 本闸口会看到 0 类并**静默通过** —— 那不是"没有噪音"，那是"没有采集"。
+// 「闸口在没数据时判绿」这件事本轮已经栽过一次（verify-pkg 的 walk 只看到 9% 文件），
+// 所以这里显式把空采集判红，并给出正确操作顺序。
+if (sorted.length === 0) {
+  console.error('')
+  console.error('❌ 采集到 0 类噪音 —— 这几乎一定是"没采集上"，而不是"真的没有噪音"。')
+  console.error('   本库实测稳定有 20+ 类测试环境噪音，0 类只可能是 spool 为空。')
+  console.error('   正确顺序：npm run test:unit（写入 spool）→ npm run check:console-noise --no-run')
+  console.error('   或直接：npm run check:console-noise（它会自己跑一遍单测再汇总）')
+  process.exit(1)
+}
+
 // ── 3. 写基线 or 比对 ──
 const noise = Object.fromEntries([...totals.entries()].sort((a, b) => a[0].localeCompare(b[0])))
 

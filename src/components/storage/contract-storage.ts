@@ -1,4 +1,4 @@
-import { reportWarn } from '@/components/_internal/runtime-observer'
+import { reportEvent, reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * 合同收集存储适配层
  *
@@ -133,7 +133,7 @@ export class IndexedDBBackend implements StorageBackend {
         }
       }
     } catch (e) {
-      reportWarn('[contract-storage] IndexedDB 加载失败:', e)
+      reportEvent('storage/load-failed', '[contract-storage] IndexedDB 加载失败:', { error: String(e) }, 'warn')
     }
     return map
   }
@@ -148,7 +148,12 @@ export class IndexedDBBackend implements StorageBackend {
         appleId,
       })
     } catch (e) {
-      reportWarn('[contract-storage] IndexedDB 保存失败:', appleId, e)
+      reportEvent(
+        'storage/save-failed',
+        '[contract-storage] IndexedDB 保存失败:',
+        { appleId, error: String(e) },
+        'error',
+      )
     }
   }
 
@@ -156,7 +161,7 @@ export class IndexedDBBackend implements StorageBackend {
     try {
       await dbClear(STORE_NAME)
     } catch (e) {
-      reportWarn('[contract-storage] IndexedDB 清空失败:', e)
+      reportEvent('storage/clear-failed', '[contract-storage] IndexedDB 清空失败:', { error: String(e) }, 'warn')
     }
   }
 }
@@ -379,7 +384,12 @@ export class ObjectCloudBackend implements StorageBackend {
         await this.tr.deleteObjectWithRetry(obj.name)
       } catch (e) {
         failed.push(obj.name)
-        reportWarn('[contract-storage] 云端删除失败:', obj.name, e)
+        reportEvent(
+          'storage/cloud-delete-failed',
+          '[contract-storage] 云端删除失败:',
+          { name: obj.name, error: String(e) },
+          'warn',
+        )
       }
     }
     if (failed.length) throw new Error(t('storage.clearPartialFail', { n: failed.length }))
@@ -486,7 +496,12 @@ export class CompositeBackend implements StorageBackend {
     try {
       cloudMap = await this.cloud.loadAll(slotKeys)
     } catch (e) {
-      reportWarn('[contract-storage] 云端对账失败，仅恢复本地:', e)
+      reportEvent(
+        'storage/reconcile-failed',
+        '[contract-storage] 云端对账失败，仅恢复本地:',
+        { error: String(e) },
+        'warn',
+      )
       return localMap
     }
     // 同步云端墓碑集合（appleId → 删除时间戳），决定对账时哪些门店「已删除」

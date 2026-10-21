@@ -1,4 +1,4 @@
-import { reportWarn } from '@/components/_internal/runtime-observer'
+import { reportEvent } from '@/components/_internal/runtime-observer'
 /**
  * amap-key.ts — 高德 API Key 统一管理（唯一真相源）
  *
@@ -82,7 +82,12 @@ export function setAmapKeys(keys: { jsKey?: string; restKey?: string; securityCo
 export function getAmapJsKey(): string {
   const key = getKeys().jsKey
   if (!key && !_warned) {
-    reportWarn('[amap] 未设置高德 JS API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY')
+    reportEvent(
+      'amap/js-key-missing',
+      '[amap] 未设置高德 JS API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY',
+      undefined,
+      'error',
+    )
     _warned = true
   }
   return key
@@ -92,7 +97,12 @@ export function getAmapJsKey(): string {
 export function getAmapRestKey(): string {
   const key = getKeys().restKey
   if (!key && !_warned) {
-    reportWarn('[amap] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY')
+    reportEvent(
+      'amap/rest-key-missing',
+      '[amap] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY',
+      undefined,
+      'error',
+    )
     _warned = true
   }
   return key

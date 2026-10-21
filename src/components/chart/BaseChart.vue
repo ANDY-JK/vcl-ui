@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reportWarn } from '@/components/_internal/runtime-observer'
+import { reportEvent } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 图表基础组件，禁止：clamp() → px，canvas resize 逻辑，ECharts dispose
 //    需我确认：loading/error slot、主题配置、toolbar 默认按钮
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
@@ -209,7 +209,7 @@ function ensureInstance() {
   try {
     chartInstance = init(el, theme)
   } catch (e) {
-    reportWarn('[BaseChart] ECharts 初始化失败:', e)
+    reportEvent('chart/init-failed', '[BaseChart] ECharts 初始化失败:', { error: String(e) }, 'error')
     return
   }
   if (!chartInstance) return
@@ -233,7 +233,7 @@ function ensureInstance() {
           }
         }
       } else {
-        reportWarn('[BaseChart] setOption 失败:', e)
+        reportEvent('chart/set-option-failed', '[BaseChart] setOption 失败:', { error: String(e) }, 'error')
       }
     }
   }

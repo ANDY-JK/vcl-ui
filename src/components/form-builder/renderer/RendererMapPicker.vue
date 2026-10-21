@@ -17,7 +17,7 @@ import { computed, ref } from 'vue'
 import AmapWidget from '@/components/amap/AmapWidget.vue'
 import { reverseGeocode } from '@/components/amap/amap-service'
 import { useT } from '@/components/_internal/i18n'
-import { reportWarn } from '@/components/_internal/runtime-observer'
+import { reportEvent } from '@/components/_internal/runtime-observer'
 import type { FormField } from '../types'
 
 const t = useT()
@@ -88,7 +88,12 @@ async function onMapClick(lng: number, lat: number): Promise<void> {
     addressText.value = geo.formatted
     emit('update:formDataField', { key: addressFieldKey.value, value: geo.formatted })
   } catch (err) {
-    reportWarn('[map-picker] 反向地理编码失败，已忽略（坐标不受影响）:', err)
+    reportEvent(
+      'form-builder/geocode-failed',
+      '[map-picker] 反向地理编码失败，已忽略（坐标不受影响）:',
+      { error: String(err) },
+      'warn',
+    )
   }
 }
 

@@ -46,6 +46,11 @@ const [
 
 const results = []
 /**
+ * 本次运行的算力校准值（ms）。**在所有场景之前测一次**，
+ * 这样它反映的是"开跑时这台机器的状态"，与后续场景同处一个环境窗口。
+ */
+const calibration = measureCalibration()
+/**
  * 每个场景记录 mean / **median** / min。
  *
  * 为什么同时记 median：`mean` 会被偶发的长尾（一次 GC、一次调度抢占）拉高，
@@ -53,6 +58,46 @@ const results = []
  * 情况下，`mean` 相差可达 2–3 倍，而 `median` 稳定得多。
  * 判定回归用 median，`--json` 两个都存（便于人工判断分布形状）。
  */
+/**
+ * 校准探针（2026-10-21 加，第 5 轮迭代）。
+ *
+ * 为什么需要：本仓的性能闸口已经调过 4 轮阈值（1.3 → 1.6 → 2.2 + median + 可守护门槛 + 二次确认），
+ * 但仍然会假阳性。本轮实测到决定性证据 —— **同一份代码、连续 6 次、空闲状态**：
+ *
+ *   拼音 裸转换路径：×2.70 / ×2.29 / ×2.75 / ×2.08 / ×1.87 / ×1.11
+ *
+ * 单调回落，最大 2.6 倍差距。这不是代码回归，是**机器状态**（降频/后台负载/GC 节奏）。
+ * 在这种状态下继续调阈值只会把真回归一起放过 —— 阈值调到 3 就没意义了。
+ *
+ * 正确做法：**先判断"这台机器现在能不能测"**。用一个纯算术负载（不碰库代码、
+ * 无内存分配、不受 JIT 类型反馈影响）测出当前算力，与基线记录的算力比：
+ *   · 偏差 ≤ CALIBRATION_TOLERANCE → 环境健康，正常判回归
+ *   · 偏差过大 → 明确标注「环境不健康，本次不判回归」，退出码 0 但**打印醒目警告**
+ *
+ * 这是**诚实的降级**，不是放过：报告里能看出"这次没测准"，而不是假装测准了。
+ */
+const CALIBRATION_TOLERANCE = 1.6
+function calibrationProbe() {
+  // 纯算术：1000 万次整数运算 + 一次字符串拼接。故意不用 Date/数组，
+  // 避免被 GC 或分配器状态干扰 —— 我们只想量 CPU 当前跑得多快。
+  let acc = 0
+  for (let i = 0; i < 10_000_000; i++) {
+    acc = (acc + i) % 1_000_003
+  }
+  return acc
+}
+
+function measureCalibration() {
+  // 3 次取最优：最优值最接近"无干扰真实算力"
+  let best = Infinity
+  for (let i = 0; i < 3; i++) {
+    const t0 = performance.now()
+    calibrationProbe()
+    best = Math.min(best, performance.now() - t0)
+  }
+  return best
+}
+
 function bench(name, fn, { iterations = 10, warmup = 3 } = {}) {
   for (let i = 0; i < warmup; i++) fn()
   const times = []
@@ -282,6 +327,8 @@ if (jsonOnly) {
       {
         // 记 node 版本：不同 Node 的 JIT 表现差异足以解释 20% 的漂移
         node: process.version,
+        // 算力校准值（纯算术探针，ms）：写进基线后可用于判断「这次测量环境是否可比」
+        calibrationMs: Number(calibration.toFixed(3)),
         scenarios: results.map((r) => ({
           name: r.name,
           mean: Number(r.mean.toFixed(4)),
@@ -329,6 +376,33 @@ if (checkMode) {
   /** 第一轮判为回归的场景名 —— 需要重测确认 */
   const suspects = new Set()
 
+  // ── 环境健康门（先于任何回归判定）──
+  //
+  // 基线里有 calibrationMs 才能比。没有（旧基线）就跳过此门，只提示。
+  // 判定：本次算力比基线慢超过 CALIBRATION_TOLERANCE 倍 → 这台机器现在不可比。
+  const baseCal = typeof baseline.calibrationMs === 'number' ? baseline.calibrationMs : null
+  let envUnhealthy = false
+  if (baseCal) {
+    const ratio = calibration / baseCal
+    if (ratio > CALIBRATION_TOLERANCE) {
+      envUnhealthy = true
+      console.log(
+        `\n⚠ 环境不健康：算力校准 ${calibration.toFixed(1)}ms vs 基线 ${baseCal.toFixed(1)}ms（慢 ×${ratio.toFixed(2)}）`,
+      )
+      console.log(
+        `   判定：本次**不判性能回归**（阈值 ×${CALIBRATION_TOLERANCE}）。` +
+          `机器当前比基线时慢 ${((ratio - 1) * 100).toFixed(0)}%，任何场景都会"看起来变慢"。`,
+      )
+      console.log('   这不是放过回归，是承认测不准 —— 想真验证请找一台空闲机器或稍后重跑。')
+    } else {
+      console.log(
+        `\n✓ 环境健康：算力校准 ${calibration.toFixed(1)}ms vs 基线 ${baseCal.toFixed(1)}ms（×${ratio.toFixed(2)}，阈值 ×${CALIBRATION_TOLERANCE}）`,
+      )
+    }
+  } else {
+    console.log('\nℹ 基线无 calibrationMs（旧基线），跳过环境健康门。重生成基线即可启用。')
+  }
+
   for (const r of results) {
     const b = baseByName.get(r.name)
     if (!b) {
@@ -351,6 +425,12 @@ if (checkMode) {
       // 比值超了但绝对差太小：不判失败，但要说出来，免得"为什么它没红"变成谜
       noisy.push({ name: r.name, base, now, ratio: now / base })
     }
+  }
+
+  // 环境不健康 → 所有"回归"都不可信，一律不判（前面已打印醒目警告说明原因）
+  if (envUnhealthy) {
+    regressions.length = 0
+    suspects.clear()
   }
 
   /**
@@ -433,8 +513,17 @@ if (checkMode) {
     const b = baseByName.get(r.name)
     return b && (b.median ?? b.mean) >= MEASURABLE_MS
   }).length - regressions.length - noisy.length
-  console.log(
-    `\n✅ bench --check 通过 — ${compared} 个场景在守护范围内（基线 ×${RATCHET} 以内），` +
-      `${tooSmall.length} 个因基线过小仅报告不守护（基线 Node ${baseline.node ?? '未知'}）`,
-  )
+  // 措辞必须区分「真的没回归」与「这次没测准」——
+  // 两者都 exit 0，但结论强度完全不同，不能让读日志的人混淆。
+  if (envUnhealthy) {
+    console.log(
+      `\n⚠ bench --check **未判定**（环境不健康）— ${results.length} 个场景的耗时数据已采集，` +
+        `但机器算力与基线不可比，故**不做回归判定**。这不是"通过"。`,
+    )
+  } else {
+    console.log(
+      `\n✅ bench --check 通过 — ${compared} 个场景在守护范围内（基线 ×${RATCHET} 以内），` +
+        `${tooSmall.length} 个因基线过小仅报告不守护（基线 Node ${baseline.node ?? '未知'}）`,
+    )
+  }
 }

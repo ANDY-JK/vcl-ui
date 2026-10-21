@@ -1,4 +1,4 @@
-import { reportWarn } from '@/components/_internal/runtime-observer'
+import { reportEvent, reportWarn } from '@/components/_internal/runtime-observer'
 /**
  * amap-service.ts — 高德地图 REST API 统一服务层
  *
@@ -196,7 +196,7 @@ export async function keywordSearch(
     const [longitude, latitude] = location.split(',')
     return { latitude: parseFloat(latitude), longitude: parseFloat(longitude) }
   } catch {
-    reportWarn('[amap] 关键词搜索失败:', keywords, city ? `城市: ${city}` : '')
+    reportEvent('amap/keyword-search-failed', '[amap] 关键词搜索失败:', { keywords, city }, 'warn')
     return { latitude: null, longitude: null }
   }
 }
@@ -260,7 +260,7 @@ async function searchNearbyPage(
       : `https://restapi.amap.com/v5/place/around?${base}`
     return await parseAroundResp(await safeFetch(url))
   } catch {
-    reportWarn('[amap] 周边搜索失败')
+    reportEvent('amap/nearby-search-failed', '[amap] 周边搜索失败', undefined, 'warn')
     return []
   }
 }

@@ -104,7 +104,8 @@ describe('IndexedDBBackend', () => {
     const warnSpy = vi.mocked(console.warn)
     const empty = await backend.loadAll()
     expect(empty.size).toBe(0)
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('IndexedDB 加载失败'), expect.any(Error))
+    // 结构化事件化后第 2 参是 { error } context（可序列化），不再是 Error 实例
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('IndexedDB 加载失败'), expect.anything())
   })
 
   it('saveRecord：dbPut 键=String(appleId)、value 含 appleId 冗余；contract 镜像只在有值时保留', async () => {
@@ -118,11 +119,11 @@ describe('IndexedDBBackend', () => {
     })
 
     vi.mocked(dbPut).mockRejectedValue(new Error('quota'))
-    await backend.saveRecord(7, { slots: {}, ts: 9 }) // 失败只 warn 不抛
-    expect(vi.mocked(console.warn)).toHaveBeenCalledWith(
+    await backend.saveRecord(7, { slots: {}, ts: 9 }) // 失败只上报不抛
+    // 保存失败=数据丢失风险，2026-10-21 起按 **error** 级上报（走 console.error 而非 warn）
+    expect(vi.mocked(console.error)).toHaveBeenCalledWith(
       expect.stringContaining('IndexedDB 保存失败'),
-      7,
-      expect.any(Error),
+      expect.anything(),
     )
   })
 
@@ -131,7 +132,7 @@ describe('IndexedDBBackend', () => {
     await expect(new IndexedDBBackend().clearAll()).resolves.toBeUndefined()
     expect(vi.mocked(console.warn)).toHaveBeenCalledWith(
       expect.stringContaining('IndexedDB 清空失败'),
-      expect.any(Error),
+      expect.anything(),
     )
   })
 })
@@ -278,7 +279,8 @@ describe('ObjectCloudBackend', () => {
     tr.failDelete = ['1-a.png']
     const warnSpy = vi.mocked(console.warn)
     await expect(backend.clearAll()).rejects.toThrow()
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('云端删除失败'), '1-a.png', expect.any(Error))
+    // 结构化事件化后：第 2 参是可序列化 context（含 name + error），不再是 name 与 Error 两个裸参
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('云端删除失败'), expect.anything())
     expect(tr.deletes).toEqual(['1-a.png', '2-b.png']) // 失败的也记录，不中断后续
   })
 })
