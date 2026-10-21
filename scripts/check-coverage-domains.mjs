@@ -24,7 +24,13 @@ const FLOORS = {
   data: [64, 50, 63], // 2026-09-25 四批抬升：①useTableColumns 20+useTableTooltip 11 ②cell-clipboard 18+cell-keyboard 19+canvas-screenshot 5 ③filter/extras 补测 25（跨列计数/render 异常/四向排序/externalFilters 同步/CSV 公式注入/Excel 惰性导出/右键菜单/全局事件）；实测 67.6/53.9/66.0；DataTable 主文件交互细节仍靠 e2e
   'form-builder': [55, 46, 48],
   layout: [61, 38, 52],
-  storage: [64, 54, 50], // 2026-09-25 抬升：contract-storage 补测 18 条（纯 helper/IndexedDBBackend mock/假 transport 直测 ObjectCloudBackend 对象名解析+墓碑+上传删除/工厂路由+env 默认），51.9/35.6/46.4 → 67.7/57.1/53.6；indexedDB.ts 仍环境死角（happy-dom 无 IDB）靠 e2e
+  // 2026-09-25 抬升：contract-storage 补测 18 条（纯 helper/IndexedDBBackend mock/假 transport 直测 ObjectCloudBackend 对象名解析+墓碑+上传删除/工厂路由+env 默认），51.9/35.6/46.4 → 67.7/57.1/53.6；indexedDB.ts 仍环境死角（happy-dom 无 IDB）靠 e2e
+  // 2026-10-21 再抬：unified 门面 18 条（**同步 API / remove 三级全删 / has 降级顺序 / onChange 解包**
+  //   此前全未测）。实测 68.3/55.8/52.8 → 70.9/58.9/56.3，地板抬到 68/56/53（留 2-3 点）。
+  //   五个负向对照全部生效（不删云端 / 云端失败冒泡 / 不解包 StoreItem / IDB 故障不降级 / setSync 走自动路由）。
+  //   ⚠️ indexedDB.ts 仍是最大死角（函数 12/65），但 happy-dom 无真实 IDB，只能靠 mock 打桩；
+  //      打桩测的是"门面逻辑"而非"IDB 真行为"，价值有限，暂不硬凑。
+  storage: [68, 56, 53],
   // 2026-10-21 抬升：AmapWidget 组件级 18 条（**此前 265 行组件从未被挂载过**，仓里唯一的 widget
   //   测试是读源码锁 setContent 消毒）。补：ensureInit 取 key、ready/getMap、插件挂载两态、
   //   marker 增删（含"先 remove 旧的再 add"）、marker/map-click 回传、infoWindow 消毒与开关、
@@ -63,6 +69,57 @@ if (!fs.existsSync(REPORT)) {
 }
 
 const j = JSON.parse(fs.readFileSync(REPORT, 'utf8'))
+
+// ── 数据完整性守卫（2026-10-21 加）───────────────────────────────────────────
+//
+// ## 为什么必须加
+//
+// `npx vitest run <单个spec> --coverage` 会**静默覆盖** coverage-final.json。
+// 此时跑本脚本会大面积误报：实测只跑一个 11 用例的 spec 后，
+// login 分支掉到 0.0%、shared 语句掉到 0.0%，8 个域同时"低于地板" —— 全是假的。
+//
+// 更糟的是反过来：想"验证覆盖率有没有提升"时跑几个 spec 带 --coverage，
+// 看到数字变好就以为改进了，**其实那是只统计了部分文件的口径**。
+// 这个坑补 route-planner 时真的踩了（当时看到的"提升"来自 2 个 spec，
+// 而真实提升要靠全量跑才能确认）。
+//
+// ## 为什么不用「文件数」做判据（试过，不可行）
+//
+// 第一版想用「coverage 里的文件数 ≥ 200」判断完整性。
+// **实测证伪**：vitest 的 v8 provider 会把所有被 import 过的模块都写进报告，
+// 未测到的记 0 —— 单独跑 11 个用例的 spec 也产出 **346 个文件**，
+// 与全量跑的 346 个**完全相同**。文件数分不出完整与残缺。
+//
+// ## 改用「全量跑的标记文件」
+//
+// `npm run test:unit` 结束时写 `reports/coverage/.full-run`（内容为时间戳）。
+// 本脚本要求该标记存在，且**不比 coverage-final.json 旧**
+// （若有人先全量跑、再单 spec 带 --coverage，coverage 会变新而标记不变旧 → 立刻抓出）。
+const FULL_RUN_MARKER = path.join(path.dirname(REPORT), '.full-run')
+
+if (!fs.existsSync(FULL_RUN_MARKER)) {
+  console.error(
+    '❌ 覆盖数据来源不明：找不到全量跑的标记 reports/coverage/.full-run。\n' +
+      '   单跑 `vitest run <spec> --coverage` 也会产出 coverage-final.json，\n' +
+      '   但只统计了部分文件——在它上面做按域地板检查会大面积误报。\n' +
+      '   请先跑 `npm run test:unit`（它会写这个标记）。',
+  )
+  process.exit(1)
+}
+
+const markerTime = fs.statSync(FULL_RUN_MARKER).mtimeMs
+const reportTime = fs.statSync(REPORT).mtimeMs
+if (reportTime > markerTime) {
+  console.error(
+    '❌ 覆盖数据比全量标记更新 —— 说明在全量跑之后又单跑了某个 spec 带 --coverage，\n' +
+      '   当前 coverage-final.json 只反映最后那次的部分统计，不是全量口径。\n' +
+      `   coverage-final.json: ${new Date(reportTime).toISOString()}\n` +
+      `   .full-run 标记:       ${new Date(markerTime).toISOString()}\n` +
+      '   请重新跑 `npm run test:unit`。',
+  )
+  process.exit(1)
+}
+
 const agg = {}
 for (const [file, cov] of Object.entries(j)) {
   const f = file.replaceAll('\\', '/')

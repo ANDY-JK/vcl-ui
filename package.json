@@ -27,7 +27,7 @@
     "format": "prettier --write \"src/**/*.{ts,vue,css}\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:unit": "vitest run --coverage",
+    "test:unit": "vitest run --coverage && node scripts/mark-coverage-full-run.mjs",
     "bench": "node scripts/bench.mjs",
     "quality-check": "node scripts/quality-check.mjs",
     "prepare": "husky",

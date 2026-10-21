@@ -92,6 +92,17 @@ const STEPS = [
   ['check:doc-completeness', 'npm run check:doc-completeness'],
   // 口径单一真源（6.2 #8）：事实页漂移 + 正文手写数字与真源冲突，两件都拦。
   // 放在文档类闸口之后：它依赖 docs-site/guide/facts.md，且比上面两个更"语义"。
+  //
+  // ⚠️ 2026-10-21 加 `gen:facts` 前置（此前只有 check:facts，是个设计缺陷）：
+  //    `gen-facts.mjs` 从 **reports/quality-check-logs/15-test-unit.log** 里读
+  //    「单测文件数 / 用例数」—— 那是第 15 步刚写的，所以整链里数字天然最新。
+  //    但**人手动跑 check:facts 时读的是上一轮的旧日志**，
+  //    于是出现"我刚 gen 过怎么还红"的反复（本次会话连续踩了 3 轮，
+  //    每轮都是手动补一次 gen 然后提心吊胆地看能不能过）。
+  //    修法：整链里跑 check 之前先 gen 一次，把真源刷新到本轮实测值；
+  //    若 gen 后仍不一致（比如有人手改 facts.md 或正文写了错数字），
+  //    check 才会红 —— 那才是它真正该拦的东西。
+  ['gen:facts', 'npm run gen:facts'],
   ['check:facts', 'npm run check:facts'],
   // 台账/ADR 腐化（6.3 #4）：只查机械可验证项（closed 提交号真实存在、ADR 索引无死链）。
   // 放在文档类闸口末尾 —— 它最便宜（纯读文件 + git cat-file），失败时前面已经验过更重的东西。
