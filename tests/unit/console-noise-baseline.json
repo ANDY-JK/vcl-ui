@@ -9,6 +9,7 @@
     "[…/…] 分享码无效或已损坏": 3,
     "[组件库][…] morphicons 图标未收录: …，已渲染兜底图": 1,
     "[组件库][IconSvg] lucide 图标未收录: （…），已渲染兜底图": 2,
+    "[BaseChart] ECharts 初始化失败: init boom": 1,
     "[Chart] 未知图表类型 \"…\"，回退为柱状图": 1,
     "[FormBuilder] 草稿加载失败，尝试清除: fd_share_… IndexedDB 不可用": 10,
     "[FormBuilder] 草稿加载失败，尝试清除: fd_share_…!! IndexedDB 不可用": 1,
