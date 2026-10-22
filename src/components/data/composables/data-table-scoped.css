@@ -1047,7 +1047,10 @@ td.cell-has-options:hover .cell-options-arrow {
 /* 截断长文本展开图标 */
 .cell-expand-icon {
   position: absolute;
-  right: 2px;
+  /* 2026-10-22 RTL 修：物理 `right` → 逻辑 `inset-inline-end`。
+     实测 RTL 下仍贴右（LTR=0.91 / RTL=0.91 未镜像），
+     而该图标是「单元格内容末尾的展开提示」，应跟随阅读方向到末尾侧。 */
+  inset-inline-end: 2px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;

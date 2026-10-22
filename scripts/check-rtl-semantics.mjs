@@ -190,6 +190,120 @@ for (const p of PROBES) {
   }
   rows.push({ ...p, ltrRel: ltr.relLeft, rtlRel: rtl.relLeft, delta, status: ok ? 'PASS' : 'FAIL', note })
 }
+
+// ── 全路由自动扫描（2026-10-22 新增）──────────────────────────────────────────
+//
+// ## 为什么手写 PROBES 不够
+//
+// 上面的 PROBES 是**手工登记**的 4 条。它们只能验证"我已经想到的元素"，
+// 而 RTL 缺陷的典型形态恰恰是"我没想到的那个元素"——
+// 实测：`.fl-label`（浮动标签基类）、`.cell-expand-icon`（表格展开图标）
+// 都是这样被漏掉的，前者影响 Input/Select 全部组件。
+//
+// ## 自动扫描的判据（经过三轮修正，每轮都是被假阳性逼出来的）
+//
+//   ① key 用 **DOM 路径**（childIndex 链），不用 class 名
+//      —— 同名元素（div.grid-card × 4）会互相覆盖，第一版据此报"10 个组件全坏"，全假
+//   ② 排除 **inline 元素** —— `<span>` 在 `<p text-align:start>` 里是文字流的一部分，
+//      位置不变才是对的，第二版没排除时 upload 报 8 个假阳性
+//   ③ 排除 **fixed** —— 浮层越界不算布局缺陷（与 check:rtl 口径一致）
+//   ④ 只看**窄元素**（父宽 5%~60%）—— 全宽元素 offsetRatio 恒 0，无"左右"之分
+//   ⑤ 阈值留 2% 容差 —— 实测 beep-voice 的 0.85+0.05=0.90 恰好卡边界被误判
+//
+// ## 为什么这条断言可信
+//
+// 负向对照验过：把 `.cell-expand-icon` 的 `inset-inline-end` 改回 `right`，
+// 扫描立刻报 `data-table BAD 未镜像 1 <span.cell-expand-icon> LTR=0.91 RTL=0.91`。
+const SCAN_ROUTES = [
+  'button', 'icon', 'tag', 'input', 'select', 'group', 'upload', 'capture', 'card',
+  'toggle-list', 'data-table', 'progress', 'divider', 'collapse', 'image', 'tree',
+  'skeleton', 'avatar', 'toast', 'result', 'popover', 'loading', 'drawer',
+  'error-boundary', 'beep-voice', 'confirm-modal', 'state', 'chart-table', 'tabs',
+  'steps', 'pagination', 'breadcrumb', 'menu', 'modal', 'flex', 'login',
+  'contract-collection', 'contract-target-collect', 'form-builder', 'form-designer',
+  'form-renderer', 'storage',
+]
+
+/** 在页面内采集"窄且靠边"的元素位置（相对父容器的比例） */
+const SCAN_SNAPSHOT = () => {
+  const root = document.querySelector('.content-body') || document.body
+  const pathOf = (el) => {
+    const parts = []
+    let cur = el
+    while (cur && cur !== root) {
+      const p = cur.parentElement
+      if (!p) break
+      parts.unshift([...p.children].indexOf(cur))
+      cur = p
+    }
+    return parts.join('/')
+  }
+  const out = []
+  for (const el of root.querySelectorAll('*')) {
+    const cs = getComputedStyle(el)
+    if (cs.display === 'none' || cs.visibility === 'hidden') continue
+    if (cs.position === 'fixed') continue
+    if (cs.display.startsWith('inline')) continue
+    const r = el.getBoundingClientRect()
+    if (r.width < 8 || r.height < 8) continue
+    const p = el.parentElement
+    if (!p) continue
+    const pr = p.getBoundingClientRect()
+    if (pr.width < 40) continue
+    const wr = r.width / pr.width
+    if (wr < 0.05 || wr > 0.6) continue
+    const off = (r.left - pr.left) / pr.width
+    if (off > 0.1 && off + wr < 0.9) continue
+    const cls = typeof el.className === 'string' ? el.className.split(/\s+/)[0] : ''
+    out.push({ k: pathOf(el), tag: el.tagName.toLowerCase(), cls, off: +off.toFixed(2), wr: +wr.toFixed(2) })
+  }
+  return out.slice(0, 100)
+}
+
+const scanFails = []
+const scanSkipped = []
+let scanChecked = 0
+
+for (const route of SCAN_ROUTES) {
+  const snap = {}
+  for (const dir of ['ltr', 'rtl']) {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 })
+    const page = await ctx.newPage()
+    await page.addInitScript((d) => {
+      document.addEventListener('DOMContentLoaded', () => document.documentElement.setAttribute('dir', d))
+    }, dir)
+    try {
+      await page.goto(`${BASE}/#/${route}`, { waitUntil: 'domcontentloaded', timeout: 25_000 })
+      await page.waitForTimeout(900)
+      snap[dir] = await page.evaluate(SCAN_SNAPSHOT)
+    } catch {
+      snap[dir] = null
+    }
+    await ctx.close()
+  }
+
+  // ⚠️ SKIP 必须计失败：第一版只 continue，于是「server 没起来 → 全部 goto 失败
+  // → 全 SKIP → 汇总仍显示 0」= 假绿。负向对照失效的真因就是它。
+  if (!snap.ltr || !snap.rtl) {
+    scanSkipped.push(route)
+    continue
+  }
+
+  const rtlMap = new Map(snap.rtl.map((x) => [x.k, x]))
+  for (const l of snap.ltr) {
+    const r = rtlMap.get(l.k)
+    if (!r) continue
+    scanChecked++
+    const nearLeft = l.off < 0.1
+    const nearRight = l.off + l.wr > 0.9
+    // 阈值留 2% 容差（实测 0.85+0.05=0.90 卡边界被误判）
+    const flipped = nearLeft ? r.off + r.wr >= 0.88 : nearRight ? r.off <= 0.12 : true
+    if (!flipped) {
+      scanFails.push({ route, el: `<${l.tag}${l.cls ? '.' + l.cls : ''}>`, ltr: l.off, rtl: r.off, wr: l.wr })
+    }
+  }
+}
+
 await browser.close()
 stopServer()
 
@@ -220,13 +334,35 @@ for (const r of rows) {
 }
 
 const fails = rows.filter((r) => r.status === 'FAIL')
+
+// ── 全路由扫描结果 ──
+console.log(`\n=== 全路由自动扫描（${SCAN_ROUTES.length} 个路由）===`)
+console.log(`检查 ${scanChecked} 个窄定位元素，未镜像 ${scanFails.length} 个，SKIP ${scanSkipped.length} 个路由`)
+for (const f of scanFails.slice(0, 10)) {
+  console.log(`  ✗ [${f.route}] ${f.el} LTR=${f.ltr} RTL=${f.rtl} wr=${f.wr}`)
+}
+if (scanFails.length > 10) console.log(`  …还有 ${scanFails.length - 10} 个`)
+
 console.log('')
-if (fails.length) {
+if (fails.length || scanFails.length || scanSkipped.length) {
   if (REPORT_ONLY) {
-    console.log(`⚠ 报告模式：${fails.length} 处方向语义不符（不判失败）`)
+    console.log(
+      `⚠ 报告模式：${fails.length} 处探针不符 + ${scanFails.length} 处扫描未镜像 + ${scanSkipped.length} 个 SKIP（不判失败）`,
+    )
     process.exit(0)
   }
-  console.error(`❌ check:rtl-semantics 未通过 —— ${fails.length} 处方向语义不符`)
+  if (fails.length) console.error(`❌ check:rtl-semantics 未通过 —— ${fails.length} 处探针方向语义不符`)
+  if (scanFails.length) console.error(`❌ check:rtl-semantics 未通过 —— ${scanFails.length} 处元素未镜像`)
+  // SKIP 也必须红：否则"连不上 server"会伪装成"全部通过"
+  if (scanSkipped.length) {
+    console.error(`❌ check:rtl-semantics 未通过 —— ${scanSkipped.length} 个路由没测到（连不上/超时）`)
+    console.error(`   不能当作通过：${scanSkipped.join(', ')}`)
+  }
+  console.error('\n   改法：物理 left/right → inset-inline-start/end；')
+  console.error('   确需物理定位的（箭头/进度条/地图角标）在 PROBES 里登记 expect: fixed。')
   process.exit(1)
 }
-console.log(`✅ check:rtl-semantics 通过 — ${rows.filter((r) => r.status === 'PASS').length} 个探针方向语义正确`)
+console.log(
+  `✅ check:rtl-semantics 通过 — ${rows.filter((r) => r.status === 'PASS').length} 个探针 + ` +
+    `${scanChecked} 个扫描元素方向语义正确`,
+)
