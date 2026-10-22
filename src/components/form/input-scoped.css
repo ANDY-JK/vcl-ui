@@ -57,7 +57,10 @@
   color: var(--vcl-color-text-muted);
 }
 .fl-wrap.has-icon .fl-label:not(.raised) {
-  left: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) + 32px * var(--vcl-scale));
+  /* 2026-10-22 RTL 修：此前是物理 `left`，RTL 下标签仍贴左、
+     直接压在右侧的图标上（实测 input 路由 RTL 下 label 偏移 0.06 未镜像）。
+     同文件上一行的图标已经用 margin-inline-start，这里漏改。 */
+  inset-inline-start: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) + 32px * var(--vcl-scale));
 }
 .fl-wrap.focused .fl-icon {
   color: var(--vcl-color-primary-on-surface);
@@ -187,10 +190,12 @@
   user-select: none;
 }
 
-/* 密码显示/隐藏按钮 — 始终显示，保持右侧布局统一 */
+/* 密码显示/隐藏按钮 — 始终显示，保持在**末尾侧**（LTR 右 / RTL 左）
+   2026-10-22 RTL 修：物理 right → 逻辑 inset-inline-end。
+   原来写死 right，RTL 下眼睛图标与输入文字挤在同一侧。 */
 .f-toggle-pwd {
   position: absolute;
-  right: calc(8px * var(--vcl-scale));
+  inset-inline-end: calc(8px * var(--vcl-scale));
   display: flex;
   padding: var(--vcl-space-1);
   border: none;
@@ -198,10 +203,10 @@
   color: var(--vcl-color-text-muted);
   cursor: pointer;
 }
-/* 清除按钮 */
+/* 清除按钮（同上，跟密码按钮同一侧） */
 .f-clear {
   position: absolute;
-  right: calc(8px * var(--vcl-scale));
+  inset-inline-end: calc(8px * var(--vcl-scale));
   display: flex;
   padding: var(--vcl-space-1);
   border: none;
@@ -263,11 +268,12 @@
   color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-surface);
   padding: 0 var(--vcl-space-1);
-  left: calc(calc(40px * var(--vcl-scale)) - 4px * var(--vcl-scale));
+  /* 2026-10-22 RTL 修：同 floating-label.css 基类，物理 left → 逻辑属性 */
+  inset-inline-start: calc(calc(40px * var(--vcl-scale)) - 4px * var(--vcl-scale));
 }
 .fl-wrap:not(.has-icon) .f-input:-webkit-autofill ~ .fl-label,
 .fl-wrap:not(.has-icon) .f-input:autofill ~ .fl-label {
-  left: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));
+  inset-inline-start: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));
 }
 .input-field.error .f-input:-webkit-autofill ~ .fl-label,
 .input-field.error .f-input:autofill ~ .fl-label {

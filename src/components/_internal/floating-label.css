@@ -15,7 +15,11 @@
 
 .fl-label {
   position: absolute;
-  left: var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
+  /* 2026-10-22 RTL 修：物理 `left` → 逻辑 `inset-inline-start`。
+     此前 RTL 下浮动标签仍贴左（实测 #/input 路由 label 在左侧、被侧栏遮挡），
+     因为这条**基类**规则覆盖了组件级的同名逻辑属性（同优先级、基类更晚生效）。
+     改这一处，Input / Select 等所有用浮动标签的组件一并生效。 */
+  inset-inline-start: var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale)));
   top: 50%;
   transform: translateY(-50%);
   font-size: calc(14px * var(--vcl-scale));
@@ -37,6 +41,6 @@
   color: var(--vcl-color-primary-on-surface);
   background: var(--fl-label-bg, var(--vcl-color-surface));
   padding: 0 var(--vcl-space-1);
-  left: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));
+  inset-inline-start: calc(var(--vcl-ctrl-padding-x, calc(14px * var(--vcl-scale))) - 4px * var(--vcl-scale));
   z-index: 2;
 }
