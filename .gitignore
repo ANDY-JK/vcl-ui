@@ -2,6 +2,10 @@
 /key.pem
 /cert.pem
 
+# DSH（DeepSeek Harness）面板运行时产物 —— 会话事件流 / 面板快照
+# 2026-10-22：曾被 `git add -A` 误提交（42a7e06），是工具侧生成物，不属于本项目
+/.dsh-ops/
+
 # Playwright 调试产物（MCP 日志 / CLI 快照）
 /.playwright-mcp/
 /.playwright-cli/
