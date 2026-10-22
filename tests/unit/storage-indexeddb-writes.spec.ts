@@ -78,6 +78,17 @@ function makeFakeIdb() {
         setTimeout(() => (r.onsuccess as () => void)?.(), 0)
         return r
       },
+      getAll() {
+        // 返回所有 StoreItem（保持插入顺序）
+        const r: Record<string, unknown> = { result: [...storeFor(name).values()], error: null }
+        setTimeout(() => (r.onsuccess as () => void)?.(), 0)
+        return r
+      },
+      getAllKeys() {
+        const r: Record<string, unknown> = { result: [...storeFor(name).keys()], error: null }
+        setTimeout(() => (r.onsuccess as () => void)?.(), 0)
+        return r
+      },
     }
   }
 
@@ -249,5 +260,82 @@ describe('idbHas：复用 idbGet 的过期逻辑', () => {
     storeFor('kv').set('expired', { key: 'expired', value: 'x', _ts: Date.now() - 100_000, _exp: Date.now() - 50_000 })
     const has = await m.dbHas('kv', 'expired')
     expect(has, '已过期的 key 应视为不存在').toBe(false)
+  })
+})
+
+describe('过期清理：dbGetAll 触发 idbBatchDelete', () => {
+  it('读到过期项时返回时过滤掉，并异步清理', async () => {
+    const { storeFor, ops } = makeFakeIdb()
+    const m = await freshModule()
+    const now = Date.now()
+
+    // 塞三条：两条有效、一条过期
+    storeFor('kv').set('live1', { key: 'live1', value: 'a', _ts: now, _exp: 0 })
+    storeFor('kv').set('live2', { key: 'live2', value: 'b', _ts: now, _exp: now + 60_000 })
+    storeFor('kv').set('dead', { key: 'dead', value: 'c', _ts: now - 1000, _exp: now - 500 })
+
+    const all = await m.dbGetAll('kv')
+    expect(all, '过期项不应出现在结果里').toHaveLength(2)
+    expect(all).toEqual(['a', 'b'])
+
+    // 给异步清理一点时间
+    await new Promise((r) => setTimeout(r, 60))
+    expect(
+      ops.filter((o) => o.type === 'delete').map((o) => o.key),
+      '过期 key 应被 idbBatchDelete 清理',
+    ).toContain('dead')
+  })
+
+  it('没有过期项时不触发删除', async () => {
+    const { storeFor, ops } = makeFakeIdb()
+    const m = await freshModule()
+    const now = Date.now()
+    storeFor('kv').set('k1', { key: 'k1', value: 'a', _ts: now, _exp: 0 })
+    await m.dbGetAll('kv')
+    await new Promise((r) => setTimeout(r, 60))
+    expect(ops.filter((o) => o.type === 'delete'), '无过期项时不该有删除').toHaveLength(0)
+  })
+
+  it('前缀过滤：只返回匹配前缀的有效项', async () => {
+    const { storeFor } = makeFakeIdb()
+    const m = await freshModule()
+    const now = Date.now()
+    storeFor('kv').set('u:1', { key: 'u:1', value: 'a', _ts: now, _exp: 0 })
+    storeFor('kv').set('u:2', { key: 'u:2', value: 'b', _ts: now, _exp: 0 })
+    storeFor('kv').set('x:1', { key: 'x:1', value: 'c', _ts: now, _exp: 0 })
+
+    const res = await m.dbGetAll('kv', 'u:')
+    expect(res, '只应返回 u: 前缀').toEqual(['a', 'b'])
+  })
+})
+
+describe('idbKeys / idbCount', () => {
+  it('dbKeys 返回全部 key', async () => {
+    const { storeFor } = makeFakeIdb()
+    const m = await freshModule()
+    const now = Date.now()
+    storeFor('kv').set('a', { key: 'a', value: 1, _ts: now, _exp: 0 })
+    storeFor('kv').set('b', { key: 'b', value: 2, _ts: now, _exp: 0 })
+    const keys = await m.dbKeys('kv')
+    expect(keys).toEqual(['a', 'b'])
+  })
+
+  it('dbKeys 支持前缀过滤', async () => {
+    const { storeFor } = makeFakeIdb()
+    const m = await freshModule()
+    const now = Date.now()
+    storeFor('kv').set('u:1', { key: 'u:1', value: 1, _ts: now, _exp: 0 })
+    storeFor('kv').set('x:1', { key: 'x:1', value: 2, _ts: now, _exp: 0 })
+    const keys = await m.dbKeys('kv', 'u:')
+    expect(keys).toEqual(['u:1'])
+  })
+
+  it('dbCount 返回条目数', async () => {
+    const { storeFor } = makeFakeIdb()
+    const m = await freshModule()
+    const now = Date.now()
+    storeFor('kv').set('a', { key: 'a', value: 1, _ts: now, _exp: 0 })
+    storeFor('kv').set('b', { key: 'b', value: 2, _ts: now, _exp: 0 })
+    expect(await m.dbCount('kv')).toBe(2)
   })
 })
