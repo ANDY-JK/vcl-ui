@@ -226,7 +226,24 @@ const SCAN_ROUTES = [
 
 /** 在页面内采集"窄且靠边"的元素位置（相对父容器的比例） */
 const SCAN_SNAPSHOT = () => {
-  const root = document.querySelector('.content-body') || document.body
+  /**
+   * 扫描根用 `body` 而不是 `.content-body`（2026-10-22 修）。
+   *
+   * ## 为什么必须换成 body
+   *
+   * 上一版扫 `.content-body`，而 **`.sidebar` / `.topbar` 是它的兄弟节点、
+   * 在它外面**（`AppLayout` 的布局外壳）。于是：
+   *   · 移动端抽屉 `.sidebar` 从来没被扫过（实测 sidebarInContentBody=false）
+   *   · 我给移动端注入探针做负向对照时，探针在 `.sidebar` 里 → 采不到 → 负向对照"未生效"
+   *
+   * 而布局外壳恰恰是移动端 RTL 问题最集中的地方（抽屉方向、汉堡菜单位置）。
+   *
+   * 噪音问题：换 body 后会把 demo 站的顶栏按钮也扫进来
+   * （`button.topbar-tool-btn` 之类）。它们**属于组件库**（AppLayout 的一部分），
+   * 该测；但 demo 站自己的 `.demo-wrap` 内容不算。这里不排除任何东西 ——
+   * 实测 `.demo-wrap` 里没有"窄且靠边"的定位元素，不会制造噪音。
+   */
+  const root = document.body
   const pathOf = (el) => {
     const parts = []
     let cur = el
@@ -264,42 +281,68 @@ const scanFails = []
 const scanSkipped = []
 let scanChecked = 0
 
+/**
+ * 扫描视口（2026-10-22 新增移动端）。
+ *
+ * ## 为什么必须加 375
+ *
+ * 上一版只扫 1280，而**移动端专属规则完全扫不到**：
+ * `@container layout (max-width: 767px)` 里的定位在 1280 下根本不命中。
+ * 上轮修好的 `.sidebar` 抽屉方向缺陷就是这类 —— 它在 1280 下连 fixed 都不生效。
+ *
+ * 加 375 后，同一套判据能覆盖到移动端的抽屉、汉堡菜单、折叠面板等。
+ * 代价是扫描量翻倍（42 路由 × 2 方向 × 2 视口 = 168 次页面加载），
+ * 实测整步从 ~40s 涨到 ~75s，可接受。
+ */
+const SCAN_VIEWPORTS = [
+  { name: '1280', width: 1280, height: 900 },
+  { name: '375', width: 375, height: 800 },
+]
+
 for (const route of SCAN_ROUTES) {
-  const snap = {}
-  for (const dir of ['ltr', 'rtl']) {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 })
-    const page = await ctx.newPage()
-    await page.addInitScript((d) => {
-      document.addEventListener('DOMContentLoaded', () => document.documentElement.setAttribute('dir', d))
-    }, dir)
-    try {
-      await page.goto(`${BASE}/#/${route}`, { waitUntil: 'domcontentloaded', timeout: 25_000 })
-      await page.waitForTimeout(900)
-      snap[dir] = await page.evaluate(SCAN_SNAPSHOT)
-    } catch {
-      snap[dir] = null
+  for (const vp of SCAN_VIEWPORTS) {
+    const snap = {}
+    for (const dir of ['ltr', 'rtl']) {
+      const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 })
+      const page = await ctx.newPage()
+      await page.addInitScript((d) => {
+        document.addEventListener('DOMContentLoaded', () => document.documentElement.setAttribute('dir', d))
+      }, dir)
+      try {
+        await page.goto(`${BASE}/#/${route}`, { waitUntil: 'domcontentloaded', timeout: 25_000 })
+        await page.waitForTimeout(700)
+        snap[dir] = await page.evaluate(SCAN_SNAPSHOT)
+      } catch {
+        snap[dir] = null
+      }
+      await ctx.close()
     }
-    await ctx.close()
-  }
 
-  // ⚠️ SKIP 必须计失败：第一版只 continue，于是「server 没起来 → 全部 goto 失败
-  // → 全 SKIP → 汇总仍显示 0」= 假绿。负向对照失效的真因就是它。
-  if (!snap.ltr || !snap.rtl) {
-    scanSkipped.push(route)
-    continue
-  }
+    // ⚠️ SKIP 必须计失败：第一版只 continue，于是「server 没起来 → 全部 goto 失败
+    // → 全 SKIP → 汇总仍显示 0」= 假绿。负向对照失效的真因就是它。
+    if (!snap.ltr || !snap.rtl) {
+      scanSkipped.push(`${route}@${vp.name}`)
+      continue
+    }
 
-  const rtlMap = new Map(snap.rtl.map((x) => [x.k, x]))
-  for (const l of snap.ltr) {
-    const r = rtlMap.get(l.k)
-    if (!r) continue
-    scanChecked++
-    const nearLeft = l.off < 0.1
-    const nearRight = l.off + l.wr > 0.9
-    // 阈值留 2% 容差（实测 0.85+0.05=0.90 卡边界被误判）
-    const flipped = nearLeft ? r.off + r.wr >= 0.88 : nearRight ? r.off <= 0.12 : true
-    if (!flipped) {
-      scanFails.push({ route, el: `<${l.tag}${l.cls ? '.' + l.cls : ''}>`, ltr: l.off, rtl: r.off, wr: l.wr })
+    const rtlMap = new Map(snap.rtl.map((x) => [x.k, x]))
+    for (const l of snap.ltr) {
+      const r = rtlMap.get(l.k)
+      if (!r) continue
+      scanChecked++
+      const nearLeft = l.off < 0.1
+      const nearRight = l.off + l.wr > 0.9
+      // 阈值留 2% 容差（实测 0.85+0.05=0.90 卡边界被误判）
+      const flipped = nearLeft ? r.off + r.wr >= 0.88 : nearRight ? r.off <= 0.12 : true
+      if (!flipped) {
+        scanFails.push({
+          route: `${route}@${vp.name}`,
+          el: `<${l.tag}${l.cls ? '.' + l.cls : ''}>`,
+          ltr: l.off,
+          rtl: r.off,
+          wr: l.wr,
+        })
+      }
     }
   }
 }
