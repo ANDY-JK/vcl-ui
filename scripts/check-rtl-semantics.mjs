@@ -95,13 +95,37 @@ const PROBES = [
     tol: 0.5,
     why: '固定列钉在阅读起始侧，必须用 inset-inline-start（RTL 下 left 应解析为 auto）',
   },
+  // ── 移动端侧栏抽屉（2026-10-22 新增）──
+  //
+  // 此前这个守卫**完全测不到移动端**：视口固定 1280，而 `.sidebar` 的
+  // fixed 定位只写在 `@container layout (max-width: 767px)` 里。
+  // 于是「RTL 下抽屉从错误一侧滑出」这类缺陷一直存在且无人发现
+  // （实测 375px + dir=rtl 时 rectLeft=0，即仍从左边滑出）。
+  //
+  // ⚠️ 这里必须用 `mirror` 而**不能**用 `logical`：
+  //   `logical` 的判据是「RTL 下 computed left === auto」，那只对**宽度未定**
+  //   的元素成立（如表格固定列 td）。而 `.sidebar` 有确定的
+  //   `width: min(260px*scale, 85vw)`，RTL 下浏览器会由 right 反算出
+  //   `left: 180px`（不是 auto）—— 实测确认。
+  //   所以对固定宽度元素，唯一可靠判据是「位置是否镜像」。
+  {
+    route: 'card',
+    selector: '.sidebar',
+    expect: 'mirror',
+    tol: 0.2,
+    viewport: { width: 375, height: 800 },
+    why: '移动端抽屉从阅读起始侧滑出（LTR 贴左 / RTL 贴右），位置必须镜像',
+  },
 ]
 
 await ensureServer()
 const browser = await chromium.launch()
 
-async function posOf(dir, route, selector) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 })
+async function posOf(dir, route, selector, viewport) {
+  // 视口可覆盖（2026-10-22）：移动端专属规则（如 @container max-width:767px 里的
+  // 抽屉定位）在 1280 下根本不会命中，用默认视口测等于没测。
+  const vp = viewport ?? { width: 1280, height: 900 }
+  const ctx = await browser.newContext({ viewport: { ...vp, deviceScaleFactor: 1 } })
   const page = await ctx.newPage()
   await page.addInitScript((d) => {
     document.addEventListener('DOMContentLoaded', () => document.documentElement.setAttribute('dir', d))
@@ -137,8 +161,8 @@ async function posOf(dir, route, selector) {
 
 const rows = []
 for (const p of PROBES) {
-  const ltr = await posOf('ltr', p.route, p.selector)
-  const rtl = await posOf('rtl', p.route, p.selector)
+  const ltr = await posOf('ltr', p.route, p.selector, p.viewport)
+  const rtl = await posOf('rtl', p.route, p.selector, p.viewport)
   if (!ltr || !rtl) {
     rows.push({ ...p, status: 'SKIP', note: '元素不存在' })
     continue

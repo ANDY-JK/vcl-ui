@@ -43,7 +43,10 @@
   .sidebar {
     position: fixed;
     top: 0;
-    left: 0;
+    /* 逻辑属性：LTR 贴左、RTL 贴右 —— 抽屉从"阅读起始侧"滑出。
+       2026-10-22 修：此前是 `left: 0`，RTL 下侧栏仍从左边滑出（实测 375px
+       + dir=rtl 时 rectLeft=0），而 RTL 语义应从右侧滑出。 */
+    inset-inline-start: 0;
     bottom: 0;
     width: min(260px * var(--vcl-scale), 85vw);
     transform: translateX(-100%);
