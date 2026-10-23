@@ -99,6 +99,26 @@ async function settle(ms = 20) {
   await flushPromises()
 }
 
+/**
+ * 有界轮询等待条件成立。
+ *
+ * ⚠️ **不要用固定 `settle(600)` 等异步 ZIP 导出**：ZIP 生成（JSZip +
+ * canvas→Blob）耗时随机器负载波动，全量并发跑时 600ms 会不够 →
+ * ① 断言「导出应触发一次下载」拿到 0（假失败）；
+ * ② 更糟的是该用例**在导出仍在途时就结束**，这次下载会落到下一个用例的
+ *    spy 上，让「重复点击只该触发一次」拿到 2。
+ * 实测：该文件隔离跑 3/3 通过、全量并发跑必失败 —— 典型的时间敏感用例。
+ * 所以改成「等到条件真正成立（或超时）」，保证用例结束前异步导出已收尾。
+ */
+async function waitFor(cond: () => boolean, timeoutMs = 8000, stepMs = 50) {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (cond()) return true
+    await settle(stepMs)
+  }
+  return cond()
+}
+
 const q = <T extends Element = HTMLElement>(sel: string) => document.querySelector(sel) as T | null
 const rows = () => [...document.querySelectorAll('.ftc-row')] as HTMLElement[]
 const doneRows = () => document.querySelectorAll('.ftc-status-done').length
@@ -337,8 +357,11 @@ describe('ZIP 导出', () => {
     const btn = exportBtn()
     expect(btn, '应有导出按钮').toBeTruthy()
     btn!.click()
-    await settle(600)
-
+    // 等到下载真正发生（而不是赌 600ms 够用），确保本用例结束前导出已收尾，
+    // 否则这次下载会泄漏到下一个用例的 spy 上
+    const ok = await waitFor(() => downloaded >= 1)
+    expect(ok, '导出应在超时前完成').toBe(true)
+    await settle(200) // 再留一点时间，让可能重复的下载暴露出来
     expect(downloaded, '导出应触发一次下载').toBe(1)
   })
 
@@ -357,7 +380,8 @@ describe('ZIP 导出', () => {
     const btn = exportBtn()!
     btn.click()
     btn.click() // 立即再点（exporting=true 应早退）
-    await settle(600)
+    await waitFor(() => downloaded >= 1)
+    await settle(400) // 若第二次点击没被挡住，它的下载会在这段时间内落地
 
     expect(downloaded, '重复点击只该触发一次下载').toBe(1)
   })
