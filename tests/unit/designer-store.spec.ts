@@ -69,6 +69,12 @@ vi.mock('@/components/_internal/env-guard', () => ({
 
 import type { FormDesign, CollectRecord, FormMetaItem } from '@/components/form-builder/designer/types'
 
+// 本 spec 每个用例都 vi.resetModules() + 动态 import 整条 designer 模块链；
+// 在 `--coverage` 插桩下 transform 会占到约 39% 挂钟时间（日志实测），冷启动首例
+// 偶发超过默认 20s 上限 → 插桩运行时假红（不带 coverage 的全量运行从不失败）。
+// 放宽本文件超时，消除这一 flaky；不改任何断言与实现。
+vi.setConfig({ testTimeout: 60_000 })
+
 /* ═══════════ 夹具 ═══════════ */
 
 const design = (title = '表单'): FormDesign =>
