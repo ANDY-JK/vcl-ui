@@ -14,8 +14,8 @@ title: 事实清单（自动生成）
 | 事实 | 值 | 怎么算的 |
 | --- | --- | --- |
 | 域入口数 | **13** | `package.json` 的 `exports`，去掉 `./css`/`./i18n` 等辅助子路径 |
-| 组件数 | **65** | `gen:docs` 解析 `defineProps`/`defineEmits`/`defineSlots` 得到 |
-| 命名导出数 | **173** | 同上，含类型与 composable |
+| 组件数 | **66** | `gen:docs` 解析 `defineProps`/`defineEmits`/`defineSlots` 得到 |
+| 命名导出数 | **176** | 同上，含类型与 composable |
 | 解析失败组件 | **0** | 应为 0；非 0 时 `check:docs` 直接红 |
 
 域入口清单：
@@ -90,8 +90,8 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 单测文件数 | **286** |
-| 单测用例数 | **4716** |
+| 单测文件数 | **288** |
+| 单测用例数 | **4778** |
 
 ::: info 这两个数会随每次提交变化
 它们来自 `reports/quality-check-logs/15-test-unit.log`（**每次整链运行前清空**），

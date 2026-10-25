@@ -4,7 +4,7 @@ layout: home
 hero:
   name: vcl-ui
   text: Vue 3 通用组件库
-  tagline: 13 个域入口 · 65 组件 · 按域多入口构建 · 设计令牌驱动 · 暗色与 i18n 内置
+  tagline: 13 个域入口 · 66 组件 · 按域多入口构建 · 设计令牌驱动 · 暗色与 i18n 内置
   actions:
     - theme: brand
       text: 快速上手

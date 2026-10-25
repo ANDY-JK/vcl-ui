@@ -13,11 +13,15 @@
 | `FormCollect` | 6 | 1 | 0 |
 | `FormTargetCollect` | 4 | 1 | 0 |
 | `FormShareView` | 4 | 1 | 0 |
+| `LowCodeNav` | 11 | 4 | 7 |
 
 ## 组合式函数 / 工具导出
 
 | 导出 | 说明 |
 | --- | --- |
+| `createFormPageResolver` | 默认解析器：内联 schema 直接用；`formId` 走 FormStore（不传则用宿主注入的活动实例）。 |
+| `designToSchema` | 设计数据 → 渲染 schema；v2 legacy（只有 `fields`）也兼容（宿主后端可能还没迁移） |
+| `isRenderableSchema` | 这份 schema 能不能交给渲染器（只判最小形状：`fields` 必须是数组） |
 | `useFormSchema` | Schema 解析 composable |
 | `isFieldVisible` | 判断字段在当前数据下是否可见 |
 | `createInitialData` | 从 Schema 的 fields 提取默认值，生成初始 form data |
@@ -264,4 +268,43 @@
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `submitted` | `record: CollectRecord` | 提交成功，携带写入的收集记录 |
+
+## `LowCodeNav`
+
+### Props
+
+| 属性 | 类型 | 默认值 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `source` | `NavSource \| (() => NavSource \| undefined)` | — | 否 | 导航定义来源（static / api / forms）；不传 = 空导航（空态，不报错） |
+| `apiUrlPolicy` | `() => ApiUrlPolicy` | — | 否 | 外发 URL 策略（api 来源用）；不传 = 只允许同源 |
+| `filter` | `(node: NavNode) => boolean` | — | 否 | 权限过滤（判定交宿主） |
+| `fetcher` | `typeof fetch` | — | 否 | 注入 fetch（宿主常要加鉴权头 / 走自己的请求层）；不传用全局 fetch |
+| `modelValue` | `string \| null` | — | 否 | 受控选中 key（不传 = 非受控） |
+| `title` | `string` | — | 否 | 侧栏标题（纯展示；不传则不渲染标题行） |
+| `autoLoad` | `boolean` | `true` | 否 | 挂载即加载 |
+| `autoSelect` | `boolean` | `true` | 否 | 加载后自动选中第一个可选项 |
+| `renderFormPage` | `boolean` | `true` | 否 | 表单页是否内置渲染（关掉 = 交给 `#page` 插槽，宿主完全自渲染） |
+| `resolveFormPage` | `FormPageResolver` | — | 否 | 表单页解析器（默认用活动 FormStore；宿主可换成自己后端取设计数据） |
+| `showIssues` | `boolean` | `false` | 否 | 是否显示配置问题条（默认不显示；问题仍可从 `#issues` 插槽取） |
+
+### Events
+
+| 事件 | 载荷 | 说明 |
+| --- | --- | --- |
+| `'update:modelValue'` | `key: string \| null` | 选中态变化（受控宿主据此回写；非受控时也会发，悬空收敛同样会通知宿主） |
+| `select` | `node: NavNode` | 用户选中某个可选项 —— **只通知，不替宿主路由**（宿主按 key 决定跳哪里） |
+| `'page-submit'` | `payload: { node: NavNode; data: FormData }` | 表单页提交（校验通过后）；外壳**不自动外发**，由宿主的监听决定发给谁 |
+| `'page-change'` | `payload: { node: NavNode; data: FormData }` | 表单页数据变化（同一次变更只发一次，不透传 FormBuilder 的双事件） |
+
+### Slots
+
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `default` | `node, issues` | 兜底页面渲染（data/custom 页，或宿主关掉内置表单渲染时） | &#123;&#123; t('common.empty') &#125;&#125; |
+| `icon` | `node` | 自定义图标渲染（默认只出 data-icon 属性，本库不解释图标名） | — |
+| `issues` | `issues` | 取全部配置问题（默认不显示问题条，但插槽始终可用来自己呈现） | — |
+| `nav-empty` | — | 覆盖"导航为空"的文案 | &#123;&#123; t('common.empty') &#125;&#125; |
+| `nav-group` | `node` | 自定义分组标题渲染（默认只出一行不可点的标题） | &#123;&#123; node.label &#125;&#125; |
+| `nav-item` | `node, active, select` | 自定义导航项渲染（接管后不渲染内置按钮；回传 node/active/select） | — |
+| `page` | `node, issues` | 完全接管页面区（优先级最高；用它会跳过表单页解析） | — |
 

@@ -1,0 +1,137 @@
+/* LowCodeNav 外壳样式：只负责"骨架可读"，观感交给宿主覆盖（低代码场景宿主多半要自己定风格）。
+   约定与同域其它 -scoped.css 一致：只用 --vcl-* 令牌 + 兜底字面量，不引新断点。 */
+.lcn {
+  display: flex;
+  align-items: stretch;
+  gap: calc(12px * var(--vcl-scale));
+  min-height: calc(240px * var(--vcl-scale));
+}
+.lcn-nav {
+  flex: 0 0 auto;
+  width: calc(200px * var(--vcl-scale));
+  border-right: 1px solid var(--vcl-color-border-light, #f1f5f9);
+  padding-right: calc(8px * var(--vcl-scale));
+}
+.lcn-title {
+  font-size: var(--vcl-fs-13);
+  font-weight: 600;
+  color: var(--vcl-color-text-secondary, #64748b);
+  padding: calc(4px * var(--vcl-scale)) 0;
+}
+.lcn-list,
+.lcn-sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.lcn-group-label {
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-secondary, #64748b);
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale)) calc(2px * var(--vcl-scale));
+}
+.lcn-item {
+  display: flex;
+  align-items: center;
+  gap: calc(6px * var(--vcl-scale));
+  width: 100%;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+  border: none;
+  border-radius: calc(6px * var(--vcl-scale));
+  background: transparent;
+  color: var(--vcl-color-text, #0f172a);
+  font-size: var(--vcl-fs-13);
+  text-align: left;
+  cursor: pointer;
+}
+.lcn-item:hover {
+  background: var(--vcl-color-bg-alt, #f8fafc);
+}
+.lcn-item.active {
+  background: var(--vcl-color-primary-light, #eff6ff);
+  color: var(--vcl-color-primary, #3b82f6);
+  font-weight: 600;
+}
+.lcn-icon {
+  flex: 0 0 auto;
+  width: calc(14px * var(--vcl-scale));
+  height: calc(14px * var(--vcl-scale));
+  background: currentColor;
+  opacity: 0.75;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+}
+.lcn-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lcn-badge {
+  flex: 0 0 auto;
+  font-size: var(--vcl-fs-11);
+  padding: 0 calc(4px * var(--vcl-scale));
+  border-radius: calc(8px * var(--vcl-scale));
+  background: var(--vcl-color-bg-alt, #f8fafc);
+  color: var(--vcl-color-text-secondary, #64748b);
+}
+.lcn-page {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.lcn-hint {
+  margin: 0;
+  color: var(--vcl-color-text-secondary, #64748b);
+  font-size: var(--vcl-fs-13);
+  padding: calc(8px * var(--vcl-scale)) 0;
+}
+.lcn-missing {
+  color: var(--vcl-color-text-secondary, #64748b);
+  font-size: var(--vcl-fs-13);
+  padding: calc(8px * var(--vcl-scale));
+  border: 1px dashed var(--vcl-color-border, #e2e8f0);
+  border-radius: calc(6px * var(--vcl-scale));
+}
+.lcn-error {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-danger, #ef4444);
+  border-radius: calc(6px * var(--vcl-scale));
+  color: var(--vcl-color-danger, #ef4444);
+  font-size: var(--vcl-fs-13);
+}
+.lcn-error-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.lcn-retry {
+  flex: 0 0 auto;
+  border: 1px solid currentColor;
+  border-radius: calc(4px * var(--vcl-scale));
+  background: transparent;
+  color: inherit;
+  font-size: var(--vcl-fs-12);
+  padding: 0 calc(6px * var(--vcl-scale));
+  cursor: pointer;
+}
+.lcn-link {
+  color: var(--vcl-color-primary, #3b82f6);
+  font-size: var(--vcl-fs-13);
+}
+.lcn-issues {
+  border: 1px solid var(--vcl-color-warning, #f59e0b);
+  border-radius: calc(6px * var(--vcl-scale));
+  padding: calc(4px * var(--vcl-scale)) calc(6px * var(--vcl-scale));
+  margin-bottom: calc(6px * var(--vcl-scale));
+}
+.lcn-issues-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--vcl-fs-11);
+  color: var(--vcl-color-text-secondary, #64748b);
+}
+.lcn-issue-path {
+  color: var(--vcl-color-warning, #f59e0b);
+}

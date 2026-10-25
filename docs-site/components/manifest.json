@@ -41,8 +41,8 @@
       "named": 0
     },
     "form-builder": {
-      "components": 7,
-      "named": 104
+      "components": 8,
+      "named": 107
     },
     "amap": {
       "components": 1,
@@ -54,6 +54,6 @@
     }
   },
   "unparsed": [],
-  "totalComponents": 65,
-  "totalNamed": 173
+  "totalComponents": 66,
+  "totalNamed": 176
 }

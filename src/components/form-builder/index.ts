@@ -25,6 +25,11 @@ export type { TargetItem } from './FormTargetCollect.vue'
 // ── 表单发布填写端（#/form/:code 路由指向此组件） ──
 export { default as FormShareView } from './FormShareView.vue'
 
+// ── 低代码导航外壳（宿主只挂这一个；其余导航项由用户配 nav 配置） ──
+export { default as LowCodeNav } from './lowcode/LowCodeNav.vue'
+export { createFormPageResolver, designToSchema, isRenderableSchema } from './lowcode/page-resolver'
+export type { FormPageOutcome, FormPageResolver } from './lowcode/page-resolver'
+
 // ── composable ──
 export { useFormSchema, isFieldVisible, createInitialData, normalizeSchema, SCHEMA_VERSION } from './useFormSchema'
 export { useFormValidator, validateField, validateAll, validators } from './useFormValidator'

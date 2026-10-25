@@ -5,12 +5,12 @@ title: 常见问题
 # 常见问题（FAQ）
 
 ::: tip 一句话定位
-这是一个**内部优先**的 Vue 3 组件库：**13 个域入口 / 65 组件**、按域多入口、设计令牌驱动、闸口密度高。
+这是一个**内部优先**的 Vue 3 组件库：**13 个域入口 / 66 组件**、按域多入口、设计令牌驱动、闸口密度高。
 它不是「又一个 Element Plus」，差异点见 [特性对照](/guide/comparison)。
 :::
 
 ::: info 口径（可自行核验）
-域数取**构建入口**口径（`package.json` 的 `exports`）= **13**，与 `npm run gen:docs` 的「13 域 / 组件 65」一致。
+域数取**构建入口**口径（`package.json` 的 `exports`）= **13**，与 `npm run gen:docs` 的「13 域 / 组件 66」一致。
 `_internal` 与 `shared` 是内部支撑目录，**不出独立域入口**；覆盖地板管 14 项
 （12 个域 + `_internal` + `shared`，`wc` 由 Web Components 专项覆盖）。
 ::: 
