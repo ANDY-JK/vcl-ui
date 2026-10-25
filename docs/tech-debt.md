@@ -44,12 +44,12 @@
 | TD-07 | **`docs/` 与 `docs-site/` 是两套叙事**，只有后者进站；前者的审查报告不进站也无法被站内搜索 | `docs/*.md` 共 8 份，`docs-site/` 不含它们；`check:facts` 刻意不扫 `docs/` | P3 | `accepted` | 触发条件：需要对外披露审查过程时 → 择要进站，不必全量 |
 | TD-08 | **历史审查报告保留当时数字**，与 `facts.md` 的当前真源必然不一致 | `check:facts` 不扫 `docs/`（脚本内有注释说明） | P3 | `accepted` | 触发条件：有人把历史报告当"当前事实"引用 → 在报告头部加过期横幅 |
 | TD-09 | **`walk()` 类工具函数的目录排除曾按整路径匹配**，导致体积预算只看 9% 文件 | 已修（`scripts/verify-pkg.mjs` 按 basename 判）；**同类写法可能还有** | P3 | `accepted` | 触发条件：新增任何目录遍历脚本时 → 用 basename 判，并写负向对照 |
-| TD-28 |**官方 `createRestFormStore` 还没有用 `rev`**：并发保护只到数据层 —— 宿主想要"读-改-写冲突检测"得自己在 body 里带 `rev`，客户端不会自动带、也不会在 409 后重读重试 |`src/components/form-builder/designer/rest-form-store.ts`（写方法只发 `{ data }` / `{ name }`）；参考后端已支持（`4e7e8c0`） |P2 |`accepted` |触发条件：出现第一个"多端同时编辑"的真实宿主要求，或演示站要展示冲突处理 → 那时给 store 加"读时记 rev、写时带上、409 后自动重读一次并重试"的状态机（并补 e2e：两个 page 同时改同一条记录）
 
 ## 已结项（保留历史）
 
 | 编号 | 一句话 | 修法 | 提交 |
 | --- | --- | --- | --- |
+| TD-28 |**官方 `createRestFormStore` 没用 `rev`**：并发保护只到数据层，宿主得自己在 body 带 rev，409 也没人处理 |读时记版本（`listForms`/`loadRecords` 填缓存）→ 写时自动带上 → 409 抛 `RestStoreConflictError`（带 `currentRev`）；需要覆盖语义的传 `onConflict: "retry"`（重读后重试**一次**，仍冲突照抛）。默认**不自动重试**：静默重试等于回到"后写覆盖"。**读到过才带**，老后端行为不变 |af6767b |
 | TD-23 |**参考后端没有迁移体系、没有并发控制**：示例是「后写覆盖」，多端同时编辑同一表单会互相盖掉；表结构变更也没有版本化迁移 |加 `schema_version` + 只增的 `MIGRATIONS`（v2 给两表加 `rev`），打开库自动升级、每版一事务、失败回滚且带 `cause`；写接口接受可选 `expectedRev`，不一致抛 `ConflictError` → **409** `{ error: "conflict", currentRev }`（不带 rev 仍是后写覆盖，老客户端不受影响）。用例手写一个 v1 老库验证「升级后数据不丢」，并验两版 rev 语义一致 |4e7e8c0 |
 | TD-00 | **台账维护本身没有闸口**，靠人记得更新，而"记得"最不可靠 | 建 `scripts/check-tech-debt.mjs` 并接入整链（校验 closed 提交号可查 + ADR 索引一一对应）。**第 110 轮盘点时的实际情况**：闸口确实存在，但 ① 只查这两项、② 台账本身已 **82 个提交 / 13 个动过 src** 未回填 —— 说明"有闸口"不等于"台账会更新"。故本轮追加三项判据（结构、`accepted` 必须写触发条件、陈旧度），并把该缺口另立为 TD-27 跟踪口径 | b3adb44 |
 | TD-21 | **一类用户可见缺陷："错误状态被赋值、模板从不渲染"**：`FormCollect` 导入失败（空文件/坏 JSON/写库失败）在界面上毫无反馈 | 渲染 `importError`（`role="alert"`）；三条用例改断言渲染文本；新增类级棘轮 `tests/unit/silent-error-states.spec.ts`（候选集 ⇄ 已分诊清单双向比对） | 7755854 |
