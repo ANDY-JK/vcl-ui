@@ -24,20 +24,44 @@ import { policyFromOrigins } from '@/components/form-builder/api-url-guard'
 import type { FormStore } from '@/components/form-builder/designer/store'
 import type { NavNode } from '@/components/form-builder/lowcode/nav-schema'
 import { createLowcodeBackend, createLowcodeHandler } from '../../examples/lowcode-backend/server.mjs'
+import { createSqliteStore } from '../../examples/lowcode-backend/sqlite-store.mjs'
 
 const TOKEN = 'unit-token-r106'
 const LIMITED = '{{SECRET_9rkd2vbn}}'
 const AUTH = `Bearer ${TOKEN}`
 const AUTH_LIMITED = `Bearer ${LIMITED}`
 
+/**
+ * **同一套用例跑两种存储**：内存版与真 SQLite 版。
+ *
+ * 这是本轮的核心主张的**证据形态**：README 里写"换数据库只改 11 个方法"是一句**说法**；
+ * 只有"同一批断言在两份实现上都绿"才叫**证明**——它也顺带锁住了两版的语义对齐
+ * （记录后写的在前、删表单级联删记录、JSON 字段的 null/缺省口径）。
+ */
+const STORES: Array<[label: string, make: () => { store?: unknown; close?: () => void }]> = [
+  ['内存', () => ({})],
+  [
+    'SQLite',
+    () => {
+      const store = createSqliteStore(':memory:') as unknown as { close: () => void }
+      return { store, close: () => store.close() }
+    },
+  ],
+]
+
 let server: { close: (cb?: () => void) => void; address: () => unknown }
 let origin = ''
 let base = ''
+let closeStore: (() => void) | undefined
 
-// 每个用例一份**全新的**后端实例：参考实现是内存存储，共享实例会让"空库起步"这类断言
-// 依赖用例执行顺序（第 106 轮第一版就踩了：只读令牌那例看到的表单是上一例建的）。
-beforeEach(async () => {
-  const s = createLowcodeBackend({ token: TOKEN, limitedToken: LIMITED }) as unknown as {
+/** 每个用例一份**全新的**后端实例（含全新的库）：共享实例会让"空库起步"这类断言
+ *  依赖用例执行顺序（第 106 轮第一版就踩了：只读令牌那例看到的表单是上一例建的）。 */
+async function bootServer(store?: unknown) {
+  const s = createLowcodeBackend({
+    token: TOKEN,
+    limitedToken: LIMITED,
+    ...(store ? { store: store as never } : {}),
+  }) as unknown as {
     listen: (port: number, host: string, cb: () => void) => void
     address: () => { port: number }
     close: (cb?: () => void) => void
@@ -47,10 +71,12 @@ beforeEach(async () => {
   origin = `http://127.0.0.1:${port}`
   base = `${origin}/api/lowcode`
   server = s as unknown as typeof server
-})
+}
 
 afterEach(async () => {
   await new Promise<void>((done) => server.close(done))
+  closeStore?.()
+  closeStore = undefined
 })
 
 /** 2 个 nextTick + 宏任务：仅用于"不该发请求"的负向断言；正向断言一律 await refresh() ——
@@ -91,7 +117,13 @@ const design = (title: string) => ({
   nodes: [{ id: 'n1', type: 'text' as const, label: `${title}·名称`, key: 'name' }],
 })
 
-describe('参考后端（examples/lowcode-backend）× 官方客户端 · 真 HTTP', () => {
+describe.each(STORES)('参考后端（examples/lowcode-backend）× 官方客户端 · 真 HTTP｜存储：%s', (_label, make) => {
+  beforeEach(async () => {
+    const made = make()
+    closeStore = made.close
+    await bootServer(made.store)
+  })
+
   it('FormStore 全链往返：设计、改名、收集记录五法、删除连记录一起删（每步用服务端 __stats 对账）', async () => {
     const s = store({ Authorization: AUTH })
     const stats = async () => {

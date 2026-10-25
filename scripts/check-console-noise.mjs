@@ -81,6 +81,24 @@ if (!existsSync(SPOOL)) {
 }
 
 const totals = new Map()
+/**
+ * **Node 运行时自身的告警不算本仓噪音**（2026-10-26 补，起因见下）。
+ *
+ * 起因：采用 `node:sqlite`（Node 内置实验性模块）后，worker 会打出
+ *   `(node:12345) ExperimentalWarning: SQLite is an experimental feature and might change at any time`
+ * —— 这条告警**不是仓库代码的输出**，而是运行时对 API 稳定性的声明；把它记成"我们新增了告警"
+ * 会让棘轮误报，而且**每次 Node 升级**都可能再撞一次（升级运行时不该逼着改基线）。
+ *
+ * 判据刻意收窄：只豁免带 `(node:<pid>)` 前缀的运行时告警；仓库自己的 console.* 输出
+ * 从来不带这个前缀（本仓的库代码与测试都是浏览器/组件语义，不打进程级警告）→ 其余一律照旧拦。
+ *
+ * ⚠️ 注意匹配的是**归一化之后**的键：闸口会把数字统一替换成 `…`/`N`，
+ * 所以真实键长这样 `(node:N) …: SQLite is an … feature …`（pid 已变 `N`）——
+ * 用 `\d+` 匹配会**漏过**（第一版就写错了，被自己的双向自测抓出来）。
+ */
+const NODE_RUNTIME_WARNING = /^\(node:[^)]+\)/
+let runtimeWarningKinds = 0
+let rawKinds = 0
 for (const f of readdirSync(SPOOL)) {
   if (!f.endsWith('.json')) continue
   let part
@@ -89,7 +107,17 @@ for (const f of readdirSync(SPOOL)) {
   } catch {
     continue // 半写入的文件跳过（不影响结论）
   }
-  for (const [k, v] of Object.entries(part)) totals.set(k, (totals.get(k) ?? 0) + v)
+  for (const [k, v] of Object.entries(part)) {
+    rawKinds += 1
+    if (NODE_RUNTIME_WARNING.test(k)) {
+      runtimeWarningKinds += 1
+      continue
+    }
+    totals.set(k, (totals.get(k) ?? 0) + v)
+  }
+}
+if (runtimeWarningKinds > 0) {
+  console.log(`   （已豁免 ${runtimeWarningKinds} 类 Node 运行时告警：如 ExperimentalWarning）`)
 }
 
 const sorted = [...totals.entries()].sort((a, b) => b[1] - a[1])
@@ -102,7 +130,7 @@ for (const [k, v] of sorted) console.log(`   ×${String(v).padStart(4)}  ${k}`)
 // 本闸口会看到 0 类并**静默通过** —— 那不是"没有噪音"，那是"没有采集"。
 // 「闸口在没数据时判绿」这件事本轮已经栽过一次（verify-pkg 的 walk 只看到 9% 文件），
 // 所以这里显式把空采集判红，并给出正确操作顺序。
-if (sorted.length === 0) {
+if (rawKinds === 0) {
   console.error('')
   console.error('❌ 采集到 0 类噪音 —— 这几乎一定是"没采集上"，而不是"真的没有噪音"。')
   console.error('   本库实测稳定有 20+ 类测试环境噪音，0 类只可能是 spool 为空。')

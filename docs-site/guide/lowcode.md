@@ -185,6 +185,11 @@ LOWCODE_TOKEN=my-secret-token node examples/lowcode-backend/server.mjs   # 默�
 - **演示站用的就是这份代码**：低代码演示页切到「REST（真 HTTP）」时后端就是它
   （`vite.config.ts` 只把 `prefix` 指到演示路径并种一份服务端表单）——
   **演示站里看到的行为＝部署后的行为**，不存在"demo 一套、上线一套"
+- **真数据库有现成两份实现**：内存版（重启即丢）与**零依赖 SQLite 版**
+  （设 `LOWCODE_DB=./lowcode.db` 即落盘；`node:sqlite` 是 Node 22.5+ 内置模块）。
+  换 MySQL/PG 就是把 `sqlite-store.mjs` 里那 11 个方法体换成你的方言 ——
+  这个接缝被测试证明过：**同一套 12 例契约测试在两种存储上各跑一遍都绿**，
+  另有 3 例专测持久化、真 SQL 可查（`json_extract` 聚合）、两版行为一致
 
 > 反向代理让 `/api/lowcode` 与前端**同域**最省事：`api-url-guard` 默认只放行同源，
 > 跨域得宿主用 `apiUrlPolicy` 显式放行。

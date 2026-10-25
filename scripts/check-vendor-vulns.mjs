@@ -4,11 +4,42 @@
 // CVE（0.19.6 / 0.20.2 已修复）永远停在 introduced:0 无 fixed 事件——朴素查询对任何
 // npm 版本号恒红。故按仓内登记制：返回的 GHSA id 必须在豁免表内且理由仍成立，新 id 即红。
 // 复核触发：OSV 给任一豁免 id 补上 fixed 事件 / vendored 版本升级 / 出现新 id——都回这里重审。
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+/**
+ * **上次成功结果的本地缓存**（`reports/` 已 gitignore）。
+ *
+ * 起因（第 107/108 轮实测）：本闸是整链里**唯一联网**的步骤（查 osv.dev），
+ * 网络抖一下就 `fetch failed` → 其后 19 步全部不执行（两轮里共挡了 3 次整链）。
+ * 而"断网"与"代码有漏洞"是两件事，不该用同一种红来表达。
+ *
+ * 口径（刻意保守）：
+ *  · 只有**成功**跑完全部目标才写缓存（半截数据不入库）；
+ *  · 缓存键 = `包名@版本`（版本变了自动不命中，不会拿旧结论顶新版本）；
+ *  · 年龄 ≤ `MAX_AGE_DAYS` 天才允许兜底；**超期仍然红** —— 宁可误红，
+ *    也不让供应链监测静默停摆；两者都不可用时行为与改动前完全一致。
+ */
+const CACHE = resolve(ROOT, 'reports', 'vendor-vulns-cache.json')
+const MAX_AGE_DAYS = 7
+
+function readCache() {
+  if (!existsSync(CACHE)) return null
+  try {
+    return JSON.parse(readFileSync(CACHE, 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+/** 缓存年龄（天）；时间戳坏了视为无限旧（= 不可用） */
+function cacheAgeDays(cache) {
+  const t = Date.parse(cache?.checkedAt ?? '')
+  return Number.isFinite(t) ? (Date.now() - t) / 86_400_000 : Number.POSITIVE_INFINITY
+}
 const VENDOR = JSON.parse(readFileSync(resolve(ROOT, 'src/components/_internal/xlsx/VENDOR.json'), 'utf8'))
 const version = VENDOR.version ?? VENDOR['xlsx']?.version
 if (!version) {
@@ -89,8 +120,27 @@ async function main() {
   ]
 
   const lines = []
+  const cache = readCache()
+  const cacheFresh = cache && cacheAgeDays(cache) <= MAX_AGE_DAYS
+  const freshResults = {}
+  let usedCache = 0
+
   for (const t of TARGETS) {
-    const vulns = await queryOsv(t.name, t.version)
+    const key = `${t.name}@${t.version ?? 'unknown'}`
+    let vulns
+    try {
+      vulns = await queryOsv(t.name, t.version)
+      freshResults[key] = vulns.map((v) => v.id)
+    } catch (err) {
+      // 网络不可达：只有在"缓存新鲜且版本一致"时才兜底，并把这件事**显式说出来**
+      const cachedIds = cacheFresh ? cache?.results?.[key] : undefined
+      if (!cachedIds) throw err
+      usedCache += 1
+      vulns = cachedIds.map((id) => ({ id }))
+      console.log(
+        `   ⚠ ${key}：osv.dev 不可达（${err?.message ?? err}），改用 ${cacheAgeDays(cache).toFixed(1)} 天前的缓存结果（上限 ${MAX_AGE_DAYS} 天）`,
+      )
+    }
     const { waived, unknown } = splitVulns(vulns, t.allowed)
     if (unknown.length) {
       console.error(
@@ -101,7 +151,18 @@ async function main() {
     for (const id of waived) console.log(`  豁免命中 ${id}（${t.name}）：${t.allowed.get(id).split('；')[0]}；`)
     lines.push(`${t.name}${t.version ? `@${t.version}` : '(版本未知/按包名)'}=${vulns.length}条通告(豁免${waived.length})`)
   }
-  console.log(`✅ check:vendor-vulns 通过 — ${lines.join('；')}（新 id 即红）`)
+
+  // 全部目标都拿到**新鲜**结果才写缓存（有兜底的跑不覆盖缓存，避免"离线结论"污染"在线结论"）
+  if (usedCache === 0) {
+    try {
+      writeFileSync(CACHE, JSON.stringify({ checkedAt: new Date().toISOString(), results: freshResults }, null, 2))
+    } catch {
+      // 写不了缓存不影响闸口结论（reports/ 可能只读）
+    }
+  }
+
+  const suffix = usedCache > 0 ? `（其中 ${usedCache} 项用离线缓存兜底）` : ''
+  console.log(`✅ check:vendor-vulns 通过 — ${lines.join('；')}（新 id 即红）${suffix}`)
 }
 
 const invokedDirectly = (process.argv[1] ?? '').replace(/\\/g, '/').endsWith('check-vendor-vulns.mjs')

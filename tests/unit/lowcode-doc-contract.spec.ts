@@ -322,4 +322,37 @@ describe('文档 lowcode.md · 可部署参考后端（§3）', () => {
       expect(readme, `README 必须写清 ${need}`).toContain(need)
     }
   })
+  it('真数据库这条路：指南/README 点名 SQLite 版，且存储实现含两张表与 11 个方法', () => {
+    const readme = readFileSync('examples/lowcode-backend/README.md', 'utf8')
+    for (const need of ['LOWCODE_DB', 'sqlite-store.mjs', 'json_extract']) {
+      expect(readme, `README 必须写清 ${need}`).toContain(need)
+    }
+    const guide = readFileSync('docs-site/guide/lowcode.md', 'utf8')
+    expect(guide, '指南要点名 SQLite 版与 LOWCODE_DB').toContain('LOWCODE_DB')
+    expect(guide).toContain('sqlite-store.mjs')
+
+    const store = readFileSync('examples/lowcode-backend/sqlite-store.mjs', 'utf8')
+    expect(store, '两张表是真建出来的').toContain('CREATE TABLE IF NOT EXISTS forms')
+    expect(store).toContain('CREATE TABLE IF NOT EXISTS records')
+    expect(store, '必须导出工厂').toContain('export function createSqliteStore')
+    // 11 个方法一个都不能少（否则"换库"会变成"换出缺陷"）
+    for (const method of [
+      'listForms',
+      'loadForm',
+      'saveForm',
+      'renameForm',
+      'deleteForm',
+      'loadRecords',
+      'appendRecord',
+      'updateRecord',
+      'removeRecord',
+      'clearRecords',
+      'stats',
+    ]) {
+      expect(store, `SQLite 存储缺方法 ${method}`).toContain(`async ${method}(`)
+    }
+    // 删表单必须级联删记录，且用事务包住（否则断在中间会留孤儿数据）
+    expect(store, '删表单要连记录一起删').toContain('DELETE FROM records WHERE collect_key = ?')
+    expect(store, '级联删除要在事务里').toContain('BEGIN')
+  })
 })

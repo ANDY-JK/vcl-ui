@@ -380,12 +380,21 @@ if (isMain) {
     process.exit(1)
   }
   const port = Number(process.env.PORT ?? 8787)
+  // 可选：把数据落到 SQLite（Node 内置 node:sqlite，仍属零依赖）。
+  // 动态 import：不设 LOWCODE_DB 时不会加载 sqlite 模块（内存模式不产生 ExperimentalWarning）。
+  const store = process.env.LOWCODE_DB
+    ? (await import('./sqlite-store.mjs')).createSqliteStore(process.env.LOWCODE_DB)
+    : undefined
   const server = createLowcodeBackend({
     token,
     ...(process.env.LOWCODE_LIMITED_TOKEN ? { limitedToken: process.env.LOWCODE_LIMITED_TOKEN } : {}),
+    ...(store ? { store } : {}),
     log: process.env.LOWCODE_LOG === '1',
   })
   server.listen(port, () => {
-    console.log(`[lowcode-backend] http://127.0.0.1:${port}/api/lowcode  (token 来自 LOWCODE_TOKEN)`)
+    // 打印**实际绑定的端口**：PORT=0 时由系统分配（测试与"多实例并存"都靠它拿真端口）
+    const actual = server.address()?.port ?? port
+    const where = store ? `SQLite ${process.env.LOWCODE_DB}` : '内存（重启即丢）'
+    console.log(`[lowcode-backend] http://127.0.0.1:${actual}/api/lowcode  (token 来自 LOWCODE_TOKEN · 存储 ${where})`)
   })
 }

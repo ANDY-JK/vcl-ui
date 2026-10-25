@@ -63,6 +63,36 @@ app.use((req, res, next) => {
 > 种一份"服务端才有的表单"）。也就是说 —— **你在演示站看到的行为，就是你部署后的行为**，
 > 不再有"demo 一套、上线另一套"。
 
+## 换成真数据库：零依赖 SQLite（`LOWCODE_DB`）
+
+上面那份内存存储一重启就丢。要落到磁盘，设一个环境变量即可 —— **仍然零依赖**
+（`node:sqlite` 是 Node 22.5+ 内置模块）：
+
+```bash
+LOWCODE_DB=./lowcode.db LOWCODE_TOKEN=your-secret node examples/lowcode-backend/server.mjs
+# 启动行会显示「存储 SQLite ./lowcode.db」
+```
+
+表结构就两张（`examples/lowcode-backend/sqlite-store.mjs` 顶部有完整 DDL）：
+
+```sql
+forms   (id PK, name, updated_at, collect_key, design)        -- design 存 JSON
+records (seq PK AUTOINCREMENT, collect_key, id, time, data)   -- data   存 JSON
+```
+
+**换成 MySQL / PostgreSQL / 云数据库**：把 `sqlite-store.mjs` 里那 11 个方法体换成你的方言
+（SQL 语句 + 事务 + JSON 列），**HTTP 层、鉴权、错误语义一行都不用改**。
+`store.raw` 也给你留着了 —— 低代码之外想按业务字段查（例如"这个客户还有几张待办"），
+直接 `SELECT … json_extract(data, '$.customer') …` 即可，不必为每个查询再加 store 方法。
+
+> **这个接缝是被测试证明过的，不是说法**：同一套契约测试（12 例）分别在**内存版**与**SQLite 版**
+> 上各跑一遍（共 24 例全绿），另有 3 例专测 —— ① 关库重开数据还在；② 数据是**真表里的真列**
+> （宿主可直接 `json_extract` 聚合）；③ 两版**行为一致**（同一批操作后表单/记录/统计相等，
+> 含"删表单级联删记录"）。也就是说：**换实现只换那 11 个方法，语义由测试兜住。**
+>
+> ⚠️ `node:sqlite` 目前仍标 experimental（Node 会打一条 `ExperimentalWarning`），参考实现够用；
+> 生产请按下面"上线前要补的五件事"补齐迁移体系与并发方案。
+
 > **同源很关键**：库的 `api-url-guard` 默认只放行同源地址（跨域要宿主用 `apiUrlPolicy`
 > 显式放行）。生产里最省事的做法是**反向代理**：让 `/api/lowcode` 与前端同域，
 > 后端实际部署在哪都行（Nginx `location /api/lowcode { proxy_pass ... }`）。
