@@ -34,6 +34,35 @@ setActiveFormStore(
 )
 ```
 
+## 嵌进你自己的服务器（不必另起进程）
+
+`server.mjs` 拆成两层：`createLowcodeHandler()` 是**请求处理器**（同一契约的唯一实现），
+`createLowcodeBackend()` 只是把它包进 `http.createServer`。所以 Vite 中间件 / Express /
+Serverless 适配器都能直接挂，路由与鉴权不用重写：
+
+```js
+import { createLowcodeHandler } from './server.mjs'
+
+const handler = createLowcodeHandler({
+  token: process.env.LOWCODE_TOKEN,
+  prefix: '/api/lowcode-demo/store', // 默认 /api/lowcode；挂到别处就改它
+  seed: async (store) => {           // 预置数据（首次请求前落地，无竞态）
+    await store.saveForm('demo-1', { schemaVersion: 3, meta: { title: '演示' }, nodes: [] }, '演示')
+  },
+})
+
+app.use((req, res, next) => {
+  // ★ 前缀不匹配就交回外层：处理器只认自己的前缀，别吞掉宿主自己的路由
+  if (!(req.url ?? '').startsWith('/api/lowcode-demo/store/')) return next()
+  void handler(req, res)
+})
+```
+
+> **演示站用的就是这份代码**：`docs-site` 的低代码演示页切到「REST（真 HTTP）」时，
+> 后端就是本文件（`vite.config.ts` 只做两件事：把 `prefix` 指到 `/api/lowcode-demo/store`、
+> 种一份"服务端才有的表单"）。也就是说 —— **你在演示站看到的行为，就是你部署后的行为**，
+> 不再有"demo 一套、上线另一套"。
+
 > **同源很关键**：库的 `api-url-guard` 默认只放行同源地址（跨域要宿主用 `apiUrlPolicy`
 > 显式放行）。生产里最省事的做法是**反向代理**：让 `/api/lowcode` 与前端同域，
 > 后端实际部署在哪都行（Nginx `location /api/lowcode { proxy_pass ... }`）。

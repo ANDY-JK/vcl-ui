@@ -4,6 +4,9 @@ import dts from 'vite-plugin-dts'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
 import { thirdPartyEvidencePlugin } from './scripts/third-party-evidence.mjs'
+// 演示站的"表单仓储后端"**不是另写一份**，而是直接复用 `examples/lowcode-backend` 里
+// 宿主真要部署的那份实现（同一契约只能有一份代码 —— 否则 e2e 验的和交付的是两套东西）
+import { createLowcodeHandler } from './examples/lowcode-backend/server.mjs'
 
 /**
  * 声明按最低承诺版本生成时，vue 被解析到构建别名 vue34，
@@ -99,186 +102,46 @@ function lowcodeDemoApiPlugin() {
       })
 
       /**
+/**
        * **自托管后端的参考实现**（低代码的 REST 仓储）：`createRestFormStore` 约定的 9 条路由。
        *
-       * 为什么放在 dev server 里：`createRestFormStore` 的单测用的是 stub fetch，
-       * 「真 HTTP → 鉴权头 → JSON → 表单库/收集记录」这条链必须真跑一次才算通。
-       * 这里当"你自己的后端"——它**故意要求 `Authorization`**：缺令牌一律 401，
-       * 于是演示页有没有把 `headers` 接对，是**可观测的**（而不是"看着能跑"）。
+       * 第 106 轮之前这里是**一份 ~170 行的平行实现**：同一契约两份代码，而演示站 e2e 验的是
+       * 这个中间件、**不是宿主真要部署的那一份** —— 验证与交付脱节，契约一漂移两边就分叉。
+       * 现在这里只做两件事：把前缀指到演示页用的路径、把"服务端才有的表单"种进去；
+       * 路由/鉴权/错误语义（401/403/400/413、裸载荷）全部来自 `createLowcodeHandler`，
+       * 与 `LOWCODE_TOKEN=… node examples/lowcode-backend/server.mjs` 跑的是**同一份代码**。
        *
-       * 预置一份"服务端才有的表单"（名字带「服务端：」前缀）：切到 REST 仓储后如果导航项
-       * 从「客户台账/工单」变成「服务端：客户台账」，就证明确实是**从 HTTP 取的**，
-       * 而不是复用内存里那两份。
+       * 令牌写死在这里并被**服务端强制校验**：缺令牌一律 401，
+       * 于是"演示页有没有把 headers 接对"是**可观测的**，而不是"看着能跑"。
        */
-      const AUTH = 'Bearer demo-token-r105'
-      interface RestForm {
-        id: string
-        name: string
-        updatedAt: string
-        collectKey: string
-        design: unknown
-      }
-      const restForms = new Map<string, RestForm>()
-      const restRecords = new Map<string, unknown[]>()
-      let restSeq = 0
-      restForms.set('rest-customers', {
-        id: 'rest-customers',
-        name: '服务端：客户台账',
-        updatedAt: '2026-10-25T09:00:00.000Z',
-        collectKey: 'fd_collect_rest-customers',
-        design: {
-          schemaVersion: 3,
-          meta: { title: '服务端：客户台账', submitText: '提交' },
-          nodes: [
-            { id: 's1', type: 'text', label: '服务端字段·客户名称', key: 'name', required: true },
-            { id: 's2', type: 'textarea', label: '服务端字段·备注', key: 'note' },
-          ],
+      const STORE_PREFIX = '/api/lowcode-demo/store'
+      const storeHandler = createLowcodeHandler({
+        token: 'demo-token-r105',
+        prefix: STORE_PREFIX,
+        seed: async (store) => {
+          // 预置一份"服务端才有的表单"（名字带「服务端：」前缀）：切到 REST 仓储后，
+          // 导航项若从「客户台账 / 工单」变成「服务端：客户台账」，
+          // 就证明确实是**从 HTTP 取的**，而不是复用内存里那两份。
+          await store.saveForm(
+            'rest-customers',
+            {
+              schemaVersion: 3,
+              meta: { title: '服务端：客户台账', submitText: '提交' },
+              nodes: [
+                { id: 's1', type: 'text', label: '服务端字段·客户名称', key: 'name', required: true },
+                { id: 's2', type: 'textarea', label: '服务端字段·备注', key: 'note' },
+              ],
+            },
+            '服务端：客户台账',
+          )
         },
       })
-      const restMeta = (f: RestForm) => ({
-        id: f.id,
-        name: f.name,
-        updatedAt: f.updatedAt,
-        collectKey: f.collectKey,
-      })
-      const totalRecords = () => [...restRecords.values()].reduce((n, r) => n + r.length, 0)
-
-      server.middlewares.use('/api/lowcode-demo/store', (rawReq, rawRes) => {
-        const req = rawReq as unknown as {
-          url?: string
-          method?: string
-          headers: Record<string, string | string[] | undefined>
-          on: (ev: string, cb: (chunk?: unknown) => void) => void
+      server.middlewares.use((req, res, next) => {
+        if (!(req.url ?? '').startsWith(STORE_PREFIX + '/')) {
+          next()
+          return
         }
-        const res = rawRes as unknown as {
-          statusCode: number
-          setHeader: (k: string, v: string) => void
-          end: (b?: string) => void
-        }
-        const send = (code: number, body?: unknown) => {
-          res.statusCode = code
-          res.setHeader('Content-Type', 'application/json')
-          res.end(body === undefined ? '' : JSON.stringify(body))
-        }
-        const readBody = () =>
-          new Promise<string>((done) => {
-            let buf = ''
-            req.on('data', (c) => {
-              buf += String(c ?? '')
-            })
-            req.on('end', () => done(buf))
-          })
-        void (async () => {
-          try {
-            // 鉴权：宿主必须把令牌接上（演示页用 headers 函数形态供令牌）
-            if (req.headers.authorization !== AUTH) {
-              send(401, { error: 'unauthorized', hint: `需要 Authorization: ${AUTH}` })
-              return
-            }
-            const path = (req.url ?? '/').split('?')[0]
-            const method = (req.method ?? 'GET').toUpperCase()
-            const segs = path.split('/').filter(Boolean).map(decodeURIComponent)
-
-            if (segs[0] === '__stats') {
-              send(200, { forms: restForms.size, records: totalRecords() })
-              return
-            }
-            if (segs[0] === 'forms' && segs.length === 1) {
-              if (method === 'GET') {
-                // 契约是**裸数组**（`GET /forms → 200 FormMetaItem[]`）：不要包 `{ data: … }` 信封，
-                // 消费端拿到的是解析后的值本身（第 105 轮就因为这个多包了一层而导航为空）
-                send(200, [...restForms.values()].map(restMeta))
-                return
-              }
-              if (method === 'POST') {
-                const body = JSON.parse((await readBody()) || '{}') as {
-                  id?: string | null
-                  design?: { meta?: { title?: string } }
-                  name?: string
-                }
-                const id = body.id ?? `rest-${++restSeq}-${Date.now()}`
-                const name = body.name ?? body.design?.meta?.title ?? id
-                const rec: RestForm = {
-                  id,
-                  name,
-                  updatedAt: new Date().toISOString(),
-                  collectKey: `fd_collect_${id}`,
-                  design: body.design ?? null,
-                }
-                restForms.set(id, rec)
-                send(200, restMeta(rec))
-                return
-              }
-            }
-            if (segs[0] === 'forms' && segs.length === 2) {
-              const id = segs[1]
-              const f = restForms.get(id)
-              if (method === 'GET') {
-                if (!f) {
-                  send(404, { error: 'not_found' })
-                  return
-                }
-                send(200, f.design)
-                return
-              }
-              if (method === 'PATCH') {
-                const body = JSON.parse((await readBody()) || '{}') as { name?: string }
-                if (f && body.name) {
-                  f.name = body.name
-                  f.updatedAt = new Date().toISOString()
-                }
-                send(204)
-                return
-              }
-              if (method === 'DELETE') {
-                restForms.delete(id)
-                restRecords.delete(`fd_collect_${id}`)
-                send(204)
-                return
-              }
-            }
-            if (segs[0] === 'records' && segs.length >= 2) {
-              const key = segs[1]
-              const list = restRecords.get(key) ?? []
-              if (segs.length === 2) {
-                if (method === 'GET') {
-                  send(200, list)
-                  return
-                }
-                if (method === 'POST') {
-                  const body = JSON.parse((await readBody()) || '{}') as { record?: unknown }
-                  list.push(body.record ?? null)
-                  restRecords.set(key, list)
-                  send(204)
-                  return
-                }
-                if (method === 'DELETE') {
-                  restRecords.set(key, [])
-                  send(204)
-                  return
-                }
-              }
-              if (segs.length === 3 && method === 'PATCH') {
-                const body = JSON.parse((await readBody()) || '{}') as { data?: unknown }
-                const i = Number(segs[2])
-                if (Number.isInteger(i) && i >= 0 && i < list.length) list[i] = body.data ?? null
-                restRecords.set(key, list)
-                send(204)
-                return
-              }
-              if (segs.length === 3 && method === 'DELETE') {
-                const i = Number(segs[2])
-                if (Number.isInteger(i) && i >= 0 && i < list.length) list.splice(i, 1)
-                restRecords.set(key, list)
-                send(204)
-                return
-              }
-            }
-            send(404, { error: 'no_route', path, method })
-          } catch (err) {
-            send(500, { error: 'server_error', message: err instanceof Error ? err.message : String(err) })
-          }
-        })()
+        void storeHandler(req, res)
       })
     },
   }

@@ -13,10 +13,22 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
-    // vmThreads：happy-dom 环境按 worker 复用而非每文件重建（threads 池下实测创建 171 次、
-    // 占 tracked time 44%）。per-file 隔离由默认 isolate:true 保持在 VM 上下文层，
-    // 模块级单例（useTheme 等）不跨文件泄漏——2026-09-30 F11 实测 1628 用例全绿后启用。
-    pool: 'vmThreads',
+    // ★ pool：forks（2026-10-26 改；原为 vmThreads）
+    //
+    // 为什么改：vmThreads 下**每个 worker 共用同一份 Vite 转换缓存**，并行跑同一批 .vue 时
+    // 会偶发把「主模块」与「?vue&type=style 子模块」串台 —— 组件 import 拿到的是该文件的
+    // 样式子模块（CSS-modules 对象），于是渲染报
+    //   [Vue warn]: Component is missing template or render function
+    //   TypeError: Cannot read properties of undefined (reading 'modules')
+    // 实测（同一棵树、未改任何产品代码）：
+    //   · vmThreads 全量 ×9 → **4 次红**（1 例 / 11 例 / 185 例不等，单跑该文件必绿，复跑必绿）
+    //   · forks    全量 ×5 → **5/5 全绿**
+    //   · vmThreads + --no-file-parallelism 全量 ×2 → 2/2 全绿（代价 128s）
+    // 代价：forks 约 67s（vmThreads 约 40s，+27s）；换来的是"整链不再随机假红"。
+    // 历史注记（2026-09-30 F11）：当初选 vmThreads 是为**省时间** —— threads 池下 happy-dom
+    // 环境被创建 171 次、占 tracked time 44%，vmThreads 按 worker 复用。性能收益实测约 27s，
+    // 但代价是上面那类**不可自证**的假红（最坏一次 185 例），对"质量链结论可信"伤害更大。
+    pool: 'forks',
     // 单条用例上限 20s —— 默认 5s 在「带覆盖率插桩 + 全库并行」下会误伤大数据挂载用例：
     // 实测 1000~2000 行的 DataTable 挂载单条 2~4s，并行时越过 5s 判失败（不放开就是偶发红），
     // 而真挂死的用例照样会在 20s 处报错，探测能力没丢。

@@ -180,6 +180,11 @@ LOWCODE_TOKEN=my-secret-token node examples/lowcode-backend/server.mjs   # 默�
   （身份明确但无权）—— 宿主日志里能一眼分辨"令牌没带上"和"这个用户不该有权限"
 - **权限示例**：全权令牌能看到「内部」导航组，只读令牌看不到；`README.md` 里还列了
   上线前要补的五件事（持久化、真实鉴权、限流、审计、并发/乐观锁）
+- **可嵌进你自己的服务器**：`createLowcodeHandler()` 是请求处理器，能被 Vite 中间件 / Express /
+  Serverless 适配器直接挂（`prefix` 指定挂载前缀、`seed` 预置数据），不必另起进程、也不必重写路由
+- **演示站用的就是这份代码**：低代码演示页切到「REST（真 HTTP）」时后端就是它
+  （`vite.config.ts` 只把 `prefix` 指到演示路径并种一份服务端表单）——
+  **演示站里看到的行为＝部署后的行为**，不存在"demo 一套、上线一套"
 
 > 反向代理让 `/api/lowcode` 与前端**同域**最省事：`api-url-guard` 默认只放行同源，
 > 跨域得宿主用 `apiUrlPolicy` 显式放行。

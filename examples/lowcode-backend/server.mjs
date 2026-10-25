@@ -179,22 +179,37 @@ const readBody = (req) =>
   })
 
 /**
- * 建服务但不监听（测试与嵌入都这样用）：`server.listen(0)` 后读 `server.address().port`。
+ * **请求处理器**：同一份契约的**唯一实现**。
  *
- * @param {{ token: string, limitedToken?: string, store?: ReturnType<typeof createMemoryStore>, log?: boolean }} options
+ * 它既能被 `createLowcodeBackend()` 包成一个独立 HTTP 服务（部署形态），
+ * 也能被**直接挂进别的服务器**（Vite dev 中间件、Express、Serverless 适配器都行）——
+ * 仓库里的演示站就是这么接的：`vite.config.ts` 不再自己写一遍路由，而是 import 本文件。
+ * （第 106 轮之前，`vite.config.ts` 里有一份 170 行的**平行实现**：同一契约两份代码，
+ * 而 e2e 验的是中间件那份、**不是要交付的那份** —— 这种"验证与交付脱节"迟早会漂移。）
+ *
+ * @param {{
+ *   token: string,
+ *   limitedToken?: string,
+ *   store?: ReturnType<typeof createMemoryStore>,
+ *   log?: boolean,
+ *   prefix?: string,
+ *   seed?: (store: ReturnType<typeof createMemoryStore>) => Promise<void> | void,
+ * }} options
  *   - `token`：全权令牌（可读可写、可见受限导航组）
  *   - `limitedToken`：只读令牌（读得到表单/记录；写操作 **403**，且看不到受限导航组）
+ *   - `prefix`：挂载前缀，默认 `/api/lowcode`。挂到别处（如 `/api/lowcode-demo/store`）时改它
+ *   - `seed`：预置数据。**首次请求前落地**（处理器内部 `await ready`），不存在"第一个请求看不见种子"的竞态
  *
  * 两种令牌是为了把"**能读到什么**"与"**能不能写**"分开演示：生产里这两件事常由不同 scope 决定，
  * 而"有令牌就给全部"是最常见的越权来源。
  */
-export function createLowcodeBackend(options) {
+export function createLowcodeHandler(options) {
   const token = options?.token
-  if (!token) throw new Error('createLowcodeBackend: 必须提供 token（参考实现不提供无鉴权模式）')
+  if (!token) throw new Error('createLowcodeHandler: 必须提供 token（参考实现不提供无鉴权模式）')
   const limitedToken = options.limitedToken
   const store = options.store ?? createMemoryStore()
   const log = options.log === true
-  const PREFIX = '/api/lowcode'
+  const PREFIX = options.prefix ?? '/api/lowcode'
 
   /** 令牌 → scope 集合；未知令牌返回 null（→ 401） */
   const scopesOf = (auth) => {
@@ -204,7 +219,15 @@ export function createLowcodeBackend(options) {
   }
   const WRITE_METHODS = ['POST', 'PATCH', 'DELETE']
 
-  return createHttpServer(async (req, res) => {
+  /** 预置数据的落地结果：null = 成功；Error = 失败（此后每个请求都如实 500，不假装没事） */
+  const ready = Promise.resolve()
+    .then(() => options.seed?.(store))
+    .then(
+      () => null,
+      (err) => (err instanceof Error ? err : new Error(String(err))),
+    )
+
+  return async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost')
     const path = url.pathname
     const method = (req.method ?? 'GET').toUpperCase()
@@ -225,6 +248,12 @@ export function createLowcodeBackend(options) {
     const need = WRITE_METHODS.includes(method) ? 'store:write' : 'store:read'
     if (!scopes.includes(need)) {
       json(res, 403, { error: 'forbidden', need })
+      return
+    }
+
+    const seedErr = await ready
+    if (seedErr) {
+      json(res, 500, { error: 'seed_failed', message: seedErr.message })
       return
     }
 
@@ -331,7 +360,15 @@ export function createLowcodeBackend(options) {
       }
       json(res, 500, { error: 'server_error', message })
     }
-  })
+  }
+}
+
+/**
+ * 建**独立服务**但不监听（测试与 CLI 都这样用）：`server.listen(0)` 后读 `server.address().port`。
+ * 参数与 `createLowcodeHandler` 完全一致（它就是把处理器包进 `http.createServer`）。
+ */
+export function createLowcodeBackend(options) {
+  return createHttpServer(createLowcodeHandler(options))
 }
 
 /** CLI：只有被直接运行时才监听（被 import 时不占端口） */

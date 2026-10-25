@@ -306,4 +306,20 @@ describe('文档 lowcode.md · 可部署参考后端（§3）', () => {
     expect(doc, '要给出可直接抄的 fetcher 包装').toContain(':fetcher="withAuth"')
     expect(doc, '必须点明 formStore 的令牌在另一处').toContain('createRestFormStore({ headers })')
   })
+  it('演示站与独立部署**共用同一份实现**（vite.config 不准再长出平行实现）', () => {
+    const viteCfg = readFileSync('vite.config.ts', 'utf8')
+    expect(viteCfg, 'demo 后端必须复用示例后端，而不是另写一份').toContain(
+      'examples/lowcode-backend/server.mjs',
+    )
+    // 这几样是第 106 轮那份平行实现的内部状态；它们回来 = 平行实现回来了
+    for (const ghost of ['restForms', 'restRecords', 'restMeta', 'totalRecords']) {
+      expect(viteCfg, `vite.config 里又出现了平行实现的痕迹 ${ghost}`).not.toContain(ghost)
+    }
+    const example = readFileSync('examples/lowcode-backend/server.mjs', 'utf8')
+    expect(example, '处理器要能单独嵌进别的服务器').toContain('export function createLowcodeHandler')
+    const readme = readFileSync('examples/lowcode-backend/README.md', 'utf8')
+    for (const need of ['createLowcodeHandler', 'prefix', 'seed']) {
+      expect(readme, `README 必须写清 ${need}`).toContain(need)
+    }
+  })
 })

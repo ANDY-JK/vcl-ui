@@ -17,12 +17,13 @@
 //   深路径导入把这个连带面缩到最小。
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { effectScope } from 'vue'
+import { createServer } from 'node:http'
 import { createRestFormStore } from '@/components/form-builder/designer/rest-form-store'
 import { useLowCodeNav } from '@/components/form-builder/lowcode/useLowCodeNav'
 import { policyFromOrigins } from '@/components/form-builder/api-url-guard'
 import type { FormStore } from '@/components/form-builder/designer/store'
 import type { NavNode } from '@/components/form-builder/lowcode/nav-schema'
-import { createLowcodeBackend } from '../../examples/lowcode-backend/server.mjs'
+import { createLowcodeBackend, createLowcodeHandler } from '../../examples/lowcode-backend/server.mjs'
 
 const TOKEN = 'unit-token-r106'
 const LIMITED = '{{SECRET_9rkd2vbn}}'
@@ -247,5 +248,96 @@ describe('参考后端（examples/lowcode-backend）× 官方客户端 · 真 HT
     expect(called, '策略拒绝后不该发请求').toBe(0)
     expect(api.error.value).toMatch(/安全策略/)
     scope.stop()
+  })
+it('嵌进别人的服务器：前缀可换，且**不匹配的路径交回外层**（演示站就是这么挂的）', async () => {
+    // 这一例复刻 vite.config.ts 的挂法：**同一份处理器** + 外层先判前缀、不匹配则 next/自己处理。
+    // 它锁住的是"demo 与独立部署共用一份实现"这件事本身（不是再加一份平行实现）。
+    const handler = createLowcodeHandler({
+      token: TOKEN,
+      prefix: '/api/custom/store',
+      seed: async (store) => {
+        await store.saveForm('demo-form', design('服务端表') as never, '服务端表')
+      },
+    })
+    const outer = createServer((req, res) => {
+      if (!(req.url ?? '').startsWith('/api/custom/store/')) {
+        res.writeHead(418, { 'Content-Type': 'text/plain' })
+        res.end('outer')
+        return
+      }
+      void handler(req, res)
+    })
+    await new Promise<void>((done) => outer.listen(0, '127.0.0.1', done))
+    const { port } = outer.address() as { port: number }
+    try {
+      const s = createRestFormStore({
+        baseUrl: `http://127.0.0.1:${port}/api/custom/store`,
+        headers: { Authorization: AUTH },
+      })
+      expect((await s.listForms()).map((f) => f.name), '换前缀后照样能用').toEqual(['服务端表'])
+
+      const other = await fetch(`http://127.0.0.1:${port}/api/other/store/forms`, {
+        headers: { Authorization: AUTH },
+      })
+      expect(other.status, '前缀不匹配的路径必须交回外层（否则会吞掉宿主自己的路由）').toBe(418)
+      expect(await other.text()).toBe('outer')
+    } finally {
+      await new Promise<void>((done) => outer.close(done))
+    }
+  })
+
+  it('预置数据 seed：**首次请求前**就落地（没有"第一个请求看不见种子"的竞态）', async () => {
+    const seeded = createLowcodeBackend({
+      token: TOKEN,
+      seed: async (store) => {
+        await store.saveForm('seed-1', design('种子表') as never, '种子表')
+        await store.appendRecord('fd_collect_seed-1', {
+          id: 'r1',
+          time: '2026-01-01 00:00',
+          data: { note: '种子记录' },
+        })
+      },
+    })
+    await new Promise<void>((done) => seeded.listen(0, '127.0.0.1', done))
+    const { port } = seeded.address() as { port: number }
+    const seededOrigin = `http://127.0.0.1:${port}`
+    try {
+      // **第一个**请求就要看得见种子里那张表 —— 不 await ready 的实现这里会是空的
+      const forms = await (
+        await fetch(`${seededOrigin}/api/lowcode/forms`, { headers: { Authorization: AUTH } })
+      ).json()
+      expect((forms as { name: string }[]).map((f) => f.name)).toEqual(['种子表'])
+      const records = await (
+        await fetch(`${seededOrigin}/api/lowcode/records/fd_collect_seed-1`, {
+          headers: { Authorization: AUTH },
+        })
+      ).json()
+      expect((records as { id: string }[]).map((r) => r.id)).toEqual(['r1'])
+    } finally {
+      await new Promise<void>((done) => seeded.close(done))
+    }
+  })
+
+  it('seed 自己失败时**如实 500**（不假装没事、也不静默返回空），且鉴权仍然先判', async () => {
+    const broken = createLowcodeBackend({
+      token: TOKEN,
+      seed: async () => {
+        throw new Error('数据库连不上')
+      },
+    })
+    await new Promise<void>((done) => broken.listen(0, '127.0.0.1', done))
+    const { port } = broken.address() as { port: number }
+    const brokenOrigin = `http://127.0.0.1:${port}`
+    try {
+      const res = await fetch(`${brokenOrigin}/api/lowcode/forms`, { headers: { Authorization: AUTH } })
+      expect(res.status).toBe(500)
+      expect(await res.json()).toMatchObject({ error: 'seed_failed' })
+
+      // 未授权方不该从"运维故障"里得到任何信息：401 先于 seed_failed
+      const unauth = await fetch(`${brokenOrigin}/api/lowcode/forms`)
+      expect(unauth.status).toBe(401)
+    } finally {
+      await new Promise<void>((done) => broken.close(done))
+    }
   })
 })
