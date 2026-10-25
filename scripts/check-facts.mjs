@@ -85,6 +85,7 @@ const F = {
   domains: fact(/\| 域入口数 \| \*\*(\d+)\*\*/),
   components: fact(/\| 组件数 \| \*\*(\d+)\*\*/),
   named: fact(/\| 命名导出数 \| \*\*(\d+)\*\*/),
+  demoPages: fact(/\| demo 组件演示页数 \| \*\*(\d+)\*\*/),
   keys: fact(/\| zh-CN \| \*\*(\d+)\*\*/),
   steps: fact(/\| 整链步数 \| \*\*(\d+)\*\*/),
 }
@@ -117,6 +118,9 @@ const PROSE = [
   'docs-site/guide/troubleshooting.md',
   'docs-site/guide/comparison.md',
   'docs-site/guide/glossary.md',
+  // 低代码指南：读者是要照着它"部署到服务器"的，里面一旦出现组件数/键数这类
+  // 会漂移的数字就必须被真源校验（第 104 轮纳入；此前它不在受检清单里）
+  'docs-site/guide/lowcode.md',
 ]
 
 /** 每条规则：正则里的第 1 组是真源值对应的数字，name 用于报错 */
@@ -129,6 +133,8 @@ const RULES = [
   { re: /键\s*(\d+)\s*个/g, truth: () => F.keys, name: 'i18n 键数' },
   { re: /整链\s*\**(\d+)\**\s*步/g, truth: () => F.steps, name: '整链步数' },
   { re: /(\d+)\s*步(?:机械)?闸口/g, truth: () => F.steps, name: '整链步数' },
+  // "N 页交互示例" 曾经是手写没人校验的（第 104 轮实测 49 ≠ 46）
+  { re: /(\d+)\s*页(?:组件)?交互示例/g, truth: () => F.demoPages, name: 'demo 演示页数' },
 ]
 
 /** 模糊表述：只警告 */

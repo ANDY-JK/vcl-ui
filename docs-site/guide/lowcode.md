@@ -7,13 +7,14 @@
 
 ## 0. 一句话说清能力边界
 
-本库提供的是**三件可组合的能力**，不是「一个能连数据库的低代码平台」：
+本库提供的是**四件可组合的能力**，不是「一个能连数据库的低代码平台」：
 
 | 能力 | 入口 | 它负责 | 它不负责 |
 |---|---|---|---|
 | 设计表单 | `FormDesigner` | 拖拽出字段树，产出 JSON | 存哪、谁能用 |
 | 存储表单 | `FormStore` 接口（10 方法） | 定义契约 | **具体后端由你实现或选官方 local/cloud 实现** |
 | 渲染表单 | `FormBuilder` | 按 schema 渲染 + 校验 + 收集数据 | 提交到哪 |
+| 导航外壳 | `LowCodeNav` | 导航骨架 + 页面区装配 + 事件出口 | 数据从哪来、提交到哪（**仍然全由你决定**） |
 
 **「对接自己的数据库」的正确姿势**：你的数据库 → 你自己的 HTTP 接口 → 本库调接口。
 浏览器**无法**直连 MySQL / PostgreSQL（没有 TCP socket），所以任何声称"前端直连数据库"的方案都不成立。
@@ -165,9 +166,110 @@ useFormNav({
 
 > 只想用映射逻辑、不要加载副作用？用纯函数 `buildFormNavItems(forms, options)`。
 
+> 想**连骨架一起拿走**（"宿主只搭一个导航框架，其它导航项用户自建"）就用下一节的 `LowCodeNav`，它把「导航骨架 + 页面区装配 + 事件出口」做成一个组件。
+
 ---
 
-## 5. 展示类字段的数据源：`displaySource` 三模式
+## 5. 把外壳一起用：`LowCodeNav`（组件形态）
+
+上一节的 `useFormNav` 只产数据、UI 由你选。想**连骨架一起拿走** —— "宿主只搭一个导航框架 + 一个低代码入口，其它导航项由用户自建" —— 就用 `LowCodeNav`：它把「导航骨架 + 页面区装配 + 事件出口」做成一个组件，而**数据从哪来、提交发给谁仍然全由你决定**。
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { LowCodeNav } from 'vcl-ui/form-builder'
+import type { FormStore } from 'vcl-ui/form-builder'
+
+// 你自己的存储实现（见第 3 节）：对接自己后端的唯一接缝
+const myStore: FormStore = createMyCloudStore()
+const navRef = ref<{ refresh: () => Promise<void> } | null>(null)
+
+/** 表单页校验通过后触发。外壳**不自动外发** —— 发给谁由你决定 */
+async function onPageSubmit({ node, data }: { node: { formId?: string }; data: unknown }) {
+  await fetch('/api/records', {
+    method: 'POST',
+    body: JSON.stringify({ form: node.formId, data }),
+  })
+}
+
+/** 你在自己的界面里存完表单后再喊这一声：重取导航（不用整页重载） */
+async function afterHostSaved() {
+  await navRef.value?.refresh()
+}
+</script>
+
+<template>
+  <LowCodeNav
+    ref="navRef"
+    :source="{ kind: 'forms' }"
+    :form-store="myStore"
+    title="我的工作台"
+    @page-submit="onPageSubmit"
+  />
+</template>
+```
+
+### 三种导航定义来源（`source`）
+
+| `kind` | 字段 | 谁提供导航项 |
+|---|---|---|
+| `'static'` | `nodes` | 你写死的配置（"框架写死、页面动态"就是这一档） |
+| `'forms'` | `icon?` | **用户自建的表单**自动成为导航项（数据来自 `form-store`） |
+| `'api'` | `url` / `method?` / `dataPath?` / `body?` | 后端下发定义（默认**只允许同源**，跨域要显式放行） |
+
+> `forms` 档**故意没有 `basePath`**：这一层只给 `key` / `formId`，路由约定属于宿主。
+> 曾经收过这个参数，负向对照证明它配了等于没配（传与不传导航项逐字相同），于是删掉 —— 不留"配了等于没配"的选项。
+
+### 页面区由优先级决定谁渲染
+
+1. **`#page` 插槽** —— 存在就最高优先级，**连内置表单页都跳过**（此时 `renderFormPage` 不生效）
+2. 没有可选项 → 空态（`data-state="no-page"`）
+3. `kind: 'link'` → 站内链接**交给你的路由**（只有外链才真跳转）
+4. `kind: 'form'` 且 `renderFormPage !== false` → 内置渲染（解析器默认取活动 `FormStore`，可用 `resolveFormPage` 换你自己的后端）
+5. 其余 → **默认插槽**；连默认插槽也没给 → `data-state="slot-required"` 明确提示（不静默留白）
+
+### 关键 props
+
+| prop | 作用 |
+|---|---|
+| `source` | 三选一来源，或返回它的函数（`() => NavSource`） |
+| `formStore` | `forms` 来源的数据源，也是表单页解析的默认来源 —— **对接自己后端的唯一接缝** |
+| `fetcher` | 注入自己的 `fetch`（加鉴权头 / 走自己的请求层） |
+| `apiUrlPolicy` | 外发 URL 策略；不传 = **只允许同源** |
+| `filter` | 权限过滤（判定交给你） |
+| `renderFormPage` | 关掉 = 只留骨架，页面区完全由 `#page` 接管 |
+| `resolveFormPage` | 换成你自己后端的表单页解析器 |
+| `showIssues` | 显示配置问题条（默认不显示；`#issues` 插槽随时可取全部问题） |
+| `title` / `modelValue` / `autoLoad` / `autoSelect` | 侧栏标题 / 受控选中 / 挂载即加载 / 加载后自动选第一项 |
+
+### 事件
+
+| 事件 | 语义 |
+|---|---|
+| `select(node)` | 选中某项 —— **只通知，不替你路由** |
+| `update:modelValue(key)` | 受控宿主回写；选项被删导致的**悬空选中**也会通知 |
+| `page-submit({ node, data })` | 表单页校验通过后触发 —— **外壳不自动外发**，发不发、发给谁由你决定 |
+| `page-change({ node, data })` | 表单数据变化（同一次变更只发一次，不透传渲染器的双事件） |
+
+### 实例方法：`refresh()`
+
+你在自己的界面里改完后端数据（例如刚存了一份新表单）后调用它重取导航 —— **不用整页重载**：
+
+```ts
+const navRef = ref<{ refresh: () => Promise<void> } | null>(null)
+await navRef.value?.refresh()
+```
+
+> **别和上一节搞混**：`useFormNav()` 返回的 `refresh()` 与组件实例上的 `refresh()` 同名，
+> 但一个是组合式函数的返回值、一个是外壳实例方法（走模板 `ref` 取）。
+
+**插槽一览**（默认渲染都能被替换）：`#nav-item :node/:active/:select`、`#nav-group :node`、`#nav-empty`、`#icon :node`、`#issues :issues`、`#page :node/:issues`，以及默认插槽（页面区兜底）。
+
+在线可跑版本见演示站 `#/lowcode-nav`：三种来源可切换、**脏数据被拒且原因可见**、提交**零外发**（请求计数断言）；"用户自建"那半在同一页用内置设计器演示 —— 建表单 → 保存 → 它自己成为导航项。
+
+---
+
+## 6. 展示类字段的数据源：`displaySource` 三模式
 
 表格 / 图表 / 地图 / 结果态这类**展示类字段**（不参与提交），数据从哪来由 `displaySource` 决定：
 
@@ -231,7 +333,7 @@ const { rows, loading, error } = useDisplayData({
 
 ---
 
-## 6. 分享：把表单编码进 URL
+## 7. 分享：把表单编码进 URL
 
 ```ts
 import { encodeShareCode, decodeShareCode } from 'vcl-ui/form-builder'
@@ -246,7 +348,7 @@ const design = decodeShareCode(code)     // 还原
 
 ---
 
-## 7. 常见误解
+## 8. 常见误解
 
 ### ❌「低代码能直连我的 MySQL」
 
@@ -267,7 +369,7 @@ const design = decodeShareCode(code)     // 还原
 
 ---
 
-## 8. 完整最小示例
+## 9. 完整最小示例
 
 ```vue
 <script setup lang="ts">
@@ -305,7 +407,7 @@ async function save() {
 
 ---
 
-## 9. 相关文件与测试
+## 10. 相关文件与测试
 
 | 关注点 | 落点 |
 |---|---|
@@ -316,6 +418,12 @@ async function save() {
 | 展示数据源 | `display-data-source.ts` |
 | 分享码 | `designer/share.ts` |
 | 转换正确性测试 | `tests/unit/lowcode-to-schema.spec.ts` |
+| 导航外壳 | `lowcode/LowCodeNav.vue`（props/slots/事件/`refresh()`） |
+| 外壳的数据与编排 | `lowcode/useLowCodeNav.ts`（三种来源）+ `lowcode/page-resolver.ts`（表单页解析） |
+| 外发 URL 策略 | `lowcode/api-url-guard.ts`（默认同源） |
+| 外壳测试 | `tests/unit/lowcode-nav-shell.spec.ts` / `lowcode-page-resolver.spec.ts` / `use-lowcode-nav.spec.ts` |
+| 外壳真数据闭环测试 | `tests/unit/lowcode-nav-realdata.spec.ts`（零桩）+ `tests/e2e/lowcode-nav-shell.spec.ts`（真浏览器） |
+| 宿主接入示例页 | `src/demos/lowcode/LowCodeNavDemo.vue`（演示站 `#/lowcode-nav`） |
 | 文档契约测试 | `tests/unit/lowcode-doc-contract.spec.ts` |
 | 决策记录 | `docs/adr/005-lowcode-display-source.md`（仓库内，不在本站） |
 

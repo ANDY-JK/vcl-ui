@@ -25,6 +25,15 @@ import { encodeShareCode, decodeShareCode } from '@/components/form-builder'
 import { createLocalFormStore, createCloudFormStore, createFormStore } from '@/components/form-builder'
 // ⑦ 文档「设计态类型」
 import type { DesignerNode, FormMeta } from '@/components/form-builder'
+// ⑧ 文档「导航外壳」（§5）用的
+import {
+  LowCodeNav,
+  useLowCodeNav,
+  createFormPageResolver,
+  setActiveFormStore,
+  isExternalNavUrl,
+} from '@/components/form-builder'
+import { readFileSync } from 'node:fs'
 
 describe('文档 lowcode.md · 所有 import 都真实存在', () => {
   it('组件与函数都是可用的（不是 undefined）', () => {
@@ -151,5 +160,66 @@ describe('文档 lowcode.md · buildFormNavItems 纯函数', () => {
     expect(items).toHaveLength(2)
     // 默认按 updatedAt 倒序 → f2 在前
     expect(items[0].label).toBe('表单B')
+  })
+})
+
+const DOC_LOWCODE = 'docs-site/guide/lowcode.md'
+const SHELL_SRC = 'src/components/form-builder/lowcode/LowCodeNav.vue'
+
+describe('文档 lowcode.md · 导航外壳（§5）', () => {
+  it('文档「导航外壳」节教的 import 都真实存在', () => {
+    for (const [name, v] of Object.entries({
+      LowCodeNav,
+      useLowCodeNav,
+      createFormPageResolver,
+      setActiveFormStore,
+      isExternalNavUrl,
+    })) {
+      expect(v, `文档里写的 ${name} 必须真实导出`).toBeTruthy()
+    }
+  })
+
+  it('**文档必须覆盖外壳的关键面**（代码加了、文档没跟 → 当场红）', () => {
+    const doc = readFileSync(DOC_LOWCODE, 'utf8')
+    // 这些名字都是"读者会照着抄"的东西，少一个就说明外壳层从文档里掉出去了
+    const required = [
+      'LowCodeNav',
+      '## 5. 把外壳一起用',
+      'refresh()',
+      'page-submit',
+      'page-change',
+      '#page',
+      '#nav-item',
+      'renderFormPage',
+      'resolveFormPage',
+      'showIssues',
+      'apiUrlPolicy',
+      'formStore',
+    ]
+    for (const n of required) {
+      expect(doc.includes(n), `lowcode.md 必须提到 ${n}`).toBe(true)
+    }
+  })
+
+  it('**文档写的那三档来源写法与 NavSource 真实判联一致**（写错一个字母读者就编译不过）', () => {
+    const doc = readFileSync(DOC_LOWCODE, 'utf8')
+    for (const k of ["'static'", "'forms'", "'api'"]) {
+      expect(doc, `文档必须写明来源档位 ${k}`).toContain(k)
+    }
+  })
+
+  it('**`refresh()` 只做「重取导航」一件事**：第 103 轮删掉的冗余 loadFormPage 不得回归', () => {
+    const src = readFileSync(SHELL_SRC, 'utf8')
+    const from = src.indexOf('async function refresh')
+    // 从 from 之后找：refresh() 上方那段说明注释里也出现了 defineExpose 字样，全局 indexOf 会命中注释
+    const to = src.indexOf('defineExpose', from)
+    expect(from, '源码里必须有 refresh()').toBeGreaterThan(-1)
+    expect(to, 'refresh() 之后必须有 defineExpose').toBeGreaterThan(from)
+    const body = src.slice(from, to)
+    expect(body, '必须真的调 api.refresh()').toMatch(/await api\.refresh\(\)/)
+    expect(
+      body,
+      '不得再显式 loadFormPage(current)：重取会重建导航项，current 身份变化已触发 watch 重载（见 §5 的 refresh 说明）'
+    ).not.toMatch(/loadFormPage/)
   })
 })

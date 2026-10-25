@@ -177,6 +177,46 @@ function eventCatalog() {
   rows.sort((a, b) => a.code.localeCompare(b.code))
   return rows
 }
+
+/**
+ * demo 组件演示页数。
+ *
+ * 口径：`src/demos/ComponentDemo.vue` 里 `demoMap` 的**顶层键数** —— 一个键就是一页
+ * （路由 `/:category` 按它取组件）。为什么值得当真源：`introduction.md` 写"仓库自带 N 页
+ * 交互示例"，这个 N 曾经是手写的、没人校验的（第 104 轮实测 49 ≠ 46，且"每个组件一页"
+ * 的说法也不成立：组件 66 个、演示页 46 个）。数键而不是数组件，因为它才是"页"的单位。
+ *
+ * 解析方式：花括号配对找出 `demoMap` 的对象体，再只数**深度 0** 的行首键 —— 这样
+ * `defineAsyncComponent(() => import(...))` 里嵌的对象不会把键数算多。
+ */
+function countDemoPages() {
+  const src = readFileSync(join(ROOT, 'src', 'demos', 'ComponentDemo.vue'), 'utf8')
+  const start = src.indexOf('demoMap')
+  if (start < 0) return null
+  const open = src.indexOf('{', start)
+  let depth = 0
+  let end = -1
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === '{') depth++
+    else if (src[i] === '}') {
+      depth--
+      if (depth === 0) {
+        end = i
+        break
+      }
+    }
+  }
+  if (open < 0 || end < 0) return null
+  let d = 0
+  let n = 0
+  for (const line of src.slice(open + 1, end).split('\n')) {
+    const t = line.trim()
+    if (d === 0 && /^['"]?[a-z0-9-]+['"]?\s*:/.test(t)) n++
+    d += (line.match(/[{([]/g) || []).length - (line.match(/[})\]]/g) || []).length
+  }
+  return n
+}
+
 async function main() {
   // 组件/命名导出数：复用 gen-docs 的解析（它已是「组件清单」的既有真源）
   const tmp = join(ROOT, 'reports', '.facts-tmp')
@@ -185,6 +225,7 @@ async function main() {
   const keys = await i18nKeys()
   const steps = gateSteps()
   const scale = testScale()
+  const demoPages = countDemoPages()
 
   const lines = [
     '---',
@@ -205,6 +246,7 @@ async function main() {
     `| 域入口数 | **${domains.length}** | \`package.json\` 的 \`exports\`，去掉 \`./css\`/\`./i18n\` 等辅助子路径 |`,
     `| 组件数 | **${manifest.totalComponents}** | \`gen:docs\` 解析 \`defineProps\`/\`defineEmits\`/\`defineSlots\` 得到 |`,
     `| 命名导出数 | **${manifest.totalNamed}** | 同上，含类型与 composable |`,
+    `| demo 组件演示页数 | **${demoPages}** | \`src/demos/ComponentDemo.vue\` 的 \`demoMap\` 顶层键数（一个键一页，页面含 Props 表） |`,
     `| 解析失败组件 | **${manifest.unparsed.length}** | 应为 0；非 0 时 \`check:docs\` 直接红 |`,
     '',
     '域入口清单：',
@@ -354,7 +396,7 @@ async function main() {
 
   console.log(
     `[gen:facts] 域 ${domains.length} / 组件 ${manifest.totalComponents} / 命名导出 ${manifest.totalNamed} / ` +
-      `zh-CN 键 ${keys['zh-CN'].keys} / 整链 ${steps.count} 步 / 事件码 ${uniqCodes.length}（${callSites} 调用点）→ ${relative(ROOT, OUT)}`,
+      `演示页 ${demoPages} / zh-CN 键 ${keys['zh-CN'].keys} / 整链 ${steps.count} 步 / 事件码 ${uniqCodes.length}（${callSites} 调用点）→ ${relative(ROOT, OUT)}`,
   )
 }
 
