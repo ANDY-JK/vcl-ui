@@ -34,7 +34,7 @@ import {
   type CollectRecord,
   type FormDesign,
 } from './designer/types'
-import { getActiveFormStore, type FormStore } from './designer/store'
+import { getActiveFormStore, isConflictError, type FormStore } from './designer/store'
 import { encodeShareCode, shareShortLink, shareFullLink } from './designer/share'
 import QRCode from 'qrcode/lib/browser.js'
 import { isLayoutField } from './fieldRegistry'
@@ -220,7 +220,16 @@ async function handleRecordSubmit(data: Record<string, unknown>): Promise<void> 
     await refreshRecords()
     recordDone.value = true
   } catch (e) {
-    recordError.value = t('fbd.reviewRecordFail', { err: e instanceof Error ? e.message : String(e) })
+    // 并发冲突不是"保存失败"：别人已改过这条记录，用户手里的才是旧版本。
+    // 刷新列表 + 面板换成最新 + 明说"未写入"（不假装成功，也不静默丢弃）。
+    if (!isConflictError(e)) {
+      recordError.value = t('fbd.reviewRecordFail', { err: e instanceof Error ? e.message : String(e) })
+    } else {
+      await refreshRecords()
+      const fresh = records.value.find((r) => r.id === record.id)
+      if (fresh) recordTarget.value = fresh
+      recordError.value = t('fbd.reviewRecordConflict', { rev: e.currentRev ?? '-' })
+    }
   } finally {
     recordSubmitting.value = false
   }

@@ -399,6 +399,33 @@ describe('handleRecordSubmit 审核提交', () => {
     expect(vm.recordDone, '失败不得标记完成').toBe(false)
     expect(vm.recordSubmitting, '标志复位').toBe(false)
   })
+
+  it('**并发冲突（409）→ 专用文案 + 刷新列表 + 面板换成最新数据**（不与"保存失败"混淆）', async () => {
+    const store = memoryStore([rec('r1', '张三')], { withUpdate: true })
+    // 模拟 REST 仓储抛出的冲突：鸭子类型（code + currentRev），不依赖具体实现
+    ;(store as unknown as Record<string, unknown>).updateRecord = vi.fn(async () => {
+      throw Object.assign(new Error('版本已过期'), { code: 'conflict', currentRev: 7 })
+    })
+    const w = mountCollect(store)
+    await flushPromises()
+    await openReview(w)
+    const loadsBefore = store.loadCalls
+    const vm = vmOf(w)
+    // 期间别人改了这条记录（刷新后应出现在面板里）
+    store.records[0]!.data.name = '别人改的'
+
+    await vm.handleRecordSubmit({ name: '我改的' })
+    await flushPromises()
+
+    expect(vm.recordError, '文案要说"已被他人修改"并带上当前版本').toBe(
+      t('fbd.reviewRecordConflict', { rev: 7 }),
+    )
+    expect(vm.recordError, '不能混成"审核保存失败" —— 那是另一类问题').not.toContain('审核保存失败')
+    expect(store.loadCalls, '冲突后必须刷新列表').toBeGreaterThan(loadsBefore)
+    expect(vm.recordTarget?.data?.name, '面板换成最新那条：用户能立刻看到别人改了什么').toBe('别人改的')
+    expect(vm.recordDone, '冲突不算完成（不假装成功）').toBe(false)
+    expect(vm.recordSubmitting, '标志复位').toBe(false)
+  })
 })
 
 /* ═══════════════ ④ 批量清除 vs 单条删除 ═══════════════ */

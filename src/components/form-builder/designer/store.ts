@@ -91,6 +91,17 @@ function write(key: string, value: unknown): void {
   }
 }
 
+/**
+ * 是不是"版本过期"类冲突（后端 409）？
+ *
+ * 用鸭子类型而非 `instanceof`：`FormStore` 是公开接口，宿主自己实现的 store 只要按契约
+ * 抛 `{ code: 'conflict', currentRev }` 就该被识别。UI 据此把"保存失败"与"别人改过了"分开说。
+ */
+export function isConflictError(e: unknown): e is { code?: string; currentRev?: number } {
+  const err = e as { code?: string; currentRev?: unknown } | null | undefined
+  return err?.code === 'conflict' || typeof err?.currentRev === 'number'
+}
+
 /** 创建 localStorage 形态的表单存储（草稿/表单列表/收集数据全走本机） */
 export function createLocalFormStore(): FormStore {
   function listForms(): FormMetaItem[] {

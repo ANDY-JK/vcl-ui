@@ -579,6 +579,9 @@ export default {
     reviewRecordTitle: '审核记录',
     reviewRecordDone: '审核完成，记录已更新',
     reviewRecordFail: '审核保存失败：{err}',
+    // 并发冲突（后端 409）：**必须与"保存失败"分开说** —— 前者是"你的版本过期了"，
+    // 后者是"请求挂了"。混在一起用户只会反复点重试，而他真正需要的是看一眼别人改了什么
+    reviewRecordConflict: '这条记录已被他人修改（当前第 {rev} 版）：列表已刷新，你的改动未写入，请基于最新内容重新提交',
     newRecord: '新建',
     fillFormHint: '填写新记录',
     // P1-8 数据导入（FormCollect 批量导入）

@@ -584,6 +584,10 @@ export default {
     reviewRecordTitle: 'Review record',
     reviewRecordDone: 'Review complete, record updated',
     reviewRecordFail: 'Failed to save review: {err}',
+    // Conflict (HTTP 409) must read differently from a failure: "your version is stale",
+    // not "the request failed" — otherwise users just retry blindly.
+    reviewRecordConflict:
+      'This record was changed by someone else (now at revision {rev}): the list has been refreshed, your changes were not saved. Please re-submit based on the latest content.',
     newRecord: 'New',
     fillFormHint: 'Fill in a new record',
     // P1-8 bulk import (FormCollect)
