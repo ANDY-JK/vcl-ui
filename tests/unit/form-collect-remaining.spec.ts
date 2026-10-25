@@ -411,8 +411,9 @@ describe('handleRecordSubmit 审核提交', () => {
     await openReview(w)
     const loadsBefore = store.loadCalls
     const vm = vmOf(w)
-    // 期间别人改了这条记录（刷新后应出现在面板里）
-    store.records[0]!.data.name = '别人改的'
+    // 期间别人改了这条记录：**换成新对象**（不是原地改字段）——
+    // 否则 recordTarget 指向的还是同一个对象，"面板换没换"这件事根本测不出来（负向对照抓到过假绿）
+    store.records[0] = { ...store.records[0]!, data: { name: '别人改的' } }
 
     await vm.handleRecordSubmit({ name: '我改的' })
     await flushPromises()
