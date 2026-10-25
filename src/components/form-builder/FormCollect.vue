@@ -581,6 +581,19 @@ async function confirmImport(): Promise<void> {
         {{ okMsg }}
       </p>
     </Transition>
+    <!--
+      导入失败提示（第 109 轮补渲染）。
+      之前 `importError` 只在 script 里被赋值（空文件 / JSON 解析失败 / 写入 store 失败三条路径），
+      **模板里没有任何节点消费它** —— 用户点了「导入记录」什么都没发生：
+      空文件、坏 JSON、后端 500 三种情况在界面上完全一样（都像"点了没反应"）。
+      刻意与 `errorMsg`（表单提交错误）分开：两条错误的来源与清空时机都不同。
+    -->
+    <Transition name="ldc-fade">
+      <p v-if="importError" class="ldc-feedback ldc-error" role="alert" data-test="import-error">
+        <IconSvg type="alert-circle" size="sm" />
+        {{ importError }}
+      </p>
+    </Transition>
 
     <!-- 统计卡片 -->
     <div v-if="records.length || todayCount" class="ldc-stats">

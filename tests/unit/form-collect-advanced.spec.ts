@@ -280,7 +280,7 @@ describe('导入链（Excel/CSV → 预览 → 确认写入）', () => {
     expect(badge?.textContent, '导入后计数应刷新').toContain('2')
   })
 
-  it('**空文件 → 提示 importEmpty，不弹预览**', async () => {
+  it('**空文件 → 提示 importEmpty（真的显示在界面上），不弹预览**', async () => {
     const store = memoryStore()
     const w = mountCollect(store)
     await settle()
@@ -289,6 +289,12 @@ describe('导入链（Excel/CSV → 预览 → 确认写入）', () => {
 
     expect(store.appendRecord, '不该写入').not.toHaveBeenCalled()
     expect([...document.querySelectorAll('.modal-box')].length, '不该弹预览').toBe(0)
+    // 第 109 轮补：这条提示以前**没有任何渲染节点**（写了状态没人看）——
+    // 空文件/坏 JSON/后端失败三种情况在界面上长得一模一样，都像"点了没反应"。
+    const alert = document.querySelector('[data-test="import-error"]')
+    expect(alert, '导入失败必须有可见提示').not.toBeNull()
+    expect(alert?.getAttribute('role'), '错误提示要能被读屏播报').toBe('alert')
+    expect(alert?.textContent ?? '').toContain('没有可导入的数据')
   })
 
   it('**重复导入去重**（同 id/内容记录跳过）', async () => {
@@ -316,12 +322,39 @@ describe('导入链（Excel/CSV → 预览 → 确认写入）', () => {
     const w = mountCollect(store)
     await settle()
 
-    // 二进制垃圾当 xlsx 名字 → readFileToRows 抛错
-    const bad = new File([new Uint8Array([0, 1, 2, 3])], 'data.xlsx', { type: 'application/octet-stream' })
+    // 坏 JSON → JSON.parse 抛错 → importParseFail 分支
+    // （注：二进制垃圾命名成 .xlsx 走的是"没有可导入的数据"那条，不是解析失败 —— 两条分支不同，
+    //   别拿一个用例同时声称两件事）
+    const bad = new File(['{ 这不是合法 JSON '], 'data.json', { type: 'application/json' })
     await importFile(w, bad)
 
     expect(store.appendRecord, '不该写入').not.toHaveBeenCalled()
     expect([...document.querySelectorAll('.modal-box')].length, '不该弹预览').toBe(0)
+    // 第 109 轮补：解析失败也要**看得见**（以前只写状态不渲染）
+    expect(document.querySelector('[data-test="import-error"]')?.textContent ?? '').toContain('解析失败')
+  })
+
+  it('**写入 store 失败 → 显示 importFailMsg**（后端 500 / 网络断，以前完全静默）', async () => {
+    const store = memoryStore()
+    // 导入预览确认后要逐条 appendRecord —— 让它抛（模拟后端 500 / 断网）
+    ;(store.appendRecord as unknown as { mockRejectedValue: (e: Error) => void }).mockRejectedValue(
+      new Error('后端 500'),
+    )
+    const w = mountCollect(store)
+    await settle()
+
+    await importFile(w, makeCsv('姓名,年龄\n张三,30\n'))
+    const confirm = [...document.querySelectorAll('button')].find((b) => b.textContent?.includes('导入'))
+    expect(confirm, '合法数据应先弹预览').toBeTruthy()
+    confirm!.click()
+    await settle()
+    await new Promise((r) => setTimeout(r, 20))
+    await settle()
+
+    const alert = document.querySelector('[data-test="import-error"]')
+    expect(alert, '写库失败必须有可见提示').not.toBeNull()
+    expect(alert?.textContent ?? '').toContain('导入失败')
+    expect(alert?.textContent ?? '').toContain('后端 500')
   })
 })
 
