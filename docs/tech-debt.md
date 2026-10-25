@@ -44,6 +44,7 @@
 | TD-07 | **`docs/` 与 `docs-site/` 是两套叙事**，只有后者进站；前者的审查报告不进站也无法被站内搜索 | `docs/*.md` 共 8 份，`docs-site/` 不含它们；`check:facts` 刻意不扫 `docs/` | P3 | `accepted` | 触发条件：需要对外披露审查过程时 → 择要进站，不必全量 |
 | TD-08 | **历史审查报告保留当时数字**，与 `facts.md` 的当前真源必然不一致 | `check:facts` 不扫 `docs/`（脚本内有注释说明） | P3 | `accepted` | 触发条件：有人把历史报告当"当前事实"引用 → 在报告头部加过期横幅 |
 | TD-09 | **`walk()` 类工具函数的目录排除曾按整路径匹配**，导致体积预算只看 9% 文件 | 已修（`scripts/verify-pkg.mjs` 按 basename 判）；**同类写法可能还有** | P3 | `accepted` | 触发条件：新增任何目录遍历脚本时 → 用 basename 判，并写负向对照 |
+| TD-29 |**`FormCollect.vue` 已贴住域止涨线**：改动后一度 818 行 > 810 被 `check:constants` 拦下，抽出冲突识别函数后 805 行（余量 5 行 / 0.6%），下次再动它会立刻触线 |`src/components/form-builder/FormCollect.vue`；`scripts/check-constants.mjs` 的 [7] 行数止涨线（form-builder 域 810） |P3 |`open` |触发条件：下一次要改 `FormCollect.vue` 时 → 先把审核提交（`handleRecordSubmit` + 记录弹窗状态）、导入（`onImportFile` 三条链）、导出（Excel/CSV）各抽成一个 composable，再改功能；抽完把止涨线降到实测值|
 
 ## 已结项（保留历史）
 
