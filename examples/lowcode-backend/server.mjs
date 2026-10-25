@@ -17,14 +17,20 @@
  *
  *   GET    /api/lowcode/forms                 → 200 FormMetaItem[]（**裸数组**）
  *   GET    /api/lowcode/forms/{id}            → 200 FormDesign ｜ 404
- *   POST   /api/lowcode/forms                 body { id, design, name? } → 201 FormMetaItem（**裸对象**）
- *   PATCH  /api/lowcode/forms/{id}            body { name } → 204
+ *   POST   /api/lowcode/forms                 body { id, design, name?, rev? } → 201 FormMetaItem（**裸对象**）
+ *   PATCH  /api/lowcode/forms/{id}            body { name, rev? } → 204 ｜ 409
  *   DELETE /api/lowcode/forms/{id}            （连同其收集记录）→ 204
- *   GET    /api/lowcode/records/{key}         → 200 CollectRecord[]（**裸数组**）
- *   POST   /api/lowcode/records/{key}         body { record } → 204
- *   PATCH  /api/lowcode/records/{key}/{id}    body { data } → 204
+ *   GET    /api/lowcode/records/{key}         → 200 CollectRecord[]（**裸数组**；每项带 `rev`）
+ *   POST   /api/lowcode/records/{key}         body { record } → 204（新记录 `rev` 从 1 起）
+ *   PATCH  /api/lowcode/records/{key}/{id}    body { data, rev? } → 204 ｜ 409
  *   DELETE /api/lowcode/records/{key}/{id}    → 204
  *   DELETE /api/lowcode/records/{key}         （清空）→ 204
+ *
+ * ## 并发（乐观锁）
+ *
+ * 带 `rev` = "我读到的是第 N 版"：库里已不是 N → **409** `{ error: 'conflict', currentRev, message }`，
+ * 客户端重读后重试即可。不带 `rev` 仍是老语义（最后一次写入赢），故老客户端与既有 e2e 不受影响。
+ * 版本号存在实体上（`forms.rev` / `records.rev`），每次写 +1，新建从 1 起。
  *
  *   GET    /api/lowcode/nav                   → 200 { code, data: { items } }（配 dataPath: 'data.items'）
  *   GET    /api/lowcode/__stats               → 200 { forms, records }（运维自检/演示用）
@@ -44,6 +50,7 @@
  */
 import { createServer as createHttpServer } from 'node:http'
 import { randomUUID } from 'node:crypto'
+import { ConflictError, isConflict } from './store-errors.mjs'
 
 /** 请求体上限：参考实现也要有护栏，别让一个超大 body 把进程撑爆 */
 const MAX_BODY = 2 * 1024 * 1024
@@ -55,11 +62,19 @@ const MAX_BODY = 2 * 1024 * 1024
  * 靠这份注释对齐契约即可（改错了会被库的契约测试与前端一起抓出来）。
  */
 export function createMemoryStore() {
-  /** id → { id, name, updatedAt, collectKey, design } */
+  /** id → { id, name, updatedAt, collectKey, design, rev } */
   const forms = new Map()
-  /** storageKey → CollectRecord[] */
+  /** storageKey → CollectRecord[]（记录自带 rev） */
   const records = new Map()
-  const meta = (f) => ({ id: f.id, name: f.name, updatedAt: f.updatedAt, collectKey: f.collectKey })
+  const meta = (f) => ({ id: f.id, name: f.name, updatedAt: f.updatedAt, collectKey: f.collectKey, rev: f.rev })
+
+  /** 乐观锁：带了 expectedRev 才检查（不带 = 老语义"后写覆盖"） */
+  const assertRev = (actual, expectedRev, what) => {
+    if (expectedRev === undefined || expectedRev === null) return
+    if (actual !== expectedRev) {
+      throw new ConflictError(`${what} 已被别人改过（当前 rev=${actual}，你带的是 ${expectedRev}）`, { rev: actual })
+    }
+  }
 
   return {
     async listForms() {
@@ -69,24 +84,28 @@ export function createMemoryStore() {
       const f = forms.get(id)
       return f ? f.design : null
     },
-    async saveForm(id, design, name) {
+    async saveForm(id, design, name, expectedRev) {
       const key = id || `form_${randomUUID()}`
       const prev = forms.get(key)
+      if (prev) assertRev(prev.rev, expectedRev, `表单 ${key}`)
       const rec = {
         id: key,
         name: name || design?.meta?.title || prev?.name || key,
         updatedAt: new Date().toISOString(),
         collectKey: prev?.collectKey || `fd_collect_${key}`,
         design,
+        rev: (prev?.rev ?? 0) + 1,
       }
       forms.set(key, rec)
       return meta(rec)
     },
-    async renameForm(id, name) {
+    async renameForm(id, name, expectedRev) {
       const f = forms.get(id)
       if (!f) return
+      assertRev(f.rev, expectedRev, `表单 ${id}`)
       f.name = name
       f.updatedAt = new Date().toISOString()
+      f.rev += 1
     },
     async deleteForm(id) {
       const f = forms.get(id)
@@ -99,13 +118,15 @@ export function createMemoryStore() {
     },
     async appendRecord(storageKey, record) {
       const list = records.get(storageKey) ?? []
-      list.unshift(record)
+      list.unshift({ ...record, rev: 1 })
       records.set(storageKey, list)
     },
-    async updateRecord(storageKey, recordId, data) {
+    async updateRecord(storageKey, recordId, data, expectedRev) {
       const list = records.get(storageKey) ?? []
       const i = list.findIndex((r) => r && r.id === recordId)
-      if (i >= 0) list[i] = { ...list[i], data }
+      if (i < 0) return
+      assertRev(list[i].rev, expectedRev, `记录 ${storageKey}/${recordId}`)
+      list[i] = { ...list[i], data, rev: (list[i].rev ?? 1) + 1 }
       records.set(storageKey, list)
     },
     async removeRecord(storageKey, recordId) {
@@ -281,7 +302,7 @@ export function createLowcodeHandler(options) {
         }
         if (method === 'POST') {
           const body = JSON.parse((await readBody(req)) || '{}')
-          const saved = await store.saveForm(body.id ?? null, body.design, body.name)
+          const saved = await store.saveForm(body.id ?? null, body.design, body.name, body.rev)
           json(res, 201, saved)
           return
         }
@@ -300,7 +321,7 @@ export function createLowcodeHandler(options) {
         }
         if (method === 'PATCH') {
           const body = JSON.parse((await readBody(req)) || '{}')
-          await store.renameForm(id, body.name)
+          await store.renameForm(id, body.name, body.rev)
           json(res, 204)
           return
         }
@@ -335,7 +356,7 @@ export function createLowcodeHandler(options) {
         const id = segs[2]
         if (method === 'PATCH') {
           const body = JSON.parse((await readBody(req)) || '{}')
-          await store.updateRecord(key, id, body.data)
+          await store.updateRecord(key, id, body.data, body.rev)
           json(res, 204)
           return
         }
@@ -348,6 +369,12 @@ export function createLowcodeHandler(options) {
 
       json(res, 404, { error: 'no_route', path, method })
     } catch (err) {
+      // 乐观锁冲突：**不是**服务端故障，而是"你读到的是旧版本"——回 409 并把当前版本带上，
+      // 否则客户端只能瞎猜要不要重读（400/500 都会让 UI 提示成"保存失败，请重试"，掩盖真实原因）
+      if (isConflict(err)) {
+        json(res, 409, { error: 'conflict', currentRev: err?.current?.rev ?? null, message: err.message })
+        return
+      }
       // JSON 解析失败是**客户端错误**（400），不要混进 500 —— 否则宿主日志里全是假的服务端故障
       if (err instanceof SyntaxError) {
         json(res, 400, { error: 'bad_json' })

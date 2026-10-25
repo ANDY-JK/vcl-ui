@@ -12,7 +12,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawn } from 'node:child_process'
 import { createMemoryStore } from '../../examples/lowcode-backend/server.mjs'
-import { createSqliteStore } from '../../examples/lowcode-backend/sqlite-store.mjs'
+import { createSqliteStore, MIGRATIONS, migrate, readSchemaVersion } from '../../examples/lowcode-backend/sqlite-store.mjs'
+import { DatabaseSync } from 'node:sqlite'
 
 /** 存储接口的最小形状（本文件只用到这几个方法） */
 interface Store {
@@ -234,5 +235,111 @@ describe('SQLite 存储层：真落库 · 真持久化 · 宿主可自行 SQL �
     expect(sqlite.stats, '统计一致').toEqual(memory.stats)
     expect(sqlite.afterDelete, '删表单级联删记录后一致').toEqual(memory.afterDelete)
     expect(sqlite.afterDelete, '级联删除后确实空了').toEqual({ forms: 0, records: 0 })
+  })
+
+  it('**乐观锁 rev 两版一致**：递增序列相同，用旧版本写两边都抛 ConflictError', async () => {
+    // 同一段脚本在两份实现上跑：只要有一边 rev 语义不同（比如忘了 +1、或比较方向反了），序列就会分叉
+    async function script(s: Store) {
+      const saved = await s.saveForm(null, design('并发'), '并发')
+      const key = saved.collectKey
+      await s.appendRecord(key, { id: 'r1', time: 't1', data: { n: 1 } })
+      const seq: Array<number | undefined> = []
+      seq.push((await s.loadRecords(key))[0].rev)
+      await s.updateRecord(key, 'r1', { n: 2 }, 1)
+      seq.push((await s.loadRecords(key))[0].rev)
+      await s.updateRecord(key, 'r1', { n: 3 }, 2)
+      seq.push((await s.loadRecords(key))[0].rev)
+      let conflictName = ''
+      let conflictRev: number | undefined
+      try {
+        // 用"别人已经读过的旧版本"再写：必须冲突，而不是把 n:3 悄悄改成 n:4
+        await s.updateRecord(key, 'r1', { n: 4 }, 1)
+      } catch (e) {
+        conflictName = (e as Error).name
+        conflictRev = (e as { current?: { rev?: number } }).current?.rev
+      }
+      const data = (await s.loadRecords(key))[0].data
+      const formRev = (await s.listForms())[0].rev
+      return { seq, conflictName, conflictRev, data, formRev }
+    }
+
+    const memory = await script(createMemoryStore() as unknown as Store)
+    const sqliteStore = createSqliteStore(':memory:') as unknown as Store
+    let sqlite
+    try {
+      sqlite = await script(sqliteStore)
+    } finally {
+      sqliteStore.close?.()
+    }
+
+    expect(memory.seq, '记录 rev 从 1 起、每次写 +1').toEqual([1, 2, 3])
+    expect(sqlite, '两版的 rev 序列 / 冲突类型 / 冲突后的数据 都一致').toEqual(memory)
+    expect(sqlite.conflictName, '存储层抛的是同一个错误类型（HTTP 层才能统一映射 409）').toBe('ConflictError')
+    expect(sqlite.conflictRev, '冲突时要把当前版本带回去，客户端才能重读后重试').toBe(3)
+    expect(sqlite.data, '冲突的写入**不能**生效').toEqual({ n: 3 })
+    expect(sqlite.formRev, '表单侧同样从 1 起').toBe(1)
+  })
+})
+
+describe('SQLite 迁移：已上线的旧库能升级、数据不丢、可重复打开', () => {
+  it('迁移函数按版本连续应用且幂等：首次 from 0→2 应用 [1,2]，再次应用空', () => {
+    const raw = new DatabaseSync(tempDb())
+    try {
+      expect(migrate(raw), '空库应把两个版本都应用一遍').toEqual({ from: 0, to: 2, applied: [1, 2] })
+      expect(migrate(raw), '再跑一次不该重复应用（否则加列会报 duplicate column）').toEqual({
+        from: 2,
+        to: 2,
+        applied: [],
+      })
+      expect(readSchemaVersion(raw)).toBe(2)
+    } finally {
+      raw.close()
+    }
+  })
+
+  it('**v1 老库升级**：只有 v1 结构 + 历史数据 → 新版打开后自动到 v2，数据还在且 rev 从 1 起', async () => {
+    const file = tempDb()
+    // 用迁移列表里 v1 的 DDL 造一个"已上线的库"（这正是真实升级路径：先有数据，后有新版本）
+    const old = new DatabaseSync(file)
+    try {
+      old.exec(MIGRATIONS[0].sql)
+      old.exec(
+        `INSERT INTO forms (id, name, updated_at, collect_key, design)
+         VALUES ('form_old', '老表单', '2026-01-01T00:00:00.000Z', 'fd_collect_form_old', '{"meta":{"title":"老表单"}}')`,
+      )
+      old.exec(
+        `INSERT INTO records (collect_key, id, time, data)
+         VALUES ('fd_collect_form_old', 'r-old', '2026-01-01 09:00', '{"name":"历史数据"}')`,
+      )
+      expect(readSchemaVersion(old), '老库还没有版本表').toBe(0)
+    } finally {
+      old.close()
+    }
+
+    const store = createSqliteStore(file)
+    try {
+      expect(readSchemaVersion(store.raw), '打开即迁移到最新版本').toBe(2)
+      expect(
+        await store.listForms(),
+        '历史表单必须还在（迁移不是重建库），且 rev 从 1 起',
+      ).toEqual([
+        { id: 'form_old', name: '老表单', updatedAt: '2026-01-01T00:00:00.000Z', collectKey: 'fd_collect_form_old', rev: 1 },
+      ])
+      expect(await store.loadRecords('fd_collect_form_old')).toEqual([
+        { id: 'r-old', time: '2026-01-01 09:00', data: { name: '历史数据' }, rev: 1 },
+      ])
+    } finally {
+      store.close()
+    }
+
+    // 幂等：进程重启再打开一次，版本不倒退、数据不变、也不会重复加列
+    const again = createSqliteStore(file)
+    try {
+      expect(readSchemaVersion(again.raw)).toBe(2)
+      expect((await again.listForms())[0]).toMatchObject({ id: 'form_old', rev: 1 })
+      expect((await again.loadRecords('fd_collect_form_old'))[0]).toMatchObject({ id: 'r-old', rev: 1 })
+    } finally {
+      again.close()
+    }
   })
 })

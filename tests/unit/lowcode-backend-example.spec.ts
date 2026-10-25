@@ -372,4 +372,58 @@ it('嵌进别人的服务器：前缀可换，且**不匹配的路径交回外�
       await new Promise<void>((done) => broken.close(done))
     }
   })
+
+  it('**乐观锁**：带 rev 写成功、用旧 rev 再写 → 409 且带 currentRev；不带 rev 仍 204（老客户端不受影响）', async () => {
+    const send = (url: string, body: unknown, method = 'POST') =>
+      fetch(url, {
+        method,
+        headers: { Authorization: AUTH, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+    // ① 建表单：新实体的 rev 从 1 起
+    const created = await send(`${base}/forms`, { design: design('并发表'), name: '并发表' })
+    expect(created.status).toBe(201)
+    const saved = (await created.json()) as { id: string; collectKey: string; rev: number }
+    expect(saved.rev, '新建表单 rev 从 1 起').toBe(1)
+
+    // ② 写一条记录：同样从 1 起
+    const key = saved.collectKey
+    expect(
+      (await send(`${base}/records/${key}`, { record: { id: 'r1', time: '2026-10-26 10:00', data: { name: '张三' } } }))
+        .status,
+    ).toBe(204)
+    const readRev = async () =>
+      (
+        (await (await fetch(`${base}/records/${key}`, { headers: { Authorization: AUTH } })).json()) as Array<{
+          rev: number
+        }>
+      )[0].rev
+    expect(await readRev(), '新记录 rev 从 1 起').toBe(1)
+
+    const patchRec = (body: unknown) => send(`${base}/records/${key}/r1`, body, 'PATCH')
+
+    // ③ 带"我读到的版本"写 → 成功，且版本递增
+    expect((await patchRec({ data: { name: '甲先改' }, rev: 1 })).status).toBe(204)
+    expect(await readRev(), '写成功要 +1').toBe(2)
+
+    // ④ 另一个标签页也读到 rev=1，随后提交 → 必须 409，**不能**把甲改的悄悄盖掉
+    const conflict = await patchRec({ data: { name: '乙后到' }, rev: 1 })
+    expect(conflict.status, '别人改过了要给 409，而不是静默覆盖').toBe(409)
+    const conflictBody = (await conflict.json()) as { error: string; currentRev: number; message: string }
+    expect(conflictBody.error).toBe('conflict')
+    expect(conflictBody.currentRev, '把当前版本带回去，客户端才能重读后重试').toBe(2)
+    expect(conflictBody.message, '错误信息要说人话（含双方版本号）').toMatch(/rev=2/)
+
+    // ⑤ 不带 rev → 老的"最后一次写入赢"，仍 204（既有客户端与演示站 e2e 靠这个）
+    expect((await patchRec({ data: { name: '无版本号写入' } })).status).toBe(204)
+    expect(await readRev(), '不带 rev 的写入照样 +1').toBe(3)
+
+    // ⑥ 表单侧同理：第一次带 rev=1 改名成功，第二次带同一个旧 rev → 409
+    expect((await send(`${base}/forms/${saved.id}`, { name: '并发表（甲改）', rev: 1 }, 'PATCH')).status).toBe(204)
+    expect(
+      (await send(`${base}/forms/${saved.id}`, { name: '并发表（乙改）', rev: 1 }, 'PATCH')).status,
+      '表单被别人改过 → 409',
+    ).toBe(409)
+  })
 })

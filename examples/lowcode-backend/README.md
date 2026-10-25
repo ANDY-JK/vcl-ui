@@ -141,14 +141,52 @@ import { createLowcodeBackend } from './server.mjs'
 createLowcodeBackend({ token: process.env.LOWCODE_TOKEN, store: mySqlBackedStore }).listen(8787)
 ```
 
+## 并发：乐观锁 `rev`（"两个标签页同时改"不再是后写覆盖）
+
+每条表单与记录都带一个 `rev`（版本号，新建从 1 起、每次写 +1）：
+
+```bash
+# 读：拿到 rev
+GET /forms            # → [{ id, name, updatedAt, collectKey, rev: 3 }, …]
+
+# 写：把"我读到的是第几版"带上
+PATCH /records/{key}/{id}   body { data: {...}, rev: 3 }   → 204
+PATCH /records/{key}/{id}   body { data: {...}, rev: 2 }   → 409 { error: "conflict", currentRev: 3 }
+```
+
+**不带 `rev` 仍是老语义（最后一次写入赢）** —— 已有客户端与演示站不受影响；
+**带 `rev` 就是"我知道我在改第几版"**，库里已经不是那一版 → `409` 并回当前版本，
+客户端重读后重试即可。
+
+> 为什么值得用：低代码表单常常是"两个人同时开着同一张表"，后写覆盖会让先改的人**无声地丢掉工作**。
+> 409 至少把这件事变成可见的冲突，而不是"我明明改了怎么没了"。
+
+## 迁移：`schema_version` + 只增的迁移列表
+
+`schema_version` 表记录已应用到第几版；打开数据库时自动把**旧库**升到最新：
+
+```js
+export const MIGRATIONS = [
+  { version: 1, sql: `CREATE TABLE forms (…)  …  CREATE TABLE records (…)` },
+  { version: 2, sql: `ALTER TABLE forms ADD COLUMN rev INTEGER NOT NULL DEFAULT 1; …` },
+]
+```
+
+规矩（`sqlite-store.mjs` 顶部也有）：**只增不改**、每条只做加法、版本号连续、每版一个事务。
+所以"线上已经跑了 v1 的库"升级时数据不丢 —— 这正是**迁移**与"删库重建"的区别；
+`tests/unit/lowcode-sqlite-store.spec.ts` 里有一条用例专门造一个 v1 老库来验这件事。
+
 ## 上线前要补的（示例没替你做的）
 
-- **持久化**：这里用 `Map`（重启即丢）。换数据库，并给 `design` / `record` 加约束与索引。
+- **持久化**：默认是内存 `Map`（重启即丢）；设 `LOWCODE_DB=./lowcode.db` 走 SQLite，
+  或照 `LowcodeStore` 的 11 个方法换成你的数据库。
 - **真实鉴权**：接你的用户体系；令牌别写死，也别放进前端包或分享链接。
 - **限流与体积**：示例有 2 MB body 上限与 400/413 区分，但没有限流（按你的网关补）。
-- **审计**：谁在什么时候改了哪张表单/哪条记录 —— 低代码平台几乎一定会被问到。
-- **并发**：示例是"后写覆盖"。多端同时编辑同一表单时，建议加版本号做乐观锁
-  （`FormDesign` 已有 `schemaVersion`，但那是**结构版本**不是**记录版本**）。
+- **审计**：谁在什么时候改了哪张表单/哪条记录 —— 低代码平台几乎一定会被问到
+  （`rev` 只能告诉你"被改过几次"，**谁**改的要你自己记）。
+- **多实例写协调**：`rev` 解决"同一行的并发覆盖"；多进程/多机同时写同一 SQLite 文件仍需串行化
+  （SQLite 用文件锁，吞吐有限）—— 上多实例就换 PG/MySQL 并给写入加事务。
+- **连接池与备份**：示例每次调用直接用同一个句柄；生产要有池与定期备份。
 
 ## 验证
 
@@ -156,6 +194,8 @@ createLowcodeBackend({ token: process.env.LOWCODE_TOKEN, store: mySqlBackedStore
 npx vitest run tests/unit/lowcode-backend-example.spec.ts
 ```
 
-9 个用例：`createRestFormStore` 全链往返（含服务端 `__stats` 对账）、401/403 区分、
+`lowcode-backend-example.spec.ts`：同一批用例**在内存版与 SQLite 版各跑一遍** —— 全链往返（含服务端 `__stats` 对账）、401/403 区分、
 裸载荷形状、坏 JSON → 400、`fetcher` 带鉴权拉导航、受限组按 scope 下发、
-无令牌**报错而不静默**、地址被安全策略拒绝时**不发请求**。
+无令牌**报错而不静默**、地址被安全策略拒绝时**不发请求**、**乐观锁 409 与向后兼容**。
+`lowcode-sqlite-store.spec.ts`：真落库/真进程重启、真表真列可查（`json_extract`）、两版行为一致、
+**迁移幂等 + v1 老库升级后数据不丢**。

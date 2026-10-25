@@ -3,34 +3,52 @@
 // 为什么值得声明：这个文件既给宿主"照着部署"，也被 `vite.config.ts` 直接 import 当 demo 后端用 ——
 // 没有签名时调用方只能拿到 any，"少传 token""把 prefix 拼错"这类错误就没人拦。
 
-/** 一条收集记录（与库里的 `CollectRecord` 同形，此处不引库类型：后端工程不装 vcl-ui） */
+/** 一条收集记录（与库里的 `CollectRecord` 同形；`rev` 是乐观锁版本号，从 1 起） */
 export interface LowcodeRecord {
   id: string
   time: string
   data: Record<string, unknown>
+  rev?: number
 }
 
-/** 表单列表项（与库里 `FormStore.listForms()` 的返回同形） */
+/** 表单列表项（与库里 `FormStore.listForms()` 的返回同形；`rev` 见上） */
 export interface LowcodeFormMeta {
   id: string
   name: string
   updatedAt: string
   collectKey: string
+  rev: number
 }
 
-/** 存储层接口：**宿主换数据库时实现这个**（11 个方法），路由与鉴权不用动 */
+/**
+ * 存储层接口：**宿主换数据库时实现这个**（11 个方法），路由与鉴权不用动。
+ *
+ * `expectedRev` 是**可选**的乐观锁参数：传了就必须与库里的 rev 一致，否则抛 `ConflictError`
+ * （HTTP 层映射成 409）；不传则保持"最后一次写入赢"的老语义。
+ */
 export interface LowcodeStore {
   listForms(): Promise<LowcodeFormMeta[]>
   loadForm(id: string): Promise<unknown>
-  saveForm(id: string | null, design: unknown, name?: string): Promise<LowcodeFormMeta>
-  renameForm(id: string, name: string): Promise<void>
+  saveForm(id: string | null, design: unknown, name?: string, expectedRev?: number): Promise<LowcodeFormMeta>
+  renameForm(id: string, name: string, expectedRev?: number): Promise<void>
   deleteForm(id: string): Promise<void>
   loadRecords(storageKey: string): Promise<LowcodeRecord[]>
   appendRecord(storageKey: string, record: LowcodeRecord): Promise<void>
-  updateRecord(storageKey: string, recordId: string, data: Record<string, unknown>): Promise<void>
+  updateRecord(
+    storageKey: string,
+    recordId: string,
+    data: Record<string, unknown>,
+    expectedRev?: number,
+  ): Promise<void>
   removeRecord(storageKey: string, recordId: string): Promise<void>
   clearRecords(storageKey: string): Promise<void>
   stats(): Promise<{ forms: number; records: number }>
+}
+
+/** 乐观锁冲突（存储层抛、HTTP 层映射成 409）：`current.rev` 是冲突时的当前版本 */
+export class ConflictError extends Error {
+  constructor(message: string, current?: { rev?: number; id?: string })
+  current: { rev?: number; id?: string }
 }
 
 export interface LowcodeBackendOptions {
