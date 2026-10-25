@@ -20,9 +20,11 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import LowCodeNav from '@/components/form-builder/lowcode/LowCodeNav.vue'
 import type { NavSource } from '@/components/form-builder/lowcode/useLowCodeNav'
+import { createFormPageResolver } from '@/components/form-builder/lowcode/page-resolver'
 import type { FormPageOutcome, FormPageResolver } from '@/components/form-builder/lowcode/page-resolver'
 import type { NavNode } from '@/components/form-builder/lowcode/nav-schema'
 import { policyFromOrigins } from '@/components/form-builder/api-url-guard'
+import { mountExposeHost } from './lowcode-nav-expose-host'
 
 /** FormBuilder 桩：收 `schema` prop（断言"解析结果到达渲染器"），并能发 submit/change/update */
 const FormBuilderStub = defineComponent({
@@ -777,4 +779,134 @@ describe('LowCodeNav · 兜底文案与设计约束', () => {
     expect(code).not.toMatch(/\buseRouter\(/)
     expect(code).not.toMatch(/\buseRoute\(/)
   })
+})
+/**
+ * 宿主刷新入口（`defineExpose({ refresh })`）
+ *
+ * 为什么单独锁：`forms` 来源的导航项由"用户自建表单"派生。宿主在自己的界面里存完新表单后，
+ * 若外壳不重取，新项不会出现 —— 而此前的出路只有"整页重载"或"去改全局 setActiveFormStore"，
+ * 这与"用户完全自己对接自己数据库"的承诺不符。两条语义都要钉：
+ *   ① 重取导航（新表单 → 新导航项）
+ *   ② 重载当前页（改的是正打开的那份 → 页面跟着换，而不是"导航项在、页面还是旧字段"）
+ */
+describe('宿主刷新入口（defineExpose refresh）', () => {
+  /** 宿主自己的 store 最小实现（内存，不碰 localStorage） */
+  const memStore = () => {
+    const mem = new Map<string, { meta: { title: string }; nodes: unknown[] }>()
+    const stamps = [
+      '2026-01-01T00:00:00.000Z',
+      '2026-01-02T00:00:00.000Z',
+      '2026-01-03T00:00:00.000Z',
+      '2026-01-04T00:00:00.000Z'
+    ]
+    return {
+      mem,
+      async listForms() {
+        return [...mem.entries()].map(([id, d], i) => ({
+          id,
+          name: d.meta.title,
+          updatedAt: stamps[i % stamps.length],
+          collectKey: `c_${id}`
+        }))
+      },
+      async loadForm(id: string) {
+        return mem.get(id) ?? null
+      },
+      async saveForm(
+        id: string | null,
+        design: { meta: { title: string }; nodes: unknown[] },
+        name?: string
+      ) {
+        const nid = id ?? `f${mem.size + 1}`
+        mem.set(nid, design)
+        return {
+          id: nid,
+          name: name ?? design.meta.title,
+          updatedAt: '2026-02-01T00:00:00.000Z',
+          collectKey: `c_${nid}`
+        }
+      },
+      async renameForm() {},
+      async deleteForm(id: string) {
+        mem.delete(id)
+      },
+      async loadRecords() {
+        return []
+      },
+      async appendRecord() {},
+      async updateRecord() {},
+      async removeRecord() {},
+      async clearRecords() {}
+    }
+  }
+
+  const designOf = (title: string, label = "字段") => ({
+    schemaVersion: 3,
+    meta: { title },
+    nodes: [{ id: 'n1', type: 'text', label, key: 'k1' }]
+  })
+
+  const labels = (w: VueWrapper) => w.findAll('.lcn-label').map((l) => l.text())
+
+  it('**存完新表单后 refresh() → 新导航项立刻出现（不用重挂外壳）**', async () => {
+    const store = memStore()
+    await store.saveForm(null, designOf('旧表'), '旧表')
+    const w = mountShell({ source: { kind: 'forms' }, formStore: store })
+    await flush()
+    expect(labels(w)).toEqual(['旧表'])
+
+    // 宿主在自己的界面里又存了一个 —— 外壳此时**还不知道**
+    await store.saveForm(null, designOf('新表'), '新表')
+    expect(labels(w), '没调 refresh 之前不该自动出现（这正是要 expose 的原因）').toEqual(['旧表'])
+
+    await (w.vm as unknown as { refresh: () => Promise<void> }).refresh()
+    await flush()
+    expect(labels(w), 'refresh 之后新项出现').toEqual(['新表', '旧表'])
+  })
+
+  it('**正打开的那份被改后 refresh() → 页面跟着换（不只是导航）**', async () => {
+    const store = memStore()
+    const saved = await store.saveForm(null, designOf('台账', '旧字段名'), '台账')
+    const w = mountShell({
+      source: { kind: 'forms' },
+      formStore: store,
+      resolveFormPage: createFormPageResolver(store as never)
+    })
+    await flush()
+    expect(w.find('.fb-stub').attributes('data-title'), '首项自动选中并解析').toBe('台账')
+
+    // 宿主后端改了同一份表单（同一 id，新的标题与字段名）
+    await store.saveForm(saved.id, designOf('台账（已改）', '新字段名'), '台账（已改）')
+    await (w.vm as unknown as { refresh: () => Promise<void> }).refresh()
+    await flush()
+    expect(
+      w.find('.fb-stub').attributes('data-title'),
+      '页面也必须重载，否则是「导航新、页面旧」'
+    ).toBe('台账（已改）')
+  })
+  it('**宿主经模板 ref 拿到的 refresh 就是 defineExpose 的那份（内部代理不算）**', async () => {
+    // ⚠️ 为什么单独锁这条：test-utils 的 `wrapper.vm` 会退到组件的**内部代理**，
+    // 于是 `defineExpose({})` 这种变异在 vm 上看不出来（`vm.refresh` 照样是函数）。
+    // 真实宿主走的是模板 ref → 只拿得到 expose 出来的对象 —— 这里必须按宿主的方式取。
+    const store = memStore()
+    await store.saveForm(null, designOf('旧表'), '旧表')
+    const host = mountExposeHost(
+      { source: { kind: 'forms' }, formStore: store },
+      { stubs: { FormBuilder: FormBuilderStub } }
+    )
+    wrappers.push(host.wrapper)
+    await flush()
+
+    const exposed = host.exposed()
+    expect(typeof exposed?.refresh, '模板 ref 上必须有 refresh —— 没有它宿主就没法让外壳重取').toBe('function')
+
+    await store.saveForm(null, designOf('新表'), '新表')
+    await exposed?.refresh?.()
+    await flush()
+    expect(host.wrapper.findAll('.lcn-label').map((l) => l.text()), '经 expose 的 refresh 真能让新项出现').toEqual([
+      '新表',
+      '旧表'
+    ])
+  })
+
 })

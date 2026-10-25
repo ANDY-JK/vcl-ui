@@ -134,4 +134,44 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
       '无障碍违规',
     ).toEqual([])
   })
+  test('用户自建：在设计器里建表单 → 保存 → 它自己成为导航项（全程零网络）', async ({ page }) => {
+    const posts: string[] = []
+    page.on('request', (r) => {
+      if (r.method() === 'POST') posts.push(r.url())
+    })
+
+    await page.goto(PAGE)
+    await page.getByRole('button', { name: /forms：用户自建表单/ }).click()
+    const nav = page.locator('.lcn-demo-nav')
+    await expect(nav.locator(item('demo-customers'))).toBeVisible({ timeout: 10_000 })
+    const before = await nav.locator('.lcn-demo-item').count()
+
+    // ② 设计器：点一下组件面板的字段项即加入画布
+    const build = page.locator('.lcn-demo-build')
+    await build.locator('.ldp-field-item').first().click()
+
+    // 保存：工具栏「保存」→ 弹窗改名 → 确认
+    await build.getByRole('button', { name: '保存' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.locator('.ld-save-input').fill('巡检台账')
+    await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
+
+    // 保存后：导航**自己**多出一项（宿主 store 收到设计 + navRef.refresh()），不用刷新页面
+    const added = nav.locator('.lcn-demo-item').filter({ hasText: '巡检台账' })
+    await expect(added, '保存后新表单成为导航项').toBeVisible({ timeout: 10_000 })
+    expect(await nav.locator('.lcn-demo-item').count()).toBe(before + 1)
+    await expect(page.locator('[data-event="designer-saved"]').first()).toContainText('巡检台账')
+    await expect(page.locator('[data-test="store-stat"]'), '走宿主 store，不写本机存储').toContainText(
+      'localStorage 记录：0 条'
+    )
+
+    // 点进去能渲染刚建的字段（设计 → store → 导航 → 页面这条链真的通）
+    await added.click()
+    await expect(page.locator('.lcn-page input').first(), '新建表单的字段渲染成输入框').toBeVisible({
+      timeout: 10_000,
+    })
+
+    expect(posts, '用户自建全程没有一条网络请求（数据进的是宿主自己的 store）').toEqual([])
+  })
+
 })

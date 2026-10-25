@@ -164,6 +164,26 @@ async function loadFormPage(node: NavNode | null): Promise<void> {
 
 watch(current, (node) => void loadFormPage(node), { immediate: true })
 
+/**
+ * 宿主刷新入口（`defineExpose`）：保存表单 / 改完后端数据后调用 —— 重取导航。
+ *
+ * 为什么这是产品形态的必需项而不是便利项：`forms` 来源的导航项由"用户自建表单"派生，
+ * 用户在宿主里存完新表单后若不重取，新项不会出现 —— 此前宿主只剩两条路（整页重载，
+ * 或去改全局 `setActiveFormStore` 触发）。既然承诺"用户完全自己对接自己数据库"，
+ * 宿主就必须有能力说一句"我改完了，你重取一下"。
+ *
+ * ⚠️ **只调 `api.refresh()` 就够，不要在这里再显式 `loadFormPage(current)`**：
+ * `refresh()` 会重建 `nodes`（新对象），`current` 身份随之变化，`watch(current, …)`
+ * 已经把当前页重载掉了 —— 多写一行等于加一段永不独立生效的防御代码。
+ * 本轮负向对照 + 实验证据：去掉那行后，static 来源（节点数组同一引用）下页面**照样**换成新标题。
+ * 若将来有人让节点对象"身份稳定"（例如缓存复用），**必须回来把这里改回显式重载**。
+ */
+async function refresh(): Promise<void> {
+  await api.refresh()
+}
+
+defineExpose({ refresh })
+
 onUnmounted(() => {
   disposed = true
   pageToken++ // 卸载后到达的解析结果不再写状态

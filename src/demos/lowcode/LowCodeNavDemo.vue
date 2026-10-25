@@ -42,6 +42,7 @@
 
     <div class="lcn-demo-body">
       <LowCodeNav
+        ref="navRef"
         class="lcn-demo-nav"
         :source="source"
         :form-store="demoStore"
@@ -95,6 +96,23 @@
       </aside>
     </div>
 
+    <section class="lcn-demo-build">
+      <h2 class="lcn-demo-sub">② 用户自建：在设计器里建一个表单，保存后它自己成为导航项</h2>
+      <p class="lcn-demo-note">
+        这就是「我只搭一个导航入口，其它导航项用户自己建」的那一半。设计器的
+        <code>:store</code> 注入的是<strong>同一份宿主 store</strong>，保存后本页调 <code>navRef.refresh()</code> ——
+        <strong>不用刷新页面</strong>，左侧（会自动切到 forms 来源）立刻多出一项。 全程零网络：数据进的是宿主自己的
+        store。
+      </p>
+      <FormDesigner
+        v-model:nodes="dNodes"
+        v-model:meta="dMeta"
+        :store="demoStore"
+        height="420px"
+        @saved="onDesignerSaved"
+      />
+    </section>
+
     <details class="lcn-demo-code">
       <summary>最小接入片段（复制走）</summary>
       <pre><code>&lt;LowCodeNav
@@ -108,9 +126,15 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import FormDesigner from '@/components/form-builder/FormDesigner.vue'
 import LowCodeNav from '@/components/form-builder/lowcode/LowCodeNav.vue'
 import type { NavSource } from '@/components/form-builder/lowcode/useLowCodeNav'
-import { FORM_DESIGN_VERSION, type FormDesign } from '@/components/form-builder/designer/types/domain'
+import {
+  FORM_DESIGN_VERSION,
+  type DesignerNode,
+  type FormDesign,
+  type FormMeta,
+} from '@/components/form-builder/designer/types/domain'
 import type { FormMetaItem, FormStore } from '@/components/form-builder/designer/store'
 import type { NavNode } from '@/components/form-builder/lowcode/nav-schema'
 
@@ -137,9 +161,16 @@ const designs: Record<string, FormDesign> = {
  * 换成后端实现时，导航、表单页、提交三者都不用改。
  */
 const mem = new Map<string, FormDesign>(Object.entries(designs))
+/**
+ * 表单名（存储层元信息）单独存 —— 它**不等于**设计里的 `meta.title`：
+ * `FormMetaItem.name` 是"这份表单叫什么"（保存弹窗里填的），`meta.title` 是"渲染出来的标题"。
+ * e2e 抓到的正是这个：设计器 `saved` 事件给的是 `name='巡检台账'`，而设计里的 title 还是默认值，
+ * 我第一版用 `meta.title` 当表单名，导航项于是显示成默认标题。
+ */
+const names = new Map<string, string>(Object.entries(designs).map(([id, d]) => [id, d.meta.title ?? id]))
 const stamp = (id: string): FormMetaItem => ({
   id,
-  name: String((mem.get(id)?.meta as { title?: string } | undefined)?.title ?? id),
+  name: names.get(id) ?? id,
   updatedAt: '2026-10-25T00:00:00.000Z',
   collectKey: `fd_collect_${id}`,
 })
@@ -153,11 +184,15 @@ const demoStore: FormStore = {
   async saveForm(id, d, name) {
     const nid = id ?? `mem_${mem.size + 1}`
     mem.set(nid, d)
-    return { ...stamp(nid), name: name ?? stamp(nid).name }
+    names.set(nid, name ?? names.get(nid) ?? String(d.meta.title ?? nid))
+    return stamp(nid)
   },
-  async renameForm() {},
+  async renameForm(id, name) {
+    names.set(id, name)
+  },
   async deleteForm(id) {
     mem.delete(id)
+    names.delete(id)
   },
   async loadRecords() {
     return []
@@ -208,6 +243,25 @@ const countLocal = () => {
   localCount.value = Object.keys(localStorage).filter((k) => k.includes('fd_form_')).length
 }
 watch(sourceKind, countLocal, { immediate: true })
+
+// ── ② 用户自建：内置设计器（同一份宿主 store）+ 保存后自动刷新导航 ──
+
+/** 外壳实例：只用到它 `defineExpose` 出来的 `refresh()` */
+const navRef = ref<{ refresh: () => Promise<void> } | null>(null)
+const dNodes = ref<DesignerNode[]>([])
+const dMeta = ref<FormMeta>({ title: '新建台账' })
+
+/**
+ * 设计器保存成功 → 切到 `forms` 来源并让外壳重取。
+ *
+ * 为什么这两步都要有：**(a)** 宿主自己的列表 UI 往往不在这一屏，切过来用户才看得见"我的表单成了导航项"；
+ * **(b)** 不调 `refresh()` 就得整页重载 —— "用户完全自己对接"的承诺里，宿主必须有"我存完了，你重取一下"的能力。
+ */
+const onDesignerSaved = async (item: FormMetaItem) => {
+  log('designer-saved', { name: item.name, id: item.id })
+  sourceKind.value = 'forms'
+  await navRef.value?.refresh()
+}
 </script>
 
 <style src="./lowcode-nav-demo-scoped.css" scoped></style>
