@@ -78,6 +78,13 @@
 | `useDisplayData` | 解析展示类字段的数据源。三种模式统一在这里收敛。 |
 | `extractByPath` | 按点路径取值：`dataPath='data.rows'` 从 `{data:{rows:[...]}}` 取出数组。 |
 | `toRows` | 归一化成"行数组"： |
+| `parseNavSchema` | 校验并归一化用户自建的导航配置。 |
+| `flattenNavNodes` | 展平成"可选项"（去掉分组，按前序深度优先）——渲染层与键盘导航直接消费。 |
+| `findNavNode` | 按 key 找项（含分组内部；key 全局唯一，所以找到即唯一） |
+| `firstSelectableNode` | 第一个可选项（用于"挂载即选中第一个"；全空时返回 null，外壳显示空态而不是假页签） |
+| `isSafeNavUrl` | URL 是否安全（导航链接的口径，**与 checkApiUrl 语义不同**：外链是合法导航，接口默认只允许同源） |
+| `isExternalNavUrl` | 是否为跨源链接（渲染层据此加 `rel="noopener"` / `target="_blank"` 防反向标签劫持） |
+| `useLowCodeNav` | 组合式函数：加载 + 校验 + 过滤 + 选中态。 |
 | `useFormManager` | 表单管理编排：存储实现选择（宿主注入优先）、列表/草稿/收集数据的增删改查与落库调度 |
 | `encodeShareCode` | FormDesign → 分享码（内容不加密：仅传输编码，敏感表单请勿外发） |
 | `decodeShareCode` | 分享码 → FormDesign；非分享码/损坏内容返回 null（导入面板据此走 JSON 路径或报错） |

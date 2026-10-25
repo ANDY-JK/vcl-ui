@@ -97,6 +97,31 @@ export type { FormNavItem, FormNavOptions, UseFormNavOptions, UseFormNavResult }
 // 展示类字段的数据源（三种模式：静态 / 绑定字段 / 接口；接口走同一套同源守卫）
 export { useDisplayData, extractByPath, toRows } from './display-data-source'
 export type { DisplayDataSource, DisplayDataKind, DisplayDataState, UseDisplayDataOptions } from './display-data-source'
+// 低代码导航外壳：用户自建的导航**配置**（数据，不是源码 → 不可信输入，先校验再渲染）
+export {
+  parseNavSchema,
+  flattenNavNodes,
+  findNavNode,
+  firstSelectableNode,
+  isSafeNavUrl,
+  isExternalNavUrl,
+} from './lowcode/nav-schema'
+export type {
+  NavNode,
+  NavNodeKind,
+  NavNodeBase,
+  NavGroupNode,
+  NavFormNode,
+  NavDataNode,
+  NavLinkNode,
+  NavCustomNode,
+  NavSchemaIssue,
+  NavSchemaIssueCode,
+  ParsedNavSchema,
+  ParseNavSchemaOptions,
+} from './lowcode/nav-schema'
+export { useLowCodeNav } from './lowcode/useLowCodeNav'
+export type { NavSource, UseLowCodeNavOptions, UseLowCodeNavResult } from './lowcode/useLowCodeNav'
 export type { FormStore, FormMetaItem, FormStoreMode, FormCloudConfig } from './designer/store'
 export { useFormManager } from './designer/useFormManager'
 export type { FormManager } from './designer/useFormManager'
