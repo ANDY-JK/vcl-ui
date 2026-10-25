@@ -72,6 +72,10 @@ const configPreview = computed(() => {
       —— 把它存到你的库里，就是一个可复用的表单定义。
       <br />
       接自己后端的路径：设计器产出 JSON → 存你的库 → 渲染端用 <code>FormBuilder</code> 消费同一份 fields。
+      <br />
+      存下来之后怎么变成导航项、宿主怎么只搭一个外壳：<RouterLink to="/lowcode-nav">
+        看「低代码导航外壳」接入示例 →
+      </RouterLink>
     </p>
 
     <FormDesigner v-model:nodes="nodes" v-model:meta="meta" height="560px" />

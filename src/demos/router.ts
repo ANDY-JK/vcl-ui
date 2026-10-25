@@ -21,6 +21,12 @@ const router = createRouter({
       component: () => import('@/demos/theme/ThemeEditorDemo.vue'),
     },
     // 组件 demo 路由（/:category 对应 demoMap 中的 key）
+    // 低代码导航外壳的宿主接入示例：静态段必须排在 /:category 之前，否则会被当成 category
+    {
+      path: '/lowcode-nav',
+      name: 'lowcode-nav',
+      component: () => import('@/demos/lowcode/LowCodeNavDemo.vue'),
+    },
     {
       path: '/:category',
       name: 'demo',

@@ -1,0 +1,193 @@
+/* 低代码导航外壳 · 宿主接入示例页的样式
+   约定与组件库一致：
+   · 尺寸/间距走 calc(Npx * var(--vcl-scale))（全站等比缩放闸口强制）
+   · 字号/圆角/颜色**只引 tokens.css 里真实声明的令牌，且不写 hex 兜底**
+     —— 兜底会掩盖写错的令牌名（"看着正常"但暗色下失效），实测就是这样踩了一轮
+   · 主色当浅底文字必须用 --vcl-color-primary-on-surface（contrast-audit 的合规配对） */
+.lcn-demo {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--vcl-scale));
+  padding: calc(16px * var(--vcl-scale));
+}
+
+.lcn-demo-title {
+  margin: 0 0 calc(6px * var(--vcl-scale));
+  font-size: var(--vcl-fs-22);
+  color: var(--vcl-color-text);
+}
+
+.lcn-demo-desc {
+  margin: 0;
+  max-width: 78ch;
+  line-height: 1.7;
+  color: var(--vcl-color-text-secondary);
+}
+
+.lcn-demo-desc code,
+.lcn-demo-code code {
+  padding: 0 calc(4px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text);
+}
+
+.lcn-demo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-bg-alt);
+}
+
+.lcn-demo-group {
+  display: flex;
+  align-items: center;
+  gap: calc(6px * var(--vcl-scale));
+}
+
+.lcn-demo-label {
+  color: var(--vcl-color-text-secondary);
+  font-size: var(--vcl-fs-13);
+}
+
+.lcn-demo-btn {
+  padding: calc(4px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
+  font-size: var(--vcl-fs-13);
+  cursor: pointer;
+}
+
+.lcn-demo-btn.on {
+  border-color: var(--vcl-color-primary-on-surface);
+  color: var(--vcl-color-primary-on-surface);
+  font-weight: 600;
+}
+
+.lcn-demo-check {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6px * var(--vcl-scale));
+  color: var(--vcl-color-text-secondary);
+  font-size: var(--vcl-fs-13);
+}
+
+.lcn-demo-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(12px * var(--vcl-scale));
+  align-items: flex-start;
+}
+
+.lcn-demo-nav {
+  flex: 1 1 calc(420px * var(--vcl-scale));
+  min-width: calc(320px * var(--vcl-scale));
+}
+
+.lcn-demo-item {
+  display: flex;
+  align-items: center;
+  gap: calc(4px * var(--vcl-scale));
+  width: 100%;
+  padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
+  border: 1px solid transparent;
+  border-radius: var(--vcl-radius-sm);
+  background: transparent;
+  color: var(--vcl-color-text);
+  font-size: var(--vcl-fs-13);
+  text-align: start;
+  cursor: pointer;
+}
+
+.lcn-demo-item.custom {
+  border-color: var(--vcl-color-border);
+}
+
+/* 选中态：主色只落在"边框 + 文字"上，底色用 surface ——
+   "主色文字压主色浅底"这一对不在 contrast-audit 的配对表里，实测 axe 判违规（首版因此挂过） */
+.lcn-demo-item.on {
+  border-color: var(--vcl-color-primary-on-surface);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-primary-on-surface);
+  font-weight: 600;
+}
+
+.lcn-demo-page {
+  padding: calc(8px * var(--vcl-scale)) 0;
+}
+
+.lcn-demo-note {
+  margin: calc(4px * var(--vcl-scale)) 0 0;
+  color: var(--vcl-color-text-secondary);
+  font-size: var(--vcl-fs-13);
+  line-height: 1.6;
+}
+
+.lcn-demo-log {
+  flex: 1 1 calc(320px * var(--vcl-scale));
+  min-width: calc(260px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
+}
+
+.lcn-demo-log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8px * var(--vcl-scale));
+  font-weight: 600;
+  color: var(--vcl-color-text);
+}
+
+.lcn-demo-stat {
+  margin: calc(8px * var(--vcl-scale)) 0;
+  color: var(--vcl-color-text-secondary);
+  font-size: var(--vcl-fs-13);
+}
+
+.lcn-demo-events {
+  margin: 0;
+  padding-inline-start: calc(18px * var(--vcl-scale));
+  max-height: calc(280px * var(--vcl-scale));
+  overflow: auto;
+  font-size: var(--vcl-fs-13);
+}
+
+.lcn-demo-events li {
+  margin-bottom: calc(4px * var(--vcl-scale));
+  line-height: 1.6;
+}
+
+.lcn-demo-payload {
+  margin-inline-start: calc(6px * var(--vcl-scale));
+  color: var(--vcl-color-text-secondary);
+  word-break: break-all;
+}
+
+.lcn-demo-code {
+  border: 1px dashed var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  padding: calc(8px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
+  background: var(--vcl-color-bg-alt);
+}
+
+.lcn-demo-code summary {
+  cursor: pointer;
+  color: var(--vcl-color-text);
+  font-size: var(--vcl-fs-13);
+}
+
+.lcn-demo-code pre {
+  margin: calc(8px * var(--vcl-scale)) 0 0;
+  overflow: auto;
+  font-size: var(--vcl-fs-13);
+  line-height: 1.7;
+}

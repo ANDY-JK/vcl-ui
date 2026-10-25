@@ -1,0 +1,137 @@
+// 低代码导航外壳 · 宿主接入示例的端到端（2026-10-25）
+//
+// 锁的是「宿主只挂一个 <LowCodeNav> + 一个低代码入口，其余导航项由用户自建」这条产品形态里
+// **只有真浏览器能证明**的部分：
+//   · 后端下发的导航 JSON 走真实 HTTP（dev server 的 lowcodeDemoApiPlugin）→ 同源守卫放行 → 渲染
+//   · 脏数据（javascript: 链接 / 未知 kind）在真 JSON 里被拒、且原因可见
+//   · 注入宿主自己的 FormStore（内存实现、不碰 localStorage）→ formId 解析成真字段
+//     —— 这一段在单测里是 happy-dom，"注入的 store 与解析器是否真的是同一条链"只有真跑才认
+//   · **提交不发一条网络请求**（外壳只 emit；发给谁由宿主决定）—— 用请求计数证明，不靠读代码
+//   · 无障碍：本页跑一遍 axe（WCAG 2.1 AA）
+//
+// 选择器约定：外壳给**页面区**元素也挂了 `data-key`（`section.lcn-page[data-key]`），
+// 所以点导航必须用导航项自己的类名 `.lcn-demo-item`，否则 strict mode 会命中两个元素。
+import { test, expect } from '@playwright/test'
+import { AxeBuilder } from '@axe-core/playwright'
+
+const PAGE = '/#/lowcode-nav'
+const item = (key: string) => `.lcn-demo-item[data-key="${key}"]`
+
+test.describe('低代码导航外壳 · 宿主接入示例', () => {
+  test('后端下发的导航定义（真 HTTP）渲染成导航；脏数据不渲染，但问题可查', async ({ page }) => {
+    const navHits: string[] = []
+    page.on('request', (r) => {
+      if (r.url().includes('/api/lowcode-demo/nav')) navHits.push(r.url())
+    })
+
+    await page.goto(PAGE)
+    await expect(page.locator('h1')).toContainText('低代码导航外壳')
+
+    const nav = page.locator('.lcn-demo-nav')
+    await expect(nav.locator(item('form-customers')), '后端 JSON 里的表单页成为导航项').toBeVisible({
+      timeout: 15_000,
+    })
+    await expect(nav.locator(item('link-doc'))).toBeVisible()
+    expect(navHits.length, '真接口被请求过一次').toBeGreaterThan(0)
+
+    // 负向：同一份真 JSON 里的脏数据必须**不出现**在导航里
+    await expect(page.getByText('脏数据（会被拒）')).toHaveCount(0)
+    await expect(page.getByText('未知类型（会被丢弃）')).toHaveCount(0)
+
+    // 但它是"被拒"而不是"被静默吞掉"：勾上问题清单就能看到原因
+    await page.getByLabel(/显示配置问题清单/).check()
+    const issues = page.locator('.lcn-issues li[data-code]')
+    await expect(issues).toHaveCount(2)
+    await expect(issues.first()).toContainText('javascript')
+  })
+
+  test('点表单页 → 注入的宿主 store 取设计 → 真字段渲染 → 填值 → 提交（全程不发网络）', async ({ page }) => {
+    const posts: string[] = []
+    page.on('request', (r) => {
+      if (r.method() === 'POST') posts.push(`${r.method()} ${r.url()}`)
+    })
+
+    await page.goto(PAGE)
+    await page.locator('.lcn-demo-nav ' + item('form-customers')).click()
+
+    // 走的是注入 store 里的真设计（节点树 → toFormSchema → FormBuilder）
+    await expect(page.getByRole('textbox', { name: '客户名称' }), '设计里的 text 字段渲染成输入框').toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('combobox', { name: '客户等级' }), 'select 字段的 label 也在').toBeVisible()
+
+    // 填值：外壳把数据变化 emit 给宿主（事件日志看得见）
+    await page.getByRole('textbox', { name: '客户名称' }).fill('张三')
+    await expect(page.locator('[data-event="page-change"]').first()).toBeVisible({ timeout: 10_000 })
+
+    // 提交：只 emit，不外发
+    await page.getByRole('button', { name: '提交' }).click()
+    const submitted = page.locator('[data-event="page-submit"]').first()
+    await expect(submitted).toBeVisible({ timeout: 10_000 })
+    await expect(submitted).toContainText('"name":"张三"')
+    // 观察（如实记）：未选择的 select 也会以 null 进提交数据，键不缺席
+    await expect(submitted).toContainText('"level":null')
+
+    expect(posts, '外壳不替宿主外发：整个流程一条 POST 都没有').toEqual([])
+  })
+
+  test('必填没填 → 真校验挡住，不发 page-submit', async ({ page }) => {
+    await page.goto(PAGE)
+    await page.locator('.lcn-demo-nav ' + item('form-tickets')).click()
+    await expect(page.getByRole('textbox', { name: '工单标题' })).toBeVisible({ timeout: 15_000 })
+
+    await page.getByRole('button', { name: '提交' }).click()
+    await expect(page.locator('[data-event="page-submit"]')).toHaveCount(0)
+  })
+
+  test('三种导航来源可在同一外壳里切换；注入的 store 不碰本机存储', async ({ page }) => {
+    await page.goto(PAGE)
+    const nav = page.locator('.lcn-demo-nav')
+
+    // forms：由用户自建表单派生（这里是宿主注入的内存 store）
+    await page.getByRole('button', { name: /forms：用户自建表单/ }).click()
+    await expect(nav.locator(item('demo-customers'))).toBeVisible({ timeout: 10_000 })
+    await expect(nav.locator(item('demo-tickets'))).toBeVisible()
+    await expect(page.locator('[data-test="store-stat"]'), '注入的 store 不写本机存储').toContainText(
+      'localStorage 记录：0 条',
+    )
+
+    // static：配置内置
+    await page.getByRole('button', { name: /static：配置内置/ }).click()
+    await expect(nav.locator(item('s1'))).toBeVisible({ timeout: 10_000 })
+    await expect(nav.locator(item('demo-customers'))).toHaveCount(0)
+
+    // api：回到后端下发
+    await page.getByRole('button', { name: /api：后端下发定义/ }).click()
+    await expect(nav.locator(item('form-customers'))).toBeVisible({ timeout: 10_000 })
+  })
+
+  test('两个出口：自定义导航项渲染 + #page 插槽完全接管页面区', async ({ page }) => {
+    await page.goto(PAGE)
+    const nav = page.locator('.lcn-demo-nav')
+    await expect(nav.locator(item('form-customers'))).toBeVisible({ timeout: 15_000 })
+
+    // #nav-item 接管：切到自定义样式后带上标记
+    await page.getByLabel(/自定义导航项样式/).check()
+    await expect(nav.locator(item('form-customers'))).toContainText('★')
+
+    // #page 接管：整块页面区交给宿主（并跳过表单页解析）
+    await page.getByLabel(/用 #page 插槽自己渲染整块页面区/).check()
+    await page.locator('.lcn-demo-nav ' + item('form-customers')).click()
+    await expect(page.locator('.lcn-demo-page')).toContainText('宿主自渲染：客户台账', { timeout: 10_000 })
+    await expect(page.getByRole('textbox', { name: '客户名称' }), '接管后不再走内置表单渲染').toHaveCount(0)
+  })
+
+  test('无障碍：本页 axe（WCAG 2.1 AA）零违规', async ({ page }) => {
+    await page.goto(PAGE)
+    await expect(page.locator('h1')).toContainText('低代码导航外壳')
+    await page.locator('.lcn-demo-nav ' + item('form-customers')).click()
+    await expect(page.getByRole('textbox', { name: '客户名称' })).toBeVisible({ timeout: 15_000 })
+
+    const { violations } = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze()
+    expect(
+      violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`),
+      '无障碍违规',
+    ).toEqual([])
+  })
+})

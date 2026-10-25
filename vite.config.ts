@@ -71,6 +71,32 @@ function lowcodeDemoApiPlugin() {
         res.setHeader('Content-Type', 'application/json')
         res.end(JSON.stringify({ code: 0, data: { rows } }))
       })
+      /**
+       * 后端下发的**导航定义**（低代码导航外壳的 api 来源）。
+       *
+       * 故意混进一个 `javascript:` 链接与一个未知 kind：真实后端一定会下发脏数据，
+       * 演示页要能让人**亲眼看到**"合规项照常渲染、坏项不渲染且问题可查"，
+       * 而不是只在单测里断言。
+       */
+      server.middlewares.use('/api/lowcode-demo/nav', (_req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+        res.end(
+          JSON.stringify({
+            code: 0,
+            data: {
+              items: [
+                { key: 'group-biz', label: '业务台账', kind: 'group', children: [
+                  { key: 'form-customers', label: '客户台账', kind: 'form', formId: 'demo-customers', icon: 'clipboard' },
+                  { key: 'form-tickets', label: '工单', kind: 'form', formId: 'demo-tickets' },
+                ] },
+                { key: 'link-doc', label: '帮助文档', kind: 'link', url: 'https://example.com/help' },
+                { key: 'bad-js', label: '脏数据（会被拒）', kind: 'link', url: 'javascript:alert(1)' },
+                { key: 'bad-kind', label: '未知类型（会被丢弃）', kind: 'mystery' },
+              ],
+            },
+          }),
+        )
+      })
     },
   }
 }
