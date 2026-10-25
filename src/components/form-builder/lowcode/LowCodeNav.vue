@@ -107,7 +107,9 @@ const api = useLowCodeNav({
   apiUrlPolicy: () => props.apiUrlPolicy?.() ?? {},
   filter: (n) => (props.filter ? props.filter(n) : true),
   fetcher: props.fetcher,
-  formStore: props.formStore,
+  // getter 形态：宿主中途换实现（登录态/后端切换、内存 ↔ REST）后 `refresh()` 才跟得上。
+  // 传 `props.formStore` 是**快照** —— 换了 store 还拿旧的取一遍，表现为"切了没变化"且不报错。
+  formStore: () => props.formStore,
   modelValue: selectedKey,
   autoLoad: props.autoLoad,
   autoSelect: props.autoSelect,

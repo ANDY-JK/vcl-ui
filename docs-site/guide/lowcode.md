@@ -121,7 +121,48 @@ const myStore: FormStore = {
 |---|---|
 | `createLocalFormStore()` | localStorage（零配置，适合单机/演示） |
 | `createCloudFormStore(config)` | Supabase（需配置） |
-| `createFormStore(mode)` | 按 mode 选上面之一 |
+| **`createRestFormStore(options)`** | **你自己的 REST 后端**（"对接自己数据库"的首选，见下） |
+| `createFormStore(mode)` | 按 mode 选上面 local / cloud 之一 |
+
+#### `createRestFormStore`：后端照这 9 条路由实现就行
+
+```ts
+import { createRestFormStore, setActiveFormStore } from 'vcl-ui/form-builder'
+
+const store = createRestFormStore({
+  baseUrl: '/api/lowcode',                       // 末尾斜杠会被规整掉
+  // 令牌用**函数形态**：每次请求都取最新登录态（写成常量会一直带过期令牌）
+  headers: () => ({ Authorization: `Bearer ${token}` }),
+})
+
+setActiveFormStore(store)   // 之后设计器、收集端、导航外壳全部走你的库
+```
+
+| 方法 | 路由与载荷（`baseUrl` 之后是相对段） |
+|---|---|
+| `listForms()` | `GET /forms` → **裸数组** `FormMetaItem[]` |
+| `loadForm(id)` | `GET /forms/{id}` → `FormDesign`；**404 视为「表单不存在」返回 `null`** |
+| `saveForm(id, design, name)` | `POST /forms`，body 是 `{ id: string 或 null, design, name? }` → `FormMetaItem` |
+| `renameForm(id, name)` | `PATCH /forms/{id}`，body `{ name }` |
+| `deleteForm(id)` | `DELETE /forms/{id}`（连同该表单的收集记录） |
+| `loadRecords(key)` | `GET /records/{storageKey}` → 裸数组 `CollectRecord[]` |
+| `appendRecord(key, record)` | `POST /records/{storageKey}`，body `{ record }` |
+| `updateRecord(key, id, data)` | `PATCH /records/{storageKey}/{id}`，body `{ data }` |
+| `removeRecord(key, id)` | `DELETE /records/{storageKey}/{id}` |
+| `clearRecords(key)` | `DELETE /records/{storageKey}`（清空） |
+
+> **响应是裸载荷，不要套 `{ data: … }` 信封**（我第一版后端就多包了一层，导航直接空掉）。
+> 需要信封的后端，在自己那层打开即可 —— 但 `createRestFormStore` 期望的是解开的那个值。
+>
+> **失败语义**：非 2xx 一律抛错，**不静默返回空** —— 静默会让用户以为"数据没了"，
+> 真实原因是后端 500。错误信息带状态码与路由，宿主日志里能直接定位。
+>
+> **安全边界**：`baseUrl` 属宿主可信配置（不是 schema 里来的），所以不再套 `api-url-guard`
+> 的同源策略；但 `headers` 里可能有令牌，**宿主要自己保证它不写进分享码 / URL**。
+>
+> 真浏览器里跑通的版本：演示站 `#/lowcode-nav` 有「表单仓储」切换（内存 ↔ REST），
+> 后端由 dev server 当"你自己的后端"——它**故意要求 `Authorization`**（缺了 401），
+> 于是"令牌接没接对"是可观测的；提交后会重新读服务端计数，**数据真的落库才算过**。
 
 ---
 
@@ -149,6 +190,24 @@ const { items, loading, error, refresh } = useFormNav({
 1. **`useFormNav` 只产数据、不渲染 UI** —— 用什么导航组件是你的选择（可以用本库的，也可以用自己的）
 2. **加载失败时不把 `items` 清空** —— `error` 有值但 `items` 保留上一次结果。
    导航不该因为一次网络抖动整条消失。
+
+### 提交记录长什么样（自己拼记录时照这个形状）
+
+内置表单页提交后，外壳只 `emit`，**落库由你写**。记录就用官方的 `CollectRecord`：
+
+```ts
+import type { CollectRecord } from 'vcl-ui/form-builder'
+
+const record: CollectRecord = {
+  id: genRecordId(),                        // 用官方的 id 生成器，别自己拼随机串
+  time: new Date().toLocaleString('zh-CN', { hour12: false }),
+  data: { ...submittedData },               // 表单值（键就是字段 key）
+}
+await myStore.appendRecord(storageKey, record)
+```
+
+> `storageKey` 由表单自己决定（官方收集端用的是 `fd_collect_<表单 id>`）；
+> 换了 `FormStore` 实现后，**这一步完全不变** —— 变的只是 `appendRecord` 打到哪个后端。
 
 ### 导航项定制
 

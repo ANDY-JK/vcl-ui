@@ -97,6 +97,189 @@ function lowcodeDemoApiPlugin() {
           }),
         )
       })
+
+      /**
+       * **自托管后端的参考实现**（低代码的 REST 仓储）：`createRestFormStore` 约定的 9 条路由。
+       *
+       * 为什么放在 dev server 里：`createRestFormStore` 的单测用的是 stub fetch，
+       * 「真 HTTP → 鉴权头 → JSON → 表单库/收集记录」这条链必须真跑一次才算通。
+       * 这里当"你自己的后端"——它**故意要求 `Authorization`**：缺令牌一律 401，
+       * 于是演示页有没有把 `headers` 接对，是**可观测的**（而不是"看着能跑"）。
+       *
+       * 预置一份"服务端才有的表单"（名字带「服务端：」前缀）：切到 REST 仓储后如果导航项
+       * 从「客户台账/工单」变成「服务端：客户台账」，就证明确实是**从 HTTP 取的**，
+       * 而不是复用内存里那两份。
+       */
+      const AUTH = 'Bearer demo-token-r105'
+      interface RestForm {
+        id: string
+        name: string
+        updatedAt: string
+        collectKey: string
+        design: unknown
+      }
+      const restForms = new Map<string, RestForm>()
+      const restRecords = new Map<string, unknown[]>()
+      let restSeq = 0
+      restForms.set('rest-customers', {
+        id: 'rest-customers',
+        name: '服务端：客户台账',
+        updatedAt: '2026-10-25T09:00:00.000Z',
+        collectKey: 'fd_collect_rest-customers',
+        design: {
+          schemaVersion: 3,
+          meta: { title: '服务端：客户台账', submitText: '提交' },
+          nodes: [
+            { id: 's1', type: 'text', label: '服务端字段·客户名称', key: 'name', required: true },
+            { id: 's2', type: 'textarea', label: '服务端字段·备注', key: 'note' },
+          ],
+        },
+      })
+      const restMeta = (f: RestForm) => ({
+        id: f.id,
+        name: f.name,
+        updatedAt: f.updatedAt,
+        collectKey: f.collectKey,
+      })
+      const totalRecords = () => [...restRecords.values()].reduce((n, r) => n + r.length, 0)
+
+      server.middlewares.use('/api/lowcode-demo/store', (rawReq, rawRes) => {
+        const req = rawReq as unknown as {
+          url?: string
+          method?: string
+          headers: Record<string, string | string[] | undefined>
+          on: (ev: string, cb: (chunk?: unknown) => void) => void
+        }
+        const res = rawRes as unknown as {
+          statusCode: number
+          setHeader: (k: string, v: string) => void
+          end: (b?: string) => void
+        }
+        const send = (code: number, body?: unknown) => {
+          res.statusCode = code
+          res.setHeader('Content-Type', 'application/json')
+          res.end(body === undefined ? '' : JSON.stringify(body))
+        }
+        const readBody = () =>
+          new Promise<string>((done) => {
+            let buf = ''
+            req.on('data', (c) => {
+              buf += String(c ?? '')
+            })
+            req.on('end', () => done(buf))
+          })
+        void (async () => {
+          try {
+            // 鉴权：宿主必须把令牌接上（演示页用 headers 函数形态供令牌）
+            if (req.headers.authorization !== AUTH) {
+              send(401, { error: 'unauthorized', hint: `需要 Authorization: ${AUTH}` })
+              return
+            }
+            const path = (req.url ?? '/').split('?')[0]
+            const method = (req.method ?? 'GET').toUpperCase()
+            const segs = path.split('/').filter(Boolean).map(decodeURIComponent)
+
+            if (segs[0] === '__stats') {
+              send(200, { forms: restForms.size, records: totalRecords() })
+              return
+            }
+            if (segs[0] === 'forms' && segs.length === 1) {
+              if (method === 'GET') {
+                // 契约是**裸数组**（`GET /forms → 200 FormMetaItem[]`）：不要包 `{ data: … }` 信封，
+                // 消费端拿到的是解析后的值本身（第 105 轮就因为这个多包了一层而导航为空）
+                send(200, [...restForms.values()].map(restMeta))
+                return
+              }
+              if (method === 'POST') {
+                const body = JSON.parse((await readBody()) || '{}') as {
+                  id?: string | null
+                  design?: { meta?: { title?: string } }
+                  name?: string
+                }
+                const id = body.id ?? `rest-${++restSeq}-${Date.now()}`
+                const name = body.name ?? body.design?.meta?.title ?? id
+                const rec: RestForm = {
+                  id,
+                  name,
+                  updatedAt: new Date().toISOString(),
+                  collectKey: `fd_collect_${id}`,
+                  design: body.design ?? null,
+                }
+                restForms.set(id, rec)
+                send(200, restMeta(rec))
+                return
+              }
+            }
+            if (segs[0] === 'forms' && segs.length === 2) {
+              const id = segs[1]
+              const f = restForms.get(id)
+              if (method === 'GET') {
+                if (!f) {
+                  send(404, { error: 'not_found' })
+                  return
+                }
+                send(200, f.design)
+                return
+              }
+              if (method === 'PATCH') {
+                const body = JSON.parse((await readBody()) || '{}') as { name?: string }
+                if (f && body.name) {
+                  f.name = body.name
+                  f.updatedAt = new Date().toISOString()
+                }
+                send(204)
+                return
+              }
+              if (method === 'DELETE') {
+                restForms.delete(id)
+                restRecords.delete(`fd_collect_${id}`)
+                send(204)
+                return
+              }
+            }
+            if (segs[0] === 'records' && segs.length >= 2) {
+              const key = segs[1]
+              const list = restRecords.get(key) ?? []
+              if (segs.length === 2) {
+                if (method === 'GET') {
+                  send(200, list)
+                  return
+                }
+                if (method === 'POST') {
+                  const body = JSON.parse((await readBody()) || '{}') as { record?: unknown }
+                  list.push(body.record ?? null)
+                  restRecords.set(key, list)
+                  send(204)
+                  return
+                }
+                if (method === 'DELETE') {
+                  restRecords.set(key, [])
+                  send(204)
+                  return
+                }
+              }
+              if (segs.length === 3 && method === 'PATCH') {
+                const body = JSON.parse((await readBody()) || '{}') as { data?: unknown }
+                const i = Number(segs[2])
+                if (Number.isInteger(i) && i >= 0 && i < list.length) list[i] = body.data ?? null
+                restRecords.set(key, list)
+                send(204)
+                return
+              }
+              if (segs.length === 3 && method === 'DELETE') {
+                const i = Number(segs[2])
+                if (Number.isInteger(i) && i >= 0 && i < list.length) list.splice(i, 1)
+                restRecords.set(key, list)
+                send(204)
+                return
+              }
+            }
+            send(404, { error: 'no_route', path, method })
+          } catch (err) {
+            send(500, { error: 'server_error', message: err instanceof Error ? err.message : String(err) })
+          }
+        })()
+      })
     },
   }
 }

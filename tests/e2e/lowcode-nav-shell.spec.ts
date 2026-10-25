@@ -174,4 +174,60 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
     expect(posts, '用户自建全程没有一条网络请求（数据进的是宿主自己的 store）').toEqual([])
   })
 
+  // ── ③ 自托管后端：官方 createRestFormStore + 真 HTTP ──
+  // 单测里 createRestFormStore 用的是 stub fetch；「真 HTTP → 鉴权头 → 表单库/收集记录」这条链
+  // 只有真跑才认。dev server 那份参考后端**故意要求 Authorization**（缺了 401），
+  // 于是"宿主有没有把 headers 接对"是可观测的，而不是"看着能跑"。
+  test('自托管后端：切到 REST 仓储 → 导航来自服务端（带令牌）→ 提交真落到服务端', async ({ page }) => {
+    const storeCalls: { url: string; method: string; auth: string | undefined }[] = []
+    page.on('request', (r) => {
+      const u = r.url()
+      if (u.includes('/api/lowcode-demo/store/')) {
+        storeCalls.push({ url: u, method: r.method(), auth: r.headers()['authorization'] })
+      }
+    })
+
+    await page.goto(PAGE)
+    const nav = page.locator('.lcn-demo-nav')
+    const serverStat = page.locator('[data-test="server-stat"]')
+
+    // 内存仓储（默认）：导航是内存那两份，且一条后端请求都没有
+    await page.getByRole('button', { name: /forms：用户自建表单/ }).click()
+    await expect(nav.locator('.lcn-demo-item').filter({ hasText: '客户台账' }).first()).toBeVisible()
+    expect(storeCalls, '内存实现不该碰后端').toEqual([])
+
+    // 切到 REST 仓储：导航立刻变成"服务端才有的那一份"
+    await page.getByRole('button', { name: /REST（真 HTTP）/ }).click()
+    await expect(nav.locator('.lcn-demo-item').filter({ hasText: '服务端：客户台账' }).first()).toBeVisible({
+      timeout: 10_000,
+    })
+    await expect(
+      nav.locator('.lcn-demo-item').filter({ hasText: '工单' }),
+      '换实现后旧 store 的导航项必须消失'
+    ).toHaveCount(0)
+
+    // 每个仓储请求都必须带令牌；表单份数由**服务端**报出来（不是前端自己数的）
+    const listCalls = storeCalls.filter((c) => c.method === 'GET' && c.url.includes('/forms'))
+    expect(listCalls.length, '导航必须来自服务端').toBeGreaterThan(0)
+    expect(
+      listCalls.every((c) => c.auth === 'Bearer demo-token-r105'),
+      '宿主必须把令牌接上（缺它后端 401）'
+    ).toBe(true)
+    await expect(serverStat).toContainText('1 份表单')
+
+    // 打开服务端表单：页面区渲染的是**服务端下发的字段**
+    await nav.locator('.lcn-demo-item').filter({ hasText: '服务端：客户台账' }).first().click()
+    const pageArea = page.locator('.lcn-page')
+    await expect(pageArea.getByText('服务端字段·客户名称')).toBeVisible({ timeout: 10_000 })
+
+    // 填一栏提交 → 记录真的 POST 到收集记录路由，服务端计数 +1（后端自己报的数）
+    await pageArea.getByRole('textbox', { name: /服务端字段·客户名称/ }).fill('进来一条真数据')
+    await pageArea.getByRole('button', { name: '提交' }).click()
+    await expect(serverStat, '提交必须真的落到服务端').toContainText('1 条收集记录', { timeout: 10_000 })
+    const recordPosts = storeCalls.filter((c) => c.method === 'POST' && c.url.includes('/records/'))
+    expect(recordPosts.length, '提交必须 POST 到收集记录路由（外壳不自动外发，是宿主发的）').toBeGreaterThan(0)
+    expect(recordPosts[0].auth, '落库请求同样要带令牌').toBe('Bearer demo-token-r105')
+    await expect(page.locator('[data-event="record-saved"]').first()).toBeVisible()
+  })
+
 })

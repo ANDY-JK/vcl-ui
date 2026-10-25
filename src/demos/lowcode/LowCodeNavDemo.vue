@@ -4,13 +4,29 @@
       <!-- h1 而非 h2：demo 页的语义主标题；全站 a11y 扫描也以可见 h1 作为"页面已挂载"信号 -->
       <h1 class="lcn-demo-title">低代码导航外壳（宿主接入示例）</h1>
       <p class="lcn-demo-desc">
-        宿主只挂一个 <code>&lt;LowCodeNav&gt;</code> + 一个低代码入口，<strong>其余导航项由用户自建</strong>。 下面的
-        store 是一份<strong>内存实现</strong>（不碰 localStorage）——「对接自己数据库」要做的只有一件事： 实现
-        <code>FormStore</code> 接口后注入 <code>form-store</code>。
+        宿主只挂一个 <code>&lt;LowCodeNav&gt;</code> + 一个低代码入口，<strong>其余导航项由用户自建</strong>。
+        下面可以在 <strong>内存实现</strong>（零网络）与<strong>官方 REST 实现</strong>（真 HTTP，dev server
+        当"你自己的后端"）之间切换 ——「对接自己数据库」要做的只有一件事：实现 <code>FormStore</code> 接口，或直接用
+        <code>createRestFormStore</code> 把后端路由接上。
       </p>
     </header>
 
     <div class="lcn-demo-bar">
+      <div class="lcn-demo-group" role="group" aria-label="表单仓储实现">
+        <span class="lcn-demo-label">表单仓储</span>
+        <button
+          v-for="s in storeKinds"
+          :key="s.kind"
+          type="button"
+          class="lcn-demo-btn"
+          :class="{ on: storeKind === s.kind }"
+          :aria-pressed="storeKind === s.kind"
+          @click="switchStore(s.kind)"
+        >
+          {{ s.label }}
+        </button>
+      </div>
+
       <div class="lcn-demo-group" role="group" aria-label="导航定义来源">
         <span class="lcn-demo-label">导航来源</span>
         <button
@@ -45,12 +61,12 @@
         ref="navRef"
         class="lcn-demo-nav"
         :source="source"
-        :form-store="demoStore"
+        :form-store="activeStore"
         :show-issues="showIssues"
         title="我搭的框架"
         @select="onSelect"
         @page-change="log('page-change', $event)"
-        @page-submit="log('page-submit', $event)"
+        @page-submit="onPageSubmit"
       >
         <template #nav-item="{ node, active, select }">
           <!-- 接管后外壳不再渲染内置按钮：这里保持"可点 + aria-current + data-key"，
@@ -84,7 +100,21 @@
           <button type="button" class="lcn-demo-btn" @click="events = []">清空</button>
         </div>
         <p class="lcn-demo-stat" data-test="store-stat">
-          当前 store：内存实现 · localStorage 记录：{{ localCount }} 条
+          当前 store：{{ storeKind === 'rest' ? 'REST（真 HTTP）' : '内存实现' }} · localStorage 记录：{{
+            localCount
+          }}
+          条
+        </p>
+        <p class="lcn-demo-stat" data-test="server-stat">
+          <template v-if="storeKind === 'rest'">
+            服务端（dev server 当你的后端）：
+            <template v-if="serverStat">
+              <strong>{{ serverStat.forms }}</strong> 份表单 / <strong>{{ serverStat.records }}</strong> 条收集记录
+            </template>
+            <template v-else>读取中…</template>
+            <span v-if="serverError">（{{ serverError }}）</span>
+          </template>
+          <template v-else>服务端：未接入（内存实现，零网络）</template>
         </p>
         <ol class="lcn-demo-events">
           <li v-for="(e, i) in events" :key="i" :data-event="e.name">
@@ -125,9 +155,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import FormDesigner from '@/components/form-builder/FormDesigner.vue'
 import LowCodeNav from '@/components/form-builder/lowcode/LowCodeNav.vue'
+import { createRestFormStore } from '@/components/form-builder/designer/rest-form-store'
+import { genRecordId } from '@/components/form-builder/designer/types/domain'
 import type { NavSource } from '@/components/form-builder/lowcode/useLowCodeNav'
 import {
   FORM_DESIGN_VERSION,
@@ -261,6 +293,88 @@ const onDesignerSaved = async (item: FormMetaItem) => {
   log('designer-saved', { name: item.name, id: item.id })
   sourceKind.value = 'forms'
   await navRef.value?.refresh()
+}
+
+// ── ③ 两种仓储实现：内存（零网络）↔ 官方 REST（真 HTTP） ──
+
+/**
+ * 「对接自己数据库」在这里变成**可切换的一件事**：
+ *   内存实现 = 本文件上面那份手写 `demoStore`（零网络，适合本地/单机）
+ *   REST 实现 = 官方 `createRestFormStore`（9 条约定路由，宿主后端照此实现即可）
+ *
+ * 为什么演示页要能切：换实现**不改外壳**（`form-store` 注入 + `refresh()` 重取就够了）。
+ * 只讲"换个实现就能上生产"是没法验证的，能切才有证据。
+ */
+const storeKinds = [
+  { kind: 'memory', label: '内存（零网络）' },
+  { kind: 'rest', label: 'REST（真 HTTP）' },
+] as const
+const storeKind = ref<'memory' | 'rest'>('memory')
+
+/**
+ * 令牌用**函数形态**取：真实项目里每次请求都要带最新登录态，写成常量就会拿到过期令牌。
+ * dev server 那份参考后端**故意要求**这个头（缺了返回 401），于是"接没接对"是可观测的。
+ */
+const DEMO_TOKEN = 'Bearer demo-token-r105'
+const restStore = createRestFormStore({
+  baseUrl: '/api/lowcode-demo/store',
+  headers: () => ({ Authorization: DEMO_TOKEN }),
+})
+const activeStore = computed<FormStore>(() => (storeKind.value === 'rest' ? restStore : demoStore))
+
+/** 服务端自己报的数（表单份数 / 收集记录条数）——**从后端读**才证明数据真的落了库 */
+const serverStat = ref<{ forms: number; records: number } | null>(null)
+const serverError = ref('')
+async function fetchServerStat() {
+  if (storeKind.value !== 'rest') {
+    serverStat.value = null
+    serverError.value = ''
+    return
+  }
+  try {
+    const res = await fetch('/api/lowcode-demo/store/__stats', { headers: { Authorization: DEMO_TOKEN } })
+    if (!res.ok) throw new Error(`__stats HTTP ${res.status}`)
+    serverStat.value = (await res.json()) as { forms: number; records: number }
+    serverError.value = ''
+  } catch (err) {
+    serverStat.value = null
+    serverError.value = err instanceof Error ? err.message : String(err)
+  }
+}
+watch(storeKind, () => void fetchServerStat(), { immediate: true })
+
+/** 换实现 = 换数据源 → 必须让外壳重取（否则导航还停在旧 store 的结果上） */
+async function switchStore(kind: 'memory' | 'rest') {
+  if (storeKind.value === kind) return
+  storeKind.value = kind
+  log('store-switch', { kind })
+  // ⚠️ 顺序有讲究：`activeStore` 是 computed，`:form-store` 这个 prop 要等**下一次渲染**
+  // 才传到外壳；同一个 tick 里立刻调 refresh()，外壳读到的还是旧 prop（表现为"切了没变化，
+  // 但页面区已经换了源"，第 105 轮就是这样被 e2e 抓到的）。宿主自己也换实现时照此处理。
+  await nextTick()
+  await navRef.value?.refresh()
+  await fetchServerStat()
+}
+
+/**
+ * 提交落到哪由**宿主**决定（外壳刻意不自动外发）：
+ * 内存实现只记事件；REST 实现把这条记录真的 POST 到后端，然后重新读服务端计数 ——
+ * 于是"数据进来了"不是靠日志自证，而是后端自己报出来的。
+ */
+async function onPageSubmit({ node, data }: { node: NavNode; data: Record<string, unknown> }) {
+  log('page-submit', { node, data })
+  if (storeKind.value !== 'rest') return
+  if (node.kind !== 'form') return
+  const formId = (node as { formId?: string }).formId
+  if (!formId) return
+  // 记录形状照官方 CollectRecord（id 用官方 genRecordId()，别自己拼随机串）
+  await restStore.appendRecord(`fd_collect_${formId}`, {
+    id: genRecordId(),
+    time: new Date().toLocaleString('zh-CN', { hour12: false }),
+    data: data,
+  })
+  await fetchServerStat()
+  log('record-saved', { storageKey: `fd_collect_${formId}` })
 }
 </script>
 

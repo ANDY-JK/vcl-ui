@@ -711,4 +711,32 @@ describe('useLowCodeNav · forms 来源（用户在低代码入口建的表单�
     expect(h.api.selectedKey.value).toBe('f1')
     expect(h.api.select('f2')).toBe(false)
   })
+  it('**换实现（getter 形态）：宿主切了 store，refresh() 立刻用新的那一份**', async () => {
+    // 真实场景：登录后从匿名后端换成带令牌的后端、或从内存实现切到 REST 实现。
+    // 传常量会把当时那一份定格，refresh() 只是"拿旧 store 重取一遍" —— 不报错，看着像没生效。
+    const memStore = (id: string, name: string) =>
+      ({
+        listForms: async () => [{ id, name, updatedAt: '', collectKey: `fd_collect_${id}` }],
+        loadForm: async () => ({ nodes: [], meta: { title: name } }),
+        renameForm: async () => undefined,
+        deleteForm: async () => undefined,
+        loadRecords: async () => [],
+        appendRecord: async () => undefined,
+        clearRecords: async () => undefined,
+      }) as never
+    const first = memStore('a1', '第一份')
+    const second = memStore('b1', '第二份')
+    let current = first
+    const host = mountLowCodeHost({ source: { kind: 'forms' }, formStore: () => current })
+    await flush()
+    expect(host.api.nodes.value.map((n) => n.label)).toContain('第一份')
+
+    current = second
+    await host.api.refresh()
+    await flush()
+    const labels = host.api.nodes.value.map((n) => n.label)
+    expect(labels, '换 store 后必须取到新 store 的表单').toContain('第二份')
+    expect(labels, '旧 store 的结果必须换掉').not.toContain('第一份')
+  })
+
 })

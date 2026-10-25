@@ -909,4 +909,36 @@ describe('宿主刷新入口（defineExpose refresh）', () => {
     ])
   })
 
+  it('**换 form-store prop（内存 ↔ REST 同款场景）：refresh() 后导航与表单页都换成新 store 的**', async () => {
+    const mk = (id: string, label: string) =>
+      ({
+        listForms: async () => [{ id, name: label, updatedAt: '', collectKey: '' }],
+        loadForm: async () => ({
+          nodes: [{ id: 'n1', type: 'text', label: `${label}·字段`, key: 'f' }],
+          meta: { title: `${label}（设计）` },
+        }),
+        renameForm: async () => undefined,
+        deleteForm: async () => undefined,
+        loadRecords: async () => [],
+        appendRecord: async () => undefined,
+        clearRecords: async () => undefined,
+      }) as never
+    const storeA = mk('a1', '甲库')
+    const storeB = mk('b1', '乙库')
+    const w = mountShell({ source: { kind: 'forms' }, formStore: storeA })
+    await flush()
+    expect(w.findAll('.lcn-label').map((l) => l.text())).toEqual(['甲库'])
+
+    // 宿主换了实现（真项目里就是登录态切换 / 换后端），外壳必须跟上
+    await w.setProps({ formStore: storeB })
+    await (w.vm as unknown as { refresh: () => Promise<void> }).refresh()
+    await flush()
+    expect(w.findAll('.lcn-label').map((l) => l.text()), '导航必须来自新 store').toEqual(['乙库'])
+
+    // 页面区也要换源（它在源码里是 computed resolver，本就该跟着 prop 走 —— 这里锁住别退化）
+    await w.findAll('.lcn-item')[0].trigger('click')
+    await flush()
+    expect(w.find('.fb-stub').attributes('data-title'), '表单页解析必须也走新 store').toBe('乙库（设计）')
+  })
+
 })

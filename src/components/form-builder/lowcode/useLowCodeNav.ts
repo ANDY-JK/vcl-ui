@@ -81,8 +81,14 @@ export interface UseLowCodeNavOptions {
   autoLoad?: boolean
   /** 加载后若无可选项是否自动选中第一个，默认 true */
   autoSelect?: boolean
-  /** `forms` 模式的数据源（不传则用 `getActiveFormStore()`） */
-  formStore?: FormStore
+  /**
+   * `forms` 模式的数据源（不传则用 `getActiveFormStore()`）。
+   *
+   * 支持**函数形态**（与 `source` 同款）：宿主可能在中途换实现 —— 登录后从匿名后端换成
+   * 带令牌的后端、或从内存实现切到 REST 实现。传常量就是把当时那一份**定格**了，
+   * `refresh()` 只会拿旧 store 重取一遍（表现为"切了实现但导航没变"，还不报错）。
+   */
+  formStore?: FormStore | (() => FormStore | undefined)
 }
 
 /** 返回值 */
@@ -126,6 +132,15 @@ export function useLowCodeNav(options: UseLowCodeNavOptions = {}): UseLowCodeNav
   const staticSource = typeof options.source === 'function' ? undefined : options.source
   const getSource = (): NavSource | undefined =>
     typeof options.source === 'function' ? options.source() : staticSource
+
+  /**
+   * 表单仓储同样归一成 getter（与 `source` 同款）：
+   * 常量形态在 setup 时定格（"传了就稳定"的直觉不变），**函数形态每次 refresh 重取** ——
+   * 宿主换了实现（登录态/后端切换）后，`refresh()` 立刻用新的那一份。
+   */
+  const staticFormStore = typeof options.formStore === 'function' ? undefined : options.formStore
+  const storeOf = (): FormStore | undefined =>
+    typeof options.formStore === 'function' ? options.formStore() : staticFormStore
 
   /** 请求序号：连续刷新 / 卸载后到达的结果一律丢弃（见文件头易错点 2） */
   let token = 0
@@ -182,9 +197,11 @@ export function useLowCodeNav(options: UseLowCodeNavOptions = {}): UseLowCodeNav
       else if (src.kind === 'api') raw = await loadFromApi(src)
       else {
         // forms 模式：用户在低代码入口建的表单自动成为导航项（委托 useFormNav，不重写映射）
+        // 每次 refresh 都重取一次 store：宿主换实现后（getter 形态）能立刻跟上
+        const store = storeOf()
         const formNav = useFormNav({
           ...(src.icon === undefined ? {} : { icon: src.icon }),
-          ...(options.formStore === undefined ? {} : { store: options.formStore }),
+          ...(store === undefined ? {} : { store }),
           autoLoad: false,
         })
         const items = await formNav.refresh()

@@ -33,6 +33,10 @@ import {
   setActiveFormStore,
   isExternalNavUrl,
 } from '@/components/form-builder'
+// ⑨ 文档「接你自己的后端」里的官方 REST 实现
+import { createRestFormStore } from '@/components/form-builder'
+// ⑩ 文档「提交记录形状」用的 id 生成器
+import { genRecordId } from '@/components/form-builder'
 import { readFileSync } from 'node:fs'
 
 describe('文档 lowcode.md · 所有 import 都真实存在', () => {
@@ -221,5 +225,53 @@ describe('文档 lowcode.md · 导航外壳（§5）', () => {
       body,
       '不得再显式 loadFormPage(current)：重取会重建导航项，current 身份变化已触发 watch 重载（见 §5 的 refresh 说明）'
     ).not.toMatch(/loadFormPage/)
+  })
+})
+
+describe('文档 lowcode.md · 官方 REST 仓储（§3）', () => {
+  it('文档教的 createRestFormStore 真实导出，且路由方法齐全', () => {
+    expect(createRestFormStore, 'createRestFormStore 必须真实导出').toBeTruthy()
+    const store = createRestFormStore({
+      baseUrl: '/api/lowcode',
+      headers: () => ({ Authorization: 'Bearer t' }),
+      fetchImpl: (async () => new Response('[]', { status: 200 })) as unknown as typeof fetch,
+    })
+    for (const m of [
+      'listForms',
+      'loadForm',
+      'saveForm',
+      'renameForm',
+      'deleteForm',
+      'loadRecords',
+      'appendRecord',
+      'updateRecord',
+      'removeRecord',
+      'clearRecords',
+    ]) {
+      expect(typeof (store as unknown as Record<string, unknown>)[m], `${m} 必须是函数`).toBe('function')
+    }
+  })
+
+  it('文档写的路由与实现一致；id 必须 URL 编码（否则带斜杠的 id 会越权）', () => {
+    const src = readFileSync('src/components/form-builder/designer/rest-form-store.ts', 'utf8')
+    for (const p of ['/forms', '/records/']) {
+      expect(src, `实现里必须出现路由 ${p}`).toContain(p)
+    }
+    expect(src).toContain('encodeURIComponent')
+  })
+})
+
+describe('文档 lowcode.md · 提交记录形状（§4）', () => {
+  it('文档教的 genRecordId 真实导出；CollectRecord 三段形状与实现一致', () => {
+    expect(genRecordId, 'genRecordId 必须真实导出').toBeTruthy()
+    expect(typeof genRecordId()).toBe('string')
+    const src = readFileSync('src/components/form-builder/designer/types/domain.ts', 'utf8')
+    const i = src.indexOf('export interface CollectRecord')
+    expect(i, 'CollectRecord 必须定义在 domain.ts').toBeGreaterThan(-1)
+    const closeIdx = src.indexOf('}', i)
+    const body = src.slice(i, closeIdx)
+    for (const k of ['id', 'time', 'data']) {
+      expect(body, `${k} 必须出现在 CollectRecord 里`).toContain(k)
+    }
   })
 })
