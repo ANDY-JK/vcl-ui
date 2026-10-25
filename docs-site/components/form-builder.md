@@ -13,7 +13,7 @@
 | `FormCollect` | 6 | 1 | 0 |
 | `FormTargetCollect` | 4 | 1 | 0 |
 | `FormShareView` | 4 | 1 | 0 |
-| `LowCodeNav` | 11 | 4 | 7 |
+| `LowCodeNav` | 12 | 4 | 7 |
 
 ## 组合式函数 / 工具导出
 
@@ -279,6 +279,7 @@
 | `apiUrlPolicy` | `() => ApiUrlPolicy` | — | 否 | 外发 URL 策略（api 来源用）；不传 = 只允许同源 |
 | `filter` | `(node: NavNode) => boolean` | — | 否 | 权限过滤（判定交宿主） |
 | `fetcher` | `typeof fetch` | — | 否 | 注入 fetch（宿主常要加鉴权头 / 走自己的请求层）；不传用全局 fetch |
+| `formStore` | `FormStore` | — | 否 | 表单存储（`forms` 来源的数据源，也是表单页解析的默认来源）。 宿主对接自己后端时在这里注入；不传则用活动实例（`setActiveFormStore`）。 |
 | `modelValue` | `string \| null` | — | 否 | 受控选中 key（不传 = 非受控） |
 | `title` | `string` | — | 否 | 侧栏标题（纯展示；不传则不渲染标题行） |
 | `autoLoad` | `boolean` | `true` | 否 | 挂载即加载 |

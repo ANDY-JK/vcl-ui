@@ -34,6 +34,7 @@ import { useT } from '@/components/_internal/i18n'
 import FormBuilder from '../FormBuilder.vue'
 import type { ApiUrlPolicy } from '../api-url-guard'
 import type { FormData, FormSchema } from '../types'
+import type { FormStore } from '../designer/store'
 import { isExternalNavUrl, type NavNode, type NavFormNode } from './nav-schema'
 import { useLowCodeNav, type NavSource } from './useLowCodeNav'
 import { createFormPageResolver, type FormPageResolver } from './page-resolver'
@@ -47,6 +48,11 @@ interface Props {
   filter?: (node: NavNode) => boolean
   /** 注入 fetch（宿主常要加鉴权头 / 走自己的请求层）；不传用全局 fetch */
   fetcher?: typeof fetch
+  /**
+   * 表单存储（`forms` 来源的数据源，也是表单页解析的默认来源）。
+   * 宿主对接自己后端时在这里注入；不传则用活动实例（`setActiveFormStore`）。
+   */
+  formStore?: FormStore
   /** 受控选中 key（不传 = 非受控） */
   modelValue?: string | null
   /** 侧栏标题（纯展示；不传则不渲染标题行） */
@@ -101,6 +107,7 @@ const api = useLowCodeNav({
   apiUrlPolicy: () => props.apiUrlPolicy?.() ?? {},
   filter: (n) => (props.filter ? props.filter(n) : true),
   fetcher: props.fetcher,
+  formStore: props.formStore,
   modelValue: selectedKey,
   autoLoad: props.autoLoad,
   autoSelect: props.autoSelect,
@@ -121,7 +128,7 @@ const pageData = ref<FormData>({})
 let pageToken = 0
 let disposed = false
 
-const resolver = computed<FormPageResolver>(() => props.resolveFormPage ?? createFormPageResolver())
+const resolver = computed<FormPageResolver>(() => props.resolveFormPage ?? createFormPageResolver(props.formStore))
 
 /** 只有"表单页 + 开启内置渲染 + 没被 `#page` 覆盖"才需要解析 */
 const needsFormResolve = (node: NavNode | null): node is NavFormNode =>
