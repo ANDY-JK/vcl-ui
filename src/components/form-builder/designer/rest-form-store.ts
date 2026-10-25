@@ -38,6 +38,36 @@ export interface RestFormStoreOptions {
   headers?: Record<string, string> | (() => Record<string, string>)
   /** 注入 fetch（测试用；默认全局 fetch） */
   fetchImpl?: typeof fetch
+  /**
+   * 写冲突（后端 409）时的策略，默认 `'throw'`：
+   *
+   * - `'throw'`（推荐）：把 `RestStoreConflictError` 抛给调用方 —— 由 UI 决定"要覆盖吗/重新编辑"。
+   *   低代码表单常常是两个人开着同一张表，**静默覆盖会让先改的人无声丢工作**，所以默认不替用户做决定。
+   * - `'retry'`：自动重读最新版本号后重试**一次**（适合"我的改动就是要覆盖"的场景，例如改标签）；
+   *   仍冲突则照旧抛错（不无限重试）。
+   *
+   * 后端不支持 `rev`（响应里没有版本号）时两种策略都不会触发 —— 行为与旧版完全一致。
+   */
+  onConflict?: 'throw' | 'retry'
+}
+
+/**
+ * 写冲突（HTTP 409）：说明"你读到的是旧版本"。
+ *
+ * `currentRev` 是库里的当前版本号（后端会带回来），宿主可据此决定：
+ * 提示用户"有人改过了"、或把本地改动叠加到最新数据上重试。
+ */
+export class RestStoreConflictError extends Error {
+  readonly code = 'conflict'
+
+  constructor(
+    message: string,
+    /** 冲突时的最新版本号（后端没带则 undefined） */
+    readonly currentRev?: number,
+  ) {
+    super(message)
+    this.name = 'RestStoreConflictError'
+  }
 }
 
 /** 创建一个由 REST 后端支撑的 FormStore */
@@ -54,6 +84,21 @@ export function createRestFormStore(options: RestFormStoreOptions): FormStore {
       headers: { 'Content-Type': 'application/json', ...headersOf(), ...(init?.headers ?? {}) },
     })
     if (init?.allow404 && res.status === 404) return null
+    // 409 单独识别：它是**业务冲突**（"你带的是旧版本"），不是"请求失败"——
+    // 混进通用错误里，宿主就只能给用户看"保存失败，请重试"，掩盖真实原因
+    if (res.status === 409) {
+      let currentRev: number | undefined
+      try {
+        const body = (await res.json()) as { currentRev?: number }
+        if (typeof body?.currentRev === 'number') currentRev = body.currentRev
+      } catch {
+        // 后端没回 JSON 也不影响判冲突
+      }
+      throw new RestStoreConflictError(
+        `表单仓储冲突：${init?.method ?? 'GET'} ${path} 的版本已过期（当前 rev=${currentRev ?? '未知'}）`,
+        currentRev,
+      )
+    }
     if (!res.ok) throw new Error(`表单仓储请求失败 ${init?.method ?? 'GET'} ${path}：HTTP ${res.status}`)
     if (res.status === 204) return null
     const text = await res.text()
@@ -62,44 +107,134 @@ export function createRestFormStore(options: RestFormStoreOptions): FormStore {
 
   const seg = (s: string) => encodeURIComponent(s)
 
+  /**
+   * 版本号缓存：**读到过才带**。
+   *
+   * 为什么不做成"没有 rev 就先 GET 一次"：那会让每次写多一次往返，而绝大多数写在
+   * 单端场景下没有冲突风险。宿主需要强一致时，先 `listForms()` / `loadRecords()` 即可（它们会填缓存）。
+   */
+  const formRev = new Map<string, number>()
+  const recordRev = new Map<string, number>()
+  const recordKey = (storageKey: string, recordId: string) => `${storageKey}\u0000${recordId}`
+  const withRev = (rev: number | undefined, payload: Record<string, unknown>) =>
+    rev === undefined ? payload : { ...payload, rev }
+  const isConflict = (err: unknown): err is RestStoreConflictError =>
+    err instanceof RestStoreConflictError || (err as { code?: string })?.code === 'conflict'
+
+  const listFormsImpl = async (): Promise<FormMetaItem[]> => {
+    const list = (await request<FormMetaItem[]>('/forms')) ?? []
+    for (const f of list) {
+      const rev = (f as { rev?: unknown }).rev
+      if (typeof rev === 'number') formRev.set(f.id, rev)
+    }
+    return list
+  }
+
+  const loadRecordsImpl = async (storageKey: string): Promise<CollectRecord[]> => {
+    const list = (await request<CollectRecord[]>(`/records/${seg(storageKey)}`)) ?? []
+    for (const r of list) {
+      const rev = (r as { rev?: unknown }).rev
+      if (typeof rev === 'number') recordRev.set(recordKey(storageKey, r.id), rev)
+    }
+    return list
+  }
+
+  /**
+   * 写操作统一走这里：按 `onConflict` 策略决定"冲突就抛"还是"刷新版本重试一次"。
+   * 重试**只做一次**：真并发下继续重试只是在替用户赌运气，第二次冲突应当如实抛给调用方。
+   */
+  async function writeWith<T>(
+    send: (rev: number | undefined) => Promise<T>,
+    rev: number | undefined,
+    refresh: () => Promise<number | undefined>,
+  ): Promise<T> {
+    try {
+      return await send(rev)
+    } catch (err) {
+      if (!isConflict(err) || options.onConflict !== 'retry') throw err
+      const fresh = await refresh()
+      // 刷新后仍拿不到版本号（后端不支持 rev）就没必要重试了，原样抛出
+      if (fresh === undefined) throw err
+      return await send(fresh)
+    }
+  }
+
   return {
-    async listForms(): Promise<FormMetaItem[]> {
-      return (await request<FormMetaItem[]>('/forms')) ?? []
-    },
+    listForms: listFormsImpl,
     async loadForm(id: string): Promise<FormDesign | null> {
       return await request<FormDesign>(`/forms/${seg(id)}`, { allow404: true })
     },
     async saveForm(id: string | null, design: FormDesign, name?: string): Promise<FormMetaItem> {
-      const saved = await request<FormMetaItem>('/forms', {
-        method: 'POST',
-        body: JSON.stringify({ id, design, name }),
-      })
+      const rev = id ? formRev.get(id) : undefined
+      const saved = await writeWith(
+        (r) =>
+          request<FormMetaItem>('/forms', {
+            method: 'POST',
+            body: JSON.stringify(withRev(r, { id, design, name })),
+          }),
+        rev,
+        async () => {
+          await listFormsImpl()
+          return id ? formRev.get(id) : undefined
+        },
+      )
       if (!saved) throw new Error('表单仓储保存失败：后端未返回表单元信息')
+      const savedRev = (saved as { rev?: unknown }).rev
+      if (typeof savedRev === 'number') formRev.set(saved.id, savedRev)
       return saved
     },
     async renameForm(id: string, name: string): Promise<void> {
-      await request(`/forms/${seg(id)}`, { method: 'PATCH', body: JSON.stringify({ name }) })
+      const rev = formRev.get(id)
+      await writeWith(
+        (r) =>
+          request(`/forms/${seg(id)}`, {
+            method: 'PATCH',
+            body: JSON.stringify(withRev(r, { name })),
+          }),
+        rev,
+        async () => {
+          await listFormsImpl()
+          return formRev.get(id)
+        },
+      )
+      // PATCH 回 204（不带新版本号）：本地 +1 保持后续写入的 rev 正确
+      if (rev !== undefined) formRev.set(id, rev + 1)
     },
     async deleteForm(id: string): Promise<void> {
       await request(`/forms/${seg(id)}`, { method: 'DELETE' })
+      formRev.delete(id)
     },
-    async loadRecords(storageKey: string): Promise<CollectRecord[]> {
-      return (await request<CollectRecord[]>(`/records/${seg(storageKey)}`)) ?? []
-    },
+    loadRecords: loadRecordsImpl,
     async appendRecord(storageKey: string, record: CollectRecord): Promise<void> {
       await request(`/records/${seg(storageKey)}`, { method: 'POST', body: JSON.stringify({ record }) })
+      // 新记录的版本号由后端定（1 起），这里不猜；下次读就拿到了
     },
     async updateRecord(storageKey: string, recordId: string, data: Record<string, unknown>): Promise<void> {
-      await request(`/records/${seg(storageKey)}/${seg(recordId)}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ data }),
-      })
+      const k = recordKey(storageKey, recordId)
+      const rev = recordRev.get(k)
+      await writeWith(
+        (r) =>
+          request(`/records/${seg(storageKey)}/${seg(recordId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify(withRev(r, { data })),
+          }),
+        rev,
+        async () => {
+          await loadRecordsImpl(storageKey)
+          return recordRev.get(k)
+        },
+      )
+      if (rev !== undefined) recordRev.set(k, rev + 1)
     },
     async removeRecord(storageKey: string, recordId: string): Promise<void> {
       await request(`/records/${seg(storageKey)}/${seg(recordId)}`, { method: 'DELETE' })
+      recordRev.delete(recordKey(storageKey, recordId))
     },
     async clearRecords(storageKey: string): Promise<void> {
       await request(`/records/${seg(storageKey)}`, { method: 'DELETE' })
+      for (const k of [...recordRev.keys()]) {
+        if (k.startsWith(`${storageKey}\u0000`)) recordRev.delete(k)
+      }
     },
   }
 }

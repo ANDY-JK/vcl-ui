@@ -18,7 +18,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { effectScope } from 'vue'
 import { createServer } from 'node:http'
-import { createRestFormStore } from '@/components/form-builder/designer/rest-form-store'
+import { createRestFormStore, RestStoreConflictError } from '@/components/form-builder/designer/rest-form-store'
 import { useLowCodeNav } from '@/components/form-builder/lowcode/useLowCodeNav'
 import { policyFromOrigins } from '@/components/form-builder/api-url-guard'
 import type { FormStore } from '@/components/form-builder/designer/store'
@@ -425,5 +425,38 @@ it('嵌进别人的服务器：前缀可换，且**不匹配的路径交回外�
       (await send(`${base}/forms/${saved.id}`, { name: '并发表（乙改）', rev: 1 }, 'PATCH')).status,
       '表单被别人改过 → 409',
     ).toBe(409)
+  })
+
+  it('**官方客户端真的用上了 rev**：两个「标签页」改同一条记录 → 后者收到冲突且不覆盖前者；retry 策略可自动重读', async () => {
+    const a = store({ Authorization: AUTH })
+    const saved = await a.saveForm(null, design('并发客户端'), '并发客户端')
+    const key = saved.collectKey
+    await a.appendRecord(key, { id: 'r1', time: '2026-10-26 10:00', data: { v: '初始' } })
+
+    // 两个独立客户端 = 两个浏览器标签页：各自读到 rev=1
+    const b = store({ Authorization: AUTH })
+    await a.loadRecords(key)
+    const [seenByB] = await b.loadRecords(key)
+    expect(seenByB.rev, '读接口把版本号带给客户端').toBe(1)
+
+    // A 先写 → 服务端 rev=2
+    await a.updateRecord(key, 'r1', { v: 'A 改的' })
+
+    // B 手上还是 rev=1 → 必须收到冲突，而不是把 A 的改动盖掉
+    const err = await b.updateRecord(key, 'r1', { v: 'B 改的' }).catch((e: unknown) => e)
+    expect(err, '客户端会带上本地 rev，服务端据此判冲突').toBeInstanceOf(RestStoreConflictError)
+    expect((err as RestStoreConflictError).currentRev, '冲突响应里的当前版本透传给宿主').toBe(2)
+    expect((await a.loadRecords(key))[0].data, 'A 的改动没有被静默覆盖').toEqual({ v: 'A 改的' })
+
+    // `onConflict: 'retry'`：读到旧版本 → 冲突 → 自动重读 → 重试成功（"我的改动就是要覆盖"的场景）
+    const retryClient = createRestFormStore({
+      baseUrl: base,
+      headers: { Authorization: AUTH },
+      onConflict: 'retry',
+    })
+    await retryClient.loadRecords(key) // 拿到 rev=2
+    await a.updateRecord(key, 'r1', { v: 'A 又改' }) // A 插一脚 → rev=3
+    await retryClient.updateRecord(key, 'r1', { v: 'B 重试成功' }) // 自动重读成 rev=3 再写
+    expect((await a.loadRecords(key))[0].data, '重试策略下后写的按预期生效').toEqual({ v: 'B 重试成功' })
   })
 })
