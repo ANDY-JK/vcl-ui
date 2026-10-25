@@ -37,7 +37,7 @@ import {
 import { createRestFormStore } from '@/components/form-builder'
 // ⑩ 文档「提交记录形状」用的 id 生成器
 import { genRecordId } from '@/components/form-builder'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 describe('文档 lowcode.md · 所有 import 都真实存在', () => {
   it('组件与函数都是可用的（不是 undefined）', () => {
@@ -273,5 +273,37 @@ describe('文档 lowcode.md · 提交记录形状（§4）', () => {
     for (const k of ['id', 'time', 'data']) {
       expect(body, `${k} 必须出现在 CollectRecord 里`).toContain(k)
     }
+  })
+})
+
+describe('文档 lowcode.md · 可部署参考后端（§3）', () => {
+  it('指南点名了 examples/lowcode-backend/server.mjs，且该文件真实存在', () => {
+    const doc = readFileSync('docs-site/guide/lowcode.md', 'utf8')
+    expect(doc, '指南必须给出可部署的起点').toContain('examples/lowcode-backend/server.mjs')
+    expect(doc, '读法（令牌拒绝启动）也要写').toContain('LOWCODE_TOKEN')
+    expect(existsSync('examples/lowcode-backend/server.mjs')).toBe(true)
+    expect(existsSync('examples/lowcode-backend/README.md'), '部署起点不能只有代码').toBe(true)
+  })
+
+  it('参考后端真的实现了 9 条路由，且导出可嵌入的工厂（指南的契约不是纸面契约）', () => {
+    const src = readFileSync('examples/lowcode-backend/server.mjs', 'utf8')
+    for (const frag of ['/forms', '/records', '/nav', '__stats']) {
+      expect(src, `参考后端必须实现 ${frag}`).toContain(frag)
+    }
+    for (const m of ['GET', 'POST', 'PATCH', 'DELETE']) {
+      expect(src, `参考后端必须处理 ${m}`).toContain(m)
+    }
+    expect(src, '必须可嵌入（导出工厂而不是只会自启）').toContain('export function createLowcodeBackend')
+    expect(src, '存储层要能被整体替换').toContain('export function createMemoryStore')
+    expect(src, 'fail-closed：没令牌必须拒绝启动').toContain('拒绝启动')
+    expect(src, '401 与 403 必须分开').toContain('forbidden')
+  })
+
+  it('指南给了给导航来源加鉴权的 fetcher 写法（api 来源的令牌走这里）', () => {
+    const doc = readFileSync('docs-site/guide/lowcode.md', 'utf8')
+    // 锚点必须**唯一**：`withAuth` 这个词在指南里出现 2 次（另有一处叙述），
+    // 只断言它等于没锁住这段可抄的写法 —— 第 106 轮的负向对照正是这样抓到的（删一处仍绿）。
+    expect(doc, '要给出可直接抄的 fetcher 包装').toContain(':fetcher="withAuth"')
+    expect(doc, '必须点明 formStore 的令牌在另一处').toContain('createRestFormStore({ headers })')
   })
 })

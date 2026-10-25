@@ -164,6 +164,26 @@ setActiveFormStore(store)   // 之后设计器、收集端、导航外壳全部�
 > 后端由 dev server 当"你自己的后端"——它**故意要求 `Authorization`**（缺了 401），
 > 于是"令牌接没接对"是可观测的；提交后会重新读服务端计数，**数据真的落库才算过**。
 
+#### 可直接部署的参考后端（零依赖）
+
+上表那份契约，仓库里有一份**能直接跑**的实现：`examples/lowcode-backend/server.mjs`
+（只用 Node 内置 `node:http`，没有第三方依赖）：
+
+```bash
+LOWCODE_TOKEN=my-secret-token node examples/lowcode-backend/server.mjs   # 默认 :8787
+```
+
+- **令牌必须显式给**：没设 `LOWCODE_TOKEN` 就**拒绝启动**（参考实现不提供"无鉴权模式"——
+  被随手部署成公网无鉴权接口是真实事故，默认值不该帮这种忙）
+- **换数据库只改一处**：`createMemoryStore()` 的 11 个方法体；路由、鉴权、错误语义都不用动
+- **401 与 403 分开**：令牌不认识是 401（身份不明），令牌有效但 scope 不够是 403
+  （身份明确但无权）—— 宿主日志里能一眼分辨"令牌没带上"和"这个用户不该有权限"
+- **权限示例**：全权令牌能看到「内部」导航组，只读令牌看不到；`README.md` 里还列了
+  上线前要补的五件事（持久化、真实鉴权、限流、审计、并发/乐观锁）
+
+> 反向代理让 `/api/lowcode` 与前端**同域**最省事：`api-url-guard` 默认只放行同源，
+> 跨域得宿主用 `apiUrlPolicy` 显式放行。
+
 ---
 
 ## 4. 自动生成导航项：`useFormNav`
@@ -300,6 +320,19 @@ async function afterHostSaved() {
 | `resolveFormPage` | 换成你自己后端的表单页解析器 |
 | `showIssues` | 显示配置问题条（默认不显示；`#issues` 插槽随时可取全部问题） |
 | `title` / `modelValue` / `autoLoad` / `autoSelect` | 侧栏标题 / 受控选中 / 挂载即加载 / 加载后自动选第一项 |
+
+> **后端要鉴权时用 `fetcher`**（`api` 来源的请求头在这里加，`formStore` 的令牌在
+> `createRestFormStore({ headers })` 里加）：
+>
+> ```ts
+> const withAuth: typeof fetch = (input, init) =>
+>   fetch(input, { ...init, headers: { ...init?.headers, Authorization: `Bearer ${token}` } })
+> ```
+> `<LowCodeNav :source="{ kind: 'api', url: '/api/lowcode/nav', dataPath: 'data.items' }" :fetcher="withAuth" />`
+>
+> 拿不到导航时**不是静默空**：`error` 有值、`nodes` 保留上一次结果，`showIssues` 一开就能看到原因
+> （401 还是 403、被哪个来源拒绝）。"后端下发了权限外的项"这类事也在这里显形 ——
+> 该由后端按令牌过滤，或宿主用 `filter` 再兜一道。
 
 ### 事件
 
