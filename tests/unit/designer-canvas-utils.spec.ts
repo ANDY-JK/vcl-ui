@@ -152,3 +152,32 @@ describe('previewFakeData：按字段类型生成预览初始值（与 FormRende
     expect(data).toEqual({ inner: false, noid: false })
   })
 })
+
+describe('previewFakeData 的 v3 高级字段初始值', () => {
+  const fake = (type: string, extra: Record<string, unknown> = {}) =>
+    previewFakeData([{ id: 'a', type, key: 'k', label: 'L', ...extra } as never])
+
+  it('relate → null（关联字段无默认选项，不能给空数组）', () => {
+    expect(fake('relate')['k']).toBeNull()
+  })
+
+  it('address → 空串（省市区三段拼接的起点）', () => {
+    expect(fake('address')['k']).toBe('')
+  })
+
+  it('idcard → 空串（与 signature/richtext 同口径，不是 null）', () => {
+    expect(fake('idcard')['k']).toBe('')
+  })
+
+  it('同批其它 v3 类型保持各自口径（回归护栏）', () => {
+    expect(fake('richtext')['k']).toBe('')
+    expect(fake('signature')['k']).toBe('')
+    expect(fake('subform')['k']).toEqual([])
+    expect(fake('matrix')['k']).toEqual({})
+    expect(fake('serial')['k']).toBeNull()
+  })
+
+  it('未知类型兜底为 null', () => {
+    expect(fake('totally-unknown-type')['k']).toBeNull()
+  })
+})
