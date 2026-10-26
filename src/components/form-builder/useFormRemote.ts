@@ -179,10 +179,30 @@ export function useFormRemote(
     return pendingIdempotencyKey
   }
 
+  /**
+   * 丢弃挂起的幂等键（下一次提交会拿新键）。
+   *
+   * ⚠️ 第 138 轮修：键只在**提交成功**后轮换，失败会一直挂着等重试。这在"重试同一次提交"
+   * 时是对的，但**放弃这次提交、改录一条新记录**时就错了 —— 新记录会带着旧键出去，
+   * 服务端若实现了去重，会把它当成"上一次失败的重复"直接丢弃（静默丢数据）。
+   * 所以「重置表单」必须同时丢弃这个键：重置的语义就是"这次提交不要了"。
+   */
+  function resetIdempotency(): void {
+    pendingIdempotencyKey = null
+  }
+
   /** 卸载清理（autoSave pending） */
   function dispose(): void {
     if (autoSaveTimer) clearTimeout(autoSaveTimer)
   }
 
-  return { loadRemoteData, scheduleAutoSave, applyApiDefaults, submitRemote, currentIdempotencyKey, dispose }
+  return {
+    loadRemoteData,
+    scheduleAutoSave,
+    applyApiDefaults,
+    submitRemote,
+    currentIdempotencyKey,
+    resetIdempotency,
+    dispose,
+  }
 }

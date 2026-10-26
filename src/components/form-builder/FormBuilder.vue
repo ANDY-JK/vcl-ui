@@ -399,9 +399,10 @@ function getFormData(): FormData {
 //   `validateForm` / `validateAndGet` 两个近义入口已删，要数据用 `getFormData()`、
 //   要错误明细用 `errors`，各自独立调用即可拼出原先 `validateAndGet` 的组合。
 //   不要再加第二个校验变体。全表以 README「defineExpose 公开契约」一节为对账单。
-defineExpose({ stopSubmit, setSubmitting, submitting, getFormData, validate, errors })
 
 function handleReset(): void {
+  // 重置 = 放弃这次提交：幂等键必须一起丢，否则改录新记录时会带旧键出去（服务端会当成重复丢弃）
+  resetIdempotency()
   formData.value = { ...initialData.value }
   clearErrors()
   currentStep.value = 0
@@ -433,6 +434,7 @@ const {
   scheduleAutoSave,
   applyApiDefaults,
   submitRemote,
+  resetIdempotency,
   dispose: disposeRemote,
 } = useFormRemote(
   submitConfig,
@@ -443,6 +445,18 @@ const {
   (err) => t('formBuilder.loadFail', { err }),
   apiUrlPolicy,
 )
+
+// 暴露给宿主的命令式 API（放在 useFormRemote 之后：resetIdempotency 在此才完成初始化）
+defineExpose({
+  stopSubmit,
+  setSubmitting,
+  submitting,
+  getFormData,
+  validate,
+  errors,
+  /** 宿主自行重置（不走内置重置按钮）时也要丢弃挂起的幂等键，否则新记录会被服务端当成重复 */
+  resetIdempotency,
+})
 
 /** FieldList 回写字段值 */
 function onFieldUpdate(key: string, value: unknown): void {
