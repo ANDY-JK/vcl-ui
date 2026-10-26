@@ -117,6 +117,20 @@ function close() {
   emit('close')
 }
 
+/**
+ * 用户点了「取消」按钮。
+ *
+ * ⚠️ 第 137 轮修：form / select 模式的内置取消按钮原来只走 `close()`（emit update:visible + close），
+ * **从不 emit `cancel`**；而 confirm 模式（委托 ConfirmModal）会 emit cancel，
+ * 类型注释也写着 `cancel: 点击取消 / 关闭`。于是宿主写 `@cancel="丢弃草稿"` 时，
+ * 只有 confirm 弹窗生效、表单弹窗静默不生效 —— 草稿没被丢弃，用户下次打开看到上次的残留。
+ * 现在两种模式的取消都会 emit cancel，语义统一（cancel 在前、close 在后）。
+ */
+function cancel() {
+  emit('cancel')
+  close()
+}
+
 function toggleSelectItem(val: string | number) {
   if (props.selectMultiple) {
     const arr = internalSelectValue.value
@@ -226,11 +240,11 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
       <!-- @slot footer: 模态框底部按钮区；不传则回退按 mode 类型的内置按钮组（form 模式为取消/提交） -->
       <slot name="footer">
         <template v-if="modalType === 'form'">
-          <Button :text="t('common.cancel')" variant="secondary" @click="close" />
+          <Button :text="t('common.cancel')" variant="secondary" @click="cancel" />
           <Button :text="t('common.submit')" variant="primary" @click="emit('form-submit')" />
         </template>
         <template v-else-if="modalType === 'select'">
-          <Button :text="t('common.cancel')" variant="secondary" @click="close" />
+          <Button :text="t('common.cancel')" variant="secondary" @click="cancel" />
           <Button :text="t('common.confirm')" variant="primary" @click="confirmSelect" />
         </template>
       </slot>
