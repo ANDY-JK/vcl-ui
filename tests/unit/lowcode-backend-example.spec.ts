@@ -449,6 +449,67 @@ it('嵌进别人的服务器：前缀可换，且**不匹配的路径交回外�
     ).toBe(409)
   })
 
+  /**
+   * 删除是**最不可逆**的一步，第 118 轮之前它是唯一没接乐观锁的破坏性操作：
+   * 甲刚改完的东西，乙拿着旧版本号一删就没了，且没有任何提示。
+   */
+  it('**删除也接乐观锁**：带过期 rev 删 → 409 且东西还在；带正确 rev / 不带 rev → 204（老客户端不受影响）', async () => {
+    const del = (url: string) => fetch(url, { method: 'DELETE', headers: { Authorization: AUTH } })
+    const created = await store({ Authorization: AUTH }).saveForm(null, design('待删表'), '待删表')
+
+    // ① 表单：甲改名（rev 1 → 2），乙拿 rev=1 去删 → 409，且**表单没被删掉**
+    expect(
+      (await fetch(`${base}/forms/${created.id}`, {
+        method: 'PATCH',
+        headers: { Authorization: AUTH, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: '甲改的名字', rev: 1 }),
+      })).status,
+    ).toBe(204)
+    const stale = await del(`${base}/forms/${created.id}?rev=1`)
+    expect(stale.status, '拿旧版本号删 = 删掉别人刚改的东西 → 必须 409').toBe(409)
+    const body = (await stale.json()) as { error: string; currentRev: number }
+    expect(body.error).toBe('conflict')
+    expect(body.currentRev, '带上当前版本，客户端才能重读后再决定').toBe(2)
+    expect(
+      (await (await fetch(`${base}/forms/${created.id}`, { headers: { Authorization: AUTH } })).json()) as unknown,
+      '409 之后表单必须还在',
+    ).toBeTruthy()
+
+    // ② 带正确 rev → 删成功
+    expect((await del(`${base}/forms/${created.id}?rev=2`)).status).toBe(204)
+    expect((await fetch(`${base}/forms/${created.id}`, { headers: { Authorization: AUTH } })).status).toBe(404)
+
+    // ③ 记录侧同理：先写一条并改一次（rev 1 → 2），再用 rev=1 删 → 409
+    const f2 = await store({ Authorization: AUTH }).saveForm(null, design('待删记录'), '待删记录')
+    const k2 = f2.collectKey
+    await store({ Authorization: AUTH }).appendRecord(k2, { id: 'r1', time: '2026-10-26 10:00', data: { v: 1 } })
+    expect(
+      (await fetch(`${base}/records/${k2}/r1`, {
+        method: 'PATCH',
+        headers: { Authorization: AUTH, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { v: 2 }, rev: 1 }),
+      })).status,
+    ).toBe(204)
+    expect((await del(`${base}/records/${k2}/r1?rev=1`)).status, '记录被改过 → 删要给 409').toBe(409)
+    expect((await del(`${base}/records/${k2}/r1?rev=2`)).status).toBe(204)
+
+    // ④ 整表清空用**条数**当护栏（没有单条版本可比）：条数对不上就 409
+    await store({ Authorization: AUTH }).appendRecord(k2, { id: 'r2', time: '2026-10-26 11:00', data: { v: 3 } })
+    const wrong = await del(`${base}/records/${k2}?count=99`)
+    expect(wrong.status, '清空别人并发写入的记录 → 必须挡住').toBe(409)
+    expect(
+      ((await (await fetch(`${base}/records/${k2}`, { headers: { Authorization: AUTH } })).json()) as unknown[]).length,
+      '409 之后记录必须还在',
+    ).toBe(1)
+    expect((await del(`${base}/records/${k2}?count=1`)).status).toBe(204)
+    expect(
+      ((await (await fetch(`${base}/records/${k2}`, { headers: { Authorization: AUTH } })).json()) as unknown[]).length,
+    ).toBe(0)
+
+    // ⑤ 不带 rev 仍是老语义（既有客户端/演示站 e2e 靠它）：删掉刚建的那份表单
+    expect((await del(`${base}/forms/${f2.id}`)).status, '不带 rev 仍 204').toBe(204)
+  })
+
   it('**官方客户端真的用上了 rev**：两个「标签页」改同一条记录 → 后者收到冲突且不覆盖前者；retry 策略可自动重读', async () => {
     const a = store({ Authorization: AUTH })
     const saved = await a.saveForm(null, design('并发客户端'), '并发客户端')

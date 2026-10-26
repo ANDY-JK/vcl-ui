@@ -154,3 +154,72 @@ describe('REST 仓储 · 乐观锁 rev', () => {
     expect((err as RestStoreConflictError).currentRev).toBe(4)
   })
 })
+
+/**
+ * 删除是**最不可逆**的一步（第 118 轮补）：带版本号删 → 后端能把"删掉别人刚改的东西"变成 409。
+ * 同时钉死一个**故意的设计决定**：删除**不走**自动重试 —— 重试会先刷新 rev 再重发，
+ * 那等于"把别人刚改的那一版删掉"，与乐观锁的本意正好相反。
+ */
+describe('REST 仓储 · 删除也接乐观锁（第 118 轮）', () => {
+  it('读到过 rev 就带上：`DELETE /forms/{id}?rev=N`', async () => {
+    const { calls, fetchImpl } = fakeBackend({
+      'GET /forms': { json: [{ id: 'f1', name: '甲', updatedAt: 't', collectKey: 'k1', rev: 3 }] },
+      'DELETE /forms/f1?rev=3': { status: 204 },
+    })
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl })
+    await store.listForms()
+    await store.deleteForm('f1')
+
+    expect(calls.at(-1), '删除要带上读到的版本号').toMatchObject({ method: 'DELETE', path: '/forms/f1?rev=3' })
+  })
+
+  it('没读到过 rev 就不带（老后端 / 未读过列表时行为与改造前一致）', async () => {
+    const { calls, fetchImpl } = fakeBackend({ 'DELETE /forms/f1': { status: 204 } })
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl })
+    await store.deleteForm('f1')
+
+    expect(calls.at(-1)!.path, '没版本号就别编一个').toBe('/forms/f1')
+  })
+
+  it('冲突 → 抛 RestStoreConflictError（带 currentRev），且**即使 onConflict=retry 也不重试**', async () => {
+    const { calls, fetchImpl } = fakeBackend({
+      'GET /forms': { json: [{ id: 'f1', name: '甲', updatedAt: 't', collectKey: 'k1', rev: 1 }] },
+      'DELETE /forms/f1?rev=1': {
+        status: 409,
+        json: { error: 'conflict', currentRev: 2, message: '表单 f1 已被别人改过' },
+      },
+    })
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl, onConflict: 'retry' })
+    await store.listForms()
+    const err = await store.deleteForm('f1').catch((e: unknown) => e)
+
+    expect(err).toBeInstanceOf(RestStoreConflictError)
+    expect((err as RestStoreConflictError).currentRev, '要带当前版本，宿主才能提示"已被别人改过"').toBe(2)
+    expect(calls.filter((c) => c.method === 'DELETE'), '重试=删掉别人刚改的那一版，绝不允许').toHaveLength(1)
+  })
+
+  it('单条记录删除同理：`DELETE /records/{key}/{id}?rev=N`，冲突只抛一次', async () => {
+    const { calls, fetchImpl } = fakeBackend({
+      [`GET /records/${KEY}`]: { json: [{ id: 'r1', time: 't', data: {}, rev: 5 }] },
+      [`DELETE /records/${KEY}/r1?rev=5`]: { status: 409, json: { error: 'conflict', currentRev: 6 } },
+    })
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl, onConflict: 'retry' })
+    await store.loadRecords(KEY)
+    const err = await store.removeRecord(KEY, 'r1').catch((e: unknown) => e)
+
+    expect(calls.at(-1)!.path).toBe(`/records/${KEY}/r1?rev=5`)
+    expect(err).toBeInstanceOf(RestStoreConflictError)
+    expect(calls.filter((c) => c.method === 'DELETE')).toHaveLength(1)
+  })
+
+  it('整表清空**故意不带**条数护栏（没读全就猜 count 会让清空莫名其妙 409）', async () => {
+    const { calls, fetchImpl } = fakeBackend({ [`DELETE /records/${KEY}`]: { status: 204 } })
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl })
+    await store.clearRecords(KEY)
+
+    expect(calls.at(-1), '就是裸的 DELETE，不加 count').toMatchObject({
+      method: 'DELETE',
+      path: `/records/${KEY}`,
+    })
+  })
+})

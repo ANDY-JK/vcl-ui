@@ -105,12 +105,12 @@ records (seq PK AUTOINCREMENT, collect_key, id, time, data)   -- data   存 JSON
 | GET | `/api/lowcode/forms/{id}` | `FormDesign`；**404 表示"表单不存在"**（客户端拿 `null`） |
 | POST | `/api/lowcode/forms` | body `{ id, design, name? }` → `FormMetaItem`（**裸对象**） |
 | PATCH | `/api/lowcode/forms/{id}` | body `{ name }` → 204 |
-| DELETE | `/api/lowcode/forms/{id}` | 连同该表单的收集记录一起删 → 204 |
+| DELETE | `/api/lowcode/forms/{id}` | 连同该表单的收集记录一起删 → 204；带 `?rev=N` 且库里已不是 N → **409** |
 | GET | `/api/lowcode/records/{key}` | `CollectRecord[]`（**裸数组**） |
 | POST | `/api/lowcode/records/{key}` | body `{ record }` → 204 |
 | PATCH | `/api/lowcode/records/{key}/{id}` | body `{ data }` → 204 |
-| DELETE | `/api/lowcode/records/{key}/{id}` | 204 |
-| DELETE | `/api/lowcode/records/{key}` | 清空该表单的记录 → 204 |
+| DELETE | `/api/lowcode/records/{key}/{id}` | 204；带 `?rev=N` 且不符 → **409** |
+| DELETE | `/api/lowcode/records/{key}` | 清空该表单的记录 → 204；带 `?count=N` 且条数不符 → **409** |
 | GET | `/api/lowcode/nav` | `{ code, data: { items } }`（前端配 `dataPath: 'data.items'`） |
 | GET | `/api/lowcode/__stats` | `{ forms, records }`（运维自检/演示用） |
 
@@ -160,6 +160,13 @@ PATCH /records/{key}/{id}   body { data: {...}, rev: 2 }   → 409 { error: "con
 
 > 为什么值得用：低代码表单常常是"两个人同时开着同一张表"，后写覆盖会让先改的人**无声地丢掉工作**。
 > 409 至少把这件事变成可见的冲突，而不是"我明明改了怎么没了"。
+
+**删除也接同一套乐观锁**（第 118 轮补）：`DELETE /forms/{id}?rev=N`、`DELETE /records/{key}/{id}?rev=N`。
+删除是最不可逆的一步 —— 甲刚改完、乙拿着旧版本号一删，甲的工作就没了，而且**两边的界面都显示成功**。
+整表清空（`DELETE /records/{key}`）没有"单条版本"可比，改用**条数**当护栏：`?count=N` 与库中不符 → 409。
+官方客户端 `deleteForm` / `removeRecord` 会自动带上读到的版本号，但**故意不自动重试**：
+重试会先刷新 `rev` 再重发，那等于"把别人刚改的那一版删掉"，与乐观锁的本意正好相反 —— 冲突直接抛给宿主
+（`RestStoreConflictError` 带 `currentRev`），由人来决定。
 
 ## 迁移：`schema_version` + 只增的迁移列表
 

@@ -201,7 +201,14 @@ export function createRestFormStore(options: RestFormStoreOptions): FormStore {
       if (rev !== undefined) formRev.set(id, rev + 1)
     },
     async deleteForm(id: string): Promise<void> {
-      await request(`/forms/${seg(id)}`, { method: 'DELETE' })
+      const rev = formRev.get(id)
+      // 读到过版本号就带上：**删掉一个别人刚改过的项**是最不可逆的静默数据丢失，
+      // 后端会回 409 而不是照删。
+      //
+      // 这里**故意不走** `writeWith` 的自动重试：它的重试会先刷新 rev 再重发，
+      // 那等于"把别人刚改的那一版删掉" —— 与乐观锁的本意正好相反。
+      // 冲突就直接抛给宿主（`RestStoreConflictError` 带 `currentRev`），由人来决定。
+      await request(`/forms/${seg(id)}${rev === undefined ? '' : `?rev=${rev}`}`, { method: 'DELETE' })
       formRev.delete(id)
     },
     loadRecords: loadRecordsImpl,
@@ -227,10 +234,18 @@ export function createRestFormStore(options: RestFormStoreOptions): FormStore {
       if (rev !== undefined) recordRev.set(k, rev + 1)
     },
     async removeRecord(storageKey: string, recordId: string): Promise<void> {
-      await request(`/records/${seg(storageKey)}/${seg(recordId)}`, { method: 'DELETE' })
-      recordRev.delete(recordKey(storageKey, recordId))
+      const k = recordKey(storageKey, recordId)
+      const rev = recordRev.get(k)
+      // 同 `deleteForm`：带 rev 让"删掉别人刚改的记录"变成 409，而不是静默成功
+      await request(`/records/${seg(storageKey)}/${seg(recordId)}${rev === undefined ? '' : `?rev=${rev}`}`, {
+        method: 'DELETE',
+      })
+      recordRev.delete(k)
     },
     async clearRecords(storageKey: string): Promise<void> {
+      // 整表清空**故意不带条数护栏**：库只在"读过全部记录"时才可能知道准确条数，
+      // 没读全就替你猜一个 count，会让清空莫名其妙地 409。
+      // 需要这层保护（清空别人并发写入的记录）的宿主，直接调后端 `DELETE /records/{key}?count=N`。
       await request(`/records/${seg(storageKey)}`, { method: 'DELETE' })
       for (const k of [...recordRev.keys()]) {
         if (k.startsWith(`${storageKey}\u0000`)) recordRev.delete(k)

@@ -186,9 +186,12 @@ export function createSqliteStore(file = ':memory:') {
       )
     },
 
-    async deleteForm(id) {
-      const row = db.prepare('SELECT collect_key FROM forms WHERE id = ?').get(id)
+    async deleteForm(id, expectedRev) {
+      const row = db.prepare('SELECT collect_key, rev FROM forms WHERE id = ?').get(id)
       if (!row) return
+      // 删除最不可逆：带了 rev 就必须匹配。校验放在事务**之前** ——
+      // 否则会先删掉记录、再发现版本不对，回滚之外还得解释"为什么删了一半"
+      assertRev(row.rev, expectedRev, `表单 ${id}`)
       // 事务：删表单与删它的记录要么都成、要么都不成（否则断在中间会留下孤儿记录）
       db.exec('BEGIN')
       try {
@@ -237,11 +240,26 @@ export function createSqliteStore(file = ':memory:') {
       )
     },
 
-    async removeRecord(storageKey, recordId) {
+    async removeRecord(storageKey, recordId, expectedRev) {
+      const row = db
+        .prepare('SELECT rev FROM records WHERE collect_key = ? AND id = ?')
+        .get(storageKey, recordId)
+      if (row) assertRev(row.rev, expectedRev, `记录 ${storageKey}/${recordId}`)
       db.prepare('DELETE FROM records WHERE collect_key = ? AND id = ?').run(storageKey, recordId)
     },
 
-    async clearRecords(storageKey) {
+    async clearRecords(storageKey, expectedCount) {
+      // 整表清空没有"单条版本"可比 → 用**条数**当护栏（与内存版同一判据、同一个错误类型，
+      // 否则两个存储实现会在"清空"这件事上给出不同结论）
+      if (expectedCount !== undefined && expectedCount !== null) {
+        const n = db.prepare('SELECT COUNT(*) AS n FROM records WHERE collect_key = ?').get(storageKey).n
+        if (n !== expectedCount) {
+          throw new ConflictError(
+            `${storageKey} 的记录数已变（当前 ${n} 条，你带的是 ${expectedCount} 条）`,
+            { rev: n },
+          )
+        }
+      }
       db.prepare('DELETE FROM records WHERE collect_key = ?').run(storageKey)
     },
 

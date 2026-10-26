@@ -228,3 +228,70 @@ test('删除写进**你的库**：导航项消失，重连后仍不在', async (
   await expect(status).toContainText('已连接', { timeout: 15_000 })
   await expect(item, '重连后不该复活').toHaveCount(0)
 })
+
+/**
+ * 真浏览器里的并发删除：**一个标签页刚改名，另一个拿旧版本号去删**。
+ * 没有这层护栏时，后者的删除会静默成功 —— 前者刚改的名字连同它的收集记录一起消失，
+ * 而且**两边的界面都会显示成功**（最坏的一类数据丢失：没人会知道）。
+ */
+test('两个标签页：一个刚改名、另一个拿旧版本号删除 → 被挡住且改名不丢', async ({ browser }) => {
+  const ctx = await browser.newContext()
+  const a = await ctx.newPage()
+  const b = await ctx.newPage()
+
+  const connect = async (p: typeof a) => {
+    await p.goto(PAGE)
+    await p.locator('[data-test="backend-connect-btn"]').click()
+    await expect(p.locator('[data-test="backend-status"]')).toContainText('已连接', { timeout: 15_000 })
+  }
+  await connect(a)
+  await connect(b)
+
+  // ① A 建一份表单
+  const buildA = a.locator('.lcn-demo-build')
+  await buildA.locator('.ldp-field-item').first().click()
+  await buildA.getByRole('button', { name: '保存' }).click()
+  const dialogA = a.getByRole('dialog')
+  await dialogA.locator('.ld-save-input').fill('并发删除表')
+  await dialogA.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
+  await expect(a.locator('.lcn-demo-nav').locator('.lcn-demo-item').filter({ hasText: '并发删除表' })).toBeVisible({
+    timeout: 15_000,
+  })
+
+  // ② B 重连一次，让它的列表拿到这份表单（此时它手上的版本号是 rev=1）
+  await b.locator('[data-test="backend-disconnect-btn"]').click()
+  await b.locator('[data-test="backend-connect-btn"]').click()
+  await expect(b.locator('[data-test="backend-status"]')).toContainText('已连接', { timeout: 15_000 })
+  const rowB = b.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: '并发删除表' })
+  await expect(rowB, 'B 也看得到它').toBeVisible({ timeout: 15_000 })
+
+  // ③ A 改名（后端版本号 +1）
+  const rowA = a.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: '并发删除表' })
+  const idA = await rowA.getAttribute('data-form-id')
+  const stableA = a.locator(`[data-test="form-admin"] .lcn-admin-row[data-form-id="${idA}"]`)
+  await stableA.locator('[data-test="rename-btn"]').click()
+  await stableA.locator('[data-test="rename-input"]').fill('并发删除表（甲改）')
+  await stableA.locator('[data-test="rename-save"]').click()
+  await expect(a.locator('.lcn-demo-nav').locator('.lcn-demo-item').filter({ hasText: '甲改' })).toBeVisible({
+    timeout: 15_000,
+  })
+
+  // ④ B 拿**旧版本号**删 → 必须被 409 挡住，且界面上要说清原因（不是笼统一句"失败"）
+  await rowB.locator('[data-test="delete-btn"]').click()
+  await rowB.locator('[data-test="delete-confirm"]').click()
+  const errB = b.locator('[data-test="admin-error"]')
+  await expect(errB, '拿旧版本号删别人刚改的东西 → 要报冲突').toBeVisible({ timeout: 15_000 })
+  await expect(errB).toContainText('版本已过期')
+
+  // ⑤ 幸存验证：B 重连后看到的是 **A 改过的名字**（改名与那份表单都还在）
+  await b.locator('[data-test="backend-disconnect-btn"]').click()
+  await b.locator('[data-test="backend-connect-btn"]').click()
+  await expect(b.locator('[data-test="backend-status"]')).toContainText('已连接', { timeout: 15_000 })
+  await expect(
+    b.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: '并发删除表（甲改）' }),
+    '删除被挡住 → 甲改的名字还在',
+  ).toBeVisible({ timeout: 15_000 })
+  await expect(a.locator('.lcn-demo-nav').locator('.lcn-demo-item').filter({ hasText: '并发删除表（甲改）' })).toBeVisible()
+
+  await ctx.close()
+})

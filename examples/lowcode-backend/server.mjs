@@ -19,12 +19,12 @@
  *   GET    /api/lowcode/forms/{id}            → 200 FormDesign ｜ 404
  *   POST   /api/lowcode/forms                 body { id, design, name?, rev? } → 201 FormMetaItem（**裸对象**）
  *   PATCH  /api/lowcode/forms/{id}            body { name, rev? } → 204 ｜ 409
- *   DELETE /api/lowcode/forms/{id}            （连同其收集记录）→ 204
+ *   DELETE /api/lowcode/forms/{id}?rev=N       （连同其收集记录）→ 204 ｜ 409（库里已不是 N）
  *   GET    /api/lowcode/records/{key}         → 200 CollectRecord[]（**裸数组**；每项带 `rev`）
  *   POST   /api/lowcode/records/{key}         body { record } → 204（新记录 `rev` 从 1 起）
  *   PATCH  /api/lowcode/records/{key}/{id}    body { data, rev? } → 204 ｜ 409
- *   DELETE /api/lowcode/records/{key}/{id}    → 204
- *   DELETE /api/lowcode/records/{key}         （清空）→ 204
+ *   DELETE /api/lowcode/records/{key}/{id}?rev=N → 204 ｜ 409（记录已被别人改过）
+ *   DELETE /api/lowcode/records/{key}?count=N （清空）→ 204 ｜ 409（条数不符：挡住"清空时抹掉别人并发写入的记录"）
  *
  * ## 并发（乐观锁）
  *
@@ -108,9 +108,11 @@ export function createMemoryStore() {
       f.updatedAt = new Date().toISOString()
       f.rev += 1
     },
-    async deleteForm(id) {
+    async deleteForm(id, expectedRev) {
       const f = forms.get(id)
       if (!f) return
+      // 删除是最不可逆的一步：带了 rev 就必须匹配（否则"删掉别人刚改过的项"会静默发生）
+      assertRev(f.rev, expectedRev, `表单 ${id}`)
       records.delete(f.collectKey)
       forms.delete(id)
     },
@@ -130,13 +132,25 @@ export function createMemoryStore() {
       list[i] = { ...list[i], data, rev: (list[i].rev ?? 1) + 1 }
       records.set(storageKey, list)
     },
-    async removeRecord(storageKey, recordId) {
+    async removeRecord(storageKey, recordId, expectedRev) {
+      const list = records.get(storageKey) ?? []
+      const target = list.find((r) => r && r.id === recordId)
+      if (target) assertRev(target.rev, expectedRev, `记录 ${storageKey}/${recordId}`)
       records.set(
         storageKey,
-        (records.get(storageKey) ?? []).filter((r) => !r || r.id !== recordId),
+        list.filter((r) => !r || r.id !== recordId),
       )
     },
-    async clearRecords(storageKey) {
+    async clearRecords(storageKey, expectedCount) {
+      // 整表清空没有"单条版本"可比 —— 用**条数**当护栏：带了 count 且与库中不符 → 409。
+      // 没有护栏时，"清空"会把别人并发写入的记录一起抹掉且无从察觉。
+      const list = records.get(storageKey) ?? []
+      if (expectedCount !== undefined && expectedCount !== null && list.length !== expectedCount) {
+        throw new ConflictError(
+          `${storageKey} 的记录数已变（当前 ${list.length} 条，你带的是 ${expectedCount} 条）`,
+          { rev: list.length },
+        )
+      }
       records.set(storageKey, [])
     },
     async stats() {
@@ -187,6 +201,16 @@ function navPayload(includeInternal, forms = []) {
 /** 权限模型（示例）：按令牌给 scope 集合。真实项目里换成你的用户体系（JWT → scopes） */
 const FULL_SCOPES = ['store:read', 'store:write', 'nav:internal']
 const LIMITED_SCOPES = ['store:read']
+
+/**
+ * query 里的数字参数（`?rev=` / `?count=`）：缺省或非法一律当"没带"。
+ * 老客户端不带这些参数 → 行为与改造前完全一致（后写覆盖）。
+ */
+const numOrUndefined = (raw) => {
+  if (raw === null || raw === '') return undefined
+  const n = Number(raw)
+  return Number.isFinite(n) ? n : undefined
+}
 
 const json = (res, code, body) => {
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
@@ -340,7 +364,7 @@ export function createLowcodeHandler(options) {
           return
         }
         if (method === 'DELETE') {
-          await store.deleteForm(id)
+          await store.deleteForm(id, numOrUndefined(url.searchParams.get('rev')))
           json(res, 204)
           return
         }
@@ -359,7 +383,7 @@ export function createLowcodeHandler(options) {
           return
         }
         if (method === 'DELETE') {
-          await store.clearRecords(key)
+          await store.clearRecords(key, numOrUndefined(url.searchParams.get('count')))
           json(res, 204)
           return
         }
@@ -375,7 +399,7 @@ export function createLowcodeHandler(options) {
           return
         }
         if (method === 'DELETE') {
-          await store.removeRecord(key, id)
+          await store.removeRecord(key, id, numOrUndefined(url.searchParams.get('rev')))
           json(res, 204)
           return
         }
