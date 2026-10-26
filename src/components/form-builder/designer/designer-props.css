@@ -227,6 +227,10 @@
 .ldp-prop-hint:not(.ldp-prop-ok) {
   color: var(--vcl-color-danger-on-surface);
 }
+/** 提示语类：不是错误、但"这么配不会生效"——比危险色轻一档（同口径见 PropsValidationPage） */
+.ldp-prop-hint.ldp-prop-warn {
+  color: var(--vcl-color-warning-text, #b45309);
+}
 
 /** 数据源·静态数据的 JSON 文本框（展示类字段用；形状多变，故不做行编辑器，直接编 JSON） */
 .ldp-display-json {

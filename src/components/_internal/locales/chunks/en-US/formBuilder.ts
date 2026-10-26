@@ -293,6 +293,10 @@ export default {
     patternPh: 'e.g. ^[\\u4e00-\\u9fa5]+$',
     patternMessage: 'Validation message',
     patternMessagePh: 'Message shown when validation fails',
+    /** Inline hint for an invalid regex (runtime silently skips it) */
+    patternInvalidHint: 'This regular expression is invalid, so the form will not use it',
+    /** Hint when a message is set but no pattern exists */
+    patternMessageOrphanHint: 'No pattern set, so this message will never be shown',
     trim: 'Trim spaces',
     unique: 'Unique check',
     realtime: 'Realtime validation',

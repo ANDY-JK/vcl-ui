@@ -293,6 +293,10 @@ export default {
     patternPh: '如：^[\\u4e00-\\u9fa5]+$',
     patternMessage: '校验提示语',
     patternMessagePh: '校验失败时显示的提示',
+    /** 非法正则的即时提示（运行时会被静默跳过） */
+    patternInvalidHint: '这个正则不合法，表单不会用它校验（先改好再上线）',
+    /** 只填提示语没填正则时的提示 */
+    patternMessageOrphanHint: '没有填正则，这条提示永远不会显示',
     trim: '去除空格',
     unique: '唯一校验',
     realtime: '实时校验',

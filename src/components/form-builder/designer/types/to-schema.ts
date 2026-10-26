@@ -303,7 +303,9 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
           const re = new RegExp(val.pattern)
           rules.push((v: string) => (!re.test(v) ? val.patternMessage || t('formBuilder.patternInvalid') : undefined))
         } catch {
-          /* 无效正则跳过 */
+          /* 无效正则跳过（不 throw：一条坏配置不该让整个表单崩）。
+             但**不能就这么静默**——属性面板已做即时校验并给出可见提示
+             （PropsValidationPage 的 patternIssue），别再往这里加隐式兜底。 */
         }
       }
       if (val.builtinType) {

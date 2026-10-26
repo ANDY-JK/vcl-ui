@@ -19,6 +19,27 @@ const props = defineProps<{
   node: DesignerNode
 }>()
 
+/**
+ * 正则是否可用（第 143 轮）。
+ *
+ * 运行时（`to-schema.ts`）对非法正则是 `try { new RegExp(...) } catch { 跳过 }` ——
+ * 也就是说**面板上规则看着是开的、表单实际一条都不校验**。这种"配了没人读"比没配更危险，
+ * 因为它让人以为校验生效了。所以在这里即时判一次，把问题摆在配置时而不是上线后。
+ */
+const patternIssue = computed<'empty' | 'invalid' | null>(() => {
+  const raw = props.node.validation?.pattern
+  if (!raw) return null // 空 = 没配正则，不是问题
+  try {
+    new RegExp(raw)
+    return null
+  } catch {
+    return 'invalid'
+  }
+})
+
+/** 只填了提示语却没填正则：规则不存在，提示语永远不会显示（同 onFocus 那类死配置） */
+const orphanPatternMessage = computed(() => !props.node.validation?.pattern && !!props.node.validation?.patternMessage)
+
 const emit = defineEmits<{
   update: [patch: Partial<DesignerNode>]
 }>()
@@ -90,15 +111,19 @@ const builtinValidations = computed(() => {
     </div>
 
     <div class="ldp-section-title">{{ t('fbp.sectionCustom') }}</div>
-    <div class="ldp-prop">
+    <div class="ldp-prop" :data-invalid="patternIssue === 'invalid' ? '1' : undefined">
       <label>{{ t('fbp.valPattern') }}</label>
       <Input
         :model-value="node.validation?.pattern ?? ''"
         :placeholder="t('fbp.patternPh')"
         @update:model-value="emit('update', { validation: { ...node.validation, pattern: String($event ?? '') } })"
       />
+      <!-- 非法正则：运行时会被静默跳过，必须在这里说清楚，否则用户以为校验生效了 -->
+      <span v-if="patternIssue === 'invalid'" class="ldp-prop-hint" role="alert">
+        {{ t('fbp.patternInvalidHint') }}
+      </span>
     </div>
-    <div class="ldp-prop">
+    <div class="ldp-prop" :data-invalid="orphanPatternMessage ? '1' : undefined">
       <label>{{ t('fbp.patternMessage') }}</label>
       <Input
         :model-value="node.validation?.patternMessage ?? ''"
@@ -107,6 +132,10 @@ const builtinValidations = computed(() => {
           emit('update', { validation: { ...node.validation, patternMessage: String($event ?? '') } })
         "
       />
+      <!-- 有提示语没正则：这条提示永远不会触发（死配置，同 onFocus 那次的口径） -->
+      <span v-if="orphanPatternMessage" class="ldp-prop-hint ldp-prop-warn">
+        {{ t('fbp.patternMessageOrphanHint') }}
+      </span>
     </div>
     <div class="ldp-prop ldp-prop-switch">
       <label>{{ t('fbp.trim') }}</label>
