@@ -176,15 +176,68 @@ export function packageRootOf(spec) {
 }
 
 /**
+ * 剥掉 JS 源码里的注释（用于"谁在包外"的判定）。
+ *
+ * 为什么要剥注释（第 130 轮踩到）：正则里 `\bfrom\s*['"]` 会被**注释文字**命中 ——
+ * 本轮新写的一条注释含 `distinct from "empty"`，于是 "empty" 被当成"产物里以裸说明符引用的件"，
+ * 整条质量链在第 22 步 check:licenses 被误报中断。注释不是代码，不该参与该判定。
+ *
+ * 实现取舍：**不用状态机**。试过两版都被"字符串里含多层转义的引号"带偏
+ * （语言包被 JSON 化进字符串常量后，文本里混有 `\"` 与 `\\"`，状态机一旦判错就再也没回到 code 态）。
+ * 这里改成**两遍正则**，简单且对产物够用：
+ *   1. 先删块注释 `/* … *\/`
+ *   2. 再逐行删行注释 `// …`，但**跳过落在字符串里的 `//`**
+ *      （用"引号奇偶"近似判断：行注释不可能出现在字符串中间，而 `"http://x"` 这种要保住）
+ *
+ * 保不住的情况：注释文字本身含 `//` 时只删到第一个 `//` 为止 —— 对本判定无害
+ * （剩下的片段是注释文字，不含 from/require 形态时不会误报）。
+ * @param {string} code
+ * @returns {string} 注释替换为等长空白（保留字符位置，便于定位）
+ */
+export function stripJsComments(code) {
+  // 1) 块注释
+  let out = code.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+  // 2) 行注释：逐行处理，只删"引号配对之外"的 `//`
+  out = out
+    .split('\n')
+    .map((line) => {
+      const idx = findLineCommentStart(line)
+      if (idx < 0) return line
+      return line.slice(0, idx) + ' '.repeat(line.length - idx)
+    })
+    .join('\n')
+  return out
+}
+
+/** 返回行内"行注释起点"下标；没有则 -1。用引号配对近似判断（不处理正则字面量） */
+function findLineCommentStart(line) {
+  let inS = null // "'" | '"' | '`'
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i]
+    if (inS) {
+      if (c === '\\') i++ // 跳过转义字符
+      else if (c === inS) inS = null
+    } else if (c === '"' || c === "'" || c === '`') {
+      inS = c
+    } else if (c === '/' && line[i + 1] === '/') {
+      return i
+    }
+  }
+  return -1
+}
+
+/**
  * 从产物文本里取仍为裸说明符的引用（＝真外部件，由宿主安装）
  * @param {string} code
  * @returns {string[]} 包名级说明符
  */
 export function externalRootsInCode(code) {
+  // 先剥注释：注释里的 `from "xxx"` 不是真实依赖（见 stripJsComments 的说明）
+  const src = stripJsComments(code)
   const RE =
     /(?:\bfrom\s*|(?<![\w.])import\s+|(?<![\w.$])import\s*\(\s*|\brequire\s*\(\s*)['"]([A-Za-z@][A-Za-z0-9@._\-/]{0,80})['"]/g
   const out = new Set()
-  for (const m of code.matchAll(RE)) {
+  for (const m of src.matchAll(RE)) {
     const root = packageRootOf(m[1])
     if (!root || NODE_BUILTINS.has(root) || !/^(@[^/]+\/)?[a-zA-Z0-9._-]+$/.test(root)) continue
     out.add(root)

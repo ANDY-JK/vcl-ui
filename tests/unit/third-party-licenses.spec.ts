@@ -11,6 +11,7 @@ import {
   policyFindings,
   packageRootOf,
   externalRootsInCode,
+  stripJsComments,
   undeclaredExternals,
   undeclaredBundled,
   pickLicenseFile,
@@ -156,6 +157,57 @@ describe('packageRootOf / externalRootsInCode：谁在包外', () => {
   it('scoped 子路径说明符也收（@iconify/vue、morphicons/vue）', () => {
     const code = `from '@iconify/vue'` + '\n' + `from 'morphicons/vue'`
     expect(externalRootsInCode(code)).toEqual(['@iconify/vue', 'morphicons'])
+  })
+
+  // ── 注释不得参与判定（第 130 轮：一条注释把整条质量链误报中断） ──
+  describe('注释里的 from/require 不算依赖', () => {
+    it('**行注释里的 `from "x"` 不算外部件**（曾把注释里的 empty 当成未声明依赖）', () => {
+      const code = [
+        `// filled but not a number (distinct from "empty", which is valid)`,
+        `const a = 1`,
+      ].join('\n')
+      expect(externalRootsInCode(code), '注释文字不是依赖').toEqual([])
+    })
+
+    it('块注释里的 import/require 也不算', () => {
+      const code = [`/* import x from 'leftpad'`, `   require('lodash') */`, `const a = 1`].join('\n')
+      expect(externalRootsInCode(code)).toEqual([])
+    })
+
+    it('**字符串里的 `//` 不能被当注释**（否则会把字符串后半截抹掉）', () => {
+      const code = [`const u = "https://example.com/x"`, `import { ref } from 'vue'`].join('\n')
+      expect(externalRootsInCode(code), 'URL 里的 // 不该吃掉下一行的 import').toEqual(['vue'])
+      // 只断言"依赖还在"是**测不出回归的**：破坏"字符串内不判注释"之后，`https://…` 后半截会被抹成空白，
+      // 但下一行的 import 依然被识别，结论一模一样（第一版用例就这么漏了）。
+      // 所以必须直接断言剥离结果 —— URL 要原样保留。
+      expect(stripJsComments(code), 'URL 必须原样保留，不被当注释吃掉').toBe(code)
+    })
+
+    it('字符串里含转义引号时行注释仍被正确剥掉（产物里语言包是 JSON 化进字符串的）', () => {
+      const code = [
+        `const m = "a \\" b // not a comment"`,
+        `// from "ghost"`,
+        `import { ref } from 'vue'`,
+      ].join('\n')
+      const roots = externalRootsInCode(code)
+      expect(roots).toContain('vue')
+      expect(roots, '注释里的 ghost 不算').not.toContain('ghost')
+    })
+
+    it('真依赖与注释混排时，只报真依赖', () => {
+      const code = [
+        `// require('fake-a')`,
+        `import { ref } from 'vue'`,
+        `/* import b from 'fake-b' */`,
+        `const h = await import('echarts')`,
+      ].join('\n')
+      expect(externalRootsInCode(code)).toEqual(['echarts', 'vue'])
+    })
+
+    it('stripJsComments 保持长度不变（便于按偏移定位）', () => {
+      const code = `// abc\nimport 'vue'\n/* xy */\nconst a = 1`
+      expect(stripJsComments(code).length).toBe(code.length)
+    })
   })
 })
 
