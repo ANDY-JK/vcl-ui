@@ -64,7 +64,8 @@ const _lightboxOpen = ref(false)
 let _observer: IntersectionObserver | null = null
 
 onMounted(() => {
-  if (props.lazy && imgRef.value) {
+  // 没有图片地址时不必观察（观察了也没有图片要加载）
+  if (props.lazy && hasSrc.value && imgRef.value) {
     // 环境降级：无 IntersectionObserver（旧 Safari/WebView）时直接加载
     if (typeof IntersectionObserver !== 'undefined') {
       _observer = new IntersectionObserver(
@@ -97,6 +98,12 @@ watch(
   },
 )
 
+/** 是否给了真实图片地址：空串/纯空白都算"没有"，此时不该发起请求 */
+const hasSrc = computed(() => typeof props.src === 'string' && props.src.trim() !== '')
+
+/** 是否处于可交互（点开预览）状态：必须已加载成功且有地址 */
+const canPreview = computed(() => props.preview && loaded.value && hasSrc.value)
+
 const _w = computed(() => (props.width || props.size) + 'px')
 const _h = computed(() => (props.height || props.size) + 'px')
 const _rad = computed(() => (props.round ? '50%' : (props.radius ?? 4) + 'px'))
@@ -113,7 +120,8 @@ function onError() {
 
 function onClick() {
   emit('click', props.src || '')
-  if (props.preview && loaded.value) _lightboxOpen.value = true
+  // 只有"有地址且加载成功"才开灯箱；失败态开灯箱只会弹出一个同样加载不出来的空壳
+  if (canPreview.value) _lightboxOpen.value = true
 }
 </script>
 
@@ -122,13 +130,13 @@ function onClick() {
     ref="imgRef"
     class="v-image"
     :style="{ width: _w, height: _h, borderRadius: _rad }"
-    :class="{ loaded, failed, clickable: preview && loaded }"
-    role="img"
+    :class="{ loaded, failed, clickable: canPreview }"
+    :role="canPreview ? 'button' : 'img'"
     :aria-label="alt || t('image.label')"
-    :tabindex="preview && loaded ? 0 : undefined"
+    :tabindex="canPreview ? 0 : undefined"
     @click="onClick"
-    @keydown.enter.prevent="onClick"
-    @keydown.space.prevent="onClick"
+    @keydown.enter="canPreview && onClick()"
+    @keydown.space="canPreview && onClick()"
   >
     <!-- 加载占位 -->
     <div v-if="!loaded && !failed" class="v-image-placeholder">
@@ -143,8 +151,13 @@ function onClick() {
     </div>
 
     <!-- 真实图片（懒加载：进入视口前不绑定 src，避免提前发起请求） -->
+    <!--
+      没有 src 时**不渲染 <img>**：原来会渲染 `<img src="">`，浏览器把它当成
+      "当前文档地址"再请求一次（等于每次渲染都多一个无效请求），而且永远等不到 load/error，
+      占位符就永久挂着。失败态同样不再保留 <img>（留着只会让"到底哪张是坏的"看不出来）。
+    -->
     <img
-      v-if="inView"
+      v-if="inView && hasSrc && !failed"
       :src="src"
       :alt="alt"
       class="v-image-img"
