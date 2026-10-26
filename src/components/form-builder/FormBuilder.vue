@@ -20,6 +20,7 @@ import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } f
 import { useT } from '@/components/_internal/i18n'
 import { shallowEqual } from '@/components/_internal/utils'
 import { useFormSchema, isLayoutField, isFieldVisible, collectVisibleData } from './useFormSchema'
+import { resolveActiveTab, resolveCollapsed, fieldsInSlot } from './container-render'
 import { useFormValidator } from './useFormValidator'
 import { useFormStorage } from './useFormStorage'
 import { useFormLinkage } from './useFormLinkage'
@@ -544,46 +545,33 @@ function flexStyle(c: FieldContainer): Record<string, string> {
   return s
 }
 
-/** tabs 容器：当前激活 tab 名（缺省第一个） */ function activeTabOf(section: RenderSection): string {
-  const id = section.container?.id ?? ''
+/** tabs 容器：当前激活 tab 名（存的名字失效时回落第一个，见 container-render.ts） */
+function activeTabOf(section: RenderSection): string {
   const tabs = section.container?.tabs ?? []
-  if (tabStates.value[id] !== undefined) return tabStates.value[id]
-  return tabs[0]?.name ?? ''
+  return resolveActiveTab(tabs, tabStates.value[section.container?.id ?? ''])
 }
 
 /** 取 collapse 容器某折叠项展开状态 */
 function collapseOpen(section: RenderSection, index: number): boolean {
-  const id = section.container?.id ?? ''
   const items = section.container?.collapseItems ?? []
-  if (collapseStates.value[`${id}:${index}`] !== undefined) return collapseStates.value[`${id}:${index}`]
-  return items[index]?.expanded ?? false
+  const stored = collapseStates.value[`${section.container?.id ?? ''}:${index}`]
+  return resolveCollapsed(items, index, stored)
 }
 
 /** 取 steps 容器当前步骤 */
 function stepIndexOf(section: RenderSection): number {
-  const id = section.container?.id ?? ''
-  return stepStates.value[id] ?? 0
+  return stepStates.value[section.container?.id ?? ''] ?? 0
 }
 
 /** tabs 容器：按槽位过滤出当前 tab 的字段 */
 function fieldsInTab(section: RenderSection, tabName: string): FormField[] {
-  const tabs = section.container?.tabs ?? []
-  const idx = tabs.findIndex((t) => t.name === tabName)
-  return section.fields.filter((f) => {
-    const slot = f.container?.slot ?? 0
-    return slot === idx
-  })
+  const idx = (section.container?.tabs ?? []).findIndex((t) => t.name === tabName)
+  return fieldsInSlot(section.fields, idx)
 }
 
-/**
- * 按「容器槽位」过滤字段（collapse 与 steps 共用）。
- *
- * 这两个容器此前各有一个**代码完全相同**的函数（`fieldsInCollapse` / `fieldsInStep`），
- * 只是注释不同 —— 合并成一个，避免改一处忘另一处。
- * 语义：字段的 `container.slot` 就是它属于第几个折叠项/步骤。
- */
+/** 按「容器槽位」过滤字段（collapse 与 steps 共用；语义：slot 就是第几个折叠项/步骤） */
 function fieldsBySlot(section: RenderSection, index: number): FormField[] {
-  return section.fields.filter((f) => (f.container?.slot ?? 0) === index)
+  return fieldsInSlot(section.fields, index)
 }
 
 /** 是否显示步骤导航 */

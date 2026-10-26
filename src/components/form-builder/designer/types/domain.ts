@@ -359,19 +359,26 @@ export interface DesignerContainerConfig {
   // ── tabs 标签页 ──
   /** 标签页定义（tabs 用） */
   tabs?: { label: string; name: string }[]
-  /** 当前激活标签页 */
+  /**
+   * @deprecated **未实现**：全库无人读取。激活页状态由 FormBuilder 的运行时 ref（tabStates）持有，
+   * 不进 schema（toSchema 也只导出 tabs 列表）。写它不会有效果。
+   */
   activeTab?: string
 
   // ── collapse 折叠面板 ──
   /** 折叠项定义（collapse 用） */
   collapseItems?: { title: string; expanded: boolean }[]
-  /** 当前展开的折叠项 index */
+  /**
+   * @deprecated **未实现**：全库无人读取（同 activeTab，展开态在运行时 collapseStates 里）。
+   */
   activeCollapse?: number
 
   // ── steps 步骤条 ──
   /** 步骤定义（steps 用） */
   steps?: { title: string }[]
-  /** 当前步骤 index */
+  /**
+   * @deprecated **未实现**：全库无人读取（同 activeTab，当前步在运行时 stepStates 里）。
+   */
   activeStep?: number
 }
 
