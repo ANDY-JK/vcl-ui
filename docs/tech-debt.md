@@ -73,6 +73,7 @@
 | TD-03 | 覆盖率最低的域是 form（语句 56.4% / 分支 52.4% / 函数 52.3%） | **实际最洼的是 login**（`forgot-*.vue` 215 行/19 函数、`portal_login.vue` 194 行/12 函数完全零测试）。补 26 条行为测试，login 域 → 80.3/70.9/61.2；补测中发现真缺陷：portal_login 没有防重复提交 | 880cdc4 |
 | TD-01 | 主 CSS 体积口径错误（只看未压缩 345.6 KB） | 改双轨（gzip 60KB / raw 420KB 双守 + 域 CSS 30/220）；**顺带发现主 CSS 预算一直静默失效**（`/dist/vcl-ui.css$` 要求前导斜杠，而 walk 返回相对路径） | 922b194 |
 | TD-06 | **`--no-run` 与整链的耦合**：整链里 check:console-noise 曾自己跑一遍全量单测，同一轮跑两次 | package.json 的 check-console-noise 已带 `--no-run`，复用第 15 步的 spool；实测该步 0.7s | c304666 |
+| TD-34 |**标签页键盘导航在"受控值失效"时 `ArrowLeft` 跳过末项**：当 `modelValue` 指向一个已不在 `items` 里的值（页签随权限/数据重建导致），`findIndex` 得 -1，环绕公式 `(currentIdx - 1 + len) % len` 算出 `len - 2` —— 往左跳到了**倒数第二项**，而自然的"往回绕"应落在末项。`ArrowRight` 的 -1+1=0 恰好正确，所以只有往左这一侧偏 |`ArrowLeft` 改为 `(currentIdx <= 0 ? len : currentIdx) - 1`，与 `ArrowRight` 的 `-1+1=0` 对称；`it.fails` 已翻成正式用例（并补了"只有两项"一例）。依据：用户 2026-10-26 澄清"保护只是防止外部调用方修改（外部改了不会更新库内文档），并不是不能优化完善调整" |c1b53af |
 
 ---
 

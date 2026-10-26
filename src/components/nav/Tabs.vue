@@ -55,7 +55,10 @@ function onKeydown(e: KeyboardEvent) {
       nextIdx = (currentIdx + 1) % props.items.length
       break
     case 'ArrowLeft':
-      nextIdx = (currentIdx - 1 + props.items.length) % props.items.length
+      // currentIdx = -1（modelValue 指向已不在 items 里的值：页签随权限/数据重建时会这样）
+      // 时的环绕不能走 `(currentIdx - 1 + len) % len`：那会得到 len-2，**跳过末项**。
+      // 先归到 0 再 -1 绕回末项，与 ArrowRight 的 -1+1=0 对称。（TD-34，第 125 轮发现 / 本轮修）
+      nextIdx = (currentIdx <= 0 ? props.items.length : currentIdx) - 1
       break
     case 'Home':
       nextIdx = 0
