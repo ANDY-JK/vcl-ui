@@ -47,8 +47,7 @@ const linkageHelpText = computed(() => {
 
 <template>
   <div class="ldp-prop-page">
-    <div class="ldp-section-title">{{ t('fbp.sectionEvent') }}</div>
-
+    <!-- 第 131 轮修：这里原本连着渲染了两次同一个标题（拆分自 PropsPanel 时的残留） -->
     <div class="ldp-section-title">{{ t('fbp.sectionEvent') }}</div>
 
     <!-- onChange -->
@@ -142,6 +141,9 @@ const linkageHelpText = computed(() => {
                 eventConfig: {
                   ...node.eventConfig,
                   onChange: {
+                    // 第 131 轮修：这里原来重建了整个 onChange，把 targetField 悄悄丢了 ——
+                    // 先配了「显隐联动」的目标字段、再切到 callApi 填接口地址，目标字段就没了。
+                    ...node.eventConfig?.onChange,
                     enabled: true,
                     action: 'callApi',
                     apiUrl: $event === null ? '' : String($event ?? ''),
@@ -154,27 +156,15 @@ const linkageHelpText = computed(() => {
       </div>
     </div>
 
-    <!-- onFocus -->
-    <div class="ldp-event-card">
-      <div class="ldp-event-head">
-        <IconSvg type="sun" size="xs" class="ldp-event-icon" />
-        <span class="ldp-event-label">{{ t('fbp.eventFocus') }}</span>
-        <div class="ldp-event-toggle">
-          <Group
-            type="switch"
-            :model-value="!!node.eventConfig?.onFocus?.enabled"
-            @update:model-value="
-              emit('update', {
-                eventConfig: {
-                  ...node.eventConfig,
-                  onFocus: { enabled: !!$event, action: node.eventConfig?.onFocus?.action },
-                },
-              })
-            "
-          />
-        </div>
-      </div>
-    </div>
+    <!--
+      onFocus 卡片**已移除**（第 131 轮）。
+      原因：运行时 `useFormEvents.handleFieldChange(field, trigger)` 只接受 'change' | 'blur'
+      （`FormBuilder.vue` 的四处 @change 与 `FormFieldGroup` 的转发也只派发这两个），
+      **没有任何 focus 触发链路**。原先这个开关会把 `eventConfig.onFocus.enabled` 写进 schema，
+      `to-schema` 也会导出 `events.onFocus`，但运行时从不读它 —— 用户打开开关、什么都不会发生，
+      属于"配了没人读"的死配置。等真的实现 focus 派发时再把卡片加回来（见 TD-35）。
+      `FieldEvents.onFocus` 类型保留：手写 schema 仍可声明，不删公开类型。
+    -->
 
     <!-- onBlur -->
     <div class="ldp-event-card">
@@ -251,6 +241,10 @@ const linkageHelpText = computed(() => {
               eventConfig: {
                 ...node.eventConfig,
                 onChange: {
+                  // 第 131 轮修：原来重建整个 onChange，会把已配好的 apiUrl 抹掉
+                  // （先设了 onChange=callApi + 接口地址，再回来配显隐目标，接口地址就没了）。
+                  // 目标字段存 onChange.targetField 是引擎契约（to-schema 的 linkage.targetField 从这里取）。
+                  ...node.eventConfig?.onChange,
                   enabled: true,
                   action: 'toggleVisible',
                   targetField: $event === null ? '' : String($event ?? ''),

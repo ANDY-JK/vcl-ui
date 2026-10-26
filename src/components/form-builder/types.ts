@@ -186,6 +186,12 @@ export interface FieldEventAction {
 /** 字段运行时事件配置 */
 export interface FieldEvents {
   onChange?: FieldEventAction
+  /**
+   * ⚠️ **运行时暂不支持**（TD-35）：`useFormEvents.handleFieldChange(field, trigger)` 只接受
+   * `'change' | 'blur'`，`FormBuilder` 也只派发这两种，因此声明 `onFocus` **不会有任何效果**。
+   * 类型保留是为了手写 schema 的前向兼容；设计器面板已不再提供该开关、`toSchema` 也不再导出它
+   * （避免写出"配了没人读"的配置）。等运行时补上 focus 派发后再放开。
+   */
   onFocus?: FieldEventAction
   onBlur?: FieldEventAction
 }

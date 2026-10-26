@@ -6,7 +6,7 @@
  * `toFormSchema` 是一张**又长又平的映射表**（390 行里 260 行是 `if (f.x) base.y = ...`），
  * 已有三个 spec 只钉住了三件事：容器归属不丢、缺 key 的兜底、布局字段不参与收集。
  * 剩下整张表——数值 props、upload/scan-code 的类型专属属性、条件必填/禁用、
- * linkage 的依赖提取、onChange/onBlur/onFocus 三类事件、四种数据源、
+ * linkage 的依赖提取、onChange/onBlur 两类事件（onFocus 自第 131 轮不再导出，见 TD-35）、四种数据源、
  * 以及**校验规则（含内置手机号/邮箱/身份证/URL 与非法正则兜底）**——一行都没测。
  *
  * 这类「平铺映射」最典型的缺陷不是崩，而是**某个属性被静默漏掉**：
@@ -251,7 +251,7 @@ describe('联动（linkage）与事件动作（events）', () => {
     expect(f.events?.onChange).toEqual({ action: 'callApi', targetField: 't', apiUrl: '/x' })
   })
 
-  it('**events.onBlur / onFocus 只带 action**', () => {
+  it('**events.onBlur 只带 action**；onFocus 不再导出（第 131 轮契约变更，见下条）', () => {
     const f = one({
       eventConfig: {
         onBlur: { enabled: true, action: 'validate' },
@@ -259,19 +259,23 @@ describe('联动（linkage）与事件动作（events）', () => {
       },
     })
     expect(f.events?.onBlur).toEqual({ action: 'validate' })
-    expect(f.events?.onFocus).toEqual({ action: 'tip' })
+    // 第 131 轮：运行时 `useFormEvents.handleFieldChange` 只接受 'change' | 'blur'，
+    // `events.onFocus` 没有任何消费者。继续导出会让 schema 里多一份"看着配了、实际无效"的数据，
+    // 所以不再导出。`FieldEvents.onFocus` 类型保留（手写 schema 仍可声明）。见 TD-35。
+    expect(f.events?.onFocus, 'onFocus 运行时无人消费，不该再导出').toBeUndefined()
     expect(f.events?.onChange, 'onChange 未配 → 不该出现').toBeUndefined()
   })
 
-  it('**三类事件同时配置时合并进同一个 events**（展开合并写错会只剩最后一个）', () => {
+  it('**onChange / onBlur 同时配置时合并进同一个 events**（展开合并写错会只剩最后一个）', () => {
     const f = one({
       eventConfig: {
         onChange: { enabled: true, action: 'a' },
         onBlur: { enabled: true, action: 'b' },
+        // onFocus 即使配了也不导出（TD-35），这里保留输入以证明它确实被忽略
         onFocus: { enabled: true, action: 'c' },
       },
     })
-    expect(Object.keys(f.events ?? {}).sort()).toEqual(['onBlur', 'onChange', 'onFocus'])
+    expect(Object.keys(f.events ?? {}).sort()).toEqual(['onBlur', 'onChange'])
   })
 
   it('**enabled=false 的事件不下发**（设计器里配过但关掉了）', () => {
