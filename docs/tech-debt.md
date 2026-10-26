@@ -45,6 +45,7 @@
 | TD-08 | **历史审查报告保留当时数字**，与 `facts.md` 的当前真源必然不一致 | `check:facts` 不扫 `docs/`（脚本内有注释说明） | P3 | `accepted` | 触发条件：有人把历史报告当"当前事实"引用 → 在报告头部加过期横幅 |
 | TD-09 | **`walk()` 类工具函数的目录排除曾按整路径匹配**，导致体积预算只看 9% 文件 | 已修（`scripts/verify-pkg.mjs` 按 basename 判）；**同类写法可能还有** | P3 | `accepted` | 触发条件：新增任何目录遍历脚本时 → 用 basename 判，并写负向对照 |
 | TD-29 |**`FormCollect.vue` 已贴住域止涨线**：改动后一度 818 行 > 810 被 `check:constants` 拦下，抽出冲突识别函数后 805 行（余量 5 行 / 0.6%），下次再动它会立刻触线 |`src/components/form-builder/FormCollect.vue`；`scripts/check-constants.mjs` 的 [7] 行数止涨线（form-builder 域 810） |P3 |`open` |触发条件：下一次要改 `FormCollect.vue` 时 → 先把审核提交（`handleRecordSubmit` + 记录弹窗状态）、导入（`onImportFile` 三条链）、导出（Excel/CSV）各抽成一个 composable，再改功能；抽完把止涨线降到实测值|
+| TD-30 |**「连自定义后端」只验到"连上 + 读到自报的数"，没验"写进去"**：e2e 覆盖了探活/断开/坏地址不发请求，但"连上后提交一条记录 → 断连重连仍在"这条写入闭环没有端到端用例（写入路径本身在上位 e2e 里对**内置演示后端**验过） |`tests/e2e/lowcode-backend-connect.spec.ts`（2 例，均只读）；`src/demos/lowcode/useBackendConnection.ts`；参考后端已支持全部写路由 |P3 |`accepted` |触发条件：下一次动演示站（或用户真的要接自己后端）时 → 补一条 e2e：连上 → 在设计器存一份表单/提交一条记录 → 断开 → 重连 → 数据仍在；顺手把 `__stats` 两份数与界面显示对账|
 
 ## 已结项（保留历史）
 
