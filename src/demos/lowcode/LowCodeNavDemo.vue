@@ -11,9 +11,83 @@
       </p>
     </header>
 
+    <div class="lcn-connect" data-test="backend-connect">
+      <div class="lcn-connect-head">
+        <strong>连接你自己的后端</strong>
+        <span class="lcn-connect-hint">
+          跑起来 <code>node examples/lowcode-backend/server.mjs</code> 后填地址即可（默认只允许同源/相对路径）
+        </span>
+      </div>
+      <div class="lcn-connect-row">
+        <label class="lcn-connect-field">
+          <span>后端地址</span>
+          <input
+            v-model="conn.baseUrl.value"
+            type="text"
+            class="lcn-connect-input"
+            data-test="backend-url"
+            placeholder="/api/lowcode 或 https://你的域名/api/lowcode"
+            spellcheck="false"
+            autocomplete="off"
+          />
+        </label>
+        <label class="lcn-connect-field">
+          <span>令牌</span>
+          <input
+            v-model="conn.token.value"
+            type="password"
+            class="lcn-connect-input"
+            data-test="backend-token"
+            placeholder="LOWCODE_TOKEN"
+            autocomplete="off"
+          />
+        </label>
+        <button
+          type="button"
+          class="lcn-demo-btn lcn-connect-go"
+          data-test="backend-connect-btn"
+          @click="connectBackend"
+        >
+          {{ conn.status.value === 'connecting' ? '连接中…' : '连接' }}
+        </button>
+        <button
+          v-if="conn.connected.value"
+          type="button"
+          class="lcn-demo-btn"
+          data-test="backend-disconnect-btn"
+          @click="disconnectBackend"
+        >
+          断开
+        </button>
+      </div>
+      <label class="lcn-connect-remember">
+        <input v-model="conn.rememberToken.value" type="checkbox" data-test="backend-remember" />
+        记住令牌（默认不落盘：localStorage 可被脚本读取，仅演示用）
+      </label>
+      <p
+        v-if="conn.status.value === 'connected'"
+        class="lcn-connect-status ok"
+        data-test="backend-status"
+        role="status"
+      >
+        已连接：后端自报 {{ conn.probe.value?.forms ?? 0 }} 份表单 · {{ conn.probe.value?.records ?? 0 }} 条记录
+      </p>
+      <p
+        v-else-if="conn.status.value === 'error'"
+        class="lcn-connect-status bad"
+        data-test="backend-status"
+        role="alert"
+      >
+        {{ conn.error.value }}
+      </p>
+    </div>
+
     <div class="lcn-demo-bar">
       <div class="lcn-demo-group" role="group" aria-label="表单仓储实现">
         <span class="lcn-demo-label">表单仓储</span>
+        <span v-if="conn.connected.value" class="lcn-demo-note" data-test="store-overridden">
+          已接你的后端（下面这排按钮暂时被它接管）
+        </span>
         <button
           v-for="s in storeKinds"
           :key="s.kind"
@@ -62,6 +136,7 @@
         class="lcn-demo-nav"
         :source="source"
         :form-store="activeStore"
+        :fetcher="navFetcher"
         :show-issues="showIssues"
         title="我搭的框架"
         @select="onSelect"
@@ -100,9 +175,7 @@
           <button type="button" class="lcn-demo-btn" @click="events = []">清空</button>
         </div>
         <p class="lcn-demo-stat" data-test="store-stat">
-          当前 store：{{ storeKind === 'rest' ? 'REST（真 HTTP）' : '内存实现' }} · localStorage 记录：{{
-            localCount
-          }}
+          当前 store：{{ storeKind === 'rest' ? 'REST（真 HTTP）' : '内存实现' }} · localStorage 记录：{{ localCount }}
           条
         </p>
         <p class="lcn-demo-stat" data-test="server-stat">
@@ -155,12 +228,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import FormDesigner from '@/components/form-builder/FormDesigner.vue'
 import LowCodeNav from '@/components/form-builder/lowcode/LowCodeNav.vue'
 import { createRestFormStore } from '@/components/form-builder/designer/rest-form-store'
 import { genRecordId } from '@/components/form-builder/designer/types/domain'
 import type { NavSource } from '@/components/form-builder/lowcode/useLowCodeNav'
+import { useBackendConnection } from './useBackendConnection'
 import {
   FORM_DESIGN_VERSION,
   type DesignerNode,
@@ -247,9 +321,22 @@ const staticNodes: NavNode[] = [
 const source = computed<NavSource>(() => {
   if (sourceKind.value === 'forms') return { kind: 'forms', icon: 'clipboard' }
   if (sourceKind.value === 'static') return { kind: 'static', nodes: staticNodes }
+  // 连了自己的后端 → 导航项也从它下发（同一份令牌通过 fetcher 带上）
+  const remote = conn.navSource()
+  if (conn.connected.value && remote) return remote
   // dev-only 端点（vite.config 的 lowcodeDemoApiPlugin）：同源 → 默认策略放行
   return { kind: 'api', url: '/api/lowcode-demo/nav', dataPath: 'data.items' }
 })
+
+/** 给导航请求补令牌：连上自己的后端时，`/nav` 也要鉴权（未连接时等价于普通 fetch） */
+const navFetcher = ((input: RequestInfo | URL, init?: RequestInit) => {
+  const token = conn.connected.value ? conn.token.value.trim() : ''
+  if (!token) return fetch(input, init)
+  return fetch(input, {
+    ...init,
+    headers: { ...(init?.headers as Record<string, string>), Authorization: `Bearer ${token}` },
+  })
+}) as typeof fetch
 
 const customPage = ref(false)
 const showIssues = ref(false)
@@ -320,19 +407,50 @@ const restStore = createRestFormStore({
   baseUrl: '/api/lowcode-demo/store',
   headers: () => ({ Authorization: DEMO_TOKEN }),
 })
-const activeStore = computed<FormStore>(() => (storeKind.value === 'rest' ? restStore : demoStore))
+
+/**
+ * 「连接你自己的后端」：把地址/令牌从**写死**变成运行时可填，见 `useBackendConnection`。
+ * 预填内置参考后端的地址与令牌（方便一键演示），连上后它**接管**表单仓储与 api 导航来源。
+ */
+const conn = useBackendConnection({
+  defaultBaseUrl: '/api/lowcode-demo/store',
+  defaultToken: DEMO_TOKEN.replace(/^Bearer\s+/i, ''),
+})
+/** 连上后**固定一个** store 实例（computed 里每次 new 会导致重复请求与身份漂移） */
+const remoteStore = shallowRef<FormStore | null>(null)
+
+async function connectBackend(): Promise<void> {
+  const ok = await conn.connect()
+  remoteStore.value = ok ? conn.store() : null
+  if (ok) {
+    // 连上后把"哪来的数据"讲清楚：表单来自你的后端，不再是演示内存
+    storeKind.value = 'rest'
+    await fetchServerStat()
+  }
+}
+function disconnectBackend(): void {
+  conn.disconnect()
+  remoteStore.value = null
+  serverStat.value = null
+}
+
+const activeStore = computed<FormStore>(() => remoteStore.value ?? (storeKind.value === 'rest' ? restStore : demoStore))
 
 /** 服务端自己报的数（表单份数 / 收集记录条数）——**从后端读**才证明数据真的落了库 */
 const serverStat = ref<{ forms: number; records: number } | null>(null)
 const serverError = ref('')
 async function fetchServerStat() {
-  if (storeKind.value !== 'rest') {
+  // 连了自己的后端 → 数它的；否则走内置演示后端（两条路径都要能读出数，否则"落没落库"看不见）
+  const remote = remoteStore.value !== null
+  if (!remote && storeKind.value !== 'rest') {
     serverStat.value = null
     serverError.value = ''
     return
   }
+  const url = remote ? `${conn.baseUrl.value.replace(/\/+$/, '')}/__stats` : '/api/lowcode-demo/store/__stats'
+  const headers = { Authorization: remote ? `Bearer ${conn.token.value.trim()}` : DEMO_TOKEN }
   try {
-    const res = await fetch('/api/lowcode-demo/store/__stats', { headers: { Authorization: DEMO_TOKEN } })
+    const res = await fetch(url, { headers })
     if (!res.ok) throw new Error(`__stats HTTP ${res.status}`)
     serverStat.value = (await res.json()) as { forms: number; records: number }
     serverError.value = ''

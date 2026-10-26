@@ -204,3 +204,87 @@
   border-radius: var(--vcl-radius-md);
   background: var(--vcl-color-surface);
 }
+
+/* ── 「连接你自己的后端」面板（第 114 轮）──────────────────────────────
+   令牌输入框用 type=password；"记住令牌"默认不勾（localStorage 可被脚本读取）。
+   状态行分两档：ok 用 success 色，bad 用 danger 色 —— 都取真实令牌，不写 hex 兜底。 */
+.lcn-connect {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
+}
+
+.lcn-connect-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: calc(8px * var(--vcl-scale));
+  color: var(--vcl-color-text);
+}
+
+.lcn-connect-hint {
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-secondary);
+}
+
+.lcn-connect-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: calc(8px * var(--vcl-scale));
+}
+
+.lcn-connect-field {
+  display: flex;
+  flex-direction: column;
+  gap: calc(4px * var(--vcl-scale));
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-secondary);
+  flex: 1 1 calc(220px * var(--vcl-scale));
+  min-width: calc(160px * var(--vcl-scale));
+}
+
+.lcn-connect-input {
+  height: calc(30px * var(--vcl-scale));
+  padding: 0 calc(8px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg);
+  color: var(--vcl-color-text);
+  font-size: var(--vcl-fs-13);
+}
+
+.lcn-connect-go {
+  height: calc(30px * var(--vcl-scale));
+}
+
+.lcn-connect-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6px * var(--vcl-scale));
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-secondary);
+}
+
+.lcn-connect-status {
+  margin: 0;
+  font-size: var(--vcl-fs-13);
+  line-height: 1.6;
+}
+
+.lcn-connect-status.ok {
+  color: var(--vcl-color-success);
+}
+
+.lcn-connect-status.bad {
+  color: var(--vcl-color-danger);
+}
+
+.lcn-demo-note {
+  font-size: var(--vcl-fs-12);
+  color: var(--vcl-color-text-secondary);
+}
