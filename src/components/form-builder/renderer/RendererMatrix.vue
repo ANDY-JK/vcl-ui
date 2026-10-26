@@ -17,16 +17,25 @@ const emit = defineEmits<{
   'update:modelValue': [v: unknown]
 }>()
 
-/** 矩阵行标题 */
+/**
+ * 矩阵行标题。第 142 轮：先 trim 再判空 —— 原来 `filter(Boolean)` 只挡空串，
+ * 一行空格/制表符会变成表头里的一个空白格子（用户按两下回车就会出现）。
+ */
 const matrixRows = computed(() => {
   const raw = (props.field.props?.matrixRows as string) ?? ''
-  return raw.split('\n').filter(Boolean)
+  return raw
+    .split('\n')
+    .map((s) => s.trim())
+    .filter((s) => s !== '')
 })
 
-/** 矩阵列标题 */
+/** 矩阵列标题（同 matrixRows：先 trim 再判空） */
 const matrixCols = computed(() => {
   const raw = (props.field.props?.matrixCols as string) ?? ''
-  return raw.split('\n').filter(Boolean)
+  return raw
+    .split('\n')
+    .map((s) => s.trim())
+    .filter((s) => s !== '')
 })
 
 function selectCell(row: string, col: string): void {

@@ -18,17 +18,38 @@ const emit = defineEmits<{
   'update:modelValue': [v: unknown]
 }>()
 
-/** 子表单解析列定义 */
+/**
+ * 子表单解析列定义（`label|key|type` 换行分隔）。
+ *
+ * 第 142 轮修的三类畸形输入（都是"静默产生坏结构"）：
+ * - **纯空格/制表符行**：原来 `filter(Boolean)` 只挡空串，`"   "` 活着 → 多出一列"列"；
+ * - **缺 key 的行**：原来回退成字面量 `'col'`，**两行都缺就共用同一数据字段**
+ *   （输入互串、只存一个值），且 `v-for :key` 重复；
+ * - **显式重复 key**：同上，两列绑同一字段。
+ *
+ * 现在：逐行 trim 后去空行；缺 key 回退为 `col`，由"已占用就追加序号"兜住重复；
+ * 空白 label 带上序号以便区分（否则两列都叫"列"）。
+ */
 const subformCols = computed(() => {
   const raw = (props.field.props?.subformColumns as string) ?? ''
+  const used = new Set<string>()
   return raw
     .split('\n')
-    .filter(Boolean)
-    .map((line) => {
+    .map((line) => line.trim())
+    .filter((line) => line !== '')
+    .map((line, i) => {
       const [label, key, type] = line.split('|')
+      let colKey = key?.trim() || 'col'
+      if (used.has(colKey)) {
+        // 显式重复（或与回退名撞车）：追加序号，避免两列绑同一字段 + v-for 重复 key
+        let n = i + 1
+        while (used.has(`${colKey}_${n}`)) n++
+        colKey = `${colKey}_${n}`
+      }
+      used.add(colKey)
       return {
-        label: label?.trim() || t('formBuilder.column'),
-        key: key?.trim() || 'col',
+        label: label?.trim() || `${t('formBuilder.column')} ${i + 1}`,
+        key: colKey,
         type: type?.trim() || 'text',
       }
     })
