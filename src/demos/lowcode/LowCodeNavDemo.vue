@@ -217,6 +217,49 @@
         height="420px"
         @saved="onDesignerSaved"
       />
+
+      <!-- 建完还要能改、能删：否则"用户自己管导航项"只完成了一半 -->
+      <div class="lcn-admin" data-test="form-admin">
+        <div class="lcn-admin-head">
+          <strong>我的表单</strong>
+          <span class="lcn-demo-note">
+            共 {{ myForms.length }} 份 · 重命名/删除立刻写进当前 store（连上后端就是你的库）
+          </span>
+        </div>
+        <p v-if="adminError" class="lcn-connect-status bad" data-test="admin-error" role="alert">
+          {{ adminError }}
+        </p>
+        <ul class="lcn-admin-list">
+          <li v-for="f in myForms" :key="f.id" class="lcn-admin-row" :data-form-id="f.id">
+            <template v-if="renamingId === f.id">
+              <input v-model="renameDraft" class="lcn-connect-input lcn-admin-input" data-test="rename-input" />
+              <button type="button" class="lcn-demo-btn" data-test="rename-save" @click="doRename(f.id)">保存</button>
+              <button type="button" class="lcn-demo-btn" @click="renamingId = ''">取消</button>
+            </template>
+            <template v-else-if="confirmingDeleteId === f.id">
+              <span class="lcn-admin-name">{{ f.name }}</span>
+              <span class="lcn-demo-note">会连同它的收集记录一起删掉</span>
+              <button
+                type="button"
+                class="lcn-demo-btn ldc-danger-btn"
+                data-test="delete-confirm"
+                @click="doDelete(f.id)"
+              >
+                确认删除
+              </button>
+              <button type="button" class="lcn-demo-btn" @click="confirmingDeleteId = ''">取消</button>
+            </template>
+            <template v-else>
+              <span class="lcn-admin-name" data-test="form-name">{{ f.name }}</span>
+              <button type="button" class="lcn-demo-btn" data-test="rename-btn" @click="startRename(f)">重命名</button>
+              <button type="button" class="lcn-demo-btn" data-test="delete-btn" @click="confirmingDeleteId = f.id">
+                删除
+              </button>
+            </template>
+          </li>
+        </ul>
+        <p v-if="!myForms.length" class="lcn-demo-note">还没有表单：上面建一个，保存后它自己成为导航项。</p>
+      </div>
     </section>
 
     <details class="lcn-demo-code">
@@ -384,8 +427,68 @@ const onDesignerSaved = async (item: FormMetaItem) => {
   // 连了自己的后端时导航来源是 `api`（后端下发）：设计器把表单存进**它**之后，
   // 必须重拉导航才看得到新项 —— 硬切到 `forms` 会让左侧导航与"数据在哪"对不上
   sourceKind.value = conn.connected.value ? 'api' : 'forms'
+  await afterFormsChanged()
+}
+
+/**
+ * 「我的表单」管理（重命名 / 删除）。
+ *
+ * 读列表、改名、删除**全都走 `activeStore`** —— 连上自己的后端时就是对他的库做增删改，
+ * 而不是只改页面上的显示。建完还能改能删，"用户自己管导航项"才算闭环。
+ */
+const myForms = ref<FormMetaItem[]>([])
+const renamingId = ref('')
+const renameDraft = ref('')
+const confirmingDeleteId = ref('')
+const adminError = ref('')
+
+async function loadMyForms(): Promise<void> {
+  try {
+    myForms.value = await activeStore.value.listForms()
+    adminError.value = ''
+  } catch (e) {
+    adminError.value = `读表单列表失败：${e instanceof Error ? e.message : String(e)}`
+  }
+}
+
+/** 表单集合变了（新建/改名/删除）之后：列表、导航、服务端计数一起刷新 */
+async function afterFormsChanged(): Promise<void> {
+  await loadMyForms()
   await navRef.value?.refresh()
   if (conn.connected.value) await fetchServerStat()
+}
+
+function startRename(f: FormMetaItem): void {
+  renamingId.value = f.id
+  renameDraft.value = f.name
+}
+
+async function doRename(id: string): Promise<void> {
+  const name = renameDraft.value.trim()
+  if (!name) {
+    adminError.value = '名字不能为空'
+    return
+  }
+  try {
+    await activeStore.value.renameForm(id, name)
+    renamingId.value = ''
+    adminError.value = ''
+    await afterFormsChanged()
+  } catch (e) {
+    // 冲突（409）也会走到这里：store 的错误信息里带当前版本，照原样显示，别吞
+    adminError.value = `重命名失败：${e instanceof Error ? e.message : String(e)}`
+  }
+}
+
+async function doDelete(id: string): Promise<void> {
+  try {
+    await activeStore.value.deleteForm(id)
+    confirmingDeleteId.value = ''
+    adminError.value = ''
+    await afterFormsChanged()
+  } catch (e) {
+    adminError.value = `删除失败：${e instanceof Error ? e.message : String(e)}`
+  }
 }
 
 // ── ③ 两种仓储实现：内存（零网络）↔ 官方 REST（真 HTTP） ──
@@ -428,11 +531,13 @@ async function connectBackend(): Promise<void> {
     // 连上后把"哪来的数据"讲清楚：表单来自你的后端，不再是演示内存
     storeKind.value = 'rest'
     await fetchServerStat()
+    await loadMyForms()
   }
 }
 function disconnectBackend(): void {
   conn.disconnect()
   serverStat.value = null
+  void loadMyForms()
 }
 
 /**
@@ -477,7 +582,14 @@ async function fetchServerStat() {
     serverError.value = err instanceof Error ? err.message : String(err)
   }
 }
-watch(storeKind, () => void fetchServerStat(), { immediate: true })
+watch(
+  storeKind,
+  () => {
+    void fetchServerStat()
+    void loadMyForms()
+  },
+  { immediate: true },
+)
 
 /** 换实现 = 换数据源 → 必须让外壳重取（否则导航还停在旧 store 的结果上） */
 async function switchStore(kind: 'memory' | 'rest') {

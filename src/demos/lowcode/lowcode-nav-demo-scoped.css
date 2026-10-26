@@ -288,3 +288,49 @@
   font-size: var(--vcl-fs-12);
   color: var(--vcl-color-text-secondary);
 }
+
+/* ── 「我的表单」管理（重命名 / 删除）────────────────────────────────
+   建房还要能改能删，否则"用户自己管导航项"只完成一半。删除是**两步**（先点删除再确认），
+   避免把用户的表单和它的收集记录一键误删。 */
+.lcn-admin {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--vcl-scale));
+  padding: calc(12px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
+}
+
+.lcn-admin-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: calc(8px * var(--vcl-scale));
+  color: var(--vcl-color-text);
+}
+
+.lcn-admin-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: calc(6px * var(--vcl-scale));
+}
+
+.lcn-admin-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(8px * var(--vcl-scale));
+}
+
+.lcn-admin-name {
+  color: var(--vcl-color-text);
+  min-width: calc(120px * var(--vcl-scale));
+}
+
+.lcn-admin-input {
+  flex: 1 1 calc(160px * var(--vcl-scale));
+}

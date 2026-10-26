@@ -133,3 +133,98 @@ test('用户在**自己的库**里建表单：保存后后端自报表单数 +1�
   })
   expect((await statOf(status)).forms, '重连后表单数也没变少').toBeGreaterThanOrEqual(before.forms + 1)
 })
+
+/**
+ * 建完还要能改：重命名必须写进**你的库**。
+ * 判据用"重连后导航里还是新名字"——导航由后端下发，只改页面显示的话重连就现原形。
+ */
+test('重命名写进**你的库**：导航项标签跟着变，重连后仍是新名字（且不是新建）', async ({ page }) => {
+  await page.goto(PAGE)
+  await page.locator('[data-test="backend-connect-btn"]').click()
+  const status = page.locator('[data-test="backend-status"]')
+  await expect(status).toContainText('已连接', { timeout: 15_000 })
+
+  // 自己建一份再改名：**别动 seed 里那份**。共享后端上"改掉别人依赖的数据"
+// 会把另一个 spec（`lowcode-nav-shell` 找 `服务端：客户台账`）打红 —— 上一轮踩的是"新增数据"，
+// 这次踩的是"改掉数据"，同一类：凡写共享 fixture，就要自带数据、别动别人的。
+  const build = page.locator('.lcn-demo-build')
+  await build.locator('.ldp-field-item').first().click()
+  await build.getByRole('button', { name: '保存' }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.locator('.ld-save-input').fill('待改名表')
+  await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
+
+  // 「我的表单」列表读的是当前 store —— 连上后即你的库
+  const admin = page.locator('[data-test="form-admin"]')
+  const seedRow = admin.locator('.lcn-admin-row').filter({ hasText: '待改名表' })
+  await expect(seedRow, '列表来自当前 store').toBeVisible({ timeout: 15_000 })
+
+  // 记下 id 再按 id 定位：点进"改名态"后名字进了 input 的 value，
+  // `hasText` 不再匹配（第一次写这条用例就踩了：fill 一直等到超时）
+  const formId = await seedRow.getAttribute('data-form-id')
+  expect(formId, '每行要带 data-form-id（稳定定位用）').toBeTruthy()
+  const row = admin.locator(`.lcn-admin-row[data-form-id="${formId}"]`)
+
+  await row.locator('[data-test="rename-btn"]').click()
+  await row.locator('[data-test="rename-input"]').fill('改过名的台账')
+  await row.locator('[data-test="rename-save"]').click()
+
+  // 列表、导航同时变（导航来自后端 → 说明改的是库，不是页面）
+  const nav = page.locator('.lcn-demo-nav')
+  await expect(admin.locator('.lcn-admin-row').filter({ hasText: '改过名的台账' })).toBeVisible({
+    timeout: 15_000,
+  })
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '改过名的台账' })).toBeVisible({
+    timeout: 15_000,
+  })
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '待改名表' }), '旧名字要没了').toHaveCount(0)
+
+  // 断开重连：仍是新名字（=改名落了库；若是"新建"则旧项会复活）
+  await page.locator('[data-test="backend-disconnect-btn"]').click()
+  await page.locator('[data-test="backend-connect-btn"]').click()
+  await expect(status).toContainText('已连接', { timeout: 15_000 })
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '改过名的台账' })).toBeVisible({
+    timeout: 15_000,
+  })
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '待改名表' })).toHaveCount(0)
+})
+
+/**
+ * 能建也要能删：删除必须写进**你的库**。
+ * 判据同上：重连后导航里**仍然没有**它 —— 只删了页面状态的话，后端下发的导航会把它带回来。
+ */
+test('删除写进**你的库**：导航项消失，重连后仍不在', async ({ page }) => {
+  await page.goto(PAGE)
+  await page.locator('[data-test="backend-connect-btn"]').click()
+  const status = page.locator('[data-test="backend-status"]')
+  await expect(status).toContainText('已连接', { timeout: 15_000 })
+
+  // 先建一份"待删除表"（别动 seed / 别的用例依赖的项）
+  const build = page.locator('.lcn-demo-build')
+  await build.locator('.ldp-field-item').first().click()
+  await build.getByRole('button', { name: '保存' }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.locator('.ld-save-input').fill('待删除表')
+  await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
+
+  const nav = page.locator('.lcn-demo-nav')
+  const item = nav.locator('.lcn-demo-item').filter({ hasText: '待删除表' })
+  await expect(item, '建好了才谈删').toBeVisible({ timeout: 15_000 })
+
+  // 两步删除：先点「删除」再「确认删除」（避免一键误删用户的表单与它的记录）
+  const admin = page.locator('[data-test="form-admin"]')
+  const row = admin.locator('.lcn-admin-row').filter({ hasText: '待删除表' })
+  await expect(row).toBeVisible({ timeout: 15_000 })
+  await row.locator('[data-test="delete-btn"]').click()
+  await expect(row.locator('[data-test="delete-confirm"]'), '要先确认').toBeVisible()
+  await row.locator('[data-test="delete-confirm"]').click()
+
+  await expect(admin.locator('.lcn-admin-row').filter({ hasText: '待删除表' })).toHaveCount(0)
+  await expect(item).toHaveCount(0)
+
+  // 断开重连：仍不在（=删除落了库）
+  await page.locator('[data-test="backend-disconnect-btn"]').click()
+  await page.locator('[data-test="backend-connect-btn"]').click()
+  await expect(status).toContainText('已连接', { timeout: 15_000 })
+  await expect(item, '重连后不该复活').toHaveCount(0)
+})
