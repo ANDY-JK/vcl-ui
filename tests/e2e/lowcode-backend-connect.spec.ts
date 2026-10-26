@@ -80,14 +80,18 @@ test('连上后**写入落在你的库**里：提交一条记录 → 后端自�
     timeout: 15_000,
   })
 
-  // 计数由**后端自己报**：+1 才说明写真的落库了（不是页面内存里的假象）
-  await expect(status).toContainText(`${before.records + 1} 条记录`, { timeout: 15_000 })
+  // 计数由**后端自己报**：+1 才说明写真的落库了（不是页面内存里的假象）。
+  // 用"至少 +1"而不是严格等值：两个 spec 文件**并行**打同一个 dev server，
+  // 别的用例也会往里写（严格等值会随并行时序变红，而"写错地方"时它**一次都不会增**，判别力不减）
+  await expect
+    .poll(async () => (await statOf(status)).records, { timeout: 15_000 })
+    .toBeGreaterThanOrEqual(before.records + 1)
 
   // 断开 → 重连：数据仍在（落在后端，不是页面状态）
   await page.locator('[data-test="backend-disconnect-btn"]').click()
   await page.locator('[data-test="backend-connect-btn"]').click()
   await expect(status).toContainText('已连接', { timeout: 15_000 })
-  expect((await statOf(status)).records, '重连后仍能看到那条记录').toBe(before.records + 1)
+  expect((await statOf(status)).records, '重连后仍能看到那条记录').toBeGreaterThanOrEqual(before.records + 1)
 })
 
 /**
@@ -109,8 +113,11 @@ test('用户在**自己的库**里建表单：保存后后端自报表单数 +1�
   await dialog.locator('.ld-save-input').fill('你自己的巡检表')
   await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
 
-  // ① 后端自报的表单数 +1（数据进了**你的库**，不是页面内存）
-  await expect(status).toContainText(`${before.forms + 1} 份表单`, { timeout: 15_000 })
+  // ① 后端自报的表单数 +1（数据进了**你的库**，不是页面内存）。
+  //    同样用"至少 +1"：并行跑时别的文件也会存表单（见上一条测试的注释）
+  await expect
+    .poll(async () => (await statOf(status)).forms, { timeout: 15_000 })
+    .toBeGreaterThanOrEqual(before.forms + 1)
 
   // ② 导航由后端下发 → 新表单以「我的表单」项出现（保存后不刷新页面）
   const nav = page.locator('.lcn-demo-nav')
@@ -124,5 +131,5 @@ test('用户在**自己的库**里建表单：保存后后端自报表单数 +1�
   await expect(nav.locator('.lcn-demo-item').filter({ hasText: '你自己的巡检表' }), '重连后仍在').toBeVisible({
     timeout: 15_000,
   })
-  expect((await statOf(status)).forms, '重连后表单数也没变').toBe(before.forms + 1)
+  expect((await statOf(status)).forms, '重连后表单数也没变少').toBeGreaterThanOrEqual(before.forms + 1)
 })

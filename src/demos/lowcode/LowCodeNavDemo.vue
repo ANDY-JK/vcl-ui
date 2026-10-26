@@ -135,7 +135,7 @@
         ref="navRef"
         class="lcn-demo-nav"
         :source="source"
-        :form-store="activeStore"
+        :form-store="boundStore"
         :fetcher="navFetcher"
         :show-issues="showIssues"
         title="我搭的框架"
@@ -204,13 +204,16 @@
       <p class="lcn-demo-note">
         这就是「我只搭一个导航入口，其它导航项用户自己建」的那一半。设计器的
         <code>:store</code> 注入的是<strong>同一份宿主 store</strong>，保存后本页调 <code>navRef.refresh()</code> ——
-        <strong>不用刷新页面</strong>，左侧（会自动切到 forms 来源）立刻多出一项。 全程零网络：数据进的是宿主自己的
-        store。
+        <strong>不用刷新页面</strong>，左侧立刻多出一项。
+        <template v-if="conn.connected.value">
+          已连你自己的后端：这份表单存进<strong>你的库</strong>，导航也由它下发（重连后仍在）。
+        </template>
+        <template v-else>默认内存实现：全程零网络，数据进的是宿主自己的 store。</template>
       </p>
       <FormDesigner
         v-model:nodes="dNodes"
         v-model:meta="dMeta"
-        :store="demoStore"
+        :store="boundStore"
         height="420px"
         @saved="onDesignerSaved"
       />
@@ -378,8 +381,11 @@ const dMeta = ref<FormMeta>({ title: '新建台账' })
  */
 const onDesignerSaved = async (item: FormMetaItem) => {
   log('designer-saved', { name: item.name, id: item.id })
-  sourceKind.value = 'forms'
+  // 连了自己的后端时导航来源是 `api`（后端下发）：设计器把表单存进**它**之后，
+  // 必须重拉导航才看得到新项 —— 硬切到 `forms` 会让左侧导航与"数据在哪"对不上
+  sourceKind.value = conn.connected.value ? 'api' : 'forms'
   await navRef.value?.refresh()
+  if (conn.connected.value) await fetchServerStat()
 }
 
 // ── ③ 两种仓储实现：内存（零网络）↔ 官方 REST（真 HTTP） ──
@@ -435,6 +441,14 @@ function disconnectBackend(): void {
  * 用户以为写进了自己的库。现在"用哪个 store"只从这一个入口出去，不会再各挑各的。
  */
 const activeStore = computed<FormStore>(() => conn.resolveStore(storeKind.value === 'rest' ? restStore : demoStore))
+
+/**
+ * 本页**所有** store 消费者都取这一个：导航外壳（`:form-store`）、设计器（`:store`）、提交。
+ * 走过的弯路（同一类漏改出现三次）：连接面板只换了"导航用的 store"，然后
+ * ① 提交还写死内置实现 —— 记录落到另一个库；② 设计器的 `:store` 还写死 `demoStore` ——
+ * 用户建的表单进的是演示内存。每一处都是"读在 A、写在 B"，所以这里不留第二个入口。
+ */
+const boundStore = computed<FormStore>(() => activeStore.value)
 
 /** 服务端自己报的数（表单份数 / 收集记录条数）——**从后端读**才证明数据真的落了库 */
 const serverStat = ref<{ forms: number; records: number } | null>(null)

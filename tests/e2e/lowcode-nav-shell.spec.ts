@@ -213,7 +213,14 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
       listCalls.every((c) => c.auth === 'Bearer demo-token-r105'),
       '宿主必须把令牌接上（缺它后端 401）'
     ).toBe(true)
-    await expect(serverStat).toContainText('1 份表单')
+    // 表单份数由**服务端**报出来（不是前端自己数的）。
+    // 同样不断言绝对值：另一个 spec 文件也会往这个共享后端存表单（≥1 = 至少有那份 seed）
+    await expect
+      .poll(
+        async () => Number(/(\d+)\s*份表单/.exec((await serverStat.textContent()) ?? '')?.[1] ?? -1),
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThanOrEqual(1)
 
     // 打开服务端表单：页面区渲染的是**服务端下发的字段**
     await nav.locator('.lcn-demo-item').filter({ hasText: '服务端：客户台账' }).first().click()
@@ -226,12 +233,18 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
     const before = Number(/(\d+)\s*条收集记录/.exec((await serverStat.textContent()) ?? '')?.[1] ?? -1)
     expect(before, '状态行要能读出条数（读不出就是这条断言本身失效了）').toBeGreaterThanOrEqual(0)
 
-    // 填一栏提交 → 记录真的 POST 到收集记录路由，服务端计数 +1（后端自己报的数）
+    // 填一栏提交 → 记录真的 POST 到收集记录路由，服务端计数 +1（后端自己报的数）。
+    // 用"至少 +1"而不是等值：另一个 spec 文件也在往**同一个** dev server 写记录，
+    // 等值会随两文件交错执行变红；而"提交没落库"时它一次都不会增，判别力不减
     await pageArea.getByRole('textbox', { name: /服务端字段·客户名称/ }).fill('进来一条真数据')
     await pageArea.getByRole('button', { name: '提交' }).click()
-    await expect(serverStat, '提交必须真的落到服务端').toContainText(`${before + 1} 条收集记录`, {
-      timeout: 10_000,
-    })
+    await expect
+      .poll(
+        async () =>
+          Number(/(\d+)\s*条收集记录/.exec((await serverStat.textContent()) ?? '')?.[1] ?? -1),
+        { timeout: 10_000 },
+      )
+      .toBeGreaterThanOrEqual(before + 1)
     const recordPosts = storeCalls.filter((c) => c.method === 'POST' && c.url.includes('/records/'))
     expect(recordPosts.length, '提交必须 POST 到收集记录路由（外壳不自动外发，是宿主发的）').toBeGreaterThan(0)
     expect(recordPosts[0].auth, '落库请求同样要带令牌').toBe('Bearer demo-token-r105')
