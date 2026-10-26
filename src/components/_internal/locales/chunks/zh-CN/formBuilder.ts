@@ -231,8 +231,10 @@ export default {
     matrixMinRows: '矩阵必填行数',
     signatureRequired: '必填（需签名）',
     sectionSubform: '子表单设置',
-    subformColumns: '列定义（每行一个，格式：标签|key|类型）',
-    subformColumnsPh: '姓名|name|text\n电话|phone|number',
+    // ⚠️ 文案里的竖线必须写成 {'|'}：vue-i18n 的 message 语法把裸 `|` 当**复数分隔符**，
+    // 写裸竖线的话整条会被拆成多候选，`t()` 只取其中一段（实测显示成 “key” / “name”）。
+    subformColumns: "列定义（每行一个，格式：标签{'|'}key{'|'}类型）",
+    subformColumnsPh: "姓名{'|'}name{'|'}text\n电话{'|'}phone{'|'}number",
     subformTypeHint: '类型支持：text / number / select',
     sectionRelate: '关联设置',
     relateEntity: '关联实体类型',

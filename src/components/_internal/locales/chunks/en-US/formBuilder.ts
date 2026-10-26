@@ -231,8 +231,9 @@ export default {
     matrixMinRows: 'Min rated rows (matrix)',
     signatureRequired: 'Required (signature)',
     sectionSubform: 'Subform settings',
-    subformColumns: 'Column definitions (one per line, format: label|key|type)',
-    subformColumnsPh: 'Name|name|text\nPhone|phone|number',
+    // ⚠️ 竖线必须写成 {'|'}：vue-i18n 把裸 `|` 当复数分隔符，会把整条拆成多候选（实测只显示 “key” / “name”）
+    subformColumns: "Column definitions (one per line, format: label{'|'}key{'|'}type)",
+    subformColumnsPh: "Name{'|'}name{'|'}text\nPhone{'|'}phone{'|'}number",
     subformTypeHint: 'Supported types: text / number / select',
     sectionRelate: 'Relation settings',
     relateEntity: 'Related entity type',
