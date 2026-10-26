@@ -89,3 +89,40 @@ test('连上后**写入落在你的库**里：提交一条记录 → 后端自�
   await expect(status).toContainText('已连接', { timeout: 15_000 })
   expect((await statOf(status)).records, '重连后仍能看到那条记录').toBe(before.records + 1)
 })
+
+/**
+ * 造物链闭环：用户在**自己的库**里建表单 —— 设计 → 存进你的后端 → 后端把它下发成导航项 → 重连仍在。
+ * 与上一条的区别：上一条验"填表提交"（数据），这条验"用户自建"（结构）。
+ */
+test('用户在**自己的库**里建表单：保存后后端自报表单数 +1，导航里出现该项，重连后仍在', async ({ page }) => {
+  await page.goto(PAGE)
+  await page.locator('[data-test="backend-connect-btn"]').click()
+  const status = page.locator('[data-test="backend-status"]')
+  await expect(status).toContainText('已连接', { timeout: 15_000 })
+  const before = await statOf(status)
+
+  // 建表单：点一下组件面板的字段项即加入画布，再走工具栏「保存」→ 弹窗改名 → 确认
+  const build = page.locator('.lcn-demo-build')
+  await build.locator('.ldp-field-item').first().click()
+  await build.getByRole('button', { name: '保存' }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.locator('.ld-save-input').fill('你自己的巡检表')
+  await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
+
+  // ① 后端自报的表单数 +1（数据进了**你的库**，不是页面内存）
+  await expect(status).toContainText(`${before.forms + 1} 份表单`, { timeout: 15_000 })
+
+  // ② 导航由后端下发 → 新表单以「我的表单」项出现（保存后不刷新页面）
+  const nav = page.locator('.lcn-demo-nav')
+  const added = nav.locator('.lcn-demo-item').filter({ hasText: '你自己的巡检表' })
+  await expect(added, '保存后它成了导航项（后端下发）').toBeVisible({ timeout: 15_000 })
+
+  // ③ 断开重连：仍在（结构存在后端，不是页面状态）
+  await page.locator('[data-test="backend-disconnect-btn"]').click()
+  await page.locator('[data-test="backend-connect-btn"]').click()
+  await expect(status).toContainText('已连接', { timeout: 15_000 })
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '你自己的巡检表' }), '重连后仍在').toBeVisible({
+    timeout: 15_000,
+  })
+  expect((await statOf(status)).forms, '重连后表单数也没变').toBe(before.forms + 1)
+})
