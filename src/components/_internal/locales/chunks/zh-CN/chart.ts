@@ -4,6 +4,8 @@
  */
 export default {
   chart: {
+    /** echarts-wordcloud 未安装时的可见提示（不能只是空白框） */
+    wordCloudMissing: '词云图需要安装扩展 echarts-wordcloud（npm i echarts-wordcloud）',
     seriesFallback: '系列 {n}',
     itemFallback: '项 {n}',
     selectAll: '全选',

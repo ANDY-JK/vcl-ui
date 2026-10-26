@@ -4,6 +4,8 @@
  */
 export default {
   chart: {
+    /** Visible hint when echarts-wordcloud is not installed (never leave a blank box) */
+    wordCloudMissing: 'The word cloud needs the echarts-wordcloud extension (npm i echarts-wordcloud)',
     seriesFallback: 'Series {n}',
     itemFallback: 'Item {n}',
     selectAll: 'Select All',

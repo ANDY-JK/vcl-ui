@@ -42,13 +42,28 @@ import {
 // 未安装该包时（可选 peer）动态 import 会 reject，须捕获降级而非 unhandled rejection。
 import { warnOnce } from '../../_internal/warnOnce'
 let _wordCloudLoaded = false
-export async function ensureWordCloud(): Promise<void> {
-  if (_wordCloudLoaded) return
+
+/**
+ * 按需加载 echarts-wordcloud。
+ *
+ * 返回**是否可用**（第 141 轮改）：原来只返回 void，调用方拿不到成败，于是依赖缺失时
+ * 图表照样按 wordCloud 出 option —— 而该 series 类型没注册，ECharts 什么也不画，
+ * 界面上就是一个**没有任何提示的空白框**（只有控制台一条 warnOnce）。
+ * 现在调用方可以据此显示"缺扩展"的可见提示。
+ *
+ * @param loader 仅用于测试注入（默认动态 import 真包）；生产调用不传
+ */
+export async function ensureWordCloud(
+  loader: () => Promise<unknown> = () => import('echarts-wordcloud'),
+): Promise<boolean> {
+  if (_wordCloudLoaded) return true
   try {
-    await import('echarts-wordcloud')
+    await loader()
     _wordCloudLoaded = true
+    return true
   } catch {
     warnOnce('Chart', 'wordCloud 图表类型需安装 echarts-wordcloud：npm i echarts-wordcloud（当前渲染将留空）')
+    return false
   }
 }
 

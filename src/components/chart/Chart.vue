@@ -317,6 +317,8 @@ function bindEvents() {
 // 其他类型不需要此模块，避免增加首屏 bundle
 // 加载完成后 wordCloudReady=true → :key 变化 → BaseChart 重新创建 → 自动 setOption
 const wordCloudReady = ref(false)
+/** echarts-wordcloud 加载失败（可选 peer 未安装）→ 必须给可见提示，不能静默留空 */
+const wordCloudFailed = ref(false)
 let _isMounted = true
 onUnmounted(() => {
   _isMounted = false
@@ -325,12 +327,14 @@ watch(
   () => props.type,
   async (t) => {
     if (t === 'wordCloud') {
-      await ensureWordCloud()
+      const ok = await ensureWordCloud()
       if (!_isMounted) return
+      wordCloudFailed.value = !ok
       // wordCloudReady 变化触发 :key 变化 → BaseChart 重新挂载 → 自动渲染 wordCloud
-      wordCloudReady.value = true
+      wordCloudReady.value = ok
     } else {
       wordCloudReady.value = false
+      wordCloudFailed.value = false
     }
   },
   { immediate: true },
@@ -390,11 +394,11 @@ defineExpose({
       :key="props.type === 'wordCloud' ? `wc-${wordCloudReady}` : 'chart'"
       class="chart-canvas-area"
       :option="props.type === 'wordCloud' && !wordCloudReady ? null : chartOption"
+      :empty-text="wordCloudFailed ? t('chart.wordCloudMissing') : emptyText"
       height="100%"
       width="100%"
       :dark-mode="darkMode"
       :loading="loading"
-      :empty-text="emptyText"
       :toolbar="toolbar"
     />
     <ChartLegend
