@@ -45,6 +45,8 @@
 | TD-08 | **历史审查报告保留当时数字**，与 `facts.md` 的当前真源必然不一致 | `check:facts` 不扫 `docs/`（脚本内有注释说明） | P3 | `accepted` | 触发条件：有人把历史报告当"当前事实"引用 → 在报告头部加过期横幅 |
 | TD-09 | **`walk()` 类工具函数的目录排除曾按整路径匹配**，导致体积预算只看 9% 文件 | 已修（`scripts/verify-pkg.mjs` 按 basename 判）；**同类写法可能还有** | P3 | `accepted` | 触发条件：新增任何目录遍历脚本时 → 用 basename 判，并写负向对照 |
 | TD-29 |**`FormCollect.vue` 已贴住域止涨线**：改动后一度 818 行 > 810 被 `check:constants` 拦下，抽出冲突识别函数后 805 行（余量 5 行 / 0.6%），下次再动它会立刻触线 |`src/components/form-builder/FormCollect.vue`；`scripts/check-constants.mjs` 的 [7] 行数止涨线（form-builder 域 810） |P3 |`open` |触发条件：下一次要改 `FormCollect.vue` 时 → 先把审核提交（`handleRecordSubmit` + 记录弹窗状态）、导入（`onImportFile` 三条链）、导出（Excel/CSV）各抽成一个 composable，再改功能；抽完把止涨线降到实测值|
+| TD-31 |**`clearRecords` 的条数护栏库不自动带**：后端支持 `DELETE /records/{key}?count=N`（条数不符 → 409），但库的 `clearRecords` 只在"读全过记录"时才可能知道准确条数，没读全就替你猜会让清空莫名其妙 409 —— 所以库故意不带，护栏留给需要它的宿主显式传 |`src/components/form-builder/designer/rest-form-store.ts` 的 `clearRecords`（注释写明为何不带）；`tests/unit/rest-form-store-rev.spec.ts` 有一条断言"清空就是裸 DELETE、不加 count"；后端侧见 `examples/lowcode-backend/README.md` 路由表 |P3 |`accepted` |触发条件：出现一例"清空时把并发写入的记录一起抹掉"的真实反馈 → 那时让 `loadRecords` 记下每个 key 的**已读全**标记、只在读全时带 `count`，或给 `clearRecords` 加显式的 `expectedCount` 参数由宿主传入|
+| TD-32 |**两条 e2e 偶发 flaky（重试即过）**：`icon-color-picker`（取色器收到解析后的主题色）与 `print-media`（打印时缩放归位为 -1）在本轮整链里各偶发红一次、重试均通过；两者都是**时序敏感**：前者等的是异步回填的主题色，后者等的是打印前的一次布局结算 | 整链第 31 步 e2e 留痕：`reports/quality-check-logs/` 里 `2 flaky / 98 passed`（重试全过，未掩盖真实失败） |P3 |`accepted` |触发条件：同一条用例在**连续三轮**整链里各偶发红一次 → 那时查它的等待条件（多半是 `toHaveCount`/`toBeVisible` 缺少状态收敛判据），改成等待具体状态而不是"轮询一次"；在此之前它们重试即过，不阻塞闸口 |
 
 ## 已结项（保留历史）
 
