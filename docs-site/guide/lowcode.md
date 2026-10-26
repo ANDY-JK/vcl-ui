@@ -369,6 +369,12 @@ async function afterHostSaved() {
 > ```
 > `<LowCodeNav :source="{ kind: 'api', url: '/api/lowcode/nav', dataPath: 'data.items' }" :fetcher="withAuth" />`
 >
+> **`/nav` 里该有什么**：参考后端（`examples/lowcode-backend`）回的是 `{ code, data: { items } }`，
+> 其中除了静态链接分组，还会把**库里已有的表单**派生成一组「我的表单」——
+> 每项形如 `{ key: 'form-<id>', label: <表单名>, kind: 'form', formId: '<id>' }`。
+> 只回一堆静态链接是不行的：客户端拿到导航却**一份表单也点不到**，"低代码导航项"就落不了地。
+> `kind: 'form'` + `formId` 正是客户端解析器认的形状（见上一节），所以你自己的后端照抄即可。
+>
 > 拿不到导航时**不是静默空**：`error` 有值、`nodes` 保留上一次结果，`showIssues` 一开就能看到原因
 > （401 还是 403、被哪个来源拒绝）。"后端下发了权限外的项"这类事也在这里显形 ——
 > 该由后端按令牌过滤，或宿主用 `filter` 再兜一道。

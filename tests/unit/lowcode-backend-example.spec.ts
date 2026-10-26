@@ -236,6 +236,28 @@ describe.each(STORES)('参考后端（examples/lowcode-backend）× 官方客户
     host.stop()
   })
 
+  it('**导航项由库中的表单派生**：存一份表单后 /nav 出现「我的表单」项（kind form + formId）；空库时没有这一组', async () => {
+    const store = createRestFormStore({ baseUrl: base, headers: { Authorization: AUTH } })
+    // ① 空库：静态分组照旧，但没有「我的表单」——不能凭空长出一组
+    const empty = navHost(`${base}/nav`, authFetcher(AUTH))
+    await empty.api.refresh()
+    expect(empty.api.nodes.value.map((n) => n.label)).toContain('常用')
+    expect(empty.api.nodes.value.map((n) => n.label), '空库不该有表单组').not.toContain('我的表单')
+    empty.stop()
+
+    // ② 存一份表单 → 导航里出现它（否则连上自己的后端后，导航里一份表单都点不到）
+    const saved = await store.saveForm(null, design('导航派生'), '导航派生表')
+    const host = navHost(`${base}/nav`, authFetcher(AUTH))
+    await host.api.refresh()
+    const group = host.api.nodes.value.find((n) => n.label === '我的表单') as { children?: NavNode[] } | undefined
+    expect(group, '库里有表单 → 必须有「我的表单」组').toBeTruthy()
+    expect(group!.children!.map((c) => c.label)).toContain('导航派生表')
+    const item = group!.children!.find((c) => c.label === '导航派生表') as { kind?: string; formId?: string } | undefined
+    expect(item?.kind, '客户端 page-resolver 认的形状').toBe('form')
+    expect(item?.formId, 'formId 要指回库里那份表单').toBe(saved.id)
+    host.stop()
+  })
+
   it('身份明确但无权 → 403（而不是 401，也不是静默成功）：只读令牌写表单被拒', async () => {
     const readOnly = store({ Authorization: AUTH_LIMITED })
     // 读得到

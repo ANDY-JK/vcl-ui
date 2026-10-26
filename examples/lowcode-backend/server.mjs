@@ -33,6 +33,7 @@
  * 版本号存在实体上（`forms.rev` / `records.rev`），每次写 +1，新建从 1 起。
  *
  *   GET    /api/lowcode/nav                   → 200 { code, data: { items } }（配 dataPath: 'data.items'）
+ *      └ items 里含「我的表单」组：由**库中的表单**派生成 kind:'form' + formId（客户端据此渲染表单页）
  *   GET    /api/lowcode/__stats               → 200 { forms, records }（运维自检/演示用）
  *
  * 鉴权：以上全部要求 `Authorization: Bearer <LOWCODE_TOKEN>`。缺失/不匹配 → **401**；
@@ -150,7 +151,7 @@ export function createMemoryStore() {
  * 「用户看得到哪些导航项」是低代码落到生产后第一个要解决的问题（按角色/租户/部门下发），
  * 所以参考实现里保留这一层：`includeInternal` 由令牌的 scope 决定，而不是"有令牌就给全量"。
  */
-function navPayload(includeInternal) {
+function navPayload(includeInternal, forms = []) {
   const items = [
     {
       key: 'group-common',
@@ -168,6 +169,16 @@ function navPayload(includeInternal) {
       label: '内部（需权限）',
       kind: 'group',
       children: [{ key: 'link-audit', label: '审计日志', kind: 'link', url: '/audit' }],
+    })
+  }
+  if (forms.length) {
+    // `kind: 'form'` + `formId` 是客户端 `page-resolver` 认的形状（据此把设计渲染成表单页）；
+    // key 用 `form-` 前缀，与演示站/文档里的约定一致
+    items.push({
+      key: 'group-forms',
+      label: '我的表单',
+      kind: 'group',
+      children: forms.map((f) => ({ key: `form-${f.id}`, label: f.name, kind: 'form', formId: f.id })),
     })
   }
   return { code: 0, data: { items } }
@@ -291,7 +302,10 @@ export function createLowcodeHandler(options) {
       }
 
       if (segs[0] === 'nav' && method === 'GET') {
-        json(res, 200, navPayload(scopes.includes('nav:internal')))
+        // 「我的表单」由**库里的表单**派生：用户自建的表单必须能作为导航项出现在客户端。
+        // 只回一堆静态链接的话，"低代码导航项"就落不了地 —— 请求方拿到导航却没有任何表单可点。
+        const forms = await store.listForms()
+        json(res, 200, navPayload(scopes.includes('nav:internal'), forms))
         return
       }
 

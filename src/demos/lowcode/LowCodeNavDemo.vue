@@ -452,7 +452,11 @@ async function fetchServerStat() {
   try {
     const res = await fetch(url, { headers })
     if (!res.ok) throw new Error(`__stats HTTP ${res.status}`)
-    serverStat.value = (await res.json()) as { forms: number; records: number }
+    const stats = (await res.json()) as { forms: number; records: number }
+    serverStat.value = stats
+    // 面板状态行读的是 conn.probe（连接那一刻的快照）：写入后不刷新它，用户就会看到
+    // "刚提交完仍是 0 条" —— 记录真的落了库，界面却在撒谎（TD-30 的 e2e 抓到的就是这个）
+    if (remote) conn.probe.value = stats
     serverError.value = ''
   } catch (err) {
     serverStat.value = null
@@ -481,12 +485,15 @@ async function switchStore(kind: 'memory' | 'rest') {
  */
 async function onPageSubmit({ node, data }: { node: NavNode; data: Record<string, unknown> }) {
   log('page-submit', { node, data })
-  if (storeKind.value !== 'rest') return
+  // 走 activeStore 而不是写死的 restStore：连上"你自己的后端"后，**读**在远程（导航/表单设计）
+  // 而**写**如果还打内置演示后端，数据就会悄悄落到另一个库里 —— 半边接管比不接管更容易骗人
+  const remote = remoteStore.value !== null
+  if (!remote && storeKind.value !== 'rest') return
   if (node.kind !== 'form') return
   const formId = (node as { formId?: string }).formId
   if (!formId) return
   // 记录形状照官方 CollectRecord（id 用官方 genRecordId()，别自己拼随机串）
-  await restStore.appendRecord(`fd_collect_${formId}`, {
+  await activeStore.value.appendRecord(`fd_collect_${formId}`, {
     id: genRecordId(),
     time: new Date().toLocaleString('zh-CN', { hour12: false }),
     data: data,
