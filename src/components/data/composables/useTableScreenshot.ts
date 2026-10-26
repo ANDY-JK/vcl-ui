@@ -55,19 +55,32 @@ export function useTableScreenshot(o: TableScreenshotOptions) {
     }
   }
 
+  /**
+   * 关闭预览并**释放**截图内容。
+   *
+   * 一张 2x 的整表截图，dataURL 是几 MB 的字符串、blob 又是几 MB ——
+   * 只把 `visible` 置 false 的话，它们会一直挂在这个 ref 上：用户按十几次"导出"，
+   * 内存就多压十几份全表截图（第 121 轮由用例照出：关闭后 dataUrl 仍可读到）。
+   */
+  function closeModal(): void {
+    modal.value = { visible: false, dataUrl: '', blob: null }
+  }
+
   function downloadFromModal(): void {
     downloadScreenshot(modal.value.dataUrl)
     o.notify(o.t('table.screenshotDownloaded'), 'success')
-    modal.value.visible = false
+    closeModal()
   }
 
   async function copyFromModal(): Promise<void> {
     const ok = modal.value.blob ? await copyScreenshotToClipboard(modal.value.blob, modal.value.dataUrl) : false
     o.notify(ok ? o.t('table.screenshotCopied') : o.t('table.screenshotCopyFail'), ok ? 'success' : 'error')
-    modal.value.visible = false
+    closeModal()
   }
 
-  return { modal, capture, downloadFromModal, copyFromModal }
+  // closeModal 必须一起导出：宿主还有别的关闭入口（Esc / 点遮罩外 / 打开单元格详情时互踢），
+  // 只置 visible=false 会让 dataUrl/blob 继续挂着（本条由第 121 轮的用例照出）
+  return { modal, capture, downloadFromModal, copyFromModal, closeModal }
 }
 
 /**

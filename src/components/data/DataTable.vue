@@ -682,7 +682,7 @@ function onFullscreenKeydown(e: KeyboardEvent) {
       return
     }
     if (_screenshotModal.value.visible) {
-      _screenshotModal.value.visible = false
+      closeScreenshotModal()
       return
     }
     if (contextMenu.value.visible) {
@@ -778,6 +778,7 @@ const {
   capture: captureScreenshot,
   downloadFromModal: downloadScreenshotFromModal,
   copyFromModal: copyScreenshotFromModal,
+  closeModal: closeScreenshotModal,
 } = useTableScreenshot({
   getShotTable: () =>
     (tableWrapRef.value?.querySelector('.table-scroll') as HTMLElement | null)?.querySelector(
@@ -1550,7 +1551,7 @@ const _cellDetailModal = ref<{ visible: boolean; title: string; content: string 
 })
 function openCellDetail(colTitle: string, text: string) {
   // 关闭截图弹窗（避免两个内部 ModalBox 通过 ModalManager 互相踢）
-  if (_screenshotModal.value.visible) _screenshotModal.value.visible = false
+  if (_screenshotModal.value.visible) closeScreenshotModal()
   _cellDetailModal.value = { visible: true, title: colTitle, content: text }
 }
 
