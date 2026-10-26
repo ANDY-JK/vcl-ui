@@ -40,13 +40,27 @@ const form = ref<Partial<Store>>({
 })
 
 const isEdit = computed(() => !!props.store)
-const nameError = ref(false)
+/** 是否"尝试提交过"（用来区分"还没动过"和"提交被拦下了"） */
+const submitAttempted = ref(false)
+
+/** 名称与地址是否都空 —— 校验与提示共用同一个判定，避免两处写法漂移 */
+const bothNameAndAddressEmpty = computed(() => !form.value.name?.trim() && !form.value.address?.trim())
+
+/**
+ * 错误文案是否显示。
+ *
+ * ⚠️ 第 133 轮修：这里原来只用一个 `nameError` 布尔，提交失败后置 true 就再没人清它 ——
+ * 用户填上名称/地址后**红字仍然挂着**（提示"至少填一个"，可实际上已经填了），
+ * 要等下次重新打开弹窗才消失。改成"提交过 + 当前仍然两个都空"两个条件同时成立才显示，
+ * 于是填上任意一个就自动消失，清空又会出现。
+ */
+const showRequiredError = computed(() => submitAttempted.value && bothNameAndAddressEmpty.value)
 
 watch(
   () => props.visible,
   (val) => {
     if (val) {
-      nameError.value = false
+      submitAttempted.value = false
       if (props.store) {
         form.value = { ...props.store }
       } else {
@@ -65,20 +79,40 @@ watch(
       }
     }
   },
+  // ⚠️ 第 133 轮修：原来没有 `immediate`，于是**弹窗以 visible=true 直接挂载时表单永远是空的**。
+  // 宿主最常用的是 `<StoreFormModal v-if="show" visible :store="s" />`（v-if + 静态 visible），
+  // 此时 `props.visible` 从头到尾不变、watch 一次都不触发 → 编辑场景保存会把用户原有门店
+  // 用空值覆盖（名称/地址/省市区全被清空），属于静默数据丢失。
+  { immediate: true },
 )
+
+/**
+ * 坐标输入归一化：把输入框产物收敛成 `number | null`。
+ *
+ * `v-model.number` 在**清空输入框**时给的是空串 `''`（不是 null），非数字输入还可能给 NaN ——
+ * 原来直接 `?? null` 兜不住空串，于是库里出现 `longitude: ''`（类型声明是 `number | null`），
+ * 下游任何 `toFixed` / 算术都会当场炸。这里统一收敛，语义与类型声明对齐。
+ */
+function toCoord(v: unknown): number | null {
+  if (v === null || v === undefined || v === '') return null
+  const n = typeof v === 'number' ? v : Number(v)
+  return Number.isFinite(n) ? n : null
+}
 
 function handleSubmit(): void {
   // 门店名和地址至少填一个
   if (!form.value.name?.trim() && !form.value.address?.trim()) {
-    nameError.value = true
+    submitAttempted.value = true
     return
   }
 
+  // 先归一化坐标（清空输入框给的是 ''，不是 null），再做"是否改动过"的比较
+  const longitude = toCoord(form.value.longitude)
+  const latitude = toCoord(form.value.latitude)
+
   // 坐标是否被用户改动（编辑场景对比打开时的原始坐标）
   const coordsChanged =
-    !props.store ||
-    form.value.longitude !== (props.store.longitude ?? null) ||
-    form.value.latitude !== (props.store.latitude ?? null)
+    !props.store || longitude !== (props.store.longitude ?? null) || latitude !== (props.store.latitude ?? null)
 
   const store: Store = {
     id: props.store?.id || `store_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -90,11 +124,11 @@ function handleSubmit(): void {
     town: form.value.town?.trim() || '',
     contact: form.value.contact?.trim() || '',
     phone: form.value.phone?.trim() || '',
-    longitude: form.value.longitude ?? null,
-    latitude: form.value.latitude ?? null,
+    longitude,
+    latitude,
     // 编辑时保留原有状态：坐标未改动则不覆盖 coordSource，跳过状态不因编辑被静默重置
     coordSource:
-      form.value.longitude && form.value.latitude
+      longitude !== null && latitude !== null
         ? coordsChanged
           ? 'manual'
           : (props.store?.coordSource ?? 'manual')
@@ -137,7 +171,7 @@ const formId = useIdSafe('store-form')
           v-model="form.name"
           type="text"
           :placeholder="t('routePlanner.storeNamePlaceholder')"
-          :class="{ 'input-error': nameError && !form.name?.trim() }"
+          :class="{ 'input-error': showRequiredError && !form.name?.trim() }"
         />
       </div>
 
@@ -148,10 +182,10 @@ const formId = useIdSafe('store-form')
           v-model="form.address"
           type="text"
           :placeholder="t('routePlanner.addressPlaceholder')"
-          :class="{ 'input-error': nameError && !form.address?.trim() }"
+          :class="{ 'input-error': showRequiredError && !form.address?.trim() }"
         />
       </div>
-      <p v-if="nameError" class="form-error">{{ t('routePlanner.nameAddressRequired') }}</p>
+      <p v-if="showRequiredError" class="form-error">{{ t('routePlanner.nameAddressRequired') }}</p>
 
       <div class="form-row form-grid-4">
         <div>
