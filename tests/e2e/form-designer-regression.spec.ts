@@ -59,6 +59,38 @@ test.describe('设计器：从组件库拖拽新增字段', () => {
   })
 })
 
+test.describe('设计器：键盘撤销/重做（真浏览器键语义）', () => {
+  test('Ctrl+Z 撤销、**Ctrl+Shift+Z 重做**（Shift 让 e.key 变成大写 Z —— 这正是它曾经失效的原因）', async ({
+    page,
+  }) => {
+    await page.goto('/#/form-builder')
+    await expect(page.locator('.lc-demo-title')).toHaveText('低代码表单平台', { timeout: 15_000 })
+
+    const counter = page.getByText(/\d+ 个节点 · \d+ 个容器/).first()
+    const nodes = async () => Number((await counter.textContent())!.match(/(\d+) 个节点/)![1])
+    const before = await nodes()
+
+    // ① 用鼠标加一个字段（把"快捷键"这件事与前置步骤分开）
+    await page
+      .locator('.ldp-field-item[draggable="true"]', { hasText: '下拉选择' })
+      .first()
+      .dragTo(page.locator('.ldc-canvas').first())
+    await expect.poll(nodes, { timeout: 10_000 }).toBe(before + 1)
+
+    // ② 焦点落在画布上（快捷键挂 `.ld-canvas-wrap`，它有 tabindex），再按键盘撤销
+    await page.locator('.ld-canvas-wrap').focus()
+    await page.keyboard.press('Control+z')
+    await expect.poll(nodes, { timeout: 10_000 }, '键盘撤销要能生效').toBe(before)
+
+    // ③ 键盘重做：**过去这里永远没反应**（真实浏览器里 Shift+Z 的 e.key 是大写 'Z'，
+    //    而分支只判了小写）。工具上的"重做"按钮一直是好的，所以只有键盘用户会踩到。
+    await page.keyboard.press('Control+Shift+KeyZ')
+    await expect
+      .poll(nodes, { timeout: 10_000 })
+      .toBe(before + 1)
+  })
+})
+
 test.describe('分享页：code 变化必须重新解析', () => {
   const codeA = shareCode(
     designWith('切换前表单', [{ id: 'n1', type: 'text', label: '字段一', span: 24, key: 'k1' }]),

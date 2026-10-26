@@ -27,23 +27,34 @@ export interface DesignerShortcutsHost {
 
 export function useDesignerShortcuts(opts: DesignerShortcutsHost) {
   function onCanvasKeydown(e: KeyboardEvent): void {
-    const tag = (e.target as HTMLElement)?.tagName
+    const el = e.target as HTMLElement | null
+    const tag = el?.tagName
+    // 焦点在输入类元素里 → 一个动作都不做，也别 preventDefault（用户的输入必须正常发生）。
+    // contenteditable 必须单独判：富文本标签/可编辑文案就是 div，只判 tagName 会让用户在
+    // 编辑文字时按 Delete **删掉整个节点**（第 120 轮由用例照出）。
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+    if (el?.isContentEditable || el?.closest?.('[contenteditable=""],[contenteditable="true"]')) return
+
+    // 单字符键归一成小写：真实浏览器里 `Shift+Z` 给出的 `e.key` 是**大写 Z**，
+    // 而 Ctrl/Cmd+Shift+Z 恰恰是 Windows/Linux/macOS 的标准"重做"。
+    // 不归一化就会出现"重做按了没反应"（第 120 轮由用例照出），且大小写行为分裂、不可预测。
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key
+    const mod = e.ctrlKey || e.metaKey
 
     // ? 键呼出快捷键帮助（无需选中节点）
-    if (e.key === '?') {
+    if (key === '?') {
       e.preventDefault()
       opts.showShortcuts.value = !opts.showShortcuts.value
       return
     }
 
     // 撤销/重做不依赖选中节点
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    if (mod && key === 'z' && !e.shiftKey) {
       e.preventDefault()
       opts.undo()
       return
     }
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+    if (mod && (key === 'y' || (key === 'z' && e.shiftKey))) {
       e.preventDefault()
       opts.redo()
       return
@@ -54,22 +65,22 @@ export function useDesignerShortcuts(opts: DesignerShortcutsHost) {
     // 多选模式下结构操作作用于整个选中集合（删除在上游 removeNode 已处理）
     const ids = opts.selectedIds.value.size ? [...opts.selectedIds.value] : [id]
 
-    if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (key === 'Delete' || key === 'Backspace') {
       e.preventDefault()
       opts.removeNode(id)
-    } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+    } else if (mod && key === 'd') {
       e.preventDefault()
       opts.duplicateNode(ids)
-    } else if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+    } else if (mod && key === 'c') {
       e.preventDefault()
       opts.copyNode(ids)
-    } else if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+    } else if (mod && key === 'v') {
       e.preventDefault()
       opts.pasteNode(id)
-    } else if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowUp') {
+    } else if (mod && key === 'ArrowUp') {
       e.preventDefault()
       opts.moveNode(ids, -1)
-    } else if ((e.ctrlKey || e.metaKey) && e.key === 'ArrowDown') {
+    } else if (mod && key === 'ArrowDown') {
       e.preventDefault()
       opts.moveNode(ids, 1)
     }
