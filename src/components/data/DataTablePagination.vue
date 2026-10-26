@@ -1,5 +1,10 @@
 <script setup lang="ts">
 // 分页脚注 — 从 DataTable.vue 区块化抽出（§18-②）
+//
+// ⚠️ 第 140 轮：本文件是"手写副本"，长期缺了 nav/Pagination.vue 已有的四样东西 ——
+//    <nav> 地标 + aria-label、type="button"、aria-current="page"、省略号 aria-hidden。
+//    其中 type="button" 不只是无障碍问题：<button> 默认 type 是 submit，
+//    宿主把 <DataTable> 放进自己的 <form>（后台 CRUD 常见写法）时，点一下页码就提交了表单。
 // 行为约定：分页状态经 injectDataTableContext 注入（与主文件同一引用）；
 // 样式自 data-table-scoped.css 迁入本组件 scoped（根节点仍带主文件 scope id，外部布局规则不受影响）。
 import { useT } from '@/components/_internal/i18n'
@@ -21,13 +26,18 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
 
 <template>
   <!-- ========== 分页控件 ========== -->
-  <div v-if="!fullscreen && pageSize > 0 && totalPages > 1" class="table-pagination">
+  <nav
+    v-if="!fullscreen && pageSize > 0 && totalPages > 1"
+    class="table-pagination"
+    :aria-label="t('pagination.navLabel')"
+  >
     <span class="pagination-status">
       <template v-if="selectable && _selectedKeys.length > 0"
         >{{ t('table.selected') }} <strong>{{ _selectedKeys.length }}</strong> {{ t('table.rows') }} - </template
       >{{ t('table.pageInfo', { current: _currentPage, total: totalPages }) }}
     </span>
     <button
+      type="button"
       class="page-btn"
       :disabled="_currentPage <= 1"
       :aria-label="t('table.prevPage')"
@@ -36,12 +46,21 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
       <IconSvg type="chevron-left" size="sm" />
     </button>
     <template v-for="p in displayPages" :key="p">
-      <button v-if="p !== '...'" class="page-btn" :class="{ active: p === _currentPage }" @click="setPage(p as number)">
+      <button
+        v-if="p !== '...'"
+        type="button"
+        class="page-btn"
+        :class="{ active: p === _currentPage }"
+        :aria-current="p === _currentPage ? 'page' : undefined"
+        @click="setPage(p as number)"
+      >
         {{ p }}
       </button>
-      <span v-else class="page-ellipsis">...</span>
+      <!-- 省略号是纯装饰：读屏不该把它念成一个页码 -->
+      <span v-else class="page-ellipsis" aria-hidden="true">...</span>
     </template>
     <button
+      type="button"
       class="page-btn"
       :disabled="_currentPage >= totalPages"
       :aria-label="t('table.nextPage')"
@@ -49,7 +68,7 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
     >
       <IconSvg type="chevron-right" size="sm" />
     </button>
-  </div>
+  </nav>
 </template>
 
 <!-- 自 data-table-scoped.css 迁入（分页区块专用；.table-wrap.auto-height/.fullscreen 下
