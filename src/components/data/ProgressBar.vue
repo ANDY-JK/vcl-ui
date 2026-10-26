@@ -62,44 +62,97 @@ const emit = defineEmits<{
   change: [v: number]
 }>()
 
+/** 只读模式显示的百分比：与填充宽度同口径夹紧，坏值当 0（原来会显示 NaN% / 150% / -20%） */
+const displayPercent = computed(() => {
+  const p = props.percent
+  if (!Number.isFinite(p)) return 0
+  return Math.round(Math.max(0, Math.min(100, p)))
+})
+
 const trackRef = ref<HTMLDivElement | null>(null)
 const dragging = ref(false)
 
+/**
+ * 步进归一化：**必须是一个正的有限数**，否则退回 1。
+ *
+ * 原来直接信任 `props.step`，step=0 时 `Math.round(x / 0)` = `Infinity`，
+ * 拖拽/键盘/数字输入**全部卡死在原值**（用户拖不动，界面上没有任何提示）；
+ * step 为负数/NaN 时行为同样不可预期。归一化后这些输入退回默认步进 1。
+ */
+const safeStep = computed(() => {
+  const s = props.step
+  return typeof s === 'number' && Number.isFinite(s) && s > 0 ? s : 1
+})
+
+/**
+ * 取值范围归一化：`max` 必须大于 `min`，否则整个区间塌缩。
+ * （原来只判 `range <= 0` 就返回 0，导致滑块"看得见却永远拖不到"）
+ */
+const safeRange = computed(() => {
+  const lo = Number.isFinite(props.min) ? props.min : 0
+  const hi = Number.isFinite(props.max) ? props.max : 100
+  return { min: lo, max: hi > lo ? hi : lo + 100, ok: hi > lo }
+})
+
+/** 实际生效的区间（模板里的 aria-valuemin/max 必须与它一致，否则读屏报的范围和能拖动的范围不符） */
+const effectiveMin = computed(() => safeRange.value.min)
+const effectiveMax = computed(() => safeRange.value.max)
+
+/** 把任意值夹到 [min, max]（坏值退回 min） */
+function clampRaw(v: number): number {
+  const { min, max } = safeRange.value
+  if (!Number.isFinite(v)) return min
+  return Math.max(min, Math.min(max, v))
+}
+
 const sliderPercent = computed(() => {
-  const range = props.max - props.min
-  if (range <= 0) return 0
-  return ((props.modelValue - props.min) / range) * 100
+  const { min, max } = safeRange.value
+  const ratio = (clampRaw(props.modelValue) - min) / (max - min)
+  // 必须夹紧：越界值（modelValue=200）原来直接算成 width:200%，滑块跑到轨道外
+  return Math.max(0, Math.min(100, ratio * 100))
 })
 
 const stops = computed(() => {
   if (!props.interactive || !props.showStops) return []
-  const range = props.max - props.min
-  if (range <= 0) return []
-  const count = Math.floor(range / props.step) + 1
-  // count=1（range<step）时 0/0=NaN → 刻度定位失效
-  if (count <= 1) return []
+  const { min } = safeRange.value
+  const step = safeStep.value
+  const span = safeRange.value.max - min
+  const count = Math.floor(span / step) + 1
+  // count<=1（span<step）时 (count-1)=0 → 0/0=NaN → 刻度定位失效；此时干脆不画刻度
+  if (!Number.isFinite(count) || count <= 1) return []
+  const current = clampRaw(props.modelValue)
   return Array.from({ length: Math.min(count, 50) }, (_, i) => ({
-    value: props.min + i * props.step,
+    value: min + i * step,
     percent: (i / (count - 1)) * 100,
-    active: props.min + i * props.step <= props.modelValue,
+    active: min + i * step <= current,
   }))
 })
 
 function snapToStep(val: number): number {
-  const stepped = Math.round((val - props.min) / props.step) * props.step + props.min
-  return Math.max(props.min, Math.min(props.max, stepped))
+  const { min, max } = safeRange.value
+  const step = safeStep.value
+  if (!Number.isFinite(val)) return min
+  const stepped = Math.round((val - min) / step) * step + min
+  return Math.max(min, Math.min(max, stepped))
 }
 
 function posToValue(clientX: number): number {
-  if (!trackRef.value) return props.min
+  const { min, max } = safeRange.value
+  if (!trackRef.value) return min
   const rect = trackRef.value.getBoundingClientRect()
-  const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
-  return snapToStep(props.min + ratio * (props.max - props.min))
+  // 轨道宽度为 0（未布局 / display:none）时 ratio 会是 Infinity 或 NaN → 直接落到 min
+  const width = rect.width
+  if (!width) return min
+  const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / width))
+  return snapToStep(min + ratio * (max - min))
 }
 
 function onInputChange(val: string) {
+  // 空串与非数字都**不提交**：原来 Number('abc')=NaN 会被 snapToStep 悄悄当成 min 存进去，
+  // 用户输错了却得到一个"看起来合法"的值，完全无从发现。
+  if (val.trim() === '') return
   const n = Number(val)
-  if (isNaN(n)) return
+  if (!Number.isFinite(n)) return
   emit('update:modelValue', snapToStep(n))
   emit('change', snapToStep(n))
 }
@@ -146,12 +199,9 @@ function onPointerUp() {
 
 function onKeydown(e: KeyboardEvent) {
   if (props.disabled) return
+  const step = safeStep.value
   const delta =
-    e.key === 'ArrowRight' || e.key === 'ArrowUp'
-      ? props.step
-      : e.key === 'ArrowLeft' || e.key === 'ArrowDown'
-        ? -props.step
-        : 0
+    e.key === 'ArrowRight' || e.key === 'ArrowUp' ? step : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -step : 0
   if (delta === 0) return
   e.preventDefault()
   const newVal = snapToStep(props.modelValue + delta)
@@ -171,8 +221,8 @@ onUnmounted(unbindWindowPointer)
       class="slider-input"
       :aria-label="label || t('common.progress')"
       :value="modelValue"
-      :min="min"
-      :max="max"
+      :min="effectiveMin"
+      :max="effectiveMax"
       :step="step"
       :disabled="disabled"
       @change="onInputChange(($event.target as HTMLInputElement).value)"
@@ -196,8 +246,8 @@ onUnmounted(unbindWindowPointer)
         tabindex="0"
         role="slider"
         :aria-label="label || t('common.progress')"
-        :aria-valuemin="min"
-        :aria-valuemax="max"
+        :aria-valuemin="effectiveMin"
+        :aria-valuemax="effectiveMax"
         :aria-valuenow="modelValue"
         @pointerdown.stop="onPointerDown"
         @keydown="onKeydown"
@@ -214,7 +264,7 @@ onUnmounted(unbindWindowPointer)
         :style="{ width: Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent)) + '%' }"
       />
     </div>
-    <span v-if="showText" class="progress-text">{{ Math.round(percent) }}%</span>
+    <span v-if="showText" class="progress-text">{{ displayPercent }}%</span>
   </div>
 </template>
 
