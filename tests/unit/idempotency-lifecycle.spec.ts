@@ -42,9 +42,15 @@ const keyOf = (call: unknown[]) => ((call[1] as RequestInit).headers as Record<s
 
 beforeEach(() => {
   setIdempotencyKeyFactory(null)
+  // 本套用例**故意**制造失败提交，`reportEvent` 会往 console.warn/error 打结构化事件。
+  // 那是被测行为的一部分，不是告警噪音 —— 必须在这里吃掉，否则会给
+  // check:console-noise 的"新增类别棘轮"造成假阳性（仓库既有做法，见 barcode-scanner-*）。
+  vi.spyOn(console, 'warn').mockImplementation(() => {})
+  vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
   setIdempotencyKeyFactory(null)
 })
 
