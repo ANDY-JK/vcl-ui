@@ -165,14 +165,35 @@ export function useBackendConnection(options: BackendConnectionOptions = {}) {
     probe.value = null
   }
 
-  /** 连接成功后可用的仓储；未连接返回 null（调用方据此回退到本地/内置后端） */
+  /**
+   * 连接成功后可用的仓储；未连接返回 null（调用方据此回退到本地/内置后端）。
+   *
+   * **实例缓存**：每次调用都 new 一个的话身份会漂移（同一份仓储换实例 → 重复请求、
+   * 依赖它的 computed 反复求值），也没法判断"读和写用的是不是同一个"。
+   */
+  let cached: FormStore | null = null
   function store(): FormStore | null {
-    if (!connected.value) return null
-    return createRestFormStore({
-      baseUrl: normalizedBase.value,
-      headers: authHeaders,
-      ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
-    })
+    if (!connected.value) {
+      cached = null
+      return null
+    }
+    if (!cached) {
+      cached = createRestFormStore({
+        baseUrl: normalizedBase.value,
+        headers: authHeaders,
+        ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+      })
+    }
+    return cached
+  }
+
+  /**
+   * **读和写必须用同一个 store** —— 这条是第 115 轮教训的收口：
+   * 之前导航/设计走远程、提交却写死内置实现，记录悄悄落到另一个库。
+   * 把"用哪个 store"收成这一个入口，别让调用方各挑各的。
+   */
+  function resolveStore(local: FormStore): FormStore {
+    return store() ?? local
   }
 
   /** 连接成功后的导航来源：后端下发的导航项（`dataPath: 'data.items'`） */
@@ -192,6 +213,7 @@ export function useBackendConnection(options: BackendConnectionOptions = {}) {
     connect,
     disconnect,
     store,
+    resolveStore,
     navSource,
   }
 }

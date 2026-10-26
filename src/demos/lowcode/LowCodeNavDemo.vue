@@ -228,7 +228,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import FormDesigner from '@/components/form-builder/FormDesigner.vue'
 import LowCodeNav from '@/components/form-builder/lowcode/LowCodeNav.vue'
 import { createRestFormStore } from '@/components/form-builder/designer/rest-form-store'
@@ -416,12 +416,8 @@ const conn = useBackendConnection({
   defaultBaseUrl: '/api/lowcode-demo/store',
   defaultToken: DEMO_TOKEN.replace(/^Bearer\s+/i, ''),
 })
-/** 连上后**固定一个** store 实例（computed 里每次 new 会导致重复请求与身份漂移） */
-const remoteStore = shallowRef<FormStore | null>(null)
-
 async function connectBackend(): Promise<void> {
   const ok = await conn.connect()
-  remoteStore.value = ok ? conn.store() : null
   if (ok) {
     // 连上后把"哪来的数据"讲清楚：表单来自你的后端，不再是演示内存
     storeKind.value = 'rest'
@@ -430,18 +426,22 @@ async function connectBackend(): Promise<void> {
 }
 function disconnectBackend(): void {
   conn.disconnect()
-  remoteStore.value = null
   serverStat.value = null
 }
 
-const activeStore = computed<FormStore>(() => remoteStore.value ?? (storeKind.value === 'rest' ? restStore : demoStore))
+/**
+ * **读与写共用一个 store**：`resolveStore` 在连上时给远程实现，否则回退到本地/内置。
+ * 走过的弯路：导航与设计取了远程、提交却写死内置实现 —— 记录落到另一个库里，
+ * 用户以为写进了自己的库。现在"用哪个 store"只从这一个入口出去，不会再各挑各的。
+ */
+const activeStore = computed<FormStore>(() => conn.resolveStore(storeKind.value === 'rest' ? restStore : demoStore))
 
 /** 服务端自己报的数（表单份数 / 收集记录条数）——**从后端读**才证明数据真的落了库 */
 const serverStat = ref<{ forms: number; records: number } | null>(null)
 const serverError = ref('')
 async function fetchServerStat() {
   // 连了自己的后端 → 数它的；否则走内置演示后端（两条路径都要能读出数，否则"落没落库"看不见）
-  const remote = remoteStore.value !== null
+  const remote = conn.connected.value
   if (!remote && storeKind.value !== 'rest') {
     serverStat.value = null
     serverError.value = ''
@@ -487,7 +487,7 @@ async function onPageSubmit({ node, data }: { node: NavNode; data: Record<string
   log('page-submit', { node, data })
   // 走 activeStore 而不是写死的 restStore：连上"你自己的后端"后，**读**在远程（导航/表单设计）
   // 而**写**如果还打内置演示后端，数据就会悄悄落到另一个库里 —— 半边接管比不接管更容易骗人
-  const remote = remoteStore.value !== null
+  const remote = conn.connected.value
   if (!remote && storeKind.value !== 'rest') return
   if (node.kind !== 'form') return
   const formId = (node as { formId?: string }).formId

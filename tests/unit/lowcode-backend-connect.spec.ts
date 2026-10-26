@@ -7,8 +7,9 @@
  *   ② **诚实**：连不上要说清是哪一种（401 令牌错 / 403 没权限 / 404 前缀错 / 网络），
  *      而不是笼统一句"连接失败"——这四种排障方向完全不同
  */
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useBackendConnection } from '@/demos/lowcode/useBackendConnection'
+import type { FormStore } from '@/components/form-builder/designer/store'
 
 type Call = { url: string; headers: Record<string, string> }
 
@@ -140,6 +141,41 @@ describe('useBackendConnection · 连上之后的产物', () => {
     expect(conn.probe.value).toBeNull()
     expect(conn.baseUrl.value, '地址要留着').toBe('/api/lowcode')
     expect(conn.store()).toBeNull()
+  })
+
+  /**
+   * `resolveStore` 是第 115 轮的收口：**读和写必须用同一个 store**。
+   * 之前导航/设计走远程、提交却写死内置实现，记录悄悄落到另一个库 ——
+   * 而 e2e 分辨不出来（演示站里那两条路径指向同一个 URL），所以必须在单测层钉住。
+   */
+  it('连上后 `resolveStore` 给**远程** store，且完全不碰传入的本地实现', async () => {
+    const { calls, fetchImpl } = fakeFetch((call) =>
+      call.url.endsWith('/__stats') ? { status: 200, json: { forms: 0, records: 0 } } : { status: 200, json: [] },
+    )
+    const conn = useBackendConnection({ fetchImpl, defaultBaseUrl: '/api/lowcode', defaultToken: 'tk' })
+    await conn.connect()
+
+    const local = { listForms: vi.fn(async () => []), loadForm: vi.fn(), saveForm: vi.fn() } as unknown as FormStore
+    const chosen = conn.resolveStore(local)
+    await chosen.listForms()
+
+    expect(local.listForms, '本地实现不该被调用（否则写入就会落到另一个库）').not.toHaveBeenCalled()
+    expect(calls.at(-1)!.url, '读打到远程').toBe('/api/lowcode/forms')
+  })
+
+  it('未连接时 `resolveStore` 原样交回传入的本地实现（回退语义）', () => {
+    const conn = useBackendConnection({ defaultBaseUrl: '/api/lowcode' })
+    const local = { listForms: vi.fn(async () => []) } as unknown as FormStore
+    expect(conn.resolveStore(local)).toBe(local)
+  })
+
+  it('`store()` 实例稳定：两次调用是同一个对象（否则依赖它的 computed 会反复求值）', async () => {
+    const { fetchImpl } = fakeFetch({ status: 200, json: { forms: 0, records: 0 } })
+    const conn = useBackendConnection({ fetchImpl, defaultBaseUrl: '/api/lowcode' })
+    await conn.connect()
+    expect(conn.store()).toBe(conn.store())
+    conn.disconnect()
+    expect(conn.store(), '断开后清空缓存').toBeNull()
   })
 })
 

@@ -220,10 +220,18 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
     const pageArea = page.locator('.lcn-page')
     await expect(pageArea.getByText('服务端字段·客户名称')).toBeVisible({ timeout: 10_000 })
 
+    // 提交前的条数：断言**增量**而不是绝对值 ——
+    // dev server 的参考后端在整轮 e2e 里是共享的（别的用例也会写记录），
+    // 写死 "1 条" 会随用例执行顺序变红（第 115 轮加写入闭环用例时当场发生）
+    const before = Number(/(\d+)\s*条收集记录/.exec((await serverStat.textContent()) ?? '')?.[1] ?? -1)
+    expect(before, '状态行要能读出条数（读不出就是这条断言本身失效了）').toBeGreaterThanOrEqual(0)
+
     // 填一栏提交 → 记录真的 POST 到收集记录路由，服务端计数 +1（后端自己报的数）
     await pageArea.getByRole('textbox', { name: /服务端字段·客户名称/ }).fill('进来一条真数据')
     await pageArea.getByRole('button', { name: '提交' }).click()
-    await expect(serverStat, '提交必须真的落到服务端').toContainText('1 条收集记录', { timeout: 10_000 })
+    await expect(serverStat, '提交必须真的落到服务端').toContainText(`${before + 1} 条收集记录`, {
+      timeout: 10_000,
+    })
     const recordPosts = storeCalls.filter((c) => c.method === 'POST' && c.url.includes('/records/'))
     expect(recordPosts.length, '提交必须 POST 到收集记录路由（外壳不自动外发，是宿主发的）').toBeGreaterThan(0)
     expect(recordPosts[0].auth, '落库请求同样要带令牌').toBe('Bearer demo-token-r105')
