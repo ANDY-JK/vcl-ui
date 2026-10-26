@@ -1416,8 +1416,15 @@ describe('可分辨断言（防变异存活）', () => {
     expect(w.text(), '第 2 步字段消失').not.toContain('字段-b')
   })
 
-  /* 事件隐藏：visibleFields 若不过事件隐藏，字段会一直可见。 */
-  it('**事件隐藏后字段不渲染**（visibleFields 过事件隐藏）', async () => {
+  /*
+   * 事件隐藏：visibleFields 若不过事件隐藏，字段会一直可见。
+   *
+   * ⚠️ 第 139 轮语义变更（契约变更）：`toggleVisible` 从「每事件翻转」改为「值驱动」——
+   * 源字段**有内容 → 显示目标**、**清空 → 隐藏目标**。
+   * 原语义下目标可见性是"change 事件次数的奇偶"，而 Input 逐键 emit change，
+   * 于是键入 a→隐藏、ab→显示、abc→隐藏；值没变时重复派发也会翻转（详见 useFormEvents 注释）。
+   */
+  it('**事件隐藏后字段不渲染**（visibleFields 过事件隐藏 · 值驱动）', async () => {
     const w = mountBuilder(
       {
         fields: [
@@ -1437,9 +1444,14 @@ describe('可分辨断言（防变异存活）', () => {
     )
     await nextTick()
     expect(w.text(), '初始可见').toContain('字段-b')
+    // 有内容 → 显示（值驱动：不随键入次数抖动）
     await w.find('input').setValue('x')
     await nextTick()
-    expect(w.text(), '事件隐藏后不可见').not.toContain('字段-b')
+    expect(w.text(), '有内容时仍显示').toContain('字段-b')
+    // 清空 → 隐藏。这一条同时充当变异检测：visibleFields 若不过事件隐藏，清空后仍会渲染 '字段-b'
+    await w.find('input').setValue('')
+    await nextTick()
+    expect(w.text(), '清空后不可见').not.toContain('字段-b')
   })
 
   /* reset 清掉事件隐藏（hiddenByEvent 复位）。 */
@@ -1463,9 +1475,10 @@ describe('可分辨断言（防变异存活）', () => {
     )
     await nextTick()
     expect(w.text(), '初始可见').toContain('字段-b')
-    await w.find('input').setValue('x')
+    // 清空源字段 → 值驱动语义下隐藏目标
+    await w.find('input').setValue('')
     await nextTick()
-    expect(w.text(), '事件隐藏后不可见').not.toContain('字段-b')
+    expect(w.text(), '清空后不可见').not.toContain('字段-b')
     await w.findAll('button').find((b) => b.text() === '重置')!.trigger('click')
     await nextTick()
     expect(w.text(), 'reset 后恢复可见').toContain('字段-b')

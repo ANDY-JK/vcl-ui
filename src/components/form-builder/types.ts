@@ -177,7 +177,20 @@ export interface FieldDataSource {
 export interface FieldEventAction {
   /** 动作类型 */
   action?: string
-  /** 目标字段 key（setValue / toggleVisible 用） */
+  /**
+   * 目标字段 key（setValue / toggleVisible 用）
+   *
+   * **toggleVisible 的语义（2026-10-20 第 139 轮起）**：值驱动 —— 源字段**有内容 → 显示**目标、
+   * **清空 → 隐藏**目标。"有内容"的判定：字符串非纯空白 / 数字有限 / 布尔 true /
+   * 数组非空 / 对象有键。
+   *
+   * 变更原因：旧语义是「每收到一次 change 就翻转一次」，而 `Input` 是**逐键** emit change，
+   * 目标字段可见性于是变成"字符数奇偶"的函数（键入 a→隐藏、ab→显示、abc→隐藏），
+   * 且**值未变**时重复派发（父组件重渲染）也会翻转。现在同一状态重复派发不再改变结果。
+   *
+   * ⚠️ 由此**不再能表达"有值时隐藏"**（旧语义在单选/复选这类单次事件控件上可以做到）。
+   * 需要该方向的场景见 TD-41（待加 `invert` 配置并接设计器）。
+   */
   targetField?: string
   /** callApi 动作的接口地址 */
   apiUrl?: string
