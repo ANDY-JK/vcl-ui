@@ -34,18 +34,37 @@ function addressLevels(desc: string) {
       : t('fbPre.srAddrLevels', { desc })
   }
 }
+/**
+ * 解析坐标输入。**区分三种情况**（这一步是校验能不能正确工作的前提）：
+ *   · 未填（空串/纯空白）      → null（放过，不是错误）
+ *   · 填了但不是合法数字       → NaN （**必须报错**；以前直接返回 undefined 放过了 `"abc"`）
+ *   · 合法数字                 → number
+ *
+ * 另外不能先剥掉空白再 parseFloat：`"30 5"` 剥完变成 `305`，会被判成"疑似输成经度"，
+ * 而真实意图是**填错了格式**。所以只做 trim，用整串锚定的正则判断"是不是一个数"。
+ */
+function parseCoord(v: string | undefined): number | null {
+  const s = (v ?? '').trim()
+  if (!s) return null // 未填
+  if (!/^[+-]?\d+(?:\.\d+)?$/.test(s)) return NaN // 填了但不是数
+  return parseFloat(s)
+}
+
 /** 纬度校验（中国范围 18~54，旧版 isLat） */
 const isLat = (v: string) => {
-  const n = parseFloat((v || '').replace(/[\s\n\r]+/g, ''))
-  if (isNaN(n) || !v.trim()) return undefined
+  const n = parseCoord(v)
+  if (n === null) return undefined
+  // 第 130 轮修：原来 `isNaN(n) → return undefined`，把 `"abc"` 当"没填"静默放过了
+  if (Number.isNaN(n)) return t('fbPre.srCoordNotNumber')
   if (n > 70) return t('fbPre.srLatAsLng')
   if (n < 18 || n > 54) return t('fbPre.srLatRange')
   return undefined
 }
 /** 经度校验（中国范围 73~135，旧版 isLng） */
 const isLng = (v: string) => {
-  const n = parseFloat((v || '').replace(/[\s\n\r]+/g, ''))
-  if (isNaN(n) || !v.trim()) return undefined
+  const n = parseCoord(v)
+  if (n === null) return undefined
+  if (Number.isNaN(n)) return t('fbPre.srCoordNotNumber')
   if (n < 60) return t('fbPre.srLngAsLat')
   if (n < 73 || n > 135) return t('fbPre.srLngRange')
   return undefined

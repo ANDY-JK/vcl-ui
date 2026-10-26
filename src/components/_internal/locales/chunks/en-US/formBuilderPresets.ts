@@ -86,6 +86,9 @@ export default {
     srLatRange: 'Latitude out of China range (18~54)',
     srLngAsLat: 'Looks like a latitude; longitude should be 73~135',
     srLngRange: 'Longitude out of China range (73~135)',
+    // Latitude/longitude: filled but not a number (distinct from "empty", which is valid)
+    srCoordNotNumber:
+      'Please enter a number (digits with at most a decimal point and minus sign, no letters, degree symbols or spaces)',
   },
   fbTarget: {
     title: 'Target Collection',
