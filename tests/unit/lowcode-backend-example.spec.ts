@@ -27,7 +27,10 @@ import { createLowcodeBackend, createLowcodeHandler } from '../../examples/lowco
 import { createSqliteStore } from '../../examples/lowcode-backend/sqlite-store.mjs'
 
 const TOKEN = 'unit-token-r106'
-const LIMITED = '{{SECRET_9rkd2vbn}}'
+/* 只读令牌：值本身不重要（用例把 createLowcodeBackend 的 token/limitedToken 都显式传进去，
+   后端按 `Bearer ${limitedToken}` 判定只读范围），所以这里刻意用与 TOKEN **不同**的固定串 ——
+   不能写成 `{{...}}` 这种占位符形态：那是文档里的敏感值写法，出现在可执行用例里会被误当成真令牌。 */
+const LIMITED = 'limited-token-test-only'
 const AUTH = `Bearer ${TOKEN}`
 const AUTH_LIMITED = `Bearer ${LIMITED}`
 
