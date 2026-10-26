@@ -229,6 +229,18 @@ export function useTableCore(
     return calcTableTotalPages(props.total ?? displayData.value.length, props.pageSize)
   })
 
+  /**
+   * 页码列表（总页数 > 9 时用省略号收拢）。
+   *
+   * 两条硬约束（第 123 轮由用例逐场景对账钉住，此前两处差一错误）：
+   *   ① **显示出来的页码必须连续** —— 断号 = 那一页在界面上**永远点不到**；
+   *   ② **首/尾段不该有省略号** —— 靠近首页时左侧没有可省略的东西。
+   *
+   * 原来的写法 `if (cp > 4) '...'` 与 `start = max(2, cp-1)` 不自洽：
+   * cp=4 时判断说不加省略号、但 start 已经是 3，于是渲染成 `1 3 4 5 … 10`（**漏了第 2 页**）；
+   * 尾段同理，`cp < tp-3` 与 `end = min(tp-1, cp+1)` 不自洽，cp=tp-3 时漏掉 tp-1。
+   * 现在把两处判据都改成"省略号阈值 = 邻近页的边界"，二者由同一组常量推导，不会再错位。
+   */
   const displayPages = computed(() => {
     const tp = totalPages.value
     const cp = _currentPage.value
@@ -237,12 +249,15 @@ export function useTableCore(
       for (let i = 1; i <= tp; i++) pages.push(i)
       return pages
     }
-    pages.push(1)
-    if (cp > 4) pages.push('...')
+    // 当前页前后各显示 1 页；首页/末页常驻。
+    // 左侧省略号只在"从 2 到 start-1 之间确实有页被藏起来"时出现（即 start > 2）。
+    // 右侧同理：end < tp-1 才藏了东西。
     const start = Math.max(2, cp - 1)
     const end = Math.min(tp - 1, cp + 1)
+    pages.push(1)
+    if (start > 2) pages.push('...')
     for (let i = start; i <= end; i++) pages.push(i)
-    if (cp < tp - 3) pages.push('...')
+    if (end < tp - 1) pages.push('...')
     pages.push(tp)
     return pages
   })
