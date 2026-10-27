@@ -625,6 +625,8 @@ export default {
     loadFail: '打开失败：{err}',
     loadedTip: '已打开「{name}」',
     renamedTip: '已重命名',
+    /** 要删的表单已经不在（别的会话/标签页先删掉了）—— 不能报"已删除" */
+    deleteGone: '该表单已不存在（可能已被其他窗口删除）',
     /** 名字没变（空白名回落原名，或只加了首尾空格）时的提示 —— 不能报"已重命名" */
     renameNoChange: '名称未变化（不能为空）',
     deletedTip: '已删除',

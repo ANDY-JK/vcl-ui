@@ -630,6 +630,8 @@ export default {
     loadFail: 'Open failed: {err}',
     loadedTip: 'Opened "{name}"',
     renamedTip: 'Renamed',
+    /** The form was already gone (removed by another session/tab) */
+    deleteGone: 'This form no longer exists (it may have been deleted in another window)',
     /** Shown when the name did not actually change (blank or only surrounding spaces) */
     renameNoChange: 'Name unchanged (cannot be empty)',
     deletedTip: 'Deleted',

@@ -267,10 +267,25 @@ export function useFormManager(host: FormManagerHost) {
 
   const deleting = ref(false)
 
+  /**
+   * 删除表单；**真的删掉了**才返回 true。
+   *
+   * 第 146 轮修：存储层的接口是 `deleteForm(id): Promise<void>`，**找不到目标就静默 return**
+   * （不抛错），于是"已经被别人删掉了"和"真的删掉了"在返回值上完全一样，这里一律提示"已删除"。
+   * 两个标签页同时打开、或多人共用后端时会看到"我说删成功了，刷新一下它又回来了"。
+   * 现在删前先看索引：目标不在 → 不调存储层、提示"已不存在"并返回 false
+   * （调用方据此弹一句"该表单已被删除"或直接刷新，而不是报成功）。
+   */
   async function deleteForm(item: FormMetaItem): Promise<boolean> {
     if (deleting.value) return false
     deleting.value = true
     try {
+      const index = await activeStore.value.listForms()
+      if (!index.some((f) => f.id === item.id)) {
+        // 已经被别的会话删掉了 —— 目标达成但**不是本次删除**，不能报"已删除"
+        host.showTip(t('fbd.deleteGone'))
+        return false
+      }
       await activeStore.value.deleteForm(item.id)
       if (currentFormId.value === item.id) currentFormId.value = null
       host.showTip(t('fbd.deletedTip'))

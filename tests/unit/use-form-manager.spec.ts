@@ -451,9 +451,11 @@ describe('deleteForm', () => {
 
   it('**deleting 中重复调用 → 返回 false（防重复删）**', async () => {
     const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
-      __store: { deleteForm: ReturnType<typeof vi.fn> }
+      __store: { deleteForm: ReturnType<typeof vi.fn>; listForms: ReturnType<typeof vi.fn> }
     }
     storeMod.__store.deleteForm.mockClear()
+    // 第 146 轮起删前会查索引：目标必须"真的存在"（真实 store 的 listForms 返回已存表单）
+    storeMod.__store.listForms.mockImplementationOnce(async () => [{ id: 'f1', name: 'F1', updatedAt: '' }])
     const { host } = makeHost()
     const m = useFormManager(host)
     const p1 = m.deleteForm(item('f1'))
@@ -462,6 +464,38 @@ describe('deleteForm', () => {
     expect(r1, '第一次应成功').toBe(true)
     expect(r2, '第二次应被挡').toBe(false)
     expect(storeMod.__store.deleteForm, '只该删一次').toHaveBeenCalledTimes(1)
+  })
+
+  /* ── 第 146 轮：删一个已经不在的表单，不能报"已删除" ──
+   * 存储层接口是 `deleteForm(id): Promise<void>`，**找不到目标就静默 return**（不抛错）。
+   * 于是"已经被别人删掉了"和"真的删掉了"在返回值上完全一样，`deleteForm` 一律提示"已删除"。
+   * 两个标签页同时打开、或多人共用后端时，这就是"我说删成功了，刷新一下它又回来了"。 */
+
+  it('**目标已不存在 → 不报"已删除"**（存储静默 return 不能被当成成功）', async () => {
+    const { host, tips } = makeHost()
+    const m = useFormManager(host)
+    // 索引里没有 f1：模拟别的会话已经删掉
+    h.failList = false
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+    }
+    storeMod.__store.listForms.mockImplementationOnce(async () => [])
+    const ok = await m.deleteForm(item('gone'))
+    const all = tips.join(' | ')
+    expect(all, `实际提示：${JSON.stringify(tips)}`).not.toContain('已删除')
+    expect(ok, '没删到东西不该报成功').toBe(false)
+  })
+
+  it('找不到目标时要说明原因（不能静默无反应）', async () => {
+    const { host, tips } = makeHost()
+    const m = useFormManager(host)
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+    }
+    storeMod.__store.listForms.mockImplementationOnce(async () => [])
+    await m.deleteForm(item('gone'))
+    expect(tips.length, '既没删成功就得说一句').toBeGreaterThan(0)
+    expect(tips.join(' | '), '要说明"不存在/已被删除"').toMatch(/不存在|已删|找不到/)
   })
 })
 
