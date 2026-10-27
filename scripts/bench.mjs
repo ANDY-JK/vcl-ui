@@ -284,6 +284,20 @@ const checkMode = args.includes('--check')
  *   · 抓不住：30–50% 的缓慢退化 —— 那需要固定 CPU 频率 + 隔离环境，超出单机开发的现实。
  * 所以这个闸口的定位是"**防止悄悄翻倍**"，不是"保证不退化"。
  * 做性能优化时请直接看 `npm run bench` 的原始数字对比，别依赖这里的阈值。
+ *
+ * ## 2026-10-27 补：比值要**先扣掉机器本身的降速**（TD-33）
+ *
+ * 第 148/149 轮连续两轮整链被判超阈，实测到决定性证据 —— **同一台机器、同一份代码，
+ * 11 个场景全部变慢**，连 `归一化 date`（0.0021ms 的纯算术）都慢 ×2.14：
+ *
+ *   ×4.13 sanitizeHTML 对抗载荷   ×3.25 拼音缓存命中   ×2.85 路线规划
+ *   ×2.79 表格排序   ×2.25 表格搜索   ×1.76 rowMetaMap   …（11/11 全部 > 1.7）
+ *
+ * 代码回归不可能同时命中所有场景 ⇒ 是**机器整体慢约 2.3 倍**，而算力探针只报 ×1.42
+ * （纯算术循环跑得短、吃 turbo，**低估了内存/GC 敏感场景的降速**）。
+ *
+ * 于是判定改为：`现在 > 基线 × RATCHET × calRatio`，`calRatio = 本次校准 / 基线校准`。
+ * 报告里同时打印**原始比值**与**折算后比值** —— 折算只是扣掉机器降速，不是藏起来。
  */
 const RATCHET = 2.2
 
@@ -381,9 +395,17 @@ if (checkMode) {
   // 基线里有 calibrationMs 才能比。没有（旧基线）就跳过此门，只提示。
   // 判定：本次算力比基线慢超过 CALIBRATION_TOLERANCE 倍 → 这台机器现在不可比。
   const baseCal = typeof baseline.calibrationMs === 'number' ? baseline.calibrationMs : null
+  /**
+   * 机器整体降速倍率（本次校准 / 基线校准）。
+   *
+   * 判定时会**先扣掉它**：机器整体慢 1.4 倍时，场景慢 1.4 倍不该算"代码回归"。
+   * 没有基线校准时按 1 处理（不折算），并在报告里说明。
+   */
+  let calRatio = 1
   let envUnhealthy = false
   if (baseCal) {
     const ratio = calibration / baseCal
+    calRatio = ratio
     if (ratio > CALIBRATION_TOLERANCE) {
       envUnhealthy = true
       console.log(
@@ -398,6 +420,11 @@ if (checkMode) {
       console.log(
         `\n✓ 环境健康：算力校准 ${calibration.toFixed(1)}ms vs 基线 ${baseCal.toFixed(1)}ms（×${ratio.toFixed(2)}，阈值 ×${CALIBRATION_TOLERANCE}）`,
       )
+      if (ratio > 1.05) {
+        console.log(
+          `   机器比基线时慢 ×${ratio.toFixed(2)} → 判定前会先扣掉这部分（折算后比值 = 原始比值 ÷ ${ratio.toFixed(2)}）`,
+        )
+      }
     }
   } else {
     console.log('\nℹ 基线无 calibrationMs（旧基线），跳过环境健康门。重生成基线即可启用。')
@@ -418,12 +445,14 @@ if (checkMode) {
       tooSmall.push({ name: r.name, base, now })
       continue
     }
-    if (now > base * RATCHET && now - base > MIN_ABS_DELTA_MS) {
+    // 折算：机器整体慢 calRatio 倍时，先把这部分扣掉再看是否还有"额外的"退化
+    const allowed = base * RATCHET * (calRatio && calRatio > 1 ? calRatio : 1)
+    if (now > allowed && now - base > MIN_ABS_DELTA_MS) {
       suspects.add(r.name)
-      regressions.push({ name: r.name, base, now, ratio: now / base })
-    } else if (now > base * RATCHET) {
+      regressions.push({ name: r.name, base, now, ratio: now / base, norm: (now / base) / (calRatio || 1) })
+    } else if (now > allowed) {
       // 比值超了但绝对差太小：不判失败，但要说出来，免得"为什么它没红"变成谜
-      noisy.push({ name: r.name, base, now, ratio: now / base })
+      noisy.push({ name: r.name, base, now, ratio: now / base, norm: (now / base) / (calRatio || 1) })
     }
   }
 
@@ -501,8 +530,10 @@ if (checkMode) {
   if (confirmed.length) {
     console.error(`\n❌ bench --check 未通过 —— ${confirmed.length} 个场景超基线 ×${RATCHET}（已二次确认）：`)
     for (const r of confirmed) {
+      const norm = typeof r.norm === 'number' ? r.norm : r.ratio
       console.error(
-        `   - ${r.name}\n     基线 ${r.base.toFixed(2)}ms → 现在 ${r.now.toFixed(2)}ms（×${r.ratio.toFixed(2)}）`,
+        `   - ${r.name}\n     基线 ${r.base.toFixed(2)}ms → 现在 ${r.now.toFixed(2)}ms` +
+          `（原始 ×${r.ratio.toFixed(2)}，扣掉机器降速 ×${calRatio.toFixed(2)} 后 ×${norm.toFixed(2)}，阈值 ×${RATCHET}）`,
       )
     }
     console.error('\n   若是真优化/环境变化导致，更新基线：npm run bench -- --json > bench-baseline.json')
