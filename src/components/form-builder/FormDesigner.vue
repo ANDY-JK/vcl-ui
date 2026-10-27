@@ -19,7 +19,7 @@
  * - SavedFormsDrawer：我的表单抽屉
  */
 import { useIdSafe } from '@/components/_internal/useIdCompat'
-import { ref, computed, watch, provide, onUnmounted } from 'vue'
+import { ref, shallowRef, computed, watch, provide, onUnmounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { copyText } from '@/components/_internal/useCopy'
 import IconSvg from '@/components/basic/IconSvg.vue'
@@ -207,6 +207,14 @@ const {
     patchNodes(nodes)
     if (meta) emit('update:meta', meta)
   },
+  // 第 149 轮：撤销/重做要连"正在编辑哪份表单"一起恢复。
+  // 否则打开 B → 撤销（画布回 A）→ 保存，会把 A 的内容写进 B（静默数据损坏）。
+  // 这里用 getter 延迟读 manager：ops 先于 manager 创建，但两者都在 setup 内，
+  // 这两个箭头只在用户点撤销/重做时才被调用，那时 manager 早已就绪。
+  formId: () => managerRef.value?.currentFormId ?? null,
+  restoreFormId: (id) => {
+    if (managerRef.value) managerRef.value.currentFormId = id
+  },
   selectedId,
   selectedIds,
   showTip,
@@ -227,6 +235,12 @@ const { discardDraft } = useDesignerAutosave({
 
 // ══ 表单管理（保存 / 我的表单 / 存储 / 分享）— 逻辑在 useFormManager ══
 
+/**
+ * ops 需要读/写"当前表单身份"，但 ops 先于 manager 创建 —— 用一个 ref 桥接，
+ * 避免"先声明后使用"的循环依赖，也让两处接线保持显式。
+ */
+const managerRef = shallowRef<ReturnType<typeof useFormManager> | null>(null)
+
 const manager = useFormManager({
   nodes: () => currentNodes.value,
   meta: () => props.meta,
@@ -241,6 +255,7 @@ const manager = useFormManager({
   },
   onSaved: (item) => emit('saved', item),
 })
+managerRef.value = manager
 
 /** 表单管理实例共享给设置面板与我的表单抽屉（reactive 按引用共享，非 prop 单向流） */
 provide(FORM_MANAGER_KEY, manager)

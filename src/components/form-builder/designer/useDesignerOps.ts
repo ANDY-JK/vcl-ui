@@ -32,6 +32,15 @@ const t = useT()
 export interface DesignerSnapshot {
   nodes: DesignerNode[]
   meta: FormMeta | null
+  /**
+   * 快照生成时"正在编辑哪份表单"（第 149 轮）。
+   *
+   * 为什么历史要记它：打开确认弹窗写着「将替换画布（可撤销）」，而 `currentFormId`
+   * 由 `useFormManager` 单独持有 —— 撤销只恢复画布、不碰身份，就会出现
+   * **画布是 A、身份是 B** 的错位，接着点保存就把 A 的内容写进 B（静默数据损坏）。
+   * 历史与身份必须同进同退。
+   */
+  formId: string | null
 }
 
 export interface DesignerOpsHost {
@@ -49,6 +58,10 @@ export interface DesignerOpsHost {
   selectedIds: Ref<Set<string>>
   /** 轻提示 */
   showTip: (msg: string) => void
+  /** 读取"当前正在编辑哪份表单"（可空 = 未命名新表单）；不传则历史不记身份 */
+  formId?: () => string | null
+  /** 恢复表单身份（撤销/重做到跨表单的那一步时调用） */
+  restoreFormId?: (id: string | null) => void
 }
 
 export function useDesignerOps(host: DesignerOpsHost) {
@@ -141,7 +154,11 @@ export function useDesignerOps(host: DesignerOpsHost) {
 
   /** 记录快照（每次结构操作前调用；nodes+meta 整组入栈） */
   function snapshot(): void {
-    _pushUndo({ nodes: deepClone(host.nodes()), meta: deepClone(host.meta()) })
+    _pushUndo({
+      nodes: deepClone(host.nodes()),
+      meta: deepClone(host.meta()),
+      formId: host.formId?.() ?? null,
+    })
     _clearRedo()
     _trimHistory()
     _syncDepth()
@@ -163,20 +180,31 @@ export function useDesignerOps(host: DesignerOpsHost) {
 
   function undo(): void {
     if (!undoStack.length) return
-    _pushRedo({ nodes: deepClone(host.nodes()), meta: deepClone(host.meta()) })
+    _pushRedo({
+      nodes: deepClone(host.nodes()),
+      meta: deepClone(host.meta()),
+      formId: host.formId?.() ?? null,
+    })
     const prev = _popUndo()!
     // 重做链变长后两条栈合计可能超预算 → 挤掉最老的撤销步
     _trimHistory()
     _syncDepth()
     host.patchAll(prev.nodes, prev.meta)
+    // 身份跟着历史走：否则"画布是 A、身份还是 B"，一保存就写错表单
+    host.restoreFormId?.(prev.formId)
   }
 
   function redo(): void {
     if (!redoStack.length) return
-    _pushUndo({ nodes: deepClone(host.nodes()), meta: deepClone(host.meta()) })
+    _pushUndo({
+      nodes: deepClone(host.nodes()),
+      meta: deepClone(host.meta()),
+      formId: host.formId?.() ?? null,
+    })
     const next = _popRedo()!
     _syncDepth()
     host.patchAll(next.nodes, next.meta)
+    host.restoreFormId?.(next.formId)
   }
 
   // ════════════════════════════════════════
