@@ -79,6 +79,8 @@ vi.mock('@/components/form-builder/designer/store', () => {
     }),
   }
   return {
+    /** 测试用：清空 mock 的内存表单索引（模块级共享，会跨用例残留） */
+    __mem: mem,
     createLocalFormStore: vi.fn(() => store),
     createCloudFormStore: vi.fn(() => {
       if (h.cloudThrow) throw new Error('cloud create boom')
@@ -152,7 +154,14 @@ function makeHost(over: Partial<FormManagerHost> & { nodesCount?: number } = {})
 const item = (id: string, name = '表单A'): FormMetaItem =>
   ({ id, name, updatedAt: '2026-01-01', collectKey: 'k' }) as unknown as FormMetaItem
 
-beforeEach(() => {
+beforeEach(async () => {
+  // 第 147 轮：saveForm 新建时会调 listForms 查重名，而 mock 的 mem.forms 是**模块级共享 Map**，
+  // 前一个用例存过的表单会留到这里 → 查重误判"重名" → saveForm 返回 null（表现为奇怪的连锁失败）。
+  // 每个用例前清空索引，与真实 store 的"每次新建 store 各自独立"对齐。
+  const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+    __mem: { forms: Map<string, unknown> }
+  }
+  storeMod.__mem.forms.clear()
   h.failSave = false
   h.failList = false
   h.failRename = false
@@ -169,7 +178,7 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
 
-afterEach(() => {
+afterEach(async () => {
   localStorage.clear()
   vi.restoreAllMocks()
 })
@@ -202,6 +211,108 @@ describe('saveForm：保存画布', () => {
     await m.saveForm('   ')
     const arg = h.savedArgs[0] as { name?: string }
     expect(arg.name, '应回落 meta.title').toBe('测试表单')
+  })
+
+  /* ── 第 147 轮：新建时不能悄悄建出同名表单 ──
+   * 表单名就是导航项标签。低代码的目标是"用户完全自己建导航项"，
+   * 两个都叫「报表」的导航项在侧栏里分不清，用户只能靠点开猜。
+   * 新建（currentFormId 为 null）时要拦住并说明；覆盖保存不拦（那是同一份表单）。 */
+
+  it('**新建时与已有表单同名 → 拦住并提示重名**（不静默创建）', async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn>; saveForm: ReturnType<typeof vi.fn> }
+    }
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [
+      { id: 'old', name: '报表', updatedAt: '', collectKey: 'k' },
+    ])
+    try {
+      storeMod.__store.saveForm.mockClear()
+      const { host, tips } = makeHost()
+      const m = useFormManager(host)
+      const r = await m.saveForm('报表')
+    expect(r, '重名不该创建').toBeNull()
+    expect(storeMod.__store.saveForm, '不该调存储层').not.toHaveBeenCalled()
+      expect(tips.join(' | '), `实际提示：${JSON.stringify(tips)}`).toMatch(/重名|已存在|同名/)
+      expect(m.saving, 'saving 应复位').toBe(false)
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
+  })
+
+  it('**重名判断要 trim 后比**（" 报表 " 与 "报表" 算重名）', async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn>; saveForm: ReturnType<typeof vi.fn> }
+    }
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [
+      { id: 'old', name: '报表', updatedAt: '', collectKey: 'k' },
+    ])
+    try {
+      storeMod.__store.saveForm.mockClear()
+      const { host } = makeHost()
+      const m = useFormManager(host)
+      const r = await m.saveForm('  报表  ')
+      expect(r, 'trim 后同名也要拦住').toBeNull()
+      expect(storeMod.__store.saveForm).not.toHaveBeenCalled()
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
+  })
+
+  it('**覆盖保存（currentFormId 非空）不拦同名**', async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+    }
+    const { host } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('原名') // 建立 currentFormId
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [
+      { id: 'new-1', name: '原名', updatedAt: '', collectKey: 'k' },
+    ])
+    try {
+      const r = await m.saveForm('原名')
+      expect(r, '覆盖自己不算重名').toBeTruthy()
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
+  })
+
+  it('**不同名 → 正常保存**', async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+    }
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [
+      { id: 'old', name: '报表', updatedAt: '', collectKey: 'k' },
+    ])
+    try {
+      const { host } = makeHost()
+      const m = useFormManager(host)
+      const r = await m.saveForm('另一个报表')
+      expect(r).toBeTruthy()
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
+  })
+
+  it('**取索引失败时不能因此挡住保存**（重名检查是尽力而为）', async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+    }
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => {
+      throw new Error('list boom')
+    })
+    try {
+      const { host } = makeHost()
+      const m = useFormManager(host)
+      const r = await m.saveForm('随便')
+      expect(r, '查重失败不该拖累保存').toBeTruthy()
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
   })
 
   it('**第二次保存复用 currentFormId**（覆盖而非新建）', async () => {
@@ -242,8 +353,11 @@ describe('refreshForms / openForms', () => {
     const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
       __store: { listForms: ReturnType<typeof vi.fn> }
     }
+    // 第 147 轮：`saveForm` 新建时会调 listForms 查重名，因此"消耗一次返回"的
+    // mockResolvedValueOnce 不再可靠 —— 改为整段覆盖 + 复原。
+    const original = storeMod.__store.listForms.getMockImplementation()
     storeMod.__store.listForms.mockClear()
-    storeMod.__store.listForms.mockResolvedValueOnce([item('f1'), item('f2')])
+    storeMod.__store.listForms.mockImplementation(async () => [item('f1'), item('f2')])
 
     const { host } = makeHost()
     const m = useFormManager(host)
@@ -253,6 +367,7 @@ describe('refreshForms / openForms', () => {
     await nextTick()
     expect(storeMod.__store.listForms, 'openForms 应触发刷新').toHaveBeenCalledTimes(1)
     expect(m.formsList.length, '列表应被填充').toBe(2)
+    if (original) storeMod.__store.listForms.mockImplementation(original)
   })
 
   it('**listForms 抛错 → formsError 有值、loading 复位**', async () => {
@@ -433,11 +548,24 @@ describe('deleteForm', () => {
   })
 
   it('**删除其他表单 → currentFormId 不变**', async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+    }
     const { host } = makeHost()
     const m = useFormManager(host)
+    // 先建 currentFormId（第 147 轮起新建会查重，索引里不能有同名）
     await m.saveForm('x')
-    await m.deleteForm(item('other'))
-    expect(m.currentFormId, '不该动当前 id').toBe('new-1')
+    expect(m.currentFormId, '前置：应有当前表单').toBe('new-1')
+    // 第 146 轮起删前查索引：目标必须真的存在，否则会走"已不存在"分支
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [item('new-1'), item('other', '表单B')])
+    try {
+      const ok = await m.deleteForm(item('other', '表单B'))
+      expect(ok, '目标存在应删除成功').toBe(true)
+      expect(m.currentFormId, '不该动当前 id').toBe('new-1')
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
   })
 
   it('**抛错 → 返回 false、提示失败**', async () => {
@@ -455,15 +583,20 @@ describe('deleteForm', () => {
     }
     storeMod.__store.deleteForm.mockClear()
     // 第 146 轮起删前会查索引：目标必须"真的存在"（真实 store 的 listForms 返回已存表单）
-    storeMod.__store.listForms.mockImplementationOnce(async () => [{ id: 'f1', name: 'F1', updatedAt: '' }])
-    const { host } = makeHost()
-    const m = useFormManager(host)
-    const p1 = m.deleteForm(item('f1'))
-    const p2 = m.deleteForm(item('f1'))
-    const [r1, r2] = await Promise.all([p1, p2])
-    expect(r1, '第一次应成功').toBe(true)
-    expect(r2, '第二次应被挡').toBe(false)
-    expect(storeMod.__store.deleteForm, '只该删一次').toHaveBeenCalledTimes(1)
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [{ id: 'f1', name: 'F1', updatedAt: '' }])
+    try {
+      const { host } = makeHost()
+      const m = useFormManager(host)
+      const p1 = m.deleteForm(item('f1'))
+      const p2 = m.deleteForm(item('f1'))
+      const [r1, r2] = await Promise.all([p1, p2])
+      expect(r1, '第一次应成功').toBe(true)
+      expect(r2, '第二次应被挡').toBe(false)
+      expect(storeMod.__store.deleteForm, '只该删一次').toHaveBeenCalledTimes(1)
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
   })
 
   /* ── 第 146 轮：删一个已经不在的表单，不能报"已删除" ──
@@ -479,11 +612,16 @@ describe('deleteForm', () => {
     const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
       __store: { listForms: ReturnType<typeof vi.fn> }
     }
-    storeMod.__store.listForms.mockImplementationOnce(async () => [])
-    const ok = await m.deleteForm(item('gone'))
-    const all = tips.join(' | ')
-    expect(all, `实际提示：${JSON.stringify(tips)}`).not.toContain('已删除')
-    expect(ok, '没删到东西不该报成功').toBe(false)
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [])
+    try {
+      const ok = await m.deleteForm(item('gone'))
+      const all = tips.join(' | ')
+      expect(all, `实际提示：${JSON.stringify(tips)}`).not.toContain('已删除')
+      expect(ok, '没删到东西不该报成功').toBe(false)
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
   })
 
   it('找不到目标时要说明原因（不能静默无反应）', async () => {
@@ -492,10 +630,15 @@ describe('deleteForm', () => {
     const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
       __store: { listForms: ReturnType<typeof vi.fn> }
     }
-    storeMod.__store.listForms.mockImplementationOnce(async () => [])
-    await m.deleteForm(item('gone'))
-    expect(tips.length, '既没删成功就得说一句').toBeGreaterThan(0)
-    expect(tips.join(' | '), '要说明"不存在/已被删除"').toMatch(/不存在|已删|找不到/)
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [])
+    try {
+      await m.deleteForm(item('gone'))
+      expect(tips.length, '既没删成功就得说一句').toBeGreaterThan(0)
+      expect(tips.join(' | '), '要说明"不存在/已被删除"').toMatch(/不存在|已删|找不到/)
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
   })
 })
 

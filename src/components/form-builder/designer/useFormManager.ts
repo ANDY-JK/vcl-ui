@@ -150,6 +150,28 @@ export function useFormManager(host: FormManagerHost) {
 
   const saving = ref(false)
 
+  /**
+   * 新建时是否有同名表单（第 147 轮）。
+   *
+   * 为什么需要：表单名就是导航项标签。低代码的目标是"用户完全自己建导航项"，
+   * 两个都叫「报表」的导航项在侧栏里分不清，用户只能点开猜。
+   * **只拦新建**：覆盖保存是同一份表单改名，不该被自己挡。
+   * **尽力而为**：取索引失败（网络抖动）时放行 —— 查重是体验优化，不能反过来让保存失败。
+   */
+  async function findSameName(name: string): Promise<string | null> {
+    if (!name) return null
+    try {
+      const index = await activeStore.value.listForms()
+      // 调用方传进来的 name 已 trim（=\`trimmed || meta.title\`），这里不再重复 trim；
+      // 也**不需要排除自己**：只有新建才会调本函数，此时还没有 currentFormId。
+      // 两处都是本轮负向对照专门盯出来的死代码（探针"未生效"就是信号）。
+      const hit = index.find((f) => f.name.trim() === name)
+      return hit ? hit.name : null
+    } catch {
+      return null
+    }
+  }
+
   /** 保存当前画布；成功返回元信息，失败返回 null（错误经 showTip 展示） */
   async function saveForm(name: string): Promise<FormMetaItem | null> {
     if (saving.value) return null
@@ -157,10 +179,21 @@ export function useFormManager(host: FormManagerHost) {
       host.showTip(t('fbd.nothingToSave'))
       return null
     }
+    const trimmed = name.trim()
+    const finalName = trimmed || host.meta().title || ''
+    // ⚠️ 锁必须在查重**之前**上：查重里有 await，先查后锁会让并发的第二次调用
+    // 穿过 `saving` 检查（本轮的负向对照真的抓到了这个回归）。
     saving.value = true
     try {
+      // 新建才查重（覆盖保存是同一份表单改名，不该被自己挡）
+      if (!currentFormId.value) {
+        const clash = await findSameName(finalName)
+        if (clash) {
+          host.showTip(t('fbd.duplicateName', { name: clash }))
+          return null
+        }
+      }
       const design: FormDesign = { schemaVersion: FORM_DESIGN_VERSION, meta: host.meta(), nodes: host.nodes() }
-      const trimmed = name.trim()
       const item = await activeStore.value.saveForm(
         currentFormId.value,
         design,

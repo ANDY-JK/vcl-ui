@@ -630,6 +630,8 @@ export default {
     loadFail: 'Open failed: {err}',
     loadedTip: 'Opened "{name}"',
     renamedTip: 'Renamed',
+    /** Creating a form whose name already exists — the name is the nav label */
+    duplicateName: 'A form named "{name}" already exists, please choose another name',
     /** The form was already gone (removed by another session/tab) */
     deleteGone: 'This form no longer exists (it may have been deleted in another window)',
     /** Shown when the name did not actually change (blank or only surrounding spaces) */

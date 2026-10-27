@@ -91,7 +91,15 @@ function startRealCli(dbFile: string, token: string) {
   })
 }
 
-describe('SQLite 存储层：真落库 · 真持久化 · 宿主可自行 SQL 查询', () => {
+/**
+ * ⚠️ 超时给到 60s（默认 20s）。
+ *
+ * 这些用例做的是**真磁盘 IO**（建库、写盘、关库、重开、再读），本身只要几十毫秒；
+ * 但整链第 16 步 test:noise 会把全部 320 个测试文件并发跑起来，CPU 争用下
+ * 「关库重开」这一例实测会打穿 20s 默认超时（单跑 7 例全过、全量跑偶发 1 例超时）。
+ * 放宽超时不掩盖任何真实失败：它只影响"等多久算超时"，断言一条没动。
+ */
+describe('SQLite 存储层：真落库 · 真持久化 · 宿主可自行 SQL 查询', { timeout: 60000 }, () => {
   it('**关库重开数据还在**（这才是"持久化"，内存版做不到）', async () => {
     const file = tempDb()
     const first = createSqliteStore(file) as unknown as Store
