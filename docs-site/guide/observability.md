@@ -41,8 +41,8 @@ setRuntimeObserver({
 | `amap/keyword-search-failed` | warn | [amap] 关键词搜索失败: | `{ keywords, city }` | `src/components/amap/amap-service.ts:199` |
 | `amap/nearby-search-failed` | warn | [amap] 周边搜索失败 | — | `src/components/amap/amap-service.ts:263` |
 | `amap/rest-key-missing` | error | [amap] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY | — | `src/components/amap/amap-key.ts:100` |
-| `chart/init-failed` | error | [BaseChart] ECharts 初始化失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:212` |
-| `chart/set-option-failed` | error | [BaseChart] setOption 失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:236` |
+| `chart/init-failed` | error | [BaseChart] ECharts 初始化失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:241` |
+| `chart/set-option-failed` | error | [BaseChart] setOption 失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:265` |
 | `form-builder/geocode-failed` | warn | [map-picker] 反向地理编码失败，已忽略（坐标不受影响）: | `{ error: String(err) }` | `src/components/form-builder/renderer/RendererMapPicker.vue:91` |
 | `form-builder/share-invalid` | warn | 分享码无效或已损坏 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), }` | `src/components/form-builder/FormShareView.vue:117` |
 | `form-builder/share-signature-invalid` | warn | 分享码签名校验未通过，已拒绝渲染 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), signer: signer.name, }` | `src/components/form-builder/FormShareView.vue:107` |
