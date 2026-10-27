@@ -205,6 +205,14 @@ export function useFormManager(host: FormManagerHost) {
     // 穿过 `saving` 检查（本轮的负向对照真的抓到了这个回归）。
     saving.value = true
     try {
+      // 第 152 轮：覆盖保存前先确认目标还在。
+      // 若它已被别的窗口删掉，`store.saveForm` 会抛 formNotFound，**而 currentFormId 不会变** ——
+      // 于是每次点保存都被同一条错误挡住，内容再也存不下去（也**没有**"新建/脱离"入口）。
+      // 处理：摘掉身份、转成新建，先把用户的内容存下来；同时提示原因，不偷偷改语义。
+      if (currentFormId.value && !(await targetStillExists(currentFormId.value))) {
+        currentFormId.value = null
+        host.showTip(t('fbd.saveTargetGone'))
+      }
       // 新建才查重（覆盖保存是同一份表单改名，不该被自己挡）
       if (!currentFormId.value) {
         const clash = await findSameName(finalName)

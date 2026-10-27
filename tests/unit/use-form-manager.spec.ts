@@ -27,6 +27,8 @@ const h = vi.hoisted(() => ({
   loadFormResult: null as unknown,
   /** 记录 saveForm 的入参 */
   savedArgs: [] as unknown[],
+  /** 新建时的自增序号：真实存储层每次新建都给新 id，"恒 new-1"会让身份类断言失真 */
+  newSeq: 0,
   /** validateSupabaseConfig 返回值 */
   cfgInvalid: '' as string,
   /** createCloudFormStore 是否抛错 */
@@ -56,7 +58,13 @@ vi.mock('@/components/form-builder/designer/store', () => {
     saveForm: vi.fn(async (id: string | null, design: unknown, name?: string) => {
       if (h.failSave) throw new Error('save boom')
       h.savedArgs.push({ id, design, name })
-      const item = { id: id ?? 'new-1', name: name || '未命名', updatedAt: '2026-01-01', collectKey: 'k' }
+      h.newSeq += 1
+      const item = {
+        id: id ?? `new-${h.newSeq}`,
+        name: name || '未命名',
+        updatedAt: '2026-01-01',
+        collectKey: 'k',
+      }
       mem.forms.set(item.id, item)
       return item
     }),
@@ -168,6 +176,7 @@ beforeEach(async () => {
   h.failDelete = false
   h.loadFormResult = null
   h.savedArgs = []
+  h.newSeq = 0
   h.cfgInvalid = ''
   h.cloudThrow = false
   h.cloudListFail = false
@@ -322,6 +331,71 @@ describe('saveForm：保存画布', () => {
     await m.saveForm('第二次')
     const second = h.savedArgs[1] as { id: string | null }
     expect(second.id, '第二次应带已有 id').toBe('new-1')
+  })
+
+  /* ── 第 152 轮：当前表单被别处删掉后，保存会**永远失败且无路可走** ──
+   * `currentFormId` 只在"自己删除它"时清空（而删除已不存在的目标会提前返回），
+   * 也没有"新建/脱离"入口。store.saveForm 覆盖不存在的 id 会抛 formNotFound，
+   * 于是每次点保存都被同一条错误挡住 —— 用户的内容再也存不下去。 */
+
+  it('**覆盖目标已被删除 → 转为另存为新表单**（不能让内容存不下去）', async () => {
+    const { host, tips } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('第一次')
+    const oldId = m.currentFormId
+    expect(oldId, '前置：已有 id').toBeTruthy()
+
+    // 别的窗口把它删了：索引里再也查不到这个 id
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+      __mem: { forms: Map<string, unknown> }
+    }
+    storeMod.__mem.forms.clear()
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [])
+    try {
+      h.savedArgs.length = 0
+      const r = await m.saveForm('第二次')
+      expect(r, '内容应被保存下来（新建），而不是报错返回 null').toBeTruthy()
+      const arg = h.savedArgs[0] as { id: string | null }
+      expect(arg.id, '不再用那个已消失的 id').toBeNull()
+      expect(m.currentFormId, '身份要切到新表单').not.toBe(oldId)
+      expect(tips.join(' | '), '要说明为什么改成新建').toMatch(/已不存在|已删除|另存/)
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
+  })
+
+  it('**目标还在 → 仍走覆盖**（别把正常的覆盖保存也改成新建）', async () => {
+    const { host } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('第一次')
+    await m.saveForm('第二次')
+    const second = h.savedArgs[1] as { id: string | null }
+    expect(second.id, '目标还在时不该新建').toBe('new-1')
+  })
+
+  it('**取索引失败时不挡住保存**（查存在性是尽力而为）', async () => {
+    const { host } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('第一次')
+
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+    }
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => {
+      throw new Error('list boom')
+    })
+    try {
+      h.savedArgs.length = 0
+      const r = await m.saveForm('第二次')
+      expect(r, '读不到索引不该拖累保存').toBeTruthy()
+      const arg = h.savedArgs[0] as { id: string | null }
+      expect(arg.id, '按原 id 覆盖（真没了会由 store 抛错兜底）').toBe('new-1')
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
   })
 
   it('**保存抛错 → 返回 null、提示失败、saving 复位**', async () => {
