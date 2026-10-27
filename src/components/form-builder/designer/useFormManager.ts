@@ -200,7 +200,12 @@ export function useFormManager(host: FormManagerHost) {
         trimmed || host.meta().title || undefined,
       )
       currentFormId.value = item.id
-      markClean() // 存下去的这份就是"已保存"基线
+      // 第 150 轮：保存时用户可能改了名字，而存储层的兜底是 `name || design.meta.title`。
+      // 若不回写，画布标题会继续停留在旧名 —— 下次名字框留空再保存就退回旧名（改名白改）。
+      // 用 `item.name`（存储层归一后的最终名）回写，保证"画布标题 = 库里的名字"。
+      const metaNow = host.meta()
+      if (metaNow.title !== item.name) host.updateMeta({ ...metaNow, title: item.name })
+      markClean() // 存下去的这份就是"已保存"基线（必须在回写之后取，否则刚保存就变脏）
       host.showTip(t('fbd.savedTip', { name: item.name }))
       host.onSaved?.(item)
       return item
@@ -346,6 +351,13 @@ export function useFormManager(host: FormManagerHost) {
     renaming.value = true
     try {
       await activeStore.value.renameForm(item.id, next)
+      // 第 150 轮：改名只落在列表索引上，设计稿/画布的 `meta.title` 仍是旧名。
+      // 而名字框留空保存时会回落到 `meta.title` —— 于是"改名 → 保存"会把新名写回旧名。
+      // 只同步**当前打开的那份**；改别人的名字不能动我的画布。
+      if (currentFormId.value === item.id) {
+        const metaNow = host.meta()
+        if (metaNow.title !== next) host.updateMeta({ ...metaNow, title: next })
+      }
       host.showTip(t('fbd.renamedTip'))
       return true
     } catch (err) {

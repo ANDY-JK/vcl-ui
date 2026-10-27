@@ -596,6 +596,52 @@ describe('renameForm', () => {
     expect(r1).toBe(true)
     expect(r2, '第二次应被挡').toBe(false)
   })
+
+  /* ── 第 150 轮：重命名"当前打开的表单"必须同步画布标题 ──
+   * `store.renameForm` 只改索引里的 name，从不碰设计稿的 meta.title；
+   * 而 `saveForm` 在名字为空时正是回落到 `design.meta.title`
+   * （store.ts：`name || design.meta.title || t('fbd.untitled')`）。
+   * 于是「重命名当前表单 → 直接点保存」会把新名悄悄写回旧名 —— 改名白改。 */
+
+  it('**重命名当前打开的表单 → 画布标题跟着改**（否则下次保存退回旧名）', async () => {
+    const { host, getMeta } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('旧名') // 建立 currentFormId
+    expect(m.currentFormId, '前置：应有当前表单').toBeTruthy()
+    expect(getMeta().title, '前置：画布标题是旧名').toBe('旧名')
+
+    await m.renameForm(item(m.currentFormId as string, '旧名'), '新名')
+    expect(getMeta().title, '改名后画布标题必须同步').toBe('新名')
+  })
+
+  it('**改名后再保存 → 不会把新名写回旧名**', async () => {
+    const { host } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('旧名')
+    await m.renameForm(item(m.currentFormId as string, '旧名'), '新名')
+
+    h.savedArgs.length = 0
+    await m.saveForm('') // 名字框留空 → 走 meta.title 回落
+    const arg = h.savedArgs[0] as { name?: string }
+    expect(arg.name, '回落应拿到新名，而不是旧名').toBe('新名')
+  })
+
+  it('**重命名别的表单 → 不动当前画布标题**（同进同退 ≠ 乱同步）', async () => {
+    const { host, getMeta } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('当前表单')
+    const id = m.currentFormId
+    await m.renameForm(item('other', '别的'), '别人的新名')
+    expect(m.currentFormId, '身份不该变').toBe(id)
+    expect(getMeta().title, '不该动当前画布').toBe('当前表单')
+  })
+
+  it('**还没打开任何表单时重命名 → 不动画布标题**', async () => {
+    const { host, getMeta } = makeHost()
+    const m = useFormManager(host)
+    await m.renameForm(item('f9', '某个'), '新名')
+    expect(getMeta().title, '没有当前表单就不该改画布').toBe('测试表单')
+  })
 })
 
 describe('deleteForm', () => {
