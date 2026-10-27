@@ -10,7 +10,6 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { nextTick } from 'vue'
 
 // 让 echarts-setup 的实例在用例间互不影响（模块级 _wordCloudLoaded 会缓存）
 async function freshSetup() {
@@ -80,10 +79,17 @@ describe('Chart · wordCloud 依赖缺失时必须给可见提示', () => {
       props: { type: 'wordCloud', categories: ['a', 'b'], series: [{ name: 's', data: [1, 2] }] },
       attachTo: document.body,
     })
-    await nextTick()
-    await nextTick()
+    // ⚠️ 不要在这里写"固定等两拍"：`ensureWordCloud` 是异步的，动态 import +
+    // 失败/成功分支落到 DOM 需要几拍**取决于机器有多忙**。第 153 轮整链实测：
+    // 并发下这条固定 tick 的用例先红（同文件 39.7s，单跑 13.5s 全过）。
+    // 改为等条件 —— 与机器快慢无关，也不会掩盖"根本没渲染"。
+    await vi.waitFor(
+      () => {
+        expect(w.text(), '异步失败分支必须落到 DOM').toContain('echarts-wordcloud')
+      },
+      { timeout: 5000 },
+    )
     const text = w.text()
-    expect(text, `实际渲染：${text}`).toContain('echarts-wordcloud')
     expect(text, '不能只给一个空白框').not.toBe('')
     w.unmount()
   })
@@ -101,12 +107,16 @@ describe('Chart · wordCloud 依赖缺失时必须给可见提示', () => {
       props: { type: 'wordCloud', categories: ['a', 'b'], series: [{ name: 's', data: [1, 2] }] },
       attachTo: document.body,
     })
-    await nextTick()
-    await nextTick()
+    // ⚠️ 不要在这里写"固定等两拍"：`ensureWordCloud` 是异步的，动态 import +
+    // 失败/成功分支落到 DOM 需要几拍**取决于机器有多忙**。第 153 轮整链实测：
+    // 并发下这条固定 tick 的用例先红（同文件 39.7s，单跑 13.5s 全过）。
+    // 改为等条件 —— 与机器快慢无关，也不会掩盖"根本没渲染"。
+    // 等**成功路径**的信号（图表容器已渲染），而不是固定等几拍；
+    // 容器出现后异步分支必然已经跑过，再断言"没有提示"才有意义
+    await vi.waitFor(() => expect(w.find('.chart-root').exists()).toBe(true), { timeout: 5000 })
     expect(w.text()).not.toContain('echarts-wordcloud')
     w.unmount()
   })
-
   it('从 wordCloud 切到普通类型后，失败标记要清除（不能把提示带到别的图）', async () => {
     vi.doMock('@/components/chart/utils/echarts-setup', async () => {
       const actual = await vi.importActual<typeof import('@/components/chart/utils/echarts-setup')>(
@@ -120,15 +130,20 @@ describe('Chart · wordCloud 依赖缺失时必须给可见提示', () => {
       props: { type: 'wordCloud', categories: ['a', 'b'], series: [{ name: 's', data: [1, 2] }] },
       attachTo: document.body,
     })
-    await nextTick()
-    expect(w.text()).toContain('echarts-wordcloud')
+    // ⚠️ 不要在这里写"固定等两拍"：`ensureWordCloud` 是异步的，动态 import +
+    // 失败/成功分支落到 DOM 需要几拍**取决于机器有多忙**。第 153 轮整链实测：
+    // 并发下这条固定 tick 的用例先红（同文件 39.7s，单跑 13.5s 全过）。
+    // 改为等条件 —— 与机器快慢无关，也不会掩盖"根本没渲染"。
+    await vi.waitFor(() => expect(w.text()).toContain('echarts-wordcloud'), { timeout: 5000 })
 
     // 关键是换成"空数据"的折线图：此时没有系列 → BaseChart 会走空态遮罩，
     // 遮罩文案若还带着上面那个失败标记，用户就会在折线图上看到"缺 echarts-wordcloud"
     await w.setProps({ type: 'line', series: [], categories: [] })
-    await nextTick()
-    await nextTick()
-    expect(w.text(), '折线图的空态不该显示词云的缺扩展提示').not.toContain('echarts-wordcloud')
+    // 等"提示消失"：这是**否定断言**，必须给它时间，否则固定等拍会在慢机器上假通过/假失败
+    await vi.waitFor(
+      () => expect(w.text(), '折线图的空态不该显示词云的缺扩展提示').not.toContain('echarts-wordcloud'),
+      { timeout: 5000 },
+    )
     w.unmount()
   })
 })
