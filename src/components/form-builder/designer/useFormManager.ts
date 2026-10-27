@@ -200,6 +200,7 @@ export function useFormManager(host: FormManagerHost) {
         trimmed || host.meta().title || undefined,
       )
       currentFormId.value = item.id
+      markClean() // 存下去的这份就是"已保存"基线
       host.showTip(t('fbd.savedTip', { name: item.name }))
       host.onSaved?.(item)
       return item
@@ -240,8 +241,64 @@ export function useFormManager(host: FormManagerHost) {
   /** 打开非空画布前需确认的候选表单 */
   const pendingLoad = ref<FormMetaItem | null>(null)
 
+  /**
+   * 当前画布的"内容签名"（第 148 轮）。
+   *
+   * 为什么需要：打开确认弹窗的文案是「当前画布**尚有未保存内容**」，但原实现判的是
+   * `host.nodes().length`（画布非空）—— 两者不等价，于是两个方向同时出错：
+   * ① **真丢数据**：画布为空但改过标题（meta）时判为"空" → 不确认 → 标题被静默覆盖；
+   * ② **虚假警报**：刚打开/刚保存、什么都没改，也被告知"尚有未保存内容"。
+   *
+   * 签名取 `nodes + meta`：设计内容就是这两样。只在"要不要确认"这一刻算一次，
+   * 不做响应式追踪（比 watch 深比较便宜，也不会在拖拽时抖动）。
+   */
+  function contentSignature(): string {
+    try {
+      return JSON.stringify({ n: host.nodes(), m: host.meta() })
+    } catch {
+      // 极端情况（循环引用等）算不出签名时按"脏"处理 —— 宁可多问一句，不可静默丢
+      return '\u0000unserializable'
+    }
+  }
+
+  /**
+   * 上次"已持久化/已同步"时的内容签名；`null` = 挂载时画布就有内容、且此后从未保存/打开过。
+   *
+   * 首次基线怎么定，取决于"画布上那些东西是谁写的"：
+   * - **挂载时为空** → 以当下（空 + 默认 meta）为基线：此后改标题/加字段才算脏。
+   *   这样"空画布改标题"能被拦下（原来的实现把它判成"空"→ 静默丢标题）。
+   * - **挂载时非空** → 保持 `null`（按脏处理）：这些内容是宿主给进来的（草稿恢复、外部编辑），
+   *   本层无从知道它存没存过 —— 宁可多问一句，不能静默替换。
+   */
+  const savedSig = ref<string | null>(host.nodes().length > 0 ? null : contentSignature())
+
+  /** 建立基线：保存成功、打开成功时调用 */
+  function markClean(): void {
+    savedSig.value = contentSignature()
+  }
+
+  /** 是否有未保存的修改 */
+  function isDirty(): boolean {
+    if (savedSig.value === null) return true // 挂载即有内容、从未保存/打开 → 按脏处理
+    return savedSig.value !== contentSignature()
+  }
+
+  /**
+   * 打开完成后建立基线。
+   *
+   * 回填是经 `host.updateMeta` / `host.applyNodes` 走宿主 emit 的，同一 tick 内
+   * `host.meta()` 可能还是旧值 —— 那样会把"刚打开"误判成"已修改"。故下一微任务再取签名。
+   */
+  function marksCleanAfterApply(): void {
+    savedSig.value = '\u0000pending'
+    void Promise.resolve().then(() => {
+      // 期间用户可能已经动手改了；只在本函数认领的窗口内建基线
+      savedSig.value = contentSignature()
+    })
+  }
+
   function requestOpenForm(item: FormMetaItem): void {
-    if (host.nodes().length) {
+    if (isDirty()) {
       pendingLoad.value = item
       return
     }
@@ -259,6 +316,7 @@ export function useFormManager(host: FormManagerHost) {
       host.applyNodes(design.nodes ?? design.fields ?? [])
       host.updateMeta(design.meta ?? {})
       currentFormId.value = item.id
+      marksCleanAfterApply()
       formsOpen.value = false
       host.showTip(t('fbd.loadedTip', { name: item.name }))
       host.onFormOpened?.()
@@ -377,6 +435,7 @@ export function useFormManager(host: FormManagerHost) {
     // 保存
     saving,
     saveForm,
+    isDirty,
     // 我的表单
     formsOpen,
     formsList,

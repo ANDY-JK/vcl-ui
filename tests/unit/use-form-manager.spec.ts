@@ -400,6 +400,69 @@ describe('requestOpenForm / doOpenForm', () => {
     expect(calls.applyNodes.length, '确认前不该回填').toBe(0)
   })
 
+  /* ── 第 148 轮：判据是"有未保存修改"，不是"画布非空" ──
+   * 确认弹窗的文案是「当前画布尚有未保存内容，打开将替换画布」——
+   * 但实现判的是 `host.nodes().length`。两者不等价，于是两个方向同时出问题：
+   * ① 虚假警报：刚打开/刚保存过、什么都没改，也被告知"尚有未保存内容"；
+   * ② **真丢数据**：画布为空但改过标题（meta）时判为"空"→ 不确认 → 标题被静默覆盖。 */
+
+  it('**改过标题但画布为空 → 仍要确认**（这是真丢数据的路径）', async () => {
+    const { host } = makeHost({ nodesCount: 0 })
+    const m = useFormManager(host)
+    // 用户先敲了标题还没加字段
+    host.updateMeta({ title: '客户台账' } as never)
+    m.requestOpenForm(item('f1'))
+    expect(m.pendingLoad, '改了没保存就该拦一下').toBeTruthy()
+  })
+
+  it('**画布非空但没改动 → 不弹确认**（"尚有未保存内容"不能是假的）', async () => {
+    const { host } = makeHost()
+    const m = useFormManager(host)
+    // 先保存一次：此后内容与库中一致
+    await m.saveForm('我的表单')
+    m.requestOpenForm(item('other', '别的表单'))
+    expect(m.pendingLoad, '没改动就不该吓唬用户').toBeNull()
+  })
+
+  it('**保存后立刻打开另一个 → 不弹确认**', async () => {
+    const { host } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('我的表单')
+    m.requestOpenForm(item('f1'))
+    expect(m.pendingLoad).toBeNull()
+  })
+
+  it('**保存后又改了内容 → 重新要确认**（保存不能把脏标记永久清掉）', async () => {
+    const { host, setNodes } = makeHost()
+    const m = useFormManager(host)
+    await m.saveForm('我的表单')
+    m.requestOpenForm(item('f1'))
+    expect(m.pendingLoad, '保存后应视为干净').toBeNull()
+
+    setNodes([node('n0'), node('n1'), node('n2')]) // 又加了一个字段
+    m.requestOpenForm(item('f1'))
+    expect(m.pendingLoad, '改了就要拦').toBeTruthy()
+  })
+
+  it('**打开某个表单后立刻打开另一个 → 不弹确认**（刚打开的内容就是库里的）', async () => {
+    h.loadFormResult = { nodes: [node('a')], meta: { title: '已存表单' } }
+    const { host } = makeHost({ nodesCount: 0 })
+    const m = useFormManager(host)
+    await m.doOpenForm(item('f1', '已存表单'))
+    m.requestOpenForm(item('f2', '另一个'))
+    expect(m.pendingLoad, '刚打开没改过，不该拦').toBeNull()
+  })
+
+  it('**打开后又改了内容 → 要确认**', async () => {
+    h.loadFormResult = { nodes: [node('a')], meta: { title: '已存表单' } }
+    const { host, setNodes } = makeHost({ nodesCount: 0 })
+    const m = useFormManager(host)
+    await m.doOpenForm(item('f1', '已存表单'))
+    setNodes([node('a'), node('b')])
+    m.requestOpenForm(item('f2', '另一个'))
+    expect(m.pendingLoad, '改了就要拦').toBeTruthy()
+  })
+
   it('**打开成功 → snapshot + applyNodes + updateMeta + 关抽屉 + onFormOpened**', async () => {
     h.loadFormResult = { nodes: [node('a'), node('b')], meta: { title: '已存表单' } }
     const { host, calls } = makeHost({ nodesCount: 0 })
