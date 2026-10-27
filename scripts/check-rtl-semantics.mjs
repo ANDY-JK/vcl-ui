@@ -153,20 +153,35 @@ async function posOf(dir, route, selector, viewport) {
         dir: getComputedStyle(document.body).direction,
       }
     }, selector)
-    return r
+    return r ? { status: 'ok', data: r } : { status: 'missing' }
+  } catch (err) {
+    // ⚠️ 必须 catch，不能让它抛出去（第 149 轮实测）：
+    //   整链跑到第 31 步时 Chromium 被系统回收，`page.goto` 抛
+    //   "Target page, context or browser has been closed" —— 原来只有 finally 没有 catch，
+    //   于是整条闸口带着栈回溯崩掉：既没报告"哪些探针验过"，也没机会跑那 5394 个元素的扫描。
+    //   闸口遇到"测不了"要**诚实报告没测到**（后面 SKIP 计失败），而不是崩。
+    const msg = String(err && err.message ? err.message : err).split(String.fromCharCode(10))[0]
+    return { status: 'error', error: msg }
   } finally {
-    await ctx.close()
+    // 浏览器已死时 close 本身也会抛；清理失败不该盖住真正的原因
+    await ctx.close().catch(() => {})
   }
 }
 
 const rows = []
 for (const p of PROBES) {
-  const ltr = await posOf('ltr', p.route, p.selector, p.viewport)
-  const rtl = await posOf('rtl', p.route, p.selector, p.viewport)
-  if (!ltr || !rtl) {
-    rows.push({ ...p, status: 'SKIP', note: '元素不存在' })
+  const ltrRes = await posOf('ltr', p.route, p.selector, p.viewport)
+  const rtlRes = await posOf('rtl', p.route, p.selector, p.viewport)
+  if (ltrRes.status !== 'ok' || rtlRes.status !== 'ok') {
+    // 两种 SKIP 必须分开写：元素不存在是"探针过时了"，页面打不开是"这次没测成"，
+    // 混成一句话会让人以为组件没了。
+    const err = ltrRes.error || rtlRes.error
+    const note = err ? `页面打不开（${err.slice(0, 80)}）` : '元素不存在'
+    rows.push({ ...p, status: 'SKIP', note })
     continue
   }
+  const ltr = ltrRes.data
+  const rtl = rtlRes.data
   if (rtl.dir !== 'rtl') {
     rows.push({ ...p, status: 'SKIP', note: `方向未生效（${rtl.dir}）` })
     continue
@@ -299,7 +314,32 @@ const SCAN_VIEWPORTS = [
   { name: '375', width: 375, height: 800 },
 ]
 
-for (const route of SCAN_ROUTES) {
+/**
+ * 实际参与扫描的路由。
+ *
+ * 默认**全量** —— 这是覆盖率的保证。RTL_SCAN_LIMIT 只给"快速抽查 / 自测闸口本身"用：
+ * 例如 tests/unit/rtl-gate-robustness.spec.ts 要验"页面打不开时闸口怎么反应"，
+ * 没必要为此扫完 42 个路由（单次约 50s）。
+ *
+ * ⚠️ 只要生效就**必然打印**一行醒目提示，不允许静默缩减覆盖：
+ * 静默少扫 = 假绿，这正是本文件多处注释反复在防的事。
+ */
+const scanLimitRaw = Number(process.env.RTL_SCAN_LIMIT ?? "")
+const scanLimited = Number.isFinite(scanLimitRaw) && scanLimitRaw > 0
+const scanRoutes = scanLimited ? SCAN_ROUTES.slice(0, scanLimitRaw) : SCAN_ROUTES
+if (scanLimited) {
+  console.log(
+    `\n⚠ RTL_SCAN_LIMIT=` +
+      scanLimitRaw +
+      `：本次只抽查前 ` +
+      scanRoutes.length +
+      `/` +
+      SCAN_ROUTES.length +
+      ` 个路由（非全量覆盖，仅供诊断）`,
+  )
+}
+
+for (const route of scanRoutes) {
   for (const vp of SCAN_VIEWPORTS) {
     const snap = {}
     for (const dir of ['ltr', 'rtl']) {
@@ -315,7 +355,8 @@ for (const route of SCAN_ROUTES) {
       } catch {
         snap[dir] = null
       }
-      await ctx.close()
+      // 同上：浏览器已死时 close 会抛，不该让整轮扫描崩在这里
+      await ctx.close().catch(() => {})
     }
 
     // ⚠️ SKIP 必须计失败：第一版只 continue，于是「server 没起来 → 全部 goto 失败
@@ -347,7 +388,7 @@ for (const route of SCAN_ROUTES) {
   }
 }
 
-await browser.close()
+await browser.close().catch(() => {})
 stopServer()
 
 console.log('\n=== RTL 定位语义（ltr vs rtl 的 left 偏移）===')
@@ -380,7 +421,10 @@ const fails = rows.filter((r) => r.status === 'FAIL')
 
 // ── 全路由扫描结果 ──
 console.log(`\n=== 全路由自动扫描（${SCAN_ROUTES.length} 个路由）===`)
-console.log(`检查 ${scanChecked} 个窄定位元素，未镜像 ${scanFails.length} 个，SKIP ${scanSkipped.length} 个路由`)
+console.log(
+  `检查 ${scanChecked} 个窄定位元素，未镜像 ${scanFails.length} 个，SKIP ${scanSkipped.length} 个路由` +
+    (scanLimited ? `（只抽查前 ${scanRoutes.length}/${SCAN_ROUTES.length} 个路由）` : ''),
+)
 for (const f of scanFails.slice(0, 10)) {
   console.log(`  ✗ [${f.route}] ${f.el} LTR=${f.ltr} RTL=${f.rtl} wr=${f.wr}`)
 }
