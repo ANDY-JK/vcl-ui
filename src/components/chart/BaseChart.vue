@@ -40,6 +40,17 @@ const chartRef = ref<HTMLDivElement>()
 let chartInstance: ReturnType<typeof init> | null = null
 let resizeObserver: ResizeObserver | null = null
 
+/**
+ * 实例"换新"的响应式印记（每次创建/销毁 +1）。
+ *
+ * 为什么需要它（第 156 轮）：`chartInstance` 是普通闭包变量，**不是响应式状态** ——
+ * 父组件 `watch(() => baseChartRef.value?.chart, …)` 只在 getter 的其他依赖变化时才重新求值，
+ * 于是"实例从无到有"这一步**观察不到**：父组件的 `bindEvents()` 与 `chart-ready` 事件
+ * 双双落空（实测文档列出的 click/datazoom/finished 等事件一个都不发）。
+ * 暴露一个自增印记，把"实例换新"变成可 watch 的信号（不改变实例本身的读写语义）。
+ */
+const instanceSeq = ref(0)
+
 const containerStyle = computed(() => ({
   width: toSize(props.width, '100%'),
   height: toSize(props.height, 'clamp(280px, 50vh, 480px)'),
@@ -242,6 +253,7 @@ function ensureInstance() {
     return
   }
   if (!chartInstance) return
+  instanceSeq.value++ // 实例就绪 → 通知父组件（可 watch）
   const opt = mergeToolbox(props.option)
   if (opt) {
     // Compound option (timeline) 不支持 notMerge:true，会破坏 Timeline 组件内部状态
@@ -276,6 +288,10 @@ function destroyInstance() {
     chartInstance.dispose()
   }
   chartInstance = null
+  // 这里**不**再自增 instanceSeq：销毁本身没有消费方 —— 父组件 watch 到的
+  // `chart` 为 null 也不能做什么，而"重建"必然由新实例的自增覆盖。
+  // （第 156 轮：先写了销毁也自增，负向对照证明它不可被任何断言捕获 → 撤掉，
+  //   没有消费方的信号不留，免得下一位读者以为"对称才正确"。）
 }
 
 let _roPending = false
@@ -377,6 +393,10 @@ defineExpose({
   /** 原始 ECharts 实例（只读访问，调用前判空） */
   get chart() {
     return chartInstance
+  },
+  /** 实例换新印记（自增；每次创建/销毁变化一次）——给父组件 watch 用，见文件内说明 */
+  get instanceSeq() {
+    return instanceSeq.value
   },
   /** 获取当前 option 副本 */
   getOption() {

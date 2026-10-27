@@ -382,14 +382,20 @@ watch(
 )
 
 // 监听实例变化（覆盖 mount/type/darkMode 所有重建场景）
+// ⚠️ 必须 watch `instanceSeq`（BaseChart 暴露的自增印记），**不能** watch `chart`：
+// `chartInstance` 是非响应式的闭包变量，getter 在"实例从无到有"这一步不会被重新求值
+// → bindEvents 与 chart-ready 双双落空（第 156 轮实测：文档列出的 click/datazoom/
+// finished 等事件一个都不发）。印记是响应式 ref，实例换新必触发。
 watch(
-  () => baseChartRef.value?.chart,
-  (inst, _old) => {
+  () => baseChartRef.value?.instanceSeq,
+  () => {
+    const inst = baseChartRef.value?.chart
     if (inst && !inst.isDisposed()) {
       bindEvents()
       ;(emit as (event: string, ...args: unknown[]) => void)('chart-ready', inst)
     }
   },
+  { immediate: true },
 )
 
 defineExpose({
