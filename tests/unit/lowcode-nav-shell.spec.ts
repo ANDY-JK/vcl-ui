@@ -699,13 +699,22 @@ describe('LowCodeNav · 页面区：链接与其余种类', () => {
     await flush()
     await noSlot.find('.lcn-item[data-key="b"]').trigger('click')
     await flush()
-    expect(noSlot.find('.lcn-hint[data-state="slot-required"]').exists()).toBe(true)
+    const hint = noSlot.find('.lcn-hint[data-state="slot-required"]')
+    expect(hint.exists()).toBe(true)
+    /* 第 153 轮：`data-state` 只有读 DOM 的人看得见。宿主集成者看到的是**文案** ——
+     * 这里必须**指路**（"这一页要靠你给插槽渲染"），不能只说"暂无数据"：
+     * 用户分不清是"这页本来空"还是"我没接插槽"。 */
+    expect(hint.text(), '必须说明是缺插槽，而不是泛泛的"暂无数据"').toMatch(/插槽|slot/i)
+    expect(hint.text(), '要和 no-page 的通用空态区分开').not.toBe('暂无数据')
   })
 
   it('**没有任何选中项时显示 no-page 空态**（而不是渲染一个不存在的页面）', async () => {
     const w = mountShell({ source: twoItems, autoSelect: false })
     await flush()
-    expect(w.find('.lcn-hint[data-state="no-page"]').exists()).toBe(true)
+    const hint = w.find('.lcn-hint[data-state="no-page"]')
+    expect(hint.exists()).toBe(true)
+    // no-page 保持通用空态（这里"没有选中项"就是真的空，不需要指路）
+    expect(hint.text()).toBe('暂无数据')
     expect(w.find('.fb-stub').exists()).toBe(false)
   })
 

@@ -637,6 +637,8 @@ export default {
     renameGone: 'Cannot rename: this form no longer exists (it may have been deleted in another window)',
     saveTargetGone:
       'The original form no longer exists (it may have been deleted in another window); saving as a new form instead',
+    slotRequired:
+      'This nav item must be rendered by the host via the #page or default slot (no built-in renderer for this page)',
     /** Shown when the name did not actually change (blank or only surrounding spaces) */
     renameNoChange: 'Name unchanged (cannot be empty)',
     deletedTip: 'Deleted',

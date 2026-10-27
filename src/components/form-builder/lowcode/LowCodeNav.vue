@@ -378,7 +378,10 @@ function onFormChange(data: FormData): void {
       <!-- 4. 其余（data / custom，或宿主关掉内置表单渲染）：交给默认插槽，没插槽就是空态 -->
       <!-- @slot default: 兜底页面渲染（data/custom 页，或宿主关掉内置表单渲染时） -->
       <slot v-else :node="current" :issues="api.issues.value">
-        <p class="lcn-hint" data-state="slot-required">{{ t('common.empty') }}</p>
+        <!-- 第 153 轮：这句**必须指路**。`data-state` 只有读 DOM 的人看得见，
+             宿主集成者看到的是文案 —— 原来和 no-page 共用"暂无数据"，
+             用户分不清"这页本来就空"还是"我没接插槽"。 -->
+        <p class="lcn-hint" data-state="slot-required">{{ t('fbd.slotRequired') }}</p>
       </slot>
     </section>
   </div>

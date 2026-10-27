@@ -375,7 +375,7 @@ async function afterHostSaved() {
 2. 没有可选项 → 空态（`data-state="no-page"`）
 3. `kind: 'link'` → 站内链接**交给你的路由**（只有外链才真跳转）
 4. `kind: 'form'` 且 `renderFormPage !== false` → 内置渲染（解析器默认取活动 `FormStore`，可用 `resolveFormPage` 换你自己的后端）
-5. 其余 → **默认插槽**；连默认插槽也没给 → `data-state="slot-required"` 明确提示（不静默留白）
+5. 其余 → **默认插槽**；连默认插槽也没给 → `data-state="slot-required"`，文案是「该导航项需要宿主用 `#page` 或默认插槽渲染」—— **指路，不是"暂无数据"**。（`data-state` 只有读 DOM 的人看得见，宿主集成者看到的是文案；`no-page`（真的没选中项）仍用 `common.empty` 的通用空态，两者刻意分开）
 
 ### 关键 props
 
