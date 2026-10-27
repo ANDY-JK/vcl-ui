@@ -151,6 +151,26 @@ export function useFormManager(host: FormManagerHost) {
   const saving = ref(false)
 
   /**
+   * 目标表单是否仍在库里（第 151 轮，delete 与 rename 共用）。
+   *
+   * 为什么需要：存储层的 `deleteForm(id)` 与 `renameForm(id, name)` 都是
+   * **找不到目标就静默 `return`**（不抛错、返回 `void`）—— 于是"目标早就没了"与
+   * "操作成功了"在上层**完全无法区分**，一律提示成功就是假成功。
+   * 接口表达力不足时，只能由上层补一次读校验。
+   *
+   * **尽力而为**：取索引失败（网络抖动）时按"还在"处理 —— 查存在性是防御，
+   * 不能反过来让删除/改名失败。真实失败仍由存储层抛错兜住。
+   */
+  async function targetStillExists(id: string): Promise<boolean> {
+    try {
+      const index = await activeStore.value.listForms()
+      return index.some((f) => f.id === id)
+    } catch {
+      return true
+    }
+  }
+
+  /**
    * 新建时是否有同名表单（第 147 轮）。
    *
    * 为什么需要：表单名就是导航项标签。低代码的目标是"用户完全自己建导航项"，
@@ -348,8 +368,16 @@ export function useFormManager(host: FormManagerHost) {
       host.showTip(t('fbd.renameNoChange'))
       return false
     }
+    // ⚠️ 锁必须**早于任何 await**：`targetStillExists` 里有一次读，
+    // 先查后锁会让并发的第二次调用穿过防重复检查（第 147 轮在 `saving` 上踩过同一个坑，
+    // 本轮用例又抓了一次）。`finally` 会复位，所以提前上锁是安全的。
     renaming.value = true
     try {
+      if (!(await targetStillExists(item.id))) {
+        // 已经被别的会话删掉了 —— 改名无从谈起，且**不能报"已重命名"**
+        host.showTip(t('fbd.renameGone'))
+        return false
+      }
       await activeStore.value.renameForm(item.id, next)
       // 第 150 轮：改名只落在列表索引上，设计稿/画布的 `meta.title` 仍是旧名。
       // 而名字框留空保存时会回落到 `meta.title` —— 于是"改名 → 保存"会把新名写回旧名。
@@ -383,8 +411,7 @@ export function useFormManager(host: FormManagerHost) {
     if (deleting.value) return false
     deleting.value = true
     try {
-      const index = await activeStore.value.listForms()
-      if (!index.some((f) => f.id === item.id)) {
+      if (!(await targetStillExists(item.id))) {
         // 已经被别的会话删掉了 —— 目标达成但**不是本次删除**，不能报"已删除"
         host.showTip(t('fbd.deleteGone'))
         return false

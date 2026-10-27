@@ -518,6 +518,22 @@ describe('requestOpenForm / doOpenForm', () => {
 /* ═══════════ 重命名 / 删除 ═══════════ */
 
 describe('renameForm', () => {
+  /* 第 151 轮起 `renameForm` 会先查索引（存储层找不到目标会静默 return，
+   * 上层必须自己读一次）。所以被测目标要在索引里"真的存在" ——
+   * 这是补 fixture，不是放宽断言：对"目标不存在"的断言另有专条（mock 返回 []）。 */
+  beforeEach(async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __mem: { forms: Map<string, unknown> }
+    }
+    for (const [id, name] of [
+      ['f1', '表单A'],
+      ['f9', '某个'],
+      ['other', '别的'],
+    ]) {
+      storeMod.__mem.forms.set(id, { id, name, updatedAt: '', collectKey: 'k' })
+    }
+  })
+
   it('**成功 → 返回 true、提示、renaming 复位**', async () => {
     const { host, tips } = makeHost()
     const m = useFormManager(host)
@@ -641,6 +657,47 @@ describe('renameForm', () => {
     const m = useFormManager(host)
     await m.renameForm(item('f9', '某个'), '新名')
     expect(getMeta().title, '没有当前表单就不该改画布').toBe('测试表单')
+  })
+
+  /* ── 第 151 轮：存储层 `renameForm(id,name): Promise<void>` 找不到目标也**静默 return**
+   * （第 146 轮只修了 `deleteForm` 的同类洞）。于是"重命名一个已被别处删掉的表单"
+   * 会报**已重命名**并返回 true —— 假成功，与 TD-43 同一族。 */
+
+  it('**目标已不存在 → 不报"已重命名"、返回 false**（存储静默 return 不能被当成成功）', async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn>; renameForm: ReturnType<typeof vi.fn> }
+    }
+    storeMod.__store.renameForm.mockClear()
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => [])
+    try {
+      const { host, tips } = makeHost()
+      const m = useFormManager(host)
+      const ok = await m.renameForm(item('gone', '原名'), '新名')
+      expect(ok, '没改到东西不该报成功').toBe(false)
+      expect(tips.join(' | '), `实际提示：${JSON.stringify(tips)}`).not.toContain('已重命名')
+      expect(tips.join(' | '), '要说明"不存在"').toMatch(/不存在|已删|找不到/)
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
+  })
+
+  it('**取索引失败时不挡住改名**（查存在性是尽力而为，不能反过来制造故障）', async () => {
+    const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
+      __store: { listForms: ReturnType<typeof vi.fn> }
+    }
+    const original = storeMod.__store.listForms.getMockImplementation()
+    storeMod.__store.listForms.mockImplementation(async () => {
+      throw new Error('list boom')
+    })
+    try {
+      const { host } = makeHost()
+      const m = useFormManager(host)
+      const ok = await m.renameForm(item('f1', '原名'), '新名')
+      expect(ok, '读不到索引不该拖累改名').toBe(true)
+    } finally {
+      if (original) storeMod.__store.listForms.mockImplementation(original)
+    }
   })
 })
 

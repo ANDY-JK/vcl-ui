@@ -191,12 +191,14 @@ function openRename(id: string, name: string): void {
 async function onConfirmRename(): Promise<void> {
   const target = renameTarget.value
   if (!target) return
-  const item = manager.formsList.find((f) => f.id === target.id)
-  if (!item) {
-    renameVisible.value = false
-    return
+  // 第 151 轮：列表可能已经刷新过、目标行不在了。原来这里 `return` —— 用户点了确认
+  // **什么都不发生也没有提示**，只会以为按钮坏了。改为把目标（至少 id/名字）交给 manager，
+  // 由它去库里查一次并如实报"该表单已不存在"。
+  const item = manager.formsList.find((f) => f.id === target.id) ?? {
+    id: target.id,
+    name: target.name,
   }
-  const ok = await manager.renameForm(item, renameName.value)
+  const ok = await manager.renameForm(item as FormMetaItem, renameName.value)
   if (ok) {
     renameVisible.value = false
     void manager.refreshForms()
@@ -213,10 +215,13 @@ function requestDelete(id: string, name: string): void {
 async function onConfirmDelete(): Promise<void> {
   const target = deleteTarget.value
   if (!target) return
-  const item = manager.formsList.find((f) => f.id === target.id)
+  // 同上：列表里找不到也要交给 manager，由它查库后如实报告
+  const item = manager.formsList.find((f) => f.id === target.id) ?? {
+    id: target.id,
+    name: target.name,
+  }
   deleteTarget.value = null
-  if (!item) return
-  const ok = await manager.deleteForm(item)
+  const ok = await manager.deleteForm(item as FormMetaItem)
   if (ok) void manager.refreshForms()
 }
 

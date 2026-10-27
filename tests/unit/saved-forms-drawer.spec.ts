@@ -339,6 +339,26 @@ describe('重命名（openRename → onConfirmRename）', () => {
 
     expect(refreshForms, '失败时不该刷新').not.toHaveBeenCalled()
   })
+
+  /* ── 第 151 轮：列表已刷新、目标行不见了时，不能"静默不办事" ──
+   * 原来 `if (!item) return` 直接返回：点了确认**什么都不发生**，也没有任何提示。
+   * 用户只会以为按钮坏了。改为把目标交给 manager —— 由它如实报"该表单已不存在"。 */
+
+  it('**目标已不在列表里 → 仍要交给 manager 处理并说明原因**（不静默）', async () => {
+    const { w, manager } = await mountWithForms()
+    const renameForm = vi.spyOn(manager, 'renameForm')
+
+    await w.find('.ld-table-act[data-act="rename"]').trigger('click')
+    await flushPromises()
+    // 模拟"列表刷新后目标已不在"（别的窗口删掉了它）
+    manager.formsList.splice(0)
+    await clickModalConfirm(w)
+    await flushPromises()
+
+    expect(renameForm, '不能静默返回，要交给 manager 报"已不存在"').toHaveBeenCalled()
+    const arg = renameForm.mock.calls[0]?.[0] as { id?: string } | undefined
+    expect(arg?.id, '要带上目标 id，manager 才能查它还在不在').toBe('f1')
+  })
 })
 
 describe('删除（requestDelete → onConfirmDelete）', () => {
@@ -366,6 +386,21 @@ describe('删除（requestDelete → onConfirmDelete）', () => {
     await clickModalConfirm(w)
     await flushPromises()
     expect(refreshForms).not.toHaveBeenCalled()
+  })
+
+  it('**目标已不在列表里 → 仍要交给 manager 处理并说明原因**（不静默）', async () => {
+    const { w, manager } = await mountWithForms()
+    const deleteForm = vi.spyOn(manager, 'deleteForm')
+
+    await w.find('.ld-table-act[data-act="delete"]').trigger('click')
+    await flushPromises()
+    manager.formsList.splice(0)
+    await clickModalConfirm(w)
+    await flushPromises()
+
+    expect(deleteForm, '不能静默返回，要交给 manager 报"已不存在"').toHaveBeenCalled()
+    const arg = deleteForm.mock.calls[0]?.[0] as { id?: string } | undefined
+    expect(arg?.id).toBe('f1')
   })
 })
 
