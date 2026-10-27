@@ -230,3 +230,105 @@ describe('BaseChart · 无障碍与工具栏', () => {
     w.unmount()
   })
 })
+
+/* ── 第 155 轮：toolbox 让位判定此前**零覆盖** ──
+ * `mergeToolbox` 用 `'title' in opt` 判"有没有标题"，而各 builder 写的是
+ * `title: p.title`（`p.title = props.title || ''`）—— **空标题也留一个 title 键**。
+ * 于是"无标题"被当成"有标题"：toolbox 下移 36px，而 grid.top 仍是 builder 给的 16px
+ * → 工具栏正好压在图上（`reserveToolboxBand` 存在的意义就是防这个，被绕过了）。
+ *
+ * 只有 `toolbar` 含 `dataView` 时才走 canvas 浮层（否则是图上方 HTML 行），所以用
+ * `toolbar: ['dataView']` 触发这条路径。 */
+describe('BaseChart · toolbox 让位（按标题**内容**判定，不是按键存在）', () => {
+  const DATA_VIEW: string[] = ['dataView']
+
+  /** 取首次 setOption 的载荷 */
+  function firstOption(): Record<string, unknown> {
+    const inst = last()
+    expect(inst, '应创建实例').toBeTruthy()
+    const call = inst!.setOption.mock.calls[0]
+    expect(call, '应至少 setOption 一次').toBeTruthy()
+    return call[0] as Record<string, unknown>
+  }
+
+  it('**无标题（title: ""）→ toolbox 不下移、grid 不多留**（builder 的实际形状）', async () => {
+    const w = await mountAndSettle({
+      toolbar: DATA_VIEW,
+      option: { title: '', series: [{ type: 'bar', data: [1, 2] }] },
+    })
+    const opt = firstOption()
+    const toolbox = opt.toolbox as Record<string, unknown>
+    expect(toolbox.top, '空标题不该按"有标题"下移到 36').toBe(4)
+    const grid = opt.grid as Record<string, unknown> | undefined
+    // 原来会算成 36+32=68（按"有标题"让位），净多出 32px 空带
+    expect(grid?.top, 'grid.top 应按无标题算（4+32=36）').toBe(36)
+    w.unmount()
+  })
+
+  it('有标题（title.text 非空）→ toolbox 下移 36、grid 让位 68（既有设计）', async () => {
+    const w = await mountAndSettle({
+      toolbar: DATA_VIEW,
+      option: { title: { text: '销售趋势' }, series: [{ type: 'bar', data: [1, 2] }] },
+    })
+    const opt = firstOption()
+    expect((opt.toolbox as Record<string, unknown>).top, '有标题才下移').toBe(36)
+    expect((opt.grid as Record<string, unknown>)?.top, '有标题要让出两行').toBe(68)
+    w.unmount()
+  })
+
+  it('**纯空白标题算"无标题"**（`title: "   "` 不该按有标题让位）', async () => {
+    const w = await mountAndSettle({
+      toolbar: DATA_VIEW,
+      option: { title: '   ', series: [{ type: 'bar', data: [1, 2] }] },
+    })
+    const opt = firstOption()
+    expect((opt.toolbox as Record<string, unknown>).top, '空白标题不占位，工具栏不该下移').toBe(4)
+    expect((opt.grid as Record<string, unknown>)?.top, '空白标题不该让出两行').toBe(36)
+    w.unmount()
+  })
+
+  it('用户自设 grid.top 时不动它（尊重自定义）', async () => {
+    const w = await mountAndSettle({
+      toolbar: DATA_VIEW,
+      option: { title: '', grid: { top: 10 }, series: [{ type: 'bar', data: [1, 2] }] },
+    })
+    expect((firstOption().grid as Record<string, unknown>).top, '自设值不该被覆盖').toBe(10)
+    w.unmount()
+  })
+
+  it('timeline 复合 option：按**内容**判定 baseOption 与各子 option', async () => {
+    const w = await mountAndSettle({
+      toolbar: DATA_VIEW,
+      option: {
+        baseOption: { title: '', series: [{ type: 'bar', data: [1] }] },
+        options: [{ title: '', series: [{ type: 'bar', data: [2] }] }],
+      },
+    })
+    const opt = firstOption()
+    const bo = opt.baseOption as Record<string, unknown>
+    expect((bo.toolbox as Record<string, unknown>).top, '空标题的 baseOption 不该下移').toBe(4)
+    expect((bo.grid as Record<string, unknown>)?.top, 'baseOption grid 按无标题算').toBe(36)
+    // ECharts timeline 复合形态：`options` 是 baseOption 的**兄弟**（顶层），子项也要让位
+    const childOptions = opt.options as Record<string, unknown>[]
+    expect(childOptions?.length, '子 option 不能丢').toBe(1)
+    expect((childOptions[0].grid as Record<string, unknown>)?.top, '子 option 同样按内容判定').toBe(36)
+    w.unmount()
+  })
+
+  it('用户自定义 toolbox 被合并而非覆盖（feature 合并保留双方）', async () => {
+    const w = await mountAndSettle({
+      toolbar: DATA_VIEW,
+      option: {
+        title: '',
+        toolbox: { left: 8, feature: { restore: { show: true } } },
+        series: [{ type: 'bar', data: [1, 2] }],
+      },
+    })
+    const toolbox = firstOption().toolbox as Record<string, unknown>
+    expect(toolbox.left, '用户的自定义项要保留').toBe(8)
+    const feature = toolbox.feature as Record<string, unknown>
+    expect(feature.restore, '用户的 feature 要保留').toBeTruthy()
+    expect(feature.dataView, '库注入的 dataView 也要在').toBeTruthy()
+    w.unmount()
+  })
+})

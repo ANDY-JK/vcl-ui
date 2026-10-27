@@ -152,6 +152,23 @@ function reserveToolboxBand<T extends Record<string, unknown>>(target: T, toolbo
 const TB_TOP_DEFAULT = 4
 const TB_TOP_TITLED = 36
 
+/**
+ * option 里是否**真的有标题文本**。
+ *
+ * ⚠️ 不能用 `'title' in opt`：各 builder 写的是 `title: p.title`
+ * （`p.title = props.title || ''`），**空标题也留一个 title 键**。
+ * 按"键存在"判定就把"无标题"当成"有标题" → toolbox 下移 36px，
+ * 而 grid.top 仍是 builder 给的 16px → 工具栏正好压在图上
+ * （`reserveToolboxBand` 存在的意义就是防这个，被绕过了）。第 155 轮修。
+ */
+function hasTitleText(target: Record<string, unknown>): boolean {
+  const title = target.title as unknown
+  if (!title) return false // 含 ''、null、undefined
+  if (typeof title === 'string') return title.trim().length > 0
+  if (Array.isArray(title)) return title.some((x) => !!(x as { text?: unknown } | null)?.text)
+  return !!(title as { text?: unknown }).text
+}
+
 function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
   if (!opt) return opt
   const toolbox = buildToolbox()
@@ -161,8 +178,8 @@ function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
   const compound = opt as unknown as { baseOption?: Record<string, unknown> }
   if (compound.baseOption) {
     const bo = { ...compound.baseOption }
-    const boToolTop = 'title' in bo ? TB_TOP_TITLED : TB_TOP_DEFAULT
-    if ('title' in bo) toolbox.top = TB_TOP_TITLED
+    const boToolTop = hasTitleText(bo) ? TB_TOP_TITLED : TB_TOP_DEFAULT
+    if (hasTitleText(bo)) toolbox.top = TB_TOP_TITLED
     const userToolbox = bo.toolbox as Record<string, unknown> | undefined
     const mergedToolbox = userToolbox
       ? {
@@ -171,16 +188,28 @@ function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
           feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
         }
       : toolbox
-    reserveToolboxBand(bo, boToolTop)
-    // 各 timeline option 也要让位
-    const options = (bo.options ?? []) as Array<Record<string, unknown>>
-    bo.options = options.map((o) => reserveToolboxBand({ ...o }, 'title' in o ? TB_TOP_TITLED : boToolTop))
-    return { ...opt, baseOption: { ...bo, toolbox: mergedToolbox } } as EChartsOption
+    // ⚠️ `reserveToolboxBand` 是**纯函数**（返回新对象、从不 mutate 入参）——
+    // 原来这里丢掉了返回值，等于 timeline 复合图的"让位"从未生效（第 155 轮修）。
+    const reservedBo = reserveToolboxBand(bo, boToolTop)
+    // ⚠️ ECharts timeline 复合形态是 `{ baseOption, options: [...] }` —— `options` 是
+    // baseOption 的**兄弟**，不是它的属性（本文件 `showEmpty` 读的也是顶层 `opt.options`）。
+    // 此前读 `bo.options` 恒为 undefined → 各时间点的子 option 从未让位。第 155 轮修。
+    const timelineChild = (opt as unknown as { options?: unknown }).options
+    const childOptions = Array.isArray(timelineChild)
+      ? (timelineChild as Array<Record<string, unknown>>).map((o) =>
+          reserveToolboxBand({ ...o }, hasTitleText(o) ? TB_TOP_TITLED : boToolTop),
+        )
+      : timelineChild
+    return {
+      ...opt,
+      options: childOptions,
+      baseOption: { ...reservedBo, toolbox: mergedToolbox },
+    } as EChartsOption
   }
 
   // Standard option
-  const stdToolTop = 'title' in opt ? TB_TOP_TITLED : TB_TOP_DEFAULT
-  if ('title' in opt) toolbox.top = TB_TOP_TITLED
+  const stdToolTop = hasTitleText(opt) ? TB_TOP_TITLED : TB_TOP_DEFAULT
+  if (hasTitleText(opt)) toolbox.top = TB_TOP_TITLED
   const userToolbox = (opt as Record<string, unknown>).toolbox as Record<string, unknown> | undefined
   const mergedToolbox = userToolbox
     ? {
