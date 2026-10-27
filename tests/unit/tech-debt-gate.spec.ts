@@ -96,7 +96,14 @@ describe('check:tech-debt · 解析与校验（纯函数）', () => {
   })
 })
 
-describe('check:tech-debt · 真实台账（当前仓库这份必须过）', () => {
+/**
+ * ⚠️ 超时给到 60s（默认 20s）。
+ *
+ * `结构校验零问题` 会为台账里**每一条已结项**提交号调用一次 `git cat-file` 查真实存在性
+ * （现在 28 条 closed）。单跑约几十毫秒，但整链第 15 步 test:unit 并发跑 320 个文件时
+ * 实测被拖到 31.6s 打穿 20s 默认超时。放宽超时不掩盖失败：断言一条没动。
+ */
+describe('check:tech-debt · 真实台账（当前仓库这份必须过）', { timeout: 60000 }, () => {
   const ledger = readFileSync(resolve(process.cwd(), 'docs/tech-debt.md'), 'utf8')
 
   it('结构与语义校验零问题（closed 的提交号真的在 git 里）', () => {
