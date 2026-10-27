@@ -13,7 +13,7 @@
 | `FormCollect` | 6 | 1 | 0 |
 | `FormTargetCollect` | 4 | 1 | 0 |
 | `FormShareView` | 4 | 1 | 0 |
-| `LowCodeNav` | 12 | 4 | 7 |
+| `LowCodeNav` | 12 | 5 | 7 |
 
 ## 组合式函数 / 工具导出
 
@@ -296,6 +296,7 @@
 | `select` | `node: NavNode` | 用户选中某个可选项 —— **只通知，不替宿主路由**（宿主按 key 决定跳哪里） |
 | `'page-submit'` | `payload: { node: NavNode; data: FormData }` | 表单页提交（校验通过后）；外壳**不自动外发**，由宿主的监听决定发给谁 |
 | `'page-change'` | `payload: { node: NavNode; data: FormData }` | 表单页数据变化（同一次变更只发一次，不透传 FormBuilder 的双事件） |
+| `'selection-adjust'` | `payload: SelectionAdjustPayload` | 选中态被**收敛**（第 144 轮）：宿主传的 key 不存在 / 指向分组 / 按配置置空。 宿主应据此修正自己存的"上次访问页"，否则下次打开还在错页。 |
 
 ### Slots
 

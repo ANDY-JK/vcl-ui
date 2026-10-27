@@ -36,7 +36,7 @@ import type { ApiUrlPolicy } from '../api-url-guard'
 import type { FormData, FormSchema } from '../types'
 import type { FormStore } from '../designer/store'
 import { isExternalNavUrl, type NavNode, type NavFormNode } from './nav-schema'
-import { useLowCodeNav, type NavSource } from './useLowCodeNav'
+import { useLowCodeNav, type NavSource, type SelectionAdjustPayload } from './useLowCodeNav'
 import { createFormPageResolver, type FormPageResolver } from './page-resolver'
 
 interface Props {
@@ -85,6 +85,11 @@ const emit = defineEmits<{
   'page-submit': [payload: { node: NavNode; data: FormData }]
   /** 表单页数据变化（同一次变更只发一次，不透传 FormBuilder 的双事件） */
   'page-change': [payload: { node: NavNode; data: FormData }]
+  /**
+   * 选中态被**收敛**（第 144 轮）：宿主传的 key 不存在 / 指向分组 / 按配置置空。
+   * 宿主应据此修正自己存的"上次访问页"，否则下次打开还在错页。
+   */
+  'selection-adjust': [payload: SelectionAdjustPayload]
 }>()
 
 const t = useT()
@@ -111,6 +116,7 @@ const api = useLowCodeNav({
   // 传 `props.formStore` 是**快照** —— 换了 store 还拿旧的取一遍，表现为"切了没变化"且不报错。
   formStore: () => props.formStore,
   modelValue: selectedKey,
+  onSelectionAdjust: (payload) => emit('selection-adjust', payload),
   autoLoad: props.autoLoad,
   autoSelect: props.autoSelect,
   onSelect: (node) => emit('select', node),

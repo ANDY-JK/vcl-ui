@@ -60,7 +60,27 @@ export type NavSource =
     }
 
 /** 可选项 */
+/** 选中态被收敛的原因：key 不存在 / 指向分组 / 按配置置空 */
+export type SelectionAdjustReason = 'not-found' | 'group' | 'none'
+
+/** 选中态收敛回执（宿主据此修正自己存的"上次访问页"） */
+export interface SelectionAdjustPayload {
+  /** 收敛前的 key（一定非空） */
+  from: string
+  /** 收敛后的 key；`null` 表示没有可选项 */
+  to: string | null
+  reason: SelectionAdjustReason
+}
+
 export interface UseLowCodeNavOptions {
+  /**
+   * 选中态被**收敛**时回调（第 144 轮）。
+   *
+   * 为什么需要：`settleSelection()` 会把悬空/指向分组的 key 改掉，而宿主的 `v-model`
+   * 往往存在 localStorage / 服务端 —— 静默改写等于篡改宿主状态，用户下次打开还在错页，
+   * 排查时也没有任何痕迹。低代码的主路径是"用户自建导航项"，删项/改 key 是常态。
+   */
+  onSelectionAdjust?: (payload: SelectionAdjustPayload) => void
   /** 导航定义来源；不传 = 空导航（外壳显示空态，不报错） */
   source?: NavSource | (() => NavSource | undefined)
   /** 外发 URL 策略（api 模式用）；不传 = 只允许同源 */
@@ -160,12 +180,24 @@ export function useLowCodeNav(options: UseLowCodeNavOptions = {}): UseLowCodeNav
     return out
   }
 
-  /** 选中态收敛：key 不存在（或指向分组）时回落第一个可选项，避免悬空（见文件头易错点 1） */
+  /**
+   * 选中态收敛：key 不存在（或指向分组）时回落第一个可选项，避免悬空（见文件头易错点 1）。
+   *
+   * 收敛是必须的，但**必须留回执**：宿主存着这枚 key，静默改掉它等于替宿主做了决定，
+   * 且宿主无从察觉。原因分三档，便于宿主区分"配置写错了"和"这一项被删了"。
+   */
   const settleSelection = (): void => {
     const cur = selectedKey.value
     const hit = cur ? findNavNode(nodes.value, cur) : null
-    if (hit && hit.kind !== 'group') return
-    selectedKey.value = options.autoSelect === false ? null : (firstSelectableNode(nodes.value)?.key ?? null)
+    if (hit && hit.kind !== 'group') return // 有效，不动也不通知
+
+    const to = options.autoSelect === false ? null : (firstSelectableNode(nodes.value)?.key ?? null)
+    selectedKey.value = to
+    // 只有"原来真有一个 key 却被改掉"才算收敛；本来就是空的无须打扰宿主
+    if (cur) {
+      const reason: SelectionAdjustReason = !hit ? 'not-found' : 'group'
+      options.onSelectionAdjust?.({ from: cur, to, reason: to === null ? 'none' : reason })
+    }
   }
 
   async function loadFromApi(src: Extract<NavSource, { kind: 'api' }>): Promise<unknown> {

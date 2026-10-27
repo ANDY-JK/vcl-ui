@@ -404,8 +404,14 @@ async function afterHostSaved() {
 |---|---|
 | `select(node)` | 选中某项 —— **只通知，不替你路由** |
 | `update:modelValue(key)` | 受控宿主回写；选项被删导致的**悬空选中**也会通知 |
+| `selection-adjust({ from, to, reason })` | **选中态被收敛**时触发：你存的 `v-model` 指向了不存在/不可选的项，外壳替你改成了别的值。`reason` 分三档：`not-found`（没这个 key，多半是项被删了）、`group`（是分组，不可选）、`none`（`auto-select=false` 且没有可选项目 → `to` 为 `null`）。**正常选中不会触发**（不会有噪声） |
 | `page-submit({ node, data })` | 表单页校验通过后触发 —— **外壳不自动外发**，发不发、发给谁由你决定 |
 | `page-change({ node, data })` | 表单数据变化（同一次变更只发一次，不透传渲染器的双事件） |
+
+> ⚠️ **把"上次访问的页面"存起来的宿主请监听 `selection-adjust`。** 用户删掉导航项、或把项挪进分组后，
+> 你存的那个 key 就悬空了。外壳必须收敛（不能渲染一个指向不存在项的页面），但它**不会替你猜** ——
+> 收下 `{ from, to, reason }` 后按自己的策略处理（改成 `to`、清空、提示用户、或直接忽略）。
+> 不监听也不会坏，只是你存的值和界面对不上，且排查时看不到痕迹。
 
 ### 实例方法：`refresh()`
 
