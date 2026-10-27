@@ -625,6 +625,8 @@ export default {
     loadFail: '打开失败：{err}',
     loadedTip: '已打开「{name}」',
     renamedTip: '已重命名',
+    /** 名字没变（空白名回落原名，或只加了首尾空格）时的提示 —— 不能报"已重命名" */
+    renameNoChange: '名称未变化（不能为空）',
     deletedTip: '已删除',
     // 存储方式（本地 / 云端）
     storageMode: '存储方式',

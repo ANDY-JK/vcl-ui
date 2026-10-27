@@ -236,12 +236,25 @@ export function useFormManager(host: FormManagerHost) {
 
   const renaming = ref(false)
 
-  /** 重命名；成功返回 true（调用方负责刷新列表） */
+  /**
+   * 重命名；**真的改了**才返回 true（调用方据此刷新列表）。
+   *
+   * 第 145 轮修：原来无论是否真改名都提示"已重命名" —— 空白名被 `trim() || item.name`
+   * 兜底回落原名（不写库是对的），但界面照样报成功，用户以为改了。
+   * 表单名就是导航项标签，"改了没生效却提示成功"比报错更难查。
+   * 现在：名没变就提示"名称未变化"并返回 false，调用方保持弹窗打开让用户重填。
+   */
   async function renameForm(item: FormMetaItem, name: string): Promise<boolean> {
     if (renaming.value) return false
+    const next = name.trim() || item.name
+    if (next === item.name) {
+      // 空白（回落原名）或只加了首尾空格 —— 都不是"改名"
+      host.showTip(t('fbd.renameNoChange'))
+      return false
+    }
     renaming.value = true
     try {
-      await activeStore.value.renameForm(item.id, name.trim() || item.name)
+      await activeStore.value.renameForm(item.id, next)
       host.showTip(t('fbd.renamedTip'))
       return true
     } catch (err) {

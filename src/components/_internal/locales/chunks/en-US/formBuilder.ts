@@ -630,6 +630,8 @@ export default {
     loadFail: 'Open failed: {err}',
     loadedTip: 'Opened "{name}"',
     renamedTip: 'Renamed',
+    /** Shown when the name did not actually change (blank or only surrounding spaces) */
+    renameNoChange: 'Name unchanged (cannot be empty)',
     deletedTip: 'Deleted',
     // Storage mode (local / cloud)
     storageMode: 'Storage',

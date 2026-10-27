@@ -349,14 +349,55 @@ describe('renameForm', () => {
     expect(m.renaming).toBe(false)
   })
 
-  it('**空名字 → 回落原名**（不写空串）', async () => {
+  it('**空名字 → 不写库**（第 145 轮：连"回落原名再写一遍"都不做）', async () => {
     const storeMod = (await import('@/components/form-builder/designer/store')) as unknown as {
       __store: { renameForm: ReturnType<typeof vi.fn> }
     }
     const { host } = makeHost()
     const m = useFormManager(host)
+    storeMod.__store.renameForm.mockClear()
     await m.renameForm(item('f1', '原名'), '   ')
-    expect(storeMod.__store.renameForm, '应传原名').toHaveBeenCalledWith('f1', '原名')
+    // 契约变更说明：原来会调 `renameForm('f1', '原名')`（回落原名写一遍），
+    // 现在改成"名没变就不写库" —— 省掉一次无意义的写，也让返回值能表达"没改名"。
+    expect(storeMod.__store.renameForm, '名没变就不该写库').not.toHaveBeenCalled()
+  })
+
+  /* ── 第 145 轮：空白名不能报"已重命名" ──
+   * 兜底（`trim() || item.name`）保证了不写空串，但**界面照样提示"已重命名"** ——
+   * 用户会以为改名成功了。表单名就是导航项标签，用户自建导航项时改名是高频操作。 */
+
+  it('**空白名 → 不提示"已重命名"**（名字没变就不能说改成功了）', async () => {
+    const { host, tips } = makeHost()
+    const m = useFormManager(host)
+    const ok = await m.renameForm(item('f1', '原名'), '   ')
+    const all = tips.join(' | ')
+    expect(all, `实际提示：${JSON.stringify(tips)}`).not.toContain('已重命名')
+    expect(ok, '没改名不该报成功').toBe(false)
+  })
+
+  it('**只加首尾空格（trim 后与原名相同）→ 也不提示"已重命名"**', async () => {
+    const { host, tips } = makeHost()
+    const m = useFormManager(host)
+    const ok = await m.renameForm(item('f1', '原名'), '  原名  ')
+    const all = tips.join(' | ')
+    expect(all, `实际提示：${JSON.stringify(tips)}`).not.toContain('已重命名')
+    expect(ok).toBe(false)
+  })
+
+  it('空白名要给"没改名"的明确提示（不能静默无反应）', async () => {
+    const { host, tips } = makeHost()
+    const m = useFormManager(host)
+    await m.renameForm(item('f1', '原名'), '')
+    expect(tips.length, '既没改成功就得说一句').toBeGreaterThan(0)
+    expect(tips.join(' | '), '要说明是名字为空/未变化').toMatch(/名|空|变化/)
+  })
+
+  it('改了名字但只是大小写/内部空格不同 → 照常成功', async () => {
+    const { host, tips } = makeHost()
+    const m = useFormManager(host)
+    const ok = await m.renameForm(item('f1', 'a b'), 'A  B')
+    expect(ok).toBe(true)
+    expect(tips.join(' | ')).toContain('已重命名')
   })
 
   it('**抛错 → 返回 false、提示失败**', async () => {
