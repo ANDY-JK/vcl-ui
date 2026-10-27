@@ -16,7 +16,7 @@ import ChartLegend from './ChartLegend.vue'
 import { buildChartOption } from './options'
 import { ensureWordCloud } from './utils/echarts-setup'
 import { DEFAULT_COLORS } from './options/common'
-import type { ChartProps, ChartData, BuildParams, ChartSeriesItem } from './utils/types'
+import type { ChartProps, ChartData, ChartType, BuildParams, ChartSeriesItem } from './utils/types'
 import { toSize } from './utils/chart-utils'
 import { DEFAULT_ANIMATION_MS } from './options/common'
 
@@ -85,23 +85,61 @@ const baseChartRef = ref<InstanceType<typeof BaseChart>>()
    极简推断
    ================================================================ */
 
-function inferChartData(raw: unknown): { categories: string[]; series: ChartSeriesItem[] } | null {
+/**
+ * 只给 `data` 时推断出「类目 + 系列 + 图类型」。
+ *
+ * 四种形状（与 `ChartProps.data` 的文档一致，见 utils/types.ts）：
+ *   ① 单序列数值数组 `[1,2,3]`
+ *   ② 多序列二维数组 `[[1,2],[3,4]]`
+ *   ③ 饼图项列表 `[{name,value}]`
+ *   ④ **ChartData 完整结构** `{ categories, series }` —— 第 154 轮补：文档列了却不认，
+ *      传它等于"什么都不画"，而界面并不报错（最糟的一种失败）。
+ *
+ * 两个"别猜"原则：
+ *   · **空数组返回 null**：原来 `[].every(...)` 为真会"猜出"一条空 series，
+ *     BaseChart 见 `series.length > 0` 就认为有数据 → 用户看到一块**空画布**而不是"暂无数据"；
+ *   · **认不出的形状返回 null**：宁可让空态说话，也不画一张假的。
+ *
+ * 图类型：ChartData 的 `series[0].type` 有值就听它的（数据本身说明了怎么画），否则 bar。
+ */
+function inferChartData(raw: unknown): { categories: string[]; series: ChartSeriesItem[]; type: ChartType } | null {
   if (!raw) return null
 
-  if (Array.isArray(raw) && raw.every((v) => typeof v === 'number')) {
-    return { categories: raw.map((_, i) => `${i + 1}`), series: [{ name: '', data: raw }] }
+  // ④ ChartData 完整结构
+  if (!Array.isArray(raw) && typeof raw === 'object') {
+    const d = raw as ChartData
+    if (!Array.isArray(d.series) || !d.series.length) return null
+    const t0 = d.series[0]?.type
+    return {
+      categories: Array.isArray(d.categories) ? d.categories : [],
+      series: d.series,
+      type: (t0 as ChartType) || 'bar',
+    }
   }
-  if (Array.isArray(raw) && raw.every((v) => Array.isArray(v))) {
+
+  if (!Array.isArray(raw)) return null
+  // 空数组：交给空态（见上面"别猜"）
+  if (!raw.length) return null
+
+  // ① 单序列数值数组
+  if (raw.every((v) => typeof v === 'number')) {
+    return { categories: raw.map((_, i) => `${i + 1}`), series: [{ name: '', data: raw }], type: 'bar' }
+  }
+  // ② 多序列二维数组
+  if (raw.every((v) => Array.isArray(v))) {
     const maxLen = Math.max(...raw.map((a: unknown[]) => a.length))
     return {
       categories: Array.from({ length: maxLen }, (_, i) => `${i + 1}`),
       series: raw.map((arr: number[], i: number) => ({ name: t('chart.seriesFallback', { n: i + 1 }), data: arr })),
+      type: 'bar',
     }
   }
-  if (Array.isArray(raw) && raw.every((v) => typeof v === 'object' && v !== null && ('name' in v || 'value' in v))) {
+  // ③ 饼图项列表
+  if (raw.every((v) => typeof v === 'object' && v !== null && ('name' in v || 'value' in v))) {
     return {
       categories: raw.map((d) => String((d as Record<string, unknown>).name ?? '')),
       series: [{ name: '', data: raw.map((d) => (d as Record<string, unknown>).value ?? 0) }],
+      type: 'bar',
     }
   }
   return null
@@ -127,7 +165,10 @@ const resolvedOption = computed<EChartsOption | null>(() => {
   if (!props.type && !props.series?.length && !props.categories?.length) {
     const inferred = inferChartData(props.data)
     if (inferred) {
-      return buildChartOption('bar', buildParams(inferred.categories, inferred.series))
+      // 类型由推断给出（ChartData 的 series[0].type 优先）—— 它决定选哪个 builder
+      // （`buildChartOption` 按第一个参数分发）。注意 `BuildParams.type` 全仓无消费方，
+      // 所以不额外造一个没人读的参数（"假接口不留"）。
+      return buildChartOption(inferred.type, buildParams(inferred.categories, inferred.series))
     }
     return null
   }
