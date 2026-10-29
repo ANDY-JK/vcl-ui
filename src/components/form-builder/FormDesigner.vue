@@ -129,8 +129,18 @@ const device = ref<'desktop' | 'tablet' | 'mobile'>('desktop')
 
 // ══ 面板宽度 / 显隐（可拖拽调宽并记忆；主体过窄时自动收起大纲列）— 逻辑在 useDesignerPanels ══
 
-const { paletteW, outlineW, propsW, showPalette, showProps, resizing, outlineVisible, startResize, togglePanel } =
-  useDesignerPanels()
+const {
+  paletteW,
+  outlineW,
+  propsW,
+  showPalette,
+  showProps,
+  resizing,
+  outlineVisible,
+  startResize,
+  stopResize,
+  togglePanel,
+} = useDesignerPanels()
 
 const selectedNode = computed(() => {
   if (!selectedId.value) return null
@@ -174,6 +184,9 @@ function showTip(msg: string): void {
 }
 onUnmounted(() => {
   if (_tipTimer) clearTimeout(_tipTimer)
+  // 拖拽中途卸载（设计器被切走/关闭）必须解绑 window 监听：
+  // 否则残留的 mousemove 会继续改已卸载组件的宽度，且再没有人能解绑它
+  stopResize()
 })
 
 // ══ 节点操作与历史（撤销/重做 + 增删改 + 剪贴板）— 逻辑在 useDesignerOps ══

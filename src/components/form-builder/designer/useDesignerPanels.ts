@@ -116,9 +116,33 @@ export function useDesignerPanels() {
 
   restorePanels()
 
+  /**
+   * 当前拖拽的清理句柄。
+   *
+   * 为什么需要（第 164 轮实测）：原实现每次 startResize 都把 onMove/onUp 两个监听挂到 window，
+   * 而 onUp 只解绑**自己那一对**。于是「第一根分隔条还没松手就按下第二根」时，第一对的
+   * mousemove 永远留在 window 上 —— 松手后鼠标一动，**旧面板仍在跟着变宽**（幽灵拖拽），
+   * 且 `resizing` 会被旧闭包写成错误的值。组件卸载同理：拖拽中途设计器切走/关闭，
+   * 监听继续改已卸载组件的状态（且没有任何人再能解绑它）。
+   *
+   * 收口成一个句柄：新拖拽开始前先停掉旧的，卸载时调 stopResize 即可。
+   */
+  let activeCleanup: (() => void) | null = null
+
+  /** 停掉当前拖拽（若有）：解绑 window 监听、清 resizing。重复调用安全。 */
+  function stopResize(): void {
+    if (activeCleanup) {
+      activeCleanup()
+      activeCleanup = null
+    }
+    resizing.value = null
+  }
+
   /** 拖分隔条调宽（属性面板在右侧，向左拖才变宽） */
   function startResize(key: 'palette' | 'outline' | 'props', e: MouseEvent): void {
     e.preventDefault()
+    // 新拖拽开始前先收掉旧的：否则两对监听并存，松手只能停掉后一对
+    stopResize()
     const startX = e.clientX
     const dir = key === 'props' ? -1 : 1
     const startW = key === 'palette' ? paletteW.value : key === 'outline' ? outlineW.value : propsW.value
@@ -130,13 +154,15 @@ export function useDesignerPanels() {
       else propsW.value = next
     }
     const onUp = (): void => {
-      resizing.value = null
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
+      stopResize()
       persistPanels()
     }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
+    activeCleanup = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
   }
 
   function togglePanel(key: 'palette' | 'outline' | 'props'): void {
@@ -156,6 +182,7 @@ export function useDesignerPanels() {
     resizing,
     outlineVisible,
     startResize,
+    stopResize,
     togglePanel,
   }
 }
