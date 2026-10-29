@@ -57,9 +57,14 @@ export type DraftSaveResult =
  * `for (const key of Object.keys(obj)) if (typeof key !== 'string')` 的检查——
  * `Object.keys()` 只会返回字符串，该分支**永远不可能为假**，是"看起来在校验"的死代码，已删。
  * 深层可序列化性由写入前的 `toPlainJson` 保证（structuredClone 遇 Proxy 会抛）。
+ *
+ * 注（第 167 轮）：这里原有的 `if (data === null || data === undefined) return false` 也已删。
+ * 本函数全仓只有一个调用点（loadDraft），而它上一行已经 `if (data === null || data === undefined) return null`，
+ * 所以那行**永远为假**——覆盖率长期显示它是该文件唯一未执行语句，正是"不可达"的直接证据。
+ * 删掉后既有 23 例全绿，反过来印证没有任何输入能走到它。null 归属由 loadDraft 的早退负责：
+ * "没有草稿"不该被当成"草稿损坏"（损坏要清库，没有不需清库）。
  */
 function isValidDraft(data: unknown): data is FormData {
-  if (data === null || data === undefined) return false
   if (typeof data !== 'object') return false
   if (Array.isArray(data)) return false
   return true
