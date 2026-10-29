@@ -12,6 +12,8 @@ import { reportWarn } from '@/components/_internal/runtime-observer'
  */
 import { useT } from '@/components/_internal/i18n'
 import { REQUEST_TIMEOUT_MS } from './request-timeout'
+// 时间归一与 supabase-transport 共用零依赖叶子模块（直接引 supabase 会形成循环依赖）
+import { toEpochMs } from './time-epoch'
 
 /** 删除对象失败的线性退避基数：第 i 次重试等 i × 该值。与 supabase-transport 的同名常量结构相同、数值不同（两份都是沿用各自现状，未实测比较过谁更合适） */
 const _DELETE_RETRY_STEP_MS = 200
@@ -283,7 +285,8 @@ export class S3Transport {
           name,
           size,
           mimetype: mimeFromName(name),
-          createdAt: lastModified ? new Date(lastModified).getTime() : 0,
+          // 非法/缺失时间一律 0：NaN 会让墓碑比较（ts > prev.ts）恒 false，删除被忽略
+          createdAt: toEpochMs(lastModified),
         })
       }
       if (/<IsTruncated>true<\/IsTruncated>/.test(xml)) {

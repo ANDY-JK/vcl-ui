@@ -16,6 +16,8 @@ import { reportWarn } from '@/components/_internal/runtime-observer'
 
 import { useT } from '@/components/_internal/i18n'
 import { REQUEST_TIMEOUT_MS } from './request-timeout'
+// 时间归一与 s3-transport 共用零依赖叶子模块（同一缺陷曾两份发散出现，见 time-epoch.ts 注释）
+import { toEpochMs } from './time-epoch'
 
 /** 删除对象失败的线性退避基数：第 i 次重试等 i × 该值。与 s3-transport 的同名常量结构相同、数值不同（两份都是沿用各自现状，未实测比较过谁更合适） */
 const _DELETE_RETRY_STEP_MS = 500
@@ -31,6 +33,9 @@ export interface SupabaseConfig {
 
 /** 云端请求超时（毫秒），大图上传也不应无限等待 */
 export { REQUEST_TIMEOUT_MS } from './request-timeout'
+
+/** list 翻页页数上限（与 s3-transport 同口径：200 页 × 1000/页 = 20 万对象） */
+const MAX_LIST_PAGES = 200
 
 export function validateSupabaseConfig(cfg: SupabaseConfig): string | null {
   if (!cfg || !cfg.url.trim()) return t('storage.supabaseUrlRequired')
@@ -193,8 +198,12 @@ export class SupabaseTransport {
     const PAGE = 1000
     const all: CloudObjectMeta[] = []
     let offset = 0
-    // Supabase 单页上限 1000：循环翻页直到返回不足一页
-    for (;;) {
+    // Supabase 单页上限 1000：循环翻页直到返回不足一页。
+    // 页数上限（第 173 轮）：原实现是 `for (;;)`——只要服务端恒返回满页就会**无限翻页**，
+    // 每轮还要 push 1000 条进 all，内存无上限增长（死循环 + 泄漏）。
+    // 同族的 s3-transport 一直有 MAX_LIST_PAGES = 200，这里补齐并保持同口径：
+    // 200 页 × 1000 = 20 万对象，对本库的照片桶远超实际量级，触发即说明服务端异常。
+    for (let page = 0; page < MAX_LIST_PAGES; page++) {
       const resp = await this.request(`/object/list/${this.cfg.bucket}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -211,8 +220,12 @@ export class SupabaseTransport {
           name: r.name,
           size: Number(r.metadata?.size ?? 0),
           mimetype: r.metadata?.mimetype || 'application/octet-stream',
-          // 对象创建时间 ≈ 上传时间；缺失/非法回退 0（导出层对 0 显示为空）
-          createdAt: r.created_at ? new Date(r.created_at).getTime() : 0,
+          // 对象创建时间 ≈ 上传时间；缺失/非法回退 0（导出层对 0 显示为空）。
+          // 第 173 轮修正：原实现只判"缺失"，非法日期串得到的是 **NaN** ——
+          // createdAt 会流进 contract-storage 的墓碑比较（`ts > prev.ts`，NaN 恒 false
+          // → 删除记录被忽略、旧照片会"复活"）与导出层（显示 NaN）。
+          // Number.isFinite 同时挡住 NaN 与 ±Infinity。
+          createdAt: toEpochMs(r.created_at),
         })
       }
       if (rows.length < PAGE) break
