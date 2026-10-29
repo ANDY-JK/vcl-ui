@@ -125,7 +125,7 @@ const props = withDefaults(
     // ────────────────────────────── 分页与虚拟化 ──────────────────────────────
     /** 每页行数；0（默认）不分页 */
     pageSize?: number
-    /** 受控当前页（v-model:currentPage） */
+    /** 受控当前页（v-model:currentPage）。越界（>总页数 / <1）时自动夹到 [1,totalPages] 并 emit 纠正值——宿主把页码存 URL 后恢复、或筛选后总数变小都靠它兜住 */
     currentPage?: number
     /** 总行数：传入即按服务端分页处理（分页器用它算页数，数据由父组件按页提供；不传=客户端分页） */
     total?: number
@@ -511,7 +511,7 @@ const {
   displayData,
   totalCount,
   rowMetaMap,
-  _currentPage,
+  safePage,
   setPage,
   pagedData,
   displayPages,
@@ -1618,7 +1618,7 @@ provideDataTableContext({
   selectedKeySet: _selectedKeySet,
   noteInputEl,
   setNoteInputEl,
-  currentPage: _currentPage,
+  currentPage: safePage,
   displayPages,
   setPage,
   // ---- 工具栏 ----

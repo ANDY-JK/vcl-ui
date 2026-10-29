@@ -209,24 +209,61 @@ export function useTableCore(
     },
   )
 
+  const totalPages = computed(() => {
+    // 服务端分页用外部 total，客户端分页用 data 长度
+    return calcTableTotalPages(props.total ?? displayData.value.length, props.pageSize)
+  })
+
+  /**
+   * 合法页码（**显示与切片**口径）。
+   *
+   * 为什么需要（第 162 轮实测）：受控页码可能越界 —— 宿主把它存进 URL/localStorage 后恢复、
+   * 或筛选/搜索后总数变小。原实现直接按越界值渲染，界面上会出现三件事：
+   *   ① 状态行写出 **「第 5 / 2 页」** 这种不存在的页码组合（模板把两者直接拼）；
+   *   ② 页码列表里**没有任何页码带 active**（用户看不出当前在第几页）；
+   *   ③ "上一页"可点，但点完还是越界（5→4）→ 空表 + 死按钮。
+   * 这里只归一化**显示与切片**，不动受控状态本身（`_currentPage` 仍是宿主给的原值），
+   * 这样"异步加载首帧 totalPages 还是 1"的场景不会被误判成越界而把页码清掉。
+   */
+  const safePage = computed(() => Math.min(Math.max(1, Math.trunc(_currentPage.value) || 1), totalPages.value))
+
+  /**
+   * 越界纠正只在"页数已经可信"时 emit：
+   *  - 服务端分页：宿主给了 `total` 就是权威页数，可以立即纠正（否则会一直请求不存在的页）；
+   *  - 客户端分页：要等首屏数据真的到了（`displayData.length > 0`）才纠正 —— 否则首帧
+   *    `data=[]` 时 totalPages=1，会把宿主从 URL 恢复的第 5 页纠正成第 1 页，数据回来后
+   *    就再也回不到第 5 页（这是本轮刻意避免的回归）。
+   */
+  const pageReady = computed(() => props.total !== undefined || displayData.value.length > 0)
+  watch(
+    [safePage, pageReady],
+    () => {
+      if (pageReady.value && safePage.value !== _currentPage.value) {
+        _currentPage.value = safePage.value
+        emit('update:currentPage', safePage.value)
+        emit('page-change', safePage.value, props.pageSize || 0)
+      }
+    },
+    { immediate: true },
+  )
+
   function setPage(p: number) {
-    _currentPage.value = p
-    emit('update:currentPage', p)
-    emit('page-change', p, props.pageSize || 0)
+    // 入口夹紧：界面上点不出越界页，但宿主/键盘直接调用时不能把越界值写进去，
+    // 否则"上一页"会退化成"点了没反应的按钮"（5→4 还是空表）。
+    const next = Math.min(Math.max(1, Math.trunc(p) || 1), totalPages.value)
+    if (next === _currentPage.value) return
+    _currentPage.value = next
+    emit('update:currentPage', next)
+    emit('page-change', next, props.pageSize || 0)
   }
 
   const pagedData = computed(() => {
     if (!props.pageSize || props.pageSize <= 0) return displayData.value
     // 服务端分页：data 已是对应页数据，直接返回不切
     if (props.total !== undefined) return displayData.value
-    // 客户端分页：从全量 data 中切当前页
-    const start = (_currentPage.value - 1) * props.pageSize
+    // 客户端分页：从全量 data 中切当前页（用 safePage —— 越界时给最后一页，而不是空数组）
+    const start = (safePage.value - 1) * props.pageSize
     return displayData.value.slice(start, start + props.pageSize)
-  })
-
-  const totalPages = computed(() => {
-    // 服务端分页用外部 total，客户端分页用 data 长度
-    return calcTableTotalPages(props.total ?? displayData.value.length, props.pageSize)
   })
 
   /**
@@ -243,7 +280,8 @@ export function useTableCore(
    */
   const displayPages = computed(() => {
     const tp = totalPages.value
-    const cp = _currentPage.value
+    // 用 safePage：越界时页码序列必须以"夹紧后的当前页"为中心，否则不会有任何 active
+    const cp = safePage.value
     const pages: (number | string)[] = []
     if (tp <= 9) {
       for (let i = 1; i <= tp; i++) pages.push(i)
@@ -363,6 +401,7 @@ export function useTableCore(
     rowMetaMap,
     // Pages
     _currentPage,
+    safePage,
     setPage,
     pagedData,
     totalPages,

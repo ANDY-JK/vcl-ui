@@ -47,7 +47,8 @@ export interface DataTableContext {
   noteInputEl: Ref<HTMLInputElement | null>
   setNoteInputEl: (el: unknown) => void
   // ---- 分页（useTableCore 产出） ----
-  currentPage: Ref<number>
+  /** 当前页（**已夹紧到 [1,totalPages] 的只读视图**；改页码请用 setPage，避免写入越界值） */
+  currentPage: ComputedRef<number>
   displayPages: ComputedRef<(number | string)[]>
   setPage: (p: number) => void
   // ---- 工具栏 ----

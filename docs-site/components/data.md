@@ -55,7 +55,7 @@
 | `excelExportable` | `boolean` | `false` | 否 | Excel(.xlsx) 导出按钮（导出范围同 exportScope） |
 | `exportScope` | `'all' \| 'page'` | — | 否 | 导出范围：'all' 筛选后全量（默认），'page' 仅当前页 |
 | `pageSize` | `number` | `0` | 否 | 每页行数；0（默认）不分页 |
-| `currentPage` | `number` | `1` | 否 | 受控当前页（v-model:currentPage） |
+| `currentPage` | `number` | `1` | 否 | 受控当前页（v-model:currentPage）。越界（>总页数 / <1）时自动夹到 [1,totalPages] 并 emit 纠正值——宿主把页码存 URL 后恢复、或筛选后总数变小都靠它兜住 |
 | `total` | `number` | — | 否 | 总行数：传入即按服务端分页处理（分页器用它算页数，数据由父组件按页提供；不传=客户端分页） |
 | `cardBreakpoint` | `number` | `BP_MD` | 否 | 卡片视图断点（px）：容器实测宽度低于该值时自动切卡片视图（视图模式 auto 下生效） |
 | `maxHeight` | `string` | `''` | 否 | 表格区最大高度（CSS 高度值，如 '400px'）；空串不限高 |
