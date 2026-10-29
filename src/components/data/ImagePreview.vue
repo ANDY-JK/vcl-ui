@@ -26,7 +26,7 @@ export type ImageSrc = string | ImageItem | (string | ImageItem)[]
 
 const props = withDefaults(
   defineProps<{
-    /** 图片源：字符串/对象 = 单图，数组 = 多图 */
+    /** 图片源：字符串/对象 = 单图，数组 = 多图。**运行中把数组换成更短的会在下一帧把当前索引收敛到最后一张并 emit change**（否则预览层会因 currentUrl 为空而整块卸载，看起来像"自己关了"却从未 emit close） */
     src?: ImageSrc
     /** 初始打开定位到第几张（越界自动收敛） */
     initialIndex?: number
@@ -65,6 +65,21 @@ watch(
     currentIndex.value = Math.max(0, Math.min(v ?? 0, total.value - 1))
   },
 )
+
+// 集合变短时必须重夹：否则 currentIndex 指向已不存在的图片 → currentUrl 变空 →
+// 模板 `v-if="currentUrl"` 把整个预览层卸载。用户看到的是"预览自己关了"，但 `close` 从未 emit，
+// 宿主仍以为它是打开态 → 再点也打不开（状态卡死）。重夹后落到最后一张并 emit change 保持宿主同步。
+watch(total, (n) => {
+  if (n <= 0) {
+    currentIndex.value = 0
+    return
+  }
+  const max = n - 1
+  if (currentIndex.value > max) {
+    currentIndex.value = max
+    emit('change', max)
+  }
+})
 
 // ---- 缩略图面板 ----
 const showThumbs = ref(isMulti.value)

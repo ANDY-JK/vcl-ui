@@ -16,8 +16,26 @@ export function useFormSteps(
   isVisibleWithLinkage: (field: FormField, data: FormData) => boolean,
   validateKeys: (keys: string[]) => boolean,
 ) {
-  const currentStep = ref(0)
   const totalSteps = computed(() => normalized.value.steps?.length ?? 0)
+
+  /**
+   * 当前步骤（**读写都夹紧在 [0, totalSteps-1]**）。
+   *
+   * 为什么不用裸 ref（第 163 轮实测）：步骤数会变（设计器删步骤、宿主切换 schema），
+   * 而 `currentStep` 也对外暴露成可写。一旦它指向不存在的步骤：
+   *   - `stepFields` 里 `steps[currentStep]` 取不到 → 直接 return [] →
+   *     表单**一个字段都不显示**，步骤头却还写着"第 N 步"；
+   *   - `isLastStep` 恒为 false，用户点"下一步"没有任何反应（nextStep 的 < 判断已不成立）。
+   * 用带 setter 的 computed 把夹紧收在一处：读（渲染/校验）与写（nextStep/prevStep/宿主直写）
+   * 拿到的永远是合法步骤，不需要在每个调用点各写一遍 Math.min/Math.max。
+   */
+  const _currentStep = ref(0)
+  const currentStep = computed<number>({
+    get: () => Math.min(Math.max(0, _currentStep.value), Math.max(0, totalSteps.value - 1)),
+    set: (v: number) => {
+      _currentStep.value = Math.min(Math.max(0, Math.trunc(v) || 0), Math.max(0, totalSteps.value - 1))
+    },
+  })
 
   /** 当前步骤的字段列表（按 effectiveFields 裁剪，条件禁用/必填已合成） */
   const stepFields = computed<FormField[]>(() => {
