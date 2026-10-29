@@ -6,6 +6,7 @@
  *      退出/卸载时放回原位（快照失效回退 append）。
  *   2. 边界监听：全屏框对齐 .content-body（无外壳时按视口），RO + window resize 合帧。
  *   3. 侧栏收起等待：能问到 CSS 动画就等动画，问不到退回「宽度连续两帧不变」实测。
+ *      （第 168 轮补：实测兜底也必须有时限——宽度持续变化时它原本会永久轮询。）
  *
  * Escape 优先级链与 body-click 的弹窗守卫（筛选/详情/截图/右键/批量/笔记）依赖宿主
  * 六个子弹窗状态，留在 DataTable 的处理器里（那些是业务编排，不是机械逻辑）。
@@ -147,6 +148,12 @@ function waitForWidthSettle(el: HTMLElement | null): Promise<void> {
     let last = -1
     let stable = 0
     let timer: ReturnType<typeof setTimeout> | undefined
+    // 硬上限（第 168 轮）：常量注释一直写着"超过这个时长就认为已稳定，不能让流程挂死"，
+    // 但这个函数的轮询链**从来没有上限** —— 宽度若一直变（祖先有循环动画、内容抖动、
+    // 子像素宽度在动画中小幅摆动），promise 永不 resolve：
+    //   · 调用方 await 卡住 → **点"全屏"毫无反应**（既不进全屏也不报错）；
+    //   · 这条 50ms 定时器链会一直跑到标签页关闭，后台常驻唤醒。
+    const deadline = Date.now() + _SETTLE_TIMEOUT_MS
     const done = () => {
       clearTimeout(timer)
       resolve()
@@ -160,6 +167,7 @@ function waitForWidthSettle(el: HTMLElement | null): Promise<void> {
         stable = 0
         last = w
       }
+      if (Date.now() >= deadline) return done()
       timer = setTimeout(step, _WIDTH_SETTLE_POLL_MS)
     }
     step()
@@ -167,8 +175,15 @@ function waitForWidthSettle(el: HTMLElement | null): Promise<void> {
 }
 
 /** 问浏览器要该元素的 CSS 动画清单（动效降级/不支持的浏览器没有 getAnimations） */
-async function waitForCssAnimations(el: HTMLElement): Promise<boolean> {
-  if (typeof el.getAnimations !== 'function') return false
+async function waitForCssAnimations(el: HTMLElement | null): Promise<boolean> {
+  // null 守卫（第 168 轮）：同文件的 waitForWidthSettle 早就接了 null，这里没接 ——
+  // 谁按"兄弟函数的容错口径"传 null 过来就直接 TypeError，而它发生在 async 函数里，
+  // 表现为 waitForSidebarCollapse **reject**，调用方的 await 当场中断。
+  if (!el || typeof el.getAnimations !== 'function') return false
+  // KeyframeEffect 守卫（第 168 轮）：部分嵌入式 WebView / 测试环境暴露了 getAnimations
+  // 却没有 KeyframeEffect 全局构造器，下面一句 instanceof 会抛 ReferenceError；
+  // 同样会把这个 async 函数变成 rejection。问不出结论就按"没有可等的动画"处理。
+  if (typeof KeyframeEffect === 'undefined') return false
   const own = (el.getAnimations() as Animation[]).filter(
     (a) =>
       a.effect instanceof KeyframeEffect &&
@@ -196,6 +211,6 @@ async function waitForCssAnimations(el: HTMLElement): Promise<boolean> {
 }
 
 /** 进全屏前等侧栏收起：能问到动画就等动画跑完，问不到才退回"宽度连续两帧不变" */
-export function waitForSidebarCollapse(el: HTMLElement): Promise<void> {
+export function waitForSidebarCollapse(el: HTMLElement | null): Promise<void> {
   return waitForCssAnimations(el).then((ok) => (ok ? Promise.resolve() : waitForWidthSettle(el)))
 }
