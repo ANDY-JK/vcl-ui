@@ -240,12 +240,18 @@ export class S3Transport {
 
   /** 删除重试（与 supabase 传输同策略：3 次退避；404 幂等成功不重试） */
   async deleteObjectWithRetry(name: string, attempts = 3): Promise<void> {
-    for (let i = 1; i <= attempts; i++) {
+    // 次数下限（第 174 轮）：attempts 传 0 / 负数时，原写法 `i <= attempts` 一次都不进循环，
+    // 整个方法**静默返回成功、却一次请求都没发**——删除从未发生却报成功，
+    // 调用方（对账、墓碑清理）会以为已删干净，云端留下孤儿对象与旧照片。
+    // 语义修正：attempts 是"重试次数"，至少要有第一次尝试。
+    const raw = Math.floor(attempts)
+    const max = Number.isFinite(raw) && raw > 0 ? raw : 1
+    for (let i = 1; i <= max; i++) {
       try {
         await this.deleteObject(name)
         return
       } catch (e) {
-        if (i === attempts) throw e
+        if (i === max) throw e
         await new Promise((r) => setTimeout(r, _DELETE_RETRY_STEP_MS * i))
       }
     }

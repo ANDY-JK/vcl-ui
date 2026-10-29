@@ -206,3 +206,12 @@ describe('supabase-transport · 对象键清洗', () => {
     expect(sanitizeObjectKeyPart('a'.repeat(80) + '.jpg')).toHaveLength(64) // 60 + '.jpg'
   })
 })
+
+describe('supabase-transport · 删除重试次数下限', () => {
+  it('**attempts=0 不得静默"成功"**（一次都不请求却返回 = 删除从未发生却报成功）', async () => {
+    const calls = stubFetch(() => new Response('', { status: 500 }))
+    // 至少尝试一次：attempts 是"重试次数"，不是"允许不执行"
+    await expect(new SupabaseTransport(CFG).deleteObjectWithRetry('a.jpg', 0)).rejects.toThrow(/500/)
+    expect(calls.length, '必须真的发出过一次 DELETE').toBeGreaterThanOrEqual(1)
+  })
+})
