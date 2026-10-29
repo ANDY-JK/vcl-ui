@@ -15,9 +15,11 @@ describe('useFormStorage 降级行为（无 IndexedDB 环境）', () => {
     await expect(loadDraft('test-key')).resolves.toBeNull()
   })
 
-  it('saveDraft：IndexedDB 不可用时静默失败（不抛错）', async () => {
+  it('saveDraft：IndexedDB 不可用时不抛错，且**明确报告** ok:false/error（第 159 轮）', async () => {
     const { saveDraft } = useFormStorage()
-    await expect(saveDraft('test-key', { name: 'x' })).resolves.toBeUndefined()
+    // 契约从 `Promise<void>` 改为 `DraftSaveResult`：调用方必须能区分"存下来了"与"没存下来"，
+    // 否则宿主无法给用户提示（此前是静默失败，用户以为草稿在）。
+    await expect(saveDraft('test-key', { name: 'x' })).resolves.toMatchObject({ ok: false, reason: 'error' })
   })
 
   it('clearDraft：IndexedDB 不可用时静默失败（不抛错）', async () => {

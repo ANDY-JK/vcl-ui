@@ -22,7 +22,7 @@ import { shallowEqual } from '@/components/_internal/utils'
 import { useFormSchema, isLayoutField, isFieldVisible, collectVisibleData } from './useFormSchema'
 import { resolveActiveTab, resolveCollapsed, fieldsInSlot } from './container-render'
 import { useFormValidator } from './useFormValidator'
-import { useFormStorage } from './useFormStorage'
+import { useFormDraftAutosave } from './useFormDraftAutosave'
 import { useFormLinkage } from './useFormLinkage'
 import { useFormSteps } from './useFormSteps'
 import { useFormEvents } from './useFormEvents'
@@ -211,7 +211,7 @@ watch(
     if (props.storageKey) {
       if (saveTimer) clearTimeout(saveTimer)
       saveTimer = setTimeout(() => {
-        saveDraft(props.storageKey, formData.value).catch(() => {})
+        void draftIO.autosave(props.storageKey!)
       }, _DRAFT_SAVE_DEBOUNCE_MS)
     }
 
@@ -222,8 +222,11 @@ watch(
 )
 
 // ══ 存储持久化（P2 — 接入 useFormStorage） ══
-
-const { loadDraft, saveDraft, clearDraft } = useFormStorage()
+// 草稿存取 + "没存下来"的用户提示都在 useFormDraftAutosave（本文件贴住止涨线，见 TD-29）
+const draftIO = useFormDraftAutosave({
+  getData: () => formData.value,
+  showToast: (msg, type, ms) => toastRef.value?.show(msg, type, ms),
+})
 
 // 传入 storageKey 时自动加载草稿 + 自动保存
 // 同时初始化联动引擎
@@ -243,7 +246,7 @@ onMounted(async () => {
   await loadRemoteData()
 
   if (props.storageKey) {
-    const draft = await loadDraft(props.storageKey)
+    const draft = await draftIO.loadDraft(props.storageKey)
     if (draft) {
       formData.value = { ...formData.value, ...draft }
       toastRef.value?.show(t('formBuilder.draftRestored'), 'info', 1500)
@@ -339,7 +342,7 @@ function finishSubmit(): void {
 
   // 提交成功后清除草稿
   if (props.storageKey) {
-    clearDraft(props.storageKey).catch(() => {})
+    draftIO.clearDraft(props.storageKey).catch(() => {})
   }
 
   // 3 秒后自动重置 submitting，防止父组件未处理时永远 loading
@@ -410,7 +413,7 @@ function handleReset(): void {
   hiddenByEvent.value = new Set()
   // 重置时清除草稿，避免下次加载又恢复旧数据
   if (props.storageKey) {
-    clearDraft(props.storageKey).catch(() => {})
+    draftIO.clearDraft(props.storageKey).catch(() => {})
   }
   emit('reset')
   toastRef.value?.show(t('formBuilder.resetDone'), 'info', 1500)

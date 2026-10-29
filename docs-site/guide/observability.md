@@ -31,8 +31,8 @@ setRuntimeObserver({
 
 ## 事件码清单
 
-共 **17** 个事件码（error 7 / warn 10 / info 0），
-分布在 18 个调用点（同一个码可在多处上报，如网络层失败与服务端拒绝各一次）。
+共 **17** 个事件码（error 6 / warn 11 / info 0），
+分布在 19 个调用点（同一个码可在多处上报，如网络层失败与服务端拒绝各一次）。
 
 | 事件码 | 级别 | 触发场景 | context 字段 | 代码位置 |
 | --- | --- | --- | --- | --- |
@@ -48,7 +48,8 @@ setRuntimeObserver({
 | `form-builder/share-signature-invalid` | warn | 分享码签名校验未通过，已拒绝渲染 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), signer: signer.name, }` | `src/components/form-builder/FormShareView.vue:107` |
 | `form-builder/submit-failed` | error | 表单提交失败（网络层） | `{ saveUrl: verdict.url, fieldCount, reason: err instanceof Error ? err.message : String(err) }` | `src/components/form-builder/useFormRemote.ts:156` |
 | `form-builder/submit-failed` | error | 表单提交失败（服务端拒绝） | `{ saveUrl: verdict.url, status: resp.status, fieldCount }` | `src/components/form-builder/useFormRemote.ts:165` |
-| `form-designer/draft-save-failed` | error | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: err instanceof Error ? err.message : String(err), }` | `src/components/form-builder/designer/useDesignerDraft.ts:84` |
+| `form-designer/draft-save-failed` | warn | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: 'too-large', sizeMB: (size / 1024 / 1024).toFixed(1) }` | `src/components/form-builder/designer/useDesignerDraft.ts:81` |
+| `form-designer/draft-save-failed` | error | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: err instanceof Error ? err.message : String(err), }` | `src/components/form-builder/designer/useDesignerDraft.ts:95` |
 | `storage/clear-failed` | warn | [contract-storage] IndexedDB 清空失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:164` |
 | `storage/cloud-delete-failed` | warn | [contract-storage] 云端删除失败: | `{ name: obj.name, error: String(e) }` | `src/components/storage/contract-storage.ts:387` |
 | `storage/load-failed` | warn | [contract-storage] IndexedDB 加载失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:136` |
@@ -64,7 +65,6 @@ setRuntimeObserver({
 - `chart/init-failed` —— ECharts 初始化失败:
 - `chart/set-option-failed` —— setOption 失败:
 - `form-builder/submit-failed` —— 表单提交失败（网络层）
-- `form-designer/draft-save-failed` —— 设计草稿保存失败
 - `storage/save-failed` —— IndexedDB 保存失败:
 
 **建议聚合观察（warn 级）**——功能降级但仍可用，按小时聚合看趋势：
@@ -75,6 +75,7 @@ setRuntimeObserver({
 - `form-builder/geocode-failed` —— 反向地理编码失败，已忽略（坐标不受影响）:
 - `form-builder/share-invalid` —— 分享码无效或已损坏
 - `form-builder/share-signature-invalid` —— 分享码签名校验未通过，已拒绝渲染
+- `form-designer/draft-save-failed` —— 设计草稿保存失败
 - `storage/clear-failed` —— IndexedDB 清空失败:
 - `storage/cloud-delete-failed` —— 云端删除失败:
 - `storage/load-failed` —— IndexedDB 加载失败:

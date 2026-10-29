@@ -50,6 +50,30 @@ export function useDesignerAutosave(opts: {
     }
   })
 
+  /** 草稿没保存成时只提示一次（成功后复位）——防抖周期内反复失败不该刷屏 */
+  let saveWarned = false
+
+  /**
+   * 自动保存一次并向用户交代结果。
+   *
+   * 第 159 轮：此前是 `void saveDraft(...)` —— 超容量跳过与写入失败都只进开发控制台，
+   * 用户以为草稿在、刷新后发现没了。现在按结果提示，且只在**首次**失败时提示。
+   */
+  async function autosaveOnce(nodes: DesignerNode[]): Promise<void> {
+    const res = await saveDraft(nodes, opts.getMeta())
+    if (res.ok) {
+      saveWarned = false
+      return
+    }
+    if (saveWarned) return
+    saveWarned = true
+    opts.showTip(
+      res.reason === 'too-large'
+        ? t('fbd.draftTooLarge', { size: (res.size / 1024 / 1024).toFixed(1) })
+        : t('fbd.draftSaveFailed'),
+    )
+  }
+
   watch(
     [() => opts.getNodes(), () => opts.getMeta()],
     () => {
@@ -63,7 +87,7 @@ export function useDesignerAutosave(opts: {
           void clearDraft()
           return
         }
-        void saveDraft(nodes, opts.getMeta())
+        void autosaveOnce(nodes)
       }, AUTOSAVE_DEBOUNCE)
     },
     { deep: true },

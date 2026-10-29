@@ -11,9 +11,10 @@ import { createField } from '@/components/form-builder/designer/types'
 import type { DesignerNode, FormMeta } from '@/components/form-builder/designer/types'
 
 // ── 草稿模块部分 mock：只桩掉 IndexedDB 存取三件套，useDesignerAutosave 接线逻辑走真实实现 ──
+// saveDraft 自第 159 轮起返回 DraftSaveResult（用于向用户交代"有没有存下来"），桩须同步
 const draftStubs = vi.hoisted(() => ({
   load: vi.fn<() => Promise<unknown>>(),
-  save: vi.fn<(nodes: DesignerNode[], meta: FormMeta) => Promise<void>>(),
+  save: vi.fn<(nodes: DesignerNode[], meta: FormMeta) => Promise<{ ok: boolean; size?: number }>>(),
   clear: vi.fn<() => Promise<void>>(),
 }))
 vi.mock('@/components/form-builder/designer/useDesignerDraft', async (importOriginal) => {
@@ -27,6 +28,7 @@ vi.mock('@/components/form-builder/designer/useDesignerDraft', async (importOrig
 beforeEach(() => {
   vi.clearAllMocks()
   draftStubs.load.mockResolvedValue(null)
+  draftStubs.save.mockResolvedValue({ ok: true, size: 0 })
   vi.spyOn(console, 'warn').mockImplementation(() => {})
 })
 

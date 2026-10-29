@@ -39,20 +39,29 @@ export function toPlainJson<T>(v: T): T {
 }
 
 /**
+ * 草稿保存结果
+ *
+ * 为什么不是 `Promise<void>`（第 159 轮）：草稿"没保存成"有两种原因——**超容量被跳过**与
+ * **写入失败**。两者此前都只进开发控制台（`reportWarn`），宿主无从得知：用户以为草稿在，
+ * 刷新后没了，且全程没有任何提示。把结果交回调用方，宿主才能给出用户可见的提示。
+ */
+export type DraftSaveResult =
+  { ok: true; size: number } | { ok: false; reason: 'too-large'; size: number } | { ok: false; reason: 'error' }
+
+/**
  * 校验草稿数据有效性
  * - 必须是对象
  * - 不能是数组或原始值
- * - 键必须是字符串
+ *
+ * 注（第 159 轮）：这里**只**能挡"明显不是草稿"的形态。原先还有一段
+ * `for (const key of Object.keys(obj)) if (typeof key !== 'string')` 的检查——
+ * `Object.keys()` 只会返回字符串，该分支**永远不可能为假**，是"看起来在校验"的死代码，已删。
+ * 深层可序列化性由写入前的 `toPlainJson` 保证（structuredClone 遇 Proxy 会抛）。
  */
 function isValidDraft(data: unknown): data is FormData {
   if (data === null || data === undefined) return false
   if (typeof data !== 'object') return false
   if (Array.isArray(data)) return false
-  const obj = data as Record<string, unknown>
-  // 键必须是字符串
-  for (const key of Object.keys(obj)) {
-    if (typeof key !== 'string') return false
-  }
   return true
 }
 
@@ -107,12 +116,15 @@ export function useFormStorage() {
   /**
    * 保存草稿
    *
-   * 含容量保护：数据超过 DRAFT_MAX_SIZE 时跳过保存并警告
+   * 含容量保护：数据超过 DRAFT_MAX_SIZE 时跳过保存。
+   * **跳过与失败都通过返回值告知调用方**（不再是静默 no-op）——宿主据此提示用户，
+   * 否则用户以为草稿在、刷新后发现没了。
    *
    * @param key 存储键
    * @param data 表单数据
+   * @returns 保存结果；`ok:false` 时 `reason` 区分「超容量跳过」与「写入失败」
    */
-  async function saveDraft(key: string, data: FormData): Promise<void> {
+  async function saveDraft(key: string, data: FormData): Promise<DraftSaveResult> {
     try {
       const plain = toPlainJson(data)
       // 数据大小检查（防止超出 IndexedDB 配额）
@@ -124,11 +136,13 @@ export function useFormStorage() {
       }
       if (size > DRAFT_MAX_SIZE) {
         reportWarn(`[FormBuilder] 草稿数据过大 (${(size / 1024 / 1024).toFixed(1)}MB)，跳过保存:`, key)
-        return
+        return { ok: false, reason: 'too-large', size }
       }
       await dbPut(STORE_NAME, key, plain, DRAFT_TTL)
+      return { ok: true, size }
     } catch {
       reportWarn('[FormBuilder] 草稿保存失败:', key)
+      return { ok: false, reason: 'error' }
     }
   }
 

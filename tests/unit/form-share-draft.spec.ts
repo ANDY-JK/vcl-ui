@@ -10,9 +10,10 @@ import { createField } from '@/components/form-builder/designer/types'
 import type { FormDesign, CollectRecord } from '@/components/form-builder/designer/types'
 
 // 草稿存取桩（FormBuilder 内部 useDesignerDraft… 不对——FormBuilder 走 useFormStorage）
+// saveDraft 自第 159 轮起返回 DraftSaveResult，桩须同步（否则接线层读 res.ok 会炸）
 const draftStubs = vi.hoisted(() => ({
   load: vi.fn(async () => null),
-  save: vi.fn(async () => {}),
+  save: vi.fn(async () => ({ ok: true, size: 0 })),
   clear: vi.fn(async () => {}),
 }))
 vi.mock('@/components/form-builder/useFormStorage', async (importOriginal) => {

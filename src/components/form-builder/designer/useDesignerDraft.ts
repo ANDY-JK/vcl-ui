@@ -14,6 +14,7 @@ import { reportWarn, reportEvent } from '@/components/_internal/runtime-observer
  * 测试可经 vi.mock 本模块拦截存取而不影响接线逻辑（同文件内部引用不可拦截）。
  */
 import { toPlainJson } from '../useFormStorage'
+import type { DraftSaveResult } from '../useFormStorage'
 import type { DesignerNode, FormMeta } from './types'
 import { DRAFT_MAX_SIZE, DRAFT_TTL } from '../draft-policy'
 import { getActiveDraftStorage, DRAFT_STORE, DRAFT_KEY } from './draft-storage'
@@ -60,7 +61,7 @@ export function useDesignerDraft() {
     }
   }
 
-  async function saveDraft(nodes: DesignerNode[], meta: FormMeta): Promise<void> {
+  async function saveDraft(nodes: DesignerNode[], meta: FormMeta): Promise<DraftSaveResult> {
     const storage = getActiveDraftStorage(DRAFT_TTL)
     try {
       // 节点树来自响应式 props：Proxy 无法 structuredClone，须先纯化为纯 JSON
@@ -74,10 +75,25 @@ export function useDesignerDraft() {
       }
       if (size > DRAFT_MAX_SIZE) {
         reportWarn(`[FormDesigner] 设计草稿过大 (${(size / 1024 / 1024).toFixed(1)}MB)，跳过保存`)
-        return
+        // 与下面的写入失败同一事件码、同一"这是数据损失"的判断标准：
+        // 超容量跳过同样是用户可感知的损失（草稿根本没落盘），不能只躺在自由文本日志里。
+        // reason 里区分 'too-large'，宿主看板据此区分"该引导用户精简"还是"存储出问题了"。
+        reportEvent(
+          'form-designer/draft-save-failed',
+          '设计草稿保存失败',
+          {
+            storage: storage.name,
+            nodeCount: nodes.length,
+            reason: 'too-large',
+            sizeMB: (size / 1024 / 1024).toFixed(1),
+          },
+          'warn',
+        )
+        return { ok: false, reason: 'too-large', size }
       }
       const draft: DesignerDraft = { nodes: plain.nodes, meta: plain.meta, savedAt: new Date().toISOString() }
       await storage.save(draft)
+      return { ok: true, size }
     } catch (err) {
       reportWarn('[FormDesigner] 设计草稿保存失败:', err)
       // 结构化事件：草稿丢失是用户可感知的数据损失，值得宿主告警（而非只躺在自由文本日志里）
@@ -91,6 +107,7 @@ export function useDesignerDraft() {
         },
         'error',
       )
+      return { ok: false, reason: 'error' }
     }
   }
 

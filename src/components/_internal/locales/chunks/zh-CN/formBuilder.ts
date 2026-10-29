@@ -5,6 +5,8 @@
 export default {
   formBuilder: {
     draftRestored: '草稿已恢复',
+    draftTooLarge: '内容较大（约 {size}MB），自动草稿已暂停保存，请及时提交或精简内容',
+    draftSaveFailed: '草稿自动保存失败（不影响提交，请及时提交以免丢失）',
     resetDone: '已重置',
     requiredStep: '请完成当前步骤的必填项',
     requiredAll: '请完成所有必填项',
@@ -675,5 +677,7 @@ export default {
     setGroupStorage: '存储',
     // P2-13 设计器草稿自动保存
     draftRestored: '已恢复上次未保存的设计草稿',
+    draftTooLarge: '设计内容较大（约 {size}MB），自动草稿已暂停保存，请及时点「保存」或精简内容',
+    draftSaveFailed: '设计草稿自动保存失败（不影响继续编辑，请及时点「保存」）',
   },
 }

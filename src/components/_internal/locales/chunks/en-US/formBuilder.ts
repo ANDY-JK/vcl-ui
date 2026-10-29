@@ -5,6 +5,8 @@
 export default {
   formBuilder: {
     draftRestored: 'Draft restored',
+    draftTooLarge: 'Content is large (~{size}MB) — autosave is paused. Please submit or trim it soon.',
+    draftSaveFailed: 'Draft autosave failed (submitting still works — please submit to avoid losing data).',
     resetDone: 'Reset',
     requiredStep: 'Please complete required fields in this step',
     requiredAll: 'Please complete all required fields',
@@ -677,5 +679,7 @@ export default {
     setGroupStorage: 'Storage',
     // P2-13 designer draft autosave
     draftRestored: 'Unsaved design draft restored',
+    draftTooLarge: 'Design is large (~{size}MB) — autosave is paused. Please hit Save or trim the content soon.',
+    draftSaveFailed: 'Design draft autosave failed (editing continues — please hit Save to keep it).',
   },
 }
