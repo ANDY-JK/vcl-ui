@@ -121,7 +121,11 @@ describe('check:tech-debt · 真实台账（当前仓库这份必须过）', { t
     expect(issues).toEqual([])
   })
 
-  it('CLI 行为：陈旧度超限时退 1 并点名"陈旧"，放宽上限后通过', () => {
+  // 超时放宽到 180s（第 168 轮）：本用例两次 spawnSync 子进程，各自要跑多条 git 命令；
+  // 整链 test:unit 会并行 337 个 worker，若同期还有别的 git 操作，索引锁会把这两次 spawn
+  // 挤压到 60s 以上，导致质量链假红（实测撞过一次，单独跑该文件仅 9s）。
+  // 只放宽时限、不改断言——180s 仍是有界上限，真挂死照样会被抓住。
+  it('CLI 行为：陈旧度超限时退 1 并点名"陈旧"，放宽上限后通过', { timeout: 180_000 }, () => {
     const run = (args: string[]) => {
       try {
         return { code: 0, out: execFileSync(process.execPath, ['scripts/check-tech-debt.mjs', ...args], {
