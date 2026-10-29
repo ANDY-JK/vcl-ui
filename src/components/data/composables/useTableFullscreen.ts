@@ -49,7 +49,13 @@ export function useFullscreenNodeRelocation(wrapRef: Ref<HTMLElement | null>) {
       if (next && next.parentNode === parent) parent.insertBefore(wrap, next)
       else parent.appendChild(wrap)
     } else if (wrap?.parentNode === document.body) {
-      wrap.remove() // 原父容器快照也没了：至少别把全屏框留在页面上
+      // 原父容器快照也没了：至少别把全屏框留在页面上。
+      // 说明（第 168 轮）：本分支目前**不可达** —— _el 与 _parent 在 moveToBody 里一起赋值、
+      // 在下方一起清空，恒同生同灭，所以 "wrap 有值而 parent 为空" 不会出现（覆盖率长期显示
+      // 这两行未执行）。选择保留而不是删除：它护的是"节点永久游离在 body 上"这种严重后果，
+      // 而不可达性依赖的是**非局部不变量**——将来若有人把两个字段的赋值/清空拆开，这里会静默
+      // 重新变得必要；届时没有这段兜底，用户会看到一张无处归属的表格叠在页面上。
+      wrap.remove()
     }
     if (wrap) {
       wrap.style.top = ''

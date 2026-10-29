@@ -295,6 +295,32 @@ describe('useTableFullscreen · 侧栏收起等待不得挂死', () => {
     await expect(waitForSidebarCollapse(el), 'KeyframeEffect 缺失时不能 reject').resolves.toBeUndefined()
   })
 
+  it('有 getAnimations 但**没有自己的动画**（祖先动画 / 动效降级）→ 退回实测', async () => {
+    class FakeKeyframeEffect {
+      target: unknown
+      pseudoElement: string | null
+      constructor(target: unknown, pseudoElement: string | null) {
+        this.target = target
+        this.pseudoElement = pseudoElement
+      }
+    }
+    const prev = (globalThis as Record<string, unknown>).KeyframeEffect
+    ;(globalThis as Record<string, unknown>).KeyframeEffect = FakeKeyframeEffect
+    try {
+      const el = fakeEl(() => 250)
+      const rect = vi.spyOn(el, 'getBoundingClientRect')
+      const other = document.createElement('div')
+      ;(el as unknown as { getAnimations: () => unknown[] }).getAnimations = () => [
+        // 动画跑在**别人**身上（祖先/兄弟），不属于本元素
+        { effect: new FakeKeyframeEffect(other, null), finished: new Promise(() => {}) },
+      ]
+      await waitForSidebarCollapse(el)
+      expect(rect.mock.calls.length, '没有自己的动画时不该白等，必须退回宽度实测').toBeGreaterThan(0)
+    } finally {
+      ;(globalThis as Record<string, unknown>).KeyframeEffect = prev
+    }
+  })
+
   it('动画可等 → 等 finished 跑完，不退回实测', async () => {
     class FakeKeyframeEffect {
       target: unknown
