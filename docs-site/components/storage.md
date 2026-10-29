@@ -22,6 +22,7 @@
 | `dbBatch` | 批量事务操作：单次 IDB 事务保证原子性 |
 | `createBackend` | 存储后端工厂：按 cfg.backend（local/s3/supabase）装配对应实现（本地缓存 + 云端对账），onSyncError 接收单文件同步失败 |
 | `validateStorageConfig` | 本地后端是唯一零配置选项；supabase / s3 各自必填项缺一不可 |
+| `normalizeForBackend` | 把配置收敛成**只带当前后端字段**的形态（其余后端字段一律置空串）。 |
 | `sanitizeObjectKeyPart` | 把任意文件名/键名转成可作 Supabase 对象键的 ASCII 形式（导出供测试/复用）。 |
 | `storage` | 统一存储门面：声明意图、自动路由后端（localStorage / 云端），业务侧只与它对话 |
 | `setCloudAdapter` | 注入/移除云端 KV 适配器。传 null 关闭云端能力（退化为纯本地）。 |

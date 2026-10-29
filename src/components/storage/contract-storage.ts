@@ -622,6 +622,43 @@ export function emptyStorageConfig(): StorageConfig {
   }
 }
 
+/**
+ * 把配置收敛成**只带当前后端字段**的形态（其余后端字段一律置空串）。
+ *
+ * 为什么必须有它（第 160 轮实测）：`StorageConfig` 的字段注释写着「supabase 后端配置
+ * （非 supabase 时为空串）」「S3 兼容后端配置（非 s3 时为空串）」——这是**契约**，
+ * `defaultStorageConfigFromEnv()` 也遵守它。但配置面板在编辑副本上让用户切后端时，
+ * 上一个后端已填的值会留在副本里，保存后整份交给宿主：
+ * ① 宿主把 cfg 落 localStorage（`persistStorageConfig` 只脱敏 `secretAccessKey`，
+ *    `url`/`anonKey`/`accessKeyId`/`endpoint` 照存）→ 用户以为「切到 local 就干净了」，
+ *    磁盘上却还留着别的后端的地址与凭据标识；
+ * ② 在 s3 与 supabase 之间来回切时，旧后端的地址会被**静默复用**（面板里看着"已经填好"），
+ *    实际连到的是上一次的项目。
+ * 以「保存时收敛」而不是「切换时清空」实现：切换时清空会把用户正在对比/复制到一半的输入
+ * 一起抹掉，代价更大；收敛只影响真正发出去的配置。
+ *
+ * `bucket` 是两个云后端**共用**的字段（见 `StorageConfig` 注释「bucket 复用上方字段」），
+ * 故 local 以外的后端都保留；`local` 无任何字段，全部置空。
+ *
+ * @param cfg 任意来源的配置（可能带残留字段）
+ * @returns 新的配置对象（不改动入参），满足「非当前后端的字段为空串」
+ */
+export function normalizeForBackend(cfg: StorageConfig): StorageConfig {
+  const out: StorageConfig = { ...emptyStorageConfig(), backend: cfg.backend }
+  if (cfg.backend === 'local') return out
+  out.bucket = cfg.bucket
+  if (cfg.backend === 'supabase') {
+    out.url = cfg.url
+    out.anonKey = cfg.anonKey
+  } else {
+    out.endpoint = cfg.endpoint
+    out.region = cfg.region
+    out.accessKeyId = cfg.accessKeyId
+    out.secretAccessKey = cfg.secretAccessKey
+  }
+  return out
+}
+
 /** 环境变量默认配置：仅开发期生效。S3 兼容（缤纷云等）配齐则优先 → Supabase 配齐次之 → 本地 */
 export function defaultStorageConfigFromEnv(): StorageConfig {
   const s3 = {

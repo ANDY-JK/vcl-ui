@@ -12,7 +12,7 @@ import { ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import Input from '@/components/form/Input.vue'
 import Button from '@/components/basic/Button.vue'
-import { validateStorageConfig, emptyStorageConfig, type StorageConfig } from './contract-storage'
+import { validateStorageConfig, emptyStorageConfig, normalizeForBackend, type StorageConfig } from './contract-storage'
 
 const t = useT()
 
@@ -32,7 +32,7 @@ const visible = defineModel<boolean>('visible', { default: false })
 
 /** 本地编辑副本（避免未保存的输入直接污染生效配置） */
 const draft = ref<StorageConfig>(emptyStorageConfig())
-// 保存是同步 emit，无异步过程 — 死状态（此前恒 false，Button loading 永远不可见）
+/** 校验错误文案（保存是同步 emit，没有"loading"这种中间态） */
 const error = ref('')
 
 watch(
@@ -46,14 +46,26 @@ watch(
   { immediate: true },
 )
 
+// 切后端时立刻撤掉旧后端的报错：否则用户在 S3 面板上会被提示「URL 必填」——一个
+// 当前根本没显示、也无法填写的字段。错误文案指错字段，比没有错误文案更费解。
+watch(
+  () => draft.value.backend,
+  () => {
+    error.value = ''
+  },
+)
+
 function save(): void {
-  const err = validateStorageConfig(draft.value)
+  // 先收敛成「只带当前后端字段」的形态再校验：校验只看当前后端，两者结果一致，
+  // 但发出去的必须是**满足契约**的配置（残留字段会随宿主落盘/复用，见 normalizeForBackend 注释）。
+  const next = normalizeForBackend(draft.value)
+  const err = validateStorageConfig(next)
   if (err) {
     error.value = err
     return
   }
   error.value = ''
-  emit('save', { ...draft.value })
+  emit('save', next)
 }
 </script>
 
