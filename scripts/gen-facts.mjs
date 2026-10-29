@@ -94,6 +94,12 @@ function eventCatalog() {
   for (const f of files) {
     const text = readFileSync(f, 'utf8')
     const lines = text.split('\n')
+    // 不变量：本文件里"像调用点"的行数，必须与真正解析出来的条数相等。
+    // 少一条就抛错——宁可整条闸口红，也不要一份"看起来完整、实际漏码"的告警清单。
+    const expectedCalls = lines.filter(
+      (l) => /reportEvent\(/.test(l) && !/function\s+reportEvent|reportEvent\s*:\s*\(|reportEvent\?:/.test(l),
+    ).length
+    const rowsBefore = rows.length
     for (const [i, line] of lines.entries()) {
       // reportEvent('code', 'message', ctx, 'level')
       //
@@ -101,14 +107,15 @@ function eventCatalog() {
       // （prettier 在参数多时会这么折行）。第一版只按单行正则匹配，
       // 19 个调用点里只认出 8 个 —— 清单少了 11 个码，而清单是宿主建告警的依据，
       // 漏码等于"这个告警永远不会被配"。
-      // 做法：把当前行与后续 3 行拼起来（去掉换行与缩进）再匹配。
-      // 窗口取 10 行：实测 context 对象可能跨 5+ 行
-      // （如 useDesignerDraft 的 `{ storage: …, nodeCount: …, reason: … }`）。
-      // 窗口太小会漏码，而漏码等于"这个告警永远不会被配"。
-      const window = lines
-        .slice(i, i + 10)
-        .join(' ')
-        .replace(/\s+/g, ' ')
+      // 做法：**不用固定行窗**，按括号配对一路扫到文件末尾。
+      //
+      // 为什么（第 159 轮实测）：这里原是「当前行 + 后续 10 行」的固定窗口。prettier 把
+      // useDesignerDraft 里那个 reportEvent 的 context 对象展开后，该调用共占 **11 行**，
+      // 右括号落在窗口之外 → 整条调用被静默丢弃。后果不是"少一行表"，而是
+      // `form-designer/draft-save-failed` 的 warn 变体（reason=too-large）在宿主建告警的
+      // 清单里根本不存在 —— 漏码等于这个告警永远不会被配。
+      // 教训：窗口大小是对"代码长什么样"的隐式假设，而格式由 prettier 决定，随时会变。
+      const window = lines.slice(i).join(' ').replace(/\s+/g, ' ')
       // 只在这一行确实是调用起点时才匹配，避免同一调用被后续行重复计入
       if (!/reportEvent\(/.test(line)) continue
       // **排除函数定义**：`export function reportEvent(` 与 TS 类型声明不是调用点。
@@ -172,6 +179,14 @@ function eventCatalog() {
         context: args[2] && args[2] !== 'undefined' ? args[2] : '',
         at: `${relative(ROOT, f).replaceAll('\\', '/')}:${i + 1}`,
       })
+    }
+    const parsed = rows.length - rowsBefore
+    if (parsed !== expectedCalls) {
+      throw new Error(
+        `[gen-facts] 事件码解析不完整：${relative(ROOT, f)} 有 ${expectedCalls} 个 reportEvent 调用点，` +
+          `只解析出 ${parsed} 个。请检查解析器（常见原因：调用跨行数超过扫描范围、参数不是字面量）。` +
+          ` 漏码 = 宿主永远不会给该告警配规则。`,
+      )
     }
   }
   rows.sort((a, b) => a.code.localeCompare(b.code))

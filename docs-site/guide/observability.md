@@ -48,8 +48,8 @@ setRuntimeObserver({
 | `form-builder/share-signature-invalid` | warn | 分享码签名校验未通过，已拒绝渲染 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), signer: signer.name, }` | `src/components/form-builder/FormShareView.vue:107` |
 | `form-builder/submit-failed` | error | 表单提交失败（网络层） | `{ saveUrl: verdict.url, fieldCount, reason: err instanceof Error ? err.message : String(err) }` | `src/components/form-builder/useFormRemote.ts:156` |
 | `form-builder/submit-failed` | error | 表单提交失败（服务端拒绝） | `{ saveUrl: verdict.url, status: resp.status, fieldCount }` | `src/components/form-builder/useFormRemote.ts:165` |
-| `form-designer/draft-save-failed` | warn | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: 'too-large', sizeMB: (size / 1024 / 1024).toFixed(1) }` | `src/components/form-builder/designer/useDesignerDraft.ts:81` |
-| `form-designer/draft-save-failed` | error | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: err instanceof Error ? err.message : String(err), }` | `src/components/form-builder/designer/useDesignerDraft.ts:95` |
+| `form-designer/draft-save-failed` | warn | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: 'too-large', sizeMB: (size / 1024 / 1024).toFixed(1), }` | `src/components/form-builder/designer/useDesignerDraft.ts:81` |
+| `form-designer/draft-save-failed` | error | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: err instanceof Error ? err.message : String(err), }` | `src/components/form-builder/designer/useDesignerDraft.ts:100` |
 | `storage/clear-failed` | warn | [contract-storage] IndexedDB 清空失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:164` |
 | `storage/cloud-delete-failed` | warn | [contract-storage] 云端删除失败: | `{ name: obj.name, error: String(e) }` | `src/components/storage/contract-storage.ts:387` |
 | `storage/load-failed` | warn | [contract-storage] IndexedDB 加载失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:136` |
