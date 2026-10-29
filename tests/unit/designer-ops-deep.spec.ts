@@ -562,6 +562,24 @@ describe('sortNode', () => {
     expect(keys(h.nodes())).toEqual(['field1', 'field2', 'field3'])
   })
 
+  it('**非法落点（容器拖进自己的后代）→ 树不变，且不写撤销栈**', () => {
+    const outer = createField('card', 0)
+    const inner = createField('card', 1)
+    const deep = createField('text', 2)
+    inner.children = [deep]
+    outer.children = [inner]
+    const h = makeHost([outer])
+
+    h.ops.sortNode(outer.id, inner.id, 'inside')
+
+    expect(h.nodes(), '整棵子树必须还在').toBe(h.nodes())
+    expect(h.nodes()[0]!.children![0]!.children, 'deep 不能被弄丢').toHaveLength(1)
+    // 关键：非法落点不得产生"什么都没变"的空撤销步（否则 Ctrl+Z 按下去没反应）
+    expect(h.patches, '非法拖动不该 patch').toBe(0)
+    h.ops.undo()
+    expect(h.nodes()[0]!.children![0]!.children, 'undo 后仍是原样（无空步可撤）').toHaveLength(1)
+  })
+
   it('**可撤销**', () => {
     const { list, card, tail } = withCard()
     const h = makeHost(list)

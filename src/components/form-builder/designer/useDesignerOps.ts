@@ -422,11 +422,17 @@ export function useDesignerOps(host: DesignerOpsHost) {
    * （画布容器交互化后只展示激活槽位，落点必须与之保持一致）。
    */
   function sortNode(sourceId: string, targetId: string, position: 'before' | 'after' | 'inside', slot?: number): void {
-    snapshot()
-    let updated = moveNodeRelative(host.nodes(), sourceId, targetId, position)
+    const before = host.nodes()
+    const moved = moveNodeRelative(before, sourceId, targetId, position)
+    // 非法落点（把容器拖进自己的后代等）会返回同一棵树 —— 此时**不进撤销栈、不 patch**。
+    // 第 176 轮：domain 层加了非法移动守卫后，这类落点变常见（以前是丢数据），
+    // 若照旧先 snapshot 再 patch，撤销栈里会留下"什么都没变"的空步，用户按 Ctrl+Z 没反应。
+    if (moved === before) return
+    let updated = moved
     if (slot !== undefined && slot >= 0 && position === 'inside') {
       updated = updateNodeInTree(updated, sourceId, { containerSlot: slot })
     }
+    snapshot()
     host.patch(updated)
   }
 

@@ -82,10 +82,14 @@ describe('domain · moveNodeInTree：同类缺陷必须同口径', () => {
     expect(findNode(out, 'c1')!.children!.map((n) => n.id)).toEqual(['f2', 'f1'])
   })
 
-  it('**容器移进自己的后代 → 拒绝，整棵树不变**（否则子树全丢）', () => {
-    const tree = [card('outer', [card('inner', [field('deep')])])]
+  it('**容器移进自己的后代 → 整棵树原样不动**（否则子树全丢）', () => {
+    // 关键：外层容器必须**不在根级** —— 否则"退回根级追加"恰好等价，
+    // 去掉守卫也看不出差别（负向对照探 3 首轮就是这么漏的）
+    const tree = [card('host', [card('outer', [card('inner', [field('deep')])])])]
+    const snapshot = JSON.parse(JSON.stringify(tree))
     const out = moveNodeInTree(tree, 'outer', 'inner', 0)
-    expect(ids(out), 'outer/inner/deep 都必须在').toEqual(['outer', 'inner', 'deep'])
+    expect(out).toEqual(snapshot)
+    expect(ids(out), 'host/outer/inner/deep 都必须在').toEqual(['host', 'outer', 'inner', 'deep'])
   })
 
   it('**目标容器不存在 → 退回根级追加，节点不丢**', () => {
@@ -97,22 +101,40 @@ describe('domain · moveNodeInTree：同类缺陷必须同口径', () => {
 })
 
 describe('domain · moveNodeRelative：自环与非法目标', () => {
-  it('**容器拖到自己的子节点之后：不得让容器消失**（子节点随父一起被移除）', () => {
+  it('**容器拖到自己的子节点之后：整棵树原样不动**（不消失、也不被挪到别处）', () => {
     const tree = [card('c1', [field('f1')]), field('x')]
+    const snapshot = JSON.parse(JSON.stringify(tree))
     const out = moveNodeRelative(tree, 'c1', 'f1', 'after')
-    expect(findNode(out, 'c1'), 'c1 不能凭空消失').toBeTruthy()
-    expect(ids(out), '整个子树都要还在').toContain('f1')
+    // 注意：只断言"节点还在"太弱 —— 把容器挪到根级末尾也满足它。
+    // 非法落点的正确语义是「什么都没发生」，所以必须深比较整棵树。
+    expect(out).toEqual(snapshot)
   })
 
-  it('**容器拖进自己的子容器：不得丢失整棵子树**', () => {
+  it('**容器拖进自己的子容器：整棵树原样不动**（不得丢失整棵子树）', () => {
     const tree = [card('outer', [card('inner', [field('deep')])])]
+    const snapshot = JSON.parse(JSON.stringify(tree))
     const out = moveNodeRelative(tree, 'outer', 'inner', 'inside')
-    expect(ids(out), 'outer/inner/deep 都必须在').toEqual(expect.arrayContaining(['outer', 'inner', 'deep']))
+    expect(out).toEqual(snapshot)
+    expect(ids(out), 'outer/inner/deep 都必须在').toEqual(['outer', 'inner', 'deep'])
+  })
+
+  it('**拖到自己身上：整棵树原样不动**', () => {
+    const tree = [field('a'), card('c1', [field('f1')])]
+    const snapshot = JSON.parse(JSON.stringify(tree))
+    expect(moveNodeRelative(tree, 'c1', 'c1', 'after')).toEqual(snapshot)
+    expect(moveNodeRelative(tree, 'c1', 'c1', 'inside')).toEqual(snapshot)
   })
 
   it('目标不存在（before/after）→ 追加到根级末尾，节点不丢', () => {
     const tree = [field('a'), field('b')]
     const out = moveNodeRelative(tree, 'a', 'ghost', 'after')
     expect(ids(out).sort()).toEqual(['a', 'b'])
+  })
+
+  it('**inside 的目标容器不存在 → 退回根级，节点不丢**（不能静默消失）', () => {
+    const tree = [card('c1', [field('f1')]), field('a')]
+    const out = moveNodeRelative(tree, 'a', 'ghost', 'inside')
+    expect(ids(out), 'a 必须还在树里').toContain('a')
+    expect(out.map((n) => n.id), 'a 退回根级末尾').toEqual(['c1', 'a'])
   })
 })
