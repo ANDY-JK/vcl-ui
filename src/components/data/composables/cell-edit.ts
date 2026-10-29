@@ -161,17 +161,17 @@ export function useCellEdit(deps: CellEditDeps) {
       if (!commitEdit('enter')) return
       nextTick(() => {
         const idx = cols.findIndex((c) => c.key === curCol)
-        // 跳过图片列与下拉选项列（options 列不走内联编辑，避免假编辑态）
-        const next =
-          cols.slice(idx + 1).find((c) => c.accept !== 'image' && !c.options) ??
-          cols.find((c) => c.accept !== 'image' && !c.options)
+        // 只落到"可内联编辑"的列：图片列走拖拽/粘贴、options 列走弹出面板（无内联输入框），
+        // 只读列（editable === false）更不能进编辑态（第 177 轮：此前只排除 image/options，
+        // Tab 会落进只读列，而模板编辑框只判 editable 与 options → 只读列真的可被写入；
+        // 全仓另外 5 处都排除了只读列，只有这里漏了）
+        const inlineEditable = (c: Column) => c.accept !== 'image' && !c.options && c.editable !== false
+        const next = cols.slice(idx + 1).find(inlineEditable) ?? cols.find(inlineEditable)
         if (next && next.key !== curCol) {
-          editingCell.value = { rowKey, colKey: next.key, value: '' }
-          editValue.value = ''
-          nextTick(() => {
-            const el = editInputEl.value
-            el?.focus()
-          })
+          // 必须走 startEdit：它负责 markActive / preEditCell / 清选区，并**预填该格当前值**
+          // （手工赋 value: '' 会让用户以为格子是空的，且绕过 preEditCell
+          //   导致 Tab 之后按 Escape 把选中格恢复到上一格）
+          startEdit(rowKey, next.key, select.displayValue(rowKey, next.key))
         }
       })
     }
