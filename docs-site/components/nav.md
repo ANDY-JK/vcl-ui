@@ -78,7 +78,7 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `modelValue` | `number` | — | 是 | 受控当前页（v-model:modelValue，1 起） |
+| `modelValue` | `number` | — | 是 | 受控当前页（v-model:modelValue，1 起）。超出 `[1, totalPages]` 时组件会把页码拉回合法页并 emit 纠正值（典型：搜索/筛选后总数变小、宿主没重置页码） |
 | `total` | `number` | — | 是 | 总条数 |
 | `pageSize` | `number` | `10` | 否 | 每页行数（默认 10） |
 | `showQuickJumper` | `boolean` | `false` | 否 | 显示页码快速跳转输入框 |
