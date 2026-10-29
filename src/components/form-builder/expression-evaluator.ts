@@ -289,7 +289,7 @@ export function safeEvaluate(expr: string): unknown {
  *
  * 1. 替换所有 `{{fieldName}}` 为字面量（字符串加引号包裹）
  * 2. 用受限求值器计算（算术 / 比较 / 逻辑 / 字符串拼接）
- * 3. 求值失败退化为纯字符串拼接
+ * 3. 求值失败或结果为非有限值（Infinity/NaN）时返回空串（falsy），不把坏值交给表单
  */
 export function evaluateFormula(formula: string, data: FormData): unknown {
   let expr = formula
@@ -322,7 +322,21 @@ export function evaluateFormula(formula: string, data: FormData): unknown {
   }
 
   try {
-    return safeEvaluate(expr)
+    const result = safeEvaluate(expr)
+    // 非有限结果不得流出（第 170 轮）。
+    //
+    // 为什么必须在这里挡：本函数的返回值会被 useFormSchema（formula 初始值）与
+    // useFormLinkage 的 followValue **直接写进 formData**，随后随表单提交落库。
+    // 而算术天然会产生非有限值——`{{price}} / {{qty}}` 在 qty=0 时是 Infinity，
+    // `0/0` 与 `'abc' * 2` 是 NaN，`5 % 0` 也是 NaN。
+    // 一旦流出：
+    //   · 界面上显示 "Infinity" / "NaN"（用户看不懂，也改不掉）；
+    //   · JSON.stringify(Infinity) === 'null'、JSON.stringify(NaN) === 'null'
+    //     → 提交后后端只看到 null，「算坏了」与「没填」再也无法区分（静默丢值）。
+    // 处理方式与语法错误同档：返回空串（falsy）。不返回 0——那会假装"结果是零"，
+    // 是另一种看着正常的假值。
+    if (typeof result === 'number' && !Number.isFinite(result)) return ''
+    return result
   } catch {
     // 求值失败：降级为不可见条件不成立——返回空字符串（falsy），
     // 避免兜底产出 truthy 值使 showHide 恒真；纯拼接公式已由 parsePrimary

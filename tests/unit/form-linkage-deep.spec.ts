@@ -257,6 +257,23 @@ describe('followValue：目标缺省为自身', () => {
     await tick()
     expect(formData.value.total).toBe(14)
   })
+
+  it('**除零结果不得写进 formData**（Infinity 会让 UI 显示 "Infinity"，序列化后变 null）', async () => {
+    // 第 170 轮：followValue 把 evaluateFormula 的结果**直接写进 formData**，
+    // 所以除零必须在求值层就被挡住，否则脏值会一路流到提交体里
+    // （JSON.stringify(Infinity) === 'null'，后端分不清"算坏了"与"没填"）。
+    const { api, formData } = setup(
+      [f({ key: 'unit', linkage: { type: 'followValue', formula: '{{total}} / {{qty}}' } })],
+      { total: 100, qty: 0 },
+    )
+    api.setupWatchers()
+    await tick()
+    expect(formData.value.unit, '除零不得落成 Infinity').not.toBe(Number.POSITIVE_INFINITY)
+    expect(typeof formData.value.unit === 'number' ? Number.isFinite(formData.value.unit as number) : true).toBe(
+      true,
+    )
+    expect(formData.value.unit, '应退化为空串（"没有值"）而不是 0（"结果为零"）').toBe('')
+  })
 })
 
 
