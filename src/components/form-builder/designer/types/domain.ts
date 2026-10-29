@@ -614,6 +614,31 @@ export function getNodePath(nodes: DesignerNode[], id: string): DesignerNode[] {
 }
 
 /**
+ * 源节点能否移动到目标位置（第 176 轮）
+ *
+ * 两种非法移动都是"先移除再插入"顺序下的**数据丢失**来源，必须拒绝：
+ *   ① 移到自己身上 —— 移除后目标消失，插入无处可去；
+ *   ② 移进自己的子树 —— 源被移除时目标随之消失，实测整棵子树被丢弃（树变空）。
+ */
+function canMoveTo(nodes: DesignerNode[], sourceId: string, targetId: string): boolean {
+  if (sourceId === targetId) return false
+  const source = findNode(nodes, sourceId)
+  if (!source) return false
+  return !findNode(source.children ?? [], targetId)
+}
+
+/** 在容器内插入子节点；**容器不存在时退回根级追加**（否则"先移除"后节点再不会被插回） */
+function insertChildOrRoot(
+  nodes: DesignerNode[],
+  containerId: string,
+  child: DesignerNode,
+  index: number,
+): DesignerNode[] {
+  if (!findNode(nodes, containerId)) return insertNode(nodes, child, -1)
+  return insertChildNode(nodes, containerId, child, index)
+}
+
+/**
  * 不可变更新：将源节点移动到目标节点的 before/after/inside 位置
  * 支持跨容器移动
  */
@@ -623,7 +648,7 @@ export function moveNodeRelative(
   targetId: string,
   position: 'before' | 'after' | 'inside',
 ): DesignerNode[] {
-  // 1. 找到源节点并从树中移除
+  if (!canMoveTo(nodes, sourceId, targetId)) return nodes // 非法移动见 canMoveTo 注释
   const sourceNode = findNode(nodes, sourceId)
   if (!sourceNode) return nodes
   let result = removeNodeFromTree(nodes, sourceId)
@@ -631,7 +656,7 @@ export function moveNodeRelative(
   // 2. 根据位置插入
   if (position === 'inside') {
     // 插入到目标容器内（末尾）
-    result = insertChildNode(result, targetId, sourceNode, -1)
+    result = insertChildOrRoot(result, targetId, sourceNode, -1)
   } else {
     // before/after：找到目标节点的父级和索引
     const targetParent = findParent(result, targetId)
@@ -645,7 +670,6 @@ export function moveNodeRelative(
         result = insertNode(result, sourceNode, insertIdx)
       } else {
         // 目标在某个容器内 — 需要重建路径
-        // 使用 moveNodeInTree 的逻辑
         result = moveNodeRelativeInTree(result, sourceNode, targetId, insertIdx)
       }
     }
@@ -654,28 +678,31 @@ export function moveNodeRelative(
   return result
 }
 
-/** 辅助：在树中找到目标容器并按索引插入子节点（递归） */
+/**
+ * 辅助：沿"目标所在的那条路径"重建树并插入源节点
+ *
+ * 第 176 轮修掉一处复制缺陷：原实现对**不含目标**的分支也 `insertNode(..., -1)`，
+ * 把源节点追加进了每一个无关容器（实测一次拖拽字段同时出现在两个容器里）。
+ */
 function moveNodeRelativeInTree(
   nodes: DesignerNode[],
   sourceNode: DesignerNode,
   targetId: string,
   insertIdx: number,
 ): DesignerNode[] {
-  // 找到目标所在父级，插入到指定索引
   const targetParent = findParent(nodes, targetId)
-  if (!targetParent) return insertNode(nodes, sourceNode, -1)
+  if (!targetParent) return nodes // 目标不在这棵子树里：什么都不做，绝不插入
 
-  // 如果父级就是根 nodes
   if (targetParent.parent === nodes) {
     return insertNode(nodes, sourceNode, insertIdx)
   }
 
-  // 递归：找到包含 targetParent.parent 的容器并替换
+  // 只在"直接包含目标父级数组"的那个容器上重建，其余分支原样返回
   return nodes.map((node) => {
     if (node.children === targetParent.parent) {
-      return { ...node, children: insertNode(targetParent.parent, sourceNode, insertIdx) }
+      return { ...node, children: insertNode(node.children, sourceNode, insertIdx) }
     }
-    if (node.children?.length) {
+    if (node.children?.length && findParent(node.children, targetId)) {
       return { ...node, children: moveNodeRelativeInTree(node.children, sourceNode, targetId, insertIdx) }
     }
     return node
@@ -756,6 +783,10 @@ export function moveNodeInTree(
   toParentId: string | null,
   toIndex: number,
 ): DesignerNode[] {
+  // 0. 非法移动（移进自己的子树 / 移到自己所在的容器自身）直接拒绝（第 176 轮）
+  //    与 moveNodeRelative 同口径：先移除再插入，目标若随源一起被移除就必然丢数据
+  if (toParentId !== null && !canMoveTo(nodes, fromId, toParentId)) return nodes
+
   // 1. 找到并移除原节点
   const movingNode = findNode(nodes, fromId)
   if (!movingNode) return nodes
@@ -767,8 +798,8 @@ export function moveNodeInTree(
     // 插入到根级
     result = insertNode(result, movingNode, toIndex)
   } else {
-    // 插入到目标容器
-    result = insertChildNode(result, toParentId, movingNode, toIndex)
+    // 插入到目标容器；容器不存在时退回根级追加，绝不丢节点
+    result = insertChildOrRoot(result, toParentId, movingNode, toIndex)
   }
 
   return result
