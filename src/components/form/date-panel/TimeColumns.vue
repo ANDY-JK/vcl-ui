@@ -38,10 +38,21 @@ function clampInt(s: string | undefined, lo: number, hi: number): number {
 const showSeconds = computed(() => /ss/i.test(props.format))
 
 const hours = computed(() => Array.from({ length: 24 }, (_, i) => i))
+
+/**
+ * 合法的分钟步进（第 165 轮补）：`Math.max(1, NaN)` 是 **NaN**，会让下面的 for 循环
+ * 在 push(0) 后立刻因 `NaN < 60` 为 false 而结束 → 分钟列只剩 "00" 一项，
+ * 用户再也选不到别的分钟。非整数（如 2.5）也会产生 0/2.5/5… 这种半个分钟的列表。
+ * 统一在这里收口：非有限、非正、非整数一律退化为 1。
+ */
+const stepSafe = computed(() => {
+  const n = Math.floor(Number(props.step))
+  return Number.isFinite(n) && n > 0 ? n : 1
+})
 /** 分钟列按 step 步进 */
 const minutes = computed(() => {
   const list: number[] = []
-  for (let m = 0; m < 60; m += Math.max(1, props.step)) list.push(m)
+  for (let m = 0; m < 60; m += stepSafe.value) list.push(m)
   return list
 })
 const seconds = computed(() => Array.from({ length: 60 }, (_, i) => i))
@@ -50,8 +61,13 @@ const seconds = computed(() => Array.from({ length: 60 }, (_, i) => i))
 const curH = computed(() => clampInt(String(props.value).split(':')[0], 0, 23))
 const curM = computed(() => {
   const raw = clampInt(String(props.value).split(':')[1], 0, 59)
-  const st = Math.max(1, props.step)
-  return Math.min(59, Math.round(raw / st) * st)
+  const st = stepSafe.value
+  // 对齐到最近的步进点，**但必须落回列表里真实存在的值**（第 165 轮补）：
+  // step 不整除 60 时（如 9/12/17），round(59/st)*st 会超过末项（step=9 → 63），
+  // 原来夹到 59 —— 而 59 根本不在 [0,9,…,54] 里，于是**分钟列一个选中项都没有**，
+  // 用户看不出当前时间是几分（滚到正确位置也无从谈起）。
+  const last = minutes.value.length ? minutes.value[minutes.value.length - 1] : 0
+  return Math.min(last, Math.round(raw / st) * st)
 })
 const curS = computed(() => clampInt(String(props.value).split(':')[2], 0, 59))
 
@@ -87,7 +103,9 @@ defineExpose({ scrollToValue })
 function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   const p = String(props.value).split(':')
   const h = part === 'hour' ? v : clampInt(p[0], 0, 23)
-  const m = part === 'minute' ? v : clampInt(p[1], 0, 59)
+  // 点"时"时分钟取**已对齐并落回列表**的 curM，而不是原始 p[1]（第 165 轮补）：
+  // 否则 step=15 + 值 10:37 时，界面高亮 30 却输出 22:37 —— 用户看到的和提交的不一致。
+  const m = part === 'minute' ? v : curM.value
   const s = part === 'second' ? v : clampInt(p[2], 0, 59)
   let result = `${pad2(h)}:${pad2(m)}`
   if (showSeconds.value) result += `:${pad2(s)}`
