@@ -49,7 +49,9 @@ interface StatProps {
   icon?: string
   /** 数值/图标语义色（CSS 颜色值或令牌名） */
   color?: string
-  /** 趋势：数字或 '12%' 类字符串；正=上涨箭头、负=下跌箭头、0/非法值=持平 */
+  /** 趋势：数字或 '12%' 类字符串；正=上涨箭头、负=下跌箭头、0/非法值=持平。
+   *  非有限值（如分母为 0 得到的 Infinity）与不可解析的字符串（'1,234'/'12px'）一律按持平处理——
+   *  它们不能变成「Infinity%」或一个看起来正常的错数（第 169 轮）。 */
   trend?: number | string
 }
 
@@ -73,8 +75,16 @@ const isStat = computed(() => props.type === 'stat')
 const trendNum = computed(() => {
   const v = props.trend
   if (v === undefined || v === null) return 0
-  const n = typeof v === 'string' ? parseFloat(v.replace('%', '')) : Number(v)
-  return isNaN(n) ? 0 : n
+  // 用 Number 而非 parseFloat（第 169 轮）：
+  //  · parseFloat('1,234') = 1、parseFloat('12px') = 12 —— 得到一个**看起来完全正常的错数**，
+  //    界面显示 "1%" / "12%"，比显示乱码更危险（没人会去质疑一个合理的百分比）；
+  //    Number 对这两种输入返回 NaN，落到下面的"持平"，语义是"这不是个趋势值"。
+  //  · Number('') 为 0、Number('12.5') 为 12.5，正常输入不受影响。
+  const n = typeof v === 'string' ? Number(v.replace('%', '').trim()) : Number(v)
+  // 非有限值一律按持平（第 169 轮）：环比增长率的分母为 0 时上游会算出 Infinity，
+  // 而 isNaN(Infinity) 是 false，原实现把它原样渲染成「Infinity%」——趋势文案直接上屏。
+  // 'Infinity' / '-Infinity' 字符串同样走这一条。
+  return Number.isFinite(n) ? n : 0
 })
 const trendUi = computed(() => ({
   icon: trendNum.value > 0 ? 'chevron-up' : trendNum.value < 0 ? 'chevron-down' : 'minus',
