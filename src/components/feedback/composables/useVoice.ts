@@ -122,12 +122,19 @@ export function speak(text: string, rate = 1, pitch = 1, lang: VoiceLang = 'zh')
   }
 }
 
-/** 简单语言检测：根据文本字符特征推断语言 */
+/**
+ * 简单语言检测：根据文本字符特征推断语言
+ *
+ * 检测顺序很重要（第 171 轮）：**假名必须先于漢字**查。
+ * 日语句子几乎必然含漢字（「日本語です」「東京駅」），若先查 CJK 统一表意文字，
+ * 含漢字的日文会被判成 zh —— 'auto' 模式下用户听到的是中文音读的日文。
+ * 假名（平假名/片假名）是日语的排他特征，命中了就一定是日语。
+ * 谚文（한글）与漢字范围不相交，相对顺序无关紧要，但与假名一并前置更直观。
+ */
 function detectLang(text: string): string {
-  // 中日韩文字范围检测
-  if (/[\u4e00-\u9fff]/.test(text)) return 'zh'
   if (/[\u3040-\u309f\u30a0-\u30ff]/.test(text)) return 'ja'
   if (/[\uac00-\ud7af]/.test(text)) return 'ko'
+  if (/[\u4e00-\u9fff]/.test(text)) return 'zh'
   // 默认英语
   return 'en'
 }
