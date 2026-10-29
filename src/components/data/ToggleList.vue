@@ -86,6 +86,19 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
   if (e.type === 'keydown' && e.target !== e.currentTarget) return
   emit('item-click', item)
 }
+
+/**
+ * 行内空格键（第 166 轮修）：`@keydown.space.prevent` 写在**整行**上时，焦点若在内层
+ * `<input type="checkbox">`（或 button 变体的 `<button>`），按键冒泡到行 → `.prevent`
+ * 把默认行为（空格切换复选框）吃掉，而 `onItemClick` 又因 `target !== currentTarget`
+ * 提前 return —— 结果**键盘用户完全无法用空格切换开关**（鼠标能点、Tab 能聚焦，但按空格没反应）。
+ * 现在只有"焦点在行本身"时才拦截空格并发整行点击；焦点在内层控件时一律放行。
+ */
+function onRowSpace(e: KeyboardEvent, item: Parameters<typeof onItemClick>[1]) {
+  if (e.target !== e.currentTarget) return // 内层控件自己的空格行为归控件
+  e.preventDefault() // 行本身按空格：阻止页面滚动
+  emit('item-click', item)
+}
 </script>
 
 <template>
@@ -112,7 +125,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
         tabindex="0"
         @click="onItemClick($event, item)"
         @keydown.enter="onItemClick($event, item)"
-        @keydown.space.prevent="onItemClick($event, item)"
+        @keydown.space="onRowSpace($event, item)"
       >
         <div v-if="item[iconField]" class="item-icon">
           <IconSvg :type="item[iconField]" size="md" />
