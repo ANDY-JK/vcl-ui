@@ -124,7 +124,12 @@ function onTool(action: ToolBtn['action']) {
     const url = inst.getDataURL({ pixelRatio: 2, backgroundColor: bg })
     const a = document.createElement('a')
     a.href = url
-    a.download = `${(ariaLabel.value || 'chart').replace(/[^\w\u4e00-\u9fa5-]/g, '')}.png`
+    // 文件名取图表标题（与读屏 aria-label 同源），再清洗成安全字符。
+    // 第 175 轮修正：兜底 `|| 'chart'` 原本写在 replace **之前** —— 清洗会把纯标点标题
+    // （如 "###"）洗成空串，于是下载名变成 ".png"（无主文件名：Windows 下非法、
+    // 浏览器会另取名或直接丢弃）。兜底必须放在清洗**之后**才管用。
+    const safeName = (ariaLabel.value || '').replace(/[^\w\u4e00-\u9fa5-]/g, '') || 'chart'
+    a.download = `${safeName}.png`
     a.click()
   } else if (action === 'zoom') {
     // 放大：聚焦到中部区域（无 dataZoom 的图无副作用）
