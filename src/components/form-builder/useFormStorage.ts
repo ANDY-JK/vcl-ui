@@ -169,7 +169,14 @@ export function useFormStorage() {
     try {
       if (navigator.storage?.estimate) {
         const est = await navigator.storage.estimate()
-        return { usage: est.usage ?? 0, quota: est.quota ?? 0 }
+        // 量不到就报"量不到"（第 167 轮）：这个 API 的结果直接进宿主 UI，
+        // 交出 NaN 会渲染成「NaN%」，交出负数会渲染成「-5 B」。原先只用 ?? 0 兜缺字段，
+        // NaN/负值会原样漏出去；若改成"归 0"则更糟——NaN 用量会变成"已用 0"，**假报容量充足**。
+        // 归 null 让调用方与 checkStorageStatus 都能诚实地回答 'unknown'。
+        const usage = Number(est.usage ?? 0)
+        const quota = Number(est.quota ?? 0)
+        if (!Number.isFinite(usage) || usage < 0 || !Number.isFinite(quota) || quota < 0) return null
+        return { usage, quota }
       }
     } catch {
       // 非安全上下文或旧浏览器不支持
@@ -184,6 +191,9 @@ export function useFormStorage() {
    */
   async function checkStorageStatus(): Promise<'ok' | 'warning' | 'critical' | 'unknown'> {
     const est = await estimateStorage()
+    // quota=0 必须单独挡（第 167 轮）：estimateStorage 已保证数值有限，但 quota=0 会让
+    // ratio=usage/0=Infinity → 被下面的 > 0.9 判成 'critical'，即"配额未知"被报成"爆满"。
+    // 0 在这里的含义是"配额未知"，不是"没有空间"。
     if (!est || est.quota === 0) return 'unknown'
     const ratio = est.usage / est.quota
     if (ratio > 0.9) return 'critical'
