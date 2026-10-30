@@ -93,8 +93,12 @@ export function colTitle(col?: Column): string {
 
 /** 选项列取值颜色：匹配 options 内对象项的 color，未命中回退 inherit */
 export function optColor(col: Column, val: string): string {
-  if (!col.options) return 'inherit'
-  const opt = col.options.find((o) => (typeof o === 'string' ? o : o.value) === val)
+  // 第 189 轮：比较必须按**字符串口径**。调用方是 `optColor(col, cellVal(...))`，
+  // 而 cellVal 返回 getCellValue(...) —— 字符串；旧实现用严格相等 `o.value === val`，
+  // 于是数字型选项（状态码 1/2/3、优先级 1/2/3 —— 最常见的写法）永远匹配不上，
+  // 颜色静默失效。col 也可能异步到达（列定义未就绪），一并挡掉。
+  if (!col?.options) return 'inherit'
+  const opt = col.options.find((o) => String(typeof o === 'string' ? o : o.value) === String(val))
   return opt && typeof opt === 'object' && opt.color ? opt.color : 'inherit'
 }
 

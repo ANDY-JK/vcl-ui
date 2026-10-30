@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { useTreeFlatten } from '@/components/_internal/useTreeFlatten'
 import { registerModal } from '@/components/_internal/useModalManager'
 import { copyText } from '@/components/_internal/useCopy'
-import { blankPlaceholder, getCellText } from '@/components/data/composables/utils'
+import { blankPlaceholder, getCellText, optColor } from '@/components/data/composables/utils'
 import type { Column } from '@/components/data/composables/types'
 
 interface TreeNode {
@@ -109,8 +109,7 @@ describe('getCellText — 保持原值，不注入占位符', () => {
   })
 })
 
-describe('blankPlaceholder（空白占位：展示层 - 替代）', () => {
-  it('null/undefined → 默认 -', () => {
+describe('blankPlaceholder（空白占位：展示层 - 替代）', () => {  it('null/undefined → 默认 -', () => {
     expect(blankPlaceholder(null)).toBe('-')
     expect(blankPlaceholder(undefined)).toBe('-')
   })
@@ -142,5 +141,46 @@ describe('blankPlaceholder（空白占位：展示层 - 替代）', () => {
     expect(blankPlaceholder(undefined, '')).toBe('')
     expect(blankPlaceholder('  ', '')).toBe('  ')
     expect(blankPlaceholder(0, '')).toBe('0')
+  })
+})
+
+/* ═══════════ optColor：选项列着色（第 189 轮） ═══════════
+ *
+ * DataTable 的调用是 `optColor(col, cellVal(...))`，而 cellVal 返回的是
+ * `getCellValue(...)` —— **字符串**。旧实现用严格相等 `o.value === val`，
+ * 于是数字型选项（状态码 1/2/3、优先级 1/2/3 这类最常见写法）永远匹配不上，
+ * 颜色静默失效（用户看到的是"配了颜色但不生效"）。
+ */
+describe('optColor（选项列取值颜色）', () => {
+  const colOf = (options: unknown): Column => ({ key: 's', title: '状态', options }) as Column
+
+  it('字符串选项值命中 → 返回其 color', () => {
+    expect(optColor(colOf(['待办', { value: 'doing', label: '进行中', color: '#f59e0b' }]), 'doing')).toBe('#f59e0b')
+  })
+
+  it('**数字选项值也要命中**（单元格值是字符串，`1 === "1"` 会漏）', () => {
+    const col = colOf([
+      { value: 1, label: '待办', color: '#ef4444' },
+      { value: 2, label: '已完成', color: '#10b981' },
+    ])
+    expect(optColor(col, '1'), '状态码 1 应着红色').toBe('#ef4444')
+    expect(optColor(col, '2')).toBe('#10b981')
+    // 防御：下游直接传原始值（数字）也要命中 —— 两侧都 String 化才稳
+    expect(optColor(col, 1 as never), 'val 为数字时同样命中').toBe('#ef4444')
+    // 布尔型选项值同理
+    const boolCol = colOf([{ value: true, label: '是', color: '#0ea5e9' }])
+    expect(optColor(boolCol, 'true')).toBe('#0ea5e9')
+  })
+
+  it('未命中 / 选项无 color → inherit', () => {
+    const col = colOf([{ value: 'a', label: 'A' }])
+    expect(optColor(col, 'a')).toBe('inherit')
+    expect(optColor(col, 'nope')).toBe('inherit')
+    expect(optColor(colOf(undefined), 'x')).toBe('inherit')
+  })
+
+  it('**col 为 undefined 时不抛错**（表格列定义异步到达时可达）', () => {
+    expect(() => optColor(undefined as never, 'x')).not.toThrow()
+    expect(optColor(undefined as never, 'x')).toBe('inherit')
   })
 })
