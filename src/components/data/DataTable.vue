@@ -1338,6 +1338,15 @@ function cellShow(row: Record<string, any>, col: Column): string {
   return blankPlaceholder(cellVal(row, col.key, rowMetaMap.value.get(row)?.texts[col.key] ?? ''), props.blankText)
 }
 
+/** 单元格**取值**（本地覆盖优先）—— 供"按取值匹配列配置"用（选项列着色等）。
+ *  与 cellVal 的区别：cellVal 走 getCellText，会套用 col.render 的显示文本。
+ *  第 190 轮：着色若拿显示文本去比选项 value，`options + render`（状态列配徽标
+ *  的常规写法，显示"待办"而非 1）就永远匹配不上，颜色静默丢失。
+ *  实现上复用 cellVal（把**原值**当作 metaVal 传入），不新增带 any 的函数。 */
+function cellRaw(row: Record<string, unknown>, colKey: string): string {
+  return cellVal(row as never, colKey, String(row[colKey] ?? ''))
+}
+
 /** 图片判定（域名单归 props.imageDomains；纯函数在 composables/utils） */
 function isImageUrl(val: unknown): boolean {
   return _isImageUrl(val, props.imageDomains)
@@ -2062,7 +2071,7 @@ provideDataTableContext({
                           <span
                             v-else-if="col.options && col.options.length && typeof col.options[0] === 'object'"
                             :style="{
-                              color: optColor(col, cellVal(row, col.key, rowMetaMap.get(row)?.texts[col.key] ?? '')),
+                              color: optColor(col, cellRaw(row, col.key)),
                             }"
                             >{{ cellShow(row, col) }}</span
                           >

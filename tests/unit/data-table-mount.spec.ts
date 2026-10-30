@@ -658,3 +658,57 @@ describe('DataTable 挂载级护栏 — 交互体验第二批（撤销/重做按
     expect(w.find('input.cell-edit-input').attributes('inputmode')).toBe('decimal')
   })
 })
+
+/* ═══════════ 选项列着色口径（第 190 轮） ═══════════
+ *
+ * 第 189 轮修好 optColor 的字符串比较后，还有一层口径问题：
+ * 调用点传的是 `cellVal(...)` —— **显示文本**（含 col.render 的结果）。
+ * 而"状态列配徽标"的常规写法是 `options` + `render`（显示"待办"而非 1），
+ * 于是 optColor 拿到 "待办"、选项值是 1，仍然匹配不上，颜色依旧不生效。
+ * 着色应当按**取值**匹配（配置的 value），与显示文本无关。
+ */
+describe('选项列着色：按取值匹配，与 render 无关', () => {
+  const OPT_COL = (render?: (v: unknown) => string): Column => ({
+    key: 's',
+    title: '状态',
+    options: [{ value: 1, label: '待办', color: '#ef4444' }],
+    ...(render ? { render } : {}),
+  })
+
+  const colorOf = (w: VueWrapper): string => {
+    const span = w.find('.cell-text-inner span[style]')
+    return span.exists() ? (span.element as HTMLElement).style.color : ''
+  }
+
+  it('无 render：按原值着色（数字 value 也命中）', async () => {
+    const w = mount(DataTable, {
+      props: { ...MINIMAL, columns: [OPT_COL()], data: [{ id: 'r1', s: 1 }] },
+      attachTo: document.body,
+    })
+    await nextTick()
+    expect(['#ef4444', 'rgb(239, 68, 68)']).toContain(colorOf(w))
+  })
+
+  it('**有 render（显示标签）时仍按取值着色**（旧实现拿显示文本比，颜色丢失）', async () => {
+    const w = mount(DataTable, {
+      props: {
+        ...MINIMAL,
+        columns: [OPT_COL((v) => (v === 1 ? '待办' : '其他'))],
+        data: [{ id: 'r1', s: 1 }],
+      },
+      attachTo: document.body,
+    })
+    await nextTick()
+    expect(w.text(), '显示的是标签').toContain('待办')
+    expect(['#ef4444', 'rgb(239, 68, 68)'], '颜色也要在').toContain(colorOf(w))
+  })
+
+  it('取值未命中选项 → 不着色（inherit）', async () => {
+    const w = mount(DataTable, {
+      props: { ...MINIMAL, columns: [OPT_COL()], data: [{ id: 'r1', s: 99 }] },
+      attachTo: document.body,
+    })
+    await nextTick()
+    expect(colorOf(w)).toBe('inherit')
+  })
+})
