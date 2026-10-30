@@ -385,6 +385,21 @@ describe('formatNumber / formatMoney / toChineseAmount', () => {
     expect(toChineseAmount(-12.34)).toBe('负壹拾贰元叁角肆分')
     expect(toChineseAmount('abc')).toBe('')
   })
+
+  it('**超出「万亿」量级 → 空串，绝不把 undefined 拼进大写**（第 186 轮）', () => {
+    // bigRadices 只有 ['', '万', '亿', '万亿'] 四档；1e16 起分组数 > 4，
+    // bigRadices[4] 是 undefined，于是拼出 "壹undefined元整" —— 会直接印在单据上。
+    expect(toChineseAmount(1e16), '1e16 超出可表示量级').toBe('')
+    expect(toChineseAmount(1e17)).toBe('')
+    expect(toChineseAmount(-1e16)).toBe('')
+    // 边界内最大量级（9999 万亿）仍要正常
+    const max = toChineseAmount(9.999e15)
+    expect(max).toContain('万亿')
+    // 全量扫描：任何输入都不得产出字面量 "undefined"
+    for (const n of [1e3, 1e8, 1e12, 1e15, 9.999e15, 1e16, 1e17, 1e20]) {
+      expect(toChineseAmount(n), `n=${n}`).not.toContain('undefined')
+    }
+  })
 })
 
 // ════════════════════════════════════════

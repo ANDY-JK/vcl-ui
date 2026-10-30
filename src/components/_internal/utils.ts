@@ -255,6 +255,10 @@ export function formatSize(bytes: number): string {
 export function toChineseAmount(n: number | string): string {
   const value = typeof n === 'string' ? Number(n) : n
   if (!isFinite(value)) return ''
+  // 超出「万亿」量级（≥1e16）无法用现役大数单位表达（bigRadices 只到「万亿」）。
+  // 第 186 轮：此前不设界，分组数 > 4 时 bigRadices[4] 是 undefined，
+  // 拼出 "壹undefined元整" —— 会直接印在单据上。与"不可表示"的既有约定一致：返回空串。
+  if (Math.abs(value) >= 1e16) return ''
 
   const digits = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖']
   const radices = ['', '拾', '佰', '仟']
