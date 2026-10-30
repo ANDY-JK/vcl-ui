@@ -42,6 +42,29 @@ describe('parseCsvRecords', () => {
       ['3', '4'],
     ])
   })
+
+  it('引号内的双引号按 "" 转义还原', () => {
+    // 既有实现有这条分支，但从未被测试（CSV 标准转义）
+    expect(parseCsvRecords('a\n"说 ""你好"""\n')).toEqual([['a'], ['说 "你好"']])
+  })
+
+  it('**只含 CR 换行的文件也按行切分**（老式导出常见；否则整份文件变成 1 行、静默导入 0 条）', () => {
+    const rows = parseCsvRecords('姓名,年龄\r甲,30\r乙,25\r')
+    expect(rows).toEqual([
+      ['姓名', '年龄'],
+      ['甲', '30'],
+      ['乙', '25'],
+    ])
+  })
+
+  it('CRLF 与 LF 混排同样按行切分', () => {
+    const rows = parseCsvRecords('a,b\r\n1,2\n3,4\r\n')
+    expect(rows).toEqual([
+      ['a', 'b'],
+      ['1', '2'],
+      ['3', '4'],
+    ])
+  })
 })
 
 describe('parseJsonRecords', () => {
@@ -52,6 +75,15 @@ describe('parseJsonRecords', () => {
 
   it('非法 JSON 抛错', () => {
     expect(() => parseJsonRecords('not-json')).toThrow()
+  })
+
+  it('**容忍 UTF-8 BOM**（Windows 记事本 / PowerShell 导出的 JSON 默认带 BOM）', () => {
+    const bom = '\uFEFF'
+    expect(parseJsonRecords(bom + '[{"name":"甲"}]')).toEqual([{ name: '甲' }])
+  })
+
+  it('JSON 根节点不是数组 → 明确抛错（不是静默空结果）', () => {
+    expect(() => parseJsonRecords('{"name":"甲"}')).toThrow()
   })
 })
 
@@ -85,6 +117,14 @@ describe('normalizeRecords', () => {
     ]
     const { records } = normalizeRecords(rows, headerMap, fields)
     expect(records[0].age).toBe(25)
+  })
+
+  it('**number 列只接受有限数：Infinity / 1e400 保留原串**（否则序列化成 null，静默丢值）', () => {
+    const rows = [['年龄'], ['Infinity'], ['-Infinity'], ['1e400'], ['42']]
+    const { records } = normalizeRecords(rows, headerMap, fields)
+    expect(records.map((r) => r.age), '非有限数不该被转成数字').toEqual(['Infinity', '-Infinity', '1e400', 42])
+    // 转成 ±Infinity 后 JSON.stringify 会写成 null —— 用户数据静默变成"空"
+    expect(JSON.stringify(records[0])).toContain('Infinity')
   })
 
   it('全空行视为无效并计数', () => {

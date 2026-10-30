@@ -40,6 +40,13 @@ const ARRAY_FIELD_TYPES = new Set(['checkbox', 'upload', 'image-upload', 'camera
 /** 值拆分分隔符：英文逗号 / 中文逗号 / 分号 / 竖线 */
 const ARRAY_SPLIT_RE = /[,，;；|]+/
 
+/** 去掉 UTF-8 BOM（第 179 轮）：Excel/PowerShell/记事本的导出常带 U+FEFF。
+ *  CSV 那边表头 trim() 恰好能吃掉它，但 JSON.parse 不容忍 BOM 会直接抛错，
+ *  所以统一在解析入口剥掉，两个解析器都不再各判一次。 */
+function stripBom(text: string): string {
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text
+}
+
 // ════════════════════════════════════════
 // 表头映射
 // ════════════════════════════════════════
@@ -74,7 +81,10 @@ export function parseCsvRecords(text: string): string[][] {
   let row: string[] = []
   let cell = ''
   let inQuotes = false
-  const src = text.replace(/\r\n/g, '\n')
+  // 换行归一（第 179 轮）：`\r\n` 与**裸 `\r`** 都算换行。
+  // 此前只替换 CRLF —— 老式导出（CR-only）会被当成一行，表头里还夹着 `\r`，
+  // 归一化后 0 条记录，用户只看到"没有可导入数据"，完全看不出问题在哪。
+  const src = stripBom(text).replace(/\r\n?/g, '\n')
   for (let i = 0; i < src.length; i++) {
     const ch = src[i]
     if (inQuotes) {
@@ -116,7 +126,9 @@ export function parseCsvRecords(text: string): string[][] {
  * - `[{ "字段label": value }]`（导出/手工格式，由 normalize 反查 key）
  */
 export function parseJsonRecords(text: string): Record<string, unknown>[] {
-  const data = JSON.parse(text)
+  // BOM 必须先去：JSON.parse 不容忍 U+FEFF，带 BOM 的文件会抛
+  // "Unexpected token ''"，用户看到的是一句 JS 内部报错（第 179 轮）
+  const data = JSON.parse(stripBom(text))
   if (!Array.isArray(data)) throw new Error('JSON 根节点必须是数组')
   return data as Record<string, unknown>[]
 }
@@ -146,7 +158,10 @@ function cleanCell(key: string, raw: unknown, fields: ImportField[]): unknown {
   const f = fields.find((x) => x.key === key)
   if (f?.type === 'number' && str !== '') {
     const n = Number(str)
-    return isNaN(n) ? str : n
+    // 只接受**有限数**（第 179 轮）：`isNaN` 放过 ±Infinity，而 'Infinity' / '1e400'
+    // 转成 Infinity 后 JSON.stringify 会写成 null —— 导入完用户看到的是"金额为空"，
+    // 数据静默丢失。非有限数保留原串，至少不篡改。
+    return Number.isFinite(n) ? n : str
   }
   return str
 }
