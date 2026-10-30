@@ -237,6 +237,7 @@ describe('endSignature 收笔与回写', () => {
   it('**收笔回写 dataURL**（update:modelValue）', async () => {
     const w = mountSig()
     await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointermove', ptr(60, 40))
     await w.find('canvas').trigger('pointerup')
     expect(w.emitted('update:modelValue')).toBeTruthy()
     expect(w.emitted('update:modelValue')!.at(-1)).toEqual([PNG_URL])
@@ -248,9 +249,27 @@ describe('endSignature 收笔与回写', () => {
     expect(w.emitted('update:modelValue'), '不该白写').toBeUndefined()
   })
 
+  it('**起笔但未运笔（单击/手抖单点）不回写空白图**（第 183 轮）', async () => {
+    // 单击只走 moveTo、从不 stroke：画布上没有任何墨迹。
+    // 此前 endSignature 无条件 toDataURL，于是"点一下"就让 required 字段变成已签名，
+    // 提交上来的是一张全透明 PNG —— 与同文件「避免空图覆盖原签名」的意图相悖。
+    const w = mountSig()
+    await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointerup')
+    expect(w.emitted('update:modelValue'), '没有笔迹就不该写值').toBeUndefined()
+  })
+
+  it('**起笔但未运笔后 pointerleave 同样不回写**', async () => {
+    const w = mountSig()
+    await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointerleave')
+    expect(w.emitted('update:modelValue')).toBeUndefined()
+  })
+
   it('**pointerleave 也收笔并回写**（滑出边界结束一笔）', async () => {
     const w = mountSig()
     await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointermove', ptr(60, 40))
     await w.find('canvas').trigger('pointerleave')
     expect(w.emitted('update:modelValue')!.at(-1)).toEqual([PNG_URL])
   })
@@ -267,8 +286,10 @@ describe('endSignature 收笔与回写', () => {
   it('**连续两笔各自回写一次**', async () => {
     const w = mountSig()
     await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointermove', ptr(40, 30))
     await w.find('canvas').trigger('pointerup')
     await w.find('canvas').trigger('pointerdown', ptr(30, 20))
+    await w.find('canvas').trigger('pointermove', ptr(60, 40))
     await w.find('canvas').trigger('pointerup')
     expect(w.emitted('update:modelValue')).toHaveLength(2)
   })
@@ -276,6 +297,7 @@ describe('endSignature 收笔与回写', () => {
   it('**toDataURL 以 image/png 请求**', async () => {
     const w = mountSig()
     await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointermove', ptr(40, 30))
     await w.find('canvas').trigger('pointerup')
     expect(HTMLCanvasElement.prototype.toDataURL).toHaveBeenCalledWith('image/png')
   })
@@ -298,6 +320,19 @@ describe('clearSignature 清除', () => {
     const w = mountSig()
     await w.find('canvas').trigger('pointerdown', ptr(10, 20))
     await w.find('.fb-signature-clear').trigger('click')
+    expect(w.emitted('update:modelValue')!.at(-1)).toEqual([''])
+  })
+
+  it('**绘画中途清除 → 随后收笔不再回写空白图**（否则覆盖刚清空的值）', async () => {
+    // down → move（有墨迹）→ 点清除（画布清空、值写 ''）→ up：
+    // 若清除不复位"本笔已有墨迹"的标记，收笔会把空画布 toDataURL 再写一遍，
+    // 把刚清空的值覆盖成一张全透明 PNG。
+    const w = mountSig()
+    await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointermove', ptr(40, 30))
+    await w.find('.fb-signature-clear').trigger('click')
+    await w.find('canvas').trigger('pointerup')
+    expect(w.emitted('update:modelValue'), '只应回写一次（清除那次）').toHaveLength(1)
     expect(w.emitted('update:modelValue')!.at(-1)).toEqual([''])
   })
 

@@ -20,6 +20,15 @@ const emit = defineEmits<{
 /** 签名 canvas ref */
 const signatureCanvasRef = ref<HTMLCanvasElement>()
 let signatureDrawing = false
+/**
+ * 本次起笔是否真的落下过墨迹（第 183 轮）。
+ *
+ * `pointerdown` 只 `moveTo`、不 `stroke`；只有 `pointermove` 才真正画线。
+ * 因此「单击 / 手抖单点」（down 后直接 up）画布上什么都没有，若照旧无条件
+ * `toDataURL`，就会把一张全透明 PNG 写成字段值 —— required 校验通过、
+ * 提交上来却是空白签名。与同文件「避免空图覆盖原签名」的意图相悖。
+ */
+let signatureHasStroke = false
 
 /** 把指针事件坐标换算为 canvas 内部像素坐标（canvas 属性尺寸与 CSS 显示尺寸可能不一致） */
 function signaturePoint(e: PointerEvent): { x: number; y: number } {
@@ -32,6 +41,7 @@ function signaturePoint(e: PointerEvent): { x: number; y: number } {
 
 function startSignature(e: PointerEvent): void {
   signatureDrawing = true
+  signatureHasStroke = false
   const canvas = signatureCanvasRef.value
   if (!canvas) return
   // 指针捕获：笔迹滑出画布不丢笔（否则 pointermove 不再派发，线断在边界）
@@ -59,11 +69,16 @@ function drawSignature(e: PointerEvent): void {
   const p = signaturePoint(e)
   ctx.lineTo(p.x, p.y)
   ctx.stroke()
+  signatureHasStroke = true
 }
 
 function endSignature(): void {
   if (!signatureDrawing) return
   signatureDrawing = false
+  // 只回写真正画过的那一笔（第 183 轮）：单击只 moveTo 未 stroke，画布仍是空的，
+  // 此时写 dataURL 等于把「空白签名」提交成有效值
+  if (!signatureHasStroke) return
+  signatureHasStroke = false
   // 绘制结束即回写 dataURL，保证提交时签名字段有值
   const canvas = signatureCanvasRef.value
   if (canvas) emit('update:modelValue', canvas.toDataURL('image/png'))
@@ -75,6 +90,10 @@ function clearSignature(): void {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   ctx.clearRect(0, 0, canvas.width, canvas.height)
+  // 清除即作废"本笔"（第 183 轮）：否则绘画中途点清除后，随后的 pointerup
+  // 会因 hasStroke 仍为 true 把空画布再 toDataURL 一遍，覆盖掉刚写入的 ''
+  signatureDrawing = false
+  signatureHasStroke = false
   emit('update:modelValue', '')
 }
 
