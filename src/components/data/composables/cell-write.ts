@@ -15,6 +15,16 @@ export interface CellWriteDeps {
   getDisplayValue: (rowKey: string, colKey: string) => string | undefined
   /** 历史回写完成后同步外部缓存（如选择态的复制缓存） */
   onAfterHistory: (changes: { rowKey: string; colKey: string }[]) => void
+  /**
+   * 该格是否允许写入（第 178 轮）。
+   *
+   * 漏斗自称「所有单元格写入的唯一入口」，但此前**不做只读校验**，于是各入口各自判：
+   * 清空判了 `editable === false`，粘贴（7 个写入点）却没判，一个文件两套口径，
+   * 只读列被 Excel 粘贴整列覆盖。这里补一道兜底闸口 —— 入口该判的照旧判（给出更早的
+   * 用户提示），漏斗负责保证"无论如何不写进只读列"。
+   * 省略该依赖 = 不设限（既有调用与测试保持原行为）。
+   */
+  isWritable?: (rowKey: string, colKey: string) => boolean
 }
 
 export function useCellWrite(emit: CellEditEmit, deps: CellWriteDeps) {
@@ -33,7 +43,9 @@ export function useCellWrite(emit: CellEditEmit, deps: CellWriteDeps) {
   }
 
   /** 批量写入：先快照「写入前」状态再写，整批 push 成一条撤销记录 */
-  function applyChanges(entries: WriteEntry[]) {
+  function applyChanges(all: WriteEntry[]) {
+    // 只读闸口（第 178 轮）：把不可写列的条目挡在漏斗口，防止任何入口漏判
+    const entries = deps.isWritable ? all.filter((en) => deps.isWritable!(en.rowKey, en.colKey)) : all
     if (!entries.length) return
     // 全部条目按**写入前**口径取 before；同一格重复出现时也能被逆序回滚抹平
     const changes = entries.map((en) => ({

@@ -40,6 +40,9 @@ export function useTableEdit(props: CellEditProps, emit: CellEditEmit, hooks?: T
         select.selectedCellValue.value = hooks?.getCellDisplayValue?.(sc.rowKey, sc.colKey) ?? ''
       }
     },
+    // 只读闸口（第 178 轮）：只读列任何路径都写不进去。
+    // 列不存在（如自定义 cellKey / 计算列）时不设限，保持既有行为。
+    isWritable: (_rk, ck) => props.columns?.find((c) => c.key === ck)?.editable !== false,
   })
 
   // 选择模型（cell-edit 的 startEdit 由下方 edit 模块提供，这里用惰性转发避免循环依赖）

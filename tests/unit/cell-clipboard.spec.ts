@@ -77,18 +77,20 @@ beforeEach(() => {
 })
 
 describe('pasteText：矩阵 vs 单值', () => {
-  it('单值 + 矩形选区：填满整个区域，一条 applyChanges', () => {
+  it('单值 + 矩形选区：填满整个区域，一条 applyChanges（只读列被跳过）', () => {
     const { api, changes } = makeDeps({
       rangeSel: {
         rows: ['r1', 'r2'],
-        cols: ['a', 'ro'], // ro 列虽只读，但 isAllowedColumnValue 只管 accept/options（readonly 写在写入漏斗层拦）
+        cols: ['a', 'ro'],
         anchor: { rowIndex: 0, colIndex: 0 },
         focus: { rowIndex: 1, colIndex: 1 },
       },
     })
     api.pasteText('统一值')
     expect(changes).toHaveLength(1)
-    expect(changes[0].map((e) => `${e.rowKey}:${e.colKey}`)).toEqual(['r1:a', 'r1:ro', 'r2:a', 'r2:ro'])
+    // 第 178 轮：此前这条断言把 'ro' 也列了进去（只读列被写入），依据是注释里
+    // 「readonly 写在写入漏斗层拦」——但 cell-write.ts 并没有这个校验。
+    expect(changes[0].map((e) => `${e.rowKey}:${e.colKey}`)).toEqual(['r1:a', 'r2:a'])
     expect(changes[0].every((e) => e.value === '统一值')).toBe(true)
   })
 
@@ -390,5 +392,57 @@ describe('onCellPaste / 图片拖拽', () => {
     api.onImageDragOver(over)
     api.onImageDragLeave(over as never)
     expect(td.classList.contains('drag-over-image')).toBe(false)
+  })
+})
+
+/* ═══════════ 只读列不可被粘贴覆盖（第 178 轮） ═══════════
+ *
+ * 原注释写的是「readonly 写在写入漏斗层拦」，但 `cell-write.ts` 头部列出的三件事只有
+ * 记已修改行 / emit cellChange / 整批撤销 —— **没有任何只读校验**。
+ * 于是 7 个粘贴写入点全部能覆盖只读列，而同一文件里的「清空」路径（L170/L183）
+ * 却老老实实判了 editable === false：一个文件里两套口径。
+ */
+describe('只读列：粘贴一律不写（与清空路径同口径）', () => {
+  it('单选格粘贴到只读列 → 零写入', () => {
+    const { api, changes, singles } = makeDeps({ selectedCell: { rowKey: 'r1', colKey: 'ro' } })
+    api.pasteText('新值')
+    expect(singles, '只读列不该被写入').toEqual([])
+    expect(changes.flat()).toEqual([])
+  })
+
+  it('**矩阵粘贴：只读列条目被跳过，其它列照写**（整片粘贴最常见的场景）', () => {
+    const { api, changes } = makeDeps({ selectedCell: { rowKey: 'r1', colKey: 'ro' } })
+    api.pasteText('甲\t乙')
+    // 锚点在 ro 列：ro 拒收，之后的列越界
+    expect(changes.flat().map((e) => e.colKey)).not.toContain('ro')
+  })
+
+  it('**整列粘贴落到只读列 → 零写入**（否则一次覆盖整列所有行）', () => {
+    const { api, changes } = makeDeps({ selectedColKey: 'ro', pasteRowKeys: ['r1', 'r2'] })
+    api.pasteText('覆盖值')
+    expect(changes.flat(), '整列只读不该被覆盖').toEqual([])
+  })
+
+  it('多选集合里混有只读列 → 只读列跳过、其它列照写', () => {
+    const { api, changes } = makeDeps({ multiKeys: ['r1|a', 'r1|ro'] })
+    api.pasteText('值')
+    const written = changes.flat().map((e) => e.colKey)
+    expect(written).toContain('a')
+    expect(written, '只读列必须被跳过').not.toContain('ro')
+  })
+
+  it('矩形选区单值填充含只读列 → 只读列被跳过', () => {
+    const { api, changes } = makeDeps({
+      rangeSel: {
+        rows: ['r1', 'r2'],
+        cols: ['a', 'ro'],
+        anchor: { rowIndex: 0, colIndex: 0 },
+        focus: { rowIndex: 1, colIndex: 1 },
+      },
+    })
+    api.pasteText('填满')
+    const written = changes.flat()
+    expect(written.some((e) => e.colKey === 'a')).toBe(true)
+    expect(written.some((e) => e.colKey === 'ro'), '只读列必须被跳过').toBe(false)
   })
 })

@@ -35,9 +35,16 @@ export function useCellClipboard(deps: CellClipboardDeps) {
   /** 整列粘贴时的目标行键（DataTable 在勾选变化时同步） */
   const pasteRowKeys = ref<string[]>([])
 
-  /** 列是否接受某粘贴值：图片列拒绝文本；下拉选项列仅接受选项内值（保护数据约束） */
+  /** 列是否接受某粘贴值：只读列一律拒绝；图片列拒绝文本；下拉选项列仅接受选项内值（保护数据约束）
+   *
+   * 第 178 轮：此前这里只判 accept/options，**没判只读列**，7 个粘贴写入点全部能覆盖
+   * `editable === false` 的列（整列粘贴更是一次覆盖该列所有行）。而同一文件的清空路径
+   * 判了 editable —— 一个文件两套口径。写入漏斗 `cell-write.ts` 并不做只读校验
+   * （它只负责记已修改行 / emit / 整批撤销），所以判据必须落在入口这一层。
+   */
   function isAllowedColumnValue(col: Column | undefined, value: string): boolean {
     if (!col) return true
+    if (col.editable === false) return false
     if (col.accept === 'image') return false
     if (!col.options || col.options.length === 0) return true
     return col.options.some((o) =>
