@@ -49,6 +49,28 @@ const DB_NAME = 'saas_local_v2'
 let _db: IDBDatabase | null = null
 let _dbPromise: Promise<IDBDatabase> | null = null
 
+/**
+ * 给连接挂「版本变更自愈」（第 181 轮抽成共享函数）：
+ * 另一标签页升级版本时主动 close 本连接并重置缓存，下次 openDB 按新版本重开 ——
+ * 不挂的话，旧连接会把对方的升级挡在 onblocked，写入报"升级被阻塞"。
+ *
+ * 两条建立连接的路径（openDB 正常打开 / ensureStore 升级）都必须调用：
+ * 升级路径此前绕过了这段代码，其连接对版本变更完全失聪。
+ */
+function attachVersionSelfHeal(db: IDBDatabase): void {
+  db.onversionchange = () => {
+    try {
+      db.close()
+    } catch {
+      /* 已关闭 */
+    }
+    if (_db === db) {
+      _db = null
+      _dbPromise = null
+    }
+  }
+}
+
 function openDB(): Promise<IDBDatabase> {
   if (_db) return Promise.resolve(_db)
   if (_dbPromise) return _dbPromise
@@ -74,17 +96,7 @@ function openDB(): Promise<IDBDatabase> {
     }
     req.onsuccess = () => {
       _db = req.result
-      // 另一标签页升级版本时主动释放旧连接并重置缓存，
-      // 下次调用 openDB 按新版本重开（复用上方失败自愈机制），避免旧连接事务报 InvalidStateError
-      _db.onversionchange = () => {
-        try {
-          _db?.close()
-        } catch {
-          /* 已关闭 */
-        }
-        _db = null
-        _dbPromise = null
-      }
+      attachVersionSelfHeal(_db)
       resolve(_db)
     }
     req.onerror = () => {
@@ -134,6 +146,9 @@ async function ensureStore(store: string): Promise<void> {
       req.onsuccess = () => {
         _db = req.result
         _dbPromise = Promise.resolve(_db)
+        // 升级建立的连接同样要挂自愈（第 181 轮）：此前没挂，
+        // 多标签页下第二次升级会被这条旧连接挡住（onblocked）
+        attachVersionSelfHeal(_db)
         resolve()
       }
       req.onerror = () => reject(req.error)
