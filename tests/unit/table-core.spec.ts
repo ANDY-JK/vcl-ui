@@ -150,3 +150,56 @@ describe('useTableCore 数据管道（P2-3 拆分安全网）', () => {
     expect(meta.get(rows[1])?.striped).toBe(true)
   })
 })
+
+/* ═══════════ 显示文本 vs 取值：筛选/搜索口径（第 191 轮） ═══════════
+ *
+ * 表格里"显示文本"（走 getCellText，含 col.render）与"取值"（原始数据）是两条通道。
+ * TD-86 记下要核对两处：
+ *   · **筛选**必须按**取值**匹配（选项 value 是 1/2/3，与 render 出来的标签无关）；
+ *   · **搜索**必须按**显示文本**匹配（用户搜的是屏幕上看到的内容）。
+ * 两条都在这里钉死，避免以后有人"统一口径"时把其中一条改坏。
+ */
+describe('显示文本 vs 取值：筛选/搜索口径', () => {
+  const renderCols: Column[] = [
+    {
+      key: 's',
+      title: '状态',
+      options: [{ value: 1, label: '待办', color: '#ef4444' }],
+      render: (v: unknown) => (v === 1 ? '待办' : '已完成'),
+    },
+  ]
+  const renderRows = [
+    { id: 'r1', s: 1 },
+    { id: 'r2', s: 2 },
+  ]
+
+  function makeRendered() {
+    const filterState = ref<Record<string, ColumnFilterState>>({})
+    const hiddenColumns = ref(new Set<string>())
+    const visibleColumns = computed(() => renderCols)
+    const globalSearch = ref('')
+    const core = useTableCore(
+      { data: renderRows } as never,
+      (() => {}) as never,
+      filterState,
+      hiddenColumns,
+      visibleColumns,
+      globalSearch,
+    )
+    return { core, filterState, globalSearch }
+  }
+
+  it('**筛选按取值**：selectedValues 存字符串 "1" 也能命中数字 1 的行', () => {
+    const { core, filterState } = makeRendered()
+    filterState.value = { s: { searchText: '', selectedValues: ['1'] } }
+    expect(core.displayData.value.map((r) => r.id)).toEqual(['r1'])
+  })
+
+  it('**搜索按显示文本**：搜 render 后的「待办」能命中', () => {
+    const { core, globalSearch } = makeRendered()
+    globalSearch.value = '待办'
+    expect(core.displayData.value.map((r) => r.id), '显示文本可搜').toEqual(['r1'])
+    globalSearch.value = '已完成'
+    expect(core.displayData.value.map((r) => r.id)).toEqual(['r2'])
+  })
+})
