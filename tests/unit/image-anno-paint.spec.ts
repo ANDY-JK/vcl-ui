@@ -35,9 +35,10 @@ describe('mapAnnoToImage · 坐标映射', () => {
   })
 })
 
-/** 2D 上下文 mock：记录调用序列供断言 */
-function mockCtx(): { ctx: CanvasRenderingContext2D; calls: string[] } {
+/** 2D 上下文 mock：记录调用序列供断言；strokes 快照每次 stroke() 的样式/线宽 */
+function mockCtx(): { ctx: CanvasRenderingContext2D; calls: string[]; strokes: Array<{ style: string; width: number }> } {
   const calls: string[] = []
+  const strokes: Array<{ style: string; width: number }> = []
   const rec = (m: string) => calls.push(m)
   const ctx = {
     strokeStyle: '',
@@ -62,6 +63,7 @@ function mockCtx(): { ctx: CanvasRenderingContext2D; calls: string[] } {
     },
     stroke() {
       rec('stroke')
+      strokes.push({ style: String(ctx.strokeStyle), width: ctx.lineWidth })
     },
     moveTo(x: number, y: number) {
       rec(`moveTo:${x},${y}`)
@@ -70,7 +72,7 @@ function mockCtx(): { ctx: CanvasRenderingContext2D; calls: string[] } {
       rec(`lineTo:${x},${y}`)
     },
   } as unknown as CanvasRenderingContext2D
-  return { ctx, calls }
+  return { ctx, calls, strokes }
 }
 
 describe('paintAnno · 绘制契约', () => {
@@ -113,7 +115,33 @@ describe('paintAnno · 绘制契约', () => {
     expect(calls).toContain('moveTo:1,1')
     expect(calls).toContain('lineTo:2,2')
     paintAnno(ctx, pen, true)
-    expect(calls.filter((c) => c === 'lineTo:2,2')).toHaveLength(2)
+    // 第 182 轮：选中改为「白描边垫底 + 彩线在上」，sel 那次要画两条轨迹，共 3 次
+    expect(calls.filter((c) => c === 'lineTo:2,2')).toHaveLength(3)
+  })
+
+  it('pen 未选中：单次**彩色**描边', () => {
+    const { ctx, strokes } = mockCtx()
+    paintAnno(ctx, { type: 'pen', id: 'p', color: '#000', lw: 2, points: [{ x: 1, y: 1 }, { x: 2, y: 2 }] }, false)
+    expect(strokes).toEqual([{ style: '#000', width: 2 }])
+  })
+
+  it('**pen 选中：白色描边是垫底高亮，彩色线仍要画**（选中不是把线条变白）', () => {
+    // 此前 sel 分支只 stroke 一次白线：浅色图片上选中的画笔标注几乎隐形
+    const { ctx, strokes } = mockCtx()
+    paintAnno(ctx, { type: 'pen', id: 'p', color: '#000', lw: 2, points: [{ x: 1, y: 1 }, { x: 2, y: 2 }] }, true)
+    expect(strokes, '两次 stroke：白描边垫底 + 彩色线在上').toEqual([
+      { style: '#fff', width: 4 }, // lw + 2*s（s=1）
+      { style: '#000', width: 2 },
+    ])
+  })
+
+  it('**pen 选中在导出缩放下同样成立**（s=2：lw=4，白描边 lw+4，彩线 4）', () => {
+    const { ctx, strokes } = mockCtx()
+    paintAnno(ctx, { type: 'pen', id: 'p', color: '#123', lw: 2, points: [{ x: 1, y: 1 }, { x: 2, y: 2 }] }, true, 2)
+    expect(strokes).toEqual([
+      { style: '#fff', width: 8 }, // lw(=max(2,2*2)=4) + 2*s
+      { style: '#123', width: 4 },
+    ])
   })
 
   it('lineWidth 保底 2px（导出 s=1 时 1.5px 描边按 2 画）', () => {

@@ -66,19 +66,29 @@ export function paintAnno(ctx: CanvasRenderingContext2D, a: Annotation, sel: boo
   } else if (a.type === 'pen') {
     ctx.lineCap = 'round'
     ctx.setLineDash([])
-    ctx.beginPath()
-    if (sel) {
-      ctx.strokeStyle = '#fff'
-      ctx.lineWidth = lw + 2 * s
-    }
-    for (let i = 0; i < a.points.length; i++) {
-      const p = a.points[i]
-      if (i === 0) {
-        ctx.moveTo(p.x, p.y)
-      } else {
-        ctx.lineTo(p.x, p.y)
+    const trace = () => {
+      ctx.beginPath()
+      for (let i = 0; i < a.points.length; i++) {
+        const p = a.points[i]
+        if (i === 0) {
+          ctx.moveTo(p.x, p.y)
+        } else {
+          ctx.lineTo(p.x, p.y)
+        }
       }
     }
+    // 选中高亮 = 白色描边**垫底**（第 182 轮）：此前 sel 分支只 stroke 一次白线，
+    // 把彩色线条整个替换掉 —— 浅色图片上选中的画笔标注几乎隐形。
+    // rect/circle 的选中语义是「彩色本体 + 高亮装饰」，pen 应同口径：白描边在下，彩线在上。
+    if (sel) {
+      trace()
+      ctx.strokeStyle = '#fff'
+      ctx.lineWidth = lw + 2 * s
+      ctx.stroke()
+    }
+    ctx.strokeStyle = a.color
+    ctx.lineWidth = lw
+    trace()
     ctx.stroke()
   }
   ctx.setLineDash([])
