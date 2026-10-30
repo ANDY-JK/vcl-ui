@@ -15,6 +15,19 @@ describe('formatSize', () => {
     expect(formatSize(1024 * 1024)).toBe('1.0 MB')
     expect(formatSize(1024 * 1024 * 1024)).toBe('1.00 GB')
   })
+
+  it('**脏输入 → 空串，不产出 "NaN GB" / "null B"**（第 187 轮）', () => {
+    // 模块头部承诺「所有函数带容错/降级：接受 unknown 输入」，
+    // 但 formatSize 完全没守卫：NaN / undefined / 'abc' 一路比较全为 false，
+    // 落到 GB 分支拼出 "NaN GB"；null 走 B 分支拼出 "null B"。
+    // 上传组件（Upload.vue:464）直接把它渲染在文件条目上。
+    const dirty: unknown[] = [NaN, Infinity, -Infinity, undefined, null, '', 'abc', {}, []]
+    for (const v of dirty) {
+      expect(formatSize(v as never), `输入 ${String(v)}`).toBe('')
+    }
+    // 负大小无意义，同样按非法处理
+    expect(formatSize(-1)).toBe('')
+  })
 })
 
 describe('calcTotalPages', () => {

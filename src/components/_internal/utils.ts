@@ -240,8 +240,12 @@ export function formatMoney(
   return sign + symbol + formatNumber(Math.abs(value), { decimals, separator })
 }
 
-/** 格式化文件大小（B/KB/MB/GB） */
+/** 格式化文件大小（B/KB/MB/GB）。脏输入返回空串（第 187 轮） */
 export function formatSize(bytes: number): string {
+  // 本文件头部承诺「所有函数带容错/降级：接受 unknown 输入」，但这里原先没有守卫：
+  // NaN / undefined / 'abc' 与任何阈值比较都为 false，一路落到 GB 分支拼出 "NaN GB"；
+  // null 走 B 分支拼出 "null B"。上传组件直接把它渲染在文件条目上。
+  if (typeof bytes !== 'number' || !isFinite(bytes) || bytes < 0) return ''
   if (bytes < 1024) return bytes + ' B'
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
   if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB'
@@ -532,6 +536,10 @@ export function maskIdCard(id?: unknown): string {
 
 /** 任意输入转 Date，非法返回 null */
 function toDate(v: Date | number | string): Date | null {
+  // 第 187 轮：null/undefined 必须先挡掉。`new Date(null)` 是**合法的纪元 0**，
+  // 于是"没有时间"被显示成 1970-01-01（与同函数对 'bad' 返回 '' 的口径不一致）。
+  // 注意 0 是合法时间戳，不能一起砍。
+  if (v === null || v === undefined) return null
   const d = v instanceof Date ? v : new Date(v)
   return isNaN(d.getTime()) ? null : d
 }

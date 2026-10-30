@@ -603,6 +603,15 @@ describe('formatRelativeTime', () => {
   it('非法输入返回空串', () => {
     expect(formatRelativeTime('bad', now)).toBe('')
   })
+
+  it('**null / undefined 时间 → 空串，不是 1970-01-01**（第 187 轮）', () => {
+    // toDate 用 `new Date(v)` 兜底：null 会被转成纪元 0（合法 Date），
+    // 于是"没有时间"被显示成 1970-01-01 —— 与同函数对 'bad' 返回 '' 的口径不一致。
+    expect(formatRelativeTime(null as never, now), 'null 不该变成 1970').toBe('')
+    expect(formatRelativeTime(undefined as never, now)).toBe('')
+    // 0 是**合法时间戳**（1970-01-01），仍按绝对日期显示 —— 别把合法值一起砍掉
+    expect(formatRelativeTime(0, new Date(2026, 7, 24))).toBe('1970-01-01')
+  })
 })
 
 // ════════════════════════════════════════
