@@ -448,3 +448,62 @@ describe('nav-schema · 数量上限与检索工具', () => {
     expect(firstSelectableNode([{ key: 'g', label: 'G', kind: 'group', children: [] } as NavNode])).toBeNull()
   })
 })
+
+/* ═══════════ 被拒项不得占用 key / 数量名额（第 185 轮） ═══════════
+ *
+ * `seen.add(key)` 与 `count++` 原先写在 kind 校验**之前**，而 form/link/group
+ * 的校验失败会 `continue` 丢掉该项 —— 于是"被丢弃的项"仍占着 key 与 maxNodes 名额：
+ *   · 坏项 + 同 key 好项 → 好项被误判 duplicate-key 丢弃（配了却不出现，还提示"重复"）；
+ *   · 一堆空分组 → 吃掉 maxNodes 预算，后面的正常项被 too-many 截断。
+ * 宿主拿到的配置可能来自自己的数据库，坏项与好项混排是很常见的形态。
+ */
+describe('nav-schema · 被拒项不占名额', () => {
+  it('**坏项被拒后，同 key 的好项仍应保留**（不是 duplicate-key）', () => {
+    const r = parseNavSchema([
+      { key: 'a', kind: 'link', url: '' }, // 被拒：missing-url
+      { key: 'a', label: 'A', kind: 'form', formId: 'f1' }, // 同 key，本应合法
+    ])
+    expect(keys(r.nodes), '好项不该因为前面有坏项而消失').toEqual(['a'])
+    expect(codes(r), '不该报重复').not.toContain('duplicate-key')
+    expect(codes(r), '坏项原因仍要可见').toContain('missing-url')
+  })
+
+  it('**被拒项不吃 maxNodes 预算**（空分组不应把后面的正常项截断）', () => {
+    const r = parseNavSchema(
+      [
+        { key: 'g1', kind: 'group', children: [] }, // 被拒：group-empty
+        { key: 'g2', kind: 'group', children: [] }, // 被拒
+        { key: 'f1', label: 'F1', kind: 'form', formId: 'x' },
+        { key: 'f2', label: 'F2', kind: 'form', formId: 'y' },
+      ],
+      { maxNodes: 2 },
+    )
+    expect(keys(r.nodes), '两个正常项都应保留').toEqual(['f1', 'f2'])
+    expect(codes(r), '不该报超限').not.toContain('too-many')
+  })
+
+  it('**被拒的分组也不占 key**（同 key 的合法叶子仍能出现）', () => {
+    const r = parseNavSchema([
+      { key: 'x', kind: 'group', children: [] }, // 被拒
+      { key: 'x', label: 'X', kind: 'custom' }, // 同 key 合法
+    ])
+    expect(keys(r.nodes)).toEqual(['x'])
+    expect(codes(r)).not.toContain('duplicate-key')
+  })
+
+  it('**正常重复 key 仍然只留第一个**（回归：别把去重一起改坏；逐个 kind 都要占位）', () => {
+    // 每种 kind 的"接收"分支都必须在接收时登记 key，否则同 key 的第二个会溜进来
+    const valid: Record<string, Record<string, unknown>> = {
+      custom: { key: 'a', label: 'A', kind: 'custom' },
+      form: { key: 'a', label: 'A', kind: 'form', formId: 'f1' },
+      link: { key: 'a', label: 'A', kind: 'link', url: '/x' },
+      data: { key: 'a', label: 'A', kind: 'data' },
+      group: { key: 'a', label: 'A', kind: 'group', children: [{ key: 'a-c', label: 'C', kind: 'custom' }] },
+    }
+    for (const [kind, first] of Object.entries(valid)) {
+      const r = parseNavSchema([first, { ...first, label: 'A2' }])
+      expect(keys(r.nodes), `${kind}：重复项应被丢弃`).toEqual(['a'])
+      expect(codes(r), `${kind}：应报 duplicate-key`).toContain('duplicate-key')
+    }
+  })
+})

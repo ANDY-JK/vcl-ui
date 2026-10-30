@@ -218,9 +218,12 @@ export function parseNavSchema(raw: unknown, options: ParseNavSchemaOptions = {}
         label = key
       }
 
-      seen.add(key)
-      count++
-
+      // 第 185 轮：key 与 maxNodes 名额**只在项被真正接收时**才占用。
+      // 此前这两行写在这里（kind 校验之前），而 form/link/group 的校验失败会
+      // continue 丢掉该项 —— 于是"被丢弃的项"仍占着 key 与预算：
+      //   · 坏项 + 同 key 好项 → 好项被误判 duplicate-key 丢弃（配了却不出现，还提示"重复"）；
+      //   · 一堆空分组 → 吃掉 maxNodes 预算，后面的正常项被 too-many 截断。
+      // 宿主配置可能来自自己的数据库，坏项与好项混排是很常见的形态。
       const base: NavNodeBase = { key, label }
       if (typeof entry.icon === 'string' && entry.icon) base.icon = entry.icon
       if (typeof entry.requiredPermission === 'string' && entry.requiredPermission) {
@@ -242,6 +245,9 @@ export function parseNavSchema(raw: unknown, options: ParseNavSchemaOptions = {}
           })
           continue
         }
+        // 分组先占位再递归（父项 key 优先，子项与父同 key 时仍按重复处理）
+        seen.add(key)
+        count++
         out.push({ ...base, kind: 'group', children: walk(children, `${at}.children`, depth + 1) })
         continue
       }
@@ -257,6 +263,8 @@ export function parseNavSchema(raw: unknown, options: ParseNavSchemaOptions = {}
           })
           continue
         }
+        seen.add(key)
+        count++
         out.push({ ...base, kind: 'form', ...(formId ? { formId } : {}), ...(schema ? { schema } : {}) })
         continue
       }
@@ -264,6 +272,8 @@ export function parseNavSchema(raw: unknown, options: ParseNavSchemaOptions = {}
       if (kind === 'data') {
         const display = parseDisplay(entry.display, at, options, issues)
         const columns = Array.isArray(entry.columns) ? entry.columns : undefined
+        seen.add(key)
+        count++
         out.push({ ...base, kind: 'data', ...(display ? { display } : {}), ...(columns ? { columns } : {}) })
         continue
       }
@@ -282,11 +292,15 @@ export function parseNavSchema(raw: unknown, options: ParseNavSchemaOptions = {}
           })
           continue
         }
+        seen.add(key)
+        count++
         out.push({ ...base, kind: 'link', url })
         continue
       }
 
       // custom：宿主自己渲染，本库只搬运 payload
+      seen.add(key)
+      count++
       out.push({ ...base, kind: 'custom', ...(entry.payload === undefined ? {} : { payload: entry.payload }) })
     }
     return out
