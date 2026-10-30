@@ -7,6 +7,9 @@ import {
   parseRegion,
   parseAddress,
   formatRegion,
+  errMessage,
+  toNativeColorValue,
+  formatSize,
   splitRegionDetail,
   downloadBlob,
   deepClone,
@@ -611,6 +614,81 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime(undefined as never, now)).toBe('')
     // 0 是**合法时间戳**（1970-01-01），仍按绝对日期显示 —— 别把合法值一起砍掉
     expect(formatRelativeTime(0, new Date(2026, 7, 24))).toBe('1970-01-01')
+  })
+})
+
+/* ════════════════════════════════════════
+ * 脏输入矩阵（第 188 轮）
+ *
+ * `utils.ts` 头注释承诺「所有函数带容错/降级：接受 unknown 输入（运行时可能是
+ * 数字/对象等脏数据）」。第 187 轮修了 formatSize / toDate 两处，本轮把矩阵铺到
+ * 其余"产出文本"的导出函数：**任何脏输入都不得抛错，也不得产出 NaN/undefined/
+ * [object Object] 这类可见垃圾**（字符串原样透传是文档化行为，允许）。
+ * ════════════════════════════════════════ */
+describe('导出函数 · 脏输入矩阵', () => {
+  const DIRTY: unknown[] = [NaN, Infinity, -Infinity, undefined, null, '', 'abc', {}, [], 0, false]
+
+  it('**formatRegion：null/undefined 返回空串，不抛错**', () => {
+    // 签名是 Region | string；传 null 时旧实现直接读 r.province → 渲染期抛错
+    expect(formatRegion(null as never)).toBe('')
+    expect(formatRegion(undefined as never)).toBe('')
+    expect(formatRegion(NaN as never)).toBe('')
+    expect(formatRegion({ province: '广东省', city: '深圳市' } as never)).toBe('广东省深圳市')
+    expect(formatRegion('广东省深圳市南山区')).toBe('广东省深圳市南山区')
+  })
+
+  it('**hexToRgb：非字符串返回 null，不抛错**（旧实现直接 hex.trim() 崩）', () => {
+    for (const v of [NaN, Infinity, undefined, null, {}, [], 0, false]) {
+      expect(hexToRgb(v as never), `输入 ${String(v)}`).toBeNull()
+    }
+    expect(hexToRgb('')).toBeNull()
+    expect(hexToRgb('#fff')).toEqual({ r: 255, g: 255, b: 255 })
+  })
+
+  it('**buildQueryString：非对象返回空串，不抛错**（旧实现 Object.entries(undefined) 崩）', () => {
+    for (const v of [NaN, Infinity, undefined, null, '', 'abc', 0, false]) {
+      expect(buildQueryString(v as never), `输入 ${String(v)}`).toBe('')
+    }
+    expect(buildQueryString({ a: 1, b: null, c: 'x y' })).toBe('a=1&c=x%20y')
+  })
+
+  it('**rgbToHex：非有限分量按 0 处理，绝不产出 #NAN…**', () => {
+    expect(rgbToHex(NaN, 10, 20)).toBe('#000A14')
+    expect(rgbToHex(Infinity, -Infinity, 300), 'Infinity→0，300→255').toBe('#0000FF')
+    // 正常值仍按四舍五入钳制
+    expect(rgbToHex(255, 128, 0)).toBe('#FF8000')
+  })
+
+  it('**全矩阵不变量：任何脏输入都不得抛错**', () => {
+    const fns: Array<[string, (v: unknown) => unknown]> = [
+      ['formatNumber', (v) => formatNumber(v as never)],
+      ['formatMoney', (v) => formatMoney(v as never)],
+      ['formatSize', (v) => formatSize(v as never)],
+      ['toChineseAmount', (v) => toChineseAmount(v as never)],
+      ['formatRegion', (v) => formatRegion(v as never)],
+      ['formatRelativeTime', (v) => formatRelativeTime(v as never)],
+      ['truncate', (v) => truncate(v, 3)],
+      ['maskName', (v) => maskName(v)],
+      ['maskPhone', (v) => maskPhone(v)],
+      ['maskIdCard', (v) => maskIdCard(v)],
+      ['escapeHtml', (v) => escapeHtml(v)],
+      ['unescapeHtml', (v) => unescapeHtml(v)],
+      ['toNativeColorValue', (v) => toNativeColorValue(v)],
+      ['hexToRgb', (v) => hexToRgb(v as never)],
+      ['isHexColor', (v) => isHexColor(v)],
+      ['parseRegion', (v) => parseRegion(v)],
+      ['parseQueryString', (v) => parseQueryString(v as never)],
+      ['buildQueryString', (v) => buildQueryString(v as never)],
+      ['errMessage', (v) => errMessage(v)],
+      ['isNumeric', (v) => isNumeric(v)],
+      ['isEmpty', (v) => isEmpty(v)],
+      ['deepClone', (v) => deepClone(v)],
+    ]
+    for (const [name, fn] of fns) {
+      for (const v of DIRTY) {
+        expect(() => fn(v), `${name}(${String(v)}) 不该抛错`).not.toThrow()
+      }
+    }
   })
 })
 

@@ -134,6 +134,10 @@ export const parseAddress = parseRegion
 
 /** 拼接区域名（省市区，可选乡镇/详细地址） */
 export function formatRegion(region: Region | string, opts?: { withTown?: boolean; withDetail?: boolean }): string {
+  // 第 188 轮：签名是 Region | string，但运行时可能拿到 null/undefined/数字等脏数据，
+  // 旧实现直接读 r.province → 渲染期抛 "Cannot read properties of null"，整棵组件树崩。
+  if (region == null) return ''
+  if (typeof region !== 'string' && typeof region !== 'object') return ''
   const r = typeof region === 'string' ? parseRegion(region) : region
   const parts: string[] = []
   if (r.province) parts.push(r.province)
@@ -365,6 +369,8 @@ export function parseQueryString(query: string): Record<string, string> {
 
 /** 对象 → 查询字符串（跳过 null/undefined 值）。 */
 export function buildQueryString(params: Record<string, string | number | boolean | null | undefined>): string {
+  // 第 188 轮：非对象直接返回空串（旧实现 Object.entries(undefined/null) 抛 TypeError）
+  if (!params || typeof params !== 'object') return ''
   const parts: string[] = []
   for (const [k, v] of Object.entries(params)) {
     if (v === null || v === undefined) continue
@@ -642,6 +648,8 @@ function isValidHex(hex: string): boolean {
 
 /** HEX（#RGB 或 #RRGGBB）→ { r, g, b }，非法返回 null。 */
 export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  // 第 188 轮：非字符串直接判非法（旧实现 `hex.trim()` 对 null/数字/对象抛 TypeError）
+  if (typeof hex !== 'string') return null
   let h = hex.trim().replace(/^#/, '')
   if (h.length === 3)
     h = h
@@ -659,7 +667,10 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
 /** { r, g, b } → #RRGGBB，分量自动钳制到 0~255 并四舍五入。 */
 export function rgbToHex(r: number, g: number, b: number): string {
   const toHex = (n: number) => {
-    const clamped = Math.max(0, Math.min(255, Math.round(n)))
+    // 第 188 轮：非有限分量（NaN/±Infinity）先归 0 —— 否则 Math.round(NaN) 仍是 NaN，
+    // 最终拼出 "#NAN0A14" 这种非法颜色串（会直接写进 style）
+    const safe = Number.isFinite(n) ? n : 0
+    const clamped = Math.max(0, Math.min(255, Math.round(safe)))
     return clamped.toString(16).padStart(2, '0')
   }
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase()
