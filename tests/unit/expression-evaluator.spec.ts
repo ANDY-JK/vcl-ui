@@ -120,6 +120,29 @@ describe('evaluateFormula · 字段占位符替换', () => {
     expect(typeof result).toBe('string')
   })
 
+  it('**"Number 认、分词器不认"的数值字符串不得被静默丢空**（第 184 轮）', () => {
+    // 判"是否数值字符串"用的是 Number(val)，而分词器只接受 [0-9.] 字面量。
+    // 于是 1e5 / 0x1f / Infinity / 1E+06 这些 Number() 认得的写法被**原样注入**表达式，
+    // 分词时撞上标识符（e5 / x1f / infinity）→ 抛错 → evaluateFormula 兜底返回 ''。
+    // 真实场景：从 Excel 复制科学计数法（1E+06）粘进字段，联动公式失效、目标字段变空。
+    const cases: Array<[string, string, unknown]> = [
+      // [输入, 纯占位符期望, 参与 *2 的期望]
+      ['1e5', '1e5', 200000],
+      ['1E+06', '1E+06', 2000000],
+      ['0x1f', '0x1f', 62],
+      // Infinity 参与算术的结果是非有限值，按第 170 轮契约必须被拦成空串（不得流出）
+      ['Infinity', 'Infinity', ''],
+    ]
+    for (const [input, shown, arith] of cases) {
+      expect(evaluateFormula('{{x}}', { x: input }), `纯占位符：${input}`).toBe(shown)
+      // 参与算术时仍应算得出数（分词器认不出就当字符串，由 mulDiv 的 Number() 强转）
+      expect(evaluateFormula('{{x}} * 2', { x: input }), `参与算术：${input}`).toBe(arith)
+    }
+    // 普通数值字符串仍是数字（不走字符串路径，避免改变既有类型语义）
+    expect(evaluateFormula('{{x}}', { x: '42' })).toBe(42)
+    expect(evaluateFormula('{{x}}', { x: '-5' })).toBe(-5)
+  })
+
   it('值含反斜杠（含以 \\ 结尾）不破坏求值——条件比较原样参与', () => {
     // 旧实现手拼转义：值 "a\" 产生 "a"" → tokenize 抛错走兜底 → truthy 字符串 showHide 恒真
     // 匹配含反斜杠的值：公式字面量用双引号 + \\ 转义（JSON.stringify 替换值同形态）

@@ -21,6 +21,16 @@ type Tok =
   | { kind: 'null' }
   | { kind: 'op'; value: string }
 
+/**
+ * 分词器能直接当作**数字字面量**读的字符串形态（第 184 轮）。
+ *
+ * 必须与 `tokenize` 的数字分支保持同一口径（`[0-9.]` 序列 + 可选前导负号，
+ * 负号由 `parseUnary` 处理）。用它替代 `Number()` 判断"是否数值字符串"——
+ * `Number()` 太宽（认 1e5 / 0x1f / Infinity），宽出来的那些会被原样注入
+ * 表达式并在分词阶段抛错，公式静默失效。
+ */
+const NUMERIC_LITERAL_RE = /^-?(?:\d+(?:\.\d*)?|\.\d+)$/
+
 /** 从公式中提取依赖字段 key：`{{price}} * {{quantity}}` → ['price', 'quantity'] */
 export function extractFields(formula: string): string[] {
   const regex = /\{\{(\w+)\}\}/g
@@ -305,7 +315,13 @@ export function evaluateFormula(formula: string, data: FormData): unknown {
       // 如果是纯数字字符串，直接替换为数字（用于算术）
       // 否则用 JSON.stringify 包裹——任意值（含反斜杠/引号/换行）都成为合法字符串字面量，
       // tokenize 不会因转义失衡抛错（旧实现手拼转义，值以 \ 结尾时求值失败走兜底）
-      if (val !== '' && !isNaN(Number(val))) {
+      //
+      // ⚠️ 第 184 轮：「是不是数字」必须用**分词器认得的字面量语法**判定，不能用 Number()。
+      // Number() 认得 '1e5' / '0x1f' / 'Infinity' / '1E+06'，而 tokenize 只吃 [0-9.] 序列，
+      // 原样注入会撞上标识符（e5 / x1f / infinity）→ 抛错 → 兜底返回 ''，
+      // 表现为"公式静默失效、目标字段变空"（从 Excel 复制科学计数法数字是最常见触发路径）。
+      // 这类值改走字符串字面量：显示原样保留，参与算术时由 mulDiv 的 Number() 强转。
+      if (NUMERIC_LITERAL_RE.test(val)) {
         replacement = val
       } else {
         replacement = JSON.stringify(val)
