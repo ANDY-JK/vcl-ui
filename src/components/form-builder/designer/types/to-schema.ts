@@ -1,4 +1,5 @@
 import type { FormSchema, FormField, FieldContainer, FieldContainerType, FieldType } from '../../types'
+import { graphemeLength } from '@/components/_internal/text-slice'
 import { reportWarn } from '@/components/_internal/runtime-observer'
 import type { Option } from '@/components/shared/types'
 import type { DesignerNode, DesignerNodeType, FormMeta } from './domain'
@@ -290,12 +291,14 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
       const rules: ((v: string) => string | undefined)[] = []
       if (val.minLength !== undefined && val.minLength > 0) {
         rules.push((v: string) =>
-          v.length < val.minLength! ? t('formBuilder.lenMinMsg', { len: val.minLength }) : undefined,
+          // 按用户感知字符计（#278）：emoji 占 2 码元，v.length 会让 3 个字通过「至少 5 个字」
+          graphemeLength(v) < val.minLength! ? t('formBuilder.lenMinMsg', { len: val.minLength }) : undefined,
         )
       }
       if (val.maxLength !== undefined && val.maxLength > 0) {
         rules.push((v: string) =>
-          v.length > val.maxLength! ? t('formBuilder.lenMaxMsg', { len: val.maxLength }) : undefined,
+          // 反方向：emoji 算 2 码元 → 限 10 个字只能输 5 个（#278）
+          graphemeLength(v) > val.maxLength! ? t('formBuilder.lenMaxMsg', { len: val.maxLength }) : undefined,
         )
       }
       if (val.pattern) {

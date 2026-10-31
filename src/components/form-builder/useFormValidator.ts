@@ -11,6 +11,7 @@
  */
 
 import { ref, type Ref } from 'vue'
+import { graphemeLength } from '@/components/_internal/text-slice'
 import type { FormSchema, FormField, FormData, FormErrors, ValidationRuleSpec } from './types'
 import { isLayoutField, isFieldVisible } from './useFormSchema'
 import { useT } from '@/components/_internal/i18n'
@@ -109,7 +110,8 @@ function validateAdvanced(field: FormField, value: unknown): string {
       const min = Number(field.props?.richtextMinChars ?? 0)
       if (min > 0) {
         const text = htmlToPlainText(typeof value === 'string' ? value : '')
-        if (text.trim().length < min) return t('formBuilder.richtextMinChars', { len: min })
+        // 按用户感知字符计（#278）：富文本里的 emoji 占 2 个码元，.length 会让 3 个字算成 6 个
+        if (graphemeLength(text.trim()) < min) return t('formBuilder.richtextMinChars', { len: min })
       }
       break
     }
@@ -254,11 +256,13 @@ export function validateAll(
 export const validators = {
   /** 最小长度 */
   minLen(len: number, label = t('formBuilder.thisField')) {
-    return (v: string) => (v.length < len ? t('formBuilder.minLen', { label, len }) : undefined)
+    // 码元口径会让 emoji 算 2 个：3 个字就能通过「至少 5 个字」—— 校验被绕过（#278）
+    return (v: string) => (graphemeLength(String(v ?? '')) < len ? t('formBuilder.minLen', { label, len }) : undefined)
   },
   /** 最大长度 */
   maxLen(len: number, label = t('formBuilder.thisField')) {
-    return (v: string) => (v.length > len ? t('formBuilder.maxLen', { label, len }) : undefined)
+    // 反方向：emoji 算 2 个 → 限 10 个字只能输 5 个（#278）
+    return (v: string) => (graphemeLength(String(v ?? '')) > len ? t('formBuilder.maxLen', { label, len }) : undefined)
   },
   /** 手机号格式 */
   phone() {

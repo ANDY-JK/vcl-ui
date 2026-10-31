@@ -388,6 +388,24 @@ describe('校验规则：长短限制与自定义正则', () => {
     expect(ruleText(f, 0, 'ab')).toBeUndefined()
   })
 
+  // ── 字数按「用户感知字符」计（#278）──
+  it('**minLength 不能被 emoji 绕过**：3 个 emoji（.length=6）不该通过「至少 5 个字符」', () => {
+    const f = one({ validation: { minLength: 5 } })
+    expect(ruleText(f, 0, '😀😀😀'), '旧实现按码元算长度 6 → 误判通过').toBe('至少 5 个字符')
+    expect(ruleText(f, 0, '😀😀😀😀😀'), '5 个 emoji 才是 5 个字').toBeUndefined()
+  })
+
+  it('**maxLength 不因 emoji 提前拦截**：限 3 个字，3 个 emoji 应通过', () => {
+    const f = one({ validation: { maxLength: 3 } })
+    expect(ruleText(f, 0, '😀😀😀'), '旧实现长度 6 → 误报超限').toBeUndefined()
+    expect(ruleText(f, 0, '😀😀😀😀'), '4 个才该报').toBe('最多 3 个字符')
+  })
+
+  it('组合 emoji（ZWJ）算 1 个字', () => {
+    const f = one({ validation: { maxLength: 1 } })
+    expect(ruleText(f, 0, '👨‍👩‍👧‍👦'), '一个家庭 emoji 是 1 个字').toBeUndefined()
+  })
+
   it('**minLength / maxLength = 0 视为未设置**', () => {
     expect(one({ validation: { minLength: 0, maxLength: 0 } }).rules, '都不加规则').toBeUndefined()
   })

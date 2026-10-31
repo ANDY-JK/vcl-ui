@@ -157,3 +157,38 @@ describe('useFormValidator composable', () => {
     expect(v.errors.value).toEqual({})
   })
 })
+/* ════════════════════════════════════════
+ * 字数校验按「用户感知字符」（#278）
+ *
+ * 旧实现用 `v.length`（UTF-16 码元）：`'😀'.length === 2`。两个方向都错：
+ *   ① minLen 被绕过 —— 3 个 emoji 的 .length 是 6，能通过「至少 5 个字」；
+ *   ② maxLen 过早拦住 —— 限 10 个字，输到第 6 个 emoji 就报"超过 10 个字符"。
+ * ════════════════════════════════════════ */
+describe('字数校验按 grapheme 计数', () => {
+  it('**minLen 不能被 emoji 绕过**：3 个 emoji（.length=6）不该通过「至少 5 个字」', () => {
+    const rule = validators.minLen(5)
+    expect(rule('😀😀😀'), '旧实现长度为 6 会误判通过').toBeTruthy()
+    expect(rule('张三丰'), '3 个中文字同样不通过').toBeTruthy()
+    expect(rule('张三丰是道'), '5 个中文字通过').toBeUndefined()
+    expect(rule('😀😀😀😀😀'), '5 个 emoji 通过').toBeUndefined()
+  })
+
+  it('**maxLen 不因 emoji 提前拦截**：限 5 个字，5 个 emoji 应通过', () => {
+    const rule = validators.maxLen(5)
+    expect(rule('😀😀😀😀😀'), '旧实现长度 10 会误报超限').toBeUndefined()
+    expect(rule('😀😀😀😀😀😀'), '6 个才该报').toBeTruthy()
+    expect(rule('张三丰是道'), '5 个中文字通过').toBeUndefined()
+  })
+
+  it('组合 emoji（ZWJ）算 1 个字', () => {
+    const family = '👨‍👩‍👧‍👦'
+    expect(validators.maxLen(2)(family + family), '2 个组合 emoji 不算超限').toBeUndefined()
+    expect(validators.minLen(2)(family + family), '2 个组合 emoji 够数').toBeUndefined()
+  })
+
+  it('空值/脏值不抛错（校验器不因入参形态崩）', () => {
+    expect(validators.minLen(1)(undefined as never)).toBeTruthy()
+    expect(validators.maxLen(5)(undefined as never)).toBeUndefined()
+    expect(validators.minLen(1)(''), '空串不足 1 字').toBeTruthy()
+  })
+})
