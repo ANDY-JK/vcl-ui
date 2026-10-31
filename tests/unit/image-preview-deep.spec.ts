@@ -514,6 +514,9 @@ describe('底部工具栏', () => {
     expect(wrapper.find('.ip-spinner').exists()).toBe(false)
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no cors header')))
     await toolbarBtn(wrapper, 6).trigger('click')
+    // 2026-10-31 下载改走 blob 通道：toPngBlob 多一跳 Promise，等微任务排空再断言
+    await Promise.resolve()
+    await Promise.resolve()
     expect(downloadMock, '导出流水线要走到底').toHaveBeenCalled()
     expect(String(downloadMock.mock.calls[0]![1]), '文件名 = 标题.png').toBe('封面图.png')
   })
@@ -526,20 +529,22 @@ describe('底部工具栏', () => {
     await wrapper.find('.ip-img').trigger('load')
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no cors')))
     await toolbarBtn(wrapper, 6).trigger('click')
+    await Promise.resolve()
+    await Promise.resolve()
     expect(String(downloadMock.mock.calls[0]![1])).toBe('image.png')
   })
 
-  it('**toDataURL 抛错（跨域污染）→ 跨域提示，不崩**', async () => {
+  it('**toBlob 给 null（跨域污染）→ 跨域提示，不崩**（下载已走 blob 通道）', async () => {
     const { wrapper } = setup({ src: IMG })
-    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(() => {
-      throw new Error('tainted')
-    })
+    HTMLCanvasElement.prototype.toBlob = vi.fn((cb: BlobCallback) => cb(null)) as never
     const img = wrapper.find('.ip-img').element as HTMLImageElement
     Object.defineProperty(img, 'naturalWidth', { value: 800, configurable: true })
     Object.defineProperty(img, 'naturalHeight', { value: 600, configurable: true })
     await wrapper.find('.ip-img').trigger('load')
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no cors')))
     await toolbarBtn(wrapper, 6).trigger('click')
+    await Promise.resolve()
+    await Promise.resolve()
     expect(allToasts()).toContain('跨域')
   })
 

@@ -29,7 +29,7 @@ vi.mock('@/components/_internal/runtime-observer', async (orig) => {
 })
 vi.mock('html2canvas', () => ({ default: vi.fn() }))
 
-import { captureElement, downloadScreenshot, copyScreenshotToClipboard } from '@/components/_internal/useScreenshot'
+import { captureElement, downloadScreenshot, copyScreenshotToClipboard, sanitizeDownloadName } from '@/components/_internal/useScreenshot'
 
 /** 取到被 mock 的 html2canvas（每次用例重置实现） */
 async function h2c() {
@@ -300,6 +300,45 @@ describe('downloadScreenshot', () => {
     expect(downloadScreenshot('data:x')).toBe(false)
     expect(obs.reportWarn).toHaveBeenCalledTimes(1)
     expect(String(obs.reportWarn.mock.calls[0]![0])).toContain('下载截图失败')
+  })
+})
+
+/* ═══════════ sanitizeDownloadName（2026-10-31，#253） ═══════════ */
+
+describe('sanitizeDownloadName', () => {
+  it('Windows 非法字符（\\ / : * ? " < > |）替换成下划线（标题带斜杠的下载不再失败）', () => {
+    expect(sanitizeDownloadName('2026/10/31 报表')).toBe('2026_10_31 报表')
+    expect(sanitizeDownloadName('图:片*名?')).toBe('图_片_名_')
+    expect(sanitizeDownloadName('a"b<c>|')).toBe('a_b_c__')
+    expect(sanitizeDownloadName('C:\\temp\\x.png')).toBe('C__temp_x.png')
+  })
+
+  it('首尾点/空格剥掉（Windows 不允许文件名以点结尾），控制字符替换', () => {
+    expect(sanitizeDownloadName('  名字. ')).toBe('名字')
+    expect(sanitizeDownloadName('...名字...')).toBe('名字')
+    expect(sanitizeDownloadName('a\u0007b')).toBe('a_b')
+  })
+
+  it('全空输入（空串/纯空格）→ 回默认名（不能产出空文件名）；`///` 清洗成 `___` 是合法名', () => {
+    expect(sanitizeDownloadName('')).toBe('image')
+    expect(sanitizeDownloadName('   ')).toBe('image')
+    expect(sanitizeDownloadName('', '报表')).toBe('报表')
+    // `///` 先被替换成 `___` —— 非空即合法（三条下划线是有效文件名），不回默认
+    expect(sanitizeDownloadName('///')).toBe('___')
+  })
+
+  it('downloadScreenshot 传非法文件名 → a.download 已清洗（端到端）', () => {
+    const made: HTMLAnchorElement[] = []
+    const realCreate = document.createElement.bind(document)
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const node = realCreate(tag)
+      if (tag === 'a') {
+        ;(node as HTMLAnchorElement).click = () => made.push(node as HTMLAnchorElement)
+      }
+      return node
+    })
+    downloadScreenshot('data:image/png;base64,ZZ', '2026/10/31: 截图?')
+    expect(made[0]!.download).toBe('2026_10_31_ 截图_')
   })
 })
 

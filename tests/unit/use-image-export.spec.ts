@@ -370,6 +370,18 @@ describe('toPngBlob', () => {
 /* ═══════════ downloadImage ═══════════ */
 
 describe('downloadImage', () => {
+  // 2026-10-31 起 downloadImage 走 blob + objectURL：这两个 API 需要在本 describe 内桩住
+  const createObjectURL = vi.fn(() => 'blob:mock-object-url')
+  const revokeObjectURL = vi.fn()
+  beforeEach(() => {
+    createObjectURL.mockClear()
+    revokeObjectURL.mockClear()
+    vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL })
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('**未加载 → 直接返回**（不合成、不通知）', async () => {
     const h = makeHost({ loaded: false })
     await h.api.downloadImage()
@@ -385,11 +397,13 @@ describe('downloadImage', () => {
     expect(downloadMock).not.toHaveBeenCalled()
   })
 
-  it('**成功：文件名取标题 + notify 成功**', async () => {
+  it('**成功：文件名取标题 + notify 成功**（blob 通道：toBlob → objectURL → download）', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('CORS')))
     const h = makeHost({ titleText: '标注图' })
     await h.api.downloadImage()
-    expect(downloadMock).toHaveBeenCalledWith('data:image/png;base64,AAAA', '标注图.png')
+    // 2026-10-31 起走 toPngBlob + objectURL（省大 dataURL 内存）：download 收到的是 blob URL 而非 dataURL
+    expect(downloadMock).toHaveBeenCalledWith('blob:mock-object-url', '标注图.png')
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-object-url')
     expect(h.notify).toHaveBeenCalledWith('T:imagePreview.downloadOk', 'success')
   })
 
@@ -408,11 +422,13 @@ describe('downloadImage', () => {
     expect(h.notify).toHaveBeenCalledWith('T:imagePreview.downloadFail', 'error')
   })
 
-  it('**toDataURL 抛错 → notify 跨域错误**', async () => {
+  it('**toPngBlob 失败（画布污染）→ notify 跨域错误，不走 download**', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('CORS')))
     HTMLCanvasElement.prototype.toDataURL = vi.fn(() => {
       throw new DOMException('tainted', 'SecurityError')
     }) as never
+    // blob 通道：toBlob 给 null（toPngBlob 返回 null 的口径）
+    toBlobImpl = (cb) => cb(null)
     const h = makeHost()
     await h.api.downloadImage()
     expect(h.notify).toHaveBeenCalledWith('T:imagePreview.exportFailCrossOrigin', 'error')

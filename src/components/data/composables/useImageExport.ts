@@ -81,7 +81,12 @@ export function useImageExport(o: {
     }
   }
 
-  /** 下载 PNG（文件名取当前标题，回退 image.png） */
+  /** 下载 PNG（文件名取当前标题，回退 image.png）。
+   *  优先 blob + objectURL（2026-10-31）：原先用 toDataURL —— 一张 4000×3000 的
+   *  手机照片 dataURL 是几十 MB 的字符串，同图 blob 通道内存占用减半且少一次 base64 编码。
+   *  ① 画布被污染时 toPngBlob 返回 null → 与复制同口径提示跨域失败；
+   *  ② 环境不支持 createObjectURL（旧 WebView/happy-dom 未桩）→ 回退 toDataURL，
+   *     下载动作不能因为省内存的优化而整个失效。 */
   async function downloadImage(): Promise<void> {
     if (!o.isLoaded()) return
     const cvs = await buildExportCanvas()
@@ -89,8 +94,21 @@ export function useImageExport(o: {
       o.notify(o.t('imagePreview.exportFailNotLoaded'), 'error')
       return
     }
+    const name = `${o.title() || 'image'}.png`
+    if (typeof URL.createObjectURL === 'function') {
+      const blob = await toPngBlob(cvs)
+      if (!blob) {
+        o.notify(o.t('imagePreview.exportFailCrossOrigin'), 'error')
+        return
+      }
+      const url = URL.createObjectURL(blob)
+      const ok = downloadScreenshot(url, name)
+      URL.revokeObjectURL(url)
+      o.notify(ok ? o.t('imagePreview.downloadOk') : o.t('imagePreview.downloadFail'), ok ? 'success' : 'error')
+      return
+    }
     try {
-      const ok = downloadScreenshot(cvs.toDataURL('image/png'), `${o.title() || 'image'}.png`)
+      const ok = downloadScreenshot(cvs.toDataURL('image/png'), name)
       o.notify(ok ? o.t('imagePreview.downloadOk') : o.t('imagePreview.downloadFail'), ok ? 'success' : 'error')
     } catch {
       o.notify(o.t('imagePreview.exportFailCrossOrigin'), 'error')
