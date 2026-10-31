@@ -89,9 +89,16 @@ export function useTableScreenshot(o: TableScreenshotOptions) {
  * 公式注入防护（CSV 注入的 TSV 变体）：以 = + - @ 或制表符/回车开头的单元格加单引号
  * 前缀，Excel 按文本打开，防止 =HYPERLINK() 等公式在粘贴后被执行。表头不防护（列名
  * 由调用方列定义给出，非用户数据）。
+ *
+ * 控制字符清洗（2026-10-31，用户反馈"细节"类缺陷）：值内的 \t / \n / \r 一律替换成
+ * 空格 —— TSV 用 \t 分列、\n 分行，值里出现这两个字符会让粘贴进 Excel 后行列错位
+ * （多行文本被拆成多行，后续列全部串行）。col.render 允许返回多行文本，数据本身
+ * 也可含控制字符，构建器必须自己兜住。表头同理清洗（列名来自调用方，同样可能带）。
  */
 export function buildTsv(header: string[], rows: string[][]): string {
-  return [header.join('\t'), ...rows.map((r) => r.map((s) => (/^[=+\-@\t\r]/.test(s) ? `'${s}` : s)).join('\t'))].join(
-    '\n',
-  )
+  const sanitize = (s: string) => s.replace(/[\t\r\n]+/g, ' ')
+  return [
+    header.map(sanitize).join('\t'),
+    ...rows.map((r) => r.map((s) => (/^[=+\-@\t\r]/.test(s) ? `'${sanitize(s)}` : sanitize(s))).join('\t')),
+  ].join('\n')
 }
