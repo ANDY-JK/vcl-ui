@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import { buildFillCells } from './fill-series'
 import type { FillDirection } from './fill-series'
 import type { CellEditProps, WriteEntry } from './cell-types'
+import { isTextWritable } from './cell-types'
 import type { CellSelectApi } from './cell-select'
 import type { CellWriteApi } from './cell-write'
 
@@ -56,7 +57,7 @@ export function useCellFill(deps: CellFillDeps) {
       const ck = cols[ci]
       if (!ck) return false
       const col = props.columns?.find((c) => c.key === ck)
-      if (!col || col.editable === false || col.accept === 'image') return false
+      if (!isTextWritable(col)) return false
     }
     return true
   }

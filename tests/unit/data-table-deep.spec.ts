@@ -513,3 +513,89 @@ describe('复制表格数据', () => {
 
   })
 })
+
+/* ══════════════════ TD-77 / #274：可写判据单一化 ══════════════════ */
+
+describe('「列是否可写」单一谓词（TD-77 收口）', () => {
+  it('三档是包含关系：内联可编 ⊂ 可收文本 ⊂ 非只读', async () => {
+    const { isColumnReadonly, isTextWritable, isInlineEditable } = await import(
+      '@/components/data/composables/cell-types'
+    )
+    const plain = { key: 'a', title: 'A' } as Column
+    const image = { key: 'b', title: 'B', accept: 'image' } as Column
+    const select = { key: 'c', title: 'C', options: ['x'] } as Column
+    const readonly = { key: 'd', title: 'D', editable: false } as Column
+
+    expect([isColumnReadonly(plain), isTextWritable(plain), isInlineEditable(plain)]).toEqual([false, true, true])
+    expect([isColumnReadonly(image), isTextWritable(image), isInlineEditable(image)]).toEqual([false, false, false])
+    expect([isColumnReadonly(select), isTextWritable(select), isInlineEditable(select)]).toEqual([false, true, false])
+    expect([isColumnReadonly(readonly), isTextWritable(readonly), isInlineEditable(readonly)]).toEqual([
+      true,
+      false,
+      false,
+    ])
+    // undefined 列 = 没有列信息：**未声明即非只读**（保持写入漏斗原有宽松口径，
+    // `props.columns?.find(...)?.editable !== false` 也是 true），但"能写文本/能内联编辑"一律 false。
+    expect(isColumnReadonly(undefined), 'undefined 不等于显式只读').toBe(false)
+    expect(isTextWritable(undefined), '无列信息不可写').toBe(false)
+    expect(isInlineEditable(undefined), '无列信息不可内联编辑').toBe(false)
+  })
+
+  it('**双击图片列不进内联编辑**（旧实现会隐藏 img、换成文本框）', async () => {
+    const cols: Column[] = [
+      { key: 'name', title: '名称' },
+      { key: 'avatar', title: '头像', accept: 'image' },
+    ]
+    const dt = mount(DataTable, {
+      props: {
+        columns: cols,
+        data: [{ id: 'r1', name: '甲', avatar: 'https://example.com/a.png' }],
+        rowKey: 'id',
+        editable: true,
+        virtualScroll: false,
+        autoFit: false,
+        persistence: 'none',
+      },
+      attachTo: document.body,
+    })
+    try {
+      await nextTick()
+      const cell = dt.findAll('tbody td').find((td) => td.find('img').exists())
+      expect(cell, '应找到图片单元格').toBeTruthy()
+      await cell!.trigger('dblclick')
+      await nextTick()
+      expect(cell!.find('img').exists(), '图片必须还在（不能被输入框替换）').toBe(true)
+      expect(cell!.find('input').exists(), '不该出现内联输入框').toBe(false)
+    } finally {
+      dt.unmount()
+    }
+  })
+
+  it('**双击 options 列不进内联编辑**（走下拉面板）', async () => {
+    const cols: Column[] = [
+      { key: 'name', title: '名称' },
+      { key: 'opt', title: '选项', options: ['x', 'y'] },
+    ]
+    const dt = mount(DataTable, {
+      props: {
+        columns: cols,
+        data: [{ id: 'r1', name: '甲', opt: 'x' }],
+        rowKey: 'id',
+        editable: true,
+        virtualScroll: false,
+        autoFit: false,
+        persistence: 'none',
+      },
+      attachTo: document.body,
+    })
+    try {
+      await nextTick()
+      const cell = dt.findAll('tbody td')[1]!
+      await cell.trigger('dblclick')
+      await nextTick()
+      expect(cell.find('input').exists(), 'options 列不该出现内联输入框').toBe(false)
+    } finally {
+      dt.unmount()
+    }
+  })
+})

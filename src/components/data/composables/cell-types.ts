@@ -69,3 +69,50 @@ export interface CellEditEmit {
   cellChange: (rowKey: string, colKey: string, newValue: string) => void
   cellNote: (rowKey: string, colKey: string, note: string) => void
 }
+
+// ════════════════════════════════════════
+// 「这列能不能写」的单一判据（TD-77 收口，2026-11-01 #274）
+// ════════════════════════════════════════
+
+/**
+ * ## 为什么要有这一组
+ *
+ * 「列是否可写」这个判据在 data 域里分散过 **6 处**，每处各写一遍条件表达式：
+ * `cell-clipboard`（粘贴/清空）、`cell-fill`、`cell-edit`（Tab 续编 / 内联编辑）、
+ * `cell-select`（键盘导航）、`DataTable.onCellDblClick`、模板里的 `cell-readonly` class。
+ * 已经因此漏判三次：第 177 轮 Tab 落进只读列、第 178 轮粘贴覆盖只读列、
+ * **第 37 轮双击图片列进入内联编辑（图片被文本框替换）** —— 每次都是"另一处没跟上"。
+ *
+ * ## 三档语义（不是同一件事，必须分开命名）
+ *
+ * | 谓词 | 语义 | 用在哪 |
+ * | --- | --- | --- |
+ * | `isColumnReadonly` | 列级只读（`editable === false`） | 所有路径的第一道门 |
+ * | `isTextWritable` | 能接受**文本值**（排除图片列） | 粘贴 / 填充 / 清空 |
+ * | `isInlineEditable` | 能进**内联输入框**（再排除 options 列 —— 下拉列走弹层） | 双击进入编辑 / Tab 续编 / 键盘导航 |
+ *
+ * 三者是**包含关系**：`isInlineEditable ⊂ isTextWritable ⊂ !isColumnReadonly`。
+ * 所以实现只写一次最严格的、其余由它组合，避免再出现"某处少排一个条件"。
+ */
+export function isColumnReadonly(col: Column | undefined): boolean {
+  return col?.editable === false
+}
+
+/** 能接受文本值：非只读、且不是图片列（图片列的值是 URL，不能用键盘/粘贴的文本覆盖） */
+export function isTextWritable(col: Column | undefined): boolean {
+  if (!col) return false
+  if (isColumnReadonly(col)) return false
+  return col.accept !== 'image'
+}
+
+/**
+ * 能进内联输入框：在 isTextWritable 基础上再排除 options 列（下拉列走 openOptDrop 弹层）。
+ *
+ * ⚠️ 用 `!col.options`（**有没有这个属性**）而不是 `!col.options?.length`：
+ * `options: []` 也是「声明为下拉列」（选项可由数据源异步填充），它没有内联输入框。
+ * 用 length 判会让空 options 数组的列变成可内联编辑 —— 那是另一种语义。
+ */
+export function isInlineEditable(col: Column | undefined): boolean {
+  if (!isTextWritable(col)) return false
+  return !col!.options
+}

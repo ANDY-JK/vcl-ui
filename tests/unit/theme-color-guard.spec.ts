@@ -470,7 +470,9 @@ describe('主题适配护栏 · 表格选中按可编辑性分色', () => {
     const fnBlock = menusSrc.slice(fnIdx, fnEnd > fnIdx ? fnEnd : undefined)
     expect(fnBlock, 'isOptionDroppable 应要求 col.options').toContain('col.options')
     expect(fnBlock, 'isOptionDroppable 应要求整表 editable').toContain('props.editable')
-    expect(fnBlock, 'isOptionDroppable 应排除列级 editable:false').toContain('col.editable !== false')
+    // 判据已单一化（TD-77 / #274）：不再裸写 `col.editable !== false`，改为走 isColumnReadonly 谓词。
+    // 断的是**语义等价**：块里必须排除列级只读（谓词内部即 `editable === false`）。
+    expect(fnBlock, 'isOptionDroppable 应通过 isColumnReadonly 排除列级只读').toContain('isColumnReadonly(col)')
 
     // ② 箭头指示器由该判定渲染（不是裸 col.options）
     expect(dt, '下拉箭头应改为由 isOptionDroppable 决定，否则不可编辑列仍显示箭头').toMatch(

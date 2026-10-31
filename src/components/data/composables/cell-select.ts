@@ -3,6 +3,7 @@
 // 填充柄的「选区边界」视图见 cell-fill.ts（它只读本模块的快照，方向单一）。
 import { ref } from 'vue'
 import type { RangeSelection, CellEditProps, TableEditHooks } from './cell-types'
+import { isInlineEditable } from './cell-types'
 import { markActive } from './cell-active'
 
 export interface CellSelectDeps {
@@ -246,7 +247,7 @@ export function useCellSelect(deps: CellSelectDeps) {
     const anchor = navAnchor()
     if (!anchor || !props.editable) return
     const col = props.columns?.find((c) => c.key === anchor.colKey)
-    if (!col || col.editable === false || col.options || col.accept === 'image') return
+    if (!isInlineEditable(col)) return
     e.preventDefault()
     deps.startEdit(anchor.rowKey, anchor.colKey, displayValue(anchor.rowKey, anchor.colKey))
   }

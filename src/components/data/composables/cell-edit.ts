@@ -3,6 +3,7 @@
 import { ref, watch, nextTick } from 'vue'
 import { normalizeCellInput } from './cell-input'
 import type { CellEditProps, TableEditHooks, EditState } from './cell-types'
+import { isInlineEditable } from './cell-types'
 import type { Column } from './types'
 import { markActive } from './cell-active'
 import type { CellWriteApi } from './cell-write'
@@ -133,7 +134,7 @@ export function useCellEdit(deps: CellEditDeps) {
     if (!nk) return
     const col = props.columns?.find((c) => c.key === colKey)
     // 图片列 / 只读列 / options 列不续编（options 列走弹出面板，无内联输入框）
-    const editableCol = !!col && col.editable !== false && col.accept !== 'image' && !col.options
+    const editableCol = isInlineEditable(col)
     if (editableCol) {
       // 直接续编下一行同列，省掉「选中 → Enter」两步
       startEdit(nk, colKey, select.displayValue(nk, colKey))
@@ -165,7 +166,7 @@ export function useCellEdit(deps: CellEditDeps) {
         // 只读列（editable === false）更不能进编辑态（第 177 轮：此前只排除 image/options，
         // Tab 会落进只读列，而模板编辑框只判 editable 与 options → 只读列真的可被写入；
         // 全仓另外 5 处都排除了只读列，只有这里漏了）
-        const inlineEditable = (c: Column) => c.accept !== 'image' && !c.options && c.editable !== false
+        const inlineEditable = (c: Column) => isInlineEditable(c)
         const next = cols.slice(idx + 1).find(inlineEditable) ?? cols.find(inlineEditable)
         if (next && next.key !== curCol) {
           // 必须走 startEdit：它负责 markActive / preEditCell / 清选区，并**预填该格当前值**

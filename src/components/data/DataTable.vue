@@ -35,6 +35,7 @@ import DataTableToolbar from './DataTableToolbar.vue'
 import { provideDataTableContext, type ColumnSettingsPanelExpose, type BatchDialogExpose } from './composables/context'
 import type { Column, Emits, RowAction, RowContextAction, RowLineColor, TableStorage } from './composables/types'
 import type { DateOrder } from './composables/cell-input'
+import { isInlineEditable, isColumnReadonly } from './composables/cell-types'
 import { useTableCore } from './composables/useTableCore'
 import { useTableColumns } from './composables/useTableColumns'
 import { useTableFilter } from './composables/useTableFilter'
@@ -1297,7 +1298,10 @@ function onCardFieldClick(row: Record<string, any>, col: Column, event: MouseEve
 
 /** 单元格双击：编辑模式且列可编辑 → 进入编辑；否则仅保留单元格选中态，清除浏览器双击产生的文本全选 */
 function onCellDblClick(row: Record<string, any>, col: Column, e?: MouseEvent) {
-  const canEdit = props.editable && col.editable !== false
+  // TD-77（#274）：此前是 `props.editable && col.editable !== false` —— **漏了图片列**。
+  // 双击图片单元格会进内联编辑：图片被隐藏、换成文本框，用户能把 URL 以外的文本写进图片列。
+  // 全仓另 5 处都排除了 image/options，只有这里没跟上（TD-77 第三次同类漏判）。
+  const canEdit = props.editable && isInlineEditable(col)
   // options 列双击：打开选项面板（不进入无输入框的内联编辑）
   if (isOptionDroppable(col) && e) {
     openOptDrop(row, col, e)
@@ -1990,7 +1994,7 @@ provideDataTableContext({
                       'cell-modified':
                         (props.modifiedMark || props.originalTooltip) &&
                         (_cellOverrides[rowMetaMap.get(row)?.key ?? ''] ?? {})[col.key] !== undefined,
-                      'cell-readonly': !editable || col.editable === false,
+                      'cell-readonly': !editable || isColumnReadonly(col),
                     },
                     _cellClass(col.key, row, rowDisplayIndex(idx)) ?? '',
                   ]"
@@ -2223,7 +2227,7 @@ provideDataTableContext({
                 'card-field-editing':
                   editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') && editingCell?.colKey === col.key,
                 'card-field-invalid': isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key),
-                'cell-readonly': !editable || col.editable === false,
+                'cell-readonly': !editable || isColumnReadonly(col),
               }"
               @contextmenu.prevent="showContextMenu(col, $event)"
             >

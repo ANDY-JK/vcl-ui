@@ -3,6 +3,7 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import type { CellEditProps, TableEditHooks, EditState, WriteEntry } from './cell-types'
+import { isTextWritable } from './cell-types'
 import type { Column } from './types'
 import type { CellWriteApi } from './cell-write'
 import type { CellSelectApi } from './cell-select'
@@ -44,8 +45,8 @@ export function useCellClipboard(deps: CellClipboardDeps) {
    */
   function isAllowedColumnValue(col: Column | undefined, value: string): boolean {
     if (!col) return true
-    if (col.editable === false) return false
-    if (col.accept === 'image') return false
+    // 判据走单一谓词（TD-77 / #274）：第 178 轮这里漏判只读列，7 个粘贴写入点全部能覆盖
+    if (!isTextWritable(col)) return false
     if (!col.options || col.options.length === 0) return true
     return col.options.some((o) =>
       typeof o === 'string' ? o === value : String(o.value) === value || String(o.label ?? o.value) === value,
@@ -174,7 +175,7 @@ export function useCellClipboard(deps: CellClipboardDeps) {
           const ck = r.cols[ci]
           if (!rk || !ck) continue
           const col = cols.get(ck)
-          if (col?.editable === false || col?.accept === 'image') continue
+          if (!isTextWritable(col)) continue
           entries.push({ rowKey: rk, colKey: ck, value: '' })
         }
       }
@@ -187,7 +188,7 @@ export function useCellClipboard(deps: CellClipboardDeps) {
     const sc = select.selectedCell.value
     if (!sc) return
     const col = cols.get(sc.colKey)
-    if (col?.editable === false || col?.accept === 'image') return
+    if (!isTextWritable(col)) return
     e?.preventDefault?.()
     write.applyChange(sc.rowKey, sc.colKey, '')
     select.selectedCellValue.value = ''

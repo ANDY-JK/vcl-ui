@@ -23,6 +23,7 @@ import { useCellClipboard } from './cell-clipboard'
 import { useCellNote } from './cell-note'
 import { useCellKeyboard } from './cell-keyboard'
 import type { CellEditProps, CellEditEmit, TableEditHooks } from './cell-types'
+import { isColumnReadonly } from './cell-types'
 
 export type { EditState, RangeSelection, TableEditHooks } from './cell-types'
 
@@ -42,7 +43,9 @@ export function useTableEdit(props: CellEditProps, emit: CellEditEmit, hooks?: T
     },
     // 只读闸口（第 178 轮）：只读列任何路径都写不进去。
     // 列不存在（如自定义 cellKey / 计算列）时不设限，保持既有行为。
-    isWritable: (_rk, ck) => props.columns?.find((c) => c.key === ck)?.editable !== false,
+    // 写入漏斗的兜底门：**只判列级只读**（TD-77 / #274）。不能在这里排除图片列 ——
+    // 图片粘贴是写图片列的**合法**路径，这里收紧会把功能关死。
+    isWritable: (_rk, ck) => !isColumnReadonly(props.columns?.find((c) => c.key === ck)),
   })
 
   // 选择模型（cell-edit 的 startEdit 由下方 edit 模块提供，这里用惰性转发避免循环依赖）

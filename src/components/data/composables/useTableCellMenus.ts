@@ -5,6 +5,7 @@
 import { ref, watch, nextTick, type ComputedRef, type Ref } from 'vue'
 import type { Column, ColumnOption, RowMeta } from './types'
 import type { WriteEntry } from './cell-types'
+import { isColumnReadonly } from './cell-types'
 import { clampFloatingPosition, markLayerOpen } from './utils'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 
@@ -104,7 +105,8 @@ export function useTableCellMenus(
    *  ⚠️ 不可编辑的 options 列**不应显示任何「可下拉」暗示**（箭头/手型光标），否则看似能点却点不开。
    *  声明为类型谓词（col is Column & { options: ... }），使调用方在守卫后可直接使用 col.options。 */
   function isOptionDroppable(col: Column): col is Column & { options: NonNullable<Column['options']> } {
-    return !!col.options && !!props.editable && col.editable !== false
+    // 下拉面板可开 = 有选项 + 表格可编辑 + 列非只读（判据走单一谓词，TD-77 / #274）
+    return !!col.options && !!props.editable && !isColumnReadonly(col)
   }
 
   // 面板打开时的触发单元格 rect 快照，用于渲染后精确重定位
