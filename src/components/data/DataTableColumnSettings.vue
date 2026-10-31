@@ -270,12 +270,14 @@ defineExpose({
       <input v-model="colKeyword" class="dt-col-search" :placeholder="t('table.searchCols')" />
       <div class="dt-col-quick-actions">
         <button
+          type="button"
           :title="allColumnsVisible ? t('table.hideAllKeepFirst') : t('table.showAllCols')"
           @click="allColumnsVisible ? toggleAllColsVisible(false) : toggleAllColsVisible(true)"
         >
           {{ allColumnsVisible ? t('table.hideAllCols') : t('table.showAllCols') }}
         </button>
         <button
+          type="button"
           class="dt-reset-width-btn"
           :disabled="!hasManualWidths"
           :title="t('table.resetColWidthsHint')"
@@ -284,6 +286,7 @@ defineExpose({
           {{ t('table.resetColWidths') }}
         </button>
         <button
+          type="button"
           :class="{ active: allFixedLeft }"
           :title="allFixedLeft ? t('table.unfixAllLeft') : t('table.fixAllLeft')"
           @click="toggleAllFixed('left')"
@@ -291,13 +294,14 @@ defineExpose({
           {{ t('table.fixAllLeftShort') }}
         </button>
         <button
+          type="button"
           :class="{ active: allFixedRight }"
           :title="allFixedRight ? t('table.unfixAllRight') : t('table.fixAllRight')"
           @click="toggleAllFixed('right')"
         >
           {{ t('table.fixAllRightShort') }}
         </button>
-        <button :disabled="nothingFixed" :title="t('table.clearAllFixed')" @click="setAllFixed(null)">
+        <button type="button" :disabled="nothingFixed" :title="t('table.clearAllFixed')" @click="setAllFixed(null)">
           {{ t('table.unfixAll') }}
         </button>
       </div>
@@ -321,6 +325,7 @@ defineExpose({
           <span class="dt-col-title" :title="colTitle(col)">{{ colTitle(col) }}</span>
           <span class="dt-col-width">
             <button
+              type="button"
               :disabled="colWidthPx(col) <= Math.max(headerMinW(col), 30)"
               :title="t('table.narrower')"
               @click="adjustColWidth(col.key, -10)"
@@ -328,13 +333,14 @@ defineExpose({
               −
             </button>
             <span :title="t('table.colWidthPx', { n: colWidthPx(col) })">{{ colWidthPx(col) }}</span>
-            <button :title="t('table.wider')" @click="adjustColWidth(col.key, 10)">+</button>
+            <button type="button" :title="t('table.wider')" @click="adjustColWidth(col.key, 10)">+</button>
           </span>
           <span class="dt-col-ops">
-            <button :disabled="i === 0" :title="t('table.moveUp')" @click="moveCol(col.key, -1)">
+            <button type="button" :disabled="i === 0" :title="t('table.moveUp')" @click="moveCol(col.key, -1)">
               <IconSvg type="arrow-up" size="xs" />
             </button>
             <button
+              type="button"
               :disabled="i === _settingsColumns.length - 1"
               :title="t('table.moveDown')"
               @click="moveCol(col.key, 1)"
@@ -343,6 +349,7 @@ defineExpose({
             </button>
             <span class="dt-col-fixed-group" :class="{ disabled: hiddenColumns.has(col.key) }">
               <button
+                type="button"
                 :class="{ active: !isColumnFixed(col) }"
                 :title="t('table.unfixedHint')"
                 :disabled="hiddenColumns.has(col.key)"
@@ -351,6 +358,7 @@ defineExpose({
                 {{ t('common.none') }}
               </button>
               <button
+                type="button"
                 :class="{ active: isColumnFixed(col) === 'left' }"
                 :title="t('table.fixLeftHint')"
                 :disabled="hiddenColumns.has(col.key)"
@@ -359,6 +367,7 @@ defineExpose({
                 {{ t('table.leftShort') }}
               </button>
               <button
+                type="button"
                 :class="{ active: isColumnFixed(col) === 'right' }"
                 :title="t('table.fixRightHint')"
                 :disabled="hiddenColumns.has(col.key)"

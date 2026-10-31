@@ -154,7 +154,7 @@ function onPanelMousedown() {
             <h3 class="modal-title">
               {{ title }}
             </h3>
-            <button v-if="closable" class="modal-close" :aria-label="t('common.close')" @click="close">
+            <button v-if="closable" type="button" class="modal-close" :aria-label="t('common.close')" @click="close">
               <IconSvg type="x" size="md" />
             </button>
           </div>

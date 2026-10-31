@@ -255,19 +255,44 @@ const fldIds = {
             }}</span>
             <!-- 操作列：Vue 组件渲染（v-html 会被 sanitizeHTML 消毒，插槽不受影响） -->
             <span v-else-if="column.key === '_actions'" class="ld-table-actions">
-              <button class="ld-table-act" data-act="share" :data-id="row.id" @click="onTableAction('share', row)">
+              <button
+                type="button"
+                class="ld-table-act"
+                data-act="share"
+                :data-id="row.id"
+                @click="onTableAction('share', row)"
+              >
                 {{ t('fbd.share') }}
               </button>
-              <button class="ld-table-act" data-act="view" :data-id="row.id" @click="onTableAction('view', row)">
+              <button
+                type="button"
+                class="ld-table-act"
+                data-act="view"
+                :data-id="row.id"
+                @click="onTableAction('view', row)"
+              >
                 {{ t('fbd.viewData') }}
               </button>
-              <button class="ld-table-act" data-act="review" :data-id="row.id" @click="onTableAction('review', row)">
+              <button
+                type="button"
+                class="ld-table-act"
+                data-act="review"
+                :data-id="row.id"
+                @click="onTableAction('review', row)"
+              >
                 {{ t('fbd.review') }}
               </button>
-              <button class="ld-table-act" data-act="rename" :data-id="row.id" @click="onTableAction('rename', row)">
+              <button
+                type="button"
+                class="ld-table-act"
+                data-act="rename"
+                :data-id="row.id"
+                @click="onTableAction('rename', row)"
+              >
                 {{ t('fbd.rename') }}
               </button>
               <button
+                type="button"
                 class="ld-table-act ld-danger"
                 data-act="delete"
                 :data-id="row.id"

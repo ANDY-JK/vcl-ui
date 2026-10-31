@@ -192,10 +192,20 @@ function onChartReady(inst: ECharts) {
         <span v-if="tableTitle" class="ct-title">{{ tableTitle }}</span>
       </slot>
       <div class="ct-toggles">
-        <button class="ct-toggle" :class="{ off: !showLegendLocal }" @click="showLegendLocal = !showLegendLocal">
+        <button
+          type="button"
+          class="ct-toggle"
+          :class="{ off: !showLegendLocal }"
+          @click="showLegendLocal = !showLegendLocal"
+        >
           🏷️{{ showLegendLocal ? t('chart.legend') : t('chart.off') }}
         </button>
-        <button class="ct-toggle" :class="{ off: !showTableLocal }" @click="showTableLocal = !showTableLocal">
+        <button
+          type="button"
+          class="ct-toggle"
+          :class="{ off: !showTableLocal }"
+          @click="showTableLocal = !showTableLocal"
+        >
           📋{{ showTableLocal ? t('chart.table') : t('chart.off') }}
         </button>
       </div>

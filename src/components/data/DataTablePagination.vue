@@ -3,7 +3,7 @@
 //
 // ⚠️ 第 140 轮：本文件是"手写副本"，长期缺了 nav/Pagination.vue 已有的四样东西 ——
 //    <nav> 地标 + aria-label、type="button"、aria-current="page"、省略号 aria-hidden。
-//    其中 type="button" 不只是无障碍问题：<button> 默认 type 是 submit，
+//    其中 type="button" 不只是无障碍问题：<button type="button"> 默认 type 是 submit，
 //    宿主把 <DataTable> 放进自己的 <form>（后台 CRUD 常见写法）时，点一下页码就提交了表单。
 // 行为约定：分页状态经 injectDataTableContext 注入（与主文件同一引用）；
 // 样式自 data-table-scoped.css 迁入本组件 scoped（根节点仍带主文件 scope id，外部布局规则不受影响）。

@@ -423,16 +423,16 @@ const { ZOOM_MIN, ZOOM_MAX, zoom, zoomPercent, zoomStyle, zoomIn, zoomOut, reset
                 <span class="ldc-container-label">{{ node.label }}</span>
                 <span class="ldc-container-badge">{{ getTypeLabel(node.type) }}</span>
                 <span class="ldc-container-actions" @click.stop>
-                  <button :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
+                  <button type="button" :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
                     <IconSvg type="chevron-up" size="xs" />
                   </button>
-                  <button :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
+                  <button type="button" :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
                     <IconSvg type="chevron-down" size="xs" />
                   </button>
-                  <button :title="t('common.copy')" @click="emit('duplicate', node.id)">
+                  <button type="button" :title="t('common.copy')" @click="emit('duplicate', node.id)">
                     <IconSvg type="copy" size="xs" />
                   </button>
-                  <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
+                  <button type="button" class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
                     <IconSvg type="trash-2" size="xs" />
                   </button>
                 </span>
@@ -760,16 +760,16 @@ const { ZOOM_MIN, ZOOM_MAX, zoom, zoomPercent, zoomStyle, zoomIn, zoomOut, reset
                 <span class="ldc-card-type-badge">{{ getTypeLabel(node.type) }}</span>
                 <span class="ldc-card-key">{{ node.key }}</span>
                 <span class="ldc-card-actions" @click.stop>
-                  <button :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
+                  <button type="button" :title="t('fbt.moveUp')" @click="emit('move', node.id, -1)">
                     <IconSvg type="chevron-up" size="xs" />
                   </button>
-                  <button :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
+                  <button type="button" :title="t('fbt.moveDown')" @click="emit('move', node.id, 1)">
                     <IconSvg type="chevron-down" size="xs" />
                   </button>
-                  <button :title="t('common.copy')" @click="emit('duplicate', node.id)">
+                  <button type="button" :title="t('common.copy')" @click="emit('duplicate', node.id)">
                     <IconSvg type="copy" size="xs" />
                   </button>
-                  <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
+                  <button type="button" class="ldc-del" :title="t('common.delete')" @click="emit('remove', node.id)">
                     <IconSvg type="trash-2" size="xs" />
                   </button>
                 </span>

@@ -189,7 +189,7 @@ onUnmounted(unmountEsc)
                 {{ title }}
               </h4>
             </slot>
-            <button v-if="closable" class="drawer-close" :aria-label="t('drawer.close')" @click="close">
+            <button v-if="closable" type="button" class="drawer-close" :aria-label="t('drawer.close')" @click="close">
               <IconSvg type="x" size="md" />
             </button>
           </div>

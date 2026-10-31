@@ -35,6 +35,7 @@ function onToggleAll() {
       <button
         v-for="item in items"
         :key="item.name"
+        type="button"
         class="cl-item"
         :class="{ off: !item.visible }"
         :title="item.name"

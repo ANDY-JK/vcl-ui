@@ -86,6 +86,7 @@ const navItemClass = computed(() => {
   <button
     v-if="isGroup"
     v-show="!collapsed"
+    type="button"
     :class="navItemClass"
     :style="levelStyle"
     :aria-expanded="isExpanded"
@@ -98,6 +99,7 @@ const navItemClass = computed(() => {
   <!-- 无子节点：渲染为叶子导航项 -->
   <button
     v-else
+    type="button"
     :class="navItemClass"
     :style="levelStyle"
     :aria-current="isActive ? 'page' : undefined"

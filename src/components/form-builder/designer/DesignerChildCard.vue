@@ -60,16 +60,16 @@ const emit = defineEmits<{
       <span class="ldc-card-type-badge">{{ getTypeLabel(child.type) }}</span>
       <span class="ldc-card-key">{{ child.key }}</span>
       <span v-if="sortable" class="ldc-card-actions" @click.stop>
-        <button :title="t('fbt.moveUp')" @click="emit('move', child.id, -1)">
+        <button type="button" :title="t('fbt.moveUp')" @click="emit('move', child.id, -1)">
           <IconSvg type="chevron-up" size="xs" />
         </button>
-        <button :title="t('fbt.moveDown')" @click="emit('move', child.id, 1)">
+        <button type="button" :title="t('fbt.moveDown')" @click="emit('move', child.id, 1)">
           <IconSvg type="chevron-down" size="xs" />
         </button>
-        <button :title="t('common.copy')" @click="emit('duplicate', child.id)">
+        <button type="button" :title="t('common.copy')" @click="emit('duplicate', child.id)">
           <IconSvg type="copy" size="xs" />
         </button>
-        <button class="ldc-del" :title="t('common.delete')" @click="emit('remove', child.id)">
+        <button type="button" class="ldc-del" :title="t('common.delete')" @click="emit('remove', child.id)">
           <IconSvg type="trash-2" size="xs" />
         </button>
       </span>

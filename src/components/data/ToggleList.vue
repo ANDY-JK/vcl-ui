@@ -89,7 +89,7 @@ function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
 
 /**
  * 行内空格键（第 166 轮修）：`@keydown.space.prevent` 写在**整行**上时，焦点若在内层
- * `<input type="checkbox">`（或 button 变体的 `<button>`），按键冒泡到行 → `.prevent`
+ * `<input type="checkbox">`（或 button 变体的 `<button type="button">`），按键冒泡到行 → `.prevent`
  * 把默认行为（空格切换复选框）吃掉，而 `onItemClick` 又因 `target !== currentTarget`
  * 提前 return —— 结果**键盘用户完全无法用空格切换开关**（鼠标能点、Tab 能聚焦，但按空格没反应）。
  * 现在只有"焦点在行本身"时才拦截空格并发整行点击；焦点在内层控件时一律放行。
@@ -161,6 +161,7 @@ function onRowSpace(e: KeyboardEvent, item: Parameters<typeof onItemClick>[1]) {
         <!-- 按钮变体 -->
         <button
           v-if="variant === 'button'"
+          type="button"
           class="item-action-btn"
           :disabled="disabled"
           @click.stop="

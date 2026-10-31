@@ -185,6 +185,7 @@ function onProgressMouseUp() {
         <span v-show="!sidebarCollapsed" class="vcl-logo-text">{{ logoText }}</span>
         <button
           v-if="!isMobile"
+          type="button"
           class="vcl-collapse-btn"
           :aria-label="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
           :title="sidebarCollapsed ? t('common.expand') : t('common.collapse')"
@@ -213,6 +214,7 @@ function onProgressMouseUp() {
         <div class="vcl-topbar-glow" />
         <button
           v-if="isMobile"
+          type="button"
           class="vcl-topbar-hamburger"
           :aria-label="t('common.menu')"
           @click="sidebarOpen = !sidebarOpen"
@@ -253,10 +255,10 @@ function onProgressMouseUp() {
               ★ 以上三种均支持 .active（主色高亮）和 .is-danger（红色危险）
               .topbar-tool-sep             → 按钮组间竖线分隔
             示例：
-              <button class="topbar-tool-btn" title="搜索" aria-label="搜索"><IconSvg type="search" size="sm" /></button>
+              <button type="button" class="topbar-tool-btn" title="搜索" aria-label="搜索"><IconSvg type="search" size="sm" /></button>
               <span class="topbar-tool-sep" />
-              <button class="topbar-tool-text active">编辑</button>
-              <button class="topbar-tool-label"><IconSvg type="download" size="sm" /><span>导出</span></button>
+              <button type="button" class="topbar-tool-text active">编辑</button>
+              <button type="button" class="topbar-tool-label"><IconSvg type="download" size="sm" /><span>导出</span></button>
           -->
           <!-- @slot topbar-tools: 顶栏工具栏左端自定义按钮区 -->
           <slot name="topbar-tools" />
@@ -274,6 +276,7 @@ function onProgressMouseUp() {
                 <span class="vcl-user-name" :title="username">{{ username }}</span>
               </div>
               <button
+                type="button"
                 class="vcl-logout-btn"
                 :title="t('common.logout')"
                 :aria-label="t('common.logout')"
@@ -294,7 +297,7 @@ function onProgressMouseUp() {
       </div>
 
       <div class="vcl-content-bottombar">
-        <button v-if="nav.prev" class="vcl-nav-btn" @click="goDemo(nav.prev.route!)">
+        <button v-if="nav.prev" type="button" class="vcl-nav-btn" @click="goDemo(nav.prev.route!)">
           <IconSvg type="arrow-left" size="sm" /><span class="vcl-toolbar-label" :title="navLabel(nav.prev.label)">{{
             navLabel(nav.prev.label)
           }}</span>
@@ -308,7 +311,7 @@ function onProgressMouseUp() {
           <span class="vcl-nav-percent">{{ scrollPercent }}%</span>
         </div>
 
-        <button v-if="nav.next" class="vcl-nav-btn" @click="goDemo(nav.next.route!)">
+        <button v-if="nav.next" type="button" class="vcl-nav-btn" @click="goDemo(nav.next.route!)">
           <span class="vcl-toolbar-label" :title="navLabel(nav.next.label)">{{ navLabel(nav.next.label) }}</span
           ><IconSvg type="arrow-right" size="sm" />
         </button>

@@ -1693,7 +1693,9 @@ provideDataTableContext({
       >
         {{ _internalError.message }}
       </p>
-      <button class="base-btn btn-primary btn-md" @click="_internalError = null">{{ t('common.retry') }}</button>
+      <button type="button" class="base-btn btn-primary btn-md" @click="_internalError = null">
+        {{ t('common.retry') }}
+      </button>
     </div>
     <div v-else style="display: contents">
       <!-- ========== 工具栏（区块组件，含筛选 chip 行与滚动进度条；toolbar-actions 插槽转发） ========== -->
@@ -2118,6 +2120,7 @@ provideDataTableContext({
                     v-for="act in rowActions!"
                     v-show="!act.visible || act.visible(row, rowDisplayIndex(idx))"
                     :key="act.key"
+                    type="button"
                     :class="['row-action-btn', `row-action-${act.variant || 'default'}`]"
                     :title="act.label"
                     @click="emit('row-action', act.key, row, rowDisplayIndex(idx))"
@@ -2314,6 +2317,7 @@ provideDataTableContext({
                 v-for="act in rowActions!"
                 v-show="!act.visible || act.visible(row, idx)"
                 :key="act.key"
+                type="button"
                 :class="['row-action-btn', `row-action-${act.variant || 'default'}`]"
                 :title="act.label"
                 @click="emit('row-action', act.key, row, idx)"
@@ -2374,6 +2378,7 @@ provideDataTableContext({
             <div class="dt-filter-option-sort">
               <span class="dt-filter-option-sort-label">{{ t('table.sortLabel') }}</span>
               <button
+                type="button"
                 class="dt-filter-option-sort-btn"
                 :class="{ active: optionSort === 'name' || optionSort === 'name-desc' }"
                 @click="optionSort = optionSort === 'name' ? 'name-desc' : 'name'"
@@ -2389,6 +2394,7 @@ provideDataTableContext({
                 </span>
               </button>
               <button
+                type="button"
                 class="dt-filter-option-sort-btn"
                 :class="{ active: optionSort === 'count' || optionSort === 'count-desc' }"
                 @click="optionSort = optionSort === 'count' ? 'count-desc' : 'count'"
@@ -2407,16 +2413,16 @@ provideDataTableContext({
 
             <!-- 快捷操作 -->
             <div class="dt-filter-quick-actions">
-              <button class="dt-filter-quick-btn" @click="filterQuickAction('all')">
+              <button type="button" class="dt-filter-quick-btn" @click="filterQuickAction('all')">
                 {{ t('table.selectAll') }} <span class="dt-filter-quick-count">({{ filteredOptions.length }})</span>
               </button>
-              <button class="dt-filter-quick-btn" @click="filterQuickAction('none')">
+              <button type="button" class="dt-filter-quick-btn" @click="filterQuickAction('none')">
                 {{ t('table.invertSelection') }}
               </button>
-              <button class="dt-filter-quick-btn" @click="filterQuickAction('duplicates')">
+              <button type="button" class="dt-filter-quick-btn" @click="filterQuickAction('duplicates')">
                 {{ t('table.duplicates') }}
               </button>
-              <button class="dt-filter-quick-btn" @click="filterQuickAction('unique')">
+              <button type="button" class="dt-filter-quick-btn" @click="filterQuickAction('unique')">
                 {{ t('table.uniqueOnly') }}
               </button>
             </div>
@@ -2451,8 +2457,12 @@ provideDataTableContext({
 
             <!-- 操作按钮 -->
             <div class="dt-filter-actions">
-              <button class="dt-filter-btn dt-filter-btn-apply" @click="applyFilter">{{ t('table.apply') }}</button>
-              <button class="dt-filter-btn dt-filter-btn-reset" @click="resetFilter">{{ t('table.reset') }}</button>
+              <button type="button" class="dt-filter-btn dt-filter-btn-apply" @click="applyFilter">
+                {{ t('table.apply') }}
+              </button>
+              <button type="button" class="dt-filter-btn dt-filter-btn-reset" @click="resetFilter">
+                {{ t('table.reset') }}
+              </button>
             </div>
           </template>
         </div>
@@ -2603,8 +2613,12 @@ provideDataTableContext({
               @keydown="onNoteKeydown"
             />
             <div class="note-editor-actions">
-              <button class="dt-filter-btn dt-filter-btn-apply" @click="commitNote">{{ t('common.ok') }}</button>
-              <button class="dt-filter-btn dt-filter-btn-reset" @click="cancelNote">{{ t('common.cancel') }}</button>
+              <button type="button" class="dt-filter-btn dt-filter-btn-apply" @click="commitNote">
+                {{ t('common.ok') }}
+              </button>
+              <button type="button" class="dt-filter-btn dt-filter-btn-reset" @click="cancelNote">
+                {{ t('common.cancel') }}
+              </button>
             </div>
           </div>
 
@@ -2681,10 +2695,10 @@ provideDataTableContext({
         @close="_screenshotModal.visible = false"
       >
         <template #actions>
-          <button class="lightbox-action" @click.stop="downloadScreenshotFromModal">
+          <button type="button" class="lightbox-action" @click.stop="downloadScreenshotFromModal">
             <IconSvg type="download" size="sm" /> {{ t('table.downloadPng') }}
           </button>
-          <button class="lightbox-action" @click.stop="copyScreenshotFromModal">
+          <button type="button" class="lightbox-action" @click.stop="copyScreenshotFromModal">
             <IconSvg type="copy" size="sm" /> {{ t('table.copyImage') }}
           </button>
         </template>

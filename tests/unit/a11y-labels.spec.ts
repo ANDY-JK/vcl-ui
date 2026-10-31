@@ -32,6 +32,6 @@ describe('AppLayout · 图标按钮可访问名称', () => {
   })
 
   it('顶栏工具按钮文档示例带 aria-label，不只靠 title', () => {
-    expect(src).toMatch(/<button class="topbar-tool-btn"[^>]*aria-label="搜索"/)
+    expect(src).toMatch(/<button[^>]*class="topbar-tool-btn"[^>]*aria-label="搜索"/)
   })
 })

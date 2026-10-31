@@ -398,13 +398,14 @@ const fldIds = {
       <span v-if="tip" class="ld-tip">{{ tip }}</span>
       <div class="ld-toolbar-actions">
         <!-- 撤销/重做 -->
-        <button class="ld-btn" :disabled="!canUndo" :title="t('fbd.undoTitle')" @click="undo">
+        <button type="button" class="ld-btn" :disabled="!canUndo" :title="t('fbd.undoTitle')" @click="undo">
           <IconSvg type="undo-2" size="xs" /> {{ t('fbd.undo') }}
         </button>
-        <button class="ld-btn" :disabled="!canRedo" :title="t('fbd.redoTitle')" @click="redo">
+        <button type="button" class="ld-btn" :disabled="!canRedo" :title="t('fbd.redoTitle')" @click="redo">
           <IconSvg type="redo-2" size="xs" /> {{ t('fbd.redo') }}
         </button>
         <button
+          type="button"
           class="ld-btn"
           :class="{ active: showShortcuts }"
           :title="t('fbd.shortcuts')"
@@ -415,6 +416,7 @@ const fldIds = {
         <span class="ld-sep" />
         <!-- 面板显隐（窄屏下大纲自动收起，此时按钮禁用并说明原因） -->
         <button
+          type="button"
           class="ld-btn ld-btn-icon"
           :class="{ active: showPalette }"
           :title="t('fbd.togglePalette')"
@@ -423,6 +425,7 @@ const fldIds = {
           <IconSvg type="panel-left" size="xs" />
         </button>
         <button
+          type="button"
           class="ld-btn ld-btn-icon"
           :class="{ active: outlineVisible }"
           :title="t('fbd.toggleOutline')"
@@ -431,6 +434,7 @@ const fldIds = {
           <IconSvg type="list-tree" size="xs" />
         </button>
         <button
+          type="button"
           class="ld-btn ld-btn-icon"
           :class="{ active: showProps }"
           :title="t('fbd.toggleProps')"
@@ -442,6 +446,7 @@ const fldIds = {
         <!-- 设备切换 -->
         <div class="ld-device-switch">
           <button
+            type="button"
             class="ld-device-btn"
             :class="{ active: device === 'desktop' }"
             :title="t('fbd.deviceDesktop')"
@@ -450,6 +455,7 @@ const fldIds = {
             <IconSvg type="monitor" size="xs" />
           </button>
           <button
+            type="button"
             class="ld-device-btn"
             :class="{ active: device === 'tablet' }"
             :title="t('fbd.deviceTablet')"
@@ -458,6 +464,7 @@ const fldIds = {
             <IconSvg type="tablet" size="xs" />
           </button>
           <button
+            type="button"
             class="ld-device-btn"
             :class="{ active: device === 'mobile' }"
             :title="t('fbd.deviceMobile')"
@@ -468,33 +475,42 @@ const fldIds = {
         </div>
         <span class="ld-sep" />
         <!-- 标签页切换 -->
-        <button class="ld-btn" :class="{ active: activeTab === 'design' }" @click="activeTab = 'design'">
+        <button type="button" class="ld-btn" :class="{ active: activeTab === 'design' }" @click="activeTab = 'design'">
           {{ t('fbd.tabDesign') }}
         </button>
-        <button class="ld-btn" :class="{ active: activeTab === 'preview' }" @click="activeTab = 'preview'">
+        <button
+          type="button"
+          class="ld-btn"
+          :class="{ active: activeTab === 'preview' }"
+          @click="activeTab = 'preview'"
+        >
           {{ t('fbd.tabPreview') }}
         </button>
-        <button class="ld-btn" :class="{ active: activeTab === 'schema' }" @click="activeTab = 'schema'">
+        <button type="button" class="ld-btn" :class="{ active: activeTab === 'schema' }" @click="activeTab = 'schema'">
           {{ t('fbd.tabCode') }}
         </button>
         <span class="ld-sep" />
-        <button class="ld-btn" :class="{ active: showSettings }" @click="showSettings = !showSettings">
+        <button type="button" class="ld-btn" :class="{ active: showSettings }" @click="showSettings = !showSettings">
           {{ t('fbd.formSettings') }}
         </button>
         <span class="ld-sep" />
-        <button class="ld-btn" :disabled="manager.saving" @click="openSave">
+        <button type="button" class="ld-btn" :disabled="manager.saving" @click="openSave">
           <IconSvg type="save" size="xs" /> {{ t('fbd.save') }}
         </button>
-        <button class="ld-btn" @click="manager.openForms">
+        <button type="button" class="ld-btn" @click="manager.openForms">
           <IconSvg type="folder-open" size="xs" /> {{ t('fbd.myForms') }}
         </button>
-        <button class="ld-btn" @click="openShare"><IconSvg type="share-2" size="xs" /> {{ t('fbd.share') }}</button>
+        <button type="button" class="ld-btn" @click="openShare">
+          <IconSvg type="share-2" size="xs" /> {{ t('fbd.share') }}
+        </button>
         <span class="ld-sep" />
-        <button class="ld-btn" @click="exportJson"><IconSvg type="download" size="xs" /> {{ t('fbd.export') }}</button>
-        <button class="ld-btn" @click="showImport = !showImport">
+        <button type="button" class="ld-btn" @click="exportJson">
+          <IconSvg type="download" size="xs" /> {{ t('fbd.export') }}
+        </button>
+        <button type="button" class="ld-btn" @click="showImport = !showImport">
           <IconSvg type="upload" size="xs" /> {{ t('fbd.import') }}
         </button>
-        <button class="ld-btn ld-danger" @click="clearAll">
+        <button type="button" class="ld-btn ld-danger" @click="clearAll">
           <IconSvg type="trash-2" size="xs" /> {{ t('fbd.clear') }}
         </button>
       </div>
@@ -525,8 +541,8 @@ const fldIds = {
       <textarea v-model="importText" rows="5" :placeholder="t('fbd.pasteJsonPh')" />
       <div class="ld-import-actions">
         <span v-if="importError" class="ld-import-error">{{ importError }}</span>
-        <button class="ld-btn" @click="applyImport">{{ t('fbd.applyImport') }}</button>
-        <button class="ld-btn" @click="closeImport">{{ t('common.cancel') }}</button>
+        <button type="button" class="ld-btn" @click="applyImport">{{ t('fbd.applyImport') }}</button>
+        <button type="button" class="ld-btn" @click="closeImport">{{ t('common.cancel') }}</button>
       </div>
     </div>
 
@@ -632,7 +648,9 @@ const fldIds = {
             {{ t('fbd.designCodeJson') }}
           </span>
           <div class="ld-code-actions">
-            <button class="ld-btn" @click="copySchema"><IconSvg type="copy" size="xs" /> {{ t('common.copy') }}</button>
+            <button type="button" class="ld-btn" @click="copySchema">
+              <IconSvg type="copy" size="xs" /> {{ t('common.copy') }}
+            </button>
           </div>
         </div>
         <div class="ld-code-body">

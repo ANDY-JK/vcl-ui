@@ -215,6 +215,7 @@ const showFooter = computed(() => !!slots.footer || props.modalType === 'form' |
         <button
           v-for="item in selectItems"
           :key="String(item.value)"
+          type="button"
           class="select-item"
           :class="{ active: internalSelectValue.includes(item.value) }"
           :aria-pressed="internalSelectValue.includes(item.value)"

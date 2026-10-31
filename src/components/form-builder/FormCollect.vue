@@ -599,7 +599,7 @@ async function confirmImport(): Promise<void> {
         <div v-if="records.length > 3" class="ldc-search">
           <IconSvg type="search" size="sm" />
           <input v-model="searchQuery" class="ldc-search-input" :placeholder="t('fbd.searchRecordsPh')" />
-          <button v-if="searchQuery" class="ldc-search-clear" @click="searchQuery = ''">
+          <button v-if="searchQuery" type="button" class="ldc-search-clear" @click="searchQuery = ''">
             <IconSvg type="x" size="xs" />
           </button>
         </div>
@@ -630,16 +630,22 @@ async function confirmImport(): Promise<void> {
         </div>
         <!-- 分页控件 -->
         <div v-if="totalPages > 1" class="ldc-pagination">
-          <button class="ldc-page-btn" :disabled="currentPage === 1" @click="currentPage--">
+          <button type="button" class="ldc-page-btn" :disabled="currentPage === 1" @click="currentPage--">
             <IconSvg type="chevron-left" size="xs" />
           </button>
           <template v-for="(p, i) in pageButtons" :key="i">
             <span v-if="p === -1" class="ldc-page-ellipsis">…</span>
-            <button v-else class="ldc-page-btn" :class="{ active: p === currentPage }" @click="currentPage = p">
+            <button
+              v-else
+              type="button"
+              class="ldc-page-btn"
+              :class="{ active: p === currentPage }"
+              @click="currentPage = p"
+            >
               {{ p }}
             </button>
           </template>
-          <button class="ldc-page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
+          <button type="button" class="ldc-page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
             <IconSvg type="chevron-right" size="xs" />
           </button>
           <span class="ldc-page-info">{{ t('fbd.pageInfo', { n: filteredRecords.length, p: totalPages }) }}</span>

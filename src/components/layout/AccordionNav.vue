@@ -110,7 +110,13 @@ const effectiveExpanded = computed(() => {
         :aria-label="t('appLayout.searchPlaceholder')"
         @keydown.esc="query = ''"
       />
-      <button v-if="query" class="nav-search-clear" :aria-label="t('appLayout.searchClear')" @click="query = ''">
+      <button
+        v-if="query"
+        type="button"
+        class="nav-search-clear"
+        :aria-label="t('appLayout.searchClear')"
+        @click="query = ''"
+      >
         <IconSvg type="x" size="sm" color="currentColor" />
       </button>
     </div>
@@ -122,6 +128,7 @@ const effectiveExpanded = computed(() => {
         <!-- L1 根级叶子节点（无 children 的直接节点） -->
         <button
           v-if="!node.children"
+          type="button"
           class="nav-leaf-root"
           :class="{ active: node.route && activeRoute === node.route }"
           :aria-current="node.route && activeRoute === node.route ? 'page' : undefined"

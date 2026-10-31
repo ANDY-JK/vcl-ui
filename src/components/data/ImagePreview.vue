@@ -317,6 +317,7 @@ const displayTitle = computed(() => {
           <button
             v-for="tool in ['rect', 'circle', 'pen'] as AnnoType[]"
             :key="tool"
+            type="button"
             class="ip-hdr-btn"
             :class="{ active: annoTool === tool }"
             :title="
@@ -334,6 +335,7 @@ const displayTitle = computed(() => {
           <button
             v-for="c in annoColors"
             :key="c"
+            type="button"
             class="ip-color-dot"
             :class="{ active: annoColor === c }"
             :style="{ background: c }"
@@ -344,6 +346,7 @@ const displayTitle = computed(() => {
           <button
             v-for="w in annoWidths"
             :key="w"
+            type="button"
             class="ip-hdr-btn ip-w-btn"
             :class="{ active: annoWidth === w }"
             :title="$t('imagePreview.lineWidth', { w })"
@@ -356,6 +359,7 @@ const displayTitle = computed(() => {
           <span v-if="isMulti" class="ip-counter-header">{{ currentIndex + 1 }} / {{ total }}</span>
           <button
             v-if="isMulti"
+            type="button"
             class="ip-hdr-btn"
             :class="{ active: showThumbs }"
             :title="$t('imagePreview.thumbs')"
@@ -363,7 +367,7 @@ const displayTitle = computed(() => {
           >
             <IconSvg type="panel-right" size="sm" />
           </button>
-          <button class="ip-close" :title="$t('imagePreview.close')" @click="emit('close')">
+          <button type="button" class="ip-close" :title="$t('imagePreview.close')" @click="emit('close')">
             <IconSvg type="x" size="sm" />
           </button>
         </div>
@@ -411,6 +415,7 @@ const displayTitle = computed(() => {
             <canvas ref="annoCanvas" class="ip-anno-canvas" />
             <template v-if="isMulti">
               <button
+                type="button"
                 class="ip-arrow ip-arrow-left"
                 :disabled="currentIndex <= 0"
                 :title="$t('imagePreview.prev')"
@@ -419,6 +424,7 @@ const displayTitle = computed(() => {
                 <IconSvg type="chevron-left" size="md" />
               </button>
               <button
+                type="button"
                 class="ip-arrow ip-arrow-right"
                 :disabled="currentIndex >= total - 1"
                 :title="$t('imagePreview.next')"
@@ -432,32 +438,32 @@ const displayTitle = computed(() => {
           <!-- 底部工具栏 -->
           <div class="ip-toolbar">
             <!-- 旋转 + 翻转 -->
-            <button :title="$t('imagePreview.rotateCCW')" @click.stop="rotateCCW">
+            <button type="button" :title="$t('imagePreview.rotateCCW')" @click.stop="rotateCCW">
               <IconSvg type="rotate-ccw" size="sm" />
             </button>
-            <button :title="$t('imagePreview.rotateCW')" @click.stop="rotateCW">
+            <button type="button" :title="$t('imagePreview.rotateCW')" @click.stop="rotateCW">
               <IconSvg type="rotate-cw" size="sm" />
             </button>
-            <button :class="{ active: flipH }" :title="$t('imagePreview.flipH')" @click.stop="toggleFlip">
+            <button type="button" :class="{ active: flipH }" :title="$t('imagePreview.flipH')" @click.stop="toggleFlip">
               <IconSvg type="arrow-left-right" size="sm" />
             </button>
             <span class="ip-toolbar-sep" />
             <!-- 缩放 -->
-            <button :title="$t('imagePreview.zoomIn')" @click.stop="setScale(scale + 0.25)">
+            <button type="button" :title="$t('imagePreview.zoomIn')" @click.stop="setScale(scale + 0.25)">
               <IconSvg type="zoom-in" size="sm" />
             </button>
-            <button :title="$t('imagePreview.zoomOut')" @click.stop="setScale(scale - 0.25)">
+            <button type="button" :title="$t('imagePreview.zoomOut')" @click.stop="setScale(scale - 0.25)">
               <IconSvg type="zoom-out" size="sm" />
             </button>
-            <button :title="$t('imagePreview.zoomActual')" @click.stop="setScale(1)">
+            <button type="button" :title="$t('imagePreview.zoomActual')" @click.stop="setScale(1)">
               <IconSvg type="maximize" size="sm" />
             </button>
             <span class="ip-toolbar-sep" />
             <!-- 导出：下载 / 复制（合成图包含标注） -->
-            <button :title="$t('imagePreview.download')" @click.stop="downloadImage">
+            <button type="button" :title="$t('imagePreview.download')" @click.stop="downloadImage">
               <IconSvg type="download" size="sm" />
             </button>
-            <button :title="$t('imagePreview.copy')" @click.stop="copyImage">
+            <button type="button" :title="$t('imagePreview.copy')" @click.stop="copyImage">
               <IconSvg type="copy" size="sm" />
             </button>
             <span v-if="isMulti" class="ip-counter">{{ currentIndex + 1 }} / {{ total }}</span>

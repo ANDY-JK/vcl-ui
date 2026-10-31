@@ -145,7 +145,7 @@ const isDate = computed(() => props.type === 'date')
 const isDateRange = computed(() => props.type === 'date-range')
 const isTime = computed(() => props.type === 'time')
 /**
- * 面板角色。日期/时间面板里装的是 DatePanel/TimeColumns 的一堆 <button>，
+ * 面板角色。日期/时间面板里装的是 DatePanel/TimeColumns 的一堆 <button type="button">，
  * 而 listbox 只允许 option 作后代 —— 挂 listbox 会让读屏把这些按钮整块剪出无障碍树
  * （用户听得见"列表框"却读不到任何一天）。这两种模式改为不设角色。
  */

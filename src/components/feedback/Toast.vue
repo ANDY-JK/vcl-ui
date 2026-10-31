@@ -231,6 +231,7 @@ defineExpose({
           <span class="toast-msg">{{ t.message }}</span>
           <button
             v-if="t.actionText || t.undoText"
+            type="button"
             class="toast-undo"
             :aria-label="t.actionText || t.undoText"
             @click="
@@ -242,6 +243,7 @@ defineExpose({
           </button>
           <button
             v-if="t.closable"
+            type="button"
             class="toast-close"
             :aria-label="tt('toast.closeNotification')"
             @click="removeToast(t.id)"

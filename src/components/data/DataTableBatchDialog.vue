@@ -90,8 +90,12 @@ defineExpose({
       @keydown.enter="confirmBatchEdit"
     />
     <div class="note-editor-actions">
-      <button class="dt-filter-btn dt-filter-btn-apply" @click="confirmBatchEdit">{{ t('common.ok') }}</button>
-      <button class="dt-filter-btn dt-filter-btn-reset" @click="closeBatchEdit">{{ t('common.cancel') }}</button>
+      <button type="button" class="dt-filter-btn dt-filter-btn-apply" @click="confirmBatchEdit">
+        {{ t('common.ok') }}
+      </button>
+      <button type="button" class="dt-filter-btn dt-filter-btn-reset" @click="closeBatchEdit">
+        {{ t('common.cancel') }}
+      </button>
     </div>
   </div>
 </template>

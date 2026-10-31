@@ -1,4 +1,4 @@
-// 常量与写死值自检（七项判定，任一不过即非零退出）
+// 常量与写死值自检（八项判定，任一不过即非零退出）
 // 规矩本体写在 README「开发规范」一节，这里只负责把它变成机器能拦的那部分：
 // [1] 断点令牌单源一致 —— _internal/breakpoints.ts 的 BP_* 必须与 tokens.css 的 --vcl-bp-* 逐个同值，
 //     否则「改了令牌、JS 判定没跟着改」会静默分叉（侧栏收起和表格卡片视图就是两个判定）
@@ -11,6 +11,7 @@
 // [6] 原生 <input type="color"> 的值必须经 toNativeColorValue 归一 —— 绕层 computed 的要登记判定
 // [7] form-builder 域源文件 ≤800 行 —— 该域交互密、曾靠人工把 979/881 行两文件拆回纪律内；
 //     无机械闸口必然回潮（09-04 收官过 ≤800，09-20 复查已漂移）。超限=该抽 composable/子组件了
+// [8] 原生 <button> 必须显式 type —— 默认值是 submit，宿主包进 <form> 时点按钮就提交表单（TD-42）
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
@@ -508,6 +509,46 @@ for (const [domain, limit] of Object.entries(LINE_LIMITS)) {
     `[7] ${domain} 域行数 文件=${count} 止涨线=${limit} 超线=${oversized.length}` +
       (peak ? ` 最大=${peak.file} ${peak.lines} 行 余量=${headroom}` : '') +
       hint,
+  )
+}
+
+// ---------- [8] 原生 <button> 必须显式声明 type ----------
+// HTML 里 <button> 的默认 type 是 submit。宿主把库组件放进自己的 <form> 时，
+// 任何一个没标 type 的按钮都会变成"提交按钮"——点一下整页表单就提交了（TD-42）。
+// 库内确需提交语义的只有 StoreFormModal 的 btn-save，它是显式 type="submit"；
+// 其余全部该是 type="button"。规则：[8] 扫 src/components 下所有 .vue 的
+// <button ...> 标签（跨行也算一个标签），缺 type= 就红并点名 file:line。
+const buttonOffenders = []
+const scanButtons = (file) => {
+  const src = readFileSync(file, 'utf8')
+  let i = 0
+  while ((i = src.indexOf('<button', i)) >= 0) {
+    let j = i + '<button'.length
+    let quote = null
+    while (j < src.length) {
+      const ch = src[j]
+      if (quote) {
+        if (ch === quote) quote = null
+      } else if (ch === '"' || ch === "'") quote = ch
+      else if (ch === '>') break
+      j++
+    }
+    const tag = src.slice(i, j)
+    if (!/\btype\s*=/.test(tag)) {
+      const ln = src.slice(0, i).split('\n').length
+      buttonOffenders.push(`${relOf(file)}:${ln}`)
+    }
+    i = j
+  }
+}
+// 只扫 src/components（随包发布的库面）：src/App.vue 与 src/demos 是演示壳，
+// 不随包发布，其中的裸 button 不构成"宿主表单被误提交"的风险。
+files.filter((f) => f.endsWith('.vue') && /(^|[\\/])src[\\/]components[\\/]/.test(relOf(f))).forEach(scanButtons)
+
+if (buttonOffenders.length) {
+  fail.push(
+    `[8] ${buttonOffenders.length} 处原生 <button> 没标 type（默认 submit：宿主包进 <form> 里点一下就提交表单）：` +
+      `${buttonOffenders.slice(0, 8).join(', ')}${buttonOffenders.length > 8 ? ' …' : ''}。补 type="button"（确需提交才写 submit）`,
   )
 }
 

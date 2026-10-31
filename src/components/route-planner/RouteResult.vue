@@ -209,8 +209,10 @@ function densityLabel(density: number | null): { text: string; cls: string } {
           <div v-if="expandedDay === day.day" class="day-detail">
             <!-- 导航按钮 -->
             <div v-if="day.navLink" class="day-nav">
-              <button class="btn-nav-day" @click="openNav(day.navLink)">{{ t('routePlanner.startNav') }}</button>
-              <button class="btn-set-current" @click="setCurrentDay(day.day)">
+              <button type="button" class="btn-nav-day" @click="openNav(day.navLink)">
+                {{ t('routePlanner.startNav') }}
+              </button>
+              <button type="button" class="btn-set-current" @click="setCurrentDay(day.day)">
                 {{ t('routePlanner.setCurrent') }}
               </button>
             </div>
@@ -273,6 +275,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
                 </div>
                 <button
                   v-if="day.legNavLinks && day.legNavLinks[idx]"
+                  type="button"
                   class="btn-nav-mini"
                   :title="day.legNavLinks[idx].label"
                   @click="openNav(day.legNavLinks[idx])"

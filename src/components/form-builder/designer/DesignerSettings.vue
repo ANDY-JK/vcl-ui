@@ -381,7 +381,7 @@ const fldIds = {
           </div>
           <div class="ld-settings-row ld-storage-test-row">
             <label>{{ t('fbd.storageCloudTest') }}</label>
-            <button class="ld-btn" :disabled="manager.cloudTesting" @click="manager.testCloud">
+            <button type="button" class="ld-btn" :disabled="manager.cloudTesting" @click="manager.testCloud">
               {{ manager.cloudTesting ? t('fbd.storageTesting') : t('fbd.storageCloudTest') }}
             </button>
             <span v-if="manager.cloudTestMsg" class="ld-storage-test" :class="{ ok: manager.cloudTestOk }">

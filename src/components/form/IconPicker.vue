@@ -290,6 +290,7 @@ function confirm() {
           <!-- 提供者切换 -->
           <div class="provider-switch" role="tablist" :aria-label="t('form.iconProvider')">
             <button
+              type="button"
               class="provider-tab"
               role="tab"
               :aria-selected="localProvider === 'lucide'"
@@ -299,6 +300,7 @@ function confirm() {
               Lucide
             </button>
             <button
+              type="button"
               class="provider-tab"
               role="tab"
               :aria-selected="localProvider === 'solar'"
@@ -308,6 +310,7 @@ function confirm() {
               Solar
             </button>
             <button
+              type="button"
               class="provider-tab"
               role="tab"
               :aria-selected="localProvider === 'morphicons'"
@@ -360,6 +363,7 @@ function confirm() {
                 @focus="colorTarget = 'bg'"
               />
               <button
+                type="button"
                 class="transparent-btn"
                 :class="{ active: localBgColor === 'transparent' }"
                 @click="setTransparentBg()"
@@ -381,6 +385,7 @@ function confirm() {
               <button
                 v-for="c in presetColors"
                 :key="c"
+                type="button"
                 class="preset-dot"
                 :style="{ background: c }"
                 :class="{ active: (colorTarget === 'fg' ? localColor : localBgColor) === c }"

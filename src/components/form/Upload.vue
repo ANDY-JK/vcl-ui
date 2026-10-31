@@ -365,10 +365,10 @@ onUnmounted(() => {
 
       <!-- ③ 多张标志：翻页按钮 + 计数 -->
       <template v-if="cardFileCount > 1">
-        <button class="card-arrow card-arrow-left" :aria-label="t('form.prevPhoto')" @click="cardPrev">
+        <button type="button" class="card-arrow card-arrow-left" :aria-label="t('form.prevPhoto')" @click="cardPrev">
           <IconSvg type="chevron-left" size="xs" />
         </button>
-        <button class="card-arrow card-arrow-right" :aria-label="t('form.nextPhoto')" @click="cardNext">
+        <button type="button" class="card-arrow card-arrow-right" :aria-label="t('form.nextPhoto')" @click="cardNext">
           <IconSvg type="chevron-right" size="xs" />
         </button>
         <span class="card-count">{{ cardIdx + 1 }}/{{ cardFileCount }}</span>

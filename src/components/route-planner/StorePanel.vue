@@ -129,7 +129,7 @@ const stats = computed(() => {
   <div class="store-panel">
     <!-- 操作栏 -->
     <div class="panel-actions">
-      <button class="btn-add" @click="emit('add')">{{ t('routePlanner.addStoreBtn') }}</button>
+      <button type="button" class="btn-add" @click="emit('add')">{{ t('routePlanner.addStoreBtn') }}</button>
       <div class="stats">
         <span>{{ t('routePlanner.totalCount', { count: stats.total }) }}</span>
         <span>{{ t('routePlanner.withCoord', { count: stats.withCoord }) }}</span>
@@ -146,7 +146,13 @@ const stats = computed(() => {
         :placeholder="t('routePlanner.searchPlaceholder')"
         class="search-input"
       />
-      <button v-if="searchQuery" class="search-clear" :title="t('routePlanner.clearSearch')" @click="searchQuery = ''">
+      <button
+        v-if="searchQuery"
+        type="button"
+        class="search-clear"
+        :title="t('routePlanner.clearSearch')"
+        @click="searchQuery = ''"
+      >
         <IconSvg type="x" size="xs" />
       </button>
     </div>
@@ -170,6 +176,7 @@ const stats = computed(() => {
           <span class="group-count">{{ t('routePlanner.storeCountUnit', { count: cityStores.length }) }}</span>
           <div class="group-batch" @click.stop>
             <button
+              type="button"
               class="btn-batch"
               :title="t('routePlanner.skipCityTitle')"
               :aria-label="t('routePlanner.skipCityTitle')"
@@ -178,6 +185,7 @@ const stats = computed(() => {
               <IconSvg type="chevron-right" size="sm" />
             </button>
             <button
+              type="button"
               class="btn-batch btn-batch-danger"
               :title="t('routePlanner.deleteCityTitle')"
               :aria-label="t('routePlanner.deleteCityTitle')"
@@ -207,6 +215,7 @@ const stats = computed(() => {
             </div>
             <div class="store-actions">
               <button
+                type="button"
                 class="btn-icon"
                 :title="t('routePlanner.editTitle')"
                 :aria-label="t('routePlanner.editTitle')"
@@ -215,6 +224,7 @@ const stats = computed(() => {
                 <IconSvg type="pencil" size="sm" />
               </button>
               <button
+                type="button"
                 class="btn-icon"
                 :title="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
                 :aria-label="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
@@ -223,6 +233,7 @@ const stats = computed(() => {
                 <IconSvg :type="store.skipped ? 'rotate-ccw' : 'chevron-right'" size="sm" />
               </button>
               <button
+                type="button"
                 class="btn-icon btn-danger"
                 :title="t('routePlanner.deleteTitle')"
                 :aria-label="t('routePlanner.deleteTitle')"
@@ -264,8 +275,10 @@ const stats = computed(() => {
             {{ confirmTarget.city ? t('routePlanner.deleteCityHint') : t('routePlanner.deleteStoreHint') }}
           </p>
           <div class="confirm-actions">
-            <button class="btn-cancel" @click="cancelDelete">{{ t('routePlanner.cancel') }}</button>
-            <button class="btn-confirm-delete" @click="confirmDelete">{{ t('routePlanner.confirmDelete') }}</button>
+            <button type="button" class="btn-cancel" @click="cancelDelete">{{ t('routePlanner.cancel') }}</button>
+            <button type="button" class="btn-confirm-delete" @click="confirmDelete">
+              {{ t('routePlanner.confirmDelete') }}
+            </button>
           </div>
         </div>
       </div>

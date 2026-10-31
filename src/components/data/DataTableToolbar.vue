@@ -115,19 +115,33 @@ function handleClearSort(): void {
       </template>
       <!-- 清除操作居中 -->
       <div class="toolbar-center">
-        <button v-if="activeFilters.length > 0" class="toolbar-clear" @click="handleClearFilters">
+        <button v-if="activeFilters.length > 0" type="button" class="toolbar-clear" @click="handleClearFilters">
           {{ t('table.clearFilters') }}
         </button>
-        <button v-if="sortState.key" class="toolbar-clear" @click="handleClearSort">{{ t('table.clearSort') }}</button>
+        <button v-if="sortState.key" type="button" class="toolbar-clear" @click="handleClearSort">
+          {{ t('table.clearSort') }}
+        </button>
       </div>
       <!-- 功能按钮靠右 -->
       <div class="toolbar-right">
         <!-- 编辑撤销/重做（仅编辑模式；键盘等价 Ctrl+Z / Ctrl+Y，按钮给触屏与可发现性） -->
         <template v-if="editable">
-          <button class="toolbar-export-btn" :title="t('table.undo')" :disabled="!canUndo" @click="undoFromToolbar()">
+          <button
+            type="button"
+            class="toolbar-export-btn"
+            :title="t('table.undo')"
+            :disabled="!canUndo"
+            @click="undoFromToolbar()"
+          >
             <IconSvg type="undo-2" size="sm" />
           </button>
-          <button class="toolbar-export-btn" :title="t('table.redo')" :disabled="!canRedo" @click="redoFromToolbar()">
+          <button
+            type="button"
+            class="toolbar-export-btn"
+            :title="t('table.redo')"
+            :disabled="!canRedo"
+            @click="redoFromToolbar()"
+          >
             <IconSvg type="redo-2" size="sm" />
           </button>
         </template>
@@ -143,6 +157,7 @@ function handleClearSort(): void {
             @keydown.escape="toggleGlobalSearch"
           />
           <button
+            type="button"
             class="global-search-toggle"
             :title="showGlobalSearch ? t('table.closeSearch') : t('table.globalSearch')"
             @click="toggleGlobalSearch"
@@ -153,6 +168,7 @@ function handleClearSort(): void {
         <!-- 密度切换 -->
         <button
           v-if="!isCardViewEffective"
+          type="button"
           class="toolbar-export-btn"
           :title="_dense ? t('table.defaultDensity') : t('table.compactMode')"
           @click="toggleDense"
@@ -161,6 +177,7 @@ function handleClearSort(): void {
         </button>
         <!-- 缩放指示器 -->
         <button
+          type="button"
           class="toolbar-export-btn toolbar-zoom-btn"
           :title="_zoomX !== 1 || _zoomY !== 1 ? t('table.zoomResetHint') : t('table.zoomHint')"
           @click="resetZoom"
@@ -168,12 +185,19 @@ function handleClearSort(): void {
           {{ Math.round(_zoomY * 100) }}%
         </button>
         <!-- CSV 导出 -->
-        <button v-if="exportable" class="toolbar-export-btn" :title="t('table.downloadCsv')" @click="exportCSV">
+        <button
+          v-if="exportable"
+          type="button"
+          class="toolbar-export-btn"
+          :title="t('table.downloadCsv')"
+          @click="exportCSV"
+        >
           <IconSvg type="download" size="sm" />
         </button>
         <!-- Excel 导出 -->
         <button
           v-if="excelExportable"
+          type="button"
           class="toolbar-export-btn"
           :title="t('table.downloadExcel')"
           @click="exportExcel"
@@ -182,6 +206,7 @@ function handleClearSort(): void {
         </button>
         <!-- 全屏 -->
         <button
+          type="button"
           class="toolbar-export-btn"
           :title="_isFullscreen ? t('table.exitFullscreen') : t('table.fullscreenShow')"
           @click="toggleFullscreen"
@@ -193,15 +218,21 @@ function handleClearSort(): void {
           />
         </button>
         <!-- 截图 -->
-        <button class="toolbar-export-btn" :title="t('table.screenshotExport')" @click="captureScreenshot">
+        <button
+          type="button"
+          class="toolbar-export-btn"
+          :title="t('table.screenshotExport')"
+          @click="captureScreenshot"
+        >
           <IconSvg type="camera" size="sm" />
         </button>
         <!-- 复制 -->
-        <button class="toolbar-export-btn" :title="t('table.copyTableData')" @click="copyTableData">
+        <button type="button" class="toolbar-export-btn" :title="t('table.copyTableData')" @click="copyTableData">
           <IconSvg type="copy" size="sm" />
         </button>
         <!-- 视图切换 -->
         <button
+          type="button"
           class="toolbar-export-btn"
           :title="isCardViewEffective ? t('table.switchToList') : t('table.switchToCard')"
           @click="toggleCardMode"
@@ -211,6 +242,7 @@ function handleClearSort(): void {
         <!-- 列设置 -->
         <button
           v-if="colSettings"
+          type="button"
           class="toolbar-export-btn col-settings-btn"
           :class="{ active: colSettingsPanel?.show }"
           :title="t('table.colSettings')"
@@ -219,7 +251,12 @@ function handleClearSort(): void {
           <IconSvg type="settings" size="sm" />
         </button>
         <!-- 批量修改 -->
-        <button v-if="selectable && _selectedKeys.length > 0" class="toolbar-clear" @click="batchDialog?.open()">
+        <button
+          v-if="selectable && _selectedKeys.length > 0"
+          type="button"
+          class="toolbar-clear"
+          @click="batchDialog?.open()"
+        >
           {{ t('table.batchEdit', { n: _selectedKeys.length }) }}
         </button>
         <!-- 自定义工具栏按钮（使用方扩展：刷新/导入等） -->

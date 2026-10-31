@@ -65,7 +65,7 @@ function onDragStart(e: DragEvent, type: DesignerNodeType): void {
     <div class="ldp-search">
       <IconSvg type="search" size="xs" />
       <input v-model="searchQuery" class="ldp-search-input" :placeholder="t('fbt.searchFieldsPh')" />
-      <button v-if="searchQuery" class="ldp-search-clear" @click="searchQuery = ''">
+      <button v-if="searchQuery" type="button" class="ldp-search-clear" @click="searchQuery = ''">
         <IconSvg type="x" size="xs" />
       </button>
     </div>
@@ -81,6 +81,7 @@ function onDragStart(e: DragEvent, type: DesignerNodeType): void {
       <button
         v-for="item in g.items"
         :key="item.type"
+        type="button"
         class="ldp-field-item"
         :class="{ 'ldp-field-item-container': item.isContainer }"
         draggable="true"

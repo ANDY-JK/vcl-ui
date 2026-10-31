@@ -158,16 +158,22 @@ function exportCsv(): void {
 
         <!-- 分页控件 -->
         <div v-if="totalPages > 1" class="ld-data-page">
-          <button class="ld-data-page-btn" :disabled="currentPage === 1" @click="currentPage--">
+          <button type="button" class="ld-data-page-btn" :disabled="currentPage === 1" @click="currentPage--">
             <IconSvg type="chevron-left" size="xs" />
           </button>
           <template v-for="(p, i) in pageButtons" :key="i">
             <span v-if="p === -1" class="ld-data-page-ellipsis">…</span>
-            <button v-else class="ld-data-page-btn" :class="{ active: p === currentPage }" @click="currentPage = p">
+            <button
+              v-else
+              type="button"
+              class="ld-data-page-btn"
+              :class="{ active: p === currentPage }"
+              @click="currentPage = p"
+            >
               {{ p }}
             </button>
           </template>
-          <button class="ld-data-page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
+          <button type="button" class="ld-data-page-btn" :disabled="currentPage === totalPages" @click="currentPage++">
             <IconSvg type="chevron-right" size="xs" />
           </button>
         </div>

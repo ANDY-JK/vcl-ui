@@ -11,7 +11,7 @@
       <p class="eb-desc">
         {{ error?.message || t('errorBoundary.unknownError') }}
       </p>
-      <button class="eb-btn" @click="retry">
+      <button type="button" class="eb-btn" @click="retry">
         {{ retryText || t('errorBoundary.retry') }}
       </button>
     </slot>
