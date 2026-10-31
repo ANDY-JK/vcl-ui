@@ -158,14 +158,29 @@ export function splitRegionDetail(input?: unknown): { region: string; detail: st
 // 文件下载
 // ════════════════════════════════════════
 
+/** 文件名安全化（2026-10-31，#253/#254）：Windows 非法字符（\ / : * ? " < > |）与
+ *  控制字符 → `_`，剥首尾点/空格，清洗后为空回默认名。所有下载入口共用 ——
+ *  标题/日期/表名都可能进文件名，清洗修在出口（downloadBlob/downloadScreenshot）
+ *  而非调用点，新入口自动继承。 */
+export function sanitizeDownloadName(name: string, fallback = 'download'): string {
+  const cleaned = name
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\\/:*?"<>|]/g, '_')
+    .replace(/^[.\s]+|[.\s]+$/g, '')
+    .trim()
+  return cleaned || fallback
+}
+
 /**
  * 触发浏览器下载 Blob 文件，返回是否成功触发下载。
+ * - 文件名先过 sanitizeDownloadName（#254：调用方给的标题可能带 Windows 非法字符）
  * - SSR（无 document）静默返回 false
  * - createObjectURL 不可用（极老环境）降级 FileReader 读 data URL
  * - download 属性不支持（部分 WebView）降级 window.open
  * - 任何异常兜底返回 false，不阻断调用方主流程
  */
-export function downloadBlob(blob: Blob, filename: string): boolean {
+export function downloadBlob(blob: Blob, rawFilename: string): boolean {
+  const filename = sanitizeDownloadName(rawFilename)
   if (!isBrowser) return false
   try {
     if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {

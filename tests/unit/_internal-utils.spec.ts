@@ -12,6 +12,7 @@ import {
   formatSize,
   splitRegionDetail,
   downloadBlob,
+  sanitizeDownloadName,
   deepClone,
   formatNumber,
   formatMoney,
@@ -326,6 +327,31 @@ describe('downloadBlob — Blob 下载', () => {
     expect(() => downloadBlob(new Blob(['x']), 'a.txt')).not.toThrow()
     expect(downloadBlob(new Blob(['x']), 'a.txt')).toBe(false)
     warn.mockRestore()
+  })
+
+  it('文件名过 sanitizeDownloadName（#254：a.download 收到的是清洗后的名字）', () => {
+    const downloads: string[] = []
+    URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+    URL.revokeObjectURL = vi.fn()
+    const realCreate = document.createElement.bind(document)
+    vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+      const node = realCreate(tag)
+      if (tag === 'a') {
+        Object.defineProperty(node, 'download', { set: (v: string) => downloads.push(v), get: () => downloads[0] })
+      }
+      return node
+    })
+    downloadBlob(new Blob(['x']), '报表 2026/10/31: v2.csv')
+    expect(downloads[0]).toBe('报表 2026_10_31_ v2.csv')
+  })
+})
+
+describe('sanitizeDownloadName — 文件名安全化（#254 与 downloadBlob 同源）', () => {
+  it('非法字符替换 + 首尾点/空格剥除 + 空名回默认', () => {
+    expect(sanitizeDownloadName('a/b\\c:d*e?f"g<h>i|j')).toBe('a_b_c_d_e_f_g_h_i_j')
+    expect(sanitizeDownloadName('  名字. ')).toBe('名字')
+    expect(sanitizeDownloadName('')).toBe('download')
+    expect(sanitizeDownloadName('', '表单')).toBe('表单')
   })
 })
 

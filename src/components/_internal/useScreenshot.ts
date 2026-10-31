@@ -1,4 +1,5 @@
 import { reportWarn } from '@/components/_internal/runtime-observer'
+import { sanitizeDownloadName } from './utils'
 // 截图工具 — 基于 html2canvas，适应 HTTP/HTTPS/跨域图片等环境
 
 export interface ScreenshotOptions {
@@ -112,17 +113,9 @@ export async function captureElement(
   }
 }
 
-/** 文件名安全化（2026-10-31，用户反馈"细节"类）：标题可能带 Windows 非法字符
- *  （\ / : * ? " < > |）与首尾点/空格 —— 直接当 a.download 会下载失败或被浏览器截断。
- *  控制字符同样替换；清洗后为空则回默认名。所有下载入口共用（表格截图/图片导出）。 */
-export function sanitizeDownloadName(name: string, fallback = 'image'): string {
-  const cleaned = name
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u001f\\/:*?"<>|]/g, '_')
-    .replace(/^[.\s]+|[.\s]+$/g, '')
-    .trim()
-  return cleaned || fallback
-}
+/** 文件名安全化 —— 实现在 _internal/utils.ts（downloadBlob 同文件，#254 收口：
+ *  所有下载出口共用一份清洗），此处 re-export 保持既有 import 路径兼容。 */
+export { sanitizeDownloadName }
 
 /** 下载 data URL 为 PNG 文件，返回是否成功触发下载 */
 export function downloadScreenshot(dataUrl: string, filename?: string): boolean {

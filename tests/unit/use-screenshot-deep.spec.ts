@@ -320,8 +320,8 @@ describe('sanitizeDownloadName', () => {
   })
 
   it('全空输入（空串/纯空格）→ 回默认名（不能产出空文件名）；`///` 清洗成 `___` 是合法名', () => {
-    expect(sanitizeDownloadName('')).toBe('image')
-    expect(sanitizeDownloadName('   ')).toBe('image')
+    expect(sanitizeDownloadName('')).toBe('download')
+    expect(sanitizeDownloadName('   ')).toBe('download')
     expect(sanitizeDownloadName('', '报表')).toBe('报表')
     // `///` 先被替换成 `___` —— 非空即合法（三条下划线是有效文件名），不回默认
     expect(sanitizeDownloadName('///')).toBe('___')
