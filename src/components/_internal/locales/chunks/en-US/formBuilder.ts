@@ -519,6 +519,8 @@ export default {
     pasteJsonPh: "or paste form design JSON ({'{'}meta,nodes{'}'} or array format)...",
     applyImport: 'Apply import',
     exportedTip: 'JSON exported (downloaded + copied to clipboard)',
+    exportedCopiedOnly: 'Download unavailable — design JSON copied to clipboard',
+    exportFail: 'Export failed (download not supported here)',
     jsonFileRequired: 'Please upload a .json file',
     fileReadFail: 'Failed to read file',
     importStructureErr: "Top level must be an array or a {'{'}meta, nodes/fields{'}'} object",

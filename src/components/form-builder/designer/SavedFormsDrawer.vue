@@ -35,6 +35,11 @@ const toastRef = ref<InstanceType<typeof Toast>>()
 const showTip = (msg: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') =>
   toastRef.value?.show(msg, type, 2000)
 
+/** 数据汇总弹窗的 CSV 导出结果（弹窗没有 Toast 实例，由这里提示 —— #269） */
+function onSummaryExportResult(ok: boolean): void {
+  showTip(ok ? t('fbd.exportedTip') : t('fbd.exportFail'), ok ? 'success' : 'error')
+}
+
 /** 当前活动存储（分享需加载表单设计） */
 const activeStore = () => getActiveFormStore()
 
@@ -426,7 +431,12 @@ const fldIds = {
   />
 
   <!-- 数据汇总弹窗 -->
-  <FormDataSummary :visible="!!summaryTarget" :item="summaryTarget" @update:visible="summaryTarget = null" />
+  <FormDataSummary
+    :visible="!!summaryTarget"
+    :item="summaryTarget"
+    @update:visible="summaryTarget = null"
+    @export-result="onSummaryExportResult"
+  />
 
   <Toast ref="toastRef" variant="toast" position="top" />
 </template>

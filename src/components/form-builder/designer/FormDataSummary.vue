@@ -27,6 +27,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:visible': [v: boolean]
+  /** 导出结果（弹窗本身没有 Toast 实例，提示交给宿主）—— #269 */
+  'export-result': [ok: boolean]
 }>()
 
 const activeStore = () => props.store ?? getActiveFormStore()
@@ -108,7 +110,9 @@ function exportCsv(): void {
     lines.push([r.time, ...ks.map((k) => escape(cellValue(r.data[k])))].join(','))
   }
   const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
-  downloadBlob(blob, `${props.item?.name ?? 'form'}-${records.value.length}${t('fbd.countSuffix')}.csv`)
+  // downloadBlob 在 SSR / DOM 异常时返回 false：把结果交给宿主提示（#269）
+  const ok = downloadBlob(blob, `${props.item?.name ?? 'form'}-${records.value.length}${t('fbd.countSuffix')}.csv`)
+  emit('export-result', ok)
 }
 </script>
 

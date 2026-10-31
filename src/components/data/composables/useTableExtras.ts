@@ -108,11 +108,12 @@ export function useTableExtras(
     return { cols, body }
   }
 
-  function exportCSV() {
+  /** @returns false = 未能触发下载（SSR / DOM 异常），宿主据此提示失败；服务端导出恒 true（已 emit） */
+  function exportCSV(): boolean {
     // 服务端导出：v2（Q5）起由 @export 事件接管（宿主请求后端下载全量），不再走内置 CSV
     if (options.hasExportListener()) {
       emit('export')
-      return
+      return true
     }
 
     const { cols, body } = buildExportPayload()
@@ -122,7 +123,9 @@ export function useTableExtras(
       .map((row) => row.map((val) => `"${csvFormulaSafe(String(val)).replace(/"/g, '""')}"`).join(','))
       .join('\n')
     const blob = new Blob([BOM + header + '\n' + csvBody], { type: 'text/csv;charset=utf-8' })
-    downloadBlob(blob, `${props.exportFileName || 'export'}.csv`)
+    // downloadBlob 在 SSR（无 document）/ 抛异常时返回 false（2026-11-01 #269）。
+    // 返回值透给宿主决定提示文案 —— 本 composable 没有 Toast 实例。
+    return downloadBlob(blob, `${props.exportFileName || 'export'}.csv`)
   }
 
   // ==================== Excel 导出（xlsx 惰性加载，含编辑后显示值） ====================

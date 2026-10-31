@@ -66,6 +66,8 @@ export default {
     screenshotCopied: '截图已复制',
     screenshotCopyFail: '复制失败（当前环境可能不支持图片复制），请使用「下载 PNG」',
     tableDataCopied: '已复制表格数据',
+    exportDone: '表格已导出',
+    exportFail: '导出失败（当前环境不支持下载）',
     copyFail: '复制失败（浏览器权限限制）',
     colWidthReset: '已重置列宽，恢复自动列宽',
     // 异常兜底

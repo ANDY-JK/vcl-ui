@@ -39,9 +39,12 @@ export function useFormIO(host: FormIOHost) {
     const design: FormDesign = { schemaVersion: FORM_DESIGN_VERSION, meta: host.meta(), nodes: host.nodes() }
     const json = JSON.stringify(design, null, 2)
     const blob = new Blob([json], { type: 'application/json' })
-    downloadBlob(blob, 'form-design.json')
-    void copyText(json)
-    host.showTip(t('fbd.exportedTip'))
+    // 下载与复制是两件事，各自可能失败（#269）：
+    // downloadBlob 在 SSR / DOM 异常时 false；copyText 在 HTTP / 权限受限时 false。
+    const downloaded = downloadBlob(blob, 'form-design.json')
+    void copyText(json).then((copied) => {
+      host.showTip(downloaded ? t('fbd.exportedTip') : copied ? t('fbd.exportedCopiedOnly') : t('fbd.exportFail'))
+    })
   }
 
   const importText = ref('')

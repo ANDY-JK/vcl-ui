@@ -516,6 +516,8 @@ export default {
     pasteJsonPh: "或粘贴表单设计 JSON（{'{'}meta,nodes{'}'} 或数组格式）...",
     applyImport: '应用导入',
     exportedTip: '已导出 JSON（下载 + 复制到剪贴板）',
+    exportedCopiedOnly: '未能下载文件，设计 JSON 已复制到剪贴板',
+    exportFail: '导出失败（当前环境不支持下载）',
     jsonFileRequired: '请上传 .json 格式的文件',
     fileReadFail: '文件读取失败',
     importStructureErr: "顶层必须是数组或 {'{'}meta, nodes/fields{'}'} 对象",

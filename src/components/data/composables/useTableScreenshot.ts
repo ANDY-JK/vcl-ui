@@ -44,8 +44,10 @@ export function useTableScreenshot(o: TableScreenshotOptions) {
     }
 
     if (o.shotMode() === 'download') {
-      downloadScreenshot(result.dataUrl)
-      o.notify(o.t('table.screenshotDownloaded'), 'success')
+      // 必须看返回值：downloadScreenshot 在 DOM 异常 / 无 document 时返回 false。
+      // 无条件报"已下载"会让用户去下载文件夹找一张不存在的图（2026-11-01 #269）。
+      const ok = downloadScreenshot(result.dataUrl)
+      o.notify(ok ? o.t('table.screenshotDownloaded') : o.t('table.screenshotFail'), ok ? 'success' : 'error')
     } else if (o.shotMode() === 'copy') {
       const ok = await copyScreenshotToClipboard(result.blob, result.dataUrl)
       o.notify(ok ? o.t('table.screenshotCopied') : o.t('table.screenshotCopyFail'), ok ? 'success' : 'error')
@@ -67,9 +69,14 @@ export function useTableScreenshot(o: TableScreenshotOptions) {
   }
 
   function downloadFromModal(): void {
-    downloadScreenshot(modal.value.dataUrl)
-    o.notify(o.t('table.screenshotDownloaded'), 'success')
-    closeModal()
+    const ok = downloadScreenshot(modal.value.dataUrl)
+    if (ok) {
+      o.notify(o.t('table.screenshotDownloaded'), 'success')
+      closeModal()
+    } else {
+      // 下载失败**不关弹窗**：图还在，用户可以改试"复制"或重试；关掉就什么都留不下了
+      o.notify(o.t('table.screenshotFail'), 'error')
+    }
   }
 
   async function copyFromModal(): Promise<void> {

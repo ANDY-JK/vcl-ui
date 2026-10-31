@@ -68,7 +68,8 @@ export interface DataTableContext {
   zoomX: Ref<number>
   zoomY: Ref<number>
   resetZoom: () => void
-  exportCSV: () => void
+  /** 导出结果：false = 未能触发下载（SSR / DOM 异常），宿主据此提示失败 */
+  exportCSV: () => boolean
   exportExcel: () => void
   isFullscreen: Ref<boolean>
   toggleFullscreen: () => void

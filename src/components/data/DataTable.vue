@@ -1254,6 +1254,13 @@ const {
   },
 )
 
+/** CSV 导出 + 结果提示（downloadBlob 在 SSR / DOM 异常时返回 false，#269） */
+function exportCSVWithFeedback(): boolean {
+  const ok = exportCSV()
+  notify(ok ? t('table.exportDone') : t('table.exportFail'), ok ? 'success' : 'error')
+  return ok
+}
+
 /** 单元格单击：选项列弹出面板，否则走选择逻辑
  *  @patch 2026-07-15 Ctrl+单击 → 行高亮+进度条标记；普通单击 → 仅单元格选中 */
 function onCellClick(row: Record<string, any>, col: Column, event: MouseEvent) {
@@ -1647,7 +1654,7 @@ provideDataTableContext({
   zoomX: _zoomX,
   zoomY: _zoomY,
   resetZoom,
-  exportCSV,
+  exportCSV: exportCSVWithFeedback,
   exportExcel,
   isFullscreen: _isFullscreen,
   toggleFullscreen,

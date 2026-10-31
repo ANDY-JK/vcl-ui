@@ -166,6 +166,27 @@ describe('预览弹窗内的 下载 / 复制', () => {
     expect(s.modal.value.visible).toBe(false)
   })
 
+  // ── 下载失败分支（2026-11-01 #269）──
+  // downloadScreenshot 在 DOM 异常 / 无 document 时返回 false。此前不看返回值，
+  // 无条件报"已下载"：用户去下载文件夹找一张不存在的图（且弹窗已被关掉，图也没了）。
+  it('**downloadFromModal 下载失败 → 报失败、且不关闭弹窗**（图还在，可改试复制/重试）', async () => {
+    downloadScreenshot.mockReturnValue(false)
+    const s = setup()
+    await s.capture()
+    s.downloadFromModal()
+    expect(s.notify).toHaveBeenLastCalledWith('T:table.screenshotFail', 'error')
+    expect(s.modal.value.visible, '失败时不能关弹窗').toBe(true)
+    expect(s.modal.value.dataUrl, '图必须还在').toBe(DATA_URL)
+  })
+
+  it('**download 模式下载失败 → 报失败而不是"已下载"**', async () => {
+    downloadScreenshot.mockReturnValue(false)
+    const s = setup({ mode: 'download' })
+    await s.capture()
+    expect(s.notify).toHaveBeenLastCalledWith('T:table.screenshotFail', 'error')
+    expect(s.notify, '不能同时报成功').not.toHaveBeenCalledWith('T:table.screenshotDownloaded', 'success')
+  })
+
   it('**blob 缺失时不去调剪贴板**，直接报失败（别把 undefined 递给 Clipboard API）', async () => {
     const s = setup()
     s.modal.value = { visible: true, dataUrl: DATA_URL, blob: null }
