@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import ErrorBoundary from '@/components/feedback/ErrorBoundary.vue'
+import Result from '@/components/feedback/Result.vue'
 
 const ErrorFallback = {
   props: ['error'],
@@ -130,15 +131,24 @@ const currentCategory = computed(() => {
   return (route.params.category as string) || 'select'
 })
 
-const currentDemo = computed(() => {
-  return demoMap[currentCategory.value] || demoMap['select']
-})
+// 未匹配到 demo 的 category：显式 404 态（2026-10-31，R5-A9）。此前 `|| demoMap['select']`
+// 兜底换"路由永不空"，代价是丢掉 404 语义 —— 用户输错地址看到的是 Select 演示页，
+// 分不清是"这页面存在"还是"地址打错了"。
+const currentDemo = computed(() => demoMap[currentCategory.value] || null)
 </script>
 
 <template>
   <div class="demo-wrap">
     <ErrorBoundary :watch-key="currentCategory" :title="`「${currentCategory}」组件异常`">
-      <component :is="currentDemo" />
+      <Result
+        v-if="!currentDemo"
+        status="404"
+        title="未找到该示例页"
+        :description="`「${currentCategory}」不是有效的组件地址，请从左侧导航选择。`"
+        action-text="返回组件列表"
+        @action="$router.push('/select')"
+      />
+      <component :is="currentDemo" v-else />
     </ErrorBoundary>
   </div>
 </template>
