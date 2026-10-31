@@ -32,19 +32,10 @@ const _t = useT()
  * 文件的头注释承诺"接受 unknown 输入"，但"接受"不等于"把内部表示泄漏到界面"：
  * 对象/数组/Symbol/函数**没有对应的文本形态**，给空串才是正确降级。
  */
-export function toStr(v: unknown): string {
-  if (v === null || v === undefined) return ''
-  const t = typeof v
-  // 原始值才有文本形态；object / symbol / function / bigint 一律空串
-  if (t === 'string') return v as string
-  if (t === 'number' || t === 'boolean' || t === 'bigint') return String(v)
-  return ''
-}
-
-/** 去掉全部空白 */
-export function stripSpace(input: unknown): string {
-  return toStr(input).replace(/\s+/g, '')
-}
+// 文本原语已下沉到叶子模块 text-primitives（TD-72 / #279：与 region.ts 曾互为环）。
+// 这里 re-export 保持公开 API 不变。
+export { toStr, stripSpace } from './text-primitives'
+import { toStr, stripSpace } from './text-primitives'
 
 // ════════════════════════════════════════
 // 格式校验

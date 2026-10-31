@@ -13,7 +13,7 @@
  * - `州市` 歧义（广州 vs 恩施州）靠"切开后余下是否县级单位"判定
  * - 输入经 `toStr` 归一（TD-85：对象/Symbol 不再泄漏成 `[object Object]`）
  */
-import { stripSpace } from './utils'
+import { stripSpace } from './text-primitives'
 // ════════════════════════════════════════
 // 行政区划 / 地址
 // ════════════════════════════════════════
