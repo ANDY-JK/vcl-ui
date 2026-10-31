@@ -301,25 +301,25 @@ describe('开关：把某块关掉时保留其内部配置（便于再打开）'
 })
 
 // ════════════════════════════════════════════════════════════════════
-describe('onFocus 死配置已移除', () => {
-  it('面板里**没有**「获得焦点」开关（运行时只派发 change/blur，配了没人读）', () => {
+describe('onFocus 恢复为真实事件（2026-10-31 运行时接通，TD-35 收口）', () => {
+  it('面板里有「获得焦点」开关（第 131 轮因运行时无链路移除，本轮链路接通后恢复）', () => {
     const { w } = mountPage({ onFocus: { enabled: true, action: 'x' } })
-    expect(w.text()).not.toContain('获得焦点')
+    expect(w.text(), 'onFocus 卡片应随链路接通恢复').toContain('获得焦点')
     w.unmount()
   })
 
-  it('运行时确实只有 change/blur 两个触发器（移除依据；将来支持 focus 就该改回这条）', () => {
+  it('运行时三种触发器齐备：change / blur / focus（签名里都有）', () => {
     const src = readFileSync('src/components/form-builder/useFormEvents.ts', 'utf8')
     const m = src.match(/function handleFieldChange\(field: FormField, trigger: ([^)]+)\)/)
     expect(m, '找不到 handleFieldChange 签名').toBeTruthy()
     expect(m![1]).toContain("'change'")
     expect(m![1]).toContain("'blur'")
-    expect(m![1], '运行时一旦支持 focus，就该把面板开关加回来并改这条用例').not.toContain('focus')
+    expect(m![1]).toContain("'focus'")
   })
 
-  it('to-schema 也不再导出 events.onFocus，但保留 onChange / onBlur', () => {
+  it('to-schema 同口径导出 events.onFocus（onChange / onBlur 照旧）', () => {
     const src = readFileSync('src/components/form-builder/designer/types/to-schema.ts', 'utf8')
-    expect(src, '不该再有 onFocus 导出').not.toContain('evt?.onFocus?.enabled')
+    expect(src, 'onFocus 已接通，应恢复导出').toContain('evt?.onFocus?.enabled')
     expect(src).toContain('evt?.onChange?.enabled')
     expect(src).toContain('evt?.onBlur?.enabled')
   })

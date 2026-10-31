@@ -20,7 +20,7 @@ import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } f
 import { useT } from '@/components/_internal/i18n'
 import { shallowEqual } from '@/components/_internal/utils'
 import { useFormSchema, isLayoutField, isFieldVisible, collectVisibleData } from './useFormSchema'
-import { resolveActiveTab, resolveCollapsed, fieldsInSlot } from './container-render'
+import { useContainerStates } from './useContainerStates'
 import { useFormValidator } from './useFormValidator'
 import { useFormDraftAutosave } from './useFormDraftAutosave'
 import { useFormLinkage } from './useFormLinkage'
@@ -36,7 +36,7 @@ import Tabs from '@/components/nav/Tabs.vue'
 import Collapse from '@/components/data/Collapse.vue'
 import Card from '@/components/data/Card.vue'
 import Toast from '@/components/feedback/Toast.vue'
-import type { FormSchema, FormData, FormField, RenderSection, FieldContainer } from './types'
+import type { FormSchema, FormData, FormField, RenderSection } from './types'
 
 /** 草稿自动保存防抖：连续输入只在停下来 1s 后存一次 */
 const _DRAFT_SAVE_DEBOUNCE_MS = 1000
@@ -421,9 +421,8 @@ function handleReset(): void {
 
 // ══ 计算属性 ══
 
-// 字段事件动作（setValue/toggleVisible/showTip/callApi/autoValidate/format/submit）
-// — 逻辑在 useFormEvents；onFieldUpdate 保留（FieldList 回写）
-const { hiddenByEvent, isHiddenByEvent, handleFieldChange } = useFormEvents(
+// 字段事件动作（setValue/toggleVisible/showTip/callApi/autoValidate/format/submit）— 逻辑在 useFormEvents，onFieldUpdate 保留（FieldList 回写）
+const { hiddenByEvent, isHiddenByEvent, handleFieldChange, onFieldEvent } = useFormEvents(
   formData,
   (msg, type, ms) => toastRef.value?.show(msg, type, ms),
   (key) => validateOne(key),
@@ -544,52 +543,18 @@ const renderSections = computed<RenderSection[]>(() => {
 
 // ══ 容器交互渲染辅助（tabs/collapse/steps） ══
 
-/** tabs 容器：当前激活 tab 名 */
-const tabStates = ref<Record<string, string>>({})
-/** collapse 容器：展开状态（collapseIndex → bool） */
-const collapseStates = ref<Record<string, boolean>>({})
-/** steps 容器：当前步骤下标 */
-const stepStates = ref<Record<string, number>>({})
-
-/** flex 容器：容器配置 → CSS 变量（换行/对齐/间距） */
-function flexStyle(c: FieldContainer): Record<string, string> {
-  const s: Record<string, string> = {
-    '--fb-flex-wrap': c.wrap === false ? 'nowrap' : 'wrap',
-    '--fb-flex-justify':
-      c.justify === 'center' ? 'center' : c.justify === 'space-between' ? 'space-between' : 'flex-start',
-  }
-  if (c.gap !== undefined) s['--fb-flex-gap'] = `${Math.max(0, Number(c.gap) || 0)}px`
-  return s
-}
-
-/** tabs 容器：当前激活 tab 名（存的名字失效时回落第一个，见 container-render.ts） */
-function activeTabOf(section: RenderSection): string {
-  const tabs = section.container?.tabs ?? []
-  return resolveActiveTab(tabs, tabStates.value[section.container?.id ?? ''])
-}
-
-/** 取 collapse 容器某折叠项展开状态 */
-function collapseOpen(section: RenderSection, index: number): boolean {
-  const items = section.container?.collapseItems ?? []
-  const stored = collapseStates.value[`${section.container?.id ?? ''}:${index}`]
-  return resolveCollapsed(items, index, stored)
-}
-
-/** 取 steps 容器当前步骤 */
-function stepIndexOf(section: RenderSection): number {
-  return stepStates.value[section.container?.id ?? ''] ?? 0
-}
-
-/** tabs 容器：按槽位过滤出当前 tab 的字段 */
-function fieldsInTab(section: RenderSection, tabName: string): FormField[] {
-  const idx = (section.container?.tabs ?? []).findIndex((t) => t.name === tabName)
-  return fieldsInSlot(section.fields, idx)
-}
-
-/** 按「容器槽位」过滤字段（collapse 与 steps 共用；语义：slot 就是第几个折叠项/步骤） */
-function fieldsBySlot(section: RenderSection, index: number): FormField[] {
-  return fieldsInSlot(section.fields, index)
-}
+// 容器状态（tabs/collapse/steps 的激活项）与读取函数 —— 下沉 useContainerStates（TD-54 第一刀）
+const {
+  tabStates,
+  collapseStates,
+  stepStates,
+  flexStyle,
+  activeTabOf,
+  collapseOpen,
+  stepIndexOf,
+  fieldsInTab,
+  fieldsBySlot,
+} = useContainerStates()
 
 /** 是否显示步骤导航 */
 const showSteps = computed(() => normalized.value.layout === 'steps' && totalSteps.value > 0)
@@ -636,8 +601,8 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
                 :errors="errors"
                 :disabled="disabled || effectiveReadonly"
                 :get-options="getFieldOptions"
+                :on-event="onFieldEvent"
                 @update:field="onFieldUpdate"
-                @change="(f: FormField) => handleFieldChange(f, 'change')"
               />
             </div>
           </Card>
@@ -663,8 +628,8 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
                 :errors="errors"
                 :disabled="disabled || effectiveReadonly"
                 :get-options="getFieldOptions"
+                :on-event="onFieldEvent"
                 @update:field="onFieldUpdate"
-                @change="(f: FormField) => handleFieldChange(f, 'change')"
               />
             </Collapse>
           </Card>
@@ -690,8 +655,8 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
                 :errors="errors"
                 :disabled="disabled || effectiveReadonly"
                 :get-options="getFieldOptions"
+                :on-event="onFieldEvent"
                 @update:field="onFieldUpdate"
-                @change="(f: FormField) => handleFieldChange(f, 'change')"
               />
             </div>
           </Card>
@@ -720,8 +685,8 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
                 :errors="errors"
                 :disabled="disabled || effectiveReadonly"
                 :get-options="getFieldOptions"
+                :on-event="onFieldEvent"
                 @update:field="onFieldUpdate"
-                @change="(f: FormField) => handleFieldChange(f, 'change')"
               />
             </div>
           </Card>
@@ -731,7 +696,13 @@ const showActions = computed(() => !normalized.value.hideActions && submitConfig
       <!-- steps 模式：渲染当前步骤字段 -->
       <template v-else>
         <div class="fb-fields fb-fields-step">
-          <div v-for="field in renderFields" :key="field.key" class="fb-field">
+          <div
+            v-for="field in renderFields"
+            :key="field.key"
+            class="fb-field"
+            @focusin="handleFieldChange(field, 'focus')"
+            @focusout="handleFieldChange(field, 'blur')"
+          >
             <FormRenderer
               v-model="formData[field.key]"
               :field="field"

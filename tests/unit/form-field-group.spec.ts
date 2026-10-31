@@ -106,3 +106,64 @@ describe('FormFieldGroup 不越权', () => {
     expect(w.find('.fb-group-card').exists(), '不应自带 Card 包装').toBe(false)
   })
 })
+
+describe('FormFieldGroup focus/blur 转发（2026-10-31，TD-35 收口）', () => {
+  it('子组件 focus → 父组件收到同一个 field 对象', async () => {
+    const w = mountGroup()
+    const child = w.findComponent(FieldList)
+    const field = fields[0]
+    child.vm.$emit('focus', field)
+    await w.vm.$nextTick()
+    const emitted = w.emitted('focus')
+    expect(emitted, '应转发 focus').toBeTruthy()
+    expect(emitted![0][0], '应是同一个 field 对象').toBe(field)
+  })
+
+  it('子组件 blur → 父组件收到同一个 field 对象', async () => {
+    const w = mountGroup()
+    const child = w.findComponent(FieldList)
+    const field = fields[0]
+    child.vm.$emit('blur', field)
+    await w.vm.$nextTick()
+    const emitted = w.emitted('blur')
+    expect(emitted, '应转发 blur').toBeTruthy()
+    expect(emitted![0][0], '应是同一个 field 对象').toBe(field)
+  })
+})
+
+describe('FieldList 原生焦点冒泡（focusin/focusout 会冒泡，focus/blur 不会）', () => {
+  it('内部输入框 focusin → 组件发 focus(field)', async () => {
+    const w = mount(FieldList, {
+      props: {
+        fields,
+        section,
+        formData: { a: 1 },
+        errors,
+        disabled: false,
+        getOptions,
+      },
+    })
+    // 真实 focusin 事件从包裹 div 冒出（FormRenderer 内部元素 focus 时发生的事）
+    await w.find('.fb-field').trigger('focusin')
+    const emitted = w.emitted('focus')
+    expect(emitted, 'focusin 应转成 focus 事件').toBeTruthy()
+    expect(emitted![0][0].key).toBe('a')
+  })
+
+  it('内部输入框 focusout → 组件发 blur(field)', async () => {
+    const w = mount(FieldList, {
+      props: {
+        fields,
+        section,
+        formData: { a: 1 },
+        errors,
+        disabled: false,
+        getOptions,
+      },
+    })
+    await w.find('.fb-field').trigger('focusout')
+    const emitted = w.emitted('blur')
+    expect(emitted, 'focusout 应转成 blur 事件').toBeTruthy()
+    expect(emitted![0][0].key).toBe('a')
+  })
+})

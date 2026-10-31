@@ -248,10 +248,10 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
     }
     if (evt?.onBlur?.enabled && evt.onBlur.action) {
       base.events = { ...base.events, onBlur: { action: evt.onBlur.action } }
+      if (evt?.onFocus?.enabled && evt.onFocus.action) {
+        base.events = { ...base.events, onFocus: { action: evt.onFocus.action } }
+      }
     }
-    // 第 131 轮：不再导出 onFocus —— 运行时 `useFormEvents` 只处理 change/blur 两种触发，
-    // `events.onFocus` 没有任何消费者。导出它只会让 schema 里多一份"看着配了、实际无效"的数据。
-    // （`FieldEvents.onFocus` 类型保留，手写 schema 仍可声明，等运行时支持后恢复导出。见 TD-35）
 
     // 数据源配置映射（从 dataConfig 导出）
     const dat = f.dataConfig

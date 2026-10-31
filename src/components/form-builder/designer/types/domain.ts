@@ -298,10 +298,13 @@ export interface DesignerEventConfig {
     /** callApi 动作的接口地址 */
     apiUrl?: string
   }
-  /** 获得焦点事件 */
+  /** 获得焦点事件（2026-10-31 运行时接通，支持与 onChange 相同的动作集） */
   onFocus?: {
     enabled: boolean
     action?: string
+    targetField?: string
+    /** callApi 动作的接口地址 */
+    apiUrl?: string
   }
   /** 失去焦点事件 */
   onBlur?: {

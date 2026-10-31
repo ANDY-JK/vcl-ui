@@ -200,10 +200,9 @@ export interface FieldEventAction {
 export interface FieldEvents {
   onChange?: FieldEventAction
   /**
-   * ⚠️ **运行时暂不支持**（TD-35）：`useFormEvents.handleFieldChange(field, trigger)` 只接受
-   * `'change' | 'blur'`，`FormBuilder` 也只派发这两种，因此声明 `onFocus` **不会有任何效果**。
-   * 类型保留是为了手写 schema 的前向兼容；设计器面板已不再提供该开关、`toSchema` 也不再导出它
-   * （避免写出"配了没人读"的配置）。等运行时补上 focus 派发后再放开。
+   * 获得焦点时执行动作（2026-10-31 接通，TD-35 收口）：FieldList 的 `.fb-field`
+   * 包裹元素监听 `focusin`（会冒泡）派发 `focus`，FormBuilder 转给
+   * `handleFieldChange(field, 'focus')`。支持与 onChange 相同的动作集。
    */
   onFocus?: FieldEventAction
   onBlur?: FieldEventAction

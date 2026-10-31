@@ -402,3 +402,35 @@ describe('onScopeDispose 清理', () => {
     expect(() => api.handleFieldChange(fieldWith({ onBlur: { action: 'format' } }, 'src'), 'blur')).not.toThrow()
   })
 })
+
+// ════════════════════════════════════════════════════════════════════
+describe('focus 触发（2026-10-31 接通，TD-35 收口）', () => {
+  it('onFocus 动作真的会执行（此前 trigger 只认 change/blur，onFocus 配了没人读）', () => {
+    const { api, toast, scope } = setup({ src: 'v' })
+    api.handleFieldChange(fieldWith({ onFocus: { action: 'showTip' } }), 'focus')
+    expect(toast, 'focus 触发的 showTip 应该到达 toast').toHaveBeenCalledTimes(1)
+    scope.stop()
+  })
+
+  it('onFocus 的 setValue 把源值抄给目标（动作集与 onChange 相同）', () => {
+    const { api, formData, scope } = setup({ src: 'hello' })
+    api.handleFieldChange(fieldWith({ onFocus: { action: 'setValue', targetField: 'dst' } }), 'focus')
+    expect(formData.value.dst).toBe('hello')
+    scope.stop()
+  })
+
+  it('onFocus 未配置 → 无副作用（evtKey 分支不误读 onChange）', () => {
+    const { api, toast, formData, scope } = setup({ src: 'v' })
+    api.handleFieldChange(fieldWith({ onChange: { action: 'showTip' } }), 'focus')
+    expect(toast, 'focus 不该读 onChange 的配置').not.toHaveBeenCalled()
+    expect(formData.value).toEqual({ src: 'v' })
+    scope.stop()
+  })
+
+  it('onBlur 的 autoValidate 走 blur 触发（链路语义核对）', () => {
+    const { api, autoValidate, scope } = setup({ src: 'v' })
+    api.handleFieldChange(fieldWith({ onBlur: { action: 'autoValidate' } }), 'blur')
+    expect(autoValidate).toHaveBeenCalledTimes(1)
+    scope.stop()
+  })
+})

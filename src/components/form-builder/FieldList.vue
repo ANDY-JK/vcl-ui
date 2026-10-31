@@ -22,6 +22,10 @@ const props = defineProps<{
 const emit = defineEmits<{
   change: [field: FormField]
   'update:field': [key: string, value: unknown]
+  /** 字段获得焦点（focusin 冒泡，2026-10-31 接通 onFocus 动作） */
+  focus: [field: FormField]
+  /** 字段失去焦点（focusout 冒泡，2026-10-31 修复 onBlur 动作从未派发） */
+  blur: [field: FormField]
 }>()
 
 /**
@@ -42,7 +46,19 @@ function fieldStyle(field: FormField): Record<string, string | number> {
 </script>
 
 <template>
-  <div v-for="field in fields" :key="field.key" class="fb-field" :style="fieldStyle(field)">
+  <!--
+    focusin / focusout 而不是 focus / blur：后两者**不冒泡**，原子字段组件（Input/Select/
+    DatePicker/自定义渲染）各不相同、要一一补 emit；前两者从任何内部元素都能冒泡到本包裹层，
+    一处接住全部字段类型的"获得焦点 / 失去焦点"，不必改 20 多个原子组件。
+  -->
+  <div
+    v-for="field in fields"
+    :key="field.key"
+    class="fb-field"
+    :style="fieldStyle(field)"
+    @focusin="emit('focus', field)"
+    @focusout="emit('blur', field)"
+  >
     <FormRenderer
       :model-value="formData[field.key]"
       :field="field"

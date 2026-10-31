@@ -156,15 +156,65 @@ const linkageHelpText = computed(() => {
       </div>
     </div>
 
-    <!--
-      onFocus 卡片**已移除**（第 131 轮）。
-      原因：运行时 `useFormEvents.handleFieldChange(field, trigger)` 只接受 'change' | 'blur'
-      （`FormBuilder.vue` 的四处 @change 与 `FormFieldGroup` 的转发也只派发这两个），
-      **没有任何 focus 触发链路**。原先这个开关会把 `eventConfig.onFocus.enabled` 写进 schema，
-      `to-schema` 也会导出 `events.onFocus`，但运行时从不读它 —— 用户打开开关、什么都不会发生，
-      属于"配了没人读"的死配置。等真的实现 focus 派发时再把卡片加回来（见 TD-35）。
-      `FieldEvents.onFocus` 类型保留：手写 schema 仍可声明，不删公开类型。
-    -->
+    <!-- onFocus（2026-10-31 恢复：运行时已接通 focus 派发，见 TD-35 收口） -->
+    <div class="ldp-event-card">
+      <div class="ldp-event-head">
+        <IconSvg type="sun" size="xs" class="ldp-event-icon" />
+        <span class="ldp-event-label">{{ t('fbp.eventFocus') }}</span>
+        <div class="ldp-event-toggle">
+          <Group
+            type="switch"
+            :model-value="!!node.eventConfig?.onFocus?.enabled"
+            @update:model-value="
+              emit('update', {
+                eventConfig: {
+                  ...node.eventConfig,
+                  onFocus: { enabled: !!$event, action: node.eventConfig?.onFocus?.action },
+                },
+              })
+            "
+          />
+        </div>
+      </div>
+      <div v-if="node.eventConfig?.onFocus?.enabled" class="ldp-event-body">
+        <Select
+          :model-value="node.eventConfig?.onFocus?.action ?? ''"
+          :options="[
+            { value: '', label: t('fbp.chooseAction') },
+            { value: 'setValue', label: t('fbp.actSetValue') },
+            { value: 'toggleVisible', label: t('fbp.actToggleVisible') },
+            { value: 'showTip', label: t('fbp.actShowTip') },
+            { value: 'callApi', label: t('fbp.actCallApi') },
+          ]"
+          @update:model-value="
+            emit('update', {
+              eventConfig: {
+                ...node.eventConfig,
+                onFocus: { ...node.eventConfig?.onFocus, enabled: true, action: String($event ?? '') },
+              },
+            })
+          "
+        />
+        <Input
+          v-if="node.eventConfig?.onFocus?.action === 'callApi'"
+          :model-value="node.eventConfig?.onFocus?.apiUrl ?? ''"
+          placeholder="https://api.example.com/xxx"
+          @update:model-value="
+            emit('update', {
+              eventConfig: {
+                ...node.eventConfig,
+                onFocus: {
+                  ...node.eventConfig?.onFocus,
+                  enabled: true,
+                  action: 'callApi',
+                  apiUrl: $event === null ? '' : String($event ?? ''),
+                },
+              },
+            })
+          "
+        />
+      </div>
+    </div>
 
     <!-- onBlur -->
     <div class="ldp-event-card">

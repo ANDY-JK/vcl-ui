@@ -1,9 +1,14 @@
 /**
  * 字段事件动作 composable — 拆分自 FormBuilder（超 800 行约束整改）
  *
- * 执行字段配置的事件动作（由 FormRenderer @change/@blur 触发）：
+ * 执行字段配置的事件动作（由 FieldList 的 focusin/focusout/change 冒泡派发）：
  * - onChange: setValue / toggleVisible（值驱动：有内容显示、清空隐藏）/ showTip / callApi / linkField
  * - onBlur:   autoValidate / format / submit
+ * - onFocus:  与 onChange 同一组动作（2026-10-31 接通，此前无任何派发链路）
+ *
+ * 三种触发都从 FieldList 的 `.fb-field` 包裹元素冒泡出来（focusin/focusout 会冒泡，
+ * focus/blur 不会）—— 这样 Input/Select/DatePicker/自定义字段全都不用各自改，
+ * 一处接住所有字段类型。
  *
  * 隐藏集合（toggleVisible）与表单数据写入由宿主注入，保持与渲染/提交链路解耦。
  */
@@ -57,8 +62,9 @@ export function useFormEvents(
   }
 
   /** 执行单个字段事件动作 */
-  function handleFieldChange(field: FormField, trigger: 'change' | 'blur'): void {
-    const evt = field.events?.[trigger === 'change' ? 'onChange' : 'onBlur']
+  function handleFieldChange(field: FormField, trigger: 'change' | 'blur' | 'focus'): void {
+    const evtKey = trigger === 'change' ? 'onChange' : trigger === 'blur' ? 'onBlur' : 'onFocus'
+    const evt = field.events?.[evtKey]
     if (!evt?.action) return
     const target = evt.targetField
 
@@ -154,7 +160,11 @@ export function useFormEvents(
     }
   }
 
-  return { hiddenByEvent, isHiddenByEvent, handleFieldChange }
+  /** FormFieldGroup 的统一事件出口（field, trigger）—— FormBuilder 模板 :on-event 直用 */
+  const onFieldEvent = (field: FormField, trigger: 'change' | 'focus' | 'blur'): void =>
+    handleFieldChange(field, trigger)
+
+  return { hiddenByEvent, isHiddenByEvent, handleFieldChange, onFieldEvent }
 }
 
 // 模块级 t：本文件纯逻辑层复用 FormBuilder 的 i18n 域

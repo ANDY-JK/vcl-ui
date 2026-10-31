@@ -29,7 +29,7 @@ import type { FormField, RenderSection, FormErrors } from './types'
 import type { Option } from '@/components/shared/types'
 import FieldList from './FieldList.vue'
 
-defineProps<{
+const props = defineProps<{
   /** 要渲染的字段（四个分支各算各的） */
   fields: FormField[]
   /** 所属 section（FieldList 用它算 span / flex basis） */
@@ -42,13 +42,24 @@ defineProps<{
   disabled: boolean
   /** 动态选项取数 */
   getOptions: (field: FormField) => Option[] | undefined
+  /**
+   * 可选统一事件出口（field, trigger）—— 2026-10-31 加：FormBuilder 的 4 个分支
+   * 各自写 @change/@focus/@blur 三行模板是 12 行完全重复；收敛成一个 prop 后
+   * 4 处各 1 行。仍 emit change/focus/blur（旧契约测试锁着组件间转发），
+   * 传了 onEvent 就额外调用它 —— 两种消费方式并存。
+   */
+  onEvent?: (field: FormField, trigger: 'change' | 'focus' | 'blur') => void
 }>()
 
 const emit = defineEmits<{
   /** 字段值变更 → 转发给 FormBuilder 的 onFieldUpdate */
   'update:field': [key: string, value: unknown]
-  /** 字段交互（change/blur 等）→ 转发给 FormBuilder 的 handleFieldChange */
+  /** 字段值交互 → 转发给 FormBuilder 的 handleFieldChange(field, 'change') */
   change: [field: FormField]
+  /** 字段获得焦点 → handleFieldChange(field, 'focus')（2026-10-31 接通 onFocus） */
+  focus: [field: FormField]
+  /** 字段失去焦点 → handleFieldChange(field, 'blur')（2026-10-31 修复 onBlur 从未派发） */
+  blur: [field: FormField]
 }>()
 </script>
 
@@ -73,6 +84,23 @@ const emit = defineEmits<{
     :disabled="disabled"
     :get-options="getOptions"
     @update:field="(key: string, value: unknown) => emit('update:field', key, value)"
-    @change="(f: FormField) => emit('change', f)"
+    @change="
+      (f: FormField) => {
+        emit('change', f)
+        props.onEvent?.(f, 'change')
+      }
+    "
+    @focus="
+      (f: FormField) => {
+        emit('focus', f)
+        props.onEvent?.(f, 'focus')
+      }
+    "
+    @blur="
+      (f: FormField) => {
+        emit('blur', f)
+        props.onEvent?.(f, 'blur')
+      }
+    "
   />
 </template>
