@@ -16,7 +16,7 @@ import {
   findNode,
   flattenNodes,
   type DesignerNode,
-} from '@/components/form-builder/designer/types/domain'
+} from '@/components/form-builder/designer/tree-ops'
 
 /** 造一个容器节点 */
 function card(id: string, children: DesignerNode[] = []): DesignerNode {

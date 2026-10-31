@@ -5,3 +5,5 @@
  */
 export * from './domain'
 export * from './to-schema'
+// 树操作已从 domain 拆出（2026-11-01）：桶文件继续转发，调用方 './types' 路径不变
+export * from '../tree-ops'
