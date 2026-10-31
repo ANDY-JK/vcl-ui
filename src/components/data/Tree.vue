@@ -58,7 +58,7 @@ const emit = defineEmits<{
   /** 勾选变化：[勾选后的全量键集合, 本次变更的节点] */
   'check-change': [checkedKeys: (string | number)[], node: TreeNode]
   /** v-model:selectedKey——受控选中节点键 */
-  'update:selectedKey': [key: string | number | null]
+  'update:selected-key': [key: string | number | null]
   /** 懒加载：节点展开时触发，父组件加载子节点后回填到 data */
   load: [node: TreeNode]
 }>()
@@ -255,7 +255,7 @@ if (isRoot) {
 
   function handleNodeClick(node: TreeNode) {
     if (node.disabled) return
-    if (props.selectable) emit('update:selectedKey', node.key)
+    if (props.selectable) emit('update:selected-key', node.key)
     else if (node.children?.length) toggleExpand(node.key)
     emit('node-click', node)
   }
@@ -271,7 +271,7 @@ if (isRoot) {
       if (next) {
         focusKey.value = next.node.key
         // 可选中模式：键盘移动即改变选中（与点击语义一致）
-        if (state.selectable) emit('update:selectedKey', next.node.key)
+        if (state.selectable) emit('update:selected-key', next.node.key)
         emit('node-click', next.node)
         focusNode(next.node.key)
       }

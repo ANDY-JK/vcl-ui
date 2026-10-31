@@ -68,7 +68,7 @@ const emit = defineEmits<{
   /** v-model:color——图标颜色 */
   'update:color': [v: string]
   /** v-model:bgColor——触发按钮底色 */
-  'update:bgColor': [v: string]
+  'update:bg-color': [v: string]
   /** v-model:provider——图标提供者切换 */
   'update:provider': [v: 'lucide' | 'solar' | 'morphicons']
   /** 任一选择提交：[图标名 + 颜色 + 底色] 快照 */
@@ -262,7 +262,7 @@ function selectIcon(name: string) {
 function confirm() {
   emit('update:modelValue', localIcon.value)
   emit('update:color', localColor.value)
-  emit('update:bgColor', localBgColor.value)
+  emit('update:bg-color', localBgColor.value)
   emit('update:provider', localProvider.value)
   emit('change', { icon: localIcon.value, color: localColor.value, bgColor: localBgColor.value })
   open.value = false

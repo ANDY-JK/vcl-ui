@@ -52,8 +52,8 @@ describe('useTableExtras 行选择', () => {
     const { api, emitted } = makeExtras()
     api.toggleRowSelect(data[0])
     expect(api._selectedKeys.value).toEqual(['1'])
-    // emit update:selectedKeys
-    expect(emitted[0]).toEqual(['update:selectedKeys', ['1']])
+    // emit update:selected-keys
+    expect(emitted[0]).toEqual(['update:selected-keys', ['1']])
     // emit selectionChange（含行对象）
     expect(emitted[1][0]).toBe('selection-change')
     expect(emitted[1][1]).toEqual(['1'])

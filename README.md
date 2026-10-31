@@ -380,6 +380,7 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 - `Select`：`visibleChange`→`visible-change`；`ToggleList`：`itemClick`→`item-click`、`buttonClick`→`button-click`；`Drawer`：`afterOpen`/`afterClose`→`after-open`/`after-close`
 - `StorePanel`（route-planner）：`toggleSkip`→`toggle-skip`、`skipCity`→`skip-city`、`removeCity`→`remove-city`
 - form-builder 内部子组件（`DesignerCanvas` / `RichtextToolbar`，仅经 FormDesigner/RendererRichtext 消费）：`insertAt`→`insert-at`、`insertIntoContainer`→`insert-into-container`、`sortNode`→`sort-node`、`assignSlot`→`assign-slot`、`updateContainer`→`update-container`、`inlineCode`→`inline-code`、`togglePreview`→`toggle-preview`、`toggleFullscreen`→`toggle-fullscreen`
+- **`update:*` 家族同口径（2026-10-31 补齐，此前 R5-A14 指出例外未成文）**：多词的 `update:` 事件同样 kebab 化——`Tree`/`Menu` 的 `update:selectedKey`→`update:selected-key`、`DataTable` 的 `update:currentPage`→`update:current-page` / `update:selectedKeys`→`update:selected-keys`、`IconPicker` 的 `update:bgColor`→`update:bg-color`。**这一类是 breaking**：模板里手写的 `@update:selectedKey="…"` 与 `v-model:selectedKey="…"` 都要改成 kebab 写法（`v-model:selected-key` 照常生效）；`update:modelValue`、`update:visible`、`update:open`、`update:filters`、`update:nodes` 等单词/单形名事件不变。
 
 **3. expose 近义入口收敛（Q18）** —— `FormBuilder` 删 `validateForm()` / `validateAndGet()`（只留 `validate()`，数据用 `getFormData()`、错误用 `errors` 拼装）；`login` 删 `notifyFailed()` / `notifySuccess()`，改传 `:auth-result="{ ok, message? }"` prop。
 

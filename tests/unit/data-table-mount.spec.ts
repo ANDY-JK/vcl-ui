@@ -272,7 +272,7 @@ describe('DataTable 挂载级护栏 — 分页脚注区块（主子装配路径�
     // 下一页
     await pageBtns[4].trigger('click')
     expect(w.emitted('page-change')?.[0]).toEqual([2, 2])
-    expect(w.emitted('update:currentPage')?.[0]).toEqual([2])
+    expect(w.emitted('update:current-page')?.[0]).toEqual([2])
     await nextTick()
     // 第 2 页数据
     expect(w.findAll('tbody tr')[0].text()).toContain('行2')

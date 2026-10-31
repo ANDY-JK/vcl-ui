@@ -314,7 +314,7 @@ export function useTableExtras(
 
   function updateSelectedKeys(keys: string[]) {
     _selectedKeys.value = keys
-    emit('update:selectedKeys', keys)
+    emit('update:selected-keys', keys)
     const keySet = new Set(keys)
     emit(
       'selection-change',

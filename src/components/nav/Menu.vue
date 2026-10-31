@@ -34,7 +34,7 @@ const emit = defineEmits<{
   /** 选中菜单项：[MenuItem] */
   select: [item: MenuItem]
   /** v-model:selectedKey——受控选中 */
-  'update:selectedKey': [key: string | number]
+  'update:selected-key': [key: string | number]
 }>()
 
 // --- state ---
@@ -108,7 +108,7 @@ function handleClick(item: MenuItem) {
     return
   }
   emit('select', item)
-  emit('update:selectedKey', item.key)
+  emit('update:selected-key', item.key)
   item.action?.()
 }
 
@@ -221,7 +221,7 @@ const levelStyle = computed(() => {
                 :level="level + 1"
                 :theme="theme"
                 @select="(i) => emit('select', i)"
-                @update:selected-key="(k) => emit('update:selectedKey', k)"
+                @update:selected-key="(k) => emit('update:selected-key', k)"
               />
             </div>
           </Transition>
@@ -250,7 +250,7 @@ const levelStyle = computed(() => {
               "
               @update:selected-key="
                 (k) => {
-                  emit('update:selectedKey', k)
+                  emit('update:selected-key', k)
                   hoverKey = null
                 }
               "

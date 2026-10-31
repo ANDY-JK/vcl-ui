@@ -178,7 +178,7 @@
 | --- | --- | --- |
 | `'update:modelValue'` | `v: string` | v-model——选中图标名 |
 | `'update:color'` | `v: string` | v-model:color——图标颜色 |
-| `'update:bgColor'` | `v: string` | v-model:bgColor——触发按钮底色 |
+| `'update:bg-color'` | `v: string` | v-model:bg-color——触发按钮底色 |
 | `'update:provider'` | `v: 'lucide' \| 'solar' \| 'morphicons'` | v-model:provider——图标提供者切换 |
 | `change` | `v: { icon: string; color: string; bgColor: string }` | 任一选择提交：[图标名 + 颜色 + 底色] 快照 |
 

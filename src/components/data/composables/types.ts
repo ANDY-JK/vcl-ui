@@ -171,9 +171,9 @@ export type Emits = {
   /** 行点击 */
   'row-click': [row: Record<string, any>, index: number]
   /** v-model:selectedKeys——选中行键集合 */
-  'update:selectedKeys': [keys: string[]]
+  'update:selected-keys': [keys: string[]]
   /** v-model:currentPage——当前页码 */
-  'update:currentPage': [page: number]
+  'update:current-page': [page: number]
   /** 翻页：[页码, 每页行数]（服务端分页接此事件换数据） */
   'page-change': [page: number, pageSize: number]
   /** 选中集合变化：[行键数组, 行对象数组] */

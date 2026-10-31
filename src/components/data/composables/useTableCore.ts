@@ -240,7 +240,7 @@ export function useTableCore(
     () => {
       if (pageReady.value && safePage.value !== _currentPage.value) {
         _currentPage.value = safePage.value
-        emit('update:currentPage', safePage.value)
+        emit('update:current-page', safePage.value)
         emit('page-change', safePage.value, props.pageSize || 0)
       }
     },
@@ -253,7 +253,7 @@ export function useTableCore(
     const next = Math.min(Math.max(1, Math.trunc(p) || 1), totalPages.value)
     if (next === _currentPage.value) return
     _currentPage.value = next
-    emit('update:currentPage', next)
+    emit('update:current-page', next)
     emit('page-change', next, props.pageSize || 0)
   }
 

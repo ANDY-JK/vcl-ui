@@ -39,12 +39,12 @@ const isRowExpanded = (w: ReturnType<typeof mountMenu>, label: string) =>
   rowByLabel(w, label).classes().includes('menu-item--expanded')
 
 describe('Menu · 选中回传', () => {
-  it('点叶子项：emit select + update:selectedKey，payload 为整项', async () => {
+  it('点叶子项：emit select + update:selected-key，payload 为整项', async () => {
     const w = mountMenu()
     await rowByLabel(w, '首页').trigger('click')
     expect(w.emitted('select')).toHaveLength(1)
     expect(w.emitted('select')![0]![0]).toMatchObject({ key: 'home', label: '首页' })
-    expect(w.emitted('update:selectedKey')).toEqual([['home']])
+    expect(w.emitted('update:selected-key')).toEqual([['home']])
   })
 
   it('disabled 子项不可选中（无 emit）', async () => {
@@ -139,7 +139,7 @@ describe('Menu · 键盘导航', () => {
   it('Enter 触发与 click 相同的选中回传', async () => {
     const w = mountMenu()
     await rowByLabel(w, '首页').trigger('keydown', { key: 'Enter' })
-    expect(w.emitted('update:selectedKey')).toEqual([['home']])
+    expect(w.emitted('update:selected-key')).toEqual([['home']])
   })
 
   it('Escape 清空展开态', async () => {

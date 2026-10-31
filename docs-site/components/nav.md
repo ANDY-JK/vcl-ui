@@ -121,5 +121,5 @@
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
 | `select` | `item: MenuItem` | 选中菜单项：[MenuItem] |
-| `'update:selectedKey'` | `key: string \| number` | v-model:selectedKey——受控选中 |
+| `'update:selected-key'` | `key: string \| number` | v-model:selected-key——受控选中 |
 

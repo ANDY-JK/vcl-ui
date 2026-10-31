@@ -66,7 +66,7 @@ describe('DataTable 分页 · 受控页码越界（总数 12 / 每页 10 = 2 页
   it('越界时自动 emit 纠正值（宿主据此同步自己的页码/URL）', async () => {
     const w = mountTable({ currentPage: 5 })
     await nextTick()
-    const emitted = (w.emitted('update:currentPage') as [number][] | undefined) ?? []
+    const emitted = (w.emitted('update:current-page') as [number][] | undefined) ?? []
     expect(emitted.at(-1)?.[0], '必须把纠偏后的页码回传宿主').toBe(2)
     w.unmount()
   })
@@ -77,7 +77,7 @@ describe('DataTable 分页 · 受控页码越界（总数 12 / 每页 10 = 2 页
     const prev = w.findAll('.table-pagination .page-btn')[0]!
     await prev.trigger('click')
     await nextTick()
-    const emitted = (w.emitted('currentPage') ?? []).concat(w.emitted('update:currentPage') ?? [])
+    const emitted = (w.emitted('currentPage') ?? []).concat(w.emitted('update:current-page') ?? [])
     // 只要发出的是合法页码就说明没在原地打转
     const vals = emitted.flat() as number[]
     expect(vals.length, '点上一页必须发出页码事件').toBeGreaterThan(0)
@@ -102,7 +102,7 @@ describe('DataTable 分页 · 受控页码越界（总数 12 / 每页 10 = 2 页
     const w = mountTable({ currentPage: 2 })
     await nextTick()
     expect(activePages(w)).toEqual(['2'])
-    expect(w.emitted('update:currentPage'), '合法状态不该 emit').toBeUndefined()
+    expect(w.emitted('update:current-page'), '合法状态不该 emit').toBeUndefined()
     w.unmount()
   })
 
@@ -119,13 +119,13 @@ describe('DataTable 分页 · 受控页码越界（总数 12 / 每页 10 = 2 页
     // 宿主把页码存进 URL，刷新后先渲染空表、再拉数据 —— 首帧 totalPages=1
     const w = mountTable({ data: [], currentPage: 5 })
     await nextTick()
-    expect(w.emitted('update:currentPage'), '数据没到就纠正会把"第 5 页"永久清掉').toBeUndefined()
+    expect(w.emitted('update:current-page'), '数据没到就纠正会把"第 5 页"永久清掉').toBeUndefined()
 
     await w.setProps({ data: rows(120) }) // 12 页，第 5 页合法
     await nextTick()
     expect(statusText(w), '数据到位后应回到宿主原本要的第 5 页').toContain('5 / 12')
     expect(activePages(w)).toEqual(['5'])
-    expect(w.emitted('update:currentPage'), '合法意图不该被纠正').toBeUndefined()
+    expect(w.emitted('update:current-page'), '合法意图不该被纠正').toBeUndefined()
     w.unmount()
   })
 
@@ -162,7 +162,7 @@ describe('useTableCore.setPage · 入口夹紧（宿主/键盘直接调用）', 
     core.setPage(99)
     await nextTick()
     expect(core.safePage.value, '越界写入必须被入口夹住').toBe(1)
-    const vals = emitted.filter((e) => e.name === 'update:currentPage').map((e) => e.args[0])
+    const vals = emitted.filter((e) => e.name === 'update:current-page').map((e) => e.args[0])
     expect(vals.every((v) => v === 1), `绝不能把 99 之类的页码回传给宿主，实际：${JSON.stringify(vals)}`).toBe(true)
   })
 

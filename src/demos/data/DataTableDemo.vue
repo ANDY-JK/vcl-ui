@@ -1506,9 +1506,9 @@ const lineMode = ref<'callback' | 'key'>('callback')
     <Card title="事件一览 — 15 个 emit 的回显" title-as="h2">
       <p class="demo-hint">
         操作下面这张表，右半边会打出组件真正抛出的事件与载荷。 带 <code>update:</code> 前缀的三个（<code
-          >update:selectedKeys</code
+          >update:selected-keys</code
         >
-        / <code>update:currentPage</code> / <code>update:filters</code>）就是
+        / <code>update:current-page</code> / <code>update:filters</code>）就是
         <code>v-model</code> 的另一半，下面已经双向绑上了。
       </p>
       <p class="demo-hint">
@@ -2090,13 +2090,13 @@ const lineMode = ref<'callback' | 'key'>('callback')
             <td>点击数据行；index 是渲染序，非过滤前原序</td>
           </tr>
           <tr>
-            <td><code>update:selectedKeys</code></td>
+            <td><code>update:selected-keys</code></td>
             <td><code>(keys)</code></td>
             <td><code>selectedKeys</code></td>
             <td><code>v-model:selected-keys</code> 的写入侧</td>
           </tr>
           <tr>
-            <td><code>update:currentPage</code></td>
+            <td><code>update:current-page</code></td>
             <td><code>(page)</code></td>
             <td><code>currentPage</code></td>
             <td><code>v-model:current-page</code> 的写入侧</td>

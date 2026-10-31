@@ -398,11 +398,11 @@ function onSelect(item: { key: string | number; label: string }) {
           </tr>
           <tr>
             <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>update:selectedKey</code>
+              <code>update:selected-key</code>
             </td>
             <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string | number</td>
             <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              选中 key 变更（支持 v-model:selectedKey）
+              选中 key 变更（支持 v-model:selected-key）
             </td>
           </tr>
         </tbody>

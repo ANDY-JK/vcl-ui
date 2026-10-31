@@ -236,7 +236,7 @@ describe('确认（emit 四个 update + change）', () => {
     await clickConfirm()
 
     expect(w.emitted('update:color'), '应 emit color').toBeTruthy()
-    expect(w.emitted('update:bgColor'), '应 emit bgColor').toBeTruthy()
+    expect(w.emitted('update:bg-color'), '应 emit bgColor').toBeTruthy()
     expect(w.emitted('update:provider'), '应 emit provider').toBeTruthy()
     expect(w.emitted('change'), '应 emit change').toBeTruthy()
 
@@ -372,7 +372,7 @@ describe('颜色设置', () => {
     await flushPromises()
     await clickConfirm()
 
-    expect(w.emitted('update:bgColor')!.at(-1)![0], '应是 transparent').toBe('transparent')
+    expect(w.emitted('update:bg-color')!.at(-1)![0], '应是 transparent').toBe('transparent')
     w.unmount()
   })
 

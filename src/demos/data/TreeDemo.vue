@@ -488,7 +488,7 @@ function onNodeClick(node: TreeNode) {
         "
       >
         <strong>Events：</strong><code>@node-click(node)</code> · <code>@check-change(keys, node)</code> ·
-        <code>@update:selectedKey(key)</code>
+        <code>@update:selected-key(key)</code>
       </p>
     </Card>
   </div>

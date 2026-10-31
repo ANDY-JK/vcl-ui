@@ -282,14 +282,14 @@ describe('点击语义', () => {
     await nextTick()
     await wrapperByKey(w, 'a').trigger('click')
     expect(w.emitted('node-click'), '禁用节点不响应').toBeFalsy()
-    expect(w.emitted('update:selectedKey')).toBeFalsy()
+    expect(w.emitted('update:selected-key')).toBeFalsy()
   })
 
-  it('**selectable 模式：点击发 update:selectedKey + node-click**', async () => {
+  it('**selectable 模式：点击发 update:selected-key + node-click**', async () => {
     const w = mountTree({ selectable: true, data: [{ key: 'a', label: 'A' }] })
     await nextTick()
     await wrapperByKey(w, 'a').trigger('click')
-    expect(w.emitted('update:selectedKey')![0]![0]).toBe('a')
+    expect(w.emitted('update:selected-key')![0]![0]).toBe('a')
     expect((w.emitted('node-click')![0]![0] as AnyNode).key).toBe('a')
   })
 
@@ -299,7 +299,7 @@ describe('点击语义', () => {
     expect(wrapperByKey(w, 'p').attributes('aria-expanded'), '初始收起').toBe('false')
     await wrapperByKey(w, 'p').trigger('click')
     expect(wrapperByKey(w, 'p').attributes('aria-expanded'), '点击后展开').toBe('true')
-    expect(w.emitted('update:selectedKey'), '非 selectable 不发选中').toBeFalsy()
+    expect(w.emitted('update:selected-key'), '非 selectable 不发选中').toBeFalsy()
     expect(w.emitted('node-click'), '但仍发 node-click').toBeTruthy()
   })
 
@@ -308,7 +308,7 @@ describe('点击语义', () => {
     await nextTick()
     await wrapperByKey(w, 'p').trigger('click')
     await nextTick()
-    expect(w.emitted('update:selectedKey')![0]![0], '发选中').toBe('p')
+    expect(w.emitted('update:selected-key')![0]![0], '发选中').toBe('p')
     expect(wrapperByKey(w, 'p').attributes('aria-expanded'), '不展开').toBe('false')
   })
 
@@ -370,7 +370,7 @@ describe('键盘左右与 Enter', () => {
     await nextTick()
     keydown(wrapperByKey(w, 'a').element, 'Enter')
     await nextTick()
-    expect(w.emitted('update:selectedKey')![0]![0]).toBe('a')
+    expect(w.emitted('update:selected-key')![0]![0]).toBe('a')
     expect(w.emitted('node-click')).toBeTruthy()
   })
 
@@ -379,7 +379,7 @@ describe('键盘左右与 Enter', () => {
     await nextTick()
     keydown(wrapperByKey(w, 'a').element, ' ')
     await nextTick()
-    expect(w.emitted('update:selectedKey')![0]![0]).toBe('a')
+    expect(w.emitted('update:selected-key')![0]![0]).toBe('a')
   })
 
   it('**Space 在勾选模式切换勾选并上报 check-change**', async () => {
@@ -413,7 +413,7 @@ describe('键盘左右与 Enter', () => {
     await nextTick()
     keydown(wrapperByKey(w, 'a').element, 'ArrowDown')
     await nextTick()
-    expect(w.emitted('update:selectedKey')!.at(-1)![0]).toBe('b')
+    expect(w.emitted('update:selected-key')!.at(-1)![0]).toBe('b')
   })
 })
 

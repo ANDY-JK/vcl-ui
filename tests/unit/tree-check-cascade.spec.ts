@@ -130,13 +130,13 @@ describe('Tree · 共享 state 跨层级', () => {
     expect(labels).toEqual(['祖父', '父', '子一'])
   })
 
-  it('selectable：深层节点点击也高亮并 emit update:selectedKey', async () => {
+  it('selectable：深层节点点击也高亮并 emit update:selected-key', async () => {
     const w = mountTree({ selectable: true })
     await expand(w, '父')
     const leaf = w.findAll('.tree-node-wrapper').find((n) => n.attributes('aria-label') === '子一')!
     await leaf.find('.tree-node-label').trigger('click')
     // 选中是全受控：emit 出去，父组件写回 selectedKey 才高亮（与 demo 用法一致）
-    const events = w.emitted('update:selectedKey')
+    const events = w.emitted('update:selected-key')
     expect(events?.[0]?.[0]).toBe('c1')
     await w.setProps({ selectedKey: 'c1' })
     expect(leaf.find('.tree-node--selected').exists()).toBe(true)
