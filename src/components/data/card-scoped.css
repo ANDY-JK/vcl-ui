@@ -283,7 +283,7 @@
   color: var(--vcl-color-info-text);
 }
 
-/* dot：状态圆点中心=锚点，pulse 扩散环（reduced-motion 停）；文字视觉隐藏、读屏仍读 */
+/* dot：状态圆点中心=锚点，pulse 扩散环（由 tokens.css 减弱动效块统一压停，勿在组件内再写 reduced @media）；文字视觉隐藏、读屏仍读 */
 .grid-corner--dot .grid-corner-mark {
   left: 0;
   top: 0;
@@ -327,9 +327,4 @@
 }
 .grid-corner--dot.grid-corner--info .grid-corner-mark::after {
   border-color: var(--vcl-color-info-solid);
-}
-@media (prefers-reduced-motion: reduce) {
-  .grid-corner--dot::after {
-    animation: none;
-  }
 }
