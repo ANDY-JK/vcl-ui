@@ -98,7 +98,7 @@ const STEPS = [
   // 放在文档类闸口之后：它依赖 docs-site/guide/facts.md，且比上面两个更"语义"。
   //
   // ⚠️ 2026-10-21 加 `gen:facts` 前置（此前只有 check:facts，是个设计缺陷）：
-  //    `gen-facts.mjs` 从 **reports/quality-check-logs/15-test-unit.log** 里读
+  //    `gen-facts.mjs` 从 **reports/quality-check-logs/*-test-unit.log**（按后缀匹配）里读
   //    「单测文件数 / 用例数」—— 那是第 15 步刚写的，所以整链里数字天然最新。
   //    但**人手动跑 check:facts 时读的是上一轮的旧日志**，
   //    于是出现"我刚 gen 过怎么还红"的反复（本次会话连续踩了 3 轮，

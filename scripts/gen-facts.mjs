@@ -65,10 +65,26 @@ function gateSteps() {
   return { count: lines.length, names: lines.map((l) => l.trim().replace(/^\d+\.\s*/, '').split(/\s+/)[0]) }
 }
 
-/** 单测规模：从最近一次整链留痕读（没有就标"未测"）。**不跑测试**，只读留痕。 */
+/**
+ * 单测规模：从最近一次整链留痕读（没有就标"未测"）。**不跑测试**，只读留痕。
+ *
+ * ⚠️ 2026-11-01（#271）：这里曾把文件名硬编码成 `15-test-unit.log`。而该前缀是
+ * **步骤序号** —— 往 STEPS 中间插一步，test:unit 就从 15 变成 16，于是本函数
+ * 静默 catch 掉「文件不存在」，`testScale()` 返回 null，**整节「测试规模」从
+ * facts.md 里消失**且 check:facts 照样绿（真源也跟着少了一节，两边"一致"）。
+ *
+ * 这正是本页自己在警告的"安静地过期"：不是数字错了，是**一节事实凭空不见了**。
+ * 改为按后缀匹配，不依赖步骤序号。
+ */
 function testScale() {
   try {
-    const t = readFileSync(join(ROOT, 'reports', 'quality-check-logs', '15-test-unit.log'), 'utf8')
+    const dir = join(ROOT, 'reports', 'quality-check-logs')
+    const hit = readdirSync(dir)
+      .filter((f) => /-?test-unit\.log$/.test(f))
+      .sort()
+      .pop()
+    if (!hit) return null
+    const t = readFileSync(join(dir, hit), 'utf8')
     const files = t.match(/Test Files\s+(\d+) passed/)
     const tests = t.match(/Tests\s+(\d+) passed/)
     if (files && tests) return { files: Number(files[1]), tests: Number(tests[1]) }
@@ -293,22 +309,22 @@ async function main() {
     '',
   ]
 
-  if (scale) {
-    lines.push(
-      '## 测试规模（读自最近一次整链留痕）',
-      '',
-      '| 事实 | 值 |',
-      '| --- | --- |',
-      `| 单测文件数 | **${scale.files}** |`,
-      `| 单测用例数 | **${scale.tests}** |`,
-      '',
-      '::: info 这两个数会随每次提交变化',
-      '它们来自 `reports/quality-check-logs/15-test-unit.log`（**每次整链运行前清空**），',
-      '所以只反映最近一次整链。闸口**不拦**这两个数的漂移，只拦结构规模与语言包键数。',
-      ':::',
-      '',
-    )
-  }
+  // ⚠️ 2026-11-01（#271）：这一节**永远输出**，缺数据时写"未测"而不是整节省略。
+  // 省略的后果比写错更坏：读者看不到"缺了一节"，只会以为本库从未统计过测试规模。
+  lines.push(
+    '## 测试规模（读自最近一次整链留痕）',
+    '',
+    '| 事实 | 值 |',
+    '| --- | --- |',
+    `| 单测文件数 | ${scale ? `**${scale.files}**` : '_未测（最近没有整链留痕）_'} |`,
+    `| 单测用例数 | ${scale ? `**${scale.tests}**` : '_未测（最近没有整链留痕）_'} |`,
+    '',
+    '::: info 这两个数会随每次提交变化',
+    '它们来自 `reports/quality-check-logs/*-test-unit.log`（按后缀匹配，**不依赖步骤序号**；每次整链运行前清空），',
+    '所以只反映最近一次整链。闸口**不拦**这两个数的漂移，只拦结构规模与语言包键数。',
+    ':::',
+    '',
+  )
 
   lines.push(
     '## 为什么要有这一页',
