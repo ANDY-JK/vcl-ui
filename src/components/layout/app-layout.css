@@ -295,7 +295,7 @@
 }
 /* 激活/选中态 — 有主色边框 + 微亮底色 */
 .topbar-tool-btn.active {
-  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
+  color: var(--vcl-color-topbar-active-text); /* 顶栏恒深色，亮蓝强调色见 tokens.css 同名令牌注释 */
   background: rgba(var(--vcl-color-primary-rgb), 0.3);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
 }
@@ -358,7 +358,7 @@
 }
 /* 文字按钮 — 主色高亮态 */
 .topbar-tool-text.active {
-  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
+  color: var(--vcl-color-topbar-active-text); /* 顶栏恒深色，亮蓝强调色见 tokens.css 同名令牌注释 */
   background: rgba(var(--vcl-color-primary-rgb), 0.3);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
@@ -429,7 +429,7 @@
 }
 /* 图标+文字按钮 — 主色高亮态 */
 .topbar-tool-label.active {
-  color: #9db1fb; /* 2026-10-01 顶栏恒深色，active 用亮蓝字（原 on-surface 深蓝压深底仅 2.2） */
+  color: var(--vcl-color-topbar-active-text); /* 顶栏恒深色，亮蓝强调色见 tokens.css 同名令牌注释 */
   background: rgba(var(--vcl-color-primary-rgb), 0.3);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;

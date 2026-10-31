@@ -483,3 +483,92 @@ describe('主题适配护栏 · 表格选中按可编辑性分色', () => {
     expect(dt, 'cell-has-options 不应再由裸 col.options 绑定').not.toContain("'cell-has-options': col.options")
   })
 })
+
+// ==================== 顶栏激活态令牌（R5-A7） ====================
+// 背景：顶栏激活态曾在 app-layout.css 三处硬编码 #9db1fb —— ① 绕过令牌体系，宿主换主题
+// 改不动它；② 该色值不在任何对比度验收里（contrast-audit 只扫令牌配对）。
+// R5-A7 把它提为 --vcl-color-topbar-active-text，本组用例钉住三件事：
+//   令牌三块都声明且同值 / 三处消费点都走 var() / 亮暗两套主题下对比度 ≥ 4.5。
+describe('顶栏激活态令牌（R5-A7）', () => {
+  const TOKEN = '--vcl-color-topbar-active-text'
+  const tokensCss = () => readFileSync(join(SRC, 'components', 'tokens.css'), 'utf8')
+
+  it('亮色 / 暗色 / 自动暗色三块都声明该令牌且同值', () => {
+    const tokens = tokensCss()
+    const light = tokens.match(/:root\s*\{([\s\S]*?)\n\}/)
+    const darkAttr = tokens.match(/:root\[data-theme=['"]dark['"]\]\s*\{([\s\S]*?)\n\}/)
+    const autoDark = tokens.match(/@media\s*\(prefers-color-scheme:\s*dark\)\s*\{([\s\S]*?)\n\}/)
+    expect(light, '未找到 :root 亮色令牌块').toBeTruthy()
+    expect(darkAttr, "未找到 :root[data-theme='dark'] 暗色块").toBeTruthy()
+    expect(autoDark, '未找到 prefers-color-scheme 自动暗色块').toBeTruthy()
+
+    const valueOf = (block: string) => {
+      const m = block.match(new RegExp(TOKEN.replace(/-/g, '\\-') + '\\s*:\\s*(#[0-9a-fA-F]{6})'))
+      return m ? m[1].toLowerCase() : null
+    }
+    const vLight = valueOf(light![1])
+    expect(vLight, '亮色块未声明顶栏激活色令牌').toBeTruthy()
+    expect(valueOf(darkAttr![1]), '暗色块未覆写顶栏激活色令牌（暗色下会残留亮色值）').toBe(vLight)
+    expect(valueOf(autoDark![1]), '自动暗色块未声明顶栏激活色令牌').toBe(vLight)
+  })
+
+  it('app-layout.css 三处激活态都走令牌，不再硬编码 #9db1fb', () => {
+    const css = readFileSync(join(SRC, 'components', 'layout', 'app-layout.css'), 'utf8')
+    expect(css, '仍存在硬编码 #9db1fb —— 应改用 var(--vcl-color-topbar-active-text)').not.toMatch(/#9db1fb/i)
+    const hits = [...css.matchAll(/\.(topbar-tool-(?:btn|text|label))\.active\s*\{([\s\S]*?)\}/g)]
+    expect(hits.length, '应找到 3 个顶栏激活态选择器（btn / text / label）').toBe(3)
+    for (const h of hits) {
+      expect(h[2], `${h[1]}.active 未使用顶栏激活色令牌`).toContain(`var(${TOKEN})`)
+    }
+  })
+
+  it('亮 / 暗两套主题下，激活字压胶囊底的对比度 ≥ 4.5（AA 正文）', () => {
+    const tokens = tokensCss()
+    const light = tokens.match(/:root\s*\{([\s\S]*?)\n\}/)![1]
+    const dark = tokens.match(/:root\[data-theme=['"]dark['"]\]\s*\{([\s\S]*?)\n\}/)![1]
+
+    const hex = (v: string) => {
+      const n = parseInt(v.slice(1), 16)
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 1 }
+    }
+    const rgba = (v: string) => {
+      const m = v.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?\s*\)/)
+      return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] } : null
+    }
+    const tokenValue = (block: string, name: string) => {
+      const m = block.match(new RegExp(name.replace(/-/g, '\\-') + '\\s*:\\s*(#[0-9a-fA-F]{6}|rgba?\\([^)]*\\))'))
+      return m ? m[1] : null
+    }
+    const over = (fg: { r: number; g: number; b: number; a: number }, bg: { r: number; g: number; b: number }) => [
+      fg.r * fg.a + bg.r * (1 - fg.a),
+      fg.g * fg.a + bg.g * (1 - fg.a),
+      fg.b * fg.a + bg.b * (1 - fg.a),
+    ]
+    const lum = ([r, g, b]: number[]) => {
+      const f = (v: number) => {
+        v /= 255
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+      }
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+    }
+    const ratio = (fg: number[], bg: number[]) => {
+      const [l1, l2] = [lum(fg), lum(bg)].sort((a, b) => b - a)
+      return (l1 + 0.05) / (l2 + 0.05)
+    }
+
+    for (const [label, block] of [
+      ['亮色', light],
+      ['暗色', dark],
+    ] as const) {
+      const fgRaw = tokenValue(block, TOKEN)
+      const sidebarRaw = tokenValue(block, '--vcl-color-sidebar')
+      const activeRaw = tokenValue(block, '--vcl-color-sidebar-active')
+      expect(fgRaw, `${label}块缺顶栏激活色`).toBeTruthy()
+      expect(sidebarRaw, `${label}块缺侧边栏底色`).toBeTruthy()
+      expect(activeRaw, `${label}块缺侧边栏选中胶囊色`).toBeTruthy()
+      const fg = hex(fgRaw!)
+      const bg = over(rgba(activeRaw!)!, hex(sidebarRaw!))
+      expect(ratio([fg.r, fg.g, fg.b], bg), `${label}主题下顶栏激活字对比度不足`).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+})

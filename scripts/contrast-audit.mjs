@@ -93,6 +93,13 @@ const navActive = [
   ['导航选中字/胶囊底(亮)', rgb(B['--vcl-color-sidebar-text-active']), over(B['--vcl-color-sidebar-active'], B['--vcl-color-sidebar'])],
   ['导航选中字/胶囊底(暗)', rgb(D['--vcl-color-sidebar-text-active']), over(D['--vcl-color-sidebar-active'], D['--vcl-color-sidebar'])],
 ]
+// 顶栏激活态（R5-A7）：顶栏恒深色，亮蓝强调字压「主色半透明胶囊底」。此前三处 #9db1fb 硬编码
+// 不在任何验收里，提为 --vcl-color-topbar-active-text 后一并纳入配对 —— 与导航选中态同构：
+// 文字是实色、底是半透明胶囊，必须先合成再算。
+const topbarActive = [
+  ['顶栏选中字/胶囊底(亮)', rgb(B['--vcl-color-topbar-active-text']), over(B['--vcl-color-sidebar-active'], B['--vcl-color-sidebar'])],
+  ['顶栏选中字/胶囊底(暗)', rgb(D['--vcl-color-topbar-active-text']), over(D['--vcl-color-sidebar-active'], D['--vcl-color-sidebar'])],
+]
 
 const failures = []
 const show = (title, list) => {
@@ -108,11 +115,12 @@ show('亮色', lightPairs)
 show('亮色实心底', solids)
 show('暗色', darkPairs)
 show('导航选中态', navActive)
+show('顶栏激活态', topbarActive)
 console.log('\n令牌抓取核对：surface=' + B['--vcl-color-surface'] + ' primary=' + B['--vcl-color-primary'] + ' | 暗块 surface=' + D['--vcl-color-surface'])
 
 // 退出码：任何配对跌破 AA 正文线即红，供 quality-check 当闸口用（2026-10-17 起，
 // 见第五轮审查 R5-A2：这份"验收正源"此前不在任何闸口链里）。
-const total = lightPairs.length + solids.length + darkPairs.length + navActive.length
+const total = lightPairs.length + solids.length + darkPairs.length + navActive.length + topbarActive.length
 if (failures.length) {
   console.error(`\n❌ contrast-audit 未通过 — ${failures.length}/${total} 组配对低于 AA 4.5：`)
   for (const f of failures) console.error(`   - [${f.title}] ${f.label} = ${f.r.toFixed(2)}`)

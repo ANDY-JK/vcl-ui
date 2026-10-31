@@ -96,6 +96,10 @@
   --vcl-color-sidebar-active: rgba(79, 110, 247, 0.22);
   --vcl-color-sidebar-text: #c0c5cf;
   --vcl-color-sidebar-text-active: #e2e5ed;
+  /* 顶栏激活态文字 — 顶栏恒为深色（--vcl-color-sidebar 底），亮蓝在深底上 AA 达标；
+     单独成令牌而不复用 --vcl-color-sidebar-text-active：后者是浅灰，压深底只有 2.2 对比度
+     （2026-10-01 实测），宿主整体换主题时需要能单独改这个强调色 */
+  --vcl-color-topbar-active-text: #9db1fb;
 
   /* 状态色 */
   --vcl-color-success: #22ad5f;
@@ -353,6 +357,8 @@
   --vcl-color-sidebar-active: rgba(107, 138, 249, 0.18);
   --vcl-color-sidebar-text: #8b92a0;
   --vcl-color-sidebar-text-active: #c0c5cf;
+  /* 顶栏恒深色，亮蓝强调色与亮色主题同值（理由见亮色块注释） */
+  --vcl-color-topbar-active-text: #9db1fb;
 
   /* 状态色 — 暗底调亮 */
   --vcl-color-success: #34d399;
@@ -446,6 +452,7 @@
     --vcl-color-sidebar-active: rgba(107, 138, 249, 0.18);
     --vcl-color-sidebar-text: #8b92a0;
     --vcl-color-sidebar-text-active: #c0c5cf;
+    --vcl-color-topbar-active-text: #9db1fb;
 
     /* 状态色 */
     --vcl-color-success: #34d399;
