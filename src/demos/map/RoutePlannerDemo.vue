@@ -447,8 +447,8 @@ function handleClear(): void {
   localStorage.removeItem(CACHE_START_KEY)
 }
 
-// ── 页面加载：缓存优先 → 默认文件 → 定位 ──
-onMounted(async () => {
+// ── 页面加载：恢复缓存起点 → 定位 ──
+onMounted(() => {
   // 门店单例（useStoreData）已由模块级 loadFromStorage 从 localStorage 恢复，无需重复导入
   // 此处只恢复自定义起点（CACHE_KEY 与单例 STORAGE_KEY 相同，缓存里的门店数据即单例已有数据）
   const cached = loadCache()
@@ -456,21 +456,10 @@ onMounted(async () => {
     startPoint.value = cached.startPoint
   }
 
-  // 仅当单例为空（首次使用/被清空）时加载默认文件
-  if (stores.value.length === 0) {
-    try {
-      const resp = await fetch('/default-stores.xlsx')
-      // Vite SPA fallback 会把不存在的路径返回 index.html（200 OK），
-      // 因此必须额外检查 content-type，只有真正的 xlsx 文件才导入
-      const ct = resp.headers.get('content-type') || ''
-      if (resp.ok && (ct.includes('xlsx') || ct.includes('octet-stream') || ct.includes('spreadsheet'))) {
-        const buffer = await resp.arrayBuffer()
-        await processImport(buffer)
-      }
-    } catch {
-      // 默认文件不存在或加载失败，静默跳过
-    }
-  }
+  // 空 stores 时不再请求 /default-stores.xlsx（2026-10-31，R5-A10 核对）：
+  // 该文件从未入库，Vite SPA fallback 把它返回成 index.html（200 + text/html），
+  // content-type 守卫拦掉后等于每次进入页面都发一次永远不可能成功的请求
+  // （DevTools 里每次都有这条误导性请求）。示例数据请点「下载模板」或「导入 Excel」。
 
   // GPS 静默定位
   setTimeout(() => {
