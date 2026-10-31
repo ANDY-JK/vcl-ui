@@ -103,14 +103,41 @@ describe('captureTableCanvas', () => {
     expect(spy.fillTextCalls.map((c) => c[0])).toEqual(['A1', 'B1', 'l1', 'l2', 'l3', 'D2'])
   })
 
-  it('文本超列宽：按 measureText 截断加省略号（7px/字，maxW=84 → 11 字 + …）', async () => {
-    const { spy } = makeFakeCanvas()
-    const long = '长'.repeat(20) // 140px > 84px
+  it('文本超列宽：列宽自适应扩到内容自然宽，文本完整绘制（不再截断加…）', async () => {
+    const { canvas, spy } = makeFakeCanvas()
+    const long = '长'.repeat(20) // 20 字 × 7px = 140px 自然宽；呈现宽 100 被截断
     const table = makeTable([[{ text: long }, '短']])
     await captureTableCanvas(table)
-    const first = spy.fillTextCalls[0][0]
-    expect(first.endsWith('…')).toBe(true)
-    expect(first).toBe('长'.repeat(11) + '…') // 12 字时 (12+1)×7=91>84 继续切；11 字时 12×7=84 停
+    // 文本完整（无省略号）——用户反馈「截图内容显示不全」的行为锁
+    expect(spy.fillTextCalls[0][0]).toBe(long)
+    // 画布宽 = 自适应后：长文本列扩到 140+16=156，短列保持 100 → (156+100)×2
+    expect(canvas.width).toBe(512)
+  })
+
+  it('未被截断的列保持呈现宽（自适应只扩不缩，与页面观感一致）', async () => {
+    const { canvas } = makeFakeCanvas()
+    const table = makeTable([['短', '也短']])
+    await captureTableCanvas(table)
+    expect(canvas.width).toBe(400) // 100+100，各列未被截断 → 不变
+  })
+
+  it('虚拟滚动占位行（aria-hidden）不计入画布高度与绘制', async () => {
+    const { canvas, spy } = makeFakeCanvas()
+    const table = makeTable([['A1'], ['B1']])
+    // 模拟虚拟滚动上下占位：单格大高度、aria-hidden、无内容
+    for (const h of [900, 800]) {
+      const tr = document.createElement('tr')
+      tr.setAttribute('aria-hidden', 'true')
+      const td = document.createElement('td')
+      tr.appendChild(td)
+      vi.spyOn(tr, 'getBoundingClientRect').mockReturnValue({ height: h } as DOMRect)
+      table.appendChild(tr)
+    }
+    await captureTableCanvas(table)
+    // 画布高只含两行真实数据（40+40）×2，占位行的 1700px 不计入 —— 「图片太大很空」的行为锁
+    expect(canvas.height).toBe(160)
+    // 占位行无内容 → 不产生 fillText
+    expect(spy.fillTextCalls.map((c) => c[0])).toEqual(['A1', 'B1'])
   })
 
   it('toBlob 返回 null → reject（不静默吞掉）', async () => {
