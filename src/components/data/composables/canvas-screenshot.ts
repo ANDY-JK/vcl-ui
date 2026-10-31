@@ -24,6 +24,30 @@ interface ColSizing {
 const MAX_TEXT_LINES = 3
 /** 单元格两侧留白 */
 const CELL_PAD = 8
+/**
+ * 计算样式取不到时的兜底（2026-11-01 #275）。
+ *
+ * `ctx.fillStyle = ''` / `ctx.font = ' '` 这类**非法赋值在 Canvas 里是被静默忽略的**，
+ * 于是 context 保留上一次的值 —— 而上一笔恰好是单元格**背景色**。
+ * 后果：文本用背景色绘制 → 导出图里文字整片消失，且不报任何错。
+ * 计算样式在真实浏览器里通常有值，但只要表格克隆到离屏容器 / 样式表未加载，
+ * 就可能拿到空串，所以必须兜底。
+ */
+const FALLBACK_TEXT_COLOR = '#1f2937'
+const FALLBACK_FONT = '13px system-ui, -apple-system, sans-serif'
+
+/**
+ * 组装 canvas 字体串，缺项用兜底。
+ *
+ * `font = ' '` 是非法值 → Canvas 静默忽略 → 沿用上一次字体（可能是别的格子的字号），
+ * 于是"这台机器上截图字号忽大忽小"且无法复现。统一走这里就不会有半个字体串。
+ */
+function canvasFont(cs: CSSStyleDeclaration): string {
+  const size = cs.fontSize?.trim()
+  const family = cs.fontFamily?.trim()
+  if (!size || !family) return FALLBACK_FONT
+  return `${size} ${family}`
+}
 
 /** Canvas 自绘表格截图 */
 export async function captureTableCanvas(
@@ -55,7 +79,7 @@ export async function captureTableCanvas(
       let natural = shown
       if (text && measureCtx) {
         const cs = getComputedStyle(cell)
-        measureCtx.font = `${cs.fontSize} ${cs.fontFamily}`
+        measureCtx.font = canvasFont(cs)
         const textW = Math.max(
           ...text
             .split('\n')
@@ -113,8 +137,9 @@ export async function captureTableCanvas(
       // 文本（支持最多 3 行；字号读计算样式）
       const text = (cell.innerText || '').trim()
       if (text) {
-        ctx.fillStyle = cs.color
-        ctx.font = `${cs.fontSize} ${cs.fontFamily}`
+        // 颜色/字体必须有值：非法赋值会被 Canvas 静默忽略，导致文字沿用背景色（见图消失）
+        ctx.fillStyle = cs.color || FALLBACK_TEXT_COLOR
+        ctx.font = canvasFont(cs)
         ctx.textAlign = (cs.textAlign || 'left') as CanvasTextAlign
         ctx.textBaseline = 'middle'
         const maxW = Math.max(0, w - CELL_PAD * 2)

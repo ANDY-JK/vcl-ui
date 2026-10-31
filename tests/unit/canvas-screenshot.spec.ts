@@ -7,6 +7,12 @@ type CtxSpy = {
   scaleCalls: number[]
   fillTextCalls: Array<[string, number, number]>
   measureText: (t: string) => { width: number }
+  /** 每次 fillRect 的样式快照（TD-80：不只记"调了什么方法"，还要记"用什么样式调"） */
+  fills: Array<{ style: string; x: number; y: number; w: number; h: number }>
+  /** 每次 strokeRect 的样式快照（边框色 / 线宽 / 半像素偏移都是易回归项） */
+  strokes: Array<{ style: string; width: number; x: number; y: number; w: number; h: number }>
+  /** 每次 fillText 的样式快照（颜色 / 字号 / 对齐方式） */
+  texts: Array<{ style: string; font: string; align: string; text: string }>
 }
 
 function makeFakeCanvas(opts: { toBlobFail?: boolean } = {}) {
@@ -15,16 +21,29 @@ function makeFakeCanvas(opts: { toBlobFail?: boolean } = {}) {
     fillTextCalls: [],
     // 每个字符 7px（与「截断算法可预期」的约定）
     measureText: (t: string) => ({ width: t.length * 7 }),
+    fills: [],
+    strokes: [],
+    texts: [],
   }
+  // 属性的值必须**在调用发生时**快照，不能事后读 ctx.fillStyle
+  // （下一次赋值会覆盖，旧断言就永远看不到"这次用的是哪个颜色"—— 正是 TD-80 的漏洞形态）
   const ctx = {
     scale: (...a: number[]) => spy.scaleCalls.push(...a),
-    fillRect: vi.fn(),
-    strokeRect: vi.fn(),
-    fillText: (t: string, x: number, y: number) => spy.fillTextCalls.push([String(t), x, y]),
+    fillRect(x: number, y: number, w: number, h: number) {
+      spy.fills.push({ style: String(this.fillStyle), x, y, w, h })
+    },
+    strokeRect(x: number, y: number, w: number, h: number) {
+      spy.strokes.push({ style: String(this.strokeStyle), width: Number(this.lineWidth), x, y, w, h })
+    },
+    fillText(t: string, x: number, y: number) {
+      spy.fillTextCalls.push([String(t), x, y])
+      spy.texts.push({ style: String(this.fillStyle), font: String(this.font), align: String(this.textAlign), text: String(t) })
+    },
     measureText: spy.measureText,
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 0,
+    font: '',
     textAlign: 'left',
     textBaseline: 'middle',
   }
@@ -144,5 +163,73 @@ describe('captureTableCanvas', () => {
     makeFakeCanvas({ toBlobFail: true })
     const table = makeTable([['a']])
     await expect(captureTableCanvas(table)).rejects.toThrow('toBlob failed')
+  })
+})
+
+/* ════════════════════════════════════════
+ * 绘制样式锁定（TD-80 收口，2026-11-01 #275）
+ *
+ * 旧 mock 只暴露 `fillStyle: ''` 这样的**可变属性**，断言只能比"调了 fillRect 几次"。
+ * 于是"表头底色错了 / 边框色错了 / 文字颜色错了"这类回归**全绿通过** ——
+ * 第 182 轮 pen 高亮被换成白描边、藏了两轮，就是这个形态。
+ * 现在 mock 在**调用发生时**快照样式（下一次赋值不会覆盖），下面锁住关键绘制口径。
+ * ════════════════════════════════════════ */
+describe('绘制样式（不只比方法名）', () => {
+  it('**底色先铺白**：第一笔 fillRect 必须是 #ffffff 铺满整张画布', () => {
+    const { spy } = makeFakeCanvas()
+    return captureTableCanvas(makeTable([['甲'], ['乙']])).then(() => {
+      expect(spy.fills[0], '第一笔应是铺底').toEqual({ style: '#ffffff', x: 0, y: 0, w: expect.any(Number), h: expect.any(Number) })
+      // 铺底必须覆盖整张画布，否则透明底在深色页面上会露出后面的内容
+      expect(spy.fills[0]!.w).toBeGreaterThan(0)
+      expect(spy.fills[0]!.h).toBeGreaterThan(0)
+    })
+  })
+
+  it('**每个单元格先填背景再描边框**，边框色 #d8dee9、线宽 1、半像素偏移', () => {
+    const { spy } = makeFakeCanvas()
+    return captureTableCanvas(makeTable([['甲', '乙'], ['丙', '丁']])).then(() => {
+      // 2 行 × 2 列 → 4 次描边
+      expect(spy.strokes.length, '每格一次描边').toBe(4)
+      for (const s of spy.strokes) {
+        expect(s.style, '边框色固定 #d8dee9').toBe('#d8dee9')
+        expect(s.width, '线宽 1').toBe(1)
+        // 半像素偏移是"1px 边框不发虚"的关键；取整成整数会让线糊成两像素
+        expect(s.x % 1, 'x 半像素偏移').toBe(0.5)
+        expect(s.y % 1, 'y 半像素偏移').toBe(0.5)
+      }
+      // 填背景次数 = 格数（另加 1 次整张铺底）
+      expect(spy.fills.length, '铺底 1 次 + 每格 1 次').toBe(5)
+    })
+  })
+
+  it('**文字颜色/字号取自计算样式**（不是硬编码黑）；每个有文本的格都有 fillText', () => {
+    const { spy } = makeFakeCanvas()
+    return captureTableCanvas(makeTable([['甲', '乙'], ['丙', '丁']])).then(() => {
+      expect(spy.texts.length, '2 行 × 2 列都有文本').toBe(4)
+      for (const t of spy.texts) {
+        expect(t.style, '文字色应来自 cs.color').not.toBe('')
+        expect(t.font, '字号应来自 cs.fontSize/fontFamily').not.toBe('')
+        expect(t.align).toMatch(/^(left|center|right)$/)
+      }
+      // 表头文字与内容文字都要画出来（不是只画了内容）
+      const all = spy.texts.map((t) => t.text).join('|')
+      expect(all).toContain('甲')
+      expect(all).toContain('乙')
+    })
+  })
+})
+describe('样式取不到时的兜底（#275）', () => {
+  it('**计算样式为空时文字仍用可见颜色/字体**（否则 Canvas 静默忽略非法赋值 → 沿用背景色）', () => {
+    const { spy } = makeFakeCanvas()
+    // happy-dom 的 getComputedStyle 对无样式表元素返回空串 —— 正好模拟"样式表没加载"
+    return captureTableCanvas(makeTable([['甲', '乙']])).then(() => {
+      expect(spy.texts.length).toBe(2)
+      for (const t of spy.texts) {
+        expect(t.style, '文字色不能是空串（空串赋值在 Canvas 里被忽略）').not.toBe('')
+        expect(t.style, '兜底色必须与白底可区分').not.toBe('#ffffff')
+        expect(t.font, '字体串不能含空段').not.toMatch(/^\s|^\s*$|\s$/)
+        expect(t.font, '字体必须有尺寸').toMatch(/\d+px/)
+      }
+    })
   })
 })
