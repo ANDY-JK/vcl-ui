@@ -49,13 +49,13 @@
 | `pinyinSearch` | `boolean` | `true` | 否 | 全局搜索是否启用拼音匹配（默认开） |
 | `truncateThreshold` | `number` | `0` | 否 | 单元格截断判定的字符数下限：0（默认）全部单元格按 truncateMode 处理；>0 时仅文本超过该长度的单元格截断 |
 | `selectable` | `boolean` | `false` | 否 | 行首选择列（复选框）开关 |
-| `selectedKeys` | `string[]` | `() => []` | 否 | 受控选中行键集合（v-model:selected-keys） |
+| `selectedKeys` | `string[]` | `() => []` | 否 | 受控选中行键集合（v-model:selectedKeys） |
 | `exportable` | `boolean` | `false` | 否 | CSV 导出按钮；有 @export 监听时抛事件由宿主自理，无监听时内置导出 |
 | `exportFileName` | `string` | `'export'` | 否 | 导出文件名（不含扩展名，默认 'export'） |
 | `excelExportable` | `boolean` | `false` | 否 | Excel(.xlsx) 导出按钮（导出范围同 exportScope） |
 | `exportScope` | `'all' \| 'page'` | — | 否 | 导出范围：'all' 筛选后全量（默认），'page' 仅当前页 |
 | `pageSize` | `number` | `0` | 否 | 每页行数；0（默认）不分页 |
-| `currentPage` | `number` | `1` | 否 | 受控当前页（v-model:current-page）。越界（>总页数 / <1）时自动夹到 [1,totalPages] 并 emit 纠正值——宿主把页码存 URL 后恢复、或筛选后总数变小都靠它兜住 |
+| `currentPage` | `number` | `1` | 否 | 受控当前页（v-model:currentPage）。越界（>总页数 / <1）时自动夹到 [1,totalPages] 并 emit 纠正值——宿主把页码存 URL 后恢复、或筛选后总数变小都靠它兜住 |
 | `total` | `number` | — | 否 | 总行数：传入即按服务端分页处理（分页器用它算页数，数据由父组件按页提供；不传=客户端分页） |
 | `cardBreakpoint` | `number` | `BP_MD` | 否 | 卡片视图断点（px）：容器实测宽度低于该值时自动切卡片视图（视图模式 auto 下生效） |
 | `maxHeight` | `string` | `''` | 否 | 表格区最大高度（CSS 高度值，如 '400px'）；空串不限高 |
@@ -103,8 +103,8 @@
 | `filter` | `filters: Record<string, string[]>` | 筛选变化：列头筛选提交后抛出当前全量筛选状态（filterMode='server' 时接此事件由后端处理） |
 | `'update:filters'` | `filters: Record<string, string[]>` | v-model:filters——外部程序化控制筛选状态（服务端筛选场景） |
 | `'row-click'` | `row: Record<string, any>, index: number` | 行点击 |
-| `'update:selected-keys'` | `keys: string[]` | v-model:selected-keys——选中行键集合 |
-| `'update:current-page'` | `page: number` | v-model:current-page——当前页码 |
+| `'update:selected-keys'` | `keys: string[]` | v-model:selectedKeys——选中行键集合 |
+| `'update:current-page'` | `page: number` | v-model:currentPage——当前页码 |
 | `'page-change'` | `page: number, pageSize: number` | 翻页：[页码, 每页行数]（服务端分页接此事件换数据） |
 | `'selection-change'` | `keys: string[], rows: Record<string, any>[]` | 选中集合变化：[行键数组, 行对象数组] |
 | `'cell-change'` | `rowKey: string, colKey: string, newValue: string` | 单元格编辑提交：[行键, 列键, 新值]——新值已经过 Column.type 归一化 |
@@ -365,8 +365,8 @@
 | `checkable` | `boolean` | `false` | 否 | 节点勾选框：父子级联 + 半选态 |
 | `defaultExpandedKeys` | `(string \| number)[]` | `() => []` | 否 | 初始展开的节点键集合（此后展开状态由组件内部管理） |
 | `expandAll` | `boolean` | `false` | 否 | 初始全部展开 |
-| `selectable` | `boolean` | `false` | 否 | 节点单选（配合 v-model:selected-key） |
-| `selectedKey` | `string \| number \| null` | `null` | 否 | 受控选中节点键（v-model:selected-key） |
+| `selectable` | `boolean` | `false` | 否 | 节点单选（配合 v-model:selectedKey） |
+| `selectedKey` | `string \| number \| null` | `null` | 否 | 受控选中节点键（v-model:selectedKey） |
 | `lazy` | `boolean` | `false` | 否 | 懒加载：展开节点时若无 children 且 isLeaf 非 true 的节点不会触发 load |
 | `sharedState` | `TreeState \| null` | — | 否 | ⛔ 内部 plumbing：递归子树经此 prop 接收根实例的共享 state。 不能只靠 provide/inject——嵌套 Tree 渲染在 Transition 的插槽里， 该边界上 inject 实测取不到（每层自建 state：深层没有勾选框、勾选级联 不同步、深层节点的事件发不出去、expandAll 只生效一层）。消费方勿传。 |
 
@@ -376,7 +376,7 @@
 | --- | --- | --- |
 | `'node-click'` | `node: TreeNode` | 节点点击（selectable 模式下同时更新选中） |
 | `'check-change'` | `checkedKeys: (string \| number)[], node: TreeNode` | 勾选变化：[勾选后的全量键集合, 本次变更的节点] |
-| `'update:selected-key'` | `key: string \| number \| null` | v-model:selected-key——受控选中节点键 |
+| `'update:selected-key'` | `key: string \| number \| null` | v-model:selectedKey——受控选中节点键 |
 | `load` | `node: TreeNode` | 懒加载：节点展开时触发，父组件加载子节点后回填到 data |
 
 ## `Empty`

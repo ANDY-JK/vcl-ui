@@ -50,42 +50,43 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 整链步数 | **32** |
+| 整链步数 | **33** |
 
 步清单（顺序即执行顺序）：
 
 1. `typecheck`
 2. `lint`
 3. `check:constants`
-4. `check:css-tokens`
-5. `check:contrast`
-6. `check:css-breakpoints`
-7. `check:css-fonts`
-8. `check:css-scale`
-9. `check:offline`
-10. `check:i18n`
-11. `check:demo-props`
-12. `check:vendor-data`
-13. `check:vendor-vulns`
-14. `check:deps`
-15. `test:unit`
-16. `check:console-noise`
-17. `bench:check`
-18. `check:coverage-domains`
-19. `build`
-20. `smoke:entries`
-21. `verify:pkg`
-22. `check:licenses`
-23. `check:release-consistency`
-24. `docs:build`
-25. `check:docs`
-26. `check:doc-completeness`
-27. `gen:facts`
-28. `check:facts`
-29. `check:tech-debt`
-30. `check:rtl`
-31. `check:rtl-semantics`
-32. `test:e2e`
+4. `check:result-consumed`
+5. `check:css-tokens`
+6. `check:contrast`
+7. `check:css-breakpoints`
+8. `check:css-fonts`
+9. `check:css-scale`
+10. `check:offline`
+11. `check:i18n`
+12. `check:demo-props`
+13. `check:vendor-data`
+14. `check:vendor-vulns`
+15. `check:deps`
+16. `test:unit`
+17. `check:console-noise`
+18. `bench:check`
+19. `check:coverage-domains`
+20. `build`
+21. `smoke:entries`
+22. `verify:pkg`
+23. `check:licenses`
+24. `check:release-consistency`
+25. `docs:build`
+26. `check:docs`
+27. `check:doc-completeness`
+28. `gen:facts`
+29. `check:facts`
+30. `check:tech-debt`
+31. `check:rtl`
+32. `check:rtl-semantics`
+33. `test:e2e`
 
 ## 测试规模（读自最近一次整链留痕）
 
