@@ -16,7 +16,6 @@
  */
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useT } from '@/components/_internal/i18n'
-import { copyText } from '@/components/_internal/useCopy'
 import { formatDateZh, formatDateTimeZh } from '@/components/form/utils/date-utils'
 import { computePageButtons } from '@/components/form/utils/pagination'
 import FormBuilder from './FormBuilder.vue'
@@ -32,11 +31,9 @@ import {
   type DesignerField,
   type FormMeta,
   type CollectRecord,
-  type FormDesign,
 } from './designer/types'
 import { getActiveFormStore, isConflictError, type FormStore } from './designer/store'
-import { encodeShareCode, shareShortLink, shareFullLink } from './designer/share'
-import QRCode from 'qrcode/lib/browser.js'
+import { useCollectShare } from './useCollectShare'
 import { isLayoutField } from './fieldRegistry'
 import { buildHeaderMap, normalizeRecords, dedupeRecords, readFileToRows } from './importRecords'
 
@@ -92,71 +89,14 @@ const rootEl = ref<HTMLElement | null>(null)
 
 // ══ 顶部工具栏（分享 / 新建） ══
 
-/** 分享弹窗状态 */
-const shareVisible = ref(false)
-const shareLink = ref('')
-const shareCode = ref('')
-/** 发布链接二维码（dataURL，动态加载 qrcode 生成） */
-const shareQr = ref('')
-/** 二维码生成失败提示（链接过长超出二维码容量） */
-const shareQrError = ref('')
-
-/**
- * 打开分享弹窗：将本组件承接的表单设计编码为分享码/发布链接。
- * FormCollect 由外部传入 fields/meta（不含完整 FormDesign），这里重建 FormDesign 结构。
- * 发布链接用短链（设计先存入 store 拿 id，链接只带 id → 二维码容量有限也能放下）。
- */
-async function openShare(): Promise<void> {
-  const design: FormDesign = { meta: { ...props.meta }, nodes: props.fields }
-  shareCode.value = encodeShareCode(design)
-  try {
-    // 存入 store（已有同名表单则复用 id，避免重复保存）
-    let formId = shareFormId.value
-    if (!formId) {
-      const item = await props.store.saveForm(null, design, design.meta.title || t('fbd.untitled'))
-      formId = item.id
-      shareFormId.value = formId
-    }
-    shareLink.value = shareShortLink(formId)
-  } catch {
-    // store 不可用时退回完整分享码链接（跨设备可靠，长表单链接超长）
-    shareLink.value = shareFullLink(shareCode.value)
-  }
-  // 异步生成二维码（不阻塞弹窗打开）
-  void generateQr()
-  shareVisible.value = true
-}
-
-/** 分享已存入 store 的表单 id（组件生命周期内复用，避免反复保存同一表单） */
-const shareFormId = ref('')
-
-/** 发布链接 → 二维码 dataURL（qrcode 浏览器端实现；短链只有几十字符，任何表单都能放下） */
-async function generateQr(): Promise<void> {
-  shareQr.value = ''
-  shareQrError.value = ''
-  try {
-    shareQr.value = await QRCode.toDataURL(shareLink.value, {
-      width: 180,
-      margin: 1,
-      errorCorrectionLevel: 'M',
-    })
-  } catch {
-    shareQr.value = ''
-    shareQrError.value = t('fbd.qrGenFail')
-  }
-}
-
-async function copyShareLink(): Promise<void> {
-  const ok = await copyText(shareLink.value)
-  showTip(ok ? t('fbd.shareLinkCopied') : t('fbd.copyFail'), ok ? 'success' : 'error')
-}
-
-async function copyShareCode(): Promise<void> {
-  const ok = await copyText(shareCode.value)
-  showTip(ok ? t('fbd.shareCopied') : t('fbd.copyFail'), ok ? 'success' : 'error')
-}
-
-/** 新建：清空表单并聚焦填写区 */
+const { shareVisible, shareLink, shareCode, shareQr, shareQrError, openShare, copyShareLink, copyShareCode } =
+  useCollectShare({
+    meta: () => props.meta,
+    fields: () => props.fields,
+    store: props.store,
+    t,
+    showTip,
+  })
 function startNewRecord(): void {
   formData.value = {}
   errorMsg.value = ''
