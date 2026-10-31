@@ -32,8 +32,9 @@ import {
   type FormMeta,
   type CollectRecord,
 } from './designer/types'
-import { getActiveFormStore, isConflictError, type FormStore } from './designer/store'
+import { getActiveFormStore, type FormStore } from './designer/store'
 import { useCollectShare } from './useCollectShare'
+import { useRecordModal } from './useRecordModal'
 import { isLayoutField } from './fieldRegistry'
 import {
   buildHeaderMap,
@@ -90,6 +91,37 @@ const okMsg = ref('')
 
 const storageKey = computed(() => props.storageKey || collectStorageKey(props.fields))
 const records = ref<CollectRecord[]>([])
+
+/** 记录查看/审核弹窗的状态机（TD-29 第二刀：这段 75 行原本在页面里，纯状态无渲染） */
+const {
+  recordModal,
+  recordTarget,
+  recordFormData,
+  recordError,
+  // recordSubmitting 模板不用，但对外暴露供测试与宿主观察''防重复审核''状态
+  recordSubmitting,
+  recordDone,
+  openRecordModal,
+  recordSchema,
+  handleRecordSubmit,
+} = useRecordModal({
+  fields: () => props.fields,
+  meta: () => props.meta,
+  store: props.store,
+  storageKey: () => storageKey.value,
+  refreshRecords: () => refreshRecords(),
+  records,
+  t,
+})
+
+/** 格式化值显示（导入预览等展示用） */
+function formatValue(v: unknown): string {
+  if (v === null || v === undefined) return '-'
+  if (Array.isArray(v)) return v.join(', ')
+  if (typeof v === 'boolean') return v ? t('common.yes') : t('common.no')
+  if (typeof v === 'object') return JSON.stringify(v)
+  return String(v)
+}
 /** 组件根节点（模板 ref，滚动定位限定在当前实例内） */
 const rootEl = ref<HTMLElement | null>(null)
 
@@ -113,82 +145,6 @@ function startNewRecord(): void {
 }
 
 // ══ 记录级查看 / 审核（旧版 DynamicForm 三模式承接：view=只读 / review=可编辑+提交） ══
-
-/** 记录操作弹窗类型：null=关闭 / 'view'=查看 / 'review'=审核 */
-const recordModal = ref<'view' | 'review' | null>(null)
-/** 当前操作的目标记录 */
-const recordTarget = ref<CollectRecord | null>(null)
-/** 记录弹窗内表单数据（回填自记录） */
-const recordFormData = ref<Record<string, unknown>>({})
-/** 记录弹窗内提交 loading / 错误 / 完成态 */
-const recordSubmitting = ref(false)
-const recordError = ref('')
-/** 审核提交完成（弹窗内显示成功态，替代 Toast——页面存在多个 Toast 实例时 Toast 会重复弹） */
-const recordDone = ref(false)
-
-/** 打开记录查看 / 审核弹窗：回填记录数据，按 mode 注入表单模式 */
-function openRecordModal(mode: 'view' | 'review', record: CollectRecord): void {
-  recordTarget.value = record
-  recordFormData.value = { ...(record.data ?? {}) }
-  recordError.value = ''
-  recordDone.value = false
-  recordModal.value = mode
-}
-
-/** 记录弹窗表单 schema（view=全字段只读；review=全字段可编辑+提交） */
-const recordSchema = computed(() => {
-  if (!recordModal.value) return null
-  const schema = toFormSchema(props.fields, props.meta)
-  schema.submitConfig = {
-    mode: recordModal.value,
-    // view 模式只读展示，不触发提交链路；review 提交走下方 handleRecordSubmit
-    apiUrl: '',
-    saveUrl: '',
-  }
-  return schema
-})
-
-/** 审核提交：原地更新被审核的记录（无 updateRecord 能力时降级为删+增，保持位置） */
-async function handleRecordSubmit(data: Record<string, unknown>): Promise<void> {
-  const record = recordTarget.value
-  if (!record || recordSubmitting.value) return
-  recordSubmitting.value = true
-  recordError.value = ''
-  try {
-    if (typeof props.store.updateRecord === 'function') {
-      await props.store.updateRecord(storageKey.value, record.id, data)
-    } else {
-      // 降级：外部注入的旧实现无 updateRecord —— 删除后重新写入
-      // （store 接口只有 appendRecord，重插后该记录排在列表顶部，无法保持原位）
-      await props.store.removeRecord(storageKey.value, record.id)
-      await props.store.appendRecord(storageKey.value, { ...record, data: { ...data } })
-    }
-    await refreshRecords()
-    recordDone.value = true
-  } catch (e) {
-    // 并发冲突不是"保存失败"：别人已改过这条记录，用户手里的才是旧版本。
-    // 刷新列表 + 面板换成最新 + 明说"未写入"（不假装成功，也不静默丢弃）。
-    if (!isConflictError(e)) {
-      recordError.value = t('fbd.reviewRecordFail', { err: e instanceof Error ? e.message : String(e) })
-    } else {
-      await refreshRecords()
-      const fresh = records.value.find((r) => r.id === record.id)
-      if (fresh) recordTarget.value = fresh
-      recordError.value = t('fbd.reviewRecordConflict', { rev: e.currentRev ?? '-' })
-    }
-  } finally {
-    recordSubmitting.value = false
-  }
-}
-
-/** 格式化值显示 */
-function formatValue(v: unknown): string {
-  if (v === null || v === undefined) return '-'
-  if (Array.isArray(v)) return v.join(', ')
-  if (typeof v === 'boolean') return v ? t('common.yes') : t('common.no')
-  if (typeof v === 'object') return JSON.stringify(v)
-  return String(v)
-}
 
 /** 异步兼容的记录刷新 */
 async function refreshRecords(): Promise<void> {
@@ -730,6 +686,7 @@ async function confirmImport(): Promise<void> {
       :visible="!!recordModal"
       :title="recordModal === 'review' ? t('fbd.reviewRecordTitle') : t('fbd.viewRecordTitle')"
       modal-type="default"
+      :confirm-loading="recordSubmitting"
       size="lg"
       @update:visible="recordModal = null"
     >
