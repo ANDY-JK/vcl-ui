@@ -352,6 +352,7 @@ export default {
     linkageShowHide: '显隐联动',
     showHideFieldPh: '选择要控制显隐的字段',
     linkageFormula: '联动公式',
+    formulaSyntaxError: '公式语法有误，运行时会被静默跳过（请检查运算符与括号）',
     formulaHintValue: "如：{'{{'}price{'}}'} * {'{{'}quantity{'}}'}",
     formulaHintShowHide: "如：{'{{'}type{'}}'} == \"A\"",
     formulaHintOptions: "如：{'{{'}category{'}}'}",

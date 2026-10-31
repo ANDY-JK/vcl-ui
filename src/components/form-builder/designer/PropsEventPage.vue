@@ -12,6 +12,7 @@ import Select from '@/components/form/Select.vue'
 import Group from '@/components/form/Group.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
+import { checkFormulaSyntax } from '../expression-evaluator'
 import type { DesignerNode } from './types'
 
 const t = useT()
@@ -42,6 +43,20 @@ const linkageHelpText = computed(() => {
   if (lt === 'showHide') return t('fbp.linkageHelpShowHide')
   if (lt === 'followOptions') return t('fbp.linkageHelpOptions')
   return ''
+})
+
+/**
+ * 公式语法体检（TD-82 收口）：只判"能不能解析"，不求值。
+ *
+ * 运行时 `evaluateFormula` 对写错的公式一律静默返回空串（这是正确的运行时选择，
+ * 不能把坏值写进字段），但用户因此只看到"公式配了没反应"，找不到根因。
+ * 这里在设计器侧给一次即时反馈 —— 空公式不报（用户可能刚切到联动类型还没填）。
+ */
+const formulaSyntaxError = computed(() => {
+  const f = props.node.eventConfig?.linkageFormula ?? ''
+  if (!f.trim()) return ''
+  const verdict = checkFormulaSyntax(f)
+  return verdict.ok ? '' : verdict.reason
 })
 </script>
 
@@ -315,6 +330,12 @@ const linkageHelpText = computed(() => {
             emit('update', { eventConfig: { ...node.eventConfig, linkageFormula: String($event ?? '') } })
           "
         />
+      </div>
+
+      <!-- 公式语法错误（TD-82 收口）：运行时静默兜底，设计器这里给即时反馈 -->
+      <div v-if="formulaSyntaxError" class="ldp-linkage-help ldp-formula-error" role="alert">
+        <IconSvg type="alert-triangle" size="xs" />
+        <span>{{ t('fbp.formulaSyntaxError') }}</span>
       </div>
 
       <!-- 公式帮助提示 -->

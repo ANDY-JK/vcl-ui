@@ -184,6 +184,13 @@
   color: var(--vcl-color-text-muted, #9ca3af);
   line-height: 1.5;
 }
+/* 公式语法错误提示（TD-82 收口）：运行时静默兜底，这里给红色即时反馈 */
+.ldp-linkage-help.ldp-formula-error {
+  color: var(--vcl-color-danger, #dc2626);
+}
+.ldp-linkage-help.ldp-formula-error svg {
+  flex: 0 0 auto;
+}
 .ldp-linkage-help code {
   font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
   font-size: var(--vcl-fs-10);

@@ -374,3 +374,37 @@ export function evaluateFormula(formula: string, data: FormData): unknown {
     return ''
   }
 }
+
+/**
+ * 公式**语法体检**（TD-82 收口，2026-11-01）：只判"能不能解析"，不求值、不碰数据。
+ *
+ * ## 为什么需要
+ *
+ * `evaluateFormula` 对语法错误/非法字符/非有限结果一律兜底返回 `''`（这是正确的运行时
+ * 选择：不能把坏值写进字段）。但**运行时静默**意味着用户配错公式后毫无反馈 ——
+ * followValue 表现为"目标字段永远空"、showHide 表现为"字段永远隐藏"，两者都像"功能没生效"，
+ * 用户会反复改别的配置，永远找不到根因。
+ *
+ * 设计器里已经有公式输入框（`PropsEventPage` 的 linkageFormula），所以这里提供一次
+ * **dry-run**：把 `{{field}}` 换成合法字面量 `0` 跑一遍解析器，只判语法是否可解析。
+ * 用 `0` 而不是空串：空串会让 `{{a}} + {{b}}` 变成 `+`（另一个语法错误），
+ * 数字 `0` 对所有运算符位置都合法，能把"公式结构本身对不对"单独暴露出来。
+ *
+ * @returns null 表示语法可解析；否则返回可读的失败原因（给设计器提示用）
+ */
+export function checkFormulaSyntax(formula: string): { ok: true } | { ok: false; reason: string } {
+  const trimmed = formula.trim()
+  if (!trimmed) return { ok: false, reason: 'empty' }
+  // 占位符换成 0：`{{a}}` 本身不是合法字面量（tokenize 只吃数字/字符串/布尔/null）
+  const probe = trimmed.replace(/\{\{(\w+)\}\}/g, '0')
+  try {
+    const result = safeEvaluate(probe)
+    // 语法可解析，但结果非有限（如 `0 / 0`）：这不是语法错误，是**数据相关**的运行时结果，
+    // 不该在设计器里报红（用户填了非零数据就正常了）。
+    void result
+    return { ok: true }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return { ok: false, reason: msg }
+  }
+}

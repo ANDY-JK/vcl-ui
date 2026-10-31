@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { safeEvaluate, evaluateFormula, extractFields } from '@/components/form-builder/expression-evaluator'
+import { safeEvaluate, evaluateFormula, extractFields, checkFormulaSyntax } from '@/components/form-builder/expression-evaluator'
 
 describe('expression-evaluator · 受限表达式求值器', () => {
   describe('算术运算', () => {
@@ -162,5 +162,49 @@ describe('evaluateFormula · 字段占位符替换', () => {
     expect(evaluateFormula('{{first}}{{last}}', { first: '张', last: '三' })).toBe('张三')
     // 含转义字符的值拼接同样原样保留
     expect(evaluateFormula('{{a}}{{b}}', { a: 'x\\', b: 'y"' })).toBe('x\\y"')
+  })
+})
+
+// ════════════════════════════════════════
+// TD-82：公式语法体检（设计器 dry-run，运行时静默兜底的补偿）
+// ════════════════════════════════════════
+describe('checkFormulaSyntax · 只判语法可解析，不求值', () => {
+  it('合法公式 → ok（含占位符、运算符、括号、字符串）', () => {
+    for (const f of [
+      '{{a}} + {{b}}',
+      '{{a}} * 2',
+      '{{a}} || {{b}}',
+      '{{a}} == "yes"',
+      '({{a}} + 1) * 2',
+      '{{a}} > 10 && {{b}} < 5',
+      '"前缀" + {{a}}',
+      '1 < 2 and 2 < 3',
+    ]) {
+      expect(checkFormulaSyntax(f), `${f} 应判可解析`).toEqual({ ok: true })
+    }
+  })
+
+  it('写错的公式 → ok:false 并带原因（此前运行时只会静默返回空串）', () => {
+    // 这些形态实测在运行时都返回 ''（followValue 表现为"目标字段永远空"）
+    for (const f of ['{{a}} @ 2', '{{a}} * ', '{{a}} +', '({{a}}', '{{a}} )', '{{a}} == ']) {
+      const v = checkFormulaSyntax(f)
+      expect(v.ok, `${f} 应判语法错误`).toBe(false)
+      expect((v as { reason: string }).reason.length, '应带可读原因').toBeGreaterThan(0)
+    }
+  })
+
+  it('空/纯空白公式 → ok:false reason=empty（设计器侧另行判断是否展示）', () => {
+    expect(checkFormulaSyntax('')).toEqual({ ok: false, reason: 'empty' })
+    expect(checkFormulaSyntax('   ')).toEqual({ ok: false, reason: 'empty' })
+  })
+
+  it('语法合法但数据相关的结果（如 0/0）不判错 —— 那是运行时的事', () => {
+    // 关键区分：语法可解析 ≠ 求值结果有限。用户填了非零数据就正常，不该在设计器报红。
+    expect(checkFormulaSyntax('0 / 0'), '0/0 语法没问题').toEqual({ ok: true })
+    expect(checkFormulaSyntax('{{a}} / {{b}}'), '除法语法没问题').toEqual({ ok: true })
+  })
+
+  it('占位符换成 0 而不是空串（空串会让 `{{a}} + {{b}}` 变成 `+` 假错）', () => {
+    expect(checkFormulaSyntax('{{a}} + {{b}}'), '加号两侧有操作数').toEqual({ ok: true })
   })
 })

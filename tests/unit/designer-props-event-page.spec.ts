@@ -324,3 +324,33 @@ describe('onFocus 恢复为真实事件（2026-10-31 运行时接通，TD-35 收
     expect(src).toContain('evt?.onBlur?.enabled')
   })
 })
+
+// ════════════════════════════════════════
+// TD-82：公式语法错误的即时反馈（运行时静默兜底的补偿）
+// ════════════════════════════════════════
+describe('公式语法错误提示', () => {
+  it('写错的公式 → 出现红色提示（此前运行时静默返回空串，用户毫无反馈）', () => {
+    const { w } = mountPage({ linkageType: 'followValue', linkageFormula: '{{a}} @ 2' })
+    expect(w.find('.ldp-formula-error').exists(), '语法错应展示提示').toBe(true)
+    expect(w.text()).toContain('公式语法有误')
+    w.unmount()
+  })
+
+  it('写对的公式 → 不出现提示（不能对合法公式误报）', () => {
+    const { w } = mountPage({ linkageType: 'followValue', linkageFormula: '{{a}} + {{b}}' })
+    expect(w.find('.ldp-formula-error').exists(), '合法公式不该报错').toBe(false)
+    w.unmount()
+  })
+
+  it('空公式 → 不出现提示（用户可能刚切到联动类型还没填）', () => {
+    const { w } = mountPage({ linkageType: 'followValue' })
+    expect(w.find('.ldp-formula-error').exists()).toBe(false)
+    w.unmount()
+  })
+
+  it('语法合法但数据相关（0/0）→ 不报错（那是运行时的事，不该在设计器拦）', () => {
+    const { w } = mountPage({ linkageType: 'followValue', linkageFormula: '{{a}} / {{b}}' })
+    expect(w.find('.ldp-formula-error').exists(), '除法语法没问题').toBe(false)
+    w.unmount()
+  })
+})

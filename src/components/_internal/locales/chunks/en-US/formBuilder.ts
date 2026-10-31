@@ -352,6 +352,7 @@ export default {
     linkageShowHide: 'Show/hide linkage',
     showHideFieldPh: 'Select the field to show/hide',
     linkageFormula: 'Linkage formula',
+    formulaSyntaxError: 'Formula syntax error — it will be silently skipped at runtime (check operators and brackets)',
     formulaHintValue: "e.g. {'{{'}price{'}}'} * {'{{'}quantity{'}}'}",
     formulaHintShowHide: "e.g. {'{{'}type{'}}'} == \"A\"",
     formulaHintOptions: "e.g. {'{{'}category{'}}'}",
