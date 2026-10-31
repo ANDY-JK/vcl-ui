@@ -712,3 +712,96 @@ describe('选项列着色：按取值匹配，与 render 无关', () => {
     expect(colorOf(w)).toBe('inherit')
   })
 })
+
+/* ═══════════ col.cell / #cell 插槽的值通道口径（TD-86 第三项核对） ═══════════
+ *
+ * TD-86 记下三处"显示文本 vs 取值"待核对位置，着色（第 189/190 轮）、筛选与搜索
+ * （第 191 轮）都已核完，这是最后一处：col.cell 与 #cell 插槽拿到的 value 是哪条通道。
+ *
+ * 核对结论（**无缺陷，钉住契约**）：两处都走 cellShow —— 显示通道。
+ * - col.render 的结果**会**先套上（cellShow → cellVal → getCellText 含 render）；
+ * - 占位符在 render **之后**：render 对空值返回非空串时，占位符被 render 结果顶掉
+ *   （render 的职责就是给每个值配显示文本，含空值 —— 职责边界，不是占位符失效）；
+ *   render 不在或产空白时才回落 blankText；
+ * - 本地编辑覆盖值优先（改完 cell 立即看到新值）。
+ * 该路径上没有任何"按配置匹配"的逻辑（着色走 cellRaw），所以两条通道在这里
+ * 各司其职：渲染吃显示文本，配置匹配吃取值。
+ *
+ * 为什么值得钉住：这是 col.cell/`#cell` 插槽 value 语义的唯一行为级用例
+ * （此前全仓零覆盖）。将来有人"统一两通道"或改 cellShow 签名时，这几条
+ * 断言就是护栏。
+ */
+describe('col.cell / #cell 插槽：按显示文本通道（TD-86 第三项核对）', () => {
+  const CELL_COL = (): Column => ({
+    key: 's',
+    title: '状态',
+    render: (v) => `R:${String(v ?? '')}`,
+    cell: (v) => `<b>CELL[${String(v)}]</b>`,
+  })
+  const PLAIN_CELL_COL = (): Column => ({
+    key: 's',
+    title: '状态',
+    cell: (v) => `<b>CELL[${String(v)}]</b>`,
+  })
+
+  it('col.cell 收到 render 后的显示文本（不是原始值）', async () => {
+    const w = track(
+      mount(DataTable, {
+        attachTo: document.body,
+        props: { ...MINIMAL, columns: [CELL_COL()], data: [{ id: 'r1', s: 1 }] },
+      }),
+    )
+    await nextTick()
+    expect(w.text()).toContain('CELL[R:1]')
+  })
+
+  it('空值 + render：col.cell 收到 render 的结果（render 顶掉占位符）', async () => {
+    const w = track(
+      mount(DataTable, {
+        attachTo: document.body,
+        props: { ...MINIMAL, columns: [CELL_COL()], data: [{ id: 'r1', s: '' }] },
+      }),
+    )
+    await nextTick()
+    expect(w.text()).toContain('CELL[R:]')
+  })
+
+  it('空值无 render：col.cell 收到占位符（blankText 默认 "-"），不是原空值', async () => {
+    const w = track(
+      mount(DataTable, {
+        attachTo: document.body,
+        props: { ...MINIMAL, columns: [PLAIN_CELL_COL()], data: [{ id: 'r1', s: '' }] },
+      }),
+    )
+    await nextTick()
+    expect(w.text()).toContain('CELL[-]')
+  })
+
+  it('blankText 传空串关闭占位：col.cell 收到原空值', async () => {
+    const w = track(
+      mount(DataTable, {
+        attachTo: document.body,
+        props: { ...MINIMAL, columns: [PLAIN_CELL_COL()], data: [{ id: 'r1', s: '' }], blankText: '' },
+      }),
+    )
+    await nextTick()
+    expect(w.text()).toContain('CELL[]')
+  })
+
+  it('#cell 插槽同口径：value 是 render 后的显示文本（插槽优先于 col.cell）', async () => {
+    const w = track(
+      mount(DataTable, {
+        attachTo: document.body,
+        props: { ...MINIMAL, columns: [CELL_COL()], data: [{ id: 'r1', s: 1 }] },
+        slots: {
+          cell: `<template #cell="{ column, row, value }"><i class="slot-probe">S[{{ value }}]</i></template>`,
+        },
+      }),
+    )
+    await nextTick()
+    expect(w.find('.slot-probe').exists()).toBe(true)
+    expect(w.find('.slot-probe').text()).toBe('S[R:1]')
+    // 插槽存在时 col.cell 不再执行
+    expect(w.text()).not.toContain('CELL[')
+  })
+})
