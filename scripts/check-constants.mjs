@@ -444,6 +444,18 @@ const LINE_LIMITS = {
   form: 1140, // Select.vue 下沉 useSelectFiltering 后回收（原 1500，实测最大 985，留 ~15% 余量）
   layout: 370, // AppLayout.vue 回收（原 950，实测最大 321，留 ~15% 余量）
   'route-planner': 850, // utils/route-planning.ts 现状止涨线
+  // —— 2026-10-31 R5-A15 收口：其余 10 域纳入同款纪律（此前只在 5 域生效，其余无约束）——
+  // 全部是"现状止涨线"＝实测最大文件 + ~5% 余量，只拦增长不追溯存量；抬线必须带新实测值
+  amap: 745, // 实测最大 amap-service.ts 711
+  basic: 220, // 实测最大 IconSvg.vue 207
+  chart: 495, // 实测最大 Chart.vue 471
+  feedback: 290, // 实测最大 Popover.vue 275
+  login: 440, // 实测最大 login.vue 419
+  nav: 280, // 实测最大 Menu.vue 265
+  shared: 62, // 实测最大 types.ts 58
+  storage: 760, // 实测最大 contract-storage.ts 724
+  wc: 122, // 实测最大 index.ts 116
+  _internal: 810, // 实测最大 utils.ts 772
 }
 
 /** 余量低于这个比例就提示"快顶到线了"——比"还以为有余量"更早给出信号 */
