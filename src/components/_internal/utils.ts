@@ -236,10 +236,18 @@ export function deepClone<T>(value: T): T {
 // 数字 / 金额
 // ════════════════════════════════════════
 
-/** 千分位 + 可选小数位数。非法数值原样返回字符串。 */
+/**
+ * 千分位 + 可选小数位数。非法数值返回空串。
+ *
+ * ⚠️ TD-84（第 29 轮）：此前是 `return String(n)` —— 对 `Infinity` / `NaN` 这两个
+ * 非有限数，`String()` 给出的正是 `'Infinity'` / `'NaN'`，**原样显示给用户**。
+ * "原样返回"对 `'abc'` 这类字符串输入是对的（保留用户原输入），但对非有限**数值**
+ * 就不该：用户从没输入过 "Infinity"。两者要分开判。
+ */
 export function formatNumber(n: number | string, opts?: { decimals?: number; separator?: string }): string {
   const value = typeof n === 'string' ? Number(n) : n
-  if (!isFinite(value)) return String(n)
+  // 非有限「数值」→ 空串（不显示 Infinity/NaN）；非数字「字符串」→ 原样（保留用户输入）
+  if (!isFinite(value)) return typeof n === 'number' ? '' : String(n)
   const { decimals, separator = ',' } = opts ?? {}
   const fixed = decimals === undefined ? String(value) : value.toFixed(decimals)
   const [int, dec] = fixed.split('.')
@@ -253,7 +261,7 @@ export function formatMoney(
   opts?: { symbol?: string; decimals?: number; separator?: string },
 ): string {
   const value = typeof n === 'string' ? Number(n) : n
-  if (!isFinite(value)) return String(n)
+  if (!isFinite(value)) return typeof n === 'number' ? '' : String(n)
   const { symbol = '¥', decimals = 2, separator = ',' } = opts ?? {}
   const sign = value < 0 ? '-' : ''
   return sign + symbol + formatNumber(Math.abs(value), { decimals, separator })
@@ -498,7 +506,10 @@ export function errMessage(err: unknown): string {
     const m = err.message ?? err.name
     if (typeof m === 'string') return m
   }
-  return String(err)
+  // TD-84（第 29 轮）：`String(undefined)` 是 'undefined'，`String({})` 是
+  // '[object Object]' —— 两者都会原样进 toast/错误条。只对基本类型取值，其余给空串。
+  if (err === null || err === undefined) return ''
+  return typeof err === 'number' || typeof err === 'boolean' ? String(err) : ''
 }
 
 /** 判断是否为普通对象（排除 null/数组/Date 等） */
@@ -540,7 +551,12 @@ export function maskName(name?: unknown): string {
 /** 手机号脱敏：138****8000；非 1 开头 11 位原样返回。 */
 export function maskPhone(phone?: unknown): string {
   const p = stripSpace(phone)
-  if (!/^1\d{10}$/.test(p)) return toStr(phone)
+  // TD-84（第 29 轮）：非手机号时回退 `toStr(phone)`，对对象/数组会给出
+  // `[object Object]` / `1,2,3` 这类**不是用户填的内容**的串。回退只对
+  // 基本类型有意义（数字/字符串/布尔），其余给空串。
+  if (!/^1\d{10}$/.test(p)) {
+    return typeof phone === 'string' || typeof phone === 'number' ? toStr(phone) : ''
+  }
   return p.slice(0, 3) + '****' + p.slice(7)
 }
 

@@ -396,9 +396,16 @@ describe('formatNumber / formatMoney / toChineseAmount', () => {
     expect(formatNumber(1234.5, { decimals: 0 })).toBe('1,235')
   })
 
-  it('非法数值原样返回', () => {
-    expect(formatNumber(NaN)).toBe('NaN')
-    expect(formatNumber('abc')).toBe('abc')
+  it('非法输入：非有限「数值」给空串，非数字「字符串」原样（TD-84 第 29 轮语义收紧）', () => {
+    // 旧断言 `formatNumber(NaN) === 'NaN'` 把"用户可见文本里出现 NaN"钉成了现状。
+    // 区别对待：NaN/Infinity 是**数值**，用户从没输入过它们 → 空串；
+    // 'abc' 是用户真的填进来的字符串 → 原样保留（不能吃掉用户输入）。
+    expect(formatNumber(NaN), '非有限数值 → 空串').toBe('')
+    expect(formatNumber(Infinity), '非有限数值 → 空串').toBe('')
+    expect(formatNumber(-Infinity)).toBe('')
+    expect(formatNumber('abc'), '非数字字符串 → 原样').toBe('abc')
+    expect(formatMoney(NaN), '金额同理').toBe('')
+    expect(formatMoney('abc')).toBe('abc')
   })
 
   it('金额', () => {
