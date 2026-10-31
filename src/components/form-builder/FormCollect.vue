@@ -356,6 +356,8 @@ const importError = ref('')
 const importPreview = ref<Record<string, unknown>[]>([])
 const importSkipped = ref(0)
 const importInvalid = ref(0)
+/** 重复表头（同一字段被多列映射，只保留第一列）—— #272 */
+const importDupHeaders = ref<string[]>([])
 const importFileName = ref('')
 
 /** 导入字段定义（取非布局字段的 key/label/type） */
@@ -390,6 +392,10 @@ const importSummaryText = computed(() => {
         .join(' · '),
     )
   }
+  // 重复表头单列一行：用户必须知道"有一列没进来"，否则他会以为导入是全的（#272）
+  if (importDupHeaders.value.length) {
+    parts.push(t('fbd.importDupHeaders', { cols: importDupHeaders.value.join('、') }))
+  }
   return parts.join('\n')
 })
 
@@ -405,7 +411,9 @@ async function onImportFile(e: Event): Promise<void> {
     const name = file.name.toLowerCase()
     const rows = await readFileToRows(file, name, importFields.value)
     const headerMap = buildHeaderMap(importFields.value)
-    const { records: parsedRecs, invalid } = normalizeRecords(rows, headerMap, importFields.value)
+    const { records: parsedRecs, invalid, duplicateHeaders } = normalizeRecords(rows, headerMap, importFields.value)
+    // 重复表头：只保留第一列，其余列的数据不会入库 —— 必须告诉用户少了哪几列（#272）
+    importDupHeaders.value = duplicateHeaders
     if (!parsedRecs.length) {
       importError.value = t('fbd.importEmpty')
       importVisible.value = false

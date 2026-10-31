@@ -600,6 +600,7 @@ export default {
     importRecords: '导入数据',
     importRecordsPh: '支持 JSON / CSV / Excel（.xlsx）',
     importPreviewTitle: '导入预览',
+    importDupHeaders: '⚠️ 表头重复（{cols}）：同名字段只保留第一列，其余列的数据不会导入。请改名后重新导入。',
     importSummary: '待导入 {n} 条 · 重复跳过 {skipped} 条 · 无效 {invalid} 条',
     importEmpty: '没有可导入的数据',
     importConfirm: '确认导入',

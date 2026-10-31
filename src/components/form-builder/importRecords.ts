@@ -59,10 +59,17 @@ function stripBom(text: string): string {
  */
 export function buildHeaderMap(fields: ImportField[]): Record<string, string> {
   const map: Record<string, string> = {}
+  // 两趟：先登记所有 label，再登记所有 key（2026-11-01 #272）。
+  //
+  // 单趟写法有个静默覆盖：字段 A 的 **key** 会被后面字段 B 的 **label** 抢走 ——
+  // 例如 A={key:'memo',label:'备注'}、B={key:'note',label:'memo'}，
+  // 单趟结果是 `memo → note`：CSV 表头写着 `memo`（明明是 A 的 key）却导进 B 字段。
+  // 表头字面量等于某字段 key 时，那个字段才是用户的意图 → key 必须最后写、优先级最高。
   for (const f of fields) {
-    if (!f.key) continue
-    if (f.label) map[f.label] = f.key
-    map[f.key] = f.key
+    if (f.key && f.label) map[f.label] = f.key
+  }
+  for (const f of fields) {
+    if (f.key) map[f.key] = f.key
   }
   return map
 }
@@ -190,13 +197,29 @@ export function normalizeRecords(
   rows: string[][],
   headerMap: Record<string, string>,
   fields: ImportField[],
-): { records: Record<string, unknown>[]; invalid: number } {
-  if (rows.length < 2) return { records: [], invalid: 0 }
+): { records: Record<string, unknown>[]; invalid: number; duplicateHeaders: string[] } {
+  if (rows.length < 2) return { records: [], invalid: 0, duplicateHeaders: [] }
   const header = rows[0]
   // 表头 → 字段 key（按列序）
   const colKeys: (string | null)[] = header.map((h) => headerMap[h.trim()] ?? null)
   const records: Record<string, unknown>[] = []
   let invalid = 0
+
+  // 同一字段被**多列**映射（CSV 里两列都叫「备注」）时必须上报（2026-11-01 #272）。
+  // 旧实现让后面的列静默覆盖前面的列：用户导入后只看到后一列的值，前一列整列消失，
+  // 且没有任何提示 —— 这是"数据少了但没人知道"的典型形态。
+  const firstColOf = new Map<string, number>()
+  const duplicateHeaders: string[] = []
+  for (let c = 0; c < colKeys.length; c++) {
+    const key = colKeys[c]
+    if (!key) continue
+    if (firstColOf.has(key)) {
+      const name = header[c]?.trim() || key
+      if (!duplicateHeaders.includes(name)) duplicateHeaders.push(name)
+    } else {
+      firstColOf.set(key, c)
+    }
+  }
 
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r]
@@ -207,12 +230,15 @@ export function normalizeRecords(
       if (!key) continue
       const val = row[c] ?? ''
       if (val !== '') hasKnown = true
+      // 重复列：**保留第一列**（用户按导出顺序写的，第一列才是那一路数据），
+      // 覆盖问题由上方的 duplicateHeaders 报给宿主，让用户改表头而不是默默丢数据。
+      if (firstColOf.get(key) !== c) continue
       rec[key] = cleanCell(key, val, fields)
     }
     if (hasKnown) records.push(rec)
     else invalid++
   }
-  return { records, invalid }
+  return { records, invalid, duplicateHeaders }
 }
 
 // ════════════════════════════════════════

@@ -241,3 +241,77 @@ describe('TD-78 ③ 导入文件体量上限', () => {
     expect(rows.length).toBe(2)
   })
 })
+
+// ════════════════════════════════════════
+// TD-83 同族：登记/映射早于校验 → 好数据被静默挤掉（第 36 轮）
+// ════════════════════════════════════════
+
+describe('#272 ① 字段 key 不得被别家 label 抢走', () => {
+  it('表头写了某字段的 key，就该进那个字段（单趟写法会被后者的 label 覆盖）', () => {
+    // A={key:memo,label:备注}、B={key:note,label:memo}
+    // 单趟登记顺序：A.label→memo、A.key→memo、B.label→note、B.key→note
+    //   ⇒ 'memo' 最终指向 note（A 的 key 被 B 的 label 抢走）
+    // 两趟（label 先、key 后）⇒ 'memo' 稳定指向 memo
+    const fields = [
+      { key: 'memo', label: '备注', type: 'text' },
+      { key: 'note', label: 'memo', type: 'text' },
+    ]
+    const map = buildHeaderMap(fields)
+    expect(map['memo'], '表头 memo 应进 memo 字段').toBe('memo')
+    expect(map['备注']).toBe('memo')
+    expect(map['note']).toBe('note')
+  })
+
+  it('label 之间同名时后者覆盖（文档化行为，保持不变）', () => {
+    const fields = [
+      { key: 'a', label: '同名', type: 'text' },
+      { key: 'b', label: '同名', type: 'text' },
+    ]
+    expect(buildHeaderMap(fields)['同名']).toBe('b')
+  })
+})
+
+describe('#272 ② 重复表头不再静默覆盖，改为上报 + 保留第一列', () => {
+  const fields = [field('name', '姓名'), field('memo', '备注')]
+  const headerMap = buildHeaderMap(fields)
+
+  it('CSV 两列都叫「备注」→ 保留第一列，并报出重复列名', () => {
+    const rows = [
+      ['姓名', '备注', '备注'],
+      ['张三', '第一列备注', '第二列备注'],
+    ]
+    const { records, duplicateHeaders } = normalizeRecords(rows, headerMap, fields)
+    expect(records[0].memo, '保留第一列（旧实现是后列覆盖前列）').toBe('第一列备注')
+    expect(duplicateHeaders, '必须报出重复的列名').toEqual(['备注'])
+  })
+
+  it('三列同名 → 仍只保留第一列，重复名只报一次', () => {
+    const rows = [
+      ['备注', '备注', '备注'],
+      ['一', '二', '三'],
+    ]
+    const { records, duplicateHeaders } = normalizeRecords(rows, headerMap, [field('memo', '备注')])
+    expect(records[0].memo).toBe('一')
+    expect(duplicateHeaders).toEqual(['备注'])
+  })
+
+  it('无重复表头 → duplicateHeaders 为空（不能误报）', () => {
+    const rows = [
+      ['姓名', '备注'],
+      ['张三', 'x'],
+    ]
+    const { duplicateHeaders } = normalizeRecords(rows, headerMap, fields)
+    expect(duplicateHeaders).toEqual([])
+  })
+
+  it('两列映射到同一字段（label 与 key 各写一次）也算重复', () => {
+    // 表头「备注」与「memo」都指向 memo 字段
+    const rows = [
+      ['备注', 'memo'],
+      ['来自 label', '来自 key'],
+    ]
+    const { records, duplicateHeaders } = normalizeRecords(rows, headerMap, fields)
+    expect(records[0].memo, '保留靠前那列').toBe('来自 label')
+    expect(duplicateHeaders, '按表头原文报出后者').toEqual(['memo'])
+  })
+})

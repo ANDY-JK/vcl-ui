@@ -605,6 +605,8 @@ export default {
     importRecords: 'Import data',
     importRecordsPh: 'JSON / CSV / Excel (.xlsx)',
     importPreviewTitle: 'Import preview',
+    importDupHeaders:
+      '⚠️ Duplicate headers ({cols}): only the first column of each duplicated field is kept; the rest are not imported. Rename them and import again.',
     importSummary: '{n} to import · {skipped} duplicates · {invalid} invalid',
     importEmpty: 'Nothing to import',
     importConfirm: 'Confirm import',
