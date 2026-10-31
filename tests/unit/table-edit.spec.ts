@@ -824,3 +824,52 @@ describe('useTableEdit · 填充柄', () => {
     expect(edit.isFillCorner('r2', 'name')).toBe(false)
   })
 })
+/* ════════════════════════════════════════
+ * 中文输入法（IME）合成期不得提交编辑（#276）
+ *
+ * 中文用户输拼音 → 候选框 → 按 Enter 上屏。此时浏览器先派发 `keydown`
+ * （`isComposing: true` / `keyCode 229`），再派发 `compositionend`。
+ * 若组件在 keydown 里 `preventDefault()` + 提交，后果是：
+ *   ① 上屏被取消；② **拼音被当成单元格值写入**（用户看到 "zhangsan" 而不是「张三」）。
+ * ════════════════════════════════════════ */
+describe('IME 合成期（合成中按 Enter 不上屏）', () => {
+  function enterKey(init: KeyboardEventInit = {}) {
+    return new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true, ...init })
+  }
+
+  it('**合成中按 Enter → 不提交编辑，也不阻止默认行为**（上屏要正常完成）', () => {
+    const { edit, emit } = setup()
+    edit.startEdit('r1', 'name', '张三')
+    edit.editValue.value = 'zhangsan'
+    const e = enterKey({ isComposing: true })
+    edit.onEditKeydown(e, cols, 'r1')
+    // 不能提交：否则拼音进单元格
+    expect(emit.cellChange, '合成期不得提交').not.toHaveBeenCalled()
+    expect(edit.editingCell.value, '应仍处于编辑态').toBeTruthy()
+    // 不能 preventDefault：否则输入法上屏被取消
+    expect(e.defaultPrevented, '合成期必须放行默认行为').toBe(false)
+  })
+
+  it('keyCode 229（部分浏览器/输入法只给这个）同样不算提交', () => {
+    const { edit, emit } = setup()
+    edit.startEdit('r1', 'name', '张三')
+    edit.editValue.value = 'zhangsan'
+    const e = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
+    Object.defineProperty(e, 'keyCode', { value: 229, configurable: true })
+    edit.onEditKeydown(e, cols, 'r1')
+    expect(emit.cellChange, 'keyCode 229 是合成期的另一形态').not.toHaveBeenCalled()
+    expect(e.defaultPrevented).toBe(false)
+  })
+
+  it('**合成结束后按 Enter 正常提交**（守卫不能把正常路径也堵死）', () => {
+    const { edit, emit } = setup()
+    // 原值「张三」，上屏后改为「张三丰」—— 值相同则 commitEdit 不写（无可提交变更）
+    edit.startEdit('r1', 'name', '张三')
+    edit.editValue.value = '张三丰'
+    const e = enterKey()
+    edit.onEditKeydown(e, cols, 'r1')
+    // cellChange 的契约是三个位置参数 (rowKey, colKey, value)
+    expect(emit.cellChange, '正常 Enter 必须提交').toHaveBeenCalledWith('r1', 'name', '张三丰')
+    expect(e.defaultPrevented, '正常 Enter 应阻止默认（不让它冒泡去提交表单）').toBe(true)
+  })
+})

@@ -4,6 +4,7 @@ import { ref, watch, nextTick } from 'vue'
 import { normalizeCellInput } from './cell-input'
 import type { CellEditProps, TableEditHooks, EditState } from './cell-types'
 import { isInlineEditable } from './cell-types'
+import { isImeComposing } from '../../_internal/ime'
 import type { Column } from './types'
 import { markActive } from './cell-active'
 import type { CellWriteApi } from './cell-write'
@@ -145,6 +146,14 @@ export function useCellEdit(deps: CellEditDeps) {
   }
 
   function onEditKeydown(e: KeyboardEvent, cols: Column[], rowKey: string) {
+    // 输入法合成期一律放行（2026-11-01 #276）。
+    //
+    // 中文用户输拼音 → 候选框 → 按 Enter 上屏。浏览器先派发 keydown
+    //（`isComposing: true`，部分浏览器/输入法只给 `keyCode 229`），再派发 compositionend。
+    // 此前这里对 Enter 直接 `preventDefault()` + `commitEdit()`，后果是双重的：
+    //   ① 上屏被取消；② **拼音被当成单元格值写入**（单元格里出现 "zhangsan" 而不是「张三」）。
+    // 部分 Safari/旧 WebView 不发 isComposing，只能靠 keyCode 229 识别，两个都要判。
+    if (isImeComposing(e)) return
     if (e.key === 'Enter') {
       e.preventDefault()
       const curCol = editingCell.value?.colKey ?? ''

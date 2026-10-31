@@ -28,6 +28,7 @@ import { useIdSafe } from '@/components/_internal/useIdCompat'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
+import { isImeComposing } from '@/components/_internal/ime'
 import { useSelectDatePanel } from './useSelectDatePanel'
 import { useSelectTree } from './useSelectTree'
 import { useSelectOption } from './useSelectOption'
@@ -546,6 +547,11 @@ function onComboBlur() {
 }
 
 function onComboKeydown(e: KeyboardEvent) {
+  // 输入法合成期一律放行（2026-11-01 #276）。
+  // 中文用户输拼音 → 候选框 → 按 Enter 上屏；此前这里会把 Enter 当作"确认选中"，
+  // 拿**拼音**去匹配/创建选项（`allowCreate` 下直接生成 "zhongguo" 这种脏选项），
+  // 同时 `preventDefault()` 让上屏本身也失败。部分 WebView 只给 keyCode 229，两个都判。
+  if (isImeComposing(e)) return
   if (e.key === 'Escape') {
     comboText.value = ''
     closePanel()

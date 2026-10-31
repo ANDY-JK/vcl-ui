@@ -2,6 +2,7 @@
 // 背景：审计发现 Select（8 模式 1419 行）挂载级仅 1 个标签关联测试，交互回归风险全库最高
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import Select from '@/components/form/Select.vue'
 import { setLocale } from '@/components/_internal/i18n'
 
@@ -173,5 +174,50 @@ describe('Select · i18n 默认文案', () => {
     const input = w.find('input.trigger-input')
     expect(input.attributes('placeholder')).toBe('请选择')
     setLocale('zh-CN')
+  })
+})
+/* ════════════════════════════════════════
+ * 输入法合成期（#276）：中文上屏不能被当成"确认选中"
+ * ════════════════════════════════════════ */
+describe('IME 合成期', () => {
+  it('**合成中按 Enter → 不提交、不阻止上屏**（否则拼音被当成选项）', async () => {
+    const w = mount(Select, {
+      props: { modelValue: '', options: [...options], allowCreate: true, filterable: true },
+      attachTo: document.body,
+    })
+    try {
+      await nextTick()
+      const input = w.find('input')
+      await input.trigger('focus')
+      await input.setValue('bei')
+      await nextTick()
+      const e = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true, isComposing: true })
+      input.element.dispatchEvent(e)
+      await nextTick()
+      expect(e.defaultPrevented, '合成期必须放行上屏').toBe(false)
+      expect((w.props('modelValue') as string) || '', '不能把拼音提交成值').not.toBe('beijing')
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('合成结束后按 Enter 正常确认（守卫不能堵死正常路径）', async () => {
+    const w = mount(Select, {
+      props: { modelValue: '', options: [...options], allowCreate: true, filterable: true },
+      attachTo: document.body,
+    })
+    try {
+      await nextTick()
+      const input = w.find('input')
+      await input.trigger('focus')
+      await input.setValue('北京')
+      await nextTick()
+      const e = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
+      input.element.dispatchEvent(e)
+      await nextTick()
+      expect(w.emitted('update:modelValue'), '正常 Enter 应确认选中').toBeTruthy()
+    } finally {
+      w.unmount()
+    }
   })
 })

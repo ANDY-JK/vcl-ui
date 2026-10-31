@@ -85,6 +85,7 @@
 </template>
 
 <script setup lang="ts">
+import { isImeComposing } from '@/components/_internal/ime'
 import { ref, reactive, computed } from 'vue'
 import { Input, Button, IconSvg, Toast, useT, SUBMIT_UNLOCK_FALLBACK_MS } from './_shared'
 
@@ -198,6 +199,9 @@ const handleSubmit = () => {
 
 /** 回车提交（login/portal_login/register 均已支持） */
 function handleEnter(e: KeyboardEvent) {
+  // 输入法合成期放行（#276）：找回{{PASSWORD}}的验证问答常是中文，
+  // 上屏时按回车会被当成"提交"，拿到半截答案去校验
+  if (isImeComposing(e)) return
   if (e.key === 'Enter') handleSubmit()
 }
 

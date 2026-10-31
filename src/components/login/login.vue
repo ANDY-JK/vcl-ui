@@ -153,6 +153,7 @@
 </template>
 
 <script setup lang="ts">
+import { isImeComposing } from '@/components/_internal/ime'
 import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
 import {
   Input,
@@ -346,6 +347,8 @@ onMounted(() => {
 // ======================== 提交 ========================
 
 const handleEnter = (event: KeyboardEvent) => {
+  // 输入法合成期放行：中文用户名/找回答案上屏时按回车，不能当提交（#276）
+  if (isImeComposing(event)) return
   if (event.key === 'Enter') handleSubmit()
 }
 
