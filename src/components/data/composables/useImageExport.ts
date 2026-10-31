@@ -115,7 +115,11 @@ export function useImageExport(o: {
     }
   }
 
-  /** 复制 PNG 到剪贴板 */
+  /** 复制 PNG 到剪贴板。
+   *  dataUrl 兜底（2026-10-31，#255）：Clipboard API 失败（HTTP 环境/部分 WebView）时
+   *  富文本降级需要 dataUrl —— 此前只传 blob，降级通道永远拿不到图，HTTP 下复制必失败
+   *  且只报 copyFail。blob 能产出说明画布未被污染，toDataURL 实际不会抛；仍 try 包住 ——
+   *  失败只少一条降级通道，不阻断主通道。 */
   async function copyImage(): Promise<void> {
     if (!o.isLoaded()) return
     const cvs = await buildExportCanvas()
@@ -128,7 +132,13 @@ export function useImageExport(o: {
       o.notify(o.t('imagePreview.exportFailCrossOrigin'), 'error')
       return
     }
-    const ok = await copyScreenshotToClipboard(blob)
+    let dataUrl: string | undefined
+    try {
+      dataUrl = cvs.toDataURL('image/png')
+    } catch {
+      /* 拿不到 dataUrl 就只走主通道 */
+    }
+    const ok = await copyScreenshotToClipboard(blob, dataUrl)
     o.notify(ok ? o.t('imagePreview.copyOk') : o.t('imagePreview.copyFail'), ok ? 'success' : 'error')
   }
 

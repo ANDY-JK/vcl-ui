@@ -462,11 +462,23 @@ describe('copyImage', () => {
     expect(copyMock).not.toHaveBeenCalled()
   })
 
-  it('**成功：把 blob 交给剪贴板 + notify 成功**', async () => {
+  it('**成功：blob + dataUrl 都交给剪贴板（富文本降级的粮草）+ notify 成功**', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('CORS')))
     const h = makeHost()
     await h.api.copyImage()
-    expect(copyMock).toHaveBeenCalledWith(PNG)
+    // #255：第二参数 dataUrl 是 Clipboard API 失败时富文本降级的唯一输入，缺了降级通道必死
+    expect(copyMock).toHaveBeenCalledWith(PNG, 'data:image/png;base64,AAAA')
+    expect(h.notify).toHaveBeenCalledWith('T:imagePreview.copyOk', 'success')
+  })
+
+  it('**toDataURL 抛错（理论上不会：blob 出了说明未污染）→ 只少降级通道，主通道照走**', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('CORS')))
+    HTMLCanvasElement.prototype.toDataURL = vi.fn(() => {
+      throw new DOMException('tainted', 'SecurityError')
+    }) as never
+    const h = makeHost()
+    await h.api.copyImage()
+    expect(copyMock).toHaveBeenCalledWith(PNG, undefined)
     expect(h.notify).toHaveBeenCalledWith('T:imagePreview.copyOk', 'success')
   })
 
