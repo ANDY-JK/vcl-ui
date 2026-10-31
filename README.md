@@ -246,7 +246,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **用法示例**：`src/demos/` — 每个组件一页 demo，`npm run dev` 直接看效果与 Props
 - **API 入口**：`src/components/index.ts` — 全部导出与类型，IDE 里可直接跳转
 - **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 设计令牌断档自检 + 语言包对账 + 单测（全局覆盖率地板 + **按域覆盖地板**）+ 构建 + **发包自检** + **文档漂移自检** + **文档说明完整性自检** + 真实浏览器 e2e
-- **常量来源自检**：`npm run check:constants` — 六项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量、截断类必须登记判定且用户数据类要绑 `title`、原生 `color` 输入的值必须经归一
+- **常量来源自检**：`npm run check:constants` — 八项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量、截断类必须登记判定且用户数据类要绑 `title`、原生 `color` 输入的值必须经归一、**各域单文件行数不超止涨线**、**原生 `<button>` 必须显式 `type`**
 - **语言包对账**：`npm run check:i18n` — zh-CN / en-US 分块与键集一一对应，缺哪边点哪个键
 - **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
 - **第三方许可闸口**：`npm run check:licenses` — 产物里真进了哪些第三方件（构建期由 rollup 记录到 `dist/third-party-modules.json`），逐条双向对账：漏报、虚报、许可文本缺失、copyleft 命中、外部件没在 `dependencies/peerDependencies` 声明、进包件不在运行期依赖闭包内——任一即红。清单正文随包发布：`vcl-ui/dist/THIRD-PARTY-LICENSES.md`
@@ -307,6 +307,8 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 10. **CSS 设计令牌不许"无声明又无 fallback"**：`var(--x)` 引用一个全库从未声明的令牌时，浏览器会静默求值为继承/初始值——亮色下常因继承背景碰巧看着正常、切暗色才暴露。`check:css-tokens` 全仓收集两处「有主」信号：① 任何 `.css/.vue/.ts` 里出现的 `--name:` 声明（含 `:style` 内联键、`setProperty('name',…)` 字符串字面量）；② 引用带了 fallback（`var(--x, 默认)`）即视为显式降级、放行。两者都不满足才判红。新增局部变量照第 1 条走「同文件声明 + 引用兜底」即可，全局令牌加进 `tokens.css`。
 
 11. **form-builder 域单文件 ≤800 行**：该域交互密度高，设计器/渲染器/收集端三块各自曾长到近千行。09-04 收官过一次（PropsPanel 五页签、useTableEdit 式拆分），09-20 复查发现 `FormDesigner 979 / DesignerCanvas 881` 已回潮——**靠人工守必然回潮**，所以 `check:constants` 第 [7] 项直接扫该目录（含子目录）的 `.ts/.vue` 行数，超限即红。正确拆法：纯函数归 `.ts`（如 `canvas-utils.ts`）、有状态逻辑归 composable（如 `useDesignerPanels`）、可独立交互的 UI 归子组件；能不拆就别拆——拆错地方比不拆更糟。
+
+12. **原生 `<button>` 必须显式声明 `type`**：HTML 里 `<button>` 的默认 `type` 是 `submit`——宿主把库组件（表格工具栏、筛选面板、列设置、图片预览工具条……）放进自己的 `<form>` 里时，点其中任何一个按钮都会把**宿主表单**提交掉，症状（页面刷新、已填数据丢失）离"组件库"很远，排查成本极高。所以库面一律 `type="button"`，确需提交语义才写 `submit`（现库内只有 `StoreFormModal` 的保存按钮）。`check:constants` 第 [8] 项扫 `src/components` 下所有 `.vue` 的 `<button>` 标签（跨行标签算一个），缺 `type=` 即红并点名 `file:line`。与第 6/7/8 条同口径只管库代码：`src/App.vue` 与 `src/demos` 是演示壳、不随包发布，其中的裸 button 不构成该风险，扫它只会制造噪音。
 
 ### 闸口的本地执行者（2026-10-18 补）
 
