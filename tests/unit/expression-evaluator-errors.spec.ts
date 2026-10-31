@@ -55,15 +55,17 @@ describe('受限求值器 · null 字面量与真值判定', () => {
   })
 
   it('真值判定：null/undefined 为假，0 与 NaN 为假，空串为假，其余为真', () => {
-    // 注意（第 170 轮实测）：本求值器的 && / || **返回布尔**，不是 JS 的"返回操作数"。
-    // 这对 showHide（只看真值）没问题；但对 followValue（把结果写进字段值）来说，
-    // 想表达"a 为空就取 b"的 {{a}} || {{b}} 会得到 true 而不是 b。
-    // 这是既有语义选择，改动会影响已发布模板，已登记待确认（见审查报告 #225），此处锁现状。
-    expect(safeEvaluate('null || 1')).toBe(true)
-    expect(safeEvaluate('0 || 2')).toBe(true)
-    expect(safeEvaluate('"" || 3')).toBe(true)
-    expect(safeEvaluate('"x" && 1')).toBe(true)
-    expect(safeEvaluate('0 && 1')).toBe(false)
+    // 2026-11-01（TD-69 收口）：&& / || **返回操作数**，与 JS / Excel 一致。
+    // 旧实现一律返回布尔，导致 followValue（把结果写进字段值）里
+    // "{{a}} 为空就取 {{b}}" 得到 true 而不是 b —— 用户可感知的错误值。
+    // 语义：左真 → 返回左（或）／返回右（与）；左假 → 返回右（或）／返回左（与）。
+    expect(safeEvaluate('null || 1'), 'null 假 → 取右操作数').toBe(1)
+    expect(safeEvaluate('0 || 2'), '0 假 → 取右操作数').toBe(2)
+    expect(safeEvaluate('"" || 3'), '空串假 → 取右操作数').toBe(3)
+    expect(safeEvaluate('"x" && 1'), '左真 → 取右操作数').toBe(1)
+    expect(safeEvaluate('0 && 1'), '左假 → 返回左（0 本身，不是 false）').toBe(0)
+    expect(safeEvaluate('"" && "y"'), '左假 → 返回左（空串本身）').toBe('')
+    expect(safeEvaluate('"x" || "y"'), '左真 → 返回左').toBe('x')
   })
 
   it('布尔与字符串宽松相等：先走 String() 比较（"true" === "1" 为假）', () => {

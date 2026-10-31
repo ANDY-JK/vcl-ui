@@ -184,24 +184,38 @@ class ExprParser {
     throw new Error('expected operator')
   }
 
+  /**
+   * 逻辑或 —— **返回操作数，不是布尔**（2026-11-01 对齐 JS/Excel 语义，TD-69 收口）
+   *
+   * 旧实现 `left = truthy(left) || truthy(right)` 一律返回 true/false。
+   * 对 showHide（只看真值）无影响，但 followValue 会把结果**写进字段值**：
+   * 用户写 `{{A}} 或 {{B}}` 想表达"A 为空就取 B"，得到的是 `true`。
+   * 现在 `左真 → 返回左；左假 → 返回右`（与 JS `a || b` 一致，也与 Excel 的 IF 短路一致）。
+   *
+   * ⚠️ 右侧**始终解析**（解析无副作用）：token 必须消费完，否则 `a or b or c` 会漏读。
+   */
   private parseOr(): unknown {
     let left = this.parseAnd()
     while (this.isOp('||', 'or')) {
       this.takeOp()
-      // 始终解析右侧以消费 token（解析无副作用），再按逻辑或求值
       const right = this.parseAnd()
-      left = truthy(left) || truthy(right)
+      left = truthy(left) ? left : right
     }
     return left
   }
 
+  /**
+   * 逻辑与 —— **返回操作数，不是布尔**（同 parseOr，TD-69 收口）
+   *
+   * `a && b`：左假 → 返回左（假值本身，如 0 / '' / null）；左真 → 返回右。
+   * 这样 `{{x}} 与 {{y}}` 在 x 为空时给出 ''（而不是 false），followValue 写进字段仍是"空"。
+   */
   private parseAnd(): unknown {
     let left = this.parseCompare()
     while (this.isOp('&&', 'and')) {
       this.takeOp()
-      // 始终解析右侧以消费 token（解析无副作用），再按逻辑与求值
       const right = this.parseCompare()
-      left = truthy(left) && truthy(right)
+      left = truthy(left) ? right : left
     }
     return left
   }

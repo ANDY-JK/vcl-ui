@@ -36,6 +36,29 @@ describe('P0-5 联动求值安全（evaluateFormula 替代 new Function）', () 
     expect(formData.value.total).toBe(16)
   })
 
+  it('followValue：`A 或 B` 取的是 B 的值，不是布尔 true（TD-69 收口，用户可感知）', async () => {
+    // 用户的真实写法：备用值兜底 —— "{{primary}} 为空就取 {{fallback}}"。
+    // 旧实现（&& / || 返回布尔）会把 true 写进字段，提交上来的数据就是错的。
+    const fields = ref<FormField[]>([
+      makeField('backup', {
+        type: 'followValue',
+        formula: '{{primary}} || {{fallback}}',
+        targetField: 'backup',
+      }),
+    ])
+    const formData = ref<FormData>({ primary: '', fallback: '兜底值' })
+    const rp = useFormLinkage(
+      computed(() => fields.value),
+      formData,
+    )
+    rp.setupWatchers()
+    expect(formData.value.backup, '主值为空 → 取兜底值（不是 true）').toBe('兜底值')
+
+    formData.value = { primary: '主值', fallback: '兜底值' }
+    await nextTick()
+    expect(formData.value.backup, '主值有内容 → 取主值').toBe('主值')
+  })
+
   it('showHide：条件为 false 时隐藏目标字段', async () => {
     const fields = ref<FormField[]>([
       makeField('agree', { type: 'showHide', formula: "{{agree}} == 'yes'", targetField: 'detail' }),
