@@ -103,11 +103,14 @@ for (const spec of VENDOR_SOURCES) {
   }
 }
 
-// xlsx 另有上游正源 tarball 的可再验证路径（vendor-sheetjs.mjs 的 --check），保持原样调用
+// xlsx 的仓内校验是**自洽**（仓内件 = VENDOR.json 登记），不是上游对账（R5-C26）：
+// 「没人手改仓内件」与「当年搬的就是上游那份」是两个命题，前者离线可证、后者需要
+// 重新下载 tarball（node scripts/vendor-sheetjs.mjs --verify-tarball，可选项不进整链）。
+// 输出措辞必须区分两者，否则读日志的人会把自洽误当成上游对账。
 try {
   const { bad, summary } = checkVendored(ROOT)
   if (bad.length) RED.push(...bad.map((b) => `vendor(xlsx) ${b}`))
-  else console.log(`[vendor] ${summary}`)
+  else console.log(`[vendor] 自洽校验：${summary}（上游 tarball 锚点未在本步复算 —— 需要时跑 node scripts/vendor-sheetjs.mjs --verify-tarball）`)
 } catch (e) {
   RED.push(`vendor(xlsx) 正源校验跑不起来：${e && e.message ? e.message : e}`)
 }

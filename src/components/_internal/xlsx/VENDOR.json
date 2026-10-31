@@ -3,6 +3,12 @@
   "version": "0.20.3",
   "license": "Apache-2.0",
   "upstreamSource": "https://git.sheetjs.com/SheetJS/sheetjs",
+  "upstreamTarball": {
+    "url": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "sha256": "8dc73fc3b00203e72d176e85b50938627c7b086e607c682e8d3c22c02bb99fe8",
+    "bytes": 2409319,
+    "note": "一次性人工核对（2026-10-31 下载实算）：tarball 内 xlsx.mjs / types/index.d.ts / LICENSE 与 files 登记逐字节一致。链上只做自洽校验（仓内件 = 本登记）；要复算上游锚点跑 node scripts/vendor-sheetjs.mjs --verify-tarball（需联网，离线时显式退出 2 报「未验证」）。"
+  },
   "vendoredFrom": "node_modules/xlsx",
   "versionMarkerInCode": "0.20.3",
   "files": [

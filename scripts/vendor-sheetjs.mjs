@@ -9,8 +9,15 @@
 // 用法：
 //   node scripts/vendor-sheetjs.mjs              # 从 node_modules/xlsx 搬进仓（首次/换版）
 //   node scripts/vendor-sheetjs.mjs --check      # 只检不改：仓内件与 VENDOR.json 登记的字节不符即 exit 1
+//   node scripts/vendor-sheetjs.mjs --verify-tarball  # 可选联网复算：重新下载上游 tarball，核对
+//                                                 #   ① tarball 自身 sha256 = 登记 ② tarball 内文件 = 仓内件。
+//                                                 #   离线/失败时显式退出 2（"未验证"），绝不静默当通过。
 //
 // `--check` 不读 node_modules：搬进来之后仓内就是正源，装机器没有 xlsx 包也要能自证。
+//
+// 自洽 vs 对账（R5-C26，2026-10-31）：--check 是**自洽校验**（仓内件 = VENDOR.json 登记），
+// 只能证明"没人手改仓内件"，不能证明"当年搬的就是上游那份" —— 上游锚点是
+// VENDOR.json.upstreamTarball 里一次性人工核对的 tarball sha256（复算入口就是 --verify-tarball）。
 import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -20,6 +27,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const FROM = 'node_modules/xlsx'
 const TO = 'src/components/_internal/xlsx'
 const CHECK = process.argv.includes('--check')
+const VERIFY_TARBALL = process.argv.includes('--verify-tarball')
 
 /** 仓内落点名 → 上游发布物里的路径 */
 const FILES = {
@@ -116,6 +124,11 @@ const isMain =
 
 if (!isMain) {
   // 被 import（check:vendor-data 复用 checkVendored）时不执行任何动作
+} else if (VERIFY_TARBALL) {
+  // 不调用 process.exit：fetch 的底层句柄在异步栈里直接 exit 会触发 libuv 的
+  // UV_HANDLE_CLOSING assert（Windows 实测 exit code 变成 -1073740791）。
+  // 设 process.exitCode 让事件循环自然排空后以该码退出 —— 这是 Node 官方推荐的异步退出方式。
+  process.exitCode = await verifyTarball()
 } else if (CHECK) {
   const { bad, summary } = checkVendored()
   if (bad.length) {
@@ -126,6 +139,80 @@ if (!isMain) {
   console.log(`[vendor] ${summary}`)
 } else {
   main()
+}
+
+/**
+ * 可选联网复算上游锚点（R5-C26）：下载 tarball →
+ *   ① tarball 自身 sha256 = VENDOR.json.upstreamTarball 登记；
+ *   ② 解包后 FILES 清单内文件与仓内件逐字节一致。
+ * 任何失败（无网 / 上游改件 / 登记不符）都以 exit 2 结束并明确说"未验证"，
+ * 绝不静默当通过 —— exit 2 与"校验失败 exit 1"分开，方便调用方区分。
+ *
+ * ⚠️ 不用裸 process.exit：fetch 是挂起的异步句柄，在它的回调栈里直接 exit 会触发
+ * libuv 的 UV_HANDLE_CLOSING assert（Windows 实测 exit code 变成 -1073740791）。
+ * 改为返回退出码、由顶层的 setImmediate 排干当前栈后再 exit。
+ */
+async function verifyTarball() {
+  const man = JSON.parse(readFileSync(manifestPath(), 'utf8'))
+  const t = man.upstreamTarball
+  if (!t || !t.url || !t.sha256) {
+    console.error('[vendor-sheetjs] VENDOR.json 缺 upstreamTarball 段，无法复算上游锚点')
+    return 2
+  }
+  console.log(`[vendor-sheetjs] 下载上游 tarball：${t.url}`)
+  let buf
+  try {
+    const resp = await fetch(t.url)
+    if (!resp.ok) {
+      console.error(`[vendor-sheetjs] 下载失败：HTTP ${resp.status} —— 上游对账**未验证**（exit 2）`)
+      return 2
+    }
+    buf = Buffer.from(await resp.arrayBuffer())
+  } catch (e) {
+    console.error(`[vendor-sheetjs] 下载失败（离线或网络受限）：${e && e.message ? e.message : e} —— 上游对账**未验证**（exit 2）`)
+    return 2
+  }
+  const got = sha(buf)
+  if (buf.length !== t.bytes || got !== t.sha256) {
+    console.error(
+      `❌ 上游 tarball 与登记不符：实得 ${buf.length.toLocaleString('en-US')}B sha256=${got.slice(0, 16)}…，登记 ${t.bytes.toLocaleString('en-US')}B ${String(t.sha256).slice(0, 16)}…（上游改包？登记写错？）`,
+    )
+    return 1
+  }
+  console.log(`[vendor-sheetjs] tarball sha256 与登记一致：${got.slice(0, 16)}…`)
+  // 解包核对：tarball 内文件 = 仓内件（走 tar，Windows 10+ 自带 bsdtar）
+  const { mkdtempSync, rmSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { execFileSync } = await import('node:child_process')
+  const dir = mkdtempSync(join(tmpdir(), 'xlsx-verify-'))
+  try {
+    const tgz = join(dir, 'upstream.tgz')
+    writeFileSync(tgz, buf)
+    execFileSync('tar', ['-xzf', tgz, '-C', dir], { stdio: 'ignore' })
+    let mismatch = 0
+    for (const [to, from] of Object.entries(FILES)) {
+      const inTar = join(dir, 'package', from)
+      const inRepo = join(ROOT, TO, to)
+      if (!existsSync(inTar)) {
+        console.error(`   - tarball 内缺 ${from}（上游结构变了？）`)
+        mismatch++
+        continue
+      }
+      const a = sha(readFileSync(inTar))
+      const b = sha(readFileSync(inRepo))
+      if (a !== b) {
+        console.error(`   - ${to}：tarball ${a.slice(0, 12)}… ≠ 仓内 ${b.slice(0, 12)}…`)
+        mismatch++
+      }
+    }
+    if (mismatch) {
+      console.error(`❌ tarball 内文件与仓内 vendor 不一致（${mismatch} 项）—— 当年搬的可能不是这份包`)
+      return 1
+    }
+    console.log(`[vendor-sheetjs] 上游对账通过：tarball 内 ${Object.keys(FILES).length} 份文件与仓内 vendor 逐字节一致`)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 }
 
 function main() {
