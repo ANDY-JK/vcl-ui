@@ -22,10 +22,12 @@ const props = withDefaults(defineProps<Props>(), {
 const initials = computed(() => {
   const trimmed = (props.name || '').trim()
   if (!trimmed) return '?'
+  // `s[0]` 取的是一个 UTF-16 **码元**：名字以 emoji 开头时会拿到孤立代理，
+  // 头像上渲染成豆腐块（#277）。改用按码点取首字符。
   return trimmed
     .split(/\s+/)
     .slice(0, 2)
-    .map((s) => s[0])
+    .map((s) => Array.from(s)[0] ?? '')
     .join('')
     .toUpperCase()
 })

@@ -1,3 +1,4 @@
+import { trimToFit } from '../../_internal/text-slice'
 // ==================== 表格 Canvas 自绘截图（纯 DOM 工具，从 DataTable.vue 迁出 · §18-② 阶段 C） ====================
 // 无响应式依赖：输入表格元素，输出 PNG dataURL + Blob。
 // 绕开 html2canvas 对 <table> 行高的渲染缺陷（行内空白/行高翻倍/底部裁剪）。
@@ -165,7 +166,8 @@ export async function captureTableCanvas(
 /** Canvas 文本截断（按像素宽度；列已自适应后只在极端长文本时兜底触发） */
 function truncateCanvasText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string {
   if (maxW <= 0 || ctx.measureText(text).width <= maxW) return text
-  let t = text
-  while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1)
-  return t + '…'
+  // 按**用户感知字符**逐个删（#277）。旧实现 `t.slice(0, -1)` 每次删一个 UTF-16 码元，
+  // 删到 emoji 中间会留下孤立代理 —— 导出的图里就是豆腐块。
+  const head = trimToFit(text, (candidate) => ctx.measureText(candidate + '…').width <= maxW)
+  return head ? head + '…' : '…'
 }

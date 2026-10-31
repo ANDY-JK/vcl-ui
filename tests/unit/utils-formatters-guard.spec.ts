@@ -169,3 +169,39 @@ describe('TD-85 非原始值输入不让脏文本泄漏、也不抛错', () => {
     expect(sanitizeDownloadName('a/b:c'), '正常字符串照旧清洗').toBe('a_b_c')
   })
 })
+/* ════════════════════════════════════════
+ * 截断按「用户感知字符」，不切出半个 emoji（#277）
+ * ════════════════════════════════════════ */
+describe('truncate 的 grapheme 口径', () => {
+  /** 孤立代理 = 渲染成豆腐块的根源 */
+  const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/
+
+  it.each([1, 2, 3, 5, 7])('「😀😀😀😀」截 %i 字：不产生孤立代理', (n) => {
+    const out = truncate('😀😀😀😀', n)
+    expect(out, `truncate → ${JSON.stringify(out)} 含半个 emoji`).not.toMatch(LONE_SURROGATE)
+  })
+
+  it('emoji 按"一个字"计数：限 2 字保留 2 个 emoji（旧实现只留 1 个）', () => {
+    // '😀😀😀'.length === 6（码元），按码元切 2 只得到半个 emoji
+    expect(truncate('😀😀😀', 2)).toBe('😀😀…')
+  })
+
+  it('ZWJ 组合 emoji（家庭）整簇保留，不切碎', () => {
+    const family = '👨‍👩‍👧‍👦'
+    const out = truncate(family + '家', 1)
+    expect(out, '组合 emoji 应作为 1 个字符保留').toBe(family + '…')
+    expect(out).not.toMatch(LONE_SURROGATE)
+  })
+
+  it('中文/英文口径不变（回归护栏）', () => {
+    expect(truncate('张三丰是个道士', 3)).toBe('张三丰…')
+    expect(truncate('hello world', 5)).toBe('hello…')
+    expect(truncate('hello', 10)).toBe('hello')
+    expect(truncate('', 3)).toBe('')
+  })
+
+  it('len ≤ 0 → 只留后缀（不返回原文，避免"限 0 字"输出整段）', () => {
+    expect(truncate('abc', 0)).toBe('…')
+    expect(truncate('', 0)).toBe('')
+  })
+})

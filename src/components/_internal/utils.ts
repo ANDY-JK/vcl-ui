@@ -1,4 +1,5 @@
 import { reportWarn } from '@/components/_internal/runtime-observer'
+import { truncateGraphemes } from './text-slice'
 /**
  * utils — 通用工具函数统一入口
  *
@@ -279,11 +280,15 @@ export function toChineseAmount(n: number | string): string {
 // 字符串
 // ════════════════════════════════════════
 
-/** 截断字符串并加后缀（默认 …），长度未超限原样返回。 */
+/**
+ * 截断字符串并加后缀（默认 …），长度未超限原样返回。
+ *
+ * `len` 计的是**用户感知字符**（grapheme），不是 UTF-16 码元（2026-11-01 #277）。
+ * 旧实现用 `s.slice(0, len)` 按码元切：emoji 占 2 码元，切在中间会留下**孤立代理**，
+ * 渲染成豆腐块；`'😀'.length === 2` 也让"限 N 字"对 emoji 只能输一半。
+ */
 export function truncate(str: unknown, len: number, suffix = '…'): string {
-  const s = toStr(str)
-  if (s.length <= len) return s
-  return s.slice(0, len) + suffix
+  return truncateGraphemes(toStr(str), len, suffix)
 }
 
 /** 安全 JSON 解析，失败返回 fallback（不抛异常）。 */

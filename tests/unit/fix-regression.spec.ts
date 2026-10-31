@@ -296,3 +296,33 @@ describe('amap keywordSearch · infocode 校验', () => {
     }
   })
 })
+// ════════════════════════════════════════
+// Avatar · 首字母不切出半个 emoji（#277）
+// ════════════════════════════════════════
+describe('Avatar · 首字母按码点取', () => {
+  const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/
+
+  it('名字以 emoji 开头 → 头像字母不含孤立代理（旧实现 s[0] 取到高位代理）', async () => {
+    const Avatar = (await import('@/components/data/Avatar.vue')).default
+    const w = mount(Avatar, { props: { name: '😀张三', size: 'md' }, attachTo: document.body })
+    try {
+      await nextTick()
+      const text = w.text()
+      expect(text, `头像文本 ${JSON.stringify(text)} 含孤立代理`).not.toMatch(LONE_SURROGATE)
+      expect(text).toContain('😀')
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('中文姓名取首字（口径不变）', async () => {
+    const Avatar = (await import('@/components/data/Avatar.vue')).default
+    const w = mount(Avatar, { props: { name: '张三', size: 'md' }, attachTo: document.body })
+    try {
+      await nextTick()
+      expect(w.text()).toContain('张')
+    } finally {
+      w.unmount()
+    }
+  })
+})
