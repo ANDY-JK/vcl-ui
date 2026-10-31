@@ -21,14 +21,27 @@ const _t = useT()
 // 基础：安全转字符串
 // ════════════════════════════════════════
 
-/** 任意值安全转字符串（null/undefined → 空串） */
-function toStr(v: unknown): string {
+/**
+ * 任意值安全转字符串（null/undefined → 空串）
+ *
+ * ⚠️ TD-85（第 32 轮）：**只把「能表达成文本」的原始值转成字符串**。
+ * 旧实现是无条件 `String(v)`，于是对象变 `'[object Object]'`、Symbol 变 `'Symbol(x)'`、
+ * 数组变 `'1,2'` —— 这些字符串会被上层拼进用户可见文本（`escapeHtml` / `parseRegion`
+ * 的 detail / `maskIdCard` 的脱敏结果 / `truncate` 的截断值全是这条路径）。
+ * 文件的头注释承诺"接受 unknown 输入"，但"接受"不等于"把内部表示泄漏到界面"：
+ * 对象/数组/Symbol/函数**没有对应的文本形态**，给空串才是正确降级。
+ */
+export function toStr(v: unknown): string {
   if (v === null || v === undefined) return ''
-  return typeof v === 'string' ? v : String(v)
+  const t = typeof v
+  // 原始值才有文本形态；object / symbol / function / bigint 一律空串
+  if (t === 'string') return v as string
+  if (t === 'number' || t === 'boolean' || t === 'bigint') return String(v)
+  return ''
 }
 
 /** 去掉全部空白 */
-function stripSpace(input: unknown): string {
+export function stripSpace(input: unknown): string {
   return toStr(input).replace(/\s+/g, '')
 }
 
@@ -57,104 +70,6 @@ export function isValidUrl(v?: unknown): boolean {
 }
 
 // ════════════════════════════════════════
-// 行政区划 / 地址
-// ════════════════════════════════════════
-
-/** 行政区划拆分结果（省 → 市 → 区县 → 乡镇，剩余部分为详细地址） */
-export interface Region {
-  /** 省级：省 / 自治区 / 特别行政区 */
-  province: string
-  /** 地级：市 / 自治州 / 地区 / 盟 */
-  city: string
-  /** 县级：区 / 县 / 旗 / 县级市 */
-  district: string
-  /** 乡级：镇 / 乡 / 街道 / 苏木 / 民族乡 */
-  town: string
-  /** 剩余详细地址（门牌号、路名、村/社区等） */
-  detail: string
-}
-
-/**
- * 中国地址四级行政区划拆分（纯后缀规则，零硬编码名单）。
- *
- * 按「省 → 市 → 区县 → 乡镇」顺序逐级剥取，剩余部分归入 detail。
- * - 直辖市（北京市等）无「省」后缀，按「市」归入 city，province 保持为空
- * - 无省级前缀的地址（如 "深圳市南山区"）也能正确落入对应层级
- *
- * @example
- * parseRegion('广东省深圳市南山区科技园路1号')
- * // { province:'广东省', city:'深圳市', district:'南山区', town:'', detail:'科技园路1号' }
- * parseRegion('北京市朝阳区三里屯街道工体北路')
- * // { province:'', city:'北京市', district:'朝阳区', town:'三里屯街道', detail:'工体北路' }
- */
-export function parseRegion(input?: unknown): Region {
-  let addr = stripSpace(input)
-  const region: Region = { province: '', city: '', district: '', town: '', detail: '' }
-
-  // 省级：省 / 自治区 / 特别行政区
-  const p = addr.match(/^(.+?省|.+?自治区|.+?特别行政区)/)
-  if (p) {
-    region.province = p[1]
-    addr = addr.slice(p[1].length)
-  }
-
-  // 地级：自治州 / 地区 / 盟 / 市 优先，单字「州」作兜底（恩施州）
-  const c = addr.match(/^(.+?(?:自治州|地区|盟|市)|.+?州)/)
-  let city = c ? c[1] : ''
-  // 「州市」歧义消解：广州/杭州/苏州 里「州市」是城市名整体；恩施州利川市 里「州」是地级、
-  // 「利川市」才是县级。纯后缀规则无法两全，判据是「在州处切开后余下是否为县级单位」：
-  // 广州 → 余下「市天河区」以市开头，不是县级单位，故不切；恩施州 → 余下「利川市」，切。
-  const zhouCut = addr.match(/^(.+?州)([^市区县旗]+(?:自治县|自治旗|新区|区|县|旗|市))/)
-  if (zhouCut && zhouCut[1].length < city.length) city = zhouCut[1]
-  if (city) {
-    region.city = city
-    addr = addr.slice(city.length)
-  }
-
-  // 县级：自治县 / 自治旗 / 新区 / 区 / 县 / 旗 / 市
-  const d = addr.match(/^(.+?(?:自治县|自治旗|新区|区|县|旗|市))/)
-  if (d) {
-    region.district = d[1]
-    addr = addr.slice(d[1].length)
-  }
-
-  // 乡级：街道 / 民族乡 / 苏木 / 镇 / 乡
-  const t = addr.match(/^(.+?(?:街道|民族乡|苏木|镇|乡))/)
-  if (t) {
-    region.town = t[1]
-    addr = addr.slice(t[1].length)
-  }
-
-  region.detail = addr
-  return region
-}
-
-/** parseRegion 的语义别名（地址拆分 = 行政区划拆分 + 详细地址） */
-export const parseAddress = parseRegion
-
-/** 拼接区域名（省市区，可选乡镇/详细地址） */
-export function formatRegion(region: Region | string, opts?: { withTown?: boolean; withDetail?: boolean }): string {
-  // 第 188 轮：签名是 Region | string，但运行时可能拿到 null/undefined/数字等脏数据，
-  // 旧实现直接读 r.province → 渲染期抛 "Cannot read properties of null"，整棵组件树崩。
-  if (region == null) return ''
-  if (typeof region !== 'string' && typeof region !== 'object') return ''
-  const r = typeof region === 'string' ? parseRegion(region) : region
-  const parts: string[] = []
-  if (r.province) parts.push(r.province)
-  if (r.city) parts.push(r.city)
-  if (r.district) parts.push(r.district)
-  if (opts?.withTown && r.town) parts.push(r.town)
-  if (opts?.withDetail && r.detail) parts.push(r.detail)
-  return parts.join('')
-}
-
-/** 把完整地址拆成「区域」与「详细地址」两部分 */
-export function splitRegionDetail(input?: unknown): { region: string; detail: string } {
-  const r = parseRegion(input)
-  return { region: formatRegion(r, { withTown: true }), detail: r.detail }
-}
-
-// ════════════════════════════════════════
 // 文件下载
 // ════════════════════════════════════════
 
@@ -162,8 +77,10 @@ export function splitRegionDetail(input?: unknown): { region: string; detail: st
  *  控制字符 → `_`，剥首尾点/空格，清洗后为空回默认名。所有下载入口共用 ——
  *  标题/日期/表名都可能进文件名，清洗修在出口（downloadBlob/downloadScreenshot）
  *  而非调用点，新入口自动继承。 */
-export function sanitizeDownloadName(name: string, fallback = 'download'): string {
-  const cleaned = name
+export function sanitizeDownloadName(name: unknown, fallback = 'download'): string {
+  // TD-85：守卫自己不能抛错 —— 原签名 name: string 下传对象/Symbol 会 `name.replace is not a function`，
+  // 下载链路直接崩、用户点"下载"没反应。经 toStr 归一（非原始值 → 空串 → 回落 fallback）。
+  const cleaned = toStr(name)
     // eslint-disable-next-line no-control-regex
     .replace(/[\u0000-\u001f\\/:*?"<>|]/g, '_')
     .replace(/^[.\s]+|[.\s]+$/g, '')
@@ -245,6 +162,10 @@ export function deepClone<T>(value: T): T {
  * 就不该：用户从没输入过 "Infinity"。两者要分开判。
  */
 export function formatNumber(n: number | string, opts?: { decimals?: number; separator?: string }): string {
+  // TD-85（第 32 轮）：签名是 number | string，但运行时可能来对象/数组/Symbol
+  // （`{{field}}` 求值结果、宿主透传的脏数据）。这类值没有数字形态 → 空串；
+  // 旧实现走 `String(n)` 分支，对象会变成 `'[object Object]'` 显示在金额列。
+  if (typeof n !== 'number' && typeof n !== 'string') return ''
   const value = typeof n === 'string' ? Number(n) : n
   // 非有限「数值」→ 空串（不显示 Infinity/NaN）；非数字「字符串」→ 原样（保留用户输入）
   if (!isFinite(value)) return typeof n === 'number' ? '' : String(n)
@@ -260,6 +181,7 @@ export function formatMoney(
   n: number | string,
   opts?: { symbol?: string; decimals?: number; separator?: string },
 ): string {
+  if (typeof n !== 'number' && typeof n !== 'string') return ''
   const value = typeof n === 'string' ? Number(n) : n
   if (!isFinite(value)) return typeof n === 'number' ? '' : String(n)
   const { symbol = '¥', decimals = 2, separator = ',' } = opts ?? {}
@@ -284,6 +206,8 @@ export function formatSize(bytes: number): string {
  * 算法移植（GB 金额大写规范），超 20 行属豁免场景。
  */
 export function toChineseAmount(n: number | string): string {
+  // TD-85：非 number/string 的运行时脏值（对象/Symbol）→ 空串，不抛错
+  if (typeof n !== 'number' && typeof n !== 'string') return ''
   const value = typeof n === 'string' ? Number(n) : n
   if (!isFinite(value)) return ''
   // 超出「万亿」量级（≥1e16）无法用现役大数单位表达（bigRadices 只到「万亿」）。
@@ -577,6 +501,9 @@ function toDate(v: Date | number | string): Date | null {
   // 于是"没有时间"被显示成 1970-01-01（与同函数对 'bad' 返回 '' 的口径不一致）。
   // 注意 0 是合法时间戳，不能一起砍。
   if (v === null || v === undefined) return null
+  // TD-85（第 32 轮）：`new Date(Symbol())` 抛 TypeError（Symbol 不能隐式转原始值），
+  // 对象/数组也会得到无意义结果。只接受三种声明过的类型。
+  if (typeof v !== 'string' && typeof v !== 'number' && !(v instanceof Date)) return null
   const d = v instanceof Date ? v : new Date(v)
   return isNaN(d.getTime()) ? null : d
 }
@@ -786,3 +713,6 @@ export function shallowEqual(a: Record<string, unknown>, b: Record<string, unkno
   }
   return true
 }
+
+// 行政区划已拆出（2026-11-01）：本入口继续转发，公开路径 './_internal/utils' 不变
+export * from './region'
