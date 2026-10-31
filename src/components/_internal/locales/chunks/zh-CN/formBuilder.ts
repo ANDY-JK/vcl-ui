@@ -520,6 +520,7 @@ export default {
     importStructureErr: "顶层必须是数组或 {'{'}meta, nodes/fields{'}'} 对象",
     importedNodes: '已导入 {n} 个节点',
     importParseFail: 'JSON 解析失败：{err}',
+    importFileTooLarge: '文件过大（超过 {limit}MB），请拆分后再导入',
     copiedToClipboard: '已复制到剪贴板',
     saveTitle: '保存表单',
     saveNameLabel: '表单名称',

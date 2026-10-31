@@ -35,7 +35,13 @@ import {
 import { getActiveFormStore, isConflictError, type FormStore } from './designer/store'
 import { useCollectShare } from './useCollectShare'
 import { isLayoutField } from './fieldRegistry'
-import { buildHeaderMap, normalizeRecords, dedupeRecords, readFileToRows } from './importRecords'
+import {
+  buildHeaderMap,
+  normalizeRecords,
+  dedupeRecords,
+  readFileToRows,
+  ImportFileTooLargeError,
+} from './importRecords'
 
 /** 成功提示（okMsg）停留时长 —— 三处同一个事实，别各写一份 */
 const _OK_MSG_TTL_MS = 3000
@@ -456,7 +462,11 @@ async function onImportFile(e: Event): Promise<void> {
     importFileName.value = file.name
     importVisible.value = true
   } catch (e) {
-    importError.value = t('fbd.importParseFail', { err: e instanceof Error ? e.message : String(e) })
+    // 体量超限单独提示（TD-78 ③）：笼统的"解析失败"会让用户以为文件坏了、反复重试
+    importError.value =
+      e instanceof ImportFileTooLargeError
+        ? t('fbd.importFileTooLarge', { limit: Math.round(e.limit / 1024 / 1024) })
+        : t('fbd.importParseFail', { err: e instanceof Error ? e.message : String(e) })
     importVisible.value = false
   } finally {
     importing.value = false

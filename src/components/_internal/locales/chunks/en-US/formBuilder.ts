@@ -523,6 +523,7 @@ export default {
     importStructureErr: "Top level must be an array or a {'{'}meta, nodes/fields{'}'} object",
     importedNodes: 'Imported {n} nodes',
     importParseFail: 'JSON parse failed: {err}',
+    importFileTooLarge: 'File too large (over {limit}MB). Please split it and import again',
     copiedToClipboard: 'Copied to clipboard',
     saveTitle: 'Save Form',
     saveNameLabel: 'Form name',

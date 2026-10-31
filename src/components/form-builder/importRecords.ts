@@ -147,7 +147,10 @@ function isArrayField(fields: ImportField[], key: string): boolean {
 function cleanCell(key: string, raw: unknown, fields: ImportField[]): unknown {
   if (raw === null || raw === undefined) return ''
   if (typeof raw === 'number' || typeof raw === 'boolean') return raw
-  const str = String(raw).trim()
+  // 单元格内制表符归一为空格（TD-78 ①）：TSV 另存为 CSV 时常见 `a\tb`。
+  // 制表符在单值里没有任何合法语义（分列已由 CSV 逗号承担），留着会原样入库，
+  // 下游导出/打印时表现为列错位。换行**不动** —— CSV 引号内的多行文本是合法内容。
+  const str = String(raw).replace(/\t/g, ' ').trim()
   if (isArrayField(fields, key)) {
     if (str === '') return []
     return str
@@ -157,7 +160,12 @@ function cleanCell(key: string, raw: unknown, fields: ImportField[]): unknown {
   }
   const f = fields.find((x) => x.key === key)
   if (f?.type === 'number' && str !== '') {
-    const n = Number(str)
+    // 千分位剥离（TD-78 ②）：Excel 里 `1,234` 被另存为 CSV 时带逗号（或被引号包裹），
+    // Number('1,234') 是 NaN → 原串保留 → 下游"金额列是文本、求和为 0"。
+    // 只在**严格的千分位形态**下剥（`-?digits,ddd,ddd[.ddd]`），别把 '1,2' 这类
+    // 真·多值/编码值误当数字。
+    const thousands = /^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(str) ? str.replace(/,/g, '') : str
+    const n = Number(thousands)
     // 只接受**有限数**（第 179 轮）：`isNaN` 放过 ±Infinity，而 'Infinity' / '1e400'
     // 转成 Infinity 后 JSON.stringify 会写成 null —— 导入完用户看到的是"金额为空"，
     // 数据静默丢失。非有限数保留原串，至少不篡改。
@@ -243,11 +251,28 @@ export function dedupeRecords(records: Record<string, unknown>[], existing: Coll
 // ════════════════════════════════════════
 
 /** 文件 → 二维行：JSON 转 {label/key} 对象行；CSV 原样；Excel 动态加载 xlsx 库 */
+/** 导入文件体量上限（TD-78 ③）：超过即拒绝并给出可读错误。
+ *  解析在主线程逐字符同步进行（CSV）或整包读入（Excel），5MB 以上的文件会让
+ *  页面明显卡顿；真需要更大文件时应改分片或 Worker，而不是把门槛静默抬掉。 */
+export const MAX_IMPORT_FILE_BYTES = 5 * 1024 * 1024
+
+/** 体量超限错误（宿主可据此提示"文件过大，请拆分后导入"） */
+export class ImportFileTooLargeError extends Error {
+  constructor(
+    readonly size: number,
+    readonly limit: number,
+  ) {
+    super(`import file too large: ${size} > ${limit}`)
+    this.name = 'ImportFileTooLargeError'
+  }
+}
+
 export async function readFileToRows(
   file: File,
   name: string,
   importFields: { key?: string; label?: string; type?: string }[],
 ): Promise<string[][]> {
+  if (file.size > MAX_IMPORT_FILE_BYTES) throw new ImportFileTooLargeError(file.size, MAX_IMPORT_FILE_BYTES)
   const text = await file.text()
   if (name.endsWith('.json')) {
     const recs = parseJsonRecords(text)

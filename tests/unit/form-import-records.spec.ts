@@ -6,6 +6,9 @@ import {
   parseJsonRecords,
   normalizeRecords,
   dedupeRecords,
+  readFileToRows,
+  MAX_IMPORT_FILE_BYTES,
+  ImportFileTooLargeError,
   type ImportField,
 } from '@/components/form-builder/importRecords'
 import type { CollectRecord } from '@/components/form-builder/designer/types'
@@ -165,5 +168,76 @@ describe('dedupeRecords', () => {
     const existing: CollectRecord[] = [{ id: 'r1', time: 'x', data: { name: '张三', age: 30 } }]
     const { skipped } = dedupeRecords(records, existing)
     expect(skipped).toBe(1)
+  })
+})
+
+// ════════════════════════════════════════
+// TD-78：导入链路的另外三类真实文件形态（第 26 轮）
+// ════════════════════════════════════════
+
+describe('TD-78 ① 单元格内制表符', () => {
+  it('TSV 另存 CSV 的 `a\\tb` 归一成空格（不原样入库，避免下游列错位）', () => {
+    // 值里出现制表符没有合法语义（分列已由 CSV 逗号承担）；留着会原样入库，
+    // 下游导出/打印时表现为列错位。
+    const TAB = String.fromCharCode(9)
+    const rows = [['姓名', '备注'], ['张三', 'a' + TAB + 'b']]
+    const { records } = normalizeRecords(rows, buildHeaderMap([field('name', '姓名'), field('memo', '备注')]), [
+      field('name', '姓名'),
+      field('memo', '备注'),
+    ])
+    expect(records[0].memo, '制表符应变空格').toBe('a b')
+    expect(records[0].name).toBe('张三')
+  })
+
+  it('引号内的多行文本不受影响（CSV 合法内容，不能一刀切清洗）', () => {
+    const rows = parseCsvRecords('姓名,备注\n张三,"第一行\n第二行"')
+    expect(rows[1][1], '换行应保留').toBe('第一行\n第二行')
+  })
+})
+
+describe('TD-78 ② Excel 千分位数字', () => {
+  const fields = [field('amount', '金额', 'number'), field('note', '备注')]
+  const headerMap = buildHeaderMap(fields)
+
+  it('严格千分位形态 `1,234` → 1234（不再原样保留成字符串）', () => {
+    const { records } = normalizeRecords([['金额', '备注'], ['1,234', 'x']], headerMap, fields)
+    expect(records[0].amount, '应转成数字 1234').toBe(1234)
+  })
+
+  it('负号与小数也认：`-1,234.56` → -1234.56', () => {
+    const { records } = normalizeRecords([['金额', '备注'], ['-1,234.56', 'x']], headerMap, fields)
+    expect(records[0].amount).toBe(-1234.56)
+  })
+
+  it('非千分位形态不剥（`1,2` 是真·多值/编码，不是数字）', () => {
+    const { records } = normalizeRecords([['金额', '备注'], ['1,2', 'x']], headerMap, fields)
+    expect(records[0].amount, '不应被当成 12').toBe('1,2')
+  })
+
+  it('普通数字不受影响', () => {
+    const { records } = normalizeRecords([['金额', '备注'], ['1234', 'x']], headerMap, fields)
+    expect(records[0].amount).toBe(1234)
+  })
+})
+
+describe('TD-78 ③ 导入文件体量上限', () => {
+  it('超过 5MB 抛 ImportFileTooLargeError（带 size 与 limit，宿主可提示）', async () => {
+    const big = new File(['x'], 'big.csv')
+    Object.defineProperty(big, 'size', { value: MAX_IMPORT_FILE_BYTES + 1 })
+    await expect(readFileToRows(big, 'big.csv', [])).rejects.toBeInstanceOf(ImportFileTooLargeError)
+    try {
+      await readFileToRows(big, 'big.csv', [])
+    } catch (e) {
+      const err = e as ImportFileTooLargeError
+      expect(err.size).toBe(MAX_IMPORT_FILE_BYTES + 1)
+      expect(err.limit).toBe(MAX_IMPORT_FILE_BYTES)
+    }
+  })
+
+  it('刚好等于上限的文件放行（边界不外扩）', async () => {
+    const ok = new File(['a,b\n1,2'], 'ok.csv')
+    Object.defineProperty(ok, 'size', { value: MAX_IMPORT_FILE_BYTES })
+    const rows = await readFileToRows(ok, 'ok.csv', [])
+    expect(rows.length).toBe(2)
   })
 })
