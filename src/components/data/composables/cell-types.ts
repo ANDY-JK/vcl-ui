@@ -42,7 +42,8 @@ export interface TableEditHooks {
   /** 滚动到某单元格（键盘导航时保持可见） */
   scrollCellIntoView?: (rowKey: string, colKey: string) => void
   /** 复制成功后的轻提示回调 */
-  onCopied?: () => void
+  /** 复制结果：true=系统剪贴板写入成功，false=失败（宿主据此提示"复制失败"） */
+  onCopied?: (ok: boolean) => void
   /** 失焦（blur）提交时输入归一化失败且**值已丢弃**：回调方负责全局提示。
    *  Enter/Tab 提交失败不走此 hook（保持编辑态，失败原因由 editInvalidKey 在 cell 级就地呈现） */
   onNormalizeError?: (errorKey: string) => void

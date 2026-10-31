@@ -280,6 +280,70 @@ describe('复制路径', () => {
   })
 })
 
+describe('复制结果透传（2026-11-01 #267）', () => {
+  // 关键契约：copyText 在 HTTP / 权限受限 / 旧 WebView 下返回 false，
+  // 宿主必须能据此提示"复制失败" —— 否则用户粘贴出旧内容还以为复制成功。
+  const makeApi = (hooks: { onCopied?: (ok: boolean) => void }, sel: unknown) => {
+    const write = { applyChanges: () => {}, applyChange: () => {} } as never
+    return useCellClipboard({
+      props: { editable: true, columns: cols },
+      hooks,
+      write,
+      select: sel as never,
+      editingCell: ref(null),
+    } as never)
+  }
+  const selOf = (patch: Record<string, unknown>) =>
+    ({
+      rangeSel: ref(null),
+      selectedCell: ref(null),
+      selectedColKey: ref(''),
+      multiSelection: ref(new Set<string>()),
+      selectedCellValue: ref('值'),
+      displayRows: ref([]),
+      displayCols: ref([]),
+      splitCellKey: () => null,
+      displayValue: () => '',
+      ...patch,
+    }) as never
+
+  it('copySelectedCell：copyText 成功 → onCopied(true)', async () => {
+    vi.mocked(copyText).mockResolvedValueOnce(true)
+    const hooks = { onCopied: vi.fn() }
+    const api = makeApi(hooks, selOf({ selectedCell: ref({ rowKey: 'r1', colKey: 'a' }) }))
+    await api.copySelectedCell()
+    expect(hooks.onCopied).toHaveBeenCalledWith(true)
+  })
+
+  it('copySelectedCell：copyText 失败 → onCopied(false)（不再假装成功）', async () => {
+    vi.mocked(copyText).mockResolvedValueOnce(false)
+    const hooks = { onCopied: vi.fn() }
+    const api = makeApi(hooks, selOf({ selectedCell: ref({ rowKey: 'r1', colKey: 'a' }) }))
+    await api.copySelectedCell()
+    expect(hooks.onCopied, '失败必须透传 false').toHaveBeenCalledWith(false)
+    // 内部剪贴板仍写入（pasteToSelection 可用），只是系统剪贴板没成功
+    expect(api.clipboard.value, '内部剪贴板照常写入').toBe('值')
+  })
+
+  it('copyRangeSelection：copyText 失败 → onCopied(false)', async () => {
+    vi.mocked(copyText).mockResolvedValueOnce(false)
+    const hooks = { onCopied: vi.fn() }
+    const api = makeApi(
+      hooks,
+      selOf({
+        rangeSel: ref({
+          rows: ['r1'],
+          cols: ['a'],
+          anchor: { rowIndex: 0, colIndex: 0 },
+          focus: { rowIndex: 0, colIndex: 0 },
+        }),
+      }),
+    )
+    await api.copyRangeSelection()
+    expect(hooks.onCopied, '失败必须透传 false').toHaveBeenCalledWith(false)
+  })
+})
+
 describe('onCellPaste / 图片拖拽', () => {
   it('不可编辑：粘贴/拖拽全部 no-op', async () => {
     const write = { applyChanges: vi.fn(), applyChange: vi.fn() }

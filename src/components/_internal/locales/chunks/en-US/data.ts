@@ -66,6 +66,7 @@ export default {
     screenshotCopied: 'Screenshot copied',
     screenshotCopyFail: 'Copy failed (this environment may not support image copy). Use "Download PNG" instead',
     tableDataCopied: 'Table data copied',
+    copyFail: 'Copy failed (browser permission denied)',
     colWidthReset: 'Column widths reset to auto',
     // Error fallback
     renderError: 'Table render error',

@@ -804,8 +804,12 @@ function copyTableData() {
     // 与导出一致：优先显示值（含本地编辑 override）
     return cols.map((c) => String(cellVal(row, c.key, rm?.texts[c.key] ?? '') ?? ''))
   })
-  copyText(buildTsv(header, rows))
-  notify(t('table.tableDataCopied'))
+  // 必须等结果：copyText 在 HTTP / 无权限 / 旧 WebView 下会返回 false。
+  // 无条件报"已复制"会让用户粘贴出旧内容却以为复制成功（2026-11-01 #267）。
+  void copyText(buildTsv(header, rows)).then((ok) => {
+    if (ok) notify(t('table.tableDataCopied'))
+    else notify(t('table.copyFail'), 'error')
+  })
 }
 
 // 视图模式切换（手动覆盖响应式断点）
@@ -1034,7 +1038,8 @@ const {
         td?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
       })
     },
-    onCopied: () => notify(t('imagePreview.copyOk')),
+    // 复制可能失败（权限/HTTP/旧 WebView）：成功才报"已复制"，否则明说失败
+    onCopied: (ok: boolean) => notify(ok ? t('imagePreview.copyOk') : t('table.copyFail'), ok ? 'info' : 'error'),
     // 归一化失败（仅失焦提交、值已被丢弃时触发）：全局提示一次。
     // Enter/Tab 提交失败不走这里——由 editInvalidKey 在编辑格上就地呈现（红圈 + 气泡），
     // 用户视线就在格子里，右下角 toast 够不着

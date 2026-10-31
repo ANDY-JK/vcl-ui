@@ -478,4 +478,38 @@ describe('复制表格数据', () => {
     expect(text.split('\n')[0], '城市列应被排除').toBe('名称\t数值')
     expect(text).not.toContain('北京')
   })
+
+  /** 观察组件内 Toast 渲染出的消息文本（Toast.show 在 defineExpose 代理上，spy vm 拿不到） */
+  function toastMessages(): string[] {
+    return [...document.body.querySelectorAll('.toast-msg')].map((e) => e.textContent ?? '')
+  }
+
+  it('**复制成功 → Toast 报「已复制表格数据」**（不能静默）', async () => {
+    stubClipboard()
+    const dt = mountTable()
+
+    await byTitle(dt, t('table.copyTableData'))!.trigger('click')
+    await settle()
+    const msgs = toastMessages()
+    expect(msgs, '成功提示应出现').toContain(t('table.tableDataCopied'))
+    expect(msgs, '不该报失败').not.toContain(t('table.copyFail'))
+  })
+
+  it('**复制失败 → Toast 报「复制失败」而不是假报成功**（2026-11-01 #267）', async () => {
+    // 浏览器拒绝剪贴板写入（权限/HTTP/旧 WebView）：copyText 降级 execCommand 也失败
+    const writeText = vi.fn(async () => {
+      throw new Error('NotAllowedError')
+    })
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+    // happy-dom 没有 document.execCommand：copyText 的降级路径会抛 TypeError 后被捕获 → 返回 false
+    const dt = mountTable()
+
+    await byTitle(dt, t('table.copyTableData'))!.trigger('click')
+    await settle()
+    expect(writeText, '应尝试过 Clipboard API').toHaveBeenCalled()
+    const msgs = toastMessages()
+    expect(msgs, '必须提示失败').toContain(t('table.copyFail'))
+    expect(msgs, '不能同时报成功').not.toContain(t('table.tableDataCopied'))
+
+  })
 })

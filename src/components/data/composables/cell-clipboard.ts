@@ -199,8 +199,11 @@ export function useCellClipboard(deps: CellClipboardDeps) {
     clipboard.value = val
     // @patch 2026-08-09 同步写入系统剪贴板：
     // Ctrl+V 优先读取系统剪贴板，若不写入，粘贴会拿到用户之前留在系统里的旧内容
-    await copyText(val)
-    hooks?.onCopied?.()
+    const ok = await copyText(val)
+    // 内部剪贴板已写入（pasteToSelection 可用），但**系统剪贴板**可能失败：
+    // 浏览器权限限制 / HTTP / 旧 WebView 下 copyText 返回 false。
+    // 把结果透出去，让宿主提示"已复制"还是"复制失败"（2026-11-01 #267）。
+    hooks?.onCopied?.(ok)
   }
 
   function pasteToSelection() {
@@ -231,8 +234,8 @@ export function useCellClipboard(deps: CellClipboardDeps) {
       )
       .join('\n')
     clipboard.value = tsv
-    await copyText(tsv)
-    hooks?.onCopied?.()
+    const ok = await copyText(tsv)
+    hooks?.onCopied?.(ok)
   }
 
   // ==================== 单元格粘贴 & 拖拽图片 ====================

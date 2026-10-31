@@ -340,8 +340,11 @@ const schemaJson = computed(() => {
 
 /** 复制 Schema JSON 到剪贴板 */
 function copySchema(): void {
-  void copyText(schemaJson.value)
-  showTip(t('fbd.copiedToClipboard'))
+  // 不再无条件报成功：copyText 在 HTTP / 权限受限 / 旧 WebView 下返回 false，
+  // 那时用户粘贴出旧内容却以为复制成功（2026-11-01 #267）
+  void copyText(schemaJson.value).then((ok) => {
+    showTip(ok ? t('fbd.copiedToClipboard') : t('fbd.copyFail'))
+  })
 }
 
 watch(activeTab, (v) => {
