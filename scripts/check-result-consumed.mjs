@@ -37,8 +37,11 @@ const REGISTRY = {
   downloadBlob: '下载失败却报"已导出"（#269）',
 }
 
+/** 扫描根：默认库源码；自测时 --root 指到夹具目录，验证闸门真会红 */
+const rootIdx = process.argv.indexOf('--root')
+const SCAN = rootIdx > -1 ? process.argv[rootIdx + 1] : 'src/components'
 const ROOT = process.cwd()
-const files = globSync('src/components/**/*.{ts,vue}', { cwd: ROOT })
+const files = globSync(`${SCAN}/**/*.{ts,vue}`, { cwd: ROOT })
 const offenders = []
 
 for (const rel of files) {
@@ -54,20 +57,22 @@ for (const rel of files) {
       // 声明处/定义处跳过（export function copyText / function downloadBlob）
       if (new RegExp(`function\\s+${fn}\\s*\\(`).test(line)) continue
       const trimmed = line.trim()
-      const consumed =
-        /^(const|let|var)\s+\w+.*=.*\b/.test(trimmed) ||
-        /\bawait\s+/.test(trimmed) ||
-        /\breturn\s+/.test(trimmed) ||
-        /\.then\s*\(/.test(trimmed) ||
-        /expect\s*\(/.test(trimmed) ||
-        /^(if|while|switch)\s*\(/.test(trimmed) ||
-        /^(const|let|var)\s/.test(trimmed) ||
-        // 三元 / 赋值 / 比较里出现，说明结果被使用
-        /(\?|:|\|\||&&|===|!==|!)\s*$/.test(trimmed) ||
-        /^\w+\s*=/.test(trimmed)
-      if (!consumed) {
-        offenders.push({ file: rel, line: i + 1, text: trimmed, fn, why })
-      }
+      /**
+       * 判据收敛成一条（#326）：**只看"这次调用是不是裸语句"**。
+       *
+       *   · `await f()` / `void f()` / `f()` —— 语句位置，结果只能被丢弃
+       *   · `const ok = await f()` / `if (await f())` / `return f()` / `foo(f())` —— 在表达式里，算消费
+       *
+       * 旧判据把「行里出现 await」也算消费 —— 于是最常见的写错法
+       * `await downloadBlob(x)`（await 了但没人看结果）**一路绿灯**。
+       * 判据必须回答"结果去哪了"，而不是"这行有没有关键字"。
+       */
+      const bareCall = new RegExp(`^(await\\s+|void\\s+)?${fn}\\s*\\(`).test(trimmed)
+      if (!bareCall) continue // 出现在表达式里 → 结果被用到
+      // 显式转交给 Promise 链 / 明确标注可忽略，才算合法丢弃
+      const explicit = /\.(then|catch)\s*\(/.test(trimmed) || /ignore-result/.test(line)
+      if (explicit) continue
+      offenders.push({ file: rel, line: i + 1, text: trimmed, fn, why })
     }
   }
 }

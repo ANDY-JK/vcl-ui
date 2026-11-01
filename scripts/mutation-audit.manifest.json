@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "result-consumed-await-counts-as-used",
+      "file": "scripts/check-result-consumed.mjs",
+      "find": "      if (!bareCall) continue // 出现在表达式里 → 结果被用到",
+      "replace": "      if (!bareCall || /await\\s+/.test(trimmed)) continue",
+      "cmd": "npx vitest run tests/unit/result-consumed-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：`await f()` 被当成\"结果已消费\"，最常见的丢弃写法一路绿灯（#326）"
+    },
+    {
+      "id": "result-consumed-void-escapes",
+      "file": "scripts/check-result-consumed.mjs",
+      "find": "      const explicit = /\\.(then|catch)\\s*\\(/.test(trimmed) || /ignore-result/.test(line)",
+      "replace": "      const explicit = true",
+      "cmd": "npx vitest run tests/unit/result-consumed-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：`void f()` 全部放行（没有 then/catch 也算合法）（#326）"
+    },
+    {
       "id": "tab-sequence-gate-missing-tabindex",
       "file": "scripts/check-tab-sequence.mjs",
       "find": "    if (!hasTabindex && nativelyFocusable) {",
