@@ -208,3 +208,36 @@ describe('sanitizeHTML · 对抗性回归（M10：攻击向量冻结）', () => 
     expect(sanitizeHTML(good)).toBe(good)
   })
 })
+/* ════════════════════════════════════════
+ * 覆盖式钓鱼（#281）
+ *
+ * 本库展示的是**表单收集来的用户数据**。允许 `style` 时，一段固定定位的样式就能
+ * 盖住整个应用伪造登录框骗取密码 —— 这不是"样式跑偏"，是可利用的攻击面。
+ * 定位与层级属性对"展示一段文本"没有必要性，一律拦掉。
+ * ════════════════════════════════════════ */
+describe('拦截覆盖式钓鱼样式', () => {
+  it('**全屏覆盖层被剥离 style**（position:fixed + inset + z-index 组合）', () => {
+    const evil =
+      '<span style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff;z-index:9999">登录已过期，请重新输入密码</span>'
+    const out = sanitizeHTML(evil)
+    expect(out, '不得保留定位/层级').not.toMatch(/position\s*:/i)
+    expect(out).not.toMatch(/z-index\s*:/i)
+    expect(out, '文本内容保留（只剥样式）').toContain('登录已过期')
+  })
+
+  it.each([
+    ['position:fixed', '<div style="position:fixed">x</div>'],
+    ['position:absolute', '<div style="position:absolute">x</div>'],
+    ['position:sticky', '<div style="position:sticky">x</div>'],
+    ['inset:0', '<div style="inset:0">x</div>'],
+    ['z-index:9999', '<div style="z-index:9999">x</div>'],
+  ])('%s 被剥离', (_label, html) => {
+    expect(sanitizeHTML(html)).not.toMatch(/style=/i)
+  })
+
+  it('**正常展示样式照旧保留**（不能把功能一起关掉）', () => {
+    const out = sanitizeHTML('<span style="color:#f00;font-weight:bold">红字</span>')
+    expect(out).toContain('color:#f00')
+    expect(out).toContain('font-weight:bold')
+  })
+})

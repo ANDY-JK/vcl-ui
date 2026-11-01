@@ -64,6 +64,15 @@ const _dangerousCss = [
   /behavior\s*:/i,
   /@import/i,
   /vbscript:/i,
+  // 覆盖式钓鱼（2026-11-01 #281）：本库展示的是**表单收集来的用户数据**，
+  // 单元格/富文本允许 `style` 时，一段
+  //   <span style="position:fixed;inset:0;background:#fff;z-index:9999">登录已过期…</span>
+  // 就能盖住整个应用，伪造登录框骗取密码。这不是"样式跑偏"，是可利用的攻击面。
+  // 定位与层级属性对"展示一段文本"没有任何必要，一律拦掉（不是只有 fixed ——
+  // absolute + inset:0 在 relative 祖先内同样能盖住可视区）。
+  /position\s*:/i,
+  /z-index\s*:/i,
+  /inset\s*:/i,
 ]
 /** href 与 src 分开白名单：data:image 仅对图片 src 有意义，链接 href 不放行 */
 const _hrefRe = /^(https?:|mailto:|#)/i
