@@ -29,7 +29,7 @@
  * 而基于猜测的闸口会产生假警报（假警报会让闸门被关掉，见 #279）。
  */
 import { readFileSync, readdirSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 import * as lucide from '@lucide/vue'
 
 const ROOT = process.cwd()
@@ -93,7 +93,10 @@ function collect(dir, acc = []) {
   return acc
 }
 
-const files = collect(join(ROOT, 'src'))
+/** 扫描根：默认 src；自测时 --root 指到夹具目录，验证闸门真会红 */
+const rootIdx = process.argv.indexOf('--root')
+const SCAN = rootIdx > -1 ? resolve(process.argv[rootIdx + 1]) : join(ROOT, 'src')
+const files = collect(SCAN)
 const problems = []
 let checked = 0
 

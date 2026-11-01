@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "icon-names-gate-parse",
+      "file": "scripts/check-icon-names.mjs",
+      "find": "  for (const m of src.matchAll(/<IconSvg\\b[^>]*?>/g)) {",
+      "replace": "  for (const m of src.matchAll(/<IconSvgXXX\\b[^>]*?>/g)) {",
+      "cmd": "npx vitest run tests/unit/icon-names-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：IconSvg 解析失效，一个图标都不检查，静默通过（#331）"
+    },
+    {
+      "id": "icon-names-gate-verdict",
+      "file": "scripts/check-icon-names.mjs",
+      "find": "    if (!ok) {",
+      "replace": "    if (ok) {",
+      "cmd": "npx vitest run tests/unit/icon-names-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：判定写反，真实图标名全被判成不存在（#331）"
+    },
+    {
       "id": "css-tokens-gate-fallback-exempt",
       "file": "scripts/check-css-tokens.mjs",
       "find": "  const hard = uses.filter((u) => !u.hasFallback && !declared.has(name))",
