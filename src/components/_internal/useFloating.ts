@@ -320,9 +320,29 @@ export function useFloating(options: FloatingOptions = {}) {
     timer = setTimeout(updatePosition, RESIZE_COALESCE_MS)
   }
 
-  onMounted(() => window.addEventListener('resize', onResize))
+  /**
+   * 滚动时也要重算（#307）。
+   *
+   * 浮层是 `position: fixed`（**视口**坐标），而触发器在文档流里。页面一滚，
+   * 触发器走了、浮层原地不动 —— 用户看到的是「下拉面板飘在半空」。
+   * 内部滚动容器同理（如弹窗里的长列表），所以必须用**捕获阶段**：
+   * `scroll` 事件不冒泡，document 上只有捕获才能收到内部容器的滚动。
+   *
+   * 未打开时（`floatingRef` 为空）直接返回，连定时器都不建 —— 页面上几十个
+   * Select 全挂载时也不会因为滚动产生开销。
+   */
+  function onScroll() {
+    if (!floatingRef.value) return
+    onResize()
+  }
+
+  onMounted(() => {
+    window.addEventListener('resize', onResize)
+    document.addEventListener('scroll', onScroll, { capture: true, passive: true })
+  })
   onUnmounted(() => {
     window.removeEventListener('resize', onResize)
+    document.removeEventListener('scroll', onScroll, { capture: true })
     if (timer) clearTimeout(timer)
     ro?.disconnect()
   })

@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "floating-scroll-listen",
+      "file": "src/components/_internal/useFloating.ts",
+      "find": "    document.addEventListener('scroll', onScroll, { capture: true, passive: true })",
+      "replace": "    void onScroll",
+      "cmd": "npx vitest run tests/unit/floating-scroll-reposition.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：页面滚动时 fixed 浮层原地不动，触发器滚走 —— 「下拉飘在半空」（#307）"
+    },
+    {
+      "id": "floating-scroll-capture",
+      "file": "src/components/_internal/useFloating.ts",
+      "find": "    document.addEventListener('scroll', onScroll, { capture: true, passive: true })",
+      "replace": "    document.addEventListener('scroll', onScroll, { passive: true })",
+      "cmd": "npx vitest run tests/unit/floating-scroll-reposition.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：内部滚动容器的 scroll 收不到（scroll 不冒泡），弹窗里的下拉照样飘（#307）"
+    },
+    {
       "id": "upload-input-reset",
       "file": "src/components/form/Upload.vue",
       "find": "  input.value = ''",
