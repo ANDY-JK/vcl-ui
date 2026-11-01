@@ -43,6 +43,7 @@ import {
   readFileToRows,
   ImportFileTooLargeError,
 } from './importRecords'
+import { useCollectExport } from './useCollectExport'
 
 /** 成功提示（okMsg）停留时长 —— 三处同一个事实，别各写一份 */
 const _OK_MSG_TTL_MS = 3000
@@ -300,54 +301,21 @@ async function onConfirmClear(): Promise<void> {
   records.value = []
 }
 
-// ══ Excel 导出 ══
-const exporting = ref(false)
-
-async function exportExcel(): Promise<void> {
-  if (!records.value.length) {
-    errorMsg.value = t('formBuilder.exportEmpty')
-    return
-  }
-  exporting.value = true
-  try {
-    const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
-    // 优先使用自定义列配置，否则按 fields 自动生成
-    const headers: { key: string; label: string }[] =
-      props.exportColumns ??
-      props.fields.filter((f) => !isLayoutField(f.type)).map((f) => ({ key: f.key ?? f.id, label: f.label }))
-    const rows = records.value.map((r) => {
-      const row: Record<string, unknown> = { [t('fbd.submittedAt')]: r.time }
-      for (const h of headers) {
-        const val = r.data[h.key]
-        // 数组类型（如 checkbox/upload）转为逗号分隔字符串
-        if (Array.isArray(val)) {
-          row[h.label] = val.join(', ')
-        } else if (typeof val === 'boolean') {
-          row[h.label] = val ? t('common.yes') : t('common.no')
-        } else if (val === null || val === undefined) {
-          row[h.label] = ''
-        } else {
-          row[h.label] = val
-        }
-      }
-      return row
-    })
-    const ws = XLSX.utils.json_to_sheet(rows)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, t('fbd.sheetName'))
-    const title = props.exportFileName || props.meta.title || t('fbd.defaultFileName')
-    XLSX.writeFile(wb, `${title}-${records.value.length}${t('fbd.countSuffix')}.xlsx`)
-    okMsg.value = t('formBuilder.exportDone')
-    setTimeout(() => {
-      okMsg.value = ''
-    }, _OK_MSG_TTL_MS)
-  } catch (e) {
-    errorMsg.value = t('fbd.exportFailMsg', { err: e instanceof Error ? e.message : String(e) })
-  } finally {
-    exporting.value = false
-  }
-}
-
+// ══ Excel 导出（逻辑已抽 useCollectExport，TD-29 余量） ══
+const { exporting, exportExcel } = useCollectExport({
+  records,
+  meta: () => props.meta,
+  fields: () => props.fields,
+  exportColumns: () => props.exportColumns,
+  exportFileName: () => props.exportFileName,
+  okMsgTtlMs: _OK_MSG_TTL_MS,
+  onError: (msg) => {
+    errorMsg.value = msg
+  },
+  onOk: (msg) => {
+    okMsg.value = msg
+  },
+})
 // ══ 批量导入（P1-8：JSON / CSV / Excel） ══
 const importing = ref(false)
 const importVisible = ref(false)
