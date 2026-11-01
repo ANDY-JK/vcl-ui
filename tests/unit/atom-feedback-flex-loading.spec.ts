@@ -287,3 +287,61 @@ describe('三个组件的样式约定（跨文件一致性）', () => {
     expect(css, '暗色下 warning 提亮后白字不可读 → 要用 solid 令牌').toMatch(/--vcl-color-warning-solid/)
   })
 })
+/* ════════════════════════════════════════
+ * fullscreen 遮罩：结构 / 无障碍 / 滚动锁（#294）
+ *
+ * 覆盖率实测 Loading.vue 只有 30.4%，未覆盖的正是 fullscreen 这一段（46–82 行）：
+ * Teleport、aria-busy、live region 的位置、以及 body 滚动锁。这几处都在代码注释里
+ * 写了「为什么这么做」，但**没有任何用例守住它们** —— 注释写的约束没人测，等于没有。
+ * ════════════════════════════════════════ */
+describe('Loading · fullscreen 遮罩', () => {
+  afterEach(() => {
+    document.body.style.overflow = ''
+  })
+
+  it('Teleport 到 body，遮罩带 aria-busy', async () => {
+    const w = mount(Loading, { props: { fullscreen: true, text: '加载中' }, attachTo: document.body })
+    await nextTick()
+    const mask = document.body.querySelector('.loading-fullscreen') as HTMLElement
+    expect(mask, '遮罩应 teleport 到 body').toBeTruthy()
+    expect(mask.getAttribute('aria-busy')).toBe('true')
+    expect(mask.className, '默认 overlay').toContain('loading-fullscreen--overlay')
+    w.unmount()
+  })
+
+  it('**live region 必须在 aria-busy 子树之外**（否则 AT 会挂起播报）', async () => {
+    const w = mount(Loading, { props: { fullscreen: true }, attachTo: document.body })
+    await nextTick()
+    const live = document.body.querySelector('.loading-fullscreen__live') as HTMLElement
+    expect(live, 'live region 存在').toBeTruthy()
+    expect(live.closest('[aria-busy="true"]'), '不许在 aria-busy 子树内').toBe(null)
+    expect(live.getAttribute('role')).toBe('status')
+    w.unmount()
+  })
+
+  it('**遮罩期间锁 body 滚动，卸载后恢复**（引用计数）', async () => {
+    const before = document.body.style.overflow
+    const w = mount(Loading, { props: { fullscreen: true }, attachTo: document.body })
+    await nextTick()
+    expect(document.body.style.overflow, '挂载后应锁滚动').toBe('hidden')
+    w.unmount()
+    await nextTick()
+    expect(document.body.style.overflow, '卸载后应恢复原值').toBe(before)
+  })
+
+  it('overlay=false 不加半透明底色 class', async () => {
+    const w = mount(Loading, { props: { fullscreen: true, overlay: false }, attachTo: document.body })
+    await nextTick()
+    const mask = document.body.querySelector('.loading-fullscreen') as HTMLElement
+    expect(mask.className).not.toContain('loading-fullscreen--overlay')
+    w.unmount()
+  })
+
+  it('无 text 时 live region 回退到 i18n「加载中」', async () => {
+    const w = mount(Loading, { props: { fullscreen: true }, attachTo: document.body })
+    await nextTick()
+    const live = document.body.querySelector('.loading-fullscreen__live') as HTMLElement
+    expect(live.textContent?.trim().length, '不能空播报').toBeGreaterThan(0)
+    w.unmount()
+  })
+})
