@@ -26,7 +26,7 @@
  * `test.skip` 就会被当成真的跳过点。
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 
 const ROOT = process.cwd()
 
@@ -109,7 +109,14 @@ function collect(dir, acc = []) {
   return acc
 }
 
-const files = collect(join(ROOT, 'tests'))
+/** 扫描根与白名单：默认扫 tests/ + 内置 ALLOWLIST；自测时用 --root/--allowlist 指到夹具 */
+const rootIdx = process.argv.indexOf('--root')
+const allowlistIdx = process.argv.indexOf('--allowlist')
+const SCAN_DIR = rootIdx > -1 ? resolve(process.argv[rootIdx + 1]) : join(ROOT, 'tests')
+const EFFECTIVE_ALLOWLIST = allowlistIdx > -1 ? JSON.parse(readFileSync(process.argv[allowlistIdx + 1], 'utf8')) : ALLOWLIST
+// 只在**默认扫描**时排除 fixtures（夹具里故意放着未登记的跳过，供闸门自测用）；
+// 显式 --root 指向夹具时不能排除，否则白名单会全被判成陈旧。
+const files = collect(SCAN_DIR).filter((f) => rootIdx > -1 || !/[\\/]fixtures[\\/]/.test(f))
 const found = []
 for (const file of files) {
   const code = stripComments(readFileSync(file, 'utf8'))
@@ -126,12 +133,12 @@ const problems = []
 
 // ① 未登记的跳过点
 for (const f of found) {
-  const ok = ALLOWLIST.some((a) => a.file === f.file && f.line.includes(a.pattern))
+  const ok = EFFECTIVE_ALLOWLIST.some((a) => a.file === f.file && f.line.includes(a.pattern))
   if (!ok) problems.push({ kind: 'unregistered', ...f })
 }
 
 // ② 已登记但源码里不存在（陈旧登记）
-for (const a of ALLOWLIST) {
+for (const a of EFFECTIVE_ALLOWLIST) {
   const hit = found.some((f) => f.file === a.file && f.line.includes(a.pattern))
   if (!hit) problems.push({ kind: 'stale', file: a.file, pattern: a.pattern })
 }

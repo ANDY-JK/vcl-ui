@@ -1,0 +1,1 @@
+[{"file": "tests/fixtures/test-skips/bad/Unregistered.spec.ts", "pattern": "describe.skip("}]

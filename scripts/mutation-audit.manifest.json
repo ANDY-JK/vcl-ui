@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "test-skips-gate-unregistered",
+      "file": "scripts/check-test-skips.mjs",
+      "find": "  if (!ok) problems.push({ kind: 'unregistered', ...f })",
+      "replace": "  if (false) problems.push({ kind: 'unregistered', ...f })",
+      "cmd": "npx vitest run tests/unit/test-skips-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：未登记的跳过一路绿灯，\"跳过\"被当成\"通过\"（#329）"
+    },
+    {
+      "id": "test-skips-gate-stale",
+      "file": "scripts/check-test-skips.mjs",
+      "find": "  if (!hit) problems.push({ kind: 'stale', file: a.file, pattern: a.pattern })",
+      "replace": "  if (false) problems.push({ kind: 'stale', file: a.file, pattern: a.pattern })",
+      "cmd": "npx vitest run tests/unit/test-skips-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：陈旧登记永不清理，白名单失去意义（#329）"
+    },
+    {
+      "id": "test-skips-gate-fixtures-excluded",
+      "file": "scripts/check-test-skips.mjs",
+      "find": "const files = collect(SCAN_DIR).filter((f) => rootIdx > -1 || !/[\\\\/]fixtures[\\\\/]/.test(f))",
+      "replace": "const files = collect(SCAN_DIR)",
+      "cmd": "npx vitest run tests/unit/test-skips-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：默认扫描把夹具里故意放的跳过也算进来，闸门常态化误报（#329）"
+    },
+    {
       "id": "no-cycles-gate-finds-cycles",
       "file": "scripts/check-no-cycles.mjs",
       "find": "const cycles = findCycles(graph)",
