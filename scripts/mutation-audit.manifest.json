@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "tab-sequence-gate-missing-tabindex",
+      "file": "scripts/check-tab-sequence.mjs",
+      "find": "    if (!hasTabindex && nativelyFocusable) {",
+      "replace": "    if (false && nativelyFocusable) {",
+      "cmd": "npx vitest run tests/unit/tab-sequence-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：闸门放过\"根本没写 tabindex\"的角色，这道闸口变摆设（#325）"
+    },
+    {
+      "id": "tab-sequence-gate-static-zero",
+      "file": "scripts/check-tab-sequence.mjs",
+      "find": "    } else if (staticZero) {",
+      "replace": "    } else if (false) {",
+      "cmd": "npx vitest run tests/unit/tab-sequence-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：闸门不再拦\"写死 tabindex=0\"（#325）"
+    },
+    {
       "id": "tabs-roving-tabindex",
       "file": "src/components/_internal/useRovingTabindex.ts",
       "find": "  const tabindexFor = (key: string | number): number => (currentKey() === key ? 0 : -1)",

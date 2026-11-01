@@ -16,7 +16,9 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-const ROOT = 'src/components'
+/** 扫描根：默认库源码；自测时用 --root 指到夹具目录，验证闸门**真会红** */
+const rootArgIdx = process.argv.indexOf('--root')
+const ROOT = rootArgIdx > -1 ? process.argv[rootArgIdx + 1] : 'src/components'
 const ROLE_RE = /role="(option|treeitem|tab|menuitem|gridcell)"/
 const NATIVELY_FOCUSABLE = new Set(['button', 'input', 'select', 'textarea', 'summary'])
 
