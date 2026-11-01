@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "select-focus-handoff",
+      "file": "src/components/form/Select.vue",
+      "find": "  first?.focus()",
+      "replace": "  void first",
+      "cmd": "npx vitest run tests/unit/select-focus-handoff.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：日期面板打开后焦点留在只读触发器上，方向键漫游进不去（#319）"
+    },
+    {
+      "id": "select-focus-handoff-roving-first",
+      "file": "src/components/form/Select.vue",
+      "find": "querySelector<HTMLElement>('[data-iso][tabindex=\"0\"]') ??",
+      "replace": "querySelector<HTMLElement>('__none__') ??",
+      "cmd": "npx vitest run tests/unit/select-focus-handoff.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：焦点先落在「上个月」按钮上，用户还得再 Tab 一次才进网格（#319）"
+    },
+    {
       "id": "calendar-roving-tabindex",
       "file": "src/components/form/date-panel/DatePanel.vue",
       "find": ":tabindex=\"cell.iso === tabIso ? 0 : -1\"",

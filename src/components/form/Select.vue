@@ -282,9 +282,29 @@ watch(open, async (val) => {
   await nextTick()
   if (isInputable.value) {
     comboInputRef.value?.focus()
-  } else if (props.searchable && isTreeSelect.value) {
-    searchInputRef.value?.focus()
+    return
   }
+  if (props.searchable && isTreeSelect.value) {
+    searchInputRef.value?.focus()
+    return
+  }
+  /**
+   * 焦点交接（#319）。
+   *
+   * 非输入型面板（日期/日期区间/时间/菜单/只读触发器）此前**焦点一直留在触发器上**：
+   * 触发器是 readonly input，方向键对它无效；#318 刚给日历网格补的键盘漫游
+   * **根本进不去**（面板里 42 个格子只能靠 Tab 撞进去）。
+   * 这里统一把焦点交给面板内**第一个可聚焦元素**：日期面板落到 roving tabindex 那格
+   * （tabindex=0），时间列落到第一个小时按钮，树/菜单落到第一项。
+   */
+  // 优先落到日历网格的 roving 停靠点（[data-iso][tabindex="0"]）——
+  // 否则会先落在「上个月」按钮上，用户还得再 Tab 一次才进网格
+  const first =
+    floatingRef.value?.querySelector<HTMLElement>('[data-iso][tabindex="0"]') ??
+    floatingRef.value?.querySelector<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    )
+  first?.focus()
 })
 
 /**
