@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "date-locale-param",
+      "file": "src/components/form/utils/date-utils.ts",
+      "find": "  return d.toLocaleDateString(locale)",
+      "replace": "  return d.toLocaleDateString()",
+      "cmd": "npx vitest run tests/unit/form-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：宿主传 locale 无效，英文部署仍拿到中文习惯日期（#302）"
+    },
+    {
+      "id": "date-hour12",
+      "file": "src/components/form/utils/date-utils.ts",
+      "find": "  return d.toLocaleString(locale, { hour12: false })",
+      "replace": "  return d.toLocaleString(locale)",
+      "cmd": "npx vitest run tests/unit/form-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：en-US 下时间变成 2:30 PM，与库内 24 小时制口径打架（#302）"
+    },
+    {
       "id": "eq-stepper-empty-null-early-return",
       "file": "src/components/form/useInputStepper.ts",
       "find": "      if (numText.value === '' && (v === null || v === undefined)) return",

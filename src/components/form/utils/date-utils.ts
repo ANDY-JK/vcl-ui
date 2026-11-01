@@ -53,15 +53,31 @@ export function todayISO(fmt: string): string {
 }
 
 // ════════════════════════════════════════
-// 中文展示格式化（原 store.ts / FormCollect 各自内联的 toLocaleString）
+// 展示格式化（原 store.ts / FormCollect 各自内联的 toLocaleString）
+//
+// ## 为什么名字带 Zh、为什么保留
+//
+// 这两个函数**默认仍是 zh-CN**（历史调用方与已存记录都按这个格式），但库本身支持多语言，
+// 宿主在英文部署下拿到的是「2026/8/23」这种中文习惯的日期 —— 名称把"中文"写死了，
+// 调用方也没有任何途径改（#302）。
+//
+// 本轮只做**加法**：补一个可选的 `locale` 参数，传了就按它格式化；不传保持原样。
+// 这样宿主不必等重命名/破坏性变更就能本地化。
+//
+// ⚠️ 更大的问题不在格式化，而在**存储**：收集页把 `time` 存成**本地化展示字符串**
+// （见 TD-94）。切换语言后新旧记录会混着两种格式，且这些字符串不可跨语言解析。
+// 正确的终局是「存 ISO、展示时按 locale 格式化」，那需要数据迁移，登记在台账里。
 // ════════════════════════════════════════
 
-/** 中文日期：2026/8/23 */
-export function formatDateZh(d: Date = new Date()): string {
-  return d.toLocaleDateString('zh-CN')
+/** 默认展示 locale（与库默认语言一致） */
+const DEFAULT_DATE_LOCALE = 'zh-CN'
+
+/** 日期：默认 zh-CN → 2026/8/23；传 locale 按对应习惯格式化 */
+export function formatDateZh(d: Date = new Date(), locale: string = DEFAULT_DATE_LOCALE): string {
+  return d.toLocaleDateString(locale)
 }
 
-/** 中文日期时间（24 小时制）：2026/8/23 14:30:00 */
-export function formatDateTimeZh(d: Date = new Date()): string {
-  return d.toLocaleString('zh-CN', { hour12: false })
+/** 日期时间（24 小时制）：默认 → 2026/8/23 14:30:00 */
+export function formatDateTimeZh(d: Date = new Date(), locale: string = DEFAULT_DATE_LOCALE): string {
+  return d.toLocaleString(locale, { hour12: false })
 }

@@ -87,6 +87,17 @@ describe('todayISO', () => {
 })
 
 describe('中文展示格式化', () => {
+  it('**可传 locale 本地化**（默认仍是 zh-CN，不传不受影响）（#302）', () => {
+    const d = new Date(2026, 8, 5, 14, 30, 0)
+    // 默认不变
+    expect(formatDateZh(d)).toBe('2026/9/5')
+    // 传 en-US → 月/日/年
+    const en = formatDateZh(d, 'en-US')
+    expect(en, `en-US 实际：${en}`).toMatch(/^9\/5\/2026$/)
+    // 时间：en-US 下仍强制 24 小时制（避免 2:30 PM 与本库既有口径打架）
+    const enDt = formatDateTimeZh(d, 'en-US')
+    expect(enDt, `en-US 日期时间实际：${enDt}`).toContain('14:30')
+  })
   it('formatDateZh：zh-CN 短日期', () => {
     expect(formatDateZh(new Date(2026, 8, 5))).toBe('2026/9/5')
   })
