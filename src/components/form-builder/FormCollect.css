@@ -140,8 +140,10 @@
 .ldc-danger-btn {
   color: var(--vcl-color-danger-on-surface) !important;
 }
-.ldc-danger-btn:hover {
-  background: var(--vcl-color-danger-bg) !important;
+@media (hover: hover) {
+  .ldc-danger-btn:hover {
+    background: var(--vcl-color-danger-bg) !important;
+  }
 }
 
 /* 导入按钮（label 包装 file input） */
@@ -159,9 +161,11 @@
   cursor: pointer;
   transition: all 0.15s;
 }
-.ldc-import-btn:hover {
-  border-color: var(--vcl-color-primary, #3b82f6);
-  color: var(--vcl-color-primary, #3b82f6);
+@media (hover: hover) {
+  .ldc-import-btn:hover {
+    border-color: var(--vcl-color-primary, #3b82f6);
+    color: var(--vcl-color-primary, #3b82f6);
+  }
 }
 .ldc-import-input {
   display: none;
@@ -218,9 +222,11 @@
   color: var(--vcl-color-text-muted, #94a3b8);
   flex-shrink: 0;
 }
-.ldc-search-clear:hover {
-  background: var(--vcl-color-danger-bg);
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .ldc-search-clear:hover {
+    background: var(--vcl-color-danger-bg);
+    color: var(--vcl-color-danger-on-surface);
+  }
 }
 
 .ldc-record {
@@ -230,9 +236,11 @@
   background: var(--vcl-color-bg-alt, #fafbfc);
   transition: background 0.15s;
 }
-.ldc-record:hover {
-  background: var(--vcl-color-surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+@media (hover: hover) {
+  .ldc-record:hover {
+    background: var(--vcl-color-surface);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
 }
 .ldc-record-head {
   display: flex;
@@ -255,9 +263,11 @@
 .ldc-del-btn {
   color: var(--vcl-color-text-muted, #94a3b8) !important;
 }
-.ldc-del-btn:hover {
-  color: var(--vcl-color-danger-on-surface) !important;
-  background: var(--vcl-color-danger-bg) !important;
+@media (hover: hover) {
+  .ldc-del-btn:hover {
+    color: var(--vcl-color-danger-on-surface) !important;
+    background: var(--vcl-color-danger-bg) !important;
+  }
 }
 
 .ldc-detail {
@@ -305,9 +315,11 @@
   font-weight: 500;
   transition: all 0.15s ease;
 }
-.ldc-detail-reuse:hover {
-  background: var(--vcl-color-primary, #3b82f6);
-  color: #fff;
+@media (hover: hover) {
+  .ldc-detail-reuse:hover {
+    background: var(--vcl-color-primary, #3b82f6);
+    color: #fff;
+  }
 }
 
 /* ── 分页 ── */
@@ -334,9 +346,11 @@
   font-weight: 500;
   transition: all 0.15s;
 }
-.ldc-page-btn:hover:not(:disabled) {
-  border-color: var(--vcl-color-primary, #3b82f6);
-  color: var(--vcl-color-primary, #3b82f6);
+@media (hover: hover) {
+  .ldc-page-btn:hover:not(:disabled) {
+    border-color: var(--vcl-color-primary, #3b82f6);
+    color: var(--vcl-color-primary, #3b82f6);
+  }
 }
 .ldc-page-btn.active {
   background: var(--vcl-color-primary, #3b82f6);
@@ -482,9 +496,11 @@
     border-color 0.15s,
     box-shadow 0.15s;
 }
-.ldc-share-copy:hover {
-  border-color: var(--vcl-color-primary, #3b82f6);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+@media (hover: hover) {
+  .ldc-share-copy:hover {
+    border-color: var(--vcl-color-primary, #3b82f6);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+  }
 }
 .ldc-share-copy-label {
   font-size: var(--vcl-fs-12);
@@ -540,7 +556,9 @@
 .ldc-review-btn {
   color: var(--vcl-color-warning, #d97706) !important;
 }
-.ldc-review-btn:hover {
-  background: var(--vcl-color-warning-bg) !important;
-  color: var(--vcl-color-warning, #d97706) !important;
+@media (hover: hover) {
+  .ldc-review-btn:hover {
+    background: var(--vcl-color-warning-bg) !important;
+    color: var(--vcl-color-warning, #d97706) !important;
+  }
 }

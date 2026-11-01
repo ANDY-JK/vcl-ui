@@ -23,9 +23,10 @@
   font-size: var(--vcl-ctrl-font-size);
   cursor: pointer;
 }
-
-.btn-add:hover {
-  background: var(--vcl-color-primary-hover);
+@media (hover: hover) {
+  .btn-add:hover {
+    background: var(--vcl-color-primary-hover);
+  }
 }
 
 .stats {
@@ -76,10 +77,11 @@
   padding: var(--vcl-space-1) var(--vcl-space-1);
   border-radius: var(--vcl-radius-sm);
 }
-
-.search-clear:hover {
-  color: var(--vcl-color-text-secondary);
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .search-clear:hover {
+    color: var(--vcl-color-text-secondary);
+    background: var(--vcl-color-bg-alt);
+  }
 }
 
 .group-list {
@@ -105,9 +107,10 @@
   cursor: pointer;
   user-select: none;
 }
-
-.group-header:hover {
-  background: var(--vcl-color-border-light);
+@media (hover: hover) {
+  .group-header:hover {
+    background: var(--vcl-color-border-light);
+  }
 }
 
 .group-arrow {
@@ -137,17 +140,20 @@
   opacity: 0.5;
   transition: opacity 0.15s;
 }
-
-.group-header:hover .btn-batch {
-  opacity: 1;
+@media (hover: hover) {
+  .group-header:hover .btn-batch {
+    opacity: 1;
+  }
 }
-
-.btn-batch:hover {
-  background: var(--vcl-color-border-light);
+@media (hover: hover) {
+  .btn-batch:hover {
+    background: var(--vcl-color-border-light);
+  }
 }
-
-.btn-batch-danger:hover {
-  background: var(--vcl-color-danger-bg);
+@media (hover: hover) {
+  .btn-batch-danger:hover {
+    background: var(--vcl-color-danger-bg);
+  }
 }
 
 .group-count {
@@ -168,9 +174,10 @@
   border-radius: var(--vcl-radius-md);
   transition: background 0.15s;
 }
-
-.store-item:hover {
-  background: var(--vcl-color-bg);
+@media (hover: hover) {
+  .store-item:hover {
+    background: var(--vcl-color-bg);
+  }
 }
 
 .store-item.skipped {
@@ -228,9 +235,10 @@
   border-radius: var(--vcl-radius-sm);
   transition: background 0.15s;
 }
-
-.btn-icon:hover {
-  background: var(--vcl-color-border-light);
+@media (hover: hover) {
+  .btn-icon:hover {
+    background: var(--vcl-color-border-light);
+  }
 }
 
 .empty-state {
@@ -298,9 +306,10 @@
   color: var(--vcl-color-text-secondary);
   cursor: pointer;
 }
-
-.btn-cancel:hover {
-  background: var(--vcl-color-bg);
+@media (hover: hover) {
+  .btn-cancel:hover {
+    background: var(--vcl-color-bg);
+  }
 }
 
 .btn-confirm-delete {
@@ -312,7 +321,8 @@
   font-size: var(--vcl-ctrl-font-size);
   cursor: pointer;
 }
-
-.btn-confirm-delete:hover {
-  background: var(--vcl-color-danger-hover);
+@media (hover: hover) {
+  .btn-confirm-delete:hover {
+    background: var(--vcl-color-danger-hover);
+  }
 }

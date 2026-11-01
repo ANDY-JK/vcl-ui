@@ -43,8 +43,10 @@
   text-align: left;
   cursor: pointer;
 }
-.lcn-item:hover {
-  background: var(--vcl-color-bg-alt, #f8fafc);
+@media (hover: hover) {
+  .lcn-item:hover {
+    background: var(--vcl-color-bg-alt, #f8fafc);
+  }
 }
 .lcn-item.active {
   background: var(--vcl-color-primary-light, #eff6ff);

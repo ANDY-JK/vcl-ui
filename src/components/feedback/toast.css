@@ -72,8 +72,10 @@
   font-weight: 500;
   white-space: nowrap;
 }
-.toast-undo:hover {
-  background: rgba(255, 255, 255, 0.15);
+@media (hover: hover) {
+  .toast-undo:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
 }
 
 .toast-close {
@@ -86,8 +88,10 @@
   color: white;
   cursor: pointer;
 }
-.toast-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+@media (hover: hover) {
+  .toast-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 
 /* 过渡动画 */

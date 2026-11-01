@@ -108,9 +108,11 @@
   color: var(--vcl-color-text-muted, #94a3b8);
   cursor: pointer;
 }
-.fb-scancode-clear:hover {
-  background: var(--vcl-color-danger-bg, #fee2e2);
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .fb-scancode-clear:hover {
+    background: var(--vcl-color-danger-bg, #fee2e2);
+    color: var(--vcl-color-danger-on-surface);
+  }
 }
 .fb-required {
   color: var(--vcl-color-danger-on-surface);
@@ -152,8 +154,10 @@
   cursor: pointer;
   transition: border-color 0.15s;
 }
-.fb-relate:hover {
-  border-color: var(--vcl-color-primary, #3b82f6);
+@media (hover: hover) {
+  .fb-relate:hover {
+    border-color: var(--vcl-color-primary, #3b82f6);
+  }
 }
 .fb-relate-placeholder {
   color: var(--vcl-color-text-muted, #94a3b8);

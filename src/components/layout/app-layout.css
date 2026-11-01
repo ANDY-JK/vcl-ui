@@ -123,9 +123,11 @@
     color var(--vcl-transition-fast);
   flex-shrink: 0;
 }
-.vcl-collapse-btn:hover {
-  background: var(--vcl-color-sidebar-hover);
-  color: var(--vcl-color-sidebar-text-active);
+@media (hover: hover) {
+  .vcl-collapse-btn:hover {
+    background: var(--vcl-color-sidebar-hover);
+    color: var(--vcl-color-sidebar-text-active);
+  }
 }
 
 .vcl-content {
@@ -185,9 +187,11 @@
   flex-shrink: 0;
   transition: all var(--vcl-transition-fast);
 }
-.vcl-topbar-hamburger:hover {
-  background: rgba(var(--vcl-color-primary-rgb), 0.08);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .vcl-topbar-hamburger:hover {
+    background: rgba(var(--vcl-color-primary-rgb), 0.08);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .vcl-topbar-prompt {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
@@ -276,10 +280,12 @@
   flex-shrink: 0;
   position: relative;
 }
-.topbar-tool-btn:hover {
-  color: var(--vcl-color-primary-on-surface);
-  background: rgba(var(--vcl-color-primary-rgb), 0.08);
-  border-color: rgba(var(--vcl-color-primary-rgb), 0.15);
+@media (hover: hover) {
+  .topbar-tool-btn:hover {
+    color: var(--vcl-color-primary-on-surface);
+    background: rgba(var(--vcl-color-primary-rgb), 0.08);
+    border-color: rgba(var(--vcl-color-primary-rgb), 0.15);
+  }
 }
 .topbar-tool-btn:active {
   transform: scale(0.95);
@@ -299,15 +305,19 @@
   background: rgba(var(--vcl-color-primary-rgb), 0.3);
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
 }
-.topbar-tool-btn.active:hover {
-  background: rgba(var(--vcl-color-primary-rgb), 0.4);
-  border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
+@media (hover: hover) {
+  .topbar-tool-btn.active:hover {
+    background: rgba(var(--vcl-color-primary-rgb), 0.4);
+    border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
+  }
 }
-/* 危险操作变体 — 红色激活 */
-.topbar-tool-btn.is-danger:hover {
-  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(239, 68, 68, 0.2);
+@media (hover: hover) {
+  /* 危险操作变体 — 红色激活 */
+  .topbar-tool-btn.is-danger:hover {
+    color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
+    background: rgba(248, 113, 113, 0.16);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
 }
 .topbar-tool-btn.is-danger.active {
   color: var(--vcl-color-danger-on-surface);
@@ -343,10 +353,12 @@
   transition: all var(--vcl-transition-fast);
   flex-shrink: 0;
 }
-.topbar-tool-text:hover {
-  color: var(--vcl-color-sidebar-text-active);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+@media (hover: hover) {
+  .topbar-tool-text:hover {
+    color: var(--vcl-color-sidebar-text-active);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
 }
 .topbar-tool-text:active {
   transform: scale(0.97);
@@ -363,15 +375,19 @@
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
 }
-.topbar-tool-text.active:hover {
-  background: rgba(var(--vcl-color-primary-rgb), 0.4);
-  border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
+@media (hover: hover) {
+  .topbar-tool-text.active:hover {
+    background: rgba(var(--vcl-color-primary-rgb), 0.4);
+    border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
+  }
 }
-/* 文字按钮 — 危险红色 */
-.topbar-tool-text.is-danger:hover {
-  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(239, 68, 68, 0.2);
+@media (hover: hover) {
+  /* 文字按钮 — 危险红色 */
+  .topbar-tool-text.is-danger:hover {
+    color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
+    background: rgba(248, 113, 113, 0.16);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
 }
 .topbar-tool-text.is-danger.active {
   color: var(--vcl-color-danger-on-surface);
@@ -411,13 +427,17 @@
   /* 2026-10-02 光学补偿：图标字形重心偏上，下移 0.5px 与 CJK 文字视觉中线对齐（盒子本已 align-items:center，此为墨迹级微调） */
   transform: translateY(0.5px);
 }
-.topbar-tool-label:hover {
-  color: var(--vcl-color-sidebar-text-active);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+@media (hover: hover) {
+  .topbar-tool-label:hover {
+    color: var(--vcl-color-sidebar-text-active);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
 }
-.topbar-tool-label:hover > svg {
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .topbar-tool-label:hover > svg {
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .topbar-tool-label:active {
   transform: scale(0.97);
@@ -434,18 +454,24 @@
   border-color: rgba(var(--vcl-color-primary-rgb), 0.25);
   font-weight: 600;
 }
-.topbar-tool-label.active:hover {
-  background: rgba(var(--vcl-color-primary-rgb), 0.4);
-  border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
+@media (hover: hover) {
+  .topbar-tool-label.active:hover {
+    background: rgba(var(--vcl-color-primary-rgb), 0.4);
+    border-color: rgba(var(--vcl-color-primary-rgb), 0.35);
+  }
 }
-/* 图标+文字按钮 — 危险红色 */
-.topbar-tool-label.is-danger:hover {
-  color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(239, 68, 68, 0.2);
+@media (hover: hover) {
+  /* 图标+文字按钮 — 危险红色 */
+  .topbar-tool-label.is-danger:hover {
+    color: #fca5a5; /* 2026-10-01 顶栏恒深色，danger hover 用亮红 */
+    background: rgba(248, 113, 113, 0.16);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
 }
-.topbar-tool-label.is-danger:hover > svg {
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .topbar-tool-label.is-danger:hover > svg {
+    color: var(--vcl-color-danger-on-surface);
+  }
 }
 .topbar-tool-label.is-danger.active {
   color: var(--vcl-color-danger-on-surface);
@@ -492,10 +518,12 @@
   cursor: pointer;
   transition: all var(--vcl-transition-normal);
 }
-.vcl-logout-btn:hover {
-  color: var(--vcl-color-danger-on-surface);
-  border-color: rgba(239, 68, 68, 0.3);
-  background: rgba(239, 68, 68, 0.06);
+@media (hover: hover) {
+  .vcl-logout-btn:hover {
+    color: var(--vcl-color-danger-on-surface);
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.06);
+  }
 }
 
 /* ---- 内容滚动区 ---- */
@@ -539,12 +567,14 @@
   cursor: pointer;
   transition: all var(--vcl-transition-normal);
 }
-.vcl-nav-btn:hover {
-  color: var(--vcl-color-surface);
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.06);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .vcl-nav-btn:hover {
+    color: var(--vcl-color-surface);
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.06);
+    transform: translateY(-1px);
+  }
 }
 .vcl-nav-btn:active {
   transform: translateY(0);
@@ -573,12 +603,16 @@
   user-select: none;
   -webkit-user-select: none;
 }
-.vcl-nav-center:hover .vcl-nav-progress-track {
-  height: calc(4px * var(--vcl-scale));
-  border-radius: var(--vcl-radius-sm);
+@media (hover: hover) {
+  .vcl-nav-center:hover .vcl-nav-progress-track {
+    height: calc(4px * var(--vcl-scale));
+    border-radius: var(--vcl-radius-sm);
+  }
 }
-.vcl-nav-center:hover .vcl-nav-progress {
-  box-shadow: 0 0 10px rgba(var(--vcl-color-primary-rgb), 0.6);
+@media (hover: hover) {
+  .vcl-nav-center:hover .vcl-nav-progress {
+    box-shadow: 0 0 10px rgba(var(--vcl-color-primary-rgb), 0.6);
+  }
 }
 .vcl-nav-center:active .vcl-nav-progress {
   box-shadow: 0 0 14px rgba(var(--vcl-color-primary-rgb), 0.75);

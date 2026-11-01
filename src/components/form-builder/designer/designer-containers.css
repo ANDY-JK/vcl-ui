@@ -23,9 +23,11 @@
   cursor: pointer;
   white-space: nowrap;
 }
-.ldc-crumb-item:hover {
-  background: var(--vcl-color-bg-soft, #f1f5f9);
-  color: var(--vcl-color-text, #1e293b);
+@media (hover: hover) {
+  .ldc-crumb-item:hover {
+    background: var(--vcl-color-bg-soft, #f1f5f9);
+    color: var(--vcl-color-text, #1e293b);
+  }
 }
 .ldc-crumb-active {
   color: var(--vcl-color-primary, #4f6ef7);
@@ -63,9 +65,11 @@
   font-weight: 600;
   transition: all 0.12s;
 }
-.ldc-zoom button:hover:not(:disabled) {
-  background: var(--vcl-color-bg-soft, #f1f5f9);
-  color: var(--vcl-color-text, #1e293b);
+@media (hover: hover) {
+  .ldc-zoom button:hover:not(:disabled) {
+    background: var(--vcl-color-bg-soft, #f1f5f9);
+    color: var(--vcl-color-text, #1e293b);
+  }
 }
 .ldc-zoom button:disabled {
   opacity: var(--vcl-disabled-opacity);
@@ -159,9 +163,11 @@
   opacity: 0;
   transition: opacity 0.12s;
 }
-.ldc-container:hover .ldc-container-actions,
-.ldc-container.selected .ldc-container-actions {
-  opacity: 1;
+@media (hover: hover) {
+  .ldc-container:hover .ldc-container-actions,
+  .ldc-container.selected .ldc-container-actions {
+    opacity: 1;
+  }
 }
 .ldc-container-actions button {
   width: calc(28px * var(--vcl-scale));
@@ -175,13 +181,17 @@
   align-items: center;
   justify-content: center;
 }
-.ldc-container-actions button:hover {
-  background: var(--vcl-color-bg-soft, #f1f5f9);
-  color: var(--vcl-color-text, #1e293b);
+@media (hover: hover) {
+  .ldc-container-actions button:hover {
+    background: var(--vcl-color-bg-soft, #f1f5f9);
+    color: var(--vcl-color-text, #1e293b);
+  }
 }
-.ldc-container-actions .ldc-del:hover {
-  background: var(--vcl-color-danger-bg);
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .ldc-container-actions .ldc-del:hover {
+    background: var(--vcl-color-danger-bg);
+    color: var(--vcl-color-danger-on-surface);
+  }
 }
 .ldc-container-body {
   padding: 0;
@@ -202,8 +212,10 @@
 .ldc-container--card {
   border-radius: var(--vcl-radius-lg, calc(12px * var(--vcl-scale)));
 }
-.ldc-container--card:hover {
-  box-shadow: var(--vcl-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+@media (hover: hover) {
+  .ldc-container--card:hover {
+    box-shadow: var(--vcl-shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  }
 }
 .ldc-container--card > .ldc-container-head {
   background: var(--vcl-color-surface, #fff);
@@ -240,8 +252,10 @@
   outline: 2px solid var(--vcl-color-primary, #3b82f6);
   outline-offset: 1px;
 }
-.ldc-tab:hover {
-  background: var(--vcl-color-bg-soft, #f1f5f9);
+@media (hover: hover) {
+  .ldc-tab:hover {
+    background: var(--vcl-color-bg-soft, #f1f5f9);
+  }
 }
 .ldc-tab.active {
   background: var(--vcl-color-bg, #fff);
@@ -266,8 +280,10 @@
   border: 1px dashed transparent;
   border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
 }
-.ldc-slot-body:hover {
-  border-color: var(--vcl-color-border, #e5e7eb);
+@media (hover: hover) {
+  .ldc-slot-body:hover {
+    border-color: var(--vcl-color-border, #e5e7eb);
+  }
 }
 .ldc-slot-label {
   font-size: var(--vcl-fs-11);
@@ -324,8 +340,10 @@
   user-select: none;
   transition: background 0.15s;
 }
-.ldc-collapse-head:hover {
-  background: var(--vcl-color-bg-soft, #f1f5f9);
+@media (hover: hover) {
+  .ldc-collapse-head:hover {
+    background: var(--vcl-color-bg-soft, #f1f5f9);
+  }
 }
 .ldc-collapse-head:focus-visible {
   outline: 2px solid var(--vcl-color-primary, #3b82f6);
@@ -372,9 +390,11 @@
   cursor: pointer;
   transition: all 0.15s;
 }
-.ldc-step-btn:hover {
-  border-color: var(--vcl-color-border, #e5e7eb);
-  color: var(--vcl-color-text, #1e293b);
+@media (hover: hover) {
+  .ldc-step-btn:hover {
+    border-color: var(--vcl-color-border, #e5e7eb);
+    color: var(--vcl-color-text, #1e293b);
+  }
 }
 .ldc-step-btn:focus-visible {
   outline: 2px solid var(--vcl-color-primary, #3b82f6);
@@ -435,9 +455,11 @@
   cursor: pointer;
   transition: all 0.15s;
 }
-.ldc-steps-nav button:hover:not(:disabled) {
-  border-color: var(--vcl-color-primary, #3b82f6);
-  color: var(--vcl-color-primary, #3b82f6);
+@media (hover: hover) {
+  .ldc-steps-nav button:hover:not(:disabled) {
+    border-color: var(--vcl-color-primary, #3b82f6);
+    color: var(--vcl-color-primary, #3b82f6);
+  }
 }
 .ldc-steps-nav button:disabled {
   opacity: var(--vcl-disabled-opacity);

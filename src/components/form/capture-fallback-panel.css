@@ -28,9 +28,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.capfb-pick:hover:not(:disabled) {
-  border-color: var(--vcl-color-primary);
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .capfb-pick:hover:not(:disabled) {
+    border-color: var(--vcl-color-primary);
+    background: var(--vcl-color-primary-light);
+  }
 }
 .capfb-pick:disabled {
   opacity: 0.5;

@@ -216,8 +216,10 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
     background var(--vcl-transition-fast),
     color var(--vcl-transition-fast);
 }
-.tp-cell:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .tp-cell:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .tp-cell.selected {
   background: var(--vcl-color-primary);

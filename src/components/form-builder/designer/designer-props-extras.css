@@ -14,8 +14,10 @@
   border-bottom: 2px solid transparent;
   transition: all 0.15s;
 }
-.ldp-prop-tab:hover {
-  color: var(--vcl-color-text, #1e293b);
+@media (hover: hover) {
+  .ldp-prop-tab:hover {
+    color: var(--vcl-color-text, #1e293b);
+  }
 }
 .ldp-prop-tab.active {
   color: var(--vcl-color-primary, #4f6ef7);
@@ -301,9 +303,11 @@
   cursor: pointer;
   transition: all 0.15s;
 }
-.ld-data-page-btn:hover:not(:disabled) {
-  border-color: var(--vcl-color-primary, #3b82f6);
-  color: var(--vcl-color-primary, #3b82f6);
+@media (hover: hover) {
+  .ld-data-page-btn:hover:not(:disabled) {
+    border-color: var(--vcl-color-primary, #3b82f6);
+    color: var(--vcl-color-primary, #3b82f6);
+  }
 }
 .ld-data-page-btn.active {
   background: var(--vcl-color-primary, #3b82f6);

@@ -40,8 +40,10 @@
   background: var(--vcl-color-bg);
   color: var(--vcl-color-text);
 }
-.confirm-btn:hover {
-  filter: brightness(0.95);
+@media (hover: hover) {
+  .confirm-btn:hover {
+    filter: brightness(0.95);
+  }
 }
 .confirm-btn:active {
   transform: scale(0.97);
@@ -67,8 +69,10 @@
   background: var(--vcl-color-surface);
   color: var(--vcl-color-text-secondary);
 }
-.confirm-btn.cancel:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .confirm-btn.cancel:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 
 /* danger —— 实心底压白字，用 --vcl-color-danger-solid（暗色下 --vcl-color-danger 被提亮，
@@ -78,8 +82,10 @@
   background: var(--vcl-color-danger-solid, var(--vcl-color-danger));
   color: #fff;
 }
-.confirm-btn.btn-danger:hover {
-  background: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
+@media (hover: hover) {
+  .confirm-btn.btn-danger:hover {
+    background: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
+  }
 }
 
 /* warning —— 同上，实心底压白字用 solid 令牌 */
@@ -88,8 +94,10 @@
   background: var(--vcl-color-warning-solid, var(--vcl-color-warning));
   color: #fff;
 }
-.confirm-btn.btn-warning:hover {
-  background: var(--vcl-color-warning-solid-hover, var(--vcl-color-warning-text));
+@media (hover: hover) {
+  .confirm-btn.btn-warning:hover {
+    background: var(--vcl-color-warning-solid-hover, var(--vcl-color-warning-text));
+  }
 }
 
 /* primary */
@@ -98,6 +106,8 @@
   background: var(--vcl-color-primary);
   color: #fff;
 }
-.confirm-btn.btn-primary:hover {
-  background: var(--vcl-color-primary-hover);
+@media (hover: hover) {
+  .confirm-btn.btn-primary:hover {
+    background: var(--vcl-color-primary-hover);
+  }
 }

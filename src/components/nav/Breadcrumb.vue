@@ -71,8 +71,10 @@ function isExternalHttp(p: string) {
   text-decoration: none;
   transition: color var(--vcl-transition-fast);
 }
-.crumb-link:hover {
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .crumb-link:hover {
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 
 .crumb-current {

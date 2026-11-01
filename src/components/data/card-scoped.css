@@ -12,9 +12,11 @@
     box-shadow var(--vcl-transition-fast),
     transform var(--vcl-transition-fast);
 }
-.stat-card:hover {
-  box-shadow: var(--vcl-shadow-sm);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .stat-card:hover {
+    box-shadow: var(--vcl-shadow-sm);
+    transform: translateY(-1px);
+  }
 }
 .stat-card.highlight {
   border-inline-start: 3px solid var(--vcl-color-primary);
@@ -59,8 +61,10 @@
   overflow: hidden;
   transition: box-shadow var(--vcl-transition-fast);
 }
-.grid-card:hover {
-  box-shadow: var(--vcl-shadow-sm);
+@media (hover: hover) {
+  .grid-card:hover {
+    box-shadow: var(--vcl-shadow-sm);
+  }
 }
 .grid-card.highlight {
   border-color: var(--vcl-color-primary);

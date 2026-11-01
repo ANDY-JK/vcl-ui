@@ -26,8 +26,10 @@
   cursor: pointer;
   font-weight: 500;
 }
-.ld-form-link:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .ld-form-link:hover {
+    text-decoration: underline;
+  }
 }
 
 /* 操作列按钮（分享/查看/审核） */
@@ -49,10 +51,12 @@
     color 0.15s,
     border-color 0.15s;
 }
-.ld-table-act:hover {
-  background: var(--vcl-color-bg-alt, #f1f5f9);
-  border-color: var(--vcl-color-primary, #3b82f6);
-  color: var(--vcl-color-primary, #3b82f6);
+@media (hover: hover) {
+  .ld-table-act:hover {
+    background: var(--vcl-color-bg-alt, #f1f5f9);
+    border-color: var(--vcl-color-primary, #3b82f6);
+    color: var(--vcl-color-primary, #3b82f6);
+  }
 }
 .ld-table-act[data-act='share'] {
   color: var(--vcl-color-primary, #3b82f6);
@@ -138,9 +142,11 @@
     border-color 0.15s,
     box-shadow 0.15s;
 }
-.ld-share-copy:hover {
-  border-color: var(--vcl-color-primary, #3b82f6);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+@media (hover: hover) {
+  .ld-share-copy:hover {
+    border-color: var(--vcl-color-primary, #3b82f6);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+  }
 }
 .ld-share-copy-label {
   font-size: var(--vcl-fs-12);

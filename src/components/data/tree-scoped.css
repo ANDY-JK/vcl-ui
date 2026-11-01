@@ -14,15 +14,19 @@
   user-select: none;
   position: relative;
 }
-.tree-node:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .tree-node:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .tree-node--selected {
   background: var(--vcl-color-primary-light);
   color: var(--vcl-color-primary-on-surface);
 }
-.tree-node--selected:hover {
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .tree-node--selected:hover {
+    background: var(--vcl-color-primary-light);
+  }
 }
 .tree-node--disabled {
   opacity: 0.45;

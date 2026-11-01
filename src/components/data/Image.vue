@@ -188,8 +188,10 @@ function onClick() {
 .v-image.clickable {
   cursor: pointer;
 }
-.v-image.clickable:hover {
-  opacity: 0.9;
+@media (hover: hover) {
+  .v-image.clickable:hover {
+    opacity: 0.9;
+  }
 }
 .v-image.clickable:focus-visible {
   outline: 2px solid var(--vcl-color-primary);

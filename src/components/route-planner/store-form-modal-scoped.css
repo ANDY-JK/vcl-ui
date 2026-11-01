@@ -66,9 +66,10 @@
   border-color: var(--vcl-color-border-light);
   color: var(--vcl-color-text-secondary);
 }
-
-.btn-cancel:hover {
-  background: var(--vcl-color-bg);
+@media (hover: hover) {
+  .btn-cancel:hover {
+    background: var(--vcl-color-bg);
+  }
 }
 
 .btn-save {
@@ -76,10 +77,11 @@
   border-color: var(--vcl-color-primary);
   color: var(--vcl-color-surface);
 }
-
-.btn-save:hover {
-  background: var(--vcl-color-primary-hover);
-  border-color: var(--vcl-color-primary-hover);
+@media (hover: hover) {
+  .btn-save:hover {
+    background: var(--vcl-color-primary-hover);
+    border-color: var(--vcl-color-primary-hover);
+  }
 }
 
 .required {

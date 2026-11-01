@@ -100,8 +100,10 @@
   background: var(--vcl-color-border);
   border-radius: calc(5px * var(--vcl-scale));
 }
-.table-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--vcl-color-text-muted);
+@media (hover: hover) {
+  .table-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--vcl-color-text-muted);
+  }
 }
 /* maxHeight 设置后约束容器高度 */
 .table-scroll.table-scroll-fixed {
@@ -156,8 +158,10 @@ thead th {
 th.sortable {
   cursor: pointer;
 }
-th.sortable:hover {
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  th.sortable:hover {
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 th.sortable:active {
   background: rgba(var(--vcl-color-primary-rgb, 59 130 246), 0.08);
@@ -226,9 +230,11 @@ th.sort-active {
   transition: all var(--vcl-transition-fast);
   position: relative;
 }
-.th-filter-icon:hover {
-  opacity: 0.85;
-  background: var(--vcl-color-bg);
+@media (hover: hover) {
+  .th-filter-icon:hover {
+    opacity: 0.85;
+    background: var(--vcl-color-bg);
+  }
 }
 .th-filter-icon.has-filter {
   opacity: 1;
@@ -475,8 +481,10 @@ td.cell-modified::after {
   display: block;
   transition: transform var(--vcl-transition-fast);
 }
-.cell-image:hover {
-  transform: scale(1.1);
+@media (hover: hover) {
+  .cell-image:hover {
+    transform: scale(1.1);
+  }
 }
 
 /* 图片灯箱 */
@@ -491,9 +499,11 @@ td.cell-modified::after {
   cursor: pointer;
   transition: border-color var(--vcl-transition-fast);
 }
-.cell-image-placeholder:hover {
-  border-color: var(--vcl-dt-select, #7c5cf0);
-  color: var(--vcl-dt-select, #7c5cf0);
+@media (hover: hover) {
+  .cell-image-placeholder:hover {
+    border-color: var(--vcl-dt-select, #7c5cf0);
+    color: var(--vcl-dt-select, #7c5cf0);
+  }
 }
 td.drag-over-image {
   /* 拖入目标格：属选中/放置语义 → --vcl-dt-select */
@@ -595,10 +605,11 @@ td.cell-has-note {
 .data-table.striped tbody tr.row-striped td {
   background: var(--vcl-color-bg);
 }
-
-/* 悬浮 */
-.data-table.hoverable tbody tr:hover td {
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  /* 悬浮 */
+  .data-table.hoverable tbody tr:hover td {
+    background: var(--vcl-color-primary-light);
+  }
 }
 
 /* 边框 */
@@ -725,9 +736,11 @@ thead .col-fixed-right {
 .data-table.striped tbody tr.row-striped .col-fixed-right {
   background: var(--vcl-color-bg);
 }
-.data-table.hoverable tbody tr:hover .col-fixed-left,
-.data-table.hoverable tbody tr:hover .col-fixed-right {
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .data-table.hoverable tbody tr:hover .col-fixed-left,
+  .data-table.hoverable tbody tr:hover .col-fixed-right {
+    background: var(--vcl-color-primary-light);
+  }
 }
 /* 固定列是 sticky 且自带不透明底，选中/高亮的底色必须与对应行同步，
    否则固定列会露出未选中的底色（视觉上像「选了一半」） */
@@ -760,9 +773,11 @@ thead .col-fixed-right {
   bottom: 0;
   width: calc(12px * var(--vcl-scale));
 }
-.resize-handle:hover {
-  background: var(--vcl-color-primary);
-  opacity: 0.25;
+@media (hover: hover) {
+  .resize-handle:hover {
+    background: var(--vcl-color-primary);
+    opacity: 0.25;
+  }
 }
 /* 列拖拽排序 */
 th.drag-source {
@@ -802,8 +817,10 @@ th.drag-over {
   background: var(--vcl-color-border);
   border-radius: var(--vcl-radius-sm);
 }
-.card-view-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--vcl-color-text-muted);
+@media (hover: hover) {
+  .card-view-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--vcl-color-text-muted);
+  }
 }
 
 .card-view-item {
@@ -859,8 +876,10 @@ th.drag-over {
 .card-field-label .card-sort-arrows.sort-active {
   opacity: 1;
 }
-.card-field-label:hover .card-sort-arrows {
-  opacity: 1;
+@media (hover: hover) {
+  .card-field-label:hover .card-sort-arrows {
+    opacity: 1;
+  }
 }
 .card-filter-icon {
   display: inline-flex;
@@ -968,9 +987,11 @@ th.drag-over {
   transition: all var(--vcl-transition-fast);
   white-space: nowrap;
 }
-.row-action-btn:hover {
-  color: var(--vcl-color-primary-on-surface);
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .row-action-btn:hover {
+    color: var(--vcl-color-primary-on-surface);
+    background: var(--vcl-color-primary-light);
+  }
 }
 
 /* 操作按钮变体 */
@@ -978,27 +999,35 @@ th.drag-over {
   color: var(--vcl-color-primary-on-surface);
   font-weight: 500;
 }
-.row-action-primary:hover {
-  background: rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.12);
+@media (hover: hover) {
+  .row-action-primary:hover {
+    background: rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.12);
+  }
 }
 .row-action-danger {
   color: var(--vcl-color-danger-on-surface);
 }
-.row-action-danger:hover {
-  color: var(--vcl-color-danger-on-surface);
-  background: rgba(var(--vcl-color-danger-rgb, 239 68 68), 0.08);
+@media (hover: hover) {
+  .row-action-danger:hover {
+    color: var(--vcl-color-danger-on-surface);
+    background: rgba(var(--vcl-color-danger-rgb, 239 68 68), 0.08);
+  }
 }
 .row-action-success {
   color: var(--vcl-color-success);
 }
-.row-action-success:hover {
-  background: rgba(var(--vcl-color-success-rgb, 34 197 94), 0.08);
+@media (hover: hover) {
+  .row-action-success:hover {
+    background: rgba(var(--vcl-color-success-rgb, 34 197 94), 0.08);
+  }
 }
 .row-action-warning {
   color: var(--vcl-color-warning);
 }
-.row-action-warning:hover {
-  background: rgba(var(--vcl-color-warning-rgb, 245 158 11), 0.08);
+@media (hover: hover) {
+  .row-action-warning:hover {
+    background: rgba(var(--vcl-color-warning-rgb, 245 158 11), 0.08);
+  }
 }
 
 /* 紧凑模式操作按钮 */
@@ -1039,9 +1068,11 @@ td.cell-has-options {
   display: flex;
   align-items: center;
 }
-td.cell-has-options:hover .cell-options-arrow {
-  opacity: 0.8;
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  td.cell-has-options:hover .cell-options-arrow {
+    opacity: 0.8;
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 
 /* 截断长文本展开图标 */
@@ -1064,9 +1095,11 @@ td.cell-has-options:hover .cell-options-arrow {
   background: var(--vcl-color-surface);
   transition: opacity var(--vcl-transition-fast);
 }
-.cell-expand-icon:hover {
-  opacity: 1;
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .cell-expand-icon:hover {
+    opacity: 1;
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .cell-expand-icon svg,
 .cell-expand-icon * {
@@ -1105,11 +1138,12 @@ td.cell-has-options:hover .cell-options-arrow {
   cursor: pointer;
   transition: background var(--vcl-transition-fast);
 }
-/* 选项下拉（options 列的值选择）：**保持品牌蓝**，不参与「可编辑=紫」分色 ——
-   下拉是统一的交互组件，配色不随单元格状态变化（用户明确要求不改下拉颜色）。 */
-.opt-drop-item:hover {
-  background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  /* 选项下拉（options 列的值选择）：**保持品牌蓝**，不参与「可编辑=紫」分色 —— 下拉是统一的交互组件，配色不随单元格状态变化（用户明确要求不改下拉颜色）。 */
+  .opt-drop-item:hover {
+    background: var(--vcl-color-primary-light);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .opt-drop-item.active {
   background: rgba(var(--vcl-color-primary-rgb, 64 158 255), 0.08);
@@ -1146,8 +1180,10 @@ td.cell-has-options:hover .cell-options-arrow {
   transition: background var(--vcl-transition-fast);
   margin-inline-start: var(--vcl-space-2);
 }
-.lightbox-action:hover {
-  background: rgba(255, 255, 255, 0.32);
+@media (hover: hover) {
+  .lightbox-action:hover {
+    background: rgba(255, 255, 255, 0.32);
+  }
 }
 .lightbox-action:first-child {
   margin-inline-start: var(--vcl-space-1);

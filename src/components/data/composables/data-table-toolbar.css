@@ -7,8 +7,10 @@
   cursor: pointer;
   overflow: visible;
 }
-.table-progress-track:hover {
-  background: var(--vcl-color-border);
+@media (hover: hover) {
+  .table-progress-track:hover {
+    background: var(--vcl-color-border);
+  }
 }
 .table-progress-track:active {
   cursor: grabbing;
@@ -37,8 +39,10 @@
   transition: transform var(--vcl-transition-fast);
   z-index: 1;
 }
-.table-progress-anchor:hover {
-  transform: translateX(-50%) scaleY(1.5);
+@media (hover: hover) {
+  .table-progress-anchor:hover {
+    transform: translateX(-50%) scaleY(1.5);
+  }
 }
 
 /* ==================== 工具栏 sticky ==================== */
@@ -97,8 +101,10 @@
   opacity: 0.6;
   transition: opacity var(--vcl-transition-fast);
 }
-.filter-chip-close:hover {
-  opacity: 1;
+@media (hover: hover) {
+  .filter-chip-close:hover {
+    opacity: 1;
+  }
 }
 
 .toolbar-clear {
@@ -111,8 +117,10 @@
   cursor: pointer;
   transition: opacity var(--vcl-transition-fast);
 }
-.toolbar-clear:hover {
-  opacity: 0.8;
+@media (hover: hover) {
+  .toolbar-clear:hover {
+    opacity: 0.8;
+  }
 }
 
 /* 清除按钮居中 */
@@ -166,9 +174,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.global-search-toggle:hover {
-  color: var(--vcl-color-primary-on-surface);
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .global-search-toggle:hover {
+    color: var(--vcl-color-primary-on-surface);
+    background: var(--vcl-color-primary-light);
+  }
 }
 .global-search-wrap.active .global-search-toggle {
   color: var(--vcl-color-primary-on-surface);
@@ -189,9 +199,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.toolbar-export-btn:hover {
-  color: var(--vcl-color-primary-on-surface);
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .toolbar-export-btn:hover {
+    color: var(--vcl-color-primary-on-surface);
+    background: var(--vcl-color-primary-light);
+  }
 }
 /* 撤销/重做无可操作记录时：禁用态明示「没有可撤销/重做」，不藏按钮 */
 .toolbar-export-btn:disabled {

@@ -43,6 +43,8 @@
     "check:icon-names": "node scripts/check-icon-names.mjs",
     "check:mutation-tool": "node scripts/mutation-control.mjs --self-test",
     "check:mutation-audit": "node scripts/mutation-audit.mjs --check-manifest",
+    "check:hover-guard": "node scripts/wrap-hover-media.mjs --check",
+    "fix:hover-guard": "node scripts/wrap-hover-media.mjs --write",
     "mutation-audit": "node scripts/mutation-audit.mjs",
     "mutation-control": "node scripts/mutation-control.mjs",
     "check:test-skips": "node scripts/check-test-skips.mjs",

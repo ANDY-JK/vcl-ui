@@ -55,8 +55,10 @@
   cursor: pointer;
   backdrop-filter: blur(4px);
 }
-.codecap-iconbtn:hover {
-  background: rgba(255, 255, 255, 0.26);
+@media (hover: hover) {
+  .codecap-iconbtn:hover {
+    background: rgba(255, 255, 255, 0.26);
+  }
 }
 .codecap-title {
   flex: 1;
@@ -118,9 +120,11 @@
   font-family: inherit;
   cursor: pointer;
 }
-.codecap-back:hover {
-  background: var(--vcl-color-bg-alt);
-  color: var(--vcl-color-text);
+@media (hover: hover) {
+  .codecap-back:hover {
+    background: var(--vcl-color-bg-alt);
+    color: var(--vcl-color-text);
+  }
 }
 .codecap-live {
   position: absolute;
@@ -193,9 +197,11 @@
   font-family: inherit;
   cursor: pointer;
 }
-.codecap-btn:hover {
-  border-color: rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.18);
+@media (hover: hover) {
+  .codecap-btn:hover {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.18);
+  }
 }
 .codecap-spinner {
   width: calc(22px * var(--vcl-scale));
@@ -377,8 +383,10 @@
   font-family: inherit;
   cursor: pointer;
 }
-.codecap-tool:hover {
-  color: #fff;
+@media (hover: hover) {
+  .codecap-tool:hover {
+    color: #fff;
+  }
 }
 .codecap-tool.is-on {
   color: var(--vcl-color-primary-light, #a5b4fc);
@@ -453,7 +461,9 @@
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
 }
-.codecap-results li button:hover {
-  background: rgba(248, 113, 113, 0.2);
-  color: #f87171;
+@media (hover: hover) {
+  .codecap-results li button:hover {
+    background: rgba(248, 113, 113, 0.2);
+    color: #f87171;
+  }
 }

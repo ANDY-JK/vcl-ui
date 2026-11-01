@@ -8,9 +8,11 @@
   overflow: hidden;
   box-sizing: border-box;
 }
-.card-wrap:hover,
-.card-dragging {
-  border-color: var(--vcl-color-primary);
+@media (hover: hover) {
+  .card-wrap:hover,
+  .card-dragging {
+    border-color: var(--vcl-color-primary);
+  }
 }
 .card-disabled {
   opacity: 0.5;
@@ -78,8 +80,10 @@
   opacity: 0;
   transition: opacity 0.15s;
 }
-.card-wrap:hover .card-arrow {
-  opacity: 1;
+@media (hover: hover) {
+  .card-wrap:hover .card-arrow {
+    opacity: 1;
+  }
 }
 .card-arrow-left {
   left: calc(4px * var(--vcl-scale));
@@ -135,9 +139,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.upload-area:hover:not(.disabled) {
-  border-color: var(--vcl-color-primary);
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .upload-area:hover:not(.disabled) {
+    border-color: var(--vcl-color-primary);
+    background: var(--vcl-color-primary-light);
+  }
 }
 .upload-area.dragging {
   border-color: var(--vcl-color-primary);
@@ -232,7 +238,9 @@
   cursor: pointer;
   border-radius: 50%;
 }
-.upload-remove:hover {
-  background: var(--vcl-color-bg-alt);
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .upload-remove:hover {
+    background: var(--vcl-color-bg-alt);
+    color: var(--vcl-color-danger-on-surface);
+  }
 }

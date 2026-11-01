@@ -229,8 +229,10 @@
   cursor: pointer;
   font-size: inherit;
 }
-.forgot-password:hover {
-  color: var(--vcl-color-primary-hover);
+@media (hover: hover) {
+  .forgot-password:hover {
+    color: var(--vcl-color-primary-hover);
+  }
 }
 
 .social-login {
@@ -252,10 +254,12 @@
   user-select: none;
   font-family: inherit;
 }
-.social-btn:hover {
-  border-color: var(--vcl-color-primary);
-  background: var(--vcl-color-bg);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .social-btn:hover {
+    border-color: var(--vcl-color-primary);
+    background: var(--vcl-color-bg);
+    transform: translateY(-1px);
+  }
 }
 .social-icon {
   color: var(--vcl-color-text-muted);
@@ -281,8 +285,10 @@
   cursor: pointer;
   font-size: inherit;
 }
-.register-link:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .register-link:hover {
+    text-decoration: underline;
+  }
 }
 
 @container login (max-width: 767px) {

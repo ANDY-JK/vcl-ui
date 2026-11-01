@@ -311,8 +311,10 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
   border-radius: calc(3px * var(--vcl-scale));
   transition: background 0.15s;
 }
-.ldo-expand-toggle:hover {
-  background: var(--vcl-color-bg-hover, rgba(0, 0, 0, 0.06));
+@media (hover: hover) {
+  .ldo-expand-toggle:hover {
+    background: var(--vcl-color-bg-hover, rgba(0, 0, 0, 0.06));
+  }
 }
 /* 无子节点时的占位（保持对齐） */
 .ldo-expand-placeholder {

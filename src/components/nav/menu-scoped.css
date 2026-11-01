@@ -28,8 +28,10 @@
   user-select: none;
   white-space: nowrap;
 }
-.menu-item:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .menu-item:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .menu-item--active {
   background: var(--vcl-color-primary-light);
@@ -40,8 +42,10 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
-.menu-item--disabled:hover {
-  background: transparent;
+@media (hover: hover) {
+  .menu-item--disabled:hover {
+    background: transparent;
+  }
 }
 
 .menu-item-icon {
@@ -143,9 +147,11 @@
 .menu--dark .menu-item {
   color: var(--vcl-color-sidebar-text);
 }
-.menu--dark .menu-item:hover {
-  background: var(--vcl-color-sidebar-hover);
-  color: #fff;
+@media (hover: hover) {
+  .menu--dark .menu-item:hover {
+    background: var(--vcl-color-sidebar-hover);
+    color: #fff;
+  }
 }
 .menu--dark .menu-item--active {
   background: var(--vcl-color-sidebar-active);

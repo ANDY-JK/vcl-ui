@@ -31,6 +31,8 @@
   cursor: pointer;
   border-radius: var(--vcl-radius-sm);
 }
-.toast-inline-close:hover {
-  background: rgba(0, 0, 0, 0.06);
+@media (hover: hover) {
+  .toast-inline-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
 }

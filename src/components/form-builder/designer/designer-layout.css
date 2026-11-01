@@ -64,7 +64,9 @@
   background: transparent;
   transition: background 0.15s;
 }
-.ld-splitter:hover::after,
-.ld-splitter.active::after {
-  background: var(--vcl-color-primary, #4f6ef7);
+@media (hover: hover) {
+  .ld-splitter:hover::after,
+  .ld-splitter.active::after {
+    background: var(--vcl-color-primary, #4f6ef7);
+  }
 }

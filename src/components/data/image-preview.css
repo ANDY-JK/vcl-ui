@@ -71,10 +71,12 @@
   justify-content: center;
   transition: all var(--vcl-transition-fast);
 }
-.ip-hdr-btn:hover,
-.ip-hdr-btn.active {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.12);
+@media (hover: hover) {
+  .ip-hdr-btn:hover,
+  .ip-hdr-btn.active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+  }
 }
 .ip-close {
   width: clamp(28px * var(--vcl-scale), 4cqw, 36px * var(--vcl-scale));
@@ -90,8 +92,10 @@
   justify-content: center;
   transition: background var(--vcl-transition-fast);
 }
-.ip-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+@media (hover: hover) {
+  .ip-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 
 /* ===== 主体 ===== */
@@ -161,8 +165,10 @@
     border-color var(--vcl-transition-fast);
   flex-shrink: 0;
 }
-.ip-color-dot:hover {
-  transform: scale(1.2);
+@media (hover: hover) {
+  .ip-color-dot:hover {
+    transform: scale(1.2);
+  }
 }
 .ip-color-dot.active {
   border-color: #fff;
@@ -208,11 +214,15 @@
   opacity: 0;
   z-index: 1;
 }
-.ip-stage:hover .ip-arrow {
-  opacity: 1;
+@media (hover: hover) {
+  .ip-stage:hover .ip-arrow {
+    opacity: 1;
+  }
 }
-.ip-arrow:hover {
-  background: rgba(255, 255, 255, 0.25);
+@media (hover: hover) {
+  .ip-arrow:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
 }
 .ip-arrow:disabled {
   opacity: 0.15;
@@ -270,9 +280,11 @@
   outline-offset: 2px;
   opacity: 1;
 }
-.ip-thumb:hover {
-  opacity: 0.85;
-  border-color: rgba(255, 255, 255, 0.3);
+@media (hover: hover) {
+  .ip-thumb:hover {
+    opacity: 0.85;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
 }
 .ip-thumb.active {
   opacity: 1;
@@ -325,8 +337,10 @@
   justify-content: center;
   transition: background var(--vcl-transition-fast);
 }
-.ip-toolbar > button:hover {
-  background: rgba(255, 255, 255, 0.25);
+@media (hover: hover) {
+  .ip-toolbar > button:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
 }
 .ip-toolbar > button.active {
   background: rgba(255, 255, 255, 0.3);

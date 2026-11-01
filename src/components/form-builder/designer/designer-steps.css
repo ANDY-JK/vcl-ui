@@ -17,10 +17,12 @@
   background: var(--vcl-color-border, #e5e7eb);
   border-radius: 2px;
 }
-.ldp-panel::-webkit-scrollbar-thumb:hover,
-.ldp-props::-webkit-scrollbar-thumb:hover,
-.ldc-canvas-content::-webkit-scrollbar-thumb:hover {
-  background: var(--vcl-color-text-muted, #9ca3af);
+@media (hover: hover) {
+  .ldp-panel::-webkit-scrollbar-thumb:hover,
+  .ldp-props::-webkit-scrollbar-thumb:hover,
+  .ldc-canvas-content::-webkit-scrollbar-thumb:hover {
+    background: var(--vcl-color-text-muted, #9ca3af);
+  }
 }
 
 .ld-canvas-wrap {
@@ -103,8 +105,10 @@
   transition: all 0.15s;
   user-select: none;
 }
-.ld-step-field-chk:hover {
-  border-color: var(--vcl-color-primary, #4f6ef7);
+@media (hover: hover) {
+  .ld-step-field-chk:hover {
+    border-color: var(--vcl-color-primary, #4f6ef7);
+  }
 }
 .ld-step-field-chk.checked {
   background: rgba(79, 110, 247, 0.08);
@@ -168,8 +172,10 @@
   gap: calc(4px * var(--vcl-scale));
   transition: all 0.15s;
 }
-.ld-device-btn:hover {
-  background: var(--vcl-color-bg-alt, #f8fafc);
+@media (hover: hover) {
+  .ld-device-btn:hover {
+    background: var(--vcl-color-bg-alt, #f8fafc);
+  }
 }
 .ld-device-btn.active {
   background: var(--vcl-color-primary, #4f6ef7);
@@ -180,18 +186,22 @@
 .ldp-field-item-container {
   border-color: rgba(139, 92, 246, 0.2);
 }
-.ldp-field-item-container:hover {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
-  box-shadow: 0 1px 6px rgba(139, 92, 246, 0.08);
+@media (hover: hover) {
+  .ldp-field-item-container:hover {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+    box-shadow: 0 1px 6px rgba(139, 92, 246, 0.08);
+  }
 }
 .ldp-field-icon-container {
   background: var(--vcl-color-primary-light);
   color: var(--vcl-color-primary-on-surface);
 }
-.ldp-field-item-container:hover .ldp-field-icon {
-  background: var(--vcl-color-primary-soft);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .ldp-field-item-container:hover .ldp-field-icon {
+    background: var(--vcl-color-primary-soft);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .ldp-group-cnt {
   margin-inline-start: calc(4px * var(--vcl-scale));

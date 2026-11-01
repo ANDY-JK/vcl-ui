@@ -50,8 +50,10 @@
   font-size: calc(14px * var(--vcl-scale));
   cursor: pointer;
 }
-.map-retry-btn:hover {
-  border-color: var(--vcl-color-primary);
+@media (hover: hover) {
+  .map-retry-btn:hover {
+    border-color: var(--vcl-color-primary);
+  }
 }
 
 /* 空数据引导 */

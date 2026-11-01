@@ -63,9 +63,11 @@
   font-weight: 700;
   color: #dde0e8;
 }
-.nav-l1:hover {
-  color: #fff;
-  background: transparent;
+@media (hover: hover) {
+  .nav-l1:hover {
+    color: #fff;
+    background: transparent;
+  }
 }
 
 /* ================================================================
@@ -87,17 +89,18 @@
 .nav-level.expanded .nav-arrow {
   transform: rotate(180deg);
 }
-
-/* ================================================================
-   hover / active 状态
-   ================================================================ */
-.nav-level:hover {
-  background: var(--vcl-color-sidebar-hover);
-  color: #fff;
-  opacity: 1;
+@media (hover: hover) {
+  /* ================================================================ hover / active 状态 ================================================================ */
+  .nav-level:hover {
+    background: var(--vcl-color-sidebar-hover);
+    color: #fff;
+    opacity: 1;
+  }
 }
-.nav-level:hover > :deep(svg) {
-  opacity: 1;
+@media (hover: hover) {
+  .nav-level:hover > :deep(svg) {
+    opacity: 1;
+  }
 }
 
 .nav-level.active {

@@ -99,9 +99,11 @@
   cursor: pointer;
   border-radius: var(--vcl-radius-sm);
 }
-.tag-close:hover {
-  opacity: 1;
-  background: rgba(0, 0, 0, 0.08);
+@media (hover: hover) {
+  .tag-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.08);
+  }
 }
 
 /* ===== 角标模式（原 Badge） ===== */

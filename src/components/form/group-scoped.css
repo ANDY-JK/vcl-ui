@@ -151,8 +151,10 @@
   cursor: pointer;
   transition: transform var(--vcl-transition-fast);
 }
-.rate-btn:not(:disabled):hover {
-  transform: scale(1.15);
+@media (hover: hover) {
+  .rate-btn:not(:disabled):hover {
+    transform: scale(1.15);
+  }
 }
 .rate-btn:disabled {
   cursor: default;
@@ -223,8 +225,10 @@
     box-shadow var(--vcl-transition-fast),
     transform var(--vcl-transition-fast);
 }
-.slider-thumb:hover {
-  transform: translate(-50%, -50%) scale(1.1);
+@media (hover: hover) {
+  .slider-thumb:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
 }
 .slider-thumb:focus-visible {
   outline: none;

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * quality-check —— 39 步质量链的唯一执行器（含执行留痕）
+ * quality-check —— 40 步质量链的唯一执行器（含执行留痕）
  *
  * 为什么要有这个脚本：
  *   原先 quality-check 是 package.json 里一条 `&&` 串联的长命令。它有两个结构性缺陷
@@ -12,7 +12,7 @@
  *   最后写 reports/quality-check-latest.json，并把「未执行」的步骤显式标出来。
  *
  * 用法：
- *   node scripts/quality-check.mjs                # 跑全部 39 步
+ *   node scripts/quality-check.mjs                # 跑全部 40 步
  *   node scripts/quality-check.mjs --from=13      # 从第 13 步开始（快速复跑用）
  *   node scripts/quality-check.mjs --only=check:constants   # 只跑名字含关键字的步骤
  *   node scripts/quality-check.mjs --skip=e2e     # 跳过匹配关键字的步骤（本地快速链）
@@ -56,7 +56,7 @@ function runStep(cmd, logPath) {
   })
 }
 
-/** 39 步：与审查报告口径一致（顺序即依赖顺序） */
+/** 40 步：与审查报告口径一致（顺序即依赖顺序） */
 const STEPS = [
   ['typecheck', 'npm run typecheck'],
   ['lint', 'npm run lint'],
@@ -83,6 +83,8 @@ const STEPS = [
   ['check:mutation-tool', 'npm run check:mutation-tool'],
   // 变异审计清单漂移（#300）：find 是源码字面量，实现一改就失效；失效了必须有人知道。
   ['check:mutation-audit', 'npm run check:mutation-audit'],
+  // 裸 :hover 在触屏上会粘滞（#310）：点一下按钮/卡片会一直亮着
+  ['check:hover-guard', 'npm run check:hover-guard'],
   ['check:css-tokens', 'npm run check:css-tokens'],
   ['check:contrast', 'node scripts/contrast-audit.mjs'],
   ['check:css-breakpoints', 'npm run check:css-breakpoints'],
@@ -152,7 +154,7 @@ const flag = (name) => {
  * 快链把显然会坏的提交挡在本地，整链仍是唯一权威（build / e2e / 许可 / 文档都在整链里）。
  * 逃生口：`git commit --no-verify` 或 `SKIP_QUICK_CHECK=1`。
  */
-const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:css-tokens', 'check:i18n', 'test:unit']
+const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:css-tokens', 'check:i18n', 'test:unit']
 const quick = args.includes('--quick')
 if (args.includes('--list')) {
   STEPS.forEach(([n, c], i) => console.log(`${String(i + 1).padStart(2)}. ${n.padEnd(24)} ${c}`))

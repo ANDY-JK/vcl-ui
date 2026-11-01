@@ -94,8 +94,10 @@
   gap: calc(4px * var(--vcl-scale));
   transition: background 0.1s;
 }
-.ldp-prop:hover {
-  background: var(--vcl-color-bg-alt, #fafbfc);
+@media (hover: hover) {
+  .ldp-prop:hover {
+    background: var(--vcl-color-bg-alt, #fafbfc);
+  }
 }
 .ldp-prop label {
   font-size: var(--vcl-fs-11);
@@ -160,9 +162,11 @@
   cursor: pointer;
   transition: all 0.15s;
 }
-.ldp-icon-clear:hover {
-  border-color: var(--vcl-color-danger-on-surface);
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .ldp-icon-clear:hover {
+    border-color: var(--vcl-color-danger-on-surface);
+    color: var(--vcl-color-danger-on-surface);
+  }
 }
 .ldp-prop-row > .ldp-prop {
   padding: 0;

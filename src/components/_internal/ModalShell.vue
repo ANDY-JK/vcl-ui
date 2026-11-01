@@ -239,8 +239,10 @@ function onPanelMousedown() {
   cursor: pointer;
   border-radius: var(--vcl-radius-sm);
 }
-.modal-close:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .modal-close:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 
 .modal-body {

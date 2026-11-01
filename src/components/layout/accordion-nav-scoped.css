@@ -68,9 +68,11 @@
   opacity: 0.6;
   cursor: pointer;
 }
-.nav-search-clear:hover {
-  opacity: 1;
-  background: var(--vcl-color-sidebar-active);
+@media (hover: hover) {
+  .nav-search-clear:hover {
+    opacity: 1;
+    background: var(--vcl-color-sidebar-active);
+  }
 }
 
 /* 根级叶子节点（无 children 的顶级导航项） */
@@ -107,13 +109,17 @@
   flex: 1;
   min-width: 0;
 }
-.nav-leaf-root:hover {
-  background: var(--vcl-color-sidebar-hover);
-  color: #fff;
-  opacity: 1;
+@media (hover: hover) {
+  .nav-leaf-root:hover {
+    background: var(--vcl-color-sidebar-hover);
+    color: #fff;
+    opacity: 1;
+  }
 }
-.nav-leaf-root:hover > :deep(svg) {
-  opacity: 1;
+@media (hover: hover) {
+  .nav-leaf-root:hover > :deep(svg) {
+    opacity: 1;
+  }
 }
 .nav-leaf-root.active {
   background: var(--vcl-color-sidebar-active);

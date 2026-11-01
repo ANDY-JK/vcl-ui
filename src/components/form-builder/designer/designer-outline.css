@@ -65,9 +65,11 @@
   transition: all 0.12s;
   white-space: nowrap;
 }
-.ldo-node:hover {
-  background: var(--vcl-color-bg-alt, #f8fafc);
-  color: var(--vcl-color-text, #1e293b);
+@media (hover: hover) {
+  .ldo-node:hover {
+    background: var(--vcl-color-bg-alt, #f8fafc);
+    color: var(--vcl-color-text, #1e293b);
+  }
 }
 .ldo-node.selected {
   background: rgba(79, 110, 247, 0.08);
@@ -112,8 +114,10 @@
   transition: opacity 0.12s;
   flex-shrink: 0;
 }
-.ldo-node:hover .ldo-tree-actions {
-  opacity: 1;
+@media (hover: hover) {
+  .ldo-node:hover .ldo-tree-actions {
+    opacity: 1;
+  }
 }
 .ldo-del-btn {
   width: calc(26px * var(--vcl-scale));
@@ -127,7 +131,9 @@
   align-items: center;
   justify-content: center;
 }
-.ldo-del-btn:hover {
-  background: var(--vcl-color-danger-bg);
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .ldo-del-btn:hover {
+    background: var(--vcl-color-danger-bg);
+    color: var(--vcl-color-danger-on-surface);
+  }
 }

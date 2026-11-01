@@ -23,8 +23,10 @@
 .list-item:last-child {
   border-bottom: none;
 }
-.list-item:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .list-item:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 
 .item-icon {
@@ -127,10 +129,12 @@
   transition: opacity var(--vcl-transition-fast);
   white-space: nowrap;
 }
-.item-action-btn:hover {
-  /* 2026-10-01：原 opacity 0.85 会把实心底+白字整体压淡（对比 4.28→跌破），改深一档底色 */
-  background: var(--vcl-color-primary-solid-hover);
-  border-color: var(--vcl-color-primary-solid-hover);
+@media (hover: hover) {
+  .item-action-btn:hover {
+    /* 2026-10-01：原 opacity 0.85 会把实心底+白字整体压淡（对比 4.28→跌破），改深一档底色 */
+    background: var(--vcl-color-primary-solid-hover);
+    border-color: var(--vcl-color-primary-solid-hover);
+  }
 }
 .item-action-btn:disabled {
   opacity: var(--vcl-disabled-opacity);

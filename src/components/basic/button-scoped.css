@@ -46,9 +46,11 @@
   color: white;
   border-color: var(--vcl-color-primary-solid);
 }
-.btn-primary:hover:not(:disabled) {
-  background: var(--vcl-color-primary-solid-hover);
-  border-color: var(--vcl-color-primary-solid-hover);
+@media (hover: hover) {
+  .btn-primary:hover:not(:disabled) {
+    background: var(--vcl-color-primary-solid-hover);
+    border-color: var(--vcl-color-primary-solid-hover);
+  }
 }
 
 .btn-secondary {
@@ -56,8 +58,10 @@
   color: var(--vcl-color-text);
   border-color: var(--vcl-color-border);
 }
-.btn-secondary:hover:not(:disabled) {
-  background: var(--vcl-color-border);
+@media (hover: hover) {
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--vcl-color-border);
+  }
 }
 
 .btn-outline {
@@ -69,8 +73,10 @@
   /* 描边跟文字同色，暗色下才不会出现「亮文字 + 深描边」的割裂感 */
   border-color: var(--vcl-color-primary-on-surface);
 }
-.btn-outline:hover:not(:disabled) {
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .btn-outline:hover:not(:disabled) {
+    background: var(--vcl-color-primary-light);
+  }
 }
 
 .btn-danger {
@@ -80,9 +86,11 @@
   color: white;
   border-color: var(--vcl-color-danger-solid, var(--vcl-color-danger));
 }
-.btn-danger:hover:not(:disabled) {
-  background: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
-  border-color: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
+@media (hover: hover) {
+  .btn-danger:hover:not(:disabled) {
+    background: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
+    border-color: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
+  }
 }
 
 .btn-ghost {
@@ -90,9 +98,11 @@
   color: var(--vcl-color-text-secondary);
   border-color: transparent;
 }
-.btn-ghost:hover:not(:disabled) {
-  background: var(--vcl-color-bg-alt);
-  color: var(--vcl-color-text);
+@media (hover: hover) {
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--vcl-color-bg-alt);
+    color: var(--vcl-color-text);
+  }
 }
 
 /* 通栏 */

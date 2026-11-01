@@ -159,7 +159,9 @@ onUnmounted(clearEscalation)
   cursor: pointer;
   font-family: inherit;
 }
-.eb-btn:hover {
-  opacity: 0.9;
+@media (hover: hover) {
+  .eb-btn:hover {
+    opacity: 0.9;
+  }
 }
 </style>

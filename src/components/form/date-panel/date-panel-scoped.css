@@ -20,9 +20,11 @@
     background var(--vcl-transition-fast),
     color var(--vcl-transition-fast);
 }
-.dp-nav-btn:hover {
-  background: var(--vcl-color-bg-alt);
-  color: var(--vcl-color-text);
+@media (hover: hover) {
+  .dp-nav-btn:hover {
+    background: var(--vcl-color-bg-alt);
+    color: var(--vcl-color-text);
+  }
 }
 .dp-title {
   flex: 1;
@@ -68,8 +70,10 @@
     background var(--vcl-transition-fast),
     color var(--vcl-transition-fast);
 }
-.dp-cell:hover:not(.disabled):not(.selected):not(.range-start):not(.range-end) {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .dp-cell:hover:not(.disabled):not(.selected):not(.range-start):not(.range-end) {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .dp-cell.other-month {
   color: var(--vcl-color-text-muted);
@@ -141,8 +145,10 @@
   cursor: pointer;
   transition: background var(--vcl-transition-fast);
 }
-.dp-today-btn:hover {
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .dp-today-btn:hover {
+    background: var(--vcl-color-primary-light);
+  }
 }
 .dp-footer-spacer {
   flex: 1;

@@ -85,9 +85,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.dt-filter-option-sort-btn:hover {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .dt-filter-option-sort-btn:hover {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .dt-filter-option-sort-btn.active {
   background: var(--vcl-color-primary-light);
@@ -119,10 +121,12 @@
   transition: all var(--vcl-transition-fast);
   white-space: nowrap;
 }
-.dt-filter-quick-btn:hover {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
-  background: var(--vcl-color-primary-light);
+@media (hover: hover) {
+  .dt-filter-quick-btn:hover {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+    background: var(--vcl-color-primary-light);
+  }
 }
 .dt-filter-quick-count {
   color: var(--vcl-color-text-muted);
@@ -144,8 +148,10 @@
   font-size: var(--vcl-fs-14);
   color: var(--vcl-color-text);
 }
-.dt-filter-option:hover {
-  background: var(--vcl-color-bg);
+@media (hover: hover) {
+  .dt-filter-option:hover {
+    background: var(--vcl-color-bg);
+  }
 }
 .dt-filter-option.selected {
   background: var(--vcl-color-primary-light);
@@ -210,16 +216,20 @@
   color: #fff;
   border-color: var(--vcl-color-primary);
 }
-.dt-filter-btn-apply:hover {
-  background: var(--vcl-color-primary-hover);
+@media (hover: hover) {
+  .dt-filter-btn-apply:hover {
+    background: var(--vcl-color-primary-hover);
+  }
 }
 .dt-filter-btn-reset {
   background: var(--vcl-color-surface);
   color: var(--vcl-color-text-secondary);
 }
-.dt-filter-btn-reset:hover {
-  border-color: var(--vcl-color-text-muted);
-  color: var(--vcl-color-text);
+@media (hover: hover) {
+  .dt-filter-btn-reset:hover {
+    border-color: var(--vcl-color-text-muted);
+    color: var(--vcl-color-text);
+  }
 }
 
 /* ==================== 右键菜单 ==================== */
@@ -242,9 +252,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.dt-context-item:hover:not(.disabled) {
-  background: var(--vcl-color-primary-light);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .dt-context-item:hover:not(.disabled) {
+    background: var(--vcl-color-primary-light);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .dt-context-item.disabled {
   color: var(--vcl-color-text-muted);
@@ -253,10 +265,12 @@
 .dt-context-item.ctx-danger {
   color: var(--vcl-color-danger-on-surface);
 }
-.dt-context-item.ctx-danger:hover:not(.disabled) {
-  /* 走 danger 三元组令牌：两套主题各自声明 --vcl-color-danger-rgb，硬编码会锁死亮色红 */
-  background: rgba(var(--vcl-color-danger-rgb, 239 68 68), 0.08);
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .dt-context-item.ctx-danger:hover:not(.disabled) {
+    /* 走 danger 三元组令牌：两套主题各自声明 --vcl-color-danger-rgb，硬编码会锁死亮色红 */
+    background: rgba(var(--vcl-color-danger-rgb, 239 68 68), 0.08);
+    color: var(--vcl-color-danger-on-surface);
+  }
 }
 .dt-context-item.menu-focused {
   background: var(--vcl-color-primary-light);
@@ -299,8 +313,10 @@
   background: var(--vcl-color-border);
   border-radius: var(--vcl-radius-sm);
 }
-.dt-col-settings::-webkit-scrollbar-thumb:hover {
-  background: var(--vcl-color-border-dark, #94a3b8);
+@media (hover: hover) {
+  .dt-col-settings::-webkit-scrollbar-thumb:hover {
+    background: var(--vcl-color-border-dark, #94a3b8);
+  }
 }
 .dt-col-search {
   width: 100%;
@@ -339,9 +355,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.dt-col-quick-actions button:hover {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .dt-col-quick-actions button:hover {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .dt-col-quick-actions button:disabled {
   opacity: var(--vcl-disabled-opacity);
@@ -485,9 +503,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.dt-col-ops button:hover:not(:disabled) {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .dt-col-ops button:hover:not(:disabled) {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .dt-col-ops button:disabled {
   opacity: var(--vcl-disabled-opacity);

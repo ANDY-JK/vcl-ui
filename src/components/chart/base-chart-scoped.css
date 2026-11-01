@@ -40,9 +40,11 @@
   height: 24px;
   transform: translate(-50%, -50%);
 }
-.chart-tool-btn:hover {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .chart-tool-btn:hover {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .chart-tool-btn svg {
   flex-shrink: 0;

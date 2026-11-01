@@ -185,9 +185,10 @@
   cursor: pointer;
   user-select: none;
 }
-
-.day-header:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .day-header:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 
 .day-header-left {
@@ -292,9 +293,10 @@
   font-weight: 600;
   cursor: pointer;
 }
-
-.btn-nav-day:hover {
-  box-shadow: var(--vcl-shadow-sm);
+@media (hover: hover) {
+  .btn-nav-day:hover {
+    box-shadow: var(--vcl-shadow-sm);
+  }
 }
 
 .btn-set-current {
@@ -372,9 +374,10 @@
   border-radius: var(--vcl-radius-sm);
   background: var(--vcl-color-bg);
 }
-
-.store-item:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .store-item:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 
 .store-num {
@@ -440,11 +443,12 @@
   color: var(--vcl-color-primary-hover);
   font-weight: 500;
 }
-
-.btn-nav-mini:hover {
-  background: var(--vcl-color-primary);
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-surface);
+@media (hover: hover) {
+  .btn-nav-mini:hover {
+    background: var(--vcl-color-primary);
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-surface);
+  }
 }
 
 /* 跳过列表 */

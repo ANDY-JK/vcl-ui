@@ -92,9 +92,11 @@
   opacity: 0.6;
   transition: opacity var(--vcl-transition-fast);
 }
-.tag-close:hover {
-  opacity: 1;
-  background: rgba(79, 110, 247, 0.15);
+@media (hover: hover) {
+  .tag-close:hover {
+    opacity: 1;
+    background: rgba(79, 110, 247, 0.15);
+  }
 }
 .trigger-wrapper.has-tags {
   height: auto;
@@ -157,9 +159,11 @@
     opacity var(--vcl-transition-fast),
     background var(--vcl-transition-fast);
 }
-.select-clear:hover {
-  opacity: 1;
-  background: var(--vcl-color-text);
+@media (hover: hover) {
+  .select-clear:hover {
+    opacity: 1;
+    background: var(--vcl-color-text);
+  }
 }
 .trigger-wrapper .select-clear {
   margin-inline-end: var(--vcl-space-1);

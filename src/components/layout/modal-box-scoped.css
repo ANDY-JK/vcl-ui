@@ -39,8 +39,10 @@
   cursor: pointer;
   text-align: left;
 }
-.select-item:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .select-item:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .select-item.active {
   background: var(--vcl-color-primary-light);

@@ -68,8 +68,10 @@
   border-bottom: 1px solid var(--vcl-color-border);
   vertical-align: middle;
 }
-.ftc-row:hover {
-  background: var(--vcl-color-bg-alt, #f8fafc);
+@media (hover: hover) {
+  .ftc-row:hover {
+    background: var(--vcl-color-bg-alt, #f8fafc);
+  }
 }
 .ftc-td-id {
   font-weight: 600;

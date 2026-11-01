@@ -84,9 +84,11 @@
 .step.clickable {
   cursor: pointer;
 }
-.step.clickable:hover .step-num {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .step.clickable:hover .step-num {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .step.clickable:focus-visible {
   outline: 2px solid var(--vcl-color-primary);

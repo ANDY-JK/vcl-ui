@@ -238,15 +238,16 @@
 .f-input::-webkit-credentials-auto-fill-button {
   visibility: hidden;
 }
-
-/* ── 浏览器自动填充 ── */
-.f-input:-webkit-autofill,
-.f-input:-webkit-autofill:hover,
-.f-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px var(--vcl-color-surface) inset;
-  -webkit-text-fill-color: var(--vcl-color-text);
-  caret-color: var(--vcl-color-text);
-  transition: background-color 5000s ease-in-out 0s;
+@media (hover: hover) {
+  /* ── 浏览器自动填充 ── */
+  .f-input:-webkit-autofill,
+  .f-input:-webkit-autofill:hover,
+  .f-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--vcl-color-surface) inset;
+    -webkit-text-fill-color: var(--vcl-color-text);
+    caret-color: var(--vcl-color-text);
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
 .f-input:-webkit-autofill {
   animation-name: onAutoFillStart;
@@ -369,8 +370,10 @@
 .step-btn + .step-btn {
   border-top: 1px solid var(--vcl-color-border-light);
 }
-.step-btn:hover:not(:disabled) {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .step-btn:hover:not(:disabled) {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .step-btn:active:not(:disabled) {
   background: var(--vcl-color-primary-light);

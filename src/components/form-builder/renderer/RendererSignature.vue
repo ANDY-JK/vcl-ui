@@ -164,7 +164,9 @@ onMounted(() => {
   font-size: var(--vcl-fs-11);
   cursor: pointer;
 }
-.fb-signature-clear:hover {
-  color: var(--vcl-color-danger-on-surface);
+@media (hover: hover) {
+  .fb-signature-clear:hover {
+    color: var(--vcl-color-danger-on-surface);
+  }
 }
 </style>

@@ -36,9 +36,11 @@
   height: 24px;
   transform: translate(-50%, -50%);
 }
-.cl-toggle-all:hover {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .cl-toggle-all:hover {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .cl-toggle-all--active {
   border-color: var(--vcl-color-primary);
@@ -61,8 +63,10 @@
     background 0.15s;
   line-height: 1.6;
 }
-.cl-item:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .cl-item:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .cl-item.off {
   opacity: 0.3;

@@ -45,8 +45,10 @@
   background: var(--vcl-color-border);
   border-radius: var(--vcl-radius-lg);
 }
-.panel-list::-webkit-scrollbar-thumb:hover {
-  background: var(--vcl-color-text-muted);
+@media (hover: hover) {
+  .panel-list::-webkit-scrollbar-thumb:hover {
+    background: var(--vcl-color-text-muted);
+  }
 }
 .panel-item {
   display: flex;
@@ -62,8 +64,10 @@
   transition: background var(--vcl-transition-fast);
   text-align: left;
 }
-.panel-item:hover:not(.disabled) {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .panel-item:hover:not(.disabled) {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 .panel-item.selected {
   background: var(--vcl-color-primary-light);
@@ -78,8 +82,10 @@
 .panel-item.danger {
   color: var(--vcl-color-danger-on-surface);
 }
-.panel-item.danger:hover {
-  background: var(--vcl-color-danger-bg);
+@media (hover: hover) {
+  .panel-item.danger:hover {
+    background: var(--vcl-color-danger-bg);
+  }
 }
 .item-text {
   display: flex;
@@ -170,9 +176,11 @@
   cursor: pointer;
   transition: all var(--vcl-transition-fast);
 }
-.dd-btn:hover {
-  border-color: var(--vcl-color-primary);
-  color: var(--vcl-color-primary-on-surface);
+@media (hover: hover) {
+  .dd-btn:hover {
+    border-color: var(--vcl-color-primary);
+    color: var(--vcl-color-primary-on-surface);
+  }
 }
 .dd-btn:disabled {
   opacity: var(--vcl-disabled-opacity);
@@ -183,7 +191,9 @@
   border-color: var(--vcl-color-primary);
   color: #fff;
 }
-.dd-btn-primary:hover {
-  opacity: 0.85;
-  color: #fff;
+@media (hover: hover) {
+  .dd-btn-primary:hover {
+    opacity: 0.85;
+    color: #fff;
+  }
 }

@@ -72,8 +72,10 @@
   cursor: pointer;
   border-radius: var(--vcl-radius-sm);
 }
-.drawer-close:hover {
-  background: var(--vcl-color-bg-alt);
+@media (hover: hover) {
+  .drawer-close:hover {
+    background: var(--vcl-color-bg-alt);
+  }
 }
 
 .drawer-body {
