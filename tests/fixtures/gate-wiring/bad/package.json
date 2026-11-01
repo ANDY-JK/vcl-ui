@@ -1,0 +1,4 @@
+{
+  "name": "bad-fixture",
+  "scripts": { "check:a": "node scripts/check-a.mjs" }
+}

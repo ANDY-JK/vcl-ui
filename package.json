@@ -46,6 +46,7 @@
     "check:hover-guard": "node scripts/wrap-hover-media.mjs --check",
     "check:tab-sequence": "node scripts/check-tab-sequence.mjs",
     "check:review-appendix": "node scripts/check-review-appendix.mjs",
+    "check:gate-wiring": "node scripts/check-gate-wiring.mjs",
     "fix:hover-guard": "node scripts/wrap-hover-media.mjs --write",
     "mutation-audit": "node scripts/mutation-audit.mjs",
     "mutation-control": "node scripts/mutation-control.mjs",

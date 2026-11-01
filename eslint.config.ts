@@ -145,6 +145,9 @@ export default [
       // 仓内 vendor 的上游代码（SheetJS）：不是本库写的，lint/prettier 一律不碰——
       // 一旦被 --fix 改写过，`VENDOR.json` 的逐字节登记就对不上了（check:vendor-data 会红）
       'src/components/_internal/xlsx/**',
+      // 闸门自测用的夹具：里面是**故意写错**的代码片段（未登记的 skip、写死 px 的样式、
+      // 未接线的 quality-check 等），lint 它们只会制造噪声 —— 它们由各自的 *-gate.spec.ts 校验
+      'tests/fixtures/**',
       'backup/**',
       'notes/**',
       '.playwright-cli/**',

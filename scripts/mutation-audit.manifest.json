@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "gate-wiring-chain",
+      "file": "scripts/check-gate-wiring.mjs",
+      "find": "  if (!chain.includes(g.npm)) {",
+      "replace": "  if (false) {",
+      "cmd": "npx vitest run tests/unit/gate-wiring-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：闸口没接进链也不报，等于闸口没写（#335）"
+    },
+    {
+      "id": "gate-wiring-npm",
+      "file": "scripts/check-gate-wiring.mjs",
+      "find": "  if (!npmScripts[g.npm]) {",
+      "replace": "  if (false) {",
+      "cmd": "npx vitest run tests/unit/gate-wiring-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：缺 npm 脚本不报，链里按名调用会失败（#335）"
+    },
+    {
+      "id": "gate-wiring-deadlink",
+      "file": "scripts/check-gate-wiring.mjs",
+      "find": "  if (!npmScripts[name]) problems.push(",
+      "replace": "  if (false) problems.push(",
+      "cmd": "npx vitest run tests/unit/gate-wiring-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：链里的死链不报（删了脚本留死链）（#335）"
+    },
+    {
       "id": "review-appendix-gate-cols",
       "file": "scripts/check-review-appendix.mjs",
       "find": "  const bad = rows.filter((l) => cols(l) !== 5)",
