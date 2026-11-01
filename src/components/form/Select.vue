@@ -546,6 +546,20 @@ function onComboBlur() {
   }, _BLUR_SETTLE_MS)
 }
 
+/**
+ * 清空入口守卫（2026-11-01 #286）。
+ *
+ * 模板上的 × 已按 `!disabled` 隐藏，但 `onClear` 仍可被其它路径
+ * （外部调用 / 键盘扩展 / 未来新增入口）触发 —— 只读与禁用语义必须由**入口**保证，
+ * 而不是靠"界面上看不见"。
+ */
+function onClearGuarded(e: MouseEvent) {
+  if (props.disabled) {
+    e.stopPropagation()
+    return
+  }
+  onClear(e)
+}
 function onComboKeydown(e: KeyboardEvent) {
   // 输入法合成期一律放行（2026-11-01 #276）。
   // 中文用户输拼音 → 候选框 → 按 Enter 上屏；此前这里会把 Enter 当作"确认选中"，
@@ -773,13 +787,13 @@ const {
         />
 
         <span
-          v-if="clearable && hasValue"
+          v-if="clearable && hasValue && !disabled"
           class="select-clear"
           role="button"
           :aria-label="t('form.clear')"
           tabindex="-1"
           @mousedown.prevent
-          @click="onClear"
+          @click="onClearGuarded"
         >
           <IconSvg type="x" size="xs" />
         </span>

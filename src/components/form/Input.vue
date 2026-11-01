@@ -299,12 +299,25 @@ function onStepperBlur(e: FocusEvent) {
   emit('blur', e)
 }
 
+/**
+ * 清空按钮是否可用（2026-11-01 #286）。
+ *
+ * 旧实现三处清空按钮只判 `clearable && hasValue`，**不看 readonly / disabled** ——
+ * 于是把字段设为只读（例如已提交的表单）或禁用（无权限字段）后，
+ * 用户仍能点 × 把值清掉，宿主一保存数据就丢了。
+ * 「只读」= 能看不能改；「禁用」= 连写操作入口都不该有 —— 两者都不该出现清空按钮。
+ */
+const canClear = computed(() => props.clearable && !props.readonly && !props.disabled)
+
 function clearTaValue() {
+  // 兜底：按钮已按 canClear 隐藏，但反复防御——任何路径都不该在只读/禁用下写入
+  if (!canClear.value) return
   emit('update:modelValue', '')
   emit('clear')
 }
 
 function clearTextValue() {
+  if (!canClear.value) return
   emit('update:modelValue', '')
   emit('clear')
 }
@@ -427,7 +440,7 @@ const floatingRaised = computed(() => {
           label
         }}</label>
         <button
-          v-if="clearable && hasValue"
+          v-if="canClear && hasValue"
           type="button"
           class="f-clear"
           tabindex="-1"
@@ -474,7 +487,7 @@ const floatingRaised = computed(() => {
           label
         }}</label>
         <button
-          v-if="clearable && hasTaValue"
+          v-if="canClear && hasTaValue"
           type="button"
           class="f-clear"
           tabindex="-1"
@@ -571,7 +584,7 @@ const floatingRaised = computed(() => {
           <IconSvg :type="showPassword ? 'eye-off' : 'eye'" size="sm" />
         </button>
         <button
-          v-if="clearable && hasValue && type !== 'password'"
+          v-if="canClear && hasValue && type !== 'password'"
           type="button"
           class="f-clear"
           tabindex="-1"

@@ -221,3 +221,40 @@ describe('IME 合成期', () => {
     }
   })
 })
+/* ════════════════════════════════════════
+ * 清空按钮不得突破禁用（#286）
+ *
+ * 探针实测：disabled 的 Select 上 `.select-clear` 仍渲染，点击后真的 emit `update:modelValue: null`。
+ * ════════════════════════════════════════ */
+describe('清空按钮：禁用语义', () => {
+  it('**disabled：不渲染清空按钮**', async () => {
+    const w = mount(Select, {
+      props: { modelValue: 'bj', options: [...options], clearable: true, disabled: true },
+      attachTo: document.body,
+    })
+    try {
+      await nextTick()
+      expect(w.find('.select-clear').exists(), '禁用态不该有清空入口').toBe(false)
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('**正常路径不受影响**：可清空且 emit null', async () => {
+    const w = mount(Select, {
+      props: { modelValue: 'bj', options: [...options], clearable: true },
+      attachTo: document.body,
+    })
+    try {
+      await nextTick()
+      const btn = w.find('.select-clear')
+      expect(btn.exists()).toBe(true)
+      await btn.trigger('click')
+      await nextTick()
+      expect(w.emitted('update:modelValue')).toEqual([[null]])
+      expect(w.emitted('change')).toEqual([[null]])
+    } finally {
+      w.unmount()
+    }
+  })
+})

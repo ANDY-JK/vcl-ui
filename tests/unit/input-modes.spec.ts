@@ -264,3 +264,43 @@ describe('Input · 禁用与只读', () => {
     w.unmount()
   })
 })
+/* ════════════════════════════════════════
+ * 清空按钮不得突破只读 / 禁用（#286）
+ *
+ * 旧实现三处清空按钮只判 `clearable && hasValue`，不看 readonly / disabled：
+ * 把字段设为只读（已提交的表单）或禁用（无权限字段）后，用户仍能点 × 把值清掉，
+ * 宿主一保存数据就丢了。探针实测：readonly/disabled 下点击都 emit `update:modelValue: ''`。
+ * ════════════════════════════════════════ */
+describe('清空按钮：只读/禁用语义', () => {
+  it('**readonly：不渲染清空按钮**（只读 = 能看不能改）', () => {
+    const w = text({ clearable: true, readonly: true }, '内容')
+    expect(w.find('.f-clear').exists()).toBe(false)
+    w.unmount()
+  })
+
+  it('**disabled：不渲染清空按钮**（禁用连写操作入口都不该有）', () => {
+    const w = text({ clearable: true, disabled: true }, '内容')
+    expect(w.find('.f-clear').exists()).toBe(false)
+    w.unmount()
+  })
+
+  it('readonly 的 textarea 同样不渲染', () => {
+    const w = text({ type: 'textarea', clearable: true, readonly: true }, '内容')
+    expect(w.find('.f-clear').exists()).toBe(false)
+    w.unmount()
+  })
+
+  it('**正常路径不受影响**：clearable 且可写时出现且能清空', async () => {
+    const w = text({ clearable: true }, '内容')
+    const btn = w.find('.f-clear')
+    expect(btn.exists()).toBe(true)
+    await btn.trigger('click')
+    expect(w.emitted('update:modelValue')).toEqual([['']])
+    expect(w.emitted('clear')).toBeTruthy()
+    w.unmount()
+  })
+
+  it('clearable=false 时任何状态都没有清空按钮（原语义不变）', () => {
+    expect(text({ clearable: false }, '内容').find('.f-clear').exists()).toBe(false)
+  })
+})
