@@ -100,6 +100,27 @@ describe('useTableFilter 行为锁定', () => {
     expect(api.filterState.value.city).toBeUndefined()
   })
 
+  it('**applyFilter：选中"全部"视为未筛选**（否则会留下一个"全选"的筛选 chip）', () => {
+    const { api, emitted } = makeFilter()
+    openFilter(api, 'city')
+    // 选中全量选项（3 个城市）
+    api.filterDraft.value!.selectedValues = ['北京', '广州', '上海']
+    api.applyFilter()
+    expect(api.filterState.value.city, '全选不该留下筛选状态').toBeUndefined()
+    expect(emitted.at(-1), 'emit 的应是空筛选').toEqual({})
+  })
+
+  it('**搜索后"选中全部可见项"≠ 全选**（全量口径，回归 #272 那类误删）', () => {
+    const { api } = makeFilter()
+    openFilter(api, 'city')
+    // 搜索只剩 1 个可见项
+    api.filterDraft.value!.searchText = 'bei'
+    expect(api.filteredOptions.value.map((o) => o.value)).toEqual(['北京'])
+    // 选中这个"全部可见项"——但全量有 3 个，所以这是**真实筛选**
+    api.filterDraft.value!.selectedValues = ['北京']
+    api.applyFilter()
+    expect(api.filterState.value.city?.selectedValues, '必须保留筛选，不能当成全选删掉').toEqual(['北京'])
+  })
   it('filteredOptions：搜索过滤选项（拼音/文本）', () => {
     const { api } = makeFilter()
     openFilter(api, 'city')

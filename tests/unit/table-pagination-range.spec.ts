@@ -55,6 +55,17 @@ describe('DataTable 分页 · 受控页码越界（总数 12 / 每页 10 = 2 页
     w.unmount()
   })
 
+  it('**小数页码被向下取整**（?page=1.9 / 除法算出来的 2.5 不能进状态）', async () => {
+    // 宿主把页码存进 URL 再恢复时常见 1.9、2.5 这类值；
+    // 不取整会让状态行显示「第 1.9 / 2 页」、切片索引变成小数。
+    const w = mountTable({ currentPage: 1.9 })
+    await nextTick()
+    const txt = statusText(w)
+    expect(txt, `状态行内容：${txt}`).not.toContain('1.9')
+    expect(txt, '应向下取整到第 1 页').toContain('1 / 2')
+    expect(activePages(w), 'active 页码只能是整数').toEqual(['1'])
+    w.unmount()
+  })
   it('越界时表格不能是空表（切片要用夹紧后的页码）', async () => {
     const w = mountTable({ currentPage: 5 }) // 12 行 / 每页 10 → 第 2 页应有 2 行
     await nextTick()
