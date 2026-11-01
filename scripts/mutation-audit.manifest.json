@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "toast-inline-role",
+      "file": "src/components/feedback/Toast.vue",
+      "find": ":role=\"type === 'error' ? 'alert' : 'status'\"",
+      "replace": ":role=\"undefined\"",
+      "cmd": "npx vitest run tests/unit/toast-a11y-live.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：内联提示没有 role，读屏用户完全感知不到「保存失败」（#315）"
+    },
+    {
+      "id": "toast-inline-assertive",
+      "file": "src/components/feedback/Toast.vue",
+      "find": ":aria-live=\"type === 'error' ? 'assertive' : 'polite'\"",
+      "replace": ":aria-live=\"'polite'\"",
+      "cmd": "npx vitest run tests/unit/toast-a11y-live.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：错误提示降级为礼貌播报，正在读别的内容时会被吞掉（#315）"
+    },
+    {
       "id": "toast-dedupe",
       "file": "src/components/feedback/Toast.vue",
       "find": "  if (dup) {",

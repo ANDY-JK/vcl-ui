@@ -212,9 +212,14 @@ defineExpose({
 
 <template>
   <!-- inline 模式：内联提示条（替代 Alert） -->
+  <!-- 内联提示同样要能被读屏播报（#315）：弹幕模式的每条有 role，内联模式此前**一个都没有** ——
+       屏幕阅读器用户完全感知不到"表单保存失败"这类关键信息。
+       error 用 alert（打断式），其余用 status（礼貌播报），与弹幕模式口径一致。 -->
   <div
     v-if="isInline && inlineVisible"
     class="toast-inline"
+    :role="type === 'error' ? 'alert' : 'status'"
+    :aria-live="type === 'error' ? 'assertive' : 'polite'"
     :style="{ background: inlineBgMap[type], borderColor: inlineBorderMap[type] }"
   >
     <IconSvg v-if="showIcon" :type="iconMap[type]" size="md" :color="colorMap[type]" class="toast-inline-icon" />
