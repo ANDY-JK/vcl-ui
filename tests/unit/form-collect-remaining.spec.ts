@@ -174,6 +174,7 @@ const xlsxState = {
   throwOnWrite: false,
   files: [] as string[],
   readExporting: null as null | (() => boolean),
+  sheetOpts: null as null | { cellDates?: boolean },
 }
 
 function installXlsxMock() {
@@ -182,15 +183,20 @@ function installXlsxMock() {
   xlsxState.throwOnWrite = false
   xlsxState.files = []
   xlsxState.readExporting = null
+  xlsxState.sheetOpts = null
   vi.doMock('@/components/_internal/xlsx/xlsx.mjs', () => ({
     utils: {
-      json_to_sheet: (rows: Record<string, unknown>[]) => {
+      json_to_sheet: (rows: Record<string, unknown>[], opts?: { cellDates?: boolean }) => {
+        xlsxState.sheetOpts = opts ?? null
         xlsxState.rows = rows
         if (xlsxState.readExporting) xlsxState.exportingDuringSheet = xlsxState.readExporting()
         return { rows }
       },
       book_new: () => ({ sheets: [] }),
       book_append_sheet: () => {},
+      // 真实 SheetJS 有 encode_cell；导出会给"提交时间"列套日期格式（#303），
+      // 假件缺这个就会抛 TypeError → 整条导出走 catch 分支，测试会以"没写出文件"失败
+      encode_cell: (addr: { c: number; r: number }) => `C${addr.c}R${addr.r}`,
     },
     writeFile: (_wb: unknown, name: string) => {
       if (xlsxState.throwOnWrite) throw new Error('写盘失败')
@@ -534,6 +540,9 @@ describe('exportExcel 导出', () => {
     expect(xlsxState.files[0], '扩展名为 .xlsx').toMatch(/\.xlsx$/)
     expect(vm.okMsg, '成功提示').toBe(t('formBuilder.exportDone'))
     expect(vm.exporting, '结束后复位导出态').toBe(false)
+    // 时间列要写成**日期单元格**（#303）：不传 cellDates 时 SheetJS 会把 Date 写成文本/序列号，
+    // 用户按时间排序得到字典序、筛选不认日期区间
+    expect(xlsxState.sheetOpts?.cellDates, 'json_to_sheet 必须带 cellDates:true').toBe(true)
   })
 
   it('**成功后 okMsg 在 3000ms 后自动消失**', async () => {

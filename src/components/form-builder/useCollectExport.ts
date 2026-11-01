@@ -51,13 +51,41 @@ export interface CollectExportOptions {
 /** 成功提示自动消失时间 */
 const DEFAULT_OK_MSG_TTL_MS = 3000
 
+/** 提交时间的 Excel 数字格式（日期时间列必须带格式，否则 Excel 显示成一串序列号） */
+export const EXPORT_TIME_FORMAT = 'yyyy-mm-dd hh:mm:ss'
+
+/**
+ * 把记录里的"本地化展示字符串"解析成 Date，解析不出来返回 null（#303）。
+ *
+ * 为什么需要：收集页把 `time` 存成 `2026/8/23 14:30:00` 这种**展示字符串**（TD-94）。
+ * 导出 Excel 时若原样写字符串，那一列在 Excel 里是**文本** —— 用户按时间排序会得到
+ * 字典序（"2026/10/1" 排在 "2026/9/1" 前面）、筛选也不认日期区间。
+ *
+ * 这里用**宽容解析**（先试原生 Date.parse，再把 `YYYY/M/D H:m:s` 规范化），
+ * 解析失败就**保持原字符串**——导出宁可少一个日期类型，也不能丢内容。
+ */
+export function parseRecordTime(raw: string | undefined): Date | null {
+  if (!raw) return null
+  const direct = new Date(raw)
+  if (!Number.isNaN(direct.getTime())) return direct
+  // 某些环境不认 `2026/8/23 14:30:00` 里的斜杠或没有秒；补零后重试一次
+  const m = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(raw.trim())
+  if (!m) return null
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] ?? 0))
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
 /** 把一条记录摊平成"表头 → 单元格"的对象（纯函数，便于单测） */
 export function buildExportRow(
   record: { time?: string; data: Record<string, unknown> },
   columns: ExportColumn[],
   translate: (key: string) => string,
 ): Record<string, unknown> {
-  const row: Record<string, unknown> = { [translate('fbd.submittedAt')]: record.time ?? '' }
+  // 首列"提交时间"：能解析成 Date 就写 Date（Excel 里是可排序/可筛选的日期），
+  // 解析不出来回退原字符串，绝不丢内容（#303）
+  const row: Record<string, unknown> = {
+    [translate('fbd.submittedAt')]: parseRecordTime(record.time) ?? record.time ?? '',
+  }
   for (const col of columns) {
     const val = record.data[col.key]
     if (Array.isArray(val)) row[col.label] = val.join(', ')
@@ -90,7 +118,16 @@ export function useCollectExport(opts: CollectExportOptions) {
       const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
       const columns = resolveExportColumns(opts.fields(), opts.exportColumns?.())
       const rows = opts.records.value.map((r) => buildExportRow(r, columns, t))
-      const ws = XLSX.utils.json_to_sheet(rows)
+      // cellDates: true —— 让 Date 值写成真正的日期单元格（而不是序列号或文本），
+      // 并把时间列套上格式，用户打开就是「2026-08-23 14:30:00」且可排序/筛选（#303）
+      const ws = XLSX.utils.json_to_sheet(rows, { cellDates: true })
+      if (columns.length || rows.length) {
+        for (let r = 0; r < rows.length; r++) {
+          const addr = XLSX.utils.encode_cell({ c: 0, r: r + 1 })
+          const cell = (ws as Record<string, unknown>)[addr] as { t?: string; z?: string } | undefined
+          if (cell && cell.t === 'd') cell.z = EXPORT_TIME_FORMAT
+        }
+      }
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, t('fbd.sheetName'))
       const title = opts.exportFileName?.() || opts.meta().title || t('fbd.defaultFileName')

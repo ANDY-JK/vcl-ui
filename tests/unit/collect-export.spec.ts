@@ -14,7 +14,7 @@
  * 单独测它比每次都起一个挂载更直接。
  */
 import { describe, it, expect } from 'vitest'
-import { buildExportRow, resolveExportColumns } from '@/components/form-builder/useCollectExport'
+import { buildExportRow, parseRecordTime, resolveExportColumns } from '@/components/form-builder/useCollectExport'
 import type { DesignerField } from '@/components/form-builder/designer/types'
 
 /** 简易翻译：直接返回 key，便于断言"用的是哪个键"而不是文案 */
@@ -30,7 +30,16 @@ describe('buildExportRow · 摊平规则', () => {
 
   it('首列固定是提交时间（用 i18n 键，不是硬编码文案）', () => {
     const row = buildExportRow({ time: '2026-11-01 10:00', data: {} }, [], t)
-    expect(row).toEqual({ 'fbd.submittedAt': '2026-11-01 10:00' })
+    // 可解析的时间写成 Date（Excel 里可排序/筛选，见 #303）
+    const v = row['fbd.submittedAt']
+    expect(v instanceof Date, `应为 Date，实际：${String(v)}`).toBe(true)
+    expect((v as Date).getFullYear()).toBe(2026)
+    expect((v as Date).getHours()).toBe(10)
+  })
+
+  it('**时间解析不出来时保留原字符串**（导出宁可少类型，不能丢内容）', () => {
+    const row = buildExportRow({ time: '未知时间', data: {} }, [], t)
+    expect(row['fbd.submittedAt']).toBe('未知时间')
   })
 
   it('**数组 → 逗号+空格连接**（checkbox/upload 多值）', () => {
@@ -79,5 +88,36 @@ describe('resolveExportColumns · 列来源优先级', () => {
 
   it('空的 exportColumns 数组视为未给（回落到字段自动生成）', () => {
     expect(resolveExportColumns(fields, []).map((c) => c.key)).toEqual(['name', 'age'])
+  })
+})
+/* ════════════════════════════════════════
+ * 提交时间写成真正的日期单元格（#303）
+ *
+ * 收集页把 `time` 存成展示字符串（TD-94）。原样写进 Excel 就是**文本列**：
+ * 排序按字典序（"2026/10/1" 排到 "2026/9/1" 前面）、筛选不认日期区间。
+ * ════════════════════════════════════════ */
+describe('parseRecordTime · 宽容解析', () => {
+  it('标准展示格式（斜杠 / 空格分隔）', () => {
+    const d = parseRecordTime('2026/8/23 14:30:00')!
+    expect(d.getFullYear()).toBe(2026)
+    expect(d.getMonth()).toBe(7)
+    expect(d.getDate()).toBe(23)
+    expect(d.getHours()).toBe(14)
+    expect(d.getMinutes()).toBe(30)
+  })
+
+  it('没有秒也能解析', () => {
+    const d = parseRecordTime('2026-08-23 14:30')!
+    expect(d.getMinutes()).toBe(30)
+  })
+
+  it('ISO 字符串走原生解析', () => {
+    expect(parseRecordTime('2026-08-23T06:30:00.000Z')).toBeInstanceOf(Date)
+  })
+
+  it('空值与乱码返回 null（调用方回退原字符串）', () => {
+    expect(parseRecordTime(undefined)).toBe(null)
+    expect(parseRecordTime('')).toBe(null)
+    expect(parseRecordTime('刚刚')).toBe(null)
   })
 })

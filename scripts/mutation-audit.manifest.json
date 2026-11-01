@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "export-time-as-date",
+      "file": "src/components/form-builder/useCollectExport.ts",
+      "find": "if (!Number.isNaN(direct.getTime())) return direct",
+      "replace": "if (true) return null",
+      "cmd": "npx vitest run tests/unit/collect-export.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：提交时间退回文本列，Excel 里按时间排序得到字典序、筛选不认日期区间（#303）"
+    },
+    {
+      "id": "export-cell-dates",
+      "file": "src/components/form-builder/useCollectExport.ts",
+      "find": "XLSX.utils.json_to_sheet(rows, { cellDates: true })",
+      "replace": "XLSX.utils.json_to_sheet(rows)",
+      "cmd": "npx vitest run tests/unit/form-collect-remaining.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：Date 被 SheetJS 当普通值写成文本/序列号，日期格式白设（#303）"
+    },
+    {
+      "id": "export-time-fallback",
+      "file": "src/components/form-builder/useCollectExport.ts",
+      "find": "parseRecordTime(record.time) ?? record.time ?? ''",
+      "replace": "parseRecordTime(record.time) ?? ''",
+      "cmd": "npx vitest run tests/unit/collect-export.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：解析不出的时间被抹成空串 —— 导出丢内容（#303 明确要求回退原字符串）"
+    },
+    {
       "id": "date-locale-param",
       "file": "src/components/form/utils/date-utils.ts",
       "find": "  return d.toLocaleDateString(locale)",
