@@ -43,7 +43,7 @@ setRuntimeObserver({
 | `amap/rest-key-missing` | error | [amap] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY | — | `src/components/amap/amap-key.ts:100` |
 | `chart/init-failed` | error | [BaseChart] ECharts 初始化失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:257` |
 | `chart/set-option-failed` | error | [BaseChart] setOption 失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:282` |
-| `form-builder/geocode-failed` | warn | [map-picker] 反向地理编码失败，已忽略（坐标不受影响）: | `{ error: String(err) }` | `src/components/form-builder/renderer/RendererMapPicker.vue:91` |
+| `form-builder/geocode-failed` | warn | [map-picker] 反向地理编码失败，已忽略（坐标不受影响）: | `{ error: String(err) }` | `src/components/form-builder/renderer/RendererMapPicker.vue:99` |
 | `form-builder/share-invalid` | warn | 分享码无效或已损坏 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), }` | `src/components/form-builder/FormShareView.vue:117` |
 | `form-builder/share-signature-invalid` | warn | 分享码签名校验未通过，已拒绝渲染 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), signer: signer.name, }` | `src/components/form-builder/FormShareView.vue:107` |
 | `form-builder/submit-failed` | error | 表单提交失败（网络层） | `{ saveUrl: verdict.url, fieldCount, reason: err instanceof Error ? err.message : String(err) }` | `src/components/form-builder/useFormRemote.ts:156` |
