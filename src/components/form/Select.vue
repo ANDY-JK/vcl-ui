@@ -607,6 +607,14 @@ function onComboKeydown(e: KeyboardEvent) {
     highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
     return
   }
+  // Home / End（#317）：输入型（select/combobox）走的是这个处理器，与 onTriggerKeydown 同口径。
+  // 未打开时不拦截：触发器上的 Home/End 要留给页面滚动。
+  if (e.key === 'Home' || e.key === 'End') {
+    if (!open.value) return
+    e.preventDefault?.()
+    highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)
+    return
+  }
   if (e.key === 'Enter') {
     e.preventDefault?.()
     if (highlightIdx.value >= 0) {
@@ -683,6 +691,10 @@ function onTriggerKeydown(e: KeyboardEvent) {
       }
       if (e.key === 'ArrowDown') highlightIdx.value = Math.min(highlightIdx.value + 1, navCount.value - 1)
       else highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
+    } else if (e.key === 'Home' || e.key === 'End') {
+      if (!open.value) return
+      e.preventDefault?.()
+      highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)
     } else if (e.key === 'Enter' && open.value) {
       e.preventDefault?.()
       const item = navItems.value[highlightIdx.value]
@@ -715,6 +727,14 @@ function onTriggerKeydown(e: KeyboardEvent) {
   if (e.key === 'ArrowUp') {
     e.preventDefault?.()
     highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
+    return
+  }
+  // Home / End（#317）：WAI-ARIA combobox 的标准键位。此前只有上下箭头 ——
+  // 100 条选项里想跳到第一条/最后一条只能一格一格按。
+  if (e.key === 'Home' || e.key === 'End') {
+    if (!open.value) return
+    e.preventDefault?.()
+    highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)
   }
 }
 

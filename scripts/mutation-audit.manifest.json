@@ -151,6 +151,15 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "select-home-end",
+      "file": "src/components/form/Select.vue",
+      "find": "    highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)\n    return",
+      "replace": "    return",
+      "cmd": "npx vitest run tests/unit/select-home-end.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：100 条选项里按 End 没反应，只能一格一格按到末尾（#317）"
+    },
+    {
       "id": "select-error-describedby",
       "file": "src/components/form/Select.vue",
       "find": ":aria-describedby=\"errorMsg || props.error ? errorDescId : undefined\"",
