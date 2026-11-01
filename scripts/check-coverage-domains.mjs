@@ -13,7 +13,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-const REPORT = path.join(process.cwd(), 'reports/coverage/coverage-final.json')
+/**
+ * 覆盖数据来源：默认 reports/coverage/coverage-final.json（配合 .full-run 标记）；
+ * 自测时用 `--input <json>` 直接喂一份**合成**覆盖数据，此时跳过标记校验
+ * （标记校验防的是"单 spec 覆盖了全量数据"，夹具里不存在这个问题）。
+ */
+const inputIdx = process.argv.indexOf('--input')
+const REPORT = inputIdx > -1 ? process.argv[inputIdx + 1] : path.join(process.cwd(), 'reports/coverage/coverage-final.json')
 
 // 基线 2026-09-20（v8 覆盖，136 spec）。格式：[语句, 分支, 函数]，单位 %。
 // 洼地备注写在这里，抬地板时按备注找补测试的切入点。
@@ -97,7 +103,7 @@ const j = JSON.parse(fs.readFileSync(REPORT, 'utf8'))
 // （若有人先全量跑、再单 spec 带 --coverage，coverage 会变新而标记不变旧 → 立刻抓出）。
 const FULL_RUN_MARKER = path.join(path.dirname(REPORT), '.full-run')
 
-if (!fs.existsSync(FULL_RUN_MARKER)) {
+if (inputIdx === -1 && !fs.existsSync(FULL_RUN_MARKER)) {
   console.error(
     '❌ 覆盖数据来源不明：找不到全量跑的标记 reports/coverage/.full-run。\n' +
       '   单跑 `vitest run <spec> --coverage` 也会产出 coverage-final.json，\n' +
@@ -107,8 +113,9 @@ if (!fs.existsSync(FULL_RUN_MARKER)) {
   process.exit(1)
 }
 
-const markerTime = fs.statSync(FULL_RUN_MARKER).mtimeMs
-const reportTime = fs.statSync(REPORT).mtimeMs
+if (inputIdx === -1) {
+  const markerTime = fs.statSync(FULL_RUN_MARKER).mtimeMs
+  const reportTime = fs.statSync(REPORT).mtimeMs
 if (reportTime > markerTime) {
   console.error(
     '❌ 覆盖数据比全量标记更新 —— 说明在全量跑之后又单跑了某个 spec 带 --coverage，\n' +
@@ -118,6 +125,7 @@ if (reportTime > markerTime) {
       '   请重新跑 `npm run test:unit`。',
   )
   process.exit(1)
+}
 }
 
 const agg = {}

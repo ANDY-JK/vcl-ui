@@ -187,6 +187,24 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "coverage-floor-compare",
+      "file": "scripts/check-coverage-domains.mjs",
+      "find": "    const ok = c >= floor[i]",
+      "replace": "    const ok = true",
+      "cmd": "npx vitest run tests/unit/coverage-domains-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：地板比较失效，任意覆盖率都判达标（#348）"
+    },
+    {
+      "id": "coverage-new-domain",
+      "file": "scripts/check-coverage-domains.mjs",
+      "find": "  if (!(d in FLOORS)) fail.push(`新域 ${d} 没有登记地板——按当前实测值补 FLOORS 条目`)",
+      "replace": "  if (false) fail.push(`新域 ${d} 没有登记地板——按当前实测值补 FLOORS 条目`)",
+      "cmd": "npx vitest run tests/unit/coverage-domains-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：新域裸奔不报（#348）"
+    },
+    {
       "id": "deps-known-noise",
       "file": "scripts/check-deps.mjs",
       "find": "const known = KNOWN_NOISE.some((k) => k.pattern.test(line))",
