@@ -925,6 +925,8 @@ const {
                 <button
                   type="button"
                   class="panel-item"
+                  role="menuitem"
+                  tabindex="-1"
                   :class="{ danger: item.danger, highlighted: idx === highlightIdx }"
                   @click="onMenuClick(item)"
                 >
@@ -950,6 +952,7 @@ const {
                   :style="{ paddingLeft: `calc(${12 + flatNode.depth * 20}px * var(--vcl-scale))` }"
                   :disabled="flatNode.node.disabled"
                   role="treeitem"
+                  tabindex="-1"
                   :aria-selected="flatNode.isLeaf ? isTreeSelected(flatNode) : undefined"
                   @click="onTreeNodeClick(flatNode)"
                   @mouseenter="highlightIdx = idx"
@@ -1058,6 +1061,7 @@ const {
                 :class="{ selected: isSelected(opt), disabled: opt.disabled, highlighted: index === highlightIdx }"
                 :disabled="opt.disabled"
                 role="option"
+                tabindex="-1"
                 :aria-selected="isSelected(opt)"
                 @click="selectOption(opt)"
               >

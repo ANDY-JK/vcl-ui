@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "select-option-not-tabbable",
+      "file": "src/components/form/Select.vue",
+      "find": "                tabindex=\"-1\"\n                :aria-selected=\"isSelected(opt)\"",
+      "replace": "                :aria-selected=\"isSelected(opt)\"",
+      "cmd": "npx vitest run tests/unit/select-panel-tab-sequence.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：选项全部可 Tab，用户按 Tab 掉进 100 个选项堆里（#323）"
+    },
+    {
+      "id": "select-treeitem-not-tabbable",
+      "file": "src/components/form/Select.vue",
+      "find": "                  tabindex=\"-1\"\n                  :aria-selected=\"flatNode.isLeaf ? isTreeSelected(flatNode) : undefined\"",
+      "replace": "                  :aria-selected=\"flatNode.isLeaf ? isTreeSelected(flatNode) : undefined\"",
+      "cmd": "npx vitest run tests/unit/select-panel-tab-sequence.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：树节点全部可 Tab（#323）"
+    },
+    {
+      "id": "select-menu-menuitem-role",
+      "file": "src/components/form/Select.vue",
+      "find": "                  role=\"menuitem\"\n                  tabindex=\"-1\"",
+      "replace": "                  tabindex=\"-1\"",
+      "cmd": "npx vitest run tests/unit/select-panel-tab-sequence.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：role=menu 里没有 menuitem，读屏说\"菜单\"却读不到内容（#323）"
+    },
+    {
       "id": "menu-roving-tabindex",
       "file": "src/components/nav/menu-keyboard.ts",
       "find": "    return stop === item.key ? 0 : -1",
