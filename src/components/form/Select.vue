@@ -553,12 +553,14 @@ function onComboKeydown(e: KeyboardEvent) {
   // 同时 `preventDefault()` 让上屏本身也失败。部分 WebView 只给 keyCode 229，两个都判。
   if (isImeComposing(e)) return
   if (e.key === 'Escape') {
+    // 消费掉 Esc：不让它冒泡去关闭外层弹窗（#280）
+    e.preventDefault?.()
     comboText.value = ''
     closePanel()
     return
   }
   if (e.key === 'ArrowDown') {
-    e.preventDefault()
+    e.preventDefault?.()
     if (!open.value) {
       toggleOpen()
       return
@@ -567,12 +569,12 @@ function onComboKeydown(e: KeyboardEvent) {
     return
   }
   if (e.key === 'ArrowUp') {
-    e.preventDefault()
+    e.preventDefault?.()
     highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
     return
   }
   if (e.key === 'Enter') {
-    e.preventDefault()
+    e.preventDefault?.()
     if (highlightIdx.value >= 0) {
       const item = navItems.value[highlightIdx.value]
       if (!isMenu.value) selectOption(item as Option)
@@ -627,6 +629,8 @@ const navCount = computed(() => (isTreeSelect.value ? visibleTreeNodes.value.len
 
 function onTriggerKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') {
+    // 消费掉 Esc，避免同时关闭外层弹窗（#280）
+    e.preventDefault?.()
     closePanel()
     return
   }
@@ -638,7 +642,7 @@ function onTriggerKeydown(e: KeyboardEvent) {
   // 菜单模式：方向键在菜单项间导航，Enter 选中（此前直接 return，下拉对键盘完全不可达）
   if (isMenu.value) {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault()
+      e.preventDefault?.()
       if (!open.value) {
         toggleOpen()
         return
@@ -646,17 +650,17 @@ function onTriggerKeydown(e: KeyboardEvent) {
       if (e.key === 'ArrowDown') highlightIdx.value = Math.min(highlightIdx.value + 1, navCount.value - 1)
       else highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
     } else if (e.key === 'Enter' && open.value) {
-      e.preventDefault()
+      e.preventDefault?.()
       const item = navItems.value[highlightIdx.value]
       if (item) onMenuClick(item as MenuItem)
     } else if ((e.key === 'Enter' || e.key === ' ') && !open.value) {
-      e.preventDefault()
+      e.preventDefault?.()
       toggleOpen()
     }
     return
   }
   if (e.key === 'ArrowDown' || e.key === 'Enter') {
-    e.preventDefault()
+    e.preventDefault?.()
     if (!open.value) {
       toggleOpen()
       return
@@ -675,7 +679,7 @@ function onTriggerKeydown(e: KeyboardEvent) {
     return
   }
   if (e.key === 'ArrowUp') {
-    e.preventDefault()
+    e.preventDefault?.()
     highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
   }
 }

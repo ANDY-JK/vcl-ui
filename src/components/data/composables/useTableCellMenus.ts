@@ -199,13 +199,15 @@ export function useTableCellMenus(
     const len = _optDrop.value.options.length
     if (len === 0) return
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault()
+      e.preventDefault?.()
       _optFocusIndex.value = (_optFocusIndex.value + (e.key === 'ArrowDown' ? 1 : -1) + len) % len
     } else if (e.key === 'Enter') {
-      e.preventDefault()
+      e.preventDefault?.()
       const opt = _optDrop.value.options[_optFocusIndex.value]
       if (opt) pickOption(typeof opt === 'string' ? opt : opt.value)
     } else if (e.key === 'Escape') {
+      // 关右键菜单即消费 Esc（#280）
+      e.preventDefault?.()
       closeOptDrop()
     }
   }
@@ -214,7 +216,7 @@ export function useTableCellMenus(
   /** 单元格右键守卫：cellContextMenu=false 时不拦截，冒泡到行右键/浏览器默认 */
   function onCellContextMenuGuard(row: Record<string, any>, col: Column, e: MouseEvent) {
     if (!props.cellContextMenu) return
-    e.preventDefault()
+    e.preventDefault?.()
     e.stopPropagation()
     onCellContextMenu(row, col, e)
   }
@@ -294,12 +296,12 @@ export function useTableCellMenus(
     const items = [...menu.querySelectorAll<HTMLElement>('.dt-context-item:not(.disabled)')]
     if (items.length === 0) return
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault()
+      e.preventDefault?.()
       const delta = e.key === 'ArrowDown' ? 1 : -1
       _menuFocusIndex.value = (_menuFocusIndex.value + delta + items.length) % items.length
       updateMenuFocus()
     } else if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
+      e.preventDefault?.()
       items[_menuFocusIndex.value]?.click()
     }
   }

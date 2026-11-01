@@ -104,6 +104,7 @@ useBodyScrollLock(() => fullscreen.value)
 /** 全局 Esc：面板开着先关面板，再退全屏 */
 function onGlobalKeydown(e: KeyboardEvent): void {
   if (e.key !== 'Escape') return
+  e.preventDefault?.()
   if (panel.value) {
     panel.value = null
     return

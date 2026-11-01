@@ -95,9 +95,13 @@ export function useCellNote(deps: CellNoteDeps) {
 
   function onNoteKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter') {
-      e.preventDefault()
+      e.preventDefault?.()
       commitNote()
-    } else if (e.key === 'Escape') cancelNote()
+    } else if (e.key === 'Escape') {
+      // 取消备注即消费 Esc，避免连外层弹窗一起关（#280）
+      e.preventDefault?.()
+      cancelNote()
+    }
   }
 
   // ==================== @patch 2026-07-15 原始值气泡（hover 已编辑单元格显示原始值） ====================

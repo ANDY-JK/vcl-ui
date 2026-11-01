@@ -43,6 +43,13 @@ export function useEscClose(isVisible: () => boolean, isClosable: () => boolean,
 
   function onKeydown(e: KeyboardEvent) {
     if (e.key !== 'Escape') return
+    // 已被**内层**消费的 Esc 不再往上关（2026-11-01 #280）。
+    //
+    // 场景：弹窗里放一个 Select / 表格单元格编辑 / 右键菜单，用户按 Esc 想收起那一层。
+    // 内层组件在自己的 keydown 里处理了 Esc，但事件继续冒泡到 window —— 本函数也响应，
+    // 于是「收起下拉」和「关闭弹窗」同时发生：用户丢失整屏已填内容。
+    // 契约：**谁真正消费了 Esc，谁调 `preventDefault()`**；这里据 `defaultPrevented` 让行。
+    if (e.defaultPrevented) return
     if (!isVisible()) return
     if (!isTopVisible(entry)) return
     if (!isClosable()) return

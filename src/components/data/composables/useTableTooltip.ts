@@ -85,7 +85,11 @@ export function useTableTooltip(options: UseTableTooltipOptions): TableTooltipRe
   }
 
   function onTooltipKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') hideTooltip()
+    if (e.key === 'Escape') {
+      // 收起提示即消费 Esc（#280）
+      e.preventDefault?.()
+      hideTooltip()
+    }
   }
 
   onUnmounted(() => {

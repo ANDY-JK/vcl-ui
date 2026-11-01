@@ -114,11 +114,13 @@ function handleClick(item: MenuItem) {
 
 function onKeydown(e: KeyboardEvent, item: MenuItem) {
   if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault()
+    e.preventDefault?.()
     handleClick(item)
     return
   }
   if (e.key === 'Escape') {
+    // 消费掉 Esc：菜单收起后不再冒泡去关闭外层弹窗（#280）
+    e.preventDefault?.()
     expandedKeys.value = new Set()
     hoverKey.value = null
     return
@@ -126,11 +128,11 @@ function onKeydown(e: KeyboardEvent, item: MenuItem) {
   const dir =
     props.mode === 'horizontal' ? { next: 'ArrowRight', prev: 'ArrowLeft' } : { next: 'ArrowDown', prev: 'ArrowUp' }
   if (e.key === dir.next) {
-    e.preventDefault()
+    e.preventDefault?.()
     focusSibling(e.currentTarget as HTMLElement, 1)
   }
   if (e.key === dir.prev) {
-    e.preventDefault()
+    e.preventDefault?.()
     focusSibling(e.currentTarget as HTMLElement, -1)
   }
 }

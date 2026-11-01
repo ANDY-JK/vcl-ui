@@ -155,7 +155,7 @@ export function useCellEdit(deps: CellEditDeps) {
     // 部分 Safari/旧 WebView 不发 isComposing，只能靠 keyCode 229 识别，两个都要判。
     if (isImeComposing(e)) return
     if (e.key === 'Enter') {
-      e.preventDefault()
+      e.preventDefault?.()
       const curCol = editingCell.value?.colKey ?? ''
       // 归一化失败时保持编辑态（不推进焦点），让用户就地修正非法输入
       if (!commitEdit('enter')) return
@@ -164,9 +164,11 @@ export function useCellEdit(deps: CellEditDeps) {
       const delta = e.shiftKey ? -1 : 1
       nextTick(() => moveAfterCommit(rowKey, curCol, delta))
     } else if (e.key === 'Escape') {
+      // 取消编辑即消费 Esc，避免连外层弹窗一起关（#280）
+      e.preventDefault?.()
       cancelEdit()
     } else if (e.key === 'Tab') {
-      e.preventDefault()
+      e.preventDefault?.()
       const curCol = editingCell.value?.colKey ?? ''
       if (!commitEdit('enter')) return
       nextTick(() => {

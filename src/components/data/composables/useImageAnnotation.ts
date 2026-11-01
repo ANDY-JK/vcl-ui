@@ -277,6 +277,8 @@ export function useImageAnnotation(
     // 标注键盘操作优先
     if (annoTool.value || annoSelected.value) {
       if (e.key === 'Escape') {
+        // 关闭标注即消费 Esc，避免连外层弹窗一起关（#280）
+        e.preventDefault?.()
         if (_annoDrawing.value) {
           _annoDrawing.value = false
           _annoCurrent = null
