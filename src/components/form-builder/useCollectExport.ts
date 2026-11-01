@@ -96,12 +96,29 @@ export function buildExportRow(
   return row
 }
 
-/** 解析导出列：宿主自定义优先，否则按字段自动生成（排除布局字段） */
+/**
+ * 同名表头加序号，避免对象键冲突吞掉列（#304）。
+ *
+ * 为什么必须做：`buildExportRow` 用 **label 当对象键**，而字段 label 是自由文本
+ * （设计器只保证 key 唯一）。两个字段都叫「姓名」时，后一个会**覆盖**前一个 ——
+ * 导出的 Excel 里少一整列，且**没有任何报错**。用户只会奇怪"我填的那列哪去了"。
+ */
+export function dedupeExportLabels(cols: ExportColumn[]): ExportColumn[] {
+  const seen = new Map<string, number>()
+  return cols.map((col) => {
+    const n = (seen.get(col.label) ?? 0) + 1
+    seen.set(col.label, n)
+    return n === 1 ? col : { ...col, label: `${col.label} (${n})` }
+  })
+}
+
+/** 解析导出列：宿主自定义优先，否则按字段自动生成（排除布局字段）；同名表头自动加序号 */
 export function resolveExportColumns(fields: DesignerField[], custom?: ExportColumn[]): ExportColumn[] {
-  if (custom && custom.length) return custom
-  return fields
+  if (custom && custom.length) return dedupeExportLabels(custom)
+  const generated = fields
     .filter((f) => !isLayoutField(f.type))
     .map((f) => ({ key: String(f.key ?? ''), label: f.label ?? String(f.key ?? '') }))
+  return dedupeExportLabels(generated)
 }
 
 export function useCollectExport(opts: CollectExportOptions) {

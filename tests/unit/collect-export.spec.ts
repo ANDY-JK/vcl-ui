@@ -121,3 +121,41 @@ describe('parseRecordTime · 宽容解析', () => {
     expect(parseRecordTime('刚刚')).toBe(null)
   })
 })
+/* ════════════════════════════════════════
+ * 同名表头不得吞列（#304）
+ *
+ * `buildExportRow` 用 label 当对象键，字段 label 是自由文本（设计器只保证 key 唯一）。
+ * 两个字段都叫「姓名」→ 后一个覆盖前一个，Excel 里少一整列且**没有任何报错**。
+ * ════════════════════════════════════════ */
+describe('同名表头 · 自动加序号', () => {
+  it('**两个同名字段各自成列**（不再互相覆盖）', () => {
+    const fields = [
+      { id: 'n1', key: 'name', type: 'text', label: '姓名' },
+      { id: 'n2', key: 'spouse', type: 'text', label: '姓名' },
+    ] as unknown as DesignerField[]
+    const cols = resolveExportColumns(fields)
+    expect(cols.map((c) => c.label), '第二个应加序号').toEqual(['姓名', '姓名 (2)'])
+
+    const row = buildExportRow({ time: '', data: { name: '张三', spouse: '李四' } }, cols, t)
+    expect(Object.keys(row)).toHaveLength(3) // 提交时间 + 两列
+    expect(row['姓名'], '第一列不能被覆盖').toBe('张三')
+    expect(row['姓名 (2)']).toBe('李四')
+  })
+
+  it('宿主自定义列同样去重（exportColumns 也可能撞名）', () => {
+    const cols = resolveExportColumns([], [
+      { key: 'a', label: '备注' },
+      { key: 'b', label: '备注' },
+      { key: 'c', label: '备注' },
+    ])
+    expect(cols.map((c) => c.label)).toEqual(['备注', '备注 (2)', '备注 (3)'])
+  })
+
+  it('不撞名时标签原样（不能偷偷改用户文案）', () => {
+    const cols = resolveExportColumns([], [
+      { key: 'a', label: '姓名' },
+      { key: 'b', label: '电话' },
+    ])
+    expect(cols.map((c) => c.label)).toEqual(['姓名', '电话'])
+  })
+})

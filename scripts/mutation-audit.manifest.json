@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "export-label-dedupe",
+      "file": "src/components/form-builder/useCollectExport.ts",
+      "find": "return n === 1 ? col :",
+      "replace": "return false ? col :",
+      "cmd": "npx vitest run tests/unit/collect-export.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：每列都被加序号，用户看到「姓名 (1)」这种不该出现的表头（#304）"
+    },
+    {
+      "id": "export-label-dedupe-host",
+      "file": "src/components/form-builder/useCollectExport.ts",
+      "find": "if (custom && custom.length) return dedupeExportLabels(custom)",
+      "replace": "if (custom && custom.length) return custom",
+      "cmd": "npx vitest run tests/unit/collect-export.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：宿主自定义列撞名时后一列覆盖前一列，Excel 少一整列且无报错（#304）"
+    },
+    {
       "id": "export-time-as-date",
       "file": "src/components/form-builder/useCollectExport.ts",
       "find": "if (!Number.isNaN(direct.getTime())) return direct",
