@@ -15,6 +15,13 @@ import type { Option } from '@/components/shared/types'
 const tt = useT()
 
 interface Props {
+  /**
+   * 外部判定为无效（不带文案）：挂到**组容器**的 aria-invalid。
+   * 焦点落在组里的单个选项上，但"这题答错了"是组的语义 —— 所以挂 radiogroup / group（#342）。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，让读屏能回查「为什么无效」 */
+  describedby?: string
   /** 统一类型：radio | checkbox | switch | rate | slider */
   type?: 'radio' | 'checkbox' | 'switch' | 'rate' | 'slider'
   /** 受控值：radio/switch 为单值，checkbox 为数组，rate 为数值，slider 为数值或 [起, 止] */
@@ -320,7 +327,15 @@ onUnmounted(unbindWindowPointer)
 
 <template>
   <!-- ===== radio ===== -->
-  <div v-if="isRadio" class="group-radio" :class="[`direction-${direction}`]" role="radiogroup" :aria-label="ariaLabel">
+  <div
+    v-if="isRadio"
+    class="group-radio"
+    :class="[`direction-${direction}`]"
+    role="radiogroup"
+    :aria-label="ariaLabel"
+    :aria-invalid="invalid || undefined"
+    :aria-describedby="describedby"
+  >
     <label
       v-for="opt in options"
       :key="String(opt.value)"
@@ -353,6 +368,8 @@ onUnmounted(unbindWindowPointer)
     :class="[`direction-${direction}`]"
     role="group"
     :aria-label="ariaLabel"
+    :aria-invalid="invalid || undefined"
+    :aria-describedby="describedby"
   >
     <label
       v-for="opt in options"

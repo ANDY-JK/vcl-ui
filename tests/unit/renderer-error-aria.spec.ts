@@ -91,6 +91,28 @@ describe('FormRenderer · 提交期校验错误与输入框关联', () => {
     w.unmount()
   })
 
+  it('**group 字段的无效状态挂在组容器上**（焦点在选项上，但语义属于组）', async () => {
+    const w = mount(FormRenderer, {
+      props: {
+        field: { ...FIELD, type: 'radio', options: [{ label: '甲', value: 'a' }, { label: '乙', value: 'b' }] },
+        modelValue: '',
+        error: '请选择一个选项',
+      } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const group = w.find('[role="radiogroup"], [role="group"]')
+    expect(group.exists(), '前置：group 应渲染出组容器').toBe(true)
+    expect(group.attributes('aria-invalid'), '组容器没标记无效').toBe('true')
+    const describedby = group.attributes('aria-describedby')
+    expect(describedby, '组容器没指向错误说明').toBeTruthy()
+    const target = document.querySelector(`#${CSS.escape(describedby!)}`)
+    expect(target, 'group 的 aria-describedby 悬空').toBeTruthy()
+    expect(target!.textContent).toContain('请选择一个选项')
+    w.unmount()
+  })
+
   it('**既有契约不变：FieldError 仍然渲染**（17 处分支都靠它）', async () => {
     const w = await mountRenderer('姓名必填')
     const err = w.find('.fb-field-error')

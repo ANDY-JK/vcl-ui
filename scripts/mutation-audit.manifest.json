@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "group-radio-invalid",
+      "file": "src/components/form/Group.vue",
+      "find": "    role=\"radiogroup\"\n    :aria-label=\"ariaLabel\"\n    :aria-invalid=\"invalid || undefined\"",
+      "replace": "    role=\"radiogroup\"\n    :aria-label=\"ariaLabel\"\n    :aria-invalid=\"undefined\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：radiogroup 不标记无效（#342）"
+    },
+    {
+      "id": "group-radio-describedby",
+      "file": "src/components/form/Group.vue",
+      "find": "    role=\"radiogroup\"\n    :aria-label=\"ariaLabel\"\n    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",
+      "replace": "    role=\"radiogroup\"\n    :aria-label=\"ariaLabel\"\n    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"undefined\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：radiogroup 不指向错误说明（#342）"
+    },
+    {
       "id": "upload-invalid-prop",
       "file": "src/components/form/Upload.vue",
       "find": "        :aria-invalid=\"invalid || undefined\"",

@@ -237,6 +237,9 @@ const selectProps = computed(() => ({
 
 /** Group 组件 props */
 const groupProps = computed(() => ({
+  // 同 Input/Select/Upload：错误由 FieldError 渲染，这里只挂状态与位置（#342）
+  invalid: !!props.error,
+  describedby: props.error ? fieldErrorId : undefined,
   type: resolvedComponentType.value as 'radio' | 'checkbox' | 'switch' | 'rate' | 'slider',
   label: props.field.label,
   options: resolvedOptions.value,
@@ -398,7 +401,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           <span v-if="field.required" class="fb-required">*</span>
         </label>
         <Group v-model="groupValue" v-bind="groupProps" @change="emit('change')" />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
     </template>
 
