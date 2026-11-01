@@ -7,6 +7,41 @@ import { ref, onMounted, onUnmounted, watchEffect, type Ref } from 'vue'
 
 export type FlipDirection = 'down' | 'up' | 'left' | 'right'
 
+/** 布局坐标系下的可视区域边界 */
+export interface ViewportBand {
+  top: number
+  bottom: number
+  left: number
+  right: number
+}
+
+/**
+ * 取当前**可视区域**（布局坐标系）。
+ *
+ * - 有 `visualViewport`（移动端主流浏览器都有）：用它的 `offsetTop/height` ——
+ *   键盘弹出、双指缩放时可视区域会缩小/偏移，而布局视口不变。
+ * - 没有（桌面老浏览器、SSR、测试环境）：退化为整个布局视口。
+ *
+ * ⚠️ 返回的是**布局坐标**：`getBoundingClientRect()` 与 `position: fixed` 在移动端
+ * 都以布局视口为基准，二者口径一致才能直接比较。
+ */
+export function getViewportBand(): ViewportBand {
+  const vv = typeof window !== 'undefined' ? window.visualViewport : undefined
+  if (!vv) {
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 0
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 0
+    return { top: 0, bottom: vh, left: 0, right: vw }
+  }
+  const top = Math.round(vv.offsetTop)
+  const left = Math.round(vv.offsetLeft)
+  return {
+    top,
+    bottom: Math.round(top + vv.height),
+    left,
+    right: Math.round(left + vv.width),
+  }
+}
+
 /** resize 连发时合并重算的静默窗口：停止改变这么久才重排一次浮层 */
 const RESIZE_COALESCE_MS = 50
 
@@ -57,6 +92,16 @@ interface PositionInput {
   /** 容器边界（用于水平裁剪，默认视口） */
   containerLeft?: number
   containerRight?: number
+  /**
+   * 可视区域（**布局坐标系**里的上下左右边界）。
+   *
+   * 为什么需要：移动端键盘弹出时，iOS 的 `window.innerHeight` **不变**，
+   * 只有 `visualViewport` 变矮。若继续按 innerHeight 算"下方还有多少空间"，
+   * 面板会开到键盘下面去；翻转判断也会错。
+   *
+   * 不传时退化为"整个布局视口"（浏览器桌面默认），行为与改动前完全一致。
+   */
+  band?: ViewportBand
 }
 
 /**
@@ -68,11 +113,10 @@ interface PositionInput {
  * - 边界裁剪：不超出视口/容器
  */
 export function computeFloatingPosition(input: PositionInput): PositionResult {
-  const vw = window.innerWidth
-  const vh = window.innerHeight
+  const band: ViewportBand = input.band ?? { top: 0, bottom: window.innerHeight, left: 0, right: window.innerWidth }
   const { floatingW: fw, floatingH: fh, offset, defaultDirection } = input
-  const containerLeft = input.containerLeft ?? 0
-  const containerRight = input.containerRight ?? vw
+  const containerLeft = input.containerLeft ?? band.left
+  const containerRight = input.containerRight ?? band.right
 
   // 锚点坐标：element 模式用 rect 边框，pointer 模式用鼠标坐标
   const anchorLeft = input.rect ? input.rect.left : (input.clientX ?? 0)
@@ -82,8 +126,8 @@ export function computeFloatingPosition(input: PositionInput): PositionResult {
 
   // 1. 计算四个方向剩余空间
   const space = {
-    down: vh - anchorBottom - offset,
-    up: anchorTop - offset,
+    down: band.bottom - anchorBottom - offset,
+    up: anchorTop - band.top - offset,
     right: containerRight - anchorRight - offset,
     left: anchorLeft - containerLeft - offset,
   }
@@ -138,13 +182,13 @@ export function computeFloatingPosition(input: PositionInput): PositionResult {
     top = anchorTop + (input.rect && input.rect.height > 0 ? (input.rect.height - fh) / 2 : 0)
   }
 
-  // 3. 边界裁剪
-  if (left < 8) left = 8
-  if (left + fw > vw - 8) left = Math.max(8, vw - fw - 8)
+  // 3. 边界裁剪（边距相对**可视**边缘）
+  if (left < band.left + 8) left = band.left + 8
+  if (left + fw > band.right - 8) left = Math.max(band.left + 8, band.right - fw - 8)
 
   const actualH = maxH || fh
-  if (top + actualH > vh - 8) top = Math.max(8, vh - actualH - 8)
-  if (top < 8) top = 8
+  if (top + actualH > band.bottom - 8) top = Math.max(band.top + 8, band.bottom - actualH - 8)
+  if (top < band.top + 8) top = band.top + 8
 
   // 4. 防重叠兜底
   if (dir === 'down' && top < anchorBottom + offset) {
@@ -154,7 +198,7 @@ export function computeFloatingPosition(input: PositionInput): PositionResult {
       maxH = null
     } else {
       top = anchorBottom + offset
-      if (top + actualH > vh - 8) top = Math.max(8, vh - actualH - 8)
+      if (top + actualH > band.bottom - 8) top = Math.max(band.top + 8, band.bottom - actualH - 8)
     }
   } else if (dir === 'up' && top + actualH > anchorTop - offset) {
     if (space.down >= actualH) {
@@ -162,7 +206,7 @@ export function computeFloatingPosition(input: PositionInput): PositionResult {
       top = anchorBottom + offset
       maxH = null
     } else {
-      top = Math.max(8, anchorTop - actualH - offset)
+      top = Math.max(band.top + 8, anchorTop - actualH - offset)
     }
   }
 
@@ -235,7 +279,8 @@ export function useFloating(options: FloatingOptions = {}) {
     triggerWidth: number,
     arrowOffset?: number,
   ) {
-    const vw = window.innerWidth
+    const band = getViewportBand()
+    const vw = band.right - band.left
     direction.value = dir
     const style: Record<string, string> = {
       position: 'fixed',
@@ -287,6 +332,8 @@ export function useFloating(options: FloatingOptions = {}) {
       floatingH: fh,
       offset: optOffset(),
       defaultDirection: optDirection(),
+      // 移动端键盘弹出时可视区域会缩小（innerHeight 不变），必须按可视区域算空间（#308）
+      band: getViewportBand(),
     })
     applyStyle(result.top, result.left, result.direction, result.maxHeight, r.width, result.arrowOffset)
   }
@@ -296,10 +343,10 @@ export function useFloating(options: FloatingOptions = {}) {
     const trigger = triggerRef.value
     if (!trigger) return
     const r = trigger.getBoundingClientRect()
-    const vh = window.innerHeight
+    const band = getViewportBand()
     const offset = optOffset()
-    const spaceDown = vh - r.bottom - offset
-    const spaceUp = r.top - offset
+    const spaceDown = band.bottom - r.bottom - offset
+    const spaceUp = r.top - band.top - offset
     const shouldFlipUp = spaceDown < spaceUp * 0.3 && spaceUp > 100
 
     if (shouldFlipUp) {
@@ -336,13 +383,29 @@ export function useFloating(options: FloatingOptions = {}) {
     onResize()
   }
 
+  /**
+   * 键盘弹出 / 双指缩放时重算（#308）。
+   *
+   * iOS Safari 在软键盘弹出时 **不触发 window.resize**（布局视口不变），
+   * 只让 `visualViewport` 变小。若不单独监听，面板会停在键盘下面或翻转判断错。
+   * 桌面无 `visualViewport` 时整段不执行，零成本。
+   */
+  function onViewportChange() {
+    if (!floatingRef.value) return
+    onResize()
+  }
+
   onMounted(() => {
     window.addEventListener('resize', onResize)
     document.addEventListener('scroll', onScroll, { capture: true, passive: true })
+    window.visualViewport?.addEventListener('resize', onViewportChange)
+    window.visualViewport?.addEventListener('scroll', onViewportChange, { passive: true })
   })
   onUnmounted(() => {
     window.removeEventListener('resize', onResize)
     document.removeEventListener('scroll', onScroll, { capture: true })
+    window.visualViewport?.removeEventListener('resize', onViewportChange)
+    window.visualViewport?.removeEventListener('scroll', onViewportChange)
     if (timer) clearTimeout(timer)
     ro?.disconnect()
   })

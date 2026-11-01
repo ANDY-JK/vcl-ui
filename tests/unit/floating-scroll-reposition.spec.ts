@@ -26,7 +26,7 @@ function makeHost() {
   const rectTop = ref(100)
   const Host = defineComponent({
     setup() {
-      const { triggerRef, floatingRef, floatingStyle, updatePosition } = useFloating({ offset: 4 })
+      const { triggerRef, floatingRef, floatingStyle, updatePosition, direction } = useFloating({ offset: 4 })
       return () =>
         h('div', [
           h('button', {
@@ -50,6 +50,7 @@ function makeHost() {
             style: floatingStyle.value,
           }, 'panel'),
           h('button', { class: 'recalc', onClick: () => updatePosition() }, 'recalc'),
+          h('span', { class: 'dir' }, direction.value),
         ])
     },
   })
@@ -94,5 +95,73 @@ describe('useFloating · 滚动重定位', () => {
     expect(opts?.capture, 'scroll 不冒泡，必须 capture').toBe(true)
     expect(opts?.passive, '滚动监听要 passive').toBe(true)
     w.unmount()
+  })
+})
+
+describe('useFloating · 可视区域缩小（键盘弹出）时翻转（#308）', () => {
+  afterEach(() => {
+    delete (window as unknown as { visualViewport?: unknown }).visualViewport
+  })
+
+  it('**可视区域变矮后重算 → 翻到上方**（不传 band 会以为下方还有空间）', async () => {
+    const { w, rectTop } = makeHost()
+    // 触发器在 y=150，可视区域只到 200（键盘占了下面）
+    rectTop.value = 150
+    Object.defineProperty(window, 'visualViewport', {
+      value: {
+        offsetTop: 0,
+        offsetLeft: 0,
+        height: 200,
+        width: 390,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      },
+      configurable: true,
+      writable: true,
+    })
+
+    await w.find('.recalc').trigger('click')
+    await nextTick()
+
+    expect(w.find('.dir').text(), '下方放不下 120px 面板 → 必须翻到上方').toBe('up')
+    const top = parseFloat((w.findAll('div')[1]!.element as HTMLElement).style.top)
+    expect(top, `上翻后 top 应落在可视区域上沿附近，实际 ${top}`).toBeLessThan(100)
+    w.unmount()
+  })
+})
+
+describe('useFloating · visualViewport 监听（#308）', () => {
+  afterEach(() => {
+    delete (window as unknown as { visualViewport?: unknown }).visualViewport
+  })
+
+  it('**挂载时监听 resize + scroll，卸载时成对移除**', async () => {
+    const add = vi.fn()
+    const remove = vi.fn()
+    Object.defineProperty(window, 'visualViewport', {
+      value: {
+        offsetTop: 0,
+        offsetLeft: 0,
+        height: 600,
+        width: 390,
+        addEventListener: add,
+        removeEventListener: remove,
+      },
+      configurable: true,
+      writable: true,
+    })
+
+    const { w } = makeHost()
+    await nextTick()
+    const added = add.mock.calls.map((c) => c[0])
+    expect(added, '键盘弹出（resize）与可视区滚动（scroll）都要监听').toEqual(
+      expect.arrayContaining(['resize', 'scroll']),
+    )
+
+    w.unmount()
+    const removed = remove.mock.calls.map((c) => c[0])
+    expect(removed, '卸载必须成对移除，否则组件销毁后还在重算').toEqual(
+      expect.arrayContaining(['resize', 'scroll']),
+    )
   })
 })

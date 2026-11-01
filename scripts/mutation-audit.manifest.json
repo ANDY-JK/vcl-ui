@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "floating-visual-band",
+      "file": "src/components/_internal/useFloating.ts",
+      "find": "      band: getViewportBand(),",
+      "replace": "      band: undefined,",
+      "cmd": "npx vitest run tests/unit/floating-scroll-reposition.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：移动端键盘弹出时按 innerHeight 判空间，面板开到键盘下面（#308）"
+    },
+    {
+      "id": "floating-visual-viewport-listen",
+      "file": "src/components/_internal/useFloating.ts",
+      "find": "    window.visualViewport?.addEventListener('resize', onViewportChange)",
+      "replace": "    void onViewportChange",
+      "cmd": "npx vitest run tests/unit/floating-scroll-reposition.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：iOS 键盘弹出不触发 window.resize，面板不重算（#308）"
+    },
+    {
       "id": "floating-scroll-listen",
       "file": "src/components/_internal/useFloating.ts",
       "find": "    document.addEventListener('scroll', onScroll, { capture: true, passive: true })",
