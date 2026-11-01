@@ -73,6 +73,24 @@ describe('FormRenderer · 提交期校验错误与输入框关联', () => {
     w.unmount()
   })
 
+  it('**upload 字段的无效状态挂在投放区上**（文件输入 aria-hidden，焦点在 role=button）', async () => {
+    const w = mount(FormRenderer, {
+      props: { field: { ...FIELD, type: 'upload' }, modelValue: [], error: '请上传身份证' } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const area = w.find('[role="button"]')
+    expect(area.exists(), '前置：upload 应渲染 role=button 投放区').toBe(true)
+    expect(area.attributes('aria-invalid'), 'upload 投放区没标记无效').toBe('true')
+    const describedby = area.attributes('aria-describedby')
+    expect(describedby, 'upload 没指向错误说明').toBeTruthy()
+    const target = document.querySelector(`#${CSS.escape(describedby!)}`)
+    expect(target, 'upload 的 aria-describedby 悬空').toBeTruthy()
+    expect(target!.textContent).toContain('请上传身份证')
+    w.unmount()
+  })
+
   it('**既有契约不变：FieldError 仍然渲染**（17 处分支都靠它）', async () => {
     const w = await mountRenderer('姓名必填')
     const err = w.find('.fb-field-error')

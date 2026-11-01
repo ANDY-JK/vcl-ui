@@ -36,6 +36,14 @@ export interface UploadFile {
 }
 
 interface Props {
+  /**
+   * 外部判定为无效（不带文案）：挂到投放区的 aria-invalid。
+   * 文件输入本身 aria-hidden + tabindex=-1，**无障碍焦点在 role=button 的投放区上**，
+   * 所以状态要挂在投放区（#341 / TD-99）。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，让读屏能回查「为什么无效」 */
+  describedby?: string
   /** 接受的文件类型：默认图片；传空字符串 = 全部类型（含目录里的文件） */
   accept?: string
   /** 多文件 */
@@ -421,6 +429,8 @@ onUnmounted(() => {
         :tabindex="disabled ? -1 : 0"
         :aria-label="t('form.upload')"
         :aria-disabled="disabled ? 'true' : 'false'"
+        :aria-invalid="invalid || undefined"
+        :aria-describedby="describedby"
         @dragover="onDragOver"
         @dragleave="onDragLeave"
         @drop="onDrop"

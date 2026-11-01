@@ -257,6 +257,9 @@ const relateProps = computed(() => ({
 
 /** Upload 组件 props */
 const uploadProps = computed(() => ({
+  // 同 Input/Select：错误由 FieldError 渲染，这里只挂状态与位置（#341）
+  invalid: !!props.error,
+  describedby: props.error ? fieldErrorId : undefined,
   accept: props.field.type === 'image-upload' ? 'image/*' : undefined,
   label: props.field.label,
   disabled: effectiveDisabled.value,
@@ -407,7 +410,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           <span v-if="field.required" class="fb-required">*</span>
         </label>
         <Upload :model-value="uploadValue" v-bind="uploadProps" @update:model-value="onUploadChange" />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
         <p v-if="field.hint" class="fb-hint">{{ field.hint }}</p>
       </div>
     </template>
