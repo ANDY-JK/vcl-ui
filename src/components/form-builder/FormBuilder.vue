@@ -180,7 +180,7 @@ watch(
 
 // ══ 校验 ══
 
-const { errors, validate, validateOne, clearErrors } = useFormValidator(effectiveSchema, formData, {
+const { errors, firstErrorKey, validate, validateOne, clearErrors } = useFormValidator(effectiveSchema, formData, {
   // 校验可见性使用联动感知版本：被 showHide/事件隐藏的字段跳过校验，
   // 避免“隐藏的必填字段卡死提交”且错误定位失效
   isFieldVisible: isFieldVisibleWithLinkage,
@@ -272,9 +272,10 @@ function handleSubmit(): void {
 
   if (!isValid) {
     toastRef.value?.show(t('formBuilder.requiredAll'), 'error', 2000)
-    // steps 布局：错误字段可能在其它步骤——先跳到首个错误所在步骤再滚动定位
-    const firstErrField = effectiveFields.value.find((f) => errors.value[f.key])
-    if (firstErrField) jumpToFieldStep(firstErrField.key)
+    // steps 布局：错误字段可能在其它步骤——先跳到首个错误所在步骤再滚动定位。
+    // 用校验器算好的 firstErrorKey（#291）：此前这里自己扫一遍 errors 找第一个，
+    // 而 `validateAll()` 早就返回了同一个信息 —— 同一语义两处实现。
+    if (firstErrorKey.value) jumpToFieldStep(firstErrorKey.value)
     // 滚动到第一个错误字段（限定在当前组件实例内，避免多表单同页串扰）
     nextTick(() => {
       const firstErrEl = rootEl.value?.querySelector('.fb-field-error')

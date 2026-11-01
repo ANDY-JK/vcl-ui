@@ -192,3 +192,45 @@ describe('字数校验按 grapheme 计数', () => {
     expect(validators.minLen(1)(''), '空串不足 1 字').toBeTruthy()
   })
 })
+/* ════════════════════════════════════════
+ * firstErrorKey：校验器算出来的"首个错误字段"必须暴露给宿主（#291）
+ *
+ * `validateAll()` 一直返回 firstErrorKey，但 `validate()` 把它丢了，
+ * 宿主只好自己再扫一遍 errors 找第一个 —— 同一语义两处实现。
+ * ════════════════════════════════════════ */
+describe('useFormValidator · firstErrorKey', () => {
+  const fields = [
+    { key: 'a', type: 'text', label: 'A', required: true },
+    { key: 'b', type: 'text', label: 'B', required: true },
+    { key: 'c', type: 'text', label: 'C' },
+  ] as never
+
+  it('**validate() 后暴露首个错误字段**（按字段顺序，不是对象键顺序）', () => {
+    const data = ref<Record<string, unknown>>({ a: '', b: '', c: '' })
+    const v = useFormValidator(ref({ fields }) as never, data as never, {})
+    expect(v.firstErrorKey.value).toBe(null)
+    expect(v.validate()).toBe(false)
+    expect(v.firstErrorKey.value).toBe('a')
+  })
+
+  it('只有后面的字段错时，指向那一个', () => {
+    const data = ref<Record<string, unknown>>({ a: 'ok', b: '', c: '' })
+    const v = useFormValidator(ref({ fields }) as never, data as never, {})
+    v.validate()
+    expect(v.firstErrorKey.value).toBe('b')
+  })
+
+  it('全部通过时为 null，且 clearErrors 会重置', () => {
+    const data = ref<Record<string, unknown>>({ a: 'ok', b: 'ok', c: '' })
+    const v = useFormValidator(ref({ fields }) as never, data as never, {})
+    expect(v.validate()).toBe(true)
+    expect(v.firstErrorKey.value).toBe(null)
+
+    const bad = ref<Record<string, unknown>>({ a: '', b: '', c: '' })
+    const v2 = useFormValidator(ref({ fields }) as never, bad as never, {})
+    v2.validate()
+    expect(v2.firstErrorKey.value).toBe('a')
+    v2.clearErrors()
+    expect(v2.firstErrorKey.value).toBe(null)
+  })
+})

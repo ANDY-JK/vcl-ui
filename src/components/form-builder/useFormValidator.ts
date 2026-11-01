@@ -338,6 +338,15 @@ export function useFormValidator(
   const isVisible = options?.isFieldVisible ?? isFieldVisible
   const errors = ref<FormErrors>({})
 
+  /**
+   * 首个错误字段的 key（#291）。
+   *
+   * `validateAll()` 一直在算这个值却没人用 —— `validate()` 把它丢掉了，
+   * 宿主（FormBuilder）只好自己再扫一遍 `errors` 找第一个。
+   * 同一个语义两处实现，改一处忘另一处就会不一致，故把计算结果暴露出来。
+   */
+  const firstErrorKey = ref<string | null>(null)
+
   /** 校验单个字段并写入 errors */
   function validateOne(key: string): boolean {
     const schema = schemaRef.value
@@ -358,12 +367,14 @@ export function useFormValidator(
   function validate(): boolean {
     const result = validateAll(schemaRef.value.fields, dataRef.value, false, isVisible)
     errors.value = result.errors
+    firstErrorKey.value = result.firstErrorKey
     return result.isValid
   }
 
   /** 清除全部错误 */
   function clearErrors(): void {
     errors.value = {}
+    firstErrorKey.value = null
   }
 
   /** 清除单个字段错误 */
@@ -376,6 +387,7 @@ export function useFormValidator(
 
   return {
     errors,
+    firstErrorKey,
     validate,
     validateOne,
     clearErrors,
