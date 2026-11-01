@@ -103,13 +103,14 @@ describe('useTableColumns 级联固定', () => {
     expect([...api.dynamicFixedLeft.value]).toEqual(['id'])
   })
 
-  it('unfixColumn：两侧同时移除；未知 key 的级联调用无副作用', () => {
+  it('未知 key 的级联调用无副作用', () => {
+    // 原用例还断言了 `unfixColumn('name')` 让 name 从两侧集合消失 —— 那条断言
+    // **把缺陷锁死了**：集合级删除会在固定区中间打出空洞（本组件的 sticky 与
+    // 计数逻辑都假设连续前缀/后缀）。该 API 已于 #292 删除，真实入口是列头右键
+    // → DataTableColumnSettings.unfixFromMenu（级联语义，见 column-settings-panel.spec）。
     const { api } = makeApi()
     api.fixLeftCascade('name')
     api.fixRightCascade('name')
-    api.unfixColumn('name')
-    expect(api.dynamicFixedLeft.value.has('name')).toBe(false)
-    expect(api.dynamicFixedRight.value.has('name')).toBe(false)
     const before = JSON.stringify([...api.dynamicFixedLeft.value])
     api.fixLeftCascade('不存在')
     expect(JSON.stringify([...api.dynamicFixedLeft.value])).toBe(before)

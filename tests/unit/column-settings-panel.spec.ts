@@ -668,3 +668,49 @@ describe('unfixFromMenu（主文件列头右键入口）', () => {
     expect([...ctx.dynamicFixedRight.value], '右区只留 city、age').toEqual(['city', 'age'])
   })
 })
+/* ════════════════════════════════════════
+ * 不变量：固定区必须是**连续前缀 / 连续后缀**（#292）
+ *
+ * 为什么补：`useTableColumns` 里曾有一个"集合级"的 `unfixColumn(colKey)` ——
+ * 把列从 fixed 集合里单点删除，会在固定区中间打出空洞。它没人调用（真实入口是
+ * 列头右键 → `unfixFromMenu`），但**留着就是给下一个人埋坑**：本组件的
+ * `_leftFixedCount` / `_rightFixedCount` 都用 while 逐列数连续段，遇到空洞计数就错。
+ * 该 API 已删除，这里用不变量锁住真实语义。
+ * ════════════════════════════════════════ */
+describe('固定区不变量：连续前缀 / 连续后缀', () => {
+  /** 固定区必须是"从第 0 列起的连续段" */
+  const isPrefix = (set: Set<string>, order: string[]) => {
+    const count = order.filter((k) => set.has(k)).length
+    return order.slice(0, count).every((k) => set.has(k))
+  }
+  /** 固定区必须是"到最后列为止的连续段" */
+  const isSuffix = (set: Set<string>, order: string[]) => {
+    const count = order.filter((k) => set.has(k)).length
+    return order.slice(order.length - count).every((k) => set.has(k))
+  }
+
+  it('**多次取消固定后仍保持连续**（不打出空洞）', async () => {
+    const order = COLS.map((c) => c.key)
+    ctx.dynamicFixedLeft.value = new Set(order.slice(0, 3))
+    await openPanel()
+    const vm = wrapper.vm as unknown as { unfixFromMenu: (k: string) => void }
+
+    // 关键：取消**中间**那列才会暴露"空洞"实现 —— 取消前缀的最后一列，
+    // 集合级删除和级联删除结果相同，测不出差别（第一版用例就是这样假绿的）。
+    ctx.dynamicFixedLeft.value = new Set(order.slice(0, 4))
+    vm.unfixFromMenu(order[1]!)
+    await nextTick()
+    expect(isPrefix(ctx.dynamicFixedLeft.value, order), '取消中间列后仍为前缀（不留 {a,c,d} 空洞）').toBe(true)
+    expect([...ctx.dynamicFixedLeft.value], '应从该列起向内清空，只保留它之前的').toEqual([order[0]])
+  })
+
+  it('**右侧同理**：取消后仍是连续后缀', async () => {
+    const order = COLS.map((c) => c.key)
+    ctx.dynamicFixedRight.value = new Set(order.slice(-2))
+    await openPanel()
+    const vm = wrapper.vm as unknown as { unfixFromMenu: (k: string) => void }
+    vm.unfixFromMenu(order[order.length - 1]!)
+    await nextTick()
+    expect(isSuffix(ctx.dynamicFixedRight.value, order), '取消后仍为后缀').toBe(true)
+  })
+})

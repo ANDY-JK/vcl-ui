@@ -85,15 +85,12 @@ export function useTableColumns(
     dynamicFixedRight.value = new Set(newRight)
     dynamicFixedLeft.value = newLeft
   }
-  /** 取消该列固定 */
-  function unfixColumn(colKey: string) {
-    const l = new Set(dynamicFixedLeft.value)
-    l.delete(colKey)
-    dynamicFixedLeft.value = l
-    const r = new Set(dynamicFixedRight.value)
-    r.delete(colKey)
-    dynamicFixedRight.value = r
-  }
+  // （已删除 `unfixColumn`，#292）它把列从 fixed 集合里**单点删除**，会在固定区中间打出空洞 ——
+  // 而本组件的列宽/定位逻辑假设固定区是**连续前缀 / 连续后缀**（见 DataTableColumnSettings 的
+  // `_leftFixedCount` / `_rightFixedCount` 用 while 逐列数连续段）。
+  // 真实入口是列头右键 → `DataTableColumnSettings.onUnfixFromMenu()`（区域从该列断开），
+  // 语义已在 column-settings-panel.spec 里锁定。留着一个"看起来能做同一件事"的集合级 API，
+  // 下一个接线的人必然踩空洞。
   /** 双击自适应：测量该列内容宽度并设置 */
   function autoFitColumn(col: Column) {
     const sample = displayData.value.slice(0, 60)
@@ -507,7 +504,6 @@ export function useTableColumns(
     dynamicFixedRight,
     fixLeftCascade,
     fixRightCascade,
-    unfixColumn,
     isColumnFixed,
     autoFitColumn,
     _userResizedCols,
