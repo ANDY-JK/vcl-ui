@@ -1,0 +1,2 @@
+.a { font-size: var(--fs-3); }
+.b { font-size: calc(14px * var(--vcl-scale)); }

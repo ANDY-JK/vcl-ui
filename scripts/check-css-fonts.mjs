@@ -15,7 +15,9 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-const ROOT = 'src/components'
+/** 扫描根：默认 src/components；自测时 --root 指到夹具目录 */
+const rootIdx = process.argv.indexOf('--root')
+const ROOT = rootIdx > -1 ? process.argv[rootIdx + 1] : 'src/components'
 const violations = []
 let scanned = 0
 

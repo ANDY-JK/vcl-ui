@@ -10,10 +10,12 @@
  * 并同步 tokens.css 的 --bp-* 与 check-constants 的对账。
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 const ALLOWED = new Set([480, 640, 767, 1023])
-const ROOT = 'src'
+/** 扫描根：默认 src；自测时 --root 指到夹具目录，验证闸门真会红 */
+const rootIdx = process.argv.indexOf('--root')
+const ROOT = rootIdx > -1 ? resolve(process.argv[rootIdx + 1]) : 'src'
 const EXTS = new Set(['.vue', '.css'])
 
 /** 单文件检查：收集不在规范档位内的宽度断点 */

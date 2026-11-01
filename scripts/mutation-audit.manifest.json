@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "css-breakpoints-gate-allowlist",
+      "file": "scripts/check-css-breakpoints.mjs",
+      "find": "const ALLOWED = new Set([480, 640, 767, 1023])",
+      "replace": "const ALLOWED = { has: () => true }",
+      "cmd": "npx vitest run tests/unit/css-gates.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：断点白名单写松，随手写的 999px 也放过（#333）"
+    },
+    {
+      "id": "css-fonts-gate-regex",
+      "file": "scripts/check-css-fonts.mjs",
+      "find": "  for (const m of text.matchAll(/font-size:\\s*\\d+(?:\\.\\d+)?px[^;}]*/g)) {",
+      "replace": "  for (const m of text.matchAll(/font-sizeXXX:\\s*\\d+px/g)) {",
+      "cmd": "npx vitest run tests/unit/css-gates.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：字号正则匹配不到，直写 px 重新回流（#333）"
+    },
+    {
       "id": "icon-names-gate-solar-branch",
       "file": "scripts/check-icon-names.mjs",
       "find": "    if (provider === 'solar') ok = SOLAR.has(solarNormalize(name))",
