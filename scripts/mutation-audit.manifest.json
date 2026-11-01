@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "calendar-roving-tabindex",
+      "file": "src/components/form/date-panel/DatePanel.vue",
+      "find": ":tabindex=\"cell.iso === tabIso ? 0 : -1\"",
+      "replace": ":tabindex=\"0\"",
+      "cmd": "npx vitest run tests/unit/date-panel-keyboard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：42 个格子全是 Tab 停靠点，键盘用户要按 42 次 Tab 才能穿过日历（#318）"
+    },
+    {
+      "id": "calendar-arrow-keys",
+      "file": "src/components/form/date-panel/DatePanel.vue",
+      "find": "@keydown=\"onGridKeydown\"",
+      "replace": "@keydown=\"noop\"",
+      "cmd": "npx vitest run tests/unit/date-panel-keyboard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：日历内方向键完全没反应，只能靠 Tab 逐格挪（#318）"
+    },
+    {
+      "id": "calendar-month-clamp",
+      "file": "src/components/form/date-panel/DatePanel.vue",
+      "find": "pad2(Math.min(d!, daysInMonth))",
+      "replace": "pad2(d!)",
+      "cmd": "npx vitest run tests/unit/date-panel-keyboard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：1/31 按 PageDown 焦点落到不存在的 2/31，日历直接失焦（#318）"
+    },
+    {
       "id": "select-home-end",
       "file": "src/components/form/Select.vue",
       "find": "    highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)\n    return",

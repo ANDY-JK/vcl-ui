@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // ⛔ 保护 — 日历面板（Select type="date" / type="date-range" 共用），禁止：clamp() → px，本地时区构造 new Date(y, m, d) 改动
 // ⭐ iso 始终按 format 格式化；范围模式下以 selected 数组为 [start, end]，hoverEnd 为悬停预览终点
-import { computed, useSlots } from 'vue'
+import { computed, nextTick, ref, useSlots } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
-import { formatDate, todayISO } from '../utils/date-utils'
+import { formatDate, pad2, todayISO } from '../utils/date-utils'
 import { useT, useTm } from '@/components/_internal/i18n'
 
 const t = useT()
@@ -107,6 +107,96 @@ const weeks = computed(() => {
   return rows
 })
 
+/* ── 键盘漫游（#318）──────────────────────────────────────────────
+ * 上面那段注释写着"grid 语义 + 方向键漫游"，但**方向键从来没实现过**，
+ * 而且 42 个 button 全是 tabbable —— 键盘用户要按 42 次 Tab 才能穿过日历。
+ * 这里补齐 APG 日历网格的标准键位 + roving tabindex（整个网格只留 1 个 Tab 停靠点）：
+ *   ← → 前后一天 ／ ↑ ↓ 前后一周 ／ Home/End 本周首尾 ／ PageUp/PageDown 前后一月
+ * 日期加减一律走 UTC（`Date.UTC`），不碰本地时区构造 —— 与本文件头的约定一致。
+ */
+const gridRef = ref<HTMLElement | null>(null)
+
+/** ISO 加减天数（UTC 运算，跨月/跨年/夏令时都不会错） */
+function shiftDays(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const t = new Date(Date.UTC(y!, m! - 1, d!) + days * 86400000)
+  return `${t.getUTCFullYear()}-${pad2(t.getUTCMonth() + 1)}-${pad2(t.getUTCDate())}`
+}
+
+/** ISO 加减月数，日超出目标月长度时夹到月末 */
+function shiftMonths(iso: string, delta: number): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const first = new Date(Date.UTC(y!, m! - 1 + delta, 1))
+  const ty = first.getUTCFullYear()
+  const tm = first.getUTCMonth() + 1
+  const daysInMonth = new Date(Date.UTC(ty, tm, 0)).getUTCDate()
+  return `${ty}-${pad2(tm)}-${pad2(Math.min(d!, daysInMonth))}`
+}
+
+/** 网格里唯一可 Tab 进入的那一格：已选 → 今天 → 当月第一个可选日 */
+const tabIso = computed(() => {
+  const cells = calendarCells.value
+  const sel = Array.isArray(props.selected) ? props.selected[0] : props.selected
+  if (sel && cells.some((c) => c.iso === sel && !isDisabled(c))) return sel
+  const today = todayISO(props.format)
+  if (cells.some((c) => c.iso === today && !isDisabled(c))) return today
+  return cells.find((c) => !isDisabled(c))?.iso ?? cells[0]?.iso ?? ''
+})
+
+/** 把焦点移到某一天的格子；该天不在当前月时先翻月再移 */
+function focusDay(iso: string) {
+  const inGrid = (): boolean => !!gridRef.value?.querySelector(`[data-iso="${iso}"]`)
+  const apply = () => {
+    const el = gridRef.value?.querySelector<HTMLElement>(`[data-iso="${iso}"]`)
+    el?.focus()
+  }
+  if (inGrid()) {
+    apply()
+    return
+  }
+  const [y, m] = iso.split('-').map(Number)
+  emit('update:modelMonth', { year: y!, month: m! })
+  void nextTick(apply)
+}
+
+function onGridKeydown(e: KeyboardEvent) {
+  const cell = (e.target as HTMLElement | null)?.closest?.('[data-iso]') as HTMLElement | null
+  const from = cell?.dataset.iso ?? tabIso.value
+  if (!from) return
+  let target: string
+  switch (e.key) {
+    case 'ArrowLeft':
+      target = shiftDays(from, -1)
+      break
+    case 'ArrowRight':
+      target = shiftDays(from, 1)
+      break
+    case 'ArrowUp':
+      target = shiftDays(from, -7)
+      break
+    case 'ArrowDown':
+      target = shiftDays(from, 7)
+      break
+    case 'Home':
+      // 本周首日：网格首行从周日起算，这里按"同一行第 0 列"对齐
+      target = shiftDays(from, -(((calendarCells.value.findIndex((c) => c.iso === from) % 7) + 7) % 7))
+      break
+    case 'End':
+      target = shiftDays(from, 6 - (((calendarCells.value.findIndex((c) => c.iso === from) % 7) + 7) % 7))
+      break
+    case 'PageUp':
+      target = shiftMonths(from, -1)
+      break
+    case 'PageDown':
+      target = shiftMonths(from, 1)
+      break
+    default:
+      return
+  }
+  e.preventDefault()
+  focusDay(target)
+}
+
 function cellAria(cell: DateCell, idx: number): string {
   const wd = (tm('form.weekdays') as string[])[idx % 7] ?? ''
   return t('form.dateCellAria', { ymd: cell.iso, weekday: wd })
@@ -195,9 +285,11 @@ function onToday() {
   <!-- role=grid 的行包装用 display:contents，不参与布局，视觉与改前完全一致；
        星期表头设为 aria-hidden —— 每格的可访问名已自带星期，避免重复播报 -->
   <div
+    ref="gridRef"
     class="dp-grid"
     role="grid"
     :aria-label="t('form.yearMonth', { year: modelMonth.year, month: modelMonth.month })"
+    @keydown="onGridKeydown"
   >
     <div v-for="(row, ri) in weeks" :key="ri" role="row" class="dp-row">
       <button
@@ -209,6 +301,7 @@ function onToday() {
         :class="cellClass(cell)"
         :disabled="isDisabled(cell)"
         role="gridcell"
+        :tabindex="cell.iso === tabIso ? 0 : -1"
         :aria-label="cellAria(cell, idx)"
         :aria-current="!range && selected === cell.iso ? 'date' : undefined"
         @click="onCellClick(cell)"
