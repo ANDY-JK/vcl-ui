@@ -41,6 +41,8 @@
     "check:no-cycles": "node scripts/check-no-cycles.mjs",
     "check:icons": "node scripts/gen-lucide-subset.mjs --check",
     "check:icon-names": "node scripts/check-icon-names.mjs",
+    "check:mutation-tool": "node scripts/mutation-control.mjs --self-test",
+    "mutation-control": "node scripts/mutation-control.mjs",
     "check:test-skips": "node scripts/check-test-skips.mjs",
     "changelog": "node scripts/gen-changelog.mjs",
     "check:css-tokens": "node scripts/check-css-tokens.mjs",
