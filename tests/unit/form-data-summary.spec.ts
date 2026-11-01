@@ -89,3 +89,47 @@ describe('FormDataSummary · CSV 导出', () => {
     w.unmount()
   })
 })
+/* ════════════════════════════════════════
+ * CSV 公式注入防护（#282）—— 这条路径曾被漏掉
+ *
+ * FormDataSummary 导出的正是**表单收集来的用户数据**，此前只有引号转义、
+ * 没有公式前缀防护：用户在某字段填 `=cmd|'/c calc'!A0`，管理员导出后用 Excel
+ * 打开就会执行。断言捕获真实 Blob 文本，而不是"按钮点得动"。
+ * ════════════════════════════════════════ */
+describe('FormDataSummary · CSV 公式注入防护', () => {
+  it('**= 开头的用户值被加单引号前缀**（否则 Excel 当公式执行）', async () => {
+    const store = createLocalFormStore()
+    setActiveFormStore(store)
+    const item = makeItem()
+    await store.appendRecord(item.collectKey, {
+      id: 'r1',
+      time: 't1',
+      data: { name: "=cmd|'/c calc'!A0", age: 1 },
+    })
+
+    // 捕获组件交给 downloadBlob 的 Blob
+    const captured: Blob[] = []
+    const orig = URL.createObjectURL
+    URL.createObjectURL = ((b: Blob) => {
+      captured.push(b)
+      return 'blob:stub'
+    }) as typeof URL.createObjectURL
+
+    const w = mountSummary(item)
+    try {
+      await flushPromises()
+      const btn = w.findAll('button').find((b) => b.text().includes('导出'))!
+      await btn.trigger('click')
+      await flushPromises()
+      expect(captured.length, '应生成一个 CSV Blob').toBe(1)
+      const text = await captured[0]!.text()
+      expect(text, '公式载荷必须带前缀').toContain(`'=cmd|'/c calc'!A0`)
+      // 每一个 =cmd 前都必须紧跟单引号（即不存在裸露的公式）
+      expect(text, '不得出现裸露的公式开头').not.toMatch(/(?<!')=cmd\|/)
+      expect(text, '表头照常带引号').toContain('"name"')
+    } finally {
+      URL.createObjectURL = orig
+      w.unmount()
+    }
+  })
+})

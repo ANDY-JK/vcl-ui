@@ -6,6 +6,7 @@
  * 支持 CSV 导出（轻量，避免引入 xlsx 依赖；复杂导出走 FormCollect 的 Excel）。
  */
 import { ref, computed, watch } from 'vue'
+import { csvCell } from '@/components/_internal/tabular-export'
 import { useT } from '@/components/_internal/i18n'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Button from '@/components/basic/Button.vue'
@@ -103,11 +104,11 @@ function cellValue(v: unknown): string {
 function exportCsv(): void {
   const ks = keys.value
   const header = [t('fbd.submittedAt'), ...ks]
-  const escape = (s: string): string =>
-    s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s
-  const lines = [header.map(escape).join(',')]
+  // 公式注入防护走统一转义（#282）：此前这里只有引号转义，而导出的正是**用户填的数据**，
+  // 一个 =cmd|'/c calc'!A0 就能在管理员用 Excel 打开时执行。
+  const lines = [header.map(csvCell).join(',')]
   for (const r of records.value) {
-    lines.push([r.time, ...ks.map((k) => escape(cellValue(r.data[k])))].join(','))
+    lines.push([r.time, ...ks.map((k) => csvCell(cellValue(r.data[k])))].join(','))
   }
   const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
   // downloadBlob 在 SSR / DOM 异常时返回 false：把结果交给宿主提示（#269）

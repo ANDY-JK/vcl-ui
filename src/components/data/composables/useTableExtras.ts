@@ -2,6 +2,7 @@
 //    需我确认：导出 CSV 格式、右键菜单结构、namespace 存储隔离逻辑
 // ==================== 周边功能：搜索 / 导出 / 右键菜单 / 行选择 / 持久化 / 全局事件 ====================
 import { ref, computed, watch, nextTick, type Ref, type ComputedRef } from 'vue'
+import { csvCell } from '@/components/_internal/tabular-export'
 import type { Column, ColumnFilterState, RowContextAction, TableStorage } from './types'
 import { getCellText, clampFloatingPosition, markLayerOpen } from './utils'
 import { useTablePersistence } from './useTablePersistence'
@@ -87,10 +88,8 @@ export function useTableExtras(
   } = options
 
   // ==================== CSV 导出（表里看到啥就导出啥） ====================
-  /** CSV 公式注入防护：以 = + - @ 或制表符/回车开头的值加单引号前缀，Excel/WPS 按文本打开 */
-  function csvFormulaSafe(val: string): string {
-    return /^[=+\-@\t\r]/.test(val) ? `'${val}` : val
-  }
+  // CSV 公式注入防护已收敛到 _internal/tabular-export（#282）：本文件、buildTsv、
+  // FormDataSummary 三处曾各写一份，其中一处漏写导致用户数据里的公式被 Excel 执行。
 
   /** 导出共用数据源：列（过滤隐藏）+ 行值（含编辑 override），支持 exportScope 当前页 */
   function buildExportPayload(): { cols: Column[]; body: (string | number)[][] } {
@@ -118,10 +117,8 @@ export function useTableExtras(
 
     const { cols, body } = buildExportPayload()
     const BOM = '﻿'
-    const header = cols.map((c) => `"${csvFormulaSafe(c.title).replace(/"/g, '""')}"`).join(',')
-    const csvBody = body
-      .map((row) => row.map((val) => `"${csvFormulaSafe(String(val)).replace(/"/g, '""')}"`).join(','))
-      .join('\n')
+    const header = cols.map((c) => csvCell(c.title)).join(',')
+    const csvBody = body.map((row) => row.map((val) => csvCell(String(val))).join(',')).join('\n')
     const blob = new Blob([BOM + header + '\n' + csvBody], { type: 'text/csv;charset=utf-8' })
     // downloadBlob 在 SSR（无 document）/ 抛异常时返回 false（2026-11-01 #269）。
     // 返回值透给宿主决定提示文案 —— 本 composable 没有 Toast 实例。

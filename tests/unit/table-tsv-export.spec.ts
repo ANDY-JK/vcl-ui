@@ -5,19 +5,23 @@ import { describe, it, expect } from 'vitest'
 import { buildTsv } from '@/components/data/composables/useTableScreenshot'
 
 describe('buildTsv · 公式注入防护', () => {
-  // 用整行相等断言：含制表符/换行的单元格先被清洗成空格（2026-10-31 起值内控制字符不保留）
-  it.each([['=HYPERLINK("http://evil")'], ['+SUM(A1)'], ['-1+1'], ['@cmd'], ['\tx'], ['\r\nx']])(
-    '危险开头加单引号前缀：%j',
+  // 口径（#282）：**先清洗控制字符、再判公式前缀** —— 清洗后以空格开头的内容 Excel 按文本处理，
+  // 不需要再加引号前缀；清洗后仍以 `= + - @` 打头的才加。
+  it.each([['=HYPERLINK("http://evil")'], ['+SUM(A1)'], ['-1+1'], ['@cmd']])(
+    '清洗后仍危险的开头加单引号前缀：%j',
     (cell) => {
       const out = buildTsv(['列'], [[cell]])
       expect(out.startsWith('列\n')).toBe(true)
-      // 注入判定用**原始值**（\t/\r\n 打头即危险，控制字符打头的混淆风险同样要防）；
-      // 前缀后的内容已被清洗（\t/\r\n → 空格）。=+-@ 打头 → `'原文`；控制字符打头 → `'清洗后`
-      const startsDangerous = /^[=+\-@\t\r]/.test(cell)
-      const cleaned = cell.replace(/[\t\r\n]+/g, ' ')
-      expect(out).toContain(`'${startsDangerous && /^[=+\-@]/.test(cell) ? cell : cleaned}`)
+      expect(out).toContain(`'${cell}`)
     },
   )
+
+  it.each([['\tx'], ['\r\nx'], ['\nx']])('控制字符打头：清洗成空格即安全，不加前缀：%j', (cell) => {
+    const out = buildTsv(['列'], [[cell]])
+    const value = out.split('\n')[1]!
+    expect(value.startsWith(' '), '清洗后以空格开头').toBe(true)
+    expect(value.startsWith("'"), '不应多出引号前缀').toBe(false)
+  })
 
   it('普通值与含危险字符但不居首的值不加前缀', () => {
     const out = buildTsv(['列'], [['正常值'], ['a=b'], ['金额-100'], ['x@y']])
@@ -63,12 +67,21 @@ describe('buildTsv · 公式注入防护', () => {
     expect(lines[1]).toBe('a 1\t任务1 任务2') // \t 与 \n 都变空格
   })
 
-  it('控制字符打头的值：\t/\r 打头仍加注入前缀（清洗后内容不破坏行列）', () => {
-    // 既有语义：注入判定用原始值，\t 与 \r 在危险打头正则里（= + - @ \t \r）；
-    // \n 不在（历史口径）——清洗后 `\n=x` → ` =x` 不加前缀。三者清洗后的内容都不再含行列破坏符
+  it('控制字符打头的值：清洗后以空格开头，不再需要注入前缀', () => {
+    // 口径变更（#282，收敛到 _internal/tabular-export）：**先清洗控制字符、再判公式前缀**。
+    //
+    // 旧口径用「原始值」判前缀，于是 \t / \r 打头会加 `'`，而它们清洗后本来就变成空格 ——
+    // 前缀挡不住任何东西（Excel 见到前导空格就当文本），只是多出一个肉眼可见的引号；
+    // 更不一致的是 \n 不在旧的危险正则里，`\n=x` 反而不加前缀。
+    //
+    // 新口径：控制字符一律先变空格 → 单元格以空格开头 → Excel 按文本处理，天然安全；
+    // 真正需要防的是**清洗后仍以 `= + - @` 打头**的值，那种照样加前缀。
     expect(buildTsv(['a'], [['\tx']]).split('\n')).toHaveLength(2)
-    expect(buildTsv(['a'], [['\tx']]).split('\n')[1]).toBe("' x")
-    expect(buildTsv(['a'], [['\r\n=x']]).split('\n')[1]).toBe("' =x")
+    expect(buildTsv(['a'], [['\tx']]).split('\n')[1]).toBe(' x')
+    expect(buildTsv(['a'], [['\r\n=x']]).split('\n')[1]).toBe(' =x')
     expect(buildTsv(['a'], [['\n=x']]).split('\n')[1]).toBe(' =x')
+    // 清洗后仍然危险的，必须加前缀
+    expect(buildTsv(['a'], [['=x']]).split('\n')[1]).toBe("'=x")
+    expect(buildTsv(['a'], [['\t=x']]).split('\n')[1]).toBe(' =x')
   })
 })

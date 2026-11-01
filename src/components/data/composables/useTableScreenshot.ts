@@ -7,6 +7,7 @@
  * 以回调注入保持模块无 DOM 结构依赖。
  */
 import { ref } from 'vue'
+import { tsvCell } from '../../_internal/tabular-export'
 import { captureTableCanvas } from './canvas-screenshot'
 import { downloadScreenshot, copyScreenshotToClipboard } from '@/components/_internal/useScreenshot'
 
@@ -103,9 +104,6 @@ export function useTableScreenshot(o: TableScreenshotOptions) {
  * 也可含控制字符，构建器必须自己兜住。表头同理清洗（列名来自调用方，同样可能带）。
  */
 export function buildTsv(header: string[], rows: string[][]): string {
-  const sanitize = (s: string) => s.replace(/[\t\r\n]+/g, ' ')
-  return [
-    header.map(sanitize).join('\t'),
-    ...rows.map((r) => r.map((s) => (/^[=+\-@\t\r]/.test(s) ? `'${sanitize(s)}` : sanitize(s))).join('\t')),
-  ].join('\n')
+  // 转义走统一实现（#282）：此前这里内联一份前缀判定，与 useTableExtras 的实现各写各的
+  return [header.map(tsvCell).join('\t'), ...rows.map((r) => r.map((s) => tsvCell(s)).join('\t'))].join('\n')
 }
