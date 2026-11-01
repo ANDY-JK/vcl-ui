@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "menu-roving-tabindex",
+      "file": "src/components/nav/menu-keyboard.ts",
+      "find": "    return stop === item.key ? 0 : -1",
+      "replace": "    return item.disabled ? -1 : 0",
+      "cmd": "npx vitest run tests/unit/menu-roving.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：菜单每项都是 Tab 停靠点，30 项菜单要按 30 次 Tab（#322）"
+    },
+    {
+      "id": "menu-roving-follow-focus",
+      "file": "src/components/nav/Menu.vue",
+      "find": "@focus=\"tabKey = item.key\"",
+      "replace": "@focus=\"() => {}\"",
+      "cmd": "npx vitest run tests/unit/menu-roving.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：停靠点不跟随焦点，Tab 回来总是第一项（#322）"
+    },
+    {
+      "id": "menu-home-end",
+      "file": "src/components/nav/menu-keyboard.ts",
+      "find": "target?.focus()",
+      "replace": "void target",
+      "cmd": "npx vitest run tests/unit/menu-roving.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：Home/End 没反应，长菜单只能一格一格按（#322）"
+    },
+    {
       "id": "popover-trigger-expanded",
       "file": "src/components/feedback/popover-a11y.ts",
       "find": "    target.setAttribute('aria-expanded', opts.isOpen() ? 'true' : 'false')",

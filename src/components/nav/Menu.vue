@@ -4,6 +4,7 @@
 import { ref, computed, onBeforeUnmount } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import type { MenuItem } from './types'
+import { focusEdge, focusSibling, useMenuRoving } from './menu-keyboard'
 
 /** 悬停切换子菜单的进/出延时：同一手感，两向共用一个值 */
 const _HOVER_SWITCH_MS = 150
@@ -135,15 +136,11 @@ function onKeydown(e: KeyboardEvent, item: MenuItem) {
     e.preventDefault?.()
     focusSibling(e.currentTarget as HTMLElement, -1)
   }
-}
-
-function focusSibling(el: HTMLElement, delta: 1 | -1) {
-  const menuEl = el.closest('[role="menu"]')
-  if (!menuEl) return
-  const items = Array.from(menuEl.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])'))
-  const idx = items.indexOf(el)
-  const next = items[idx + delta]
-  next?.focus()
+  // Home / End（#322）：长菜单一步跳到首/末项
+  if (e.key === 'Home' || e.key === 'End') {
+    e.preventDefault?.()
+    focusEdge(e.currentTarget as HTMLElement, e.key === 'Home' ? 'first' : 'last')
+  }
 }
 
 // --- submenu visibility ---
@@ -155,6 +152,12 @@ function showSubmenu(item: MenuItem): boolean {
 }
 
 const isHoverMode = computed(() => props.mode === 'horizontal' || (props.mode === 'vertical' && props.collapsed))
+
+/** roving tabindex（#322，逻辑在 menu-keyboard.ts）：整菜单只留一个 Tab 停靠点 */
+const { tabKey, menuTabindex } = useMenuRoving(
+  () => props.items,
+  () => props.level,
+)
 
 // 层级深度（对齐 AccordionNav 的层次系统）
 // 透明度: 1.0 - 0.10 × level（逐级变淡）
@@ -192,10 +195,11 @@ const levelStyle = computed(() => {
             role="menuitem"
             :aria-expanded="item.children?.length ? showSubmenu(item) : undefined"
             :aria-disabled="item.disabled || undefined"
-            :tabindex="item.disabled ? -1 : 0"
+            :tabindex="menuTabindex(item)"
             :title="mode === 'vertical' && collapsed ? item.label : undefined"
             @click="handleClick(item)"
             @keydown="onKeydown($event, item)"
+            @focus="tabKey = item.key"
           >
             <span v-if="item.icon" class="menu-item-icon">
               <IconSvg :type="item.icon" size="md" color="currentColor" />
