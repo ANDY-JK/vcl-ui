@@ -33,6 +33,6 @@ features:
     title: 跨框架出口
     details: Web Components 版本可在 React/原生页面直接使用，与 Vue 版本同一套令牌与行为。
   - icon: 🧪
-    title: 41 步机械闸口
+    title: 42 步机械闸口
     details: 覆盖地板 / 行数止涨线 / 文档零漂移 / i18n 双侧对账 / 依赖健康 / 性能回归 / 噪音棘轮，每道都有负向对照证明它真会红。
 ---

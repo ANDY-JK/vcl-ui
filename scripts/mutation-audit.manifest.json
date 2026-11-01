@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "review-appendix-gate-cols",
+      "file": "scripts/check-review-appendix.mjs",
+      "find": "  const bad = rows.filter((l) => cols(l) !== 5)",
+      "replace": "  const bad = rows.filter((l) => false)",
+      "cmd": "npx vitest run tests/unit/review-appendix-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：列数错（未转义竖线）不再报，附录解析全错也没人知道（#334）"
+    },
+    {
+      "id": "review-appendix-gate-numbering",
+      "file": "scripts/check-review-appendix.mjs",
+      "find": "  if (bad.length || miss.length) failed = true",
+      "replace": "  if (bad.length) failed = true",
+      "cmd": "npx vitest run tests/unit/review-appendix-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：编号断档不报，某轮留痕没入册也无人知晓（#334）"
+    },
+    {
+      "id": "review-appendix-gate-parity",
+      "file": "scripts/check-review-appendix.mjs",
+      "find": "if (new Set(counts).size > 1) {",
+      "replace": "if (false) {",
+      "cmd": "npx vitest run tests/unit/review-appendix-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：多份文档行数不一致不报（真源与成稿脱节）（#334）"
+    },
+    {
       "id": "css-breakpoints-gate-allowlist",
       "file": "scripts/check-css-breakpoints.mjs",
       "find": "const ALLOWED = new Set([480, 640, 767, 1023])",
