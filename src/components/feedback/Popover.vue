@@ -1,8 +1,9 @@
 <script setup lang="ts">
 // ⛔ 保护 — 气泡浮层，禁止：clamp() → px，浮动定位算法，z-index
 //    需我确认：trigger 触发方式、placement 位置选项
-import { ref, computed, nextTick, onMounted, onUnmounted, watchEffect, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { FOCUSABLE_SELECTOR, usePopoverTriggerA11y } from './popover-a11y'
 import { useFloating } from '@/components/_internal/useFloating'
 import { useClickOutside } from '@/components/_internal/useClickOutside'
 import { useEscClose } from '@/components/_internal/useEscClose'
@@ -71,19 +72,13 @@ const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepa
   matchWidth: false,
 })
 
-// tooltip 的语义关联必须挂在真正被聚焦的元素上：插槽首个子元素可能只是图标/包裹层（不可聚焦），
-// 只给它加 aria-describedby 读屏不会播报。优先找首个可聚焦后代，退化为首个子元素、再退化为宿主。
-const FOCUSABLE_SELECTOR = 'a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
-function describedTarget(host: HTMLElement): HTMLElement {
-  return host.querySelector<HTMLElement>(FOCUSABLE_SELECTOR) ?? (host.firstElementChild as HTMLElement | null) ?? host
-}
-
-watchEffect(() => {
-  const host = triggerRef.value
-  if (!host) return
-  const target = describedTarget(host)
-  if (isTooltip.value) target.setAttribute('aria-describedby', floatingId)
-  else target.removeAttribute('aria-describedby')
+// 触发器 aria 关联下沉到 popover-a11y.ts（#321）：tooltip 用 describedby，
+// 其余补 aria-expanded/haspopup/controls —— 自定义插槽触发器也能拿到（详见该文件头）。
+usePopoverTriggerA11y({
+  triggerRef,
+  floatingId,
+  isTooltip: () => isTooltip.value,
+  isOpen: () => open.value,
 })
 
 async function toggle(e: MouseEvent) {

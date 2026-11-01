@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "popover-trigger-expanded",
+      "file": "src/components/feedback/popover-a11y.ts",
+      "find": "    target.setAttribute('aria-expanded', opts.isOpen() ? 'true' : 'false')",
+      "replace": "    void opts.isOpen()",
+      "cmd": "npx vitest run tests/unit/popover-trigger-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：自定义触发器没有展开态，读屏不知道浮层开没开（#321）"
+    },
+    {
+      "id": "popover-controls-cleanup",
+      "file": "src/components/feedback/popover-a11y.ts",
+      "find": "    else target.removeAttribute('aria-controls')",
+      "replace": "    else void 0",
+      "cmd": "npx vitest run tests/unit/popover-trigger-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：关闭后 aria-controls 仍指向已移除的浮层，读屏读到悬空引用（#321）"
+    },
+    {
       "id": "select-panel-esc",
       "file": "src/components/form/Select.vue",
       "find": "@keydown.esc.stop.prevent=\"closePanel()\"",
