@@ -187,6 +187,15 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "docs-drift-detection",
+      "file": "scripts/check-docs.mjs",
+      "find": "    else if (current.get(name) !== content) fail.push(`文档漂移 ${name}（源码改过？跑 npm run gen:docs 重新生成）`)",
+      "replace": "    else if (false) fail.push(`文档漂移 ${name}（源码改过？跑 npm run gen:docs 重新生成）`)",
+      "cmd": "npx vitest run tests/unit/docs-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：文档漂移不报，用户会照着过期 API 写代码（#352）"
+    },
+    {
       "id": "facts-hard-conflict",
       "file": "scripts/check-facts.mjs",
       "find": "        failures.push(\n          `${file}:${i + 1} ${name}写的是 **${got}**，真源是 **${want}** —— ` +",

@@ -13,7 +13,13 @@ import os from 'node:os'
 import { generate } from './gen-docs.mjs'
 
 const ROOT = process.cwd()
-const COMMITTED = path.join(ROOT, 'docs-site/components')
+/**
+ * 已提交文档目录：默认 docs-site/components；
+ * 自测时用 `--committed <dir>` 指到夹具（生成侧仍读真实 src，所以夹具只需要放"错误版本"）。
+ */
+const committedIdx = process.argv.indexOf('--committed')
+const COMMITTED =
+  committedIdx > -1 ? process.argv[committedIdx + 1] : path.join(ROOT, 'docs-site/components')
 const fail = []
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vcl-docs-'))
