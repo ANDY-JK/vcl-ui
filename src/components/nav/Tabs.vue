@@ -3,6 +3,7 @@
 //    需我确认：underline/pill 模式行为
 import { ref, computed, nextTick, getCurrentInstance, onBeforeUnmount } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
+import { useRovingTabindex } from '@/components/_internal/useRovingTabindex'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
 import type { TabItem } from './types'
 import { registerTabsHost, unregisterTabsHost, tabIdOf, type TabsContext } from './tabs-context'
@@ -78,6 +79,14 @@ function onKeydown(e: KeyboardEvent) {
     btns?.[nextIdx]?.focus()
   })
 }
+
+/** roving tabindex（#324）：「同一时刻只有一个 Tab 停靠点」这条规矩抽到了公共组合式函数里 */
+const roving = useRovingTabindex({
+  keys: () => props.items.map((it) => String(it.value ?? it.label)),
+  activeKey: () => String(props.modelValue ?? props.items[0]?.value ?? props.items[0]?.label ?? ''),
+  orientation: 'horizontal',
+  wrap: true,
+})
 </script>
 
 <template>
@@ -88,6 +97,8 @@ function onKeydown(e: KeyboardEvent) {
       :key="String(item.value ?? item.label)"
       type="button"
       class="tab-btn"
+      :tabindex="roving.tabindexFor(String(item.value ?? item.label))"
+      :data-roving-key="String(item.value ?? item.label)"
       :class="{ active: modelValue === (item.value ?? item.label) }"
       role="tab"
       :aria-selected="modelValue === (item.value ?? item.label)"
@@ -96,6 +107,7 @@ function onKeydown(e: KeyboardEvent) {
           ? `tabpanel-${tabId}-${String(item.value ?? item.label)}`
           : undefined
       "
+      @focus="roving.focusKey(String(item.value ?? item.label))"
       @click="emit('update:modelValue', item.value ?? item.label)"
     >
       <IconSvg v-if="item.icon && variant === 'tabbar'" :type="item.icon" size="md" />

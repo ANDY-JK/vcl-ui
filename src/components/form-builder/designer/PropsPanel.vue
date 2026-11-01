@@ -171,7 +171,7 @@ watch(
           :class="{ active: activeTab === tab.id }"
           role="tab"
           :aria-selected="activeTab === tab.id"
-          tabindex="0"
+          :tabindex="activeTab === tab.id ? 0 : -1"
           @click="activeTab = tab.id"
           @keydown.enter.prevent="activeTab = tab.id"
           @keydown.space.prevent="activeTab = tab.id"

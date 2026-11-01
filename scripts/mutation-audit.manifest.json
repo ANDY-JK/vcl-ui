@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "tabs-roving-tabindex",
+      "file": "src/components/_internal/useRovingTabindex.ts",
+      "find": "  const tabindexFor = (key: string | number): number => (currentKey() === key ? 0 : -1)",
+      "replace": "  const tabindexFor = (key: string | number): number => (key ? 0 : -1)",
+      "cmd": "npx vitest run tests/unit/tabs-roving.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：每个页签都是 Tab 停靠点，8 个页签要按 8 次 Tab（#324）"
+    },
+    {
+      "id": "tabs-roving-follow-active",
+      "file": "src/components/_internal/useRovingTabindex.ts",
+      "find": "    if (active != null && keys.includes(active)) return active",
+      "replace": "    if (active != null && keys.includes(active)) return null",
+      "cmd": "npx vitest run tests/unit/tabs-roving.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：停靠点不跟选中页签走，Tab 回来总是第一个（#324）"
+    },
+    {
+      "id": "tabs-roving-binding",
+      "file": "src/components/nav/Tabs.vue",
+      "find": ":tabindex=\"roving.tabindexFor(String(item.value ?? item.label))\"",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/tabs-roving.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：模板没绑 tabindex，roving 逻辑白写（#324）"
+    },
+    {
       "id": "select-option-not-tabbable",
       "file": "src/components/form/Select.vue",
       "find": "                tabindex=\"-1\"\n                :aria-selected=\"isSelected(opt)\"",

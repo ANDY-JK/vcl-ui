@@ -481,6 +481,7 @@ const displayTitle = computed(() => {
             class="ip-thumb"
             :class="{ active: i === currentIndex }"
             role="tab"
+            :tabindex="i === currentIndex ? 0 : -1"
             :aria-selected="i === currentIndex"
             @click="goTo(i)"
           >

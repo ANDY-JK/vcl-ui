@@ -44,6 +44,7 @@
     "check:mutation-tool": "node scripts/mutation-control.mjs --self-test",
     "check:mutation-audit": "node scripts/mutation-audit.mjs --check-manifest",
     "check:hover-guard": "node scripts/wrap-hover-media.mjs --check",
+    "check:tab-sequence": "node scripts/check-tab-sequence.mjs",
     "fix:hover-guard": "node scripts/wrap-hover-media.mjs --write",
     "mutation-audit": "node scripts/mutation-audit.mjs",
     "mutation-control": "node scripts/mutation-control.mjs",
