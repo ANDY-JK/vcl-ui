@@ -49,6 +49,23 @@ interface Props {
   readonly?: boolean
   /** 校验规则 */
   rules?: ((v: string) => string | undefined)[]
+  /**
+   * 外部注入错误（覆盖 rules 结果）。
+   *
+   * 表单渲染器（FormRenderer）的提交期校验结果走这里 —— 否则父级只说得出
+   * 「这个字段无效」，输入框上既没有 `aria-invalid` 也没有 `aria-describedby`（#338）。
+   * 与 `Select` 的 `error` 同款（#316）。
+   */
+  error?: string
+  /**
+   * 外部判定为无效（不带文案）：只影响 `aria-invalid`。
+   *
+   * 表单渲染器把提交期校验结果显示在自己的 `FieldError` 里（那是既有契约，
+   * 17 处分支都靠它），所以这里不接文案，只把"无效"这个状态挂到输入框上（#338）。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 `aria-describedby`，让读屏能回查"为什么无效" */
+  describedby?: string
   /** 控件下方帮助文案 */
   hint?: string
   /** HTML name 属性 */
@@ -132,7 +149,10 @@ const nativeColorValue = computed(() => toNativeColorValue(props.modelValue))
    ════════════════════════════════════════ */
 const focused = ref(false)
 const showPassword = ref(false)
-const errorMsg = ref('')
+/** 内部 rules 校验得出的错误（外部注入的 error 优先，见下面的 errorMsg） */
+const innerError = ref('')
+/** 对模板暴露的错误文案：外部注入优先 —— 外部说了算，避免出现两条不一样的错误 */
+const errorMsg = computed(() => props.error || innerError.value)
 const touched = ref(false)
 const autoFilled = ref(false)
 const floatInputRef = ref<HTMLInputElement | HTMLTextAreaElement | null>(null)
@@ -171,11 +191,11 @@ function validate() {
   for (const rule of props.rules) {
     const msg = rule(val)
     if (msg) {
-      errorMsg.value = msg
+      innerError.value = msg
       return
     }
   }
-  errorMsg.value = ''
+  innerError.value = ''
 }
 
 watch(
@@ -418,8 +438,8 @@ const floatingRaised = computed(() => {
           :id="inputId"
           ref="floatInputRef"
           :aria-label="label || placeholder || undefined"
-          :aria-invalid="!!errorMsg || undefined"
-          :aria-describedby="errorMsg ? errorDescId : undefined"
+          :aria-invalid="!!(errorMsg || invalid) || undefined"
+          :aria-describedby="errorMsg ? errorDescId : describedby"
           class="f-input"
           type="text"
           inputmode="decimal"
@@ -467,8 +487,8 @@ const floatingRaised = computed(() => {
           :id="inputId"
           ref="floatInputRef"
           :aria-label="label || placeholder || undefined"
-          :aria-invalid="!!errorMsg || undefined"
-          :aria-describedby="errorMsg ? errorDescId : undefined"
+          :aria-invalid="!!(errorMsg || invalid) || undefined"
+          :aria-describedby="errorMsg ? errorDescId : describedby"
           class="f-textarea"
           :value="taValue"
           :placeholder="taFocused && !hasTaValue ? placeholder : ''"
@@ -514,8 +534,8 @@ const floatingRaised = computed(() => {
           :id="inputId"
           ref="floatInputRef"
           :aria-label="label || placeholder || undefined"
-          :aria-invalid="!!errorMsg || undefined"
-          :aria-describedby="errorMsg ? errorDescId : undefined"
+          :aria-invalid="!!(errorMsg || invalid) || undefined"
+          :aria-describedby="errorMsg ? errorDescId : describedby"
           type="color"
           class="f-color"
           :value="nativeColorValue"
@@ -551,8 +571,8 @@ const floatingRaised = computed(() => {
           :id="inputId"
           ref="floatInputRef"
           :aria-label="label || placeholder || undefined"
-          :aria-invalid="!!errorMsg || undefined"
-          :aria-describedby="errorMsg ? errorDescId : undefined"
+          :aria-invalid="!!(errorMsg || invalid) || undefined"
+          :aria-describedby="errorMsg ? errorDescId : describedby"
           :type="actualType"
           :value="String(modelValue ?? '')"
           :placeholder="(focused || autoFilled) && !hasValue ? placeholder : ''"

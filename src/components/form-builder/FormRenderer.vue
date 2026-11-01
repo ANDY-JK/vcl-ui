@@ -42,6 +42,7 @@ import RendererDisplayResult from './renderer/RendererDisplayResult.vue'
 import RendererDisplayLoading from './renderer/RendererDisplayLoading.vue'
 import type { ApiUrlPolicy } from './api-url-guard'
 import FieldError from './FieldError.vue'
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import RendererRichtext from './renderer/RendererRichtext.vue'
 import RendererSignature from './renderer/RendererSignature.vue'
 import RendererSubform from './renderer/RendererSubform.vue'
@@ -193,6 +194,9 @@ function formatValue(v: unknown): string {
 const extraProps = computed(() => props.field.props ?? {})
 
 /** Input 组件 props */
+/** FieldError 的稳定 id：让输入框的 aria-describedby 指得到「为什么无效」（#338） */
+const fieldErrorId = useIdSafe('fbr-field-error')
+
 const inputProps = computed(() => ({
   type: resolvedComponentType.value as
     'text' | 'textarea' | 'number' | 'password' | 'tel' | 'email' | 'url' | 'search' | 'color',
@@ -202,6 +206,9 @@ const inputProps = computed(() => ({
   disabled: effectiveDisabled.value,
   readonly: props.field.readonly,
   rules: (props.field.rules ?? []) as ((v: string) => string | undefined)[],
+  // 提交期校验结果由本组件的 FieldError 渲染；这里只把「无效」与「说明在哪」交给输入框（#338）
+  invalid: !!props.error,
+  describedby: props.error ? fieldErrorId : undefined,
   required: props.field.required,
   size: styleSize.value,
   ...extraProps.value,
@@ -366,7 +373,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
     <!-- ═══ Input 系列 ═══ -->
     <template v-else-if="category === 'input'">
       <Input v-model="inputValue" v-bind="inputProps" @change="emit('change')" />
-      <FieldError :message="error ?? ''" />
+      <FieldError :id="fieldErrorId" :message="error ?? ''" />
     </template>
 
     <!-- ═══ Select 系列 ═══ -->

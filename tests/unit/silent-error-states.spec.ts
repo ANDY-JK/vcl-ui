@@ -46,6 +46,12 @@ const MIN_VUE_FILES = 100
  */
 const REVIEWED: Array<{ file: RegExp; name: string; reason: string }> = [
   {
+    file: /^form\/Input\.vue$/,
+    name: 'innerError',
+    reason:
+      '经 errorMsg computed 消费：`props.error || innerError.value`（外部注入优先），模板 15 处都用 errorMsg',
+  },
+  {
     file: /^data\/Avatar\.vue$/,
     name: 'imgError',
     reason: '经 showImg computed 消费：`const showImg = computed(() => !!props.src && !imgError.value)`，模板用 showImg',

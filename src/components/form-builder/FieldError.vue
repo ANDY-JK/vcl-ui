@@ -8,13 +8,15 @@
 interface Props {
   /** 错误信息（空字符串 = 无错误） */
   message: string
+  /** 元素 id：供输入框的 aria-describedby 指向「为什么无效」（#338） */
+  id?: string
 }
 defineProps<Props>()
 </script>
 
 <template>
   <Transition name="fb-error">
-    <p v-if="message" class="fb-field-error" role="alert">
+    <p v-if="message" :id="id" class="fb-field-error" role="alert">
       <svg class="fb-error-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
         <path
           d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3.5a.75.75 0 0 1 1.5 0v4a.75.75 0 0 1-1.5 0v-4zM8 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"

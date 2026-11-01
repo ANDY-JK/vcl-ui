@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "renderer-invalid-prop",
+      "file": "src/components/form-builder/FormRenderer.vue",
+      "find": "  invalid: !!props.error,",
+      "replace": "  invalid: false,",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：有提交期错误但输入框不标记无效（#338）"
+    },
+    {
+      "id": "renderer-describedby-prop",
+      "file": "src/components/form-builder/FormRenderer.vue",
+      "find": "  describedby: props.error ? fieldErrorId : undefined,",
+      "replace": "  describedby: undefined,",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：输入框不指向错误文案，回查不到原因（#338）"
+    },
+    {
+      "id": "fielderror-id",
+      "file": "src/components/form-builder/FieldError.vue",
+      "find": "<p v-if=\"message\" :id=\"id\" class=\"fb-field-error\" role=\"alert\">",
+      "replace": "<p v-if=\"message\" class=\"fb-field-error\" role=\"alert\">",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：错误元素没有 id，aria-describedby 指向悬空（#338）"
+    },
+    {
       "id": "datatable-cell-error-describedby",
       "file": "src/components/data/DataTable.vue",
       "find": "                      isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\n                        ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\n                        : undefined",
