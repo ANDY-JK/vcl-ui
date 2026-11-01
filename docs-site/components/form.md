@@ -6,11 +6,11 @@
 
 | 组件 | Props 数 | Events 数 | Slots 数 |
 | --- | --- | --- | --- |
-| `Input` | 22 | 6 | 0 |
-| `Select` | 24 | 5 | 2 |
-| `Group` | 16 | 2 | 0 |
+| `Input` | 25 | 6 | 0 |
+| `Select` | 26 | 5 | 2 |
+| `Group` | 18 | 2 | 0 |
 | `IconPicker` | 6 | 5 | 0 |
-| `Upload` | 17 | 5 | 2 |
+| `Upload` | 19 | 5 | 2 |
 | `CameraCapture` | 6 | 5 | 0 |
 | `CodeCapture` | 7 | 5 | 0 |
 | `CaptureFallbackPanel` | 9 | 3 | 0 |
@@ -49,6 +49,9 @@
 | `disabled` | `boolean` | `false` | 否 | 禁用 |
 | `readonly` | `boolean` | `false` | 否 | 只读 |
 | `rules` | `((v: string) => string \| undefined)[]` | `() => []` | 否 | 校验规则 |
+| `error` | `string` | — | 否 | 外部注入错误（覆盖 rules 结果）。 表单渲染器（FormRenderer）的提交期校验结果走这里 —— 否则父级只说得出 「这个字段无效」，输入框上既没有 `aria-invalid` 也没有 `aria-describedby`（#338）。 与 `Select` 的 `error` 同款（#316）。 |
+| `invalid` | `boolean` | — | 否 | 外部判定为无效（不带文案）：只影响 `aria-invalid`。 表单渲染器把提交期校验结果显示在自己的 `FieldError` 里（那是既有契约， 17 处分支都靠它），所以这里不接文案，只把"无效"这个状态挂到输入框上（#338）。 |
+| `describedby` | `string` | — | 否 | 外部错误元素的 id：挂到 `aria-describedby`，让读屏能回查"为什么无效" |
 | `hint` | `string` | — | 否 | 控件下方帮助文案 |
 | `name` | `string` | — | 否 | HTML name 属性 |
 | `autocomplete` | `string` | `'off'` | 否 | HTML autocomplete |
@@ -88,6 +91,8 @@
 | `options` | `Option[]` | `() => []` | 否 | 选项表（select/combobox）：{ value, label, disabled? } |
 | `label` | `string` | — | 否 | 浮动标签文案（上浮骑缝样式） |
 | `rules` | `((v: string) => string \| undefined)[]` | `() => []` | 否 | 校验规则：返回错误文案即不通过 |
+| `invalid` | `boolean` | — | 否 | 外部判定为无效（不带文案）：只影响 `aria-invalid`。 表单渲染器的提交期错误由它自己的 `FieldError` 渲染，这里只把状态挂上来（#338）。 |
+| `describedby` | `string` | — | 否 | 外部错误元素的 id：挂到 `aria-describedby`，让读屏能回查「为什么无效」 |
 | `error` | `string` | — | 否 | 外部注入错误提示（覆盖 rules 结果） |
 | `multiple` | `boolean` | `false` | 否 | 多选：tags 展示，值为数组 |
 | `placeholder` | `string` | `() => t('form.pleaseSelect')` | 否 | 占位文案（默认内置「请选择」） |
@@ -133,6 +138,8 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
+| `invalid` | `boolean` | — | 否 | 外部判定为无效（不带文案）：挂到**组容器**的 aria-invalid。 焦点落在组里的单个选项上，但"这题答错了"是组的语义 —— 所以挂 radiogroup / group（#342）。 |
+| `describedby` | `string` | — | 否 | 外部错误元素的 id：挂到 aria-describedby，让读屏能回查「为什么无效」 |
 | `type` | `'radio' \| 'checkbox' \| 'switch' \| 'rate' \| 'slider'` | `'radio'` | 否 | 统一类型：radio \| checkbox \| switch \| rate \| slider |
 | `modelValue` | `string \| number \| boolean \| (string \| number \| boolean)[] \| [number, number]` | — | 是 | 受控值：radio/switch 为单值，checkbox 为数组，rate 为数值，slider 为数值或 [起, 止] |
 | `options` | `Option[]` | `() => []` | 否 | radio / checkbox 模式选项列表 |
@@ -190,6 +197,8 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
+| `invalid` | `boolean` | — | 否 | 外部判定为无效（不带文案）：挂到投放区的 aria-invalid。 文件输入本身 aria-hidden + tabindex=-1，**无障碍焦点在 role=button 的投放区上**， 所以状态要挂在投放区（#341 / TD-99）。 |
+| `describedby` | `string` | — | 否 | 外部错误元素的 id：挂到 aria-describedby，让读屏能回查「为什么无效」 |
 | `accept` | `string` | `'image/*'` | 否 | 接受的文件类型：默认图片；传空字符串 = 全部类型（含目录里的文件） |
 | `multiple` | `boolean` | `false` | 否 | 多文件 |
 | `maxSize` | `number` | `10` | 否 | 单文件大小上限（MB，默认 10） |

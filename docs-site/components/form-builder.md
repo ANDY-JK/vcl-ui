@@ -9,7 +9,7 @@
 | `FormDesigner` | 5 | 4 | 0 |
 | `FormBuilder` | 8 | 6 | 0 |
 | `FormRenderer` | 7 | 3 | 0 |
-| `FieldError` | 1 | 0 | 0 |
+| `FieldError` | 2 | 0 | 0 |
 | `FormCollect` | 6 | 1 | 0 |
 | `FormTargetCollect` | 4 | 1 | 0 |
 | `FormShareView` | 4 | 1 | 0 |
@@ -211,6 +211,7 @@
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
 | `message` | `string` | — | 是 | 错误信息（空字符串 = 无错误） |
+| `id` | `string` | — | 否 | 元素 id：供输入框的 aria-describedby 指向「为什么无效」（#338） |
 
 ## `FormCollect`
 
