@@ -575,9 +575,11 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <RendererIdcard
           :field="field"
           :model-value="modelValue"
+          :invalid="!!error"
+          :describedby="error ? fieldErrorId : undefined"
           @update:model-value="emit('update:modelValue', $event)"
         />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
 
       <!-- 评分矩阵 -->
@@ -589,9 +591,11 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <RendererMatrix
           :field="field"
           :model-value="modelValue"
+          :invalid="!!error"
+          :describedby="error ? fieldErrorId : undefined"
           @update:model-value="emit('update:modelValue', $event)"
         />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
 
       <!-- 流水号 -->

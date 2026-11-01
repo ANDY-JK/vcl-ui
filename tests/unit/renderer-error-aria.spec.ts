@@ -131,6 +131,40 @@ describe('FormRenderer · 提交期校验错误与输入框关联', () => {
     w.unmount()
   })
 
+  it('**idcard 字段的无效状态挂在证件号输入框上**', async () => {
+    const w = mount(FormRenderer, {
+      props: { field: { ...FIELD, type: 'idcard' }, modelValue: '', error: '证件号格式不对' } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const input = w.find('.fb-idcard-input')
+    expect(input.exists(), '前置：应渲染证件号输入框').toBe(true)
+    expect(input.attributes('aria-invalid'), '证件号输入框没标记无效').toBe('true')
+    const describedby = input.attributes('aria-describedby')
+    expect(describedby, '证件号输入框没指向错误说明').toBeTruthy()
+    expect(document.querySelector(`#${CSS.escape(describedby!)}`)!.textContent).toContain('证件号格式不对')
+    w.unmount()
+  })
+
+  it('**matrix 字段的无效状态挂在单选组容器上**（语义属于组）', async () => {
+    const w = mount(FormRenderer, {
+      props: {
+        field: { ...FIELD, type: 'matrix', props: { matrixRows: '差,好', matrixCols: '满意' } },
+        modelValue: {},
+        error: '请完成评分矩阵',
+      } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const group = w.find('[role="radiogroup"]')
+    expect(group.exists(), '前置：矩阵应渲染 radiogroup 容器').toBe(true)
+    expect(group.attributes('aria-invalid'), '矩阵容器没标记无效').toBe('true')
+    expect(document.querySelector(`#${CSS.escape(group.attributes('aria-describedby')!)}`)).toBeTruthy()
+    w.unmount()
+  })
+
   it('**既有契约不变：FieldError 仍然渲染**（17 处分支都靠它）', async () => {
     const w = await mountRenderer('姓名必填')
     const err = w.find('.fb-field-error')

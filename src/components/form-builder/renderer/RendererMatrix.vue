@@ -11,6 +11,13 @@ const props = defineProps<{
   field: FormField
   /** 当前值（行标题 → 列标题） */
   modelValue: unknown
+  /**
+   * 外部判定为无效（不带文案）：挂到**可聚焦控件/组容器**上（#344）。
+   * 每个渲染器的可聚焦元素不同：证件号是 input、矩阵是单选组容器。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，读屏可回查「为什么无效」 */
+  describedby?: string
 }>()
 
 const emit = defineEmits<{
@@ -44,7 +51,14 @@ function selectCell(row: string, col: string): void {
 </script>
 
 <template>
-  <div v-if="matrixRows.length && matrixCols.length" class="fb-matrix">
+  <div
+    v-if="matrixRows.length && matrixCols.length"
+    class="fb-matrix"
+    role="radiogroup"
+    :aria-label="field.label"
+    :aria-invalid="invalid || undefined"
+    :aria-describedby="describedby"
+  >
     <div class="fb-matrix-head">
       <div class="fb-matrix-cell fb-matrix-first">·</div>
       <div v-for="col in matrixCols" :key="col" class="fb-matrix-cell">{{ col }}</div>

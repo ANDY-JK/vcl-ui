@@ -11,6 +11,13 @@ const props = defineProps<{
   field: FormField
   /** 当前值（证件号码字符串） */
   modelValue: unknown
+  /**
+   * 外部判定为无效（不带文案）：挂到**可聚焦控件/组容器**上（#344）。
+   * 每个渲染器的可聚焦元素不同：证件号是 input、矩阵是单选组容器。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，读屏可回查「为什么无效」 */
+  describedby?: string
 }>()
 
 const emit = defineEmits<{
@@ -34,6 +41,8 @@ const idcardTypeIndex = ref(0)
     </select>
     <input
       class="fb-idcard-input"
+      :aria-invalid="invalid || undefined"
+      :aria-describedby="describedby"
       :value="(modelValue as string) ?? ''"
       :placeholder="idcardTypes[idcardTypeIndex] || t('formBuilder.idNumber')"
       @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"

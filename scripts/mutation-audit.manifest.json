@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "idcard-invalid-prop",
+      "file": "src/components/form-builder/renderer/RendererIdcard.vue",
+      "find": "      :aria-invalid=\"invalid || undefined\"\n      :aria-describedby=\"describedby\"",
+      "replace": "      :aria-invalid=\"undefined\"\n      :aria-describedby=\"describedby\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：证件号输入框不标记无效（#344）"
+    },
+    {
+      "id": "matrix-invalid-prop",
+      "file": "src/components/form-builder/renderer/RendererMatrix.vue",
+      "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",
+      "replace": "    :aria-invalid=\"undefined\"\n    :aria-describedby=\"describedby\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：矩阵单选组容器不标记无效（#344）"
+    },
+    {
       "id": "richtext-invalid-prop",
       "file": "src/components/form-builder/renderer/RendererRichtext.vue",
       "find": "      :aria-invalid=\"invalid || undefined\"",
