@@ -136,6 +136,12 @@ const emit = defineEmits<{
 const selectInputId = useIdSafe('select-input')
 /** 下拉面板唯一 id：同页多个 Select 实例时 aria-controls/面板 id 各自独立，避免重复 id 导致关联错乱 */
 const dropdownId = useIdSafe('select-panel')
+/**
+ * 错误提示的唯一 id（#316）：与 Input 的做法对齐 —— `role="alert"` 只能保证
+ * **错误刚出现那一刻**被播报；用户之后再把焦点移回本控件时，读屏要能重新读到
+ * 错误内容，就必须用 `aria-describedby` 把错误文本挂到 combobox 上。
+ */
+const errorDescId = useIdSafe('select-error')
 const isSelect = computed(() => props.type === 'select')
 const isCombobox = computed(() => props.type === 'combobox')
 /** 统一交互模式（单选/多选、select/combobox 同格式）：已选 tag 展示 + trigger 直接输入 + 打开面板展示全部 */
@@ -780,6 +786,7 @@ const {
           :id="selectInputId"
           ref="comboInputRef"
           :aria-invalid="!!(errorMsg || props.error) || undefined"
+          :aria-describedby="errorMsg || props.error ? errorDescId : undefined"
           :value="isInputable ? comboText : displayText"
           type="text"
           class="trigger-input"
@@ -828,7 +835,9 @@ const {
       </div>
 
       <!-- 校验错误 -->
-      <div v-if="errorMsg || props.error" class="select-error" role="alert">{{ props.error || errorMsg }}</div>
+      <div v-if="errorMsg || props.error" :id="errorDescId" class="select-error" role="alert">
+        {{ props.error || errorMsg }}
+      </div>
 
       <!-- 下拉面板 -->
       <Teleport to="body">

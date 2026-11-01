@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "select-error-describedby",
+      "file": "src/components/form/Select.vue",
+      "find": ":aria-describedby=\"errorMsg || props.error ? errorDescId : undefined\"",
+      "replace": ":aria-describedby=\"undefined\"",
+      "cmd": "npx vitest run tests/unit/form-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：焦点移回下拉框时读屏读不到错误内容（只有出现那一刻播报过）（#316）"
+    },
+    {
+      "id": "select-error-id",
+      "file": "src/components/form/Select.vue",
+      "find": ":id=\"errorDescId\" class=\"select-error\"",
+      "replace": "class=\"select-error\"",
+      "cmd": "npx vitest run tests/unit/form-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：aria-describedby 指向不存在的元素，关联彻底断掉（#316）"
+    },
+    {
       "id": "toast-inline-role",
       "file": "src/components/feedback/Toast.vue",
       "find": ":role=\"type === 'error' ? 'alert' : 'status'\"",
