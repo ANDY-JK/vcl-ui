@@ -192,7 +192,27 @@ const stats = computed(() => [
 ])
 
 // ══ 提交 ══
+/**
+ * 提交锁（#312）。
+ *
+ * FormBuilder 自己有 `submitting` 守卫，但它靠**3 秒后自动复位**（`_SUBMIT_STUCK_RESET_MS`）——
+ * 那是为了"父组件没处理时别永远 loading"的兜底，**不等于提交真的结束**。
+ * 云端存储慢一点（>3s）时，用户在 spinner 复位后再点一次就会**写进两条记录**。
+ *
+ * 这里做两件事：
+ *   ① 自己的入口守卫（不依赖子组件状态，最外层兜底）；
+ *   ② 真正结束（成功或失败）时调 `stopSubmit()` 释放子组件 loading，
+ *      让"按钮转不转"跟着**实际完成**走，而不是一个 3 秒的猜测。
+ */
+const submitLock = ref(false)
+const builderRef = ref<{ setSubmitting?: (v: boolean) => void; stopSubmit?: () => void } | null>(null)
+
 async function handleSubmit(data: Record<string, unknown>): Promise<void> {
+  // 入口守卫：连点/回车复发时直接丢弃，避免重复入库
+  if (submitLock.value) return
+  submitLock.value = true
+  // 延长子组件的 loading（它原本只锁 3 秒）
+  builderRef.value?.setSubmitting?.(true)
   errorMsg.value = ''
 
   const record: CollectRecord = {
@@ -207,6 +227,10 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
     // 云端模式写入失败若静默，用户会误以为提交成功
     errorMsg.value = t('fbd.collectSubmitFail', { err: e instanceof Error ? e.message : String(e) })
     return
+  } finally {
+    // 无论成功失败都释放：失败后用户要能改了再提交
+    submitLock.value = false
+    builderRef.value?.stopSubmit?.()
   }
   emit('submit', { ...data }, record)
   okMsg.value = t('formBuilder.submitSuccess')
@@ -348,7 +372,7 @@ const { importing, importVisible, importError, importSummaryText, onImportFile, 
 
     <!-- 填写区（FormCollect 头部已渲染标题/描述，内嵌表单隐藏其头部避免双重标题） -->
     <div class="ldc-form-wrap">
-      <FormBuilder v-model="formData" :schema="formSchema" hide-header @submit="handleSubmit" />
+      <FormBuilder ref="builderRef" v-model="formData" :schema="formSchema" hide-header @submit="handleSubmit" />
     </div>
 
     <!-- 反馈 -->

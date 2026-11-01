@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "collect-double-submit-guard",
+      "file": "src/components/form-builder/FormCollect.vue",
+      "find": "  if (submitLock.value) return",
+      "replace": "  if (false) return",
+      "cmd": "npx vitest run tests/unit/form-collect-double-submit.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：云端存储慢时连点两次会写进两条记录（#312）"
+    },
+    {
+      "id": "collect-submit-lock-release",
+      "file": "src/components/form-builder/FormCollect.vue",
+      "find": "    submitLock.value = false",
+      "replace": "    void submitLock.value",
+      "cmd": "npx vitest run tests/unit/form-collect-double-submit.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：锁不释放，首次提交后用户改完再也提交不了（#312）"
+    },
+    {
       "id": "touch-active-opacity",
       "file": "src/components/tokens.css",
       "find": "    opacity: 0.82;",
