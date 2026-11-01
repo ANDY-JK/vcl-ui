@@ -12,6 +12,7 @@ import {
   type ImportField,
 } from '@/components/form-builder/importRecords'
 import type { CollectRecord } from '@/components/form-builder/designer/types'
+import { dedupeFieldLabels } from '@/components/form-builder/fieldLabels'
 
 function field(key: string, label: string, type = 'text'): ImportField {
   return { key, label, type }
@@ -262,12 +263,30 @@ describe('#272 ① 字段 key 不得被别家 label 抢走', () => {
     expect(map['note']).toBe('note')
   })
 
-  it('label 之间同名时后者覆盖（文档化行为，保持不变）', () => {
+  it('**label 同名时按"第一个保持原名、其后加序号"映射**（#305 改了旧行为）', () => {
+    // 旧行为是"后者覆盖"（`同名 → b`），与导出规则相反：
+    // 导出给第一个字段写 `同名`、第二个写 `同名 (2)`；导入却把 `同名` 映射给最后一个字段
+    // → 「导出 → 在 Excel 里改 → 再导入」会把数据写进错字段，`同名 (2)` 还被当未知列丢掉。
+    // 现在两边共用 dedupeFieldLabels()，规则一致。
     const fields = [
       { key: 'a', label: '同名', type: 'text' },
       { key: 'b', label: '同名', type: 'text' },
     ]
-    expect(buildHeaderMap(fields)['同名']).toBe('b')
+    const map = buildHeaderMap(fields)
+    expect(map['同名'], '第一个字段保持原名').toBe('a')
+    expect(map['同名 (2)'], '第二个字段带序号').toBe('b')
+  })
+
+  it('**导出 → 导入 往返：表头能映射回原字段**（同一个去重规则）', () => {
+    const fields = [
+      { key: 'name', label: '姓名', type: 'text' },
+      { key: 'spouse', label: '姓名', type: 'text' },
+    ]
+    // 导出侧的表头（与 useCollectExport.resolveExportColumns 同规则）
+    const exportLabels = dedupeFieldLabels(fields.map((f) => ({ label: f.label, key: f.key }))).map((c) => c.label)
+    const map = buildHeaderMap(fields)
+    expect(exportLabels).toEqual(['姓名', '姓名 (2)'])
+    expect(exportLabels.map((l) => map[l]), '每个导出表头都能映射回自己的 key').toEqual(['name', 'spouse'])
   })
 })
 

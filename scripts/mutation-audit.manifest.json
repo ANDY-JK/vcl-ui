@@ -151,18 +151,28 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
-      "id": "export-label-dedupe",
-      "file": "src/components/form-builder/useCollectExport.ts",
+      "id": "import-header-first-wins",
+      "file": "src/components/form-builder/importRecords.ts",
+      "find": "  const labeled = dedupeFieldLabels(",
+      "replace": "  const labeled = (",
+      "cmd": "npx vitest run tests/unit/form-import-records.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：同名 label 退回'后者覆盖'，与导出规则相反 —— 「导出→改→再导入」写错字段（#305）"
+    },
+    {
+      "id": "label-dedupe-first-kept",
+      "file": "src/components/form-builder/fieldLabels.ts",
       "find": "return n === 1 ? col :",
       "replace": "return false ? col :",
-      "cmd": "npx vitest run tests/unit/collect-export.spec.ts --no-coverage",
+      "cmd": "npx vitest run tests/unit/form-import-records.spec.ts tests/unit/collect-export.spec.ts --no-coverage",
       "expect": "red",
-      "note": "变异后：每列都被加序号，用户看到「姓名 (1)」这种不该出现的表头（#304）"
+      "note": "变异后：第一个字段也被加序号，导出表头与导入映射同时错位（#305）"
     },
+
     {
       "id": "export-label-dedupe-host",
       "file": "src/components/form-builder/useCollectExport.ts",
-      "find": "if (custom && custom.length) return dedupeExportLabels(custom)",
+      "find": "if (custom && custom.length) return dedupeFieldLabels(custom)",
       "replace": "if (custom && custom.length) return custom",
       "cmd": "npx vitest run tests/unit/collect-export.spec.ts --no-coverage",
       "expect": "red",

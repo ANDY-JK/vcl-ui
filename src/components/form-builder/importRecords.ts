@@ -13,6 +13,7 @@
  */
 
 import type { CollectRecord } from './designer/types'
+import { dedupeFieldLabels } from './fieldLabels'
 
 /** 导入字段的最小描述（FormCollect 的 DesignerField 子集） */
 export interface ImportField {
@@ -55,7 +56,12 @@ function stripBom(text: string): string {
  * 构建「表头文本 → field.key」映射
  *
  * 表头既支持字段 label（中文，导出格式）也支持字段 key 本身。
- * 同 label 冲突时后者覆盖（罕见，取最后一个）。
+ *
+ * **同 label 冲突时取"第一个"**（2026-11-01 #305）。此前是"后者覆盖"，
+ * 与导出规则相反：导出给第一个字段写 `姓名`、第二个写 `姓名 (2)`，
+ * 而导入把 `姓名` 映射给最后一个字段 —— 「导出 → 在 Excel 里改 → 再导入」
+ * 会把数据写进错字段，`姓名 (2)` 还被当成未知列丢掉。
+ * 现在两边共用 `dedupeFieldLabels()`：第一个保持原名，其后加 ` (n)`。
  */
 export function buildHeaderMap(fields: ImportField[]): Record<string, string> {
   const map: Record<string, string> = {}
@@ -65,9 +71,13 @@ export function buildHeaderMap(fields: ImportField[]): Record<string, string> {
   // 例如 A={key:'memo',label:'备注'}、B={key:'note',label:'memo'}，
   // 单趟结果是 `memo → note`：CSV 表头写着 `memo`（明明是 A 的 key）却导进 B 字段。
   // 表头字面量等于某字段 key 时，那个字段才是用户的意图 → key 必须最后写、优先级最高。
-  for (const f of fields) {
-    if (f.key && f.label) map[f.label] = f.key
-  }
+  // 先按"导出同款"规则算出唯一显示名，再登记 —— 保证同名 label 分别映射到不同 key（#305）
+  const labeled = dedupeFieldLabels(
+    fields
+      .filter((f): f is ImportField & { key: string; label: string } => Boolean(f.key && f.label))
+      .map((f) => ({ label: f.label, key: f.key })),
+  )
+  for (const f of labeled) map[f.label] = f.key
   for (const f of fields) {
     if (f.key) map[f.key] = f.key
   }
