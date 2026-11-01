@@ -61,6 +61,23 @@ function morphiconsNames() {
 const SOLAR = solarNames()
 const MORPH = morphiconsNames()
 
+/**
+ * 镜像 `IconSvg` 的 `toSolarIconName()`（**必须与组件保持一致**）。
+ *
+ * 组件会**自动补变体后缀**：`type="home"` → `solar:home-linear`。
+ * 所以 `home` 是合法的写法，写到数据里的才是 `home-linear`。
+ *
+ * 第一版闸口直接拿裸名去 `SOLAR_ICONS` 里查，于是 8 个合法写法全被报成"无效"
+ * —— 假警报（#279 的教训：假警报会让闸门被关掉）。**校验器必须镜像消费端的归一化**。
+ */
+const SOLAR_VARIANTS = ['linear', 'bold', 'broken', 'outline', 'bold-duotone', 'line-duotone']
+function solarNormalize(name) {
+  const parts = name.split('-')
+  const lastTwo = parts.slice(-2).join('-')
+  const lastOne = parts[parts.length - 1]
+  const hasVariant = SOLAR_VARIANTS.includes(lastTwo) || SOLAR_VARIANTS.includes(lastOne)
+  return hasVariant ? name : `${name}-linear`
+}
 /** 已知的"合法但不在名录里"的用法（每项必须写理由） */
 const ALLOWLIST = new Set()
 
@@ -95,13 +112,13 @@ for (const file of files) {
     if (ALLOWLIST.has(`${provider}:${name}`)) continue
     checked += 1
     let ok
-    if (provider === 'solar') ok = SOLAR.has(name)
+    if (provider === 'solar') ok = SOLAR.has(solarNormalize(name))
     else if (provider === 'morphicons') ok = MORPH.has(name)
     else ok = NOT_AN_ICON.has(name) ? false : pascal(name) in lucide
     if (!ok) {
       const hint =
         provider === 'solar'
-          ? `（solar 变体名带后缀，候选：${[`${name}-linear`, `${name}-bold`].filter((n) => SOLAR.has(n)).join(' / ') || '见 solar-icons.ts'}）`
+          ? `（按 ${name} 补后缀后是 ${solarNormalize(name)}；候选：${[...SOLAR].filter((n) => n.startsWith(name.replace(/-linear$/, ''))).slice(0, 3).join(' / ') || '见 solar-icons.ts'}）`
           : ''
       problems.push({ file: rel, name, provider, hint, kind: 'IconSvg type=' })
     }

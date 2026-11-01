@@ -82,14 +82,14 @@ function toggleMorph(i: number) {
         Solar 图标集（MIT 协议）通过 <code>provider="solar"</code> 渲染，默认使用 <code>-linear</code> 变体。
       </p>
       <div style="display: flex; align-items: center; gap: calc(16px * var(--vcl-scale)); flex-wrap: wrap">
-        <IconSvg type="home-linear" provider="solar" size="xl" color="#6366F1" />
-        <IconSvg type="user-circle-linear" provider="solar" size="xl" color="#6366F1" />
-        <IconSvg type="bell-linear" provider="solar" size="xl" color="#6366F1" />
-        <IconSvg type="star-linear" provider="solar" size="xl" color="#6366F1" />
-        <IconSvg type="chat-round-dots-linear" provider="solar" size="xl" color="#6366F1" />
-        <IconSvg type="settings-linear" provider="solar" size="xl" color="#6366F1" />
-        <IconSvg type="calendar-linear" provider="solar" size="xl" color="#6366F1" />
-        <IconSvg type="lock-linear" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="home" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="user-circle" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="bell" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="star" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="chat-round-dots" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="settings" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="calendar" provider="solar" size="xl" color="#6366F1" />
+        <IconSvg type="lock" provider="solar" size="xl" color="#6366F1" />
       </div>
     </Card>
 
