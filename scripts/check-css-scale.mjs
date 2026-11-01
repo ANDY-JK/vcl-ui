@@ -20,8 +20,14 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { scanDeclarations } from './scale-rules.mjs'
 
-const ROOT_DIRS = ['src/components', 'src/demos']
-const EXEMPT_FILES = new Set(['src/components/tokens.css'])
+/** 扫描根：默认库内两处；自测时用 --root 指到夹具目录（可重复） */
+const rootArgs = []
+for (let i = 0; i < process.argv.length; i++) {
+  if (process.argv[i] === '--root' && process.argv[i + 1]) rootArgs.push(process.argv[i + 1])
+}
+const ROOT_DIRS = rootArgs.length ? rootArgs : ['src/components', 'src/demos']
+// 夹具里没有令牌正源，豁免只在默认扫描时生效
+const EXEMPT_FILES = new Set(rootArgs.length ? [] : ['src/components/tokens.css'])
 const LIST = process.argv.includes('--list')
 
 function walk(dir, out = []) {

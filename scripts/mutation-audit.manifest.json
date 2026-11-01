@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "css-scale-gate-size",
+      "file": "scripts/check-css-scale.mjs",
+      "find": "    for (const hit of scanDeclarations(seg, { allowCustomProps: true })) {",
+      "replace": "    for (const hit of []) {",
+      "cmd": "npx vitest run tests/unit/css-scale-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：直写 px 的尺寸全放行，缩放体系被绕开（#336）"
+    },
+    {
+      "id": "css-scale-gate-comment-closure",
+      "file": "scripts/check-css-scale.mjs",
+      "find": "      const closure = checkCommentClosure(seg)",
+      "replace": "      const closure = null",
+      "cmd": "npx vitest run tests/unit/css-scale-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：注释提前闭合不报（令牌在文件里但读值是空，全站静默回退）（#336）"
+    },
+    {
       "id": "gate-wiring-chain",
       "file": "scripts/check-gate-wiring.mjs",
       "find": "  if (!chain.includes(g.npm)) {",

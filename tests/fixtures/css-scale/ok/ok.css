@@ -1,0 +1,5 @@
+.card {
+  /* 说明文字：这里写中文注释是合法的 */
+  width: calc(16px * var(--vcl-scale));
+  padding: calc(8px * var(--vcl-scale));
+}
