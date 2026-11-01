@@ -39,6 +39,7 @@
     "check:constants": "node scripts/check-constants.mjs",
     "check:result-consumed": "node scripts/check-result-consumed.mjs",
     "check:no-cycles": "node scripts/check-no-cycles.mjs",
+    "check:icons": "node scripts/gen-lucide-subset.mjs --check",
     "changelog": "node scripts/gen-changelog.mjs",
     "check:css-tokens": "node scripts/check-css-tokens.mjs",
     "check:contrast": "node scripts/contrast-audit.mjs",

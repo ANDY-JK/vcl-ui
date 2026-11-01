@@ -4,6 +4,7 @@ import type { Component } from 'vue'
 
 export const lucideSubset: Record<string, Component> = {
   'alert-circle': AlertCircle,
+  'alert-triangle': AlertTriangle,
   'align-center': AlignCenter,
   'align-left': AlignLeft,
   'align-right': AlignRight,
@@ -39,6 +40,7 @@ export const lucideSubset: Record<string, Component> = {
   'circle-check': CircleCheck,
   'circle-check-big': CircleCheckBig,
   'circle-help': CircleHelp,
+  clipboard: Clipboard,
   clock: Clock,
   cloud: Cloud,
   code: Code,
@@ -191,6 +193,7 @@ export const lucideSubset: Record<string, Component> = {
 
 import {
   AlertCircle,
+  AlertTriangle,
   AlignCenter,
   AlignLeft,
   AlignRight,
@@ -226,6 +229,7 @@ import {
   CircleCheck,
   CircleCheckBig,
   CircleHelp,
+  Clipboard,
   Clock,
   Cloud,
   Code,

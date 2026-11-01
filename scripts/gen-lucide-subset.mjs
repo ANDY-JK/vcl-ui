@@ -100,6 +100,56 @@ for (const n of valid) {
   lines.push(`  ${pascal},`)
 }
 lines.push("} from '@lucide/vue'", '')
+const OUT = 'src/components/_internal/lucide-subset.ts'
+const content = lines.join('\n')
+
+// --check：只比对不写盘（闸口用，2026-11-01 #283）
+//
+// 背景：本脚本是**一次性生成**，没有任何东西保证它跟着源码重跑。
+// 实测第 46 轮发现子集已落后源码 96 个图标（check/copy/download/calendar/clock…），
+// 后果是这些图标在构建产物里全部渲染成兜底方块 —— 而且只在**生产**可见
+//（开发态有 `import.meta.env.DEV` 告警，但告警被当成噪音忽略掉了）。
+if (process.argv.includes('--check')) {
+  let current = ''
+  try {
+    current = fs.readFileSync(OUT, 'utf8')
+  } catch {
+    console.error(`✖ 子集文件不存在：${OUT}`)
+    process.exit(1)
+  }
+  /**
+   * 取子集文件里的键集合。
+   *
+   * ⚠️ 只读 `lucideSubset` 对象体，**且引号可有可无** —— prettier 会把
+   * `'loader': Loader` 改成 `loader: Loader`（合法标识符不需要引号）。
+   * 首版判据写死 `/'([a-z0-9-]+)':/`，于是 prettier 跑过的文件只数到 91 个键、
+   * 把"格式差异"误报成"缺 95 个图标"—— 闸口自己算错比没有闸口更糟。
+   */
+  const keysIn = (text) => {
+    const body = text.match(/export const lucideSubset[^=]*=\s*\{([\s\S]*?)\n\}/)
+    if (!body) return new Set()
+    return new Set([...body[1].matchAll(/^\s+'?([a-z0-9-]+)'?\s*:/gm)].map((m) => m[1]))
+  }
+  const have = keysIn(current)
+  const want = new Set(valid)
+  const missing = [...want].filter((n) => !have.has(n)).sort()
+  const stale = [...have].filter((n) => !want.has(n)).sort()
+  if (missing.length || stale.length) {
+    if (missing.length) {
+      console.error(`✖ 子集缺 ${missing.length} 个图标（源码在用，构建产物里会渲染成兜底方块）：`)
+      console.error(`  ${missing.join(', ')}`)
+    }
+    if (stale.length) {
+      console.error(`✖ 子集多 ${stale.length} 个图标（源码已不再引用，白占包体）：`)
+      console.error(`  ${stale.join(', ')}`)
+    }
+    console.error('\n修法：node scripts/gen-lucide-subset.mjs')
+    process.exit(1)
+  }
+  console.log(`✅ check:icons 通过 — 源码引用 ${want.size} 个 lucide 图标，子集与之一致`)
+  process.exit(0)
+}
+
 fs.mkdirSync('src/components/_internal', { recursive: true })
-fs.writeFileSync('src/components/_internal/lucide-subset.ts', lines.join('\n'))
-console.log('written src/components/_internal/lucide-subset.ts')
+fs.writeFileSync(OUT, content)
+console.log('written', OUT)
