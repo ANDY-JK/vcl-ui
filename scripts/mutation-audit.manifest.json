@@ -187,6 +187,15 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "facts-hard-conflict",
+      "file": "scripts/check-facts.mjs",
+      "find": "        failures.push(\n          `${file}:${i + 1} ${name}写的是 **${got}**，真源是 **${want}** —— ` +",
+      "replace": "        void 0 && failures.push(\n          `${file}:${i + 1} ${name}写的是 **${got}**，真源是 **${want}** —— ` +",
+      "cmd": "npx vitest run tests/unit/facts-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：正文数字与真源矛盾不报，手写数字继续悄悄过期（#351）"
+    },
+    {
       "id": "coverage-floor-compare",
       "file": "scripts/check-coverage-domains.mjs",
       "find": "    const ok = c >= floor[i]",

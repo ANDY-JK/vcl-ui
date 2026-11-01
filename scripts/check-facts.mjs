@@ -15,9 +15,16 @@
 //     但会让读者得到偏小的印象，属于该改不该拦。
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, rmSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join, relative, resolve } from 'node:path'
 
-const ROOT = process.cwd()
+/**
+ * 自测支持（#351）：
+ * · `--root <dir>`  —— 正文扫描的根（默认 cwd）。夹具里只放被测的正文文件，其余 PROSE 会自然跳过
+ * · `--facts <file>` —— 用给定文本当真源，**跳过"重算再比"那一步**（夹具不该依赖真实源码）
+ */
+const rootArgIdx = process.argv.indexOf('--root')
+const factsArgIdx = process.argv.indexOf('--facts')
+const ROOT = rootArgIdx > -1 ? resolve(process.argv[rootArgIdx + 1]) : process.cwd()
 const FACTS = join(ROOT, 'docs-site', 'guide', 'facts.md')
 /** 同一批生成物：observability.md 与 facts.md 都由 gen:facts 产出，都要防漂移 */
 const OBS = join(ROOT, 'docs-site', 'guide', 'observability.md')
@@ -33,7 +40,10 @@ const warnings = []
 
 const tmpOut = join(TMP_DIR, 'facts.md')
 let fresh
-try {
+if (factsArgIdx > -1) {
+  // 夹具模式：真源直接给文本，不重算、也不做漂移比对
+  fresh = readFileSync(process.argv[factsArgIdx + 1], 'utf8')
+} else try {
   mkdirSync(TMP_DIR, { recursive: true })
   execFileSync('node', ['scripts/gen-facts.mjs', tmpOut], {
     encoding: 'utf8',
@@ -45,7 +55,7 @@ try {
 }
 
 // 生成器一次产出两份文件：facts.md 与 observability.md。两份都要比。
-for (const [committedPath, tmpPath, label] of [
+if (factsArgIdx === -1) for (const [committedPath, tmpPath, label] of [
   [FACTS, tmpOut, 'facts.md'],
   [OBS, join(TMP_DIR, 'observability.md'), 'observability.md'],
 ]) {
