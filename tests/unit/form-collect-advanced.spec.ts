@@ -280,6 +280,23 @@ describe('导入链（Excel/CSV → 预览 → 确认写入）', () => {
     expect(badge?.textContent, '导入后计数应刷新').toContain('2')
   })
 
+  it('**重复表头 → 预览文案必须点出"少了哪一列"**（#272：用户会以为导入是全的）', async () => {
+    const store = memoryStore()
+    const w = mountCollect(store)
+    await settle()
+
+    // 两列都叫「姓名」→ 同一字段被映射两次，只保留第一列，第二列的数据不会入库
+    const csv = '姓名,姓名\n张三,李四\n'
+    await importFile(w, makeCsv(csv))
+
+    const modalText = q('.modal-box')?.textContent ?? ''
+    expect(modalText, '应弹预览（不是静默失败）').not.toBe('')
+    // 断言到**具体那句警示**，而不是"含姓名"——预览摘要里本来就有"姓名: 张三"，
+    // 弱断言会让这条用例在删掉警示后依然绿（负向对照实测过一次）。
+    expect(modalText, '必须出现"表头重复"警示').toContain('表头重复')
+    expect(modalText, '要说明只保留第一列').toContain('只保留第一列')
+    expect(modalText, '要说明其余列不会导入').toContain('不会导入')
+  })
   it('**空文件 → 提示 importEmpty（真的显示在界面上），不弹预览**', async () => {
     const store = memoryStore()
     const w = mountCollect(store)

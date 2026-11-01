@@ -36,14 +36,8 @@ import { getActiveFormStore, type FormStore } from './designer/store'
 import { useCollectShare } from './useCollectShare'
 import { useRecordModal } from './useRecordModal'
 import { isLayoutField } from './fieldRegistry'
-import {
-  buildHeaderMap,
-  normalizeRecords,
-  dedupeRecords,
-  readFileToRows,
-  ImportFileTooLargeError,
-} from './importRecords'
 import { useCollectExport } from './useCollectExport'
+import { useCollectImport } from './useCollectImport'
 
 /** 成功提示（okMsg）停留时长 —— 三处同一个事实，别各写一份 */
 const _OK_MSG_TTL_MS = 3000
@@ -316,123 +310,21 @@ const { exporting, exportExcel } = useCollectExport({
     okMsg.value = msg
   },
 })
-// ══ 批量导入（P1-8：JSON / CSV / Excel） ══
-const importing = ref(false)
-const importVisible = ref(false)
-const importError = ref('')
-/** 预览：待导入记录（归一化后） */
-const importPreview = ref<Record<string, unknown>[]>([])
-const importSkipped = ref(0)
-const importInvalid = ref(0)
-/** 重复表头（同一字段被多列映射，只保留第一列）—— #272 */
-const importDupHeaders = ref<string[]>([])
-const importFileName = ref('')
 
-/** 导入字段定义（取非布局字段的 key/label/type） */
-const importFields = computed(() =>
-  props.fields.filter((f) => !isLayoutField(f.type)).map((f) => ({ key: f.key ?? f.id, label: f.label, type: f.type })),
-)
-
-/** 预览弹窗表头（导入列） */
-const importHeaders = computed(() => {
-  if (!importPreview.value.length) return []
-  return Object.keys(importPreview.value[0]).map((k) => {
-    const f = importFields.value.find((x) => x.key === k)
-    return { key: k, label: f?.label || k }
-  })
+// ══ 批量导入（JSON / CSV / Excel）—— 逻辑已抽 useCollectImport（TD-29 余量） ══
+const { importing, importVisible, importError, importSummaryText, onImportFile, confirmImport } = useCollectImport({
+  fields: () => props.fields,
+  storageKey: () => storageKey.value,
+  records,
+  appendRecord: (key, rec) => props.store.appendRecord(key, rec),
+  genRecordId,
+  refreshRecords,
+  okMsgTtlMs: _OK_MSG_TTL_MS,
+  onOk: (msg) => {
+    okMsg.value = msg
+  },
+  formatValue,
 })
-
-/** 导入预览汇总文案 */
-const importSummaryText = computed(() => {
-  const parts = [
-    t('fbd.importSummary', {
-      n: importPreview.value.length,
-      skipped: importSkipped.value,
-      invalid: importInvalid.value,
-    }),
-  ]
-  if (importPreview.value.length) {
-    const first = importPreview.value[0]
-    const keys = Object.keys(first).slice(0, 3)
-    parts.push(
-      keys
-        .map((k) => `${importHeaders.value.find((h) => h.key === k)?.label ?? k}: ${formatValue(first[k])}`)
-        .join(' · '),
-    )
-  }
-  // 重复表头单列一行：用户必须知道"有一列没进来"，否则他会以为导入是全的（#272）
-  if (importDupHeaders.value.length) {
-    parts.push(t('fbd.importDupHeaders', { cols: importDupHeaders.value.join('、') }))
-  }
-  return parts.join('\n')
-})
-
-/** 解析文件 → 归一化 + 去重 → 打开预览 */
-async function onImportFile(e: Event): Promise<void> {
-  const target = e.target as HTMLInputElement
-  const file = target.files?.[0]
-  target.value = '' // 允许重复选择同一文件
-  if (!file) return
-  importing.value = true
-  importError.value = ''
-  try {
-    const name = file.name.toLowerCase()
-    const rows = await readFileToRows(file, name, importFields.value)
-    const headerMap = buildHeaderMap(importFields.value)
-    const { records: parsedRecs, invalid, duplicateHeaders } = normalizeRecords(rows, headerMap, importFields.value)
-    // 重复表头：只保留第一列，其余列的数据不会入库 —— 必须告诉用户少了哪几列（#272）
-    importDupHeaders.value = duplicateHeaders
-    if (!parsedRecs.length) {
-      importError.value = t('fbd.importEmpty')
-      importVisible.value = false
-      return
-    }
-    const { toImport, skipped } = dedupeRecords(parsedRecs, records.value)
-    importPreview.value = toImport
-    importSkipped.value = skipped
-    importInvalid.value = invalid
-    importFileName.value = file.name
-    importVisible.value = true
-  } catch (e) {
-    // 体量超限单独提示（TD-78 ③）：笼统的"解析失败"会让用户以为文件坏了、反复重试
-    importError.value =
-      e instanceof ImportFileTooLargeError
-        ? t('fbd.importFileTooLarge', { limit: Math.round(e.limit / 1024 / 1024) })
-        : t('fbd.importParseFail', { err: e instanceof Error ? e.message : String(e) })
-    importVisible.value = false
-  } finally {
-    importing.value = false
-  }
-}
-
-/** 确认导入：批量写入存储 */
-async function confirmImport(): Promise<void> {
-  const list = importPreview.value
-  if (!list.length) return
-  importing.value = true
-  importError.value = ''
-  try {
-    // 复用 appendRecord 逐条写入（本地/云端实现内建数量上限保护）
-    for (const data of list) {
-      await props.store.appendRecord(storageKey.value, {
-        id: genRecordId(),
-        time: formatDateTimeZh(),
-        data: { ...data },
-      })
-    }
-    await refreshRecords()
-    importVisible.value = false
-    importPreview.value = []
-    okMsg.value = t('fbd.importDone', { n: list.length })
-    setTimeout(() => {
-      okMsg.value = ''
-    }, _OK_MSG_TTL_MS)
-  } catch (e) {
-    importError.value = t('fbd.importFailMsg', { err: e instanceof Error ? e.message : String(e) })
-  } finally {
-    importing.value = false
-  }
-}
 </script>
 
 <template>
