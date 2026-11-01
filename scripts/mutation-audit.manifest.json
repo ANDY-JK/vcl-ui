@@ -151,9 +151,27 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "select-invalid-prop",
+      "file": "src/components/form/Select.vue",
+      "find": ":aria-invalid=\"!!(errorMsg || props.error || invalid) || undefined\"",
+      "replace": ":aria-invalid=\"!!(errorMsg || props.error) || undefined\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：渲染器传的 invalid 被忽略，select 不标记无效（#339）"
+    },
+    {
+      "id": "select-describedby-prop",
+      "file": "src/components/form/Select.vue",
+      "find": ":aria-describedby=\"errorMsg || props.error ? errorDescId : describedby\"",
+      "replace": ":aria-describedby=\"errorMsg || props.error ? errorDescId : undefined\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：select 不指向外部错误说明（#339）"
+    },
+    {
       "id": "renderer-invalid-prop",
       "file": "src/components/form-builder/FormRenderer.vue",
-      "find": "  invalid: !!props.error,",
+      "find": "  invalid: !!props.error,\n  describedby: props.error ? fieldErrorId : undefined,\n  required: props.field.required,",
       "replace": "  invalid: false,",
       "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
       "expect": "red",
@@ -162,7 +180,7 @@
     {
       "id": "renderer-describedby-prop",
       "file": "src/components/form-builder/FormRenderer.vue",
-      "find": "  describedby: props.error ? fieldErrorId : undefined,",
+      "find": "  describedby: props.error ? fieldErrorId : undefined,\n  required: props.field.required,",
       "replace": "  describedby: undefined,",
       "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
       "expect": "red",
@@ -621,7 +639,7 @@
     {
       "id": "select-error-describedby",
       "file": "src/components/form/Select.vue",
-      "find": ":aria-describedby=\"errorMsg || props.error ? errorDescId : undefined\"",
+      "find": ":aria-describedby=\"errorMsg || props.error ? errorDescId : describedby\"",
       "replace": ":aria-describedby=\"undefined\"",
       "cmd": "npx vitest run tests/unit/form-error-aria.spec.ts --no-coverage",
       "expect": "red",

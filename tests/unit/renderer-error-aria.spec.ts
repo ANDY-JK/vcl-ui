@@ -55,6 +55,24 @@ describe('FormRenderer · 提交期校验错误与输入框关联', () => {
     w.unmount()
   })
 
+  it('**select 字段同样要挂上无效状态与说明位置**（#338 的第二条分支）', async () => {
+    const w = mount(FormRenderer, {
+      props: { field: { ...FIELD, type: 'select', options: [{ label: '甲', value: 'a' }] }, modelValue: '', error: '请选择姓名' } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const combo = w.find('[role="combobox"], input')
+    expect(combo.exists(), '前置：select 应渲染出 combobox').toBe(true)
+    expect(combo.attributes('aria-invalid'), 'select 没标记无效').toBe('true')
+    const describedby = combo.attributes('aria-describedby')
+    expect(describedby, 'select 没有指向错误说明').toBeTruthy()
+    const target = document.querySelector(`#${CSS.escape(describedby!)}`)
+    expect(target, 'select 的 aria-describedby 悬空').toBeTruthy()
+    expect(target!.textContent).toContain('请选择姓名')
+    w.unmount()
+  })
+
   it('**既有契约不变：FieldError 仍然渲染**（17 处分支都靠它）', async () => {
     const w = await mountRenderer('姓名必填')
     const err = w.find('.fb-field-error')

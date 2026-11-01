@@ -221,6 +221,9 @@ const resolvedOptions = computed<Option[]>(() => {
 
 /** Select 组件 props */
 const selectProps = computed(() => ({
+  // 同 Input：错误由 FieldError 渲染，这里只挂「无效」与「说明在哪」（#338）
+  invalid: !!props.error,
+  describedby: props.error ? fieldErrorId : undefined,
   type: resolvedComponentType.value as
     'select' | 'combobox' | 'cascader' | 'tree-select' | 'date' | 'date-range' | 'time',
   label: props.field.label,
@@ -379,7 +382,7 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
     <!-- ═══ Select 系列 ═══ -->
     <template v-else-if="category === 'select'">
       <Select v-model="inputValue" v-bind="selectProps" @change="emit('change')" />
-      <FieldError :message="error ?? ''" />
+      <FieldError :id="fieldErrorId" :message="error ?? ''" />
     </template>
 
     <!-- ═══ Group 系列 ═══ -->

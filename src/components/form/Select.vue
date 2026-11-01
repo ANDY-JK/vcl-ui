@@ -52,6 +52,13 @@ export interface Props {
   label?: string
   /** 校验规则：返回错误文案即不通过 */
   rules?: ((v: string) => string | undefined)[]
+  /**
+   * 外部判定为无效（不带文案）：只影响 `aria-invalid`。
+   * 表单渲染器的提交期错误由它自己的 `FieldError` 渲染，这里只把状态挂上来（#338）。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 `aria-describedby`，让读屏能回查「为什么无效」 */
+  describedby?: string
   /** 外部注入错误提示（覆盖 rules 结果） */
   error?: string
   /** 多选：tags 展示，值为数组 */
@@ -834,8 +841,8 @@ const {
         <input
           :id="selectInputId"
           ref="comboInputRef"
-          :aria-invalid="!!(errorMsg || props.error) || undefined"
-          :aria-describedby="errorMsg || props.error ? errorDescId : undefined"
+          :aria-invalid="!!(errorMsg || props.error || invalid) || undefined"
+          :aria-describedby="errorMsg || props.error ? errorDescId : describedby"
           :value="isInputable ? comboText : displayText"
           type="text"
           class="trigger-input"
