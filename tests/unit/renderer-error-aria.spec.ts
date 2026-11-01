@@ -198,6 +198,55 @@ describe('FormRenderer · 提交期校验错误与输入框关联', () => {
     w.unmount()
   })
 
+  it('**signature 字段的无效状态挂在组容器上**（签名组无单一可聚焦控件）', async () => {
+    const w = mount(FormRenderer, {
+      props: { field: { ...FIELD, type: 'signature' }, modelValue: null, error: '这一项没填对' } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const group = w.find('.fb-signature-wrap')
+    expect(group.exists(), '前置：应渲染 .fb-signature-wrap').toBe(true)
+    expect(group.attributes('aria-invalid'), '组容器没标记无效').toBe('true')
+    const describedby = group.attributes('aria-describedby')
+    expect(describedby, '组容器没指向错误说明').toBeTruthy()
+    expect(document.querySelector(`#${CSS.escape(describedby!)}`)).toBeTruthy()
+    w.unmount()
+  })
+
+  it('**map-picker 字段的无效状态挂在组容器上**（地图组无单一可聚焦控件）', async () => {
+    const w = mount(FormRenderer, {
+      props: { field: { ...FIELD, type: 'map-picker' }, modelValue: null, error: '这一项没填对' } as never,
+      // AmapWidget 必须 stub：真实加载高德 SDK 会挂死 worker 并抛未处理拒绝
+      global: { stubs: { AmapWidget: true } },
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const group = w.find('.fb-map-picker')
+    expect(group.exists(), '前置：应渲染 .fb-map-picker').toBe(true)
+    expect(group.attributes('aria-invalid'), '组容器没标记无效').toBe('true')
+    const describedby = group.attributes('aria-describedby')
+    expect(describedby, '组容器没指向错误说明').toBeTruthy()
+    expect(document.querySelector(`#${CSS.escape(describedby!)}`)).toBeTruthy()
+    w.unmount()
+  })
+
+  it('**toggle-list 字段的无效状态挂在组容器上**（开关列表组无单一可聚焦控件）', async () => {
+    const w = mount(FormRenderer, {
+      props: { field: { ...FIELD, type: 'toggle-list' }, modelValue: null, error: '这一项没填对' } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const group = w.find('.fb-toggle-list')
+    expect(group.exists(), '前置：应渲染 .fb-toggle-list').toBe(true)
+    expect(group.attributes('aria-invalid'), '组容器没标记无效').toBe('true')
+    const describedby = group.attributes('aria-describedby')
+    expect(describedby, '组容器没指向错误说明').toBeTruthy()
+    expect(document.querySelector(`#${CSS.escape(describedby!)}`)).toBeTruthy()
+    w.unmount()
+  })
   it('**既有契约不变：FieldError 仍然渲染**（17 处分支都靠它）', async () => {
     const w = await mountRenderer('姓名必填')
     const err = w.find('.fb-field-error')

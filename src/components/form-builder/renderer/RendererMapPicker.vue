@@ -27,6 +27,14 @@ const props = defineProps<{
   field: FormField
   /** 当前值 `{ lng, lat }` */
   modelValue: unknown
+  /**
+   * 外部判定为无效（不带文案）：挂到**组容器**上（#346）。
+   * 三处都没有单一可聚焦控件（签名 canvas / 内嵌地图 / 子组件的多个开关），
+   * 错误描述的是整组，所以挂容器。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，读屏可回查「为什么无效」 */
+  describedby?: string
 }>()
 
 const emit = defineEmits<{
@@ -104,7 +112,13 @@ const pickedText = computed(() =>
 </script>
 
 <template>
-  <div class="fb-map-picker">
+  <div
+    class="fb-map-picker"
+    role="group"
+    :aria-label="field.label"
+    :aria-invalid="invalid || undefined"
+    :aria-describedby="describedby"
+  >
     <AmapWidget :center="center" :zoom="zoom" :markers="markers" @map-click="onMapClick" />
     <p class="fb-map-picker-hint">
       <template v-if="pickedText">{{ t('fb.mapPicked', { pos: pickedText }) }}</template>

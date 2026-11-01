@@ -32,6 +32,14 @@ const props = defineProps<{
   formData?: Record<string, unknown>
   /** 外发 URL 策略（api 模式用；不传 = 只允许同源） */
   apiUrlPolicy?: ApiUrlPolicy
+  /**
+   * 外部判定为无效（不带文案）：挂到**组容器**上（#346）。
+   * 三处都没有单一可聚焦控件（签名 canvas / 内嵌地图 / 子组件的多个开关），
+   * 错误描述的是整组，所以挂容器。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，读屏可回查「为什么无效」 */
+  describedby?: string
 }>()
 
 const emit = defineEmits<{
@@ -93,7 +101,13 @@ function onToggle(): void {
 </script>
 
 <template>
-  <div class="fb-toggle-list">
+  <div
+    class="fb-toggle-list"
+    role="group"
+    :aria-label="field.label"
+    :aria-invalid="invalid || undefined"
+    :aria-describedby="describedby"
+  >
     <Skeleton v-if="loading" :rows="3" />
     <Empty v-else-if="error" :description="error" />
     <Empty v-else-if="!localRows.length" />

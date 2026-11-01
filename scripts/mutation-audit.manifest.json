@@ -169,6 +169,33 @@
       "note": "变异后：地址组不标记无效（#345）"
     },
     {
+      "id": "signature-invalid-prop",
+      "file": "src/components/form-builder/renderer/RendererSignature.vue",
+      "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",
+      "replace": "    :aria-invalid=\"undefined\"\n    :aria-describedby=\"describedby\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：签名组不标记无效（#346）"
+    },
+    {
+      "id": "togglelist-invalid-prop",
+      "file": "src/components/form-builder/renderer/RendererToggleList.vue",
+      "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",
+      "replace": "    :aria-invalid=\"undefined\"\n    :aria-describedby=\"describedby\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：开关列表组不标记无效（#346）"
+    },
+    {
+      "id": "mappicker-invalid-prop",
+      "file": "src/components/form-builder/renderer/RendererMapPicker.vue",
+      "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",
+      "replace": "    :aria-invalid=\"undefined\"\n    :aria-describedby=\"describedby\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：地图组不标记无效（#346）"
+    },
+    {
       "id": "subform-invalid-prop",
       "file": "src/components/form-builder/renderer/RendererSubform.vue",
       "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",

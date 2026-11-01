@@ -548,9 +548,11 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <RendererSignature
           :field="field"
           :model-value="modelValue"
+          :invalid="!!error"
+          :describedby="error ? fieldErrorId : undefined"
           @update:model-value="emit('update:modelValue', $event)"
         />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
 
       <!-- 地址选择 -->
@@ -624,10 +626,12 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <RendererMapPicker
           :field="field"
           :model-value="modelValue"
+          :invalid="!!error"
+          :describedby="error ? fieldErrorId : undefined"
           @update:model-value="emit('update:modelValue', $event)"
           @update:form-data-field="emit('update:form-data-field', $event)"
         />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
 
       <!-- 开关列表（输入型：值 = 被打开行的 id 数组） -->
@@ -641,9 +645,11 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           :model-value="modelValue"
           :form-data="formData"
           :api-url-policy="apiUrlPolicy"
+          :invalid="!!error"
+          :describedby="error ? fieldErrorId : undefined"
           @update:model-value="emit('update:modelValue', $event)"
         />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
 
       <!-- 未知高级字段 fallback -->
