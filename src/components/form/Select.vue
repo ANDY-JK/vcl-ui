@@ -287,6 +287,16 @@ watch(open, async (val) => {
  * - 其他模式：由 wrapper @click 调用
  * - 不再在 @focus 中调用，消除双重触发
  */
+/**
+ * 是否允许写入（2026-11-01 #288）。
+ *
+ * 清空按钮、tag 上的 ×、时间面板确认…… 都是"改值入口"。#286/#287 两轮各自发现
+ * 一个漏判的入口，根因是**判据散落**：每个入口自己写一次 `if (props.disabled)`。
+ * 收敛到这里，新入口只要引一次 canWrite，就不会再漏。
+ *
+ * 注意只收 **写** 入口：查看/展开这类读操作不在此列（禁用态本来就打不开面板）。
+ */
+const canWrite = computed(() => !props.disabled)
 function toggleOpen(e?: MouseEvent) {
   if (props.disabled) return
   if (open.value) {
@@ -380,7 +390,7 @@ function removeComboTag(tag: { value: string | number | boolean; label: string }
   // 禁用语义守卫（2026-11-01 #287）：这是**第二条清空路径** —— #286 只守了 `.select-clear`，
   // tag 上的 × 同样能把值删掉（多选删一项、单选清空），实测 disabled 下点击 emit ['sh']。
   // 与 onClearGuarded 同一判据，防止再出现"同一契约两条路径只守一条"。
-  if (props.disabled) return
+  if (!canWrite.value) return
   markTouched()
   if (props.multiple || isTreeSelect.value) {
     const vals = ((props.modelValue || []) as (string | number | boolean)[]).filter(
@@ -558,7 +568,7 @@ function onComboBlur() {
  * 而不是靠"界面上看不见"。
  */
 function onClearGuarded(e: MouseEvent) {
-  if (props.disabled) {
+  if (!canWrite.value) {
     e.stopPropagation()
     return
   }
@@ -755,7 +765,7 @@ const {
           <!-- 关闭钮用 SVG 图标不用文本 ×：文本字形受字体度量摆布（Arial 的 × 整体坐基线上方，
                墨迹中心比盒子中心高 ~1px），小尺寸 tag 里与文本肉眼可见不齐；IconSvg 由 flex 精确居中 -->
           <button
-            v-if="!disabled"
+            v-if="canWrite"
             type="button"
             class="tag-close"
             tabindex="-1"
@@ -798,7 +808,7 @@ const {
         />
 
         <span
-          v-if="clearable && hasValue && !disabled"
+          v-if="clearable && hasValue && canWrite"
           class="select-clear"
           role="button"
           :aria-label="t('form.clear')"
