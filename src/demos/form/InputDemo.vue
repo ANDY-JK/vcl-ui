@@ -159,6 +159,24 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
             <td>false</td>
             <td>显示清除按钮</td>
           </tr>
+          <tr>
+            <td><code>error</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部注入错误（覆盖 rules 结果）；表单渲染器的提交期校验走这里</td>
+          </tr>
+          <tr>
+            <td><code>invalid</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>外部判定无效（不带文案），仅影响 aria-invalid</td>
+          </tr>
+          <tr>
+            <td><code>describedby</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部错误元素的 id，挂到 aria-describedby</td>
+          </tr>
         </tbody>
       </table>
     </Card>

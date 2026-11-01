@@ -174,6 +174,18 @@ const multiFiles = ref<UploadFile[]>([])
               图片预览：builtin = 内置全屏预览；event = 只抛 @preview 事件
             </td>
           </tr>
+          <tr>
+            <td><code>invalid</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>外部判定无效（不带文案），仅影响 aria-invalid</td>
+          </tr>
+          <tr>
+            <td><code>describedby</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部错误元素的 id，挂到 aria-describedby</td>
+          </tr>
         </tbody>
       </table>
     </Card>
