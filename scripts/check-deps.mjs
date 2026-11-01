@@ -21,6 +21,7 @@
  * 这比"因为有一条噪音就干脆不看依赖树"要强得多。
  */
 import { execSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
 /**
  * 已登记的已知噪音：键是「包名@版本 + 来自谁」，值是登记理由。
@@ -36,12 +37,21 @@ const KNOWN_NOISE = [
   },
 ]
 
+/**
+ * 依赖树来源：默认现场跑 `npm ls --all`；自测时用 `--input <file>` 读预存输出
+ * （跑一次 npm ls 要几秒且依赖网络/缓存状态，夹具用文件更稳、更快）。
+ */
+const inputIdx = process.argv.indexOf('--input')
 let out
-try {
-  // npm ls --all 在有 invalid 时退出码为 1，所以必须捕获 stdout 而不是靠退出码
-  out = execSync('npm ls --all', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
-} catch (e) {
-  out = `${e.stdout ?? ''}${e.stderr ?? ''}`
+if (inputIdx > -1) {
+  out = readFileSync(process.argv[inputIdx + 1], 'utf8')
+} else {
+  try {
+    // npm ls --all 在有 invalid 时退出码为 1，所以必须捕获 stdout 而不是靠退出码
+    out = execSync('npm ls --all', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+  } catch (e) {
+    out = `${e.stdout ?? ''}${e.stderr ?? ''}`
+  }
 }
 
 // 收集所有 invalid 描述行（去重：同一问题会同时出现在"直接"和"deduped"两处）

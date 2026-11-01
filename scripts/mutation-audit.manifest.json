@@ -187,6 +187,24 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "deps-known-noise",
+      "file": "scripts/check-deps.mjs",
+      "find": "const known = KNOWN_NOISE.some((k) => k.pattern.test(line))",
+      "replace": "const known = false",
+      "cmd": "npx vitest run tests/unit/deps-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：已知噪音也报错，闸门常态红然后被无视（#347）"
+    },
+    {
+      "id": "deps-unexplained",
+      "file": "scripts/check-deps.mjs",
+      "find": "  if (!known) unexplained.push(line)",
+      "replace": "  if (false) unexplained.push(line)",
+      "cmd": "npx vitest run tests/unit/deps-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：未登记的依赖断裂被放行（#347）"
+    },
+    {
       "id": "mappicker-invalid-prop",
       "file": "src/components/form-builder/renderer/RendererMapPicker.vue",
       "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",
