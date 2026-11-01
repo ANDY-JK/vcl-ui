@@ -34,6 +34,7 @@ vi.mock('@/components/form/utils/capture-fallback', async () => {
 })
 
 import Upload from '@/components/form/Upload.vue'
+import { useUploadQueue } from '@/components/form/utils/useUploadQueue'
 
 function makeFile(name: string, size = 100, type = 'image/png'): File {
   const f = new File(['x'], name, { type })
@@ -287,5 +288,57 @@ describe('Upload · 删除按钮的禁用语义', () => {
     } finally {
       w.unmount()
     }
+  })
+})
+/* ════════════════════════════════════════
+ * 入口守卫：disabled 时 removeFile / retryFile 必须自己拦住（#287 的**第二层**）
+ *
+ * 上面那组用例只验证了「按钮不渲染」——那是第一层（模板隐藏）。
+ * 真正兜底的是 composable 里的入口守卫：自绘按钮可能被别处渲染、也可能被
+ * 键盘/程序触发，**只有在入口拦住才算真拦住**。
+ * 变异实测：把这两行 `if (props.disabled) return` 删掉，上面的用例**全过** ——
+ * 也就是说第二层此前完全没有守。这条用例就是补第二层的。
+ * ════════════════════════════════════════ */
+describe('useUploadQueue · 禁用态的入口守卫（第二层）', () => {
+  function makeQueue(props: Record<string, unknown>) {
+    const events: Array<{ e: string; arg: unknown }> = []
+    const emit = ((e: string, arg: unknown) => void events.push({ e, arg })) as unknown as (
+      e: string,
+      arg: unknown,
+    ) => void
+    const q = useUploadQueue({ props: props as never, emit: emit as never })
+    return { q, events }
+  }
+
+  it('**disabled：removeFile 不删文件、不 emit**（不能只靠"按钮不渲染"）', () => {
+    const { q, events } = makeQueue({ modelValue: [], disabled: true, maxCount: 5 })
+    q.files.value = [{ id: 1, name: 'a.png', size: 100, url: 'blob:x', status: 'done' } as never]
+    q.removeFile(q.files.value[0]!)
+    expect(q.files.value.length, '禁用态文件不能被删掉').toBe(1)
+    expect(events.map((x) => x.e), '禁用态不该 emit remove').not.toContain('remove')
+  })
+
+  it('**disabled：retryFile 不把失败项改成 uploading**', () => {
+    const { q } = makeQueue({ modelValue: [], disabled: true, maxCount: 5 })
+    q.files.value = [{ id: 2, name: 'b.png', size: 100, url: 'blob:y', status: 'error' } as never]
+    q.retryFile(2)
+    expect(q.files.value[0]!.status, '禁用态重试应被拦住').toBe('error')
+  })
+
+  it('正常态 removeFile 照常工作（守卫不能把功能一起关了）', () => {
+    const { q, events } = makeQueue({ modelValue: [], maxCount: 5 })
+    q.files.value = [{ id: 1, name: 'a.png', size: 100, url: 'x', status: 'done' } as never]
+    q.removeFile(q.files.value[0]!)
+    expect(q.files.value.length).toBe(0)
+    expect(events.map((x) => x.e)).toContain('remove')
+  })
+
+  it('正常态 retryFile 照常工作（失败项 → uploading）', () => {
+    // 这条是给上一个变异补的：守卫若误写成"恒真"，只测 removeFile 的用例照样绿，
+    // 必须**分别**验证两个入口的正常路径。
+    const { q } = makeQueue({ modelValue: [], maxCount: 5 })
+    q.files.value = [{ id: 2, name: 'b.png', size: 100, url: 'blob:y', status: 'error' } as never]
+    q.retryFile(2)
+    expect(q.files.value[0]!.status, '正常态重试应开始上传').toBe('uploading')
   })
 })
