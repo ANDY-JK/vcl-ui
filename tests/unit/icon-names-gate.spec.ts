@@ -40,6 +40,19 @@ describe('check:icon-names 闸门自测', () => {
     expect(out).toContain('definitely-not-an-icon')
   })
 
+  it('**solar / morphicons 两种 provider 口径都要能判**（#332）', () => {
+    // ok/Providers.vue 里放的是 `provider="solar" type="home-linear"` 与
+    // `provider="morphicons" type="a-arrow-down"`，都取自各自真实名录。
+    // 闸门若把 provider 分支写坏（只认 lucide），这条会红。
+    const { code, out } = runGate('tests/fixtures/icon-names/ok')
+    expect(code, `provider 分支把真实图标名判错了：\n${out}`).toBe(0)
+  })
+
+  it('**solar 分支要说明「补后缀后是什么」**（否则用户不知道该怎么改）', () => {
+    const { out } = runGate('tests/fixtures/icon-names/bad')
+    expect(out, 'solar 分支没走归一化提示').toContain('补后缀后是')
+  })
+
   it('**报错带文件位置**（否则几百个组件里找不到）', () => {
     const { out } = runGate('tests/fixtures/icon-names/bad')
     expect(out).toMatch(/Bad\.vue/)
