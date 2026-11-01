@@ -85,6 +85,11 @@ export function useFormIO(host: FormIOHost) {
   function onImportFileSelect(e: Event): void {
     const target = e.target as HTMLInputElement
     const file = target.files?.[0]
+    // 必须清空 value（#306）：change 只在"选择结果变化"时触发。
+    // 典型路径 —— 导出 form.json → 导入 → 改设计 → 再导出到同名文件 → 再导入：
+    // 路径没变，浏览器不触发 change，用户看到"导入按钮没反应"。
+    // 先取 file 再清空，readFileThen 拿到的 File 对象不受影响。
+    target.value = ''
     if (!file) return
     readFileThen(file, () => {
       importError.value = t('fbd.fileReadFail')

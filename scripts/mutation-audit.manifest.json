@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "upload-input-reset",
+      "file": "src/components/form/Upload.vue",
+      "find": "  input.value = ''",
+      "replace": "  void input.value",
+      "cmd": "npx vitest run tests/unit/upload-interaction.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：删掉再选同一文件不触发 change，用户看到「点了没反应」（#306）"
+    },
+    {
+      "id": "designer-import-input-reset",
+      "file": "src/components/form-builder/designer/useFormIO.ts",
+      "find": "    target.value = ''",
+      "replace": "    void target.value",
+      "cmd": "npx vitest run tests/unit/use-form-io.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：导出→改→再导入同名 json 时无反应（路径没变，浏览器不触发 change）（#306）"
+    },
+    {
       "id": "import-header-first-wins",
       "file": "src/components/form-builder/importRecords.ts",
       "find": "  const labeled = dedupeFieldLabels(",

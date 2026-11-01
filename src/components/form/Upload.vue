@@ -128,8 +128,18 @@ function onDrop(e: DragEvent) {
   if (!props.disabled) processFiles(e.dataTransfer?.files || null)
 }
 
+/**
+ * 文件选择器的 change 回调。
+ *
+ * ⚠️ 必须清空 `input.value`（#306）：浏览器的 change **只在选择结果变化时**触发。
+ * 用户选 `a.png` → 删掉 → 再选 `a.png`，第二次 change 不会触发 —— 用户看到的是
+ * "点了没反应"，而组件完全不知道有人选过文件。清空后每次选择都算新选择。
+ * `processFiles` 在同步段内就把 FileList 读完了，所以清空不会丢文件。
+ */
 function onInputChange(e: Event) {
-  processFiles((e.target as HTMLInputElement).files)
+  const input = e.target as HTMLInputElement
+  processFiles(input.files)
+  input.value = ''
 }
 
 function onPaste(e: ClipboardEvent) {

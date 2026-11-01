@@ -313,6 +313,40 @@ describe('onImportDrop — 拖拽导入', () => {
   })
 })
 
+describe('onImportFileSelect — 选择文件导入（#306）', () => {
+  /** 造一个「浏览器里刚选完文件」的 input（value 是假路径 C:\fakepath\...） */
+  function makeFileInput(fileName: string | null): HTMLInputElement {
+    const input = document.createElement('input')
+    input.type = 'file'
+    const files = fileName ? [new File(['{"nodes":[]}'], fileName, { type: 'application/json' })] : []
+    Object.defineProperty(input, 'files', { value: files, configurable: true })
+    // 浏览器选完文件后 value 会变成假路径；happy-dom 里可直接写
+    Object.defineProperty(input, 'value', {
+      value: fileName ? 'C:\\fakepath\\' + fileName : '',
+      writable: true,
+      configurable: true,
+    })
+    return input
+  }
+
+  it('**读完后清空 input.value**（否则同名文件再导入不触发 change）', () => {
+    const host = makeHost()
+    const io = useFormIO(host)
+    const input = makeFileInput('design.json')
+    io.onImportFileSelect({ target: input } as unknown as Event)
+    expect(input.value, '不清空则「改完再导入」点了没反应').toBe('')
+  })
+
+  it('没选文件时也清空并静默返回', () => {
+    const host = makeHost()
+    const io = useFormIO(host)
+    const input = makeFileInput(null)
+    io.onImportFileSelect({ target: input } as unknown as Event)
+    expect(input.value).toBe('')
+    expect(io.importError.value, '没选文件不该报错').toBe('')
+  })
+})
+
 describe('分享码前缀', () => {
   it('FD1. 前缀的非法分享码 → 报分享码错误（不是 JSON 错误）', () => {
     const host = makeHost()

@@ -342,3 +342,54 @@ describe('useUploadQueue · 禁用态的入口守卫（第二层）', () => {
     expect(q.files.value[0]!.status, '正常态重试应开始上传').toBe('uploading')
   })
 })
+
+/* ════════════════════════════════════════
+ * 选完文件必须清空 input.value（#306）
+ *
+ * 浏览器的 change **只在选择结果变化时**触发。用户选 a.png → 删掉 → 再选 a.png，
+ * 第二次 change 不会触发 —— 用户看到"点了没反应"，组件根本不知道有人选过文件。
+ * 探针确认 happy-dom 里 value 可用 defineProperty 写入，所以能真的断言"被清空了"。
+ * ════════════════════════════════════════ */
+describe('Upload · 重复选择同一文件', () => {
+  it('**change 之后 input.value 被清空**（否则再选同一文件不触发）', async () => {
+    const w = mount(Upload, { attachTo: document.body })
+    try {
+      await nextTick()
+      const input = w.find('input[type="file"]').element as HTMLInputElement
+      // 模拟浏览器：选完文件后 value 会是 "C:\\fakepath\\a.png"
+      Object.defineProperty(input, 'value', {
+        value: 'C:\\fakepath\\a.png',
+        writable: true,
+        configurable: true,
+      })
+      Object.defineProperty(input, 'files', {
+        value: [new File(['x'], 'a.png', { type: 'image/png' })],
+        configurable: true,
+      })
+      await w.find('input[type="file"]').trigger('change')
+      await nextTick()
+      expect(input.value, '不清空则再选同一文件不会触发 change').toBe('')
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('正常选择仍然生效（清空不能把文件也清掉）', async () => {
+    const w = mount(Upload, { attachTo: document.body })
+    try {
+      await nextTick()
+      const input = w.find('input[type="file"]').element as HTMLInputElement
+      Object.defineProperty(input, 'files', {
+        value: [new File(['x'], 'b.png', { type: 'image/png' })],
+        configurable: true,
+      })
+      await w.find('input[type="file"]').trigger('change')
+      await nextTick()
+      const emitted = w.emitted('update:modelValue') as unknown[][] | undefined
+      expect(emitted, '应写入已选文件').toBeTruthy()
+      expect(JSON.stringify(emitted!.at(-1)), '文件名应出现在 modelValue 里').toContain('b.png')
+    } finally {
+      w.unmount()
+    }
+  })
+})
