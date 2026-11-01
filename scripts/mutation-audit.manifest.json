@@ -151,6 +151,15 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "richtext-invalid-prop",
+      "file": "src/components/form-builder/renderer/RendererRichtext.vue",
+      "find": "      :aria-invalid=\"invalid || undefined\"",
+      "replace": "      :aria-invalid=\"undefined\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：富文本可编辑区不标记无效（#343）"
+    },
+    {
       "id": "group-radio-invalid",
       "file": "src/components/form/Group.vue",
       "find": "    role=\"radiogroup\"\n    :aria-label=\"ariaLabel\"\n    :aria-invalid=\"invalid || undefined\"",

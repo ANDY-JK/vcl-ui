@@ -18,6 +18,13 @@ const props = defineProps<{
   field: FormField
   /** 当前值（HTML 字符串） */
   modelValue: unknown
+  /**
+   * 外部判定为无效（不带文案）：挂到 contenteditable 上（#343）。
+   * 富文本的可聚焦元素就是这个可编辑区，错误状态必须挂在它身上。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，读屏可回查「为什么无效」 */
+  describedby?: string
 }>()
 
 const emit = defineEmits<{
@@ -154,6 +161,8 @@ onUnmounted(() => {
       ref="editorEl"
       class="fb-richtext-body"
       contenteditable="true"
+      :aria-invalid="invalid || undefined"
+      :aria-describedby="describedby"
       @input="onInput"
       @compositionstart="onCompositionStart"
       @compositionend="onCompositionEnd"

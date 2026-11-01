@@ -113,6 +113,24 @@ describe('FormRenderer · 提交期校验错误与输入框关联', () => {
     w.unmount()
   })
 
+  it('**richtext 字段的无效状态挂在可编辑区上**（富文本的可聚焦元素就是它）', async () => {
+    const w = mount(FormRenderer, {
+      props: { field: { ...FIELD, type: 'richtext' }, modelValue: '', error: '正文不能为空' } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const editor = w.find('[contenteditable="true"]')
+    expect(editor.exists(), '前置：richtext 应渲染可编辑区').toBe(true)
+    expect(editor.attributes('aria-invalid'), '富文本可编辑区没标记无效').toBe('true')
+    const describedby = editor.attributes('aria-describedby')
+    expect(describedby, '富文本没指向错误说明').toBeTruthy()
+    const target = document.querySelector(`#${CSS.escape(describedby!)}`)
+    expect(target, 'richtext 的 aria-describedby 悬空').toBeTruthy()
+    expect(target!.textContent).toContain('正文不能为空')
+    w.unmount()
+  })
+
   it('**既有契约不变：FieldError 仍然渲染**（17 处分支都靠它）', async () => {
     const w = await mountRenderer('姓名必填')
     const err = w.find('.fb-field-error')

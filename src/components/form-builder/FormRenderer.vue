@@ -530,9 +530,11 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <RendererRichtext
           :field="field"
           :model-value="modelValue"
+          :invalid="!!error"
+          :describedby="error ? fieldErrorId : undefined"
           @update:model-value="emit('update:modelValue', $event)"
         />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
 
       <!-- 电子签名 -->
