@@ -187,6 +187,15 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "constants-line-limit",
+      "file": "scripts/check-constants.mjs",
+      "find": "      if (n > LINE_LIMITS[domain]) {",
+      "replace": "      if (false) {",
+      "cmd": "npx vitest run tests/unit/constants-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：行数止涨线失效，大文件可无限增长（#354）"
+    },
+    {
       "id": "release-changelog-section",
       "file": "scripts/check-release-consistency.mjs",
       "find": "  failures.push(`CHANGELOG 缺少版本段「${versionHeading}」`)",

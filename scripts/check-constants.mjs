@@ -15,6 +15,16 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
+/**
+ * 自测支持（#354）：`--root <dir>` 把工作目录切到夹具根。
+ *
+ * 为什么不逐个改路径：本闸口有 5 处相对路径（`walk('src')`、`join('src', ...)` 等），
+ * 逐个注入参数会把这些行改得难以阅读；**chdir 一次、其余不动**，且不影响读文件语义。
+ * 夹具由用例在临时目录里现造（见 tests/unit/constants-gate.spec.ts）。
+ */
+const rootIdx = process.argv.indexOf('--root')
+if (rootIdx > -1) process.chdir(process.argv[rootIdx + 1])
+
 const fail = []
 
 const walk = (d, out = []) => {

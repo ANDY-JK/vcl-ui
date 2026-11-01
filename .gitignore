@@ -90,3 +90,6 @@ theme.config.json
 
 # 测试噪音采集中间目录（跑完即清，不入库）
 tests/unit/.noise-spool/
+
+# 闸口自测的临时夹具目录（用例造、用例删；兜底忽略）
+tests/.tmp/
