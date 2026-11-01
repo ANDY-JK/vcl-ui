@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "select-panel-esc",
+      "file": "src/components/form/Select.vue",
+      "find": "@keydown.esc.stop.prevent=\"closePanel()\"",
+      "replace": "@keydown.esc.stop=\"() => {}\"",
+      "cmd": "npx vitest run tests/unit/select-panel-exit.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：焦点在面板里按 Esc 没反应，键盘用户被困在面板里（#320）"
+    },
+    {
+      "id": "select-focus-return",
+      "file": "src/components/form/Select.vue",
+      "find": "  if (hadFocusInside) nextTick(() => comboInputRef.value?.focus())",
+      "replace": "  void hadFocusInside",
+      "cmd": "npx vitest run tests/unit/select-panel-exit.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：关闭面板后焦点掉到 body，键盘用户要从页面开头重新 Tab（#320）"
+    },
+    {
       "id": "select-focus-handoff",
       "file": "src/components/form/Select.vue",
       "find": "  first?.focus()",

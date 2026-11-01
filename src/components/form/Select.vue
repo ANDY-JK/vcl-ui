@@ -341,7 +341,16 @@ function toggleOpen(e?: MouseEvent) {
 }
 
 function closePanel() {
+  /**
+   * 焦点归还（#320）。
+   *
+   * 键盘用户在面板内按 Esc / 选中日期后，面板被 v-if 移除 —— 焦点会掉到 body，
+   * 用户得从页面开头重新 Tab 回来。这里只在"**焦点确实在面板内**"时归还，
+   * 避免点击外部关闭时把焦点从用户刚点的元素上抢走。
+   */
+  const hadFocusInside = !!floatingRef.value?.contains(document.activeElement)
   open.value = false
+  if (hadFocusInside) nextTick(() => comboInputRef.value?.focus())
   searchText.value = ''
   // 不在这里恢复 comboText — onComboBlur 已处理失焦恢复
   // 这里恢复会导致 commitComboValue 后 closePanel 把新值覆盖回旧值
@@ -890,6 +899,7 @@ const {
             :class="[`flip-${flipDir}`]"
             :style="floatingStyle"
             :role="panelRole"
+            @keydown.esc.stop.prevent="closePanel()"
           >
             <!-- 搜索框（仅 tree-select：trigger 不可输入；select/combobox 由 trigger 直接输入过滤） -->
             <div v-if="isTreeSelect && searchable" class="panel-search">
