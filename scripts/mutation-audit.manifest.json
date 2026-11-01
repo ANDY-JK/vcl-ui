@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "i18n-gate-empty-value",
+      "file": "scripts/check-i18n.mjs",
+      "find": "      if (!value.trim()) fail.push(`${file} [${loc}] ${key} 的值是空的 —— 用户会看到空白`)",
+      "replace": "      if (false) fail.push('')",
+      "cmd": "npx vitest run tests/unit/i18n-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：空值放行，用户切语言看到空白却无人知晓（#327）"
+    },
+    {
+      "id": "i18n-gate-cjk-false-positive",
+      "file": "scripts/check-i18n.mjs",
+      "find": "const looksUntranslated = (v) => CJK_RE.test(v) && !/[A-Za-z]{3}/.test(v)",
+      "replace": "const looksUntranslated = (v) => CJK_RE.test(v)",
+      "cmd": "npx vitest run tests/unit/i18n-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：英文句子里合法引用中文列名被当\"没翻译\"，闸门开始误报（#327）"
+    },
+    {
       "id": "result-consumed-await-counts-as-used",
       "file": "scripts/check-result-consumed.mjs",
       "find": "      if (!bareCall) continue // 出现在表达式里 → 结果被用到",
