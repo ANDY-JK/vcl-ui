@@ -1,0 +1,7 @@
+:root {
+  --vcl-primary: #1677ff;
+}
+.card {
+  color: var(--vcl-primary);
+  border-color: var(--vcl-unknown-with-fallback, #ccc);
+}

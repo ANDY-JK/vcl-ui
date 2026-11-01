@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "css-tokens-gate-fallback-exempt",
+      "file": "scripts/check-css-tokens.mjs",
+      "find": "  const hard = uses.filter((u) => !u.hasFallback && !declared.has(name))",
+      "replace": "  const hard = uses.filter((u) => !declared.has(name))",
+      "cmd": "npx vitest run tests/unit/css-tokens-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：带 fallback 的引用被当成断档，闸门开始误报（#330）"
+    },
+    {
+      "id": "css-tokens-gate-declared-exempt",
+      "file": "scripts/check-css-tokens.mjs",
+      "find": "  const hard = uses.filter((u) => !u.hasFallback && !declared.has(name))",
+      "replace": "  const hard = uses.filter((u) => !u.hasFallback)",
+      "cmd": "npx vitest run tests/unit/css-tokens-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：已声明的令牌被当成断档，闸门开始误报（#330）"
+    },
+    {
+      "id": "css-tokens-gate-report",
+      "file": "scripts/check-css-tokens.mjs",
+      "find": "  if (hard.length) missing.push({ name, hard })",
+      "replace": "  if (false) missing.push({ name, hard })",
+      "cmd": "npx vitest run tests/unit/css-tokens-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：真断档不报（假阴性方向），暗色皮肤上线才暴露（#330）"
+    },
+    {
       "id": "test-skips-gate-unregistered",
       "file": "scripts/check-test-skips.mjs",
       "find": "  if (!ok) problems.push({ kind: 'unregistered', ...f })",

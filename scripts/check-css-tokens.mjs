@@ -34,7 +34,10 @@ function walk(dir) {
     else if (/\.(css|vue|ts)$/.test(name)) files.push(p)
   }
 }
-walk(join(ROOT, 'src'))
+/** 扫描根：默认 src；自测时 --root 指到夹具目录，验证闸门真会红 */
+const rootIdx = process.argv.indexOf('--root')
+const SCAN = rootIdx > -1 ? resolve(process.argv[rootIdx + 1]) : join(ROOT, 'src')
+walk(SCAN)
 
 // 剥注释：块注释 → 行注释（非字符串内的 //；URL 里的 // 出现在 http://，前面是 :，正则排除）
 function stripComments(src) {
