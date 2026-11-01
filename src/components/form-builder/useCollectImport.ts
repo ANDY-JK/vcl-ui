@@ -158,6 +158,9 @@ export function useCollectImport(opts: CollectImportOptions) {
   async function confirmImport(): Promise<void> {
     const list = importPreview.value
     if (!list.length) return
+    // 重入守卫（#313）：按钮 loading 只是**界面层**的保护，程序化触发/连点仍能进来。
+    // 没有它时，慢存储下第二次确认会把同一批记录**再写一遍**（8 条变 16 条）。
+    if (importing.value) return
     importing.value = true
     importError.value = ''
     try {

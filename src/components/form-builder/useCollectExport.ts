@@ -47,6 +47,24 @@ export interface CollectExportOptions {
   /** 提示回写（页面顶部消息条） */
   onError: (msg: string) => void
   onOk: (msg: string) => void
+  /**
+   * xlsx 模块加载器（#313）。默认走动态 import；测试与宿主可注入。
+   *
+   * 注入的理由不是"灵活"，而是**可测**：导出连点的重入窗口就发生在 `await import()` 这一段，
+   * 不把它变成可控 Promise，测试就只能靠 sleep 赌时序（#312 的教训）。
+   */
+  loadXlsx?: () => Promise<XlsxLike>
+}
+
+/** 导出用到的 xlsx API 子集（便于注入替身，避免测试依赖真实实现） */
+export interface XlsxLike {
+  utils: {
+    json_to_sheet: (rows: unknown[], opts?: unknown) => Record<string, unknown>
+    book_new: () => unknown
+    book_append_sheet: (wb: unknown, ws: unknown, name: string) => void
+    encode_cell: (addr: { c: number; r: number }) => string
+  }
+  writeFile: (wb: unknown, filename: string) => void
 }
 
 /** 成功提示自动消失时间 */
@@ -119,9 +137,11 @@ export function useCollectExport(opts: CollectExportOptions) {
       opts.onError(t('formBuilder.exportEmpty'))
       return
     }
+    // 重入守卫（#313）：连点两次会**触发两次下载**（浏览器可能弹两个文件，或第二次静默失败）
+    if (exporting.value) return
     exporting.value = true
     try {
-      const XLSX = await import('@/components/_internal/xlsx/xlsx.mjs')
+      const XLSX = await (opts.loadXlsx?.() ?? import('@/components/_internal/xlsx/xlsx.mjs'))
       const columns = resolveExportColumns(opts.fields(), opts.exportColumns?.())
       const rows = opts.records.value.map((r) => buildExportRow(r, columns, t))
       // cellDates: true —— 让 Date 值写成真正的日期单元格（而不是序列号或文本），
@@ -134,7 +154,7 @@ export function useCollectExport(opts: CollectExportOptions) {
           if (cell && cell.t === 'd') cell.z = EXPORT_TIME_FORMAT
         }
       }
-      const wb = XLSX.utils.book_new()
+      const wb = XLSX.utils.book_new() as never
       XLSX.utils.book_append_sheet(wb, ws, t('fbd.sheetName'))
       const title = opts.exportFileName?.() || opts.meta().title || t('fbd.defaultFileName')
       XLSX.writeFile(wb, `${title}-${opts.records.value.length}${t('fbd.countSuffix')}.xlsx`)

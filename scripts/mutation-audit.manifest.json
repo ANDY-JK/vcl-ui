@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "import-confirm-reentry",
+      "file": "src/components/form-builder/useCollectImport.ts",
+      "find": "    if (importing.value) return",
+      "replace": "    if (false) return",
+      "cmd": "npx vitest run tests/unit/collect-reentry-guard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：连点「确认导入」会把同一批记录再写一遍（8 条变 16 条）（#313）"
+    },
+    {
+      "id": "export-reentry",
+      "file": "src/components/form-builder/useCollectExport.ts",
+      "find": "    if (exporting.value) return",
+      "replace": "    if (false) return",
+      "cmd": "npx vitest run tests/unit/collect-reentry-guard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：连点导出会触发两次下载（#313）"
+    },
+    {
+      "id": "export-reentry-unlock",
+      "file": "src/components/form-builder/useCollectExport.ts",
+      "find": "      exporting.value = false",
+      "replace": "      void exporting.value",
+      "cmd": "npx vitest run tests/unit/collect-reentry-guard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：导出结束后不解锁，用户第二次导出永远没反应（#313）"
+    },
+    {
       "id": "collect-double-submit-guard",
       "file": "src/components/form-builder/FormCollect.vue",
       "find": "  if (submitLock.value) return",
