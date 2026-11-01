@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "no-cycles-gate-finds-cycles",
+      "file": "scripts/check-no-cycles.mjs",
+      "find": "const cycles = findCycles(graph)",
+      "replace": "const cycles = []",
+      "cmd": "npx vitest run tests/unit/no-cycles-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：环检测结果被丢弃，有环也报\"无循环依赖\"（#328）"
+    },
+    {
+      "id": "no-cycles-gate-import-type",
+      "file": "scripts/check-no-cycles.mjs",
+      "find": "const RE_IMPORT_TYPE = /^\\s*import\\s+type\\s/",
+      "replace": "const RE_IMPORT_TYPE = /^\\s*import\\s+PLACEHOLDER_NEVER_MATCHES\\s/",
+      "cmd": "npx vitest run tests/unit/no-cycles-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：import type 被算成运行时依赖 → 正常代码报假环（#328）"
+    },
+    {
       "id": "i18n-gate-empty-value",
       "file": "scripts/check-i18n.mjs",
       "find": "      if (!value.trim()) fail.push(`${file} [${loc}] ${key} 的值是空的 —— 用户会看到空白`)",

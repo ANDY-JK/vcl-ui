@@ -30,7 +30,9 @@ import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs'
 import { dirname, resolve, relative, join, extname } from 'node:path'
 
 const ROOT = process.cwd()
-const SRC = join(ROOT, 'src')
+/** 扫描根：默认 src（库内代码）；自测时 --root 指到夹具目录，验证闸门真会红 */
+const rootIdx = process.argv.indexOf('--root')
+const SRC = rootIdx > -1 ? resolve(process.argv[rootIdx + 1]) : join(ROOT, 'src')
 const EXT = ['.ts', '.vue', '.mts', '.tsx']
 
 /** 剥掉注释（行注释 + 块注释），保留字符串内容与换行数量以维持行号 */
