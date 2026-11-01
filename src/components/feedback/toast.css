@@ -1,6 +1,7 @@
 .toast-container {
   position: fixed;
-  top: calc(16px * var(--vcl-scale));
+  /* 顶部提示避开刘海/状态栏；无安全区（桌面）时 env() 取 0，观感不变（#309） */
+  top: calc(16px * var(--vcl-scale) + env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--vcl-z-top, 9999);
@@ -25,13 +26,14 @@
   top: auto;
   left: auto;
   right: calc(16px * var(--vcl-scale));
-  bottom: calc(16px * var(--vcl-scale));
+  /* 底部提示避开 Home 指示条（#309） */
+  bottom: calc(16px * var(--vcl-scale) + env(safe-area-inset-bottom));
   transform: none;
 }
 .toast-bottom-left {
   top: auto;
   right: auto;
-  bottom: calc(16px * var(--vcl-scale));
+  bottom: calc(16px * var(--vcl-scale) + env(safe-area-inset-bottom));
   left: calc(16px * var(--vcl-scale));
   transform: none;
 }

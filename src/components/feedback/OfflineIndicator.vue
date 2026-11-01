@@ -52,7 +52,9 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: calc(8px * var(--vcl-scale));
-  padding: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));
+  /* 离线横幅避开刘海/状态栏（#309）：必须写进 padding **简写**里 ——
+     单独写 padding-top 会被这条简写覆盖掉（同一条规则里简写在后面就赢） */
+  padding: calc(10px * var(--vcl-scale) + env(safe-area-inset-top)) calc(16px * var(--vcl-scale));
   /* 实心底压白字：solid 令牌（暗色下 --vcl-color-warning 提亮后白字不可读） */
   background: var(--vcl-color-warning-solid, var(--vcl-color-warning));
   color: white;

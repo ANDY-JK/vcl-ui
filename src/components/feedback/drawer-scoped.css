@@ -36,6 +36,8 @@
   top: 0;
   max-width: none; /* 上下方位须占满视口宽；面板 max-width:90vw 会退化贴左留右缝 */
   max-height: 90vh;
+  /* 顶部抽屉要避开刘海/状态栏（#309）：不加这段，标题和关闭按钮会被挖孔屏遮住 */
+  padding-top: env(safe-area-inset-top);
 }
 .drawer-bottom {
   left: 0;
@@ -43,6 +45,8 @@
   bottom: 0;
   max-width: none; /* 上下方位须占满视口宽；面板 max-width:90vw 会退化贴左留右缝 */
   max-height: 90vh;
+  /* 底部抽屉要避开 Home 指示条（#309）：不加这段，底部操作按钮正好压在指示条上 */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .drawer-header {

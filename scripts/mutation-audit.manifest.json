@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "safe-area-drawer-bottom",
+      "file": "src/components/feedback/drawer-scoped.css",
+      "find": "  padding-bottom: env(safe-area-inset-bottom);",
+      "replace": "  padding-bottom: 0;",
+      "cmd": "npx vitest run tests/unit/safe-area-contract.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：底部抽屉的按钮压在 iPhone Home 指示条上，点不到（#309）"
+    },
+    {
+      "id": "safe-area-offline-padding",
+      "file": "src/components/feedback/OfflineIndicator.vue",
+      "find": "  padding: calc(10px * var(--vcl-scale) + env(safe-area-inset-top)) calc(16px * var(--vcl-scale));",
+      "replace": "  padding: calc(10px * var(--vcl-scale)) calc(16px * var(--vcl-scale));",
+      "cmd": "npx vitest run tests/unit/safe-area-contract.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：离线横幅被刘海遮住（#309；这条也演示了 padding 简写覆盖 padding-top 的坑）"
+    },
+    {
       "id": "floating-visual-band",
       "file": "src/components/_internal/useFloating.ts",
       "find": "      band: getViewportBand(),",
