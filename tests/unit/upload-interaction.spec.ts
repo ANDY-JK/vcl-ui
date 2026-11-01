@@ -21,6 +21,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
+import { nextTick } from 'vue'
 
 const h = vi.hoisted(() => ({
   systemFiles: [] as File[],
@@ -253,5 +254,38 @@ describe('卡片变体：单击 / 双击 / 翻页', () => {
     vi.advanceTimersByTime(300)
     await flushPromises()
     expect(w.exists()).toBe(true)
+  })
+})
+/* ════════════════════════════════════════
+ * 删除按钮不得在禁用态可用（#287）
+ *
+ * 探针实测：disabled 的 Upload 上 `.upload-remove` 仍存在，点击 emit `update:modelValue: []`
+ * —— 禁用状态的文件被真删掉。自绘按钮不受原生 disabled 约束。
+ * ════════════════════════════════════════ */
+describe('Upload · 删除按钮的禁用语义', () => {
+  const files = [{ name: 'a.png', size: 100, url: 'x', status: 'done' as const }]
+
+  it('**disabled：不渲染删除按钮**', async () => {
+    const w = mount(Upload, { props: { modelValue: files, disabled: true }, attachTo: document.body })
+    try {
+      await nextTick()
+      expect(w.find('.upload-remove').exists(), '禁用态不该有删除入口').toBe(false)
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('正常路径不受影响：可删且 emit 空列表', async () => {
+    const w = mount(Upload, { props: { modelValue: files }, attachTo: document.body })
+    try {
+      await nextTick()
+      const btn = w.find('.upload-remove')
+      expect(btn.exists()).toBe(true)
+      await btn.trigger('click')
+      await nextTick()
+      expect(w.emitted('update:modelValue')).toEqual([[[]]])
+    } finally {
+      w.unmount()
+    }
   })
 })

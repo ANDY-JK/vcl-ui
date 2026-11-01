@@ -477,7 +477,13 @@ onUnmounted(() => {
               style="margin-top: var(--vcl-space-1)"
             />
           </div>
-          <button type="button" class="upload-remove" :aria-label="t('form.removeFile')" @click="removeFile(f)">
+          <button
+            v-if="!disabled"
+            type="button"
+            class="upload-remove"
+            :aria-label="t('form.removeFile')"
+            @click="removeFile(f)"
+          >
             <IconSvg type="x" size="sm" />
           </button>
         </div>

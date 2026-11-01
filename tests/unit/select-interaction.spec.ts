@@ -258,3 +258,45 @@ describe('清空按钮：禁用语义', () => {
     }
   })
 })
+/* ════════════════════════════════════════
+ * 第二条清空路径：tag 上的 ×（#287）
+ *
+ * #286 只守了 `.select-clear`，而多选的 tag 上还有一个 × —— 同样能把值删掉。
+ * 探针实测：disabled 下点 .tag-close 会 emit ['sh']（值被真删）。
+ * ════════════════════════════════════════ */
+describe('tag 删除按钮：禁用语义', () => {
+  const multiOptions = [
+    { label: '北京', value: 'bj' },
+    { label: '上海', value: 'sh' },
+  ]
+
+  it('**disabled：不渲染 tag 上的 ×**', async () => {
+    const w = mount(Select, {
+      props: { modelValue: ['bj', 'sh'], options: multiOptions, multiple: true, disabled: true },
+      attachTo: document.body,
+    })
+    try {
+      await nextTick()
+      expect(w.find('.tag-close').exists(), '禁用态不该有删除入口').toBe(false)
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('正常路径不受影响：可删一项且 emit 剩余值', async () => {
+    const w = mount(Select, {
+      props: { modelValue: ['bj', 'sh'], options: multiOptions, multiple: true },
+      attachTo: document.body,
+    })
+    try {
+      await nextTick()
+      const btn = w.find('.tag-close')
+      expect(btn.exists()).toBe(true)
+      await btn.trigger('click')
+      await nextTick()
+      expect(w.emitted('update:modelValue')).toEqual([[['sh']]])
+    } finally {
+      w.unmount()
+    }
+  })
+})

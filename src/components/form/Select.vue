@@ -377,6 +377,10 @@ const comboTags = computed(() => {
 })
 
 function removeComboTag(tag: { value: string | number | boolean; label: string }) {
+  // 禁用语义守卫（2026-11-01 #287）：这是**第二条清空路径** —— #286 只守了 `.select-clear`，
+  // tag 上的 × 同样能把值删掉（多选删一项、单选清空），实测 disabled 下点击 emit ['sh']。
+  // 与 onClearGuarded 同一判据，防止再出现"同一契约两条路径只守一条"。
+  if (props.disabled) return
   markTouched()
   if (props.multiple || isTreeSelect.value) {
     const vals = ((props.modelValue || []) as (string | number | boolean)[]).filter(
@@ -750,7 +754,14 @@ const {
           <span class="tag-text" :title="tag.label">{{ tag.label }}</span>
           <!-- 关闭钮用 SVG 图标不用文本 ×：文本字形受字体度量摆布（Arial 的 × 整体坐基线上方，
                墨迹中心比盒子中心高 ~1px），小尺寸 tag 里与文本肉眼可见不齐；IconSvg 由 flex 精确居中 -->
-          <button type="button" class="tag-close" tabindex="-1" @mousedown.prevent @click.stop="removeComboTag(tag)">
+          <button
+            v-if="!disabled"
+            type="button"
+            class="tag-close"
+            tabindex="-1"
+            @mousedown.prevent
+            @click.stop="removeComboTag(tag)"
+          >
             <IconSvg type="x" size="xs" />
           </button>
         </span>

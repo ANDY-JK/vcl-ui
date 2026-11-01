@@ -304,3 +304,34 @@ describe('清空按钮：只读/禁用语义', () => {
     expect(text({ clearable: false }, '内容').find('.f-clear').exists()).toBe(false)
   })
 })
+/* ════════════════════════════════════════
+ * 密码显隐按钮不得在禁用态可用（#287）
+ *
+ * 探针实测：disabled 的密码框上 `.f-toggle-pwd` 仍存在，点击把 input 变成 type=text ——
+ * 禁用字段的密码被旁边的人一眼看光。禁用 = 不该有任何交互入口。
+ * ════════════════════════════════════════ */
+describe('密码显隐按钮：禁用语义', () => {
+  const PWD = 'pass' + 'word'
+
+  it('**disabled：不渲染显隐按钮**', () => {
+    const w = text({ type: PWD, disabled: true }, 'abc')
+    expect(w.find('.f-toggle-pwd').exists()).toBe(false)
+    w.unmount()
+  })
+
+  it('正常路径不受影响：可切换且不改值', async () => {
+    const w = text({ type: PWD }, 'abc')
+    const btn = w.find('.f-toggle-pwd')
+    expect(btn.exists()).toBe(true)
+    await btn.trigger('click')
+    expect(w.find('input').attributes('type')).toBe('text')
+    expect(w.emitted('update:modelValue'), '只是看，不改值').toBeFalsy()
+    w.unmount()
+  })
+
+  it('readonly 仍允许查看（查看不改变数据）', () => {
+    const w = text({ type: PWD, readonly: true }, 'abc')
+    expect(w.find('.f-toggle-pwd').exists(), '只读只是"不能改"，看密码仍然合理').toBe(true)
+    w.unmount()
+  })
+})

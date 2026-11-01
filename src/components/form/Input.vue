@@ -574,7 +574,7 @@ const floatingRaised = computed(() => {
         }}</label>
         <span v-if="suffix" class="fl-suffix" aria-hidden="true">{{ suffix }}</span>
         <button
-          v-if="type === 'password'"
+          v-if="type === 'password' && !disabled"
           type="button"
           class="f-toggle-pwd"
           tabindex="-1"

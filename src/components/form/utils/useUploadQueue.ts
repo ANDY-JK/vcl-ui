@@ -30,6 +30,11 @@ interface QueueProps {
   customRequest?: (file: File) => Promise<{ url: string }>
   /** 同时在飞的文件数上限；默认 3（见 useUploadQueue 内注释的推导） */
   maxConcurrent?: number
+  /**
+   * 禁用态（#287）：自绘的删除/重试按钮不受原生 `disabled` 约束，
+   * 队列内部必须自己判 —— 由宿主把组件 prop 透传进来。
+   */
+  disabled?: boolean
 }
 
 export function useUploadQueue(opts: {
@@ -280,6 +285,9 @@ export function useUploadQueue(opts: {
   }
 
   function removeFile(uf: UploadFile) {
+    // 禁用语义守卫（2026-11-01 #287）：自绘的 × 不受原生 disabled 约束，
+    // 实测 disabled 下点击会 emit update:modelValue: []（文件被真删掉）。
+    if (props.disabled) return
     // 释放 Blob URL 避免内存泄漏
     if (uf.url?.startsWith('blob:')) URL.revokeObjectURL(uf.url)
     files.value = files.value.filter((f) => f.id !== uf.id)
@@ -299,6 +307,7 @@ export function useUploadQueue(opts: {
   }
 
   function retryFile(id: number) {
+    if (props.disabled) return
     const f = files.value.find((x) => x.id === id)
     if (f && f.status === 'error') {
       f.status = 'uploading'
