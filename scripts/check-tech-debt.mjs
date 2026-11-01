@@ -35,7 +35,12 @@ export const STALE_SRC_COMMITS = 5
 
 const LEVELS = new Set(['P0', 'P1', 'P2', 'P3'])
 const STATUSES = new Set(['open', 'accepted', 'deferred', 'closed'])
-const ID_RE = /^TD-\d{2}$/
+/**
+ * 编号格式：TD-NN，**已扩到三位**（台账在 #355 之后越过 99 条 —— TD-100 是第一个三位号）。
+ * 注意不要写成 \d{2,3} 之外的宽松形式：这条正则同时用于**发现"编号写错"**（如 TD-1、TD-007），
+ * 放宽过头会让真正的笔误通过。
+ */
+const ID_RE = /^TD-\d{2,3}$/
 const SHA_RE = /^[0-9a-f]{7,40}$/
 
 /** 提交号是否真实存在（短 hash 也接受） */
