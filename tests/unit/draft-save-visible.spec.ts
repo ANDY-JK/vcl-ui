@@ -148,13 +148,17 @@ describe('FormBuilder · 草稿保存失败的用户提示', () => {
     await waitDebounce()
 
     // 再失败 → 必须重新提示
+    // ⚠️ 先等上一条提示自己消失（#314 之后相同文案会去重合并）：否则"重新提示"会
+    //    并进仍在屏上的那条，DOM 里只有一个节点，断言看不出复位是否生效。
+    await new Promise((r) => setTimeout(r, 3200))
+    await flushPromises()
     fs.save.mockResolvedValue({ ok: false, reason: 'too-large', size: 3 * 1024 * 1024 })
     await w.find('input.f-input').setValue('c')
     await waitDebounce()
     expect(
       (w.text().match(/自动草稿已暂停保存/g) ?? []).length,
       '成功后必须复位：否则用户第二次遇到同样问题就再也收不到提示',
-    ).toBe(2)
+    ).toBe(1)
     w.unmount()
   })
 })

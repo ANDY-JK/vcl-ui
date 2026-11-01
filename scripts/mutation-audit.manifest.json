@@ -151,6 +151,33 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "toast-dedupe",
+      "file": "src/components/feedback/Toast.vue",
+      "find": "  if (dup) {",
+      "replace": "  if (false) {",
+      "cmd": "npx vitest run tests/unit/toast-dedupe.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：连点保存/同一错误反复冒出来时屏幕叠满一模一样的提示（#314）"
+    },
+    {
+      "id": "toast-dedupe-restart-timer",
+      "file": "src/components/feedback/Toast.vue",
+      "find": "        setTimeout(() => removeToast(dup.id), dur),",
+      "replace": "        setTimeout(() => {}, dur),",
+      "cmd": "npx vitest run tests/unit/toast-dedupe.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：去重时清掉了旧定时器却没重设，重复提示永不消失（#314）"
+    },
+    {
+      "id": "toast-dedupe-action-isolation",
+      "file": "src/components/feedback/Toast.vue",
+      "find": "&& !t.actionText)",
+      "replace": "&& true)",
+      "cmd": "npx vitest run tests/unit/toast-dedupe.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：普通提示被并进带「撤销」的那条，撤销会作用到错误的对象（#314）"
+    },
+    {
       "id": "import-confirm-reentry",
       "file": "src/components/form-builder/useCollectImport.ts",
       "find": "    if (importing.value) return",

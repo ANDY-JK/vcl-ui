@@ -132,6 +132,27 @@ function show(
     actionText: options?.actionText ?? options?.undoText,
     onAction: options?.onAction ?? options?.onUndo,
   }
+  // 相同消息去重（#314）：连点"保存"或同一错误反复冒出来时，屏幕上会叠出 N 条
+  // 一模一样的提示（用户只看到"刷屏"）。这里把**同类型 + 同文案 + 无操作按钮**的
+  // 那条重新计时（延长停留），而不是再插一条。
+  // 带 actionText/undoText 的不合并：那类提示绑定的是某次具体操作，合并会丢回调。
+  // 判断收敛到**一处**（单一判据）：两层独立守卫时，任一层被改坏另一层仍能挡住，
+  // 单点变异测不出来（#313 的教训）。
+  const dup =
+    options?.actionText || options?.undoText
+      ? undefined
+      : toasts.value.find((t) => t.type === type && t.message === message && !t.actionText)
+  if (dup) {
+    const old = _closeTimers.get(dup.id)
+    if (old) clearTimeout(old)
+    if (dur > 0) {
+      _closeTimers.set(
+        dup.id,
+        setTimeout(() => removeToast(dup.id), dur),
+      )
+    }
+    return dup.id
+  }
   toasts.value.unshift(toast)
   // 队列上限：常驻 toast 被调用方遗漏 remove 时防止长会话无限累积（丢弃最旧的一条）
   const MAX_TOASTS = 50
