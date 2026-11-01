@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "touch-active-opacity",
+      "file": "src/components/tokens.css",
+      "find": "    opacity: 0.82;",
+      "replace": "    opacity: 1;",
+      "cmd": "npx vitest run tests/unit/touch-feedback-contract.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：触屏点按钮毫无视觉反馈（#311；#310 之后 hover 在触屏不生效）"
+    },
+    {
+      "id": "touch-active-disabled",
+      "file": "src/components/tokens.css",
+      "find": "      :disabled",
+      "replace": "      :disabledX",
+      "cmd": "npx vitest run tests/unit/touch-feedback-contract.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：禁用按钮也进按下反馈（把 :not(:disabled) 的排除绕开），用户以为能点（#311）"
+    },
+    {
       "id": "safe-area-drawer-bottom",
       "file": "src/components/feedback/drawer-scoped.css",
       "find": "  padding-bottom: env(safe-area-inset-bottom);",

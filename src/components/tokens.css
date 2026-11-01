@@ -307,6 +307,28 @@
   }
 }
 
+/* ===== 触屏按下反馈兜底（#311）=====
+ *
+ * 背景：#310 把全库 :hover 包进了 `@media (hover: hover)` —— 触屏上**不再有 hover 反馈**。
+ * 这本身是对的（粘滞高亮更像 bug），但少了 hover 之后，触屏用户点按钮/卡片
+ * **完全没有任何视觉响应**：手指按下去，界面一动不动，用户不确定"到底点到没有"。
+ *
+ * 口径：
+ *   - 只在 `(hover: none)` 生效 —— 桌面已经有 hover，再压暗会显得"点下去就变脏"；
+ *   - 选择器整体包在 `:where()` 里（特异性 0），任何组件自己的 `:active` 规则都能覆盖它
+ *     （库里已有 19 处自定义 :active，不能被兜底抢掉）；
+ *   - 用 `opacity` 而不是 `filter: brightness()`：不参与颜色计算，亮/暗主题通用，
+ *     也不会给子元素创建新的层叠上下文（filter 会）；
+ *   - **不写 transition**：按下反馈必须即时，加了过渡反而像"点了半天才反应"。
+ */
+@media (hover: none) {
+  :where(button, a[href], [role='button'], [role='tab'], [role='option'], [role='menuitem'], [role='switch']):not(
+      :disabled
+    ):active {
+    opacity: 0.82;
+  }
+}
+
 /* ===== 暗色模式 — 通过 data-theme="dark" 或 prefers-color-scheme 自动激活 =====
    使用方式：
    1. 手动切换：<html data-theme="dark">

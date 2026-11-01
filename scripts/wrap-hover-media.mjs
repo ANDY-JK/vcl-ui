@@ -98,7 +98,8 @@ function processBlock(css, masked, from, to, insideHoverMedia) {
       break
     }
     const prelude = css.slice(i, nextBrace)
-    const preludeTrim = prelude.trim()
+    // 判类型/判 :hover 必须用**遮掉注释与字符串后**的文本：注释里写「全库 :hover 包进了 @media (hover: hover)」会被误判成一条 hover 规则（#311 现场抓到）
+    const preludeTrim = masked.slice(i, nextBrace).trim()
 
     if (preludeTrim.startsWith('@media') || preludeTrim.startsWith('@supports') || preludeTrim.startsWith('@layer')) {
       // 容器块：递归处理内部（保留前导文本与块本身结构）
