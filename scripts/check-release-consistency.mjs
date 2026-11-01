@@ -19,6 +19,16 @@
  */
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+/**
+ * 自测支持（#353）：
+ * · `--root <dir>`   —— package.json / CHANGELOG.md / 迁移页都相对它解析（默认 cwd）
+ * · `--no-git`       —— 跳过 tag 相关判据（①②④ 都要读 git 历史，夹具里没有真实 tag）
+ */
+const rootIdx = process.argv.indexOf('--root')
+const ROOT = rootIdx > -1 ? resolve(process.argv[rootIdx + 1]) : process.cwd()
+const NO_GIT = process.argv.includes('--no-git')
 
 const failures = []
 const notes = []
@@ -32,7 +42,7 @@ function run(cmd) {
 }
 
 // ── 读 package.json 版本 ──────────────────────────────
-const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
+const pkg = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'))
 const version = pkg.version
 if (!version) {
   console.error('❌ check:release-consistency —— package.json 缺 version 字段')
@@ -42,7 +52,7 @@ const tag = `v${version}`
 console.log(`[1] package.json version = ${version}（期望 tag = ${tag}）`)
 
 // ── ① tag 是否存在 ────────────────────────────────────
-const tagExists = run(`git rev-parse --verify --quiet refs/tags/${tag}`) !== null
+const tagExists = NO_GIT ? true : run(`git rev-parse --verify --quiet refs/tags/${tag}`) !== null
 if (!tagExists) {
   failures.push(`找不到 tag ${tag}（package.json 说 ${version}，但没有发布标记）`)
 } else {
@@ -50,7 +60,7 @@ if (!tagExists) {
 }
 
 // ── ② tag 是否为 HEAD 祖先 ────────────────────────────
-if (tagExists) {
+if (tagExists && !NO_GIT) {
   // merge-base --is-ancestor 是"退出码即结论"：成功时无输出，所以不能用 run() 的返回值判断
   let ok
   try {
@@ -66,7 +76,7 @@ if (tagExists) {
 // ── ③ CHANGELOG 有对应版本段 ──────────────────────────
 let changelog = ''
 try {
-  changelog = readFileSync('CHANGELOG.md', 'utf8')
+  changelog = readFileSync(resolve(ROOT, 'CHANGELOG.md'), 'utf8')
 } catch {
   failures.push('找不到 CHANGELOG.md')
 }
@@ -78,7 +88,7 @@ if (changelog && !changelog.includes(versionHeading)) {
 }
 
 // ── ④ [Unreleased] 与 tag 之后是否有提交保持一致 ──────
-if (changelog && tagExists) {
+if (changelog && tagExists && !NO_GIT) {
   const commitsSince = Number(run(`git rev-list --count ${tag}..HEAD`) ?? '0')
   // 取 [Unreleased] 到下一个 ## 标题之间的内容
   const m = /## \[Unreleased\]([\s\S]*?)(?=\n## |\n*$)/.exec(changelog)
@@ -109,9 +119,9 @@ if (changelog && tagExists) {
 // 等于"包里唯一的破坏性说明是不可执行的"。所以：只要 CHANGELOG 存在 BREAKING CHANGES 段，
 // 文档站就必须有对应的迁移页，否则红。
 {
-  const changelog = readFileSync('CHANGELOG.md', 'utf8')
+  const changelog = readFileSync(resolve(ROOT, 'CHANGELOG.md'), 'utf8')
   const hasBreaking = /^### BREAKING CHANGES\s*$/m.test(changelog)
-  const migrationPath = 'docs-site/guide/migration-2.0.md'
+  const migrationPath = resolve(ROOT, 'docs-site/guide/migration-2.0.md')
   let migrationExists = true
   try {
     readFileSync(migrationPath, 'utf8')

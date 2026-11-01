@@ -187,6 +187,15 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "release-changelog-section",
+      "file": "scripts/check-release-consistency.mjs",
+      "find": "  failures.push(`CHANGELOG 缺少版本段「${versionHeading}」`)",
+      "replace": "  void 0 && failures.push(`CHANGELOG 缺少版本段「${versionHeading}」`)",
+      "cmd": "npx vitest run tests/unit/release-consistency-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：版本号与 CHANGELOG 脱节不报，发版当天才发现（#353）"
+    },
+    {
       "id": "docs-drift-detection",
       "file": "scripts/check-docs.mjs",
       "find": "    else if (current.get(name) !== content) fail.push(`文档漂移 ${name}（源码改过？跑 npm run gen:docs 重新生成）`)",
