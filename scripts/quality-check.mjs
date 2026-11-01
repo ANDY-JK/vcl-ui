@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * quality-check —— 36 步质量链的唯一执行器（含执行留痕）
+ * quality-check —— 37 步质量链的唯一执行器（含执行留痕）
  *
  * 为什么要有这个脚本：
  *   原先 quality-check 是 package.json 里一条 `&&` 串联的长命令。它有两个结构性缺陷
@@ -12,7 +12,7 @@
  *   最后写 reports/quality-check-latest.json，并把「未执行」的步骤显式标出来。
  *
  * 用法：
- *   node scripts/quality-check.mjs                # 跑全部 36 步
+ *   node scripts/quality-check.mjs                # 跑全部 37 步
  *   node scripts/quality-check.mjs --from=13      # 从第 13 步开始（快速复跑用）
  *   node scripts/quality-check.mjs --only=check:constants   # 只跑名字含关键字的步骤
  *   node scripts/quality-check.mjs --skip=e2e     # 跳过匹配关键字的步骤（本地快速链）
@@ -56,7 +56,7 @@ function runStep(cmd, logPath) {
   })
 }
 
-/** 36 步：与审查报告口径一致（顺序即依赖顺序） */
+/** 37 步：与审查报告口径一致（顺序即依赖顺序） */
 const STEPS = [
   ['typecheck', 'npm run typecheck'],
   ['lint', 'npm run lint'],
@@ -75,6 +75,9 @@ const STEPS = [
   // 跳过类用例只许减不许增（#285）：「环境不满足就 skip」会随时间静默变成常态，
   // 而被跳掉的往往正是当初出问题的那条（#284 实测：整链全绿时那条回归锁是 skipped）。
   ['check:test-skips', 'npm run check:test-skips'],
+  // 静态图标名必须真的能渲染（TD-89 / #289）：名字写错时 IconSvg 只渲染兜底方块、不报错，
+  // 于是"写错了"和"本来就没有"在构建里长得一样。按 provider 分口径校验（solar 要带 -linear）。
+  ['check:icon-names', 'npm run check:icon-names'],
   ['check:css-tokens', 'npm run check:css-tokens'],
   ['check:contrast', 'node scripts/contrast-audit.mjs'],
   ['check:css-breakpoints', 'npm run check:css-breakpoints'],
@@ -144,7 +147,7 @@ const flag = (name) => {
  * 快链把显然会坏的提交挡在本地，整链仍是唯一权威（build / e2e / 许可 / 文档都在整链里）。
  * 逃生口：`git commit --no-verify` 或 `SKIP_QUICK_CHECK=1`。
  */
-const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:test-skips', 'check:css-tokens', 'check:i18n', 'test:unit']
+const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:css-tokens', 'check:i18n', 'test:unit']
 const quick = args.includes('--quick')
 if (args.includes('--list')) {
   STEPS.forEach(([n, c], i) => console.log(`${String(i + 1).padStart(2)}. ${n.padEnd(24)} ${c}`))
