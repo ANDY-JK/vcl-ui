@@ -1,0 +1,172 @@
+{
+  "$comment": [
+    "测试强度回归清单（#300）：每条都是「改一处实现 → 指定用例必须红」。",
+    "存在的意义：覆盖率只回答『跑过没有』，这份清单回答『守没守住』。",
+    "加新条目时务必写 note 说明『变异后用户会看到什么』，否则后人无法判断该不该补测。",
+    "expect=red 表示该行为必须有用例守着；expect=equivalent 表示这是等价变异（语义相同，不该补测）。"
+  ],
+  "entries": [
+    {
+      "id": "filter-select-all",
+      "file": "src/components/data/composables/useTableFilter.ts",
+      "find": "if (draft.selectedValues.length === 0 || draft.selectedValues.length === allValues.length) {",
+      "replace": "if (draft.selectedValues.length === 0) {",
+      "cmd": "npx vitest run tests/unit/table-filter.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：用户把某列选项全勾上再确定，会留下一个『全选』筛选 chip、计数显示筛了 1 列，而数据与不筛一样（#298）"
+    },
+    {
+      "id": "filter-select-all-scope",
+      "file": "src/components/data/composables/useTableFilter.ts",
+      "find": "const allValues = activeFilterOptions.value.map((o) => o.value)",
+      "replace": "const allValues = filteredOptions.value.map((o) => o.value)",
+      "cmd": "npx vitest run tests/unit/table-filter.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：搜索后『选中全部可见项』被当成全选，筛选被误删（#298）"
+    },
+    {
+      "id": "filter-remove-emit",
+      "file": "src/components/data/composables/useTableFilter.ts",
+      "find": "function removeFilter(colKey: string) {\n    delete filterState.value[colKey]\n    emitFilterChange()",
+      "replace": "function removeFilter(colKey: string) {\n    delete filterState.value[colKey]",
+      "cmd": "npx vitest run tests/unit/table-filter.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：点单列筛选的 × 不会通知宿主，表格数据不刷新"
+    },
+    {
+      "id": "page-trunc",
+      "file": "src/components/data/composables/useTableCore.ts",
+      "find": "Math.min(Math.max(1, Math.trunc(_currentPage.value) || 1), totalPages.value)",
+      "replace": "Math.min(Math.max(1, _currentPage.value || 1), totalPages.value)",
+      "cmd": "npx vitest run tests/unit/table-pagination-range.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：`?page=1.9` 会渲染成『第 1.9 / 2 页』，切片索引为小数（#298）"
+    },
+    {
+      "id": "page-ready-guard",
+      "file": "src/components/data/composables/useTableCore.ts",
+      "find": "const pageReady = computed(() => props.total !== undefined || displayData.value.length > 0)",
+      "replace": "const pageReady = computed(() => true)",
+      "cmd": "npx vitest run tests/unit/table-pagination-range.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：客户端首帧 data=[] 时把宿主从 URL 恢复的第 5 页纠正成第 1 页，数据回来再也回不去"
+    },
+    {
+      "id": "upload-remove-guard",
+      "file": "src/components/form/utils/useUploadQueue.ts",
+      "find": "    if (props.disabled) return\n    // 释放 Blob URL 避免内存泄漏",
+      "replace": "    // 释放 Blob URL 避免内存泄漏",
+      "cmd": "npx vitest run tests/unit/upload-interaction.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：禁用态文件仍能被删掉（自绘 × 不受原生 disabled 约束，见 #287/#299）"
+    },
+    {
+      "id": "upload-remove-guard-strict",
+      "file": "src/components/form/utils/useUploadQueue.ts",
+      "find": "    if (props.disabled) return\n    // 释放 Blob URL 避免内存泄漏",
+      "replace": "    if (true) return\n    // 释放 Blob URL 避免内存泄漏",
+      "cmd": "npx vitest run tests/unit/upload-interaction.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "反向：守卫写死 true 时正常态也删不掉（#299 要求两个方向都验）"
+    },
+    {
+      "id": "upload-retry-guard",
+      "file": "src/components/form/utils/useUploadQueue.ts",
+      "find": "  function retryFile(id: number) {\n    if (props.disabled) return",
+      "replace": "  function retryFile(id: number) {",
+      "cmd": "npx vitest run tests/unit/upload-interaction.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：禁用态点重试会把失败项改成 uploading（#299）"
+    },
+    {
+      "id": "select-canwrite",
+      "file": "src/components/form/Select.vue",
+      "find": "const canWrite = computed(() => !props.disabled)",
+      "replace": "const canWrite = computed(() => true)",
+      "cmd": "npx vitest run tests/unit/select-interaction.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：禁用态仍能清空选择、删 tag（#286/#288）"
+    },
+    {
+      "id": "input-canclear",
+      "file": "src/components/form/Input.vue",
+      "find": "const canClear = computed(() => props.clearable && !props.readonly && !props.disabled)",
+      "replace": "const canClear = computed(() => props.clearable && !props.readonly)",
+      "cmd": "npx vitest run tests/unit/input-modes.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：禁用态仍能点清空按钮清掉值（#286）"
+    },
+    {
+      "id": "esc-defaultprevented",
+      "file": "src/components/_internal/useEscClose.ts",
+      "find": "    if (e.defaultPrevented) return",
+      "replace": "    if (false) return",
+      "cmd": "npx vitest run tests/unit/esc-layering.spec.ts tests/unit/esc-stack.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：内层（下拉/单元格编辑）消费掉的 Esc 继续冒泡，弹窗跟着关掉，用户丢失整屏已填内容（#280）"
+    },
+    {
+      "id": "esc-top-visible",
+      "file": "src/components/_internal/useEscClose.ts",
+      "find": "    if (!isTopVisible(entry)) return",
+      "replace": "    if (false) return",
+      "cmd": "npx vitest run tests/unit/esc-layering.spec.ts tests/unit/esc-stack.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：一次 Esc 连关多层弹窗"
+    },
+    {
+      "id": "grapheme-length",
+      "file": "src/components/_internal/text-slice.ts",
+      "find": "export function graphemeLength(s: string): number {\n  return toGraphemes(s).length\n}",
+      "replace": "export function graphemeLength(s: string): number {\n  return s.length\n}",
+      "cmd": "npx vitest run tests/unit/text-slice.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：`'😀'.length===2`，『限 10 字』实际只能输 5 个 emoji（#277）"
+    },
+    {
+      "id": "truncate-no-suffix-when-fits",
+      "file": "src/components/_internal/text-slice.ts",
+      "find": "  if (units.length <= n) return s",
+      "replace": "  if (units.length <= n) return s + suffix",
+      "cmd": "npx vitest run tests/unit/text-slice.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：没超限的文本也被加省略号"
+    },
+    {
+      "id": "stepper-clamp-min",
+      "file": "src/components/form/useInputStepper.ts",
+      "find": "    if (props.min != null && n < props.min) n = props.min",
+      "replace": "    if (false) n = props.min",
+      "cmd": "npx vitest run tests/unit/use-input-stepper.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：min 失效，用户能提交低于下限的值"
+    },
+    {
+      "id": "stepper-display-nan",
+      "file": "src/components/form/useInputStepper.ts",
+      "find": "    return v === null || v === undefined || !Number.isFinite(v) ? '' : String(v)",
+      "replace": "    return v === null || v === undefined ? '' : String(v)",
+      "cmd": "npx vitest run tests/unit/use-input-stepper.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：NaN 会原样显示成『NaN』"
+    },
+    {
+      "id": "eq-stepper-empty-null-early-return",
+      "file": "src/components/form/useInputStepper.ts",
+      "find": "      if (numText.value === '' && (v === null || v === undefined)) return",
+      "replace": "      if (false) return",
+      "cmd": "npx vitest run tests/unit/use-input-stepper.spec.ts --no-coverage",
+      "expect": "equivalent",
+      "note": "等价变异：去掉后仍会走 displayNum(null/'') → ''，结果相同。**不要为它补测试**"
+    },
+    {
+      "id": "eq-trimtofit-loop-bound",
+      "file": "src/components/_internal/text-slice.ts",
+      "find": "  for (let n = units.length; n > 0; n--) {",
+      "replace": "  for (let n = units.length; n >= 0; n--) {",
+      "cmd": "npx vitest run tests/unit/text-slice.spec.ts --no-coverage",
+      "expect": "equivalent",
+      "note": "等价变异：多试一个空串候选，命中与否都返回 ''，结果相同。**不要为它补测试**"
+    }
+  ]
+}

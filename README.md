@@ -23,7 +23,7 @@
 - **按域产物是真隔离**：不是 tree-shaking 结果，而是 13 份独立构建产物 —— 引 `vcl-ui/basic` 只加载 basic 与共享 core chunk
 - **低代码闭环带数据接缝**：设计器 → 表单落宿主库 → 自动成导航项 → 填写 → 记录落宿主库，全程不改代码；接缝含 `FormStore`(9 方法) / REST 契约(4 组路由) / `useFormNav`(只产数据不渲染 UI)
 - **跨框架出口**：Web Components 版与 Vue 版共用同一套令牌与行为基线，可在 React / 原生页面直接用
-- **38 步机械闸口**：覆盖地板 / 行数止涨线 / 文档零漂移 / i18n 双侧对账 / 依赖健康 / 版本对齐 / 性能回归 / 噪音棘轮，每道都有负向对照证明它真会红（步数以 `docs-site/guide/facts.md` 为准）
+- **39 步机械闸口**：覆盖地板 / 行数止涨线 / 文档零漂移 / i18n 双侧对账 / 依赖健康 / 版本对齐 / 性能回归 / 噪音棘轮，每道都有负向对照证明它真会红（步数以 `docs-site/guide/facts.md` 为准）
 - **可核验留痕**：每次跑链落 `reports/quality-check-latest.json` + 每步独立日志，且每次运行前清空
 
 > 与主流库的客观包数据对照（含抓取日期与复现命令）见文档站 `docs-site/guide/comparison.md`。
@@ -248,6 +248,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **质量门禁**：`npm run quality-check` — 类型检查 + lint + 常量来源自检 + 设计令牌断档自检 + 语言包对账 + 单测（全局覆盖率地板 + **按域覆盖地板**）+ 构建 + **发包自检** + **文档漂移自检** + **文档说明完整性自检** + 真实浏览器 e2e
 - **常量来源自检**：`npm run check:constants` — 八项：断点令牌与 JS 常量同值、JS 里不出现视口断点字面量、`@media` 宽度值均已登记、`setTimeout/setInterval` 的延时不写字面量、截断类必须登记判定且用户数据类要绑 `title`、原生 `color` 输入的值必须经归一、**各域单文件行数不超止涨线**、**原生 `<button>` 必须显式 `type`**
 - **动作结果消费**：`npm run check:result-consumed` — `copyText` / `downloadScreenshot` / `downloadBlob` 这类"返回值表示做没做成"的函数，调用点必须消费返回值。同一缺陷曾犯过两次（复制假报"已复制"，下载假报"已下载"且把预览弹窗一并关掉），所以做成闸口而不是靠记性
+- **测试强度回归（变异审计）**：`npm run mutation-audit [过滤词…]` —— 清单式「改一处实现 → 指定用例必须红」。**覆盖率回答"跑过没有"，这份清单回答"守住了没有"**：覆盖率高的地方最容易藏弱断言（`useTableFilter.applyFilter` 分支覆盖不低，但"全选 == 不筛选"曾经完全没断言，见 #298）。清单在 `scripts/mutation-audit.manifest.json`，每条要写 `note`（变异后用户会看到什么）；标 `equivalent` 的等价变异**故意保留**，避免后人重复调查。`npm run check:mutation-audit` 只校验清单没漂移（`find` 仍是唯一存在的源码字面量），进整链第 11 步
 - **负向对照执行器**：`npm run mutation-control -- --file <path> --find <literal> --replace <literal> --cmd "<测试命令>" [--expect red|green|invalid]`
   —— 负向对照（删掉被测逻辑，用例必须红）是判断"断言真的守住了这行代码"的唯一可靠手段，但它有**两个反复踩中的假绿陷阱**：① 替换目标因**行尾符不一致**静默没落地 → 测试全绿 → 得出"没被测到"的**相反结论**；② 变异把代码改坏（模板标签不配对）→ vitest 报 `no tests` → 看着"红了"其实**根本没跑起来**。本工具在变异前后各做一次断言（目标必须恰好出现一次、写入后哈希必须变化、跑完必须还原回原哈希），并把 `no tests` / 语法错误判为 **invalid（无效对照）** 而不是红。`npm run check:mutation-tool` 用临时夹具自检四种分类（整链第 9 步）
 - **图标名有效性**：`npm run check:icon-names` — 静态写法（`<IconSvg type="x">`、包装组件 `icon="x"`、字段映射 `icon: 'x'`）的名字必须在对应 provider 的名录里。`IconSvg` 遇到不认识的图标**不报错、只渲染兜底方块**，于是"名字写错"和"本来就没有"在构建里长得一样。**按 provider 分口径**：默认 lucide（`trash-2` 这类带数字的照常可用）、`provider="solar"` 必须带 `-linear` 后缀、`provider="morphicons"` 走注册表
