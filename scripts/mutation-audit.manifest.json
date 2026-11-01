@@ -160,6 +160,24 @@
       "note": "变异后：证件号输入框不标记无效（#344）"
     },
     {
+      "id": "address-invalid-prop",
+      "file": "src/components/form-builder/renderer/RendererAddress.vue",
+      "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",
+      "replace": "    :aria-invalid=\"undefined\"\n    :aria-describedby=\"describedby\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：地址组不标记无效（#345）"
+    },
+    {
+      "id": "subform-invalid-prop",
+      "file": "src/components/form-builder/renderer/RendererSubform.vue",
+      "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",
+      "replace": "    :aria-invalid=\"undefined\"\n    :aria-describedby=\"describedby\"",
+      "cmd": "npx vitest run tests/unit/renderer-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：子表组不标记无效（#345）"
+    },
+    {
       "id": "matrix-invalid-prop",
       "file": "src/components/form-builder/renderer/RendererMatrix.vue",
       "find": "    :aria-invalid=\"invalid || undefined\"\n    :aria-describedby=\"describedby\"",

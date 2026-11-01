@@ -165,6 +165,39 @@ describe('FormRenderer · 提交期校验错误与输入框关联', () => {
     w.unmount()
   })
 
+  it('**address 字段的无效状态挂在组容器上**（省市区多个控件，语义属于整组）', async () => {
+    const w = mount(FormRenderer, {
+      props: { field: { ...FIELD, type: 'address' }, modelValue: '', error: '请填写完整地址' } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const group = w.find('.fb-address')
+    expect(group.exists(), '前置：应渲染地址组').toBe(true)
+    expect(group.attributes('role'), '地址组缺少 role=group').toBe('group')
+    expect(group.attributes('aria-invalid'), '地址组没标记无效').toBe('true')
+    expect(document.querySelector(`#${CSS.escape(group.attributes('aria-describedby')!)}`)).toBeTruthy()
+    w.unmount()
+  })
+
+  it('**subform 字段的无效状态挂在组容器上**（多行多列输入，语义属于整组）', async () => {
+    const w = mount(FormRenderer, {
+      props: {
+        field: { ...FIELD, type: 'subform', props: { subformColumns: '项目|item|text' } },
+        modelValue: [],
+        error: '请至少填一行',
+      } as never,
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    const group = w.find('.fb-subform')
+    expect(group.exists(), '前置：应渲染子表组').toBe(true)
+    expect(group.attributes('aria-invalid'), '子表组没标记无效').toBe('true')
+    expect(document.querySelector(`#${CSS.escape(group.attributes('aria-describedby')!)}`)).toBeTruthy()
+    w.unmount()
+  })
+
   it('**既有契约不变：FieldError 仍然渲染**（17 处分支都靠它）', async () => {
     const w = await mountRenderer('姓名必填')
     const err = w.find('.fb-field-error')

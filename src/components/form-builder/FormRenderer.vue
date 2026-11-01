@@ -510,9 +510,11 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
         <RendererSubform
           :field="field"
           :model-value="modelValue"
+          :invalid="!!error"
+          :describedby="error ? fieldErrorId : undefined"
           @update:model-value="emit('update:modelValue', $event)"
         />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
 
       <!-- 关联选择（透传 change：事件联动/实时校验依赖，此前漏挂致配在 relate 上的动作不执行） -->
@@ -561,9 +563,11 @@ const styleLabelPosition = computed(() => styleConfig.value.labelPosition ?? 'le
           :field="field"
           :model-value="modelValue"
           :address-data="addressDataProp"
+          :invalid="!!error"
+          :describedby="error ? fieldErrorId : undefined"
           @update:model-value="emit('update:modelValue', $event)"
         />
-        <FieldError :message="error ?? ''" />
+        <FieldError :id="fieldErrorId" :message="error ?? ''" />
       </div>
 
       <!-- 证件号码 -->

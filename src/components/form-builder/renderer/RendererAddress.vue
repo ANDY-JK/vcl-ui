@@ -15,6 +15,14 @@ const props = defineProps<{
   modelValue: unknown
   /** 完整省市区数据注入（生产用）；缺省回退内置演示数据 */
   addressData?: { provinces: string[]; cities: Record<string, string[]> }
+  /**
+   * 外部判定为无效（不带文案）：挂到**组容器**上（#345）。
+   * 这两类字段都有多个可聚焦控件（省市区下拉 / 多行多列输入），
+   * 错误描述的是"整组没填对"，所以挂容器而不是逐个控件。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，读屏可回查「为什么无效」 */
+  describedby?: string
 }>()
 
 const emit = defineEmits<{
@@ -94,7 +102,13 @@ watch(
 </script>
 
 <template>
-  <div class="fb-address">
+  <div
+    class="fb-address"
+    role="group"
+    :aria-label="field.label"
+    :aria-invalid="invalid || undefined"
+    :aria-describedby="describedby"
+  >
     <select v-model="addressProvince" class="fb-address-select" @change="onProvinceChange">
       <option value="">{{ t('formBuilder.selectProvince') }}</option>
       <option v-for="p in effectiveProvinces" :key="p" :value="p">{{ p }}</option>

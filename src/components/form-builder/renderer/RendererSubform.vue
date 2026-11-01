@@ -12,6 +12,14 @@ const props = defineProps<{
   field: FormField
   /** 当前值（行对象数组） */
   modelValue: unknown
+  /**
+   * 外部判定为无效（不带文案）：挂到**组容器**上（#345）。
+   * 这两类字段都有多个可聚焦控件（省市区下拉 / 多行多列输入），
+   * 错误描述的是"整组没填对"，所以挂容器而不是逐个控件。
+   */
+  invalid?: boolean
+  /** 外部错误元素的 id：挂到 aria-describedby，读屏可回查「为什么无效」 */
+  describedby?: string
 }>()
 
 const emit = defineEmits<{
@@ -83,7 +91,13 @@ function removeRow(rowIndex: number): void {
 </script>
 
 <template>
-  <div class="fb-subform">
+  <div
+    class="fb-subform"
+    role="group"
+    :aria-label="field.label"
+    :aria-invalid="invalid || undefined"
+    :aria-describedby="describedby"
+  >
     <div class="fb-subform-head">
       <span class="fb-subform-title">{{
         t('formBuilder.subformHead', { cols: subformCols.length, rows: subformRows.length })
