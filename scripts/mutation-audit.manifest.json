@@ -151,6 +151,24 @@
       "note": "变异后：NaN 会原样显示成『NaN』"
     },
     {
+      "id": "datatable-cell-error-describedby",
+      "file": "src/components/data/DataTable.vue",
+      "find": "                      isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\n                        ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\n                        : undefined",
+      "replace": "                      false\n                        ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\n                        : undefined",
+      "cmd": "npx vitest run tests/unit/datatable-cell-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：错误说明不再关联到输入框，读屏说不出为什么（TD-96 / #337）"
+    },
+    {
+      "id": "datatable-cell-error-id",
+      "file": "src/components/data/DataTable.vue",
+      "find": ":id=\"cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    class=\"cell-edit-invalid-hint\"",
+      "replace": ":data-err=\"cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    class=\"cell-edit-invalid-hint\"",
+      "cmd": "npx vitest run tests/unit/datatable-cell-error-aria.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：提示元素没有 id，aria-describedby 指向悬空（#337）"
+    },
+    {
       "id": "css-scale-gate-size",
       "file": "scripts/check-css-scale.mjs",
       "find": "    for (const hit of scanDeclarations(seg, { allowCustomProps: true })) {",

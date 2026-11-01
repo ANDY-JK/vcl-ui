@@ -18,6 +18,7 @@ import {
   type ComputedRef,
 } from 'vue'
 import { useT } from '@/components/_internal/i18n'
+import { useIdSafe } from '@/components/_internal/useIdCompat'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Result from '@/components/feedback/Result.vue'
 import Loading from '@/components/feedback/Loading.vue'
@@ -1070,6 +1071,19 @@ function redoFromToolbar() {
 }
 
 /** 指定格上是否正显示「归一化失败」cell 级提示（Enter/Tab 提交被拒后挂起，随输入/成功/取消自动清除） */
+/**
+ * 编辑单元格的校验错误说明 id（TD-96）。
+ *
+ * 之前只有 `aria-invalid`：读屏能说"这个格子无效"，但**说不出为什么** ——
+ * 而错误文案就渲染在输入框下方（`role="alert"` 会念，但与输入框没有关联，
+ * 焦点回到输入框后再也找不到那条说明）。与 #316 修掉的 `Select` 是同一个缺口。
+ * 用单元格坐标拼 id，保证同一张表里多行多列不撞。
+ */
+const cellErrorIdBase = useIdSafe('dt-cell-err')
+function cellErrorId(rowKey: string, colKey: string): string {
+  return `${cellErrorIdBase}-${rowKey}-${colKey}`
+}
+
 function isEditingInvalid(rowKey: string, colKey: string): boolean {
   const c = editingCell.value
   return !!editInvalidKey.value && !!c && c.rowKey === rowKey && c.colKey === colKey
@@ -2022,6 +2036,11 @@ provideDataTableContext({
                     class="cell-edit-input"
                     :inputmode="editInputMode(col)"
                     :aria-invalid="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
+                    :aria-describedby="
+                      isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)
+                        ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)
+                        : undefined
+                    "
                     @keydown="(e) => onEditKeydown(e, _displayColumns, rowMetaMap.get(row)?.key ?? '')"
                     @blur="commitEdit('blur')"
                     @click.stop
@@ -2029,6 +2048,7 @@ provideDataTableContext({
                   <!-- 归一化失败就地提示（Enter/Tab 提交被拒：红圈 + 气泡，用户视线在格子里；继续输入即消失） -->
                   <span
                     v-if="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
+                    :id="cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)"
                     class="cell-edit-invalid-hint"
                     role="alert"
                   >
@@ -2270,6 +2290,11 @@ provideDataTableContext({
                   class="cell-edit-input card-edit-input"
                   :inputmode="editInputMode(col)"
                   :aria-invalid="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
+                  :aria-describedby="
+                    isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)
+                      ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)
+                      : undefined
+                  "
                   @keydown="(e) => onEditKeydown(e, _displayColumns, rowMetaMap.get(row)?.key ?? '')"
                   @blur="commitEdit('blur')"
                   @click.stop
@@ -2277,6 +2302,7 @@ provideDataTableContext({
                 <!-- 归一化失败就地提示（卡片视图与表格视图同一套 editInvalidKey 状态） -->
                 <span
                   v-if="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
+                  :id="cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)"
                   class="cell-edit-invalid-hint"
                   role="alert"
                 >
