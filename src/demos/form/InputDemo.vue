@@ -4,6 +4,7 @@
 // 日期/时间选择请用 Select 组件（type=date / date-range / time）
 import { ref } from 'vue'
 import Input from '@/components/form/Input.vue'
+import Button from '@/components/basic/Button.vue'
 import Card from '@/components/data/Card.vue'
 
 const textVal = ref('')
@@ -16,6 +17,23 @@ const numVal = ref<number | null>(0)
 const taVal = ref('')
 
 const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => (v.length < 3 ? '至少3个字符' : undefined)]
+
+// 外部错误注入演示（error/invalid/describedby，#338）：父级持有校验结果时用这套 ——
+// 典型场景是表单渲染器的提交期校验：提交后才知道错没错，rules（输入期）覆盖不了。
+const serverErrorVal = ref('')
+const serverError = ref('')
+const invalidOnlyVal = ref('')
+const invalidOnly = ref(false)
+
+/** 模拟提交期校验：空值报错、有值清错（演示"父级说错误、Input 只负责显示"的分工） */
+function submitServerError() {
+  serverError.value = serverErrorVal.value.trim() ? '' : '该用户名已被占用（模拟服务端返回）'
+}
+
+/** 无文案的 invalid：只翻 aria-invalid（读屏播报"无效"），视觉交给宿主的边框样式 */
+function toggleInvalid() {
+  invalidOnly.value = !invalidOnly.value
+}
 </script>
 
 <template>
@@ -52,6 +70,35 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
       <!-- 密码 + 校验 -->
       <Card title="type='password' — 密码显隐 + 校验" title-as="h2">
         <Input v-model="passwordVal" label="密码" type="password" :rules="rules" hint="至少3个字符，不能为空" />
+      </Card>
+
+      <!-- 外部错误注入（error / invalid / describedby） -->
+      <Card title="外部错误注入 — error / invalid（#338）" title-as="h2">
+        <p class="demo-hint">
+          <code>rules</code> 是输入期校验；提交期校验（服务端返回"用户名已被占用"）走 <code>error</code> 注入 ——
+          父级持有错误、Input 只负责显示。带文案的 error 会自动挂 <code>aria-invalid</code> 与
+          <code>aria-describedby</code>。
+        </p>
+        <Input v-model="serverErrorVal" label="用户名" :error="serverError || undefined" />
+        <div style="display: flex; gap: calc(8px * var(--vcl-scale)); margin-top: calc(8px * var(--vcl-scale))">
+          <Button size="sm" variant="outline" @click="submitServerError">模拟服务端校验</Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            @click="
+              serverError = ''
+              serverErrorVal = ''
+            "
+            >重置</Button
+          >
+        </div>
+        <p class="demo-hint" style="margin-top: calc(12px * var(--vcl-scale))">
+          <code>invalid</code> 是无文案版：只翻 <code>aria-invalid</code>（读屏播报"无效"），视觉错误交给宿主
+        </p>
+        <Input v-model="invalidOnlyVal" label="卡号" :invalid="invalidOnly || undefined" />
+        <div style="margin-top: calc(8px * var(--vcl-scale))">
+          <Button size="sm" variant="outline" @click="toggleInvalid">切换 invalid</Button>
+        </div>
       </Card>
 
       <!-- 搜索 + clearable -->
