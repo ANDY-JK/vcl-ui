@@ -395,6 +395,178 @@ function onContextMenu(e: MouseEvent) {
       <Select ref="contextMenuRef" type="menu" :items="menuItems" label="操作" style="display: none" />
     </Card>
 
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>type</code></td>
+            <td>'select' \</td>
+            <td>'menu' \</td>
+            <td>'cascader' \</td>
+          </tr>
+          <tr>
+            <td><code>modelValue</code></td>
+            <td>string \</td>
+            <td>number \</td>
+            <td>number \</td>
+          </tr>
+          <tr>
+            <td><code>options</code></td>
+            <td>Option[]</td>
+            <td>() => []</td>
+            <td>选项表（select/combobox）：{ value, label, disabled? }</td>
+          </tr>
+          <tr>
+            <td><code>label</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>浮动标签文案（上浮骑缝样式）</td>
+          </tr>
+          <tr>
+            <td><code>rules</code></td>
+            <td>((v: string) => string \</td>
+            <td>undefined)[]</td>
+            <td>否</td>
+          </tr>
+          <tr>
+            <td><code>invalid</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>
+              外部判定为无效（不带文案）：只影响 aria-invalid。 表单渲染器的提交期错误由它自己的 FieldError
+              渲染，这里只把状态挂上来（#338）。
+            </td>
+          </tr>
+          <tr>
+            <td><code>describedby</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部错误元素的 id：挂到 aria-describedby，让读屏能回查「为什么无效」</td>
+          </tr>
+          <tr>
+            <td><code>error</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部注入错误提示（覆盖 rules 结果）</td>
+          </tr>
+          <tr>
+            <td><code>multiple</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>多选：tags 展示，值为数组</td>
+          </tr>
+          <tr>
+            <td><code>placeholder</code></td>
+            <td>string</td>
+            <td>() => t('form.pleaseSelect')</td>
+            <td>占位文案（默认内置「请选择」）</td>
+          </tr>
+          <tr>
+            <td><code>searchable</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>触发器可输入过滤（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>pinyinEnabled</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>过滤启用拼音匹配（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>isLoading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>面板加载态</td>
+          </tr>
+          <tr>
+            <td><code>emptyText</code></td>
+            <td>string</td>
+            <td>() => t('form.noMatch')</td>
+            <td>无匹配文案（默认内置）</td>
+          </tr>
+          <tr>
+            <td><code>allowCreate</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>允许创建选项表外的自定义值（默认开）；选项精确命中不受此开关限制</td>
+          </tr>
+          <tr>
+            <td><code>clearOnFocus</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>多选下聚焦即清空已选 tags、重新输入（默认关）</td>
+          </tr>
+          <tr>
+            <td><code>items</code></td>
+            <td>MenuItem[]</td>
+            <td>() => []</td>
+            <td>menu 模式的菜单项</td>
+          </tr>
+          <tr>
+            <td><code>cascaderOptions</code></td>
+            <td>CascaderOption[]</td>
+            <td>—</td>
+            <td>cascader 模式的级联选项（value/label/children/disabled）</td>
+          </tr>
+          <tr>
+            <td><code>disabled</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>禁用</td>
+          </tr>
+          <tr>
+            <td><code>zIndex</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>浮层面板 z-index 覆盖</td>
+          </tr>
+          <tr>
+            <td><code>format</code></td>
+            <td>string</td>
+            <td>'YYYY-MM-DD'</td>
+            <td>date/date-range 模式的值格式（默认 'YYYY-MM-DD'）</td>
+          </tr>
+          <tr>
+            <td><code>dateMin</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>可选日期下限（同 format 格式）</td>
+          </tr>
+          <tr>
+            <td><code>dateMax</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>可选日期上限（同 format 格式）</td>
+          </tr>
+          <tr>
+            <td><code>rangePlaceholder</code></td>
+            <td>[string, string]</td>
+            <td>() => [t('form.startDate'), t('form.endDate')] as [string, string]</td>
+            <td>date-range 双占位（默认内置起/止文案）</td>
+          </tr>
+          <tr>
+            <td><code>timeStep</code></td>
+            <td>number</td>
+            <td>1</td>
+            <td>time 模式分钟步进（默认 1）</td>
+          </tr>
+          <tr>
+            <td><code>clearable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>显示清除按钮（默认关）</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
+
     <Toast ref="toastRef" position="bottom-right" />
   </div>
 </template>
