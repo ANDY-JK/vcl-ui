@@ -1,0 +1,5 @@
+export const ZXING_WASM_DATA_VERSION = '1.0.0'
+export const ZXING_WASM_DATA_SHA256 = '41aad11bd3a96a28c300854a58807f0d16993d569992bdf15f9c1751cd7cb2c2'
+export const ZXING_WASM_DATA_BYTES: number = 31
+export const ZXING_WASM_DATA_BASE64: string =
+  'Zml4dHVyZS12ZW5kb3ItYnl0ZXMtMDEyMzQ1Njc4OQ=='

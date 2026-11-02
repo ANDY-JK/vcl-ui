@@ -13,12 +13,22 @@ import { fileURLToPath } from 'node:url'
 import { VENDOR_BINARIES, VENDOR_SOURCES, readVendoredBinaryModule } from './gen-third-party-licenses.mjs'
 import { checkVendored } from './vendor-sheetjs.mjs'
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
+/**
+ * 自测支持（#367）：
+ * · `--root <dir>`   —— 仓内件/正源都相对它解析（默认仓库根）
+ * · `--spec <json>`  —— 用给定清单替代 VENDOR_BINARIES，**并跳过 VENDOR_SOURCES / xlsx 自洽
+ *   / 上游动态 import**：这三条都依赖真实 node_modules，夹具里没有
+ */
+const specIdx = process.argv.indexOf('--spec')
+const FIXTURE = specIdx > -1 ? JSON.parse(readFileSync(process.argv[specIdx + 1], 'utf8')) : null
+const ROOT = process.argv.includes('--root')
+  ? process.argv[process.argv.indexOf('--root') + 1]
+  : join(dirname(fileURLToPath(import.meta.url)), '..')
 const RED = []
 
 const hash = (buf) => createHash('sha256').update(buf).digest('hex')
 
-for (const spec of VENDOR_BINARIES) {
+for (const spec of FIXTURE ?? VENDOR_BINARIES) {
   const abs = join(ROOT, spec.file)
   const originAbs = join(ROOT, spec.origin)
   if (!existsSync(abs)) {
@@ -48,7 +58,9 @@ for (const spec of VENDOR_BINARIES) {
   // zxing-wasm 的 exports 图未给出 ./reader 的 types 入口，require(esm) 在其构建产物上会报
   // ERR_INVALID_ARG_VALUE，故只走动态 import；失败即判红（不静默放过——这条正是防"上游换件"的）。
   let upstream = null
-  try {
+  if (FIXTURE) {
+    // 夹具没有真实 node_modules，上游声称的 sha256 无法验证 —— 这条只能在整链里验
+  } else try {
     upstream = await import(`${spec.pkg}/reader`)
   } catch (e) {
     RED.push(
@@ -75,7 +87,7 @@ for (const spec of VENDOR_BINARIES) {
 // 于是第二份 vendored 件 pinyin-pro 入库两个月无人过问。改为遍历 VENDOR_SOURCES，
 // 新增仓内 vendor 只要登记就自动纳入字节对账与产物覆盖判定。
 let vendoredChecked = 0
-for (const spec of VENDOR_SOURCES) {
+for (const spec of FIXTURE ? [] : VENDOR_SOURCES) {
   try {
     const man = JSON.parse(readFileSync(join(ROOT, spec.manifest), 'utf8'))
     const files = Array.isArray(man.files) ? man.files : []
@@ -108,10 +120,13 @@ for (const spec of VENDOR_SOURCES) {
 // 重新下载 tarball（node scripts/vendor-sheetjs.mjs --verify-tarball，可选项不进整链）。
 // 输出措辞必须区分两者，否则读日志的人会把自洽误当成上游对账。
 try {
+  if (FIXTURE) {
+    // 同上，夹具跳过
+  } else {
   const { bad, summary } = checkVendored(ROOT)
   if (bad.length) RED.push(...bad.map((b) => `vendor(xlsx) ${b}`))
   else console.log(`[vendor] 自洽校验：${summary}（上游 tarball 锚点未在本步复算 —— 需要时跑 node scripts/vendor-sheetjs.mjs --verify-tarball）`)
-} catch (e) {
+}} catch (e) {
   RED.push(`vendor(xlsx) 正源校验跑不起来：${e && e.message ? e.message : e}`)
 }
 
@@ -121,5 +136,7 @@ if (RED.length) {
   process.exit(1)
 }
 console.log(
-  `\n✅ check:vendor-data 通过（随包二进制 ${VENDOR_BINARIES.length} 份与正源及上游声明三方一致；仓内 vendor ${vendoredChecked} 份与各自 VENDOR.json 逐字节一致）`,
+  FIXTURE
+    ? `\n✅ check:vendor-data 通过（夹具：随包二进制 ${VENDOR_BINARIES.length} 份与正源字节一致）`
+    : `\n✅ check:vendor-data 通过（随包二进制 ${VENDOR_BINARIES.length} 份与正源及上游声明三方一致；仓内 vendor ${vendoredChecked} 份与各自 VENDOR.json 逐字节一致）`,
 )

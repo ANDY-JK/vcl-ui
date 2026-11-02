@@ -187,6 +187,15 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "vendor-origin-bytes",
+      "file": "scripts/check-vendor-data.mjs",
+      "find": "  if (payloadSha !== originSha) RED.push(`${spec.file} 的内联字节与安装物正源不同 —— 升级 ${spec.pkg} 后要重跑生成脚本`)",
+      "replace": "  if (false) RED.push(`${spec.file} 的内联字节与安装物正源不同 —— 升级 ${spec.pkg} 后要重跑生成脚本`)",
+      "cmd": "npx vitest run tests/unit/vendor-data-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：随包件与正源字节不一致不报，上游升级后仓内还在说旧话（#367）"
+    },
+    {
       "id": "demo-props-missing-budget",
       "file": "scripts/check-demo-props.mjs",
       "find": "if (missing.length > MISSING_BUDGET) {",
