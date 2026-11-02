@@ -1,11 +1,4 @@
 <script lang="ts">
-/**
- * toast id 全局递增 — 模块级而非实例级，避免同页多个 <Toast> 实例 id 从 1
- * 各自计数导致 remove(id) 误删另一实例的同 id toast。
- * 注意：<script setup> 顶层 let 每实例一份，必须放普通 <script> 块才是模块作用域。
- */
-let nextId = 1
-
 /** Props 声明在普通 <script> 块：script setup 内 value 声明之后再出现 type 导出会触发 vue-tsc TS1184 */
 export interface Props {
   /** 'toast' 全局弹幕 | 'inline' 内联提示条（替代 Alert） */
@@ -36,7 +29,8 @@ import { ref, computed, provide, onUnmounted } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
 import { TOAST_KEY, registerGlobalToast, unregisterGlobalToast } from './composables/toast-context'
-import type { ToastAPI, ToastItem } from './composables/toast-context'
+import { createToastQueue } from './composables/use-toast-queue'
+import type { ToastAPI } from './composables/toast-context'
 import { feedbackIconMap, feedbackColorMap } from '../shared/types'
 
 // 模板 v-for 中 t 已被 toast 项占用，翻译函数用别名 tt
@@ -53,12 +47,6 @@ const props = withDefaults(defineProps<Props>(), {
 
 // inline 模式的本地显隐
 const inlineVisible = ref(true)
-
-// toast 队列 — 每实例一份：DataTable / ImagePreview 等各自挂 <Toast> 靠 ref 通知自己那一份；
-// provide/inject 只在本实例子树内共享，不跨实例合并队列（合并会导致同页多实例重复渲染）
-const toasts = ref<ToastItem[]>([])
-// 各 toast 的自动关闭定时器（id → timer）：组件卸载时统一清理，防止卸载后 timer 回调操作已卸载 ref
-const _closeTimers = new Map<number, ReturnType<typeof setTimeout>>()
 
 const isToast = computed(() => props.variant === 'toast')
 const isInline = computed(() => props.variant === 'inline')
@@ -90,95 +78,9 @@ const inlineBorderMap: Record<string, string> = {
   error: 'var(--vcl-color-danger-border)',
 }
 
-function removeToast(id: number) {
-  const idx = toasts.value.findIndex((t) => t.id === id)
-  if (idx >= 0) toasts.value.splice(idx, 1)
-  const timer = _closeTimers.get(id)
-  if (timer) {
-    clearTimeout(timer)
-    _closeTimers.delete(id)
-  }
-}
-
-/** 未显式传 duration 时的默认停留：报错要给人读完并处理的时间，其余类型读完即走 */
-const _DEFAULT_ERROR_DURATION_MS = 5000
-const _DEFAULT_DURATION_MS = 3000
-
-// 全局方法
-function show(
-  message: string,
-  type: 'info' | 'success' | 'warning' | 'error' = 'info',
-  duration?: number,
-  options?: {
-    undoText?: string
-    onUndo?: () => void
-    actionText?: string
-    onAction?: () => void
-    closable?: boolean
-  },
-) {
-  const id = nextId++
-  const dur = duration ?? (type === 'error' ? _DEFAULT_ERROR_DURATION_MS : _DEFAULT_DURATION_MS)
-  const toast: ToastItem = {
-    id,
-    type,
-    message,
-    duration: dur,
-    closable: options?.closable ?? true,
-    // 向后兼容 undoText/onUndo
-    undoText: options?.undoText,
-    onUndo: options?.onUndo,
-    // 新 action 接口（优先级高于 undo）
-    actionText: options?.actionText ?? options?.undoText,
-    onAction: options?.onAction ?? options?.onUndo,
-  }
-  // 相同消息去重（#314）：连点"保存"或同一错误反复冒出来时，屏幕上会叠出 N 条
-  // 一模一样的提示（用户只看到"刷屏"）。这里把**同类型 + 同文案 + 无操作按钮**的
-  // 那条重新计时（延长停留），而不是再插一条。
-  // 带 actionText/undoText 的不合并：那类提示绑定的是某次具体操作，合并会丢回调。
-  // 判断收敛到**一处**（单一判据）：两层独立守卫时，任一层被改坏另一层仍能挡住，
-  // 单点变异测不出来（#313 的教训）。
-  const dup =
-    options?.actionText || options?.undoText
-      ? undefined
-      : toasts.value.find((t) => t.type === type && t.message === message && !t.actionText)
-  if (dup) {
-    const old = _closeTimers.get(dup.id)
-    if (old) clearTimeout(old)
-    if (dur > 0) {
-      _closeTimers.set(
-        dup.id,
-        setTimeout(() => removeToast(dup.id), dur),
-      )
-    }
-    return dup.id
-  }
-  toasts.value.unshift(toast)
-  // 队列上限：常驻 toast 被调用方遗漏 remove 时防止长会话无限累积（丢弃最旧的一条）
-  const MAX_TOASTS = 50
-  if (toasts.value.length > MAX_TOASTS) {
-    const oldest = toasts.value.pop()!
-    const t = _closeTimers.get(oldest.id)
-    if (t) {
-      clearTimeout(t)
-      _closeTimers.delete(oldest.id)
-    }
-  }
-
-  if (dur > 0) {
-    const timer = setTimeout(() => removeToast(id), dur)
-    _closeTimers.set(id, timer)
-  }
-  return id
-}
-
-function clearAll() {
-  toasts.value.splice(0)
-  _closeTimers.forEach((t) => clearTimeout(t))
-  _closeTimers.clear()
-}
-
 // 本实例 API —— provide 与全局入口共用同一个对象，卸载时才能按身份精确摘除
+// 队列状态机已下沉 use-toast-queue.ts（#374）：去重/上限/定时器簿记都在那边
+const { toasts, show, remove: removeToast, clearAll } = createToastQueue()
 const toastApi: ToastAPI = { toasts, show, remove: removeToast, clearAll }
 
 // 通过 provide/inject 共享本实例 API，子组件可 inject 后直接调用（仅限本实例子树）
@@ -196,9 +98,8 @@ onUnmounted(() => {
   if (typeof window !== 'undefined') {
     unregisterGlobalToast(toastApi)
   }
-  // 清理未触发的自动关闭定时器，防止卸载后回调操作已卸载组件状态
-  _closeTimers.forEach((t) => clearTimeout(t))
-  _closeTimers.clear()
+  // 清理未触发的自动关闭定时器（簿记在 use-toast-queue 内部，走 clearAll 即可）
+  clearAll()
 })
 
 /** 组件实例方法（通过 ref 或 window.__toast 调用） */

@@ -187,6 +187,24 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "toast-queue-dedup",
+      "file": "src/components/feedback/composables/use-toast-queue.ts",
+      "find": "        : toasts.value.find((t) => t.type === type && t.message === message && !t.actionText)",
+      "replace": "        : undefined",
+      "cmd": "npx vitest run tests/unit/use-toast-queue.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：同类型同文案会叠出 N 条一模一样的提示，刷屏（#314 回归）（#374）"
+    },
+    {
+      "id": "toast-queue-cap",
+      "file": "src/components/feedback/composables/use-toast-queue.ts",
+      "find": "    if (toasts.value.length > MAX_TOASTS) {",
+      "replace": "    if (false) {",
+      "cmd": "npx vitest run tests/unit/use-toast-queue.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：常驻 toast 被遗漏 remove 时长会话无限累积（#374）"
+    },
+    {
       "id": "silent-error-hidden-subtree",
       "file": "scripts/silent-error-judge.mjs",
       "find": "  const template = stripAlwaysHidden(stripComments(text.slice(tplStart, tplEnd)))",
@@ -447,7 +465,6 @@
       "expect": "red",
       "note": "变异后：Input 分支不传 invalid，输入框不标记无效（#338）"
     },
-
     {
       "id": "fielderror-id",
       "file": "src/components/form-builder/FieldError.vue",
@@ -936,30 +953,30 @@
     },
     {
       "id": "toast-dedupe",
-      "file": "src/components/feedback/Toast.vue",
+      "file": "src/components/feedback/composables/use-toast-queue.ts",
       "find": "  if (dup) {",
       "replace": "  if (false) {",
-      "cmd": "npx vitest run tests/unit/toast-dedupe.spec.ts --no-coverage",
+      "cmd": "npx vitest run tests/unit/use-toast-queue.spec.ts --no-coverage",
       "expect": "red",
-      "note": "变异后：连点保存/同一错误反复冒出来时屏幕叠满一模一样的提示（#314）"
+      "note": "变异后：连点保存/同一错误反复冒出来时屏幕叠满一模一样的提示（#314）（#374 下沉后随迁）"
     },
     {
       "id": "toast-dedupe-restart-timer",
-      "file": "src/components/feedback/Toast.vue",
+      "file": "src/components/feedback/composables/use-toast-queue.ts",
       "find": "        setTimeout(() => removeToast(dup.id), dur),",
       "replace": "        setTimeout(() => {}, dur),",
-      "cmd": "npx vitest run tests/unit/toast-dedupe.spec.ts --no-coverage",
+      "cmd": "npx vitest run tests/unit/use-toast-queue.spec.ts --no-coverage",
       "expect": "red",
-      "note": "变异后：去重时清掉了旧定时器却没重设，重复提示永不消失（#314）"
+      "note": "变异后：去重时清掉了旧定时器却没重设，重复提示永不消失（#314）（#374 下沉后随迁）"
     },
     {
       "id": "toast-dedupe-action-isolation",
-      "file": "src/components/feedback/Toast.vue",
+      "file": "src/components/feedback/composables/use-toast-queue.ts",
       "find": "&& !t.actionText)",
       "replace": "&& true)",
-      "cmd": "npx vitest run tests/unit/toast-dedupe.spec.ts --no-coverage",
+      "cmd": "npx vitest run tests/unit/use-toast-queue.spec.ts --no-coverage",
       "expect": "red",
-      "note": "变异后：普通提示被并进带「撤销」的那条，撤销会作用到错误的对象（#314）"
+      "note": "变异后：普通提示被并进带「撤销」的那条，撤销会作用到错误的对象（#314）（#374 下沉后随迁）"
     },
     {
       "id": "import-confirm-reentry",
@@ -1114,7 +1131,6 @@
       "expect": "red",
       "note": "变异后：第一个字段也被加序号，导出表头与导入映射同时错位（#305）"
     },
-
     {
       "id": "export-label-dedupe-host",
       "file": "src/components/form-builder/useCollectExport.ts",
