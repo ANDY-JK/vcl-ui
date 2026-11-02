@@ -107,39 +107,148 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
           </tr>
           <tr>
             <td><code>type</code></td>
-            <td>string</td>
+            <td>'text' \| 'password' \| 'email' \| 'tel' \| 'number' \| 'textarea' \| 'search' \| 'url' \| 'color'</td>
             <td>'text'</td>
-            <td>text | password | email | tel | number | textarea | search | url</td>
+            <td>统一类型：text \| password \| email \| tel \| number \| textarea \| search \| url \| color</td>
           </tr>
           <tr>
             <td><code>modelValue</code></td>
-            <td>string | number | null</td>
+            <td>string \| number \| null</td>
             <td>—</td>
-            <td>v-model 绑定值</td>
+            <td>受控值：数字模式回传 number，其余 string；可为 null</td>
           </tr>
           <tr>
             <td><code>label</code></td>
             <td>string</td>
             <td>—</td>
-            <td>浮动标签文字</td>
+            <td>浮动标签文案</td>
+          </tr>
+          <tr>
+            <td><code>icon</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>输入框前置图标（IconSvg 图标名）</td>
+          </tr>
+          <tr>
+            <td><code>placeholder</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>占位文案</td>
+          </tr>
+          <tr>
+            <td><code>disabled</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>禁用</td>
+          </tr>
+          <tr>
+            <td><code>readonly</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>只读</td>
+          </tr>
+          <tr>
+            <td><code>rules</code></td>
+            <td>((v: string) => string \| undefined)[]</td>
+            <td>() => []</td>
+            <td>校验规则</td>
+          </tr>
+          <tr>
+            <td><code>error</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>
+              外部注入错误（覆盖 rules 结果）。 表单渲染器（FormRenderer）的提交期校验结果走这里 —— 否则父级只说得出
+              「这个字段无效」，输入框上既没有 aria-invalid 也没有 aria-describedby（#338）。 与 Select 的 error
+              同款（#316）。
+            </td>
+          </tr>
+          <tr>
+            <td><code>invalid</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>
+              外部判定为无效（不带文案）：只影响 aria-invalid。 表单渲染器把提交期校验结果显示在自己的 FieldError
+              里（那是既有契约， 17 处分支都靠它），所以这里不接文案，只把"无效"这个状态挂到输入框上（#338）。
+            </td>
+          </tr>
+          <tr>
+            <td><code>describedby</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部错误元素的 id：挂到 aria-describedby，让读屏能回查"为什么无效"</td>
+          </tr>
+          <tr>
+            <td><code>hint</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>控件下方帮助文案</td>
+          </tr>
+          <tr>
+            <td><code>name</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>HTML name 属性</td>
+          </tr>
+          <tr>
+            <td><code>autocomplete</code></td>
+            <td>string</td>
+            <td>'off'</td>
+            <td>HTML autocomplete</td>
           </tr>
           <tr>
             <td><code>stepper</code></td>
             <td>boolean</td>
             <td>false</td>
-            <td>数字步进按钮（type='number'）</td>
+            <td>数字模式：显示加减按钮</td>
           </tr>
           <tr>
-            <td><code>min / max</code></td>
-            <td>number</td>
+            <td><code>min</code></td>
+            <td>number \| null</td>
             <td>null</td>
-            <td>数字模式最值</td>
+            <td>数字模式：最小值</td>
+          </tr>
+          <tr>
+            <td><code>max</code></td>
+            <td>number \| null</td>
+            <td>null</td>
+            <td>数字模式：最大值</td>
           </tr>
           <tr>
             <td><code>step</code></td>
             <td>number</td>
             <td>1</td>
-            <td>步进值</td>
+            <td>数字模式：步进值</td>
+          </tr>
+          <tr>
+            <td><code>precision</code></td>
+            <td>number</td>
+            <td>undefined</td>
+            <td>数字模式：小数位数</td>
+          </tr>
+          <tr>
+            <td><code>size</code></td>
+            <td>'sm' \| 'md' \| 'lg'</td>
+            <td>'md'</td>
+            <td>数字模式：尺寸</td>
+          </tr>
+          <tr>
+            <td><code>clearable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>显示一键清空按钮（默认关）</td>
+          </tr>
+          <tr>
+            <td><code>maxlength</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>原生 maxlength</td>
+          </tr>
+          <tr>
+            <td><code>minlength</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>原生 minlength</td>
           </tr>
           <tr>
             <td><code>rows</code></td>
@@ -148,34 +257,10 @@ const rules = [(v: string) => (!v ? '不能为空' : undefined), (v: string) => 
             <td>textarea 行数</td>
           </tr>
           <tr>
-            <td><code>rules</code></td>
-            <td>Rule[]</td>
-            <td>[]</td>
-            <td>校验规则</td>
-          </tr>
-          <tr>
-            <td><code>clearable</code></td>
-            <td>boolean</td>
-            <td>false</td>
-            <td>显示清除按钮</td>
-          </tr>
-          <tr>
-            <td><code>error</code></td>
+            <td><code>suffix</code></td>
             <td>string</td>
             <td>—</td>
-            <td>外部注入错误（覆盖 rules 结果）；表单渲染器的提交期校验走这里</td>
-          </tr>
-          <tr>
-            <td><code>invalid</code></td>
-            <td>boolean</td>
-            <td>false</td>
-            <td>外部判定无效（不带文案），仅影响 aria-invalid</td>
-          </tr>
-          <tr>
-            <td><code>describedby</code></td>
-            <td>string</td>
-            <td>—</td>
-            <td>外部错误元素的 id，挂到 aria-describedby</td>
+            <td>后缀文字（输入框内右侧固定显示，如单位 "元" / "kg"）</td>
           </tr>
         </tbody>
       </table>
