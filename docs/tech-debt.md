@@ -68,9 +68,10 @@
 
 | 编号 | 一句话 | 修法 | 提交 |
 | --- | --- | --- | --- |
+| TD-102 |存储配置持久化的 SSR 守卫只盖读路径，写路径（面板点保存）裸奔 ReferenceError（TD-79"第二条路径"定理应验） | #376 修复：守卫下沉 storage-config-persist 模块内（safeLocalStorage 双路径统一），组件侧两处裸 typeof 判断删除；FormTargetCollect 列入 SSR 冒烟（#377） | a963804 |
 | TD-26 | silent-error-states 棘轮只判"模板里有没有这个名字"，判不了可见性（v-if="false" 仍绿） | #372 判据抽成 scripts/silent-error-judge.mjs：先剥注释、再剔除常量假指令包裹的子树，然后才问名字；9 例单测 + 2 条负向对照 | e4ae0a4 |
 | TD-98 | 27 道闸口里近半数没有自测，判据坏了无人知晓（尤其"平时一直绿"的发版/随包/RTL/覆盖标记几道） | 逐个补自测与负向对照：#353 发版闸、#356 漏报棘轮、#359 转写工具、#367 随包件、#368 RTL 判据拆纯函数、#369 覆盖标记判据（--marker 注入，免跑全量带覆盖单测）；变异清单 117 → 127 条，每条都验证过"判据失效必须红" | 9d9e9a7 |
-| TD-100 | 演示页 prop 表只做单向对账（查谎报不查漏报），158 个 prop 从未进过演示页文档表 | 闸口加反向对账与漏报棘轮（#356）→ sync:demo-table 转写工具（#359）→ data-component 表自述归属（#365）→ 清零后棘轮改"必须为 0" | c6bea36 |
+| TD-100 | 演示页 prop 表只做单向对账（查谎报不查漏报），158 个 prop 从未进过演示页文档表；#382 再补第三层：check:error-demo 闸口（error/invalid prop 必须有演示页绑定，豁免双向对账），质量链 43 → 44 步 | 闸口加反向对账与漏报棘轮（#356）→ sync:demo-table 转写工具（#359）→ data-component 表自述归属（#365）→ 清零后棘轮改"必须为 0" | c6bea36 |
 | TD-99 | **`FormRenderer` 其余 13 处 `FieldError` 与控件无关联** | 六批补齐：#338 `Input`、#339 `Select`、#341 `Upload`、#342 `Group`（含 rate/slider/switch 三形态）、#343 `Richtext`、#344 `Idcard`+`Matrix`、#345 `Address`+`Subform`、#346 `Signature`+`ToggleList`+`MapPicker`；统一"组件加 `invalid`/`describedby` → 挂到该错误描述的元素（控件本身或组容器）→ 渲染器传 `fieldErrorId` → 用例 + 负向对照"。显示类分支（图表/展示表/加载/结果）无可填控件，已核实不需挂 | b77f7bb |
 | TD-96 | **可编辑表格单元格的校验错误没有 aria-describedby**（与 #316 的 Select 同一缺口） | 两处（主表 + 卡片视图）编辑框补 `:aria-describedby`（仅校验失败时指向存在元素），错误提示 span 补 `:id`（单元格坐标拼接，多行多列不撞）；3 例 + 负向对照 2/2 | 05b51de |
 | TD-97 | **Tab 序列没有机械校验**：连续三轮靠人眼发现"可聚焦元素随数据增长"（#318 日历 42 格 / #322 菜单每项 / #323 下拉选项） | 抽 `_internal/useRovingTabindex.ts` 做统一 roving；新增 `check:tab-sequence` 闸门（整链第 12 步 + 快链），扫模板区两条判据；按闸门修掉 8 处（Tabs/IconPicker×3/ImagePreview/PropsPanel/DesignerCanvas×2/OutlineTree）；OutlineTree 无选中时回退首节点 | 89c0993 |
