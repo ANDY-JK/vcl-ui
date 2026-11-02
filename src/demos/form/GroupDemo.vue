@@ -91,6 +91,129 @@ const fruitOptions = [
       </div>
     </section>
   </div>
+  <div class="props-demo-wrap">
+    <table class="props-table">
+      <tbody>
+        <tr class="props-header">
+          <th>Prop</th>
+          <th>类型</th>
+          <th>默认</th>
+          <th>说明</th>
+        </tr>
+        <tr>
+          <td><code>invalid</code></td>
+          <td>boolean</td>
+          <td>—</td>
+          <td>
+            外部判定为无效（不带文案）：挂到**组容器**的 aria-invalid。
+            焦点落在组里的单个选项上，但"这题答错了"是组的语义 —— 所以挂 radiogroup / group（#342）。
+          </td>
+        </tr>
+        <tr>
+          <td><code>describedby</code></td>
+          <td>string</td>
+          <td>—</td>
+          <td>外部错误元素的 id：挂到 aria-describedby，让读屏能回查「为什么无效」</td>
+        </tr>
+        <tr>
+          <td><code>type</code></td>
+          <td>'radio' \| 'checkbox' \| 'switch' \| 'rate' \| 'slider'</td>
+          <td>'radio'</td>
+          <td>统一类型：radio \| checkbox \| switch \| rate \| slider</td>
+        </tr>
+        <tr>
+          <td><code>modelValue</code></td>
+          <td>string \| number \| boolean \| (string \| number \| boolean)[] \| [number, number]</td>
+          <td>—</td>
+          <td>受控值：radio/switch 为单值，checkbox 为数组，rate 为数值，slider 为数值或 [起, 止]</td>
+        </tr>
+        <tr>
+          <td><code>options</code></td>
+          <td>Option[]</td>
+          <td>() => []</td>
+          <td>radio / checkbox 模式选项列表</td>
+        </tr>
+        <tr>
+          <td><code>direction</code></td>
+          <td>'vertical' \| 'horizontal'</td>
+          <td>'vertical'</td>
+          <td>radio / checkbox 排列方向</td>
+        </tr>
+        <tr>
+          <td><code>disabled</code></td>
+          <td>boolean</td>
+          <td>false</td>
+          <td>整组禁用</td>
+        </tr>
+        <tr>
+          <td><code>max</code></td>
+          <td>number</td>
+          <td>0</td>
+          <td>checkbox 最多选几项，0 = 不限</td>
+        </tr>
+        <tr>
+          <td><code>ariaLabel</code></td>
+          <td>string</td>
+          <td>''</td>
+          <td>分组标签（无障碍）</td>
+        </tr>
+        <tr>
+          <td><code>label</code></td>
+          <td>string</td>
+          <td>—</td>
+          <td>switch 标签文字</td>
+        </tr>
+        <tr>
+          <td><code>size</code></td>
+          <td>'sm' \| 'md'</td>
+          <td>'md'</td>
+          <td>switch 尺寸</td>
+        </tr>
+        <tr>
+          <td><code>rateMax</code></td>
+          <td>number</td>
+          <td>5</td>
+          <td>rate 最大值，默认 5</td>
+        </tr>
+        <tr>
+          <td><code>allowHalf</code></td>
+          <td>boolean</td>
+          <td>false</td>
+          <td>rate 是否允许半星</td>
+        </tr>
+        <tr>
+          <td><code>color</code></td>
+          <td>string</td>
+          <td>'#F59E0B'</td>
+          <td>rate 颜色</td>
+        </tr>
+        <tr>
+          <td><code>min</code></td>
+          <td>number</td>
+          <td>0</td>
+          <td>slider 最小值</td>
+        </tr>
+        <tr>
+          <td><code>sliderMax</code></td>
+          <td>number</td>
+          <td>100</td>
+          <td>slider 最大值（与 checkbox max 区分）</td>
+        </tr>
+        <tr>
+          <td><code>step</code></td>
+          <td>number</td>
+          <td>1</td>
+          <td>slider 步进</td>
+        </tr>
+        <tr>
+          <td><code>showValue</code></td>
+          <td>boolean</td>
+          <td>true</td>
+          <td>slider 显示当前值</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <style scoped>

@@ -230,7 +230,7 @@ function onCancel(variant: string) {
             <td><code>visible</code></td>
             <td>boolean</td>
             <td>—</td>
-            <td>显示/隐藏（v-model）</td>
+            <td>显隐（v-model:visible）</td>
           </tr>
           <tr>
             <td><code>title</code></td>
@@ -240,27 +240,96 @@ function onCancel(variant: string) {
           </tr>
           <tr>
             <td><code>modalType</code></td>
-            <td>string</td>
+            <td>'default' \| 'confirm' \| 'form' \| 'detail' \| 'select'</td>
             <td>'default'</td>
-            <td>default | confirm | form | detail | select</td>
+            <td>模式：default 自由内容 \| confirm 确认框 \| form 表单 \| detail 明细 \| select 选择</td>
           </tr>
           <tr>
             <td><code>size</code></td>
-            <td>string</td>
+            <td>'sm' \| 'md' \| 'lg' \| 'xl'</td>
             <td>'md'</td>
-            <td>sm | md | lg | xl</td>
+            <td>尺寸档位（默认 'md'）</td>
           </tr>
           <tr>
             <td><code>closable</code></td>
             <td>boolean</td>
             <td>true</td>
-            <td>显示关闭按钮</td>
+            <td>显示关闭按钮（默认开）</td>
           </tr>
           <tr>
             <td><code>maskClosable</code></td>
             <td>boolean</td>
             <td>true</td>
-            <td>点击遮罩关闭</td>
+            <td>点遮罩关闭（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>zIndex</code></td>
+            <td>number \| string</td>
+            <td>—</td>
+            <td>遮罩 z-index 覆盖</td>
+          </tr>
+          <tr>
+            <td><code>internal</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>设为 true 时不参与全局弹窗互斥管理（组件内部弹窗用）</td>
+          </tr>
+          <tr>
+            <td><code>mutexScope</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>
+              弹窗互斥域。同一 scope 的弹窗"新开即关旧"，不同 scope 互不影响。 默认不传 →
+              全页面全局互斥（历史行为）。需要与其它弹窗共存（如 Drawer 内开确认框）时传独立 scope。
+            </td>
+          </tr>
+          <tr>
+            <td><code>confirmMessage</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>confirm 模式：正文消息</td>
+          </tr>
+          <tr>
+            <td><code>confirmVariant</code></td>
+            <td>'warning' \| 'danger' \| 'info' \| 'success'</td>
+            <td>'warning'</td>
+            <td>confirm 模式：语义色</td>
+          </tr>
+          <tr>
+            <td><code>confirmDanger</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>confirm 模式：危险操作（实心红按钮）</td>
+          </tr>
+          <tr>
+            <td><code>confirmLoading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>confirm 模式：确认按钮 loading</td>
+          </tr>
+          <tr>
+            <td><code>detailItems</code></td>
+            <td>DetailItem[]</td>
+            <td>() => []</td>
+            <td>detail 模式：键值对明细列表</td>
+          </tr>
+          <tr>
+            <td><code>selectItems</code></td>
+            <td>SelectItem[]</td>
+            <td>() => []</td>
+            <td>select 模式：候选项</td>
+          </tr>
+          <tr>
+            <td><code>selectValue</code></td>
+            <td>(string \| number)[]</td>
+            <td>() => []</td>
+            <td>select 模式：受控选中值</td>
+          </tr>
+          <tr>
+            <td><code>selectMultiple</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>select 模式：允许多选</td>
           </tr>
         </tbody>
       </table>

@@ -69,24 +69,55 @@ const rows = mdRows.map((line) => {
 })
 
 // ② 替换演示页里的表体
-let s = readFileSync(demo, 'utf8')
-const propTh = s.search(/<th[^>]*>\s*Prop\s*<\/th>/i)
-if (propTh < 0) {
-  console.error(`${demo} 里找不到 <th>Prop</th> —— 该页还没有 props 表，需要人工加表头`)
-  process.exit(1)
+const s = readFileSync(demo, 'utf8')
+/**
+ * 页面还没有 props 表时：`--create` 会在 `</template>` 前插一张标准表。
+ * 有 `Card` 的页面用 Card 包（视觉一致）；没有的用裸 table —— **不替人加 import**，
+ * 因为那会改动脚本区，超出"转写文档表"的职责。
+ */
+let template = s
+if (!/<th[^>]*>\s*Prop\s*<\/th>/i.test(template)) {
+  if (!process.argv.includes('--create')) {
+    console.error(`${demo} 里找不到 <th>Prop</th> —— 加 --create 可自动插入标准表头`)
+    process.exit(1)
+  }
+  const useCard = /<Card\b/.test(template) && /import Card/.test(template)
+  const table = [
+    useCard ? '    <Card title="Props" title-as="h2">' : '    <div class="props-demo-wrap">',
+    '      <table class="props-table">',
+    '        <tbody>',
+    '          <tr class="props-header">',
+    '            <th>Prop</th>',
+    '            <th>类型</th>',
+    '            <th>默认</th>',
+    '            <th>说明</th>',
+    '          </tr>',
+    '        </tbody>',
+    '      </table>',
+    useCard ? '    </Card>' : '    </div>',
+    '',
+  ].join('\n')
+  const tplEnd = template.lastIndexOf('</template>')
+  if (tplEnd < 0) {
+    console.error(`${demo} 里找不到 </template>`)
+    process.exit(1)
+  }
+  template = template.slice(0, tplEnd) + table + template.slice(tplEnd)
+  console.log(`[sync-demo-table] ${demo}：已插入 Props 表骨架${useCard ? '（Card 包裹）' : ''}`)
 }
+const propTh = template.search(/<th[^>]*>\s*Prop\s*<\/th>/i)
 /**
  * 只处理**包含 `<th>Prop</th> 的那张表**。
  * 一个演示页里可能有多张表（ChartDemo 3 张、MenuDemo 3 张），
  * 早期的全局替换会把别的表也吃掉 —— 结构自检当场拦住（这轮真的拦了 8 个）。
  */
-const tableStart = s.lastIndexOf('<table', propTh)
-const tableEnd = s.indexOf('</table>', propTh)
+const tableStart = template.lastIndexOf('<table', propTh)
+const tableEnd = template.indexOf('</table>', propTh)
 if (tableStart < 0 || tableEnd < 0) {
   console.error(`${demo} 里的 <th>Prop</th> 不在任何 <table> 内`)
   process.exit(1)
 }
-const table = s.slice(tableStart, tableEnd)
+const table = template.slice(tableStart, tableEnd)
 
 const headerClose = table.indexOf('</tr>', table.indexOf('<th', table.search(/<th[^>]*>\s*Prop\s*<\/th>/i))) + '</tr>'.length
 const theadClose = table.indexOf('</thead>', headerClose)
@@ -109,6 +140,6 @@ if (opens !== 1 || closes !== 1) {
   process.exit(1)
 }
 
-const out = s.slice(0, tableStart) + newTable + s.slice(tableEnd)
+const out = template.slice(0, tableStart) + newTable + template.slice(tableEnd)
 writeFileSync(demo, out, 'utf8')
 console.log(`[sync-demo-table] ${demo}：${component} 的 ${rows.length} 行${dry ? '（dry：未落盘）' : '已写入'}`)
