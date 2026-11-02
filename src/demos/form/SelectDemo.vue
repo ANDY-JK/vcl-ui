@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import type { Option, CascaderOption } from '@/components/shared/types'
 import Select from '@/components/form/Select.vue'
+import Button from '@/components/basic/Button.vue'
 import Card from '@/components/data/Card.vue'
 import Toast from '@/components/feedback/Toast.vue'
 
@@ -185,6 +186,22 @@ function onContextMenu(e: MouseEvent) {
   e.preventDefault()
   contextMenuRef.value?.openMenu(e)
 }
+
+// 外部错误注入演示（error/invalid，#339）：与 InputDemo 同一分工 —— rules 管输入期、
+// error 管提交期（服务端返回"该地区暂不支持配送"这类），父级持有错误、Select 只负责显示
+const regionVal = ref('')
+const regionError = ref('')
+const regionOptions: Option[] = [
+  { value: 'north', label: '华北' },
+  { value: 'east', label: '华东' },
+  { value: 'south', label: '华南' },
+  { value: 'overseas', label: '海外（触发错误）' },
+]
+
+/** 模拟提交期校验：选了"海外"报错，其余清错 */
+function submitRegion() {
+  regionError.value = regionVal.value === 'overseas' ? '该地区暂不支持配送（模拟服务端返回）' : ''
+}
 </script>
 
 <template>
@@ -194,6 +211,31 @@ function onContextMenu(e: MouseEvent) {
       一个组件覆盖全部选择场景：下拉选择（单选/多选/拼音搜索）、可输入选择（combobox）、
       树形选择（级联/树单选/多选）、日期时间、菜单。统一样式、统一交互、统一 tag 显示策略。
     </p>
+
+    <!-- ══════ 外部错误注入 ══════ -->
+    <Card
+      title="外部错误注入 — error / invalid（#339）"
+      title-as="h2"
+      style="margin-bottom: calc(24px * var(--vcl-scale))"
+    >
+      <p class="demo-hint">
+        <code>rules</code> 是输入期校验；提交期校验（服务端返回"该地区暂不支持配送"）走 <code>error</code> 注入 ——
+        父级持有错误、Select 只负责显示。
+      </p>
+      <Select v-model="regionVal" :options="regionOptions" label="配送地区" :error="regionError || undefined" />
+      <div style="display: flex; gap: calc(8px * var(--vcl-scale)); margin-top: calc(8px * var(--vcl-scale))">
+        <Button size="sm" variant="outline" @click="submitRegion">模拟服务端校验</Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          @click="
+            regionError = ''
+            regionVal = ''
+          "
+          >重置</Button
+        >
+      </div>
+    </Card>
 
     <!-- ══════ 基础选择 ══════ -->
     <Card title="基础选择 — 单选 / 多选 / 拼音搜索" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
