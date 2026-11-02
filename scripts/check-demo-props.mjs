@@ -473,12 +473,13 @@ if (lies.length) {
 // 漏报更常见（新加能力没人写文档），但历史存量可能很大，所以默认只报告、不判红；
 // `--strict-missing` 才判红（等存量清完再打开）。
 /**
- * 漏报预算（棘轮）：现状 2 个，**只许降不许升**。
+ * 漏报预算（棘轮）：**已归零（#366）** —— 从"只许降不许升"进入"必须为 0"。
+ * 新加的 public prop 不写进演示页表会立即判红。
  * 为什么不用"必须为 0"：历史存量仍有 2 个，一次清零不现实；但**不设上限等于没有闸口** ——
  * 新加一个 prop 只要不写进演示页表就能悄悄溜过去。
  * 修一个就把它减一（保持"只降"的语义），归零后改成"必须为 0"。
  */
-const MISSING_BUDGET = 2
+const MISSING_BUDGET = 0
 
 const missing = []
 for (const [c, p] of seenProps) {
@@ -498,7 +499,9 @@ if (missing.length > MISSING_BUDGET) {
   )
   process.exit(1)
 }
-if (missing.length < MISSING_BUDGET) {
+if (missing.length === 0) {
+  console.log('   ✓ 组件 prop 与演示页文档表完全对齐（反向对账已清零）')
+} else if (MISSING_BUDGET > 0 && missing.length < MISSING_BUDGET) {
   console.log(`   ↓ 比预算少 ${MISSING_BUDGET - missing.length} 个，请把 MISSING_BUDGET 调到 ${missing.length}`)
 }
 

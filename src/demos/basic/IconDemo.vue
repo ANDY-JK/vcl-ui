@@ -351,6 +351,54 @@ function toggleMorph(i: number) {
         </tbody>
       </table>
     </Card>
+    <Card title="Props" title-as="h2">
+      <table class="props-table" data-component="IconPicker">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>modelValue</code></td>
+            <td>string</td>
+            <td>'star'</td>
+            <td>受控图标名（kebab-case，默认 'star'）</td>
+          </tr>
+          <tr>
+            <td><code>color</code></td>
+            <td>string</td>
+            <td>'var(--vcl-color-primary)'</td>
+            <td>图标颜色（CSS 颜色值或令牌，默认主色令牌）</td>
+          </tr>
+          <tr>
+            <td><code>bgColor</code></td>
+            <td>string</td>
+            <td>'#EAECF0'</td>
+            <td>触发按钮底色（默认 #EAECF0）</td>
+          </tr>
+          <tr>
+            <td><code>placeholder</code></td>
+            <td>string</td>
+            <td>() => t('form.selectIcon')</td>
+            <td>触发按钮占位文字</td>
+          </tr>
+          <tr>
+            <td><code>presetColors</code></td>
+            <td>string[]</td>
+            <td>() => ['#6366F1', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4']</td>
+            <td>预定义色板</td>
+          </tr>
+          <tr>
+            <td><code>provider</code></td>
+            <td>'lucide' \| 'solar' \| 'morphicons'</td>
+            <td>'lucide'</td>
+            <td>图标提供者：lucide/solar 为静态图标，morphicons 在图标切换时做形变动画</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
   </div>
 </template>
 
