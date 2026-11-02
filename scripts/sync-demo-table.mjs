@@ -76,8 +76,9 @@ const s = readFileSync(demo, 'utf8')
  * 因为那会改动脚本区，超出"转写文档表"的职责。
  */
 let template = s
-if (!/<th[^>]*>\s*Prop\s*<\/th>/i.test(template)) {
-  if (!process.argv.includes('--create')) {
+const forceNewTable = process.argv.includes('--new-table')
+if (forceNewTable || !/<th[^>]*>\s*Prop\s*<\/th>/i.test(template)) {
+  if (!forceNewTable && !process.argv.includes('--create')) {
     console.error(`${demo} 里找不到 <th>Prop</th> —— 加 --create 可自动插入标准表头`)
     process.exit(1)
   }
@@ -97,22 +98,33 @@ if (!/<th[^>]*>\s*Prop\s*<\/th>/i.test(template)) {
     useCard ? '    </Card>' : '    </div>',
     '',
   ].join('\n')
+  /**
+   * 插入点必须在**根 div 之内**：直接插在 `</template>` 前会落到根元素外面 ——
+   * 页面照样能编译（Vue 允许多根），但**闸口的表解析会跳过它**（表数不增加），
+   * 于是"写了表却没被算进去"（本轮 ChartDemo 就踩了这个）。
+   */
   const tplEnd = template.lastIndexOf('</template>')
+  const rootClose = template.lastIndexOf('</div>', tplEnd)
+  const insertAt = rootClose > -1 ? rootClose : tplEnd
   if (tplEnd < 0) {
     console.error(`${demo} 里找不到 </template>`)
     process.exit(1)
   }
-  template = template.slice(0, tplEnd) + table + template.slice(tplEnd)
+  template = template.slice(0, insertAt) + table + template.slice(insertAt)
   console.log(`[sync-demo-table] ${demo}：已插入 Props 表骨架${useCard ? '（Card 包裹）' : ''}`)
 }
-const propTh = template.search(/<th[^>]*>\s*Prop\s*<\/th>/i)
+/** `--new-table` 时取最后一张 Prop 表（新插入的那张），否则取第一张 */
+const propTh = forceNewTable
+  ? template.lastIndexOf('<th', template.search(/<\/table>(?![\s\S]*<\/table>)/))
+  : template.search(/<th[^>]*>\s*Prop\s*<\/th>/i)
+const propThSafe = propTh > -1 ? propTh : template.search(/<th[^>]*>\s*Prop\s*<\/th>/i)
 /**
  * 只处理**包含 `<th>Prop</th> 的那张表**。
  * 一个演示页里可能有多张表（ChartDemo 3 张、MenuDemo 3 张），
  * 早期的全局替换会把别的表也吃掉 —— 结构自检当场拦住（这轮真的拦了 8 个）。
  */
-const tableStart = template.lastIndexOf('<table', propTh)
-const tableEnd = template.indexOf('</table>', propTh)
+const tableStart = template.lastIndexOf('<table', propThSafe)
+const tableEnd = template.indexOf('</table>', propThSafe)
 if (tableStart < 0 || tableEnd < 0) {
   console.error(`${demo} 里的 <th>Prop</th> 不在任何 <table> 内`)
   process.exit(1)
