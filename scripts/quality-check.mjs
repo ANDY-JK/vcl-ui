@@ -96,6 +96,7 @@ const STEPS = [
   ['check:offline', 'npm run check:offline'],
   ['check:i18n', 'npm run check:i18n'],
   ['check:demo-props', 'npm run check:demo-props'],
+  ['check:error-demo', 'npm run check:error-demo'],
   ['check:vendor-data', 'npm run check:vendor-data'],
   ['check:vendor-vulns', 'npm run check:vendor-vulns'],
   ['check:deps', 'npm run check:deps'],

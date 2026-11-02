@@ -2,12 +2,24 @@
 // FormRenderer 富文本专项演示 — 受控 contenteditable（IME 合成安全）+ 实时 modelValue 回显
 // 配套审计 §19 富文本专项：输入/合成/粘贴三条路径的行为可在真实浏览器中直接观察
 // 2026-09 full 档：simple / full（文章编辑）两档对照 + 最小字数联动
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { FormRenderer } from '@/components/form-builder'
 
 const simpleValue = ref('<p>默认正文，可直接编辑</p>')
 const fullValue = ref('<h1>文章标题</h1><p>这里用 full 工具栏写作：标题、引用、代码块、插图、表格一应俱全。</p>')
 const minChars = 20
+
+// 提交期校验注入演示（#382）：full 档要求最少字数，提交时父级判并把结果以 :error 注入 ——
+// FormRenderer 的 error prop 就是"父级只说得出结果"的通道（rules 是输入期、这里是提交期）
+const submitted = ref(false)
+const submitError = computed(() =>
+  submitted.value && fullValue.value.replace(/<[^>]*>/g, '').trim().length < minChars
+    ? `正文不足 ${minChars} 字（当前 ${fullValue.value.replace(/<[^>]*>/g, '').trim().length} 字）`
+    : '',
+)
+function submitArticle() {
+  submitted.value = true
+}
 </script>
 
 <template>
@@ -33,11 +45,26 @@ const minChars = 20
         label: `正文（full 档，最少 ${minChars} 字）`,
         props: { richtextToolbar: 'full', richtextMinChars: minChars },
       }"
+      :error="submitError || undefined"
     />
     <div class="fr-demo-value">
       <strong>full modelValue：</strong>
       <code>{{ fullValue }}</code>
     </div>
+    <button
+      type="button"
+      style="
+        justify-self: start;
+        padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+        border: 1px solid var(--vcl-color-border, #e2e8f0);
+        border-radius: calc(6px * var(--vcl-scale));
+        background: var(--vcl-color-bg, #fff);
+        cursor: pointer;
+      "
+      @click="submitArticle"
+    >
+      模拟提交（不足 {{ minChars }} 字会在字段上显示提交期错误）
+    </button>
   </div>
 </template>
 

@@ -148,6 +148,9 @@ export default [
       // 闸门自测用的夹具：里面是**故意写错**的代码片段（未登记的 skip、写死 px 的样式、
       // 未接线的 quality-check 等），lint 它们只会制造噪声 —— 它们由各自的 *-gate.spec.ts 校验
       'tests/fixtures/**',
+      // 测试运行期现造的夹具目录（ssr-smoke-coverage / error-demo-coverage 等）：
+      // 里面是**故意写错**的最小组件，且 afterAll 会删 —— lint 它们只会制造噪声
+      'tests/.tmp/**',
       'backup/**',
       'notes/**',
       '.playwright-cli/**',

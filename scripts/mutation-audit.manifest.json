@@ -187,6 +187,24 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "error-demo-prop-detect",
+      "file": "scripts/error-demo-coverage.mjs",
+      "find": "export function hasErrorishProps(source) {\n  return /\\b(error|invalid)\\?\\s*:/.test(source)\n}",
+      "replace": "export function hasErrorishProps(source) {\n  return false\n}",
+      "cmd": "npx vitest run tests/unit/error-demo-coverage.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：error/invalid prop 不再被识别，新组件加注入 prop 而演示页无卡片将静默放行（#382）"
+    },
+    {
+      "id": "error-demo-gap-empty",
+      "file": "scripts/error-demo-coverage.mjs",
+      "find": "export function findDemoGaps(comps, demos, exempt = {}) {",
+      "replace": "export function findDemoGaps(comps, demos, exempt = {}) {\n  return { gaps: [], staleExempt: [] }",
+      "cmd": "npx vitest run tests/unit/error-demo-coverage.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：对账永远返回空 gap，闸口判绿但实际漏报（#382）"
+    },
+    {
       "id": "storage-persist-ssr-guard",
       "file": "src/components/form-builder/storage-config-persist.ts",
       "find": "export function persistStorageConfig(cfg: StorageConfig): void {\n  const ls = safeLocalStorage()\n  if (!ls) return\n  ls.setItem(CONFIG_KEY, JSON.stringify(redactForPersist(cfg)))\n}",
