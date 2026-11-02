@@ -33,6 +33,7 @@ import DataTableColumnSettings from './DataTableColumnSettings.vue'
 import DataTableBatchDialog from './DataTableBatchDialog.vue'
 import DataTablePagination from './DataTablePagination.vue'
 import DataTableToolbar from './DataTableToolbar.vue'
+import { useColumnCtxActions } from './composables/useColumnCtxActions'
 import { provideDataTableContext, type ColumnSettingsPanelExpose, type BatchDialogExpose } from './composables/context'
 import type { Column, Emits, RowAction, RowContextAction, RowLineColor, TableStorage } from './composables/types'
 import type { DateOrder } from './composables/cell-input'
@@ -333,36 +334,6 @@ function onCellMouseLeave() {
 /** 图片加载失败 */
 function onImgError(e: Event) {
   ;(e.target as HTMLImageElement).style.display = 'none'
-}
-
-/** 右键菜单 — 隐藏当前列 */
-function onCtxHideColumn() {
-  hideCurrentColumn()
-  closeContextMenu()
-}
-
-/** 右键菜单 — 固定到左侧 */
-function onCtxFixLeftCascade() {
-  fixLeftCascade(contextMenu.value.columnKey!)
-  closeContextMenu()
-}
-
-/** 右键菜单 — 固定到右侧 */
-function onCtxFixRightCascade() {
-  fixRightCascade(contextMenu.value.columnKey!)
-  closeContextMenu()
-}
-
-/** 右键菜单 — 取消固定（列设置区块持有固定区域逻辑） */
-function onCtxUnfixColumn() {
-  colSettingsPanel.value?.unfixFromMenu(contextMenu.value.columnKey!)
-  closeContextMenu()
-}
-
-/** 右键菜单 — 显示全部列 */
-function onCtxShowAllColumns() {
-  showAllColumns()
-  closeContextMenu()
 }
 
 /** emptyText 回退：未传入时用 i18n */
@@ -1228,6 +1199,18 @@ const {
 })
 
 closeContextMenu = _closeCtxMenu
+
+// 表头右键菜单动作（#373 下沉）：只做"菜单项 → 列操作 + 关菜单"，无自有状态
+const { onCtxHideColumn, onCtxFixLeftCascade, onCtxFixRightCascade, onCtxUnfixColumn, onCtxShowAllColumns } =
+  useColumnCtxActions({
+    contextMenu,
+    closeMenu: () => closeContextMenu(),
+    hideCurrentColumn,
+    fixLeftCascade,
+    fixRightCascade,
+    showAllColumns,
+    getColSettingsPanel: () => colSettingsPanel.value,
+  })
 
 // 7. 单元格浮层菜单：图片灯箱 / 选项下拉面板 / 单元格右键菜单 / 两块键盘导航（M3 第十刀下沉）
 const {
