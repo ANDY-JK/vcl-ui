@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path'
 import { createJiti } from 'jiti'
 import { Window } from 'happy-dom'
 import { ref, computed } from 'vue'
+import { envRatio, judgeEnv, normalizeRatio } from './bench-env.mjs'
 
 // sanitizeHTML 走白名单 DOM 消毒，Node 下需注入 happy-dom 的 document
 if (typeof globalThis.document === 'undefined') {
@@ -46,10 +47,12 @@ const [
 
 const results = []
 /**
- * 本次运行的算力校准值（ms）。**在所有场景之前测一次**，
- * 这样它反映的是"开跑时这台机器的状态"，与后续场景同处一个环境窗口。
+ * 本次运行的**两条**环境探针值（ms）。**在所有场景之前各测一次**，
+ * 这样它们反映的是"开跑时这台机器的状态"，与后续场景同处一个环境窗口。
+ *
+ * 为什么是两条：纯算术探针看不见 GC/内存带宽（#371 的实测反例），
+ * 分配探针补上那一维 —— 判定取两者的较大降速倍率，见 scripts/bench-env.mjs。
  */
-const calibration = measureCalibration()
 /**
  * 每个场景记录 mean / **median** / min。
  *
@@ -87,16 +90,47 @@ function calibrationProbe() {
   return acc
 }
 
-function measureCalibration() {
-  // 3 次取最优：最优值最接近"无干扰真实算力"
+/**
+ * 分配/GC 探针（#371 加，第 6 轮迭代）。
+ *
+ * 为什么必须加第二条：2026-11-02 整链第 28 步实测反例 ——
+ *   · 算力校准 ×1.57（未超容差 ×1.6，判"环境健康"）
+ *   · 表格客户端排序 ×2.51 → 折算后 ×2.44 > ×2.2 → 判红
+ *   · 同一份代码空闲重跑：排序 ×1.11、校准 ×1.02 → 判绿
+ *
+ * 那个场景是**分配密集**（1 万行 × 10 列文本排序，海量临时字符串与数组），
+ * 而纯整数运算探针对 GC 压力与内存带宽几乎不敏感 —— **机器实际慢 2.4 倍，探针只看到 1.57 倍**。
+ * 所以补一条同样"不碰库代码"但**大量分配短命对象**的探针，取两者的较大降速倍率。
+ *
+ * 设计约束（与算术探针一致）：
+ *   · 不 import 库代码 —— 量的是"这台机器"，不是"这个库"
+ *   · 结果只依赖固定工作量，不依赖随机数 / 时间 / 容器大小
+ */
+function allocProbe() {
+  let sink = 0
+  for (let i = 0; i < 200_000; i++) {
+    // 每次迭代分配 4 个短命对象 + 1 个短字符串：制造稳定的 GC 压力
+    const a = { v: i, s: String(i) }
+    const b = [a, { v: i + 1, s: a.s + 'x' }]
+    sink += b.length + a.s.length
+  }
+  return sink
+}
+
+function measureProbe(fn, rounds = 3) {
+  // 3 次取最优：最优值最接近"无干扰真实速度"
   let best = Infinity
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < rounds; i++) {
     const t0 = performance.now()
-    calibrationProbe()
+    fn()
     best = Math.min(best, performance.now() - t0)
   }
   return best
 }
+
+const calibration = measureProbe(calibrationProbe)
+/** 分配探针耗时（ms）；老基线没有这个值 → 该维度不参与环境判定（见 bench-env.mjs） */
+const calibrationAlloc = measureProbe(allocProbe)
 
 function bench(name, fn, { iterations = 10, warmup = 3 } = {}) {
   for (let i = 0; i < warmup; i++) fn()
@@ -343,6 +377,8 @@ if (jsonOnly) {
         node: process.version,
         // 算力校准值（纯算术探针，ms）：写进基线后可用于判断「这次测量环境是否可比」
         calibrationMs: Number(calibration.toFixed(3)),
+        // 分配/GC 探针（ms）：补上算术探针看不见的那一维（#371）
+        calibrationAllocMs: Number(calibrationAlloc.toFixed(3)),
         scenarios: results.map((r) => ({
           name: r.name,
           mean: Number(r.mean.toFixed(4)),
@@ -392,42 +428,52 @@ if (checkMode) {
 
   // ── 环境健康门（先于任何回归判定）──
   //
-  // 基线里有 calibrationMs 才能比。没有（旧基线）就跳过此门，只提示。
-  // 判定：本次算力比基线慢超过 CALIBRATION_TOLERANCE 倍 → 这台机器现在不可比。
+  // 两条探针（纯算术 + 分配/GC），取**较大**降速倍率 —— 任一维度变慢都说明机器现在不可比。
+  // 旧基线只有 calibrationMs（无分配探针值）时，该维度自动不参与（bench-env.mjs 里判 null）。
   const baseCal = typeof baseline.calibrationMs === 'number' ? baseline.calibrationMs : null
+  const baseAllocCal = typeof baseline.calibrationAllocMs === 'number' ? baseline.calibrationAllocMs : null
   /**
-   * 机器整体降速倍率（本次校准 / 基线校准）。
+   * 机器整体降速倍率（本次 / 基线，两探针取大）。
    *
    * 判定时会**先扣掉它**：机器整体慢 1.4 倍时，场景慢 1.4 倍不该算"代码回归"。
-   * 没有基线校准时按 1 处理（不折算），并在报告里说明。
+   * 两条都缺时按 1 处理（不折算），并在报告里说明。
    */
-  let calRatio = 1
+  const env = envRatio({
+    cpuMs: calibration,
+    allocMs: calibrationAlloc,
+    baseCpuMs: baseCal,
+    baseAllocMs: baseAllocCal,
+  })
+  let calRatio = env.ratio
   let envUnhealthy = false
-  if (baseCal) {
-    const ratio = calibration / baseCal
-    calRatio = ratio
-    if (ratio > CALIBRATION_TOLERANCE) {
+  if (env.source) {
+    const detail = [
+      env.cpuRatio ? `算术 ×${env.cpuRatio.toFixed(2)}` : null,
+      env.allocRatio ? `分配 ×${env.allocRatio.toFixed(2)}` : null,
+    ]
+      .filter(Boolean)
+      .join('，')
+    const { healthy } = judgeEnv({ ratio: env.ratio, tolerance: CALIBRATION_TOLERANCE })
+    if (!healthy) {
       envUnhealthy = true
       console.log(
-        `\n⚠ 环境不健康：算力校准 ${calibration.toFixed(1)}ms vs 基线 ${baseCal.toFixed(1)}ms（慢 ×${ratio.toFixed(2)}）`,
+        `\n⚠ 环境不健康：${detail}（取大 ×${env.ratio.toFixed(2)}，阈值 ×${CALIBRATION_TOLERANCE}）`,
       )
       console.log(
-        `   判定：本次**不判性能回归**（阈值 ×${CALIBRATION_TOLERANCE}）。` +
-          `机器当前比基线时慢 ${((ratio - 1) * 100).toFixed(0)}%，任何场景都会"看起来变慢"。`,
+        `   判定：本次**不判性能回归**。` +
+          `机器当前比基线时慢 ${((env.ratio - 1) * 100).toFixed(0)}%，任何场景都会"看起来变慢"。`,
       )
       console.log('   这不是放过回归，是承认测不准 —— 想真验证请找一台空闲机器或稍后重跑。')
     } else {
-      console.log(
-        `\n✓ 环境健康：算力校准 ${calibration.toFixed(1)}ms vs 基线 ${baseCal.toFixed(1)}ms（×${ratio.toFixed(2)}，阈值 ×${CALIBRATION_TOLERANCE}）`,
-      )
-      if (ratio > 1.05) {
+      console.log(`\n✓ 环境健康：${detail}（取大 ×${env.ratio.toFixed(2)}，阈值 ×${CALIBRATION_TOLERANCE}）`)
+      if (env.ratio > 1.05) {
         console.log(
-          `   机器比基线时慢 ×${ratio.toFixed(2)} → 判定前会先扣掉这部分（折算后比值 = 原始比值 ÷ ${ratio.toFixed(2)}）`,
+          `   机器比基线时慢 ×${env.ratio.toFixed(2)} → 判定前会先扣掉这部分（折算后比值 = 原始比值 ÷ ${env.ratio.toFixed(2)}）`,
         )
       }
     }
   } else {
-    console.log('\nℹ 基线无 calibrationMs（旧基线），跳过环境健康门。重生成基线即可启用。')
+    console.log('\nℹ 基线无环境探针值（旧基线），跳过环境健康门。重生成基线即可启用。')
   }
 
   for (const r of results) {
@@ -449,10 +495,10 @@ if (checkMode) {
     const allowed = base * RATCHET * (calRatio && calRatio > 1 ? calRatio : 1)
     if (now > allowed && now - base > MIN_ABS_DELTA_MS) {
       suspects.add(r.name)
-      regressions.push({ name: r.name, base, now, ratio: now / base, norm: (now / base) / (calRatio || 1) })
+      regressions.push({ name: r.name, base, now, ratio: now / base, norm: normalizeRatio({ ratio: now / base, envRatioValue: calRatio }) })
     } else if (now > allowed) {
       // 比值超了但绝对差太小：不判失败，但要说出来，免得"为什么它没红"变成谜
-      noisy.push({ name: r.name, base, now, ratio: now / base, norm: (now / base) / (calRatio || 1) })
+      noisy.push({ name: r.name, base, now, ratio: now / base, norm: normalizeRatio({ ratio: now / base, envRatioValue: calRatio }) })
     }
   }
 

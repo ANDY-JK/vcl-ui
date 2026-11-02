@@ -2,6 +2,7 @@
   "node": "v24.13.0",
   "runs": 3,
   "calibrationMs": 33.928,
+  "calibrationAllocMs": 3.395,
   "note": "每个场景取 3 次运行 median 的中位数；判定用 median，倍率与绝对下限见 scripts/bench.mjs",
   "scenarios": [
     {

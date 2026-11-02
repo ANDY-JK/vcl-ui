@@ -187,6 +187,24 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "bench-env-take-max",
+      "file": "scripts/bench-env.mjs",
+      "find": "  const [source, ratio] = candidates.reduce((a, b) => (b[1] > a[1] ? b : a))",
+      "replace": "  const [source, ratio] = candidates[0]",
+      "cmd": "npx vitest run tests/unit/bench-env.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：只看算术探针，分配密集场景的环境降速被低估 → 假回归（#371）"
+    },
+    {
+      "id": "bench-env-healthy-gate",
+      "file": "scripts/bench-env.mjs",
+      "find": "  const healthy = !(ratio > tolerance)",
+      "replace": "  const healthy = true",
+      "cmd": "npx vitest run tests/unit/bench-env.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：环境永远判健康，测不准也照判回归（#371）"
+    },
+    {
       "id": "coverage-marker-missing",
       "file": "scripts/check-coverage-domains.mjs",
       "find": "if ((inputIdx === -1 || markerIdx > -1) && !fs.existsSync(FULL_RUN_MARKER)) {",
