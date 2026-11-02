@@ -25,6 +25,7 @@
  * 需要先起 dev server（`VITE_NO_HTTPS=1 npx vite --port 3721`）。
  */
 import { chromium } from 'playwright'
+import { judgeRows } from './rtl-judge.mjs'
 import { spawn } from 'node:child_process'
 import { setTimeout as sleep } from 'node:timers/promises'
 
@@ -266,35 +267,7 @@ for (const r of rows) {
 }
 
 // ── 判定 ──
-const failures = []
-
-// ① 方向必须真的切过去了（否则后面的断言测的是 LTR，等于假绿）
-for (const r of rows) {
-  if (r.error) continue
-  if (r.direction !== r.dir) {
-    failures.push(`#/${r.route} [${r.dir}] 方向未生效（实测 direction=${r.direction}）—— 断言会假绿`)
-  }
-}
-
-// ② 零横向溢出（双向都要）
-for (const r of rows) {
-  if (r.error) continue
-  if (r.overflowX > 0) {
-    failures.push(`#/${r.route} [${r.dir}] 横向溢出 ${r.overflowX}px`)
-  }
-}
-
-// ③ 零越界（双向都要）
-for (const r of rows) {
-  if (r.error) continue
-  if (r.offenders.length) {
-    const sample = r.offenders
-      .slice(0, 3)
-      .map((o) => `<${o.tag}${o.cls ? `.${o.cls}` : ''}>`)
-      .join(' ')
-    failures.push(`#/${r.route} [${r.dir}] ${r.offenders.length} 个元素越界（${sample}）`)
-  }
-}
+const failures = judgeRows(rows)
 
 console.log('')
 if (failures.length) {
