@@ -2269,6 +2269,392 @@ const lineMode = ref<'callback' | 'key'>('callback')
       </p>
       <DataTable namespace="demo-modal4" :columns="modalLargeCols" :data="modalLargeData" row-key="id" />
     </ModalBox>
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>columns</code></td>
+            <td>Column[]</td>
+            <td>—</td>
+            <td>列定义数组：key/label/type/width/sortable/filterable/cell 等（见 Column 类型）</td>
+          </tr>
+          <tr>
+            <td><code>data</code></td>
+            <td>T[]</td>
+            <td>—</td>
+            <td>行数据数组（泛型 T，行对象需含 rowKey 指定的键字段）</td>
+          </tr>
+          <tr>
+            <td><code>rowKey</code></td>
+            <td>string</td>
+            <td>'seq'</td>
+            <td>行唯一键字段名（默认 'seq'）：选中/编辑/备注/持久化都以此键定位行</td>
+          </tr>
+          <tr>
+            <td><code>striped</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>斑马纹（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>bordered</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>单元格边框（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>hoverable</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>行悬停高亮（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>isLoading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>加载态：表格蒙层，期间禁用交互</td>
+          </tr>
+          <tr>
+            <td><code>emptyText</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>空数据提示文案；空串（默认）用内置 i18n 文案</td>
+          </tr>
+          <tr>
+            <td><code>blankText</code></td>
+            <td>string</td>
+            <td>'-'</td>
+            <td>单元格空白占位：null/undefined/空串/纯空白串 → 该文本（默认 '-'）；传空串关闭。仅展示层，不影响导出</td>
+          </tr>
+          <tr>
+            <td><code>sortKey</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>初始/受控排序字段：传入后外部驱动排序状态（变化经 @sort 抛出）；不传则组件内部自由排序</td>
+          </tr>
+          <tr>
+            <td><code>sortOrder</code></td>
+            <td>'asc' \| 'desc'</td>
+            <td>—</td>
+            <td>受控排序方向，'asc' \| 'desc'（默认 'asc'），与 sortKey 成对使用</td>
+          </tr>
+          <tr>
+            <td><code>pinyinSearch</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>全局搜索是否启用拼音匹配（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>truncateThreshold</code></td>
+            <td>number</td>
+            <td>0</td>
+            <td>
+              单元格截断判定的字符数下限：0（默认）全部单元格按 truncateMode 处理；>0 时仅文本超过该长度的单元格截断
+            </td>
+          </tr>
+          <tr>
+            <td><code>selectable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>行首选择列（复选框）开关</td>
+          </tr>
+          <tr>
+            <td><code>selectedKeys</code></td>
+            <td>string[]</td>
+            <td>() => []</td>
+            <td>受控选中行键集合（v-model:selectedKeys）</td>
+          </tr>
+          <tr>
+            <td><code>exportable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>CSV 导出按钮；有 @export 监听时抛事件由宿主自理，无监听时内置导出</td>
+          </tr>
+          <tr>
+            <td><code>exportFileName</code></td>
+            <td>string</td>
+            <td>'export'</td>
+            <td>导出文件名（不含扩展名，默认 'export'）</td>
+          </tr>
+          <tr>
+            <td><code>excelExportable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>Excel(.xlsx) 导出按钮（导出范围同 exportScope）</td>
+          </tr>
+          <tr>
+            <td><code>exportScope</code></td>
+            <td>'all' \| 'page'</td>
+            <td>—</td>
+            <td>导出范围：'all' 筛选后全量（默认），'page' 仅当前页</td>
+          </tr>
+          <tr>
+            <td><code>pageSize</code></td>
+            <td>number</td>
+            <td>0</td>
+            <td>每页行数；0（默认）不分页</td>
+          </tr>
+          <tr>
+            <td><code>currentPage</code></td>
+            <td>number</td>
+            <td>1</td>
+            <td>
+              受控当前页（v-model:currentPage）。越界（>总页数 / &lt;1）时自动夹到 [1,totalPages] 并 emit
+              纠正值——宿主把页码存 URL 后恢复、或筛选后总数变小都靠它兜住
+            </td>
+          </tr>
+          <tr>
+            <td><code>total</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>总行数：传入即按服务端分页处理（分页器用它算页数，数据由父组件按页提供；不传=客户端分页）</td>
+          </tr>
+          <tr>
+            <td><code>cardBreakpoint</code></td>
+            <td>number</td>
+            <td>BP_MD</td>
+            <td>卡片视图断点（px）：容器实测宽度低于该值时自动切卡片视图（视图模式 auto 下生效）</td>
+          </tr>
+          <tr>
+            <td><code>maxHeight</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>表格区最大高度（CSS 高度值，如 '400px'）；空串不限高</td>
+          </tr>
+          <tr>
+            <td><code>autoHeight</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>自适应高度：填充父容器剩余空间（需父容器有明确高度）</td>
+          </tr>
+          <tr>
+            <td><code>virtualScroll</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>虚拟滚动（默认开）：行数超过可视范围时只渲染窗口内行，容器滚动/页面滚动都会自动接管</td>
+          </tr>
+          <tr>
+            <td><code>pageVirtualMin</code></td>
+            <td>number</td>
+            <td>0</td>
+            <td>
+              页面滚动虚拟化的**额外**行数下限（默认 0 = 不设人工下限）。 实际判据是实测的：总行数 > 可视行数 + 上下
+              overscan（那些行无论如何都要渲染）， 所以面板高矮、dense、缩放都自适应，不靠猜常量。设 >0
+              只用于强制提前/推迟启用。
+            </td>
+          </tr>
+          <tr>
+            <td><code>autoFit</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>列宽自适应（默认开）：忽略列的 width 声明，列宽由内部按容器宽度动态分配（防抖 + 冷却）</td>
+          </tr>
+          <tr>
+            <td><code>truncateMode</code></td>
+            <td>'ellipsis' \| 'wrap' \| 'none'</td>
+            <td>'ellipsis'</td>
+            <td>单元格文本截断：'ellipsis' 省略号（默认）\| 'wrap' 换行 \| 'none' 不截断</td>
+          </tr>
+          <tr>
+            <td><code>dense</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>紧凑密度（更小的行高与内边距）</td>
+          </tr>
+          <tr>
+            <td><code>colSettings</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>列设置按钮（默认显示，false 可隐藏）</td>
+          </tr>
+          <tr>
+            <td><code>cellSelection</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>单元格矩形选区：长按/拖拽框选 + 拖选自动滚动（默认开启）</td>
+          </tr>
+          <tr>
+            <td><code>keyboardNav</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>键盘导航：方向键移动/Shift 扩展/Enter 编辑/Delete 清空/Ctrl+Home/End（默认开启）</td>
+          </tr>
+          <tr>
+            <td><code>cellContextMenu</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>单元格右键菜单：复制/粘贴/清空（默认开启）</td>
+          </tr>
+          <tr>
+            <td><code>summary</code></td>
+            <td>((rows: T[]) => Record&lt;string, string \| number>) \| Record&lt;string, string \| number></td>
+            <td>—</td>
+            <td>汇总行：函数形式用 props.data 计算（仅客户端模式可用）；服务端分页请传对象（后端算好汇总值）</td>
+          </tr>
+          <tr>
+            <td><code>storage</code></td>
+            <td>TableStorage</td>
+            <td>—</td>
+            <td>存储适配器，默认 localStorage；SaaS 场景可传入按账号隔离的实现</td>
+          </tr>
+          <tr>
+            <td><code>namespace</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>存储命名空间，同页面多实例时用于隔离持久化数据</td>
+          </tr>
+          <tr>
+            <td><code>persistence</code></td>
+            <td>'auto' \| 'none'</td>
+            <td>'auto' as 'auto' \| 'none'</td>
+            <td>
+              持久化模式：'auto' 自动判断（sortKey 受控/searchMode='server'/filterMode='server' → 禁用），'none'
+              强制禁用内部 IndexedDB
+            </td>
+          </tr>
+          <tr>
+            <td><code>editable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>单元格编辑模式：双击进入编辑，Enter 确认，Escape 取消</td>
+          </tr>
+          <tr>
+            <td><code>dateInputOrder</code></td>
+            <td>DateOrder</td>
+            <td>'MDY' as DateOrder</td>
+            <td>
+              日期列（Column.type='date'/'datetime'）两段数字输入的月日顺序： 'MDY'（默认，9/12 → 9月12日）\|
+              'DMY'（9/12 → 12月9日）。 ⚠️ 当月日都 ≤12 时无法自动消歧，必须由使用方声明。
+            </td>
+          </tr>
+          <tr>
+            <td><code>noteMode</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>备注提示模式：hover 显示备注，点击填写</td>
+          </tr>
+          <tr>
+            <td><code>notes</code></td>
+            <td>Record&lt;string, Record&lt;string, string>></td>
+            <td>() => ({})</td>
+            <td>外部传入的备注数据</td>
+          </tr>
+          <tr>
+            <td><code>rowActions</code></td>
+            <td>RowAction[]</td>
+            <td>—</td>
+            <td>行操作按钮：添加后在每行末尾渲染操作列</td>
+          </tr>
+          <tr>
+            <td><code>rowContextActions</code></td>
+            <td>RowContextAction[]</td>
+            <td>—</td>
+            <td>行右键菜单项：右键点击数据行时显示的自定义操作</td>
+          </tr>
+          <tr>
+            <td><code>originalTooltip</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>@patch 2026-07-15 原始值气泡：hover 已编辑单元格时弹出原始值供对比（需 editable 开启）</td>
+          </tr>
+          <tr>
+            <td><code>modifiedMark</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>@patch 2026-07-15 已编辑标记：被修改过的单元格右上角显示三角角标</td>
+          </tr>
+          <tr>
+            <td><code>imageDomains</code></td>
+            <td>string[]</td>
+            <td>() => []</td>
+            <td>图片域名白名单，isImageUrl 判图用。默认覆盖常见 CDN</td>
+          </tr>
+          <tr>
+            <td><code>searchMode</code></td>
+            <td>'client' \| 'server'</td>
+            <td>'client'</td>
+            <td>搜索模式：'client' 客户端本地过滤，'server' 抛 search 事件由后端处理</td>
+          </tr>
+          <tr>
+            <td><code>filterMode</code></td>
+            <td>'client' \| 'server'</td>
+            <td>'client'</td>
+            <td>筛选模式：'client' 客户端本地过滤，'server' 只抛 filter 事件由后端处理</td>
+          </tr>
+          <tr>
+            <td><code>filters</code></td>
+            <td>Record&lt;string, string[]></td>
+            <td>—</td>
+            <td>
+              外部筛选状态（v-model:filters）：服务端模式下父组件可程序化控制筛选，变化时自动同步到内部 filterState
+            </td>
+          </tr>
+          <tr>
+            <td><code>rowClass</code></td>
+            <td>(row: T, index: number) => string</td>
+            <td>—</td>
+            <td>行类名回调：(row, index) => class 串，每行渲染时调用</td>
+          </tr>
+          <tr>
+            <td><code>rowStyle</code></td>
+            <td>(row: T, index: number) => Record&lt;string, string></td>
+            <td>—</td>
+            <td>行内联样式回调：(row, index) => 样式对象</td>
+          </tr>
+          <tr>
+            <td><code>cellClass</code></td>
+            <td>(colKey: string, row: T, index: number) => string</td>
+            <td>—</td>
+            <td>单元格类名回调：(colKey, row, index) => class 串</td>
+          </tr>
+          <tr>
+            <td><code>cellStyle</code></td>
+            <td>(colKey: string, row: T, index: number) => Record&lt;string, string></td>
+            <td>—</td>
+            <td>单元格内联样式回调：(colKey, row, index) => 样式对象</td>
+          </tr>
+          <tr>
+            <td><code>rowLine</code></td>
+            <td>(row: T, index: number) => RowLineColor \| undefined</td>
+            <td>—</td>
+            <td>
+              行级左边线回调：(row, index) => 语义色名，该行最左缘画对应颜色竖线；返回 undefined 不显示。 与 rowLineKey
+              并存时本回调优先（设置了即接管整行判定，返回 undefined 也不会回落到字段映射）
+            </td>
+          </tr>
+          <tr>
+            <td><code>rowLineKey</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>行线字段名：取行数据该字段值查 lineColors 映射，命中语义色名才画线（rowLine 未设置时生效）</td>
+          </tr>
+          <tr>
+            <td><code>lineColors</code></td>
+            <td>Record&lt;string, RowLineColor></td>
+            <td>() => ({})</td>
+            <td>行线字段值 → 语义色名映射（配合 rowLineKey）</td>
+          </tr>
+          <tr>
+            <td><code>shotMode</code></td>
+            <td>'preview' \| 'download' \| 'copy'</td>
+            <td>'preview' as 'preview' \| 'download' \| 'copy'</td>
+            <td>截图行为模式：'preview' 弹窗预览 \| 'download' 直接下载 \| 'copy' 直接复制到剪贴板</td>
+          </tr>
+          <tr>
+            <td><code>screenshotMaxRows</code></td>
+            <td>number</td>
+            <td>400</td>
+            <td>截图最大行数（超过提醒用户先筛选，避免生成超大 canvas 卡死）</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
   </div>
 </template>
 

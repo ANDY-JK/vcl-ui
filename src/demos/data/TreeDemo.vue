@@ -491,6 +491,76 @@ function onNodeClick(node: TreeNode) {
         <code>@update:selected-key(key)</code>
       </p>
     </Card>
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>data</code></td>
+            <td>TreeNode[]</td>
+            <td>—</td>
+            <td>树数据：TreeNode[]，children 嵌套构成层级</td>
+          </tr>
+          <tr>
+            <td><code>level</code></td>
+            <td>number</td>
+            <td>0</td>
+            <td>⛔ 内部递归层级（子树实例由组件自建），消费方勿传</td>
+          </tr>
+          <tr>
+            <td><code>checkable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>节点勾选框：父子级联 + 半选态</td>
+          </tr>
+          <tr>
+            <td><code>defaultExpandedKeys</code></td>
+            <td>(string \| number)[]</td>
+            <td>() => []</td>
+            <td>初始展开的节点键集合（此后展开状态由组件内部管理）</td>
+          </tr>
+          <tr>
+            <td><code>expandAll</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>初始全部展开</td>
+          </tr>
+          <tr>
+            <td><code>selectable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>节点单选（配合 v-model:selectedKey）</td>
+          </tr>
+          <tr>
+            <td><code>selectedKey</code></td>
+            <td>string \| number \| null</td>
+            <td>null</td>
+            <td>受控选中节点键（v-model:selectedKey）</td>
+          </tr>
+          <tr>
+            <td><code>lazy</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>懒加载：展开节点时若无 children 且 isLeaf 非 true 的节点不会触发 load</td>
+          </tr>
+          <tr>
+            <td><code>sharedState</code></td>
+            <td>TreeState \| null</td>
+            <td>—</td>
+            <td>
+              ⛔ 内部 plumbing：递归子树经此 prop 接收根实例的共享 state。 不能只靠 provide/inject——嵌套 Tree 渲染在
+              Transition 的插槽里， 该边界上 inject 实测取不到（每层自建 state：深层没有勾选框、勾选级联
+              不同步、深层节点的事件发不出去、expandAll 只生效一层）。消费方勿传。
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
   </div>
 </template>
 

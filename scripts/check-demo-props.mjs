@@ -333,6 +333,17 @@ const seenProps = new Map()
 /** 已被某张演示页表"正式列出"的 prop：`组件路径::prop` */
 const documented = new Set()
 
+/**
+ * 组件路径归一化：同一个组件在不同 demo 里可能以 `src/components/x/y.vue`
+ * 或**绝对路径** `[LOCAL_PATH] 出现（取决于 import 写法解析）。
+ * 不归一化会把同一组件算成两个 —— 实测把 20 个漏报算成 31 个（#364）。
+ */
+const normPath = (p) => {
+  const posix = p.replaceAll('\\', '/')
+  const i = posix.indexOf('/src/components/')
+  return i > -1 ? posix.slice(i + 1) : posix.replace(/^\.\//, '')
+}
+
 const lies = []
 let tables = 0
 let checkedRows = 0
@@ -348,7 +359,7 @@ for (const d of demos) {
     const p = propsOf(c)
     if (p && p.size) {
       propSets.push({ c, p })
-      seenProps.set(c, p)
+      seenProps.set(normPath(c), p)
     }
     // 组件本身不声明任何 prop（纯事件驱动）是正常形态，不算判据没覆盖到
     else if (read(c).includes('defineProps') || read(c).includes('props:'))
@@ -387,7 +398,7 @@ for (const d of demos) {
       checkedRows++
       const key = camel(r.name)
       const owner = scope.find((x) => x.p.has(key))
-      if (owner) documented.add(`${owner.c}::${key}`)
+      if (owner) documented.add(`${normPath(owner.c)}::${key}`)
       if (!owner) {
         lies.push(
           `${d}:${r.line}  表里列了 ${r.name}，但 ${attributed ? `该表判归 ${owners[0].s.c}` : '该 demo 引用的组件'}都没有这个 prop`,
@@ -422,12 +433,12 @@ if (lies.length) {
 // 漏报更常见（新加能力没人写文档），但历史存量可能很大，所以默认只报告、不判红；
 // `--strict-missing` 才判红（等存量清完再打开）。
 /**
- * 漏报预算（棘轮）：现状 40 个，**只许降不许升**。
- * 为什么不用"必须为 0"：历史存量仍有 40 个，一次清零不现实；但**不设上限等于没有闸口** ——
+ * 漏报预算（棘轮）：现状 14 个，**只许降不许升**。
+ * 为什么不用"必须为 0"：历史存量仍有 14 个，一次清零不现实；但**不设上限等于没有闸口** ——
  * 新加一个 prop 只要不写进演示页表就能悄悄溜过去。
  * 修一个就把它减一（保持"只降"的语义），归零后改成"必须为 0"。
  */
-const MISSING_BUDGET = 40
+const MISSING_BUDGET = 14
 
 const missing = []
 for (const [c, p] of seenProps) {
