@@ -187,6 +187,24 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "silent-error-hidden-subtree",
+      "file": "scripts/silent-error-judge.mjs",
+      "find": "  const template = stripAlwaysHidden(stripComments(text.slice(tplStart, tplEnd)))",
+      "replace": "  const template = stripComments(text.slice(tplStart, tplEnd))",
+      "cmd": "npx vitest run tests/unit/silent-error-judge.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：v-if=\"false\" / v-show=\"false\" 包裹的错误状态不再算静默（TD-26 的老洞）（#372）"
+    },
+    {
+      "id": "silent-error-comment-only",
+      "file": "scripts/silent-error-judge.mjs",
+      "find": "  const template = stripAlwaysHidden(stripComments(text.slice(tplStart, tplEnd)))",
+      "replace": "  const template = stripAlwaysHidden(text.slice(tplStart, tplEnd))",
+      "cmd": "npx vitest run tests/unit/silent-error-judge.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：只在 HTML 注释里出现的错误状态被当成已渲染（#372）"
+    },
+    {
       "id": "bench-env-take-max",
       "file": "scripts/bench-env.mjs",
       "find": "  const [source, ratio] = candidates.reduce((a, b) => (b[1] > a[1] ? b : a))",

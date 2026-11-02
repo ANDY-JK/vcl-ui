@@ -15,6 +15,13 @@
  * 在 `<script>` 里被**赋值**过（`x.value =` / `x = ref/computed(...)`），
  * 但 `<template>` 文本里**一次都没出现** → 记为候选。
  *
+ * ## 判据在 #372 升级过一次（TD-26）
+ *
+ * 原判据只问"名字在模板里出现过吗"，于是 `v-if="false"` / `v-show="false"` / HTML 注释
+ * 三种"写了但用户看不见"的写法都能绕过去。现改为调 `scripts/silent-error-judge.mjs`：
+ * 先去注释、再剔除被常量假指令包裹的子树，然后才问"名字还在不在"。
+ * 动态条件（`v-if="loading"`）不判 —— 那是业务逻辑，静态判不了。
+ *
  * 这个规则会漏掉"经 computed 间接消费"的情形（模板用 `displayError`，而它读 `internalError`），
  * 所以候选**不等于**缺陷：每一条都要人工分诊，结论落进下面的 `REVIEWED` 清单（写清理由）。
  * 清单是**双向**的：① 出现清单外的新候选 → 红（逼你分诊）；② 清单里的条目不再是候选 → 也红
@@ -26,12 +33,11 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
+import { silentStatesOf } from '../../scripts/silent-error-judge.mjs'
 
 const ROOT = process.cwd()
 const SRC = join(ROOT, 'src', 'components')
 
-/** 名字像"错误/提示"的状态 */
-const STATE_NAME = /(Error|Msg|Message|Fail|Failure|Warn|Warning|Alert|Hint)$/
 /** 至少扫到这么多 .vue 才算"真的扫了"（防止 walker 坏掉后空集判绿） */
 const MIN_VUE_FILES = 100
 
@@ -87,29 +93,6 @@ function walkVue(dir: string, out: string[] = []): string[] {
   return out
 }
 
-/** 返回此文件里"被赋值、但模板从未提及"的错误状态名 */
-function silentStates(file: string): string[] {
-  const text = readFileSync(file, 'utf8')
-  const tplStart = text.indexOf('<template')
-  const tplEnd = text.lastIndexOf('</template>')
-  if (tplStart < 0 || tplEnd <= tplStart) return [] // 无模板（纯逻辑组件）不参与
-  const template = text.slice(tplStart, tplEnd)
-  const script = text.slice(0, tplStart) + text.slice(tplEnd + '</template>'.length)
-
-  const declared = new Set<string>()
-  for (const m of script.matchAll(/\b([A-Za-z_$][\w$]*)\s*=\s*(?:ref|shallowRef|computed)\s*[(<]/g)) declared.add(m[1])
-  const assigned = new Set<string>()
-  for (const m of script.matchAll(/\b([A-Za-z_$][\w$]*)\.value\s*=/g)) assigned.add(m[1])
-
-  const out: string[] = []
-  for (const name of declared) {
-    if (!STATE_NAME.test(name) || !assigned.has(name)) continue
-    if (new RegExp(`\\b${name.replace(/\$/g, '\\$')}\\b`).test(template)) continue
-    out.push(name)
-  }
-  return out
-}
-
 describe('棘轮：错误状态不能被「写了没人看」', () => {
   it('候选集与分诊清单完全一致（清单外的新候选 → 红；清单里过期的 → 也红）', () => {
     const files = walkVue(SRC)
@@ -120,7 +103,7 @@ describe('棘轮：错误状态不能被「写了没人看」', () => {
     const found: Array<{ rel: string; name: string }> = []
     for (const file of files) {
       const rel = relative(SRC, file).split(sep).join('/')
-      for (const name of silentStates(file)) found.push({ rel, name })
+      for (const name of silentStatesOf(readFileSync(file, 'utf8'))) found.push({ rel, name })
     }
 
     const matched = new Set<number>() // REVIEWED 命中下标
