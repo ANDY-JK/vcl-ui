@@ -331,6 +331,12 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 
 `.husky/pre-commit` 现在跑「`lint-staged`（暂存区格式化）+ 快链」，把显然会坏的提交挡在落库之前。跳过方式：`git commit --no-verify`，或 `SKIP_QUICK_CHECK=1 git commit ...`。
 
+3. **判据抽纯函数**（2026-11-03 固化为手法）：闸口/棘轮的**判定逻辑不要埋在会跑重活的宿主里**。已三次踩同一个结构问题并三次用同一手法解决 —— `scripts/rtl-judge.mjs`（#368，宿主要起 dev server + 浏览器）、`scripts/bench-env.mjs`（#371，宿主顶层跑十几秒基准）、`scripts/silent-error-judge.mjs`（#372，判据原本写在 spec 内部）。
+
+   抽出来的好处是具体的：**秒级单测** + **稳定的负向对照**（证明判据失效时用例真会红）。埋在宿主里时这两件事都做不了，判据坏了没人知道。
+
+   判断标准：**这个判据需要浏览器 / 服务 / 全量基准 / 十几秒才能跑一次吗？** 需要 → 抽。反之（纯文本、纯文件）不必拆。
+
 **钩子生效的前提**：由 husky 安装，**新 clone / 新 worktree 必须先 `npm install`**（本仓 `.husky/` 已入库，但真正生效依赖 `prepare` 脚本设置的 `core.hooksPath`）。
 
 **为什么放 pre-commit 而不是报告建议的 pre-push**：本仓没有远端，`git push` 一次都不会发生，pre-push 等于永不触发。将来若加了远端、觉得每次提交 2 分钟太久，把快链那段从 `.husky/pre-commit` 挪到 `.husky/pre-push` 即可——**挪的时候同步改这段说明**，别让文档和事实脱节。
