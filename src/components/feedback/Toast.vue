@@ -30,7 +30,7 @@ import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
 import { TOAST_KEY, registerGlobalToast, unregisterGlobalToast } from './composables/toast-context'
 import { createToastQueue } from './composables/use-toast-queue'
-import type { ToastAPI } from './composables/toast-context'
+import type { ToastAPI, ToastItem } from './composables/toast-context'
 import { feedbackIconMap, feedbackColorMap } from '../shared/types'
 
 // 模板 v-for 中 t 已被 toast 项占用，翻译函数用别名 tt
@@ -82,6 +82,12 @@ const inlineBorderMap: Record<string, string> = {
 // 队列状态机已下沉 use-toast-queue.ts（#374）：去重/上限/定时器簿记都在那边
 const { toasts, show, remove: removeToast, clearAll } = createToastQueue()
 const toastApi: ToastAPI = { toasts, show, remove: removeToast, clearAll }
+
+/** 操作按钮点击（#384：模板表达式只放标识符，多语句收进函数） */
+function runToastAction(t: ToastItem) {
+  ;(t.onAction || t.onUndo)?.()
+  removeToast(t.id)
+}
 
 // 通过 provide/inject 共享本实例 API，子组件可 inject 后直接调用（仅限本实例子树）
 provide(TOAST_KEY, toastApi)
@@ -161,10 +167,7 @@ defineExpose({
             type="button"
             class="toast-undo"
             :aria-label="t.actionText || t.undoText"
-            @click="
-              ;(t.onAction || t.onUndo)?.()
-              removeToast(t.id)
-            "
+            @click="runToastAction(t)"
           >
             {{ t.actionText || t.undoText }}
           </button>

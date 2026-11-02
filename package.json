@@ -58,6 +58,7 @@
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:demo-props": "node scripts/check-demo-props.mjs",
     "check:error-demo": "node scripts/check-error-demo.mjs",
+    "check:template-statements": "node scripts/check-template-statements.mjs",
     "gen:docs": "node scripts/gen-docs.mjs",
     "gen:governance-index": "node scripts/gen-governance-index.mjs",
     "gen:theme": "node scripts/gen-theme.mjs",

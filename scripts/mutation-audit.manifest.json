@@ -187,6 +187,24 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "template-stmt-semicolon",
+      "file": "scripts/template-statements.mjs",
+      "find": "  if (v.includes(';')) return true",
+      "replace": "  if (false) return true",
+      "cmd": "npx vitest run tests/unit/template-statements.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：显式分号的多语句不再被判（#384）"
+    },
+    {
+      "id": "template-stmt-assign-lines",
+      "file": "scripts/template-statements.mjs",
+      "find": "  return assignLines.length >= 2",
+      "replace": "  return false",
+      "cmd": "npx vitest run tests/unit/template-statements.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：#383 的真实形态（换行分隔的多条赋值、无分号）漏报（#384）"
+    },
+    {
       "id": "error-demo-prop-detect",
       "file": "scripts/error-demo-coverage.mjs",
       "find": "export function hasErrorishProps(source) {\n  return /\\b(error|invalid)\\?\\s*:/.test(source)\n}",
