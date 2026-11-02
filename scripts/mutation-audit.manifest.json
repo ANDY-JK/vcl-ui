@@ -187,6 +187,24 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "coverage-marker-missing",
+      "file": "scripts/check-coverage-domains.mjs",
+      "find": "if ((inputIdx === -1 || markerIdx > -1) && !fs.existsSync(FULL_RUN_MARKER)) {",
+      "replace": "if (false) {",
+      "cmd": "npx vitest run tests/unit/coverage-marker-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：单 spec 覆盖数据不被拦，按域地板会大面积误报（#369）"
+    },
+    {
+      "id": "coverage-marker-stale",
+      "file": "scripts/check-coverage-domains.mjs",
+      "find": "if (reportTime > markerTime) {",
+      "replace": "if (false) {",
+      "cmd": "npx vitest run tests/unit/coverage-marker-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：全量跑后单跑 spec 的过期覆盖不被拦（#369）"
+    },
+    {
       "id": "rtl-direction-guard",
       "file": "scripts/rtl-judge.mjs",
       "find": "    if (r.direction !== r.dir) {",

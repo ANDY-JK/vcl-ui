@@ -101,11 +101,19 @@ const j = JSON.parse(fs.readFileSync(REPORT, 'utf8'))
 // `npm run test:unit` 结束时写 `reports/coverage/.full-run`（内容为时间戳）。
 // 本脚本要求该标记存在，且**不比 coverage-final.json 旧**
 // （若有人先全量跑、再单 spec 带 --coverage，coverage 会变新而标记不变旧 → 立刻抓出）。
-const FULL_RUN_MARKER = path.join(path.dirname(REPORT), '.full-run')
+/**
+ * 自测支持（#369）：`--marker <file>` 指定标记文件路径（默认与报告同目录的 .full-run）。
+ * 有了它，"标记太旧 / 标记缺失"这两条**防误用的判据**才能在夹具里验，
+ * 而不必真的跑一遍全量带覆盖的单测。
+ */
+const markerIdx = process.argv.indexOf('--marker')
+const FULL_RUN_MARKER =
+  markerIdx > -1 ? process.argv[markerIdx + 1] : path.join(path.dirname(REPORT), '.full-run')
 
-if (inputIdx === -1 && !fs.existsSync(FULL_RUN_MARKER)) {
+/** 给了 --marker 就说明调用方要**专门测标记判据**，此时即使给了 --input 也要校验 */
+if ((inputIdx === -1 || markerIdx > -1) && !fs.existsSync(FULL_RUN_MARKER)) {
   console.error(
-    '❌ 覆盖数据来源不明：找不到全量跑的标记 reports/coverage/.full-run。\n' +
+    `❌ 覆盖数据来源不明：找不到全量跑的标记 ${FULL_RUN_MARKER}。\n` +
       '   单跑 `vitest run <spec> --coverage` 也会产出 coverage-final.json，\n' +
       '   但只统计了部分文件——在它上面做按域地板检查会大面积误报。\n' +
       '   请先跑 `npm run test:unit`（它会写这个标记）。',
@@ -113,7 +121,7 @@ if (inputIdx === -1 && !fs.existsSync(FULL_RUN_MARKER)) {
   process.exit(1)
 }
 
-if (inputIdx === -1) {
+if (inputIdx === -1 || markerIdx > -1) {
   const markerTime = fs.statSync(FULL_RUN_MARKER).mtimeMs
   const reportTime = fs.statSync(REPORT).mtimeMs
 if (reportTime > markerTime) {

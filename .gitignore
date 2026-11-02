@@ -93,3 +93,6 @@ tests/unit/.noise-spool/
 
 # 闸口自测的临时夹具目录（用例造、用例删；兜底忽略）
 tests/.tmp/
+
+# coverage-marker 自测现场写的新鲜标记
+tests/fixtures/coverage-marker/.full-run-fresh
