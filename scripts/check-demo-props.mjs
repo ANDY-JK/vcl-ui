@@ -8,6 +8,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+/**
+ * 自测支持（#356）：`--root <dir>` 把工作目录切到夹具根（与 check:constants 同一手法）。
+ * 夹具由用例在临时目录里现造：闸口相对路径有 `src/demos` 与组件路径两类，chdir 一次全解决。
+ */
+const rootIdx = process.argv.indexOf('--root')
+if (rootIdx > -1) process.chdir(process.argv[rootIdx + 1])
+
 const VERBOSE = process.argv.includes('--verbose')
 
 const walk = (d, o = []) => {
@@ -321,6 +328,11 @@ const demos = walk('src/demos')
   .map(rel)
   .sort()
 
+/** 反向对账用：组件路径 → 解析出的 props（含在 `propSets` 里被带过的组件） */
+const seenProps = new Map()
+/** 已被某张演示页表"正式列出"的 prop：`组件路径::prop` */
+const documented = new Set()
+
 const lies = []
 let tables = 0
 let checkedRows = 0
@@ -334,7 +346,10 @@ for (const d of demos) {
   const propSets = []
   for (const c of comps) {
     const p = propsOf(c)
-    if (p && p.size) propSets.push({ c, p })
+    if (p && p.size) {
+      propSets.push({ c, p })
+      seenProps.set(c, p)
+    }
     // 组件本身不声明任何 prop（纯事件驱动）是正常形态，不算判据没覆盖到
     else if (read(c).includes('defineProps') || read(c).includes('props:'))
       unparsed.push(`${c}（被 ${d} 引用，props 没解析出来）`)
@@ -361,6 +376,7 @@ for (const d of demos) {
       checkedRows++
       const key = camel(r.name)
       const owner = scope.find((x) => x.p.has(key))
+      if (owner) documented.add(`${owner.c}::${key}`)
       if (!owner) {
         lies.push(
           `${d}:${r.line}  表里列了 ${r.name}，但 ${attributed ? `该表判归 ${owners[0].s.c}` : '该 demo 引用的组件'}都没有这个 prop`,
@@ -389,4 +405,39 @@ if (lies.length) {
   console.error(`❌ check:demo-props 不过：${lies.length} 条谎报`)
   process.exit(1)
 }
+// ── 反向对账：组件有、演示页表里没有（#355 登记的 TD-100）──────────
+//
+// 方向说明：上面查的是"表里有、组件没有"（谎报）；**这里查"组件有、表里没有"（漏报）**。
+// 漏报更常见（新加能力没人写文档），但历史存量可能很大，所以默认只报告、不判红；
+// `--strict-missing` 才判红（等存量清完再打开）。
+/**
+ * 漏报预算（棘轮）：现状 158 个，**只许降不许升**。
+ * 为什么不用"必须为 0"：历史存量 158 个，一次清零不现实；但**不设上限等于没有闸口** ——
+ * 新加一个 prop 只要不写进演示页表就能悄悄溜过去。
+ * 修一个就把它减一（保持"只降"的语义），归零后改成"必须为 0"。
+ */
+const MISSING_BUDGET = 158
+
+const missing = []
+for (const [c, p] of seenProps) {
+  for (const key of p.keys()) {
+    if (!documented.has(`${c}::${key}`)) missing.push(`${c} 的 ${key}`)
+  }
+}
+console.log(`\n[反向对账] 未在演示页表中出现的 prop：${missing.length} 个`)
+if (missing.length) {
+  for (const m of missing.slice(0, VERBOSE ? 999 : 20)) console.log('  · ' + m)
+  if (!VERBOSE && missing.length > 20) console.log(`  … 另有 ${missing.length - 20} 个（--verbose 看全量）`)
+}
+if (missing.length > MISSING_BUDGET) {
+  console.error(
+    `\n❌ check:demo-props 不过：漏报 ${missing.length} 个，超过预算 ${MISSING_BUDGET}` +
+      ' —— 新加的 public prop 必须写进对应演示页的 prop 表（或说明为何不公开）',
+  )
+  process.exit(1)
+}
+if (missing.length < MISSING_BUDGET) {
+  console.log(`   ↓ 比预算少 ${MISSING_BUDGET - missing.length} 个，请把 MISSING_BUDGET 调到 ${missing.length}`)
+}
+
 console.log('\n✅ check:demo-props 通过')

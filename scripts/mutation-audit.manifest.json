@@ -187,6 +187,15 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "demo-props-missing-budget",
+      "file": "scripts/check-demo-props.mjs",
+      "find": "if (missing.length > MISSING_BUDGET) {",
+      "replace": "if (false) {",
+      "cmd": "npx vitest run tests/unit/demo-props-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：漏报不设上限，新加 public prop 不写演示页文档也能过（#356）"
+    },
+    {
       "id": "constants-line-limit",
       "file": "scripts/check-constants.mjs",
       "find": "      if (n > LINE_LIMITS[domain]) {",
