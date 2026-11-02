@@ -17,6 +17,7 @@
  *   有人新加了顶层裸访问的场景。
  */
 import { describe, it, expect, beforeAll } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { setLocale } from '@/components/_internal/i18n'
@@ -47,8 +48,20 @@ import FormBuilder from '@/components/form-builder/FormBuilder.vue'
 import FormRenderer from '@/components/form-builder/FormRenderer.vue'
 import FormDesigner from '@/components/form-builder/FormDesigner.vue'
 import FormShareView from '@/components/form-builder/FormShareView.vue'
+import FormTargetCollect from '@/components/form-builder/FormTargetCollect.vue'
+import Upload from '@/components/form/Upload.vue'
+import FormCollect from '@/components/form-builder/FormCollect.vue'
+import RendererSignature from '@/components/form-builder/renderer/RendererSignature.vue'
 import AmapWidget from '@/components/amap/AmapWidget.vue'
 import { useTheme } from '@/components/_internal/useTheme'
+import LoginPage from '@/components/login/login.vue'
+import RegisterPage from '@/components/login/register.vue'
+import PortalLogin from '@/components/login/portal_login.vue'
+import ForgotPasswordPage from '@/components/login/forgot-password.vue'
+import RouteMap from '@/components/route-planner/RouteMap.vue'
+import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
+import ModalShell from '@/components/_internal/ModalShell.vue'
+import { scanComponentTree, findSmokeGaps, findUncoveredDomains, extractListedNames } from '../../scripts/ssr-smoke-coverage.mjs'
 
 const cases: Array<[string, unknown, Record<string, unknown>]> = [
   ['Button', Button, { text: '按钮' }],
@@ -99,6 +112,28 @@ const cases: Array<[string, unknown, Record<string, unknown>]> = [
   // 模块顶层或 setup 顶层碰 DOM 就会把整站打成 500。
   ['FormDesigner', FormDesigner, {}],
   ['FormShareView', FormShareView, { code: 'FD1.e30' }],
+  // FormTargetCollect：setup 期读 localStorage（存储配置 + 搜索关键词）——
+  // #376 之前它的守卫只在组件调用方、且只包读路径；列入冒烟后，任何人在
+  // 该组件 setup 顶层新加裸 localStorage/matchMedia 访问都会在 import 阶段炸出来。
+  // （真正的写路径守卫由 storage-persist-ssr.spec 单独测——renderToString 不触发用户交互。）
+  ['Upload', Upload, {}],
+  ['FormCollect', FormCollect, { fields: [] }],
+  ['RendererSignature', RendererSignature, { schema: { schemaVersion: 1, meta: { title: 't' }, fields: [] }, field: { id: 'f1', type: 'signature', label: '签名' } }],
+  ['LoginPage', LoginPage, {}],
+  ['RegisterPage', RegisterPage, {}],
+  ['PortalLogin', PortalLogin, {}],
+  ['ForgotPasswordPage', ForgotPasswordPage, {}],
+  ['RouteMap', RouteMap, { stores: [], plan: null }],
+  ['StorageConfigPanel', StorageConfigPanel, {}],
+  ['ModalShell', ModalShell, {}],
+  [
+    'FormTargetCollect',
+    FormTargetCollect,
+    {
+      schema: { schemaVersion: 1, meta: { title: 't' }, fields: [] },
+      targets: [{ id: 1, name: '门店甲' }],
+    },
+  ],
 ]
 
 describe('SSR 冒烟：组件在无 DOM 环境下可渲染', () => {
@@ -126,5 +161,24 @@ describe('SSR 冒烟：组件在无 DOM 环境下可渲染', () => {
     // 'auto' 在无 matchMedia 环境下必须回落（守卫生效）
     theme.setTheme('auto')
     expect(theme.effectiveTheme.value).toBeDefined()
+  })
+})
+
+
+describe('SSR 冒烟清单覆盖判据（#377）', () => {
+  const listed = extractListedNames(readFileSync('tests/unit/ssr-smoke.spec.ts', 'utf8'))
+  const scanned = scanComponentTree('src/components')
+
+  it('**域覆盖：每个含 .vue 的域都必须有冒烟代表**（缺失即红，逼你补）', () => {
+    const uncovered = findUncoveredDomains(scanned, listed)
+    expect(uncovered, `这些域没有 SSR 冒烟用例：${uncovered.join(', ')} —— 新组件顶层的裸 DOM 访问将无人发现`).toEqual([])
+  })
+
+  it('**危险信号组件必须逐个在清单**（setup 期裸 localStorage/matchMedia 的组件漏一个，SSR 500 就是整站级）', () => {
+    const dangerous = findSmokeGaps(scanned, listed).filter((g) => g.dangerous)
+    expect(
+      dangerous,
+      `这些含 localStorage/matchMedia 的组件不在冒烟清单：${dangerous.map((g) => g.path).join(', ')}`,
+    ).toEqual([])
   })
 })
