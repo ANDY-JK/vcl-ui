@@ -12,6 +12,7 @@ import {
   defaultStorageConfigFromEnv,
   type StorageConfig,
 } from '@/components/storage/contract-storage'
+import { safeLocalStorage } from '@/components/_internal/ssr-guard'
 
 const CONFIG_KEY = 'form-target-collect-storage-config'
 
@@ -25,9 +26,14 @@ export function redactForPersist(cfg: StorageConfig): StorageConfig {
   return out
 }
 
-/** 持久化（组件侧已做 typeof localStorage 守卫，本模块假定浏览器环境） */
+/**
+ * 持久化。SSR 安全：写路径此前只靠调用方守卫（读路径有、写路径漏，#376），
+ * 现在模块内用 ssr-guard 统一守 —— 无 window 环境静默跳过。
+ */
 export function persistStorageConfig(cfg: StorageConfig): void {
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(redactForPersist(cfg)))
+  const ls = safeLocalStorage()
+  if (!ls) return
+  ls.setItem(CONFIG_KEY, JSON.stringify(redactForPersist(cfg)))
 }
 
 /**
@@ -36,8 +42,10 @@ export function persistStorageConfig(cfg: StorageConfig): void {
  * 上传会因签名无效失败走既有错误提示，而不是静默把用户切回 local 后端丢掉整套云端配置。
  */
 export function loadPersistedStorageConfig(): StorageConfig {
+  const ls = safeLocalStorage()
+  if (!ls) return defaultStorageConfigFromEnv()
   try {
-    const raw = localStorage.getItem(CONFIG_KEY)
+    const raw = ls.getItem(CONFIG_KEY)
     if (raw) {
       const cfg = { secretAccessKey: '', ...(JSON.parse(raw) as Partial<StorageConfig>) } as StorageConfig
       const valid =

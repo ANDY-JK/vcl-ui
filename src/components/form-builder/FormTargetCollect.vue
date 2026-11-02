@@ -24,13 +24,8 @@ import ImagePreview from '@/components/data/ImagePreview.vue'
 import type { UploadFile } from '@/components/form/Upload.vue'
 import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
 import type { FormSchema, FormField } from './types'
-import {
-  createBackend,
-  defaultStorageConfigFromEnv,
-  getSlotFile,
-  setSlotFile,
-  allSlotsFilled,
-} from '@/components/storage/contract-storage'
+import { safeLocalStorage } from '@/components/_internal/ssr-guard'
+import { createBackend, getSlotFile, setSlotFile, allSlotsFilled } from '@/components/storage/contract-storage'
 import type { StorageBackend, StorageConfig, StoreUploadState, StoreFile } from '@/components/storage/contract-storage'
 import { loadPersistedStorageConfig, persistStorageConfig } from './storage-config-persist'
 import JSZip from 'jszip'
@@ -126,11 +121,8 @@ function cellText(v: unknown): string {
 // ════════════════════════════════════════
 
 // 存储配置的读写走 ./storage-config-persist：落盘脱敏 secretAccessKey（F3），
-// SSR 安全仍在此拦截——持久化模块直接访问 localStorage，无 window 环境会 ReferenceError
-const cfg = ref<StorageConfig>(
-  props.storageConfig ??
-    (typeof localStorage !== 'undefined' ? loadPersistedStorageConfig() : defaultStorageConfigFromEnv()),
-)
+// SSR 守卫已下沉到持久化模块内（#376，safeLocalStorage）——此处不再重复 typeof 判断
+const cfg = ref<StorageConfig>(props.storageConfig ?? loadPersistedStorageConfig())
 const showStoragePanel = ref(false)
 const saving = ref(false)
 let backendInstance: StorageBackend | null = null
@@ -285,13 +277,13 @@ async function onUpload(targetId: number, slotKey: string, files: UploadFile[]):
 // ════════════════════════════════════════
 
 const SEARCH_KEY = 'form-target-collect-search'
-// SSR 安全：setup 期裸读 localStorage 在服务端渲染直接 ReferenceError（对照 Select 的 typeof 守卫）
-const keyword = ref(
-  typeof localStorage !== 'undefined' ? (localStorage.getItem(SEARCH_KEY) as string | null) || '' : '',
-)
+// SSR 安全：守卫走 ssr-guard（#376 与持久化模块同款，替代裸 typeof localStorage 判断）
+const keyword = ref(safeLocalStorage()?.getItem(SEARCH_KEY) ?? '')
 watch(keyword, (v) => {
+  const ls = safeLocalStorage()
+  if (!ls) return
   try {
-    localStorage.setItem(SEARCH_KEY, v)
+    ls.setItem(SEARCH_KEY, v)
   } catch {
     /* 忽略 */
   }

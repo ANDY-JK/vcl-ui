@@ -187,6 +187,15 @@
       "note": "变异后：开关列表组不标记无效（#346）"
     },
     {
+      "id": "storage-persist-ssr-guard",
+      "file": "src/components/form-builder/storage-config-persist.ts",
+      "find": "export function persistStorageConfig(cfg: StorageConfig): void {\n  const ls = safeLocalStorage()\n  if (!ls) return\n  ls.setItem(CONFIG_KEY, JSON.stringify(redactForPersist(cfg)))\n}",
+      "replace": "export function persistStorageConfig(cfg: StorageConfig): void {\n  localStorage.setItem(CONFIG_KEY, JSON.stringify(redactForPersist(cfg)))\n}",
+      "cmd": "npx vitest run tests/unit/storage-persist-ssr.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：写路径恢复裸 localStorage，SSR 下保存存储配置直接 ReferenceError（#376）"
+    },
+    {
       "id": "toast-queue-dedup",
       "file": "src/components/feedback/composables/use-toast-queue.ts",
       "find": "        : toasts.value.find((t) => t.type === type && t.message === message && !t.actionText)",
