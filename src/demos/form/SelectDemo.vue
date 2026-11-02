@@ -202,6 +202,12 @@ const regionOptions: Option[] = [
 function submitRegion() {
   regionError.value = regionVal.value === 'overseas' ? '该地区暂不支持配送（模拟服务端返回）' : ''
 }
+
+/** 重置演示（模板表达式不支持多语句连写，收进函数 —— 同 #383） */
+function resetRegion() {
+  regionError.value = ''
+  regionVal.value = ''
+}
 </script>
 
 <template>
@@ -225,15 +231,7 @@ function submitRegion() {
       <Select v-model="regionVal" :options="regionOptions" label="配送地区" :error="regionError || undefined" />
       <div style="display: flex; gap: calc(8px * var(--vcl-scale)); margin-top: calc(8px * var(--vcl-scale))">
         <Button size="sm" variant="outline" @click="submitRegion">模拟服务端校验</Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          @click="
-            regionError = ''
-            regionVal = ''
-          "
-          >重置</Button
-        >
+        <Button size="sm" variant="ghost" @click="resetRegion">重置</Button>
       </div>
     </Card>
 
