@@ -91,9 +91,10 @@ test.describe('Upload 内置图片预览', () => {
   })
 
   test('列表变体：上传两张图 → 缩略图出现 → 点缩略图全屏预览 → 切换 → 关闭', async ({ page }) => {
-    // 预览示例卡的列表变体（多文件）：页面上第 2 个 file input
-    const inputs = page.locator('input[type=file]')
-    const listInput = inputs.nth(1)
+    // 预览示例卡的列表变体（多文件）：**定位到卡内**（#370 教训 —— 不要用页面级 nth，
+    // 卡片顺序会因新增演示卡变化；#380 在预览卡前插了 invalid 演示卡，页面级 nth(1) 错位）
+    const previewCard = page.locator('.grid-card', { hasText: '图片预览（内置）' })
+    const listInput = previewCard.locator('input[type=file]').nth(1)
 
     const blue = await makePng(page, 'blue.png', 66, 110, 247)
     const green = await makePng(page, 'green.png', 34, 197, 94)
