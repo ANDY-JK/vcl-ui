@@ -5,6 +5,16 @@ import type { UploadFile } from '@/components/form/Upload.vue'
 import Card from '@/components/data/Card.vue'
 
 const multiFiles = ref<UploadFile[]>([])
+
+// 外部错误注入演示（invalid，#341）：Upload 没有 error prop（错误文案由渲染器统一渲染），
+// invalid 只翻 aria-invalid —— 父级判定"必传但没传"这类规则时用
+const requiredUpload = ref<UploadFile[]>([])
+const requiredInvalid = ref(false)
+
+function submitUpload() {
+  // 模拟提交期校验：必传但没传 → invalid；传了 → 清掉
+  requiredInvalid.value = requiredUpload.value.length === 0
+}
 </script>
 
 <template>
@@ -13,6 +23,34 @@ const multiFiles = ref<UploadFile[]>([])
     <p class="demo-desc">
       拖拽/点击上传文件，默认图片类型；传 accept 可限定类型，传空字符串 = 全部类型；支持多文件、大小限制、目录上传。
     </p>
+
+    <Card title="外部判定无效 — invalid（#341）" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <p class="demo-hint">
+        Upload 没有 <code>error</code> prop（错误文案由表单渲染器统一渲染）； <code>invalid</code> 只翻
+        <code>aria-invalid</code>（读屏播报"无效"）—— 父级判定"必传但没传"这类提交期规则时用。
+      </p>
+      <Upload
+        v-model="requiredUpload"
+        variant="card"
+        label="现场照片（必传）"
+        :invalid="requiredInvalid || undefined"
+      />
+      <div style="display: flex; gap: calc(8px * var(--vcl-scale)); margin-top: calc(8px * var(--vcl-scale))">
+        <button
+          type="button"
+          style="
+            padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+            border: 1px solid var(--vcl-color-border);
+            border-radius: var(--vcl-radius-md);
+            background: var(--vcl-color-bg);
+            cursor: pointer;
+          "
+          @click="submitUpload"
+        >
+          模拟提交（未传照片会标无效）
+        </button>
+      </div>
+    </Card>
 
     <Card title="图片预览（内置）" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
       <p
