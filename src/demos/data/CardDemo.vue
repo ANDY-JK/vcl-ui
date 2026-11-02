@@ -177,219 +177,118 @@ const stats = [
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>type</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              grid
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              grid | stat
+            <td><code>type</code></td>
+            <td>'grid' \| 'stat'</td>
+            <td>'grid'</td>
+            <td>模式：grid 内容卡片（默认）\| stat 统计卡片</td>
+          </tr>
+          <tr>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>卡片标题（grid 模式）</td>
+          </tr>
+          <tr>
+            <td><code>titleAs</code></td>
+            <td>'h1' \| 'h2' \| 'h3' \| 'h4' \| 'h5' \| 'h6' \| 'div'</td>
+            <td>'h3'</td>
+            <td>
+              title 的标题标签级。默认 h3：卡片通常是「页标题(h1) → 区块(h2) → 卡片」的第三级。
+              硬编码某一级会在宿主层级不同时跳级（axe heading-order），故把选择权交给调用方； 传 'div'
+              表示纯展示标题（卡片不承担文档结构职责时用）。
             </td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>title</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              卡片标题（grid 模式）
+            <td><code>highlight</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>高亮描边（强调当前选中/活动卡片）</td>
+          </tr>
+          <tr>
+            <td><code>summary</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>摘要形态：压缩内边距的紧凑布局</td>
+          </tr>
+          <tr>
+            <td><code>overflowVisible</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>允许内容溢出卡片边界（用于包含下拉/弹出组件的场景）</td>
+          </tr>
+          <tr>
+            <td><code>accent</code></td>
+            <td>'primary' \| 'success' \| 'warning' \| 'danger' \| 'info'</td>
+            <td>—</td>
+            <td>
+              卡片头部标题左侧的状态竖条颜色（accent bar）。不传 = 无竖条。
+              常用于列表/看板里按状态给卡片分类着色（2026-10-04 用户需求）。
             </td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>highlight</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              false
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              高亮边框
+            <td><code>corner</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>
+              角标文案（如「NEW」「热」「异常」）。传入即渲染；dot 形态下文字视觉隐藏、读屏仍读。
+              折角形态属装饰性几何三角；语义三角（排序/涨跌/警告）请用 IconSvg。 依赖卡片 overflow:hidden 裁切——与
+              overflowVisible 同用时丝带两端会露出卡外。
             </td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>summary</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              false
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              汇总模式
+            <td><code>cornerColor</code></td>
+            <td>'primary' \| 'success' \| 'warning' \| 'danger' \| 'info'</td>
+            <td>'primary'</td>
+            <td>角标底色（语义色，默认 primary）</td>
+          </tr>
+          <tr>
+            <td><code>cornerVariant</code></td>
+            <td>'ribbon' \| 'pill' \| 'dot'</td>
+            <td>'ribbon'</td>
+            <td>
+              角标形态：ribbon 45° 折角丝带（实心底，装饰三角）\| pill 透明浅底胶囊（-bg 底 + -text 字，
+              悬浮不遮挡内容）\| dot 状态圆点（-solid 饱和点 + pulse 扩散环，文字读屏可读）。默认 ribbon。
             </td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>icon</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              图标名（stat 模式）
-            </td>
+            <td><code>cornerPosition</code></td>
+            <td>'top-right' \| 'top-left' \| 'bottom-right' \| 'bottom-left'</td>
+            <td>'top-right'</td>
+            <td>角标位置（默认 top-right）。悬浮定位不占布局空间。</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>label</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              标签文字（stat 模式）
-            </td>
+            <td><code>value</code></td>
+            <td>string \| number</td>
+            <td>—</td>
+            <td>统计数值</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>color</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              图标颜色（stat 模式）
-            </td>
+            <td><code>label</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>数值下方的标签文案</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>value</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              统计数值（stat 模式）
-            </td>
+            <td><code>icon</code></td>
+            <td>string</td>
+            <td>'circle-alert'</td>
+            <td>统计图标（IconSvg 图标名）</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>trend</code>
+            <td><code>color</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>数值/图标语义色（CSS 颜色值或令牌名）</td>
+          </tr>
+          <tr>
+            <td><code>trend</code></td>
+            <td>number \| string</td>
+            <td>—</td>
+            <td>
+              趋势：数字或 '12%' 类字符串；正=上涨箭头、负=下跌箭头、0/非法值=持平。 非有限值（如分母为 0 得到的
+              Infinity）与不可解析的字符串（'1,234'/'12px'）一律按持平处理——
+              它们不能变成「Infinity%」或一个看起来正常的错数（第 169 轮）。
             </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">趋势百分比（stat 模式）</td>
           </tr>
         </tbody>
       </table>

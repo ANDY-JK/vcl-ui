@@ -89,127 +89,49 @@ import IconSvg from '@/components/basic/IconSvg.vue'
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>variant</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">popover</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">popover | tooltip</td>
+            <td><code>variant</code></td>
+            <td>'popover' \| 'tooltip'</td>
+            <td>'popover'</td>
+            <td>'popover' 卡片弹层 \| 'tooltip' 文字气泡</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>title</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              弹窗标题（popover 模式）
-            </td>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>浮层标题（popover 模式非空时展示标题行）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>trigger</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              'click'
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              click | hover | focus
-            </td>
+            <td><code>trigger</code></td>
+            <td>'click' \| 'hover' \| 'focus'</td>
+            <td>'click'</td>
+            <td>'click' \| 'hover' \| 'focus' — tooltip 模式（有 text）时强制 hover</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>position</code>
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              'top'
-            </td>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              tooltip 方向：top | bottom | left | right
-            </td>
+            <td><code>text</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>纯文字快捷模式 → tooltip 行为</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>text</code>
+            <td><code>position</code></td>
+            <td>'top' \| 'bottom' \| 'left' \| 'right'</td>
+            <td>'top'</td>
+            <td>tooltip 方向</td>
+          </tr>
+          <tr>
+            <td><code>zIndex</code></td>
+            <td>number \| string</td>
+            <td>—</td>
+            <td>浮层 z-index（数字或 CSS 变量字符串）；默认走 --vcl-z-dropdown 变量</td>
+          </tr>
+          <tr>
+            <td><code>arrow</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>
+              指向三角（箭头）：浮层贴触发器一侧渲染 45° 菱形三角并自动对准触发器中心。 默认 false——2026-10-02
+              定案气泡无箭头；此开关为需要强指向场景的可选项。
             </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">快捷文字模式（tooltip）</td>
           </tr>
         </tbody>
       </table>

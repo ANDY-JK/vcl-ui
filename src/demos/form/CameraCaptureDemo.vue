@@ -141,116 +141,47 @@ function onBatchFinish(files: File[]) {
         </thead>
         <tbody>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>modelValue</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              boolean
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              false
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              v-model 控制显隐
+            <td><code>modelValue</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>显隐控制（v-model）</td>
+          </tr>
+          <tr>
+            <td><code>quality</code></td>
+            <td>number</td>
+            <td>0.9</td>
+            <td>JPEG 输出质量 0-1，默认 0.9</td>
+          </tr>
+          <tr>
+            <td><code>fallbackOnError</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>页面内相机不可用（权限拒绝/无摄像头/非 HTTPS）时自动降级调起设备系统相机，默认 true</td>
+          </tr>
+          <tr>
+            <td><code>multiple</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>
+              多张连拍模式：快门确认后不交付、进内部队列并回到取景继续拍下一张；
+              底部胶卷可回看/左右切换/重拍某张/删除，顶部「完成」经 finish 一次性交付 File[]。
+              降级系统相机时无法连拍（每次一张，仍走 capture 事件逐张交付）。
             </td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>quality</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              number
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              0.9
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              JPEG 输出质量 0-1
+            <td><code>shotNames</code></td>
+            <td>string[]</td>
+            <td>() => []</td>
+            <td>
+              计划拍摄的照片名称（按拍摄顺序对应，如 ['门头照','铭牌特写']）。
+              显示在顶部提示/胶卷/回看中，并写入交付文件名（name-时间戳.jpg）；未传则自动「照片1、照片2…」
             </td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>fallbackOnError</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              boolean
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              true
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              相机不可用时降级调起系统相机
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>multiple</code>
-            </td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              多张连拍：胶卷回看/重拍某张，完成时 finish 交付 File[]
-            </td>
+            <td><code>fallbackSheet</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>最后兜底：系统相机也拿不到照片（取消/不可用）时自动弹上传面板，默认 true</td>
           </tr>
         </tbody>
       </table>

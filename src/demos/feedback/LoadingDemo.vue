@@ -153,28 +153,57 @@ const loading = ref(true)
         <tbody>
           <tr>
             <td><code>variant</code></td>
+            <td>'spinner' \| 'skeleton' \| 'skeleton-text' \| 'skeleton-card'</td>
             <td>'spinner'</td>
-            <td>spinner | skeleton | skeleton-text | skeleton-card</td>
+            <td>'spinner' 旋转图标 \| 'skeleton' 骨架屏 \| 'skeleton-text' 文字骨架 \| 'skeleton-card' 卡片骨架</td>
           </tr>
           <tr>
             <td><code>size</code></td>
+            <td>'sm' \| 'md' \| 'lg'</td>
             <td>'md'</td>
-            <td>sm | md | lg（仅 spinner）</td>
+            <td>spinner 尺寸档位（默认 'md'）</td>
           </tr>
           <tr>
             <td><code>text</code></td>
+            <td>string</td>
             <td>—</td>
-            <td>加载文字（仅 spinner）</td>
+            <td>加载提示文字</td>
           </tr>
           <tr>
             <td><code>rows</code></td>
+            <td>number</td>
             <td>3</td>
-            <td>骨架行数</td>
+            <td>skeleton 模式 — 行数</td>
           </tr>
           <tr>
-            <td><code>width / height</code></td>
-            <td>—</td>
-            <td>自定义骨架块尺寸</td>
+            <td><code>width</code></td>
+            <td>string</td>
+            <td>'100%'</td>
+            <td>skeleton 模式 — 自定义宽高</td>
+          </tr>
+          <tr>
+            <td><code>height</code></td>
+            <td>string</td>
+            <td>'14px'</td>
+            <td>骨架块高度（默认 '14px'）</td>
+          </tr>
+          <tr>
+            <td><code>fullscreen</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>全屏加载遮罩：fixed 定位 + backdrop-filter + spinner 居中</td>
+          </tr>
+          <tr>
+            <td><code>overlay</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>fullscreen 模式 — 遮罩背景色（CSS 颜色或变量，默认半透明黑）</td>
+          </tr>
+          <tr>
+            <td><code>teleportTo</code></td>
+            <td>string \| HTMLElement</td>
+            <td>'body'</td>
+            <td>Teleport 目标（WC/Shadow DOM 宿主指向自身容器），默认 'body'</td>
           </tr>
         </tbody>
       </table>

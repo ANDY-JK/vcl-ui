@@ -221,46 +221,70 @@ function openMulti(idx: number) {
             <td>图片地址</td>
           </tr>
           <tr>
-            <td><code>width / height</code></td>
+            <td><code>alt</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>原生 alt</td>
+          </tr>
+          <tr>
+            <td><code>width</code></td>
             <td>number</td>
             <td>—</td>
-            <td>宽高（px）</td>
+            <td>图片宽度</td>
+          </tr>
+          <tr>
+            <td><code>height</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>图片高度</td>
           </tr>
           <tr>
             <td><code>size</code></td>
             <td>number</td>
             <td>80</td>
-            <td>默认宽高（px）</td>
+            <td>默认尺寸（宽高未设时，默认 80）</td>
           </tr>
           <tr>
             <td><code>fit</code></td>
-            <td>string</td>
+            <td>'cover' \| 'contain' \| 'fill' \| 'none' \| 'scale-down'</td>
             <td>'cover'</td>
-            <td>object-fit</td>
+            <td>object-fit（默认 'cover'）</td>
           </tr>
           <tr>
             <td><code>radius</code></td>
             <td>number</td>
-            <td>4</td>
-            <td>圆角（px）</td>
+            <td>—</td>
+            <td>圆角</td>
           </tr>
           <tr>
             <td><code>round</code></td>
             <td>boolean</td>
-            <td>false</td>
+            <td>—</td>
             <td>圆形</td>
           </tr>
           <tr>
             <td><code>lazy</code></td>
             <td>boolean</td>
             <td>true</td>
-            <td>懒加载</td>
+            <td>懒加载（默认开）</td>
           </tr>
           <tr>
             <td><code>preview</code></td>
             <td>boolean</td>
             <td>true</td>
-            <td>点击灯箱预览</td>
+            <td>点击放大预览（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>loadingText</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>加载中文本（空串用内置 i18n）</td>
+          </tr>
+          <tr>
+            <td><code>errorText</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>加载失败文本（空串用内置 i18n）</td>
           </tr>
         </tbody>
       </table>

@@ -44,38 +44,22 @@ import Card from '@/components/data/Card.vue'
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>direction</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">horizontal</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">horizontal | vertical</td>
+            <td><code>text</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>分隔线文案（居中显示在线上）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>text</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">分割线文字</td>
+            <td><code>direction</code></td>
+            <td>'horizontal' \| 'vertical'</td>
+            <td>'horizontal'</td>
+            <td>方向：水平线（默认）\| 垂直线</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>dashed</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">虚线样式</td>
+            <td><code>dashed</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>虚线样式</td>
           </tr>
         </tbody>
       </table>

@@ -34,38 +34,34 @@ import Card from '@/components/data/Card.vue'
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>title</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">面板标题</td>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>面板标题</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>open</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">默认展开</td>
+            <td><code>open</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>受控展开态（v-model:open）；不传时组件自主管理</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>disabled</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">禁用展开</td>
+            <td><code>disabled</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>禁用（标题栏不可点击展开）</td>
+          </tr>
+          <tr>
+            <td><code>id</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>面板唯一标识，用于 aria-controls / aria-labelledby 关联</td>
+          </tr>
+          <tr>
+            <td><code>accordion</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>手风琴模式标记：配合外部 CollapseGroup 使用，展开时自动关闭同组其他面板</td>
           </tr>
         </tbody>
       </table>

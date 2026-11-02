@@ -406,15 +406,18 @@ function onContextMenu(e: MouseEvent) {
           </tr>
           <tr>
             <td><code>type</code></td>
-            <td>'select' \</td>
-            <td>'menu' \</td>
-            <td>'cascader' \</td>
+            <td>'select' \| 'menu' \| 'combobox' \| 'cascader' \| 'tree-select' \| 'date' \| 'date-range' \| 'time'</td>
+            <td>'select'</td>
+            <td>
+              模式：select 下拉 \| menu 菜单 \| combobox 可输入 \| cascader 级联 \| tree-select 树选 \| date \|
+              date-range \| time
+            </td>
           </tr>
           <tr>
             <td><code>modelValue</code></td>
-            <td>string \</td>
-            <td>number \</td>
-            <td>number \</td>
+            <td>string \| number \| (string \| number \| boolean)[] \| [string, string] \| null</td>
+            <td>—</td>
+            <td>受控值：单选 string\|number；多选数组；date-range 为 [起, 止]</td>
           </tr>
           <tr>
             <td><code>options</code></td>
@@ -430,9 +433,9 @@ function onContextMenu(e: MouseEvent) {
           </tr>
           <tr>
             <td><code>rules</code></td>
-            <td>((v: string) => string \</td>
-            <td>undefined)[]</td>
-            <td>否</td>
+            <td>((v: string) => string \| undefined)[]</td>
+            <td>() => []</td>
+            <td>校验规则：返回错误文案即不通过</td>
           </tr>
           <tr>
             <td><code>invalid</code></td>

@@ -75,14 +75,40 @@ if (propTh < 0) {
   console.error(`${demo} 里找不到 <th>Prop</th> —— 该页还没有 props 表，需要人工加表头`)
   process.exit(1)
 }
-const headerClose = s.indexOf('</tr>', propTh) + '</tr>'.length
-const tbodyClose = s.indexOf('</tbody>', headerClose)
-if (tbodyClose < 0) {
-  console.error(`${demo} 里找不到 </tbody>`)
+/**
+ * 只处理**包含 `<th>Prop</th> 的那张表**。
+ * 一个演示页里可能有多张表（ChartDemo 3 张、MenuDemo 3 张），
+ * 早期的全局替换会把别的表也吃掉 —— 结构自检当场拦住（这轮真的拦了 8 个）。
+ */
+const tableStart = s.lastIndexOf('<table', propTh)
+const tableEnd = s.indexOf('</table>', propTh)
+if (tableStart < 0 || tableEnd < 0) {
+  console.error(`${demo} 里的 <th>Prop</th> 不在任何 <table> 内`)
   process.exit(1)
 }
-const before = s.slice(0, headerClose)
-const after = s.slice(tbodyClose)
-const out = before + '\n' + rows.join('\n') + '\n        ' + after
+const table = s.slice(tableStart, tableEnd)
+
+const headerClose = table.indexOf('</tr>', table.indexOf('<th', table.search(/<th[^>]*>\s*Prop\s*<\/th>/i))) + '</tr>'.length
+const theadClose = table.indexOf('</thead>', headerClose)
+const afterHead = theadClose > -1 && theadClose < table.indexOf('</tbody>', headerClose) ? theadClose + '</thead>'.length : headerClose
+/** 起点必须落在 `<tbody>` 之后：从 `</thead>` 之后开始会吃掉 `<tbody>` 开标签 → x-invalid-end-tag */
+const tbodyOpen = table.indexOf('<tbody>', afterHead)
+const start = tbodyOpen > -1 && tbodyOpen < table.indexOf('</tbody>', afterHead) ? tbodyOpen + '<tbody>'.length : afterHead
+const tbodyClose = table.indexOf('</tbody>', start)
+if (headerClose <= 0 || tbodyClose < 0) {
+  console.error(`${demo}：在 Prop 表里定位表体失败（headerClose=${headerClose}, tbodyClose=${tbodyClose}）`)
+  process.exit(1)
+}
+
+const newTable = table.slice(0, start) + '\n' + rows.join('\n') + '\n        ' + table.slice(tbodyClose)
+// 结构自检（只针对这张表）：tbody 必须恰好一开一收
+const opens = (newTable.match(/<tbody>/g) || []).length
+const closes = (newTable.match(/<\/tbody>/g) || []).length
+if (opens !== 1 || closes !== 1) {
+  console.error(`${demo} 结构自检失败：<tbody> ${opens} / </tbody> ${closes}（应为 1/1），未写入`)
+  process.exit(1)
+}
+
+const out = s.slice(0, tableStart) + newTable + s.slice(tableEnd)
 writeFileSync(demo, out, 'utf8')
 console.log(`[sync-demo-table] ${demo}：${component} 的 ${rows.length} 行${dry ? '（dry：未落盘）' : '已写入'}`)

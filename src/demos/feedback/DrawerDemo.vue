@@ -70,51 +70,73 @@ const drawerBottomVisible = ref(false)
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>visible</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">v-model:visible 绑定</td>
+            <td><code>visible</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>显隐（v-model:visible）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>title</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">标题</td>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>抽屉标题（标题栏；空串不渲染标题行）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>placement</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">right</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">left | right</td>
+            <td><code>placement</code></td>
+            <td>'left' \| 'right' \| 'top' \| 'bottom'</td>
+            <td>'right'</td>
+            <td>滑出方位（默认右侧）</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>width</code>
+            <td><code>width</code></td>
+            <td>string</td>
+            <td>'min(380px, 88vw)'</td>
+            <td>抽屉宽度（默认 'min(380px, 88vw)'）</td>
+          </tr>
+          <tr>
+            <td><code>height</code></td>
+            <td>string</td>
+            <td>'min(300px, 60vh)'</td>
+            <td>抽屉高度（上下方位时生效，默认 'min(300px, 60vh)'）</td>
+          </tr>
+          <tr>
+            <td><code>closable</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>显示右上角关闭按钮（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>maskClosable</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>点遮罩关闭（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>zIndex</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>遮罩 z-index 覆盖</td>
+          </tr>
+          <tr>
+            <td><code>destroyOnClose</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>关闭即销毁内容（默认开；关掉可保留表单等内部状态）</td>
+          </tr>
+          <tr>
+            <td><code>internal</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>设为 true 时不参与全局弹窗互斥管理（组件内部弹窗用）</td>
+          </tr>
+          <tr>
+            <td><code>mutexScope</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>
+              弹窗互斥域。同一 scope 的弹窗"新开即关旧"，不同 scope 互不影响。 默认不传 →
+              全页面全局互斥（历史行为）。需要与其它弹窗共存（如 Drawer 内开确认框）时传独立 scope。
             </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">380px</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">抽屉宽度</td>
           </tr>
         </tbody>
       </table>

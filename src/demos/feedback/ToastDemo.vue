@@ -77,55 +77,52 @@ function showToast(type: 'info' | 'success' | 'warning' | 'error') {
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>variant</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">toast</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">toast | inline</td>
+            <td><code>variant</code></td>
+            <td>'toast' \| 'inline'</td>
+            <td>'toast'</td>
+            <td>'toast' 全局弹幕 \| 'inline' 内联提示条（替代 Alert）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>type</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">info</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              info | success | warning | error
-            </td>
+            <td><code>type</code></td>
+            <td>'circle-alert' \| 'info' \| 'success' \| 'warning' \| 'error'</td>
+            <td>'circle-alert'</td>
+            <td>语义类型（决定图标与配色）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>title</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">标题（inline 模式）</td>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>标题（加粗首行）</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>closable</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              显示关闭按钮（inline 模式）
-            </td>
+            <td><code>message</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>正文消息</td>
+          </tr>
+          <tr>
+            <td><code>closable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>显示关闭按钮</td>
+          </tr>
+          <tr>
+            <td><code>showIcon</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>显示语义图标（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>position</code></td>
+            <td>'top' \| 'top-left' \| 'top-right' \| 'bottom-left' \| 'bottom-right'</td>
+            <td>'top'</td>
+            <td>toast 弹幕出没方位（默认 'top'）</td>
+          </tr>
+          <tr>
+            <td><code>teleportTo</code></td>
+            <td>string \| HTMLElement</td>
+            <td>'body'</td>
+            <td>Teleport 目标（WC/Shadow DOM 宿主指向自身容器），默认 'body'</td>
           </tr>
         </tbody>
       </table>

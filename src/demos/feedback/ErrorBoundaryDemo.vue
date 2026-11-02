@@ -142,46 +142,22 @@ function retry() {
         </thead>
         <tbody>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>title</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              '页面出错了'
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              错误标题
-            </td>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>错误面板标题（空串用内置 i18n）</td>
           </tr>
           <tr>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>retryText</code>
-            </td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">'重试'</td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">重试按钮文字</td>
+            <td><code>retryText</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>重试按钮文字（空串用内置 i18n）</td>
+          </tr>
+          <tr>
+            <td><code>watchKey</code></td>
+            <td>string \| number</td>
+            <td>undefined</td>
+            <td>监听值变化时自动重置错误状态（如路由参数、组件 key 等）</td>
           </tr>
         </tbody>
       </table>

@@ -63,250 +63,52 @@ function simulateLoading() {
         </thead>
         <tbody>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>text</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              按钮文字
-            </td>
+            <td><code>text</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>按钮文字（与 default 插槽二选一，插槽优先）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>variant</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              'primary' | 'secondary' | 'outline' | 'danger' | 'ghost'
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              'primary'
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              按钮变体
-            </td>
+            <td><code>variant</code></td>
+            <td>'primary' \| 'secondary' \| 'outline' \| 'danger' \| 'ghost'</td>
+            <td>'primary'</td>
+            <td>语义形态：primary 实心主色 \| secondary 实心次色 \| outline 描边 \| danger 危险 \| ghost 幽灵</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>size</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              'sm' | 'md' | 'lg'
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              'md'
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              按钮尺寸
-            </td>
+            <td><code>size</code></td>
+            <td>'sm' \| 'md' \| 'lg'</td>
+            <td>'md'</td>
+            <td>尺寸档位（默认 'md'）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>icon</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              图标名
-            </td>
+            <td><code>icon</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>前置图标（IconSvg 图标名）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>showArrow</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              boolean
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              false
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              显示右侧箭头
-            </td>
+            <td><code>disabled</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>禁用</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>block</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              boolean
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              false
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              通栏宽度
-            </td>
+            <td><code>loading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>加载态（转圈 + 禁点，不改变宽度）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>loading</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              boolean
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              false
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              加载中状态
-            </td>
+            <td><code>block</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>块级（撑满整行）</td>
           </tr>
           <tr>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>disabled</code>
-            </td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">禁用状态</td>
+            <td><code>showArrow</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>文字后显示箭头（「下一步」类场景）</td>
           </tr>
         </tbody>
       </table>

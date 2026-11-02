@@ -48,33 +48,31 @@ const page2 = ref(3)
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>total</code>
+            <td><code>modelValue</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>
+              受控当前页（v-model:modelValue，1 起）。超出 [1, totalPages] 时组件会把页码拉回合法页并 emit
+              纠正值（典型：搜索/筛选后总数变小、宿主没重置页码）
             </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">number</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">数据总数</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>pageSize</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">number</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">10</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">每页条数</td>
+            <td><code>total</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>总条数</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>showQuickJumper</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">显示快速跳页输入框</td>
+            <td><code>pageSize</code></td>
+            <td>number</td>
+            <td>10</td>
+            <td>每页行数（默认 10）</td>
+          </tr>
+          <tr>
+            <td><code>showQuickJumper</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>显示页码快速跳转输入框</td>
           </tr>
         </tbody>
       </table>

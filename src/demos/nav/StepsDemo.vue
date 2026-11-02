@@ -49,25 +49,28 @@ const steps = [
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>steps</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Step[]</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">步骤数组</td>
+            <td><code>steps</code></td>
+            <td>Step[]</td>
+            <td>—</td>
+            <td>步骤列表（Step：title/description/content）</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>current</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">number</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—（必填）</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">当前步骤</td>
+            <td><code>current</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>当前步（0 起，小于 0 全部待办、超尾全部完成）</td>
+          </tr>
+          <tr>
+            <td><code>direction</code></td>
+            <td>'horizontal' \| 'vertical'</td>
+            <td>'horizontal'</td>
+            <td>排列方向（默认水平）</td>
+          </tr>
+          <tr>
+            <td><code>clickable</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>是否允许点击步骤跳转</td>
           </tr>
         </tbody>
       </table>

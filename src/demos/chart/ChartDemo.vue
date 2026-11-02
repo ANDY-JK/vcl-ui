@@ -1126,68 +1126,68 @@ const mixedSeries = [
           <tr>
             <td><code>type</code></td>
             <td>ChartType</td>
-            <td>—</td>
-            <td>图表类型（16种见下方）</td>
+            <td>undefined</td>
+            <td>图表类型（line/bar/pie 等，见 ChartType）；传 option 时可省略</td>
           </tr>
           <tr>
             <td><code>option</code></td>
             <td>EChartsOption</td>
-            <td>—</td>
-            <td>完整 ECharts 配置（传入后忽略简化 props）</td>
+            <td>undefined</td>
+            <td>原生 ECharts option（优先级最高，传入后覆盖快捷 props 组装）</td>
           </tr>
           <tr>
             <td><code>data</code></td>
-            <td>ChartData</td>
-            <td>{}</td>
-            <td>完整数据对象（pieData / radarIndicators / sankeyNodes 等专用字段）</td>
+            <td>ChartData \| number[] \| number[][] \| { name: string; value: number }[]</td>
+            <td>() => ({})</td>
+            <td>快捷数据：单序列数值数组 / 多序列二维数组 / 饼图 { name, value } 列表 / ChartData 完整结构</td>
           </tr>
           <tr>
             <td><code>categories</code></td>
             <td>string[]</td>
-            <td>[]</td>
-            <td>X 轴类目标签</td>
+            <td>() => []</td>
+            <td>X 轴类目（快捷模式的类目轴）</td>
           </tr>
           <tr>
             <td><code>series</code></td>
             <td>ChartSeriesItem[]</td>
-            <td>[]</td>
-            <td>系列数据，每项可设 name / data / color / type 等</td>
+            <td>() => []</td>
+            <td>快捷多序列（name + data，与 categories 对齐）</td>
           </tr>
           <tr>
             <td><code>height</code></td>
-            <td>number | string</td>
+            <td>number \| string</td>
             <td>'100%'</td>
-            <td>图表高度，数字自动补 px，字符串原样（如 '300px' / '100%'）</td>
+            <td>容器高（数字 px 或 CSS 值，默认 '100%' 随父容器）</td>
           </tr>
           <tr>
             <td><code>width</code></td>
-            <td>number | string</td>
+            <td>number \| string</td>
             <td>'100%'</td>
-            <td>图表宽度，同上</td>
+            <td>容器宽（默认 '100%'）</td>
           </tr>
           <tr>
             <td><code>darkMode</code></td>
             <td>boolean</td>
             <td>false</td>
-            <td>暗色模式（ECharts dark 主题）</td>
+            <td>暗色主题（ECharts 内置 dark 色板，独立于全局 useTheme）</td>
           </tr>
           <tr>
             <td><code>colors</code></td>
             <td>string[]</td>
-            <td>[]</td>
-            <td>自定义色板，覆盖默认 16 色</td>
+            <td>() => []</td>
+            <td>自定义系列颜色（覆盖内置色板）</td>
           </tr>
           <tr>
             <td><code>loading</code></td>
             <td>boolean</td>
             <td>false</td>
-            <td>加载中状态</td>
+            <td>加载态（showLoading 蒙层）</td>
           </tr>
           <tr>
             <td><code>emptyText</code></td>
             <td>string</td>
-            <td>'暂无数据'</td>
-            <td>空数据提示文字</td>
+            <td>() => t('common.empty')</td>
+            <td>空数据文案</td>
           </tr>
           <tr>
             <td><code>title</code></td>
@@ -1199,37 +1199,37 @@ const mixedSeries = [
             <td><code>showLegend</code></td>
             <td>boolean</td>
             <td>true</td>
-            <td>显示图例</td>
+            <td>显示图例（默认开）</td>
           </tr>
           <tr>
             <td><code>showTooltip</code></td>
             <td>boolean</td>
             <td>true</td>
-            <td>显示提示浮层</td>
+            <td>显示悬浮提示（默认开）</td>
           </tr>
           <tr>
             <td><code>smooth</code></td>
             <td>boolean</td>
             <td>true</td>
-            <td>折线平滑（line/area）</td>
+            <td>折线平滑（默认开）</td>
           </tr>
           <tr>
             <td><code>showSymbol</code></td>
             <td>boolean</td>
             <td>true</td>
-            <td>显示数据点标记（line/area）</td>
+            <td>折线数据点符号（默认开）</td>
           </tr>
           <tr>
             <td><code>showDataLabel</code></td>
             <td>boolean</td>
             <td>false</td>
-            <td>数据点上显示数值</td>
+            <td>在数据点上显示数值标签</td>
           </tr>
           <tr>
             <td><code>horizontal</code></td>
             <td>boolean</td>
             <td>false</td>
-            <td>柱状图切换为条形图</td>
+            <td>柱状图切换为条形图（X/Y 轴互换）</td>
           </tr>
           <tr>
             <td><code>stacked</code></td>
@@ -1241,25 +1241,25 @@ const mixedSeries = [
             <td><code>stacked100</code></td>
             <td>boolean</td>
             <td>false</td>
-            <td>百分比堆叠</td>
+            <td>百分比堆叠模式</td>
           </tr>
           <tr>
             <td><code>legendPosition</code></td>
-            <td>string</td>
+            <td>'top' \| 'bottom' \| 'left' \| 'right'</td>
             <td>'bottom'</td>
-            <td>图例位置：top/bottom/left/right</td>
+            <td>图例位置</td>
           </tr>
           <tr>
             <td><code>xAxis</code></td>
             <td>AxisConfig</td>
-            <td>—</td>
-            <td>X 轴配置：{ title, min, max, labelRotate }</td>
+            <td>undefined</td>
+            <td>X 轴配置</td>
           </tr>
           <tr>
             <td><code>yAxis</code></td>
             <td>AxisConfig</td>
-            <td>—</td>
-            <td>Y 轴配置：{ title, min, max }</td>
+            <td>undefined</td>
+            <td>Y 轴配置</td>
           </tr>
           <tr>
             <td><code>animation</code></td>
@@ -1270,20 +1270,32 @@ const mixedSeries = [
           <tr>
             <td><code>animationDuration</code></td>
             <td>number</td>
-            <td>800</td>
+            <td>DEFAULT_ANIMATION_MS</td>
             <td>动画时长（毫秒）</td>
           </tr>
           <tr>
             <td><code>toolbar</code></td>
-            <td>Array | false</td>
-            <td>['saveAsImage','zoom']</td>
-            <td>工具栏按钮，支持 saveAsImage/zoom/dataView</td>
+            <td>ToolbarButton[] \| false</td>
+            <td>() => ['saveAsImage', 'zoom']</td>
+            <td>工具栏按钮，传入 false 全关</td>
           </tr>
           <tr>
-            <td><code>colors</code></td>
-            <td>string[]</td>
-            <td>[]</td>
-            <td>自定义色板（留空=默认16色）</td>
+            <td><code>palette</code></td>
+            <td>PalettePreset</td>
+            <td>undefined</td>
+            <td>内置色板预设</td>
+          </tr>
+          <tr>
+            <td><code>markLine</code></td>
+            <td>MarkLineConfig \| MarkLineConfig[]</td>
+            <td>undefined</td>
+            <td>标注线（均值线/目标线/警戒线），支持多条</td>
+          </tr>
+          <tr>
+            <td><code>markArea</code></td>
+            <td>MarkAreaConfig \| MarkAreaConfig[]</td>
+            <td>undefined</td>
+            <td>标注区域（高亮区间）</td>
           </tr>
         </tbody>
       </table>

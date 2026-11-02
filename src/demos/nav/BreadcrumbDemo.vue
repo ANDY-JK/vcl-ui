@@ -46,27 +46,16 @@ const crumbs = [{ label: '首页', path: '/' }, { label: '组件库', path: '/co
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>items</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">Crumb[]</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">面包屑路径数组</td>
+            <td><code>items</code></td>
+            <td>Crumb[]</td>
+            <td>—</td>
+            <td>面包屑列表（Crumb：label + 可选 path/to，有路径则渲染为路由链接）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>separator</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              自定义分隔符文本（默认箭头图标）
-            </td>
+            <td><code>separator</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>自定义分隔符文本；不传时使用 chevron 图标</td>
           </tr>
         </tbody>
       </table>

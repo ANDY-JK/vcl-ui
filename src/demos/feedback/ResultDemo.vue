@@ -96,27 +96,33 @@ const lastAction = ref('')
         <tbody>
           <tr>
             <td><code>status</code></td>
-            <td>string</td>
-            <td>—（必填）</td>
-            <td>success | error | info | warning | 404 | empty</td>
+            <td>'success' \| 'error' \| 'info' \| 'warning' \| '404' \| 'empty'</td>
+            <td>—</td>
+            <td>结果类型（决定图标与配色）</td>
           </tr>
           <tr>
             <td><code>title</code></td>
             <td>string</td>
             <td>—</td>
-            <td>标题</td>
+            <td>主标题</td>
           </tr>
           <tr>
             <td><code>description</code></td>
             <td>string</td>
-            <td>—</td>
-            <td>描述文字</td>
+            <td>''</td>
+            <td>描述文案</td>
           </tr>
           <tr>
             <td><code>actionText</code></td>
             <td>string</td>
-            <td>—</td>
-            <td>操作按钮文字</td>
+            <td>''</td>
+            <td>操作按钮文字（非空才渲染按钮，点击抛 action）</td>
+          </tr>
+          <tr>
+            <td><code>fullWidth</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>操作按钮占满宽度</td>
           </tr>
         </tbody>
       </table>

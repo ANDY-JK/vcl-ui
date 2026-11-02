@@ -158,27 +158,22 @@ const panelItems = [
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>variant</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">underline</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              underline | pills | card | tabbar
-            </td>
+            <td><code>modelValue</code></td>
+            <td>string \| number</td>
+            <td>—</td>
+            <td>受控激活页签值（对应 TabItem 的 value）</td>
           </tr>
           <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>items</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">TabItem[]</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">—</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">标签项数组</td>
+            <td><code>items</code></td>
+            <td>TabItem[]</td>
+            <td>—</td>
+            <td>页签列表（TabItem：value/label/icon）</td>
+          </tr>
+          <tr>
+            <td><code>variant</code></td>
+            <td>'underline' \| 'pills' \| 'card' \| 'tabbar'</td>
+            <td>'underline'</td>
+            <td>形态：underline 下划线（默认）\| pills 药丸 \| card 卡片 \| tabbar 底部标签栏（移动端，带 icon）</td>
           </tr>
         </tbody>
       </table>

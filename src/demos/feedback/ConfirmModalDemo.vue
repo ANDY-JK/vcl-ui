@@ -89,182 +89,52 @@ function onCancel(variant: string): void {
         </thead>
         <tbody>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>visible</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              boolean
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              显示/隐藏（v-model）
-            </td>
+            <td><code>visible</code></td>
+            <td>boolean</td>
+            <td>—</td>
+            <td>显隐（v-model:visible）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>title</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              '确认操作'
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              弹窗标题
-            </td>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>弹窗标题（空串用内置 i18n，语言切换实时跟随）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>message</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              —
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              提示内容（必填）
-            </td>
+            <td><code>message</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>正文消息</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>confirmText</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              '确定'
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              确认按钮文案
-            </td>
+            <td><code>confirmText</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>确认按钮文字（空串用内置 i18n）</td>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>cancelText</code>
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              string
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              '取消'
-            </td>
-            <td
-              style="
-                padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              取消按钮文案
-            </td>
+            <td><code>cancelText</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>取消按钮文字（空串用内置 i18n）</td>
           </tr>
           <tr>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))"><code>variant</code></td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              'danger' | 'warning' | 'primary'
-            </td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">'danger'</td>
-            <td style="padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">确认按钮风格</td>
+            <td><code>variant</code></td>
+            <td>'danger' \| 'warning' \| 'primary'</td>
+            <td>'danger'</td>
+            <td>语义色：danger 危险操作（默认）\| warning 谨慎 \| primary 常规确认</td>
+          </tr>
+          <tr>
+            <td><code>loading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>确认按钮 loading（等待宿主异步操作期间防重复提交）</td>
+          </tr>
+          <tr>
+            <td><code>closable</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>显示右上角关闭按钮（默认开）</td>
           </tr>
         </tbody>
       </table>
