@@ -30,6 +30,12 @@ function submitServerError() {
   serverError.value = serverErrorVal.value.trim() ? '' : '该用户名已被占用（模拟服务端返回）'
 }
 
+/** 重置演示（模板表达式不支持多语句连写，收进函数 —— #376 整链的教训） */
+function resetServerError() {
+  serverError.value = ''
+  serverErrorVal.value = ''
+}
+
 /** 无文案的 invalid：只翻 aria-invalid（读屏播报"无效"），视觉交给宿主的边框样式 */
 function toggleInvalid() {
   invalidOnly.value = !invalidOnly.value
@@ -82,15 +88,7 @@ function toggleInvalid() {
         <Input v-model="serverErrorVal" label="用户名" :error="serverError || undefined" />
         <div style="display: flex; gap: calc(8px * var(--vcl-scale)); margin-top: calc(8px * var(--vcl-scale))">
           <Button size="sm" variant="outline" @click="submitServerError">模拟服务端校验</Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            @click="
-              serverError = ''
-              serverErrorVal = ''
-            "
-            >重置</Button
-          >
+          <Button size="sm" variant="ghost" @click="resetServerError">重置</Button>
         </div>
         <p class="demo-hint" style="margin-top: calc(12px * var(--vcl-scale))">
           <code>invalid</code> 是无文案版：只翻 <code>aria-invalid</code>（读屏播报"无效"），视觉错误交给宿主
