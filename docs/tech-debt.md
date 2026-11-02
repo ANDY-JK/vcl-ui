@@ -39,7 +39,6 @@
 | TD-57 | **`gen:docs` 与 `check:doc-completeness` 的"公开面"口径是**域入口**（`src/components/<domain>/index.ts` 与主入口），直接写在模块里的 `export` 既不进文档、也不被完整性检查盯上**：第 160 轮把 `normalizeForBackend` 加进 `contract-storage.ts` 后，`gen:docs` 仍报"命名导出 176"、`docs-site/components/storage.md` 没有该行，而两道文档闸口**全绿**（它们只看域入口导出了什么） |`normalizeForBackend` 从 `storage/index.ts` 与 `src/components/index.ts` 导出后，计数变 177、文档行自动出现（生成物） |P3 |`accepted` | 触发条件：新增公共 API 时 → **从域入口导出**（否则文档静默缺行）；若要改这条口径，得同时改 `gen-docs` 与 `check-doc-completeness` 的扫描面 |
 | TD-22 | **`node:sqlite` 是 Node 实验性 API**：仓储层 import 时会打 `ExperimentalWarning`（已由噪音棘轮的"Node 运行时告警"豁免规则接住，不影响闸口），但 API 形态仍可能变 | `examples/lowcode-backend/sqlite-store.mjs:34`；豁免规则见 `scripts/check-console-noise.mjs` 的 `NODE_RUNTIME_WARNING` | P3 | `accepted` | 触发条件：要把参考后端的 SQLite 用在生产，或 Node 把该 API 标稳定 → 那时要么锁 Node 版本，要么换 `better-sqlite3`（同样 11 个方法体） |
 | TD-25 | **`check:vendor-vulns` 的离线兜底只看本地缓存**：缓存文件在 `reports/`（gitignore），CI 若无网且无热缓存仍会红；兜底结果最长可能有 7 天延迟 | `scripts/check-vendor-vulns.mjs:27`（`MAX_AGE_DAYS = 7`）；四场景自测见审查报告 #164 | P3 | `accepted` | 触发条件：要在无网 CI 上跑整链 → 那时把该步拆成"必须联网"的独立流水线，或把缓存提交进受控的 `ci/` 目录 |
-| TD-26 | **`silent-error-states` 棘轮只判"模板里有没有这个名字"，判不了可见性**：把渲染条件改成 `v-if="false"` 时棘轮仍绿（名字还在模板里） | `tests/unit/silent-error-states.spec.ts:47`（`REVIEWED` 清单与判据说明）；该局限已写进报告 #165 的负向对照 | P3 | `accepted` | 触发条件：出现一例"名字在模板里但条件恒假/被 CSS 隐藏"的真实缺陷 → 那时把判据升级为渲染后节点存在的行为级检查（或直接靠行为测试覆盖） |
 | TD-27 | **台账陈旧度用"提交数"近似"轮次"**：口径是"台账最后被改的提交之后，动过 `src/` 的提交数 > 5 就判红"。提交频次不等于轮次，纯文档轮也会推高计数 | `scripts/check-tech-debt.mjs`（`STALE_SRC_COMMITS`）；本次盘点实测：台账最后更新 `d51dcfc` → 其后 **82 个提交、13 个动过 src** | P3 | `accepted` | 触发条件：阈值出现误报/漏报（如一次大重构跨 10 个提交但台账确实不该动）→ 那时改按"审查报告新增行数"或日期窗口计算，或给 `--stale-limit` 常态化豁免 |
 | TD-04 | **`check:console-noise` 依赖 spool 文件**：手动跑过 `check` 而未跑 `test:unit` 会读到空 spool | 空采集守卫已加并按**过滤前**类别数判定（第 108 轮修正）；但**执行顺序仍然脆弱** | P3 | `accepted` | 触发条件：再次出现"0 类误判"或 spool 被外部清理 → 改为 `check` 内部强制先跑单测 |
 | TD-05 | **性能闸口在慢机器上只能"未判定"**，无法区分真回归 | `scripts/bench.mjs` 的 `CALIBRATION_TOLERANCE`；实测同代码连跑 6 次 ×1.06–2.75 | P3 | `accepted` | 触发条件：需要严格性能门时 → 上 CI 固定机型或容器化 benchmark |
@@ -68,6 +67,7 @@
 
 | 编号 | 一句话 | 修法 | 提交 |
 | --- | --- | --- | --- |
+| TD-26 | silent-error-states 棘轮只判"模板里有没有这个名字"，判不了可见性（v-if="false" 仍绿） | #372 判据抽成 scripts/silent-error-judge.mjs：先剥注释、再剔除常量假指令包裹的子树，然后才问名字；9 例单测 + 2 条负向对照 | e4ae0a4 |
 | TD-98 | 27 道闸口里近半数没有自测，判据坏了无人知晓（尤其"平时一直绿"的发版/随包/RTL/覆盖标记几道） | 逐个补自测与负向对照：#353 发版闸、#356 漏报棘轮、#359 转写工具、#367 随包件、#368 RTL 判据拆纯函数、#369 覆盖标记判据（--marker 注入，免跑全量带覆盖单测）；变异清单 117 → 127 条，每条都验证过"判据失效必须红" | 9d9e9a7 |
 | TD-100 | 演示页 prop 表只做单向对账（查谎报不查漏报），158 个 prop 从未进过演示页文档表 | 闸口加反向对账与漏报棘轮（#356）→ sync:demo-table 转写工具（#359）→ data-component 表自述归属（#365）→ 清零后棘轮改"必须为 0" | c6bea36 |
 | TD-99 | **`FormRenderer` 其余 13 处 `FieldError` 与控件无关联** | 六批补齐：#338 `Input`、#339 `Select`、#341 `Upload`、#342 `Group`（含 rate/slider/switch 三形态）、#343 `Richtext`、#344 `Idcard`+`Matrix`、#345 `Address`+`Subform`、#346 `Signature`+`ToggleList`+`MapPicker`；统一"组件加 `invalid`/`describedby` → 挂到该错误描述的元素（控件本身或组容器）→ 渲染器传 `fieldErrorId` → 用例 + 负向对照"。显示类分支（图表/展示表/加载/结果）无可填控件，已核实不需挂 | b77f7bb |
