@@ -419,7 +419,7 @@ function resetCurrentForm() {
       </p>
     </Card>
     <Card title="Props" title-as="h2">
-      <table class="props-table">
+      <table class="props-table" data-component="LoginPage">
         <tbody>
           <tr class="props-header">
             <th>Prop</th>
@@ -525,7 +525,7 @@ function resetCurrentForm() {
       </table>
     </Card>
     <Card title="Props" title-as="h2">
-      <table class="props-table">
+      <table class="props-table" data-component="RegisterPage">
         <tbody>
           <tr class="props-header">
             <th>Prop</th>
@@ -603,7 +603,7 @@ function resetCurrentForm() {
       </table>
     </Card>
     <Card title="Props" title-as="h2">
-      <table class="props-table">
+      <table class="props-table" data-component="PortalLogin">
         <tbody>
           <tr class="props-header">
             <th>Prop</th>
@@ -645,7 +645,7 @@ function resetCurrentForm() {
       </table>
     </Card>
     <Card title="Props" title-as="h2">
-      <table class="props-table">
+      <table class="props-table" data-component="ForgotPasswordPage">
         <tbody>
           <tr class="props-header">
             <th>Prop</th>

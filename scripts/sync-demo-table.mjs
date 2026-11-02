@@ -85,7 +85,7 @@ if (forceNewTable || !/<th[^>]*>\s*Prop\s*<\/th>/i.test(template)) {
   const useCard = /<Card\b/.test(template) && /import Card/.test(template)
   const table = [
     useCard ? '    <Card title="Props" title-as="h2">' : '    <div class="props-demo-wrap">',
-    '      <table class="props-table">',
+    `      <table class="props-table" data-component="${component}">`,
     '        <tbody>',
     '          <tr class="props-header">',
     '            <th>Prop</th>',

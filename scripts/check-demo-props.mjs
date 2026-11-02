@@ -293,6 +293,8 @@ function tableRows(file) {
   const src = read(file)
   const lineOf = (idx) => src.slice(0, idx).split('\n').length
   const rows = []
+  /** 每张表声明的组件名（<table data-component="RegisterPage">），索引与 table 序号对齐 */
+  const tableComponent = []
   let table = -1
   let inPropTable = false
   let defIdx = -1
@@ -310,14 +312,19 @@ function tableRows(file) {
       const texts = cells.map((c) => c.text)
       inPropTable = texts.some((c) => /^(prop|属性|prop\s*名)$/i.test(c))
       defIdx = texts.findIndex((c) => /^默认(值)?$/.test(c))
-      if (inPropTable) table++
+      if (inPropTable) {
+        table++
+        const open = src.lastIndexOf('<table', tr.index)
+        const m = open > -1 ? /<table[^>]*data-component="([^"]+)"/.exec(src.slice(open, tr.index)) : null
+        tableComponent[table] = m ? m[1] : null
+      }
       continue
     }
     if (!inPropTable) continue
     const name = (cells[0]?.text || '').replace(/`/g, '').trim()
     const id = /^([a-z][A-Za-z0-9-]{1,40})$/.exec(name)
     if (!id) continue
-    rows.push({ name: id[1], defCell: defIdx >= 0 ? (cells[defIdx]?.text ?? '') : '', line: lineOf(tr.index), table })
+    rows.push({ name: id[1], defCell: defIdx >= 0 ? (cells[defIdx]?.text ?? '') : '', line: lineOf(tr.index), table, component: tableComponent[table] ?? null })
   }
   return rows
 }
@@ -377,7 +384,40 @@ for (const d of demos) {
     if (!byTable.has(r.table)) byTable.set(r.table, [])
     byTable.get(r.table).push(r)
   }
+  const normName = (x) => x.toLowerCase().replace(/[^a-z0-9]/g, '')
   for (const group of byTable.values()) {
+    /**
+     * 表上声明了 data-component 就优先按它归属：多组件页里 prop 高度重叠
+     * （LoginPage 与 RegisterPage 都有 brandTitle/maxWidth/hideBrand…），
+     * 按统计判归属必然摇摆；**表自己说清讲的是谁**才可靠。
+     * 名字与文件名不一致（RegisterPage ↔ register.vue）用归一化后互为前缀匹配；
+     * 匹配不到唯一组件时**退回统计规则**，不硬判。
+     */
+    const declared = group[0]?.component
+    if (declared) {
+      const dn = normName(declared)
+      /**
+       * **必须按路径去重**：同一个组件可能被同一个 demo 引用两次（`register.vue` 在
+       * `comps` 里出现两次），不去重会让"唯一匹配"永远不成立 —— 实测就是这里卡住：
+       * declared 明明解析出来了，candidates 却是 2 个，于是退回统计规则、白忙一场。
+       */
+      const uniq = new Map()
+      for (const x of propSets) uniq.set(normPath(x.c), x)
+      const candidates = [...uniq.values()].filter((x) => {
+        const bn = normName(x.c.split(/[\\/]/).pop().replace(/\.vue$/, ''))
+        return bn && (dn.startsWith(bn) || bn.startsWith(dn))
+      })
+      if (candidates.length === 1) {
+        for (const r of group) {
+          checkedRows++
+          const key = camel(r.name)
+          if (candidates[0].p.has(key)) documented.add(`${normPath(candidates[0].c)}::${key}`)
+          else lies.push(`${d}:${r.line}  表里列了 ${r.name}，但表上声明的组件 ${declared} 没有这个 prop`)
+        }
+        continue
+      }
+    }
+
     const scored = propSets.map((s) => {
       const hit = group.filter((r) => s.p.has(camel(r.name))).length
       // 覆盖率 = 该表命中该组件多少 prop ÷ 该组件总 prop 数。
@@ -433,12 +473,12 @@ if (lies.length) {
 // 漏报更常见（新加能力没人写文档），但历史存量可能很大，所以默认只报告、不判红；
 // `--strict-missing` 才判红（等存量清完再打开）。
 /**
- * 漏报预算（棘轮）：现状 14 个，**只许降不许升**。
- * 为什么不用"必须为 0"：历史存量仍有 14 个，一次清零不现实；但**不设上限等于没有闸口** ——
+ * 漏报预算（棘轮）：现状 2 个，**只许降不许升**。
+ * 为什么不用"必须为 0"：历史存量仍有 2 个，一次清零不现实；但**不设上限等于没有闸口** ——
  * 新加一个 prop 只要不写进演示页表就能悄悄溜过去。
  * 修一个就把它减一（保持"只降"的语义），归零后改成"必须为 0"。
  */
-const MISSING_BUDGET = 14
+const MISSING_BUDGET = 2
 
 const missing = []
 for (const [c, p] of seenProps) {
