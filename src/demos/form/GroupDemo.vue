@@ -17,6 +17,22 @@ const fruitOptions = [
   { value: 'cherry', label: '樱桃' },
   { value: 'durian', label: '榴莲', disabled: true },
 ]
+
+// 外部判定无效演示（invalid，#342）：Group 没有 error prop（错误文案由渲染器统一渲染），
+// invalid 只翻 aria-invalid —— 选区校验（如"配送时段必选"）在提交期由父级判
+const scheduleVal = ref<string[]>([])
+const scheduleInvalid = ref(false)
+
+function submitSchedule() {
+  // 模拟提交期校验：一个时段都没选 → invalid；选了 → 清掉
+  scheduleInvalid.value = scheduleVal.value.length === 0
+}
+
+const scheduleOptions = [
+  { value: 'morning', label: '上午' },
+  { value: 'afternoon', label: '下午' },
+  { value: 'evening', label: '晚间' },
+]
 </script>
 
 <template>
@@ -78,6 +94,38 @@ const fruitOptions = [
       <h2>type="slider" — 滑块（范围）</h2>
       <Group v-model="sliderRange" type="slider" :min="0" :slider-max="100" :step="5" />
       <p class="result">当前值：{{ sliderRange[0] }} ~ {{ sliderRange[1] }}</p>
+    </section>
+
+    <!-- 外部判定无效 -->
+    <section class="demo-section">
+      <h2>外部判定无效 — invalid（#342）</h2>
+      <p class="desc">
+        Group 没有 <code>error</code> prop（错误文案由表单渲染器统一渲染）；<code>invalid</code> 只翻
+        <code>aria-invalid</code>（读屏播报"无效"）—— "配送时段必选"这类提交期规则由父级判。
+      </p>
+      <Group
+        v-model="scheduleVal"
+        type="checkbox"
+        :options="scheduleOptions"
+        label="配送时段"
+        direction="horizontal"
+        :invalid="scheduleInvalid || undefined"
+        aria-label="配送时段"
+      />
+      <p class="result">当前值：{{ scheduleVal.length ? scheduleVal.join(', ') : '未选' }}</p>
+      <button
+        type="button"
+        style="
+          padding: calc(6px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
+          border: 1px solid var(--vcl-color-border);
+          border-radius: var(--vcl-radius-md);
+          background: var(--vcl-color-bg);
+          cursor: pointer;
+        "
+        @click="submitSchedule"
+      >
+        模拟提交（未选时段会标无效）
+      </button>
     </section>
 
     <!-- 禁用态 -->
