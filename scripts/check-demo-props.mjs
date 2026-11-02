@@ -367,9 +367,20 @@ for (const d of demos) {
     byTable.get(r.table).push(r)
   }
   for (const group of byTable.values()) {
-    const scored = propSets.map((s) => ({ s, hit: group.filter((r) => s.p.has(camel(r.name))).length }))
+    const scored = propSets.map((s) => {
+      const hit = group.filter((r) => s.p.has(camel(r.name))).length
+      // 覆盖率 = 该表命中该组件多少 prop ÷ 该组件总 prop 数。
+      // 为什么要这个：多组件页里常有**同名 prop**（Chart 与 BaseChart 都有 option/loading/emptyText），
+      // 只用"绝对命中数 + 唯一最优"会并列 → 退回并集 → 表被判给先出现的那个组件，
+      // 另一个组件的 prop 永远算漏报（#362 在 ChartDemo 上实测过）。
+      // 用覆盖率做并列时的第二关键字：BaseChart 7/7=1.0 明显高于 Chart 7/29≈0.24。
+      const ratio = hit / Math.max(1, s.p.size)
+      return { s, hit, ratio }
+    })
     const best = Math.max(0, ...scored.map((x) => x.hit))
-    const owners = scored.filter((x) => x.hit === best && best > 0)
+    const tie = scored.filter((x) => x.hit === best && best > 0)
+    const bestRatio = Math.max(0, ...tie.map((x) => x.ratio))
+    const owners = tie.filter((x) => x.ratio === bestRatio)
     const attributed = owners.length === 1 && best >= Math.ceil(group.length * 0.6)
     const scope = attributed ? [owners[0].s] : propSets
     for (const r of group) {
@@ -411,12 +422,12 @@ if (lies.length) {
 // 漏报更常见（新加能力没人写文档），但历史存量可能很大，所以默认只报告、不判红；
 // `--strict-missing` 才判红（等存量清完再打开）。
 /**
- * 漏报预算（棘轮）：现状 62 个，**只许降不许升**。
- * 为什么不用"必须为 0"：历史存量仍有 62 个，一次清零不现实；但**不设上限等于没有闸口** ——
+ * 漏报预算（棘轮）：现状 40 个，**只许降不许升**。
+ * 为什么不用"必须为 0"：历史存量仍有 40 个，一次清零不现实；但**不设上限等于没有闸口** ——
  * 新加一个 prop 只要不写进演示页表就能悄悄溜过去。
  * 修一个就把它减一（保持"只降"的语义），归零后改成"必须为 0"。
  */
-const MISSING_BUDGET = 62
+const MISSING_BUDGET = 40
 
 const missing = []
 for (const [c, p] of seenProps) {

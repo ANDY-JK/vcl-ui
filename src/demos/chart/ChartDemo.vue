@@ -1539,6 +1539,78 @@ const mixedSeries = [
         </tbody>
       </table>
     </Card>
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>option</code></td>
+            <td>EChartsOption \| null</td>
+            <td>null</td>
+            <td>原生 ECharts option（必传，null 时渲染空态）</td>
+          </tr>
+          <tr>
+            <td><code>loading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>加载态（showLoading 蒙层）</td>
+          </tr>
+          <tr>
+            <td><code>emptyText</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>空数据文案</td>
+          </tr>
+          <tr>
+            <td><code>height</code></td>
+            <td>number \| string</td>
+            <td>'100%'</td>
+            <td>容器高（默认 '100%' 随父容器）</td>
+          </tr>
+          <tr>
+            <td><code>width</code></td>
+            <td>number \| string</td>
+            <td>'100%'</td>
+            <td>容器宽（默认 '100%'）</td>
+          </tr>
+          <tr>
+            <td><code>darkMode</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>ECharts 内置 dark 主题</td>
+          </tr>
+          <tr>
+            <td><code>toolbar</code></td>
+            <td>Array&lt;'saveAsImage' \| 'zoom' \| 'dataView'> \| false</td>
+            <td>() => ['saveAsImage', 'zoom']</td>
+            <td>工具栏按钮（saveAsImage 保存图片 / zoom 区域缩放 / dataView 数据视图），传 false 全关</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>items</code></td>
+            <td>{ name: string; color: string; visible: boolean }[]</td>
+            <td>—</td>
+            <td>图例项：名称 + 色值 + 当前可见态</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
   </div>
 </template>
 

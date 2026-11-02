@@ -418,6 +418,280 @@ function resetCurrentForm() {
         <code>{ ok: true }</code> 清错误/计数/锁定。
       </p>
     </Card>
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>maxWidth</code></td>
+            <td>string</td>
+            <td>'960px'</td>
+            <td>容器最大宽度，CSS 值，默认 960px</td>
+          </tr>
+          <tr>
+            <td><code>hideBrand</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>强制隐藏左侧品牌面板</td>
+          </tr>
+          <tr>
+            <td><code>minHeight</code></td>
+            <td>string</td>
+            <td>'100%'</td>
+            <td>容器最小高度，CSS 值，默认 100%</td>
+          </tr>
+          <tr>
+            <td><code>tenantMode</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>租户登录模式</td>
+          </tr>
+          <tr>
+            <td><code>loading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>外部控制加载态（如 API 请求中）</td>
+          </tr>
+          <tr>
+            <td><code>error</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部注入错误/提示信息</td>
+          </tr>
+          <tr>
+            <td><code>maxAttempts</code></td>
+            <td>number</td>
+            <td>5</td>
+            <td>最大尝试次数，0 禁用锁定</td>
+          </tr>
+          <tr>
+            <td><code>lockMinutes</code></td>
+            <td>number</td>
+            <td>15</td>
+            <td>锁定分钟数</td>
+          </tr>
+          <tr>
+            <td><code>brandTitle</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>品牌标题</td>
+          </tr>
+          <tr>
+            <td><code>brandSubtitle</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>品牌副标题</td>
+          </tr>
+          <tr>
+            <td><code>features</code></td>
+            <td>string[]</td>
+            <td>—</td>
+            <td>自定义特性列表</td>
+          </tr>
+          <tr>
+            <td><code>showSocialLogin</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>是否显示社交登录</td>
+          </tr>
+          <tr>
+            <td><code>showForgotPassword</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>是否显示忘记密码入口</td>
+          </tr>
+          <tr>
+            <td><code>showRegister</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>是否显示注册入口</td>
+          </tr>
+          <tr>
+            <td><code>authResult</code></td>
+            <td>{ ok: boolean; message?: string } \| null</td>
+            <td>null</td>
+            <td>
+              宿主登录结果回写（v2 Q18 收敛，取代 notifyFailed/notifySuccess 两个暴露方法）： 宿主自行完成登录后回传——{
+              ok: false, message? } 记一次失败尝试（message 为服务端错误文案）， { ok: true }
+              清错误/计数/锁定。每次回写传新对象（或先置 null 再传），同一引用重复赋值不重复触发
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>maxWidth</code></td>
+            <td>string</td>
+            <td>'960px'</td>
+            <td>容器最大宽度，CSS 值，默认 960px</td>
+          </tr>
+          <tr>
+            <td><code>hideBrand</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>强制隐藏左侧品牌面板</td>
+          </tr>
+          <tr>
+            <td><code>minHeight</code></td>
+            <td>string</td>
+            <td>'100vh'</td>
+            <td>容器最小高度，CSS 值，默认 100vh</td>
+          </tr>
+          <tr>
+            <td><code>loading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>外部控制加载态（如 API 请求中）</td>
+          </tr>
+          <tr>
+            <td><code>error</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部注入错误/提示信息</td>
+          </tr>
+          <tr>
+            <td><code>brandTitle</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>品牌标题（左侧品牌面板；空串用内置 i18n）</td>
+          </tr>
+          <tr>
+            <td><code>brandSubtitle</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>品牌副标题</td>
+          </tr>
+          <tr>
+            <td><code>requireCardKey</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>是否需要卡密字段</td>
+          </tr>
+          <tr>
+            <td><code>showOptionalFields</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>是否显示邮箱 & 手机号字段</td>
+          </tr>
+          <tr>
+            <td><code>requireEmail</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>邮箱是否必填</td>
+          </tr>
+          <tr>
+            <td><code>requirePhone</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>手机号是否必填</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>maxWidth</code></td>
+            <td>string</td>
+            <td>'380px'</td>
+            <td>卡片最大宽度，CSS 值，默认 380px</td>
+          </tr>
+          <tr>
+            <td><code>minHeight</code></td>
+            <td>string</td>
+            <td>'100vh'</td>
+            <td>容器最小高度，CSS 值，默认 100vh</td>
+          </tr>
+          <tr>
+            <td><code>loading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>外部控制加载态（如 API 请求中）</td>
+          </tr>
+          <tr>
+            <td><code>error</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部注入错误/提示信息</td>
+          </tr>
+          <tr>
+            <td><code>title</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>卡片标题（空串用内置 i18n）</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
+    <Card title="Props" title-as="h2">
+      <table class="props-table">
+        <tbody>
+          <tr class="props-header">
+            <th>Prop</th>
+            <th>类型</th>
+            <th>默认</th>
+            <th>说明</th>
+          </tr>
+          <tr>
+            <td><code>maxWidth</code></td>
+            <td>string</td>
+            <td>'960px'</td>
+            <td>容器最大宽度，CSS 值，默认 960px</td>
+          </tr>
+          <tr>
+            <td><code>hideBrand</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>强制隐藏左侧品牌面板</td>
+          </tr>
+          <tr>
+            <td><code>minHeight</code></td>
+            <td>string</td>
+            <td>'100vh'</td>
+            <td>容器最小高度，CSS 值，默认 100vh</td>
+          </tr>
+          <tr>
+            <td><code>loading</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>外部控制加载态（如 API 请求中）</td>
+          </tr>
+          <tr>
+            <td><code>error</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>外部注入错误/提示信息</td>
+          </tr>
+          <tr>
+            <td><code>success</code></td>
+            <td>string</td>
+            <td>—</td>
+            <td>重置成功提示（非空时切成功态视图）</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card>
   </div>
 </template>
 
