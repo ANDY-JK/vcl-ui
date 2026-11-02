@@ -81,110 +81,124 @@ const multiFiles = ref<UploadFile[]>([])
             <th style="padding: calc(4px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">说明</th>
           </tr>
           <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>accept</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">string</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">image/*</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              接受的文件类型；传空字符串 = 全部类型
-            </td>
-          </tr>
-          <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>directory</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              目录选择模式（webkitdirectory）
-            </td>
-          </tr>
-          <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>mobileMenu</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              触屏设备点击弹「拍照/相册/文件」菜单（安卓系统选择器无相机入口）
-            </td>
-          </tr>
-          <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>multiple</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">多文件上传</td>
-          </tr>
-          <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>maxSize</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">number</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">10</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">单文件大小限制(MB)</td>
-          </tr>
-          <tr>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              <code>disabled</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">boolean</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">false</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">禁用</td>
-          </tr>
-          <tr>
-            <td
-              style="
-                padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
-                border-bottom: 1px solid var(--vcl-color-border-light);
-              "
-            >
-              <code>preview-mode</code>
-            </td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">'builtin' | 'event'</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">builtin</td>
-            <td style="padding: calc(3px * var(--vcl-scale)) calc(8px * var(--vcl-scale))">
-              图片预览：builtin = 内置全屏预览；event = 只抛 @preview 事件
-            </td>
-          </tr>
-          <tr>
             <td><code>invalid</code></td>
             <td>boolean</td>
-            <td>false</td>
-            <td>外部判定无效（不带文案），仅影响 aria-invalid</td>
+            <td>—</td>
+            <td>
+              外部判定为无效（不带文案）：挂到投放区的 aria-invalid。 文件输入本身 aria-hidden +
+              tabindex=-1，**无障碍焦点在 role=button 的投放区上**， 所以状态要挂在投放区（#341 / TD-99）。
+            </td>
           </tr>
           <tr>
             <td><code>describedby</code></td>
             <td>string</td>
             <td>—</td>
-            <td>外部错误元素的 id，挂到 aria-describedby</td>
+            <td>外部错误元素的 id：挂到 aria-describedby，让读屏能回查「为什么无效」</td>
+          </tr>
+          <tr>
+            <td><code>accept</code></td>
+            <td>string</td>
+            <td>'image/*'</td>
+            <td>接受的文件类型：默认图片；传空字符串 = 全部类型（含目录里的文件）</td>
+          </tr>
+          <tr>
+            <td><code>multiple</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>多文件</td>
+          </tr>
+          <tr>
+            <td><code>maxSize</code></td>
+            <td>number</td>
+            <td>10</td>
+            <td>单文件大小上限（MB，默认 10）</td>
+          </tr>
+          <tr>
+            <td><code>minSize</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>单文件大小下限（KB）</td>
+          </tr>
+          <tr>
+            <td><code>disabled</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>禁用</td>
+          </tr>
+          <tr>
+            <td><code>drag</code></td>
+            <td>boolean</td>
+            <td>true</td>
+            <td>拖拽上传（默认开）</td>
+          </tr>
+          <tr>
+            <td><code>modelValue</code></td>
+            <td>UploadFile[]</td>
+            <td>() => []</td>
+            <td>受控文件列表（v-model:modelValue，UploadFile[]）</td>
+          </tr>
+          <tr>
+            <td><code>customRequest</code></td>
+            <td>(file: File) => Promise&lt;{ url: string }></td>
+            <td>undefined</td>
+            <td>自定义上传：替代内置请求，返回 { url }；失败时 reject 走 error 事件</td>
+          </tr>
+          <tr>
+            <td><code>variant</code></td>
+            <td>'default' \| 'card'</td>
+            <td>'default'</td>
+            <td>'default' 标准上传区 \| 'card' 紧凑方块卡片</td>
+          </tr>
+          <tr>
+            <td><code>label</code></td>
+            <td>string</td>
+            <td>''</td>
+            <td>card 模式下的显示标签</td>
+          </tr>
+          <tr>
+            <td><code>directory</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>目录选择模式（webkitdirectory）：选择整个文件夹上传（隐式多文件），仍按 accept 校验每个文件</td>
+          </tr>
+          <tr>
+            <td><code>mobileMenu</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>触屏设备点击弹「拍照/相册/文件」菜单（安卓系统选择器无相机入口，以此补齐拍照能力）；桌面不受影响</td>
+          </tr>
+          <tr>
+            <td><code>compress</code></td>
+            <td>boolean</td>
+            <td>false</td>
+            <td>图片压缩：开启后图片文件会经过 canvas 压缩再上传（移动端尤其需要）</td>
+          </tr>
+          <tr>
+            <td><code>maxWidth</code></td>
+            <td>number</td>
+            <td>1920</td>
+            <td>图片压缩最大宽度（px），超过时等比缩小；默认 1920</td>
+          </tr>
+          <tr>
+            <td><code>compressQuality</code></td>
+            <td>number</td>
+            <td>0.85</td>
+            <td>图片压缩质量 0-1；默认 0.85</td>
+          </tr>
+          <tr>
+            <td><code>maxConcurrent</code></td>
+            <td>number</td>
+            <td>—</td>
+            <td>
+              同时在飞的文件数（压缩+上传）。默认 3：按浏览器同源约 6 条连接取半，
+              给页面其它请求留通道；服务端有并发/限流策略时按更严的那个设
+            </td>
+          </tr>
+          <tr>
+            <td><code>previewMode</code></td>
+            <td>'builtin' \| 'event'</td>
+            <td>'builtin'</td>
+            <td>图片预览：'builtin' 点击图片直接打开内置全屏预览（默认）；'event' 仅抛 preview 事件由消费方自行处理</td>
           </tr>
         </tbody>
       </table>
