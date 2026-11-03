@@ -1562,6 +1562,24 @@
       "cmd": "npx vitest run tests/unit/local-storage-ttl.spec.ts --no-coverage",
       "expect": "red",
       "note": "ttl=0 被当成「过期时间 = now」→ 传 0（文档承诺的「永不过期」）的条目立刻读不回来（#402 锁定的契约）"
+    },
+    {
+      "id": "ink-no-fontsize-guard",
+      "file": "src/components/_internal/inkCenter.ts",
+      "find": "  if (!Number.isFinite(fontSizePx) || fontSizePx <= 0) return 0",
+      "replace": "  if (false) return 0",
+      "cmd": "npx vitest run tests/unit/ink-center.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "fontSize 0/负数不挡 → 画布高 0 → getImageData 抛 IndexSizeError，启动路径中断（#403）"
+    },
+    {
+      "id": "ink-measure-rethrows",
+      "file": "src/components/_internal/inkCenter.ts",
+      "find": "  } catch {",
+      "replace": "  } catch (e) {\n    throw e",
+      "cmd": "npx vitest run tests/unit/ink-center.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "catch 不再吞掉度量异常 → 宿主限制画布时异常冲出 applyInkCentering，启动路径中断（#403）"
     }
   ]
 }

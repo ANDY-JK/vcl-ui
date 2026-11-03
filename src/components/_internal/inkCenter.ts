@@ -30,44 +30,58 @@ const MAX_EM = 0.25
 /**
  * 量出并写入 `--vcl-ink-dy`。返回写入的 em 值（0 = 未生效/基线）。
  * 幂等：可重复调用，每次按当前文档字体重算（字体变了值跟着变，这就是「动态」）。
+ *
+ * ⚠️ **本函数承诺「永不抛异常」**（#403）：它是纯装饰性的度量，且在 `src/main.ts`
+ * 的启动路径上被调用 —— 一旦抛出去，`main.ts` 后面的挂载语句不再执行，用户看到白屏。
+ * 两条原来会抛的路径已堵上：
+ *   1. `fontSizePx` 为 0/负数/NaN → `canvas.height = 0` → `getImageData` 抛 IndexSizeError；
+ *   2. `getImageData` 本身可能抛（画布被限制的宿主环境 / SecurityError）。
+ * 两者都退回基线（返回 0、不写样式），与文档里"量不到时优雅降级"的承诺一致。
  */
 export function applyInkCentering(fontSizePx = 13): number {
   if (typeof document === 'undefined' || !document.body || typeof document.createElement !== 'function') return 0
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return 0
-  const family = getComputedStyle(document.body).fontFamily || 'sans-serif'
+  // 入参防御（#403）：0/负数/NaN 会让画布高度为 0，取像素时直接抛 IndexSizeError
+  if (!Number.isFinite(fontSizePx) || fontSizePx <= 0) return 0
+  try {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return 0
+    const family = getComputedStyle(document.body).fontFamily || 'sans-serif'
 
-  // 离屏量「样本墨迹上/下沿」（相对基线）：alphabetic 基线画在画布垂直中，读 alpha 通道
-  canvas.width = 200
-  canvas.height = 4 * fontSizePx
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.font = `${fontSizePx}px ${family}`
-  ctx.textBaseline = 'alphabetic'
-  ctx.fillStyle = '#000'
-  const baselineY = canvas.height / 2
-  ctx.fillText(SAMPLE, 5, baselineY)
-  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
-  let top = canvas.height
-  let bot = -1
-  for (let y = 0; y < canvas.height; y++) {
-    if (rowHasInk(data, y, canvas.width)) {
-      if (y < top) top = y
-      if (y > bot) bot = y
+    // 离屏量「样本墨迹上/下沿」（相对基线）：alphabetic 基线画在画布垂直中，读 alpha 通道
+    canvas.width = 200
+    canvas.height = 4 * fontSizePx
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.font = `${fontSizePx}px ${family}`
+    ctx.textBaseline = 'alphabetic'
+    ctx.fillStyle = '#000'
+    const baselineY = canvas.height / 2
+    ctx.fillText(SAMPLE, 5, baselineY)
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+    let top = canvas.height
+    let bot = -1
+    for (let y = 0; y < canvas.height; y++) {
+      if (rowHasInk(data, y, canvas.width)) {
+        if (y < top) top = y
+        if (y > bot) bot = y
+      }
     }
+    if (top > bot) return 0 // 样本没画出可见墨迹（异常字体），退回基线
+
+    const inkExtent = bot - top // 墨迹范围（px）
+    const em = fontSizePx // em = 字号
+    // 墨迹比 em 窄 → 向上收（负）；比 em 宽 → 向下放（正）。半差即居中所需位移。
+    let e = (inkExtent - em) / (2 * em)
+    if (!Number.isFinite(e)) return 0
+    e = Math.min(MAX_EM, Math.max(MIN_EM, e))
+    if (Math.abs(e) < 0.004) e = 0 // 亚像素噪声，不值得写
+
+    document.documentElement.style.setProperty(INK_DY_VAR, e ? `${e.toFixed(3)}em` : '0')
+    return e
+  } catch {
+    // 画布/取像素被宿主限制（SecurityError 等）、或样式写入失败：退回基线，绝不中断宿主启动
+    return 0
   }
-  if (top > bot) return 0 // 样本没画出可见墨迹（异常字体），退回基线
-
-  const inkExtent = bot - top // 墨迹范围（px）
-  const em = fontSizePx // em = 字号
-  // 墨迹比 em 窄 → 向上收（负）；比 em 宽 → 向下放（正）。半差即居中所需位移。
-  let e = (inkExtent - em) / (2 * em)
-  if (!Number.isFinite(e)) return 0
-  e = Math.min(MAX_EM, Math.max(MIN_EM, e))
-  if (Math.abs(e) < 0.004) e = 0 // 亚像素噪声，不值得写
-
-  document.documentElement.style.setProperty(INK_DY_VAR, e ? `${e.toFixed(3)}em` : '0')
-  return e
 }
 
 /** 该 y 行是否有可见墨迹（alpha>16） */
