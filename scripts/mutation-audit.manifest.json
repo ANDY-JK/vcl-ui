@@ -1337,6 +1337,24 @@
       "cmd": "npx vitest run tests/unit/rtl-gate-robustness.spec.ts --no-coverage",
       "expect": "red",
       "note": "去掉\"未镜像复核\" → 动画未稳定时的中间值会直接判红，40 分钟的链被一次抖动打断（#389）"
+    },
+    {
+      "id": "floating-prepare-hardcoded-h",
+      "file": "src/components/_internal/useFloating.ts",
+      "find": "const estH = lastFloatH || PREPARE_FALLBACK_H",
+      "replace": "const estH = 200",
+      "cmd": "npx vitest run tests/unit/floating-prepare-open.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "退回\"预定位永远假设 200px\"（TD-92 修前状态）→ 300~420px 的面板打开瞬间会盖住触发器（#390）"
+    },
+    {
+      "id": "floating-prepare-ignore-band-top",
+      "file": "src/components/_internal/useFloating.ts",
+      "find": "Math.max(band.top + 8, r.top - estH - offset)",
+      "replace": "Math.max(8, r.top - estH - offset)",
+      "cmd": "npx vitest run tests/unit/floating-prepare-open.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "钳制忽略可视区上沿 → 键盘顶起时可预排到可视区之外（#308 同类缺陷，#390）"
     }
   ]
 }

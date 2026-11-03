@@ -44,6 +44,11 @@ export function getViewportBand(): ViewportBand {
 
 /** resize 连发时合并重算的静默窗口：停止改变这么久才重排一次浮层 */
 const RESIZE_COALESCE_MS = 50
+/**
+ * 预定位的兜底高度（TD-92，#390）：**首次打开**还没量过真实高度时的估计值。
+ * 面板通常 300~420px，200 是保守下界（宁可少减，不要排到触发器上方之外）。
+ */
+const PREPARE_FALLBACK_H = 200
 
 /** 定位锚点模式 */
 export type AnchorMode = 'element' | 'pointer'
@@ -282,6 +287,15 @@ export function useFloating(options: FloatingOptions = {}) {
   const optMaxMatchWidth = () => options.maxMatchWidth ?? false
   const optZIndex = () => options.zIndex ?? 'var(--vcl-z-dropdown, 2000)'
 
+  /**
+   * 上一次量到的浮层真实高度（TD-92，#390）。
+   *
+   * `prepareOpen()` 要在"面板还没渲染出来"时预排位置，只能用估计值。原来写死 200px，
+   * 而常见的下拉/面板 300~420px —— 打开瞬间会盖住触发器、随后被 `updatePosition` 纠正（闪一下）。
+   * 这里把每次 `updatePosition` 量到的真实高度记下来，**第二次打开起就用真实值预排**。
+   */
+  let lastFloatH = 0
+
   function applyStyle(
     top: number,
     left: number,
@@ -336,6 +350,8 @@ export function useFloating(options: FloatingOptions = {}) {
       ? Math.max(floating.offsetWidth, minSize, r.width)
       : Math.max(floating.offsetWidth, minSize)
     const fh = floating.offsetHeight || minSize
+    // 记住真实高度：下次 prepareOpen 用它预定位，不再假设 200px（TD-92，#390）
+    if (floating.offsetHeight) lastFloatH = floating.offsetHeight
 
     const result = computeFloatingPosition({
       rect: r,
@@ -349,7 +365,24 @@ export function useFloating(options: FloatingOptions = {}) {
     applyStyle(result.top, result.left, result.direction, result.maxHeight, r.width, result.arrowOffset)
   }
 
-  /** 打开前预定位到触发器附近，避免从左上角闪现 */
+  /**
+   * 打开前预定位到触发器附近，避免从左上角闪现（TD-92，#390）。
+   *
+   * ## 原来的问题
+   *
+   * 预定位把面板高度**写死 200px**（`r.top - 200 - offset`）：常见的下拉/面板 300~420px，
+   * 于是"测量完成前那一帧"面板会**盖住触发器**（少减了 100~200px），随后被 `updatePosition` 纠正 ——
+   * 用户看到的是打开瞬间跳一下。
+   *
+   * ## 改法
+   *
+   * 用**上一次量到的真实高度**（`lastFloatH`）预排；从没量过（首次打开）才退到
+   * `PREPARE_FALLBACK_H = 200`。这样第二次起预定位就与真实尺寸一致，
+   * 首开也仍是原来的量级（不会比现在更差）。
+   *
+   * 另外把下沿钳制从写死的 `8` 改成 `band.top + 8`：键盘顶起可视区域时
+   * （`visualViewport.offsetTop > 0`）面板不该被排到可视区上沿之外（#308 的同一类问题）。
+   */
   function prepareOpen() {
     const trigger = triggerRef.value
     if (!trigger) return
@@ -359,10 +392,11 @@ export function useFloating(options: FloatingOptions = {}) {
     const spaceDown = band.bottom - r.bottom - offset
     const spaceUp = r.top - band.top - offset
     const shouldFlipUp = spaceDown < spaceUp * 0.3 && spaceUp > 100
+    const estH = lastFloatH || PREPARE_FALLBACK_H
 
     if (shouldFlipUp) {
       direction.value = 'up'
-      applyStyle(Math.max(8, r.top - 200 - offset), r.left, 'up', null, r.width, r.width / 2)
+      applyStyle(Math.max(band.top + 8, r.top - estH - offset), r.left, 'up', null, r.width, r.width / 2)
     } else {
       direction.value = 'down'
       applyStyle(r.bottom + offset, r.left, 'down', null, r.width, r.width / 2)
