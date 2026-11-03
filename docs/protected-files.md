@@ -5,7 +5,7 @@
 > 这些文件的头部带 `⛔ 保护 — <组件>，禁止：… / 需我确认：…` 注释，表示修改前需要人工确认。
 > 本索引只是把它们**列出来**；判定规则本身仍以各文件头部注释为准。
 
-- 受保护文件：**82** 个（`.vue` 39 + `.ts` 43）
+- 受保护文件：**83** 个（`.vue` 40 + `.ts` 43）
 - 其中写明「需我确认」的：**45** 个
 
 > **计数口径**：判定条件是「文件**头 24 行内**出现 `⛔ 保护` 标记」。全内容扫描会多出 2 个（正文里提到该约定
@@ -73,6 +73,7 @@
 | `src/components/feedback/Popover.vue` | clamp() → px，浮动定位算法，z-index 需我确认：trigger 触发方式、placement 位置选项 | trigger 触发方式、placement 位置选项 |
 | `src/components/feedback/ReadOnlyOverlay.vue` | 遮罩透明度；z-index 层级 = var(--vcl-z-readonly, 2500)（压 modal | visible 触发逻辑、slot 内容区 |
 | `src/components/feedback/Result.vue` | clamp() → px，slot 层级修改 需我确认：status 图标映射、extra slot 结构 | status 图标映射、extra slot 结构 |
+| `src/components/feedback/Toast.vue` | clamp() → px，动画时序；z-index 层级 = var(--vcl-z-top, 9999)（最高优先级通知，ImagePreview 内嵌时临时 | — |
 | `src/components/form/CameraCapture.vue` | — | 布局结构、采集参数（4:3 高清）、拍照后交付方式（capture 事件） |
 | `src/components/form/date-panel/DatePanel.vue` | clamp() → px，本地时区构造 new Date(y, m, d) 改动 ⭐ iso 始终按 format 格式化；范围模式下以 selected 数组 | — |
 | `src/components/form/date-panel/TimeColumns.vue` | clamp() → px，分钟 step 对齐逻辑删除 ⭐ 时 | — |
