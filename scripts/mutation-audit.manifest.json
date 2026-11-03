@@ -1188,8 +1188,8 @@
     {
       "id": "export-time-as-date",
       "file": "src/components/form/utils/date-utils.ts",
-      "find": "  const direct = new Date(raw)\n  if (!Number.isNaN(direct.getTime())) return direct",
-      "replace": "  const direct = new Date(raw)\n  if (true) return null",
+      "find": "  const direct = new Date(s)\n  if (!Number.isNaN(direct.getTime())) return direct",
+      "replace": "  const direct = new Date(s)\n  if (true) return null",
       "cmd": "npx vitest run tests/unit/collect-export.spec.ts --no-coverage",
       "expect": "red",
       "note": "变异后：宽容解析失效（ISO 先被原生解析这条路径断掉）→ 提交时间退回文本列，Excel 里按时间排序得到字典序、筛选不认日期区间（#303；#391 起解析器统一到 date-utils）"
@@ -1391,6 +1391,24 @@
       "cmd": "npx vitest run tests/unit/console-noise-gate.spec.ts --no-coverage",
       "expect": "red",
       "note": "棘轮只拦新增类别的判据失效 → 新告警可以静默扩散（#392）"
+    },
+    {
+      "id": "record-time-invalid-date-rolls",
+      "file": "src/components/form/utils/date-utils.ts",
+      "find": "  return isValidDate(Number(m[1]), Number(m[2]), Number(m[3]))",
+      "replace": "  return true",
+      "cmd": "npx vitest run tests/unit/record-time-iso.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "非法日期（2026/2/30）被原生/兜底解析静默滚成 3/2 → 展示的是\"改过的数\"（#393）"
+    },
+    {
+      "id": "record-time-bare-number-accepted",
+      "file": "src/components/form/utils/date-utils.ts",
+      "find": "  if (/^\\d{1,4}$/.test(s)) return null",
+      "replace": "  if (false) return null",
+      "cmd": "npx vitest run tests/unit/record-time-iso.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "纯数字串（\"0\"/\"2026\"）被当成时间 → new Date(\"0\") = 2000-01-01，脏数据变成假时间（#393）"
     }
   ]
 }

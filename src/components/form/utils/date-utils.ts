@@ -107,17 +107,43 @@ export function recordTimeNow(now: Date = new Date()): string {
 }
 
 /**
+ * 字符串开头的 `YYYY-MM-DD` / `YYYY/M/D` 是不是**真实存在的日期**（#393）。
+ *
+ * 为什么必须单独校验：`new Date(2026, 1, 30)` 会**静默滚到 3 月 2 日**，
+ * `new Date('2026/2/30')` 在 V8 里同样会滚 —— 于是"宽容解析"会把一条**非法日期**
+ * 变成隔壁的合法日期显示出来（用户看到 2026/3/2，实际数据里写的是 2026/2/30）。
+ * 这与本模块"解析不了就原样返回"的口径相悖：**看不懂的宁可原样显示，也不能改数**。
+ *
+ * 没有日期前缀（纯时间、ISO 带时区、相对描述）时返回 true，交给原生解析去判。
+ */
+function leadingDateIsReal(raw: string): boolean {
+  const m = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/.exec(raw.trim())
+  if (!m) return true
+  return isValidDate(Number(m[1]), Number(m[2]), Number(m[3]))
+}
+
+/**
  * 宽容解析记录里的时间（ISO 或历史的展示字符串）。
  *
  * 解析顺序：原生 `new Date(raw)` → 再试 `YYYY/M/D H:m[:s]`（补零后按本地时区构造）。
  * 解析不出来返回 `null` —— 调用方决定回退（展示原样、导出原字符串）。
+ *
+ * 两道拒绝（#393，都是"静默改数"的入口）：
+ *   · **纯数字串**（`0` / `2026`）：`new Date('0')` 会被解析成 2000-01-01，
+ *     记录时间不可能只有 1~4 位数字，这种输入是脏数据；
+ *   · **日期部分非法**（`2026/2/30`、`2026-13-01`）：原生与兜底路径都会滚动到隔壁日期。
  */
 export function recordTimeDate(raw: string | undefined | null): Date | null {
   if (!raw) return null
-  const direct = new Date(raw)
+  const s = raw.trim()
+  if (!s) return null
+  if (/^\d{1,4}$/.test(s)) return null
+  if (!leadingDateIsReal(s)) return null
+
+  const direct = new Date(s)
   if (!Number.isNaN(direct.getTime())) return direct
   // 某些环境不认 `2026/8/23 14:30:00` 里的斜杠或没有秒；补零后重试一次
-  const m = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(raw.trim())
+  const m = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(s)
   if (!m) return null
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] ?? 0))
   return Number.isNaN(d.getTime()) ? null : d

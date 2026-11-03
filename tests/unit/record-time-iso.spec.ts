@@ -88,6 +88,33 @@ describe('recordTimeDate / formatRecordTime · 宽容读（老记录照常显示
   })
 })
 
+describe('非法日期不许被静默滚到隔壁（#393）', () => {
+  it('**日期部分非法 → 解析失败**（否则会显示成隔壁日期，等于改数）', () => {
+    // new Date('2026/2/30') 与 new Date(2026, 1, 30) 都会滚到 3 月 2 日
+    expect(recordTimeDate('2026/2/30'), '2 月没有 30 日，必须判为解析失败').toBe(null)
+    expect(recordTimeDate('2026-13-01'), '没有 13 月').toBe(null)
+    expect(recordTimeDate('2023-02-29'), '平年没有 2 月 29 日').toBe(null)
+    expect(recordTimeDate('2026/2/30 10:00'), '带时间的非法日期同样拒绝').toBe(null)
+  })
+
+  it('合法日期照常解析（含闰年 2 月 29 日）', () => {
+    expect(recordTimeDate('2024-02-29')).toBeInstanceOf(Date)
+    expect(recordTimeDate('2026/12/31 23:59:59')).toBeInstanceOf(Date)
+    expect(recordTimeDate('2026-08-23T06:30:00.000Z')).toBeInstanceOf(Date)
+  })
+
+  it('**纯数字串不是记录时间**（new Date(0 的字面串) 会变成 2000-01-01）', () => {
+    expect(recordTimeDate('0')).toBe(null)
+    expect(recordTimeDate('2026')).toBe(null)
+    expect(recordTimeDate('12')).toBe(null)
+  })
+
+  it('非法日期展示时**原样返回**，而不是悄悄改成隔壁日期', () => {
+    expect(formatRecordTime('2026/2/30'), '必须原样，不能显示成 2026/3/2').toBe('2026/2/30')
+    expect(formatRecordTime('2026-13-01')).toBe('2026-13-01')
+  })
+})
+
 describe('收集记录的写入端必须存 ISO', () => {
   for (const file of WRITE_SITES) {
     it(`${file.split('/').pop()} 写入 time 用 recordTimeNow()，不再格式化展示字符串`, () => {
