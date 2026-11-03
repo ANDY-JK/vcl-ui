@@ -1373,6 +1373,24 @@
       "cmd": "npx vitest run tests/unit/record-time-iso.spec.ts --no-coverage",
       "expect": "red",
       "note": "解析不了就返回空串 → 历史/脏数据在列表里直接消失（吞内容），而不是原样显示（#391）"
+    },
+    {
+      "id": "console-noise-empty-guard-removed",
+      "file": "scripts/check-console-noise.mjs",
+      "find": "if (totals.size === 0) {",
+      "replace": "if (false) {",
+      "cmd": "npx vitest run tests/unit/console-noise-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "空采集守卫失效 → spool 为空（或全被豁免）时闸口判绿 = 假绿（TD-04，#392）"
+    },
+    {
+      "id": "console-noise-new-kind-ignored",
+      "file": "scripts/check-console-noise.mjs",
+      "find": "  if (!(k in base)) fresh.push([k, v])",
+      "replace": "  if (false) fresh.push([k, v])",
+      "cmd": "npx vitest run tests/unit/console-noise-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "棘轮只拦新增类别的判据失效 → 新告警可以静默扩散（#392）"
     }
   ]
 }

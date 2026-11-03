@@ -16,11 +16,25 @@
 import { execFileSync } from 'node:child_process'
 import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const SPOOL = join(ROOT, 'tests', 'unit', '.noise-spool')
-const BASELINE = join(ROOT, 'tests', 'unit', 'console-noise-baseline.json')
+
+/**
+ * 目录/基线可指向夹具（#392，TD-04）。
+ *
+ * 为什么需要：本闸口最要紧的判据是"**采集到 0 类噪音必须判红**"（0 类几乎一定是没采集上，
+ * 而不是真的没噪音）。但 spool 路径写死之后这条判据**没法自测** —— 自测只能去动真实 spool，
+ * 那会把正在跑的采集搞坏。加两个**只影响被测环节**的开关，才能用夹具证明"空采集会红"。
+ */
+const argOf = (name) => {
+  const i = process.argv.indexOf(name)
+  return i > -1 ? process.argv[i + 1] : null
+}
+const SPOOL = argOf('--spool') ? resolve(argOf('--spool')) : join(ROOT, 'tests', 'unit', '.noise-spool')
+const BASELINE = argOf('--baseline-file')
+  ? resolve(argOf('--baseline-file'))
+  : join(ROOT, 'tests', 'unit', 'console-noise-baseline.json')
 
 /**
  * 清空 spool。
@@ -130,9 +144,19 @@ for (const [k, v] of sorted) console.log(`   ×${String(v).padStart(4)}  ${k}`)
 // 本闸口会看到 0 类并**静默通过** —— 那不是"没有噪音"，那是"没有采集"。
 // 「闸口在没数据时判绿」这件事本轮已经栽过一次（verify-pkg 的 walk 只看到 9% 文件），
 // 所以这里显式把空采集判红，并给出正确操作顺序。
-if (rawKinds === 0) {
+// #392（TD-04 补）：判据从 `rawKinds === 0` 改成 **豁免之后仍为 0 类**（`totals.size === 0`）。
+//
+// 原来只看原始条数：若采集到的**全部**是 Node 运行时告警（`(node:…)` 前缀，被豁免），
+// rawKinds > 0 而 totals 为空 —— 守卫不触发，闸口拿空集合去比基线，**判绿**。
+// 写这条自测时实测撞到了：spool 里只有 1 类运行时告警 → 退出码 0。
+// 「豁免」不该顺带把"没数据"也豁免掉。
+if (totals.size === 0) {
   console.error('')
   console.error('❌ 采集到 0 类噪音 —— 这几乎一定是"没采集上"，而不是"真的没有噪音"。')
+  if (rawKinds > 0) {
+    console.error(`   已读到 ${rawKinds} 条采集，但全部带 (node:…) 前缀（Node 运行时告警，已豁免），`)
+    console.error('   豁免后没有任何可比对的仓库噪音 —— 同样按"没采集上"处理，不判绿。')
+  }
   console.error('   本库实测稳定有 20+ 类测试环境噪音，0 类只可能是 spool 为空。')
   console.error('   正确顺序：npm run test:unit（写入 spool）→ npm run check:console-noise --no-run')
   console.error('   或直接：npm run check:console-noise（它会自己跑一遍单测再汇总）')
