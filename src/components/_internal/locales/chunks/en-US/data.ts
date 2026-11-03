@@ -5,7 +5,7 @@
 export default {
   imagePreview: {
     imageLabel: 'Image {n}',
-    loadFailed: 'Failed to load image',
+    loadFailed: 'Failed to load image: please retry or upload it again',
     // Annotation tools
     annoRect: 'Rectangle (R)',
     annoPen: 'Pen (P)',
@@ -27,7 +27,7 @@ export default {
     copy: 'Copy (with annotations)',
     // Action results
     downloadOk: 'Image downloaded',
-    downloadFail: 'Download failed',
+    downloadFail: 'Download failed: please retry, or check whether the browser blocked it',
     copyOk: 'Copied to clipboard',
     copyFail: 'Copy failed (browser permission)',
     exportFailNotLoaded: 'Export failed (image not loaded or cross-origin)',

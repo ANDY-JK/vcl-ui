@@ -4,9 +4,9 @@
  */
 export default {
   routePlanner: {
-    planFailed: '路线规划失败',
+    planFailed: '路线规划失败：请检查起终点后重试',
     replanFailed: '重新规划失败',
-    coordParseFailed: '坐标解析失败',
+    coordParseFailed: '坐标解析失败：请检查坐标格式（如 120.15,30.28）后重试',
     missingCoordColumns: '缺少经度/纬度列（第 {row} 行起）：表头需为「经度」「纬度」（可带单位括号，如「经度(°)」）',
     coordResolveFailed: '无法解析坐标: {name}',
     unknown: '未知',

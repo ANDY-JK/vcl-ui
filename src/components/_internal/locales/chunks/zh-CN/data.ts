@@ -5,7 +5,7 @@
 export default {
   imagePreview: {
     imageLabel: '图片 {n}',
-    loadFailed: '图片加载失败',
+    loadFailed: '图片加载失败：请重试或重新上传',
     // 标注工具
     annoRect: '矩形 (R)',
     annoPen: '画笔 (P)',
@@ -27,7 +27,7 @@ export default {
     copy: '复制（含标注）',
     // 操作结果提示
     downloadOk: '图片已下载',
-    downloadFail: '下载失败',
+    downloadFail: '下载失败：请重试，或检查浏览器是否拦截了下载',
     copyOk: '已复制到剪贴板',
     copyFail: '复制失败（浏览器权限限制）',
     exportFailNotLoaded: '导出失败（图片未加载或跨域）',

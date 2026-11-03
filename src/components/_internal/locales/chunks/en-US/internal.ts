@@ -12,6 +12,6 @@ export default {
     daysAgo: '{n} d ago',
     // File reading Error messages
     fileReaderUnavailable: 'FileReader is unavailable',
-    readFileFail: 'Failed to read file',
+    readFileFail: 'Failed to read file: please retry, or choose another file',
   },
 }

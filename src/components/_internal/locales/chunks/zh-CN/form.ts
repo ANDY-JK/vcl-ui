@@ -9,7 +9,7 @@ export default {
     upload: '上传文件',
     uploading: '上传中...',
     uploadSuccess: '上传成功',
-    uploadFailed: '上传失败',
+    uploadFailed: '上传失败：请重试，或检查网络与文件大小',
     previewImage: '预览图片',
     camera: '拍照',
     switchCamera: '切换摄像头',
@@ -43,7 +43,7 @@ export default {
     noMatchIcon: '无匹配图标',
     // CameraCapture
     cameraUnavailable: '当前环境不支持页面内拍照',
-    captureFailed: '画面截取失败',
+    captureFailed: '画面截取失败：请重试，或检查摄像头是否被其他程序占用',
     cameraSwitched: '{msg}，已切换系统相机',
     cameraStarting: '正在启动相机…',
     use: '使用',
@@ -71,9 +71,9 @@ export default {
     nextSlot: '拍摄：{name}（{i}/{n}）',
     reshootSlot: '重拍：{name}',
     videoNotMounted: '视频元素未挂载',
-    cameraStartFailed: '摄像头启动失败',
+    cameraStartFailed: '摄像头启动失败：请检查浏览器摄像头权限后重试',
     scanNotRecognized: '未识别',
-    imageLoadFailed: '图片加载失败',
+    imageLoadFailed: '图片加载失败：请换一张图片重试',
     // 采集兜底链（拍照/扫码自动降级：页面内 → 系统 → 上传 → 手工输入）
     scanCode: '扫码识别',
     scanStarting: '启动中…',
@@ -99,7 +99,7 @@ export default {
     captureManualMismatch: '编号与前缀/位数要求不符，请检查后重试',
     captureFallbackTip: '相机不可用时，可直接上传图片识别，或手工输入编号。',
     // Upload
-    compressFailed: '压缩失败',
+    compressFailed: '图片压缩失败：请换一张图片重试',
     typeNotSupported: '文件 "{name}" 类型不支持（仅支持 {accept}）',
     sizeExceeded: '文件 "{name}" 超过 {max}MB 限制',
     sizeTooSmall: '文件 "{name}" 小于 {min}KB 限制',

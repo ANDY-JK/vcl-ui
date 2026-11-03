@@ -9,7 +9,7 @@ export default {
     upload: 'Upload File',
     uploading: 'Uploading...',
     uploadSuccess: 'Upload successful',
-    uploadFailed: 'Upload failed',
+    uploadFailed: 'Upload failed: please retry, or check the network and file size',
     previewImage: 'Preview image',
     camera: 'Camera',
     switchCamera: 'Switch Camera',
@@ -43,7 +43,7 @@ export default {
     noMatchIcon: 'No matching icons',
     // CameraCapture
     cameraUnavailable: 'In-page camera is not supported in this environment',
-    captureFailed: 'Frame capture failed',
+    captureFailed: 'Frame capture failed: please retry, or check whether another app is using the camera',
     cameraSwitched: '{msg}, switched to system camera',
     cameraStarting: 'Starting camera...',
     use: 'Use',
@@ -71,9 +71,9 @@ export default {
     nextSlot: 'Shoot: {name} ({i}/{n})',
     reshootSlot: 'Retake: {name}',
     videoNotMounted: 'Video element not mounted',
-    cameraStartFailed: 'Failed to start camera',
+    cameraStartFailed: 'Failed to start camera: please grant camera permission and retry',
     scanNotRecognized: 'Not recognized',
-    imageLoadFailed: 'Failed to load image',
+    imageLoadFailed: 'Failed to load image: please try another image',
     // Capture fallback chain (photo/scan auto-degrade: in-page → system → upload → manual input)
     scanCode: 'Scan code',
     scanStarting: 'Starting...',
@@ -99,7 +99,7 @@ export default {
     captureManualMismatch: "Code doesn't match the prefix/length filter. Please check and retry.",
     captureFallbackTip: 'If the camera is unavailable, upload a photo or type the number.',
     // Upload
-    compressFailed: 'Compression failed',
+    compressFailed: 'Compression failed: please try another image',
     typeNotSupported: 'File "{name}" type not supported (only {accept})',
     sizeExceeded: 'File "{name}" exceeds {max}MB limit',
     sizeTooSmall: 'File "{name}" is smaller than {min}KB limit',

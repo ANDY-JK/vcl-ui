@@ -20,7 +20,7 @@ export default {
     autoSaveFail: '自动保存失败，请检查网络后重试',
     exportEmpty: '没有可导出的数据',
     exportDone: 'Excel 导出完成',
-    exportFail: '导出失败',
+    exportFail: '导出失败：请重试，或检查浏览器是否拦截了下载',
     noExportableFields: '没有可导出的字段',
     clearFieldsTitle: '清空字段',
     clearFieldsMsg: '确定清空所有字段？此操作不可撤销。',
@@ -626,7 +626,7 @@ export default {
     loadConfirmMsg: '当前画布尚有未保存内容，打开「{n}」将替换画布（可撤销），确定继续？',
     // 表单管理动作提示（useFormManager）
     nothingToSave: '画布为空，没有可保存的内容',
-    shareSignFail: '分享码签名失败',
+    shareSignFail: '分享码签名失败，请重试或检查签名配置',
     savedTip: '已保存「{name}」',
     saveFail: '保存失败：{err}',
     loadFail: '打开失败：{err}',

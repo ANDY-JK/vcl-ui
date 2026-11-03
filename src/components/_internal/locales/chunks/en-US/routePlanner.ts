@@ -4,9 +4,9 @@
  */
 export default {
   routePlanner: {
-    planFailed: 'Route planning failed',
+    planFailed: 'Route planning failed: please check the start and destination, then retry',
     replanFailed: 'Re-planning failed',
-    coordParseFailed: 'Coordinate parsing failed',
+    coordParseFailed: 'Coordinate parsing failed: please check the format (e.g. 120.15,30.28) and retry',
     missingCoordColumns:
       'Missing longitude/latitude columns (from row {row}): headers must be "经度"/"纬度" (unit parentheses allowed, e.g. "经度(°)")',
     coordResolveFailed: 'Cannot resolve coordinates: {name}',

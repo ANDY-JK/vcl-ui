@@ -12,6 +12,6 @@ export default {
     daysAgo: '{n}天前',
     // 文件读取 Error 消息
     fileReaderUnavailable: 'FileReader 不可用',
-    readFileFail: '读取文件失败',
+    readFileFail: '读取文件失败：请重试，或换一个文件',
   },
 }

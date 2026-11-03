@@ -1,5 +1,5 @@
 /**
- * 失败文案的最小可操作性 —— 棘轮（#301）
+ * 失败文案的最小可操作性 —— **必须为 0**（#301 建棘轮 → #386 清零后换挡）
  *
  * ## 为什么
  *
@@ -12,78 +12,91 @@
  * ② 含括号补充 —— 说明了原因（如「导出失败（当前环境不支持下载）」）；
  * ③ 含指导词 —— 请 / 重试 / 检查 / 尝试 / 稍后 / 刷新 / 手动 / 重新。
  *
- * ## 为什么是棘轮而不是一刀切
+ * ## 为什么从"棘轮"改成"必须为 0"（#386）
  *
- * 存量里有一批"图片加载失败""上传失败"这类**足够清楚**的短文案，一刀切会产生大量
- * 假警报（#279 的教训：假警报会让闸门被关掉）。所以：**只挡新增**。
- * 已存在的裸文案登记在 `BASELINE` 里；修好一条就从 BASELINE 删掉（否则会报"陈旧条目"）。
+ * #301 时存量有 18 条、一次清零不现实，所以用 `BASELINE` 挡新增、慢慢还；
+ * 18 → 15 之后停了很久。**棘轮只是过渡形态：存量到零还留着豁免名单，
+ * 就会变成"以后再往里加一条也没人反对"**（本仓 #372/#382 都栽在单向豁免上）。
+ * 现在零存量 → 改成硬判据：新增一条裸文案直接红。**不要在这里重建 BASELINE。**
+ *
+ * 副作用提醒：这条判据只认中文指导词，所以英文侧单独有 1 条抽查（防止只修半边）。
  */
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const DIR = 'src/components/_internal/locales/chunks/zh-CN'
-
-/** 存量裸文案（修好一条就删一条；新增裸文案会被拦下） */
-const BASELINE = new Set([
-  'amap.ts:driveRouteFailed',
-  'data.ts:loadFailed',
-  'data.ts:downloadFail',
-  'form.ts:uploadFailed',
-  'form.ts:captureFailed',
-  'form.ts:cameraStartFailed',
-  'form.ts:imageLoadFailed',
-  'form.ts:compressFailed',
-  'formBuilder.ts:exportFail',
-  'formBuilder.ts:shareSignFail',
-  'formBuilderPresets.ts:loadLocalFail',
-  'formBuilderPresets.ts:clearFail',
-  'internal.ts:readFileFail',
-  'routePlanner.ts:planFailed',
-  'routePlanner.ts:coordParseFailed',
-])
+const DIR_EN = 'src/components/_internal/locales/chunks/en-US'
 
 const GUIDANCE = /请|重试|检查|尝试|稍后|刷新|手动|重新/
 const DETAIL = /\{[a-zA-Z]+\}|（[^）]+）|\([^)]+\)/
+/** 英文侧只看"有没有下一步动作"，不做逐词翻译校对 */
+const EN_GUIDANCE = /please|retry|check|try|refresh|contact/i
 
+/** 本轮（#386）逐条补完的 15 条：锁住"修过的不回退" */
+const FIXED = [
+  ['amap.ts', 'driveRouteFailed'],
+  ['data.ts', 'loadFailed'],
+  ['data.ts', 'downloadFail'],
+  ['form.ts', 'uploadFailed'],
+  ['form.ts', 'captureFailed'],
+  ['form.ts', 'cameraStartFailed'],
+  ['form.ts', 'imageLoadFailed'],
+  ['form.ts', 'compressFailed'],
+  ['formBuilder.ts', 'exportFail'],
+  ['formBuilder.ts', 'shareSignFail'],
+  ['formBuilderPresets.ts', 'loadLocalFail'],
+  ['formBuilderPresets.ts', 'clearFail'],
+  ['internal.ts', 'readFileFail'],
+  ['routePlanner.ts', 'planFailed'],
+  ['routePlanner.ts', 'coordParseFailed'],
+] as const
+
+/** 读某语言块里某个 key 的单引号字符串值 */
+function valueOf(dir: string, file: string, key: string): string | undefined {
+  const src = readFileSync(join(dir, file), 'utf8')
+  const m = new RegExp(`^\\s{2,6}${key}:\\s*'([^']*)'`, 'm').exec(src)
+  return m?.[1]
+}
+
+/** 扫中文块：返回裸文案与"判据一共看过多少条"（后者用来防空集判绿） */
 function scan() {
-  const found: string[] = []
+  const bare: string[] = []
+  let total = 0
   for (const f of readdirSync(DIR)) {
     if (!f.endsWith('.ts')) continue
     const src = readFileSync(join(DIR, f), 'utf8')
     for (const m of src.matchAll(/^\s{2,6}([a-zA-Z][\w]*):\s*'([^']*)'/gm)) {
       const [, key, value] = m
       if (!/(Fail|Failed)$/.test(key)) continue
+      total++
       if (DETAIL.test(value) || GUIDANCE.test(value)) continue
-      found.push(`${f}:${key}`)
+      bare.push(`${f}:${key}`)
     }
   }
-  return found
+  return { bare, total }
 }
 
-describe('i18n 失败文案 · 可操作性棘轮', () => {
-  it('**不得新增"只说了失败、没说下一步"的文案**', () => {
-    const bare = scan()
-    const added = bare.filter((k) => !BASELINE.has(k))
-    expect(
-      added,
-      `新增了没有下一步的失败文案：${added.join(', ')}\n` +
-        `修法：加"请/重试/检查"等指导词，或说明原因（括号/占位符）。`,
-    ).toEqual([])
+describe('i18n 失败文案 · 可操作性（必须为 0）', () => {
+  it('**不得出现"只说了失败、没说下一步"的文案**（扫到的条数有下限，防空集判绿）', () => {
+    const { bare, total } = scan()
+    expect(total, '一条失败文案都没扫到 —— 先怀疑扫描器坏了').toBeGreaterThanOrEqual(40)
+    expect(bare, `这些失败文案没有下一步：${bare.join(', ')}\n修法：加"请/重试/检查"等指导词，或说明原因（括号/占位符）。`).toEqual([])
   })
 
-  it('**BASELINE 不得含已修好的条目**（否则棘轮会僵化）', () => {
-    const bare = new Set(scan())
-    const stale = [...BASELINE].filter((k) => !bare.has(k))
-    expect(stale, `这些条目已不再裸，请从 BASELINE 删掉：${stale.join(', ')}`).toEqual([])
+  it('**#386 补过的 15 条逐条锁住**（修过的不许回退成裸文案）', () => {
+    for (const [file, key] of FIXED) {
+      const value = valueOf(DIR, file, key)
+      expect(value, `${file} 缺少 ${key}`).toBeTruthy()
+      expect(GUIDANCE.test(value!), `${file}:${key} 又变回裸文案：「${value}」`).toBe(true)
+    }
   })
 
-  it('抽查三条本轮补过的文案确实带指导（回归保护）', () => {
-    const src = readFileSync(join(DIR, 'formBuilder.ts'), 'utf8')
-    for (const key of ['fileReadFail', 'loadFormFail', 'copyFail']) {
-      const m = new RegExp(`^\\s{4}${key}:\\s*'([^']*)'`, 'm').exec(src)
-      expect(m, `${key} 应存在`).toBeTruthy()
-      expect(GUIDANCE.test(m![1]), `${key} 应含指导词，实际：${m![1]}`).toBe(true)
+  it('**英文侧同样带下一步**（判据只认中文指导词，这里防"只修半边"）', () => {
+    for (const [file, key] of FIXED) {
+      const value = valueOf(DIR_EN, file, key)
+      expect(value, `en-US ${file} 缺少 ${key}`).toBeTruthy()
+      expect(EN_GUIDANCE.test(value!), `en-US ${file}:${key} 没有下一步：「${value}」`).toBe(true)
     }
   })
 })

@@ -4,7 +4,7 @@
  */
 export default {
   amap: {
-    driveRouteFailed: 'Driving route query failed',
+    driveRouteFailed: 'Driving route query failed: please check your network and retry',
     driveRouteNoKey: 'Driving route query failed: AMap API key not set',
     driveRouteNetwork: 'Driving route query failed: network error',
     invalidRouteResults: 'Invalid results, please check the address or store name',

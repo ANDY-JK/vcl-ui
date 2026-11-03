@@ -1265,6 +1265,24 @@
       "cmd": "npx vitest run tests/unit/template-statements.spec.ts --no-coverage",
       "expect": "red",
       "note": "整体跳过编译器判据 → 只剩启发式，调用语句与插值里的多语句重新漏报（#385 之前的状态）"
+    },
+    {
+      "id": "i18n-failure-copy-bare-locale",
+      "file": "src/components/_internal/locales/chunks/zh-CN/form.ts",
+      "find": "uploadFailed: '上传失败：请重试，或检查网络与文件大小',",
+      "replace": "uploadFailed: '上传失败',",
+      "cmd": "npx vitest run tests/unit/i18n-failure-copy.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把一条已补好的失败文案改回裸文案 → 用户又只剩“失败了”，扫描与逐条锁两个用例应同时红（#386）"
+    },
+    {
+      "id": "i18n-failure-copy-empty-scan",
+      "file": "tests/unit/i18n-failure-copy.spec.ts",
+      "find": "if (!/(Fail|Failed)$/.test(key)) continue",
+      "replace": "if (!/^(Fail|Failed)$/.test(key)) continue",
+      "cmd": "npx vitest run tests/unit/i18n-failure-copy.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "过滤器写错导致一条都没扫到 → “扫到的条数有下限”必须接住（防空集判绿，#386）"
     }
   ]
 }

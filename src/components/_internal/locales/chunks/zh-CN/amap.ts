@@ -4,7 +4,7 @@
  */
 export default {
   amap: {
-    driveRouteFailed: '驾车路线查询失败',
+    driveRouteFailed: '驾车路线查询失败，请检查网络或稍后重试',
     driveRouteNoKey: '驾车路线查询失败: 未设置高德 API Key',
     driveRouteNetwork: '驾车路线查询失败: 网络错误',
     invalidRouteResults: '查询结果无效，请检查地址或门店名称',

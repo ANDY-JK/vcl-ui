@@ -20,7 +20,7 @@ export default {
     autoSaveFail: 'Auto-save failed, please check your network',
     exportEmpty: 'No data to export',
     exportDone: 'Excel exported',
-    exportFail: 'Export failed',
+    exportFail: 'Export failed: please retry, or check whether the browser blocked the download',
     noExportableFields: 'No exportable fields',
     clearFieldsTitle: 'Clear Fields',
     clearFieldsMsg: 'Clear all fields? This cannot be undone.',
@@ -632,7 +632,7 @@ export default {
     loadConfirmMsg: 'The canvas has unsaved changes. Opening "{n}" will replace it (undoable). Continue?',
     // Form manager action tips (useFormManager)
     nothingToSave: 'Canvas is empty — nothing to save',
-    shareSignFail: 'Failed to sign the share code',
+    shareSignFail: 'Failed to sign the share code, please retry or check the signing config',
     savedTip: 'Saved "{name}"',
     saveFail: 'Save failed: {err}',
     loadFail: 'Open failed: {err}',
