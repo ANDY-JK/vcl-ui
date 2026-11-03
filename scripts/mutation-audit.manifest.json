@@ -1170,11 +1170,11 @@
     {
       "id": "label-dedupe-first-kept",
       "file": "src/components/form-builder/fieldLabels.ts",
-      "find": "return n === 1 ? col :",
-      "replace": "return false ? col :",
-      "cmd": "npx vitest run tests/unit/form-import-records.spec.ts tests/unit/collect-export.spec.ts --no-coverage",
+      "find": "    if (!used.has(col.label)) {",
+      "replace": "    if (false) {",
+      "cmd": "npx vitest run tests/unit/form-import-records.spec.ts tests/unit/field-labels.spec.ts tests/unit/collect-export.spec.ts --no-coverage",
       "expect": "red",
-      "note": "变异后：第一个字段也被加序号，导出表头与导入映射同时错位（#305）"
+      "note": "变异后：第一个字段也被加序号（后来者先得），导出表头与导入映射同时错位（#305；#400 改写实现后本条 find 同步更新）"
     },
     {
       "id": "export-label-dedupe-host",
@@ -1517,6 +1517,24 @@
       "cmd": "npx vitest run tests/unit/form-import-records.spec.ts --no-coverage",
       "expect": "red",
       "note": "键顺序重新计入指纹 → 同一记录换个键序就当成新数据（去重失效，#399）"
+    },
+    {
+      "id": "label-dedupe-ignores-reserved",
+      "file": "src/components/form-builder/fieldLabels.ts",
+      "find": "    while (used.has(`${col.label} (${n})`) || reserved.has(`${col.label} (${n})`)) n++",
+      "replace": "    while (used.has(`${col.label} (${n})`)) n++",
+      "cmd": "npx vitest run tests/unit/field-labels.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "顺延不避开表里本来就有的名字 → 两列同名，导出静默覆盖一列（#304 复发，#400）"
+    },
+    {
+      "id": "label-dedupe-no-suffix",
+      "file": "src/components/form-builder/fieldLabels.ts",
+      "find": "    const label = `${col.label} (${n})`",
+      "replace": "    const label = col.label",
+      "cmd": "npx vitest run tests/unit/field-labels.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "重名不加序号 → 列名重复（这一层是 #304/#305 的原始防线）"
     }
   ]
 }
