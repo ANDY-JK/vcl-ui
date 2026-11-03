@@ -1535,6 +1535,24 @@
       "cmd": "npx vitest run tests/unit/field-labels.spec.ts --no-coverage",
       "expect": "red",
       "note": "重名不加序号 → 列名重复（这一层是 #304/#305 的原始防线）"
+    },
+    {
+      "id": "expr-tokenizer-no-exponent",
+      "file": "src/components/form-builder/expression-evaluator.ts",
+      "find": "      if (src[j] === 'e' || src[j] === 'E') {",
+      "replace": "      if (false) {",
+      "cmd": "npx vitest run tests/unit/expression-evaluator.spec.ts tests/unit/expression-evaluator-errors.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "分词器不认科学计数法 → 字段值是 number（String 带指数）时公式静默返回空串（#401）"
+    },
+    {
+      "id": "expr-exponent-sign-ignored",
+      "file": "src/components/form-builder/expression-evaluator.ts",
+      "find": "        let m = src[k] === '+' || src[k] === '-' ? k + 1 : k",
+      "replace": "        let m = k",
+      "cmd": "npx vitest run tests/unit/expression-evaluator.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "指数不认正负号 → `1e+21` / `1e-7`（JS number 的 String 形态）解析失败 → 公式静默返回空串（#401）"
     }
   ]
 }

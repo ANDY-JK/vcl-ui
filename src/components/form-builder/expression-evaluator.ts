@@ -24,10 +24,12 @@ type Tok =
 /**
  * 分词器能直接当作**数字字面量**读的字符串形态（第 184 轮）。
  *
- * 必须与 `tokenize` 的数字分支保持同一口径（`[0-9.]` 序列 + 可选前导负号，
- * 负号由 `parseUnary` 处理）。用它替代 `Number()` 判断"是否数值字符串"——
- * `Number()` 太宽（认 1e5 / 0x1f / Infinity），宽出来的那些会被原样注入
- * 表达式并在分词阶段抛错，公式静默失效。
+ * 用它替代 `Number()` 判断"是否数值字符串"——`Number()` 太宽（认 1e5 / 0x1f / Infinity），
+ * 宽出来的那些会被原样注入表达式并在分词阶段抛错，公式静默失效。
+ *
+ * ⚠️ 这里**故意**比 `tokenize` 的数字分支窄（不含指数形态）：
+ * 用户输入的 `1e5` 是**文本**，替换成数字字面量会让"原样显示"变成 `100000`；
+ * 而机器产出的 `number`（`String(1e-7) === '1e-7'`）必须能进分词器，否则整条公式静默失效（#401）。
  */
 const NUMERIC_LITERAL_RE = /^-?(?:\d+(?:\.\d*)?|\.\d+)$/
 
@@ -57,6 +59,20 @@ function tokenize(src: string): Tok[] {
     if (/[0-9.]/.test(ch)) {
       let j = i
       while (j < n && /[0-9.]/.test(src[j])) j++
+      // 科学计数法（#401）：JS 把 |n| >= 1e21 或 < 1e-6 的 number 转成 '1e-7' / '1e+21' 形态，
+      // 而这里原来只吃 [0-9.] —— 于是字段值是 number 时公式撞上标识符 e、抛错、**静默返回空**：
+      // 用户看到"公式目标字段变空"，与第 184 轮（数字字符串）同一类症状，只是来源不同。
+      // 只在 e/E 后面**确实跟着数字**时才吃（可选正负号）：'1e' 仍按标识符报错，不放宽白名单。
+      if (src[j] === 'e' || src[j] === 'E') {
+        const k = j + 1
+        let m = src[k] === '+' || src[k] === '-' ? k + 1 : k
+        let digits = 0
+        while (m < n && /[0-9]/.test(src[m])) {
+          m++
+          digits++
+        }
+        if (digits > 0) j = m
+      }
       const num = Number(src.slice(i, j))
       if (Number.isNaN(num)) throw new Error('invalid number')
       tokens.push({ kind: 'num', value: num })

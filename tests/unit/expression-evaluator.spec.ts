@@ -208,3 +208,40 @@ describe('checkFormulaSyntax · 只判语法可解析，不求值', () => {
     expect(checkFormulaSyntax('{{a}} + {{b}}'), '加号两侧有操作数').toEqual({ ok: true })
   })
 })
+describe('科学计数法 number（#401）', () => {
+  it('**字段值是 number 且 String() 带指数时，公式不再静默失效**', () => {
+    // 旧实现：tokenize 只吃 [0-9.] → '1e-7' 里的 e 被当标识符 → 抛错 → 返回 ''
+    expect(evaluateFormula('{{n}} * 2', { n: 1e-7 })).toBe(2e-7)
+    expect(evaluateFormula('{{n}} * 2', { n: 1e21 })).toBe(2e21)
+  })
+
+  it('比较与拼接同样能处理指数形态', () => {
+    expect(evaluateFormula('{{n}} > 0', { n: 1e-7 })).toBe(true)
+    expect(evaluateFormula('{{n}} < 1', { n: 1e21 })).toBe(false)
+  })
+
+  it('字面量直接写科学计数法也能解析', () => {
+    expect(safeEvaluate('1e-7 * 2')).toBe(2e-7)
+    expect(safeEvaluate('1E+3 + 1')).toBe(1001)
+  })
+
+  it('负号与指数的组合', () => {
+    expect(evaluateFormula('{{n}} * 2', { n: -1e-7 })).toBe(-2e-7)
+    expect(safeEvaluate('-1e-7')).toBe(-1e-7)
+  })
+
+  it('**不放宽白名单**：`e` 后面没有数字时仍是标识符错误', () => {
+    expect(() => safeEvaluate('1e')).toThrow()
+    expect(() => safeEvaluate('e5')).toThrow()
+    expect(() => safeEvaluate('0x1f')).toThrow()
+    // 求值失败仍走兜底空串（不是抛给用户）
+    expect(evaluateFormula('{{n}} * 2', { n: 1e-7 })).toBe(2e-7)
+  })
+
+  it('数字**字符串**仍按字面保留（#184 语义不回退）', () => {
+    // '0.0000001' 是文本 → 走字符串字面量，参与算术由 Number() 强转
+    expect(evaluateFormula('{{n}} * 2', { n: '0.0000001' })).toBe(2e-7)
+    // '1e5' 是文本 → 拼接时保持原样，不变成 100000
+    expect(evaluateFormula('{{a}}{{b}}', { a: '1e5', b: 'x' })).toBe('1e5x')
+  })
+})
