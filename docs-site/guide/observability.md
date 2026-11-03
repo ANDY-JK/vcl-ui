@@ -31,8 +31,8 @@ setRuntimeObserver({
 
 ## 事件码清单
 
-共 **17** 个事件码（error 6 / warn 11 / info 0），
-分布在 19 个调用点（同一个码可在多处上报，如网络层失败与服务端拒绝各一次）。
+共 **18** 个事件码（error 6 / warn 12 / info 0），
+分布在 20 个调用点（同一个码可在多处上报，如网络层失败与服务端拒绝各一次）。
 
 | 事件码 | 级别 | 触发场景 | context 字段 | 代码位置 |
 | --- | --- | --- | --- | --- |
@@ -44,8 +44,9 @@ setRuntimeObserver({
 | `chart/init-failed` | error | [BaseChart] ECharts 初始化失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:257` |
 | `chart/set-option-failed` | error | [BaseChart] setOption 失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:282` |
 | `form-builder/geocode-failed` | warn | [map-picker] 反向地理编码失败，已忽略（坐标不受影响）: | `{ error: String(err) }` | `src/components/form-builder/renderer/RendererMapPicker.vue:99` |
-| `form-builder/share-invalid` | warn | 分享码无效或已损坏 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), }` | `src/components/form-builder/FormShareView.vue:117` |
-| `form-builder/share-signature-invalid` | warn | 分享码签名校验未通过，已拒绝渲染 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), signer: signer.name, }` | `src/components/form-builder/FormShareView.vue:107` |
+| `form-builder/share-invalid` | warn | 分享码无效或已损坏 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), }` | `src/components/form-builder/FormShareView.vue:134` |
+| `form-builder/share-signature-invalid` | warn | 分享码签名校验未通过，已拒绝渲染 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), signer: signer.name, }` | `src/components/form-builder/FormShareView.vue:116` |
+| `form-builder/share-unsigned-rejected` | warn | 宿主已配置签发者，未签名分享码被拒绝渲染 | `{ codeLength: code.length, codePrefix: code.slice(0, 4), signer: signer.name, }` | `src/components/form-builder/FormShareView.vue:124` |
 | `form-builder/submit-failed` | error | 表单提交失败（网络层） | `{ saveUrl: verdict.url, fieldCount, reason: err instanceof Error ? err.message : String(err) }` | `src/components/form-builder/useFormRemote.ts:156` |
 | `form-builder/submit-failed` | error | 表单提交失败（服务端拒绝） | `{ saveUrl: verdict.url, status: resp.status, fieldCount }` | `src/components/form-builder/useFormRemote.ts:165` |
 | `form-designer/draft-save-failed` | warn | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: 'too-large', sizeMB: (size / 1024 / 1024).toFixed(1), }` | `src/components/form-builder/designer/useDesignerDraft.ts:81` |
@@ -75,6 +76,7 @@ setRuntimeObserver({
 - `form-builder/geocode-failed` —— 反向地理编码失败，已忽略（坐标不受影响）:
 - `form-builder/share-invalid` —— 分享码无效或已损坏
 - `form-builder/share-signature-invalid` —— 分享码签名校验未通过，已拒绝渲染
+- `form-builder/share-unsigned-rejected` —— 宿主已配置签发者，未签名分享码被拒绝渲染
 - `form-designer/draft-save-failed` —— 设计草稿保存失败
 - `storage/clear-failed` —— IndexedDB 清空失败:
 - `storage/cloud-delete-failed` —— 云端删除失败:
