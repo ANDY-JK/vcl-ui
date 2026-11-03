@@ -1247,6 +1247,24 @@
       "cmd": "npx vitest run tests/unit/text-slice.spec.ts --no-coverage",
       "expect": "equivalent",
       "note": "等价变异：多试一个空串候选，命中与否都返回 ''，结果相同。**不要为它补测试**"
+    },
+    {
+      "id": "template-stmt-drop-compile-errors",
+      "file": "scripts/template-statements.mjs",
+      "find": "  return (result.errors ?? []).map((e) => {",
+      "replace": "  return [].map((e) => {",
+      "cmd": "npx vitest run tests/unit/template-statements.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "编译器照跑但把报错结果丢掉 → 调用语句与插值里的多语句重新漏报（判据空转，最容易发生的退化）"
+    },
+    {
+      "id": "template-stmt-skip-compiler",
+      "file": "scripts/template-statements.mjs",
+      "find": "  if (!template) return []",
+      "replace": "  if (!template || true) return []",
+      "cmd": "npx vitest run tests/unit/template-statements.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "整体跳过编译器判据 → 只剩启发式，调用语句与插值里的多语句重新漏报（#385 之前的状态）"
     }
   ]
 }
