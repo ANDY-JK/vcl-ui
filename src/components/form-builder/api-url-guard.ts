@@ -46,22 +46,34 @@ export function checkApiUrl(raw: string, policy: ApiUrlPolicy = {}, base?: strin
 
   const origin = base ?? currentOrigin()
 
-  // 相对路径：始终允许（解析基准就是自己）
+  /**
+   * 相对路径也必须**解析后复核 origin**（#394 实测的绕过）。
+   *
+   * URL 规范把反斜杠当正斜杠：`/\evil.com/x`、`\\evil.com/x` 都不以 `//` 开头、
+   * 也没有 scheme，于是被判成"相对路径"直接放行 —— 但它解析出来的 origin 是
+   * **攻击者域**（`https://evil.com/x`）。这条绕过最阴险：schema 里那串字符
+   * 肉眼看像同源路径，`fetch` 却打到外域，正好击穿本模块存在的意义。
+   *
+   * 判据因此不靠"像不像绝对地址"（黑名单式，永远有新写法），而是**解析后比对 origin**
+   * —— 解析成什么源就是什么源，这条判据可以被打红、也可以被变异守住。
+   */
   const isAbsolute = /^[a-z][a-z0-9+.-]*:/i.test(url) || url.startsWith('//')
+  let parsed: URL
   if (!isAbsolute) {
     if (!origin) return { ok: true, url } // 相对路径不涉及跨域判定
     try {
-      return { ok: true, url: new URL(url, origin).toString() }
+      parsed = new URL(url, origin)
     } catch {
       return { ok: false, reason: 'URL 无法解析', url }
     }
-  }
-
-  let parsed: URL
-  try {
-    parsed = new URL(url, origin ?? undefined)
-  } catch {
-    return { ok: false, reason: 'URL 无法解析', url }
+    if (parsed.origin === origin) return { ok: true, url: parsed.toString() }
+    // 解析到了别的源 → 与绝对地址走同一条协议白名单 + 跨域判定
+  } else {
+    try {
+      parsed = new URL(url, origin ?? undefined)
+    } catch {
+      return { ok: false, reason: 'URL 无法解析', url }
+    }
   }
 
   // 协议白名单：只允许 http/https（挡掉 javascript: / data: / blob: 等）

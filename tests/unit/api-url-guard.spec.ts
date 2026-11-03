@@ -72,6 +72,39 @@ describe('checkApiUrl：真实攻击形态（分享码里的 apiUrl）', () => {
     }
   })
 
+  // #394：URL 规范把反斜杠当正斜杠，于是「看着像相对路径」的串会解析到别的源。
+  // 这类绕过最阴险：字符串里没有 //，肉眼看像同源，fetch 却打到攻击者域。
+  it('**反斜杠变体不能绕过同源判定**（/\\evil.com 之类）', () => {
+    const bypasses = [
+      '/\\evil.com/collect',
+      '\\\\evil.com/collect',
+      '/\\evil.com/collect?a=1',
+    ]
+    for (const url of bypasses) {
+      const v = checkApiUrl(url, {}, BASE)
+      expect(v.ok, `绕过成功：${url} → ${v.url}`).toBe(false)
+    }
+  })
+
+  it('协议白名单：javascript / data / blob 一律拒绝', () => {
+    for (const url of [
+      'javascript:alert(1)',
+      'data:text/html,<script>alert(1)</script>',
+      'blob:https://app.example.com/uuid',
+      'vbscript:msgbox(1)',
+    ]) {
+      const v = checkApiUrl(url, {}, BASE)
+      expect(v.ok, `危险协议被放行：${url}`).toBe(false)
+      expect(v.ok === false && v.reason, '要说明是协议不被允许').toContain('协议')
+    }
+  })
+
+  it('绝对外域仍走跨域判定（纵深防御同一条通路）', () => {
+    const v = checkApiUrl('https://attacker.example/x', {}, BASE)
+    expect(v.ok).toBe(false)
+    expect(v.ok === false && v.reason, '拒绝理由要能定位到跨域目标').toMatch(/跨域|同源/)
+  })
+
   it('返回的 url 是规范化后的绝对地址（供 fetch 直接用）', () => {
     const v = checkApiUrl('/api/x', {}, BASE)
     expect(v.ok && v.url).toBe(`${BASE}/api/x`)

@@ -1409,6 +1409,24 @@
       "cmd": "npx vitest run tests/unit/record-time-iso.spec.ts --no-coverage",
       "expect": "red",
       "note": "纯数字串（\"0\"/\"2026\"）被当成时间 → new Date(\"0\") = 2000-01-01，脏数据变成假时间（#393）"
+    },
+    {
+      "id": "url-guard-relative-skips-origin-check",
+      "file": "src/components/form-builder/api-url-guard.ts",
+      "find": "    if (parsed.origin === origin) return { ok: true, url: parsed.toString() }",
+      "replace": "    if (true) return { ok: true, url: parsed.toString() }",
+      "cmd": "npx vitest run tests/unit/api-url-guard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "相对路径解析后不比对 origin → `/[反斜杠]evil.com` 这类\"看着同源、实际跨域\"的地址被放行（#394 实测绕过）"
+    },
+    {
+      "id": "url-guard-protocol-whitelist-off",
+      "file": "src/components/form-builder/api-url-guard.ts",
+      "find": "  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {",
+      "replace": "  if (false) {",
+      "cmd": "npx vitest run tests/unit/api-url-guard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "协议白名单失效 → javascript:/data:/blob: 可被当请求地址（#394 复核既有守卫）"
     }
   ]
 }
