@@ -23,7 +23,11 @@ import { storageSet, storageGet, storageDelete, dbPut, dbGet, dbDelete, dbHas } 
 
 /** 写入选项 */
 export interface StorageWriteOptions {
-  /** 过期时间（毫秒），0/缺省 = 永不过期 */
+  /**
+   * 过期时间（毫秒）。**契约：`0` 与缺省 = 永不过期**（#402 用例锁定）；
+   * 传负数 = 立即过期（读回 `null`）——这是「立刻作废」的合法用法，不是边界事故。
+   * 落地行为：`ttl ? now + ttl : 0` 算出 `_exp`（0 = 无过期戳），falsy 归一。
+   */
   ttl?: number
   /** 是否同步云端（需先 setCloudAdapter 注入云端后端，否则忽略并 warn） */
   cloud?: boolean

@@ -1553,6 +1553,15 @@
       "cmd": "npx vitest run tests/unit/expression-evaluator.spec.ts --no-coverage",
       "expect": "red",
       "note": "指数不认正负号 → `1e+21` / `1e-7`（JS number 的 String 形态）解析失败 → 公式静默返回空串（#401）"
+    },
+    {
+      "id": "storage-ttl-zero-means-forever",
+      "file": "src/components/storage/local-storage.ts",
+      "find": "    const item: StoreItem<T> = { key, value, _ts: now, _exp: ttl ? now + ttl : 0 }",
+      "replace": "    const item: StoreItem<T> = { key, value, _ts: now, _exp: ttl === undefined ? 0 : now + ttl }",
+      "cmd": "npx vitest run tests/unit/local-storage-ttl.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "ttl=0 被当成「过期时间 = now」→ 传 0（文档承诺的「永不过期」）的条目立刻读不回来（#402 锁定的契约）"
     }
   ]
 }
