@@ -235,6 +235,29 @@ describe('拦截覆盖式钓鱼样式', () => {
     expect(sanitizeHTML(html)).not.toMatch(/style=/i)
   })
 
+  // #396：CSS 支持转义，`z-\69 ndex` 在浏览器里就是 `z-index`。裸正则只看到转义后的字面量，
+  // 于是 #281 挡住的「覆盖式钓鱼」（position:fixed + inset:0 + z-index）能用转义原样复发。
+  it.each([
+    ['十六进制转义 z-index', '<div style="z-\\69 ndex:9999">x</div>'],
+    ['十六进制转义 inset', '<div style="in\\73 et:0">x</div>'],
+    ['十六进制转义 position', '<div style="pos\\69 tion:fixed">x</div>'],
+    ['转义冒号', '<div style="position\\3a fixed">x</div>'],
+    ['转义 url/javascript', '<div style="backgr\\6f und:url(javascript:alert(1))">x</div>'],
+  ])('**CSS 转义变体被识别**：%s', (_label, html) => {
+    expect(sanitizeHTML(html), '转义后仍必须剥掉 style').not.toMatch(/style=/i)
+  })
+
+  it('注释拆词同样被识别（浏览器先剥注释再分词）', () => {
+    const out = sanitizeHTML('<div style="pos/**/ition:fixed">x</div>')
+    expect(out).not.toMatch(/style=/i)
+  })
+
+  it('覆盖式钓鱼的三个属性**全部转义**时也拦得住（完整攻击载荷）', () => {
+    const evil = '<div style="pos\\69 tion\\3a fixed;in\\73 et\\3a 0;z-\\69 ndex\\3a 9999;background:#fff">登录已过期</div>'
+    const out = sanitizeHTML(evil)
+    expect(out).not.toMatch(/style=/i)
+    expect(out, '文本仍保留（只剥样式）').toContain('登录已过期')
+  })
   it('**正常展示样式照旧保留**（不能把功能一起关掉）', () => {
     const out = sanitizeHTML('<span style="color:#f00;font-weight:bold">红字</span>')
     expect(out).toContain('color:#f00')

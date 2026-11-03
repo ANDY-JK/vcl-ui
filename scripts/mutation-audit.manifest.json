@@ -1454,6 +1454,24 @@
       "cmd": "npx vitest run tests/unit/console-noise-gate.spec.ts --no-coverage",
       "expect": "red",
       "note": "基线退回\"本次快照\" → 个别 spec 才触发的告警会从基线消失，下次一出现即被判\"新增类别\"（假红，#395 补）"
+    },
+    {
+      "id": "sanitize-css-escape-not-decoded",
+      "file": "src/components/_internal/sanitize.ts",
+      "find": "        const normalized = normalizeCssForMatch(val)",
+      "replace": "        const normalized = val",
+      "cmd": "npx vitest run tests/unit/sanitize.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "CSS 转义不归一 → `z-\\69 ndex` / `in\\73 et` 绕过 #281 的覆盖式钓鱼防护（#396）"
+    },
+    {
+      "id": "sanitize-css-comment-not-stripped",
+      "file": "src/components/_internal/sanitize.ts",
+      "find": "      .replace(/\\/\\*[\\s\\S]*?\\*\\//g, '')",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/sanitize.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "注释不剥 → `pos` + 注释 + `ition:fixed` 可拆词绕过危险模式匹配（#396）"
     }
   ]
 }

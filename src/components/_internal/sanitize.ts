@@ -80,6 +80,32 @@ const _srcRe = /^(https?:|data:image\/|mailto:|#)/i
 /** 危险标签整体移除（含内容） */
 const _dangerTags = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META', 'FORM', 'INPUT', 'BUTTON'])
 
+/**
+ * 归一化 CSS 值后再做危险模式匹配（#396）。
+ *
+ * 为什么：CSS 支持**转义**——`style="z-\69 ndex:9999"`、`"in\73 et:0"` 在浏览器里
+ * 会被还原成 `z-index:9999` / `inset:0`，而裸正则看到的是转义后的字面量。
+ * 于是 #281 挡住的"覆盖式钓鱼"（position:fixed + inset:0 + z-index）能用转义原样复发：
+ *
+ *     <div style="pos\69 tion\3a fixed;in\73 et\3a 0;z-\69 ndex\3a 9999">登录已过期…</div>
+ *
+ * 同类手法还有注释拆词（浏览器先剥注释再分词，所以 `pos` + CSS 注释 + `ition` 等于
+ * `position`）。所以匹配前先把注释与转义都归一掉。
+ */
+function normalizeCssForMatch(css: string): string {
+  return (
+    css
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      // 十六进制转义：\69 / \000069 / \3a ，后面可跟一个空格作分隔
+      .replace(/\\([0-9a-fA-F]{1,6})\s?/g, (_, hex: string) => {
+        const cp = parseInt(hex, 16)
+        return cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : '\uFFFD'
+      })
+      // 其余单字符转义（\: 、\" 等）
+      .replace(/\\(.)/g, '$1')
+  )
+}
+
 /** HTML 转义：无 DOM 环境（SSR/Node）下把原始 HTML 当纯文本输出，避免未消毒内容被当作标记注入 */
 function escapeHTML(text: string): string {
   return text
@@ -123,10 +149,12 @@ export function sanitizeHTML(html: string): string {
       if (attr === 'src' && !_srcRe.test(val)) {
         node.removeAttribute(attr)
       }
-      // style 属性过滤危险 CSS 值（expression()/javascript:/url(javascript:)等）。
-      // 先剥 CSS 注释再匹配：`expression/*x*/(alert(1))` 这类注释混淆能绕过裸正则。
-      if (attr === 'style' && _dangerousCss.some((re) => re.test(val.replace(/\/\*[\s\S]*?\*\//g, '')))) {
-        node.removeAttribute('style')
+      // style 属性过滤危险 CSS 值（expression()/javascript:/url(javascript:) 等）。
+      // **归一化后再匹配**（#396）：剥注释 + 解 CSS 转义，否则 `z-\69 ndex` / `in\73 et`
+      // 这类转义写法能绕过 #281 那条覆盖式钓鱼防护。原始值也一并测（双保险）。
+      if (attr === 'style') {
+        const normalized = normalizeCssForMatch(val)
+        if (_dangerousCss.some((re) => re.test(normalized) || re.test(val))) node.removeAttribute('style')
       }
     }
     // 带 target 的链接强制补 rel，防 reverse tabnabbing（rel 不在白名单，须在属性循环后覆写）
