@@ -234,3 +234,31 @@ describe('useFormValidator · firstErrorKey', () => {
     expect(v2.firstErrorKey.value).toBe(null)
   })
 })
+describe('validators.pattern · 有状态正则（#397）', () => {
+  it('**带 g 标志的正则重复校验同一合法值，结果必须一致**', () => {
+    const rule = validators.pattern(/^\d+$/g, '只能数字')
+    // test() 会推进 lastIndex：不复位时第二次校验会失败，用户看到「合法输入被判非法」
+    expect(rule('123'), '第 1 次').toBeUndefined()
+    expect(rule('123'), '第 2 次（修复前这里会返回错误）').toBeUndefined()
+    expect(rule('123'), '第 3 次').toBeUndefined()
+  })
+
+  it('带 y（sticky）标志同样不受 lastIndex 影响', () => {
+    const rule = validators.pattern(/^abc/y, 'sticky')
+    expect(rule('abc')).toBeUndefined()
+    expect(rule('abc')).toBeUndefined()
+  })
+
+  it('非法值仍然被拦（修复不能把判据一起放过）', () => {
+    const rule = validators.pattern(/^\d+$/g, '只能数字')
+    expect(rule('abc')).toBe('只能数字')
+    expect(rule('abc')).toBe('只能数字')
+    expect(rule('123')).toBeUndefined()
+    expect(rule('abc')).toBe('只能数字')
+  })
+
+  it('空值不报错（交给 required 处理）', () => {
+    const rule = validators.pattern(/^\d+$/g, '只能数字')
+    expect(rule('')).toBeUndefined()
+  })
+})

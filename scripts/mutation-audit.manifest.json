@@ -1472,6 +1472,15 @@
       "cmd": "npx vitest run tests/unit/sanitize.spec.ts --no-coverage",
       "expect": "red",
       "note": "注释不剥 → `pos` + 注释 + `ition:fixed` 可拆词绕过危险模式匹配（#396）"
+    },
+    {
+      "id": "pattern-validator-stateful-regex",
+      "file": "src/components/form-builder/useFormValidator.ts",
+      "find": "      regex.lastIndex = 0\n      return regex.test(v) ? undefined : msg",
+      "replace": "      return regex.test(v) ? undefined : msg",
+      "cmd": "npx vitest run tests/unit/form-validator.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "不复位 lastIndex → 带 g/y 的正则第二次校验同一合法值失败，用户看到\"合法输入被判非法\"且时好时坏（#397）"
     }
   ]
 }

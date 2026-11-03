@@ -280,9 +280,20 @@ export const validators = {
   url() {
     return (v: string) => (v && !isValidUrl(v) ? t('formBuilder.urlInvalid') : undefined)
   },
-  /** 正则匹配 */
+  /**
+   * 正则匹配。
+   *
+   * ⚠️ 每次匹配前**复位 `lastIndex`**（#397）：带 `g` / `y` 标志的正则用 `test()` 会
+   * 记忆上次命中的位置 —— 同一个规则实例第二次校验**同一个合法值**会返回 false，
+   * 用户看到"合法输入被判非法"，而且**时好时坏**（第三次又通过）。
+   * 实测：`validators.pattern(/^\d+$/g)` 连调三次得 通过/失败/通过。
+   */
   pattern(regex: RegExp, msg: string) {
-    return (v: string) => (v && !regex.test(v) ? msg : undefined)
+    return (v: string) => {
+      if (!v) return undefined
+      regex.lastIndex = 0
+      return regex.test(v) ? undefined : msg
+    }
   },
   /** 自定义条件 */
   custom(fn: (v: string) => boolean, msg: string) {
