@@ -23,6 +23,7 @@ import { ref, type Ref } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { isLayoutField } from '@/components/form-builder/fieldRegistry'
 import { dedupeFieldLabels } from './fieldLabels'
+import { recordTimeDate } from '@/components/form/utils/date-utils'
 import type { DesignerField } from '@/components/form-builder/designer/types'
 
 /** 导出列定义：key 取值、label 表头 */
@@ -74,24 +75,17 @@ const DEFAULT_OK_MSG_TTL_MS = 3000
 export const EXPORT_TIME_FORMAT = 'yyyy-mm-dd hh:mm:ss'
 
 /**
- * 把记录里的"本地化展示字符串"解析成 Date，解析不出来返回 null（#303）。
+ * 把记录里的时间解析成 Date，解析不出来返回 null（#303；#391 起统一到 `recordTimeDate`）。
  *
- * 为什么需要：收集页把 `time` 存成 `2026/8/23 14:30:00` 这种**展示字符串**（TD-94）。
- * 导出 Excel 时若原样写字符串，那一列在 Excel 里是**文本** —— 用户按时间排序会得到
- * 字典序（"2026/10/1" 排在 "2026/9/1" 前面）、筛选也不认日期区间。
+ * 为什么需要：导出 Excel 时若原样写字符串，那一列在 Excel 里是**文本** —— 用户按时间排序
+ * 会得到字典序（"2026/10/1" 排在 "2026/9/1" 前面）、筛选也不认日期区间。
  *
- * 这里用**宽容解析**（先试原生 Date.parse，再把 `YYYY/M/D H:m:s` 规范化），
- * 解析失败就**保持原字符串**——导出宁可少一个日期类型，也不能丢内容。
+ * TD-94（#391）之后记录里存的是 ISO，**历史记录仍是本地化的展示字符串** ——
+ * 两种都要认。宽容解析的实现只在 `date-utils.recordTimeDate` 里有一份（同一个契约
+ * 分散成两份实现就会漏，见 TD-79），这里只是保留导出模块的公开名字。
  */
 export function parseRecordTime(raw: string | undefined): Date | null {
-  if (!raw) return null
-  const direct = new Date(raw)
-  if (!Number.isNaN(direct.getTime())) return direct
-  // 某些环境不认 `2026/8/23 14:30:00` 里的斜杠或没有秒；补零后重试一次
-  const m = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(raw.trim())
-  if (!m) return null
-  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] ?? 0))
-  return Number.isNaN(d.getTime()) ? null : d
+  return recordTimeDate(raw)
 }
 
 /** 把一条记录摊平成"表头 → 单元格"的对象（纯函数，便于单测） */

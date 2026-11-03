@@ -1187,12 +1187,12 @@
     },
     {
       "id": "export-time-as-date",
-      "file": "src/components/form-builder/useCollectExport.ts",
-      "find": "if (!Number.isNaN(direct.getTime())) return direct",
-      "replace": "if (true) return null",
+      "file": "src/components/form/utils/date-utils.ts",
+      "find": "  const direct = new Date(raw)\n  if (!Number.isNaN(direct.getTime())) return direct",
+      "replace": "  const direct = new Date(raw)\n  if (true) return null",
       "cmd": "npx vitest run tests/unit/collect-export.spec.ts --no-coverage",
       "expect": "red",
-      "note": "变异后：提交时间退回文本列，Excel 里按时间排序得到字典序、筛选不认日期区间（#303）"
+      "note": "变异后：宽容解析失效（ISO 先被原生解析这条路径断掉）→ 提交时间退回文本列，Excel 里按时间排序得到字典序、筛选不认日期区间（#303；#391 起解析器统一到 date-utils）"
     },
     {
       "id": "export-cell-dates",
@@ -1355,6 +1355,24 @@
       "cmd": "npx vitest run tests/unit/floating-prepare-open.spec.ts --no-coverage",
       "expect": "red",
       "note": "钳制忽略可视区上沿 → 键盘顶起时可预排到可视区之外（#308 同类缺陷，#390）"
+    },
+    {
+      "id": "record-time-store-display-string",
+      "file": "src/components/form/utils/date-utils.ts",
+      "find": "export function recordTimeNow(now: Date = new Date()): string {\n  return now.toISOString()",
+      "replace": "export function recordTimeNow(now: Date = new Date()): string {\n  return formatDateTimeZh(now)",
+      "cmd": "npx vitest run tests/unit/record-time-iso.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "退回\"把展示字符串存进 time\"（TD-94 修前状态）→ 切语言后新旧记录混格式、导出是文本列（#391）"
+    },
+    {
+      "id": "record-time-no-tolerant-read",
+      "file": "src/components/form/utils/date-utils.ts",
+      "find": "  const d = recordTimeDate(raw)\n  if (!d) return String(raw ?? '')",
+      "replace": "  const d = recordTimeDate(raw)\n  if (!d) return ''",
+      "cmd": "npx vitest run tests/unit/record-time-iso.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "解析不了就返回空串 → 历史/脏数据在列表里直接消失（吞内容），而不是原样显示（#391）"
     }
   ]
 }

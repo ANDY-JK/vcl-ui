@@ -96,17 +96,19 @@ describe('FormCollect · 记录列表与搜索', () => {
     expect(viewBtn).toBeTruthy()
     await viewBtn!.trigger('click')
     await nextTick()
-    // 列表按时间展示
-    expect(w.text()).toContain('2026-01-01 09:00:00')
+    // 列表按时间展示。#391（TD-94）起展示统一走 formatRecordTime：
+    // **历史记录存的是展示字符串**（夹具就是这种），显示时会被规范化成库默认 locale 的格式，
+    // 所以这里断言的是 2026/1/1 而不是库外的 2026-01-01。
+    expect(w.text()).toContain('2026/1/1 09:00:00')
 
     // 搜索「李四」→ 过滤后只剩含李四的记录（2 条）
     const search = w.find('input.ldc-search-input')
     expect(search.exists()).toBe(true)
     await search.setValue('李四')
     await nextTick()
-    expect(w.text()).toContain('2026-01-02 09:00:00')
-    expect(w.text()).toContain('2026-01-04 09:00:00')
-    expect(w.text()).not.toContain('2026-01-01 09:00:00')
+    expect(w.text()).toContain('2026/1/2 09:00:00')
+    expect(w.text()).toContain('2026/1/4 09:00:00')
+    expect(w.text()).not.toContain('2026/1/1 09:00:00')
   })
 })
 

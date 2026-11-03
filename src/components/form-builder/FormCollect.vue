@@ -16,7 +16,7 @@
  */
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useT } from '@/components/_internal/i18n'
-import { formatDateZh, formatDateTimeZh } from '@/components/form/utils/date-utils'
+import { formatDateZh, formatRecordTime, recordTimeDate, recordTimeNow } from '@/components/form/utils/date-utils'
 import { computePageButtons } from '@/components/form/utils/pagination'
 import FormBuilder from './FormBuilder.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
@@ -158,12 +158,11 @@ const requiredCount = computed(() => props.fields.filter((f) => f.required).leng
 const todayCount = computed(() => {
   const today = formatDateZh()
   return records.value.filter((r) => {
-    try {
-      return formatDateZh(new Date(r.time)) === today
-    } catch {
-      return false
-    }
-  }).length
+    // 宽容解析：历史记录存的是展示字符串，新记录是 ISO（TD-94，#391）
+    const d = recordTimeDate(r.time)
+    if (!d) return false
+    return formatDateZh(d) === today
+  })
 })
 
 /** 统计卡片数据（icon/bg 走语义令牌对：亮暗跟随；此前硬编码 hex，暗色下不换底） */
@@ -217,7 +216,7 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
 
   const record: CollectRecord = {
     id: genRecordId(),
-    time: formatDateTimeZh(),
+    time: recordTimeNow(),
     data: { ...data },
   }
   try {
@@ -255,7 +254,7 @@ const filteredRecords = computed(() => {
   if (!q) return records.value
   return records.value.filter((r) => {
     // 匹配时间
-    if (r.time.toLowerCase().includes(q)) return true
+    if (formatRecordTime(r.time).toLowerCase().includes(q) || r.time.toLowerCase().includes(q)) return true
     // 匹配数据值
     const dataStr = JSON.stringify(r.data).toLowerCase()
     return dataStr.includes(q)
@@ -469,7 +468,7 @@ const { importing, importVisible, importError, importSummaryText, onImportFile, 
           <div class="ldc-record-head">
             <span class="ldc-record-time">
               <IconSvg type="clock" size="xs" />
-              {{ r.time }}
+              {{ formatRecordTime(r.time) }}
             </span>
             <div class="ldc-record-btns">
               <Button variant="ghost" size="sm" @click="openRecordModal('view', r)">

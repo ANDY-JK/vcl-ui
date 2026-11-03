@@ -16,7 +16,7 @@ import FormBuilder from '../FormBuilder.vue'
 import { toFormSchema, type FormDesign } from './types'
 import { getActiveFormStore, type FormStore, type FormMetaItem } from './store'
 import { genRecordId } from './types'
-import { formatDateTimeZh } from '@/components/form/utils/date-utils'
+import { recordTimeNow } from '@/components/form/utils/date-utils'
 
 const t = useT()
 
@@ -79,7 +79,7 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
   try {
     await activeStore().appendRecord(props.item.collectKey, {
       id: genRecordId(),
-      time: formatDateTimeZh(),
+      time: recordTimeNow(),
       data,
     })
     submitted.value = true

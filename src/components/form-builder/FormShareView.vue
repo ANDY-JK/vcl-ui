@@ -16,7 +16,7 @@
  */
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useT } from '@/components/_internal/i18n'
-import { formatDateTimeZh } from '@/components/form/utils/date-utils'
+import { recordTimeNow } from '@/components/form/utils/date-utils'
 import FormBuilder from './FormBuilder.vue'
 import FormTargetCollect from './FormTargetCollect.vue'
 import Result from '@/components/feedback/Result.vue'
@@ -181,7 +181,7 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
   try {
     const record: CollectRecord = {
       id: genRecordId(),
-      time: formatDateTimeZh(),
+      time: recordTimeNow(),
       data,
     }
     await activeStore.value.appendRecord(collectKey.value, record)

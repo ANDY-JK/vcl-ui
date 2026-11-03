@@ -13,6 +13,7 @@ import Button from '@/components/basic/Button.vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
 import { downloadBlob } from '@/components/_internal/utils'
 import { computePageButtons } from '@/components/form/utils/pagination'
+import { formatRecordTime } from '@/components/form/utils/date-utils'
 import type { CollectRecord } from './types'
 import { getActiveFormStore, type FormStore, type FormMetaItem } from './store'
 
@@ -108,7 +109,7 @@ function exportCsv(): void {
   // 一个 =cmd|'/c calc'!A0 就能在管理员用 Excel 打开时执行。
   const lines = [header.map(csvCell).join(',')]
   for (const r of records.value) {
-    lines.push([r.time, ...ks.map((k) => csvCell(cellValue(r.data[k])))].join(','))
+    lines.push([formatRecordTime(r.time), ...ks.map((k) => csvCell(cellValue(r.data[k])))].join(','))
   }
   const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
   // downloadBlob 在 SSR / DOM 异常时返回 false：把结果交给宿主提示（#269）
@@ -138,7 +139,9 @@ function exportCsv(): void {
             <span class="ld-data-stat-label">{{ t('fbd.statTotal') }}</span>
           </div>
           <div class="ld-data-stat">
-            <span class="ld-data-stat-num" :title="latest?.time">{{ latest?.time }}</span>
+            <span class="ld-data-stat-num" :title="formatRecordTime(latest?.time)">{{
+              formatRecordTime(latest?.time)
+            }}</span>
             <span class="ld-data-stat-label">{{ t('fbd.latestSubmit') }}</span>
           </div>
         </div>
@@ -154,7 +157,7 @@ function exportCsv(): void {
             </thead>
             <tbody>
               <tr v-for="r in pagedRecords" :key="r.id">
-                <td class="ld-data-time">{{ r.time }}</td>
+                <td class="ld-data-time">{{ formatRecordTime(r.time) }}</td>
                 <td v-for="k in keys" :key="k">{{ cellValue(r.data[k]) }}</td>
               </tr>
             </tbody>

@@ -81,3 +81,54 @@ export function formatDateZh(d: Date = new Date(), locale: string = DEFAULT_DATE
 export function formatDateTimeZh(d: Date = new Date(), locale: string = DEFAULT_DATE_LOCALE): string {
   return d.toLocaleString(locale, { hour12: false })
 }
+
+// ════════════════════════════════════════
+// 收集记录的时间戳：**存 ISO、展示按 locale**（TD-94，#391）
+//
+// ## 原来的问题
+//
+// 收集页把 `time` 直接存成 `formatDateTimeZh()` 的结果（`2026/8/23 14:30:00`）：
+//   ① 切语言后新旧记录混着两种格式；
+//   ② 这些字符串不可靠地跨语言解析（`new Date(...)` 靠引擎宽松兜底）；
+//   ③ 导出到 Excel 是文本列，排序/筛选不认日期。
+// #303 已让**导出**宽容解析并写成真日期单元格（② 解了），但存储层一直是展示字符串。
+//
+// ## 现在的口径
+//
+//   · 写入：`recordTimeNow()` → `new Date().toISOString()`（**不含任何本地化信息**）
+//   · 展示/比较：`formatRecordTime()` / `recordTimeDate()`
+//     对**历史记录**（旧的展示字符串）宽容解析后照常格式化，解析不了就原样返回 —— 不丢内容，
+//     所以**不需要一次性数据迁移**：新旧记录会并存一段时间，但都显示正确。
+// ════════════════════════════════════════
+
+/** 收集记录的时间戳：ISO 8601（存储口径，不含任何本地化信息） */
+export function recordTimeNow(now: Date = new Date()): string {
+  return now.toISOString()
+}
+
+/**
+ * 宽容解析记录里的时间（ISO 或历史的展示字符串）。
+ *
+ * 解析顺序：原生 `new Date(raw)` → 再试 `YYYY/M/D H:m[:s]`（补零后按本地时区构造）。
+ * 解析不出来返回 `null` —— 调用方决定回退（展示原样、导出原字符串）。
+ */
+export function recordTimeDate(raw: string | undefined | null): Date | null {
+  if (!raw) return null
+  const direct = new Date(raw)
+  if (!Number.isNaN(direct.getTime())) return direct
+  // 某些环境不认 `2026/8/23 14:30:00` 里的斜杠或没有秒；补零后重试一次
+  const m = /^(\d{4})[/-](\d{1,2})[/-](\d{1,2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(raw.trim())
+  if (!m) return null
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] ?? 0))
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+/**
+ * 展示用：ISO → 按 locale 格式化；历史展示字符串 → 解析后同样格式化；
+ * 完全解析不出来 → **原样返回**（宁可显示一段看不懂的文本，也不能吞掉用户数据）。
+ */
+export function formatRecordTime(raw: string | undefined | null, locale: string = DEFAULT_DATE_LOCALE): string {
+  const d = recordTimeDate(raw)
+  if (!d) return String(raw ?? '')
+  return formatDateTimeZh(d, locale)
+}

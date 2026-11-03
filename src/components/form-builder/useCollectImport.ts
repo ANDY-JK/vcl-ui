@@ -20,7 +20,7 @@
  */
 import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import { useT } from '@/components/_internal/i18n'
-import { formatDateTimeZh } from '@/components/form/utils/date-utils'
+import { recordTimeNow } from '@/components/form/utils/date-utils'
 import { isLayoutField } from '@/components/form-builder/fieldRegistry'
 import type { DesignerField } from '@/components/form-builder/designer/types'
 import type { CollectRecord } from '@/components/form-builder/designer/types'
@@ -168,7 +168,7 @@ export function useCollectImport(opts: CollectImportOptions) {
       for (const data of list) {
         await opts.appendRecord(opts.storageKey(), {
           id: opts.genRecordId(),
-          time: formatDateTimeZh(),
+          time: recordTimeNow(),
           data: { ...data },
         })
       }
