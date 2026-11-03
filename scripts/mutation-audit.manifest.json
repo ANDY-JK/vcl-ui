@@ -1481,6 +1481,24 @@
       "cmd": "npx vitest run tests/unit/form-validator.spec.ts --no-coverage",
       "expect": "red",
       "note": "不复位 lastIndex → 带 g/y 的正则第二次校验同一合法值失败，用户看到\"合法输入被判非法\"且时好时坏（#397）"
+    },
+    {
+      "id": "csv-quote-opens-mid-cell",
+      "file": "src/components/form-builder/importRecords.ts",
+      "find": "} else if (ch === '\"' && !literalQuotes && cell === '') {",
+      "replace": "} else if (ch === '\"' && !literalQuotes) {",
+      "cmd": "npx vitest run tests/unit/form-import-records.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "单元格中间的引号也进入包裹模式 → `量杯5\"口径,备注` 两列并成一列，导入落错字段（#398）"
+    },
+    {
+      "id": "csv-unterminated-quote-swallows-rest",
+      "file": "src/components/form-builder/importRecords.ts",
+      "find": "  if (inQuotes && !literalQuotes) return null",
+      "replace": "  if (false) return null",
+      "cmd": "npx vitest run tests/unit/form-import-records.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "引号不成对时不退回字面模式 → 文件剩余部分全被吞成一格，后面的行静默消失（#398）"
     }
   ]
 }

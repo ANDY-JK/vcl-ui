@@ -334,3 +334,44 @@ describe('#272 ② 重复表头不再静默覆盖，改为上报 + 保留第一�
     expect(duplicateHeaders, '按表头原文报出后者').toEqual(['memo'])
   })
 })
+describe('parseCsvRecords · 别比 Excel 更严（#398）', () => {
+  it('**单元格中间的引号按字面保留，不吞掉后面的逗号**', () => {
+    // 手改 CSV 里 `量杯5"口径` 很常见；旧实现进入引号模式 → 两列并成一列
+    const rows = parseCsvRecords('name,note\n量杯5"口径,备注\n')
+    expect(rows, '列数必须是 2').toHaveLength(2)
+    expect(rows[1]).toEqual(['量杯5"口径', '备注'])
+  })
+
+  it('**引号不成对时按字面重解析**，不吞掉文件剩余部分', () => {
+    // 旧实现会一直停在引号模式，把 c,d 那行也吞进同一格 → 后面整批数据消失
+    const rows = parseCsvRecords('a,b\n"abc,def\nc,d\n')
+    expect(rows, '三行都要在').toEqual([
+      ['a', 'b'],
+      ['"abc', 'def'],
+      ['c', 'd'],
+    ])
+  })
+
+  it('正常包裹（含逗号/换行/双写引号）照旧解析', () => {
+    expect(parseCsvRecords('a,b\n"x,1",2\n')).toEqual([
+      ['a', 'b'],
+      ['x,1', '2'],
+    ])
+    expect(parseCsvRecords('h\n"多\n行"\n')).toEqual([['h'], ['多\n行']])
+    expect(parseCsvRecords('"a""b",c\n')).toEqual([['a"b', 'c']])
+  })
+
+  it('引号只在单元格开头生效（a"b 不是包裹）', () => {
+    expect(parseCsvRecords('a"b,c\n')).toEqual([['a"b', 'c']])
+  })
+  it('**多处单元格中间引号（引号总数为偶数）也不会并列**', () => {
+    // 偶数个引号时"不成对"的退路不会触发 —— 这条专门守住"引号只在单元格开头"这条判据
+    const rows = parseCsvRecords('a,b\n5"x,1\n7"y,2\n')
+    expect(rows).toEqual([
+      ['a', 'b'],
+      ['5"x', '1'],
+      ['7"y', '2'],
+    ])
+  })
+
+})

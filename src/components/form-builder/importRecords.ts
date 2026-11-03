@@ -92,16 +92,34 @@ export function buildHeaderMap(fields: ImportField[]): Record<string, string> {
  * 解析 CSV 文本为二维数组
  *
  * 支持引号转义（字段内含逗号/引号/换行）、空行忽略。
+ *
+ * ## 两处"别比 Excel 更严"的修正（#398）
+ *
+ * 1. **引号只在单元格开头才有"包裹"语义**。手改/第三方导出的 CSV 里，
+ *    `量杯5"口径` 这种单元格中间的引号很常见 —— 此前一律进入引号模式，
+ *    于是紧随其后的逗号被吞进同一格：**两列并成一列**，导入后数据落错字段。
+ * 2. **引号不成对时按字面重解析**。少一个引号（`"abc,def` 后面没了）此前会让解析器
+ *    一直停在引号模式里，把**文件剩余部分全吞成一格** —— 用户看到"只导入了 1 条"，
+ *    而后面的行人间蒸发。现在检测到"结尾仍在引号内"就退回字面模式重解析：
+ *    宁可把引号当普通字符保留，也不能吞行吞列。
  */
 export function parseCsvRecords(text: string): string[][] {
+  const src = stripBom(text).replace(/\r\n?/g, '\n')
+  const parsed = parseCsvRows(src, false)
+  // 引号不成对 → 字面模式重解析（只重试一次，不会递归）
+  return parsed ?? parseCsvRows(src, true) ?? []
+}
+
+/**
+ * CSV 状态机。
+ * @param literalQuotes 为 true 时引号一律按普通字符处理（用于"引号不成对"的退路）
+ * @returns 正常返回行数组；解析到结尾仍在引号内且非字面模式时返回 null（交给调用方重试）
+ */
+function parseCsvRows(src: string, literalQuotes: boolean): string[][] | null {
   const rows: string[][] = []
   let row: string[] = []
   let cell = ''
   let inQuotes = false
-  // 换行归一（第 179 轮）：`\r\n` 与**裸 `\r`** 都算换行。
-  // 此前只替换 CRLF —— 老式导出（CR-only）会被当成一行，表头里还夹着 `\r`，
-  // 归一化后 0 条记录，用户只看到"没有可导入数据"，完全看不出问题在哪。
-  const src = stripBom(text).replace(/\r\n?/g, '\n')
   for (let i = 0; i < src.length; i++) {
     const ch = src[i]
     if (inQuotes) {
@@ -115,7 +133,8 @@ export function parseCsvRecords(text: string): string[][] {
       } else {
         cell += ch
       }
-    } else if (ch === '"') {
+    } else if (ch === '"' && !literalQuotes && cell === '') {
+      // 只有"单元格第一个字符是引号"才进入包裹模式（Excel/RFC 4180 同款）
       inQuotes = true
     } else if (ch === ',') {
       row.push(cell)
@@ -129,6 +148,7 @@ export function parseCsvRecords(text: string): string[][] {
       cell += ch
     }
   }
+  if (inQuotes && !literalQuotes) return null
   // 末尾行（无换行结尾）
   row.push(cell)
   if (row.some((c) => c.trim() !== '')) rows.push(row)
