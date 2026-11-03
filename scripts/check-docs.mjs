@@ -11,6 +11,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
 import { generate } from './gen-docs.mjs'
+import { renderGovernanceIndex } from './gen-governance-index.mjs'
 
 const ROOT = process.cwd()
 /**
@@ -18,8 +19,14 @@ const ROOT = process.cwd()
  * 自测时用 `--committed <dir>` 指到夹具（生成侧仍读真实 src，所以夹具只需要放"错误版本"）。
  */
 const committedIdx = process.argv.indexOf('--committed')
-const COMMITTED =
-  committedIdx > -1 ? process.argv[committedIdx + 1] : path.join(ROOT, 'docs-site/components')
+const fixtureMode = committedIdx > -1
+const COMMITTED = fixtureMode ? process.argv[committedIdx + 1] : path.join(ROOT, 'docs-site/components')
+/**
+ * 治理索引的仓库根（TD-103，#388）：默认 cwd；`--root <dir>` 只影响治理索引这一半
+ * （API 文档那半永远读真实 src），供自测把它指到夹具目录。
+ */
+const rootIdx = process.argv.indexOf('--root')
+const GOV_ROOT = rootIdx > -1 ? path.resolve(process.argv[rootIdx + 1]) : ROOT
 const fail = []
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vcl-docs-'))
@@ -57,6 +64,37 @@ try {
   )
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true })
+}
+
+// ==================== 治理索引也要比对（TD-103，#388） ====================
+//
+// `gen:governance-index` 产出的两份索引（docs/protected-files.md、workspace/README.md）
+// 此前**只有写、没有校验**：本闸口只扫 docs-site/components，于是索引能静默漂移 ——
+// #387 重跑时才发现 `Toast.vue` 头部带 `⛔ 保护` 却不在索引里（82 → 83）。
+//
+// 修法：把生成器抽成 `renderGovernanceIndex()`（纯函数，只算不写），这里重新算一遍
+// 与已提交文件逐字节比对。**不新增质量链步骤** —— 它们和 API 文档是同一类产物
+// （"生成的文档不许漂移"），挂在同一个闸口里比再立一道更贴近它守的东西。
+//
+// 夹具模式（--committed）下跳过：该参数只用于"喂一份过期的 API 文档"，
+// 夹具目录里本来就没有这两份治理索引文件。
+let govDrift = 0
+if (!fixtureMode) {
+  const { files: govFiles, stats: govStats } = renderGovernanceIndex(GOV_ROOT)
+  for (const [relPath, content] of Object.entries(govFiles)) {
+    const p = path.join(GOV_ROOT, relPath)
+    if (!fs.existsSync(p)) {
+      fail.push(`缺少生成文件 ${relPath}（跑 npm run gen:governance-index）`)
+      govDrift++
+    } else if (fs.readFileSync(p, 'utf8') !== content) {
+      fail.push(`文档漂移 ${relPath}（跑 npm run gen:governance-index 重新生成）`)
+      govDrift++
+    }
+  }
+  console.log(
+    `[check:docs] 治理索引 ${Object.keys(govFiles).length} 份（受保护文件 ${govStats.protectedCount} 个，` +
+      `台账 ${govStats.ledgers} 份），漂移 ${govDrift}`,
+  )
 }
 
 if (fail.length) {

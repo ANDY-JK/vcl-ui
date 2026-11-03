@@ -1301,6 +1301,24 @@
       "cmd": "npx vitest run tests/unit/floating-listener-lifecycle.spec.ts --no-coverage",
       "expect": "red",
       "note": "detach 变成空操作 → 关闭后监听永远摘不掉，组件销毁后仍在重算（#387）"
+    },
+    {
+      "id": "docs-gov-index-drift-ignored",
+      "file": "scripts/check-docs.mjs",
+      "find": "    } else if (fs.readFileSync(p, 'utf8') !== content) {",
+      "replace": "    } else if (false) {",
+      "cmd": "npx vitest run tests/unit/docs-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "治理索引漂移不再比对 → 索引可以静默过期（TD-103 修前状态，#388）"
+    },
+    {
+      "id": "docs-gov-index-root-ignored",
+      "file": "scripts/check-docs.mjs",
+      "find": "const GOV_ROOT = rootIdx > -1 ? path.resolve(process.argv[rootIdx + 1]) : ROOT",
+      "replace": "const GOV_ROOT = ROOT",
+      "cmd": "npx vitest run tests/unit/docs-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "--root 失效 → 闸口只盯真实仓库，夹具里的漂移看不见（自测会假绿，#388）"
     }
   ]
 }

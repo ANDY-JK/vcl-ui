@@ -20,7 +20,9 @@
  */
 import { describe, it, expect } from 'vitest'
 import { spawnSync } from 'node:child_process'
-import { resolve } from 'node:path'
+import { resolve, join } from 'node:path'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 
 const SCRIPT = resolve('scripts/check-docs.mjs')
 
@@ -41,5 +43,79 @@ describe('check:docs 闸门自测', () => {
     const { code, out } = run('tests/fixtures/docs/stale')
     expect(code, '过期文档没被拦住 → 用户会照着旧 API 写代码').toBe(1)
     expect(out, '没报"文档漂移"（可能只报了缺少文件）').toContain('文档漂移 form.md')
+  })
+})
+
+/**
+ * 治理索引那一半（TD-103，#388）
+ *
+ * ## 它守的是什么
+ *
+ * `gen:governance-index` 产出的 `docs/protected-files.md` / `workspace/README.md`
+ * 此前**只有写、没有校验** —— 索引可以静默漂移。#387 重跑时才发现 `Toast.vue`
+ * 头部带 `⛔ 保护` 却不在索引里（82 → 83），等于"变更评审会照着漏了它的索引做"。
+ *
+ * ## 为什么用夹具目录而不是改真实文件
+ *
+ * 判据是"生成器算出来的内容 与 已提交文件逐字节一致"。直接改真实索引会让单测
+ * 有副作用（跑挂了就把仓库改坏），所以 `--root` 把治理索引那一半指到临时目录：
+ * 夹具里放一个受保护文件，让**真生成器**写出索引，再让**真闸口**去比对。
+ */
+describe('check:docs · 治理索引新鲜度', () => {
+  const GEN = resolve('scripts/gen-governance-index.mjs')
+  const ROOT = process.cwd()
+
+  /** 造一个最小仓库：一个受保护组件 + 一份台账 */
+  function makeFixture(): string {
+    const dir = mkdtempSync(join(tmpdir(), 'vcl-gov-'))
+    mkdirSync(join(dir, 'src', 'components', 'feedback'), { recursive: true })
+    writeFileSync(
+      join(dir, 'src', 'components', 'feedback', 'Toast.vue'),
+      '<script setup lang="ts">\n// ⛔ 保护 — 提示消息，禁止：clamp() → px，动画时序\n</script>\n',
+      'utf8',
+    )
+    mkdirSync(join(dir, 'workspace'), { recursive: true })
+    writeFileSync(join(dir, 'workspace', '需求-2026-01-01.md'), '# 台账\n', 'utf8')
+    // 生成器直接 writeFileSync 到 docs/ 与 workspace/，目录缺一不可
+    mkdirSync(join(dir, 'docs'), { recursive: true })
+    return dir
+  }
+
+  const gen = (root: string) => spawnSync(process.execPath, [GEN], { cwd: root, encoding: 'utf8' })
+  const check = (root: string) =>
+    spawnSync(process.execPath, [SCRIPT, '--root', root], { cwd: ROOT, encoding: 'utf8' })
+
+  it('**索引与生成结果一致 → 绿**', () => {
+    const dir = makeFixture()
+    try {
+      expect(gen(dir).status, '生成器在夹具目录里执行失败').toBe(0)
+      const r = check(dir)
+      const out = `${r.stdout ?? ''}${r.stderr ?? ''}`
+      expect(r.status, `刚生成的索引就被判漂移：\n${out}`).toBe(0)
+      expect(out, '没打印治理索引的统计行').toContain('治理索引 2 份')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('**索引缺了一行（受保护文件漏登记）→ 必须红，并点名文件与修法**', () => {
+    const dir = makeFixture()
+    try {
+      expect(gen(dir).status).toBe(0)
+      const p = join(dir, 'docs', 'protected-files.md')
+      const original = readFileSync(p, 'utf8')
+      // 精确删掉 Toast 那一行：模拟"改了源码的 ⛔ 保护 注释却忘了重跑生成器"
+      const removed = original.replace(/^\| `src\/components\/feedback\/Toast\.vue`.*\n/m, '')
+      expect(removed, '夹具里没找到 Toast 行，删行变异没生效').not.toBe(original)
+      writeFileSync(p, removed, 'utf8')
+
+      const r = check(dir)
+      const out = `${r.stdout ?? ''}${r.stderr ?? ''}`
+      expect(r.status, '索引漏登记却没人拦 → 变更评审会照着漏了它的索引做').toBe(1)
+      expect(out, '没点名是哪个文件漂移').toContain('文档漂移 docs/protected-files.md')
+      expect(out, '没给出修法（重跑生成器）').toContain('gen:governance-index')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
