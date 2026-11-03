@@ -70,6 +70,9 @@ const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepa
     return props.zIndex != null ? String(props.zIndex) : undefined
   },
   matchWidth: false,
+  // 面板用 v-show 常驻 DOM → "开没开"只有宿主知道（TD-95，#387）：
+  // 关闭期间不必挂全局监听（一次滚动命中几十个实例的空回调）。
+  active: () => open.value,
 })
 
 // 触发器 aria 关联下沉到 popover-a11y.ts（#321）：tooltip 用 describedby，

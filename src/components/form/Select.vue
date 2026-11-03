@@ -232,6 +232,9 @@ const {
   // 日期/时间面板固有宽度，不随触发器拉伸（列表型面板仍与触发器同宽）
   matchWidth: !isDateTime.value,
   maxMatchWidth: isInputable.value,
+  // 面板用 v-if（关闭时不在 DOM）→ useFloating 看 floatingRef 就能判断开没开；
+  // 这里仍显式给 active，双保险（TD-95，#387）
+  active: () => open.value,
 })
 
 /**

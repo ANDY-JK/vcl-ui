@@ -160,6 +160,8 @@ const { triggerRef, floatingRef, direction, floatingStyle, updatePosition, prepa
   defaultDirection: 'down',
   minSize: 160,
   matchWidth: false,
+  // 面板用 v-show 常驻 DOM → "开没开"只有宿主知道（TD-95，#387）
+  active: () => open.value,
 })
 
 useClickOutside([triggerRef, floatingRef], () => {

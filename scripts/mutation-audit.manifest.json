@@ -1283,6 +1283,24 @@
       "cmd": "npx vitest run tests/unit/i18n-failure-copy.spec.ts --no-coverage",
       "expect": "red",
       "note": "过滤器写错导致一条都没扫到 → “扫到的条数有下限”必须接住（防空集判绿，#386）"
+    },
+    {
+      "id": "floating-listeners-always-on",
+      "file": "src/components/_internal/useFloating.ts",
+      "find": "  function shouldListen(): boolean {\n    const active = options.active\n    if (active) return active()\n    return !!floatingRef.value\n  }",
+      "replace": "  function shouldListen(): boolean {\n    return true\n  }",
+      "cmd": "npx vitest run tests/unit/floating-listener-lifecycle.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "退回\"常驻挂监听\"（TD-95 修前状态）→ 关闭状态仍挂着全局监听，空转开销回来（#387）"
+    },
+    {
+      "id": "floating-listeners-never-detach",
+      "file": "src/components/_internal/useFloating.ts",
+      "find": "  function detachListeners() {\n    if (!listenersAttached) return",
+      "replace": "  function detachListeners() {\n    if (true) return",
+      "cmd": "npx vitest run tests/unit/floating-listener-lifecycle.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "detach 变成空操作 → 关闭后监听永远摘不掉，组件销毁后仍在重算（#387）"
     }
   ]
 }

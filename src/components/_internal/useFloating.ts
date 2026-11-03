@@ -3,7 +3,7 @@
 // 1. useFloating() — Vue composable，自动绑定 ref、监听 resize/ResizeObserver
 // 2. computeFloatingPosition() — 纯函数，适合一次性定位（右键菜单、tooltip）
 // 3. computePointerPosition() — 纯函数，跟随鼠标坐标定位（contextmenu 场景）
-import { ref, onMounted, onUnmounted, watchEffect, type Ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch, watchEffect, type Ref } from 'vue'
 
 export type FlipDirection = 'down' | 'up' | 'left' | 'right'
 
@@ -58,6 +58,17 @@ interface FloatingOptions {
   maxMatchWidth?: boolean
   /** 浮动面板 z-index，默认 '2000'，弹窗内需调高 */
   zIndex?: string
+  /**
+   * 浮层当前是否处于"该被定位"的状态（TD-95，#387）。
+   *
+   * useFloating 不知道宿主的开关叫什么，但**宿主知道**：
+   * - v-if 型（Select）：面板关闭时 DOM 里没有浮层 → 用 `floatingRef` 判就够；
+   * - v-show 型（Popover / IconPicker）：面板**常驻 DOM**，只是 display 切换 ——
+   *   此时必须由宿主显式告知"我现在开着"，否则关闭期间监听会一直挂着。
+   *
+   * 不传则退化为"只看浮层在不在 DOM 里"（旧行为，对 v-if 型足够）。
+   */
+  active?: () => boolean
   /** 锚点模式：'element' 相对触发元素边框 | 'pointer' 相对鼠标坐标（右键菜单场景） */
   anchor?: AnchorMode
 }
@@ -375,8 +386,8 @@ export function useFloating(options: FloatingOptions = {}) {
    * 内部滚动容器同理（如弹窗里的长列表），所以必须用**捕获阶段**：
    * `scroll` 事件不冒泡，document 上只有捕获才能收到内部容器的滚动。
    *
-   * 未打开时（`floatingRef` 为空）直接返回，连定时器都不建 —— 页面上几十个
-   * Select 全挂载时也不会因为滚动产生开销。
+   * #387 起监听本身按"浮层开着"才挂（见 syncListeners），这里保留
+   * `floatingRef` 判空兜底：挂上时浮层一定存在，但 keep 以防未来判据松动。
    */
   function onScroll() {
     if (!floatingRef.value) return
@@ -395,17 +406,78 @@ export function useFloating(options: FloatingOptions = {}) {
     onResize()
   }
 
-  onMounted(() => {
+  /**
+   * 挂/摘全局监听（TD-95，#387）。
+   *
+   * ## 为什么改成"按需挂"
+   *
+   * 原实现是**每个 useFloating 实例在 onMounted 常驻 4 个监听**
+   * （window.resize / document.scroll[capture] / visualViewport.resize / visualViewport.scroll），
+   * 回调里只有 `if (!floatingRef.value) return` 的空转保护 ——
+   * **保护的是"重算"，不是"回调本身"**：一次页面滚动仍会命中 N 个 handler（N = 浮层实例数）。
+   * 一页几十个 Select / DatePicker / Popover 时，滚动一次就是几十次空函数调用，
+   * 低端移动端上这段开销是可测的。
+   *
+   * ## "打开"的判据：宿主说了算
+   *
+   * useFloating 不知道宿主的开关叫什么，但**宿主知道**：
+   * - v-if 型（Select）：面板关闭时 DOM 里没有浮层 → 看 `floatingRef` 就够；
+   * - v-show 型（Popover / IconPicker）：面板**常驻 DOM**，只在 display 上切换 ——
+   *   这类必须由宿主通过 `options.active()` 显式告知"我现在开着"。
+   *
+   * 两条判据合起来是：**宿主给了 `active()` 就听它的；没给就看浮层在不在 DOM 里**。
+   * 具体口径见 `shouldListen()`。
+   */
+  let listenersAttached = false
+  function attachListeners() {
+    if (listenersAttached) return
+    if (typeof window === 'undefined') return
+    listenersAttached = true
     window.addEventListener('resize', onResize)
     document.addEventListener('scroll', onScroll, { capture: true, passive: true })
     window.visualViewport?.addEventListener('resize', onViewportChange)
     window.visualViewport?.addEventListener('scroll', onViewportChange, { passive: true })
-  })
-  onUnmounted(() => {
+  }
+
+  function detachListeners() {
+    if (!listenersAttached) return
+    listenersAttached = false
     window.removeEventListener('resize', onResize)
     document.removeEventListener('scroll', onScroll, { capture: true })
     window.visualViewport?.removeEventListener('resize', onViewportChange)
     window.visualViewport?.removeEventListener('scroll', onViewportChange)
+  } /** 当前是否该挂监听：宿主显式给了 active 就听它的，否则看浮层在不在 DOM */
+  function shouldListen(): boolean {
+    const active = options.active
+    if (active) return active()
+    return !!floatingRef.value
+  }
+
+  /** 按判据挂/摘（宿主 active 变化、浮层进出 DOM 都会走这里） */
+  function syncListeners() {
+    if (shouldListen()) attachListeners()
+    else detachListeners()
+  }
+
+  // 浮层进出 DOM（v-if 型：关闭即摘，打开再挂）
+  watch(
+    () => floatingRef.value,
+    () => syncListeners(),
+    { flush: 'post' },
+  )
+
+  // 宿主开关变化（v-show 型：面板常驻 DOM，靠 active 才知道开没开）
+  if (options.active) {
+    watch(options.active, () => syncListeners(), { flush: 'post' })
+  }
+
+  onMounted(() => {
+    // 首次进入时可能已经有浮层（宿主一开始就是打开态）
+    syncListeners()
+  })
+
+  onUnmounted(() => {
+    detachListeners()
     if (timer) clearTimeout(timer)
     ro?.disconnect()
   })
