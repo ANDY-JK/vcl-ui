@@ -142,9 +142,18 @@ describe('与分享码协作：signShareCodeWith / verifyShareCodeWith', () => {
     expect(r.design).toBeNull()
   })
 
-  it('未签名的 FD1 → status=unsigned（可放行，保持兼容）', async () => {
+  // #395：默认 fail-closed —— 配了签发者就只收"我签的"；
+  // 否则攻击者把 FD2 的签名段删掉（降级成 FD1）即可绕过整条链。
+  it('未签名的 FD1 → status=unsigned 且**默认不放行**（design 为 null）', async () => {
     const s = createHmacSigner(KEY)
     const r = await verifyShareCodeWith(encodeShareCode(design('未签单')), s)
+    expect(r.status).toBe('unsigned')
+    expect(r.design, '默认必须拿不到设计，否则调用方会顺手渲染').toBeNull()
+  })
+
+  it('显式 allowUnsigned:true 时才把未签名码交出来（兼容开关）', async () => {
+    const s = createHmacSigner(KEY)
+    const r = await verifyShareCodeWith(encodeShareCode(design('未签单')), s, { allowUnsigned: true })
     expect(r.status).toBe('unsigned')
     expect(r.design?.meta?.title).toBe('未签单')
   })

@@ -1427,6 +1427,24 @@
       "cmd": "npx vitest run tests/unit/api-url-guard.spec.ts --no-coverage",
       "expect": "red",
       "note": "协议白名单失效 → javascript:/data:/blob: 可被当请求地址（#394 复核既有守卫）"
+    },
+    {
+      "id": "share-unsigned-allowed-by-default",
+      "file": "src/components/form-builder/designer/share.ts",
+      "find": "    return { status: 'unsigned', design: opts.allowUnsigned ? parsed.design : null }",
+      "replace": "    return { status: 'unsigned', design: parsed.design }",
+      "cmd": "npx vitest run tests/unit/share-signer.spec.ts tests/unit/form-share-view-code-switch.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "未签名码默认放行 → 攻击者删掉 FD2 的签名段（降级成 FD1）即可绕过签名（#395）"
+    },
+    {
+      "id": "share-view-ignores-allow-unsigned",
+      "file": "src/components/form-builder/FormShareView.vue",
+      "find": "      allowUnsigned: props.shareAllowUnsigned,",
+      "replace": "      allowUnsigned: false,",
+      "cmd": "npx vitest run tests/unit/form-share-view-code-switch.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "宿主显式打开兼容开关却无效 → 历史未签名链接全打不开（开关形同虚设，#395）"
     }
   ]
 }

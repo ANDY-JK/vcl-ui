@@ -12,7 +12,7 @@
 | `FieldError` | 2 | 0 | 0 |
 | `FormCollect` | 6 | 1 | 0 |
 | `FormTargetCollect` | 4 | 1 | 0 |
-| `FormShareView` | 4 | 1 | 0 |
+| `FormShareView` | 5 | 1 | 0 |
 | `LowCodeNav` | 12 | 5 | 7 |
 
 ## 组合式函数 / 工具导出
@@ -263,6 +263,7 @@
 | `design` | `FormDesign` | `undefined` | 否 | 直接传设计对象（宿主内嵌场景；与 code 二选一，优先于此） |
 | `store` | `FormStore` | `undefined` | 否 | 存储实现（默认全局活动 store：设计器切换本地/云端后自动跟随） |
 | `title` | `string` | `''` | 否 | 覆盖表单标题（不传用 meta.title） |
+| `shareAllowUnsigned` | `boolean` | `false` | 否 | 配了签发者时是否仍放行**未签名**（FD1）分享码，默认 `false`（#395 降级攻击防护）。 需要继续支持历史未签名链接的宿主显式传 `true`。 |
 
 ### Events
 

@@ -177,19 +177,37 @@ export async function signShareCodeWith(code: string, signer: ShareSigner): Prom
   return `${SHARE_CODE_SIGNED_PREFIX}${parsed.signedPayload}.${sig}`
 }
 
+/** 验签选项 */
+export interface ShareVerifyOptions {
+  /**
+   * 未签名（FD1）码是否放行。**默认 false**。
+   *
+   * 为什么默认拒：宿主显式 `setActiveShareSigner()` 的意图就是"只接受我签发的码"。
+   * 若此时仍放行未签名码，签名等于形同虚设 —— 攻击者把 `FD2.⟨content⟩.⟨sig⟩` 的签名段
+   * 删掉（或干脆自己拼一个 `FD1.⟨content⟩`）就绕过了整条链（**降级攻击**，#395 实测）。
+   * 需要兼容历史未签名链接的宿主可以显式传 `true`。
+   */
+  allowUnsigned?: boolean
+}
+
 /**
  * 用签发者验签。
  * 返回 'ok' | 'unsigned' | 'bad-signature' —— 三种情形必须分开：
- * 「没签名」与「签名不对」对调用方意味着完全不同的处置（前者可放行，后者必须拒）。
+ * 「没签名」与「签名不对」对调用方意味着完全不同的处置（默认都拒，但提示文案不同）。
+ *
+ * `design` 只在这两种情形下非空：验签通过（ok），或未签名且调用方显式
+ * `allowUnsigned: true`（unsigned）。其余一律 `null` —— **fail-closed**，
+ * 让调用方无法"顺手渲染"一个没验过的设计。
  */
 export async function verifyShareCodeWith(
   code: string,
   signer: ShareSigner,
+  opts: ShareVerifyOptions = {},
 ): Promise<{ status: 'ok' | 'unsigned' | 'bad-signature'; design: FormDesign | null }> {
   const parsed = parseShareCode(code)
   if (!parsed) return { status: 'bad-signature', design: null }
   if (!parsed.signed || !parsed.signedPayload || !parsed.sig) {
-    return { status: 'unsigned', design: parsed.design }
+    return { status: 'unsigned', design: opts.allowUnsigned ? parsed.design : null }
   }
   const ok = await signer.verify(parsed.signedPayload, parsed.sig)
   return ok ? { status: 'ok', design: parsed.design } : { status: 'bad-signature', design: null }

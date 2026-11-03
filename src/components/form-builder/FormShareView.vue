@@ -39,12 +39,18 @@ const props = withDefaults(
     store?: FormStore
     /** 覆盖表单标题（不传用 meta.title） */
     title?: string
+    /**
+     * 配了签发者时是否仍放行**未签名**（FD1）分享码，默认 `false`（#395 降级攻击防护）。
+     * 需要继续支持历史未签名链接的宿主显式传 `true`。
+     */
+    shareAllowUnsigned?: boolean
   }>(),
   {
     code: '',
     design: undefined,
     store: undefined,
     title: '',
+    shareAllowUnsigned: false,
   },
 )
 
@@ -99,12 +105,23 @@ async function resolveDesign(): Promise<void> {
   // 未签名的 FD1 仍放行——保持既有链接可用，不制造破坏性变更。
   const signer = getActiveShareSigner()
   if (signer) {
-    const { status, design } = await verifyShareCodeWith(code, signer)
+    const { status, design } = await verifyShareCodeWith(code, signer, {
+      allowUnsigned: props.shareAllowUnsigned,
+    })
     if (token !== resolveToken) return
-    parsed.value = status === 'bad-signature' ? null : design
+    // design 只在「验签通过」或「显式 allowUnsigned」时非空，其余为 null（fail-closed）
+    parsed.value = design
     if (status === 'bad-signature') {
       // 「用户说打不开」时宿主最需要知道的两件事：是签名被改还是码本身坏了
       reportEvent('form-builder/share-signature-invalid', '分享码签名校验未通过，已拒绝渲染', {
+        codeLength: code.length,
+        codePrefix: code.slice(0, 4),
+        signer: signer.name,
+      })
+    } else if (status === 'unsigned' && !design) {
+      // 第三件事：码本身是好的，但**没签名**被拒（#395 降级攻击防护）。
+      // 与"签名被改"分开上报，宿主才能判断是"对方给了旧链接"还是"有人动了 schema"。
+      reportEvent('form-builder/share-unsigned-rejected', '宿主已配置签发者，未签名分享码被拒绝渲染', {
         codeLength: code.length,
         codePrefix: code.slice(0, 4),
         signer: signer.name,

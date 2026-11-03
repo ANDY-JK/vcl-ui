@@ -105,11 +105,20 @@ describe('FormShareView · 配了签发者时的验签', () => {
     expect(w.text()).not.toContain('表单A')
   })
 
-  it('配了签发者：未签名 FD1 仍放行（unsigned 不等于伪造）', async () => {
-    setActiveShareSigner(createHmacSigner(['view', 'test'].join('-'))
-    )
+  // #395：配了签发者却仍放行未签名码 = 签名可被"降级攻击"绕过（删掉签名段即可）。
+  // 默认改为**拒**；需要兼容历史链接的宿主显式传 shareAllowUnsigned。
+  it('配了签发者：**未签名 FD1 默认拒绝渲染**（降级攻击防护）', async () => {
+    setActiveShareSigner(createHmacSigner(['view', 'test'].join('-')))
     const w = mount(FormShareView, { props: { code: codeA } })
-    await nextTick()
+    await new Promise((r) => setTimeout(r, 50))
+    await flushPromises()
+    expect(w.text(), '未签名码不得渲染（否则签名形同虚设）').not.toContain('表单A')
+  })
+
+  it('配了签发者：显式 shareAllowUnsigned 时才放行未签名 FD1（兼容开关）', async () => {
+    setActiveShareSigner(createHmacSigner(['view', 'test'].join('-')))
+    const w = mount(FormShareView, { props: { code: codeA, shareAllowUnsigned: true } })
+    await new Promise((r) => setTimeout(r, 50))
     await flushPromises()
     expect(w.text()).toContain('表单A')
   })
