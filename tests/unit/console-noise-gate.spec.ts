@@ -18,7 +18,7 @@
  */
 import { describe, it, expect } from 'vitest'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -71,6 +71,48 @@ describe('check:console-noise · 空采集必须判红（不许假绿）', () =>
     }
   })
 })
+
+describe(
+  'check:console-noise · 基线写入必须是并集（否则个别 spec 的告警会变成假红）',
+  () => {
+    it('**并集模式：本次未出现的旧类别保留**，新类别追加', () => {
+      const f = makeFixture({
+        spool: { a: { '[本次新出现] x': 2 } },
+        baseline: { '[本次没出现] y': 5 },
+      })
+      try {
+        const r = spawnSync(process.execPath, [SCRIPT, '--no-run', '--spool', f.spool, '--baseline-file', f.baseline, '--baseline'], {
+          encoding: 'utf8',
+        })
+        expect(r.status, r.stderr).toBe(0)
+        const written = JSON.parse(readFileSync(f.baseline, 'utf8')).noise
+        expect(Object.keys(written), '旧类别被丢掉 → 下次它一出现就判假红').toContain('[本次没出现] y')
+        expect(Object.keys(written)).toContain('[本次新出现] x')
+      } finally {
+        f.cleanup()
+      }
+    })
+
+    it('--baseline-reset 才允许把旧类别丢掉（显式重置）', () => {
+      const f = makeFixture({
+        spool: { a: { '[本次新出现] x': 2 } },
+        baseline: { '[本次没出现] y': 5 },
+      })
+      try {
+        const r = spawnSync(
+          process.execPath,
+          [SCRIPT, '--no-run', '--spool', f.spool, '--baseline-file', f.baseline, '--baseline', '--baseline-reset'],
+          { encoding: 'utf8' },
+        )
+        expect(r.status, r.stderr).toBe(0)
+        const written = JSON.parse(readFileSync(f.baseline, 'utf8')).noise
+        expect(Object.keys(written)).toEqual(['[本次新出现] x'])
+      } finally {
+        f.cleanup()
+      }
+    })
+  },
+)
 
 describe('check:console-noise · 棘轮判定', () => {
   it('**已知类别 → 绿**（不该因为"有噪音"就红，只拦新增类别）', () => {

@@ -56,6 +56,8 @@ function clearSpool() {
 }
 
 const wantBaseline = process.argv.includes('--baseline')
+// 重置模式：丢掉旧类别，只写本次采集到的（默认是**并集**，见下方说明）
+const wantReset = process.argv.includes('--baseline-reset')
 const skipRun = process.argv.includes('--no-run')
 const clearOnly = process.argv.includes('--clear')
 
@@ -167,20 +169,30 @@ if (totals.size === 0) {
 const noise = Object.fromEntries([...totals.entries()].sort((a, b) => a[0].localeCompare(b[0])))
 
 if (wantBaseline) {
+  // 基线默认按**并集**写（#395 补）：单次全量跑不会命中所有类别 ——
+  // 实测同一份代码两次跑，"`[map-picker] 反向地理编码失败 … boom`" 这类由个别 spec
+  // 触发的告警时有时无。若把基线换成"本次快照"，那些这次没出现的类别下次一冒出来
+  // 就被判成"新增类别"→ 假红。并集只增不减，才符合"棘轮"的语义（只拦新东西）。
+  const prev = existsSync(BASELINE) ? (JSON.parse(readFileSync(BASELINE, 'utf8')).noise ?? {}) : {}
+  const kept = Object.fromEntries(Object.entries(prev).filter(([k]) => !(k in noise)))
+  const out = wantReset ? noise : { ...kept, ...noise }
   writeFileSync(
     BASELINE,
     `${JSON.stringify(
       {
-        note: '未静默的 console.warn/error 类别与计数基线。新增类别或计数上升即红；确认是环境噪音才更新此文件。',
+        note: '未静默的 console.warn/error 类别与计数基线。出现**新增类别**即红；确认是环境噪音才更新此文件（--baseline 默认并集，--baseline-reset 才重置）。',
         updated: new Date().toISOString().slice(0, 10),
-        noise,
+        noise: out,
       },
       null,
       2,
     )}\n`,
     'utf8',
   )
-  console.log(`\n✅ 基线已写入 ${BASELINE}（${Object.keys(noise).length} 类）`)
+  console.log(
+    `\n✅ 基线已写入 ${BASELINE}（${Object.keys(out).length} 类` +
+      (wantReset ? '，重置模式）' : `，并集：保留 ${Object.keys(kept).length} 类本次未出现的旧类别）`),
+  )
   clearSpool()
   process.exit(0)
 }

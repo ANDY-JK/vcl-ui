@@ -1445,6 +1445,15 @@
       "cmd": "npx vitest run tests/unit/form-share-view-code-switch.spec.ts --no-coverage",
       "expect": "red",
       "note": "宿主显式打开兼容开关却无效 → 历史未签名链接全打不开（开关形同虚设，#395）"
+    },
+    {
+      "id": "console-noise-baseline-snapshot-not-union",
+      "file": "scripts/check-console-noise.mjs",
+      "find": "  const out = wantReset ? noise : { ...kept, ...noise }",
+      "replace": "  const out = noise",
+      "cmd": "npx vitest run tests/unit/console-noise-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "基线退回\"本次快照\" → 个别 spec 才触发的告警会从基线消失，下次一出现即被判\"新增类别\"（假红，#395 补）"
     }
   ]
 }
