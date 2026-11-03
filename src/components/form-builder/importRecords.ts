@@ -275,9 +275,29 @@ export function normalizeRecords(
 // 去重
 // ════════════════════════════════════════
 
-/** 内容指纹：data 按 key 排序后 JSON 序列化（键顺序无关） */
+/**
+ * 规范化：**递归**按 key 排序（#399）。
+ *
+ * 此前只排顶层 —— 值里再嵌一层对象就露出原始顺序，于是
+ * `{ m: { r1: 1, r2: 2 } }` 与 `{ m: { r2: 2, r1: 1 } }` 指纹不同、
+ * 去重认不出来，**同一批数据会被导入两遍**（矩阵/评分这类值是对象的字段就会踩到）。
+ * 数组**不动**：数组顺序可能带语义（如日期区间的起止），排了会掩盖真实差异。
+ */
+function canonical(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonical)
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+        .map(([k, v]) => [k, canonical(v)]),
+    )
+  }
+  return value
+}
+
+/** 内容指纹：data 递归按 key 排序后 JSON 序列化（键顺序无关；数组顺序仍计入） */
 function fingerprint(data: Record<string, unknown>): string {
-  return JSON.stringify(Object.entries(data).sort((a, b) => (a[0] < b[0] ? -1 : 1)))
+  return JSON.stringify(canonical(data))
 }
 
 /**

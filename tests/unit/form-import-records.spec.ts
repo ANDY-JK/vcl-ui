@@ -375,3 +375,35 @@ describe('parseCsvRecords · 别比 Excel 更严（#398）', () => {
   })
 
 })
+describe('dedupeRecords · 指纹的规范化（#399）', () => {
+  it('**嵌套对象的键顺序不影响去重**（矩阵/评分这类值是对象的字段）', () => {
+    const existing = [{ data: { m: { r1: 1, r2: 2 } } }] as unknown as Parameters<typeof dedupeRecords>[1]
+    const incoming = [{ m: { r2: 2, r1: 1 } }]
+    const r = dedupeRecords(incoming, existing)
+    expect(r.skipped, '等价记录必须被认成重复').toBe(1)
+    expect(r.toImport).toHaveLength(0)
+  })
+
+  it('顶层键顺序不影响去重（既有语义，别在递归改造里弄丢）', () => {
+    const existing = [{ data: { a: 1, b: 2 } }] as unknown as Parameters<typeof dedupeRecords>[1]
+    expect(dedupeRecords([{ b: 2, a: 1 }], existing).skipped).toBe(1)
+  })
+
+  it('**数组顺序仍然计入**（数组可能带语义，不能排序掩盖差异）', () => {
+    const existing = [{ data: { tags: ['a', 'b'] } }] as unknown as Parameters<typeof dedupeRecords>[1]
+    const r = dedupeRecords([{ tags: ['b', 'a'] }], existing)
+    expect(r.skipped, '顺序不同视为不同内容').toBe(0)
+    expect(r.toImport).toHaveLength(1)
+  })
+
+  it('嵌套数组里的对象也会被规范化', () => {
+    const existing = [{ data: { rows: [{ x: 1, y: 2 }] } }] as unknown as Parameters<typeof dedupeRecords>[1]
+    const r = dedupeRecords([{ rows: [{ y: 2, x: 1 }] }], existing)
+    expect(r.skipped).toBe(1)
+  })
+
+  it('数字与字符串照旧视为不同（不改类型语义）', () => {
+    const existing = [{ data: { n: 1 } }] as unknown as Parameters<typeof dedupeRecords>[1]
+    expect(dedupeRecords([{ n: '1' }], existing).skipped).toBe(0)
+  })
+})

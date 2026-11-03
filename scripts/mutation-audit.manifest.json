@@ -1499,6 +1499,24 @@
       "cmd": "npx vitest run tests/unit/form-import-records.spec.ts --no-coverage",
       "expect": "red",
       "note": "引号不成对时不退回字面模式 → 文件剩余部分全被吞成一格，后面的行静默消失（#398）"
+    },
+    {
+      "id": "fingerprint-nested-not-canonical",
+      "file": "src/components/form-builder/importRecords.ts",
+      "find": "        .map(([k, v]) => [k, canonical(v)]),",
+      "replace": "        .map(([k, v]) => [k, v]),",
+      "cmd": "npx vitest run tests/unit/form-import-records.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "嵌套对象不递归排序 → 等价记录指纹不同，同一批数据被导入两遍（#399）"
+    },
+    {
+      "id": "fingerprint-key-order-matters",
+      "file": "src/components/form-builder/importRecords.ts",
+      "find": "        .sort((a, b) => (a[0] < b[0] ? -1 : 1))",
+      "replace": "        .sort(() => 0)",
+      "cmd": "npx vitest run tests/unit/form-import-records.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "键顺序重新计入指纹 → 同一记录换个键序就当成新数据（去重失效，#399）"
     }
   ]
 }
