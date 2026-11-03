@@ -50,7 +50,7 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 整链步数 | **44** |
+| 整链步数 | **45** |
 
 步清单（顺序即执行顺序）：
 
@@ -77,34 +77,35 @@ title: 事实清单（自动生成）
 21. `check:i18n`
 22. `check:demo-props`
 23. `check:error-demo`
-24. `check:vendor-data`
-25. `check:vendor-vulns`
-26. `check:deps`
-27. `test:unit`
-28. `check:console-noise`
-29. `bench:check`
-30. `check:coverage-domains`
-31. `build`
-32. `smoke:entries`
-33. `verify:pkg`
-34. `check:licenses`
-35. `check:release-consistency`
-36. `docs:build`
-37. `check:docs`
-38. `check:doc-completeness`
-39. `gen:facts`
-40. `check:facts`
-41. `check:tech-debt`
-42. `check:rtl`
-43. `check:rtl-semantics`
-44. `test:e2e`
+24. `check:template-statements`
+25. `check:vendor-data`
+26. `check:vendor-vulns`
+27. `check:deps`
+28. `test:unit`
+29. `check:console-noise`
+30. `bench:check`
+31. `check:coverage-domains`
+32. `build`
+33. `smoke:entries`
+34. `verify:pkg`
+35. `check:licenses`
+36. `check:release-consistency`
+37. `docs:build`
+38. `check:docs`
+39. `check:doc-completeness`
+40. `gen:facts`
+41. `check:facts`
+42. `check:tech-debt`
+43. `check:rtl`
+44. `check:rtl-semantics`
+45. `test:e2e`
 
 ## 测试规模（读自最近一次整链留痕）
 
 | 事实 | 值 |
 | --- | --- |
-| 单测文件数 | **401** |
-| 单测用例数 | **6296** |
+| 单测文件数 | **402** |
+| 单测用例数 | **6303** |
 
 ::: info 这两个数会随每次提交变化
 它们来自 `reports/quality-check-logs/*-test-unit.log`（按后缀匹配，**不依赖步骤序号**；每次整链运行前清空），
