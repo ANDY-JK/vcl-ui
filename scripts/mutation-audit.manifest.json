@@ -1319,6 +1319,24 @@
       "cmd": "npx vitest run tests/unit/docs-gate.spec.ts --no-coverage",
       "expect": "red",
       "note": "--root 失效 → 闸口只盯真实仓库，夹具里的漂移看不见（自测会假绿，#388）"
+    },
+    {
+      "id": "rtl-retry-unbounded",
+      "file": "scripts/check-rtl-semantics.mjs",
+      "find": "Math.min(3, Number(process.env.RTL_ATTEMPTS ?? 2))",
+      "replace": "Number(process.env.RTL_ATTEMPTS ?? 2)",
+      "cmd": "npx vitest run tests/unit/rtl-gate-robustness.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "重试去掉上限 → 真坏会被无界重试拖成超时，闸口从\"判红\"退化成\"卡死\"（#389）"
+    },
+    {
+      "id": "rtl-recheck-removed",
+      "file": "scripts/check-rtl-semantics.mjs",
+      "find": "if (fails.length) {",
+      "replace": "if (false) {",
+      "cmd": "npx vitest run tests/unit/rtl-gate-robustness.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "去掉\"未镜像复核\" → 动画未稳定时的中间值会直接判红，40 分钟的链被一次抖动打断（#389）"
     }
   ]
 }

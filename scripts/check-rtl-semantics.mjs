@@ -297,6 +297,82 @@ const scanSkipped = []
 let scanChecked = 0
 
 /**
+ * 重试与复核（#389）。
+ *
+ * ## 为什么补
+ *
+ * #388 的整链在第 44 步本闸口断掉：`<div.topbar-tools>` 报"未镜像"（LTR=0.58 RTL=0.91）、
+ * 另一条路由 `chart-table@1280` 连不上，而且扫描元素数只有 **5688**（正常 5924）。
+ * 单独重跑：**5924 个元素、未镜像 0、绿**。也就是说整条 40 分钟的链被一次负载抖动打断。
+ *
+ * ## 两档措施，都不放松判据
+ *
+ * 1) **取快照有界重试**：`goto` 超时/浏览器被回收时重试，最多 `SCAN_ATTEMPTS` 次；
+ *    **重试用尽仍失败 → 仍然记 SKIP（仍然判红）**。"测不了"和"测了不合格"都必须红，
+ *    重试只是把"偶发"和"真坏"分开，不是把红变绿。
+ * 2) **未镜像需复核**：候选失败的元素换更长 settle（`SCAN_RECHECK_SETTLE_MS`）重测一遍，
+ *    **两次都不镜像才报**。真缺陷不会被更长 settle 抹掉；动画/布局未稳定的中间值会被排除。
+ */
+const SCAN_ATTEMPTS = Math.max(1, Math.min(3, Number(process.env.RTL_ATTEMPTS ?? 2)))
+const SCAN_SETTLE_MS = 700
+const SCAN_RECHECK_SETTLE_MS = 1500
+
+/** 取一次扫描快照；失败返回 null（不抛，页面级失败要如实计 SKIP） */
+async function captureScan(browser, route, vp, dir, settleMs) {
+  const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 })
+  const page = await ctx.newPage()
+  await page.addInitScript((d) => {
+    document.addEventListener('DOMContentLoaded', () => document.documentElement.setAttribute('dir', d))
+  }, dir)
+  try {
+    await page.goto(`${BASE}/#/${route}`, { waitUntil: 'domcontentloaded', timeout: 25_000 })
+    await page.waitForTimeout(settleMs)
+    return await page.evaluate(SCAN_SNAPSHOT)
+  } catch {
+    return null
+  } finally {
+    // 浏览器已死时 close 会抛，不该让整轮扫描崩在这里
+    await ctx.close().catch(() => {})
+  }
+}
+
+/** 带重试地取快照：偶发失败重试，重试用尽返回 null（由调用方计 SKIP，仍然判红） */
+async function captureScanWithRetry(browser, route, vp, dir, settleMs = SCAN_SETTLE_MS) {
+  for (let attempt = 1; attempt <= SCAN_ATTEMPTS; attempt++) {
+    const snap = await captureScan(browser, route, vp, dir, settleMs)
+    if (snap) return snap
+    if (attempt < SCAN_ATTEMPTS) await sleep(250 * attempt)
+  }
+  return null
+}
+
+/** 逐元素比对 ltr / rtl 的镜像关系，返回 { checked, fails } */
+function compareScan(snapLtr, snapRtl) {
+  const rtlMap = new Map(snapRtl.map((x) => [x.k, x]))
+  let checked = 0
+  const fails = []
+  for (const l of snapLtr) {
+    const r = rtlMap.get(l.k)
+    if (!r) continue
+    checked++
+    const nearLeft = l.off < 0.1
+    const nearRight = l.off + l.wr > 0.9
+    // 阈值留 2% 容差（实测 0.85+0.05=0.90 卡边界被误判）
+    const flipped = nearLeft ? r.off + r.wr >= 0.88 : nearRight ? r.off <= 0.12 : true
+    if (!flipped) {
+      fails.push({
+        route: '',
+        el: `<${l.tag}${l.cls ? '.' + l.cls : ''}>`,
+        ltr: l.off,
+        rtl: r.off,
+        wr: l.wr,
+      })
+    }
+  }
+  return { checked, fails }
+}
+
+/**
  * 扫描视口（2026-10-22 新增移动端）。
  *
  * ## 为什么必须加 375
@@ -343,48 +419,43 @@ for (const route of scanRoutes) {
   for (const vp of SCAN_VIEWPORTS) {
     const snap = {}
     for (const dir of ['ltr', 'rtl']) {
-      const ctx = await browser.newContext({ viewport: { width: vp.width, height: vp.height }, deviceScaleFactor: 1 })
-      const page = await ctx.newPage()
-      await page.addInitScript((d) => {
-        document.addEventListener('DOMContentLoaded', () => document.documentElement.setAttribute('dir', d))
-      }, dir)
-      try {
-        await page.goto(`${BASE}/#/${route}`, { waitUntil: 'domcontentloaded', timeout: 25_000 })
-        await page.waitForTimeout(700)
-        snap[dir] = await page.evaluate(SCAN_SNAPSHOT)
-      } catch {
-        snap[dir] = null
-      }
-      // 同上：浏览器已死时 close 会抛，不该让整轮扫描崩在这里
-      await ctx.close().catch(() => {})
+      snap[dir] = await captureScanWithRetry(browser, route, vp, dir)
     }
 
     // ⚠️ SKIP 必须计失败：第一版只 continue，于是「server 没起来 → 全部 goto 失败
     // → 全 SKIP → 汇总仍显示 0」= 假绿。负向对照失效的真因就是它。
+    // #389：重试用尽才走到这里 —— 偶发失败被挡在前面，真坏仍然记 SKIP（仍然红）。
     if (!snap.ltr || !snap.rtl) {
       scanSkipped.push(`${route}@${vp.name}`)
       continue
     }
 
-    const rtlMap = new Map(snap.rtl.map((x) => [x.k, x]))
-    for (const l of snap.ltr) {
-      const r = rtlMap.get(l.k)
-      if (!r) continue
-      scanChecked++
-      const nearLeft = l.off < 0.1
-      const nearRight = l.off + l.wr > 0.9
-      // 阈值留 2% 容差（实测 0.85+0.05=0.90 卡边界被误判）
-      const flipped = nearLeft ? r.off + r.wr >= 0.88 : nearRight ? r.off <= 0.12 : true
-      if (!flipped) {
-        scanFails.push({
-          route: `${route}@${vp.name}`,
-          el: `<${l.tag}${l.cls ? '.' + l.cls : ''}>`,
-          ltr: l.off,
-          rtl: r.off,
-          wr: l.wr,
-        })
+    let { checked, fails } = compareScan(snap.ltr, snap.rtl)
+
+    // 复核：动画/布局未稳定时会把中间值读成"未镜像"（#389 实测 topbar-tools LTR=0.58 RTL=0.91）。
+    // 真缺陷在更长 settle 下照样不镜像 → 仍然报；只有"两次都不镜像"才落账。
+    if (fails.length) {
+      const recheck = {}
+      for (const dir of ['ltr', 'rtl']) {
+        recheck[dir] = await captureScanWithRetry(browser, route, vp, dir, SCAN_RECHECK_SETTLE_MS)
+      }
+      if (recheck.ltr && recheck.rtl) {
+        const again = compareScan(recheck.ltr, recheck.rtl)
+        const stillFailing = new Set(again.fails.map((f) => f.el))
+        const dropped = fails.filter((f) => !stillFailing.has(f.el))
+        if (dropped.length) {
+          console.log(
+            `  · 复核后排除 ${dropped.length} 处偶发（${route}@${vp.name}）：` +
+              dropped.map((f) => `${f.el} LTR=${f.ltr} RTL=${f.rtl}`).join('、'),
+          )
+        }
+        fails = fails.filter((f) => stillFailing.has(f.el))
+        checked = Math.max(checked, again.checked)
       }
     }
+
+    scanChecked += checked
+    for (const f of fails) scanFails.push({ ...f, route: `${route}@${vp.name}` })
   }
 }
 

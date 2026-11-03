@@ -58,6 +58,65 @@ describe('check:rtl-semantics · 源码必须保留的健壮性写法', () => {
   })
 })
 
+/**
+ * 偶发失败的重试与复核（#389）
+ *
+ * ## 为什么补
+ *
+ * #388 的整链在第 44 步本闸口断掉：`<div.topbar-tools>` 报"未镜像"（LTR=0.58 RTL=0.91）、
+ * 另一条路由连不上，扫描元素数只有 5688（正常 5924）。**单独重跑全绿** ——
+ * 一次负载抖动打断了 40 分钟的链。
+ *
+ * ## 两条判据都必须"不放松"
+ *
+ * 重试/复核是**把偶发和真坏分开**，不是把红变绿：
+ * 取快照重试用尽 → 仍记 SKIP（仍判红）；未镜像复核两次都失败才报。
+ * 所以这里锁的不是"有没有重试"，而是**"重试之后失败仍然算失败"**这条。
+ */
+describe('check:rtl-semantics · 重试与复核不能放松判据', () => {
+  it('取快照的重试必须**有界**（默认 2 次、上限 ≤ 3）', () => {
+    expect(SRC, '缺少 RTL_ATTEMPTS 开关').toContain('RTL_ATTEMPTS')
+    expect(SRC, '默认尝试次数必须 ≤ 3：无界重试会把"真坏"拖成超时').toMatch(
+      /Math\.min\(3,\s*Number\(process\.env\.RTL_ATTEMPTS \?\? [123]\)\)/,
+    )
+    expect(SRC, '没找到重试循环（重命名了？请同步本用例）').toMatch(
+      /for \(let attempt = 1; attempt <= SCAN_ATTEMPTS; attempt\+\+\)/,
+    )
+  })
+
+  it('**重试用尽仍记 SKIP**（偶发可以重试，真坏必须红）', () => {
+    const start = SRC.indexOf('if (!snap.ltr || !snap.rtl)')
+    expect(start, '找不到 SKIP 分支（重命名了？请同步本用例）').toBeGreaterThan(-1)
+    const body = SRC.slice(start, start + 400)
+    expect(body, 'SKIP 分支必须仍然 push（否则"连不上"会伪装成"全通过"）').toContain('scanSkipped.push')
+  })
+
+  it('取快照失败必须返回 null 且 cleanup 兜底（不能抛出去）', () => {
+    const start = SRC.indexOf('async function captureScan(')
+    expect(start, '找不到 captureScan（重命名了？请同步本用例）').toBeGreaterThan(-1)
+    const body = SRC.slice(start, start + 1200)
+    expect(body, '页面级失败要 return null 交给调用方计 SKIP').toContain('return null')
+    expect(body, 'ctx.close 必须 finally + catch 兜底').toMatch(/finally \{\s*\n\s*\/\/[^\n]*\n\s*await ctx\.close\(\)\.catch\(\(\) => \{\}\)/)
+  })
+
+  it('**未镜像必须复核**：更长 settle 下仍不镜像才报', () => {
+    expect(SRC, '缺少复核 settle 常量').toContain('SCAN_RECHECK_SETTLE_MS')
+    expect(SRC, '复核的 settle 必须比常规长，否则等于没复核').toMatch(
+      /const SCAN_RECHECK_SETTLE_MS = (\d+)/,
+    )
+    const normal = Number(SRC.match(/const SCAN_SETTLE_MS = (\d+)/)?.[1] ?? 0)
+    const recheck = Number(SRC.match(/const SCAN_RECHECK_SETTLE_MS = (\d+)/)?.[1] ?? 0)
+    expect(recheck, `复核 settle(${recheck}) 必须大于常规(${normal})`).toBeGreaterThan(normal)
+    expect(SRC, '复核后必须只保留仍然失败的（否则偶发照样红）').toMatch(
+      /fails = fails\.filter\(\(f\) => stillFailing\.has\(f\.el\)\)/,
+    )
+    // 复核必须**真的跑**：由"有候选失败"驱动，而不是写死条件后留着一段死代码
+    expect(SRC, '复核分支必须由 fails.length 驱动（否则是死代码，等于没复核）').toMatch(
+      /if \(fails\.length\) \{\s*\n\s*const recheck = \{\}/,
+    )
+  })
+})
+
 const RUN_BEHAVIOR = process.env.RTL_GATE_BEHAVIOR === '1'
 
 describe.skipIf(!RUN_BEHAVIOR)('check:rtl-semantics · 页面打不开时的行为（需真浏览器）', () => {
