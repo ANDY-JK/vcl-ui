@@ -35,6 +35,14 @@ export function useSelectDatePanel(
     markTouched: () => void
     measureOptionRow: () => Promise<void> | void
     emit: (event: 'update:modelValue' | 'change', value: DatePanelValue) => void
+    /**
+     * 写入口守卫（TD-90 / #427）。时间面板的「确定」是**写**：它 emit
+     * `update:modelValue` + `change` 把草稿时间落库。面板打开时宿主完全可能把
+     * `disabled` 翻成 true（表单校验失败、权限回收、提交中锁表单）—— 此时按钮还在，
+     * 点下去照样写。模板上的 `v-if` 只能保证"界面上看不见时点不到"，**入口级守卫**
+     * 才能保证"任何路径都写不进"（与 `onClearGuarded` 同一条判据）。
+     */
+    canWrite?: () => boolean
   },
 ) {
   // 类型标志本地重算（与 Select 主文件同语义；不 import 主文件防循环）
@@ -151,6 +159,14 @@ export function useSelectDatePanel(
   }
 
   function onTimeConfirm() {
+    // 入口级守卫（TD-90 / #427）：面板打开后 disabled 才翻真的场景下，
+    // 模板上的按钮仍在 —— 只靠 v-if 挡不住，写入口必须自己判。
+    // 判不过时**照常关面板**：用户点了确定却什么都不发生更困惑，
+    // 关掉面板 + 不落值是"禁用态下点确定"最不意外的结果。
+    if (o.canWrite && !o.canWrite()) {
+      o.closePanel()
+      return
+    }
     o.markTouched()
     o.closePanel()
     o.emit('update:modelValue', draftTime.value as DatePanelValue)

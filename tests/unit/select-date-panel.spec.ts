@@ -22,16 +22,17 @@ import { ref, reactive, nextTick } from 'vue'
 import { useSelectDatePanel } from '@/components/form/useSelectDatePanel'
 import type { DatePanelProps } from '@/components/form/useSelectDatePanel'
 
-function makeOpts() {
+function makeOpts(canWrite: () => boolean = () => true) {
   return {
     closePanel: vi.fn(),
     markTouched: vi.fn(),
     measureOptionRow: vi.fn(async () => {}),
     emit: vi.fn(),
+    canWrite,
   }
 }
 
-function makePanel(type: string, modelValue: unknown = '', format?: string) {
+function makePanel(type: string, modelValue: unknown = '', format?: string, opts: { canWrite?: () => boolean } = {}) {
   // ⚠️ props 必须 reactive：composable 里 watch(() => props.modelValue) 需要
   // 响应式源，普通对象改字段不会触发后续 watch（immediate 只吃到初值）
   const props = reactive<DatePanelProps>({
@@ -41,7 +42,7 @@ function makePanel(type: string, modelValue: unknown = '', format?: string) {
     rangePlaceholder: ['开始日期', '结束日期'],
   }) as DatePanelProps
   const open = ref(false)
-  const o = makeOpts()
+  const o = makeOpts(opts.canWrite)
   const panel = useSelectDatePanel(props, open, o)
   return { panel, open, o, props }
 }
@@ -274,6 +275,30 @@ describe('Time 模式', () => {
     expect(o.emit).toHaveBeenCalledWith('update:modelValue', '09:15')
     expect(o.emit).toHaveBeenCalledWith('change', '09:15')
     expect(o.closePanel).toHaveBeenCalledTimes(1)
+  })
+
+  /* ── TD-90 / #427：写入口必须自己判 disabled ──────────────────────────
+   * 面板打开后宿主把 disabled 翻成 true（校验失败、权限回收、提交中锁表单），
+   * 模板上的「确定」按钮**仍在**（v-if 只覆盖"打开时已禁用"）——
+   * 只靠界面隐藏挡不住，写入口必须自己判。*/
+  it('**disabled 翻转后点确定：不落值，但仍关面板**（入口级守卫）', () => {
+    let writable = true
+    const { panel, o } = makePanel('time', '', undefined, { canWrite: () => writable })
+    panel.onTimePick('09:15')
+    writable = false // 面板开着时被禁用
+    panel.onTimeConfirm()
+
+    expect(o.emit, '禁用态下不能把草稿时间落库').not.toHaveBeenCalled()
+    expect(o.markTouched, '没写入就不该标脏').not.toHaveBeenCalled()
+    expect(o.closePanel, '照常关面板（点了确定却毫无反应更困惑）').toHaveBeenCalledTimes(1)
+  })
+
+  it('**可写时确定照常落值**（反向保护：守卫不能把正常路径一起拦掉）', () => {
+    const { panel, o } = makePanel('time', '', undefined, { canWrite: () => true })
+    panel.onTimePick('09:15')
+    panel.onTimeConfirm()
+    expect(o.emit).toHaveBeenCalledWith('update:modelValue', '09:15')
+    expect(o.markTouched).toHaveBeenCalledTimes(1)
   })
 
   it('**onTimeCancel → 只关面板不 emit**（草稿丢弃）', () => {

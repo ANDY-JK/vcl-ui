@@ -802,6 +802,8 @@ const {
   closePanel,
   markTouched,
   measureOptionRow,
+  // 写入口守卫（TD-90 / #427）：面板打开后 disabled 才翻真时按钮仍在，入口自己判
+  canWrite: () => canWrite.value,
   emit: (ev, v) => {
     const val = v as SelectModelValue
     if (ev === 'change') emit('change', val)

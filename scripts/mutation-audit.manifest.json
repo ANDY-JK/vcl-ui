@@ -1895,6 +1895,15 @@
       "cmd": "npx vitest run tests/unit/menu-interaction.spec.ts --no-coverage",
       "expect": "red",
       "note": "enter 回调 no-op → hover 150ms 展开语义消失，菜单悬停完全失效（TD-101/#427）"
+    },
+    {
+      "id": "date-panel-confirm-no-canwrite",
+      "file": "src/components/form/useSelectDatePanel.ts",
+      "find": "if (o.canWrite && !o.canWrite()) {",
+      "replace": "if (o.canWrite && !o.canWrite() && false) {",
+      "cmd": "npx vitest run tests/unit/select-date-panel.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "撤掉写入口守卫 → 面板打开后 disabled 翻真时仍能落值（TD-90/#427）"
     }
   ]
 }
