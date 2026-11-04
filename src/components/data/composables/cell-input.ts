@@ -210,6 +210,37 @@ function numToPlainString(n: number): string | null {
   return plain
 }
 
+/**
+ * 统一小数点与千分位（#406）。
+ *
+ * 旧实现无条件 `replace(/[,\s]/g, '')` —— 把逗号一律当千分位，于是**欧式写法被静默改值**：
+ *   · `1.234,56`（1234.56）→ `1.23456` —— **小了 1000 倍**
+ *   · `1,23`（1.23）→ `123` —— **大了 100 倍**
+ *   · `1,2` → `12`；`1,23,4` → `1234`（乱码也能"成功"）
+ * 这类"看起来正常的错数"比报错危险得多（本文件其它处已反复强调同一原则）。
+ *
+ * 判定规则（能判就判，判不了就报非法，绝不猜）：
+ *  1. 两种分隔符都有 → **最后出现的那个是小数点**（'1.234,56' 欧式 / '1,234.56' 美式）；
+ *  2. 只有逗号 → 严格千分位（`1,234,567`）去掉；`数字,1~2位` 视为小数逗号；其余判非法；
+ *  3. 只有点号 → 维持既有语义（小数点是点号）。
+ *
+ * @returns 统一后的字符串；null = 分隔符形态无法判定（交由调用方报 invalidNumber）
+ */
+function unifyDecimalSeparators(t: string): string | null {
+  const lastComma = t.lastIndexOf(',')
+  const lastDot = t.lastIndexOf('.')
+  if (lastComma === -1 && lastDot === -1) return t
+  if (lastComma !== -1 && lastDot !== -1) {
+    return lastComma > lastDot ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '')
+  }
+  if (lastComma !== -1) {
+    if (/^[+-]?\d{1,3}(,\d{3})+$/.test(t)) return t.replace(/,/g, '')
+    if (/^[+-]?\d+,\d{1,2}$/.test(t)) return t.replace(',', '.')
+    return null
+  }
+  return t
+}
+
 /** 数字归一化：去千分位/货币符号/空白，会计负数 (123) → -123，全角转半角 */
 function normalizeNumber(raw: string): NormalizeResult {
   const invalid: NormalizeResult = {
@@ -232,9 +263,13 @@ function normalizeNumber(raw: string): NormalizeResult {
     .replace(/／/g, '/')
     .replace(/[．。]/g, '.')
 
-  // 去千分位、空白、货币符号
-  t = t.replace(/[,\s]/g, '').replace(/[￥¥$€£]|元|人民币/g, '')
-
+  // 去空白与货币符号（先做，避免干扰分隔符判定）
+  t = t.replace(/[\s]/g, '').replace(/[￥¥$€£]|元|人民币/g, '')
+  if (!t) return invalid
+  // 小数点/千分位统一（#406）：欧式写法此前会被静默改值
+  const unified = unifyDecimalSeparators(t)
+  if (unified === null) return invalid
+  t = unified
   if (!t) return invalid
   // 前导零（007 / 01.5 / -007）：Excel 一般列把它当**文本**——静默转成 7 会损毁编码/工号/电话，
   // 保原样（半角化后）比「归一化出错误数字」安全。'0' / '0.5' 不受影响（0 后第二位不是数字）。

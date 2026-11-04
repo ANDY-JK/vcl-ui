@@ -1616,6 +1616,24 @@
       "cmd": "npx vitest run tests/unit/fill-series.spec.ts --no-coverage",
       "expect": "red",
       "note": "生成值不做忠实性校验 → 越过 2^53 后静默给出被圆回去的错数（#405）"
+    },
+    {
+      "id": "cell-number-eu-separator-as-grouping",
+      "file": "src/components/data/composables/cell-input.ts",
+      "find": "    return lastComma > lastDot ? t.replace(/\\./g, '').replace(',', '.') : t.replace(/,/g, '')",
+      "replace": "    return t.replace(/,/g, '')",
+      "cmd": "npx vitest run tests/unit/cell-input.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "两种分隔符并存时一律当美式 → 1.234,56 被读成 1.23456（小 1000 倍的\"正常错数\"，#406）"
+    },
+    {
+      "id": "cell-number-decimal-comma-mangled",
+      "file": "src/components/data/composables/cell-input.ts",
+      "find": "    if (/^[+-]?\\d+,\\d{1,2}$/.test(t)) return t.replace(',', '.')",
+      "replace": "    if (false) return t.replace(',', '.')",
+      "cmd": "npx vitest run tests/unit/cell-input.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "小数逗号不识别 → 1,23 被当成千分位拼成 123（大 100 倍），且 1,23,4 这类乱码也能\"成功\"（#406）"
     }
   ]
 }

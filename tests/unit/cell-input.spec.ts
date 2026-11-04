@@ -190,3 +190,33 @@ describe('cell-input · number（补上小程序库有而 Vue 丢的校验）', 
     expect(norm('.5', 'number').value).toBe('0.5')
   })
 })
+
+describe('cell-input · number 的小数点/千分位判定（#406）', () => {
+  it('**欧式写法不再被改值**：1.234,56 是 1234.56，不是 1.23456', () => {
+    expect(norm('1.234,56', 'number').value).toBe('1234.56')
+    expect(norm('1.234.567,89', 'number').value).toBe('1234567.89')
+    expect(norm('€1.234,56', 'number').value).toBe('1234.56')
+  })
+
+  it('**小数逗号不再被当千分位**：1,23 是 1.23，不是 123', () => {
+    expect(norm('1,23', 'number').value).toBe('1.23')
+    expect(norm('1,2', 'number').value).toBe('1.2')
+    expect(norm('0,5', 'number').value).toBe('0.5')
+  })
+
+  it('美式千分位与美式小数照旧（反回归）', () => {
+    expect(norm('1,234', 'number').value).toBe('1234')
+    expect(norm('1,234,567', 'number').value).toBe('1234567')
+    expect(norm('1,234.56', 'number').value).toBe('1234.56')
+    expect(norm('￥1,234.50', 'number').value).toBe('1234.5')
+  })
+
+  it('**形态无法判定时判非法**，不猜（旧实现会拼成 1234）', () => {
+    expect(norm('1,23,4', 'number')).toMatchObject({ ok: false, errorKey: 'table.invalidNumber' })
+    expect(norm('1,2345', 'number').ok).toBe(false)
+  })
+
+  it('空格千分位仍可识别（1 234,56）', () => {
+    expect(norm('1 234,56', 'number').value).toBe('1234.56')
+  })
+})
