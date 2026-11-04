@@ -69,6 +69,7 @@
     "check:coverage-domains": "node scripts/check-coverage-domains.mjs",
     "smoke:entries": "node scripts/smoke-entries.mjs",
     "check:doc-completeness": "node scripts/check-doc-completeness.mjs",
+    "check:edit-single-writer": "node scripts/check-edit-single-writer.mjs",
     "check:css-fonts": "node scripts/check-css-fonts.mjs",
     "check:css-scale": "node scripts/check-css-scale.mjs",
     "check:offline": "node scripts/check-offline.mjs",
