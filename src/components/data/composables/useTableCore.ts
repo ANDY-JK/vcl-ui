@@ -1,9 +1,12 @@
 // ⛔ 保护 — 禁止修改排序/筛选/分页管道逻辑，禁止删除虚拟滚动
 //    需我确认：sortHistory 行为、truncateThreshold 默认值、pageSize 逻辑
+//    （#419 例外：排序比较器抽到 table-sort.ts 并修掉「日期列按星期几排」的缺陷，
+//      比较口径与既有用例一致 —— 空值仍最小、数字仍按数值、降序仍取反）
 // ==================== 数据核心：排序 + 数据管道 + 分页/虚拟滚动 ====================
 import { ref, computed, watch, onUnmounted, getCurrentInstance, type Ref, type ComputedRef } from 'vue'
 import type { Column, ColumnFilterState, RowMeta } from './types'
 import { getCellText, calcTableTotalPages } from './utils'
+import { compareCellValues } from './table-sort'
 import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
 import { useTableWindowScroll } from './useTableWindowScroll'
 
@@ -129,21 +132,7 @@ export function useTableCore(
     // 外部受控排序时跳过客户端排序 — sortKey 存在表示父组件已接管排序，数据由服务端排好
     if (sortState.value.key && !props.sortKey) {
       const { key, order } = sortState.value
-      result = [...result].sort((a, b) => {
-        const va = String(a[key] ?? '')
-        const vb = String(b[key] ?? '')
-        // 数字值快速比较（localeCompare 慢 ~100 倍）：纯数字字符串用数值比较，
-        // 其余走 localeCompare（含中文等 Unicode 排序）。空串视为最小
-        let cmp: number
-        if (va === '') cmp = vb === '' ? 0 : -1
-        else if (vb === '') cmp = 1
-        else if (/^-?\d+(\.\d+)?$/.test(va) && /^-?\d+(\.\d+)?$/.test(vb)) {
-          cmp = Number(va) - Number(vb)
-        } else {
-          cmp = va.localeCompare(vb, undefined, { numeric: true })
-        }
-        return order === 'asc' ? cmp : -cmp
-      })
+      result = [...result].sort((a, b) => (order === 'asc' ? 1 : -1) * compareCellValues(a[key], b[key]))
     }
 
     const term = globalSearch.value.trim()

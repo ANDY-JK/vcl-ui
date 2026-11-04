@@ -53,8 +53,7 @@ describe('useTableCore 数据管道（P2-3 拆分安全网）', () => {
   })
 
   it('sortable: false 的列不可排序，未声明默认可排序', () => {
-    const { core } = makeCore({ data: rows })
-    // 未声明 sortable = 默认可排序
+    const { core } = makeCore({ data: rows })    // 未声明 sortable = 默认可排序
     core.toggleSort(cols[0])
     expect(core.sortState.value.key).toBe('name')
     // 显式 sortable: false 不可排序
@@ -201,5 +200,50 @@ describe('显示文本 vs 取值：筛选/搜索口径', () => {
     expect(core.displayData.value.map((r) => r.id), '显示文本可搜').toEqual(['r1'])
     globalSearch.value = '已完成'
     expect(core.displayData.value.map((r) => r.id)).toEqual(['r2'])
+  })
+})
+
+/**
+ * #419：日期列排序 —— `displayData` 曾把单元格先 `String()` 再比，
+ * `String(new Date(...))` 是"星期 月 日 年"，于是排序实际在按**星期几**排。
+ * 这里从真实 composable 走一遍（比较器的单测在 table-sort.spec.ts）。
+ */
+describe('useTableCore 排序 · 日期列按时间排（#419）', () => {
+  const dateCols: Column[] = [
+    { key: 'id', title: '编号' },
+    { key: 'at', title: '日期', sortable: true },
+  ]
+  const dateRows = [
+    { id: 'b', at: new Date(2026, 0, 2) }, // 周五
+    { id: 'a', at: new Date(2026, 0, 1) }, // 周四
+    { id: 'c', at: new Date(2026, 0, 3) },
+  ]
+
+  function makeDateCore() {
+    const filterState = ref<Record<string, ColumnFilterState>>({})
+    const hiddenColumns = ref(new Set<string>())
+    const visibleColumns = computed(() => dateCols)
+    const globalSearch = ref('')
+    return useTableCore(
+      { data: dateRows } as never,
+      (() => {}) as never,
+      filterState,
+      hiddenColumns,
+      visibleColumns,
+      globalSearch,
+    )
+  }
+
+  it('**升序按时间戳**（不是按 "Fri Jan 02" 的字母序）', () => {
+    const core = makeDateCore()
+    core.toggleSort(dateCols[1])
+    expect(core.displayData.value.map((r) => r.id)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('降序是同一口径的反向', () => {
+    const core = makeDateCore()
+    core.toggleSort(dateCols[1])
+    core.toggleSort(dateCols[1])
+    expect(core.displayData.value.map((r) => r.id)).toEqual(['c', 'b', 'a'])
   })
 })
