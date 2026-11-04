@@ -346,6 +346,36 @@ describe('downloadBlob — Blob 下载', () => {
   })
 })
 
+  /* ── #430：revoke 时机（与 #429 同一判据，但这是**共用下载出口**）────────
+   * a.click() 只发起下载；浏览器真正读 blob URL 是异步的（下一轮任务才拉数据）。
+   * 在 finally 里同步 revoke 会把 URL 抽走 → "点了下载、文件没下来或 0 字节"，
+   * 且因为 click 不抛，downloadBlob 照样返回 true —— 静默失败。
+   * 这条修的是**共用出口**：CSV / Excel / 图片导出都走它。*/
+  it('**revoke 不早于下一轮宏任务**（blob URL 被读取前不能撤）', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+    URL.revokeObjectURL = vi.fn()
+    // 前面几条用例也调过 downloadBlob —— 它们延后的 revoke 还在队列里，
+    // 先 flush 一轮再清账，否则计数把别人的回调算进来（本轮实测踩到：误报 3 次）
+    await new Promise((r) => setTimeout(r, 0))
+    URL.revokeObjectURL.mockClear()
+
+    expect(downloadBlob(new Blob(['x']), 'a.txt'), '下载已发起').toBe(true)
+    expect(URL.revokeObjectURL, '同一拍就撤 = 抽走 URL，下载会静默失败').not.toHaveBeenCalled()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
+    expect(URL.revokeObjectURL, '恰好撤一次').toHaveBeenCalledTimes(1)
+  })
+
+  it('**revokeObjectURL 抛错不影响返回值**（撤不掉只影响回收时机）', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+    URL.revokeObjectURL = vi.fn(() => {
+      throw new Error('unsupported')
+    })
+    expect(downloadBlob(new Blob(['x']), 'a.txt')).toBe(true)
+    await new Promise((r) => setTimeout(r, 0))
+    expect(URL.revokeObjectURL).toHaveBeenCalled()
+  })
+
 describe('sanitizeDownloadName — 文件名安全化（#254 与 downloadBlob 同源）', () => {
   it('非法字符替换 + 首尾点/空格剥除 + 空名回默认', () => {
     expect(sanitizeDownloadName('a/b\\c:d*e?f"g<h>i|j')).toBe('a_b_c_d_e_f_g_h_i_j')

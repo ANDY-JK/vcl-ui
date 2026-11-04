@@ -127,7 +127,19 @@ export function downloadBlob(blob: Blob, rawFilename: string): boolean {
         }
         return true
       } finally {
-        URL.revokeObjectURL(url)
+        // revoke 让出一轮宏任务（#430；与 useImageExport #429 同一判据）：
+        // 上面的 `a.click()` 只是**发起**下载 —— 浏览器真正读取 blob URL 是异步的
+        // （下一轮任务才开始拉数据）。在 finally 里同步撤销，等于在读取前把 URL 抽走：
+        // Chrome/Safari 上表现为"点了下载、文件没下来或 0 字节"，且**不报错**
+        // （click 不抛 → 本函数照样返回 true）。URL 会在页面卸载时被浏览器统一回收，
+        // 延后一轮撤销不会泄漏。
+        setTimeout(() => {
+          try {
+            URL.revokeObjectURL(url)
+          } catch {
+            /* 环境不支持则忽略：只影响回收时机，不影响已触发的下载 */
+          }
+        }, 0)
       }
     }
 

@@ -411,10 +411,20 @@ async function buildZipAndDownload(): Promise<void> {
 
   const blob = await zip.generateAsync({ type: 'blob' })
   const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
+  const zipUrl = URL.createObjectURL(blob)
+  a.href = zipUrl
   a.download = `${props.schema.title || t('fbTarget.title')}_${new Date().toISOString().slice(0, 10)}.zip`
   a.click()
-  URL.revokeObjectURL(a.href)
+  // revoke 延后一轮宏任务（#430；与 downloadBlob / useImageExport 同一判据）：
+  // click() 只是发起下载，浏览器读取 blob URL 是异步的 —— 同步撤销会抽走 URL，
+  // 表现为"点了导出、zip 没下来"且不报错。
+  setTimeout(() => {
+    try {
+      URL.revokeObjectURL(zipUrl)
+    } catch {
+      /* 撤不掉只影响回收时机 */
+    }
+  }, 0)
   toast(`${t('fbTarget.exported')} ${fileCount}`, 'success')
 }
 

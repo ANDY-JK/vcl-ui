@@ -1922,6 +1922,15 @@
       "cmd": "npx vitest run tests/unit/use-image-export.spec.ts --no-coverage",
       "expect": "red",
       "note": "把 revoke 拉回 click 同拍 → blob URL 被浏览器读取前就撤走，下载静默失败（#429）"
+    },
+    {
+      "id": "downloadblob-revoke-too-early",
+      "file": "src/components/_internal/utils.ts",
+      "find": "document.body.appendChild(a)",
+      "replace": "document.body.appendChild(a)\n          URL.revokeObjectURL(url)",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "共用下载出口把 revoke 拉回 click 同拍 → blob URL 被读取前撤走，下载静默失败（#430）"
     }
   ]
 }
