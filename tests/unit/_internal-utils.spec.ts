@@ -816,3 +816,34 @@ describe('hexToRgb / rgbToHex / isHexColor', () => {
     expect(isHexColor('#12345')).toBe(false)
   })
 })
+
+describe('formatNumber / formatMoney · 空值与越界小数位（#407）', () => {
+  it('**空白是"没填"，不是 0**：空单元格不能渲染成 0 / ¥0.00', () => {
+    expect(formatNumber(''), 'Number("") === 0，旧实现会显示 0').toBe('')
+    expect(formatNumber('   ')).toBe('')
+    expect(formatMoney('')).toBe('')
+    expect(formatMoney('   ')).toBe('')
+  })
+
+  it('反回归：真正的 0 仍然显示 0（防护没有把零也吃掉）', () => {
+    expect(formatNumber(0)).toBe('0')
+    expect(formatNumber('0')).toBe('0')
+    expect(formatMoney(0)).toBe('¥0.00')
+    expect(formatMoney('0.00')).toBe('¥0.00')
+  })
+
+  it('**越界小数位不再抛 RangeError**：夹到 0~20', () => {
+    // toFixed 对 -1 / 101 / Infinity 直接抛 RangeError —— 一个写错的列配置就能让整表渲染崩
+    expect(() => formatNumber(1.5, { decimals: -1 })).not.toThrow()
+    expect(formatNumber(1.5, { decimals: -1 })).toBe('2')
+    expect(() => formatNumber(1.5, { decimals: 101 })).not.toThrow()
+    expect(formatNumber(1.5, { decimals: 101 })).toBe('1.50000000000000000000')
+    expect(formatNumber(1.5, { decimals: Number.POSITIVE_INFINITY })).toBe('2')
+    expect(formatMoney(12, { decimals: -2 })).toBe('¥12')
+  })
+
+  it('小数位 NaN / 非整数按既有语义（ToInteger → 0 位或截断）', () => {
+    expect(formatNumber(1.5, { decimals: Number.NaN })).toBe('2')
+    expect(formatNumber(1.5, { decimals: 1.9 })).toBe('1.5')
+  })
+})

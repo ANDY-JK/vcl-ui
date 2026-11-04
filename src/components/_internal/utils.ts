@@ -166,6 +166,20 @@ export function deepClone<T>(value: T): T {
 // ════════════════════════════════════════
 
 /**
+ * 小数位数归一（#407）。
+ *
+ * `Number.prototype.toFixed` 对越界参数**直接抛 RangeError**（必须是 0~100 的整数），
+ * 而 `decimals` 常常来自列定义/宿主配置 —— 一个写错的 `-1` 或 `101` 就能让整个
+ * 单元格渲染抛异常（表现为整表白屏 / 错误边界接管）。格式化选项不该有这种破坏力：
+ * 夹到 0~20（超过 20 位已无意义，双精度只有 ~17 位有效数字），非有限值按 0 处理。
+ */
+function normalizeDecimals(d: number | undefined): number | undefined {
+  if (d === undefined) return undefined
+  if (!Number.isFinite(d)) return 0
+  return Math.min(20, Math.max(0, Math.trunc(d)))
+}
+
+/**
  * 千分位 + 可选小数位数。非法数值返回空串。
  *
  * ⚠️ TD-84（第 29 轮）：此前是 `return String(n)` —— 对 `Infinity` / `NaN` 这两个
@@ -178,11 +192,16 @@ export function formatNumber(n: number | string, opts?: { decimals?: number; sep
   // （`{{field}}` 求值结果、宿主透传的脏数据）。这类值没有数字形态 → 空串；
   // 旧实现走 `String(n)` 分支，对象会变成 `'[object Object]'` 显示在金额列。
   if (typeof n !== 'number' && typeof n !== 'string') return ''
+  // #407：空白字符串是「没填」，不是 0 —— `Number('') === 0`，旧实现会把空单元格
+  // 渲染成 `0`、金额列渲染成 `¥0.00`，用户读到的是"金额为零"而不是"未填写"。
+  // 这类"看起来正常的错数"比留空危险得多（与本文件 TD-84/85 同一原则）。
+  if (typeof n === 'string' && n.trim() === '') return ''
   const value = typeof n === 'string' ? Number(n) : n
   // 非有限「数值」→ 空串（不显示 Infinity/NaN）；非数字「字符串」→ 原样（保留用户输入）
   if (!isFinite(value)) return typeof n === 'number' ? '' : String(n)
   const { decimals, separator = ',' } = opts ?? {}
-  const fixed = decimals === undefined ? String(value) : value.toFixed(decimals)
+  const digits = normalizeDecimals(decimals)
+  const fixed = digits === undefined ? String(value) : value.toFixed(digits)
   const [int, dec] = fixed.split('.')
   const intFormatted = int.replace(/\B(?=(\d{3})+(?!\d))/g, separator)
   return dec !== undefined ? `${intFormatted}.${dec}` : intFormatted
@@ -194,6 +213,8 @@ export function formatMoney(
   opts?: { symbol?: string; decimals?: number; separator?: string },
 ): string {
   if (typeof n !== 'number' && typeof n !== 'string') return ''
+  // #407：空白 = 没填，不能显示成 ¥0.00（见 formatNumber 同款说明）
+  if (typeof n === 'string' && n.trim() === '') return ''
   const value = typeof n === 'string' ? Number(n) : n
   if (!isFinite(value)) return typeof n === 'number' ? '' : String(n)
   const { symbol = '¥', decimals = 2, separator = ',' } = opts ?? {}

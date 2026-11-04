@@ -26,6 +26,14 @@ import { tmpdir } from 'node:os'
 
 const SCRIPT = resolve('scripts/check-docs.mjs')
 
+/**
+ * 本文件的用例都要 spawnSync 跑一次「生成器 + 闸口」子进程（扫描 83 个受保护文件 / 15 份台账）。
+ * 单独跑 2s 左右，但整套用例并行（vitest pool: forks）满载时会到 20s+，
+ * 撞上全局 `testTimeout: 20_000` 就变成**假失败**（#407 实测撞过一次）。
+ * 这类"闸门自测"必须稳定，否则红/绿都不再可信 —— 单独给它 60s。
+ */
+const SUBPROC_TIMEOUT = 60_000
+
 function run(committed?: string) {
   const args = [SCRIPT]
   if (committed) args.push('--committed', committed)
@@ -44,7 +52,7 @@ describe('check:docs 闸门自测', () => {
     expect(code, '过期文档没被拦住 → 用户会照着旧 API 写代码').toBe(1)
     expect(out, '没报"文档漂移"（可能只报了缺少文件）').toContain('文档漂移 form.md')
   })
-})
+}, SUBPROC_TIMEOUT)
 
 /**
  * 治理索引那一半（TD-103，#388）
@@ -118,4 +126,4 @@ describe('check:docs · 治理索引新鲜度', () => {
       rmSync(dir, { recursive: true, force: true })
     }
   })
-})
+}, SUBPROC_TIMEOUT)

@@ -1634,6 +1634,24 @@
       "cmd": "npx vitest run tests/unit/cell-input.spec.ts --no-coverage",
       "expect": "red",
       "note": "小数逗号不识别 → 1,23 被当成千分位拼成 123（大 100 倍），且 1,23,4 这类乱码也能\"成功\"（#406）"
+    },
+    {
+      "id": "format-blank-string-as-zero",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  if (typeof n === 'string' && n.trim() === '') return ''\n  const value = typeof n === 'string' ? Number(n) : n\n  // 非有限「数值」",
+      "replace": "  const value = typeof n === 'string' ? Number(n) : n\n  // 非有限「数值」",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "空串走 Number(\"\")=0 → 空单元格显示 0（金额 ¥0.00），把\"没填\"渲染成\"零\"（#407）"
+    },
+    {
+      "id": "format-decimals-unclamped",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  return Math.min(20, Math.max(0, Math.trunc(d)))",
+      "replace": "  return d",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "越界小数位不夹取 → toFixed 抛 RangeError，一个写错的列配置就能让整表渲染崩（#407）"
     }
   ]
 }
