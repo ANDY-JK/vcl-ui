@@ -1751,6 +1751,24 @@
       "cmd": "npx vitest run tests/unit/sanitize.spec.ts --no-coverage",
       "expect": "red",
       "note": "未编码的 data: URI 放行 → `data:image/svg+xml,<svg onload=…>` 原样存进业务数据（#411）"
+    },
+    {
+      "id": "reltime-days-elapsed-floor",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  if (days < 30) return _t('utils.daysAgo', { n: days })",
+      "replace": "  if (days < 30) return _t('utils.daysAgo', { n: Math.floor(diff / day) })",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "天数改回「经过 24h 的整数倍」→ 日历前天（25.5h 前）被报成「1天前」，与「昨天」口径打架（#413）"
+    },
+    {
+      "id": "reltime-yesterday-elapsed",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  if (days === 1) return _t('utils.yesterday')",
+      "replace": "  if (diff < 1.5 * day) return _t('utils.yesterday')",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "「昨天」改按 36h 阈值 → 日历前天（25.5h 前）被叫成「昨天」，真正日历昨天（47h 前）反而不叫昨天（#413）"
     }
   ]
 }

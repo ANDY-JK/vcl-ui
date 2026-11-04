@@ -636,6 +636,27 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime(new Date(now.getTime() + 60 * 60 * 1000), now)).toBe('08-24')
   })
 
+  /* ── 日历天口径（#413）───────────────────────────────────────────────
+   * 「昨天」按日历天判、「N天前」按经过 24h 的整数倍 —— 同一条时间轴两种读数。
+   * 下面每组都是「同一把尺子」的边界：跨越午夜后，小时数与日历天会分叉。 */
+  it('跨午夜：日历 2 天前但只经过 25.5h → 「2天前」（此前按 24h 整除报「1天前」）', () => {
+    expect(formatRelativeTime(new Date(2026, 7, 22, 23, 0), new Date(2026, 7, 24, 0, 30))).toBe('2天前')
+    expect(formatRelativeTime(new Date(2026, 7, 22, 23, 30), new Date(2026, 7, 24, 12, 0))).toBe('2天前')
+  })
+
+  it('日历昨天但经过 47h → 仍「昨天」（改口径后不被天数档吃掉）', () => {
+    expect(formatRelativeTime(new Date(2026, 7, 23, 0, 30), new Date(2026, 7, 24, 23, 30))).toBe('昨天')
+  })
+
+  it('日历昨天但不足 24h → 仍「N小时前」（小时档优先于日历天）', () => {
+    expect(formatRelativeTime(new Date(2026, 7, 23, 0, 20), new Date(2026, 7, 24, 0, 10))).toBe('23小时前')
+  })
+
+  it('30 天阈值按日历天：日历满 30 天即显示日期（29 天 23 小时也算 30 天）', () => {
+    expect(formatRelativeTime(new Date(2026, 6, 26, 12, 0), new Date(2026, 7, 24, 12, 0))).toBe('29天前')
+    expect(formatRelativeTime(new Date(2026, 6, 25, 13, 0), new Date(2026, 7, 24, 12, 0))).toBe('07-25')
+  })
+
   it('非法输入返回空串', () => {
     expect(formatRelativeTime('bad', now)).toBe('')
   })

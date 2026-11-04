@@ -566,9 +566,11 @@ function toDate(v: Date | number | string): Date | null {
   return isNaN(d.getTime()) ? null : d
 }
 
-/** 是否同一天（本地时区） */
-function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+/** 日历天差（两端都归零到本地当日 00:00 再相减；DST 时区里一天可能是 23/25 小时，故 round） */
+function calendarDayDiff(t: Date, now: Date): number {
+  const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const b = new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime()
+  return Math.round((a - b) / 86400000)
 }
 
 /** 绝对日期（同年 MM-DD，跨年 YYYY-MM-DD） */
@@ -596,8 +598,15 @@ export function formatRelativeTime(time: Date | number | string, now: Date | num
   if (diff < minute) return _t('utils.justNow')
   if (diff < hour) return _t('utils.minutesAgo', { n: Math.floor(diff / minute) })
   if (diff < day) return _t('utils.hoursAgo', { n: Math.floor(diff / hour) })
-  if (isSameDay(t, new Date(n.getTime() - day))) return _t('utils.yesterday')
-  if (diff < 30 * day) return _t('utils.daysAgo', { n: Math.floor(diff / day) })
+  // 日历天口径（#413）：`昨天` 与 `N天前` 必须用**同一把尺子**。
+  // 此前 `昨天` 按日历天判（isSameDay）、`N天前` 按「经过 24h 的整数倍」——
+  // 同一条时间轴上于是有两种读数：以 08-24 00:30 为「现在」看 08-22 23:00
+  // （25.5h 前，日历上是**前天**）报「1天前」，而看 08-23 00:30（47h 前，日历昨天）报「昨天」。
+  // 列表按「天」扫读，混用口径会让相隔两天的两条记录看起来只差一天；
+  // 折算成天数的唯一稳定口径是**日历天**（与「昨天」一致，也不受 DST 影响）。
+  const days = calendarDayDiff(t, n)
+  if (days === 1) return _t('utils.yesterday')
+  if (days < 30) return _t('utils.daysAgo', { n: days })
   return formatAbsDate(t, n)
 }
 
