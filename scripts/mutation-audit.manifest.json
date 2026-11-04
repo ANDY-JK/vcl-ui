@@ -1877,6 +1877,15 @@
       "cmd": "npx vitest run tests/unit/sanitize-url.spec.ts --no-coverage",
       "expect": "red",
       "note": "关掉控制字符归一 → jav\tascript: 靠\"格式不认识\"碰巧挡住，https 带缝反而被误杀（#422）"
+    },
+    {
+      "id": "signature-no-ink-check",
+      "file": "src/components/form-builder/renderer/RendererSignature.vue",
+      "find": "if (!canvas || !canvasHasInk(canvas)) return",
+      "replace": "if (!canvas) return",
+      "cmd": "npx vitest run tests/unit/renderer-signature.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "撤掉像素兜底 → alpha≈0 的\"看不见的一笔\"被写成有效签名，required 通过但提交上来是空白（TD-81/#426）"
     }
   ]
 }

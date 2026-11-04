@@ -81,6 +81,30 @@ function drawSignature(e: PointerEvent): void {
   signatureHasStroke = true
 }
 
+/**
+ * 像素级"画布上有没有墨迹"检测（TD-81 收口）。
+ *
+ * hasStroke 只能证明"调过 stroke"，证明不了"真的留下了墨迹"：
+ * 压感笔/半透明笔刷 alpha≈0 的笔画、以及把 lineWidth 调成 0 的自定义宿主，
+ * 都会让 toDataURL 产出一张**全透明 PNG** —— 字段值非空、required 通过，
+ * 提交上来却是"看不见的签名"。收笔时用 getImageData 扫 alpha 通道兜底：
+ * 全透明即视为空白，不回写（与"单击不回写"同一语义：空白签名不是签名）。
+ *
+ * 为什么用 getImageData 而不是逐笔记录：压感笔的 alpha 由浏览器合成，
+ * JS 侧拿不到"这一笔实际画出了什么"；而 400×120 的画布一次扫描约 192KB，
+ * 只在收笔瞬间跑一次，开销可忽略。
+ */
+function canvasHasInk(cv: HTMLCanvasElement): boolean {
+  const ctx = cv.getContext('2d')
+  if (!ctx) return false
+  const { data } = ctx.getImageData(0, 0, cv.width, cv.height)
+  // 只看 alpha：签名是纯色笔画，颜色通道无关紧要；间隔 4 采样（每像素 4 字节）已经足够
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] !== 0) return true
+  }
+  return false
+}
+
 function endSignature(): void {
   if (!signatureDrawing) return
   signatureDrawing = false
@@ -88,9 +112,12 @@ function endSignature(): void {
   // 此时写 dataURL 等于把「空白签名」提交成有效值
   if (!signatureHasStroke) return
   signatureHasStroke = false
-  // 绘制结束即回写 dataURL，保证提交时签名字段有值
+  // 像素级兜底（TD-81）：hasStroke 只证明调过 stroke，压感笔 alpha≈0 的"看不见的一笔"
+  // 会被 toDataURL 写成全透明 PNG —— 字段值非空、required 通过，提交上来却是空白签名。
+  // 全透明画布与"单击"同语义：不回写，保持 modelValue 不变。
   const canvas = signatureCanvasRef.value
-  if (canvas) emit('update:modelValue', canvas.toDataURL('image/png'))
+  if (!canvas || !canvasHasInk(canvas)) return
+  emit('update:modelValue', canvas.toDataURL('image/png'))
 }
 
 function clearSignature(): void {

@@ -41,6 +41,20 @@ function makeFakeCtx(): FakeCtx & Record<string, ReturnType<typeof vi.fn>> {
   return new Proxy(store, {
     get(t, k) {
       if (typeof k === 'symbol') return undefined
+      // getImageData 必须有真实形状：TD-81 的像素级空白检测会读 `.data[i]`，
+      // 通用 Proxy 会返回 undefined 让组件抛错（把所有"回写"用例一起打红）。
+      // 默认 al=255（有墨迹），透明画布由 makeFakeCtx(false) 模拟。
+      if (k === 'getImageData') {
+        if (!(k in t)) {
+          t[k] = vi.fn(() => {
+            const n = 400 * 120 * 4
+            const data = new Uint8ClampedArray(n)
+            if (_fakeInk) for (let i = 0; i < n; i += 4) data[i + 3] = 255
+            return { data, width: 400, height: 120 }
+          })
+        }
+        return t[k]
+      }
       if (!(k in t)) t[k as string] = vi.fn(noop)
       return t[k as string]
     },
@@ -50,6 +64,9 @@ function makeFakeCtx(): FakeCtx & Record<string, ReturnType<typeof vi.fn>> {
     },
   }) as never
 }
+
+/** 假画布是否"有墨迹"（TD-81 像素检测的输入） */
+let _fakeInk = true
 
 let ctx: ReturnType<typeof makeFakeCtx>
 const origGetContext = HTMLCanvasElement.prototype.getContext
@@ -89,6 +106,7 @@ afterEach(() => {
   HTMLCanvasElement.prototype.toDataURL = origToDataURL
   HTMLCanvasElement.prototype.getBoundingClientRect = origGetBCR
   document.body.innerHTML = ''
+  _fakeInk = true
   vi.restoreAllMocks()
 })
 
@@ -292,6 +310,43 @@ describe('endSignature 收笔与回写', () => {
     await w.find('canvas').trigger('pointermove', ptr(60, 40))
     await w.find('canvas').trigger('pointerup')
     expect(w.emitted('update:modelValue')).toHaveLength(2)
+  })
+
+  /* ── TD-81：像素级空白判定 ────────────────────────────────────
+   * hasStroke 只证明"调过 stroke"：压感笔 alpha≈0、半透明笔刷会把
+   * toDataURL 写成一张**全透明 PNG** —— 字段值非空、required 通过，提交上来却是空白签名。
+   * 收笔时按 alpha 通道兜底：全透明即视为空白（与"单击不回写"同语义）。*/
+  it('**画布全透明时不回写**（压感笔 alpha≈0 的"看不见的一笔"不算签名）', async () => {
+    _fakeInk = false // 笔迹存在但像素全透明
+    const w = mountSig()
+    await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointermove', ptr(60, 40))
+    await w.find('canvas').trigger('pointerup')
+    expect(w.emitted('update:modelValue'), '全透明画布不该写成有效签名').toBeUndefined()
+  })
+
+  it('**像素检测只跑一次 getImageData**（性能约束：每笔收尾一次）', async () => {
+    const w = mountSig()
+    await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointermove', ptr(60, 40))
+    await w.find('canvas').trigger('pointerup')
+    expect(ctx.getImageData).toHaveBeenCalledTimes(1)
+  })
+
+  it('**有墨迹照旧回写**（反向保护：兜底不能把正常签名一起拦掉）', async () => {
+    _fakeInk = true
+    const w = mountSig()
+    await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointermove', ptr(60, 40))
+    await w.find('canvas').trigger('pointerup')
+    expect(w.emitted('update:modelValue')!.at(-1)).toEqual([PNG_URL])
+  })
+
+  it('**未运笔时连 getImageData 都不调**（hasStroke 快速路径前置，省 192KB 扫描）', async () => {
+    const w = mountSig()
+    await w.find('canvas').trigger('pointerdown', ptr(10, 20))
+    await w.find('canvas').trigger('pointerup')
+    expect(ctx.getImageData, '没 stroke 过就不必扫像素').not.toHaveBeenCalled()
   })
 
   it('**toDataURL 以 image/png 请求**', async () => {
