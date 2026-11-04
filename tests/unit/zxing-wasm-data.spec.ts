@@ -7,7 +7,7 @@
 // 判据两个独立来源：① 仓内 base64 现场解码再哈希；② zxing-wasm 包内导出的 ZXING_WASM_SHA256／
 // ZXING_WASM_VERSION（上游对它发布物的声明）。两边对不上＝正源被换过或版本漂了。
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { describe, it, expect } from 'vitest'
 import { ZXING_WASM_SHA256, ZXING_WASM_VERSION } from 'zxing-wasm/reader'
@@ -47,5 +47,26 @@ describe('随包 zxing wasm 二进制', () => {
   it('与 node_modules 里的正源逐字节相同（生成脚本没漏字段、也没被手工改过）', () => {
     const src = readFileSync(path.join(repoRoot, 'node_modules/zxing-wasm/dist/reader/zxing_reader.wasm'))
     expect(Buffer.from(ZXING_WASM_DATA_BASE64, 'base64').equals(src)).toBe(true)
+  })
+
+  /* ── 分片不变量（#416）──────────────────────────────────────────────
+   * esbuild 在单次输入 > 1MiB 时会把内容落成 %TEMP%\esbuild-<hash> 临时文件，
+   * 而 Windows 上这个临时文件常删不掉（`Error: remove …: Access is denied.`）→ transform 直接失败。
+   * 实测阈值在 900KB~1.1MB 之间。所以「分片」不是风格问题：它是让 transform 不落盘的前提，
+   * 一旦有人把分片合并回单文件，整链第 28 步会以「两条毫不相干的 spec 红了」的形式断掉。 */
+  const internalDir = path.join(repoRoot, 'src/components/_internal')
+
+  it('**分片必须存在且各自小于 1MiB**（超阈值 → esbuild 落临时文件 → Windows 上删不掉 → transform 失败）', () => {
+    const parts = readdirSync(internalDir).filter((f) => /^zxing-wasm-data\.part-\d+\.ts$/.test(f))
+    expect(parts.length, '分片没了 —— base64 又被合并回单文件了？').toBeGreaterThan(1)
+    for (const f of parts) {
+      const size = statSync(path.join(internalDir, f)).size
+      expect(size, `${f} 有 ${size} 字节，超过 esbuild 的 1MiB 落盘阈值`).toBeLessThan(1024 * 1024)
+    }
+  })
+
+  it('**barrel 不许把 base64 内联回去**（体积失控就是分片被合并了）', () => {
+    const barrel = statSync(path.join(internalDir, 'zxing-wasm-data.ts')).size
+    expect(barrel, `barrel 有 ${barrel} 字节 —— 只剩元数据与拼接语句时才该是几 KB`).toBeLessThan(64 * 1024)
   })
 })

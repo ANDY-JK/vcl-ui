@@ -1,4 +1,4 @@
-// 生成 src/components/_internal/zxing-wasm-data.ts —— 把扫码解码器的 wasm 二进制随包分发
+// 生成 src/components/_internal/zxing-wasm-data.ts(+ 分片) —— 把扫码解码器的 wasm 二进制随包分发
 //
 // 为什么要它：zxing-wasm 的默认 `locateFile`（见 node_modules/zxing-wasm/dist/es/share.js 里的 W 常量）
 // 把 `zxing_reader.wasm` 映射到 https://fastly.jsdelivr.net/npm/zxing-wasm@<ver>/dist/reader/…，
@@ -6,11 +6,20 @@
 // （2026-09-28 实测：整链尾段 >45s 不返回；见 docs/全量审查报告-2026-09-28.md §9.7）。
 // 本脚本把 npm 包里那个 wasm 原样搬进仓，运行时以 `wasmBinary` 直接喂给解码器，扫码零外发。
 //
+// ## 为什么 base64 要分片（#416）
+//
+// 全部 base64 有 1.27MB。esbuild 在**单次输入 > 1MiB** 时会把它落成
+// `%TEMP%\esbuild-<hash>` 临时文件再交给子进程；而 Windows 上这个临时文件经常**删不掉**
+// （`Error: remove …: Access is denied.`），于是 transform 直接失败 —— 实测表现是
+// `zxing-wasm-data.spec.ts` 与 `barcode-decoder-warm-guard.spec.ts` 双双红、整链第 28 步断。
+// 阈值实测：900KB 正常、1.1MB 必失败。所以把 base64 切成每片 ≤ 800KB 的多个模块，
+// 由 barrel 拼接导出；任何一片都在阈值内，transform 不再落临时文件。
+//
 // 用法：
 //   node scripts/gen-zxing-wasm-data.mjs           # 生成/覆盖
 //   node scripts/gen-zxing-wasm-data.mjs --check    # 只检不改：与 node_modules 里的正源漂移即 exit 1
 import { createHash } from 'node:crypto'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, readdirSync, rmSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -19,6 +28,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const WASM_REL = 'node_modules/zxing-wasm/dist/reader/zxing_reader.wasm'
 const PKG_REL = 'node_modules/zxing-wasm/package.json'
 const OUT_REL = 'src/components/_internal/zxing-wasm-data.ts'
+const PART_DIR_REL = 'src/components/_internal'
+const PART_PREFIX = 'zxing-wasm-data.part-'
+/**
+ * 单片 base64 的字符上限。取 800_000：远低于 esbuild 的 1MiB 落盘阈值（实测 900KB 仍安全、
+ * 1.1MB 必失败），留出 20% 余量让"以后 wasm 变大"不会立刻又踩线。
+ */
+const PART_CHARS = 800_000
 
 const CHECK = process.argv.includes('--check')
 
@@ -43,8 +59,35 @@ function readSource() {
   return { buf, base64: buf.toString('base64'), sha: sha256(buf), version: pkg.version }
 }
 
-function render(src) {
-  const header = `// ⚠️ 生成文件·勿手改 —— 正源：${WASM_REL}
+/** 把 base64 切成若干片（顺序即拼接顺序） */
+function splitParts(base64) {
+  const chunks = []
+  for (let i = 0; i < base64.length; i += PART_CHARS) chunks.push(base64.slice(i, i + PART_CHARS))
+  return chunks
+}
+
+function partName(idx) {
+  return `${PART_PREFIX}${idx}.ts`
+}
+
+function renderPart(idx, chunk, total) {
+  return `// ⚠️ 生成文件·勿手改 —— 见 scripts/gen-zxing-wasm-data.mjs（第 ${idx}/${total} 片）
+//
+// 为什么要分片（#416）：esbuild 在单次输入 > 1MiB 时会落 %TEMP% 临时文件，而 Windows 上
+// 那个临时文件常删不掉（Access is denied）→ transform 直接失败、整链第 28 步断。
+// 每片都控制在 ${PART_CHARS} 字符（base64 全量 ${total} 片），任何一片都不触发落盘。
+export const PART_${idx}: string =
+  '${chunk}'
+`
+}
+
+function renderBarrel(src, total) {
+  const imports = Array.from(
+    { length: total },
+    (_, i) => `import { PART_${i + 1} } from './${PART_PREFIX}${i + 1}'`,
+  ).join('\n')
+  const sum = Array.from({ length: total }, (_, i) => `PART_${i + 1}`).join(' + ')
+  return `// ⚠️ 生成文件·勿手改 —— 正源：${WASM_REL}
 // 生成：node scripts/gen-zxing-wasm-data.mjs ／ 只检不改：node scripts/gen-zxing-wasm-data.mjs --check
 //
 // 用途：把 zxing-wasm 的解码 wasm 二进制随本包分发，使首次扫码不再向 fastly.jsdelivr.net 取件
@@ -53,8 +96,10 @@ function render(src) {
 //
 // 体积：base64 文本 ${(src.base64.length / 1024 / 1024).toFixed(2)}MB（原始 ${src.buf.length.toLocaleString('en-US')} 字节），
 // 由 manualChunks 拆成独立懒加载 chunk，只有真的打开扫码界面才会加载。
+// 分片：base64 被切成 ${total} 片（${PART_PREFIX}1..${total}），本文件只做拼接与元数据（#416）。
 // 换版：升级 zxing-wasm 后重跑本脚本；sha256 与 zxing-wasm 自己导出的 ZXING_WASM_SHA256 由
 // tests/unit/zxing-wasm-data.spec.ts 做同源断言，对不上就是正源被换过（会红，别改断言迁就）。
+${imports}
 
 /** 随包 wasm 来自哪个 zxing-wasm 版本（版本与宿主装的 JS 不一致时，运行时退回默认取件方式） */
 export const ZXING_WASM_DATA_VERSION: string = '${src.version}'
@@ -66,41 +111,63 @@ export const ZXING_WASM_DATA_SHA256: string = '${src.sha}'
 export const ZXING_WASM_DATA_BYTES: number = ${src.buf.length}
 
 /**
- * zxing_reader.wasm 的 base64（无 data: 前缀，解码见 useBarcodeScanner.ts）。
- * 四个常量都显式标了类型：不标的话 vite-plugin-dts 会把这 1.27MB 当字面量类型抄进
+ * zxing_reader.wasm 的 base64（无 data: 前缀，解码见 useBarcodeScanner.ts），由各分片按序拼接。
+ * 常量显式标了类型：不标的话 vite-plugin-dts 会把这个字面量类型抄进
  * \`dist/_internal/zxing-wasm-data.d.ts\`，同一份 base64 在发布包里白带两遍。
  */
-export const ZXING_WASM_DATA_BASE64: string =
-  '${src.base64}'
+export const ZXING_WASM_DATA_BASE64: string = ${sum}
 `
-  return header
 }
 
 const src = readSource()
-const out = render(src)
-const outPath = path.join(ROOT, OUT_REL)
+const chunks = splitParts(src.base64)
+const expected = new Map([
+  [OUT_REL, renderBarrel(src, chunks.length)],
+  ...chunks.map((c, i) => [`${PART_DIR_REL}/${partName(i + 1)}`, renderPart(i + 1, c, chunks.length)]),
+])
+
+/** 目录里现存的旧分片（比如片段数变少时要删掉多余的） */
+function stalePartFiles() {
+  const dir = path.join(ROOT, PART_DIR_REL)
+  if (!existsSync(dir)) return []
+  return readdirSync(dir)
+    .filter((f) => f.startsWith(PART_PREFIX) && f.endsWith('.ts') && !expected.has(`${PART_DIR_REL}/${f}`))
+    .map((f) => `${PART_DIR_REL}/${f}`)
+}
 
 if (CHECK) {
-  if (!existsSync(outPath)) {
-    console.error(`[zxing-wasm-data] ${OUT_REL} 不存在，跑 node scripts/gen-zxing-wasm-data.mjs 生成`)
-    process.exit(1)
+  const drifts = []
+  for (const [rel, want] of expected) {
+    const abs = path.join(ROOT, rel)
+    if (!existsSync(abs)) {
+      drifts.push(`${rel} 不存在`)
+      continue
+    }
+    if (readFileSync(abs, 'utf8') !== want) drifts.push(`${rel} 内容漂移`)
   }
-  const cur = readFileSync(outPath, 'utf8')
-  if (cur !== out) {
-    const curSha = cur.match(/ZXING_WASM_DATA_SHA256 = '([0-9a-f]+)'/)?.[1] ?? '(读不到)'
-    console.error(
-      `[zxing-wasm-data] 与正源漂移：仓内登记 sha256=${curSha.slice(0, 16)}…，正源 sha256=${src.sha.slice(0, 16)}…`,
-    )
+  for (const rel of stalePartFiles()) drifts.push(`${rel} 是多余分片（分片数已变）`)
+  if (drifts.length) {
+    const curSha =
+      (existsSync(path.join(ROOT, OUT_REL)) &&
+        readFileSync(path.join(ROOT, OUT_REL), 'utf8').match(/ZXING_WASM_DATA_SHA256 = '([0-9a-f]+)'/)?.[1]) ||
+      '(读不到)'
+    console.error(`[zxing-wasm-data] 与正源不一致：仓内登记 sha256=${curSha.slice(0, 16)}…，正源 sha256=${src.sha.slice(0, 16)}…`)
+    for (const d of drifts) console.error(`  · ${d}`)
     console.error(`  修法：node scripts/gen-zxing-wasm-data.mjs 重新生成（正源 ${WASM_REL}，版本 ${src.version}）`)
     process.exit(1)
   }
   console.log(
-    `[zxing-wasm-data] 与正源一致（v${src.version}，${src.buf.length} 字节，sha256 ${src.sha.slice(0, 16)}…）`,
+    `[zxing-wasm-data] 与正源一致（v${src.version}，${src.buf.length} 字节，${chunks.length} 片，sha256 ${src.sha.slice(0, 16)}…）`,
   )
   process.exit(0)
 }
 
-writeFileSync(outPath, out, { encoding: 'utf8', newline: 'lf' })
+for (const [rel, text] of expected) {
+  writeFileSync(path.join(ROOT, rel), text, { encoding: 'utf8', newline: 'lf' })
+}
+const removed = stalePartFiles()
+for (const rel of removed) rmSync(path.join(ROOT, rel))
 console.log(
-  `[zxing-wasm-data] 已生成 ${OUT_REL}：v${src.version} ${src.buf.length} 字节 → base64 ${src.base64.length} 字符`,
+  `[zxing-wasm-data] 已生成 ${OUT_REL}（+ ${chunks.length} 片）：v${src.version} ${src.buf.length} 字节 → base64 ${src.base64.length} 字符` +
+    (removed.length ? `，清理多余分片 ${removed.length} 个` : ''),
 )
