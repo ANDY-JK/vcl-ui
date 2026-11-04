@@ -15,8 +15,9 @@ describe('sanitizeHTML · HTML 白名单消毒', () => {
   })
 
   it('剥离事件属性', () => {
-    // x.png 不是白名单协议，src 也会被剥离，仅验证 onerror 被去除（img 保留）
-    expect(sanitizeHTML('<img src="x.png" onerror="alert(1)">')).toBe('<img>')
+    // onerror 是事件属性，一律剥离（#422 起相对 src 也放行 —— x.png 是合法相对路径，
+    // 旧断言"src 也会被剥离"是对旧白名单的迁就，不是本用例的意图）
+    expect(sanitizeHTML('<img src="x.png" onerror="alert(1)">')).toBe('<img src="x.png">')
     expect(sanitizeHTML('<a href="#" onclick="evil()">链接</a>')).toBe('<a href="#">链接</a>')
   })
 

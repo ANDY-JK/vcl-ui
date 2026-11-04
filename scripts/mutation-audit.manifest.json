@@ -1859,6 +1859,24 @@
       "cmd": "npx vitest run tests/unit/draft-storage.spec.ts --no-coverage",
       "expect": "red",
       "note": "去掉 404 豁免 → 新建的空设计器每次清草稿都白打一条「清除失败」告警，真故障被噪声淹掉（#421）"
+    },
+    {
+      "id": "sanitize-relative-url-stripped",
+      "file": "src/components/_internal/sanitize.ts",
+      "find": "const _hrefRe = /^(https?:|mailto:|#|\\/(?!\\/)[^/]|[./][^/]|[A-Za-z0-9._~-]+[/.])/i",
+      "replace": "const _hrefRe = /^(https?:|mailto:|#)/i",
+      "cmd": "npx vitest run tests/unit/sanitize-url.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "撤掉相对链接放行 → 站内互链/相对图片被整条剥掉，粘贴的富文本链接无声消失（#422）"
+    },
+    {
+      "id": "sanitize-url-no-normalize",
+      "file": "src/components/_internal/sanitize.ts",
+      "find": "const resolved = trimmed.replace(/[\\t\\n\\r\\0]/g, '')",
+      "replace": "const resolved = trimmed",
+      "cmd": "npx vitest run tests/unit/sanitize-url.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "关掉控制字符归一 → jav\tascript: 靠\"格式不认识\"碰巧挡住，https 带缝反而被误杀（#422）"
     }
   ]
 }

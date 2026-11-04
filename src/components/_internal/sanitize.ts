@@ -74,9 +74,19 @@ const _dangerousCss = [
   /z-index\s*:/i,
   /inset\s*:/i,
 ]
-/** href 与 src 分开白名单：data:image 仅对图片 src 有意义，链接 href 不放行 */
-const _hrefRe = /^(https?:|mailto:|#)/i
-const _srcRe = /^(https?:|data:image\/|mailto:|#)/i
+/**
+ * href 与 src 分开白名单：data:image 仅对图片 src 有意义，链接 href 不放行。
+ *
+ * **相对链接放行（#422）**：`/docs/intro`、`./img.png`、`img.png` 不带 scheme，
+ * 不匹配 `^https?:` —— 此前被整条剥掉。这是**功能损失**而不是"更安全"：
+ * 本消毒器的场景是"宿主渲染用户粘贴的富文本"，相对链接是粘贴内容里最常见的形态
+ * （站内文章互链、同一 CDN 的相对图片），静默消失和 #411 修的"前导空白被误杀"同病。
+ * 相对 URL 的 scheme 段为空 → 不可能承载 `javascript:`，放行不引入新攻击面；
+ * 但**协议相对** `//host` 必须继续拦 —— 它等价于 `https://host` 且指向当前协议下
+ * 任意主机，白名单放它等于放开任意域。`#fragment` 也非相对（页内锚点，原有放行保留）。
+ */
+const _hrefRe = /^(https?:|mailto:|#|\/(?!\/)[^/]|[./][^/]|[A-Za-z0-9._~-]+[/.])/i
+const _srcRe = /^(https?:|data:image\/|mailto:|#|\/(?!\/)[^/]|[./][^/]|[A-Za-z0-9._~-]+[/.])/i
 /** 危险标签整体移除（含内容） */
 const _dangerTags = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META', 'FORM', 'INPUT', 'BUTTON'])
 
@@ -148,14 +158,22 @@ export function sanitizeHTML(html: string): string {
       // 是**功能损失**：链接无声消失，用户以为数据丢了。放行时写回归一化后的值。
       if (attr === 'href' || attr === 'src') {
         const trimmed = val.trim()
-        const allowed = attr === 'href' ? _hrefRe.test(trimmed) : _srcRe.test(trimmed)
+        // **控制字符归一（#422）**：浏览器解析 URL 时会剥掉 tab/LF/CR 与字符引用解码后的
+        // 等价物，所以 `jav\tascript:` 在 `<a>` 里**就是** `javascript:`；而裸正则看到的
+        // 还是带缝的原文，`^(https?:|mailto:|#)` 匹配不上 → 按"未知 scheme"剥掉。
+        // 挡住它确实是"安全"的结果，但机制错了 —— 正确机制是**按浏览器将看到的值判断**：
+        // 把 URL 里的 tab/LF/CR/NUL 全部剥掉再测白名单（WHATWG URL 规范正是这么剥的）。
+        // 这样 `jav\tascript:` 归一后变成 `javascript:` → 命中白名单失败 → 剥除，
+        // 与浏览器的实际行为一致，而不是碰巧靠"格式不认识"挡住。
+        const resolved = trimmed.replace(/[\t\n\r\0]/g, '')
+        const allowed = attr === 'href' ? _hrefRe.test(resolved) : _srcRe.test(resolved)
         // data: URI 里出现字面量 `<` = 内容没被编码（#411）：`data:image/svg+xml,<svg onload=…>`
         // 在 `<img>` 上下文里确实不执行，但这段标记会被**原样存进业务数据**，一旦宿主把它
         // 放进 `<object>` / 预览 iframe / 服务端渲染管线就是 XSS。本库自己的 mapMarkerIcon
         // 走 `%3C` 编码，不受影响 —— 判据是"有没有编码"，而不是"是不是 svg"。
-        const rawMarkup = attr === 'src' && /^data:/i.test(trimmed) && trimmed.includes('<')
+        const rawMarkup = attr === 'src' && /^data:/i.test(resolved) && resolved.includes('<')
         if (!allowed || rawMarkup) node.removeAttribute(attr)
-        else if (trimmed !== val) node.setAttribute(attr, trimmed)
+        else if (resolved !== val) node.setAttribute(attr, resolved)
       }
       // style 属性过滤危险 CSS 值（expression()/javascript:/url(javascript:) 等）。
       // **归一化后再匹配**（#396）：剥注释 + 解 CSS 转义，否则 `z-\69 ndex` / `in\73 et`
