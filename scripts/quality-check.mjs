@@ -88,6 +88,8 @@ const STEPS = [
   ['check:tab-sequence', 'npm run check:tab-sequence'],
   // TD-76 收口（#424）：编辑态建立只许 startEdit 一条路 —— 手工拼 editingCell 的写法在此拦下。
   ['check:edit-single-writer', 'npm run check:edit-single-writer'],
+  // TD-91 收口（#425）：Esc 消费契约静态化 —— 谁消费谁 preventDefault，漏了就是双关弹窗。
+  ['check:esc-consume', 'npm run check:esc-consume'],
   ['check:review-appendix', 'npm run check:review-appendix'],
   ['check:gate-wiring', 'npm run check:gate-wiring'],
   ['check:css-tokens', 'npm run check:css-tokens'],
@@ -161,7 +163,7 @@ const flag = (name) => {
  * 快链把显然会坏的提交挡在本地，整链仍是唯一权威（build / e2e / 许可 / 文档都在整链里）。
  * 逃生口：`git commit --no-verify` 或 `SKIP_QUICK_CHECK=1`。
  */
-const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:review-appendix', 'check:edit-single-writer', 'check:gate-wiring',
+const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:review-appendix', 'check:edit-single-writer', 'check:esc-consume', 'check:gate-wiring',
     // check:docs 进快链（#349）：它 1.0s，却是我连续六批加 prop 之后唯一能抓到
     // "API 文档没重新生成"的闸口 —— 单测/类型/lint 全绿也覆盖不到这一层
     'check:docs', 'check:css-tokens', 'check:i18n', 'test:unit']

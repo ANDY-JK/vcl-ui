@@ -123,6 +123,8 @@ const {
   // （工具快捷键 R/P/C 由 composable 先处理，此处只处理「无标注工具」路径）
   onKeydownFallback: (e) => {
     if (e.key === 'Escape') {
+      // 消费 Esc（#280 / TD-91）：关标注或关预览都是真消费，不让它去关外层弹窗
+      e.preventDefault?.()
       if (annoTool.value) {
         setAnnoTool(null)
         return

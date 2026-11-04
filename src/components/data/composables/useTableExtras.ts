@@ -356,6 +356,9 @@ export function useTableExtras(
     closeFilter: () => void,
   ) {
     if (e.key === 'Escape') {
+      // 消费 Esc（#280 / TD-91）：筛选弹层与右键菜单都是真弹层，不消费会让
+      // Esc 一路冒到 window 把外层弹窗连带关掉
+      e.preventDefault?.()
       if (activeFilterKey.value) {
         closeFilter()
         return

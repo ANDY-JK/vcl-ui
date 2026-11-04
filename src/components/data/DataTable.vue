@@ -645,6 +645,8 @@ async function _enterFullscreenAfterSettle(sidebar: HTMLElement | null, needColl
 }
 function onFullscreenKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && _isFullscreen.value) {
+    // 消费 Esc（#280 / TD-91）：全屏内的弹层链都由本函数收口，必须拦住冒泡
+    e.preventDefault?.()
     // 优先关闭子组件：筛选 → 详情弹窗 → 截图弹窗 → 右键菜单 → 批量编辑 → 笔记编辑 → 退出全屏
     if (activeFilterKey.value) {
       closeFilter()
@@ -1389,6 +1391,10 @@ const _onClick = (e: Event) => {
 const _onKeydown = (e: Event) => {
   const ke = e as KeyboardEvent
   if (ke.key === 'Escape' && colSettingsPanel.value?.show) {
+    // 关列设置即消费 Esc（#280 / TD-91 补漏）：否则 Esc 会同时冒泡去关外层弹窗，
+    // 用户在弹窗里的表格开列设置按 Esc，弹窗连着一起没了 —— 12 个 Esc 消费点
+    // 实测唯独这里漏了 preventDefault。
+    ke.preventDefault()
     colSettingsPanel.value.close()
     return
   }
