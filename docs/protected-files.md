@@ -54,7 +54,7 @@
 | `src/components/data/composables/cell-types.ts` | — | — |
 | `src/components/data/composables/types.ts` | — | 字段增删、枚举值扩展 @approved 2026-09-17 `type` 字段经确认新增（Excel 输入习惯对齐，见 workspace 方案） ==== |
 | `src/components/data/composables/useTableColumns.ts` | — | autoFitSampleSize |
-| `src/components/data/composables/useTableCore.ts` | — | sortHistory 行为、truncateThreshold 默认值、pageSize 逻辑 ==================== 数据核心：排序 +  |
+| `src/components/data/composables/useTableCore.ts` | — | sortHistory 行为、truncateThreshold 默认值、pageSize 逻辑 （#419 例外：排序比较器抽到 table-sort.ts  |
 | `src/components/data/composables/useTableEdit.ts` | — | 编辑状态管理、批处理 cellChange |
 | `src/components/data/composables/useTableExtras.ts` | — | 导出 CSV 格式、右键菜单结构、namespace 存储隔离逻辑 ==================== 周边功能：搜索 |
 | `src/components/data/composables/useTableFilter.ts` | — | OptionSort 排序策略、筛选下拉定位算法 ==================== 筛选全链路（状态 |
