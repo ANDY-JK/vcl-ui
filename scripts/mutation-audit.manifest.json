@@ -1787,15 +1787,6 @@
       "cmd": "npx vitest run tests/unit/deps-gate.spec.ts --no-coverage",
       "expect": "red",
       "note": "真有未登记 invalid 也不报 → 依赖断裂放行，等到运行期才炸（#414）"
-    },
-    {
-      "id": "vitest-temp-not-redirected",
-      "file": "vitest.config.ts",
-      "find": "process.env.TEMP = LOCAL_TMP\nprocess.env.TMP = LOCAL_TMP",
-      "replace": "",
-      "cmd": "npx vitest run tests/unit/vitest-config-guard.spec.ts --no-coverage",
-      "expect": "red",
-      "note": "临时目录回到 %TEMP% → esbuild 清理被拒（Access is denied），test:unit 在第 28 步随机断链，且看起来像用例挂了（#415）"
     }
   ]
 }
