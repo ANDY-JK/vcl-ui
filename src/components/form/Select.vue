@@ -1,5 +1,6 @@
 <script lang="ts">
 import { useT } from '@/components/_internal/i18n'
+import { canWrite as canWriteRule } from '@/components/_internal/writable'
 
 /** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
 const t = useT()
@@ -332,7 +333,7 @@ watch(open, async (val) => {
  *
  * 注意只收 **写** 入口：查看/展开这类读操作不在此列（禁用态本来就打不开面板）。
  */
-const canWrite = computed(() => !props.disabled)
+const canWrite = computed(() => canWriteRule(props))
 function toggleOpen(e?: MouseEvent) {
   if (props.disabled) return
   if (open.value) {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reportError } from '@/components/_internal/runtime-observer'
+import { canWrite } from '@/components/_internal/writable'
 // ⛔ 保护 — 统一输入组件，禁止：clamp() → px，浮动标签动画时序，type 枚举修改
 //    需我确认：校验规则接口、新增 type
 // ⭐ 统一上浮骑缝（floating）样式 — 标签上浮骑缝，视觉统一，节省空间
@@ -327,7 +328,7 @@ function onStepperBlur(e: FocusEvent) {
  * 用户仍能点 × 把值清掉，宿主一保存数据就丢了。
  * 「只读」= 能看不能改；「禁用」= 连写操作入口都不该有 —— 两者都不该出现清空按钮。
  */
-const canClear = computed(() => props.clearable && !props.readonly && !props.disabled)
+const canClear = computed(() => props.clearable && canWrite(props))
 
 function clearTaValue() {
   // 兜底：按钮已按 canClear 隐藏，但反复防御——任何路径都不该在只读/禁用下写入

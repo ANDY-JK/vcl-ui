@@ -81,7 +81,7 @@
     {
       "id": "select-canwrite",
       "file": "src/components/form/Select.vue",
-      "find": "const canWrite = computed(() => !props.disabled)",
+      "find": "const canWrite = computed(() => canWriteRule(props))",
       "replace": "const canWrite = computed(() => true)",
       "cmd": "npx vitest run tests/unit/select-interaction.spec.ts --no-coverage",
       "expect": "red",
@@ -90,7 +90,7 @@
     {
       "id": "input-canclear",
       "file": "src/components/form/Input.vue",
-      "find": "const canClear = computed(() => props.clearable && !props.readonly && !props.disabled)",
+      "find": "const canClear = computed(() => props.clearable && canWrite(props))",
       "replace": "const canClear = computed(() => props.clearable && !props.readonly)",
       "cmd": "npx vitest run tests/unit/input-modes.spec.ts --no-coverage",
       "expect": "red",
@@ -1904,6 +1904,15 @@
       "cmd": "npx vitest run tests/unit/select-date-panel.spec.ts --no-coverage",
       "expect": "red",
       "note": "撤掉写入口守卫 → 面板打开后 disabled 翻真时仍能落值（TD-90/#427）"
+    },
+    {
+      "id": "canwrite-readonly-ignored",
+      "file": "src/components/_internal/writable.ts",
+      "find": "return !props.disabled && !props.readonly",
+      "replace": "return !props.disabled",
+      "cmd": "npx vitest run tests/unit/writable.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "可写判据丢掉 readonly → 只读控件又能被写（TD-90 的历史缺陷形态复现）"
     }
   ]
 }

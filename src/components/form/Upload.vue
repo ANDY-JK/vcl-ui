@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reportError } from '@/components/_internal/runtime-observer'
+import { canWrite } from '@/components/_internal/writable'
 // ⛔ 保护 — 文件上传，禁止：clamp() → px，拖拽区尺寸比例，进度条动画
 //    需我确认：accept 文件类型、multiple 多文件逻辑、预览图尺寸
 import { ref, watch, computed, onUnmounted, onErrorCaptured } from 'vue'
@@ -125,7 +126,7 @@ const { files, clearAllFiles, processFiles, removeFile, retryFile, isMimeAccepte
 
 function onDragOver(e: DragEvent) {
   e.preventDefault()
-  if (props.drag && !props.disabled) dragging.value = true
+  if (props.drag && canWrite(props)) dragging.value = true
 }
 function onDragLeave() {
   dragging.value = false
@@ -133,7 +134,7 @@ function onDragLeave() {
 function onDrop(e: DragEvent) {
   e.preventDefault()
   dragging.value = false
-  if (!props.disabled) processFiles(e.dataTransfer?.files || null)
+  if (canWrite(props)) processFiles(e.dataTransfer?.files || null)
 }
 
 /**
@@ -241,7 +242,7 @@ function onCameraError(msg: string) {
 
 /** default 变体：透明 input 覆盖上传区，触屏+mobileMenu 时拦截点击改弹菜单 */
 function onDefaultInputClick(e: MouseEvent) {
-  if (props.mobileMenu && isTouchDevice && !props.disabled) {
+  if (props.mobileMenu && isTouchDevice && canWrite(props)) {
     e.preventDefault()
     handlePick()
   }
