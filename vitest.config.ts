@@ -2,6 +2,31 @@
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { mkdirSync } from 'fs'
+
+/**
+ * 把 esbuild / vite 的临时目录固定在仓库内（#415）。
+ *
+ * 起因（2026-11-04 实测，同一棵树、未改任何产品代码）：`test:unit` 里
+ * `barcode-decoder-warm-guard.spec.ts` 与 `zxing-wasm-data.spec.ts` 双双报
+ *   Error: remove C:/Users/USER\\AppData\\Local\\Temp\\esbuild-<hash>: Access is denied.
+ *   Plugin: vite:esbuild
+ * 即 esbuild 服务在**清理自己的临时文件**时被外部进程拒绝（这两个 spec 转换的是
+ * `zxing-wasm-data.ts` 这种巨量字面量文件，esbuild 才会落临时文件）。代价不是"红一次"：
+ * 它让整链在第 28 步随机断掉，而断掉的那一步看起来像"测试挂了"——归因成本极高。
+ *
+ * 对照实验：`TEMP`/`TMP` 指向仓库内目录后，两条 spec 立刻 **14 例全过**；
+ * 指回 `%TEMP%` 必红。所以在配置里统一改道：临时文件落在 `.vitest-tmp/`（已 gitignore），
+ * 与源码树同卷、不受 `%TEMP%` 那条策略影响。
+ *
+ * 为什么放在 vitest.config 而不是让调用方导环境变量：设置一次对**所有人**生效，
+ * 而且 fork worker 与 esbuild 子进程都继承这份 env —— 靠"记得先 export"的约定迟早漏。
+ * 顺带的好处：临时文件都在仓库内，清理/排查不用去翻系统临时目录。
+ */
+const LOCAL_TMP = resolve(import.meta.dirname, '.vitest-tmp')
+mkdirSync(LOCAL_TMP, { recursive: true })
+process.env.TEMP = LOCAL_TMP
+process.env.TMP = LOCAL_TMP
 
 export default defineConfig({
   plugins: [vue()],

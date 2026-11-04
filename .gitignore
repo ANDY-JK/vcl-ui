@@ -70,6 +70,10 @@ null
 form-builder-zh-check.png
 /reports/
 
+# vitest 的临时目录（#415）：vitest.config.ts 把 TEMP/TMP 改道到这里，
+# 避开 %TEMP% 下 esbuild 临时文件"删不掉"的外部策略；纯生成物，不入库
+/.vitest-tmp/
+
 # 浏览器留证截图（脚本入库可随时重生成，图不入库）
 scripts/shots-*/
 

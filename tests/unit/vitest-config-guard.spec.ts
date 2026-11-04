@@ -4,6 +4,8 @@
 // 而退化后果是**假红/假绿**——闸口不再可信。这里把三条与可靠性直接相关的值钉住，
 // 并说明它们各自挡的是什么（每条都能用变异证伪：改回去 → 本文件必红）。
 import { describe, it, expect } from 'vitest'
+import { resolve } from 'node:path'
+import os from 'node:os'
 import config from '../../vitest.config'
 
 const test = (config as { test?: Record<string, unknown> }).test ?? {}
@@ -29,5 +31,23 @@ describe('vitest 配置守卫 · 并发与超时（#409）', () => {
   it('反回归：仍然用 forks 池（vmThreads 的假红见配置注释）', () => {
     expect(test.pool).toBe('forks')
     expect(test.include).toEqual(['tests/unit/**/*.spec.ts'])
+  })
+})
+
+/* ── 临时目录改道（#415）────────────────────────────────────────────────
+ * 起因：`test:unit` 里两条转换巨量字面量的 spec（zxing-wasm-data /
+ * barcode-decoder-warm-guard）双双报
+ *   `Error: remove C:/Users/USER Access is denied.`  ← vite:esbuild
+ * 同一棵树、未改产品代码；把 TEMP/TMP 指向仓库内目录后同样的两条 **14 例全过**。
+ * 这条守卫必须在 **worker 进程里**取值：配置改的是 `process.env`，只有它真的被
+ * fork worker（以及它再 spawn 的 esbuild 子进程）继承，改道才算生效。 */
+describe('vitest 配置守卫 · 临时目录改道（#415）', () => {
+  it('**worker 看到的临时目录必须在仓库内**（%TEMP% 下 esbuild 清理会被拒绝）', () => {
+    const tmp = os.tmpdir()
+    const root = process.cwd()
+    expect(
+      resolve(tmp).startsWith(root),
+      `临时目录 ${tmp} 不在仓库 ${root} 内 → esbuild 会因 %TEMP% 策略在清理阶段报 Access is denied`,
+    ).toBe(true)
   })
 })
