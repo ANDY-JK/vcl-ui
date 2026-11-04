@@ -1827,8 +1827,8 @@
     {
       "id": "table-sort-string-compare",
       "file": "src/components/data/composables/useTableCore.ts",
-      "find": "(a, b) => (order === 'asc' ? 1 : -1) * compareCellValues(a[key], b[key]),",
-      "replace": "(a, b) => (order === 'asc' ? 1 : -1) * String(a[key] ?? '').localeCompare(String(b[key] ?? ''), undefined, { numeric: true }),",
+      "find": "result = [...result].sort((a, b) => (order === 'asc' ? 1 : -1) * compareCellValues(a[key], b[key]))",
+      "replace": "result = [...result].sort((a, b) => (order === 'asc' ? 1 : -1) * String(a[key] ?? '').localeCompare(String(b[key] ?? ''), undefined, { numeric: true }))",
       "cmd": "npx vitest run tests/unit/table-core.spec.ts --no-coverage",
       "expect": "red",
       "note": "退回 String() 比较 → 日期列按「星期几」排（Fri 在 Thu 前），用户点日期升序看到周内乱序（#419）"
