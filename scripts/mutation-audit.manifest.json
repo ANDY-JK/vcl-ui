@@ -1618,6 +1618,24 @@
       "note": "生成值不做忠实性校验 → 越过 2^53 后静默给出被圆回去的错数（#405）"
     },
     {
+      "id": "fill-target-column-not-text-writable",
+      "file": "src/components/data/composables/cell-fill.ts",
+      "find": "      if (!isTextWritable(colMap.get(ck))) continue",
+      "replace": "      if (!colMap.has(ck)) continue",
+      "cmd": "npx vitest run tests/unit/table-edit.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "目标列只查\"在不在 columns 里\" → 横向拖拽把图片列 URL 覆盖成左侧文本（https://cdn/a.png 变「苹果」）并写回宿主数据；只读列则漏斗丢弃后仍返回 true、选区照扩，用户看到高亮其实没写（#412）"
+    },
+    {
+      "id": "fill-target-image-only",
+      "file": "src/components/data/composables/cell-fill.ts",
+      "find": "      if (!isTextWritable(colMap.get(ck))) continue",
+      "replace": "      if (colMap.get(ck)?.accept === 'image') continue",
+      "cmd": "npx vitest run tests/unit/table-edit.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "只挡图片列、漏掉只读列 → 零写入仍返回 true 并扩大选区（虚假成功，用户以为已填充）（#412）"
+    },
+    {
       "id": "cell-number-eu-separator-as-grouping",
       "file": "src/components/data/composables/cell-input.ts",
       "find": "    return lastComma > lastDot ? t.replace(/\\./g, '').replace(',', '.') : t.replace(/,/g, '')",

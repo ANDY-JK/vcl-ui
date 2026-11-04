@@ -823,6 +823,77 @@ describe('useTableEdit · 填充柄', () => {
     expect(edit.isFillCorner('r1', 'qty')).toBe(false)
     expect(edit.isFillCorner('r2', 'name')).toBe(false)
   })
+
+  /* ── 横向填充的目标列校验（#412）────────────────────────────────────────
+   * canFill 只校验**源选区**的列是否 isTextWritable，而填充格落在源选区之外。
+   * 纵向填充目标列 == 源列（已被 canFill 拦住），所以问题只在横向暴露：
+   * 同一个图片列「往下拖填不进去、往右拖被文本覆盖」。 */
+  /** 带行数据的 setup：显示值从 data map 取（模拟宿主行数据） */
+  function setupData(dataCols: Column[], data: Record<string, Record<string, unknown>>) {
+    const emit = { cellChange: vi.fn(), cellNote: vi.fn() }
+    const read = (rk: string, ck: string) => String(data[rk]?.[ck] ?? '')
+    const edit = useTableEdit({ columns: dataCols, editable: true, keyboardNav: true }, emit, {
+      getCellDisplayValue: (rk, ck) => edit.getCellValue(rk, ck, read(rk, ck)),
+    })
+    const keys = dataCols.map((c) => c.key)
+    edit.setDisplayMatrix(Object.keys(data), keys)
+    return { edit, emit }
+  }
+
+  it('applyFill right：不写 accept=image 列（图片 URL 不被文本覆盖）', () => {
+    const { edit, emit } = setupData(
+      [
+        { key: 'name', title: '名称' },
+        { key: 'avatar', title: '头像', accept: 'image' },
+      ],
+      { r1: { name: '苹果', avatar: 'https://cdn/a.png' } },
+    )
+    edit.startRange(0, 0, ['r1'], ['name', 'avatar'], '')
+    edit.updateRange(0, 0)
+
+    // 唯一目标列是图片列 → 一格都不写；返回值必须诚实（此前是 true）
+    expect(edit.applyFill('right', 1)).toBe(false)
+    expect(edit.getCellValue('r1', 'avatar', 'https://cdn/a.png')).toBe('https://cdn/a.png')
+    expect(emit.cellChange).not.toHaveBeenCalled()
+    // 零写入就不该扩大选区（此前 focus 会跑到 colIndex 1，看着像填了）
+    expect(edit.rangeSel.value?.focus.colIndex).toBe(0)
+  })
+
+  it('applyFill right：跨过图片列时，后面的文本列照填（部分过滤不中断整次填充）', () => {
+    const { edit, emit } = setupData(
+      [
+        { key: 'name', title: '名称' },
+        { key: 'avatar', title: '头像', accept: 'image' },
+        { key: 'note', title: '备注' },
+      ],
+      { r1: { name: '苹果', avatar: 'https://cdn/a.png', note: '' } },
+    )
+    edit.startRange(0, 0, ['r1'], ['name', 'avatar', 'note'], '')
+    edit.updateRange(0, 0)
+
+    // 拖 2 格：第 1 格落图片列（跳过），第 2 格落文本列（照填）
+    expect(edit.applyFill('right', 2)).toBe(true)
+    expect(edit.getCellValue('r1', 'avatar', 'https://cdn/a.png')).toBe('https://cdn/a.png')
+    expect(edit.getCellValue('r1', 'note', '')).toBe('苹果')
+    expect(emit.cellChange.mock.calls).toEqual([['r1', 'note', '苹果']])
+  })
+
+  it('applyFill right：只读列零写入时不谎报成功', () => {
+    const { edit } = setupData(
+      [
+        { key: 'name', title: '名称' },
+        { key: 'code', title: '只读', editable: false },
+      ],
+      { r1: { name: 'X1', code: 'E-001' } },
+    )
+    edit.startRange(0, 0, ['r1'], ['name', 'code'], '')
+    edit.updateRange(0, 0)
+
+    // 过滤发生在写入漏斗 —— 若不在这里拦住，返回 true 而漏斗丢弃全部条目，
+    // 用户看到选区扩大却没有任何改动（虚假成功）。
+    expect(edit.applyFill('right', 1)).toBe(false)
+    expect(edit.getCellValue('r1', 'code', 'E-001')).toBe('E-001')
+  })
 })
 /* ════════════════════════════════════════
  * 中文输入法（IME）合成期不得提交编辑（#276）

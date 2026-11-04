@@ -110,7 +110,16 @@ export function useCellFill(deps: CellFillDeps) {
       const rk = rows[ri]
       const ck = cols[ci]
       if (!rk || !ck) continue
-      if (!colMap.has(ck)) continue
+      // 目标列必须能接受**文本值**（与 canFill 同口径，第 412 轮）。
+      // 此前只查 `colMap.has(ck)`，于是横向填充（up/left/right）的目标列**绕过**
+      // canFill 的 `isTextWritable` 校验 —— 只有源列被检了：
+      //   · `accept: 'image'` 列：拖右边把图片 URL 覆盖成左侧文本（`https://cdn/a.png` → `苹果`），
+      //     还 emit cellChange 写回宿主数据。同一列往下拖填不进去、往右拖却覆盖，纯方向相关的不对称。
+      //   · 只读列（`editable: false`）：写入漏斗会丢弃，**但 applyFill 仍返回 true 并扩大选区**，
+      //     用户看到"拖出高亮"却什么都没写 —— 虚假成功比失败更难查。
+      // 用 isTextWritable 一次覆盖三种目标（未声明列 / 只读列 / 图片列）：它是本库
+      // 三种可写口径里中间那一档，注释（cell-types.ts）已明确"填充"归它管。
+      if (!isTextWritable(colMap.get(ck))) continue
       entries.push({ rowKey: rk, colKey: ck, value: cell.value })
       next.r0 = Math.min(next.r0, ri)
       next.r1 = Math.max(next.r1, ri)
