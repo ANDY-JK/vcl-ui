@@ -52,24 +52,6 @@
       "note": "变异后：客户端首帧 data=[] 时把宿主从 URL 恢复的第 5 页纠正成第 1 页，数据回来再也回不去"
     },
     {
-      "id": "upload-remove-guard",
-      "file": "src/components/form/utils/useUploadQueue.ts",
-      "find": "    if (props.disabled) return\n    // 释放 Blob URL 避免内存泄漏",
-      "replace": "    // 释放 Blob URL 避免内存泄漏",
-      "cmd": "npx vitest run tests/unit/upload-interaction.spec.ts --no-coverage",
-      "expect": "red",
-      "note": "变异后：禁用态文件仍能被删掉（自绘 × 不受原生 disabled 约束，见 #287/#299）"
-    },
-    {
-      "id": "upload-remove-guard-strict",
-      "file": "src/components/form/utils/useUploadQueue.ts",
-      "find": "    if (props.disabled) return\n    // 释放 Blob URL 避免内存泄漏",
-      "replace": "    if (true) return\n    // 释放 Blob URL 避免内存泄漏",
-      "cmd": "npx vitest run tests/unit/upload-interaction.spec.ts --no-coverage",
-      "expect": "red",
-      "note": "反向：守卫写死 true 时正常态也删不掉（#299 要求两个方向都验）"
-    },
-    {
       "id": "upload-retry-guard",
       "file": "src/components/form/utils/useUploadQueue.ts",
       "find": "  function retryFile(id: number) {\n    if (props.disabled) return",
@@ -1933,13 +1915,22 @@
       "note": "共用下载出口把 revoke 拉回 click 同拍 → blob URL 被读取前撤走，下载静默失败（#430）"
     },
     {
-      "id": "upload-clearall-no-disabled-guard",
+      "id": "upload-release-forwrite-no-guard",
       "file": "src/components/form/utils/useUploadQueue.ts",
-      "find": "    if (props.disabled) return\n    files.value.forEach((f) => {\n      if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)\n    })\n    files.value = []\n    syncModel()",
-      "replace": "    files.value.forEach((f) => {\n      if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)\n    })\n    files.value = []\n    syncModel()",
+      "find": "  function releaseForWrite(url?: string): boolean {\n    if (props.disabled) return false\n    if (url?.startsWith('blob:')) URL.revokeObjectURL(url)\n    return true\n  }",
+      "replace": "  function releaseForWrite(url?: string): boolean {\n    if (url?.startsWith('blob:')) URL.revokeObjectURL(url)\n    return true\n  }",
       "cmd": "npx vitest run tests/unit/upload-queue-validation.spec.ts --no-coverage",
       "expect": "red",
-      "note": "占位 — 稍后换成真正中性化守卫的变异"
+      "note": "共用守卫 releaseForWrite 摘掉 disabled 判断 → 单删与全清在禁用态下都变成可写（TD-90/#432）"
+    },
+    {
+      "id": "upload-clearall-detach-guard",
+      "file": "src/components/form/utils/useUploadQueue.ts",
+      "find": "    if (!releaseForWrite()) return\n    files.value.forEach((f) => {",
+      "replace": "    files.value.forEach((f) => {",
+      "cmd": "npx vitest run tests/unit/upload-queue-validation.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "clearAllFiles 脱离共用守卫 → 禁用态下点「清空全部」仍会全删（#431 形态复现，#432）"
     }
   ]
 }

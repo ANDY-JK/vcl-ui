@@ -84,10 +84,9 @@ export function useUploadQueue(opts: {
 
   /** 清空全部文件并同步模型（模板 @click 只支持单表达式，抽成方法） */
   function clearAllFiles() {
-    // 禁用语义守卫（#287 的**第二条路径**）：`removeFile`（单个 ×）早就判了 disabled，
-    // 但"清空全部"是同一个写动作的另一个入口，一直漏判 —— 禁用态下点清空会把文件
-    // 全删掉并 emit 空数组，比单个 × 更狠。TD-90 收到的第 4 例，同一形态第 4 次。
-    if (props.disabled) return
+    // 守卫与 URL 释放都走 releaseForWrite（单删/全清共用一处，见其注释）：
+    // 拉回 #431 —— 全清是同一个写动作的第二条路径，禁用态下点清空会把文件全删掉。
+    if (!releaseForWrite()) return
     files.value.forEach((f) => {
       if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
     })
@@ -288,12 +287,26 @@ export function useUploadQueue(opts: {
     timers.push(timer)
   }
 
+  /**
+   * 写守卫 + 释放 Blob URL —— **单删与全清共用这一处**（#431 的收尾，TD-90 第 4 例的根因）。
+   *
+   * TD-90 踩了四次同一形态（#286 / #287 / #427 / #431），第 4 次就是这里：
+   * `clearAllFiles` 是照着 `removeFile` 抄的，抄的时候把 `if (disabled) return` 漏了。
+   * **只要还允许"各写一份"，就还会再漏第五次** —— 所以守卫只留这一个出口：
+   * 新增任何删除类入口都调 `releaseForWrite`，它返回 false 就什么都不做。
+   *
+   * @returns 是否允许继续写：禁用态返回 false（且**不释放 URL** —— 文件还在，图还得显示）
+   */
+  function releaseForWrite(url?: string): boolean {
+    if (props.disabled) return false
+    if (url?.startsWith('blob:')) URL.revokeObjectURL(url)
+    return true
+  }
+
   function removeFile(uf: UploadFile) {
-    // 禁用语义守卫（2026-11-01 #287）：自绘的 × 不受原生 disabled 约束，
+    // 禁用语义守卫（#287）：自绘的 × 不受原生 disabled 约束，
     // 实测 disabled 下点击会 emit update:modelValue: []（文件被真删掉）。
-    if (props.disabled) return
-    // 释放 Blob URL 避免内存泄漏
-    if (uf.url?.startsWith('blob:')) URL.revokeObjectURL(uf.url)
+    if (!releaseForWrite(uf.url)) return
     files.value = files.value.filter((f) => f.id !== uf.id)
     emit('remove', uf)
     syncModel()

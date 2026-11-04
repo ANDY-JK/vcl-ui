@@ -297,6 +297,27 @@ describe('removeFile / clearAllFiles', () => {
     expect(emits['update:modelValue'].at(-1), '最后一条应是空数组').toEqual([])
   })
 
+  /* ── #432：守卫只留一个出口 ────────────────────────────────────────
+   * TD-90 踩了四次同一形态，第 4 次（#431）的根因是"清空全部照着单删抄，
+   * 抄的时候把守卫漏了"。只要还允许各写一份，就会再漏第五次 ——
+   * 所以把「禁用态硬拒 + 释放 blob URL」收成 releaseForWrite()，两个入口都调它。
+   * 下面三例锁住这个共用点：任一处脱离它都会红。*/
+  it('**两个入口共用同一守卫**：禁用态下 releaseForWrite 为 false，可写态为 true', () => {
+    const { q, queueProps } = makeQueue({ multiple: true })
+    // 可写态：单删/全清都真的生效（证明共用点没把功能关掉）
+    q.processFiles([makeFile('a.png', 100), makeFile('b.png', 200)])
+    q.removeFile(q.files.value[0]!)
+    expect(q.files.value).toHaveLength(1)
+    q.clearAllFiles()
+    expect(q.files.value).toHaveLength(0)
+    // 禁用态：同一条队列，两个入口都得原样不动
+    q.processFiles([makeFile('c.png', 300)])
+    const kept = q.files.value.length
+    queueProps.disabled = true
+    q.removeFile(q.files.value[0]!)
+    q.clearAllFiles()
+    expect(q.files.value, '单删在全清之后也得被守住').toHaveLength(kept)
+  })
   it('removeFile 移除指定文件并 emit', () => {
     const { q, emits } = makeQueue({ multiple: true })
     q.processFiles([makeFile('a.png', 100), makeFile('b.png', 200)])
