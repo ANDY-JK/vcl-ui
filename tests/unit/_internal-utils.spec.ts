@@ -872,3 +872,30 @@ describe('toChineseAmount · 分位进位与负零（#408）', () => {
     expect(toChineseAmount(1234.567)).toBe('壹仟贰佰叁拾肆元伍角柒分')
   })
 })
+
+describe('formatSize · 单位边界（#410）', () => {
+  it('**四舍五入后跨界就升单位**：不能出现 "1024.0 KB" / "1024.0 MB"', () => {
+    // 1048575 B 只差 1 字节到 1 MB，旧实现显示 "1024.0 KB"（单位自己溢出）
+    expect(formatSize(1048575)).toBe('1.0 MB')
+    expect(formatSize(1048576)).toBe('1.0 MB')
+    // 1073741823 B 差 1 字节到 1 GB
+    expect(formatSize(1073741823)).toBe('1.00 GB')
+    expect(formatSize(1073741824)).toBe('1.00 GB')
+  })
+
+  it('反回归：边界内不提前升单位', () => {
+    expect(formatSize(0)).toBe('0 B')
+    expect(formatSize(1023)).toBe('1023 B')
+    expect(formatSize(1024)).toBe('1.0 KB')
+    // 1023.9 KB 仍是 KB（取整后 < 1024）
+    expect(formatSize(Math.round(1023.9 * 1024))).toBe('1023.9 KB')
+    expect(formatSize(1024 * 1024)).toBe('1.0 MB')
+    expect(formatSize(Math.round(1023.9 * 1024 * 1024))).toBe('1023.9 MB')
+  })
+
+  it('反回归：脏输入仍返回空串（第 187 轮语义不变）', () => {
+    expect(formatSize(Number.NaN)).toBe('')
+    expect(formatSize(-1)).toBe('')
+    expect(formatSize(Number.POSITIVE_INFINITY)).toBe('')
+  })
+})

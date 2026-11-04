@@ -18,6 +18,10 @@ describe('vitest 配置守卫 · 并发与超时（#409）', () => {
     expect(test.testTimeout as number, '20s 会稳定误伤 ZIP/千行表格/子进程闸门自测').toBeGreaterThanOrEqual(60_000)
   })
 
+  it('**hook 上限也必须放开**：testTimeout 管不到 beforeEach/beforeAll（默认 10s）', () => {
+    expect(test.hookTimeout as number, 'hook 默认 10s → 「空存储」这类用例会撞 10021ms 假红').toBeGreaterThanOrEqual(60_000)
+  })
+
   it('**worker 拆除宽限 ≥ 30s**：默认 10s 在满载时会把收尾算成未完成', () => {
     expect(test.teardownTimeout as number).toBeGreaterThanOrEqual(30_000)
   })

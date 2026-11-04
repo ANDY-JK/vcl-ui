@@ -1688,6 +1688,33 @@
       "cmd": "npx vitest run tests/unit/vitest-config-guard.spec.ts --no-coverage",
       "expect": "red",
       "note": "并发上限放大到 99 → 回到\"按核数硬跑\"的争用状态，红点每轮都不一样（#409）"
+    },
+    {
+      "id": "size-kb-boundary-no-promote",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  if (kb < 1024) return kb.toFixed(1) + ' KB'",
+      "replace": "  if (kb < 1025) return kb.toFixed(1) + ' KB'",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "KB 边界放宽 → 1048575 B 显示成 \"1024.0 KB\"（单位自己溢出，#410）"
+    },
+    {
+      "id": "size-mb-boundary-no-promote",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  if (mb < 1024) return mb.toFixed(1) + ' MB'",
+      "replace": "  if (mb < 1025) return mb.toFixed(1) + ' MB'",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "MB 边界放宽 → 1073741823 B 显示成 \"1024.0 MB\"（#410）"
+    },
+    {
+      "id": "vitest-hook-timeout-reverted",
+      "file": "vitest.config.ts",
+      "find": "    hookTimeout: 60_000,",
+      "replace": "    hookTimeout: 10_000,",
+      "cmd": "npx vitest run tests/unit/vitest-config-guard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "hook 上限退回默认 10s → route-store-data「空存储」这类重 hook 用例在负载下 10021ms 假红（#410）"
     }
   ]
 }

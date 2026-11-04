@@ -43,6 +43,10 @@ export default defineConfig({
     // ZIP/xlsx 真跑、千行表格挂载、子进程闸门自测都能到 20~40s。真挂死的用例照样在 60s 报错，
     // 探测能力没丢；20s 则会稳定误伤上面那几类重用例。
     testTimeout: 60_000,
+    // hook 上限同样 60s（#410）：`testTimeout` **管不到 beforeEach/beforeAll**（hook 默认 10s）。
+    // 实测 `route-store-data.spec.ts` 的「空存储」用例在快链里报 10021ms + "If this is a long-running
+    // hook, pass a timeout value…"，即 10s 的 hook 上限被打穿 —— 与 #409 同一类假红，只是踩在另一个旋钮上。
+    hookTimeout: 60_000,
     // worker 拆除宽限 30s（默认 10s）：满载时 "Timeout terminating forks worker" 会刷屏，
     // 并把用例收尾算成未完成。放宽后交给 vitest 自行回收。
     teardownTimeout: 30_000,

@@ -222,15 +222,25 @@ export function formatMoney(
   return sign + symbol + formatNumber(Math.abs(value), { decimals, separator })
 }
 
-/** 格式化文件大小（B/KB/MB/GB）。脏输入返回空串（第 187 轮） */
+/**
+ * 格式化文件大小（B/KB/MB/GB）。脏输入返回空串（第 187 轮）
+ *
+ * 分级判据用**四舍五入后的值**而不是原始比值（#410）：
+ * `1048575 B` 只差 1 字节到 1 MB，比值是 `1023.999 KB`，`toFixed(1)` 得到 `"1024.0"` ——
+ * 单位自己溢出成下一个单位的刻度，用户读到"1024.0 KB"（既不是合法 KB 数，也不像 1 MB）。
+ * 先按最终显示的位数取整，再判"够不够进下一级"，就不会出现 1024.0 KB / 1024.0 MB。
+ */
 export function formatSize(bytes: number): string {
   // 本文件头部承诺「所有函数带容错/降级：接受 unknown 输入」，但这里原先没有守卫：
   // NaN / undefined / 'abc' 与任何阈值比较都为 false，一路落到 GB 分支拼出 "NaN GB"；
   // null 走 B 分支拼出 "null B"。上传组件直接把它渲染在文件条目上。
   if (typeof bytes !== 'number' || !isFinite(bytes) || bytes < 0) return ''
   if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB'
+  const kb = Number((bytes / 1024).toFixed(1))
+  if (kb < 1024) return kb.toFixed(1) + ' KB'
+  const mb = Number((bytes / 1024 / 1024).toFixed(1))
+  if (mb < 1024) return mb.toFixed(1) + ' MB'
+  // GB 是最大单位：1 TiB 只能显示成 1024.00 GB（没有 TB，保持与既有调用方兼容）
   return (bytes / 1024 / 1024 / 1024).toFixed(2) + ' GB'
 }
 
