@@ -1841,6 +1841,15 @@
       "cmd": "npx vitest run tests/unit/table-sort.spec.ts --no-coverage",
       "expect": "red",
       "note": "关掉 Date 分支 → Date 落回 String() 文本序，两种排序口径一起坏（#419）"
+    },
+    {
+      "id": "fragment-diagnosis-normalize-off",
+      "file": "scripts/mutation-audit-fragments.mjs",
+      "find": "return stripTrailingCommas(text.replace(/\\s+/g, ''))",
+      "replace": "return text",
+      "cmd": "npx vitest run tests/unit/mutation-manifest-drift.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "关掉归一 → 「只差空白」会被误报成「实现真的改了」，人又按错方向查一遍（#420）"
     }
   ]
 }

@@ -25,6 +25,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
+import { diagnoseFragment } from './mutation-audit-fragments.mjs'
 
 const MANIFEST = 'scripts/mutation-audit.manifest.json'
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'))
@@ -60,8 +61,18 @@ if (process.argv.includes('--check-manifest')) {
       continue
     }
     const src = rf(e.file, 'utf8')
-    const n = src.split(e.find).length - 1
-    if (n !== 1) problems.push(`${e.id}：目标片段在 ${e.file} 中出现 ${n} 次（应为 1）`)
+    const diag = diagnoseFragment(src, e.find)
+    if (diag.kind === 'exact' && diag.count !== 1) {
+      problems.push(`${e.id}：目标片段在 ${e.file} 中出现 ${diag.count} 次（应为 1）`)
+    } else if (diag.kind === 'whitespace') {
+      // 折叠空白后才匹配 → 片段没失效，是写法被格式化过（本轮踩过：prettier 把三行压成一行）
+      problems.push(
+        `${e.id}：片段与 ${e.file} 只差空白（归一口径下出现 ${diag.count} 次）—— 多半是格式化把多行压成一行了，` +
+          `把 find 换成单行写法即可，**不需要重写变异**：${JSON.stringify(diag.suggestion)}`,
+      )
+    } else if (diag.kind === 'missing') {
+      problems.push(`${e.id}：目标片段在 ${e.file} 中出现 0 次（归一空白后仍无 → 实现真的改了）`)
+    }
     // cmd 里引用的 spec 文件必须存在，否则变异跑起来只会 "no tests"
     const spec = /tests\/[\w./-]+\.spec\.ts/.exec(e.cmd)
     if (!spec || !existsSync(spec[0])) problems.push(`${e.id}：cmd 里的 spec 文件不存在（${spec?.[0] ?? '未识别'}）`)
