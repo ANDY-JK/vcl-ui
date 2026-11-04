@@ -1850,6 +1850,15 @@
       "cmd": "npx vitest run tests/unit/mutation-manifest-drift.spec.ts --no-coverage",
       "expect": "red",
       "note": "关掉归一 → 「只差空白」会被误报成「实现真的改了」，人又按错方向查一遍（#420）"
+    },
+    {
+      "id": "draft-clear-404-not-idempotent",
+      "file": "src/components/form-builder/designer/draft-storage.ts",
+      "find": "if (res.status === 404 && !res.ok) return",
+      "replace": "if (false) return",
+      "cmd": "npx vitest run tests/unit/draft-storage.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "去掉 404 豁免 → 新建的空设计器每次清草稿都白打一条「清除失败」告警，真故障被噪声淹掉（#421）"
     }
   ]
 }

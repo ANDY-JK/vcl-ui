@@ -82,6 +82,29 @@ describe('createHttpDraftStorage（云接缝）', () => {
     expect((fetchImpl.mock.calls[0] as [string, RequestInit])[1].method).toBe('DELETE')
   })
 
+  /* ── 404 的语义差别（#421）──────────────────────────────────────────
+   * DELETE 是幂等语义：「草稿本来就不存在」与「已经删掉了」对调用方是同一件事。
+   * 此前 404 会抛错 → useDesignerDraft.clearDraft 记成「清除失败」并 reportWarn，
+   * 于是新建的空设计器（清空画布 / 表单已保存后丢弃草稿）每次白打一条失败告警。
+   * 但 404 只对 clear 豁免，save 的 404 仍然是真失败（下面第 4 条钉住这点）。 */
+  it('**clear：404 视为成功**（幂等删除，不该报警）', async () => {
+    const fetchImpl = vi.fn(async () => empty(404))
+    const s = createHttpDraftStorage({ loadUrl: '/d', saveUrl: '/s', clearUrl: '/c', fetchImpl: fetchImpl as never })
+    await expect(s.clear()).resolves.toBeUndefined()
+  })
+
+  it('clear：5xx 仍必须抛错（别把"真故障"也一起放过）', async () => {
+    const fetchImpl = vi.fn(async () => empty(500))
+    const s = createHttpDraftStorage({ loadUrl: '/d', saveUrl: '/s', clearUrl: '/c', fetchImpl: fetchImpl as never })
+    await expect(s.clear()).rejects.toThrow(/HTTP 500/)
+  })
+
+  it('**save：404 照旧抛错**（豁免只属于 clear，别顺手把写失败也吞掉）', async () => {
+    const fetchImpl = vi.fn(async () => empty(404))
+    const s = createHttpDraftStorage({ loadUrl: '/d', saveUrl: '/s', clearUrl: '/c', fetchImpl: fetchImpl as never })
+    await expect(s.save({})).rejects.toThrow(/HTTP 404/)
+  })
+
   it('headers 支持函数形态（每次请求取最新，便于带租户/令牌）', async () => {
     let token = 't1'
     const fetchImpl = vi.fn(async () => empty(200))

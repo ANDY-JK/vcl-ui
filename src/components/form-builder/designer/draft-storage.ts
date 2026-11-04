@@ -94,6 +94,11 @@ export function createHttpDraftStorage(opts: HttpDraftStorageOptions): DraftStor
     },
     async clear() {
       const res = await doFetch(opts.clearUrl, { method: 'DELETE', headers: headersOf() })
+      // 404 视为成功：DELETE 是幂等语义，「草稿本来就不存在」与「已经删掉了」对调用方是同一件事。
+      // 此前 404 会抛错，而 useDesignerDraft.clearDraft 会把它记成「清除失败」并 reportWarn ——
+      // 新建的空设计器（清空画布 / 表单已保存后丢弃草稿）每次都会白打一条失败告警，
+      // 而真正该报警的是 5xx 与网络错误。
+      if (res.status === 404 && !res.ok) return
       if (!res.ok) throw new Error(`草稿清除失败：HTTP ${res.status}`)
     },
   }
