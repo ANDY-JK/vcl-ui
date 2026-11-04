@@ -252,10 +252,21 @@ export function toChineseAmount(n: number | string): string {
   const radices = ['', '拾', '佰', '仟']
   const bigRadices = ['', '万', '亿', '万亿']
 
-  const negative = value < 0
-  const amount = Math.round(Math.abs(value) * 100) / 100
-  const intPart = Math.floor(amount)
-  const decPart = Math.round((amount - intPart) * 100)
+  /**
+   * 按「分」取整（#408）：先四舍五入到分，再还原成元/角分。
+   *
+   * 旧的 `Math.round(Math.abs(value) * 100) / 100` 拿**二进制浮点**直接乘 100 再 round，
+   * 于是同一个尾数在不同整数位上表现相反：
+   *   · `0.005` → 0.5 → 进到 1 分 ✓
+   *   · `1.005` → 100.49999999999999 → **舍成 100 分**（丢 1 分）✗
+   * 金额大写是要印在单据上的，进位必须**按十进制一致**，不能取决于浮点表示。
+   * 先把 `*100` 的值用 `toFixed(6)` 抹掉浮点噪声再 round，即"十进制半进位"。
+   */
+  const cents = Math.round(Number((Math.abs(value) * 100).toFixed(6)))
+  // 取整后为 0 就不再带负号：`-0.004` 旧实现会印出「负零元整」（不是有效金额写法）
+  const negative = value < 0 && cents > 0
+  const intPart = Math.floor(cents / 100)
+  const decPart = cents % 100
 
   let result = negative ? '负' : ''
 

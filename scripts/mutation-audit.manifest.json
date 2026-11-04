@@ -1652,6 +1652,24 @@
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
       "expect": "red",
       "note": "越界小数位不夹取 → toFixed 抛 RangeError，一个写错的列配置就能让整表渲染崩（#407）"
+    },
+    {
+      "id": "amount-rounds-on-float",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  const cents = Math.round(Number((Math.abs(value) * 100).toFixed(6)))",
+      "replace": "  const cents = Math.round(Math.abs(value) * 100)",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "直接对 浮点*100 取整 → 1.005 被舍成 100 分（丢 1 分），与 0.005 的进位口径相反（#408）"
+    },
+    {
+      "id": "amount-negative-zero-signed",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  const negative = value < 0 && cents > 0",
+      "replace": "  const negative = value < 0",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "取整为 0 仍带负号 → 单据上印出「负零元整」（#408）"
     }
   ]
 }

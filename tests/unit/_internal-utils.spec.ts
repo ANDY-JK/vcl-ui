@@ -847,3 +847,28 @@ describe('formatNumber / formatMoney · 空值与越界小数位（#407）', () 
     expect(formatNumber(1.5, { decimals: 1.9 })).toBe('1.5')
   })
 })
+
+describe('toChineseAmount · 分位进位与负零（#408）', () => {
+  it('**十进制半进位一致**：1.005 进到分，与 0.005 同口径', () => {
+    // 旧实现：1.005*100 = 100.49999999999999 → 舍成 100 分（丢 1 分），而 0.005 却能进
+    expect(toChineseAmount(1.005)).toBe('壹元零壹分')
+    expect(toChineseAmount(0.005)).toBe('零元零壹分')
+    expect(toChineseAmount(1.999)).toBe('贰元整')
+    expect(toChineseAmount(2.675)).toBe('贰元陆角捌分')
+  })
+
+  it('**取整为 0 不带负号**：不能印出「负零元整」', () => {
+    expect(toChineseAmount(-0.004)).toBe('零元整')
+    expect(toChineseAmount(-0)).toBe('零元整')
+    expect(toChineseAmount(0)).toBe('零元整')
+  })
+
+  it('反回归：常规金额与经典型值不变', () => {
+    expect(toChineseAmount(100)).toBe('壹佰元整')
+    expect(toChineseAmount(1001.23)).toBe('壹仟零壹元贰角叁分')
+    expect(toChineseAmount(-12.34)).toBe('负壹拾贰元叁角肆分')
+    expect(toChineseAmount(1005)).toBe('壹仟零伍元整')
+    expect(toChineseAmount(0.1 + 0.2)).toBe('零元叁角')
+    expect(toChineseAmount(1234.567)).toBe('壹仟贰佰叁拾肆元伍角柒分')
+  })
+})
