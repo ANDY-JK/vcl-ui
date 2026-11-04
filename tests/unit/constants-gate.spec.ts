@@ -36,21 +36,21 @@ const DOMAINS = (() => {
   return [...block.matchAll(/^\s{2}'?([a-z-]+)'?:/gm)].map((m) => m[1])
 })()
 
-function buildFixture(overrides: Record<string, number> = {}) {
-  rmSync(TMP, { recursive: true, force: true })
-  mkdirSync(join(TMP, 'src/components/_internal'), { recursive: true })
-  copyFileSync('src/components/tokens.css', join(TMP, 'src/components/tokens.css'))
-  copyFileSync('src/components/_internal/breakpoints.ts', join(TMP, 'src/components/_internal/breakpoints.ts'))
+function buildFixture(overrides: Record<string, number> = {}, base: string = TMP) {
+  rmSync(base, { recursive: true, force: true })
+  mkdirSync(join(base, 'src/components/_internal'), { recursive: true })
+  copyFileSync('src/components/tokens.css', join(base, 'src/components/tokens.css'))
+  copyFileSync('src/components/_internal/breakpoints.ts', join(base, 'src/components/_internal/breakpoints.ts'))
   for (const d of DOMAINS) {
     if (d === '_internal') continue
-    mkdirSync(join(TMP, 'src/components', d), { recursive: true })
+    mkdirSync(join(base, 'src/components', d), { recursive: true })
     const lines = overrides[d] ?? 3
     writeFileSync(
-      join(TMP, 'src/components', d, 'X.vue'),
+      join(base, 'src/components', d, 'X.vue'),
       `<template><div /></template>\n${'// filler\n'.repeat(Math.max(0, lines - 1))}`,
     )
   }
-  return TMP
+  return base
 }
 
 function run(root: string) {
@@ -75,5 +75,59 @@ describe('check:constants 闸门自测 · 行数止涨线', () => {
     expect(out, '超线没拦住 → 大文件会继续长，拆分时机被错过').toMatch(/超线=[1-9]/)
     expect(out).toContain('X.vue')
     expect(out).toMatch(/1200/)
+  })
+})
+
+/**
+ * [9] 生成物单文件 ≤ 900KB（#418）
+ *
+ * 这条判据不是为了"好看"：esbuild 对**单次 >1MiB 的输入**会落一个临时文件再交给子进程，
+ * 随后删除该文件；这台 Windows 上删除必被拒 → transform 失败，症状是"两条毫不相干的 spec 红"
+ * 或"build 在第 32 步断"。上一轮为定位它连跑了四次整链（TD-129 / #416 / #417）。
+ * 所以这里同时钉住三头：**超线必须红**、**边界内不许误报**、**第三方 vendored 件不被牵连**。
+ */
+describe('check:constants 闸门自测 · 生成物体积上限', () => {
+  const LIMIT = 900 * 1024
+  /** 每条用例一个独立夹具根：本机 I: 盘的删除是"延迟生效"的，同目录复用会让上一条的大文件串到下一条 */
+  const caseRoot = (name: string) => join(TMP, `size-${name}`)
+
+  /** 造一个**正好 bytes 字节**的文件（marked=true 时首行带「生成文件」标记，闸口靠它认生成物） */
+  const writeArtifact = (root: string, name: string, bytes: number, marked = true) => {
+    const head = marked ? '// ⚠️ 生成文件·勿手改\n' : '// 手写文件\n'
+    mkdirSync(join(root, 'src/components/_internal'), { recursive: true })
+    writeFileSync(
+      join(root, 'src/components/_internal', name),
+      head + 'x'.repeat(Math.max(0, bytes - Buffer.byteLength(head))),
+    )
+  }
+
+  it('**标记生成物超 900KB → 红，并点名文件与体积**', () => {
+    const root = buildFixture({}, caseRoot('over'))
+    writeArtifact(root, 'big-data.ts', 950 * 1024)
+    const { out } = run(root)
+    expect(out, '生成物胖到超过 esbuild 的 1MiB 落盘阈值时，构建会以完全无关的报错失败').toContain('big-data.ts')
+    expect(out).toMatch(/\[9\]/)
+  })
+
+  it('**恰好 900KB 不报**（判据是 >，不是 ≥ —— 别把上限当成目标）', () => {
+    const root = buildFixture({}, caseRoot('exact'))
+    writeArtifact(root, 'exact-data.ts', LIMIT)
+    const { out } = run(root)
+    expect(out).not.toMatch(/\[9\]/)
+  })
+
+  it('**没有标记的手写大文件不归这条管**（第三方 vendored 件必须与上游逐字节一致，一个字都不能改）', () => {
+    const root = buildFixture({}, caseRoot('vendored'))
+    writeArtifact(root, 'vendored-big.mjs', 2 * 1024 * 1024, false)
+    const { out } = run(root)
+    expect(out).not.toMatch(/\[9\]/)
+  })
+
+  it('**分片命名即使没标记也算生成物**（生成器换写法时判据不能跟着漏）', () => {
+    const root = buildFixture({}, caseRoot('part'))
+    writeArtifact(root, 'thing.part-1.ts', 950 * 1024, false)
+    const { out } = run(root)
+    expect(out).toMatch(/\[9\]/)
+    expect(out).toContain('thing.part-1.ts')
   })
 })

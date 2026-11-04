@@ -1814,6 +1814,15 @@
       "cmd": "npx vitest run tests/unit/zxing-wasm-data.spec.ts --no-coverage",
       "expect": "red",
       "note": "运行期改回 barrel → 分片被重新合成 1.27MB 单 chunk，构建在 Windows 上必失败（TD-129）（#417）"
+    },
+    {
+      "id": "generated-size-check-never-fires",
+      "file": "scripts/check-constants.mjs",
+      "find": ".filter(({ size }) => size > GEN_SIZE_LIMIT)",
+      "replace": ".filter(() => false)",
+      "cmd": "npx vitest run tests/unit/constants-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "生成物体积判据永不触发 → 任何生成物胖到 >1MiB，构建会以「两条无关 spec 红」的形式失败（#418）"
     }
   ]
 }

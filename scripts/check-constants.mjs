@@ -1,4 +1,4 @@
-// 常量与写死值自检（八项判定，任一不过即非零退出）
+// 常量与写死值自检（九项判定，任一不过即非零退出）
 // 规矩本体写在 README「开发规范」一节，这里只负责把它变成机器能拦的那部分：
 // [1] 断点令牌单源一致 —— _internal/breakpoints.ts 的 BP_* 必须与 tokens.css 的 --vcl-bp-* 逐个同值，
 //     否则「改了令牌、JS 判定没跟着改」会静默分叉（侧栏收起和表格卡片视图就是两个判定）
@@ -12,7 +12,7 @@
 // [7] form-builder 域源文件 ≤800 行 —— 该域交互密、曾靠人工把 979/881 行两文件拆回纪律内；
 //     无机械闸口必然回潮（09-04 收官过 ≤800，09-20 复查已漂移）。超限=该抽 composable/子组件了
 // [8] 原生 <button> 必须显式 type —— 默认值是 submit，宿主包进 <form> 时点按钮就提交表单（TD-42）
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 /**
@@ -559,6 +559,44 @@ if (buttonOffenders.length) {
   fail.push(
     `[8] ${buttonOffenders.length} 处原生 <button> 没标 type（默认 submit：宿主包进 <form> 里点一下就提交表单）：` +
       `${buttonOffenders.slice(0, 8).join(', ')}${buttonOffenders.length > 8 ? ' …' : ''}。补 type="button"（确需提交才写 submit）`,
+  )
+}
+
+// [9] 生成物单文件 ≤ 900KB —— 「大」不是洁癖问题，是工具链会当场坏掉
+//
+// 判据来源（实测，见 #416 / #417 / TD-129）：esbuild 的 JS 层对**单次 >1024×1024 字节**的输入
+// 会先把内容写成 %TEMP% 下的临时文件再交给子进程，随后删除该文件；这台 Windows 上删除必被拒
+// （`remove …: Access is denied.`），于是 `transform` 直接失败 —— 症状是「两条毫不相干的 spec 红」
+// 或「build 在第 32 步断」，而归因成本极高（连跑过四次整链才定位）。
+//
+// 阈值取 900KB（921,600 字节）：比 1MiB 留 12% 余量。为什么不是"只管 >1MiB"：
+// 边界附近的文件一旦被 prettier/生成器多吐几十 KB 就越线，余量让"以后 wasm 变大"不会立刻踩雷。
+//
+// 只扫**带「生成文件」标记**的产物（外加生成器的分片/数据命名）：手写源码再大也不该由这条闸口管，
+// 而第三方 vendored 件（如 `_internal/xlsx/xlsx.mjs`，1,008,308 字节）**必须与上游逐字节一致**、
+// 一个字都不能改 —— 它靠 `check:vendor-data` 对账，不适用本条（实测它也能正常构建：进 bundle 后
+// 先被压缩再交给 esbuild，minify 后远小于 1MiB）。
+const GEN_SIZE_LIMIT = 900 * 1024
+const isGeneratedArtifact = (f) => {
+  // 命名形态也认：生成器的分片（`*.part-N.ts`）与数据表（`*-data.ts` / `*-data.json`）即使
+  // 忘了带标记，也属于"会越长越大"的那类 —— 判据不能只靠自觉写的注释
+  if (/(\.part-\d+|-(data|icons-data))\.(ts|json)$/.test(f)) return true
+  if (!/\.(ts|json|mjs)$/.test(f)) return false
+  try {
+    return readFileSync(f, 'utf8').slice(0, 400).includes('生成文件')
+  } catch {
+    return false
+  }
+}
+const oversized = files
+  .filter(isGeneratedArtifact)
+  .map((f) => ({ f, size: statSync(f).size }))
+  .filter(({ size }) => size > GEN_SIZE_LIMIT)
+if (oversized.length) {
+  fail.push(
+    `[9] ${oversized.length} 个生成物超过单文件上限 ${GEN_SIZE_LIMIT / 1024}KB：` +
+      oversized.map(({ f, size }) => `${relOf(f)}=${(size / 1024) | 0}KB`).join('、') +
+      '。拆片（参考 #416/#417 的 zxing-wasm-data 分片）或压缩数据 —— esbuild 对 >1MiB 输入会落临时文件后删不掉（TD-129）',
   )
 }
 
