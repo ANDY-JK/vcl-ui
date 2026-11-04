@@ -1598,6 +1598,24 @@
       "cmd": "npx vitest run tests/unit/external-open-noopener.spec.ts --no-coverage",
       "expect": "red",
       "note": "只带 noopener 不带 noreferrer → 内部地址与查询串仍随 Referer 泄漏给第三方（#404）"
+    },
+    {
+      "id": "fill-numeric-no-roundtrip-guard",
+      "file": "src/components/data/composables/fill-series.ts",
+      "find": "  if (nums.every((n) => n !== null) && isRenumberable(values, nums as number[])) {",
+      "replace": "  if (nums.every((n) => n !== null)) {",
+      "cmd": "npx vitest run tests/unit/fill-series.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "纯数字即递增，不看写法能否往返 → 007 变 8、19 位 ID 被改数字（静默篡改编码，#405）"
+    },
+    {
+      "id": "fill-generated-not-faithful",
+      "file": "src/components/data/composables/fill-series.ts",
+      "find": "    if (faithful) return gen",
+      "replace": "    return gen",
+      "cmd": "npx vitest run tests/unit/fill-series.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "生成值不做忠实性校验 → 越过 2^53 后静默给出被圆回去的错数（#405）"
     }
   ]
 }

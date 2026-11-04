@@ -56,6 +56,30 @@ function fmtDate(t: number): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
 }
 
+/**
+ * 该字符串是不是"与数值一一对应"的十进制写法（#405）。
+ *
+ * 判据是**往返相等**：`formatNum(Number(s)) === s`。
+ * 为什么不能只看 `NUM_RE`：能转成数字 ≠ 能用数字重新写出来 ——
+ *   · `007`   → 7      （前导零丢失 = 工位号/货位编码被改写）
+ *   · `+5`    → 5      （符号被吃掉）
+ *   · `1.50`  → 1.5    （精度语义被抹平）
+ *   · `1234567890123456789` → 1234567890123456800（**超出双精度精确范围的整数直接被改数字**）
+ * 这些值一旦进入数字递增分支就是"静默篡改标识符"，正是本模块文档明确要避免的；
+ * 往返不相等时退回循环重复 —— 值原样保留，宁可"不智能"，不可偷偷改数据。
+ */
+function isCanonicalNumber(s: string): boolean {
+  const t = s.trim()
+  if (!NUM_RE.test(t)) return false
+  const n = Number(t)
+  return Number.isFinite(n) && formatNum(n) === t
+}
+
+/** 源序列是否全部"可重新编号"（每个值的写法都能被数值精确表示） */
+function isRenumberable(values: string[], nums: number[]): boolean {
+  return values.every((v, i) => isCanonicalNumber(v) && Number.isFinite(nums[i]))
+}
+
 /** 循环取值（支持倒序，用于 up/left 往前补） */
 function cyclic(values: string[], i: number, forward: boolean): string {
   const n = values.length
@@ -76,13 +100,20 @@ export function fillLine(values: string[], count: number, forward: boolean): str
   if (!values.length) return Array(count).fill('')
 
   const nums = values.map(parseNum)
-  if (nums.every((n) => n !== null)) {
+  if (nums.every((n) => n !== null) && isRenumberable(values, nums as number[])) {
     const ns = nums as number[]
     const step = ns.length === 1 ? 1 : (ns[ns.length - 1] - ns[0]) / (ns.length - 1)
     const anchor = forward ? ns[ns.length - 1] : ns[0]
-    return Array.from({ length: count }, (_, i) =>
-      formatNum(forward ? anchor + step * (i + 1) : anchor - step * (i + 1)),
+    const stepFor = (i: number) => (forward ? anchor + step * (i + 1) : anchor - step * (i + 1))
+    const gen = Array.from({ length: count }, (_, i) => formatNum(stepFor(i)))
+    // 生成值也必须**忠实**（#405）：`formatNum` 里的 toFixed(10) 会把超范围的数悄悄圆回去，
+    // 于是"看门狗"只看字符串会失效（'…993' 与 '…992' 都能通过往返）。整数系列直接要求
+    // 目标值在双精度安全整数范围内；越界就退回循环 —— 宁可重复，也不产生"看起来没问题"的错数。
+    const integerSeries = ns.every((n) => Number.isInteger(n)) && Number.isInteger(step)
+    const faithful = gen.every((g, i) =>
+      integerSeries ? Number.isSafeInteger(stepFor(i)) : Number.isFinite(stepFor(i)) && isCanonicalNumber(g),
     )
+    if (faithful) return gen
   }
 
   const ymds = values.map(parseYmd)

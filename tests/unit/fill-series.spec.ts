@@ -120,3 +120,52 @@ describe('fill-series · buildFillCells 方向与偏移', () => {
     expect(buildFillCells([], 'down', 2)).toEqual([])
   })
 })
+
+// ── #405：数字递增分支的"可重新编号"判据 ──────────────────────────
+// 背景：能转成数字 ≠ 能用数字重新写出来。前导零、正号、尾零、超双精度整数
+// 一旦进入递增分支就被静默改写成另一种写法 —— 而这正是本模块文档声明要避免的
+// （"避免静默改写 SKU/电话等编码"）。往返不相等时退回循环重复，值原样保留。
+describe('fill-series · 数字递增的边界：不能改写值的写法（#405）', () => {
+  it('**前导零不丢**：007 视为编码，循环重复而不是变成 8', () => {
+    expect(fillLine(['007'], 3, true)).toEqual(['007', '007', '007'])
+    expect(fillLine(['007', '008'], 2, true)).toEqual(['007', '008'])
+  })
+
+  it('**带分隔符的号码不递增**（非纯数字 → 循环重复）', () => {
+    const phone = '138-0013-8000'
+    expect(fillLine([phone], 2, true)).toEqual([phone, phone])
+    const code = 'A-001'
+    expect(fillLine([code], 2, true)).toEqual([code, code])
+  })
+
+  it('**超双精度整数原样保留**（旧实现会把 19 位 ID 改成别的数）', () => {
+    const big = '1234567890123456789'
+    expect(fillLine([big], 3, true)).toEqual([big, big, big])
+  })
+
+  it('尾零与正号不进入递增（写法会被抹平）', () => {
+    expect(fillLine(['1.50'], 2, true)).toEqual(['1.50', '1.50'])
+    expect(fillLine(['+5'], 2, true)).toEqual(['+5', '+5'])
+  })
+
+  it('生成值无法精确表示时同样退回循环（2^53 附近递增）', () => {
+    // 边界内一格可精确递增
+    expect(fillLine(['9007199254740990'], 1, true)).toEqual(['9007199254740991'])
+    // 第二格就越界（2^53）→ 整条退回循环：宁可"不智能"，也不给出看着正常其实是错的数
+    expect(fillLine(['9007199254740990'], 2, true)).toEqual(['9007199254740990', '9007199254740990'])
+    expect(fillLine(['9007199254740991'], 2, true)).toEqual(['9007199254740991', '9007199254740991'])
+  })
+
+  it('**反回归：普通整数/小数照旧递增**（防护没有关掉功能）', () => {
+    expect(fillLine(['1'], 3, true)).toEqual(['2', '3', '4'])
+    expect(fillLine(['1', '2'], 3, true)).toEqual(['3', '4', '5'])
+    expect(fillLine(['0.5'], 2, true)).toEqual(['1.5', '2.5'])
+    expect(fillLine(['-3'], 2, true)).toEqual(['-2', '-1'])
+    expect(fillLine(['10', '20'], 2, true)).toEqual(['30', '40'])
+  })
+
+  it('反回归：日期与文本规则不受影响', () => {
+    expect(fillLine(['2024-01-30'], 2, true)).toEqual(['2024-01-31', '2024-02-01'])
+    expect(fillLine(['SKU-A'], 2, true)).toEqual(['SKU-A', 'SKU-A'])
+  })
+})
