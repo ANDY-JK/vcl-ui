@@ -103,7 +103,21 @@ export function useImageExport(o: {
       }
       const url = URL.createObjectURL(blob)
       const ok = downloadScreenshot(url, name)
-      URL.revokeObjectURL(url)
+      // blob URL 的 revoke 必须让出**一轮宏任务**（#429）：
+      // `downloadScreenshot` 只做 `<a download>` + `click()` 就返回，浏览器真正读取
+      // blob URL 是**异步**的（下一轮任务里才开始拉数据）。同步 revoke 等于在读取前
+      // 把 URL 抽走 —— Chrome/Safari 上表现为"点了下载、文件没下来或 0 字节"，
+      // 而且不报错（`downloadScreenshot` 照样返回 true，通知还是成功）。
+      // #253 把它从 dataURL 换成 blob 通道时只测了"revoke 被调用"，没测"什么时候撤"。
+      // 用 setTimeout(…, 0) 让出一轮宏任务；URL 在页面卸载时由浏览器统一回收，
+      // 这里不撤也不会泄漏。
+      setTimeout(() => {
+        try {
+          URL.revokeObjectURL(url)
+        } catch {
+          /* 环境不支持则忽略：撤不掉只影响内存回收时机，不影响已触发的下载 */
+        }
+      }, 0)
       o.notify(ok ? o.t('imagePreview.downloadOk') : o.t('imagePreview.downloadFail'), ok ? 'success' : 'error')
       return
     }

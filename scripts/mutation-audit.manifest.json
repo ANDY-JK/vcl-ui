@@ -1913,6 +1913,15 @@
       "cmd": "npx vitest run tests/unit/writable.spec.ts --no-coverage",
       "expect": "red",
       "note": "可写判据丢掉 readonly → 只读控件又能被写（TD-90 的历史缺陷形态复现）"
+    },
+    {
+      "id": "image-download-revoke-too-early",
+      "file": "src/components/data/composables/useImageExport.ts",
+      "find": "const ok = downloadScreenshot(url, name)",
+      "replace": "const ok = downloadScreenshot(url, name)\n      URL.revokeObjectURL(url)",
+      "cmd": "npx vitest run tests/unit/use-image-export.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把 revoke 拉回 click 同拍 → blob URL 被浏览器读取前就撤走，下载静默失败（#429）"
     }
   ]
 }

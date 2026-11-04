@@ -369,6 +369,11 @@ describe('toPngBlob', () => {
 
 /* ═══════════ downloadImage ═══════════ */
 
+/** 让出一轮宏任务（setTimeout 0 排队的回调在此之后执行） */
+function flushMacrotask(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0))
+}
+
 describe('downloadImage', () => {
   // 2026-10-31 起 downloadImage 走 blob + objectURL：这两个 API 需要在本 describe 内桩住
   const createObjectURL = vi.fn(() => 'blob:mock-object-url')
@@ -403,7 +408,36 @@ describe('downloadImage', () => {
     await h.api.downloadImage()
     // 2026-10-31 起走 toPngBlob + objectURL（省大 dataURL 内存）：download 收到的是 blob URL 而非 dataURL
     expect(downloadMock).toHaveBeenCalledWith('blob:mock-object-url', '标注图.png')
+    // revoke 延后一轮宏任务（#429）—— 断言前必须 flush，否则测的是旧行为
+    await flushMacrotask()
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-object-url')
+    expect(h.notify).toHaveBeenCalledWith('T:imagePreview.downloadOk', 'success')
+  })
+
+  /* ── #429：blob URL 撤销时机 ─────────────────────────────────────
+   * downloadScreenshot 只做 <a download> + click() 就返回；浏览器真正读 blob URL
+   * 是异步的（下一轮任务才开始拉数据）。同步 revoke 会在读取前把 URL 抽走 ——
+   * Chrome/Safari 表现为"点了下载但文件没下来/0 字节"，且因为 click() 不抛，
+   * downloadScreenshot 照样返回 true、通知还是成功：静默失败。*/
+  it('**revoke 不早于下一轮宏任务**（blob URL 被读取前不能撤）', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('CORS')))
+    const h = makeHost()
+    await h.api.downloadImage()
+    expect(downloadMock, '下载已触发').toHaveBeenCalled()
+    expect(revokeObjectURL, '同一拍就 revoke = 抽走 URL，下载会静默失败').not.toHaveBeenCalled()
+    await flushMacrotask()
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock-object-url')
+    expect(revokeObjectURL, '恰好撤一次').toHaveBeenCalledTimes(1)
+  })
+
+  it('**revokeObjectURL 抛错不影响通知**（撤不掉只影响回收时机）', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('CORS')))
+    revokeObjectURL.mockImplementationOnce(() => {
+      throw new Error('unsupported')
+    })
+    const h = makeHost()
+    await h.api.downloadImage()
+    await flushMacrotask()
     expect(h.notify).toHaveBeenCalledWith('T:imagePreview.downloadOk', 'success')
   })
 
