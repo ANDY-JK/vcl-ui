@@ -29,10 +29,23 @@ export default defineConfig({
     // 环境被创建 171 次、占 tracked time 44%，vmThreads 按 worker 复用。性能收益实测约 27s，
     // 但代价是上面那类**不可自证**的假红（最坏一次 185 例），对"质量链结论可信"伤害更大。
     pool: 'forks',
-    // 单条用例上限 20s —— 默认 5s 在「带覆盖率插桩 + 全库并行」下会误伤大数据挂载用例：
-    // 实测 1000~2000 行的 DataTable 挂载单条 2~4s，并行时越过 5s 判失败（不放开就是偶发红），
-    // 而真挂死的用例照样会在 20s 处报错，探测能力没丢。
-    testTimeout: 20_000,
+    // 并发上限（#409）：默认按「核数」开 fork，本机 8 核 → 8 个 fork 同时搭 happy-dom。
+    // 争用下**重用例假红**，且红点每轮都不一样（同一棵树、未改任何产品代码实测）：
+    //   · chart-wordcloud-degrade → 20009ms（撞 20s 上限，单跑 3.2s）
+    //   · fix-regression「requireEmail…」→ 20018ms（单跑 <1s）
+    //   · form-target-collect-upload「ZIP 导出」→ 8151ms 且 handler 抛错（单跑 1.2s）
+    //   · designer-store / docs-gate / tech-debt-gate 轮流红（tech-debt-gate 单跑 22.6s）
+    // 单跑每个都必绿 → 结论是**并行争用**，不是用例本身。留 4 个 fork：总时长约 +15%，
+    // 换来"红就是真红"。这也是本仓一贯立场：闸口结论不可信，比闸口慢更糟（见上面 pool 那段）。
+    maxWorkers: 4,
+    minWorkers: 1,
+    // 单条用例上限 60s（#409）：原 20s 是按"理想并行"估的，但 forks 争用下，
+    // ZIP/xlsx 真跑、千行表格挂载、子进程闸门自测都能到 20~40s。真挂死的用例照样在 60s 报错，
+    // 探测能力没丢；20s 则会稳定误伤上面那几类重用例。
+    testTimeout: 60_000,
+    // worker 拆除宽限 30s（默认 10s）：满载时 "Timeout terminating forks worker" 会刷屏，
+    // 并把用例收尾算成未完成。放宽后交给 vitest 自行回收。
+    teardownTimeout: 30_000,
     // 关掉 worker 端的 console 拦截（2026-10-18）。
     //
     // 起因：整链第 14 步 test:unit 反复出现「全绿却退出码 1」——日志显示

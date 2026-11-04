@@ -1670,6 +1670,24 @@
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
       "expect": "red",
       "note": "取整为 0 仍带负号 → 单据上印出「负零元整」（#408）"
+    },
+    {
+      "id": "vitest-timeout-reverted",
+      "file": "vitest.config.ts",
+      "find": "    testTimeout: 60_000,",
+      "replace": "    testTimeout: 20_000,",
+      "cmd": "npx vitest run tests/unit/vitest-config-guard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "超时回退到 20s → 重用例（ZIP/千行表格/子进程闸门自测）在 4 fork 下假红（#409）"
+    },
+    {
+      "id": "vitest-max-workers-unset",
+      "file": "vitest.config.ts",
+      "find": "    maxWorkers: 4,",
+      "replace": "    maxWorkers: 99,",
+      "cmd": "npx vitest run tests/unit/vitest-config-guard.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "并发上限放大到 99 → 回到\"按核数硬跑\"的争用状态，红点每轮都不一样（#409）"
     }
   ]
 }
