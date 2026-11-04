@@ -1769,6 +1769,24 @@
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
       "expect": "red",
       "note": "「昨天」改按 36h 阈值 → 日历前天（25.5h 前）被叫成「昨天」，真正日历昨天（47h 前）反而不叫昨天（#413）"
+    },
+    {
+      "id": "deps-gate-tree-mode",
+      "file": "scripts/check-deps.mjs",
+      "find": "const NPM_LS_ARGS = ['ls', '--all', '--package-lock-only']",
+      "cmd": "npx vitest run tests/unit/deps-gate.spec.ts --no-coverage",
+      "replace": "const NPM_LS_ARGS = ['ls', '--all']",
+      "expect": "red",
+      "note": "退回树模式 → vue-tsc 写完 .vue-global-types 后同一棵树报 8 条假阳性（3.5.44 满足 3.x），整链第 27 步必红（#414）"
+    },
+    {
+      "id": "deps-gate-never-report",
+      "file": "scripts/check-deps.mjs",
+      "find": "if (unexplained.length) {",
+      "replace": "if (false) {",
+      "cmd": "npx vitest run tests/unit/deps-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "真有未登记 invalid 也不报 → 依赖断裂放行，等到运行期才炸（#414）"
     }
   ]
 }

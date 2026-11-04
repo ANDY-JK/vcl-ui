@@ -41,4 +41,16 @@ describe('check:deps 闸门自测', () => {
     const flagged = out.split('\n').filter((l) => l.trim().startsWith('- ') && l.includes('invalid:'))
     expect(flagged.length, `应只报 1 条未登记项，实际：\n${flagged.join('\n')}`).toBe(1)
   })
+
+  /* ── 测量面：锁模式 vs 树模式（#414）────────────────────────────────────
+   * 树模式（`npm ls --all`）会因 `node_modules` 里多出一个未登记目录
+   * （vue-tsc 每次 typecheck 写的 `.vue-global-types`）从不报错变成 8 条**假阳性**
+   * （`3.5.44` 满足 `3.x` 却被标 invalid），且删掉目录也不恢复。
+   * 质量链的顺序是 typecheck（第 1 步）→ check:deps（第 27 步），于是这道闸口必然红。
+   * 这里行为式钉住"用的是锁模式"：跑一次脚本读它自报的命令，而不是 grep 源码字符串。 */
+  it('**必须用锁模式取依赖树**（树模式会因无关目录给出 8 条假阳性）', () => {
+    const r = spawnSync(process.execPath, [SCRIPT, '--print-cmd'], { encoding: 'utf8' })
+    expect(r.status).toBe(0)
+    expect(r.stdout.trim()).toBe('npm ls --all --package-lock-only')
+  })
 })
