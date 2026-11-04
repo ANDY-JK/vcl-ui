@@ -100,7 +100,12 @@ describe('notify 创建与点击行为', () => {
     const { instances: inst2 } = await freshNotify('granted')
     await mod.notify('t', { url: 'https://example.com/x' })
     inst2[0].onclick?.()
-    expect(openSpy).toHaveBeenCalledWith('https://example.com/x', '_blank')
+    // #404：外链出口必须带 noopener/noreferrer（旧断言只写了两个参数，等于把脆弱行为锁进用例）
+    expect(openSpy).toHaveBeenCalledTimes(1)
+    expect(openSpy.mock.calls[0][0]).toBe('https://example.com/x')
+    expect(openSpy.mock.calls[0][1]).toBe('_blank')
+    expect(String(openSpy.mock.calls[0][2])).toMatch(/noopener/)
+    expect(String(openSpy.mock.calls[0][2])).toMatch(/noreferrer/)
   })
 
   it('autoClose：到时自动关闭', async () => {

@@ -1,3 +1,4 @@
+import { openExternalUrl } from '@/components/_internal/utils'
 import { reportWarn } from '@/components/_internal/runtime-observer'
 // Web Notification API — Windows / macOS 系统通知
 
@@ -38,7 +39,8 @@ export async function notify(title: string, bodyOrOptions?: string | NotifyOptio
       if (opts.onClick) {
         opts.onClick()
       } else if (opts.url) {
-        if (typeof window !== 'undefined') window.open(opts.url, '_blank')
+        // 必带 noopener,noreferrer（#404）：通知 url 来自宿主/业务数据，不能让它拿到 opener
+        openExternalUrl(opts.url)
       } else {
         if (typeof window !== 'undefined') window.focus()
       }

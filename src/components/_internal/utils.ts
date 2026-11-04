@@ -81,11 +81,31 @@ export function sanitizeDownloadName(name: unknown, fallback = 'download'): stri
 }
 
 /**
+ * 在新标签打开外部链接 —— **必带 `noopener,noreferrer`**（#404）。
+ *
+ * 为什么必须走这个函数、而不是直接 `window.open(url, '_blank')`：
+ *
+ * `window.open()` 默认把新窗口的 `window.opener` 指向本页 —— 目标站只要执行
+ * `window.opener.location = '仿冒页'`，就能把**用户当前的正版页面**换掉（反向标签劫持）。
+ * 本仓对 `<a target="_blank">` 已有两处防护（sanitize 给链接补 `rel`、LowCodeNav 手写
+ * `rel="noopener noreferrer"`），但 `window.open` 的三处调用全漏了 —— 而它们打开的
+ * 恰恰是最不可信的地址：通知里的 url、路线规划的第三方导航链接、以及下载降级用的 blob。
+ *
+ * `noreferrer` 顺带掐掉 Referer（不把内部地址与查询串带给第三方站）。
+ *
+ * @returns 新窗口引用；SSR/被拦截时返回 null
+ */
+export function openExternalUrl(url: string): Window | null {
+  if (!isBrowser) return null
+  return window.open(url, '_blank', 'noopener,noreferrer')
+}
+
+/**
  * 触发浏览器下载 Blob 文件，返回是否成功触发下载。
  * - 文件名先过 sanitizeDownloadName（#254：调用方给的标题可能带 Windows 非法字符）
  * - SSR（无 document）静默返回 false
  * - createObjectURL 不可用（极老环境）降级 FileReader 读 data URL
- * - download 属性不支持（部分 WebView）降级 window.open
+ * - download 属性不支持（部分 WebView）降级 openExternalUrl（同样带 noopener）
  * - 任何异常兜底返回 false，不阻断调用方主流程
  */
 export function downloadBlob(blob: Blob, rawFilename: string): boolean {
@@ -103,7 +123,7 @@ export function downloadBlob(blob: Blob, rawFilename: string): boolean {
           a.click()
           a.remove()
         } else {
-          window.open(url, '_blank')
+          openExternalUrl(url)
         }
         return true
       } finally {

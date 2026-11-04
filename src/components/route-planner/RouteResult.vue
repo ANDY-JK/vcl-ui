@@ -10,6 +10,7 @@ import { calcDistance as calculateDistance } from '@/components/amap'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import type { RoutePlan, NavLink, Store } from '@/components/route-planner/types'
 import { useT } from '@/components/_internal/i18n'
+import { openExternalUrl } from '@/components/_internal/utils'
 import { DEFAULTS } from './utils/route-planning'
 
 const t = useT()
@@ -69,7 +70,8 @@ function toggleDay(day: number): void {
 
 /** 打开导航链接 */
 function openNav(link: NavLink): void {
-  window.open(link.url, '_blank')
+  // 第三方导航链接走统一出口（#404）：window.open 不带 noopener 时，目标站可反向劫持本页
+  openExternalUrl(link.url)
 }
 
 /** 标记当前天为进行中 */

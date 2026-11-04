@@ -1580,6 +1580,24 @@
       "cmd": "npx vitest run tests/unit/ink-center.spec.ts --no-coverage",
       "expect": "red",
       "note": "catch 不再吞掉度量异常 → 宿主限制画布时异常冲出 applyInkCentering，启动路径中断（#403）"
+    },
+    {
+      "id": "external-open-noopener-missing",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  return window.open(url, '_blank', 'noopener,noreferrer')",
+      "replace": "  return window.open(url, '_blank')",
+      "cmd": "npx vitest run tests/unit/external-open-noopener.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "外链出口丢掉 noopener/noreferrer → 目标站可通过 window.opener 反向劫持本页（#404）"
+    },
+    {
+      "id": "external-open-no-noreferrer",
+      "file": "src/components/_internal/utils.ts",
+      "find": "  return window.open(url, '_blank', 'noopener,noreferrer')",
+      "replace": "  return window.open(url, '_blank', 'noopener')",
+      "cmd": "npx vitest run tests/unit/external-open-noopener.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "只带 noopener 不带 noreferrer → 内部地址与查询串仍随 Referer 泄漏给第三方（#404）"
     }
   ]
 }
