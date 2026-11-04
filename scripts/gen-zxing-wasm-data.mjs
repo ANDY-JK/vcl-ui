@@ -28,6 +28,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const WASM_REL = 'node_modules/zxing-wasm/dist/reader/zxing_reader.wasm'
 const PKG_REL = 'node_modules/zxing-wasm/package.json'
 const OUT_REL = 'src/components/_internal/zxing-wasm-data.ts'
+const META_REL = 'src/components/_internal/zxing-wasm-data-meta.ts'
 const PART_DIR_REL = 'src/components/_internal'
 const PART_PREFIX = 'zxing-wasm-data.part-'
 /**
@@ -81,6 +82,25 @@ export const PART_${idx}: string =
 `
 }
 
+/** 元数据单独成文件（#417）：运行期先取 sha256 做 ABI 校验，再按需取分片 —— 两者不该绑在一起 */
+function renderMeta(src) {
+  return `// ⚠️ 生成文件·勿手改 —— 正源：${WASM_REL}
+// 生成：node scripts/gen-zxing-wasm-data.mjs ／ 只检不改：node scripts/gen-zxing-wasm-data.mjs --check
+//
+// 为什么单独成文件（#417）：运行期要先拿 sha256 判断"随包 wasm 与宿主装的 zxing JS 是否配套"，
+// 若这一步就得把 1.27MB base64 拉进来，就没法既早校验又晚取字节。元数据只有几百字节，
+// 分片（${PART_PREFIX}N.ts）仍然只在真要用解码器时才下载。
+/** 随包 wasm 来自哪个 zxing-wasm 版本（版本与宿主装的 JS 不一致时，运行时退回默认取件方式） */
+export const ZXING_WASM_DATA_VERSION: string = '${src.version}'
+
+/** 随包 wasm 的 sha256 —— 与 zxing-wasm 包内导出的 ZXING_WASM_SHA256 同值 */
+export const ZXING_WASM_DATA_SHA256: string = '${src.sha}'
+
+/** 随包 wasm 的原始字节数（base64 解码后必须正好是这个数） */
+export const ZXING_WASM_DATA_BYTES: number = ${src.buf.length}
+`
+}
+
 function renderBarrel(src, total) {
   const imports = Array.from(
     { length: total },
@@ -96,19 +116,16 @@ function renderBarrel(src, total) {
 //
 // 体积：base64 文本 ${(src.base64.length / 1024 / 1024).toFixed(2)}MB（原始 ${src.buf.length.toLocaleString('en-US')} 字节），
 // 由 manualChunks 拆成独立懒加载 chunk，只有真的打开扫码界面才会加载。
-// 分片：base64 被切成 ${total} 片（${PART_PREFIX}1..${total}），本文件只做拼接与元数据（#416）。
+// 分片：base64 被切成 ${total} 片（${PART_PREFIX}1..${total}）；元数据在 zxing-wasm-data-meta.ts（#417）。
+// **本文件只给测试与对账闸门用**：运行期走 zxing-wasm-data-load.ts（先取 meta 校 ABI，再按需取分片）。
 // 换版：升级 zxing-wasm 后重跑本脚本；sha256 与 zxing-wasm 自己导出的 ZXING_WASM_SHA256 由
 // tests/unit/zxing-wasm-data.spec.ts 做同源断言，对不上就是正源被换过（会红，别改断言迁就）。
 ${imports}
-
-/** 随包 wasm 来自哪个 zxing-wasm 版本（版本与宿主装的 JS 不一致时，运行时退回默认取件方式） */
-export const ZXING_WASM_DATA_VERSION: string = '${src.version}'
-
-/** 随包 wasm 的 sha256 —— 与 zxing-wasm 包内导出的 ZXING_WASM_SHA256 同值 */
-export const ZXING_WASM_DATA_SHA256: string = '${src.sha}'
-
-/** 随包 wasm 的原始字节数（base64 解码后必须正好是这个数） */
-export const ZXING_WASM_DATA_BYTES: number = ${src.buf.length}
+export {
+  ZXING_WASM_DATA_VERSION,
+  ZXING_WASM_DATA_SHA256,
+  ZXING_WASM_DATA_BYTES,
+} from './zxing-wasm-data-meta'
 
 /**
  * zxing_reader.wasm 的 base64（无 data: 前缀，解码见 useBarcodeScanner.ts），由各分片按序拼接。
@@ -122,6 +139,7 @@ export const ZXING_WASM_DATA_BASE64: string = ${sum}
 const src = readSource()
 const chunks = splitParts(src.base64)
 const expected = new Map([
+  [META_REL, renderMeta(src)],
   [OUT_REL, renderBarrel(src, chunks.length)],
   ...chunks.map((c, i) => [`${PART_DIR_REL}/${partName(i + 1)}`, renderPart(i + 1, c, chunks.length)]),
 ])

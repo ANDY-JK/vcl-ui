@@ -52,11 +52,16 @@ let decoderReady = false
 export function warmBarcodeDecoder(): Promise<unknown> {
   if (!decoderBoot) {
     const boot = (async () => {
-      const data = await import('@/components/_internal/zxing-wasm-data')
-      const inline = data.ZXING_WASM_DATA_SHA256 === ZXING_WASM_SHA256
+      // 元数据（几百字节）与 base64 分两路取（#417）：先拿 sha256 判 ABI 配套，再按需取分片。
+      // 两片各自成 chunk —— 单次 esbuild 输入超过 1MiB 会落临时文件再删不掉（TD-129）。
+      const [meta, base64] = await Promise.all([
+        import('@/components/_internal/zxing-wasm-data-meta'),
+        import('@/components/_internal/zxing-wasm-data-load').then((m) => m.loadWasmBase64()),
+      ])
+      const inline = meta.ZXING_WASM_DATA_SHA256 === ZXING_WASM_SHA256
       return prepareZXingModule({
         fireImmediately: true,
-        ...(inline ? { overrides: { wasmBinary: base64ToArrayBuffer(data.ZXING_WASM_DATA_BASE64) } } : {}),
+        ...(inline ? { overrides: { wasmBinary: base64ToArrayBuffer(base64) } } : {}),
       })
     })().catch(() => null)
     // 启动也套同一个上限：不让「解码器没起来」把调用方挂死（2026-09-28 那次永久转圈就是这么来的）

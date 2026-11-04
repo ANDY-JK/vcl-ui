@@ -1796,6 +1796,24 @@
       "cmd": "npx vitest run tests/unit/zxing-wasm-data.spec.ts --no-coverage",
       "expect": "red",
       "note": "拼接漏掉第 2 片 → wasm 截断（字节数/sha256/正源逐字节三条同时红），钉住\"分片必须全部拼上\"（#416）"
+    },
+    {
+      "id": "zxing-loader-order-swapped",
+      "file": "src/components/_internal/zxing-wasm-data-load.ts",
+      "find": "return a.PART_1 + b.PART_2",
+      "replace": "return b.PART_2 + a.PART_1",
+      "cmd": "npx vitest run tests/unit/zxing-wasm-data.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "分片顺序颠倒 → 解出来的 wasm ABI 全错，症状是「解码器起来了但解不出码」（比报错更难查）（#417）"
+    },
+    {
+      "id": "zxing-runtime-imports-barrel",
+      "file": "src/components/form/utils/useBarcodeScanner.ts",
+      "find": "import('@/components/_internal/zxing-wasm-data-load').then((m) => m.loadWasmBase64()),",
+      "replace": "import('@/components/_internal/zxing-wasm-data').then((m) => m.ZXING_WASM_DATA_BASE64),",
+      "cmd": "npx vitest run tests/unit/zxing-wasm-data.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "运行期改回 barrel → 分片被重新合成 1.27MB 单 chunk，构建在 Windows 上必失败（TD-129）（#417）"
     }
   ]
 }

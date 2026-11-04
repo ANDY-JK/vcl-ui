@@ -598,10 +598,25 @@ export function readVendoredBinaryModule(text, readSibling) {
       if (chunks.every((c) => typeof c === 'string')) base64 = chunks.join('')
     }
   }
+  // 元数据可能被移到独立文件（#417：zxing-wasm-data-meta.ts），barrel 只 re-export。
+  // 取不到就仍然是 null/NaN —— 不许猜。
+  const metaText = readSibling ? readSibling('zxing-wasm-data-meta.ts') : null
+  const fromMeta = (re) => {
+    const m = metaText ? metaText.match(re) : null
+    return m ? m[1] : null
+  }
   return {
-    version: pick(/ZXING_WASM_DATA_VERSION(?:\s*:\s*string)?\s*=\s*'([^']+)'/),
-    sha256: pick(/ZXING_WASM_DATA_SHA256(?:\s*:\s*string)?\s*=\s*'([0-9a-f]{64})'/),
-    bytes: Number(pick(/ZXING_WASM_DATA_BYTES(?:\s*:\s*number)?\s*=\s*(\d+)/) ?? 'NaN'),
+    version:
+      pick(/ZXING_WASM_DATA_VERSION(?:\s*:\s*string)?\s*=\s*'([^']+)'/) ??
+      fromMeta(/ZXING_WASM_DATA_VERSION(?:\s*:\s*string)?\s*=\s*'([^']+)'/),
+    sha256:
+      pick(/ZXING_WASM_DATA_SHA256(?:\s*:\s*string)?\s*=\s*'([0-9a-f]{64})'/) ??
+      fromMeta(/ZXING_WASM_DATA_SHA256(?:\s*:\s*string)?\s*=\s*'([0-9a-f]{64})'/),
+    bytes: Number(
+      pick(/ZXING_WASM_DATA_BYTES(?:\s*:\s*number)?\s*=\s*(\d+)/) ??
+        fromMeta(/ZXING_WASM_DATA_BYTES(?:\s*:\s*number)?\s*=\s*(\d+)/) ??
+        'NaN',
+    ),
     base64,
   }
 }

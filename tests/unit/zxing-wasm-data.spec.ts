@@ -69,4 +69,22 @@ describe('随包 zxing wasm 二进制', () => {
     const barrel = statSync(path.join(internalDir, 'zxing-wasm-data.ts')).size
     expect(barrel, `barrel 有 ${barrel} 字节 —— 只剩元数据与拼接语句时才该是几 KB`).toBeLessThan(64 * 1024)
   })
+
+  /* ── 运行期取件口（#417）────────────────────────────────────────────
+   * 为什么运行期不走 barrel：barrel 静态 import 了全部分片 → Rollup 会把 1.27MB 合成**一个**
+   * chunk，而 esbuild 对 >1MiB 的单次输入会落临时文件、随后删除被拒 → 构建必失败（TD-129）。
+   * 所以运行期改成「meta（几百字节）+ 两个分片各自动态 import」。 */
+  it('运行期取件口与 barrel 拼出同一份 base64（顺序错/漏片都会红）', async () => {
+    const { loadWasmBase64 } = await import('@/components/_internal/zxing-wasm-data-load')
+    await expect(loadWasmBase64()).resolves.toBe(ZXING_WASM_DATA_BASE64)
+  })
+
+  it('**运行期不许直接 import barrel**（那会把分片重新合成 1.27MB 单 chunk → 构建在 Windows 上必失败）', () => {
+    const src = readFileSync(path.join(repoRoot, 'src/components/form/utils/useBarcodeScanner.ts'), 'utf8')
+    expect(src, '别再 import barrel：改走 zxing-wasm-data-meta + zxing-wasm-data-load').not.toMatch(
+      /_internal\/zxing-wasm-data['"]/,
+    )
+    expect(src).toMatch(/zxing-wasm-data-load/)
+    expect(src).toMatch(/zxing-wasm-data-meta/)
+  })
 })

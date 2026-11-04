@@ -179,6 +179,10 @@ const BUDGET_KB = [
   // 它只会随 zxing-wasm 版本重生成而变（正源 node scripts/gen-zxing-wasm-data.mjs），
   // 拆成独立懒加载 chunk，只有打开扫码界面才下载——不要合并进 form-chunk（预算 180KB）。
   [/^zxing-wasm-data-.*\.js$/, 1460],
+  // 分片形态（#417）：base64 被切成多片，每片单独成 chunk（`zxing-wasm-data.part-N-HASH.js`）。
+  // 注意 `data` 后面是**点**不是横线，上面那条正则匹配不到，会落到 150KB 兜底 ——
+  // 本轮实测就以 781KB/460KB 误报过一次，所以单独给一条预算。
+  [/^zxing-wasm-data\.part-\d+-.*\.js$/, 900],
   [/^data-chunk-.*\.js$/, 320],
   [/^form-chunk-.*\.js$/, 180],
   [/^route-planner\/index\.js$/, 100],
