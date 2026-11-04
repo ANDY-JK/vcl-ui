@@ -568,13 +568,36 @@ export const VENDOR_BINARIES = [
 
 /**
  * 从生成文件文本里取随包二进制的登记字段（不 import 生成物：本脚本要在 node 侧独立复算）。
+ *
+ * 支持两种形态（#416）：
+ * · 单文件 —— `ZXING_WASM_DATA_BASE64 = '…'`（历史形态）
+ * · 分片   —— barrel 只写 `ZXING_WASM_DATA_BASE64: string = PART_1 + PART_2`，真数据在同目录的
+ *   `zxing-wasm-data.part-N.ts` 里。此时必须由调用方给 `readSibling(文件名)`，否则**取不到就报 null**
+ *   （宁可判"读不到"也不要猜出一份像模像样的 base64 —— 对账闸门说谎比不写更糟）。
+ *
+ * @param {string} text barrel 文本
+ * @param {(partFile: string) => string|null} [readSibling] 读同目录分片文件
  * @returns {{version: string|null, sha256: string|null, bytes: number, base64: string|null}}
  */
-export function readVendoredBinaryModule(text) {
+export function readVendoredBinaryModule(text, readSibling) {
   // 生成物里的常量带 `: string` / `: number` 标注（不标会把 1.27MB base64 抄进 .d.ts），
   // 所以取值时标注可有可无都要认
   const pick = (re) => (text.match(re) || [])[1] ?? null
-  const base64 = pick(/ZXING_WASM_DATA_BASE64(?:\s*:\s*string)?\s*=\s*\n?\s*'([A-Za-z0-9+/=]+)'/)
+  let base64 = pick(/ZXING_WASM_DATA_BASE64(?:\s*:\s*string)?\s*=\s*\n?\s*'([A-Za-z0-9+/=]+)'/)
+  if (!base64) {
+    // 分片形态：按 barrel 里 PART_i 的出现顺序拼接（不按文件名排序 —— 声明顺序就是拼接顺序）
+    const sum = pick(/ZXING_WASM_DATA_BASE64(?:\s*:\s*string)?\s*=\s*(PART_\d+(?:\s*\+\s*PART_\d+)*)/)
+    if (sum && readSibling) {
+      const names = sum.split('+').map((x) => x.trim())
+      const chunks = names.map((n) => {
+        const idx = Number(n.slice('PART_'.length))
+        const partText = readSibling(`zxing-wasm-data.part-${idx}.ts`)
+        const m = partText ? /\s'([A-Za-z0-9+/=]+)'/.exec(partText) : null
+        return m ? m[1] : null
+      })
+      if (chunks.every((c) => typeof c === 'string')) base64 = chunks.join('')
+    }
+  }
   return {
     version: pick(/ZXING_WASM_DATA_VERSION(?:\s*:\s*string)?\s*=\s*'([^']+)'/),
     sha256: pick(/ZXING_WASM_DATA_SHA256(?:\s*:\s*string)?\s*=\s*'([0-9a-f]{64})'/),
@@ -617,7 +640,11 @@ export function vendorBinaryProbe(
       ver: null,
     }
     if (!out.exists) return out
-    const mod = readVendoredBinaryModule(read(abs))
+    // 分片形态（#416）：给 barrel 一个"读同目录分片"的读法，否则 base64 取不到会被误判为泄漏/改名
+    const mod = readVendoredBinaryModule(read(abs), (partFile) => {
+      const partAbs = join(abs, '..', partFile)
+      return exists(partAbs) ? read(partAbs) : null
+    })
     out.declaredSha = mod.sha256
     out.bytes = Number.isFinite(mod.bytes) ? mod.bytes : 0
     out.ver = mod.version

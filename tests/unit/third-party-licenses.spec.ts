@@ -385,4 +385,31 @@ export const ZXING_WASM_DATA_BASE64 =
     const got = readVendoredBinaryModule(TEXT.replace('a'.repeat(64), 'a'.repeat(20)))
     expect(got.sha256).toBeNull()
   })
+
+  /* ── 分片形态（#416）─────────────────────────────────────────────────
+   * base64 超过 1MiB 会被 esbuild 落成临时文件（Windows 上删不掉 → transform 失败），
+   * 所以生成物改成「barrel 拼接 + 同目录分片」。对账闸门必须跟着能读分片，
+   * 否则它会以"字段改名了？"的形式误报，或者更糟：**猜一份像模像样的 base64** 而对账变假绿。 */
+  const SPLIT = `export const ZXING_WASM_DATA_VERSION = '3.1.4'
+export const ZXING_WASM_DATA_SHA256 = '${'a'.repeat(64)}'
+export const ZXING_WASM_DATA_BYTES = 5
+export const ZXING_WASM_DATA_BASE64: string = PART_1 + PART_2
+`
+  const PARTS: Record<string, string> = {
+    'zxing-wasm-data.part-1.ts': `export const PART_1: string =\n  'AAEC'\n`,
+    'zxing-wasm-data.part-2.ts': `export const PART_2: string =\n  'AwQ='\n`,
+  }
+
+  it('**分片形态：按 barrel 里的 PART 顺序拼接**（读不到分片 ≠ 猜一个）', () => {
+    expect(readVendoredBinaryModule(SPLIT, (f) => PARTS[f] ?? null).base64).toBe('AAECAwQ=')
+  })
+
+  it('**缺一个分片就返回 null**（宁可判"读不到"，也不要拼出一份错的 base64 让对账假绿）', () => {
+    const got = readVendoredBinaryModule(SPLIT, (f) => (f.endsWith('part-2.ts') ? null : PARTS[f]))
+    expect(got.base64).toBeNull()
+  })
+
+  it('分片形态但调用方没给 readSibling → 也返回 null（不许静默降级）', () => {
+    expect(readVendoredBinaryModule(SPLIT).base64).toBeNull()
+  })
 })

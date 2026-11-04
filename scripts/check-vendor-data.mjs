@@ -39,7 +39,12 @@ for (const spec of FIXTURE ?? VENDOR_BINARIES) {
     RED.push(`${spec.origin} 不在安装物里——随包件无从对账，先确认 ${spec.pkg} 已安装`)
     continue
   }
-  const mod = readVendoredBinaryModule(readFileSync(abs, 'utf8'))
+  // barrel 可能把 base64 分片存放（#416）：给它一个"读同目录分片"的读法，
+  // 否则取不到 base64 会被误判成"字段改名了"
+  const mod = readVendoredBinaryModule(readFileSync(abs, 'utf8'), (partFile) => {
+    const partAbs = join(dirname(abs), partFile)
+    return existsSync(partAbs) ? readFileSync(partAbs, 'utf8') : null
+  })
   const originBuf = readFileSync(originAbs)
   const originSha = hash(originBuf)
   if (!mod.base64) {
