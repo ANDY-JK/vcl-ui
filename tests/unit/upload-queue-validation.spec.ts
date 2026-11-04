@@ -53,6 +53,7 @@ function makeQueue(
     compress: boolean
     maxConcurrent: number
     customRequest: (f: File) => Promise<{ url: string }>
+    disabled: boolean
   }> = {},
 ) {
   const emits: Emits = { change: [], error: [], remove: [], 'update:modelValue': [] }
@@ -269,6 +270,33 @@ describe('事件与模型同步', () => {
 })
 
 describe('removeFile / clearAllFiles', () => {
+  /* ── #431：同一写动作的第二条路径 ──────────────────────────────────
+   * removeFile 早就判了 disabled；clearAllFiles 是同一个写动作的另一个入口
+   * （都做「清 files + syncModel」），却没有守卫 —— 禁用态下点「清空全部」
+   * 会把文件全删掉并 emit 空数组 —— 比单个 × 更狠。TD-90 收判据时发现了第 4 例。*/
+  it('**disabled：clearAllFiles 不删文件、不 emit**（不能只靠按钮不渲染）', () => {
+    const { q, emits } = makeQueue({ multiple: true, disabled: true })
+    // 先照常入队拿到"入队本身产生的 emit"作基线，再看 clearAllFiles 有没有额外写
+    q.processFiles([makeFile('a.png', 100), makeFile('b.png', 200)])
+    const baselineEmits = emits['update:modelValue'].length
+    const baselineFiles = q.files.value.length
+
+    q.clearAllFiles()
+
+    expect(q.files.value, '禁用态下清空不该动队列').toHaveLength(baselineFiles)
+    expect(emits['update:modelValue'].length, '清空不该再 emit 一次').toBe(baselineEmits)
+    const last = emits['update:modelValue'].at(-1) as { status?: string; id?: string }[]
+    expect(last, '最后一条 emit 仍是入队那两个上传中条目，不是空数组').toHaveLength(baselineFiles)
+  })
+
+  it('**可写态 clearAllFiles 照常清空并 emit**（反向保护：守卫不能把功能一起关了）', () => {
+    const { q, emits } = makeQueue({ multiple: true })
+    q.processFiles([makeFile('a.png', 100), makeFile('b.png', 200)])
+    q.clearAllFiles()
+    expect(q.files.value).toHaveLength(0)
+    expect(emits['update:modelValue'].at(-1), '最后一条应是空数组').toEqual([])
+  })
+
   it('removeFile 移除指定文件并 emit', () => {
     const { q, emits } = makeQueue({ multiple: true })
     q.processFiles([makeFile('a.png', 100), makeFile('b.png', 200)])

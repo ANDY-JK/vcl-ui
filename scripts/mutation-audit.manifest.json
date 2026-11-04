@@ -1931,6 +1931,15 @@
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
       "expect": "red",
       "note": "共用下载出口把 revoke 拉回 click 同拍 → blob URL 被读取前撤走，下载静默失败（#430）"
+    },
+    {
+      "id": "upload-clearall-no-disabled-guard",
+      "file": "src/components/form/utils/useUploadQueue.ts",
+      "find": "    if (props.disabled) return\n    files.value.forEach((f) => {\n      if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)\n    })\n    files.value = []\n    syncModel()",
+      "replace": "    files.value.forEach((f) => {\n      if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)\n    })\n    files.value = []\n    syncModel()",
+      "cmd": "npx vitest run tests/unit/upload-queue-validation.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "占位 — 稍后换成真正中性化守卫的变异"
     }
   ]
 }

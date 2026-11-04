@@ -84,6 +84,10 @@ export function useUploadQueue(opts: {
 
   /** 清空全部文件并同步模型（模板 @click 只支持单表达式，抽成方法） */
   function clearAllFiles() {
+    // 禁用语义守卫（#287 的**第二条路径**）：`removeFile`（单个 ×）早就判了 disabled，
+    // 但"清空全部"是同一个写动作的另一个入口，一直漏判 —— 禁用态下点清空会把文件
+    // 全删掉并 emit 空数组，比单个 × 更狠。TD-90 收到的第 4 例，同一形态第 4 次。
+    if (props.disabled) return
     files.value.forEach((f) => {
       if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
     })
