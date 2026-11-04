@@ -1886,6 +1886,15 @@
       "cmd": "npx vitest run tests/unit/renderer-signature.spec.ts --no-coverage",
       "expect": "red",
       "note": "撤掉像素兜底 → alpha≈0 的\"看不见的一笔\"被写成有效签名，required 通过但提交上来是空白（TD-81/#426）"
+    },
+    {
+      "id": "menu-hover-enter-noop",
+      "file": "src/components/nav/menu-hover.ts",
+      "find": "enterTimer = setTimeout(() => {",
+      "replace": "enterTimer = setTimeout(() => {\n      /* no-op */\n    }, HOVER_SWITCH_MS)",
+      "cmd": "npx vitest run tests/unit/menu-interaction.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "enter 回调 no-op → hover 150ms 展开语义消失，菜单悬停完全失效（TD-101/#427）"
     }
   ]
 }

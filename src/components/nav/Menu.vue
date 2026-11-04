@@ -1,14 +1,13 @@
 <script setup lang="ts">
 // ⛔ 保护 — 多级菜单，禁止：递归渲染结构，hover/click 展开逻辑
 //    需我确认：item 字段扩展、submenu 定位方式
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import type { MenuItem } from './types'
 import { focusEdge, focusSibling, useMenuRoving } from './menu-keyboard'
+import { useMenuHover } from './menu-hover'
 
 /** 悬停切换子菜单的进/出延时：同一手感，两向共用一个值 */
-const _HOVER_SWITCH_MS = 150
-
 export type { MenuItem }
 
 const props = withDefaults(
@@ -41,40 +40,8 @@ const emit = defineEmits<{
 // --- state ---
 const expandedKeys = ref<Set<string | number>>(new Set())
 const hoverKey = ref<string | number | null>(null)
-let enterTimer: ReturnType<typeof setTimeout> | null = null
-let leaveTimer: ReturnType<typeof setTimeout> | null = null
-
-// --- hover helpers ---
-function clearTimers() {
-  if (enterTimer) {
-    clearTimeout(enterTimer)
-    enterTimer = null
-  }
-  if (leaveTimer) {
-    clearTimeout(leaveTimer)
-    leaveTimer = null
-  }
-}
-// 卸载时清理 pending 定时器，避免回调写已卸载组件的 ref
-onBeforeUnmount(clearTimers)
-function scheduleEnter(key: string | number) {
-  clearTimers()
-  enterTimer = setTimeout(() => {
-    hoverKey.value = key
-  }, _HOVER_SWITCH_MS)
-}
-function scheduleLeave() {
-  clearTimers()
-  leaveTimer = setTimeout(() => {
-    hoverKey.value = null
-  }, _HOVER_SWITCH_MS)
-}
-function cancelLeave() {
-  if (leaveTimer) {
-    clearTimeout(leaveTimer)
-    leaveTimer = null
-  }
-}
+// hover 块下沉 menu-hover.ts（TD-101）：clearTimers/scheduleEnter/scheduleLeave/cancelLeave
+const { clearTimers, scheduleEnter, scheduleLeave, cancelLeave } = useMenuHover(hoverKey)
 
 // --- expand logic ---
 function isExpanded(key: string | number) {
