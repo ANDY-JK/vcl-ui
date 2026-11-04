@@ -264,3 +264,33 @@ describe('拦截覆盖式钓鱼样式', () => {
     expect(out).toContain('font-weight:bold')
   })
 })
+
+describe('sanitizeHTML · 属性归一化与 data: URI 编码（#411）', () => {
+  it('**首尾空白不该让链接消失**：` https://…` 归一后照常保留', () => {
+    const out = sanitizeHTML('<a href="  https://example.com/x  ">链接</a>')
+    expect(out, '带空白的合法链接被整条丢弃 = 功能损失，不是安全').toContain('href="https://example.com/x"')
+    expect(out).not.toContain('  https')
+  })
+
+  it('图片 src 同样归一（粘贴来的 data URL 常带空白）', () => {
+    const out = sanitizeHTML('<img src="  data:image/png;base64,AAA  ">')
+    expect(out).toContain('src="data:image/png;base64,AAA"')
+  })
+
+  it('**未编码的 data: URI 一律剥离**：字面量 `<` 说明里面是一段标记', () => {
+    const out = sanitizeHTML('<img src="data:image/svg+xml,<svg onload=alert(1)>">')
+    expect(out, '可执行标记被原样存进业务数据，宿主一旦换上下文就是 XSS').not.toContain('src')
+  })
+
+  it('反回归：**已编码**的 data:image 仍放行（本库 mapMarkerIcon 就是这种形态）', () => {
+    expect(sanitizeHTML('<img src="data:image/svg+xml,%3Csvg%3E%3C/svg%3E">')).toContain('src="data:image/svg+xml,%3Csvg')
+    expect(sanitizeHTML('<img src="data:image/png;base64,iVBORw0KGgo=">')).toContain('src="data:image/png;base64,')
+  })
+
+  it('反回归：危险协议与事件属性照旧被剥（#411 没有放宽任何判据）', () => {
+    expect(sanitizeHTML('<a href="javascript:alert(1)">x</a>')).not.toContain('href')
+    expect(sanitizeHTML('<a href=" //evil.example">x</a>')).not.toContain('href')
+    expect(sanitizeHTML('<img src=x onerror=alert(1)>')).toBe('<img>')
+    expect(sanitizeHTML('<p title="a&quot; onmouseover=&quot;alert(1)">t</p>')).toContain('&quot;')
+  })
+})

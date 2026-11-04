@@ -1715,6 +1715,24 @@
       "cmd": "npx vitest run tests/unit/vitest-config-guard.spec.ts --no-coverage",
       "expect": "red",
       "note": "hook 上限退回默认 10s → route-store-data「空存储」这类重 hook 用例在负载下 10021ms 假红（#410）"
+    },
+    {
+      "id": "sanitize-href-no-trim",
+      "file": "src/components/_internal/sanitize.ts",
+      "find": "        const trimmed = val.trim()",
+      "replace": "        const trimmed = val",
+      "cmd": "npx vitest run tests/unit/sanitize.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "不 trim 再判白名单 → 粘贴来的 ` https://…` 整条丢 href（功能损失，#411）"
+    },
+    {
+      "id": "sanitize-data-uri-raw-markup",
+      "file": "src/components/_internal/sanitize.ts",
+      "find": "        if (!allowed || rawMarkup) node.removeAttribute(attr)",
+      "replace": "        if (!allowed) node.removeAttribute(attr)",
+      "cmd": "npx vitest run tests/unit/sanitize.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "未编码的 data: URI 放行 → `data:image/svg+xml,<svg onload=…>` 原样存进业务数据（#411）"
     }
   ]
 }

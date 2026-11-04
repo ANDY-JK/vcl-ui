@@ -143,11 +143,19 @@ export function sanitizeHTML(html: string): string {
         continue
       }
       const val = node.getAttribute(attr) || ''
-      if (attr === 'href' && !_hrefRe.test(val)) {
-        node.removeAttribute(attr)
-      }
-      if (attr === 'src' && !_srcRe.test(val)) {
-        node.removeAttribute(attr)
+      // 先去掉首尾空白再判白名单（#411）。旧实现直接拿原值测 `^https?:`，
+      // 于是用户粘贴进来的 ` https://example.com` 会被整条丢掉 —— 这不是"更安全"，
+      // 是**功能损失**：链接无声消失，用户以为数据丢了。放行时写回归一化后的值。
+      if (attr === 'href' || attr === 'src') {
+        const trimmed = val.trim()
+        const allowed = attr === 'href' ? _hrefRe.test(trimmed) : _srcRe.test(trimmed)
+        // data: URI 里出现字面量 `<` = 内容没被编码（#411）：`data:image/svg+xml,<svg onload=…>`
+        // 在 `<img>` 上下文里确实不执行，但这段标记会被**原样存进业务数据**，一旦宿主把它
+        // 放进 `<object>` / 预览 iframe / 服务端渲染管线就是 XSS。本库自己的 mapMarkerIcon
+        // 走 `%3C` 编码，不受影响 —— 判据是"有没有编码"，而不是"是不是 svg"。
+        const rawMarkup = attr === 'src' && /^data:/i.test(trimmed) && trimmed.includes('<')
+        if (!allowed || rawMarkup) node.removeAttribute(attr)
+        else if (trimmed !== val) node.setAttribute(attr, trimmed)
       }
       // style 属性过滤危险 CSS 值（expression()/javascript:/url(javascript:) 等）。
       // **归一化后再匹配**（#396）：剥注释 + 解 CSS 转义，否则 `z-\69 ndex` / `in\73 et`
