@@ -2070,11 +2070,11 @@
     {
       "id": "debt-evidence-dead-path",
       "file": "docs/tech-debt.md",
-      "find": "`src/components/form-builder/designer/fieldRegistryAdvanced.ts`",
-      "replace": "`designer/fieldRegistryAdvanced.ts`",
+      "find": "`scripts/check-console-noise.mjs`",
+      "replace": "`scripts/check-console-noise-REMOVED.mjs`",
       "cmd": "npx vitest run tests/unit/debt-evidence.spec.ts --no-coverage",
       "expect": "red",
-      "note": "台账证据路径去掉 src/ 前缀 → debt-evidence.spec 的「真实树零死链」立刻红（#456 实测踩到两次）"
+      "note": "把台账里真实存在的证据路径改名 → debt-evidence.spec 的「真实树零死链」立刻红（锚选不被每轮刷新的稳定行；带 .mjs 后缀才能被 evidencePaths 抽取）"
     },
     {
       "id": "bench-env-retry-short-circuit",
