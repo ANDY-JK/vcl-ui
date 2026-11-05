@@ -20,10 +20,6 @@
  */
 import { describe, it, expect } from 'vitest'
 import {
-  formatNumber,
-  formatMoney,
-  formatSize,
-  toChineseAmount,
   truncate,
   maskName,
   maskPhone,
@@ -37,6 +33,8 @@ import {
   parseRegion,
   sanitizeDownloadName,
 } from '@/components/_internal/utils'
+// #439：4 个格式化函数已拆到独立模块（utils.ts 余量），用例跟着实现走
+import { formatNumber, formatMoney, formatSize, toChineseAmount } from '@/components/_internal/formatters'
 
 /** 用户可见文本里绝不能出现的片段 */
 const DIRTY = /undefined|NaN|\[object Object\]|Infinity/
