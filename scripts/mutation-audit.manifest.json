@@ -2120,6 +2120,15 @@
       "cmd": "npx vitest run tests/unit/i18n-usage.spec.ts --no-coverage",
       "expect": "red",
       "note": "语言包删掉仍在用的 key → 运行时显示 key 本身；check:i18n-usage 点名调用点（check:i18n 对账看不见）"
+    },
+    {
+      "id": "event-code-renamed",
+      "file": "src/components/amap/amap-key.ts",
+      "find": "'amap/js-key-missing',",
+      "replace": "'amap/js-key-missing-renamed',",
+      "cmd": "npx vitest run tests/unit/event-codes.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "已发布事件码改名 → 宿主告警规则静默失效；check:event-codes 点名缺失的旧码"
     }
   ]
 }

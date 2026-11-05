@@ -15,6 +15,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { generate } from './gen-docs.mjs'
+import { scanEventCodes } from './lib/event-codes.mjs'
 
 const ROOT = process.cwd()
 // 可选输出路径（供 check:facts 生成到临时目录比对用）。
@@ -94,119 +95,9 @@ function testScale() {
   return null
 }
 
-/** 枚举全部结构化事件码（reportEvent 调用点）—— 宿主据此建告警 */
+/** 枚举全部结构化事件码（解析器在 scripts/lib/event-codes.mjs，与 check:event-codes 共用） */
 function eventCatalog() {
-  const files = []
-  const rec = (d) => {
-    for (const e of readdirSync(d, { withFileTypes: true })) {
-      const p = join(d, e.name)
-      if (e.isDirectory()) rec(p)
-      else if (/\.(ts|vue)$/.test(e.name)) files.push(p)
-    }
-  }
-  rec(join(ROOT, 'src', 'components'))
-
-  const rows = []
-  for (const f of files) {
-    const text = readFileSync(f, 'utf8')
-    const lines = text.split('\n')
-    // 不变量：本文件里"像调用点"的行数，必须与真正解析出来的条数相等。
-    // 少一条就抛错——宁可整条闸口红，也不要一份"看起来完整、实际漏码"的告警清单。
-    const expectedCalls = lines.filter(
-      (l) => /reportEvent\(/.test(l) && !/function\s+reportEvent|reportEvent\s*:\s*\(|reportEvent\?:/.test(l),
-    ).length
-    const rowsBefore = rows.length
-    for (const [i, line] of lines.entries()) {
-      // reportEvent('code', 'message', ctx, 'level')
-      //
-      // ⚠️ 必须处理**跨行调用**：`reportEvent(` 后换行再写参数是常见写法
-      // （prettier 在参数多时会这么折行）。第一版只按单行正则匹配，
-      // 19 个调用点里只认出 8 个 —— 清单少了 11 个码，而清单是宿主建告警的依据，
-      // 漏码等于"这个告警永远不会被配"。
-      // 做法：**不用固定行窗**，按括号配对一路扫到文件末尾。
-      //
-      // 为什么（第 159 轮实测）：这里原是「当前行 + 后续 10 行」的固定窗口。prettier 把
-      // useDesignerDraft 里那个 reportEvent 的 context 对象展开后，该调用共占 **11 行**，
-      // 右括号落在窗口之外 → 整条调用被静默丢弃。后果不是"少一行表"，而是
-      // `form-designer/draft-save-failed` 的 warn 变体（reason=too-large）在宿主建告警的
-      // 清单里根本不存在 —— 漏码等于这个告警永远不会被配。
-      // 教训：窗口大小是对"代码长什么样"的隐式假设，而格式由 prettier 决定，随时会变。
-      const window = lines.slice(i).join(' ').replace(/\s+/g, ' ')
-      // 只在这一行确实是调用起点时才匹配，避免同一调用被后续行重复计入
-      if (!/reportEvent\(/.test(line)) continue
-      // **排除函数定义**：`export function reportEvent(` 与 TS 类型声明不是调用点。
-      // 第一版没排除，把 `code: string` / `message: string` 当成了事件码 —— 清单里
-      // 多出一个假码，而且"覆盖 6 个域"里混进了 `code: string` 这种噪音。
-      if (/function\s+reportEvent|reportEvent\s*:\s*\(|reportEvent\?:/.test(line)) continue
-      // 解析策略：先截到配对右括号（粗粒度：往后找第一个 `)` 且其前不是嵌套括号），
-      // 再按**顶层逗号**切参数。比一条大正则稳 —— 正则遇到 context 里的逗号就断，
-      // 实测会漏掉 `{ keywords, city }` 这类参数。
-      const startIdx = window.indexOf('reportEvent(')
-      let depth = 0
-      let endIdx = -1
-      for (let k = startIdx + 'reportEvent('.length; k < window.length; k++) {
-        const ch = window[k]
-        if (ch === '(' || ch === '[' || ch === '{') depth++
-        else if (ch === ')' || ch === ']' || ch === '}') {
-          if (depth === 0 && ch === ')') {
-            endIdx = k
-            break
-          }
-          depth--
-        }
-      }
-      if (endIdx < 0) continue
-      const argStr = window.slice(startIdx + 'reportEvent('.length, endIdx)
-      // 按顶层逗号切
-      const args = []
-      let buf = ''
-      let d = 0
-      let inStr = null
-      for (const ch of argStr) {
-        if (inStr) {
-          buf += ch
-          if (ch === inStr) inStr = null
-          continue
-        }
-        if (ch === "'" || ch === '"') {
-          inStr = ch
-          buf += ch
-          continue
-        }
-        if (ch === '(' || ch === '[' || ch === '{') d++
-        if (ch === ')' || ch === ']' || ch === '}') d--
-        if (ch === ',' && d === 0) {
-          args.push(buf.trim())
-          buf = ''
-          continue
-        }
-        buf += ch
-      }
-      if (buf.trim()) args.push(buf.trim())
-      const unq = (s) => (s && /^['"]/.test(s) ? s.slice(1, -1) : s)
-      const code = unq(args[0])
-      const message = unq(args[1])
-      if (!code || !message) continue
-      const lv = unq(args[3])
-      rows.push({
-        code,
-        message,
-        level: lv === 'info' || lv === 'warn' || lv === 'error' ? lv : 'warn',
-        context: args[2] && args[2] !== 'undefined' ? args[2] : '',
-        at: `${relative(ROOT, f).replaceAll('\\', '/')}:${i + 1}`,
-      })
-    }
-    const parsed = rows.length - rowsBefore
-    if (parsed !== expectedCalls) {
-      throw new Error(
-        `[gen-facts] 事件码解析不完整：${relative(ROOT, f)} 有 ${expectedCalls} 个 reportEvent 调用点，` +
-          `只解析出 ${parsed} 个。请检查解析器（常见原因：调用跨行数超过扫描范围、参数不是字面量）。` +
-          ` 漏码 = 宿主永远不会给该告警配规则。`,
-      )
-    }
-  }
-  rows.sort((a, b) => a.code.localeCompare(b.code))
-  return rows
+  return scanEventCodes({ root: ROOT })
 }
 
 /**

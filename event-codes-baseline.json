@@ -1,0 +1,23 @@
+{
+  "note": "宿主建告警规则所依赖的稳定事件码清单。删改任一码 = 破坏性变更，必须同步更新本文件并在留痕里说明迁移；新增码允许，但应跑 gen:facts 让文档清单跟上。",
+  "codes": [
+    "amap/js-key-missing",
+    "amap/key-swapped-after-init",
+    "amap/keyword-search-failed",
+    "amap/nearby-search-failed",
+    "amap/rest-key-missing",
+    "chart/init-failed",
+    "chart/set-option-failed",
+    "form-builder/geocode-failed",
+    "form-builder/share-invalid",
+    "form-builder/share-signature-invalid",
+    "form-builder/share-unsigned-rejected",
+    "form-builder/submit-failed",
+    "form-designer/draft-save-failed",
+    "storage/clear-failed",
+    "storage/cloud-delete-failed",
+    "storage/load-failed",
+    "storage/reconcile-failed",
+    "storage/save-failed"
+  ]
+}
