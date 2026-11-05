@@ -154,7 +154,7 @@
 
 <script setup lang="ts">
 import { isImeComposing } from '@/components/_internal/ime'
-import { ref, reactive, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import {
   Input,
   Button,
@@ -168,6 +168,7 @@ import {
   storageDelete,
   SUBMIT_UNLOCK_FALLBACK_MS,
 } from './_shared'
+import { useLoginLockout } from './composables/useLoginLockout'
 
 /** 锁定倒计时的刷新节拍（只做显示，能不能重试按 lockUntil 时间戳判） */
 const _LOCK_TICK_MS = 1000
@@ -273,59 +274,19 @@ const passwordRules = [
 
 // ======================== 锁定逻辑（内置，依赖 indexedDB 存储） ========================
 
-const lockUntil = ref(0)
-const internalError = ref('')
-const errorType = ref<'circle-alert' | 'success' | 'warning' | 'error'>('error')
-let lockTimer: ReturnType<typeof setInterval> | null = null
-
-// 锁定状态存 localStorage，属客户端辅助防护可被清除绕过，服务端锁定才是核心
-const ATTEMPT_KEY = '_login_attempts'
-const LOCK_KEY = '_login_lock_until'
-
-/** 最终展示的错误：外部注入优先，否则内部锁定/校验错误 */
-const displayError = computed(() => props.error || internalError.value)
-
-function recordFailedAttempt(serverMsg?: string) {
-  internalLoading.value = false
-  if (props.maxAttempts <= 0) return
-  const attempts = (Number(storageGet<string>(ATTEMPT_KEY)) || 0) + 1
-  storageSet(ATTEMPT_KEY, String(attempts))
-
-  if (attempts >= props.maxAttempts) {
-    const until = Date.now() + props.lockMinutes * 60 * 1000
-    storageSet(LOCK_KEY, String(until))
-    storageSet(ATTEMPT_KEY, '0')
-    lockUntil.value = until
-    startLockCountdown()
-  } else {
-    internalError.value = serverMsg || t('login.attemptsLeft', { attempts, max: props.maxAttempts })
-    errorType.value = 'error'
-  }
-}
-
-function startLockCountdown() {
-  if (lockTimer) clearInterval(lockTimer)
-  lockTimer = setInterval(() => {
-    const remaining = Math.max(0, lockUntil.value - Date.now())
-    if (remaining <= 0) {
-      lockUntil.value = 0
-      storageDelete(LOCK_KEY)
-      internalError.value = ''
-      if (lockTimer) {
-        clearInterval(lockTimer)
-        lockTimer = null
-      }
-    } else {
-      const min = Math.floor(remaining / 60000)
-      const sec = Math.floor((remaining % 60000) / 1000)
-      internalError.value = t('login.lockedCountdown', { time: `${min}:${String(sec).padStart(2, '0')}` })
-      errorType.value = 'warning'
-    }
-  }, _LOCK_TICK_MS)
-}
-
-onUnmounted(() => {
-  if (lockTimer) clearInterval(lockTimer)
+// 失败计数与锁定倒计时下沉 useLoginLockout（#459）：localStorage 计数 → 锁定 → 秒级倒计时 → 自动解锁。
+// 恢复（刷新后锁仍生效）由 composable 的 onMounted 自己做；成功清态用 resetLockout()。
+const {
+  internalError,
+  errorType,
+  locked,
+  recordFailedAttempt,
+  reset: resetLockout,
+} = useLoginLockout({
+  t,
+  maxAttempts: props.maxAttempts,
+  lockMinutes: props.lockMinutes,
+  tickMs: _LOCK_TICK_MS,
 })
 
 // ======================== 初始化 ========================
@@ -335,12 +296,6 @@ onMounted(() => {
   if (savedUsername) {
     form.username = savedUsername
     rememberMe.value = true
-  }
-
-  const lkUntil = Number(storageGet<string>(LOCK_KEY)) || 0
-  if (lkUntil > Date.now()) {
-    lockUntil.value = lkUntil
-    startLockCountdown()
   }
 })
 
@@ -357,7 +312,7 @@ const handleSubmit = () => {
 
   // 提交中：忽略重复点击
   if (internalLoading.value) return
-  if (lockUntil.value > Date.now()) return
+  if (locked.value) return
 
   // 与 rules 的 v.trim() 口径一致：纯空格用户名不放行
   if (!form.username.trim() || form.username.length < 3 || !form.password || form.password.length < 6) {
@@ -395,15 +350,16 @@ watch(
     if (!res) return
     if (res.ok) {
       internalLoading.value = false
-      storageDelete(ATTEMPT_KEY)
-      storageDelete(LOCK_KEY)
-      internalError.value = ''
+      resetLockout()
     } else {
       recordFailedAttempt(res.message)
     }
   },
   { deep: true },
 )
+
+/** 最终展示的错误：外部注入优先，否则内部锁定/校验错误 */
+const displayError = computed(() => props.error || internalError.value)
 
 // ======================== 暴露方法 ========================
 // ⛔ 契约（Q18，v2 已收敛）：宿主登录结果回写走 authResult prop（见上），不再占暴露方法面；
