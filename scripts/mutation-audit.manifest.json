@@ -935,12 +935,12 @@
     },
     {
       "id": "select-home-end",
-      "file": "src/components/form/Select.vue",
-      "find": "    highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)\n    return",
-      "replace": "    return",
-      "cmd": "npx vitest run tests/unit/select-home-end.spec.ts --no-coverage",
+      "file": "src/components/form/composables/useSelectKeyboard.ts",
+      "find": "      highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)\n      return\n    }\n    if (e.key === 'Enter') {",
+      "replace": "      highlightIdx.value = e.key === 'Home' ? Math.max(navCount.value - 1, 0) : 0\n      return\n    }\n    if (e.key === 'Enter') {",
+      "cmd": "npx vitest run tests/unit/select-keyboard-compose.spec.ts --no-coverage",
       "expect": "red",
-      "note": "变异后：100 条选项里按 End 没反应，只能一格一格按到末尾（#317）"
+      "note": "Home/End 行为互换 → 键位 spec 立刻红（锚点带上下文；该片段在文件里出现 3 次，取 onComboKeydown 内那处）"
     },
     {
       "id": "select-error-describedby",
