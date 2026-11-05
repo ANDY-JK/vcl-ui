@@ -2102,6 +2102,15 @@
       "cmd": "npx vitest run tests/unit/review-history.spec.ts --no-coverage",
       "expect": "red",
       "note": "历史报告摘掉过期横幅 → check:review-history 点名该报告（TD-08 复活）"
+    },
+    {
+      "id": "canwrite-inline-reimplementation",
+      "file": "src/components/form/Input.vue",
+      "find": "const canClear = computed(() => props.clearable && canWrite(props))",
+      "replace": "const canClear = computed(() => props.clearable && !props.disabled && !props.readonly)",
+      "cmd": "npx vitest run tests/unit/canwrite-usage.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "新入口内联手写可写判据（TD-79 类）→ check:canwrite-usage 点名该文件行"
     }
   ]
 }
