@@ -67,6 +67,7 @@ export default {
     sourceTownship: '🟡 区域定位',
     sourceManual: '🔵 手动填写',
     sourceNone: '⚪ 无坐标',
+    needsManual: '⚠️ 需人工补坐标',
     // StoreFormModal
     editStore: '编辑门店',
     addStoreTitle: '添加门店',

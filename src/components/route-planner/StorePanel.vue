@@ -116,6 +116,16 @@ function sourceLabel(source: string): string {
   return map[source] || source
 }
 
+/**
+ * 该门店是否需要人工处理（坐标缺失或来源为 none）。
+ *
+ * 判据取"没有可用坐标"而不是"来源是 manual"：manual 是已经填好的，
+ * none / 坐标缺失才是要人补的。放在行内显示（行尾），列表里一眼可见。
+ */
+function needsManual(store: Store): boolean {
+  return !store.longitude || !store.latitude || store.coordSource === 'none'
+}
+
 // ── 统计 ──
 const stats = computed(() => {
   const total = props.stores.length
@@ -211,9 +221,22 @@ const stats = computed(() => {
                 <span v-if="store.contact" class="contact" :title="store.contact + ' ' + store.phone"
                   >{{ store.contact }} {{ store.phone }}</span
                 >
+                <!-- 「需要人工处理」放在该门店行内部（行尾），不再集中到别处：
+                     坐标缺失 / 来源为 none 的门店，在它自己那一行就能看见 -->
+                <span v-if="needsManual(store)" class="needs-manual">{{ t('routePlanner.needsManual') }}</span>
               </div>
             </div>
             <div class="store-actions">
+              <!-- 跳过态改用无头复选框（浏览器原生外观，不再用 chevron/rotate-ccw 箭头）：
+                   勾选 = 跳过该门店，语义直白；标题仍随状态切换 -->
+              <input
+                type="checkbox"
+                class="skip-box"
+                :checked="store.skipped"
+                :title="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
+                :aria-label="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
+                @change="emit('toggle-skip', store.id)"
+              />
               <button
                 type="button"
                 class="btn-icon"
@@ -222,15 +245,6 @@ const stats = computed(() => {
                 @click="emit('edit', store)"
               >
                 <IconSvg type="pencil" size="sm" />
-              </button>
-              <button
-                type="button"
-                class="btn-icon"
-                :title="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
-                :aria-label="store.skipped ? t('routePlanner.toggleSkipTitle') : t('routePlanner.toggleSkipTitleOn')"
-                @click="emit('toggle-skip', store.id)"
-              >
-                <IconSvg :type="store.skipped ? 'rotate-ccw' : 'chevron-right'" size="sm" />
               </button>
               <button
                 type="button"

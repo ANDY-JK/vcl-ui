@@ -208,21 +208,38 @@ describe('StorePanel · 事件派发', () => {
     expect((ev![0]![0] as Store).id, '应带上该门店').toBe('x')
   })
 
-  it('**跳过按钮派发 toggle-skip + 门店 id**', async () => {
+  it('**跳过用无头复选框**：派发 toggle-skip + 门店 id（不再用箭头图标按钮）', async () => {
     const w = mountPanel([store({ id: 'x' })])
     await expandFirst(w)
-    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
+    const box = w.find('.store-actions input.skip-box')
+    expect(box.exists(), '跳过控件应是原生 checkbox').toBe(true)
+    expect(box.attributes('type')).toBe('checkbox')
+    await box.setValue(true)
     expect(w.emitted('toggle-skip')![0]).toEqual(['x'])
   })
 
-  it('**跳过态不同 → 跳过按钮的 title 与图标语义不同**（同一按钮表达两态）', async () => {
+  it('**跳过态不同 → 复选框的 title 语义不同**（同一控件表达两态）', async () => {
     const w = mountPanel([store({ id: 'a', skipped: false })])
     await expandFirst(w)
-    const btn = () => w.findAll('.store-actions .btn-icon')[1]!
-    expect(btn().attributes('title'), '未跳过 → 提示去跳过').toBe(t('routePlanner.toggleSkipTitleOn'))
+    const box = () => w.find('.store-actions input.skip-box')
+    expect(box().attributes('title'), '未跳过 → 提示去跳过').toBe(t('routePlanner.toggleSkipTitleOn'))
+    expect(box().attributes('checked'), '未跳过 → 不勾选').toBeUndefined()
 
     await w.setProps({ stores: [store({ id: 'a', skipped: true })] })
-    expect(btn().attributes('title'), '已跳过 → 提示取消跳过').toBe(t('routePlanner.toggleSkipTitle'))
+    expect(box().attributes('title'), '已跳过 → 提示取消跳过').toBe(t('routePlanner.toggleSkipTitle'))
+    expect(box().attributes('checked'), '已跳过 → 勾选').toBeDefined()
+  })
+
+  it('**缺坐标的门店在行内出现「需人工补坐标」标记**（放在该门店行尾部）', async () => {
+    const w = mountPanel([
+      store({ id: 'a', name: '有坐标店', longitude: 116.4, latitude: 39.9 }),
+      store({ id: 'b', name: '缺坐标店', longitude: null, latitude: null, coordSource: 'none' }),
+    ])
+    await expandFirst(w)
+    const marks = w.findAll('.store-meta .needs-manual')
+    expect(marks).toHaveLength(1)
+    expect(marks[0].text()).toBe(t('routePlanner.needsManual'))
+    expect(marks[0].element.closest('.store-item')!.querySelector('.store-name')!.textContent).toContain('缺坐标店')
   })
 
   it('**城市批量跳过派发 skip-city**', async () => {
@@ -245,7 +262,7 @@ describe('StorePanel · 删除确认', () => {
     await expandFirst(w)
     expect(overlay(), '初始不该有弹窗').toBeNull()
 
-    await w.findAll('.store-actions .btn-icon')[2]!.trigger('click')
+    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
     expect(overlay(), '应弹出确认框').toBeTruthy()
     expect(confirmBox()!.textContent).toContain(t('routePlanner.deleteStoreHint'))
 
@@ -274,7 +291,7 @@ describe('StorePanel · 删除确认', () => {
     const w = mountPanel([store({ id: '', city: '北京市' })])
     // 走单品删除入口（不是城市入口），这样 confirmTarget 里有 id:'' 而没有 city
     await expandFirst(w)
-    await w.findAll('.store-actions .btn-icon')[2]!.trigger('click')
+    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
     expect(overlay(), '应弹确认框').toBeTruthy()
     ;(document.body.querySelector('.btn-confirm-delete') as HTMLElement).click()
     await w.vm.$nextTick()
@@ -286,7 +303,7 @@ describe('StorePanel · 删除确认', () => {
   it('**取消 → 不派发任何事件且关闭弹窗**', async () => {
     const w = mountPanel([store({ id: 'x' })])
     await expandFirst(w)
-    await w.findAll('.store-actions .btn-icon')[2]!.trigger('click')
+    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
     ;(document.body.querySelector('.btn-cancel') as HTMLElement).click()
     await w.vm.$nextTick()
     expect(overlay(), '应关闭').toBeNull()
@@ -297,7 +314,7 @@ describe('StorePanel · 删除确认', () => {
   it('**点击遮罩自身 → 取消**（点弹窗内容不取消）', async () => {
     const w = mountPanel([store({ id: 'x' })])
     await expandFirst(w)
-    await w.findAll('.store-actions .btn-icon')[2]!.trigger('click')
+    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
 
     // 弹窗在 Teleport 里，wrapper.find 查不到，只能从 document 取原生节点派发
     confirmBox()!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -312,7 +329,7 @@ describe('StorePanel · 删除确认', () => {
   it('**确认框具备 alertdialog 语义**（无障碍：模态 + 可聚焦容器）', async () => {
     const w = mountPanel([store({ id: 'x' })])
     await expandFirst(w)
-    await w.findAll('.store-actions .btn-icon')[2]!.trigger('click')
+    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
     const box = confirmBox()!
     expect(box.getAttribute('role')).toBe('alertdialog')
     expect(box.getAttribute('aria-modal')).toBe('true')
@@ -323,13 +340,13 @@ describe('StorePanel · 删除确认', () => {
   it('**门店名为空 → 确认文案回退到地址；地址也空 → 回退未知门店**', async () => {
     const w = mountPanel([store({ id: 'x', name: '', address: '望京街 1 号' })])
     await expandFirst(w)
-    await w.findAll('.store-actions .btn-icon')[2]!.trigger('click')
+    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
     expect(confirmBox()!.textContent).toContain('望京街 1 号')
     ;(document.body.querySelector('.btn-cancel') as HTMLElement).click()
     await w.vm.$nextTick()
 
     await w.setProps({ stores: [store({ id: 'x', name: '', address: '' })] })
-    await w.findAll('.store-actions .btn-icon')[2]!.trigger('click')
+    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
     expect(confirmBox()!.textContent, '两者都空时回退未知门店').toContain(t('routePlanner.unknownStore'))
   })
 })
@@ -481,7 +498,7 @@ describe('StorePanel · 生命周期', () => {
   it('**卸载后确认框随之移除（Teleport 内容不残留）**', async () => {
     const w = mountPanel([store({ id: 'x' })])
     await expandFirst(w)
-    await w.findAll('.store-actions .btn-icon')[2]!.trigger('click')
+    await w.findAll('.store-actions .btn-icon')[1]!.trigger('click')
     expect(overlay()).toBeTruthy()
 
     w.unmount()

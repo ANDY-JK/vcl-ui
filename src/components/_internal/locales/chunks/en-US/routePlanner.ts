@@ -68,6 +68,7 @@ export default {
     sourceTownship: '🟡 Area located',
     sourceManual: '🔵 Manual',
     sourceNone: '⚪ No coordinates',
+    needsManual: '⚠️ Needs coordinates',
     // StoreFormModal
     editStore: 'Edit Store',
     addStoreTitle: 'Add Store',

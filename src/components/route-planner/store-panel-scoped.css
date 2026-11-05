@@ -220,10 +220,29 @@
   text-overflow: ellipsis;
 }
 
+/* 「需人工补坐标」行内标记：放在该门店行尾部（store-meta 末尾），暖色区别于来源标签 */
+.needs-manual {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--vcl-color-warning, #b45309);
+  font-weight: 600;
+}
+
+/* 无头复选框：保留浏览器原生外观（appearance: auto），不做自定义方形/对勾 ——
+   勾选即"跳过该门店"，语义直白；只统一尺寸与对齐，不改控件本身 */
+.skip-box {
+  appearance: auto;
+  width: calc(16px * var(--vcl-scale));
+  height: calc(16px * var(--vcl-scale));
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
 .store-actions {
   display: flex;
   gap: var(--vcl-space-1);
   flex-shrink: 0;
+  align-items: center;
 }
 
 .btn-icon {
