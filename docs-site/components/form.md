@@ -30,6 +30,13 @@
 | `openSystemCapture` | 调起系统相机 / 相册（隐藏 file input），返回用户选中的文件。 |
 | `cancelPendingSystemCapture` | 强制结算上一次未完成的系统采集（视作用户取消）并清理残留临时 input。 |
 | `CAPTURE_CHAIN` | 默认链路顺序 |
+| `computePageButtons` | 分页按钮序列计算（FormCollect 记录列表 / FormDataSummary 明细表共用） |
+| `formatRecordTime` | 展示用：ISO → 按 locale 格式化；历史展示字符串 → 解析后同样格式化； |
+| `recordTimeNow` | 收集记录的时间戳：ISO 8601（存储口径，不含任何本地化信息） |
+| `formatDateTimeZh` | 日期时间（24 小时制）：默认 → 2026/8/23 14:30:00 |
+| `formatDateZh` | 日期：默认 zh-CN → 2026/8/23；传 locale 按对应习惯格式化 |
+| `recordTimeDate` | 宽容解析记录里的时间（ISO 或历史的展示字符串）。 |
+| `formatDate` | Date → format 字符串（YYYY/MM/DD 占位符替换） |
 
 ---
 

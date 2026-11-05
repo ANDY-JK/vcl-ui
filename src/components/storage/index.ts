@@ -5,6 +5,9 @@ export { storageSet, storageGet, storageDelete, storageHas } from './indexedDB'
 export { dbPut, dbGet, dbDelete, dbHas, dbGetAll, dbKeys, dbCount, dbClear, dbBatch } from './indexedDB'
 export { createBackend, validateStorageConfig, normalizeForBackend, sanitizeObjectKeyPart } from './contract-storage'
 export type { StorageConfig, StorageBackend, StoreFile, StoreUploadState, SupabaseConfig } from './contract-storage'
+// #438（TD-57 收口）：跨域共享符号从域入口导出（form-builder 的收集页与设计器在用）
+export { getSlotFile, setSlotFile, allSlotsFilled, defaultStorageConfigFromEnv } from './contract-storage'
+export { validateSupabaseConfig } from './supabase-transport'
 // 统一存储门面 —— 声明意图、自动路由后端（详见 unified.ts）
 export { storage, setCloudAdapter } from './unified'
 export type { StorageWriteOptions, CloudKVAdapter } from './unified'

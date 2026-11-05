@@ -25,6 +25,7 @@ const _DELETE_RETRY_STEP_MS = 500
 /** 模块级 t：用户可见错误消息按当前语言 */
 const t = useT()
 
+/** Supabase 连接配置（#438：跨域被 form-builder 设计器使用，从 storage 域入口导出） */
 export interface SupabaseConfig {
   url: string
   anonKey: string
@@ -37,6 +38,7 @@ export { REQUEST_TIMEOUT_MS } from './request-timeout'
 /** list 翻页页数上限（与 s3-transport 同口径：200 页 × 1000/页 = 20 万对象） */
 const MAX_LIST_PAGES = 200
 
+/** 校验 Supabase 配置：返回可读错误文案，合法返回 null（#438：从 storage 域入口导出） */
 export function validateSupabaseConfig(cfg: SupabaseConfig): string | null {
   if (!cfg || !cfg.url.trim()) return t('storage.supabaseUrlRequired')
   if (!/^https?:\/\//.test(cfg.url.trim())) return t('storage.supabaseUrlFormat')

@@ -32,6 +32,7 @@ const t = useT()
 export { sanitizeObjectKeyPart, validateSupabaseConfig, validateS3Config }
 export type { SupabaseConfig, S3Config }
 
+/** 照片位文件（#438：跨域被 form-builder 使用，从 storage 域入口导出） */
 export interface StoreFile {
   name: string
   /** 图片本体：本地落盘为 Blob（毫秒级，相机返回重建页面前已存好）；云端引用/兼容旧数据为 string（data: 或 http(s) URL） */
@@ -84,6 +85,7 @@ export function setSlotFile(
   return base
 }
 
+/** 存储后端契约（#438：跨域被 form-builder 使用，从 storage 域入口导出） */
 export interface StorageBackend {
   readonly kind: 'local' | 'supabase' | 's3'
   /**
@@ -593,6 +595,7 @@ export class CompositeBackend implements StorageBackend {
 
 // ===== 工厂：按配置选择后端 =====
 
+/** 存储配置（#438：跨域被 form-builder 使用，从 storage 域入口导出） */
 export interface StorageConfig {
   backend: 'local' | 'supabase' | 's3'
   /* supabase 后端配置（非 supabase 时为空串） */

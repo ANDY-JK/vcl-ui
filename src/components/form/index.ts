@@ -30,3 +30,15 @@ export type {
   SystemCaptureOptions,
 } from './utils/capture-fallback'
 export type { DropZoneConfig, DropZoneFile } from './utils/types'
+// #438（TD-57 收口）：跨域共享符号从域入口导出 —— form-builder 的收集/渲染/设计器都在用
+// 这些工具与类型；只在模块里 export 会让它们「既进不了文档、也不被完整性检查盯上」。
+export type { UploadFile } from './Upload.vue'
+export { computePageButtons } from './utils/pagination'
+export {
+  formatRecordTime,
+  recordTimeNow,
+  formatDateTimeZh,
+  formatDateZh,
+  recordTimeDate,
+  formatDate,
+} from './utils/date-utils'

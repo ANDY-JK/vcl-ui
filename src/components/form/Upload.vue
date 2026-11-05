@@ -25,6 +25,7 @@ import ImagePreview from '@/components/data/ImagePreview.vue'
 /** 卡片单击的判定窗口：等到这时还没第二击才按「单击预览」处理（双击是选文件） */
 const _CARD_CLICK_DECIDE_MS = 280
 
+/** 上传队列条目（#438：跨域被 form-builder 使用，从 form 域入口导出） */
 export interface UploadFile {
   id: number
   name: string

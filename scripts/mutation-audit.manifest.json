@@ -2021,6 +2021,15 @@
       "cmd": "npx vitest run tests/unit/form-events-invert.spec.ts --no-coverage",
       "expect": "red",
       "note": "schema 导出丢掉 invert → 设计器配了方向反转，运行时永远收不到（配了等于没配）"
+    },
+    {
+      "id": "public-surface-entry-drop",
+      "file": "src/components/form/index.ts",
+      "find": "export { computePageButtons } from './utils/pagination'",
+      "replace": "// MUT：入口不再导出",
+      "cmd": "npx vitest run tests/unit/public-surface.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "跨域引用又扎回 form/utils/pagination 内部（TD-57 口径被拆）—— 闸口 check:public-surface 当场报 2 处"
     }
   ]
 }

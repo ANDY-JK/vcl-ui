@@ -51,11 +51,11 @@ setRuntimeObserver({
 | `form-builder/submit-failed` | error | 表单提交失败（服务端拒绝） | `{ saveUrl: verdict.url, status: resp.status, fieldCount }` | `src/components/form-builder/useFormRemote.ts:165` |
 | `form-designer/draft-save-failed` | warn | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: 'too-large', sizeMB: (size / 1024 / 1024).toFixed(1), }` | `src/components/form-builder/designer/useDesignerDraft.ts:81` |
 | `form-designer/draft-save-failed` | error | 设计草稿保存失败 | `{ storage: storage.name, nodeCount: nodes.length, reason: err instanceof Error ? err.message : String(err), }` | `src/components/form-builder/designer/useDesignerDraft.ts:100` |
-| `storage/clear-failed` | warn | [contract-storage] IndexedDB 清空失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:164` |
-| `storage/cloud-delete-failed` | warn | [contract-storage] 云端删除失败: | `{ name: obj.name, error: String(e) }` | `src/components/storage/contract-storage.ts:387` |
-| `storage/load-failed` | warn | [contract-storage] IndexedDB 加载失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:136` |
-| `storage/reconcile-failed` | warn | [contract-storage] 云端对账失败，仅恢复本地: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:499` |
-| `storage/save-failed` | error | [contract-storage] IndexedDB 保存失败: | `{ appleId, error: String(e) }` | `src/components/storage/contract-storage.ts:151` |
+| `storage/clear-failed` | warn | [contract-storage] IndexedDB 清空失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:166` |
+| `storage/cloud-delete-failed` | warn | [contract-storage] 云端删除失败: | `{ name: obj.name, error: String(e) }` | `src/components/storage/contract-storage.ts:389` |
+| `storage/load-failed` | warn | [contract-storage] IndexedDB 加载失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:138` |
+| `storage/reconcile-failed` | warn | [contract-storage] 云端对账失败，仅恢复本地: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:501` |
+| `storage/save-failed` | error | [contract-storage] IndexedDB 保存失败: | `{ appleId, error: String(e) }` | `src/components/storage/contract-storage.ts:153` |
 
 ## 该按哪些码建告警
 

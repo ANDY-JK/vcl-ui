@@ -5,6 +5,7 @@
 
 import type { CellValueType } from './cell-input'
 
+/** 表格列定义（#438：跨域被 chart / form-builder 使用，从 data 域入口导出） */
 export interface Column {
   key: string
   title: string

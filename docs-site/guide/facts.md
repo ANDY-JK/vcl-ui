@@ -15,7 +15,7 @@ title: 事实清单（自动生成）
 | --- | --- | --- |
 | 域入口数 | **13** | `package.json` 的 `exports`，去掉 `./css`/`./i18n` 等辅助子路径 |
 | 组件数 | **66** | `gen:docs` 解析 `defineProps`/`defineEmits`/`defineSlots` 得到 |
-| 命名导出数 | **177** | 同上，含类型与 composable |
+| 命名导出数 | **189** | 同上，含类型与 composable |
 | demo 组件演示页数 | **46** | `src/demos/ComponentDemo.vue` 的 `demoMap` 顶层键数（一个键一页，页面含 Props 表） |
 | 解析失败组件 | **0** | 应为 0；非 0 时 `check:docs` 直接红 |
 
@@ -50,7 +50,7 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 整链步数 | **47** |
+| 整链步数 | **48** |
 
 步清单（顺序即执行顺序）：
 
@@ -68,39 +68,40 @@ title: 事实清单（自动生成）
 12. `check:tab-sequence`
 13. `check:edit-single-writer`
 14. `check:esc-consume`
-15. `check:review-appendix`
-16. `check:gate-wiring`
-17. `check:css-tokens`
-18. `check:contrast`
-19. `check:css-breakpoints`
-20. `check:css-fonts`
-21. `check:css-scale`
-22. `check:offline`
-23. `check:i18n`
-24. `check:demo-props`
-25. `check:error-demo`
-26. `check:template-statements`
-27. `check:vendor-data`
-28. `check:vendor-vulns`
-29. `check:deps`
-30. `test:unit`
-31. `check:console-noise`
-32. `bench:check`
-33. `check:coverage-domains`
-34. `build`
-35. `smoke:entries`
-36. `verify:pkg`
-37. `check:licenses`
-38. `check:release-consistency`
-39. `docs:build`
-40. `check:docs`
-41. `check:doc-completeness`
-42. `gen:facts`
-43. `check:facts`
-44. `check:tech-debt`
-45. `check:rtl`
-46. `check:rtl-semantics`
-47. `test:e2e`
+15. `check:public-surface`
+16. `check:review-appendix`
+17. `check:gate-wiring`
+18. `check:css-tokens`
+19. `check:contrast`
+20. `check:css-breakpoints`
+21. `check:css-fonts`
+22. `check:css-scale`
+23. `check:offline`
+24. `check:i18n`
+25. `check:demo-props`
+26. `check:error-demo`
+27. `check:template-statements`
+28. `check:vendor-data`
+29. `check:vendor-vulns`
+30. `check:deps`
+31. `test:unit`
+32. `check:console-noise`
+33. `bench:check`
+34. `check:coverage-domains`
+35. `build`
+36. `smoke:entries`
+37. `verify:pkg`
+38. `check:licenses`
+39. `check:release-consistency`
+40. `docs:build`
+41. `check:docs`
+42. `check:doc-completeness`
+43. `gen:facts`
+44. `check:facts`
+45. `check:tech-debt`
+46. `check:rtl`
+47. `check:rtl-semantics`
+48. `test:e2e`
 
 ## 测试规模（读自最近一次整链留痕）
 
