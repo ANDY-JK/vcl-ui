@@ -16,6 +16,7 @@ import ChartLegend from './ChartLegend.vue'
 import { buildChartOption } from './options'
 import { ensureWordCloud } from './utils/echarts-setup'
 import { DEFAULT_COLORS } from './options/common'
+import { useChartLegend } from './composables/useChartLegend'
 import type { ChartProps, ChartData, ChartType, BuildParams, ChartSeriesItem } from './utils/types'
 import { toSize } from './utils/chart-utils'
 import { DEFAULT_ANIMATION_MS } from './options/common'
@@ -215,112 +216,6 @@ function buildParams(categories: string[], series: ChartSeriesItem[]): BuildPara
    ChartLegend 数据 + 交互
    ================================================================ */
 
-const hiddenSeries = ref<Set<string>>(new Set())
-
-/**
- * 最终渲染 option：应用 HTML 图例隐藏状态。
- * ECharts 内置图例被 showLegend:false 关闭，legendToggleSelect 对无 legend 的
- * series 是空操作（空系列名/饼图数据项场景均失效），改为隐藏系列数据后重新
- * setOption 控制显隐。浅拷贝即可 —— option 含函数字段（如 tooltip.position），
- * 不能用 structuredClone。
- * wordCloudReady 作为依赖：当 echarts-wordcloud 异步加载完成后，
- * 触发 computed 重新计算 → BaseChart setOption → wordCloud series 正确渲染。
- */
-const chartOption = computed<EChartsOption | null>(() => {
-  // 读取 wordCloudReady 触发依赖（wordCloud 模块异步加载完成后重新计算）
-  void wordCloudReady.value
-  const opt = resolvedOption.value
-  const hidden = hiddenSeries.value
-  if (!opt || hidden.size === 0) return opt
-  const rawSeries = opt.series
-  if (!Array.isArray(rawSeries)) return opt
-  const seriesArr = rawSeries.map((s) => ({ ...s })) as Array<Record<string, unknown>>
-  const isItemLegend = props.type === 'pie' || props.type === 'funnel'
-  for (let i = 0; i < seriesArr.length; i++) {
-    const s = seriesArr[i]
-    const data = s.data
-    if (!Array.isArray(data)) continue
-    if (isItemLegend) {
-      // 饼图/漏斗：图例项对应 series[0].data 数据项 → 过滤掉隐藏项
-      // 注意：兜底名必须与 legendItems 的 t('chart.itemFallback') 一致，否则点击图例无法隐藏对应项
-      s.data = data.filter((d, di) => {
-        const name = String(
-          typeof d === 'object' && d !== null
-            ? ((d as { name?: string }).name ?? t('chart.itemFallback', { n: di + 1 }))
-            : t('chart.itemFallback', { n: di + 1 }),
-        )
-        return !hidden.has(name)
-      })
-    } else if (hidden.has(String(s.name ?? t('chart.seriesFallback', { n: i + 1 })))) {
-      // 常规系列：按名称置空数据实现隐藏
-      s.data = []
-    }
-  }
-  return { ...opt, series: seriesArr } as unknown as EChartsOption
-})
-
-const legendItems = computed(() => {
-  if (!props.showLegend || !resolvedOption.value) return []
-  const opt = resolvedOption.value as Record<string, unknown>
-  const colors: string[] = (opt.color as string[]) || DEFAULT_COLORS
-  const seriesArr = (opt.series as Record<string, unknown>[]) || []
-
-  // 饼图 / 漏斗：从 series[0].data 提取各数据项名
-  if ((props.type === 'pie' || props.type === 'funnel') && Array.isArray(seriesArr[0]?.data)) {
-    return (seriesArr[0].data as Record<string, unknown>[]).map((d, i: number) => {
-      const name = String(
-        typeof d === 'object'
-          ? (d.name ?? t('chart.itemFallback', { n: i + 1 }))
-          : t('chart.itemFallback', { n: i + 1 }),
-      )
-      return {
-        name,
-        color: colors[i % colors.length] || '#999',
-        visible: !hiddenSeries.value.has(name),
-      }
-    })
-  }
-
-  // 雷达：每个 series 是一个系列
-  return seriesArr.map((s: Record<string, unknown>, i: number) => {
-    const name = String(s.name ?? t('chart.seriesFallback', { n: i + 1 }))
-    return {
-      name,
-      color: colors[i % colors.length] || '#999',
-      visible: !hiddenSeries.value.has(name),
-    }
-  })
-})
-
-function onLegendToggle(name: string) {
-  // 同步本地状态（chartOption 依赖它重新 setOption 控制系列显隐）
-  const s = new Set(hiddenSeries.value)
-  if (s.has(name)) s.delete(name)
-  else s.add(name)
-  hiddenSeries.value = s
-  emitLegendSelectChanged()
-}
-
-function onLegendToggleAll(visible: boolean) {
-  if (visible) {
-    // 全部显示：清空 hidden
-    hiddenSeries.value = new Set()
-  } else {
-    // 全部隐藏：将所有图例项加入 hidden
-    hiddenSeries.value = new Set(legendItems.value.map((i) => i.name))
-  }
-  emitLegendSelectChanged()
-}
-
-function emitLegendSelectChanged() {
-  const selected: Record<string, boolean> = {}
-  for (const item of legendItems.value) selected[item.name] = item.visible
-  ;(emit as (event: string, ...args: unknown[]) => void)('legendselectchanged', {
-    type: 'legendselectchanged',
-    selected,
-  })
-}
-
 function bindEvents() {
   const instance = baseChartRef.value?.chart
   if (!instance || instance.isDisposed()) return
@@ -341,12 +236,7 @@ function bindEvents() {
     instance.off(name)
     const handler = (params: unknown) => {
       if (name === 'legendselectchanged' && typeof params === 'object' && params !== null && 'selected' in params) {
-        const p = params as { selected: Record<string, boolean> }
-        const h = new Set<string>()
-        for (const [key, val] of Object.entries(p.selected)) {
-          if (!val) h.add(key)
-        }
-        hiddenSeries.value = h
+        syncFromEcharts((params as { selected: Record<string, boolean> }).selected)
       }
       ;(emit as (event: string, ...args: unknown[]) => void)(name, params)
     }
@@ -358,6 +248,22 @@ function bindEvents() {
 // 其他类型不需要此模块，避免增加首屏 bundle
 // 加载完成后 wordCloudReady=true → :key 变化 → BaseChart 重新创建 → 自动 setOption
 const wordCloudReady = ref(false)
+
+// HTML 图例与隐藏系列下沉 useChartLegend（#458）：ECharts 内置图例被 showLegend:false 关闭，
+// 显隐改为「隐藏系列数据后重新 setOption」；图例项名与过滤名同源是硬约束。
+const { legendItems, chartOption, onLegendToggle, onLegendToggleAll, syncFromEcharts } = useChartLegend({
+  showLegend: props.showLegend,
+  type: props.type as string,
+  resolvedOption,
+  t,
+  colors: DEFAULT_COLORS,
+  emitLegendSelectChanged: (selected) => {
+    ;(emit as (event: string, ...args: unknown[]) => void)('legendselectchanged', {
+      type: 'legendselectchanged',
+      selected,
+    })
+  },
+})
 /** echarts-wordcloud 加载失败（可选 peer 未安装）→ 必须给可见提示，不能静默留空 */
 const wordCloudFailed = ref(false)
 let _isMounted = true
