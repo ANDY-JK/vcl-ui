@@ -20,7 +20,7 @@ const t = useT()
  * 3. 点击选中 → 联动右栏属性面板 + 大纲树
  * 4. 每张卡片有上移/下移/复制/删除操作
  */
-import { ref, computed, type PropType } from 'vue'
+import { computed, type PropType } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import FormRenderer from '../FormRenderer.vue'
 import DesignerChildCard from './DesignerChildCard.vue'
@@ -44,20 +44,18 @@ import {
   getTypeLabel,
   getTypeIcon,
   isContainerNode,
-  findParent,
   type DesignerNode,
   type DesignerNodeType,
   type DesignerContainerConfig,
   type FormMeta,
 } from './types'
 import { useCanvasZoom } from './useCanvasZoom'
+import { useCanvasDnd } from './composables/useCanvasDnd'
 import {
   isSelected as canvasIsSelected,
   showIndicator as canvasShowIndicator,
   childDropPos as canvasChildDropPos,
   gridColSpan as canvasGridColSpan,
-  findContainerOfChildren as canvasFindContainerOfChildren,
-  resolveDropPos as canvasResolveDropPos,
   previewFakeData as canvasPreviewFakeData,
 } from './canvas-utils'
 
@@ -99,13 +97,6 @@ const emit = defineEmits<{
 // 拖拽状态
 // ════════════════════════════════════════
 
-const dragSource = ref<'panel' | 'sort' | null>(null)
-const sortDragId = ref<string | null>(null)
-const dropTargetId = ref<string | null>(null)
-/** 落点位置：before/after 显示指示线，inside 显示容器内高亮 */
-const dropPos = ref<'before' | 'after' | 'inside' | null>(null)
-const canvasDragOver = ref(false)
-
 // ════════════════════════════════════════
 // 预览 Schema（供 FormRenderer 使用）
 // ════════════════════════════════════════
@@ -121,6 +112,43 @@ function findFieldByKey(key: string) {
 }
 
 // ════════════════════════════════════════
+// 拖拽编排层下沉 useCanvasDnd（#453）：拖拽会话状态 + 画布/节点/槽位三层落点分发与收口。
+// 纯函数（落点判定/容器查找）仍在 canvas-utils / tree-ops。
+const {
+  sortDragId,
+  dropTargetId,
+  dropPos,
+  canvasDragOver,
+  onSlotDrop,
+  onSlotDragOver,
+  onCanvasDragOver,
+  onCanvasDragLeave,
+  onCanvasDrop,
+  onNodeDragStart,
+  onNodeDragOver,
+  onNodeDrop,
+  onNodeDragEnd,
+} = useCanvasDnd({
+  nodes: computed(() => props.nodes),
+  isContainerNode,
+  activeSlotOf,
+  emit: {
+    'insert-at': (type, index) => emit('insert-at', type, index),
+    'insert-into-container': (type, containerId, index, slot) =>
+      emit('insert-into-container', type, containerId, index, slot),
+    'sort-node': (sourceId, targetId, pos, slot) => {
+      // 非 inside 不带槽位（原实现只对 inside 传第 4 参；测试按调用参数形状断言）
+      if (slot === undefined) emit('sort-node', sourceId, targetId, pos)
+      else emit('sort-node', sourceId, targetId, pos, slot)
+    },
+    'assign-slot': (sourceId, slot) => emit('assign-slot', sourceId, slot),
+    select: (id, multi) => {
+      // select 的多选修饰只在模板点击路径生效（id, metaKey）；拖拽收口只给单参
+      if (multi === undefined) emit('select', id)
+      else emit('select', id, multi)
+    },
+  },
+})
 // 选中态 / 落点指示（纯函数在 canvas-utils）
 // ════════════════════════════════════════
 
@@ -155,40 +183,6 @@ function addTabTo(node: DesignerNode): void {
 }
 
 /** 从面板拖字段进容器的某槽位 */
-function onSlotDropFromPanel(e: DragEvent, node: DesignerNode, slot: number): void {
-  const type = e.dataTransfer?.getData('application/x-field-type') || e.dataTransfer?.getData('text/plain')
-  if (!type) return
-  e.preventDefault()
-  e.stopPropagation()
-  emit('insert-into-container', type as DesignerNodeType, node.id, -1, slot)
-  resetDrag()
-}
-
-/** 已存在字段拖到容器的某槽位 → 改其 containerSlot */
-function onSlotDropFromSort(e: DragEvent, _node: DesignerNode, slot: number): void {
-  e.preventDefault()
-  e.stopPropagation()
-  const sourceId = sortDragId.value
-  if (sourceId) emit('assign-slot', sourceId, slot)
-  resetDrag()
-}
-
-/** 槽位体 drop 总入口（区分面板拖入 / 字段移动） */
-function onSlotDrop(e: DragEvent, node: DesignerNode, slot: number): void {
-  if (dragSource.value === 'sort' && sortDragId.value) {
-    onSlotDropFromSort(e, node, slot)
-  } else if (e.dataTransfer?.types.includes('application/x-field-type')) {
-    onSlotDropFromPanel(e, node, slot)
-  }
-}
-
-/** 槽位体 dragover（接受面板拖入 + 字段移动） */
-function onSlotDragOver(e: DragEvent): void {
-  if (e.dataTransfer?.types.includes('application/x-field-type') || dragSource.value === 'sort') {
-    e.preventDefault()
-    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
-  }
-}
 
 /** 预览用的假数据（按字段类型归一，纯函数在 canvas-utils） */
 const previewData = computed<Record<string, unknown>>(() => canvasPreviewFakeData(props.nodes))
@@ -196,126 +190,6 @@ const previewData = computed<Record<string, unknown>>(() => canvasPreviewFakeDat
 // ════════════════════════════════════════
 // 画布拖拽（从面板拖入）
 // ════════════════════════════════════════
-
-function onCanvasDragOver(e: DragEvent): void {
-  if (e.dataTransfer?.types.includes('application/x-field-type')) {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
-    canvasDragOver.value = true
-  }
-}
-
-function onCanvasDragLeave(e: DragEvent): void {
-  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-  if (e.clientX < rect.left || e.clientX >= rect.right || e.clientY < rect.top || e.clientY >= rect.bottom) {
-    canvasDragOver.value = false
-    dropTargetId.value = null
-    dropPos.value = null
-    dragSource.value = null
-  }
-}
-
-function onCanvasDrop(e: DragEvent): void {
-  e.preventDefault()
-  e.stopPropagation()
-  const type = e.dataTransfer?.getData('application/x-field-type') || e.dataTransfer?.getData('text/plain')
-  if (type) {
-    emit('insert-at', type as DesignerNodeType, -1)
-  }
-  resetDrag()
-}
-
-// ════════════════════════════════════════
-// 节点间拖拽排序
-// ════════════════════════════════════════
-
-function onNodeDragStart(e: DragEvent, node: DesignerNode): void {
-  dragSource.value = 'sort'
-  sortDragId.value = node.id
-  if (e.dataTransfer) {
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/sort', node.id)
-  }
-}
-
-/** 根据鼠标纵向位置算出落点（纯函数在 canvas-utils） */
-function resolveDropPos(e: DragEvent, node: DesignerNode, sortDrag: boolean): 'before' | 'after' | 'inside' {
-  return canvasResolveDropPos(e, node, sortDrag)
-}
-
-function onNodeDragOver(e: DragEvent, node: DesignerNode): void {
-  if (dragSource.value === 'sort' && sortDragId.value !== node.id) {
-    e.preventDefault()
-    e.stopPropagation()
-    e.dataTransfer!.dropEffect = 'move'
-    dropTargetId.value = node.id
-    dropPos.value = resolveDropPos(e, node, true)
-  } else if (e.dataTransfer?.types.includes('application/x-field-type')) {
-    e.preventDefault()
-    e.stopPropagation()
-    e.dataTransfer.dropEffect = 'copy'
-    dropTargetId.value = node.id
-    dropPos.value = resolveDropPos(e, node, false)
-  }
-}
-
-function onNodeDrop(e: DragEvent, node: DesignerNode): void {
-  e.preventDefault()
-  e.stopPropagation()
-
-  const pos = dropPos.value ?? resolveDropPos(e, node, dragSource.value === 'sort')
-
-  if (dragSource.value === 'sort' && sortDragId.value && sortDragId.value !== node.id) {
-    // 拖拽排序：容器区分 before/inside/after，字段区分 before/after
-    if (isContainerNode(node)) {
-      if (pos === 'inside') emit('sort-node', sortDragId.value, node.id, 'inside', activeSlotOf(node))
-      else emit('sort-node', sortDragId.value, node.id, pos)
-    } else {
-      emit('sort-node', sortDragId.value, node.id, pos === 'after' ? 'after' : 'before')
-    }
-    // 保持选中拖拽的节点
-    emit('select', sortDragId.value)
-  } else {
-    const type = e.dataTransfer?.getData('application/x-field-type') || e.dataTransfer?.getData('text/plain')
-    if (type) {
-      // 面板字段拖入：容器 → 插入容器内（落到当前激活槽位）；字段 → 按落点插到前/后
-      if (isContainerNode(node)) {
-        emit('insert-into-container', type as DesignerNodeType, node.id, -1, activeSlotOf(node))
-      } else {
-        const before = pos !== 'after'
-        const loc = findParent(props.nodes, node.id)
-        // 嵌套子字段：插到它所在容器内的相对位置；否则会落到根级末尾（扁平索引对嵌套节点无意义）
-        const container =
-          loc && loc.parent !== props.nodes ? canvasFindContainerOfChildren(props.nodes, loc.parent) : null
-        if (container) {
-          emit(
-            'insert-into-container',
-            type as DesignerNodeType,
-            container.id,
-            before ? loc!.index : loc!.index + 1,
-            node.containerSlot,
-          )
-        } else {
-          const index = props.nodes.findIndex((n) => n.id === node.id)
-          emit('insert-at', type as DesignerNodeType, before ? index : index + 1)
-        }
-      }
-    }
-  }
-  resetDrag()
-}
-
-function onNodeDragEnd(): void {
-  resetDrag()
-}
-
-function resetDrag(): void {
-  dragSource.value = null
-  sortDragId.value = null
-  dropTargetId.value = null
-  dropPos.value = null
-  canvasDragOver.value = false
-}
 
 // ════════════════════════════════════════
 // 设备模式 class
