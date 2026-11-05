@@ -58,6 +58,7 @@
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:i18n-usage": "node scripts/check-i18n-usage.mjs",
     "check:event-codes": "node scripts/check-event-codes.mjs",
+    "check:demo-routes": "node scripts/check-demo-routes.mjs",
     "check:demo-props": "node scripts/check-demo-props.mjs",
     "check:error-demo": "node scripts/check-error-demo.mjs",
     "check:template-statements": "node scripts/check-template-statements.mjs",

@@ -2129,6 +2129,15 @@
       "cmd": "npx vitest run tests/unit/event-codes.spec.ts --no-coverage",
       "expect": "red",
       "note": "已发布事件码改名 → 宿主告警规则静默失效；check:event-codes 点名缺失的旧码"
+    },
+    {
+      "id": "demo-route-orphan",
+      "file": "src/demos/ComponentDemo.vue",
+      "find": "loader: () => import('./data/CardDemo.vue'),",
+      "replace": "loader: () => import('./data/CardDemoGone.vue'),",
+      "cmd": "npx vitest run tests/unit/demo-routes.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "demoMap 指向不存在的 demo 文件 → check:demo-routes 同时报幽灵路由（CardDemoGone）与孤立页（CardDemo.vue）"
     }
   ]
 }
