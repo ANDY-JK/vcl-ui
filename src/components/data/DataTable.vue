@@ -9,7 +9,6 @@ import {
   computed,
   onMounted,
   onUnmounted,
-  onDeactivated,
   onErrorCaptured,
   nextTick,
   inject,
@@ -44,6 +43,7 @@ import { useTableFilter } from './composables/useTableFilter'
 import { useTableExtras } from './composables/useTableExtras'
 import { useTableEdit } from './composables/useTableEdit'
 import { useFillHandleDrag } from './composables/useFillHandleDrag'
+import { useTableFullscreenOrchestration } from './composables/useTableFullscreenOrchestration'
 // 矩形选区的指针编排（长按判定/拖拽阈值/边缘自动滚动/click 抑制）—— M3 第十二刀下沉
 import { useRangePointer } from './composables/useRangePointer'
 import './composables/data-table-global.css'
@@ -60,11 +60,6 @@ import {
   calcTableTotalPages,
 } from './composables/utils'
 import { useTableScreenshot, buildTsv } from './composables/useTableScreenshot'
-import {
-  useFullscreenNodeRelocation,
-  useFullscreenBounds,
-  waitForSidebarCollapse,
-} from './composables/useTableFullscreen'
 import { useTableTooltip } from './composables/useTableTooltip'
 import { useTableCellMenus } from './composables/useTableCellMenus'
 import { useDebounceFn } from '@/components/_internal/useDebounce'
@@ -578,173 +573,84 @@ const { toastRef, notify } = useToastNotify()
 // 截图反馈可能发生在全屏态（全屏层级高于全局 Toast）：挂载期间提升 --vcl-z-top
 let _releaseZTop: (() => void) | null = null
 
-// 全屏切换
-const _isFullscreen = ref(false)
-const _lockedMaxH = ref('')
-/** v2（Q5）：onToggleSidebar 回调 prop 收敛为 @toggle-sidebar 事件——宿主联动统一事件面。
- *  有监听=通知宿主收/还侧边栏；无监听=降级 inject('toggleCollapse')（与 v1 语义一致）。
- *  监听在否读 vnode.props：defineEmits 不提供 hasListeners 查询，且调用期判定比 setup 期
- *  取值更稳（父组件条件渲染监听器时不会钉死在旧状态）。 */
+// 全屏编排层下沉 useTableFullscreenOrchestration.ts（#452）：进入/取消/退出状态机、
+// 侧栏「谁收的谁还」簿记、watch(_isFullscreen) 的监听挂/卸与归还次序。
+// Escape 优先级链与 body-click 弹窗守卫留在本文件（业务编排），经 shouldStay/onEscape/onBodyClickHandled 注入。
+// v2（Q5）：onToggleSidebar 回调 prop 收敛为 @toggle-sidebar 事件——宿主联动统一事件面。
+// 有监听=通知宿主收/还侧边栏；无监听=降级 inject('toggleCollapse')（与 v1 语义一致）。
+// 监听在否读 vnode.props：defineEmits 不提供 hasListeners 查询，且调用期判定比 setup 期
+// 取值更稳（父组件条件渲染监听器时不会钉死在旧状态）。
 const _dtInstance = getCurrentInstance()
 const _injectedToggleCollapse = inject<() => void>('toggleCollapse', () => {})
 const _toggleCollapse = () => {
   if (_dtInstance?.vnode.props?.onToggleSidebar) emit('toggle-sidebar')
   else _injectedToggleCollapse()
 }
-const _sidebarToggledByUs = ref(false)
-/** 进入全屏的等待：_fsSeq 只头发号，_fsPendingRun 记录当前在飞的那个号（0 = 没有在飞）。
- *  为什么要两个数：共享布尔会让"取消后再点"被上一条抢先放行；只留一个自增计数又表达不出
- *  "现在没在等"，于是退出时顺手 ++ 就把按钮变成永久"取消一条不存在的等待"（实测第二次进全屏点不动）。 */
-let _fsSeq = 0
-let _fsPendingRun = 0
 const _cleanups: (() => void)[] = []
-
-// 全屏机械层下沉 useTableFullscreen.ts：节点搬迁/归还、边界监听（RO+resize 合帧）、
-// 侧栏收起等待（动画优先宽度实测兜底）。Escape 优先级链等业务编排留在本文件。
-const { moveToBody: _moveFullscreenNodeToBody, returnToOrigin: returnFullscreenNode } =
-  useFullscreenNodeRelocation(tableWrapRef)
-const _fsBounds = useFullscreenBounds(tableWrapRef, () => _isFullscreen.value)
-
-/** 放弃进行中的进入全屏，并把被本组件收起的侧栏还原（三条中断路径共用：再次点击 / 退出 / 卸载） */
-function cancelFullscreenEnter() {
-  _fsPendingRun = 0 // 在飞的那条等待落地时比不过号，自己作废
-  if (_sidebarToggledByUs.value) {
-    _toggleCollapse()
-    _sidebarToggledByUs.value = false
-  }
-}
-
-function toggleFullscreen() {
-  if (_isFullscreen.value) {
-    _isFullscreen.value = false
-    return
-  }
-  if (_fsPendingRun) {
-    // 正在等待进入全屏 → 取消并还原导航栏；下一次点击重新开始
-    cancelFullscreenEnter()
-    return
-  }
-  const sidebar = document.querySelector<HTMLElement>('.sidebar')
-  const needCollapse = !!sidebar && !sidebar.classList.contains('collapsed')
-  if (needCollapse) {
-    _toggleCollapse()
-    _sidebarToggledByUs.value = true
-  }
-  const run = ++_fsSeq
-  _fsPendingRun = run
-  // 先让侧栏收起动画跑完再进场，全屏框量的才是最终边界（过去这里等 250ms，见 waitForWidthSettle）。
-  // 进场后仍有 ResizeObserver 持续纠正，所以这一步只是让入场观感稳定，不再是唯一的一次测量。
-  void _enterFullscreenAfterSettle(needCollapse ? sidebar : null, needCollapse, run)
-}
-
-async function _enterFullscreenAfterSettle(sidebar: HTMLElement | null, needCollapse: boolean, run: number) {
-  if (needCollapse && sidebar) await waitForSidebarCollapse(sidebar)
-  if (_fsPendingRun !== run) return // 等待期间被取消/退出/卸载过 → 本条作废，不再改任何状态
-  _fsPendingRun = 0
-  _isFullscreen.value = true
-}
-function onFullscreenKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && _isFullscreen.value) {
-    // 消费 Esc（#280 / TD-91）：全屏内的弹层链都由本函数收口，必须拦住冒泡
-    e.preventDefault?.()
+const {
+  isFullscreen: _isFullscreen,
+  lockedMaxH: _lockedMaxH,
+  toggleFullscreen,
+  teardown: _fsTeardown,
+} = useTableFullscreenOrchestration({
+  wrapRef: tableWrapRef,
+  scrollContainerRef,
+  toggleCollapse: _toggleCollapse,
+  onFullscreenChange: (v) => emit('fullscreen-change', v),
+  afterToggle: () => {
+    if (scrollContainerRef.value) containerHeight.value = scrollContainerRef.value.clientHeight
+  },
+  shouldStay: () => false,
+  onEscape: () => {
     // 优先关闭子组件：筛选 → 详情弹窗 → 截图弹窗 → 右键菜单 → 批量编辑 → 笔记编辑 → 退出全屏
     if (activeFilterKey.value) {
       closeFilter()
-      return
+      return true
     }
     if (_cellDetailModal.value.visible) {
       _cellDetailModal.value.visible = false
-      return
+      return true
     }
     if (_screenshotModal.value.visible) {
       closeScreenshotModal()
-      return
+      return true
     }
     if (contextMenu.value.visible) {
       closeContextMenu()
-      return
+      return true
     }
     if (batchDialog.value?.show) {
       batchDialog.value.close()
-      return
+      return true
     }
     if (noteEditing.value) {
       noteEditing.value = null
-      return
+      return true
     }
-    _isFullscreen.value = false
-  }
-}
-// 全屏时点击外部区域关闭（排除 Teleport 到 body 的筛选/菜单/提示等子元素）
-function onFullscreenBodyClick(e: MouseEvent) {
-  if (!tableWrapRef.value) return
-  const target = e.target as HTMLElement
-  if (tableWrapRef.value.contains(target)) return
-  // Teleport 到 body 的元素不触发退出
-  if (
-    target.closest(
-      '.dt-filter-dropdown,.dt-context-menu,.dt-cell-tooltip,.opt-drop-panel,.note-editor,.note-tooltip,.modal-overlay',
-    )
-  )
-    return
-  // 有子组件打开时，让它们处理，不退出全屏
-  if (activeFilterKey.value) {
-    closeFilter()
-    return
-  }
-  if (contextMenu.value.visible) {
-    closeContextMenu()
-    return
-  }
-  if (_cellDetailModal.value.visible) return
-  if (_screenshotModal.value.visible) return
-  _isFullscreen.value = false
-}
-
-onDeactivated(() => {
-  // KeepAlive 失活时不能把全屏态带进缓存：表格节点挂在 body 上、body 的全屏类与全局监听都还在生效，
-  // 宿主切过去的新一页既被盖住又被 overflow:hidden 锁住。退出复用同一条归还路径。
-  if (_isFullscreen.value) _isFullscreen.value = false
-})
-watch(_isFullscreen, async (v) => {
-  _lockedMaxH.value = '' // 全屏模式由内部 flex 布局接管，释放 JS 锁高
-  if (v) {
-    document.addEventListener('keydown', onFullscreenKeydown, true)
-    document.removeEventListener('keydown', _onKeydown, true)
-    document.addEventListener('keydown', _onKeydown, true) // 重新注册，排在 onFullscreenKeydown 后面
-    document.addEventListener('click', onFullscreenBodyClick, true)
-    window.addEventListener('resize', _fsBounds.onWindowResize)
-    document.body.classList.add('dt-fullscreen-active')
-    // 移到 body 下，脱离弹窗/父容器的 overflow/display 限制
-    _moveFullscreenNodeToBody()
-    // 动态计算内容区边界，并在整个全屏期间跟着它变（侧栏收起不触发 window resize）
-    await nextTick()
-    _fsBounds.apply()
-    _fsBounds.start()
-  } else {
-    // 作废仍在等待的进入流程（不还原侧栏 —— 下面的归还流程统一处理）
-    _fsPendingRun = 0
-    _fsBounds.stop()
-    document.removeEventListener('keydown', onFullscreenKeydown, true)
-    document.removeEventListener('click', onFullscreenBodyClick, true)
-    window.removeEventListener('resize', _fsBounds.onWindowResize)
-    document.body.classList.remove('dt-fullscreen-active')
-    // 先归还节点并清掉全屏内联尺寸，最后才还原侧栏。
-    // 归还后表格回到普通流，宽度自然跟着父容器变，不需要等侧栏动画收尾；
-    // 反过来（先等再归还）会把整张表以"定宽定高的静态块"留在 body 末尾直到等待结束，
-    // 把宿主页面内容顶开 —— 那正是过去这里等固定毫秒埋下的雷。
-    returnFullscreenNode()
-    if (_sidebarToggledByUs.value) {
-      _toggleCollapse()
-      _sidebarToggledByUs.value = false
+    return false
+  },
+  onBodyClickHandled: () => {
+    if (activeFilterKey.value) {
+      closeFilter()
+      return true
     }
-  }
-  await nextTick()
-  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
-  applyAutoFit()
-  // 全屏切换后容器尺寸变化 → 重测虚拟滚动窗口高度（进出全屏都要测）
-  if (scrollContainerRef.value) containerHeight.value = scrollContainerRef.value.clientHeight
-  emit('fullscreen-change', v)
+    if (contextMenu.value.visible) {
+      closeContextMenu()
+      return true
+    }
+    if (_cellDetailModal.value.visible) return true
+    if (_screenshotModal.value.visible) return true
+    return false
+  },
+  rebindTableKeydown: (mode) => {
+    // 进入全屏：先把表的键盘处理器摘下再挂回（保证排在全屏 Escape 之后）；退出无需处理
+    if (mode === 'suspend') {
+      document.removeEventListener('keydown', _onKeydown, true)
+      document.addEventListener('keydown', _onKeydown, true)
+    }
+  },
+  applyAutoFit,
+  cleanups: _cleanups,
 })
 
 // 截图导出（编排下沉 useTableScreenshot；本文件只保留取表元素与关闭其它弹窗的接线）
@@ -1546,23 +1452,11 @@ onUnmounted(() => {
   document.removeEventListener('keydown', onCellKeydown, true)
   document.removeEventListener('scroll', _onScroll, true)
   window.removeEventListener('resize', onWindowResizeCard)
-  // 全屏清理：防止组件销毁后残留 DOM/事件/样式
-  // 无条件先作废"等待进入全屏"并还原侧栏：等待期间切路由时 _isFullscreen 还是 false，
-  // 若把这两件事留在下面的 if 里，等待落地会把已卸载组件置为全屏，
-  // 而导航栏被本组件收起后再无人复原（用户到新页面仍是收起态）。
-  cancelFullscreenEnter()
-  if (_isFullscreen.value) {
-    document.body.classList.remove('dt-fullscreen-active')
-    document.removeEventListener('keydown', onFullscreenKeydown, true)
-    document.removeEventListener('click', onFullscreenBodyClick, true)
-    window.removeEventListener('resize', _fsBounds.onWindowResize)
-    _fsBounds.stop()
-    _fsBounds.cancelRaf()
-    // 归还节点并清理 inline 尺寸：onUnmounted 跑在 Vue 摘除根节点之后，此时根节点（连同原父
-    // 容器）已脱离文档，而模板 ref 也已被置空 —— 被搬到 body 的 .table-wrap 不在那棵子树里，
-    // 不显式放回去就永久游离在页面上。
-    returnFullscreenNode()
-  }
+  // 全屏清理：防止组件销毁后残留 DOM/事件/样式。teardown 内部无条件先作废"等待进入全屏"
+  // 并还原侧栏（等待期间切路由时 _isFullscreen 还是 false，若留给落地分支会把已卸载组件置为
+  // 全屏、导航栏无人复原），再归还节点：onUnmounted 跑在 Vue 摘除根节点之后，被搬到 body 的
+  // .table-wrap 不在那棵子树里，不显式放回去就永久游离在页面上。
+  _fsTeardown()
   _cleanups.forEach((fn) => fn())
 })
 
