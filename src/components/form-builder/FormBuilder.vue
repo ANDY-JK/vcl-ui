@@ -16,10 +16,11 @@
  * ```
  */
 
-import { ref, computed, watch, watchEffect, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { shallowEqual } from '@/components/_internal/utils'
 import { useFormSchema, isLayoutField, isFieldVisible, collectVisibleData } from './useFormSchema'
+import { useFormSubmit } from './composables/useFormSubmit'
 import { useContainerStates } from './useContainerStates'
 import { useFormValidator } from './useFormValidator'
 import { useFormDraftAutosave } from './useFormDraftAutosave'
@@ -41,7 +42,6 @@ import type { FormSchema, FormData, FormField, RenderSection } from './types'
 /** 草稿自动保存防抖：连续输入只在停下来 1s 后存一次 */
 const _DRAFT_SAVE_DEBOUNCE_MS = 1000
 /** 提交兜底解锁：宿主没接住 submit 时，按钮最迟这么久恢复可点 */
-const _SUBMIT_STUCK_RESET_MS = 3000
 const t = useT()
 
 // ══ Props ══
@@ -257,131 +257,7 @@ onMounted(async () => {
 // 草稿保存 timer（在上方 formData watcher 中使用）
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 
-// ══ 提交与重置 ══
-
-const toastRef = ref<InstanceType<typeof Toast>>()
-const submitting = ref(false)
-/** 组件根节点（模板 ref，滚动定位限定在当前实例内） */
-const rootEl = ref<HTMLElement | null>(null)
-
-function handleSubmit(): void {
-  if (submitting.value) return // 提交进行中：入口守卫（父组件可用 setSubmitting 延长锁定）
-  // 全量校验
-  const isValid = validate()
-  emit('validate', isValid)
-
-  if (!isValid) {
-    toastRef.value?.show(t('formBuilder.requiredAll'), 'error', 2000)
-    // steps 布局：错误字段可能在其它步骤——先跳到首个错误所在步骤再滚动定位。
-    // 用校验器算好的 firstErrorKey（#291）：此前这里自己扫一遍 errors 找第一个，
-    // 而 `validateAll()` 早就返回了同一个信息 —— 同一语义两处实现。
-    if (firstErrorKey.value) jumpToFieldStep(firstErrorKey.value)
-    // 滚动到第一个错误字段（限定在当前组件实例内，避免多表单同页串扰）
-    nextTick(() => {
-      const firstErrEl = rootEl.value?.querySelector('.fb-field-error')
-      if (firstErrEl) {
-        const fieldEl = firstErrEl.closest('.fb-field')
-        fieldEl?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
-    })
-    return
-  }
-
-  // 收集可见字段的数据（隐藏字段不提交）
-  const submitData = collectVisibleData(
-    effectiveFields.value,
-    formData.value,
-    (f) => isFieldVisibleWithLinkage(f, formData.value) && !isHiddenByEvent(f.key),
-  )
-
-  // 提交模式：once/unique 模式下若已提交过则拦截（防止重复提交）；
-  // multiple 模式允许多次提交。此前只拦 unique，once 的「提交后禁用」只剩按钮灰态假设，直接触发提交仍能穿透
-  if (normalized.value.submitMode !== 'multiple' && hasSubmitted.value) {
-    toastRef.value?.show(t('formBuilder.submitOnce'), 'warning', 2000)
-    return
-  }
-
-  submitting.value = true
-
-  // 提交链路：配置了 saveUrl → 先 POST 提交（useFormRemote），成功后 emit submit 并提示
-  const rc = submitConfig.value
-  if (rc?.saveUrl) {
-    submitRemote(submitData)
-      .then(() => {
-        // view 模式只读不提示（页面级查看场景）；edit/review 提示成功
-        if (submitConfig.value?.mode !== 'view') {
-          toastRef.value?.show(t('formBuilder.submitSuccess'), 'success', 2000)
-        }
-        emit('submit', submitData)
-        finishSubmit()
-      })
-      .catch((e) => {
-        toastRef.value?.show(t('formBuilder.submitFail', { err: String(e?.message ?? e) }), 'error', 2500)
-        // 结构化事件在 useFormRemote（传输层）发出——那里才知道 POST 为何失败
-        stopSubmit()
-      })
-    return
-  }
-
-  // 无 saveUrl：直接 emit submit，由外部处理（原有行为）
-  emit('submit', submitData)
-  finishSubmit()
-}
-
-/** 提交成功后的收尾（禁用再次提交 / 清空 / 清除草稿 / 自动复位 loading） */
-function finishSubmit(): void {
-  // 提交模式：once/unique 模式下提交后禁用再次提交（multiple 允许多次）
-  if (normalized.value.submitMode !== 'multiple') {
-    hasSubmitted.value = true
-  }
-
-  // 提交后清空
-  if (normalized.value.clearAfterSubmit) {
-    formData.value = { ...initialData.value }
-    clearErrors()
-  }
-
-  // 提交成功后清除草稿
-  if (props.storageKey) {
-    draftIO.clearDraft(props.storageKey).catch(() => {})
-  }
-
-  // 3 秒后自动重置 submitting，防止父组件未处理时永远 loading
-  // 父组件可通过调用 expose 的 stopSubmit() 立即停止
-  if (submitTimer) clearTimeout(submitTimer)
-  submitTimer = setTimeout(() => {
-    submitting.value = false
-  }, _SUBMIT_STUCK_RESET_MS)
-}
-
-let submitTimer: ReturnType<typeof setTimeout> | null = null
-/** 是否已提交过（submitMode=once/unique 用） */
-const hasSubmitted = ref(false)
-
-/** 提交按钮锁定：once/unique 提交成功后置灰（与 handleSubmit 入口守卫同一口径，multiple 恒不锁） */
-const submitLocked = computed(() => normalized.value.submitMode !== 'multiple' && hasSubmitted.value)
-
-/** 停止提交 loading 状态 — 供父组件通过 ref 调用 */
-function stopSubmit(): void {
-  if (submitTimer) {
-    clearTimeout(submitTimer)
-    submitTimer = null
-  }
-  submitting.value = false
-}
-
-/** 设置提交 loading 状态 — 供父组件通过 ref 调用 */
-function setSubmitting(v: boolean): void {
-  if (submitTimer) {
-    clearTimeout(submitTimer)
-    submitTimer = null
-  }
-  submitting.value = v
-}
-
 onUnmounted(() => {
-  if (submitTimer) clearTimeout(submitTimer)
-  disposeRemote()
   if (saveTimer) clearTimeout(saveTimer)
 })
 
@@ -450,16 +326,6 @@ const {
 )
 
 // 暴露给宿主的命令式 API（放在 useFormRemote 之后：resetIdempotency 在此才完成初始化）
-defineExpose({
-  stopSubmit,
-  setSubmitting,
-  submitting,
-  getFormData,
-  validate,
-  errors,
-  /** 宿主自行重置（不走内置重置按钮）时也要丢弃挂起的幂等键，否则新记录会被服务端当成重复 */
-  resetIdempotency,
-})
 
 /** FieldList 回写字段值 */
 function onFieldUpdate(key: string, value: unknown): void {
@@ -562,6 +428,44 @@ const showSteps = computed(() => normalized.value.layout === 'steps' && totalSte
 
 /** 是否显示底部操作按钮（view 模式只读展示，隐藏提交/重置） */
 const showActions = computed(() => !normalized.value.hideActions && submitConfig.value?.mode !== 'view')
+// 提交编排下沉 useFormSubmit（#455）：入口守卫/失败定位/成功收尾/卡死自复位。
+// toastRef 与根节点在此声明（模板用）；composable 内部注册 onUnmounted 清理提交 timer 与远端资源。
+const toastRef = ref<InstanceType<typeof Toast>>()
+const rootEl = ref<HTMLElement | null>(null)
+const { submitting, hasSubmitted, submitLocked, handleSubmit, stopSubmit, setSubmitting } = useFormSubmit({
+  t,
+  emitValidate: (ok) => emit('validate', ok),
+  emitSubmit: (data) => emit('submit', data),
+  validate,
+  firstErrorKey,
+  effectiveFields,
+  formData,
+  collectVisibleData,
+  isFieldVisibleWithLinkage,
+  isHiddenByEvent,
+  normalized,
+  submitConfig,
+  initialData,
+  clearErrors,
+  clearDraft: (key) => draftIO.clearDraft(key),
+  storageKey: props.storageKey,
+  showToast: (msg, type, ms) => toastRef.value?.show(msg, type, ms),
+  rootEl,
+  jumpToFieldStep,
+  submitRemote,
+  onTeardown: () => disposeRemote(),
+})
+
+defineExpose({
+  stopSubmit,
+  setSubmitting,
+  submitting,
+  getFormData,
+  validate,
+  errors,
+  /** 宿主自行重置（不走内置重置按钮）时也要丢弃挂起的幂等键，否则新记录会被服务端当成重复 */
+  resetIdempotency,
+})
 </script>
 
 <template>
