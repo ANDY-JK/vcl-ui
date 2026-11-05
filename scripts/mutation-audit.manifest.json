@@ -2039,6 +2039,15 @@
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
       "expect": "red",
       "note": "把格式化实现抄回 utils.ts（假拆分）→ 用例「utils.ts 不再持有这 4 个实现」当场红（#439）"
+    },
+    {
+      "id": "async-assert-on-promise-object",
+      "file": "tests/unit/use-screenshot-deep.spec.ts",
+      "find": "await expect(copyScreenshotToClipboard(blob(), 'data:image/png;base64,A')).resolves.toBe(true)\r\n    expect(write, '走了 Clipboard API').toHaveBeenCalledTimes(1)",
+      "replace": "expect(copyScreenshotToClipboard(blob(), 'data:image/png;base64,A')).toBe(true)\r\n    expect(write, '走了 Clipboard API').toHaveBeenCalledTimes(1)",
+      "cmd": "npx vitest run tests/unit/async-assert.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "断言落在 Promise 本体（TD-88 的恒真值假绿）→ check:async-assert 当场 exit 1"
     }
   ]
 }
