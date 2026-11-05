@@ -2093,6 +2093,15 @@
       "cmd": "npx vitest run tests/unit/coverage-ranking.spec.ts --no-coverage",
       "expect": "red",
       "note": "覆盖率排行改回原始语句口径 → 模板行又把测全的组件排到榜尾（TD-67 复活），静态接线判据当场红"
+    },
+    {
+      "id": "review-history-banner-removed",
+      "file": "docs/全量审查报告-2026-09-24.md",
+      "find": "历史快照（非当前事实）",
+      "replace": "旧快照（非当前事实）",
+      "cmd": "npx vitest run tests/unit/review-history.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "历史报告摘掉过期横幅 → check:review-history 点名该报告（TD-08 复活）"
     }
   ]
 }
