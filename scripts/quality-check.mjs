@@ -100,6 +100,8 @@ const STEPS = [
   ['check:review-history', 'npm run check:review-history'],
   // #448（TD-79 类）：可写判据只许有 canWrite 一份实现 —— 新入口手写判据即红。
   ['check:canwrite-usage', 'npm run check:canwrite-usage'],
+  // #449：代码用到的 i18n key 必须在语言包里（check:i18n 只看两侧对账，看不到调用点）。
+  ['check:i18n-usage', 'npm run check:i18n-usage'],
   ['check:review-appendix', 'npm run check:review-appendix'],
   ['check:gate-wiring', 'npm run check:gate-wiring'],
   ['check:css-tokens', 'npm run check:css-tokens'],
@@ -173,7 +175,7 @@ const flag = (name) => {
  * 快链把显然会坏的提交挡在本地，整链仍是唯一权威（build / e2e / 许可 / 文档都在整链里）。
  * 逃生口：`git commit --no-verify` 或 `SKIP_QUICK_CHECK=1`。
  */
-const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:review-appendix', 'check:edit-single-writer', 'check:esc-consume', 'check:public-surface', 'check:async-assert', 'check:debt-evidence', 'check:review-history', 'check:canwrite-usage', 'check:gate-wiring',
+const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:review-appendix', 'check:edit-single-writer', 'check:esc-consume', 'check:public-surface', 'check:async-assert', 'check:debt-evidence', 'check:review-history', 'check:canwrite-usage', 'check:i18n-usage', 'check:gate-wiring',
     // check:docs 进快链（#349）：它 1.0s，却是我连续六批加 prop 之后唯一能抓到
     // "API 文档没重新生成"的闸口 —— 单测/类型/lint 全绿也覆盖不到这一层
     'check:docs', 'check:css-tokens', 'check:i18n', 'test:unit']
