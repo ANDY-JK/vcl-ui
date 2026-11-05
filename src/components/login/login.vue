@@ -282,6 +282,8 @@ const {
   locked,
   recordFailedAttempt,
   reset: resetLockout,
+  setValidationError,
+  clearError,
 } = useLoginLockout({
   t,
   maxAttempts: props.maxAttempts,
@@ -308,7 +310,7 @@ const handleEnter = (event: KeyboardEvent) => {
 }
 
 const handleSubmit = () => {
-  internalError.value = ''
+  clearError()
 
   // 提交中：忽略重复点击
   if (internalLoading.value) return
@@ -316,8 +318,7 @@ const handleSubmit = () => {
 
   // 与 rules 的 v.trim() 口径一致：纯空格用户名不放行
   if (!form.username.trim() || form.username.length < 3 || !form.password || form.password.length < 6) {
-    internalError.value = t('login.invalidCredentialsFull')
-    errorType.value = 'warning'
+    setValidationError(t('login.invalidCredentialsFull'))
     return
   }
 
@@ -370,7 +371,7 @@ defineExpose({
     form.username = ''
     form.password = ''
     rememberMe.value = false
-    internalError.value = ''
+    clearError()
   },
 })
 </script>

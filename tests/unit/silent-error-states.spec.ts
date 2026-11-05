@@ -63,11 +63,6 @@ const REVIEWED: Array<{ file: RegExp; name: string; reason: string }> = [
     reason: '经 showImg computed 消费：`const showImg = computed(() => !!props.src && !imgError.value)`，模板用 showImg',
   },
   {
-    file: /^login\/login\.vue$/,
-    name: 'internalError',
-    reason: '经 displayError computed 消费：`props.error || internalError.value`，模板用 displayError',
-  },
-  {
     file: /^login\/forgot-[^/]*\.vue$/,
     name: 'internalError',
     reason: '经 displayError computed 消费（同 login.vue 形态）',

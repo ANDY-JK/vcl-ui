@@ -85,6 +85,17 @@ export function useLoginLockout(d: LoginLockoutDeps) {
     }
   }
 
+  /** 宿主本地校验失败：直接呈现 warning 文案（不计数、不锁定） */
+  function setValidationError(msg: string): void {
+    internalError.value = msg
+    errorType.value = 'warning'
+  }
+
+  /** 清当前错误文案（提交入口复位） */
+  function clearError(): void {
+    internalError.value = ''
+  }
+
   /** 登录成功：清计数与锁 */
   function reset(): void {
     storageDelete(ATTEMPT_KEY)
@@ -108,6 +119,8 @@ export function useLoginLockout(d: LoginLockoutDeps) {
   })
 
   return {
+    setValidationError,
+    clearError,
     lockUntil,
     locked,
     internalError,
