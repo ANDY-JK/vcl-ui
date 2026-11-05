@@ -1931,6 +1931,24 @@
       "cmd": "npx vitest run tests/unit/upload-queue-validation.spec.ts --no-coverage",
       "expect": "red",
       "note": "clearAllFiles 脱离共用守卫 → 禁用态下点「清空全部」仍会全删（#431 形态复现，#432）"
+    },
+    {
+      "id": "camera-revoke-no-blob-check",
+      "file": "src/components/form/CameraCapture.vue",
+      "find": "  if (!url || !url.startsWith('blob:')) return",
+      "replace": "  if (!url) return",
+      "cmd": "npx vitest run tests/unit/camera-capture-revoke.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "丢掉 blob: 判定 → 对宿主 http URL 也撤销（部分内核抛错打断清理循环，后续 URL 全泄漏，#433）"
+    },
+    {
+      "id": "camera-revoke-no-trycatch",
+      "file": "src/components/form/CameraCapture.vue",
+      "find": "  try {\n    URL.revokeObjectURL(url)\n  } catch {\n    /* 忽略：只影响内存回收时机 */\n  }",
+      "replace": "  URL.revokeObjectURL(url)",
+      "cmd": "npx vitest run tests/unit/camera-capture-revoke.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "去掉 try/catch → 撤销抛错冒泡到 onUnmounted/清理循环，老 WebView 上卸载会崩（#433）"
     }
   ]
 }

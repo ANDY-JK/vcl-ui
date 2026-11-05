@@ -111,14 +111,28 @@ const slotChipText = computed(() => {
   return t('form.shotCountN', { n: next })
 })
 
+/** 安全释放一个 blob URL（#433）：只撤 blob:，且撤不掉不抛。
+ *  - 队列里可能混入**宿主的非 blob URL**（自定义 url / 已上传的 http 地址），
+ *    对它们调 revokeObjectURL 在部分内核会抛 TypeError —— 一次抛错会把整个
+ *    清理循环打断，后面的 URL 全部泄漏（deleteShot / clearShots / 卸载兜底都踩这个坑）；
+ *  - revoke 本身在极老 WebView 上不存在或不可用。撤不掉只影响回收时机，不该阻断流程。 */
+function revokeShotUrl(url: string | undefined): void {
+  if (!url || !url.startsWith('blob:')) return
+  try {
+    URL.revokeObjectURL(url)
+  } catch {
+    /* 忽略：只影响内存回收时机 */
+  }
+}
+
 function clearShot() {
-  if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
+  revokeShotUrl(shotUrl.value)
   shotUrl.value = ''
   shotFile.value = null
 }
 
 function clearShots() {
-  shots.value.forEach((s) => URL.revokeObjectURL(s.url))
+  shots.value.forEach((s) => revokeShotUrl(s.url))
   shots.value = []
   viewIdx.value = -1
   replaceIdx.value = -1
@@ -143,7 +157,7 @@ function reviewNext() {
 function deleteShot() {
   const i = viewIdx.value
   if (i < 0 || i >= shots.value.length) return
-  URL.revokeObjectURL(shots.value[i].url)
+  revokeShotUrl(shots.value[i].url)
   shots.value.splice(i, 1)
   if (!shots.value.length) {
     viewIdx.value = -1
@@ -343,7 +357,7 @@ function doShot(video: HTMLVideoElement) {
       // 文件名保留中文（用户可见/打包下载用）；存储层 sanitizeObjectKeyPart 会
       // 在生成对象键时 ASCII 化——Supabase 对象键不接受中文，但展示名不受影响
       shotFile.value = new File([blob], `${t('form.camera')}-${Date.now()}.jpg`, { type: blob.type || 'image/jpeg' })
-      if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
+      revokeShotUrl(shotUrl.value)
       shotUrl.value = URL.createObjectURL(blob)
     },
     'image/jpeg',
@@ -364,7 +378,7 @@ function useShot() {
     shotUrl.value = '' // blob URL 所有权转移给队列，不随 clearShot revoke
     shotFile.value = null
     if (replaceIdx.value >= 0 && replaceIdx.value < shots.value.length) {
-      URL.revokeObjectURL(shots.value[replaceIdx.value].url)
+      revokeShotUrl(shots.value[replaceIdx.value].url)
       // 替换位沿用原名称；文件重命名带名称（交付后上传列表可读）
       const name = shots.value[replaceIdx.value].name
       shots.value[replaceIdx.value] = { file: renameWithShotName(f, name), url, name }
@@ -405,7 +419,7 @@ onUnmounted(() => {
     stream.getTracks().forEach((t) => t.stop())
     stream = null
   }
-  if (shotUrl.value.startsWith('blob:')) URL.revokeObjectURL(shotUrl.value)
+  revokeShotUrl(shotUrl.value)
   // 队列照片的 blob URL 只在 close() 里释放；父级在开启状态下卸载组件（v-if/路由切换）会整批泄漏
   clearShots()
 })
