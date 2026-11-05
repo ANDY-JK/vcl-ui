@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onUnmounted } from 'vue'
 import { useBarcodeScanner } from '@/components/form/utils/useBarcodeScanner'
 import { openSystemCapture } from '@/components/form/utils/capture-fallback'
 import { beepSuccess, speak, notify, unlockAudio, unlockVoice, CameraCapture } from '@/components/index'
@@ -279,6 +279,12 @@ function onCamCapture(f: File) {
 function onCamError(msg: string) {
   camError.value = msg
 }
+
+// 卸载时释放最后一张（#436）：拍照演示页在"再拍一张"时会撤旧的，
+// 但用户直接切走/关页时这最后一张就没人管了 —— 一张原图几十 MB。
+onUnmounted(() => {
+  if (camShotUrl.value.startsWith('blob:')) URL.revokeObjectURL(camShotUrl.value)
+})
 </script>
 
 <template>

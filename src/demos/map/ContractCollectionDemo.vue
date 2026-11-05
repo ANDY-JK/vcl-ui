@@ -668,10 +668,19 @@ async function exportZip(): Promise<void> {
   try {
     const blob = await zip.generateAsync({ type: 'blob' })
     const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
+    const zipUrl = URL.createObjectURL(blob)
+    a.href = zipUrl
     a.download = `门店合同收集_${new Date().toISOString().slice(0, 10)}.zip`
     a.click()
-    URL.revokeObjectURL(a.href)
+    // revoke 延后一轮宏任务（#436；与 #429/#430 同一判据）：
+    // click() 只是发起下载，浏览器读 blob URL 是异步的 —— 同步撤销会让 zip 静默失败。
+    setTimeout(() => {
+      try {
+        URL.revokeObjectURL(zipUrl)
+      } catch {
+        /* 撤不掉只影响回收时机 */
+      }
+    }, 0)
     toast(`已导出 ${fileCount} 个文件 + 门店数据.xlsx`, 'success')
   } finally {
     exporting.value = false

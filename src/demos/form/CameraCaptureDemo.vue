@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import CameraCapture from '@/components/form/CameraCapture.vue'
 import Button from '@/components/basic/Button.vue'
 import Card from '@/components/data/Card.vue'
@@ -12,6 +12,9 @@ const showPreview = ref(false)
 
 function onCapture(file: File) {
   const url = URL.createObjectURL(file)
+  // 上一张的 URL 必须先撤（#436）：演示页也是"照一张看一张"的循环，
+  // 直接覆盖 ref 会让旧 Blob 一直挂在内存里（一张 4000×3000 约几十 MB）。
+  if (capturedPhoto.value?.startsWith('blob:')) URL.revokeObjectURL(capturedPhoto.value)
   capturedPhoto.value = url
   photoList.value = [{ src: url, alt: '拍照结果' }]
   showCamera.value = false
@@ -21,6 +24,13 @@ function onCameraError(msg: string) {
   console.warn('相机错误：', msg)
   showCamera.value = false
 }
+
+/** 卸载时统一释放本页持有的所有 blob URL（#436） */
+onUnmounted(() => {
+  if (capturedPhoto.value?.startsWith('blob:')) URL.revokeObjectURL(capturedPhoto.value)
+  batchUrls.value.forEach((u) => URL.revokeObjectURL(u))
+  batchUrls.value = []
+})
 
 /* ══════ 多张连拍：拍完一张接着拍，胶卷回看/重拍某张，完成批量交付 ══════ */
 const batchOpen = ref(false)

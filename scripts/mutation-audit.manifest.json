@@ -1985,6 +1985,24 @@
       "cmd": "npx vitest run tests/unit/form-target-collect-persist.spec.ts --no-coverage",
       "expect": "red",
       "note": "回到 f.raw ?? f.url → blob: 直接落盘进 StoreFile.dataUrl（#435 原缺陷写法）"
+    },
+    {
+      "id": "demo-download-sync-revoke",
+      "file": "src/demos/map/RoutePlannerDemo.vue",
+      "find": "  a.download = `门店路线规划结果_${ts}.csv`\n  a.click()\n  // revoke 延后一轮宏任务（#436）：click 只发起下载，同步撤销会让 CSV 静默失败\n  setTimeout(() => URL.revokeObjectURL(url), 0)",
+      "replace": "  a.download = `门店路线规划结果_${ts}.csv`\n  a.click()\n  URL.revokeObjectURL(url)",
+      "cmd": "npx vitest run tests/unit/blob-url-ledger.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "下载型 URL 回到同步撤销 → click 只发起下载，CSV 会静默失败（#436 总账规则②）"
+    },
+    {
+      "id": "demo-camera-no-unmount-cleanup",
+      "file": "src/demos/form/CameraCaptureDemo.vue",
+      "find": "onUnmounted(() => {\n  if (capturedPhoto.value?.startsWith('blob:')) URL.revokeObjectURL(capturedPhoto.value)",
+      "replace": "onUnmounted(() => {\n  if (false) URL.revokeObjectURL(capturedPhoto.value)",
+      "cmd": "npx vitest run tests/unit/blob-url-ledger.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "留存型 URL 的卸载清理被摘 → 切页时最后一张原图（几十 MB）泄漏（#436 总账规则③）"
     }
   ]
 }

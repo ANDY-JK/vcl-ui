@@ -423,7 +423,8 @@ function downloadResult(): void {
   const ts = new Date().toISOString().slice(0, 10)
   a.download = `门店路线规划结果_${ts}.csv`
   a.click()
-  URL.revokeObjectURL(url)
+  // revoke 延后一轮宏任务（#436）：click 只发起下载，同步撤销会让 CSV 静默失败
+  setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 function downloadTemplate(): void {
   // 生成一个简单的 CSV 模板（比 xlsx 更通用，任何表格软件都能打开）
@@ -435,7 +436,8 @@ function downloadTemplate(): void {
   a.href = url
   a.download = '门店导入模板.csv'
   a.click()
-  URL.revokeObjectURL(url)
+  // 同上（#436）：下载型 URL 的撤销必须让出一轮宏任务
+  setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
 // ── 清空 ──
