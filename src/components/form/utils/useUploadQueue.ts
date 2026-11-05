@@ -69,9 +69,7 @@ export function useUploadQueue(opts: {
         // 父组件 onUpload 误判为「用户删除文件」→ 落盘空记录 → 拍照返回刷新后图片丢失
         // （每个门店首次上传必现，需拍两次）。等上传完成 emit 后由父组件重新推入即可。
         if (files.value.some((f) => f.status === 'uploading')) return
-        files.value.forEach((f) => {
-          if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
-        })
+        files.value.forEach((f) => revokePreviewUrl(f.url))
         files.value = []
       }
     },
@@ -82,14 +80,30 @@ export function useUploadQueue(opts: {
     emit('update:modelValue', [...files.value])
   }
 
+  /**
+   * 安全释放一个 blob 预览 URL（#434；与 CameraCapture #433 同一判据）。
+   *
+   * 四个释放点原来各自手写 `if (url?.startsWith('blob:')) URL.revokeObjectURL(url)`：
+   * 判定对了，但**谁都不挡异常**。宿主回填的条目可能带自己的 URL（http / data / 相对
+   * 路径），revoke 在部分内核抛 TypeError；`files.value.forEach` 里的清理循环一旦抛，
+   * 会**就地打断在所有剩余元素上** —— 后面每个预览 Blob 都泄漏（几十张连拍就是几十 MB），
+   * 而且 watch 回调里抛错会冒到 Vue 的调度器。撤不掉只影响回收时机，不该让清理失败。
+   */
+  function revokePreviewUrl(url?: string): void {
+    if (!url?.startsWith('blob:')) return
+    try {
+      URL.revokeObjectURL(url)
+    } catch {
+      /* 忽略：只影响内存回收时机 */
+    }
+  }
+
   /** 清空全部文件并同步模型（模板 @click 只支持单表达式，抽成方法） */
   function clearAllFiles() {
     // 守卫与 URL 释放都走 releaseForWrite（单删/全清共用一处，见其注释）：
     // 拉回 #431 —— 全清是同一个写动作的第二条路径，禁用态下点清空会把文件全删掉。
     if (!releaseForWrite()) return
-    files.value.forEach((f) => {
-      if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
-    })
+    files.value.forEach((f) => revokePreviewUrl(f.url))
     files.value = []
     syncModel()
   }
@@ -102,11 +116,11 @@ export function useUploadQueue(opts: {
         const url = URL.createObjectURL(file)
         const img = new Image()
         img.onload = () => {
-          URL.revokeObjectURL(url)
+          revokePreviewUrl(url)
           resolve(img)
         }
         img.onerror = (e) => {
-          URL.revokeObjectURL(url)
+          revokePreviewUrl(url)
           reject(e)
         }
         img.src = url
@@ -144,9 +158,7 @@ export function useUploadQueue(opts: {
     // card 模式且已有文件 → 替换而非追加
     if (props.variant === 'card' && files.value.length) {
       // 清理旧 blob URL
-      files.value.forEach((f) => {
-        if (f.url?.startsWith('blob:')) URL.revokeObjectURL(f.url)
-      })
+      files.value.forEach((f) => revokePreviewUrl(f.url))
       files.value = []
     }
     const newFiles: UploadFile[] = []
@@ -299,7 +311,7 @@ export function useUploadQueue(opts: {
    */
   function releaseForWrite(url?: string): boolean {
     if (props.disabled) return false
-    if (url?.startsWith('blob:')) URL.revokeObjectURL(url)
+    revokePreviewUrl(url)
     return true
   }
 

@@ -1917,8 +1917,8 @@
     {
       "id": "upload-release-forwrite-no-guard",
       "file": "src/components/form/utils/useUploadQueue.ts",
-      "find": "  function releaseForWrite(url?: string): boolean {\n    if (props.disabled) return false\n    if (url?.startsWith('blob:')) URL.revokeObjectURL(url)\n    return true\n  }",
-      "replace": "  function releaseForWrite(url?: string): boolean {\n    if (url?.startsWith('blob:')) URL.revokeObjectURL(url)\n    return true\n  }",
+      "find": "  function releaseForWrite(url?: string): boolean {\n    if (props.disabled) return false\n    revokePreviewUrl(url)\n    return true\n  }",
+      "replace": "  function releaseForWrite(url?: string): boolean {\n    revokePreviewUrl(url)\n    return true\n  }",
       "cmd": "npx vitest run tests/unit/upload-queue-validation.spec.ts --no-coverage",
       "expect": "red",
       "note": "共用守卫 releaseForWrite 摘掉 disabled 判断 → 单删与全清在禁用态下都变成可写（TD-90/#432）"
@@ -1926,8 +1926,8 @@
     {
       "id": "upload-clearall-detach-guard",
       "file": "src/components/form/utils/useUploadQueue.ts",
-      "find": "    if (!releaseForWrite()) return\n    files.value.forEach((f) => {",
-      "replace": "    files.value.forEach((f) => {",
+      "find": "    if (!releaseForWrite()) return\n    files.value.forEach((f) => revokePreviewUrl(f.url))",
+      "replace": "    files.value.forEach((f) => revokePreviewUrl(f.url))",
       "cmd": "npx vitest run tests/unit/upload-queue-validation.spec.ts --no-coverage",
       "expect": "red",
       "note": "clearAllFiles 脱离共用守卫 → 禁用态下点「清空全部」仍会全删（#431 形态复现，#432）"
@@ -1949,6 +1949,24 @@
       "cmd": "npx vitest run tests/unit/camera-capture-revoke.spec.ts --no-coverage",
       "expect": "red",
       "note": "去掉 try/catch → 撤销抛错冒泡到 onUnmounted/清理循环，老 WebView 上卸载会崩（#433）"
+    },
+    {
+      "id": "upload-revoke-no-blob-check",
+      "file": "src/components/form/utils/useUploadQueue.ts",
+      "find": "    if (!url?.startsWith('blob:')) return",
+      "replace": "    if (!url) return",
+      "cmd": "npx vitest run tests/unit/upload-queue-revoke.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "丢掉 blob 前缀判定 → 对宿主 http/data URL 也撤销，部分内核抛错打断清理循环，后续预览 Blob 全泄漏（#434）"
+    },
+    {
+      "id": "upload-revoke-no-trycatch",
+      "file": "src/components/form/utils/useUploadQueue.ts",
+      "find": "    try {\n      URL.revokeObjectURL(url)\n    } catch {\n      /* 忽略：只影响内存回收时机 */\n    }",
+      "replace": "    URL.revokeObjectURL(url)",
+      "cmd": "npx vitest run tests/unit/upload-queue-revoke.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "去掉 try/catch → 撤销抛错冒泡到 watch 回调 / 清理循环，宿主 URL 混进队列时会连带中断整批清理（#434）"
     }
   ]
 }
