@@ -72,6 +72,7 @@
     "check:esc-consume": "node scripts/check-esc-consume.mjs",
     "check:public-surface": "node scripts/check-public-surface.mjs",
     "check:async-assert": "node scripts/check-async-assert.mjs",
+    "check:debt-evidence": "node scripts/check-debt-evidence.mjs",
     "check:edit-single-writer": "node scripts/check-edit-single-writer.mjs",
     "check:css-fonts": "node scripts/check-css-fonts.mjs",
     "check:css-scale": "node scripts/check-css-scale.mjs",

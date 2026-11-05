@@ -94,6 +94,8 @@ const STEPS = [
   ['check:public-surface', 'npm run check:public-surface'],
   // TD-88 收口（#440）：异步结果必须经 .resolves/.rejects 或 await 再断言，否则是恒真值的假绿。
   ['check:async-assert', 'npm run check:async-assert'],
+  // #443：台账证据路径不许成死链（文件改名/拆走后 open 行仍指旧位置）。
+  ['check:debt-evidence', 'npm run check:debt-evidence'],
   ['check:review-appendix', 'npm run check:review-appendix'],
   ['check:gate-wiring', 'npm run check:gate-wiring'],
   ['check:css-tokens', 'npm run check:css-tokens'],
@@ -167,7 +169,7 @@ const flag = (name) => {
  * 快链把显然会坏的提交挡在本地，整链仍是唯一权威（build / e2e / 许可 / 文档都在整链里）。
  * 逃生口：`git commit --no-verify` 或 `SKIP_QUICK_CHECK=1`。
  */
-const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:review-appendix', 'check:edit-single-writer', 'check:esc-consume', 'check:public-surface', 'check:async-assert', 'check:gate-wiring',
+const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:review-appendix', 'check:edit-single-writer', 'check:esc-consume', 'check:public-surface', 'check:async-assert', 'check:debt-evidence', 'check:gate-wiring',
     // check:docs 进快链（#349）：它 1.0s，却是我连续六批加 prop 之后唯一能抓到
     // "API 文档没重新生成"的闸口 —— 单测/类型/lint 全绿也覆盖不到这一层
     'check:docs', 'check:css-tokens', 'check:i18n', 'test:unit']

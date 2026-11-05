@@ -2066,6 +2066,15 @@
       "cmd": "npx vitest run tests/unit/e2e-media-wait.spec.ts --no-coverage",
       "expect": "red",
       "note": "去掉 print 介质切换后的轮询 → 静态纪律判据当场红（TD-32 的即时读样式会复活）"
+    },
+    {
+      "id": "debt-evidence-dead-path",
+      "file": "docs/tech-debt.md",
+      "find": "src/components/data/DataTable.vue`",
+      "replace": "src/components/data/DataTable-GONE.vue`",
+      "cmd": "npx vitest run tests/unit/debt-evidence.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "台账证据路径改名后不回填 → check:debt-evidence 当场报死链（#443）"
     }
   ]
 }
