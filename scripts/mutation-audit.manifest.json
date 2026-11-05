@@ -2048,6 +2048,15 @@
       "cmd": "npx vitest run tests/unit/async-assert.spec.ts --no-coverage",
       "expect": "red",
       "note": "断言落在 Promise 本体（TD-88 的恒真值假绿）→ check:async-assert 当场 exit 1"
+    },
+    {
+      "id": "tech-debt-rounds-metric-broken",
+      "file": "scripts/check-tech-debt.mjs",
+      "find": "const rowsAtHead = countAppendixRows(existsSync(APPENDIX) ? readFileSync(APPENDIX, 'utf8') : '')",
+      "replace": "const rowsAtHead = 0",
+      "cmd": "npx vitest run tests/unit/tech-debt-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "轮次口径被短路（head 恒 0）→ 行数倒挂分支硬报「审查报告行数倒挂」并退 1（#441）"
     }
   ]
 }

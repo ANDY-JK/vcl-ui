@@ -14,11 +14,15 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   commitExists,
+  countAppendixRows,
   parseLedger,
+  roundsDelta,
+  roundsStaleness,
   staleness,
   uncode,
   validateAdrIndex,
   validateLedger,
+  STALE_ROUNDS,
   STALE_SRC_COMMITS,
 } from '../../scripts/check-tech-debt.mjs'
 
@@ -93,6 +97,30 @@ describe('check:tech-debt · 解析与校验（纯函数）', () => {
     expect(staleness(STALE_SRC_COMMITS + 1).stale).toBe(true)
     expect(staleness(0, 0).stale).toBe(false)
     expect(staleness(1, 0).stale).toBe(true)
+  })
+
+  // ── #441：主口径从「提交数」改成「审查轮次」（TD-27 收口） ──
+  it('**轮次口径**：等于上限不算陈旧，超过才算（TD-27 触发后的改法）', () => {
+    expect(roundsStaleness(STALE_ROUNDS).stale).toBe(false)
+    expect(roundsStaleness(STALE_ROUNDS + 1).stale).toBe(true)
+    expect(roundsStaleness(0, 0).stale).toBe(false)
+    expect(roundsStaleness(1, 0).stale).toBe(true)
+  })
+
+  it('**轮次行计数**：只数 `| **#NNN** |` 形状的附录行，不数正文里的 # 号', () => {
+    const md = ['# 标题', '', '| 项 | 值 |', '| --- | --- |', '| 轮次 | #12 见正文 |', '', '| **#439** | 某轮 |', '| **#440** | 另一轮 |', '', '正文提到 #441 不算行。', ''].join('\n')
+    expect(countAppendixRows(md)).toBe(2)
+  })
+
+  it('**轮次差**：正常递增算差值；行数倒挂标 regressed（不夹到 0 —— 夹了判据就永久不陈旧）', () => {
+    expect(roundsDelta(295, 291)).toEqual({ roundsSince: 4, regressed: false })
+    expect(roundsDelta(291, 295)).toEqual({ roundsSince: 4, regressed: true })
+    expect(roundsDelta(295, 295)).toEqual({ roundsSince: 0, regressed: false })
+  })
+
+  it('**空/缺失文本按 0 轮算**（该提交里还没有审查报告时由调用方决定退回提交数口径）', () => {
+    expect(countAppendixRows('')).toBe(0)
+    expect(countAppendixRows(undefined)).toBe(0)
   })
 })
 

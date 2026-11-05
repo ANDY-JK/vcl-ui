@@ -30,8 +30,18 @@ const DEBT = join(ROOT, 'docs', 'tech-debt.md')
 const ADR_DIR = join(ROOT, 'docs', 'adr')
 const ADR_INDEX = join(ADR_DIR, 'README.md')
 
-/** 台账最后被改的提交之后，允许有多少个「动过 src/」的提交不问台账 */
+/** 台账最后被改的提交之后，允许有多少个「动过 src/」的提交不问台账（提交数口径，仅在没有审查报告时兜底） */
 export const STALE_SRC_COMMITS = 5
+/**
+ * 台账最后被改的提交之后，允许新增多少**审查轮次**不问台账（TD-27 收口后的主口径）。
+ *
+ * 为什么改成轮次：提交频次不等于轮次 —— 一次大重构会拆成 5~10 个提交，
+ * 于是"6 个 src 提交"可能只对应 1 轮审查，闸口却报"台账陈旧"（本会话真实发生过两次）。
+ * 轮次的机械定义 = 审查报告附录里新增的行数（每轮一行，#NNN 编号）。
+ */
+export const STALE_ROUNDS = 3
+const APPENDIX_REL = 'docs/全量审查报告-2026-10-17.md'
+const APPENDIX = join(ROOT, 'docs', '全量审查报告-2026-10-17.md')
 
 const LEVELS = new Set(['P0', 'P1', 'P2', 'P3'])
 const STATUSES = new Set(['open', 'accepted', 'deferred', 'closed'])
@@ -152,9 +162,33 @@ export function validateLedger(model, { exists = () => true } = {}) {
   return issues
 }
 
-/** 陈旧度判定（纯函数） */
+/** 陈旧度判定（纯函数，提交数口径 —— 兜底用） */
 export function staleness(srcCommitsSince, limit = STALE_SRC_COMMITS) {
   return { srcCommitsSince, limit, stale: srcCommitsSince > limit }
+}
+
+/** 陈旧度判定（纯函数，轮次口径 —— 主用） */
+export function roundsStaleness(roundsSince, limit = STALE_ROUNDS) {
+  return { roundsSince, limit, stale: roundsSince > limit }
+}
+
+/**
+ * 轮次差（纯函数）：`rowsAtHead < rowsAtLedger` 时**不夹到 0**，而是标 `regressed` ——
+ * 报告行数倒挂意味着截断/回退，夹到 0 会让判据永久"不陈旧"（负向对照实测过这个洞）。
+ */
+export function roundsDelta(rowsAtHead, rowsAtLedger) {
+  if (rowsAtHead < rowsAtLedger) return { roundsSince: rowsAtLedger - rowsAtHead, regressed: true }
+  return { roundsSince: rowsAtHead - rowsAtLedger, regressed: false }
+}
+
+/**
+ * 审查报告附录里的轮次行数（`| **#NNN** | ...`）。
+ *
+ * 口径取"附录行"而不是"提交数"：一轮审查 = 一行，与提交怎么拆无关。
+ */
+export function countAppendixRows(text) {
+  if (!text) return 0
+  return (text.match(/^\|\s*\*\*#\d+\*\*/gm) ?? []).length
 }
 
 /** ADR 索引与文件一一对应（返回 issues） */
@@ -178,7 +212,10 @@ export function validateAdrIndex({ dir = ADR_DIR, index = ADR_INDEX } = {}) {
 }
 
 function git(args) {
-  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim()
+  // maxBuffer 必须显式放大：审查报告附录已 >580KB，execFileSync 默认 1MB 缓冲
+  // 会让 `git show <commit>:docs/全量审查报告…` 抛 ENOBUFS —— 陈旧度判定会静默退回
+  // 提交数口径（本轮实测踩到）。
+  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).trim()
 }
 
 function main() {
@@ -199,25 +236,64 @@ function main() {
   if (adr.issues) fail.push(...adr.issues)
   else notes.push(`ADR ${adr.count} 份，索引与文件一一对应`)
 
-  // ⑤ 陈旧度
+  // ⑤ 陈旧度（TD-27 收口后按「审查轮次」算，不再按提交数）
   const limitArg = process.argv.find((a) => a.startsWith('--stale-limit='))
-  const limit = limitArg ? Number(limitArg.split('=')[1]) : STALE_SRC_COMMITS
-  let srcCommitsSince = 0
+  const limit = limitArg ? Number(limitArg.split('=')[1]) : STALE_ROUNDS
+  let roundsSince = 0
   let ledgerCommit = ''
+  let metric = 'rounds'
+  let rowsAtHeadSnapshot = 0
+  let rowsAtLedgerSnapshot = 0
   try {
     ledgerCommit = git(['log', '-1', '--format=%H', '--', DEBT_REL])
-    if (ledgerCommit) srcCommitsSince = Number(git(['rev-list', '--count', `${ledgerCommit}..HEAD`, '--', 'src'])) || 0
+    if (ledgerCommit) {
+      const rowsAtHead = countAppendixRows(existsSync(APPENDIX) ? readFileSync(APPENDIX, 'utf8') : '')
+      let rowsAtLedger = null
+      try {
+        rowsAtLedger = countAppendixRows(git(['show', `${ledgerCommit}:${APPENDIX_REL}`]))
+      } catch {
+        rowsAtLedger = null // 该提交里还没有审查报告 → 退回提交数口径
+      }
+      if (rowsAtLedger === null) {
+        metric = 'commits'
+        roundsSince = Number(git(['rev-list', '--count', `${ledgerCommit}..HEAD`, '--', 'src'])) || 0
+      } else {
+        const delta = roundsDelta(rowsAtHead, rowsAtLedger)
+        if (delta.regressed) {
+          metric = 'regressed'
+          roundsSince = delta.roundsSince
+          rowsAtHeadSnapshot = rowsAtHead
+          rowsAtLedgerSnapshot = rowsAtLedger
+        } else {
+          roundsSince = delta.roundsSince
+        }
+      }
+    }
   } catch {
     notes.push('读不到 git 历史，跳过陈旧度判定')
   }
-  const stale = staleness(srcCommitsSince, Number.isFinite(limit) ? limit : STALE_SRC_COMMITS)
-  if (stale.stale) {
+  const stale =
+    metric === 'rounds'
+      ? roundsStaleness(roundsSince, Number.isFinite(limit) ? limit : STALE_ROUNDS)
+      : staleness(roundsSince, Number.isFinite(limit) ? limit : STALE_SRC_COMMITS)
+  if (metric === 'regressed') {
+    // 报告行数倒挂：单独一条硬错，不参与"陈旧"阈值判断
     fail.push(
-      `台账陈旧：最后更新在 ${ledgerCommit.slice(0, 7)}，其后动过 src/ 的提交有 ${srcCommitsSince} 个（上限 ${stale.limit}）` +
-        ` —— 把这几个提交里核实过的债登记进来（已修的挪到「已结项」并写提交号）`,
+      `审查报告行数倒挂：当前 ${rowsAtHeadSnapshot} 行 < 台账最后更新提交（${ledgerCommit.slice(0, 7)}）时的 ${rowsAtLedgerSnapshot} 行 —— 报告被截断或回退了，先修复报告再谈陈旧度`,
+    )
+  } else if (stale.stale) {
+    fail.push(
+      (metric === 'rounds'
+        ? `台账陈旧：最后更新在 ${ledgerCommit.slice(0, 7)}，其后新增了 ${roundsSince} 轮审查（上限 ${stale.limit} 轮）`
+        : `台账陈旧：最后更新在 ${ledgerCommit.slice(0, 7)}，其后动过 src/ 的提交有 ${roundsSince} 个（上限 ${stale.limit}，该提交里还没有审查报告，退回提交数口径）`) +
+        ` —— 把这些轮次里核实过的债登记进来（已修的挪到「已结项」并写提交号）`,
     )
   } else if (ledgerCommit) {
-    notes.push(`陈旧度：台账最后更新 ${ledgerCommit.slice(0, 7)} → 其后动过 src 的提交 ${srcCommitsSince} 个（上限 ${stale.limit}）`)
+    notes.push(
+      metric === 'rounds'
+        ? `陈旧度：台账最后更新 ${ledgerCommit.slice(0, 7)} → 其后新增审查 ${roundsSince} 轮（上限 ${stale.limit} 轮）`
+        : `陈旧度：台账最后更新 ${ledgerCommit.slice(0, 7)} → 其后动过 src 的提交 ${roundsSince} 个（上限 ${stale.limit}，提交数口径）`,
+    )
   }
 
   console.log('')
