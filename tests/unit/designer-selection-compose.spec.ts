@@ -3,7 +3,7 @@
  * 从 FormDesigner.vue 下沉：单击/多选点选的状态迁移、主选中跟随、TTL 提示。
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useDesignerSelection } from '@/components/form-builder/designer/composables/useDesignerSelection'
 import type { DesignerNode } from '@/components/form-builder/designer/types'
 
