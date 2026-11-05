@@ -276,10 +276,6 @@ export {
   splitRegionDetail,
   downloadBlob,
   deepClone,
-  formatNumber,
-  formatMoney,
-  formatSize,
-  toChineseAmount,
   truncate,
   safeParseJSON,
   parseQueryString,
@@ -306,6 +302,8 @@ export {
   rgbToHex,
   isHexColor,
 } from './_internal/utils'
+// #439：数字/金额格式化已拆到独立模块（utils.ts 797 行距止涨线仅 13 行，TD-54）
+export { formatNumber, formatMoney, formatSize, toChineseAmount } from './_internal/formatters'
 export type { Region } from './_internal/utils'
 export { formatDateZh, formatDateTimeZh } from './form/utils/date-utils'
 

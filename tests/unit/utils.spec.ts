@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { formatSize } from '@/components/_internal/utils'
+import { formatSize } from '@/components/_internal/formatters'
 import { calcTotalPages } from '@/components/nav/utils/pagination-utils'
 import { warnOnce } from '@/components/_internal/warnOnce'
 import { safeRun, safeDocument } from '@/components/_internal/ssr-guard'

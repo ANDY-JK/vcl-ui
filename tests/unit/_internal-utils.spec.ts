@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import { readFileSync } from 'node:fs'
 import {
   isValidPhone,
   isValidEmail,
@@ -9,14 +10,10 @@ import {
   formatRegion,
   errMessage,
   toNativeColorValue,
-  formatSize,
   splitRegionDetail,
+  deepClone,
   downloadBlob,
   sanitizeDownloadName,
-  deepClone,
-  formatNumber,
-  formatMoney,
-  toChineseAmount,
   truncate,
   safeParseJSON,
   parseQueryString,
@@ -42,6 +39,8 @@ import {
   rgbToHex,
   isHexColor,
 } from '@/components/_internal/utils'
+// #439：数字/金额格式化拆到独立模块 —— 用例跟着实现走（不留桶文件转发）
+import { formatNumber, formatMoney, formatSize, toChineseAmount } from '@/components/_internal/formatters'
 
 // ════════════════════════════════════════
 // 格式校验
@@ -948,5 +947,44 @@ describe('formatSize · 单位边界（#410）', () => {
     expect(formatSize(Number.NaN)).toBe('')
     expect(formatSize(-1)).toBe('')
     expect(formatSize(Number.POSITIVE_INFINITY)).toBe('')
+  })
+})
+
+/* ═══════════ #439：数字/金额格式化拆到独立模块（TD-54 余量） ═══════════
+ *
+ * `utils.ts` 一度 797 行、距 810 止涨线只剩 13 行（TD-54 挂号"下次动它前先拆"）。
+ * 本轮把最大的一块内聚逻辑（4 个格式化函数 + 私有 normalizeDecimals，约 167 行）搬到
+ * `_internal/formatters.ts`，并把**两个消费者与两处用例**一起改到新模块 —— 不留桶文件转发，
+ * 否则"拆分"只是把行数搬到另一个地方，import 路径仍然指向旧文件。
+ *
+ * 下面三条是本轮的反向保护：实现只有一份、旧文件不再持有实现、新模块真的导出这四个名字。
+ */
+describe('格式化拆分（#439 / TD-54 余量）', () => {
+  it('**新模块导出全部 4 个格式化函数**（搬过去不是复制过去）', () => {
+    expect(typeof formatNumber).toBe('function')
+    expect(typeof formatMoney).toBe('function')
+    expect(typeof formatSize).toBe('function')
+    expect(typeof toChineseAmount).toBe('function')
+  })
+
+  it('**utils.ts 不再持有这 4 个实现**（防"搬了但旧文件还留着"的假拆分）', () => {
+    const src = readFileSync('src/components/_internal/utils.ts', 'utf8')
+    const leftovers = ['formatNumber', 'formatMoney', 'formatSize', 'toChineseAmount'].filter((name) =>
+      // 用 includes 而不是正则：函数名后紧跟左括号这一形状足够唯一，也避开转义层数
+      src.includes('export function ' + name + '('),
+    )
+    expect(leftovers, `这些实现不该还留在 utils.ts：${leftovers.join(', ')}`).toEqual([])
+  })
+
+  it('**utils.ts 也没有用桶文件把它们转发回来**（转发 = 旧路径继续承担耦合）', () => {
+    const src = readFileSync('src/components/_internal/utils.ts', 'utf8')
+    expect(src).not.toContain("from './formatters'")
+  })
+
+  it('**反向保护：拆分后行为不变**（金额/大小写/大写金额的既有断言仍在同一份用例里）', () => {
+    expect(formatNumber(1234567.891, { decimals: 2 })).toBe('1,234,567.89')
+    expect(formatMoney(12.3)).toBe('¥12.30')
+    expect(formatSize(2048)).toBe('2.0 KB')
+    expect(toChineseAmount(0)).toBe('零元整')
   })
 })

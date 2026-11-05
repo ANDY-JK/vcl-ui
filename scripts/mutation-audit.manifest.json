@@ -1637,7 +1637,7 @@
     },
     {
       "id": "format-blank-string-as-zero",
-      "file": "src/components/_internal/utils.ts",
+      "file": "src/components/_internal/formatters.ts",
       "find": "  if (typeof n === 'string' && n.trim() === '') return ''\n  const value = typeof n === 'string' ? Number(n) : n\n  // 非有限「数值」",
       "replace": "  const value = typeof n === 'string' ? Number(n) : n\n  // 非有限「数值」",
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
@@ -1646,7 +1646,7 @@
     },
     {
       "id": "format-decimals-unclamped",
-      "file": "src/components/_internal/utils.ts",
+      "file": "src/components/_internal/formatters.ts",
       "find": "  return Math.min(20, Math.max(0, Math.trunc(d)))",
       "replace": "  return d",
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
@@ -1655,7 +1655,7 @@
     },
     {
       "id": "amount-rounds-on-float",
-      "file": "src/components/_internal/utils.ts",
+      "file": "src/components/_internal/formatters.ts",
       "find": "  const cents = Math.round(Number((Math.abs(value) * 100).toFixed(6)))",
       "replace": "  const cents = Math.round(Math.abs(value) * 100)",
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
@@ -1664,7 +1664,7 @@
     },
     {
       "id": "amount-negative-zero-signed",
-      "file": "src/components/_internal/utils.ts",
+      "file": "src/components/_internal/formatters.ts",
       "find": "  const negative = value < 0 && cents > 0",
       "replace": "  const negative = value < 0",
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
@@ -1691,7 +1691,7 @@
     },
     {
       "id": "size-kb-boundary-no-promote",
-      "file": "src/components/_internal/utils.ts",
+      "file": "src/components/_internal/formatters.ts",
       "find": "  if (kb < 1024) return kb.toFixed(1) + ' KB'",
       "replace": "  if (kb < 1025) return kb.toFixed(1) + ' KB'",
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
@@ -1700,7 +1700,7 @@
     },
     {
       "id": "size-mb-boundary-no-promote",
-      "file": "src/components/_internal/utils.ts",
+      "file": "src/components/_internal/formatters.ts",
       "find": "  if (mb < 1024) return mb.toFixed(1) + ' MB'",
       "replace": "  if (mb < 1025) return mb.toFixed(1) + ' MB'",
       "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
@@ -2030,6 +2030,15 @@
       "cmd": "npx vitest run tests/unit/public-surface.spec.ts --no-coverage",
       "expect": "red",
       "note": "跨域引用又扎回 storage/contract-storage 内部（核心模块，TD-57 口径被拆）"
+    },
+    {
+      "id": "utils-formatters-duplicate-impl",
+      "file": "src/components/_internal/utils.ts",
+      "find": "export function deepClone<T>(value: T): T {",
+      "replace": "export function formatNumber(n: number | string): string { return String(n) }\n\nexport function deepClone<T>(value: T): T {",
+      "cmd": "npx vitest run tests/unit/_internal-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把格式化实现抄回 utils.ts（假拆分）→ 用例「utils.ts 不再持有这 4 个实现」当场红（#439）"
     }
   ]
 }
