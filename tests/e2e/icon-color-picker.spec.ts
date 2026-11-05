@@ -38,6 +38,17 @@ test('取色器收到解析后的主题色，且不再刷格式警告', async ({
   await expect(pickers).toHaveCount(6)
 
   const themeHex = (await readThemeHex(page)).toLowerCase()
+  // #442（TD-32）：`toHaveCount(6)` 只证明 6 个取色器**挂载**了，不证明它们的 value 已被
+  // 异步解析的主题色回填（onMounted → getComputedStyle → Vue 更新各在一帧之后）。
+  // 旧版紧接着就 evaluateAll 读值，恰好卡在回填之前时会拿到 #000000 → values 不含主题色，
+  // 表现为"偶发红、重试即过"。改成轮询等待**值本身**到达，而不是等元素存在。
+  await expect
+    .poll(
+      async () =>
+        pickers.evaluateAll((els) => els.map((el) => (el as HTMLInputElement).value.toLowerCase())),
+      { message: '取色器的主题色回填必须在断言前完成', timeout: 10_000 },
+    )
+    .toContain(themeHex)
   const values: string[] = await pickers.evaluateAll((els) =>
     els.map((el) => (el as HTMLInputElement).value.toLowerCase()),
   )

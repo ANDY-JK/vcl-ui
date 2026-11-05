@@ -2057,6 +2057,15 @@
       "cmd": "npx vitest run tests/unit/tech-debt-gate.spec.ts --no-coverage",
       "expect": "red",
       "note": "轮次口径被短路（head 恒 0）→ 行数倒挂分支硬报「审查报告行数倒挂」并退 1（#441）"
+    },
+    {
+      "id": "e2e-print-media-immediate-read",
+      "file": "tests/e2e/print-media.spec.ts",
+      "find": "      .poll(() => css(page, ':root', '--vcl-scale'), { message: '打印介质切换后 --vcl-scale 应归位', timeout: 10_000 })",
+      "replace": "      .immediateRead === undefined ? '' : ''",
+      "cmd": "npx vitest run tests/unit/e2e-media-wait.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "去掉 print 介质切换后的轮询 → 静态纪律判据当场红（TD-32 的即时读样式会复活）"
     }
   ]
 }

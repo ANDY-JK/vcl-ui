@@ -30,6 +30,11 @@ test.describe('打印介质', () => {
     expect(screenScale, '屏幕下应有缩放值').not.toBe('')
 
     await page.emulateMedia({ media: 'print' })
+    // #442（TD-32）：媒体切换后的样式重算不是同步可见的 —— 旧版切完立刻读计算样式，
+    // 偶发拿到上一帧的屏幕值（--vcl-scale 曾读到 -1）。轮询等**值本身**归位。
+    await expect
+      .poll(() => css(page, ':root', '--vcl-scale'), { message: '打印介质切换后 --vcl-scale 应归位', timeout: 10_000 })
+      .toBe('1')
     const printScale = await css(page, ':root', '--vcl-scale')
     expect(printScale.trim(), '打印时 --vcl-scale 必须归位为 1').toBe('1')
   })
@@ -41,8 +46,11 @@ test.describe('打印介质', () => {
     const screenBg = await css(page, ':root', '--vcl-color-bg')
     expect(screenBg, '暗色下背景应非白').not.toBe('#fff')
 
-    // 切到打印：必须变成白底
+    // 切到打印：必须变成白底（同样轮询等样式重算落定，见上）
     await page.emulateMedia({ media: 'print' })
+    await expect
+      .poll(() => css(page, ':root', '--vcl-color-bg'), { message: '打印介质切换后背景应变白', timeout: 10_000 })
+      .toMatch(/^#fff|rgb\(255,\s*255,\s*255\)/i)
     const printBg = await css(page, ':root', '--vcl-color-bg')
     const printText = await css(page, ':root', '--vcl-color-text')
     expect(printBg.toLowerCase(), '打印必须白底').toMatch(/^#fff|rgb\(255,\s*255,\s*255\)/)
@@ -51,6 +59,9 @@ test.describe('打印介质', () => {
 
   test('打印时阴影与玻璃模糊被清零（纸上会变脏灰块）', async ({ page }) => {
     await page.emulateMedia({ media: 'print' })
+    await expect
+      .poll(() => css(page, ':root', '--vcl-shadow-md'), { message: '打印介质切换后阴影应清零', timeout: 10_000 })
+      .toMatch(/^(none|)$/)
     const shadow = await css(page, ':root', '--vcl-shadow-md')
     const blur = await css(page, ':root', '--vcl-glass-blur')
     expect(shadow === 'none' || shadow === '', '打印时阴影应为 none').toBe(true)
@@ -70,7 +81,13 @@ test.describe('打印介质', () => {
     expect(await page.locator('#print-hide-probe').isVisible()).toBe(true)
 
     await page.emulateMedia({ media: 'print' })
-    expect(await page.locator('#print-hide-probe').isVisible(), '打印时必须隐藏').toBe(false)
+    // 隐藏也是样式重算的结果，同样不能切完立刻读
+    await expect
+      .poll(async () => page.locator('#print-hide-probe').isVisible(), {
+        message: '打印介质切换后 .vcl-print-hide 应隐藏',
+        timeout: 10_000,
+      })
+      .toBe(false)
   })
 
   test('打印时链接追加 URL（纸面可追溯）', async ({ page }) => {
