@@ -11,7 +11,6 @@ import type { FormData, FormField, FormSchema } from '@/components/form-builder/
 function harness(over?: { valid?: boolean; saveUrl?: string }) {
   const formData = ref<FormData>({ a: '1' })
   const initialData = ref<FormData>({ a: '' })
-  const submitting = { v: false }
   const calls: string[] = []
   const fields = [{ key: 'a', type: 'input' }] as FormField[]
   const schema = {
