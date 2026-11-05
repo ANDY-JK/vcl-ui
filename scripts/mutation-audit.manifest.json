@@ -2070,11 +2070,11 @@
     {
       "id": "debt-evidence-dead-path",
       "file": "docs/tech-debt.md",
-      "find": "src/components/data/DataTable.vue`",
-      "replace": "src/components/data/DataTable-GONE.vue`",
+      "find": "拆分见 #439 / #452 / #453",
+      "replace": "拆分见 #439 / #452 / #453X",
       "cmd": "npx vitest run tests/unit/debt-evidence.spec.ts --no-coverage",
       "expect": "red",
-      "note": "台账证据路径改名后不回填 → check:debt-evidence 当场报死链（#443）"
+      "note": "TD-54 行尾的\"拆分见 …\"引用被改坏 → 台账闸口的证据/引用解析应红（锚点随每次刷新轮换，防止锚死）"
     },
     {
       "id": "bench-env-retry-short-circuit",
