@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reportWarn } from '@/components/_internal/runtime-observer'
+import { isPersistableImageRef } from '@/components/_internal/blob-url'
 /**
  * FormTargetCollect — 目标收集（按门店等目标聚合上传）
  *
@@ -252,11 +253,21 @@ async function onUpload(targetId: number, slotKey: string, files: UploadFile[]):
   const f = files[0]
   const cur = uploadMap.get(targetId)
   if (f && f.url && f.status === 'done') {
+    // 只持久化"跨会话可解析"的引用（#435）：优先 Blob 本体，其次是 data:/http(s):
+    // 字符串。**blob: 一律拒收** —— 它是本文档内的临时句柄，写进后端后刷新即失效
+    // （预览白屏、导出 fetch 失败、mime 判定兜底成 png）。
+    const persistable = isPersistableImageRef(f.raw) ? f.raw : isPersistableImageRef(f.url) ? f.url : undefined
+    if (!persistable) {
+      // 拿不出可持久化的本体时**不改槽位**：宁可不保存，也不把临时 URL 当数据。
+      // 宿主回填/二次 emit 的条目本来就不带 raw，这条兜底正是为它准备的。
+      reportWarn('[FormTargetCollect] 跳过不可持久化的图片引用:', f.url)
+      return
+    }
     // 槽位内容变更：失效旧 blob URL（下次渲染按新文件重建）
     revokeSlotUrl(targetId, slotKey)
     const file: StoreFile = {
       name: f.name,
-      dataUrl: f.raw ?? f.url,
+      dataUrl: persistable,
       size: f.size,
       type: (f as UploadFile & { type?: string }).type || 'image/*',
     }

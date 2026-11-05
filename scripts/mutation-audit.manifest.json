@@ -1967,6 +1967,24 @@
       "cmd": "npx vitest run tests/unit/upload-queue-revoke.spec.ts --no-coverage",
       "expect": "red",
       "note": "去掉 try/catch → 撤销抛错冒泡到 watch 回调 / 清理循环，宿主 URL 混进队列时会连带中断整批清理（#434）"
+    },
+    {
+      "id": "blob-url-accepts-blob-scheme",
+      "file": "src/components/_internal/blob-url.ts",
+      "find": "const PERSISTABLE_STRING = /^(data:|https?:)/i",
+      "replace": "const PERSISTABLE_STRING = /^(data:|https?:|blob:)/i",
+      "cmd": "npx vitest run tests/unit/blob-url.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把 blob: 也判为可持久化 → 临时句柄被落盘，刷新后预览白屏（#435）"
+    },
+    {
+      "id": "form-target-collect-raw-fallback",
+      "file": "src/components/form-builder/FormTargetCollect.vue",
+      "find": "const persistable = isPersistableImageRef(f.raw) ? f.raw : isPersistableImageRef(f.url) ? f.url : undefined",
+      "replace": "const persistable = f.raw ?? f.url",
+      "cmd": "npx vitest run tests/unit/form-target-collect-persist.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "回到 f.raw ?? f.url → blob: 直接落盘进 StoreFile.dataUrl（#435 原缺陷写法）"
     }
   ]
 }
