@@ -2070,11 +2070,11 @@
     {
       "id": "debt-evidence-dead-path",
       "file": "docs/tech-debt.md",
-      "find": "拆分见 #439 / #452 / #453",
-      "replace": "拆分见 #439 / #452 / #453X",
+      "find": "`src/components/form-builder/designer/fieldRegistryAdvanced.ts`",
+      "replace": "`designer/fieldRegistryAdvanced.ts`",
       "cmd": "npx vitest run tests/unit/debt-evidence.spec.ts --no-coverage",
       "expect": "red",
-      "note": "TD-54 行尾的\"拆分见 …\"引用被改坏 → 台账闸口的证据/引用解析应红（锚点随每次刷新轮换，防止锚死）"
+      "note": "台账证据路径去掉 src/ 前缀 → debt-evidence.spec 的「真实树零死链」立刻红（#456 实测踩到两次）"
     },
     {
       "id": "bench-env-retry-short-circuit",
