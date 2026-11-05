@@ -23,7 +23,8 @@ const CODE = SRC.split('\n')
 
 /** 从源码抽出 helper 的 body，在沙箱里重放（不依赖组件实例） */
 function helperBody(): string {
-  const m = SRC.match(/function revokePreviewUrl\(url\?: string\): void \{([\s\S]*?)\n  \}/)
+  // 行首缩进用 {2} 而非两个字面空格：no-regex-spaces 规则（空格难数）
+  const m = SRC.match(/function revokePreviewUrl\(url\?: string\): void \{([\s\S]*?)\n {2}\}/)
   expect(m, '源码里应有 revokePreviewUrl 定义').toBeTruthy()
   return m![1]!
 }
