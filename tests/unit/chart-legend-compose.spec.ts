@@ -4,7 +4,7 @@
  * 硬约束：图例项名与过滤名同源（itemFallback / seriesFallback），否则点图例藏不住。
  */
 import { describe, it, expect } from 'vitest'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useChartLegend } from '@/components/chart/composables/useChartLegend'
 import type { EChartsOption } from 'echarts'
 
