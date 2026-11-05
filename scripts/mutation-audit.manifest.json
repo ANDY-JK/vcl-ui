@@ -2084,6 +2084,15 @@
       "cmd": "npx vitest run tests/unit/bench-env-retry.spec.ts --no-coverage",
       "expect": "red",
       "note": "复判短路成一律未判定 → 稳态慢机器上的真回归又被放过（TD-05 复活），静态接线判据当场红"
+    },
+    {
+      "id": "coverage-ranking-raw-stmt",
+      "file": "scripts/list-coverage-low.mjs",
+      "find": "rows.sort((a, b) => rankKey(a) - rankKey(b))",
+      "replace": "rows.sort((a, b) => a.stmt - b.stmt)",
+      "cmd": "npx vitest run tests/unit/coverage-ranking.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "覆盖率排行改回原始语句口径 → 模板行又把测全的组件排到榜尾（TD-67 复活），静态接线判据当场红"
     }
   ]
 }
