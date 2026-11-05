@@ -2024,12 +2024,12 @@
     },
     {
       "id": "public-surface-entry-drop",
-      "file": "src/components/form/index.ts",
-      "find": "export { computePageButtons } from './utils/pagination'",
-      "replace": "// MUT：入口不再导出",
+      "file": "src/components/storage/index.ts",
+      "find": "export { getSlotFile, setSlotFile, allSlotsFilled, defaultStorageConfigFromEnv } from './contract-storage'",
+      "replace": "// MUT：storage 入口不再导出合同收集工具",
       "cmd": "npx vitest run tests/unit/public-surface.spec.ts --no-coverage",
       "expect": "red",
-      "note": "跨域引用又扎回 form/utils/pagination 内部（TD-57 口径被拆）—— 闸口 check:public-surface 当场报 2 处"
+      "note": "跨域引用又扎回 storage/contract-storage 内部（核心模块，TD-57 口径被拆）"
     }
   ]
 }

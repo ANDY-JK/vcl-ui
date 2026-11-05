@@ -78,6 +78,22 @@ describe('check:public-surface · 合成夹具（判据有效性）', () => {
     expect(findCrossDomainBypass({ componentsDir: root, domains: DOMAINS })).toEqual([])
   })
 
+  it('**豁免域内 utils/ 与 composables/**（收进入口会让全量宿主付体积，见 TD-57 实测）', () => {
+    write('alpha/index.ts', "export const a = 1\n")
+    write('alpha/utils/format.ts', 'export function fmt() {}\n')
+    write('alpha/composables/useThing.ts', 'export function useThing() {}\n')
+    write('beta/use.ts', "import { fmt } from '@/components/alpha/utils/format'\nimport { useThing } from '@/components/alpha/composables/useThing'\n")
+    expect(findCrossDomainBypass({ componentsDir: root, domains: DOMAINS })).toEqual([])
+  })
+
+  it('**但核心模块不豁免**：契约/服务模块里的符号仍要求走入口（否则就是 TD-57 本体）', () => {
+    write('alpha/index.ts', "export const a = 1\n")
+    write('alpha/contract.ts', 'export function coreApi() {}\n')
+    write('beta/use.ts', "import { coreApi } from '@/components/alpha/contract'\n")
+    const findings = findCrossDomainBypass({ componentsDir: root, domains: DOMAINS })
+    expect(findings.map((f) => f.symbol)).toEqual(['coreApi'])
+  })
+
   it('**类型也算公共面**：跨域引类型未走入口同样报（不能被 import type 绕过）', () => {
     write('alpha/index.ts', "export const a = 1\n")
     write('alpha/types.ts', 'export interface Row {}\n')

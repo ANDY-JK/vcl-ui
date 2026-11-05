@@ -50,6 +50,16 @@ const DOMAINS = [
 ]
 /** 全库共享内部层：按设计不逐域导出（文档另有 `_internal` 约定） */
 const INTERNAL = /(^|\/)_internal\//
+/**
+ * 域内"内部实现"目录：工具/组合式函数/样式。
+ *
+ * 这些目录里的符号**不要求**从域入口导出 —— 入口一旦把它们全收进来，
+ * 每个按需引入的宿主都会为没用到的工具函数付 bundle 体积（实测：把
+ * `form/utils/date-utils` + `pagination` 收进 form 入口后，form/index.js
+ * 从 150KB 预算内涨到 162KB，被 verify:pkg 拦下）。
+ * 判据因此只盯**核心模块**（契约/服务/组件/类型），内部目录豁免。
+ */
+const DOMAIN_INTERNAL = /(^|\/)(utils|composables|styles)\//
 
 function walk(dir, out = []) {
   for (const name of fs.readdirSync(dir)) {
@@ -110,6 +120,7 @@ export function findCrossDomainBypass({ componentsDir = COMPONENTS, domains = DO
       const targetModule = m[3]
       if (targetModule === 'index' || targetModule.startsWith('index.')) continue
       if (INTERNAL.test('/' + targetModule)) continue
+      if (DOMAIN_INTERNAL.test('/' + targetModule)) continue
       const names = m[1]
         .split(',')
         .map((s) => s.trim().replace(/^type\s+/, '').split(/\s+as\s+/)[0].trim())

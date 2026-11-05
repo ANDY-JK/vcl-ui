@@ -10,7 +10,7 @@
     },
     "form": {
       "components": 9,
-      "named": 17
+      "named": 10
     },
     "feedback": {
       "components": 9,
@@ -55,5 +55,5 @@
   },
   "unparsed": [],
   "totalComponents": 66,
-  "totalNamed": 189
+  "totalNamed": 182
 }
