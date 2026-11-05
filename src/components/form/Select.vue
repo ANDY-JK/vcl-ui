@@ -1,6 +1,7 @@
 <script lang="ts">
 import { useT } from '@/components/_internal/i18n'
 import { canWrite as canWriteRule } from '@/components/_internal/writable'
+import { useSelectKeyboard } from './composables/useSelectKeyboard'
 
 /** 模块级 t：prop 默认值工厂在 setup 之前执行（defineProps 被提升），不能引用 setup 局部变量 */
 const t = useT()
@@ -279,7 +280,6 @@ onUnmounted(() => {
 const searchInputRef = ref<HTMLInputElement | null>(null)
 const comboInputRef = ref<HTMLInputElement | null>(null)
 const searchText = ref('')
-const highlightIdx = ref(-1)
 
 // combobox/select 统一输入文本：已选值由 tag 展示，comboText 只承载"正在输入"的内容
 const comboText = ref('')
@@ -376,6 +376,9 @@ function onTriggerClick(e: MouseEvent) {
   }
   if (!open.value) toggleOpen(e)
 }
+
+/** 高亮游标：useSelectKeyboard 返回前先声明（useSelectFiltering 引用它） */
+const highlightIdx = ref(-1)
 
 /* ════════════════════════════════════════
    拼音过滤 + 防抖搜索 + 下拉虚拟化（编排下沉 useSelectFiltering；
@@ -521,6 +524,40 @@ const {
   },
 })
 
+// 键盘导航下沉 useSelectKeyboard（#454）：输入型/触发器型两套 keydown + 高亮游标。
+// 选项来源与选中动作由宿主注入；游标与键位语义留在本文件。
+const { onComboKeydown, onTriggerKeydown } = useSelectKeyboard({
+  navItems: computed(() => (isMenu.value ? props.items || [] : filteredOptions.value)),
+  navCount: computed(() =>
+    isTreeSelect.value
+      ? visibleTreeNodes.value.length
+      : (isMenu.value ? props.items || [] : filteredOptions.value).length,
+  ),
+  visibleTreeNodes,
+  isMenu,
+  isTreeSelect,
+  open,
+  comboText,
+  modelValue: computed(() => props.modelValue),
+  multiple: props.multiple,
+  allowCreate: props.allowCreate,
+  isImeComposing,
+  externalHighlight: highlightIdx,
+  matchOptions,
+  findExact,
+  commitComboValue,
+  toggleOpen,
+  closePanel,
+  selectOption,
+  onMenuClick,
+  onTreeNodeClick,
+  focusComboInput: () => nextTick(() => comboInputRef.value?.focus()),
+  emitValue: (vals) => {
+    emit('update:modelValue', vals)
+    emit('change', vals)
+  },
+})
+
 /* ════════════════════════════════════════
    Combobox / Select 统一输入事件
    说明：已选值由 tag 展示，modelValue 外部变化无需同步进 comboText，
@@ -620,163 +657,10 @@ function onClearGuarded(e: MouseEvent) {
   }
   onClear(e)
 }
-function onComboKeydown(e: KeyboardEvent) {
-  // 输入法合成期一律放行（2026-11-01 #276）。
-  // 中文用户输拼音 → 候选框 → 按 Enter 上屏；此前这里会把 Enter 当作"确认选中"，
-  // 拿**拼音**去匹配/创建选项（`allowCreate` 下直接生成 "zhongguo" 这种脏选项），
-  // 同时 `preventDefault()` 让上屏本身也失败。部分 WebView 只给 keyCode 229，两个都判。
-  if (isImeComposing(e)) return
-  if (e.key === 'Escape') {
-    // 消费掉 Esc：不让它冒泡去关闭外层弹窗（#280）
-    e.preventDefault?.()
-    comboText.value = ''
-    closePanel()
-    return
-  }
-  if (e.key === 'ArrowDown') {
-    e.preventDefault?.()
-    if (!open.value) {
-      toggleOpen()
-      return
-    }
-    highlightIdx.value = Math.min(highlightIdx.value + 1, navItems.value.length - 1)
-    return
-  }
-  if (e.key === 'ArrowUp') {
-    e.preventDefault?.()
-    highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
-    return
-  }
-  // Home / End（#317）：输入型（select/combobox）走的是这个处理器，与 onTriggerKeydown 同口径。
-  // 未打开时不拦截：触发器上的 Home/End 要留给页面滚动。
-  if (e.key === 'Home' || e.key === 'End') {
-    if (!open.value) return
-    e.preventDefault?.()
-    highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)
-    return
-  }
-  if (e.key === 'Enter') {
-    e.preventDefault?.()
-    if (highlightIdx.value >= 0) {
-      const item = navItems.value[highlightIdx.value]
-      if (!isMenu.value) selectOption(item as Option)
-      return
-    }
-    const text = comboText.value.trim()
-    if (!text) return
-    const exact = findExact(text)
-    if (props.multiple) {
-      // 多选：精确命中优先（disabled 拒绝、不受 allowCreate 限制）；否则 allowCreate 才创建/模糊追加
-      if (exact) {
-        const vals = [...((props.modelValue || []) as (string | number | boolean)[])]
-        if (!exact.disabled && !vals.some((v) => String(v) === String(exact.value))) {
-          vals.push(exact.value)
-          emit('update:modelValue', vals)
-          emit('change', vals)
-        }
-        comboText.value = ''
-        nextTick(() => comboInputRef.value?.focus())
-        return
-      }
-      if (props.allowCreate) {
-        const vals = [...((props.modelValue || []) as (string | number | boolean)[])]
-        // 即时匹配（不走 200ms 防抖）：快速输入+回车时防抖列表尚未更新，取 stale 首项会静默失败；
-        // 模糊首匹配跳过 disabled（键盘与面板守卫对齐）
-        let addVal: string | number | boolean = text
-        const fresh = matchOptions(text).filter((o) => !o.disabled)
-        if (fresh.length > 0) addVal = fresh[0].value
-        if (!vals.some((v) => String(v) === String(addVal))) {
-          vals.push(addVal)
-          emit('update:modelValue', vals)
-          emit('change', vals)
-        }
-        comboText.value = ''
-        nextTick(() => comboInputRef.value?.focus())
-      }
-      return
-    }
-    // 单选：精确命中不受 allowCreate 限制（意图明确=选它）；disabled 命中被 commitComboValue 拒绝
-    if (exact || props.allowCreate) {
-      commitComboValue(text)
-      closePanel()
-    }
-  }
-}
 
 /* ════════════════════════════════════════
    键盘导航
    ════════════════════════════════════════ */
-const navItems = computed(() => (isMenu.value ? props.items || [] : filteredOptions.value))
-const navCount = computed(() => (isTreeSelect.value ? visibleTreeNodes.value.length : navItems.value.length))
-
-function onTriggerKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
-    // 消费掉 Esc，避免同时关闭外层弹窗（#280）
-    e.preventDefault?.()
-    closePanel()
-    return
-  }
-  if (e.key === 'Tab') {
-    // 焦点随 Tab 移走，只读型面板（日期/树/菜单）没有 blur 收起逻辑，这里显式关闭
-    closePanel()
-    return
-  }
-  // 菜单模式：方向键在菜单项间导航，Enter 选中（此前直接 return，下拉对键盘完全不可达）
-  if (isMenu.value) {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault?.()
-      if (!open.value) {
-        toggleOpen()
-        return
-      }
-      if (e.key === 'ArrowDown') highlightIdx.value = Math.min(highlightIdx.value + 1, navCount.value - 1)
-      else highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
-    } else if (e.key === 'Home' || e.key === 'End') {
-      if (!open.value) return
-      e.preventDefault?.()
-      highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)
-    } else if (e.key === 'Enter' && open.value) {
-      e.preventDefault?.()
-      const item = navItems.value[highlightIdx.value]
-      if (item) onMenuClick(item as MenuItem)
-    } else if ((e.key === 'Enter' || e.key === ' ') && !open.value) {
-      e.preventDefault?.()
-      toggleOpen()
-    }
-    return
-  }
-  if (e.key === 'ArrowDown' || e.key === 'Enter') {
-    e.preventDefault?.()
-    if (!open.value) {
-      toggleOpen()
-      return
-    }
-    if (e.key === 'ArrowDown') highlightIdx.value = Math.min(highlightIdx.value + 1, navCount.value - 1)
-    if (e.key === 'Enter' && highlightIdx.value >= 0) {
-      if (isTreeSelect.value) {
-        const flatNode = visibleTreeNodes.value[highlightIdx.value]
-        if (flatNode) onTreeNodeClick(flatNode)
-      } else {
-        const item = navItems.value[highlightIdx.value]
-        if (isMenu.value) onMenuClick(item as MenuItem)
-        else selectOption(item as Option)
-      }
-    }
-    return
-  }
-  if (e.key === 'ArrowUp') {
-    e.preventDefault?.()
-    highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
-    return
-  }
-  // Home / End（#317）：WAI-ARIA combobox 的标准键位。此前只有上下箭头 ——
-  // 100 条选项里想跳到第一条/最后一条只能一格一格按。
-  if (e.key === 'Home' || e.key === 'End') {
-    if (!open.value) return
-    e.preventDefault?.()
-    highlightIdx.value = e.key === 'Home' ? 0 : Math.max(navCount.value - 1, 0)
-  }
-}
 
 /* ════════════════════════════════════════
    Date / Date-range / Time（编排下沉 useSelectDatePanel：
