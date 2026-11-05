@@ -194,6 +194,15 @@ export interface FieldEventAction {
   targetField?: string
   /** callApi 动作的接口地址 */
   apiUrl?: string
+  /**
+   * toggleVisible 方向反转（TD-41 收口）：`true` 时语义变为
+   * "源字段**有内容 → 隐藏**目标、清空 → 显示"—— 单选/复选这类单次事件控件
+   * "选了就隐藏后续字段"的旧语义由此恢复。
+   *
+   * 与值驱动（第 139 轮）正交：反转只改方向，不改幂等性 ——
+   * 同一状态重复派发仍不会翻转。设计器事件页提供开关；schema 导出会带上该字段。
+   */
+  invert?: boolean
 }
 
 /** 字段运行时事件配置 */

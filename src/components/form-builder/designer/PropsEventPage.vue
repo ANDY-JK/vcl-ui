@@ -141,7 +141,26 @@ const formulaSyntaxError = computed(() => {
             "
           />
         </div>
-        <!-- callApi 需要接口地址 -->
+        <!-- toggleVisible 的方向开关（TD-41）：默认「有内容→显示」，打开后「有内容→隐藏」 -->
+        <div
+          v-if="node.eventConfig?.onChange?.action === 'toggleVisible'"
+          class="ldp-prop ldp-prop-switch"
+          style="margin-top: calc(8px * var(--vcl-scale))"
+        >
+          <label>{{ t('fbp.toggleInvert') }}</label>
+          <Group
+            type="switch"
+            :model-value="!!node.eventConfig?.onChange?.invert"
+            @update:model-value="
+              emit('update', {
+                eventConfig: {
+                  ...node.eventConfig,
+                  onChange: { ...node.eventConfig?.onChange, enabled: true, invert: !!$event },
+                },
+              })
+            "
+          />
+        </div>
         <div
           v-if="node.eventConfig?.onChange?.action === 'callApi'"
           class="ldp-prop"

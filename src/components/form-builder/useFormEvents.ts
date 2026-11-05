@@ -79,7 +79,10 @@ export function useFormEvents(
       case 'toggleVisible': {
         if (target) {
           // 值驱动而不是"每事件翻转"：见 isFilled 注释（逐键 change 会造成奇偶抖动）
-          const shouldShow = isFilled(formData.value[field.key])
+          const filled = isFilled(formData.value[field.key])
+          // 方向反转（TD-41）：`invert` 时"有内容 → 隐藏"。只改方向不改幂等性 ——
+          // 仍是"根据当前值算出唯一结果"，同一状态重复派发依旧不翻转。
+          const shouldShow = evt.invert ? !filled : filled
           const currentlyHidden = hiddenByEvent.value.has(target)
           if (shouldShow === currentlyHidden) {
             const next = new Set(hiddenByEvent.value)

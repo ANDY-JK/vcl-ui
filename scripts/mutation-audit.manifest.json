@@ -2003,6 +2003,24 @@
       "cmd": "npx vitest run tests/unit/blob-url-ledger.spec.ts --no-coverage",
       "expect": "red",
       "note": "留存型 URL 的卸载清理被摘 → 切页时最后一张原图（几十 MB）泄漏（#436 总账规则③）"
+    },
+    {
+      "id": "toggle-visible-ignores-invert",
+      "file": "src/components/form-builder/useFormEvents.ts",
+      "find": "const shouldShow = evt.invert ? !filled : filled",
+      "replace": "const shouldShow = filled",
+      "cmd": "npx vitest run tests/unit/form-events-invert.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "忽略 invert → 单选\"选了就隐藏后续字段\"的语义又不可达（TD-41 收口被拆）"
+    },
+    {
+      "id": "toggle-visible-schema-drops-invert",
+      "file": "src/components/form-builder/designer/types/to-schema.ts",
+      "find": "          // 方向反转（TD-41）：只在显式 true 时写出，避免给旧 schema 塞无意义字段\n          ...(evt.onChange.invert ? { invert: true } : {}),",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/form-events-invert.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "schema 导出丢掉 invert → 设计器配了方向反转，运行时永远收不到（配了等于没配）"
     }
   ]
 }

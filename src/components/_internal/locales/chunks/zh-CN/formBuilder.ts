@@ -336,6 +336,8 @@ export default {
     actShowTip: '显示提示',
     actSetValue: '设置字段值',
     actToggleVisible: '显示/隐藏字段',
+    /** toggleVisible 方向反转（TD-41）：默认「有内容→显示」，勾选后「有内容→隐藏」 */
+    toggleInvert: '反向：有内容时隐藏目标',
     targetField: '目标字段',
     targetFieldPh: '选择目标字段',
     apiUrl: '接口地址',

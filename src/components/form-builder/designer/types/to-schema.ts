@@ -244,6 +244,8 @@ export function toFormSchema(nodes: DesignerNode[], meta?: FormMeta): FormSchema
           action: evt.onChange.action,
           targetField: evt.onChange.targetField,
           apiUrl: evt.onChange.apiUrl,
+          // 方向反转（TD-41）：只在显式 true 时写出，避免给旧 schema 塞无意义字段
+          ...(evt.onChange.invert ? { invert: true } : {}),
         },
       }
     }

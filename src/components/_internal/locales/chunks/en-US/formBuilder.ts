@@ -336,6 +336,8 @@ export default {
     actShowTip: 'Show tip',
     actSetValue: 'Set field value',
     actToggleVisible: 'Show/hide field',
+    /** toggleVisible invert (TD-41) */
+    toggleInvert: 'Invert: hide target when filled',
     targetField: 'Target field',
     targetFieldPh: 'Select target field',
     apiUrl: 'API URL',

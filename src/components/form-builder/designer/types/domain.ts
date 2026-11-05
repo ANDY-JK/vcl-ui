@@ -297,6 +297,8 @@ export interface DesignerEventConfig {
     targetField?: string
     /** callApi 动作的接口地址 */
     apiUrl?: string
+    /** toggleVisible 方向反转（TD-41）：true = 有内容时隐藏目标 */
+    invert?: boolean
   }
   /** 获得焦点事件（2026-10-31 运行时接通，支持与 onChange 相同的动作集） */
   onFocus?: {
