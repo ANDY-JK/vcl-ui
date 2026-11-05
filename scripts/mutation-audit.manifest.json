@@ -2075,6 +2075,15 @@
       "cmd": "npx vitest run tests/unit/debt-evidence.spec.ts --no-coverage",
       "expect": "red",
       "note": "台账证据路径改名后不回填 → check:debt-evidence 当场报死链（#443）"
+    },
+    {
+      "id": "bench-env-retry-short-circuit",
+      "file": "scripts/bench.mjs",
+      "find": "const retry = judgeUnhealthyRetry({ ratios: retryRatios, tolerance: CALIBRATION_TOLERANCE })",
+      "replace": "const retry = { verdict: 'undetermined', reason: 'SHORT_CIRCUIT' }",
+      "cmd": "npx vitest run tests/unit/bench-env-retry.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "复判短路成一律未判定 → 稳态慢机器上的真回归又被放过（TD-05 复活），静态接线判据当场红"
     }
   ]
 }

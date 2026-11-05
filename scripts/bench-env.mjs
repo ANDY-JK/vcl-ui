@@ -59,6 +59,44 @@ export function judgeEnv({ ratio, tolerance }) {
 }
 
 /**
+ * 环境不健康时的**复判**（TD-05 收口，#444）。
+ *
+ * 旧行为：校准探针一旦超容差就一律"未判定"，于是慢机器上的真回归和"机器只是慢"
+ * 永远分不开。但"慢"分两种：
+ *   · **稳定偏慢**（连续 N 次探针都慢、彼此离散度小）—— 只是 CPU 降频/固定负载，
+ *     场景耗时与探针同比放大，已有 `envRatio` 折算足以扣掉，应当继续判回归；
+ *   · **忽快忽慢**（离散度大）—— 测不准，只能诚实"未判定"。
+ *
+ * 判据：至少 3 个有效样本；`max/min ≤ spreadTolerance` 且全部超容差 → proceed-normalized；
+ * 稳定但已恢复（都不超容差）→ healthy；否则 undetermined。
+ *
+ * @param {{ratios: number[], tolerance: number, spreadTolerance?: number}} p
+ * @returns {{verdict: 'proceed-normalized'|'healthy'|'undetermined', stable: boolean, spread: number, allSlow: boolean, reason: string}}
+ */
+export function judgeUnhealthyRetry({ ratios, tolerance, spreadTolerance = 1.15 }) {
+  const valid = (ratios ?? []).filter((r) => Number.isFinite(r) && r > 0)
+  if (valid.length < 3) {
+    return { verdict: 'undetermined', stable: false, spread: 0, allSlow: false, reason: '复判样本不足 3 个' }
+  }
+  const min = Math.min(...valid)
+  const max = Math.max(...valid)
+  const spread = max / min
+  const stable = spread <= spreadTolerance
+  const allSlow = valid.every((r) => r > tolerance)
+  const allFast = valid.every((r) => r <= tolerance)
+  if (!stable) {
+    return { verdict: 'undetermined', stable: false, spread, allSlow, reason: `探针忽快忽慢（离散 ×${spread.toFixed(2)}）` }
+  }
+  if (allSlow) {
+    return { verdict: 'proceed-normalized', stable: true, spread, allSlow, reason: '机器稳定偏慢，按折算倍率继续判回归' }
+  }
+  if (allFast) {
+    return { verdict: 'healthy', stable: true, spread, allSlow, reason: '复判时机器已恢复，按健康环境判定' }
+  }
+  return { verdict: 'undetermined', stable, spread, allSlow, reason: '探针跨容差两侧，环境状态不一致' }
+}
+
+/**
  * 把某场景的实测倍率折算成"扣掉环境降速后还剩多少"。
  *
  * 注意折算后**不做上限裁剪**：环境不健康时调用方本就不判回归，

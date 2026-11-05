@@ -12,7 +12,7 @@ import { dirname, join } from 'node:path'
 import { createJiti } from 'jiti'
 import { Window } from 'happy-dom'
 import { ref, computed } from 'vue'
-import { envRatio, judgeEnv, normalizeRatio } from './bench-env.mjs'
+import { envRatio, judgeEnv, judgeUnhealthyRetry, normalizeRatio } from './bench-env.mjs'
 
 // sanitizeHTML 走白名单 DOM 消毒，Node 下需注入 happy-dom 的 document
 if (typeof globalThis.document === 'undefined') {
@@ -455,15 +455,35 @@ if (checkMode) {
       .join('，')
     const { healthy } = judgeEnv({ ratio: env.ratio, tolerance: CALIBRATION_TOLERANCE })
     if (!healthy) {
-      envUnhealthy = true
+      // TD-05 收口（#444）：不直接"未判定"，先复测校准探针区分稳定偏慢 / 忽快忽慢。
+      // 稳定偏慢时场景与探针同比放大，折算判据依然成立；只有离散度大才承认测不准。
+      const retryRatios = []
+      for (let k = 0; k < 3; k++) {
+        const t0 = performance.now()
+        calibrationProbe()
+        const cpuMs = performance.now() - t0
+        retryRatios.push(baseCal && baseCal > 0 ? cpuMs / baseCal : env.ratio)
+      }
+      const retry = judgeUnhealthyRetry({ ratios: retryRatios, tolerance: CALIBRATION_TOLERANCE })
       console.log(
         `\n⚠ 环境不健康：${detail}（取大 ×${env.ratio.toFixed(2)}，阈值 ×${CALIBRATION_TOLERANCE}）`,
       )
-      console.log(
-        `   判定：本次**不判性能回归**。` +
-          `机器当前比基线时慢 ${((env.ratio - 1) * 100).toFixed(0)}%，任何场景都会"看起来变慢"。`,
-      )
-      console.log('   这不是放过回归，是承认测不准 —— 想真验证请找一台空闲机器或稍后重跑。')
+      console.log(`   复判：${retryRatios.map((r) => '×' + r.toFixed(2)).join(' / ')} → ${retry.reason}`)
+      if (retry.verdict === 'proceed-normalized') {
+        envUnhealthy = false
+        console.log('   判定：机器**稳定偏慢**，按折算倍率继续判回归（不再是"未判定"）。')
+      } else if (retry.verdict === 'healthy') {
+        envUnhealthy = false
+        calRatio = retryRatios.reduce((a, b) => a + b, 0) / retryRatios.length
+        console.log(`   判定：复判时机器已恢复，折算倍率改用复判中位数 ×${calRatio.toFixed(2)}。`)
+      } else {
+        envUnhealthy = true
+        console.log(
+          `   判定：本次**不判性能回归**。` +
+            `机器当前比基线时慢 ${((env.ratio - 1) * 100).toFixed(0)}%，且复判显示状态不稳定。`,
+        )
+        console.log('   这不是放过回归，是承认测不准 —— 想真验证请找一台空闲机器或稍后重跑。')
+      }
     } else {
       console.log(`\n✓ 环境健康：${detail}（取大 ×${env.ratio.toFixed(2)}，阈值 ×${CALIBRATION_TOLERANCE}）`)
       if (env.ratio > 1.05) {
