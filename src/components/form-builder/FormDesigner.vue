@@ -50,6 +50,7 @@ import { useDesignerOps } from './designer/useDesignerOps'
 import { useDesignerAutosave } from './designer/useDesignerAutosave'
 import { useFormIO } from './designer/useFormIO'
 import { useDesignerPanels } from './designer/useDesignerPanels'
+import { useDesignerSelection } from './designer/composables/useDesignerSelection'
 import { useDesignerSave } from './designer/useDesignerSave'
 import { useDesignerRemoveConfirm } from './designer/useDesignerRemoveConfirm'
 import { useDesignerShortcuts } from './designer/useDesignerShortcuts'
@@ -118,9 +119,6 @@ function patchNodes(list: DesignerNode[]): void {
 
 // ══ 状态 ══
 
-const selectedId = ref<string | null>(null)
-/** 多选集合（Ctrl/Cmd+点选进入；空 = 单选模式） */
-const selectedIds = ref<Set<string>>(new Set())
 const activeTab = ref<'design' | 'preview' | 'schema'>('design')
 const showSettings = ref(false)
 const showShortcuts = ref(false)
@@ -142,48 +140,14 @@ const {
   togglePanel,
 } = useDesignerPanels()
 
-const selectedNode = computed(() => {
-  if (!selectedId.value) return null
-  return findNode(currentNodes.value, selectedId.value)
-})
-
-/** 是否处于多选模式 */
-const isMultiSelect = computed(() => selectedIds.value.size > 0)
-
-/** 处理画布/大纲树选中事件（additive = Ctrl/Cmd+点选） */
-function handleSelect(id: string, additive = false): void {
-  if (additive) {
-    // Ctrl/Cmd+点选：切换该节点在多选集合中的状态
-    const next = new Set(selectedIds.value)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    selectedIds.value = next
-    // 主选中保持为最后点击的节点（属性面板编辑用）
-    selectedId.value = id
-  } else {
-    // 普通点选：清空多选，恢复单选
-    selectedIds.value = new Set()
-    selectedId.value = id
-  }
-}
-
-/** 清除选中（含多选） */
-function clearSelection(): void {
-  selectedId.value = null
-  selectedIds.value = new Set()
-}
-
-const tip = ref('')
-let _tipTimer: ReturnType<typeof setTimeout> | null = null
-function showTip(msg: string): void {
-  tip.value = msg
-  if (_tipTimer) clearTimeout(_tipTimer)
-  _tipTimer = setTimeout(() => {
-    tip.value = ''
-  }, _TIP_TTL_MS)
-}
+// 选中态与操作提示下沉 useDesignerSelection（#457）：单击/多选切换 + TTL 提示。
+const { selectedId, selectedIds, selectedNode, isMultiSelect, handleSelect, clearSelection, tip, showTip } =
+  useDesignerSelection({
+    nodes: currentNodes,
+    findNode,
+    tipTtlMs: _TIP_TTL_MS,
+  })
 onUnmounted(() => {
-  if (_tipTimer) clearTimeout(_tipTimer)
   // 拖拽中途卸载（设计器被切走/关闭）必须解绑 window 监听：
   // 否则残留的 mousemove 会继续改已卸载组件的宽度，且再没有人能解绑它
   stopResize()
