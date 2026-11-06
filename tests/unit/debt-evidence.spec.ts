@@ -22,11 +22,13 @@ describe('check:debt-evidence · 真实树', () => {
 
   it('**判据非空转**：open 表里确实抽出了多条带目录的路径', () => {
     const rows = openRows(readFileSync('docs/tech-debt.md', 'utf8'))
-    // 阈值是"非空转"的下限，不是目标数量：open 表随治理收敛而变小是好事，
-    // 只要还留着多项未结（≥3），闸口就仍在真实台账上生效。
-    expect(rows.length, `open 表只剩 ${rows.length} 项 —— 少于 3 项时本条判据失效`).toBeGreaterThanOrEqual(3)
+    // 阈值是"非空转"的下限，不是目标数量：open 表随治理收敛而变小是好事
+    // （#465 从 >5 降到 >=3，#473 TD-25 结项后再降到 >=2）。
+    // 只要还留着多项未结，解析器与闸口就仍在真实台账上生效；
+    // 真降到 1 项时该重审的是"台账是否还在用"，而不是继续降阈值。
+    expect(rows.length, `open 表只剩 ${rows.length} 项 —— 少于 2 项时本条判据失效`).toBeGreaterThanOrEqual(2)
     const paths = new Set(rows.flatMap((r) => evidencePaths(r)))
-    expect(paths.size, '一条路径都没抽到 → 闸口是摆设').toBeGreaterThanOrEqual(3)
+    expect(paths.size, '证据路径少于 2 条 → 闸口接近摆设').toBeGreaterThanOrEqual(2)
   })
 })
 

@@ -2165,6 +2165,15 @@
       "cmd": "npx vitest run tests/unit/vendor-vulns-offline.spec.ts --no-coverage",
       "expect": "red",
       "note": "把缓存年龄判据短路成 0（8 天前的缓存也当新鲜）→ 离线兜底的「超期缓存必红」立刻红；证明 TD-25 的 7 天上限不是只写在注释里"
+    },
+    {
+      "id": "ci-vendor-vulns-cache-path-mismatch",
+      "file": ".github/workflows/ci.yml",
+      "find": "          VENDOR_VULNS_CACHE: .ci-cache/vendor-vulns-cache.json",
+      "replace": "          VENDOR_VULNS_CACHE: .ci-cache/other.json",
+      "cmd": "npx vitest run tests/unit/ci-vendor-vulns-wiring.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把 CI 的 env 路径改成与 actions/cache path 不一致 → 接线对账立刻红（闸口写缓存到 A、CI 存的是 B，离线兜底静默失效且 CI 不会报红）"
     }
   ]
 }

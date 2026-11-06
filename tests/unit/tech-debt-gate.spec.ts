@@ -137,8 +137,8 @@ describe('check:tech-debt · 真实台账（当前仓库这份必须过）', { t
   it('结构与语义校验零问题（closed 的提交号真的在 git 里）', () => {
     const model = parseLedger(ledger)
     // 下限是「非空转」的证明，不是目标数量：open 表随治理收敛而变小是好事，
-    // 只要还留着多项未结（>=3），解析器与闸口就仍在真实台账上生效。
-    expect(model.open.length, '未结项表不该是空的（解析坏了会静默通过）').toBeGreaterThanOrEqual(3)
+    // 只要还留着多项未结（#473 起 >=2），解析器与闸口就仍在真实台账上生效。
+    expect(model.open.length, '未结项表不该是空的（解析坏了会静默通过）').toBeGreaterThanOrEqual(2)
     expect(model.closed.length, '已结项表不该是空的').toBeGreaterThan(5)
     const issues = validateLedger(model, { exists: commitExists })
     expect(issues, `台账有问题：\n${issues.join('\n')}`).toEqual([])

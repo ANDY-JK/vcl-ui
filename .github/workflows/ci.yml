@@ -145,6 +145,24 @@ jobs:
         run: npm audit --registry=https://registry.npmjs.org
         continue-on-error: true
 
+      # vendored 件的 CVE 监测（osv.dev）—— npm audit 的依赖图盲区（CDN tarball 不经 npm）。
+      # 热缓存经 actions/cache 跨 run 复用：断网时按 VENDOR_VULNS_CACHE 兜底（7 天上限，超期仍红）；
+      # 在线成功写回缓存 → 由 actions/cache 在 job 结束时自动保存，下一次 run 可restore。
+      # 缓存键绑两个 VENDOR.json：换版重搬立刻不命中旧结论。
+      - name: Restore vendor-vulns cache
+        uses: actions/cache@v4
+        with:
+          path: .ci-cache/vendor-vulns-cache.json
+          key: vendor-vulns-${{ hashFiles('src/components/_internal/xlsx/VENDOR.json', 'src/components/_internal/pinyin-pro/VENDOR.json') }}
+          restore-keys: vendor-vulns-
+
+      - name: Check vendored CVEs (offline fallback via hot cache)
+        env:
+          VENDOR_VULNS_CACHE: .ci-cache/vendor-vulns-cache.json
+        run: |
+          mkdir -p .ci-cache
+          npm run check:vendor-vulns
+
       # gitleaks 是 Go 二进制、不经 npm 分发（旧的 npx gitleaks 在 CI 上实际无效）。
       # 用官方 action，扫描结果阻断流水线；audit 的 moderate 噪音仍保留 continue。
       - name: Scan for secrets (gitleaks)
