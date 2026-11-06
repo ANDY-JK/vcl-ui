@@ -2156,6 +2156,15 @@
       "cmd": "npx vitest run tests/unit/lowcode-deployment-adr.spec.ts --no-coverage",
       "expect": "red",
       "note": "把服务端运行时塞进 src/（形态 B 的 BFF 偷渡进库）→ ADR-006 的「真实树 src/ 不含服务端运行时」立刻红；证明定位决策不是只写在文档里"
+    },
+    {
+      "id": "vendor-vulns-cache-age-bypass",
+      "file": "scripts/check-vendor-vulns.mjs",
+      "find": "  return Number.isFinite(t) ? (Date.now() - t) / 86_400_000 : Number.POSITIVE_INFINITY",
+      "replace": "  return 0",
+      "cmd": "npx vitest run tests/unit/vendor-vulns-offline.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把缓存年龄判据短路成 0（8 天前的缓存也当新鲜）→ 离线兜底的「超期缓存必红」立刻红；证明 TD-25 的 7 天上限不是只写在注释里"
     }
   ]
 }
