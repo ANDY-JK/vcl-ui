@@ -2070,11 +2070,11 @@
     {
       "id": "debt-evidence-dead-path",
       "file": "docs/tech-debt.md",
-      "find": "`scripts/check-console-noise.mjs`",
-      "replace": "`scripts/check-console-noise-REMOVED.mjs`",
+      "find": "`docs-site/guide/lowcode.md`",
+      "replace": "`docs-site/guide/lowcode-REMOVED.md`",
       "cmd": "npx vitest run tests/unit/debt-evidence.spec.ts --no-coverage",
       "expect": "red",
-      "note": "把台账里真实存在的证据路径改名 → debt-evidence.spec 的「真实树零死链」立刻红（锚选不被每轮刷新的稳定行；带 .mjs 后缀才能被 evidencePaths 抽取）"
+      "note": "把台账里真实存在的证据路径改名 → debt-evidence.spec 的「真实树零死链」立刻红（锚选 TD-24 行的 `docs-site/guide/lowcode.md` —— 部署形态未定，内容不被每轮刷新；evidencePaths 只抽取带扩展名的路径，目录/裸名不算。#465 曾把锚从 check-console-noise.mjs 换到此处：TD-25 证据单元被重写导致旧锚失效）"
     },
     {
       "id": "bench-env-retry-short-circuit",
