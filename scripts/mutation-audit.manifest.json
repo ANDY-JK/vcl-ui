@@ -2070,11 +2070,11 @@
     {
       "id": "debt-evidence-dead-path",
       "file": "docs/tech-debt.md",
-      "find": "`tests/unit/vendor-vulns-gate.spec.ts`",
-      "replace": "`tests/unit/vendor-vulns-gate-REMOVED.spec.ts`",
+      "find": "`tests/unit/lowcode-deployment-adr.spec.ts`",
+      "replace": "`tests/unit/lowcode-deployment-adr-REMOVED.spec.ts`",
       "cmd": "npx vitest run tests/unit/debt-evidence.spec.ts --no-coverage",
       "expect": "red",
-      "note": "把台账里真实存在的证据路径改名 → debt-evidence.spec 的「真实树零死链」立刻红（锚选 TD-25 行（accepted，自 #465 起稳定）的 `tests/unit/vendor-vulns-gate.spec.ts`；evidencePaths 只抽取带扩展名的路径，目录/裸名不算。#465 曾把锚从 check-console-noise.mjs 换到此处：TD-25 证据单元被重写导致旧锚失效）"
+      "note": "把台账里真实存在的证据路径改名 → debt-evidence.spec 的「真实树零死链」立刻红（锚选 TD-24 行（accepted，自 #471 起稳定；#473 TD-25 结项后从 closed 表换过来）的 `tests/unit/lowcode-deployment-adr.spec.ts`；evidencePaths 只抽取带扩展名的路径，目录/裸名不算。#465 曾把锚从 check-console-noise.mjs 换到此处：TD-25 证据单元被重写导致旧锚失效）"
     },
     {
       "id": "bench-env-retry-short-circuit",
