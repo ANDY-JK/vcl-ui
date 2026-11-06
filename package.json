@@ -68,7 +68,7 @@
     "check:docs": "node scripts/check-docs.mjs",
     "check:audit": "node scripts/check-audit.mjs",
     "docs:dev": "vitepress dev docs-site",
-    "docs:build": "vitepress build docs-site",
+    "docs:build": "node scripts/with-clean-tmp.mjs vitepress build docs-site",
     "docs:preview": "vitepress preview docs-site",
     "check:coverage-domains": "node scripts/check-coverage-domains.mjs",
     "smoke:entries": "node scripts/smoke-entries.mjs",

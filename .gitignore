@@ -96,3 +96,4 @@ tests/.tmp/
 
 # coverage-marker 自测现场写的新鲜标记
 tests/fixtures/coverage-marker/.full-run-fresh
+.build-tmp
