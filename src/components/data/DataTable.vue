@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends Record<string, any> = Record<string, any>">
+import { useDataTableScroll } from './useDataTableScroll'
 import { reportError } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 禁止：clamp() → px，table-layout:fixed 删除，列宽计算链路，结构层级
 //    允许：autoFit 开启时外部 col.width 已被禁止，列宽完全由内部动态管理
@@ -719,122 +720,25 @@ const isCardViewEffective = computed(() => {
   return isCardView.value // 'auto' → 跟随响应式断点
 })
 
-// 卡片模式渐进加载：每批补到「还能再滚 _CARD_SCREENS 屏才需要等」，批大小由卡片实测间距换算。
-// 固定 50 张在矮卡片上一次补了七八屏（白渲染一堆 DOM）、在高卡片上不到一屏（滚两下又要等）。
-const _CARD_SCREENS = 2
-/** 卡片很高时「两屏」换算出来可能只有一两张，兜底批保证每次至少推进这么多，避免反复滚反复补 */
-const _CARD_BATCH_FLOOR = 10
-let _cardBatchSize = 50
-const _cardRenderLimit = ref(_cardBatchSize)
-
-/** 相邻两张卡片的 offsetTop 差 = 卡片高度 + 间距；只有一张时退到自身高度。
- *  返回 0 表示量不出来（容器隐藏 / 无布局），此时调用方保留上一次的批大小 ——
- *  把 0 当 1 用会让批算成「整表一次渲染」，正好触发这段渐进加载要防的卡顿。
- *  只取前两张（卡片是容器的直接子元素），滚动事件里不能整棵子树 querySelectorAll。 */
-function _cardPitch(el: HTMLElement): number {
-  const first = el.firstElementChild as HTMLElement | null
-  const second = first?.nextElementSibling as HTMLElement | null
-  if (first && second) {
-    const pitch = second.offsetTop - first.offsetTop
-    return pitch > 0 ? pitch : 0
-  }
-  return first ? Math.max(0, first.offsetHeight) : 0
-}
-
-function _remeasureCardBatch(el: HTMLElement) {
-  const pitch = _cardPitch(el)
-  if (pitch > 0) _cardBatchSize = Math.max(_CARD_BATCH_FLOOR, Math.ceil((el.clientHeight * _CARD_SCREENS) / pitch))
-}
-
-watch(isCardViewEffective, (v) => {
-  if (v) _cardRenderLimit.value = _cardBatchSize
-})
-const _effectivePagedData = computed(() => {
-  // 全屏 + 分页模式：忽略分页限制，展示全部过滤后数据
-  if (_isFullscreen.value && props.pageSize && props.pageSize > 0) return displayData.value
-  return pagedData.value
-})
-const _cardVisibleData = computed(() => _effectivePagedData.value.slice(0, _cardRenderLimit.value))
-function onCardScroll(e: Event) {
-  const el = e.target as HTMLElement
-  _remeasureCardBatch(el)
-  // 预取提前量按容器实测高度取「还剩一屏」：写死像素在矮容器里太早补、在高屏容器里太晚补
-  if (el.scrollHeight - el.scrollTop - el.clientHeight < el.clientHeight) {
-    _cardRenderLimit.value = Math.min(_effectivePagedData.value.length, _cardRenderLimit.value + _cardBatchSize)
-  }
-}
-
-// 滚动进度条（可点击跳转 + 可拖拽滚动，替代隐藏的纵向滚动条）
-// 滚动状态：进度百分比 + 是否可滚动（溢出检测驱动进度条显隐）
-const _scrollProgress = ref(0)
-const _scrollable = ref(false)
-let _progressRafId = 0
-function onScrollProgress(e: Event) {
-  if (_progressRafId) return
-  _progressRafId = requestAnimationFrame(() => {
-    _progressRafId = 0
-    const el = e.target as HTMLElement
-    const max = el.scrollHeight - el.clientHeight
-    _scrollable.value = max > 0
-    _scrollProgress.value = max > 0 ? Math.round((el.scrollTop / max) * 100) : 0
-  })
-}
-
-/** 从进度条向上找到 .table-wrap，再向下找当前活跃的滚动容器 */
-function findScrollEl(barEl: HTMLElement): HTMLElement | null {
-  const wrap = barEl.closest('.table-wrap')
-  if (!wrap) return null
-  // 卡片模式用卡片滚动容器，表格模式用表格滚动容器
-  return wrap.querySelector('.card-view-scroll') ?? wrap.querySelector('.table-scroll')
-}
-function seekScroll(clientX: number, barEl: HTMLElement) {
-  const el = findScrollEl(barEl)
-  if (!el) return
-  const rect = barEl.getBoundingClientRect()
-  const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
-  const target = Math.round(pct * (el.scrollHeight - el.clientHeight))
-  el.scrollTo({ top: target, behavior: 'instant' as ScrollBehavior })
-  // 拖拽时直接更新 DOM，跳过 Vue 响应式延迟
-  const progress = barEl.querySelector('.table-progress') as HTMLElement
-  if (progress) progress.style.width = Math.round(pct * 100) + '%'
-}
-
-let _dragBar: HTMLElement | null = null
-function onProgressDragMove(e: MouseEvent) {
-  if (_dragBar) seekScroll(e.clientX, _dragBar)
-}
-function onProgressDragEnd() {
-  _dragBar = null
-  document.removeEventListener('mousemove', onProgressDragMove)
-  document.removeEventListener('mouseup', onProgressDragEnd)
-}
-
-function onProgressMouseDown(e: MouseEvent) {
-  _dragBar = e.currentTarget as HTMLElement
-  seekScroll(e.clientX, _dragBar)
-  document.addEventListener('mousemove', onProgressDragMove)
-  document.addEventListener('mouseup', onProgressDragEnd)
-}
-/** 主动检测当前活跃滚动容器是否有纵向溢出，驱动进度条显隐 */
-function checkScrollable() {
-  nextTick(() => {
-    const el = isCardViewEffective.value
-      ? (tableWrapRef.value?.querySelector('.card-view-scroll') as HTMLElement | null)
-      : scrollContainerRef.value
-    if (el) {
-      _scrollable.value = el.scrollHeight > el.clientHeight
-    }
-  })
-}
-// 挂载 + 数据变更后重新检测
-watch([displayData, isCardViewEffective], () => checkScrollable())
-// 缩放后重新检测，滚动条消失即停止缩小
-watch([_zoomX, _zoomY], () => {
-  nextTick(() => checkScrollable())
-})
-onMounted(() => checkScrollable())
-onUnmounted(() => {
-  if (_progressRafId) cancelAnimationFrame(_progressRafId)
+// 卡片渐进加载 + 滚动进度条：整块下沉 useDataTableScroll（#469）
+const {
+  effectivePagedData: _effectivePagedData,
+  cardVisibleData: _cardVisibleData,
+  onCardScroll,
+  scrollProgress: _scrollProgress,
+  scrollable: _scrollable,
+  onScrollProgress,
+  onProgressMouseDown,
+} = useDataTableScroll({
+  isCardViewEffective,
+  tableWrapRef,
+  scrollContainerRef,
+  displayData,
+  zoomX: _zoomX,
+  zoomY: _zoomY,
+  pagedData,
+  isFullscreen: _isFullscreen,
+  pageSize: computed(() => props.pageSize),
 })
 
 // 5. 编辑 & 备注（放在 useTableExtras 之前，确保导出能直接读到 _cellOverrides）
