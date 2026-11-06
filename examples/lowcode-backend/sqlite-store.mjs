@@ -34,6 +34,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import { randomUUID } from 'node:crypto'
 import { ConflictError } from './store-errors.mjs'
+import { assertSqliteSurface } from './sqlite-capability.mjs'
 
 /**
  * **迁移列表**：只增不改。每一项是一个版本，按 `version` 升序应用，已应用过的跳过。
@@ -125,6 +126,9 @@ function parseJson(text) {
  */
 export function createSqliteStore(file = ':memory:') {
   const db = new DatabaseSync(file)
+  // TD-22：立刻确认实例方法面还在（实验性 API，形态可能变）——
+  // 缺方法时报"锁 Node 版本 / 换 better-sqlite3"，而不是等到某次 prepare 才崩。
+  assertSqliteSurface(db)
   // WAL：读写并发更稳（内存库下是空操作）；同步模式 NORMAL 兼顾安全与吞吐
   db.exec('PRAGMA journal_mode = WAL')
   db.exec('PRAGMA synchronous = NORMAL')
