@@ -15,9 +15,9 @@ const GITIGNORE = '.gitignore'
 /** 从 workflow 文本里抽出 vendored CVE 步骤的接线事实（不引 YAML 依赖，按行解析） */
 export function parseVendorVulnsWiring(text: string) {
   const lines = text.split(/\r?\n/)
-  // 找「Check vendored CVEs」这一段：到下一个 step（6 空格缩进的 `- name:`）为止。
+  // 找「Check vendored xlsx against OSV」这一段：到下一个 step（6 空格缩进的 `- name:`）为止。
   // 不能用「缩进变浅」判结束 —— `run: |` 里的命令有 10 空格，会被误判成新块。
-  const step = lines.findIndex((l) => l.includes('- name: Check vendored CVEs'))
+  const step = lines.findIndex((l) => l.includes('- name: Check vendored xlsx against OSV'))
   const nextStep = step < 0 ? -1 : lines.findIndex((l, i) => i > step && /^ {6}- name:/.test(l))
   const end = nextStep < 0 ? lines.length : nextStep
   const stepText = step < 0 ? '' : lines.slice(step, end).join('\n')
@@ -28,6 +28,9 @@ export function parseVendorVulnsWiring(text: string) {
   const hasCacheStep = /uses:\s*actions\/cache@v4/.test(text)
   const hasGateRun = /npm run check:vendor-vulns/.test(stepText)
   const hasMkdir = /mkdir -p/.test(stepText)
+  // #473 抓到的事实错误：ci.yml 本来就有这道闸，初版又加了一遍 → 重复跑两次联网查询，
+  // 而且重复步骤写缓存到同一路径，可能互相覆盖。必须有且只有一处。
+  const gateOccurrences = (text.match(/npm run check:vendor-vulns/g) ?? []).length
   return {
     step,
     envPath: envMatch?.[1] ?? null,
@@ -36,6 +39,7 @@ export function parseVendorVulnsWiring(text: string) {
     hasCacheStep,
     hasGateRun,
     hasMkdir,
+    gateOccurrences,
     stepText,
   }
 }
@@ -46,6 +50,9 @@ export function validateVendorVulnsWiring(text: string, gitignore = '') {
   const issues: string[] = []
   if (!w.hasCacheStep) issues.push('缺少 actions/cache@v4 的 restore/save 步骤')
   if (!w.hasGateRun) issues.push('CI 没有跑 npm run check:vendor-vulns')
+  if (w.gateOccurrences !== 1) {
+    issues.push(`workflow 里出现 ${w.gateOccurrences} 处 npm run check:vendor-vulns（应为 1）—— 重复步骤会互相覆盖缓存`)
+  }
   if (!w.envPath) issues.push('check 步骤没设 VENDOR_VULNS_CACHE')
   if (!w.cachePath) issues.push('actions/cache 没写 path')
   if (w.envPath && w.cachePath && w.envPath !== w.cachePath) {
@@ -101,8 +108,20 @@ describe('CI vendor-vulns 接线（TD-25 收口证据）', () => {
     expect(validateVendorVulnsWiring(bad, gi).join('\n')).toContain('VENDOR.json')
   })
 
+  it('只有一处 gate 调用（#473 抓到过「本来就有、又加一遍」的重复）', () => {
+    expect(parseVendorVulnsWiring(real).gateOccurrences).toBe(1)
+  })
+
+  it('合成夹具：重复加一道 gate → 必须报出来', () => {
+    const bad = real.replace(
+      '          npm run check:vendor-vulns',
+      '          npm run check:vendor-vulns\n          npm run check:vendor-vulns',
+    )
+    expect(validateVendorVulnsWiring(bad, gi).join('\n')).toContain('重复')
+  })
+
   it('反向保护：workflow 里确实有这两个 step（不是对着空气校验）', () => {
     expect(real).toContain('- name: Restore vendor-vulns cache')
-    expect(real).toContain('- name: Check vendored CVEs')
+    expect(real).toContain('- name: Check vendored xlsx against OSV')
   })
 })

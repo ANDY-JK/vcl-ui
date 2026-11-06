@@ -2174,6 +2174,15 @@
       "cmd": "npx vitest run tests/unit/ci-vendor-vulns-wiring.spec.ts --no-coverage",
       "expect": "red",
       "note": "把 CI 的 env 路径改成与 actions/cache path 不一致 → 接线对账立刻红（闸口写缓存到 A、CI 存的是 B，离线兜底静默失效且 CI 不会报红）"
+    },
+    {
+      "id": "ci-vendor-vulns-duplicate-gate",
+      "file": ".github/workflows/ci.yml",
+      "find": "          npm run check:vendor-vulns",
+      "replace": "          npm run check:vendor-vulns\n          npm run check:vendor-vulns",
+      "cmd": "npx vitest run tests/unit/ci-vendor-vulns-wiring.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把 gate 再跑一遍（#473 初版真的犯过这个错：ci.yml 本来就有这道闸却新增了重复步骤）→ 接线对账的「有且只有一处」立刻红"
     }
   ]
 }
