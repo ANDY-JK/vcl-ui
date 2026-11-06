@@ -17,6 +17,9 @@ import { reportEvent, reportWarn } from '@/components/_internal/runtime-observer
  *   - 导航深度链接：buildNavLink / detectPlatform
  */
 import { getAmapRestKey } from './amap-key'
+import { safeFetch } from './amap-http'
+export { buildNavLink, detectPlatform } from './amap-nav'
+export type { NavLink, NavPoint } from './amap-nav'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：服务层错误消息按当前语言生成 */
@@ -60,13 +63,6 @@ export interface DrivingRouteResult {
   traffic_lights?: number
 }
 
-/** 导航深度链接 */
-export interface NavLink {
-  label: string
-  url: string
-  webUrl: string
-}
-
 // ════════════════════════════════════════
 // Key 管理 — re-export
 // ════════════════════════════════════════
@@ -76,8 +72,6 @@ export { setAmapKey, setAmapKeys, getAmapJsKey, getAmapRestKey, getAmapSecurityC
 // 通用工具
 // ════════════════════════════════════════
 
-/** 单次请求超时：高德 REST 正常几百 ms 内返回，15s 还没回来就是网络/服务端问题，别再占着批次 */
-const _FETCH_TIMEOUT_MS = 15000
 /** 地理编码可信半径（米）：解析结果离原坐标超过这个距离就认为漂到了别处，改用地址口径重试。
  *  取值来自"同城同地址的定位误差"经验量级，未实测分布 —— 调小会增多重试请求。 */
 const _GEOCODE_ACCEPT_RADIUS_M = 700
@@ -86,34 +80,6 @@ const _GEOCODE_ACCEPT_RADIUS_M = 700
  *  多出来的排到下一轮顺序跑完（见 batchFetchPoiPhotos）。放大这个值才会把高德 QPS 打满；
  *  总量上限不在这里，是调用方传的 count。 */
 const _NAME_SEARCH_BATCH_MAX = 10
-
-/** 失败后的退避重试间隔：消掉一次网络抖动，避免批量解析把失败项永久标成 none */
-const _RETRY_BACKOFF_MS = 800
-
-/** 单次 fetch：_FETCH_TIMEOUT_MS 超时 */
-async function fetchOnce(url: string): Promise<Response> {
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), _FETCH_TIMEOUT_MS)
-  try {
-    return await fetch(url, { signal: ctrl.signal })
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-/**
- * fetch 封装：超时 + 一次退避重试。
- * 一次网络抖动就让坐标解析失败且批量路径会把失败项永久标 none（batchResolveCoordinates），
- * 重试一轮能消掉绝大部分瞬时抖动。
- */
-async function safeFetch(url: string): Promise<Response> {
-  try {
-    return await fetchOnce(url)
-  } catch {
-    await new Promise((r) => setTimeout(r, _RETRY_BACKOFF_MS))
-    return fetchOnce(url)
-  }
-}
 
 /** 验证经纬度是否合法。(0,0) 视为无效——它是占位/解析失败的典型值，不是真实门店坐标 */
 export function isValidLatLon(lat: number, lon: number): boolean {
@@ -559,81 +525,6 @@ export async function geocodeCalc(params: {
 // ════════════════════════════════════════
 // 导航深度链接
 // ════════════════════════════════════════
-
-/** 检测当前平台 */
-export function detectPlatform(): 'ios' | 'android' | 'web' {
-  if (typeof navigator === 'undefined') return 'web'
-  const ua = navigator.userAgent.toLowerCase()
-  if (/iphone|ipad|ipod/.test(ua)) return 'ios'
-  if (/android/.test(ua)) return 'android'
-  return 'web'
-}
-
-/** 坐标点（导航用） */
-export interface NavPoint {
-  lon: number
-  lat: number
-  name: string
-}
-
-/**
- * 生成单段导航链接（A → B，可选途经点）
- * 自动适配 iOS / Android / Web 三端
- */
-export function buildNavLink(from: NavPoint, to: NavPoint, waypoints: NavPoint[] = []): NavLink {
-  const label = `${from.name} → ${to.name}`
-  const platform = detectPlatform()
-
-  const viaStr = waypoints.map((wp) => `${wp.lon},${wp.lat}`).join(';')
-
-  const webParams = new URLSearchParams({
-    from: `${from.lon},${from.lat},${from.name}`,
-    to: `${to.lon},${to.lat},${to.name}`,
-    mode: 'car',
-  })
-  if (viaStr) webParams.set('via', viaStr)
-  webParams.set('callnative', '1')
-  const webUrl = `https://uri.amap.com/navigation?${webParams.toString()}`
-
-  const iosParams = new URLSearchParams({
-    sourceApplication: 'vcl-ui',
-    sid: 'SV1',
-    slat: String(from.lat),
-    slon: String(from.lon),
-    sname: from.name,
-    did: 'SV2',
-    dlat: String(to.lat),
-    dlon: String(to.lon),
-    dname: to.name,
-    dev: '0',
-    t: '0',
-  })
-  if (waypoints.length > 0) {
-    iosParams.set('via', waypoints.map((wp) => `${wp.lon},${wp.lat},${wp.name}`).join(';'))
-  }
-  const iosUrl = `iosamap://path?${iosParams.toString()}`
-
-  const androidParams = new URLSearchParams({
-    sid: 'SV1',
-    slat: String(from.lat),
-    slon: String(from.lon),
-    sname: from.name,
-    did: 'SV2',
-    dlat: String(to.lat),
-    dlon: String(to.lon),
-    dname: to.name,
-    dev: '0',
-    t: '0',
-  })
-  if (waypoints.length > 0) {
-    androidParams.set('via', waypoints.map((wp) => `${wp.lon},${wp.lat},${wp.name}`).join(';'))
-  }
-  const androidUrl = `amap://route/plan/?${androidParams.toString()}`
-
-  const url = platform === 'ios' ? iosUrl : platform === 'android' ? androidUrl : webUrl
-
-  return { label, url, webUrl }
-}
 
 /**
  * 反向地理编码：坐标 → 结构化地址（2026-10-19）
