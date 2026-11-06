@@ -234,7 +234,8 @@ export { storageSet, storageGet, storageDelete, storageHas } from './storage/ind
 // 重量 API（IndexedDB）— 异步，支持 TTL、动态 store、批量事务
 export { dbPut, dbGet, dbDelete, dbHas, dbGetAll, dbKeys, dbCount, dbClear, dbBatch } from './storage/indexedDB'
 // 合同收集存储适配层 — 本地 IndexedDB + 云端 Supabase 双后端
-export { createBackend, validateStorageConfig, normalizeForBackend } from './storage/contract-storage'
+export { validateStorageConfig, normalizeForBackend } from './storage/contract-storage'
+export { createBackend } from './storage/compositeBackend'
 export type {
   StorageConfig,
   StorageBackend,

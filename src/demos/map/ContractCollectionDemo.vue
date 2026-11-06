@@ -7,11 +7,8 @@ import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
 import ImagePreview from '@/components/data/ImagePreview.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import type { UploadFile } from '@/components/form/Upload.vue'
-import {
-  createBackend,
-  validateStorageConfig,
-  defaultStorageConfigFromEnv,
-} from '@/components/storage/contract-storage'
+import { validateStorageConfig, defaultStorageConfigFromEnv } from '@/components/storage/contract-storage'
+import { createBackend } from '@/components/storage/compositeBackend'
 import type { StorageBackend, StorageConfig, StoreUploadState } from '@/components/storage/contract-storage'
 import { redactForPersist } from '@/components/form-builder/storage-config-persist'
 import JSZip from 'jszip'

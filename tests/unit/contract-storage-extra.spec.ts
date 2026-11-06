@@ -12,13 +12,13 @@ import {
   emptyStorageConfig,
   defaultStorageConfigFromEnv,
   validateStorageConfig,
-  createBackend,
   TOMBSTONE_MARKER,
   type StoreUploadState,
   type StoreFile,
   type ObjectCloudTransport,
   type S3Config,
 } from '@/components/storage/contract-storage'
+import { createBackend } from '@/components/storage/compositeBackend'
 import { dbPut, dbGetAll, dbClear } from '@/components/storage/indexedDB'
 import { envValue } from '@/components/_internal/env-guard'
 

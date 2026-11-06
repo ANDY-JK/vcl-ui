@@ -3,11 +3,11 @@
 // 若 indexedDB.ts 的 StoreItem 包装格式变更，或 contract-storage 的 LocalRecord 形状变更，此处立即红。
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
-  CompositeBackend,
   sanitizeObjectKeyPart,
   type StorageBackend,
   type StoreUploadState,
 } from '@/components/storage/contract-storage'
+import { CompositeBackend } from '@/components/storage/compositeBackend'
 
 // 本测试故意触发云端故障/降级路径，预期 console.warn/error 输出——静默避免污染测试日志
 beforeEach(() => {

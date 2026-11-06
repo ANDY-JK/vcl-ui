@@ -36,8 +36,8 @@ const h = vi.hoisted(() => ({
   persisted: [] as unknown[],
 }))
 
-vi.mock('@/components/storage/contract-storage', async () => {
-  const actual = await import('@/components/storage/contract-storage')
+vi.mock('@/components/storage/compositeBackend', async () => {
+  const actual = await import('@/components/storage/compositeBackend')
   return {
     ...actual,
     createBackend: vi.fn(() => ({

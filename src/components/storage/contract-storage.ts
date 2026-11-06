@@ -30,9 +30,6 @@ const t = useT()
 
 // 兼容再导出：实现已下沉 supabase-transport.ts（两套云端存储共用传输层），原路径不变
 export { sanitizeObjectKeyPart, validateSupabaseConfig, validateS3Config }
-import { CompositeBackend } from './compositeBackend'
-export type { CloudBackend } from './compositeBackend'
-export { CompositeBackend }
 export type { SupabaseConfig, S3Config }
 
 /** 照片位文件（#438：跨域被 form-builder 使用，从 storage 域入口导出） */
@@ -542,23 +539,4 @@ export function validateStorageConfig(cfg: StorageConfig): string | null {
     })
   }
   return validateSupabaseConfig({ url: cfg.url, anonKey: cfg.anonKey, bucket: cfg.bucket })
-}
-
-/** 存储后端工厂：按 cfg.backend（local/s3/supabase）装配对应实现（本地缓存 + 云端对账），onSyncError 接收单文件同步失败 */
-export function createBackend(cfg: StorageConfig, onSyncError?: (appleId: number, e: unknown) => void): StorageBackend {
-  if (cfg.backend === 's3') {
-    const cloud = new S3Backend({
-      endpoint: cfg.endpoint,
-      region: cfg.region,
-      bucket: cfg.bucket,
-      accessKeyId: cfg.accessKeyId,
-      secretAccessKey: cfg.secretAccessKey,
-    })
-    return new CompositeBackend(null, onSyncError, { cloud })
-  }
-  if (cfg.backend === 'supabase') {
-    // 工厂级防御：即使调用方跳过 validateStorageConfig，空配置也在此拒绝
-    return new CompositeBackend({ url: cfg.url, anonKey: cfg.anonKey, bucket: cfg.bucket }, onSyncError)
-  }
-  return new CompositeBackend(null, onSyncError)
 }

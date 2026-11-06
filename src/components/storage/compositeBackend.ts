@@ -10,8 +10,8 @@
  */
 import { reportEvent, reportWarn } from '@/components/_internal/runtime-observer'
 import type { StoreUploadState, StorageBackend } from './contract-storage'
-import { IndexedDBBackend, SupabaseBackend } from './contract-storage'
-import type { SupabaseConfig } from './contract-storage'
+import { IndexedDBBackend, SupabaseBackend, S3Backend } from './contract-storage'
+import type { SupabaseConfig, StorageConfig } from './contract-storage'
 
 /** CompositeBackend 对账所需的最小云端能力（SupabaseBackend/S3Backend 实现；测试可注入假实现） */
 export interface CloudBackend {
@@ -25,6 +25,25 @@ export interface CloudBackend {
 /** URL 引用判定：非 data: 前缀的字符串 = 指向云端对象的引用（不是真实字节） */
 export function isUrlRef(dataUrl: string | Blob | undefined): boolean {
   return typeof dataUrl === 'string' && !dataUrl.startsWith('data:')
+}
+
+/** 存储后端工厂：按 cfg.backend（local/s3/supabase）装配对应实现（本地缓存 + 云端对账），onSyncError 接收单文件同步失败 */
+export function createBackend(cfg: StorageConfig, onSyncError?: (appleId: number, e: unknown) => void): StorageBackend {
+  if (cfg.backend === 's3') {
+    const cloud = new S3Backend({
+      endpoint: cfg.endpoint,
+      region: cfg.region,
+      bucket: cfg.bucket,
+      accessKeyId: cfg.accessKeyId,
+      secretAccessKey: cfg.secretAccessKey,
+    })
+    return new CompositeBackend(null, onSyncError, { cloud })
+  }
+  if (cfg.backend === 'supabase') {
+    // 工厂级防御：即使调用方跳过 validateStorageConfig，空配置也在此拒绝
+    return new CompositeBackend({ url: cfg.url, anonKey: cfg.anonKey, bucket: cfg.bucket }, onSyncError)
+  }
+  return new CompositeBackend(null, onSyncError)
 }
 
 export interface CompositeInternals {

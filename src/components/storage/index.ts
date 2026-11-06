@@ -3,7 +3,9 @@ import '../tokens.css'
 /** 存储与持久化按需导入入口 */
 export { storageSet, storageGet, storageDelete, storageHas } from './indexedDB'
 export { dbPut, dbGet, dbDelete, dbHas, dbGetAll, dbKeys, dbCount, dbClear, dbBatch } from './indexedDB'
-export { createBackend, validateStorageConfig, normalizeForBackend, sanitizeObjectKeyPart } from './contract-storage'
+export { validateStorageConfig, normalizeForBackend, sanitizeObjectKeyPart } from './contract-storage'
+export { createBackend, CompositeBackend } from './compositeBackend'
+export type { CloudBackend } from './compositeBackend'
 export type { StorageConfig, StorageBackend, StoreFile, StoreUploadState, SupabaseConfig } from './contract-storage'
 // #438（TD-57 收口）：跨域共享符号从域入口导出（form-builder 的收集页与设计器在用）
 export { getSlotFile, setSlotFile, allSlotsFilled, defaultStorageConfigFromEnv } from './contract-storage'
