@@ -54,7 +54,7 @@ setRuntimeObserver({
 | `storage/clear-failed` | warn | [contract-storage] IndexedDB 清空失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:166` |
 | `storage/cloud-delete-failed` | warn | [contract-storage] 云端删除失败: | `{ name: obj.name, error: String(e) }` | `src/components/storage/contract-storage.ts:389` |
 | `storage/load-failed` | warn | [contract-storage] IndexedDB 加载失败: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:138` |
-| `storage/reconcile-failed` | warn | [contract-storage] 云端对账失败，仅恢复本地: | `{ error: String(e) }` | `src/components/storage/contract-storage.ts:501` |
+| `storage/reconcile-failed` | warn | [contract-storage] 云端对账失败，仅恢复本地: | `{ error: String(e) }` | `src/components/storage/compositeBackend.ts:114` |
 | `storage/save-failed` | error | [contract-storage] IndexedDB 保存失败: | `{ appleId, error: String(e) }` | `src/components/storage/contract-storage.ts:153` |
 
 ## 该按哪些码建告警
