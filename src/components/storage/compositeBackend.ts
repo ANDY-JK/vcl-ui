@@ -51,6 +51,11 @@ export interface CompositeInternals {
   cloud?: CloudBackend | null
 }
 
+/**
+ * 双写编排后端：本地 IndexedDB 恒为可信副本，云端（Supabase/S3）为跨设备同步层。
+ * 四条编排不变量：在飞排队（防「删除后上传又复活」）、本地优先恢复（云端失败不阻断）、
+ * 死链与墓碑残留清理、缺对象时后台补传。cloud 为 null 时退化为纯本地。
+ */
 export class CompositeBackend implements StorageBackend {
   readonly kind: 'local' | 'supabase' | 's3'
   private local: StorageBackend = new IndexedDBBackend()

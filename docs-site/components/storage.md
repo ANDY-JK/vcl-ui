@@ -24,7 +24,7 @@
 | `normalizeForBackend` | 把配置收敛成**只带当前后端字段**的形态（其余后端字段一律置空串）。 |
 | `sanitizeObjectKeyPart` | 把任意文件名/键名转成可作 Supabase 对象键的 ASCII 形式（导出供测试/复用）。 |
 | `createBackend` | 存储后端工厂：按 cfg.backend（local/s3/supabase）装配对应实现（本地缓存 + 云端对账），onSyncError 接收单文件同步失败 |
-| `CompositeBackend` | — |
+| `CompositeBackend` | 双写编排后端：本地 IndexedDB 恒为可信副本，云端（Supabase/S3）为跨设备同步层。 |
 | `getSlotFile` | 读某照片位的文件（兼容：'contract' 位回退到旧 contract 字段） |
 | `setSlotFile` | 设置某照片位文件（file 为空 = 删除该位）；返回新 state（immutable） |
 | `allSlotsFilled` | 全部照片位是否都已收齐 |
