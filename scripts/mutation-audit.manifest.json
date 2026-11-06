@@ -2201,6 +2201,15 @@
       "cmd": "npx vitest run tests/unit/tag-and-icon-fallback.spec.ts --no-coverage",
       "expect": "red",
       "note": "#475 的修复点：把「纯数字 text 也走 max」的分支拿掉（回到改动前直接 return props.text 的行为）→ 新 spec 的 99+ 断言立刻红；证明文档承诺的 max 契约真的被锁住"
+    },
+    {
+      "id": "chart-expose-show-loading-forward",
+      "file": "src/components/chart/Chart.vue",
+      "find": "showLoading(type?: string, opts?: Record<string, unknown>) {\n    baseChartRef.value?.showLoading(type, opts)\n  },",
+      "replace": "showLoading(type?: string, opts?: Record<string, unknown>) {\n    void type\n    void opts\n  },",
+      "cmd": "npx vitest run tests/unit/chart-expose-surface.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把 Chart 的 showLoading 转发改成空实现 → 宿主调 chartRef.value.showLoading() 不再落到 ECharts 实例，spec 立刻红；此前这条转发链 0 覆盖"
     }
   ]
 }

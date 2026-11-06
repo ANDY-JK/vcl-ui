@@ -332,3 +332,67 @@ describe('BaseChart · toolbox 让位（按标题**内容**判定，不是按键
     w.unmount()
   })
 })
+
+// ────────────────────────────────────────────────────────────────────────────
+// BaseChart **暴露方法面**（#476）
+//
+// 上面几组测的是「组件自己怎么用实例」，这组测的是「宿主怎么用组件」：
+// defineExpose 出去的方法是**公开契约**（README 的公开面清单里有），
+// 此前一条都没被调用过 —— coverage 里 showLoading/hideLoading 两个函数是 0。
+// 契约要点：①参数原样透传给实例；②实例不存在时全部退化为 no-op（不抛）。
+describe('BaseChart · 暴露方法面（宿主契约）', () => {
+  it('showLoading(type, opts) 原样透传', async () => {
+    const w = await mountAndSettle()
+    const vm = w.vm as unknown as {
+      showLoading: (type?: string, opts?: Record<string, unknown>) => void
+    }
+    vm.showLoading('circular', { text: '加载中' })
+    expect(last()!.showLoading).toHaveBeenCalledWith('circular', { text: '加载中' })
+  })
+
+  it('hideLoading / clear / dispatchAction 透传', async () => {
+    const w = await mountAndSettle()
+    const vm = w.vm as unknown as {
+      hideLoading: () => void
+      clear: () => void
+      dispatchAction: (p: Record<string, unknown>) => void
+      resize: (o?: Record<string, unknown>) => void
+    }
+    vm.hideLoading()
+    expect(last()!.hideLoading).toHaveBeenCalledTimes(1)
+    vm.clear()
+    expect(last()!.clear).toHaveBeenCalledTimes(1)
+    vm.dispatchAction({ type: 'showTip', seriesIndex: 0 })
+    expect(last()!.dispatchAction).toHaveBeenCalledWith({ type: 'showTip', seriesIndex: 0 })
+    vm.resize({ width: 800, height: 600, silent: true })
+    expect(last()!.resize).toHaveBeenCalledWith({ width: 800, height: 600, silent: true })
+  })
+
+  it('getOption 返回实例副本（宿主读图表现状）', async () => {
+    const w = await mountAndSettle()
+    const vm = w.vm as unknown as { getOption: () => unknown }
+    expect(vm.getOption()).toEqual({ series: [] })
+  })
+
+  it('**实例不存在时全部退化为 no-op**（零尺寸不 init → 方法照调不抛）', async () => {
+    patchSize(0, 0)
+    const w = await mountAndSettle()
+    expect(last(), '零尺寸不该创建实例').toBeUndefined()
+    const vm = w.vm as unknown as {
+      showLoading: () => void
+      hideLoading: () => void
+      clear: () => void
+      dispatchAction: (p: Record<string, unknown>) => void
+      resize: () => void
+      getOption: () => unknown
+    }
+    expect(() => {
+      vm.showLoading()
+      vm.hideLoading()
+      vm.clear()
+      vm.dispatchAction({ type: 'highlight' })
+      vm.resize()
+    }).not.toThrow()
+    expect(vm.getOption()).toBeUndefined()
+  })
+})
