@@ -2183,6 +2183,15 @@
       "cmd": "npx vitest run tests/unit/ci-vendor-vulns-wiring.spec.ts --no-coverage",
       "expect": "red",
       "note": "把 gate 再跑一遍（#473 初版真的犯过这个错：ci.yml 本来就有这道闸却新增了重复步骤）→ 接线对账的「有且只有一处」立刻红"
+    },
+    {
+      "id": "login-portal-username-min-length",
+      "file": "src/components/login/portal_login.vue",
+      "find": "  (v: string) => (v.length >= 3 ? undefined : t('login.accountHint')),",
+      "replace": "  (v: string) => (v.length >= 2 ? undefined : t('login.accountHint')),",
+      "cmd": "npx vitest run tests/unit/login-validation-and-submit.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把 portal 账号下限从 3 改成 2 → 新 spec 的「账号 2 字符仍报 accountHint」立刻红；证明校验规则契约真的被锁住（此前 rules 从未被任何用例走到）"
     }
   ]
 }
