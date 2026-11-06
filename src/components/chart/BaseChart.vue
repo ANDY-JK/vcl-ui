@@ -5,6 +5,7 @@ import { reportEvent } from '@/components/_internal/runtime-observer'
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { init } from './utils/echarts-setup'
 import type { EChartsOption } from 'echarts'
+import { mergeToolbox as mergeToolboxPure, type ToolbarFeature } from './toolbox'
 import type { BaseChartProps } from './utils/types'
 import { toSize } from './utils/chart-utils'
 import { useT } from '@/components/_internal/i18n'
@@ -140,103 +141,20 @@ function onTool(action: ToolBtn['action']) {
 }
 
 /** 构建 toolbar 配置 */
-function buildToolbox(): import('echarts').ToolboxComponentOption | undefined {
-  if (props.toolbar === false) return undefined
-  // HTML 工具行模式（默认 saveAsImage/zoom）：canvas 不画浮层工具栏，改由图上方 HTML 行承载，避免压图
-  if (useHtmlToolbar.value) return undefined
-  const buttons = props.toolbar || ['saveAsImage', 'zoom']
-  const feature: NonNullable<import('echarts').ToolboxComponentOption['feature']> = {}
-  if (buttons.includes('saveAsImage')) feature.saveAsImage = { title: t('chart.saveImage') }
-  if (buttons.includes('zoom')) feature.dataZoom = { title: { zoom: t('chart.zoomRegion'), back: t('chart.zoomBack') } }
-  if (buttons.includes('dataView')) feature.dataView = { title: t('chart.dataView'), readOnly: true }
-  return { show: true, right: 4, top: 4, feature }
+// toolbox 合并与让位拆到 ./toolbox（#460）：三条不变量（合并而非覆盖 / 让位 / 有标题才下移）随代码搬家。
+const toolboxI18n = {
+  saveImage: t('chart.saveImage'),
+  zoomRegion: t('chart.zoomRegion'),
+  zoomBack: t('chart.zoomBack'),
+  dataView: t('chart.dataView'),
 }
-
-/** 合并 toolbar 到 option（合并而非覆盖用户自定义的 toolbox 配置）
- * 支持 standard option 和 timeline compound option ({ baseOption, options })
- */
-/** 给图区让出工具栏那一行：工具栏画在 canvas 上（right:4 横排 3 图标，顶 ~24px），
- * 默认图区会顶到工具栏下方 → 重叠。仅当用户未自设 grid.top 时兜底，尊重自定义。
- * 返回新对象（不 mutate 入参——option 可能是 computed/引用，避免污染源）。 */
-function reserveToolboxBand<T extends Record<string, unknown>>(target: T, toolboxTop: number): T {
-  const needed = Math.round(toolboxTop + 32) // 工具栏行高 ~24 + 8 呼吸
-  const g = target.grid as Record<string, unknown> | undefined
-  if (g && g.top != null) return target // 用户自设 grid.top，不动
-  return { ...target, grid: g ? { ...g, top: needed } : { top: needed } }
-}
-
-const TB_TOP_DEFAULT = 4
-const TB_TOP_TITLED = 36
-
-/**
- * option 里是否**真的有标题文本**。
- *
- * ⚠️ 不能用 `'title' in opt`：各 builder 写的是 `title: p.title`
- * （`p.title = props.title || ''`），**空标题也留一个 title 键**。
- * 按"键存在"判定就把"无标题"当成"有标题" → toolbox 下移 36px，
- * 而 grid.top 仍是 builder 给的 16px → 工具栏正好压在图上
- * （`reserveToolboxBand` 存在的意义就是防这个，被绕过了）。第 155 轮修。
- */
-function hasTitleText(target: Record<string, unknown>): boolean {
-  const title = target.title as unknown
-  if (!title) return false // 含 ''、null、undefined
-  if (typeof title === 'string') return title.trim().length > 0
-  if (Array.isArray(title)) return title.some((x) => !!(x as { text?: unknown } | null)?.text)
-  return !!(title as { text?: unknown }).text
-}
-
 function mergeToolbox(opt: EChartsOption | null): EChartsOption | null {
-  if (!opt) return opt
-  const toolbox = buildToolbox()
-  if (!toolbox) return opt
-
-  // Timeline compound option: toolbox 挂到 baseOption 内部
-  const compound = opt as unknown as { baseOption?: Record<string, unknown> }
-  if (compound.baseOption) {
-    const bo = { ...compound.baseOption }
-    const boToolTop = hasTitleText(bo) ? TB_TOP_TITLED : TB_TOP_DEFAULT
-    if (hasTitleText(bo)) toolbox.top = TB_TOP_TITLED
-    const userToolbox = bo.toolbox as Record<string, unknown> | undefined
-    const mergedToolbox = userToolbox
-      ? {
-          ...toolbox,
-          ...userToolbox,
-          feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
-        }
-      : toolbox
-    // ⚠️ `reserveToolboxBand` 是**纯函数**（返回新对象、从不 mutate 入参）——
-    // 原来这里丢掉了返回值，等于 timeline 复合图的"让位"从未生效（第 155 轮修）。
-    const reservedBo = reserveToolboxBand(bo, boToolTop)
-    // ⚠️ ECharts timeline 复合形态是 `{ baseOption, options: [...] }` —— `options` 是
-    // baseOption 的**兄弟**，不是它的属性（本文件 `showEmpty` 读的也是顶层 `opt.options`）。
-    // 此前读 `bo.options` 恒为 undefined → 各时间点的子 option 从未让位。第 155 轮修。
-    const timelineChild = (opt as unknown as { options?: unknown }).options
-    const childOptions = Array.isArray(timelineChild)
-      ? (timelineChild as Array<Record<string, unknown>>).map((o) =>
-          reserveToolboxBand({ ...o }, hasTitleText(o) ? TB_TOP_TITLED : boToolTop),
-        )
-      : timelineChild
-    return {
-      ...opt,
-      options: childOptions,
-      baseOption: { ...reservedBo, toolbox: mergedToolbox },
-    } as EChartsOption
-  }
-
-  // Standard option
-  const stdToolTop = hasTitleText(opt) ? TB_TOP_TITLED : TB_TOP_DEFAULT
-  if (hasTitleText(opt)) toolbox.top = TB_TOP_TITLED
-  const userToolbox = (opt as Record<string, unknown>).toolbox as Record<string, unknown> | undefined
-  const mergedToolbox = userToolbox
-    ? {
-        ...toolbox,
-        ...userToolbox,
-        feature: { ...toolbox.feature, ...(userToolbox.feature as Record<string, unknown>) },
-      }
-    : toolbox
-  return { ...reserveToolboxBand(opt as Record<string, unknown>, stdToolTop), toolbox: mergedToolbox } as EChartsOption
+  return mergeToolboxPure(opt, {
+    toolbar: props.toolbar as ToolbarFeature[] | false | undefined,
+    useHtmlToolbar: useHtmlToolbar.value,
+    i18n: toolboxI18n,
+  })
 }
-
 function ensureInstance() {
   if (!chartRef.value) return
   const el = chartRef.value
