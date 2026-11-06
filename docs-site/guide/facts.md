@@ -50,7 +50,7 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 整链步数 | **55** |
+| 整链步数 | **56** |
 
 步清单（顺序即执行顺序）：
 
@@ -102,20 +102,21 @@ title: 事实清单（自动生成）
 46. `check:release-consistency`
 47. `docs:build`
 48. `check:docs`
-49. `check:doc-completeness`
-50. `gen:facts`
-51. `check:facts`
-52. `check:tech-debt`
-53. `check:rtl`
-54. `check:rtl-semantics`
-55. `test:e2e`
+49. `check:audit`
+50. `check:doc-completeness`
+51. `gen:facts`
+52. `check:facts`
+53. `check:tech-debt`
+54. `check:rtl`
+55. `check:rtl-semantics`
+56. `test:e2e`
 
 ## 测试规模（读自最近一次整链留痕）
 
 | 事实 | 值 |
 | --- | --- |
-| 单测文件数 | **442** |
-| 单测用例数 | **6710** |
+| 单测文件数 | **443** |
+| 单测用例数 | **6716** |
 
 ::: info 这两个数会随每次提交变化
 它们来自 `reports/quality-check-logs/*-test-unit.log`（按后缀匹配，**不依赖步骤序号**；每次整链运行前清空），
