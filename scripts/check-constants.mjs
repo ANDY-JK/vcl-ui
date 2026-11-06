@@ -465,7 +465,7 @@ const LINE_LIMITS = {
   nav: 280, // 实测最大 Menu.vue 265
   shared: 62, // 实测最大 types.ts 58
   storage: 760, // 实测最大 contract-storage.ts 724
-  wc: 122, // 实测最大 index.ts 116
+  wc: 79, // #470 回收：#468 拆出 component-map.ts 后实测最大 71（原 122 余量 41.8% > 棘轮松散线）
   _internal: 810, // 实测最大 utils.ts 772
 }
 

@@ -2138,6 +2138,15 @@
       "cmd": "npx vitest run tests/unit/demo-routes.spec.ts --no-coverage",
       "expect": "red",
       "note": "demoMap 指向不存在的 demo 文件 → check:demo-routes 同时报幽灵路由（CardDemoGone）与孤立页（CardDemo.vue）"
+    },
+    {
+      "id": "wc-line-ratchet-loose",
+      "file": "scripts/check-constants.mjs",
+      "find": "  wc: 79, // #470 回收：#468 拆出 component-map.ts 后实测最大 71（原 122 余量 41.8% > 棘轮松散线）",
+      "replace": "  wc: 122, // 回收被撤销",
+      "cmd": "npx vitest run tests/unit/constants-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把 wc 域止涨线退回到拆分前的 122（最大文件已缩到 71，余量 41.8%）→ constants-gate 的「真实树无松散项」立刻红，证明棘轮回收不是一次性动作"
     }
   ]
 }

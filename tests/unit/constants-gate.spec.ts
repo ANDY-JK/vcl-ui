@@ -131,3 +131,30 @@ describe('check:constants 闸门自测 · 生成物体积上限', () => {
     expect(out).toContain('thing.part-1.ts')
   })
 })
+
+/**
+ * [7] 止涨线棘轮回收（#470）—— 线放得太松时 ratchet 就不再拦增长。
+ *
+ * 为什么加：#468 把 wc 域最大文件从 116 拆到 71 后，check:constants 只是**提示**
+ * 「可考虑回收止涨线（122 → 约 79）」—— 提示不会让任何闸口变红，于是线可以永久停在
+ * 旧值上，等于该域从此没有行数约束。这条用例把「提示」升级为「机械断言」：
+ * 真实树跑一次闸口，出现任何回收提示就红，逼着当轮把线降下来。
+ */
+describe('check:constants 闸门自测 · 止涨线棘轮回收', () => {
+  it('**真实树：止涨线无松散项**（没有回收提示）', () => {
+    const r = spawnSync(process.execPath, [SCRIPT], { encoding: 'utf8' })
+    const out = `${r.stdout ?? ''}${r.stderr ?? ''}`
+    expect(out, `止涨线已放得太松，跑 npm run check:constants 看具体域：${out}`).not.toContain('可考虑回收')
+  })
+
+  it('**反向保护：闸口确实会输出域行数**（否则上一条断言是空转）', () => {
+    const r = spawnSync(process.execPath, [SCRIPT], { encoding: 'utf8' })
+    expect(`${r.stdout ?? ''}${r.stderr ?? ''}`).toContain('域行数')
+  })
+
+  it('**合成夹具：文件缩到极小时闸口会提示回收**（提示机制本身没坏）', () => {
+    // 夹具里所有域默认只有 3 行，相对 810/2760 等线必然松散 → 提示必现
+    const { out } = run(buildFixture({}, join(TMP, 'loose')))
+    expect(out, '松散提示机制失效，真实树那条断言就成了摆设').toContain('可考虑回收')
+  })
+})
