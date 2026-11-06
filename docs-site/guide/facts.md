@@ -15,7 +15,7 @@ title: 事实清单（自动生成）
 | --- | --- | --- |
 | 域入口数 | **13** | `package.json` 的 `exports`，去掉 `./css`/`./i18n` 等辅助子路径 |
 | 组件数 | **66** | `gen:docs` 解析 `defineProps`/`defineEmits`/`defineSlots` 得到 |
-| 命名导出数 | **182** | 同上，含类型与 composable |
+| 命名导出数 | **183** | 同上，含类型与 composable |
 | demo 组件演示页数 | **46** | `src/demos/ComponentDemo.vue` 的 `demoMap` 顶层键数（一个键一页，页面含 Props 表） |
 | 解析失败组件 | **0** | 应为 0；非 0 时 `check:docs` 直接红 |
 
