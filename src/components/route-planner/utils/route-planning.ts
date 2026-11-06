@@ -16,6 +16,7 @@
  * - 分天限制：每天最多8家、驾驶≤6小时、单段≤100km
  */
 import { calcDistance as calculateDistance } from '@/components/amap'
+import { twoOptOptimize, nearestNeighborSort, computeBearing } from './route-tsp'
 import { useT } from '@/components/_internal/i18n'
 
 /** 模块级 t：图表文案按当前语言 */
@@ -381,119 +382,6 @@ function orderClustersByNN(clusters: StoreCluster[], start: { lat: number; lon: 
 /**
  * 计算从点1到点2的方位角（0°~360°，正北为0，顺时针）
  */
-function computeBearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const dLon = ((lon2 - lon1) * Math.PI) / 180
-  const radLat1 = (lat1 * Math.PI) / 180
-  const radLat2 = (lat2 * Math.PI) / 180
-  const y = Math.sin(dLon) * Math.cos(radLat2)
-  const x = Math.cos(radLat1) * Math.sin(radLat2) - Math.sin(radLat1) * Math.cos(radLat2) * Math.cos(dLon)
-  const bearing = (Math.atan2(y, x) * 180) / Math.PI
-  return (bearing + 360) % 360
-}
-
-// ============================================================
-// 内部函数
-// ============================================================
-
-/**
- * 2-opt 局部路线优化
- * 通过交换两条边的连接方式减少总里程，消除"之字形"走位
- *
- * 原理：遍历所有边对 (A→B, C→D)，若交换为 (A→C, B→D) 后总距离更短则执行
- * 重复直到无法进一步优化
- *
- * @param stores 已排序门店列表
- * @param start 起点
- * @returns 优化后的门店列表
- */
-function twoOptOptimize(stores: Store[]): Store[] {
-  if (stores.length <= 2) return [...stores]
-  const route = [...stores]
-  let improved = true
-  let iterations = 0
-  const maxIterations = 100 // 安全上限
-
-  while (improved && iterations < maxIterations) {
-    improved = false
-    iterations++
-
-    for (let i = 0; i < route.length - 1; i++) {
-      for (let j = i + 2; j < route.length - 1; j++) {
-        // 边对：(i→i+1) 和 (j→j+1)
-        const a = route[i]
-        const b = route[i + 1]
-        const c = route[j]
-        const d = route[j + 1]
-
-        // 当前距离
-        const distAB = distBetween(a, b)
-        const distCD = distBetween(c, d)
-        const currentDist = distAB + distCD
-
-        // 交换后距离：(i→j) 和 (i+1→j+1)
-        const distAC = distBetween(a, c)
-        const distBD = distBetween(b, d)
-        const swappedDist = distAC + distBD
-
-        if (swappedDist < currentDist * 0.98) {
-          // 2% 阈值避免微小震荡
-          // 执行 2-opt：反转 i+1 到 j 之间的顺序
-          reverseSegment(route, i + 1, j)
-          improved = true
-          break // 改进后重新开始外层循环
-        }
-      }
-      if (improved) break
-    }
-  }
-
-  return route
-}
-
-/** 计算两个门店间的直线距离（米） */
-function distBetween(a: Store, b: Store): number {
-  if (a.latitude == null || a.longitude == null || b.latitude == null || b.longitude == null) return 0
-  return calculateDistance(a.latitude, a.longitude, b.latitude, b.longitude)
-}
-
-/** 反转数组中 [start, end] 闭区间内的元素 */
-function reverseSegment(arr: Store[], start: number, end: number): void {
-  while (start < end) {
-    ;[arr[start], arr[end]] = [arr[end], arr[start]]
-    start++
-    end--
-  }
-}
-
-/**
- * 最近邻排序
- */
-function nearestNeighborSort(stores: Store[], start: { lat: number; lon: number }): Store[] {
-  if (stores.length <= 1) return [...stores]
-  const remaining = [...stores]
-  const ordered: Store[] = []
-  let current = start
-  while (remaining.length > 0) {
-    let nearestIdx = 0,
-      nearestDist = Infinity
-    for (let i = 0; i < remaining.length; i++) {
-      const s = remaining[i]
-      if (s.latitude == null || s.longitude == null) continue
-      const dist = calculateDistance(current.lat, current.lon, s.latitude, s.longitude)
-      if (dist < nearestDist) {
-        nearestDist = dist
-        nearestIdx = i
-      }
-    }
-    const [nearest] = remaining.splice(nearestIdx, 1)
-    ordered.push(nearest)
-    if (nearest.latitude != null && nearest.longitude != null) {
-      current = { lat: nearest.latitude, lon: nearest.longitude }
-    }
-  }
-  return ordered
-}
-
 /**
  * 分天切割（考虑地理连贯性 + 拜访时长 + 驾驶时间上限 + 同聚类优先保完整）
  *
