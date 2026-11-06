@@ -34,7 +34,7 @@
     },
     "storage": {
       "components": 0,
-      "named": 28
+      "named": 29
     },
     "wc": {
       "components": 0,
@@ -55,5 +55,5 @@
   },
   "unparsed": [],
   "totalComponents": 66,
-  "totalNamed": 182
+  "totalNamed": 183
 }
