@@ -138,6 +138,7 @@ const STEPS = [
   ['check:release-consistency', 'npm run check:release-consistency'],
   ['docs:build', 'npm run docs:build'],
   ['check:docs', 'npm run check:docs'],
+  ['check:audit', 'npm run check:audit'],
   ['check:doc-completeness', 'npm run check:doc-completeness'],
   // 口径单一真源（6.2 #8）：事实页漂移 + 正文手写数字与真源冲突，两件都拦。
   // 放在文档类闸口之后：它依赖 docs-site/guide/facts.md，且比上面两个更"语义"。
