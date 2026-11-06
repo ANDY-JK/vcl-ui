@@ -114,6 +114,10 @@ export function createRestFormStore(options: RestFormStoreOptions): FormStore {
    * 单端场景下没有冲突风险。宿主需要强一致时，先 `listForms()` / `loadRecords()` 即可（它们会填缓存）。
    */
   const formRev = new Map<string, number>()
+  /** 读全过的 storageKey（整表 GET 且未分页）：只有这种状态下的条数才准 */
+  const readFullKeys = new Set<string>()
+  /** 最近一次读全时看到的条数（供 clearRecords 兜底带 count） */
+  const lastReadCount = new Map<string, number>()
   const recordRev = new Map<string, number>()
   const recordKey = (storageKey: string, recordId: string) => `${storageKey}\u0000${recordId}`
   const withRev = (rev: number | undefined, payload: Record<string, unknown>) =>
@@ -136,6 +140,10 @@ export function createRestFormStore(options: RestFormStoreOptions): FormStore {
       const rev = (r as { rev?: unknown }).rev
       if (typeof rev === 'number') recordRev.set(recordKey(storageKey, r.id), rev)
     }
+    // 「已读全」只有这一条路径能置位（整表 GET 且无分页参数）；条数与读到的快照一起存，
+    // 供 clearRecords 在需要时带 count 护栏（TD-31）
+    readFullKeys.add(storageKey)
+    lastReadCount.set(storageKey, list.length)
     return list
   }
 
@@ -242,11 +250,14 @@ export function createRestFormStore(options: RestFormStoreOptions): FormStore {
       })
       recordRev.delete(k)
     },
-    async clearRecords(storageKey: string): Promise<void> {
-      // 整表清空**故意不带条数护栏**：库只在"读过全部记录"时才可能知道准确条数，
-      // 没读全就替你猜一个 count，会让清空莫名其妙地 409。
-      // 需要这层保护（清空别人并发写入的记录）的宿主，直接调后端 `DELETE /records/{key}?count=N`。
-      await request(`/records/${seg(storageKey)}`, { method: 'DELETE' })
+    async clearRecords(storageKey: string, expectedCount?: number): Promise<void> {
+      // 整表清空的**条数护栏**：宿主显式传 expectedCount 时原样带上；
+      // 没传但此前 loadRecords 读过全表，就用读到的条数兜底（那时 count 是准的）。
+      // 两者都没有就不带 —— 裸 DELETE 是既有契约（tests/unit/rest-form-store-rev.spec.ts 钉住），
+      // 护栏留给需要它的宿主显式表达（TD-31）。
+      const count = expectedCount ?? (readFullKeys.has(storageKey) ? lastReadCount.get(storageKey) : undefined)
+      const qs = count === undefined ? '' : `?count=${count}`
+      await request(`/records/${seg(storageKey)}${qs}`, { method: 'DELETE' })
       for (const k of [...recordRev.keys()]) {
         if (k.startsWith(`${storageKey}\u0000`)) recordRev.delete(k)
       }

@@ -85,6 +85,65 @@ describe('路由与方法逐条对账', () => {
     expect(calls[1]).toMatchObject({ method: 'DELETE', url: `${BASE}/forms/f1` })
   })
 
+
+  it('TD-31 清空护栏：未读全 → 裸 DELETE（既有契约不变）', async () => {
+    const KEY = 'fd_td31_noread'
+    const { calls, fetchImpl } = backend({ [`DELETE ${BASE}/records/${KEY}`]: { status: 204 } })
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl: fetchImpl as never })
+    await store.clearRecords(KEY)
+    expect(calls.map((c) => c.url.replace(BASE, ''))).toEqual([`/records/${KEY}`])
+  })
+
+  it('TD-31 清空护栏：显式 expectedCount 原样带上（宿主口径优先）', async () => {
+    const KEY = 'fd_td31_explicit'
+    const { calls, fetchImpl } = backend({
+      [`DELETE ${BASE}/records/${KEY}?count=7`]: { status: 204 },
+    })
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl: fetchImpl as never })
+    await store.clearRecords(KEY, 7)
+    expect(calls.map((c) => c.url.replace(BASE, ''))).toEqual([`/records/${KEY}?count=7`])
+  })
+
+  it('TD-31 清空护栏：读全后不传 expectedCount → 用读到的条数兜底', async () => {
+    const KEY = 'fd_td31_fallback'
+    const { calls, fetchImpl } = backend({
+      [`GET ${BASE}/records/${KEY}`]: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+      [`DELETE ${BASE}/records/${KEY}?count=3`]: { status: 204 },
+    })
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl: fetchImpl as never })
+    await expect(store.loadRecords(KEY)).resolves.toHaveLength(3)
+    await store.clearRecords(KEY)
+    expect(calls.map((c) => c.url.replace(BASE, ''))).toEqual([
+      `/records/${KEY}`,
+      `/records/${KEY}?count=3`,
+    ])
+  })
+
+  it('TD-31 清空护栏：再次读全后条数变 0 → 兜底用最新条数', async () => {
+    const KEY = '{{SECRET_60x7uguh}}'
+    let list: unknown[] = [{ id: 'a' }]
+    const calls: string[] = []
+    const fetchImpl = async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET'
+      calls.push(`${method} ${String(url)}`)
+      if (method === 'DELETE') return new Response(null, { status: 204 })
+      return new Response(JSON.stringify(list), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
+    const store = createRestFormStore({ baseUrl: BASE, fetchImpl: fetchImpl as never })
+    await store.loadRecords(KEY)
+    list = [] // 模拟期间被别人清空：再读一次全表得 0 条
+    await store.loadRecords(KEY)
+    await store.clearRecords(KEY)
+    // seg() 会对 key 做 URL 编码 —— 断言统一解码后再比
+    expect(calls.map((c) => decodeURIComponent(c.replace(BASE, '')).replace(/^GET |DELETE /, ''))).toEqual([
+      `/records/${KEY}`,
+      `/records/${KEY}`,
+      `/records/${KEY}?count=0`,
+    ])
+  })
   it('收集记录五法：GET / POST / PATCH / DELETE(单条) / DELETE(清空)', async () => {
     const KEY = 'fd_collect_f1'
     const { calls, fetchImpl } = backend({
@@ -93,6 +152,7 @@ describe('路由与方法逐条对账', () => {
       [`PATCH ${BASE}/records/${KEY}/r1`]: { status: 204 },
       [`DELETE ${BASE}/records/${KEY}/r1`]: { status: 204 },
       [`DELETE ${BASE}/records/${KEY}`]: { status: 204 },
+      [`DELETE ${BASE}/records/${KEY}?count=1`]: { status: 204 },
     })
     const store = createRestFormStore({ baseUrl: BASE, fetchImpl: fetchImpl as never })
     expect(await store.loadRecords(KEY)).toEqual([{ id: 'r1' }])
@@ -106,7 +166,7 @@ describe('路由与方法逐条对账', () => {
       `POST /records/${KEY}`,
       `PATCH /records/${KEY}/r1`,
       `DELETE /records/${KEY}/r1`,
-      `DELETE /records/${KEY}`,
+      `DELETE /records/${KEY}?count=1`,
     ])
     expect(calls[1].body).toEqual({ record: { id: 'r1' } })
     expect(calls[2].body).toEqual({ data: { a: 1 } })
