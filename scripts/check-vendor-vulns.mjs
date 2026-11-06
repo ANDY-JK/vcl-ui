@@ -23,7 +23,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
  *  · 年龄 ≤ `MAX_AGE_DAYS` 天才允许兜底；**超期仍然红** —— 宁可误红，
  *    也不让供应链监测静默停摆；两者都不可用时行为与改动前完全一致。
  */
-const CACHE = resolve(ROOT, 'reports', 'vendor-vulns-cache.json')
+// 缓存位置可经 `VENDOR_VULNS_CACHE` 覆盖 —— CI 无网时可指向受控目录里的缓存（TD-25）：
+// 把热缓存从 reports/（gitignore）带进 CI 工件，而不是让闸口在无网环境裸红。
+function cachePathFromEnv(env = process.env) {
+  return env.VENDOR_VULNS_CACHE
+    ? resolve(env.VENDOR_VULNS_CACHE)
+    : resolve(ROOT, 'reports', 'vendor-vulns-cache.json')
+}
+const CACHE = cachePathFromEnv()
 const MAX_AGE_DAYS = 7
 
 function readCache() {
@@ -134,7 +141,13 @@ async function main() {
     } catch (err) {
       // 网络不可达：只有在"缓存新鲜且版本一致"时才兜底，并把这件事**显式说出来**
       const cachedIds = cacheFresh ? cache?.results?.[key] : undefined
-      if (!cachedIds) throw err
+      if (!cachedIds) {
+        console.error(
+          `❌ ${key}：osv.dev 不可达，且没有可用的离线缓存兜底。` +
+            `（缓存上限 ${MAX_AGE_DAYS} 天；无网 CI 请把热缓存放到受控目录并设 VENDOR_VULNS_CACHE 指向它）`,
+        )
+        throw err
+      }
       usedCache += 1
       vulns = cachedIds.map((id) => ({ id }))
       console.log(
@@ -165,6 +178,7 @@ async function main() {
   console.log(`✅ check:vendor-vulns 通过 — ${lines.join('；')}（新 id 即红）${suffix}`)
 }
 
+export { CACHE, cacheAgeDays, cachePathFromEnv, MAX_AGE_DAYS }
 const invokedDirectly = (process.argv[1] ?? '').replace(/\\/g, '/').endsWith('check-vendor-vulns.mjs')
 if (invokedDirectly) {
   main().catch((e) => {
