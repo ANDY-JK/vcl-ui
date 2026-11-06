@@ -76,18 +76,22 @@ const visible = computed(() => {
 /** 显示内容 */
 const displayText = computed(() => {
   if (props.dot) return ''
-  if (props.text !== undefined) return props.text
+  // text 优先于 count（prop 文档：「与 text 同时传入时 text 优先」），
+  // 但 max 对**纯数字 text** 同样生效 —— 此前这里直接 `return props.text`，
+  // 使下面的 parseInt 分支永远不可达（#475：文档承诺与实现不符 + 死代码）。
+  if (props.text !== undefined) {
+    const t = props.text
+    if (props.max !== undefined && /^\d+$/.test(t)) {
+      const n = parseInt(t, 10)
+      if (n > props.max) return `${props.max}+`
+    }
+    return t
+  }
   if (props.count !== undefined) {
     const n = props.count
     return n > props.max ? `${props.max}+` : String(n)
   }
-  // 纯文字模式
-  const t = props.text ?? ''
-  if (props.max !== undefined && /^\d+$/.test(t)) {
-    const n = parseInt(t, 10)
-    if (n > props.max) return `${props.max}+`
-  }
-  return t
+  return ''
 })
 
 /** 背景色覆盖。

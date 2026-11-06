@@ -2192,6 +2192,15 @@
       "cmd": "npx vitest run tests/unit/login-validation-and-submit.spec.ts --no-coverage",
       "expect": "red",
       "note": "把 portal 账号下限从 3 改成 2 → 新 spec 的「账号 2 字符仍报 accountHint」立刻红；证明校验规则契约真的被锁住（此前 rules 从未被任何用例走到）"
+    },
+    {
+      "id": "tag-numeric-text-max-overflow",
+      "file": "src/components/basic/Tag.vue",
+      "find": "    if (props.max !== undefined && /^\\d+$/.test(t)) {\n      const n = parseInt(t, 10)\n      if (n > props.max) return `${props.max}+`\n    }\n    return t",
+      "replace": "    return t",
+      "cmd": "npx vitest run tests/unit/tag-and-icon-fallback.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "#475 的修复点：把「纯数字 text 也走 max」的分支拿掉（回到改动前直接 return props.text 的行为）→ 新 spec 的 99+ 断言立刻红；证明文档承诺的 max 契约真的被锁住"
     }
   ]
 }
