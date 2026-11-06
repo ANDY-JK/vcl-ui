@@ -2070,11 +2070,11 @@
     {
       "id": "debt-evidence-dead-path",
       "file": "docs/tech-debt.md",
-      "find": "`docs-site/guide/lowcode.md`",
-      "replace": "`docs-site/guide/lowcode-REMOVED.md`",
+      "find": "`tests/unit/vendor-vulns-gate.spec.ts`",
+      "replace": "`tests/unit/vendor-vulns-gate-REMOVED.spec.ts`",
       "cmd": "npx vitest run tests/unit/debt-evidence.spec.ts --no-coverage",
       "expect": "red",
-      "note": "把台账里真实存在的证据路径改名 → debt-evidence.spec 的「真实树零死链」立刻红（锚选 TD-24 行的 `docs-site/guide/lowcode.md` —— 部署形态未定，内容不被每轮刷新；evidencePaths 只抽取带扩展名的路径，目录/裸名不算。#465 曾把锚从 check-console-noise.mjs 换到此处：TD-25 证据单元被重写导致旧锚失效）"
+      "note": "把台账里真实存在的证据路径改名 → debt-evidence.spec 的「真实树零死链」立刻红（锚选 TD-25 行（accepted，自 #465 起稳定）的 `tests/unit/vendor-vulns-gate.spec.ts`；evidencePaths 只抽取带扩展名的路径，目录/裸名不算。#465 曾把锚从 check-console-noise.mjs 换到此处：TD-25 证据单元被重写导致旧锚失效）"
     },
     {
       "id": "bench-env-retry-short-circuit",
@@ -2147,6 +2147,15 @@
       "cmd": "npx vitest run tests/unit/constants-gate.spec.ts --no-coverage",
       "expect": "red",
       "note": "把 wc 域止涨线退回到拆分前的 122（最大文件已缩到 71，余量 41.8%）→ constants-gate 的「真实树无松散项」立刻红，证明棘轮回收不是一次性动作"
+    },
+    {
+      "id": "deployment-shape-bff-in-src",
+      "file": "src/components/form-builder/designer/rest-form-store.ts",
+      "find": "import type { FormDesign, CollectRecord } from './types'",
+      "replace": "import { createServer } from 'node:http'\nvoid createServer\nimport type { FormDesign, CollectRecord } from './types'",
+      "cmd": "npx vitest run tests/unit/lowcode-deployment-adr.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "把服务端运行时塞进 src/（形态 B 的 BFF 偷渡进库）→ ADR-006 的「真实树 src/ 不含服务端运行时」立刻红；证明定位决策不是只写在文档里"
     }
   ]
 }
