@@ -35,6 +35,15 @@ const THIRD_PARTY = [
   // 环境约束非缺陷；且是否点到复制按钮随页面渲染时序漂移（偶发，非稳定回归）——
   // 受影响面是「所有带复制按钮的页」，按页登记列不全，故按文本豁免并注明来源。
   /\[useCopy\] Clipboard API 失败/,
+  // 合同演示页配置的**真实** S3 对象存储端（contract-storage.ts 的 baseUrl）。离线/限网
+  // 环境下 LIST 必超时，浏览器打出 requestfailed 与 "Failed to load resource" —— 归属外部
+  // 网络可用性，与本库无关。此前未登记，导致整链在第 56 步偶发红（网络通时侥幸通过）。
+  /s3\.bitiful\.net/,
+  // 浏览器对失败子资源打的这句 **不带 URL**（上面那条 requestfailed 才带）。任何外部域名
+  // 超时都会产出同样的文本，所以只能按"连接超时"这一环境事实豁免 —— **带 URL 的
+  // requestfailed 仍是守卫**：若是本库请求了错误的地址（localhost/相对路径），
+  // 那条事件不会被豁免，照样判红。
+  /Failed to load resource: net::ERR_(CONNECTION|NAME_NOT_RESOLVED|TIMED_OUT|ADDRESS_UNREACHABLE)/,
 ]
 
 const BY_DESIGN: Record<string, RegExp[]> = {
@@ -46,6 +55,11 @@ const BY_DESIGN: Record<string, RegExp[]> = {
   'error-boundary': [/\[ErrorBoundary\] 捕获组件错误/],
   // 无头浏览器里通知权限恒为 denied，演示「发系统通知」只能打出这条
   'beep-voice': [/\[useNotify\] 通知权限已被拒绝/],
+  // 合同演示页会**真的**去对账云端对象存储（contract-storage.ts:reconcile）。离线/限网时
+  // 对账必然失败，库按设计打出 reconcile-failed 并降级为「仅恢复本地」—— 这是被演示的
+  // 降级能力本身，不是缺陷。按页点名：其它页出现同一条文字仍判红。
+  'contract-collection': [/\[storage\/reconcile-failed\]/],
+  'contract-target-collect': [/\[storage\/reconcile-failed\]/],
 }
 
 /** 错误边界接管文本：只有 error-boundary 演示页允许出现，其余页面出现即真故障 */
@@ -60,7 +74,10 @@ const isBenign = (route: string, t: string) =>
   THIRD_PARTY.some((r) => r.test(t)) || (BY_DESIGN[route] ?? []).some((r) => r.test(t))
 
 test('全站逐页交互：无 console 报错/告警、无未捕获异常、无错误边界接管', async ({ page }) => {
-  test.setTimeout(12 * 60_000)
+  // 46 页 × （滚动 + 最多 30 个按钮 + 12 个勾选 + 下拉/输入）实测 11~13 分钟；
+  // 机器有负载时会翻倍（#477 实测 12 分钟预算被打满 → 假红）。给到 20 分钟，
+  // 但每页另有 20s 渲染看门狗，卡住的页不会再吃掉整份预算。
+  test.setTimeout(20 * 60_000)
 
   const msgs: Msg[] = []
   page.on('console', (m) => {
@@ -87,6 +104,17 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
     await page.waitForTimeout(250)
 
     const body = page.locator('.content-body')
+    // 单页看门狗（#477）：某页渲染不出来时，原先会一直挂在下面的 `body.evaluate` 上，
+    // 把整份预算烧光，报错只说「locator.evaluate: Test timeout」，**不说是哪一页**。
+    // 46 页 × 每页交互，单页卡住就等于整轮白跑。改为显式等待 + 记名跳过：
+    // 名字进 report → 末尾断言照旧判红，但报告直接指出是哪条路由。
+    try {
+      await page.waitForSelector('.content-body', { timeout: 20_000 })
+    } catch {
+      msgs.push({ type: 'render-timeout', text: `路由 ${key} 20s 内未渲染 .content-body` })
+      report[key] = { msgs: msgs.filter((m) => !isBenign(key, m.text)), boundary: false, hash: key }
+      continue
+    }
     await body.evaluate((el) => {
       el.scrollTop = el.scrollHeight
     })
