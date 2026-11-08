@@ -104,6 +104,15 @@ const server = createServer((req, res) => {
         JSON.stringify({
           amapKey: DEMO_ENV.amapKey ?? '',
           amapSecret: DEMO_ENV.amapSecret ?? '',
+          // 存储配置：与 amap 同理 —— 产物不携带，运行时给（env-guard 在生产构建下返回空）
+          s3: {
+            endpoint: DEMO_ENV.s3Endpoint ?? '',
+            region: DEMO_ENV.s3Region ?? '',
+            bucket: DEMO_ENV.s3Bucket ?? '',
+            accessKeyId: DEMO_ENV.s3AccessKeyId ?? '',
+            secretAccessKey: DEMO_ENV.s3SecretAccessKey ?? '',
+          },
+
         }),
       )
       return

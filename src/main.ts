@@ -58,34 +58,49 @@ installErrorGuard(app, {
   },
 })
 /* ===== 产物模式的运行时配置（2026-11-08）=====
-   库的 runtimeEnv() 在 DEV=false 时恒返回 {} —— 产物刻意不携带凭证。
-   所以静态产物跑起来后，amap 会报 js-key-missing。这里向**同源服务器**取一次演示站凭证，
-   产物本身仍然零密钥（与 env-guard 的承诺一致）。
+   库的 runtimeEnv() 在 DEV=false 时恒返回 {} —— 产物刻意不携带凭证（env-guard 的承诺）。
+   演示站要在产物里保持和 dev 一样的体验（地图可用、存储面板能显示云端提示），
+   就得像宿主那样在**运行时**把自己的配置给进来。分两步，这个顺序很要紧：
 
-   ⚠️ 关键：**不能开机就注入**。setAmapKeys 会通知订阅者，amap-loader 收到就立刻去
-   webapi.amap.com 下 SDK —— 于是"用户只是打开首页"也会产生一条外发请求，
-   而 capture 那条 e2e 的契约正是"非 amap 页面零外发"。所以改成**进了 amap 相关路由才取**。 */
+   ① 开机只**取**配置并挂到 window —— 纯 JSON 请求，不触发任何外部 SDK
+   ② 只有**进入 amap 相关路由时**才 setAmapKeys —— 因为 setAmapKeys 会通知订阅者，
+      amap-loader 收到就立刻去 webapi.amap.com 下 SDK，于是"只是打开首页"也会产生外发请求，
+      而 capture 那条 e2e 的契约正是"非 amap 页面零外发"。
+   并且必须在 beforeEach 里 await（afterEach 太晚：地图页会先以无 key 初始化并报错）。 */
 const AMAP_ROUTES = /(^|\/)(amap|amap-widget|route-planner)(\/|$)/
 
-let amapKeyLoaded = false
-async function ensureAmapKey() {
-  if (import.meta.env.DEV || amapKeyLoaded) return
-  amapKeyLoaded = true
-  try {
-    const res = await fetch('/api/demo-config')
-    if (!res.ok) return
-    const cfg = (await res.json()) as { amapKey?: string; amapSecret?: string }
-    if (!cfg.amapKey) return
-    const { setAmapKeys } = await import('@/components/amap')
-    setAmapKeys({ jsKey: cfg.amapKey, restKey: cfg.amapKey, securityCode: cfg.amapSecret ?? '' })
-  } catch {
-    // 静态服务器没提供配置（比如纯静态托管）：保持不变，amap 页面会提示缺 key
-  }
+type DemoRuntimeConfig = { amapKey?: string; amapSecret?: string; s3?: Record<string, string> }
+
+let runtimeConfig: DemoRuntimeConfig | null = null
+let runtimeConfigPromise: Promise<DemoRuntimeConfig | null> | null = null
+
+function loadRuntimeConfig(): Promise<DemoRuntimeConfig | null> {
+  if (import.meta.env.DEV) return Promise.resolve(null)
+  if (runtimeConfigPromise) return runtimeConfigPromise
+  runtimeConfigPromise = fetch('/api/demo-config')
+    .then((res) => (res.ok ? (res.json() as Promise<DemoRuntimeConfig>) : null))
+    .then((cfg) => {
+      runtimeConfig = cfg
+      if (cfg) (window as unknown as Record<string, unknown>).__demoRuntimeConfig = cfg
+      return cfg
+    })
+    .catch(() => null)
+  return runtimeConfigPromise
 }
 
-// 必须在**进入路由之前**拿到 key：afterEach 是异步的话，地图页会先以"无 key"初始化并报错。
+let amapKeyApplied = false
+async function ensureAmapKeys() {
+  if (import.meta.env.DEV || amapKeyApplied) return
+  const cfg = runtimeConfig ?? (await loadRuntimeConfig())
+  if (!cfg?.amapKey) return
+  amapKeyApplied = true
+  const { setAmapKeys } = await import('@/components/amap')
+  setAmapKeys({ jsKey: cfg.amapKey, restKey: cfg.amapKey, securityCode: cfg.amapSecret ?? '' })
+}
+
+void loadRuntimeConfig()
 router.beforeEach(async (to) => {
-  if (AMAP_ROUTES.test(to.path)) await ensureAmapKey()
+  if (AMAP_ROUTES.test(to.path)) await ensureAmapKeys()
   return true
 })
 

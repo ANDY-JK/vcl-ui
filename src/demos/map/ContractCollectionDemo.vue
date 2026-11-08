@@ -457,7 +457,25 @@ function loadConfig(): StorageConfig {
   } catch {
     /* 配置损坏则回退默认 */
   }
-  // 环境变量默认：S3 兼容（缤纷云等）优先 → Supabase → 本地
+  // 产物模式：用服务器运行时注入的配置（与 amap key 同一机制）。
+  // 库的 runtimeEnv() 生产构建下返回 {}，所以 defaultStorageConfigFromEnv() 一定是"本地"——
+  // 这不是缺陷，是"产物不携带凭证"的必然结果；演示站要在产物里也展示云端提示，
+  // 就得像宿主那样在运行时把自己的配置给进来。
+  const injected = (window as unknown as { __demoRuntimeConfig?: { s3?: Record<string, string> } }).__demoRuntimeConfig
+  if (import.meta.env.DEV || !injected?.s3) return defaultStorageConfigFromEnv()
+  const s3 = injected.s3
+  if (s3.endpoint && s3.bucket && s3.accessKeyId && s3.secretAccessKey) {
+    return {
+      backend: 's3',
+      url: '',
+      anonKey: '',
+      endpoint: s3.endpoint,
+      region: s3.region ?? '',
+      bucket: s3.bucket,
+      accessKeyId: s3.accessKeyId,
+      secretAccessKey: s3.secretAccessKey,
+    }
+  }
   return defaultStorageConfigFromEnv()
 }
 

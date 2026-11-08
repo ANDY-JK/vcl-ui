@@ -7,14 +7,6 @@ import { test, expect } from '@playwright/test'
 const BASE = process.env.E2E_BASE || 'http://localhost:3721'
 const TIP = '{appleId}-{文件名}'
 
-// 产物模式下这条不适用：页面上的「云端」入口由 `runtimeEnv()` 的开发期 VITE_ 存储配置驱动，
-// 而产物**按设计不携带任何凭证**（见 _internal/env-guard.ts），于是产物里只有「本地」。
-// 这不是缺陷，是那条安全承诺的必然结果 —— 所以显式跳过并注明，而不是放宽断言。
-test.skip(
-  process.env.E2E_PROD_ALL === '1',
-  '依赖开发期 VITE_ 存储配置；产物模式按设计不携带凭证，只剩「本地」入口',
-)
-
 test('合同收集页：Input 已解析、存储提示完整渲染且无 i18n 编译报错', async ({ page }) => {
   const logs: string[] = []
   page.on('console', (m) => {
