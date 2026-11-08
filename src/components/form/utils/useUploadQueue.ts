@@ -5,7 +5,7 @@
  * canvas 压缩与真实/模拟上传、删除/重试。UI 事件适配（拖拽/粘贴/input/拍照入口）留在组件。
  * UploadFile 对外类型仍由 Upload.vue 导出（消费方契约不变），此处 type-only 引用。
  */
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted, getCurrentInstance } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { errMessage } from '@/components/_internal/utils'
 import type { UploadFile } from '../Upload.vue'
@@ -355,11 +355,18 @@ export function useUploadQueue(opts: {
     }
   }
 
-  // 组件卸载时清理未完成的模拟上传定时器
-  onUnmounted(() => {
-    timers.forEach((timer) => clearInterval(timer))
-    timers.length = 0
-  })
+  // 组件卸载时清理未完成的模拟上传定时器。
+  //
+  // 为什么要先判 getCurrentInstance()：这个 composable 也会被**单测**直接调用（不在任何组件里），
+  // 而 `onUnmounted` 在没有活动实例时不仅无效，还会往控制台打 warn —— 每跑一次单测就刷 4 条，
+  // 把真正的警告淹掉。判一下既保住组件内的清理，也让"没有宿主"的调用安静通过
+  // （没有宿主也就没有卸载，不存在泄漏对象）。
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      timers.forEach((timer) => clearInterval(timer))
+      timers.length = 0
+    })
+  }
 
   return { files, syncModel, clearAllFiles, processFiles, removeFile, retryFile, isMimeAccepted }
 }
