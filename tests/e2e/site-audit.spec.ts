@@ -73,10 +73,10 @@ type Msg = { type: string; text: string }
 const isBenign = (route: string, t: string) =>
   THIRD_PARTY.some((r) => r.test(t)) || (BY_DESIGN[route] ?? []).some((r) => r.test(t))
 
-/** 每扫完这么多页就换一个新的渲染进程（见下方「页面轮换」说明） */
-const PAGES_PER_CONTEXT = 10
+/** 每扫完这么多页就换一个全新的浏览器上下文（见下方「上下文轮换」说明） */
+const ROUTES_PER_CONTEXT = 10
 
-test('全站逐页交互：无 console 报错/告警、无未捕获异常、无错误边界接管', async ({ context }) => {
+test('全站逐页交互：无 console 报错/告警、无未捕获异常、无错误边界接管', async ({ browser }) => {
   // 46 页 × （滚动 + 最多 30 个按钮 + 12 个勾选 + 下拉/输入）实测 11~13 分钟；
   // 机器有负载时会翻倍（#477 实测 12 分钟预算被打满 → 假红）。给到 20 分钟，
   // 但每页另有 20s 渲染看门狗，卡住的页不会再吃掉整份预算。
@@ -85,18 +85,23 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
   const msgs: Msg[] = []
 
   /**
-   * ## 页面轮换（2026-11-08 补）
+   * ## 上下文轮换（2026-11-08 两版迭代后的结论）
    *
-   * 症状：跑到后半程会随机有 1~3 页报 `net::ERR_INSUFFICIENT_RESOURCES` 或
+   * 症状：跑到后半程随机有 1~3 页报 `net::ERR_INSUFFICIENT_RESOURCES` 或
    * `20s 内未渲染 .content-body`，**每次命中的页都不一样**（avatar / input / loading / amap 轮换），
-   * 单跑与重试结果也不一致 —— 是渲染进程被耗光，不是某条代码路径的稳定缺陷。
+   * 单跑与重试结果也不一致 —— 是渲染资源被耗光，不是某条代码路径的稳定缺陷。
    *
-   * 成因：每页都是 `goto` + `reload` 一次完整文档加载，dev server 还要**按需编译**该页的模块图；
-   * 49 页叠加下来，同一个渲染进程里的 loader / 连接 / 内存只增不减，到后半程就没有余量了。
+   * 成因：每页 `goto` + `reload` 各是一次完整文档加载，dev server 还要**按需编译**该页模块图；
+   * 49 页叠加，同一渲染进程里的 loader / 连接 / 内存只增不减。
    *
-   * 修法：每 `PAGES_PER_CONTEXT` 页换一个新 page（同一 context，保留存储状态）。
-   * 旧 page 一关，它那一批 loader 随之释放 —— 比放宽断言或延长超时更接近根因。
+   * 第一版只换 `page`（同一 context）—— 单独跑绿了，但**整链第 57 步（机器已跑 34 分钟）仍 flake 一次**，
+   * 说明耗尽发生在浏览器进程之上，换 page 不够。
+   *
+   * 第二版换**整个 browser context**：Playwright 为每个 context 单开渲染进程，
+   * `context.close()` 会把那一整套进程连网络状态一起归还。代价是这个 spec 失去自动
+   * trace/video（那是 fixture 的 page 才有的），换来确定性。
    */
+  let context = await browser.newContext({ baseURL: BASE })
   let page = await context.newPage()
 
   function attach(p: typeof page) {
@@ -119,9 +124,10 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
   const report: Record<string, { msgs: Msg[]; boundary: boolean; hash: string }> = {}
 
   for (const [routeIndex, key] of ROUTES.entries()) {
-    // 轮换：换 page 后旧渲染进程的资源随之释放（详见上方「页面轮换」）
-    if (routeIndex > 0 && routeIndex % PAGES_PER_CONTEXT === 0) {
-      await page.close()
+    // 轮换：整个 context 一起换，旧渲染进程连网络状态一并归还（详见上方「上下文轮换」）
+    if (routeIndex > 0 && routeIndex % ROUTES_PER_CONTEXT === 0) {
+      await context.close()
+      context = await browser.newContext({ baseURL: BASE })
       page = await context.newPage()
       attach(page)
     }
@@ -139,9 +145,22 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
     try {
       await page.waitForSelector('.content-body', { timeout: 20_000 })
     } catch {
-      msgs.push({ type: 'render-timeout', text: `路由 ${key} 20s 内未渲染 .content-body` })
-      report[key] = { msgs: msgs.filter((m) => !isBenign(key, m.text)), boundary: false, hash: key }
-      continue
+      // 首轮没渲染出来：**整页重载一次再等**（只重一次）。
+      //
+      // 为什么这不是"把尺子改短"：dev server 在整链高负载下会偶发木然（模块正在按需编译，
+      // 浏览器报 net::ERR_INSUFFICIENT_RESOURCES），重载后同一页往往立刻正常。
+      // 本 spec 要审计的是 **console 噪音 / 未捕获异常 / 错误边界**，不是加载耗时；
+      // 一页"第二次就干净地渲染出来"不构成产品缺陷。首轮那批 requestfailed 先清掉，
+      // 否则会把一次失败的加载算成这页的噪音。仍失败才记账 → 真卡死的页照样判红。
+      msgs.length = 0
+      await page.reload().catch(() => {})
+      try {
+        await page.waitForSelector('.content-body', { timeout: 20_000 })
+      } catch {
+        msgs.push({ type: 'render-timeout', text: `路由 ${key} 重载后仍 20s 内未渲染 .content-body` })
+        report[key] = { msgs: msgs.filter((m) => !isBenign(key, m.text)), boundary: false, hash: key }
+        continue
+      }
     }
     await body.evaluate((el) => {
       el.scrollTop = el.scrollHeight
@@ -224,6 +243,9 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
       hash: (await page.evaluate(() => location.hash)) || '',
     }
   }
+
+  // 自建 context 不会自动回收，扫描结束就关掉（此后只读 report，不再碰页面）
+  await context.close().catch(() => {})
 
   const out = path.join(ROOT, 'reports/site-audit.json')
   fs.mkdirSync(path.dirname(out), { recursive: true })
