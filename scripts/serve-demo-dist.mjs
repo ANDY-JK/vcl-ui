@@ -18,6 +18,13 @@ import { readFile, stat } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
 import { extname, join, normalize, resolve } from 'node:path'
 import { createLowcodeHandler } from '../examples/lowcode-backend/server.mjs'
+import {
+  DEMO_NAV_PAYLOAD,
+  DEMO_ROWS,
+  DEMO_STORE_PREFIX,
+  DEMO_STORE_TOKEN,
+  seedDemoStore,
+} from '../examples/lowcode-backend/demo-seed.mjs'
 
 const ROOT = resolve(import.meta.dirname, '..')
 const DIST = join(ROOT, 'dist-demo')
@@ -25,9 +32,17 @@ const DIST = join(ROOT, 'dist-demo')
 const portArg = process.argv.indexOf('--port')
 const PORT = Number(portArg > -1 ? process.argv[portArg + 1] : process.env.PORT || 3722)
 
-/** 演示页用的令牌与路径前缀，必须与 vite.config.ts 里的 dev 中间件一致 */
-const STORE_PREFIX = '/api/lowcode-demo/store'
-const storeHandler = createLowcodeHandler({ token: 'demo-token-r105', prefix: STORE_PREFIX })
+/**
+ * 演示页用的令牌、前缀与**种子数据**都与 vite.config.ts 的 dev 中间件共用同一份
+ * （examples/lowcode-backend/demo-seed.mjs）—— 产物模式能不能过 lowcode 那几条 e2e，
+ * 取决于种子是否一致；此前这里没种，于是 dev 绿、产物红。
+ */
+const STORE_PREFIX = DEMO_STORE_PREFIX
+const storeHandler = createLowcodeHandler({
+  token: DEMO_STORE_TOKEN,
+  prefix: STORE_PREFIX,
+  seed: seedDemoStore,
+})
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -71,11 +86,6 @@ function readLocalEnv() {
 }
 const DEMO_ENV = readLocalEnv()
 
-const rows = [
-  { sku: 'SP-1001', name: '门店 A · 冷藏柜', qty: 12, amount: 3840, updatedAt: '2026-10-18 09:12' },
-  { sku: 'SP-1002', name: '门店 B · 收银台', qty: 3, amount: 1290, updatedAt: '2026-10-18 10:05' },
-  { sku: 'SP-1003', name: '门店 C · 货架区', qty: 27, amount: 8650, updatedAt: '2026-10-18 11:40' },
-]
 
 const server = createServer((req, res) => {
   void (async () => {
@@ -99,10 +109,15 @@ const server = createServer((req, res) => {
       return
     }
 
-    // ③ 演示页用的一张固定表格数据（dev 中间件里的 /api/lowcode-demo/rows）
+    // ③ 演示页用的两张固定数据（与 dev 中间件共用同一份载荷）
     if (url.startsWith('/api/lowcode-demo/rows')) {
       res.setHeader('Content-Type', 'application/json; charset=utf-8')
-      res.end(JSON.stringify({ code: 0, data: { rows } }))
+      res.end(JSON.stringify({ code: 0, data: { rows: DEMO_ROWS } }))
+      return
+    }
+    if (url.startsWith('/api/lowcode-demo/nav')) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8')
+      res.end(JSON.stringify(DEMO_NAV_PAYLOAD))
       return
     }
 

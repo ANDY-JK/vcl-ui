@@ -38,6 +38,12 @@ const ROOT = process.cwd()
  */
 const ALLOWLIST = [
   {
+    file: 'tests/e2e/verify-i18n-fix.spec.ts',
+    pattern: "test.skip(",
+    reason:
+      '页面的「云端」入口由 runtimeEnv() 的开发期 VITE_ 存储配置驱动；产物模式按设计不携带任何凭证（env-guard.ts），于是只剩「本地」。这是安全承诺的必然结果，只在 E2E_PROD_ALL=1 时跳过，dev 模式照常运行',
+  },
+  {
     file: 'tests/e2e/table-screenshot-fit.spec.ts',
     pattern: 'test.skip(!info',
     reason:

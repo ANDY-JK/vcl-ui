@@ -25,16 +25,22 @@ import { defineConfig, devices } from '@playwright/test'
 const PORT = Number(process.env.E2E_DEMO_PORT || 3722)
 const BASE_URL = `http://127.0.0.1:${PORT}`
 
+// 让那些「模块顶层读 E2E_BASE，否则回落 dev 的 3721」的 spec 也能跑在产物上。
+// 这是唯一需要改的地方：不用逐个去改 12 个 spec 的常量。
+process.env.E2E_BASE ||= BASE_URL
+
 export default defineConfig({
   testDir: './tests/e2e',
   // 只跑"整站逐页"这类受益最明显的 spec
-  testMatch: /site-audit\.spec\.ts/,
+  // 默认只跑「整站逐页」这类受益最明显的 spec；E2E_PROD_ALL=1 时跑全量（评估「能不能整体切产物」）
+  testMatch: process.env.E2E_PROD_ALL ? /\.spec\.ts$/ : /site-audit\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: [['list']],
-  timeout: 25 * 60 * 1000,
+  // site-audit 要扫 51 页；全量模式下按单条 90s 兜（有 spec 会在产物下等 dev-only 的东西）
+  timeout: process.env.E2E_PROD_ALL ? 90_000 : 25 * 60 * 1000,
   expect: { timeout: 10_000 },
   use: {
     baseURL: BASE_URL,

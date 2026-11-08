@@ -7,6 +7,13 @@ import { thirdPartyEvidencePlugin } from './scripts/third-party-evidence.mjs'
 // 演示站的"表单仓储后端"**不是另写一份**，而是直接复用 `examples/lowcode-backend` 里
 // 宿主真要部署的那份实现（同一契约只能有一份代码 —— 否则 e2e 验的和交付的是两套东西）
 import { createLowcodeHandler } from './examples/lowcode-backend/server.mjs'
+import {
+  DEMO_NAV_PAYLOAD,
+  DEMO_ROWS,
+  DEMO_STORE_PREFIX,
+  DEMO_STORE_TOKEN,
+  seedDemoStore,
+} from './examples/lowcode-backend/demo-seed.mjs'
 
 /**
  * 声明按最低承诺版本生成时，vue 被解析到构建别名 vue34，
@@ -72,7 +79,7 @@ function lowcodeDemoApiPlugin() {
     configureServer(server: { middlewares: { use: (p: string, h: (req: unknown, res: { setHeader: (k: string, v: string) => void; end: (b: string) => void }) => void) => void } }) {
       server.middlewares.use('/api/lowcode-demo/rows', (_req, res) => {
         res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify({ code: 0, data: { rows } }))
+        res.end(JSON.stringify({ code: 0, data: { rows: DEMO_ROWS } }))
       })
       /**
        * 后端下发的**导航定义**（低代码导航外壳的 api 来源）。
@@ -114,27 +121,12 @@ function lowcodeDemoApiPlugin() {
        * 令牌写死在这里并被**服务端强制校验**：缺令牌一律 401，
        * 于是"演示页有没有把 headers 接对"是**可观测的**，而不是"看着能跑"。
        */
-      const STORE_PREFIX = '/api/lowcode-demo/store'
+      const STORE_PREFIX = DEMO_STORE_PREFIX
+      // 种子数据与产物静态服务共用一份（examples/lowcode-backend/demo-seed.mjs）
       const storeHandler = createLowcodeHandler({
-        token: 'demo-token-r105',
+        token: DEMO_STORE_TOKEN,
         prefix: STORE_PREFIX,
-        seed: async (store) => {
-          // 预置一份"服务端才有的表单"（名字带「服务端：」前缀）：切到 REST 仓储后，
-          // 导航项若从「客户台账 / 工单」变成「服务端：客户台账」，
-          // 就证明确实是**从 HTTP 取的**，而不是复用内存里那两份。
-          await store.saveForm(
-            'rest-customers',
-            {
-              schemaVersion: 3,
-              meta: { title: '服务端：客户台账', submitText: '提交' },
-              nodes: [
-                { id: 's1', type: 'text', label: '服务端字段·客户名称', key: 'name', required: true },
-                { id: 's2', type: 'textarea', label: '服务端字段·备注', key: 'note' },
-              ],
-            },
-            '服务端：客户台账',
-          )
-        },
+        seed: seedDemoStore,
       })
       server.middlewares.use((req, res, next) => {
         if (!(req.url ?? '').startsWith(STORE_PREFIX + '/')) {

@@ -91,7 +91,9 @@ test('扫码零外发：拦掉所有非本机请求后，上传识别照样出�
   test.setTimeout(SCAN_TEST_TIMEOUT)
 
   const crossOrigin: string[] = []
-  await page.route(/^(?!http:\/\/localhost).*/i, (route) => {
+  // 放行**本机任意端口**：dev 跑 3721、产物模式跑 3722。只拦真正的外发请求，
+  // 否则产物模式连文档本身都被 abort（goto 直接 net::ERR_FAILED）。
+  await page.route(/^(?!https?:\/\/(localhost|127\.0\.0\.1)).*/i, (route) => {
     crossOrigin.push(route.request().url())
     return route.abort()
   })
