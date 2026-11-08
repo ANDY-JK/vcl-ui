@@ -504,8 +504,8 @@
     {
       "id": "datatable-cell-error-describedby",
       "file": "src/components/data/DataTable.vue",
-      "find": "                      isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\n                        ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\n                        : undefined",
-      "replace": "                      false\n                        ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\n                        : undefined",
+      "find": "                    class=\"cell-edit-input\"\n                    :inputmode=\"editInputMode(col)\"\n                    :aria-invalid=\"isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    :aria-describedby=\"\n                      isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\n                        ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\n                        : undefined",
+      "replace": "                    class=\"cell-edit-input\"\n                    :inputmode=\"editInputMode(col)\"\n                    :aria-invalid=\"isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    :aria-describedby=\"\n                      isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\n                        ? undefined\n                        : undefined",
       "cmd": "npx vitest run tests/unit/datatable-cell-error-aria.spec.ts --no-coverage",
       "expect": "red",
       "note": "变异后：错误说明不再关联到输入框，读屏说不出为什么（TD-96 / #337）"
@@ -513,8 +513,8 @@
     {
       "id": "datatable-cell-error-id",
       "file": "src/components/data/DataTable.vue",
-      "find": ":id=\"cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    class=\"cell-edit-invalid-hint\"",
-      "replace": ":data-err=\"cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    class=\"cell-edit-invalid-hint\"",
+      "find": "                  <!-- 归一化失败就地提示（Enter/Tab 提交被拒：红圈 + 气泡，用户视线在格子里；继续输入即消失） -->\n                  <span\n                    v-if=\"isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    :id=\"cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    class=\"cell-edit-invalid-hint\"",
+      "replace": "                  <!-- 归一化失败就地提示（Enter/Tab 提交被拒：红圈 + 气泡，用户视线在格子里；继续输入即消失） -->\n                  <span\n                    v-if=\"isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    :data-err=\"cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)\"\n                    class=\"cell-edit-invalid-hint\"",
       "cmd": "npx vitest run tests/unit/datatable-cell-error-aria.spec.ts --no-coverage",
       "expect": "red",
       "note": "变异后：提示元素没有 id，aria-describedby 指向悬空（#337）"

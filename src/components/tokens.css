@@ -169,6 +169,51 @@
   --vcl-fs-22: calc(22px * var(--vcl-scale));
   --vcl-fs-28: calc(28px * var(--vcl-scale));
 
+  /* ===== 复合字体标尺（2026-11-07 新增，经确认）=====
+     一条「档位」= 字号 + 行高 + 字距 成组声明，配套 src/components/type-scale.css 的
+     `.vcl-t-*` 工具类一次给齐四属性（含字重）。
+
+     动机（实测，不是印象）：同一档字号在不同文件里配了十几套行高 ——
+     `fs-12` 全库被引 90 次、`fs-13` 78 次、`fs-11` 50 次，行高由各组件自拍，
+     于是「同级的字」在视觉上不平级。
+
+     档位按**用途**命名而非尺寸（尺寸会随场景漂移，用途不会）：
+       caption 11/15 +0.2 — 角标、辅助说明
+       label   12/16 +0.1 — 表头、表单标签
+       body    13/20   0  — 正文
+       control 14/20   0  — 控件文字（跟随 --vcl-ctrl-font-size，控件档变了它自动跟着变）
+       heading 20/28   0  — 区块标题
+
+     小字加正字距、大字归零（低字号下字距过紧会糊成一团）。
+
+     ⚠ 刻意不设 64/56/48/40/32 的 Display 档：`grep -ro "var(--vcl-fs-N)" src` 实测
+     全库最大用量 28px 仅 1 处、22px 4 处、18px 6 处 —— 设了就是没人用的死档位。
+     要加新档位必须有真实引用计数撑着，不许「为完整性」预先铺满。 */
+  --vcl-text-caption-size: var(--vcl-fs-11);
+  --vcl-text-caption-line: calc(15px * var(--vcl-scale));
+  --vcl-text-caption-tracking: 0.2px;
+  --vcl-text-label-size: var(--vcl-fs-12);
+  --vcl-text-label-line: calc(16px * var(--vcl-scale));
+  --vcl-text-label-tracking: 0.1px;
+  --vcl-text-body-size: var(--vcl-fs-13);
+  --vcl-text-body-line: calc(20px * var(--vcl-scale));
+  --vcl-text-body-tracking: 0;
+  --vcl-text-control-size: var(--vcl-ctrl-font-size);
+  --vcl-text-control-line: calc(20px * var(--vcl-scale));
+  --vcl-text-control-tracking: 0;
+  --vcl-text-heading-size: var(--vcl-fs-20);
+  --vcl-text-heading-line: calc(28px * var(--vcl-scale));
+  --vcl-text-heading-tracking: 0;
+  /* 2026-11-07 补两档：15 与 18 有真实用量（实测 5 处 / 6 处，跨 5 / 4 个文件），
+     且原先是「有字号无行高」的重灾区之一 —— 没有对应档位就只能继续手写飘忽的行高。
+     22 与 28 暂不铺：各 4 处 / 1 处，且 28 只有页标题在用，等真出现第二批用法再加。 */
+  --vcl-text-subtitle-size: var(--vcl-fs-15);
+  --vcl-text-subtitle-line: calc(22px * var(--vcl-scale));
+  --vcl-text-subtitle-tracking: 0;
+  --vcl-text-title-size: var(--vcl-fs-18);
+  --vcl-text-title-line: calc(26px * var(--vcl-scale));
+  --vcl-text-title-tracking: 0;
+
   /* 控件统一尺寸 — 覆盖这些变量可全局调整所有表单控件 */
   --vcl-ctrl-height: calc(42px * var(--vcl-scale));
   --vcl-ctrl-font-size: calc(14px * var(--vcl-scale));

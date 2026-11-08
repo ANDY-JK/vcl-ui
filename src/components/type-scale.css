@@ -1,0 +1,117 @@
+/* ── 复合字体工具类（2026-11-07）─────────────────────────────────────────────
+ * 与 tokens.css 的 `--vcl-text-*` 配套：一条类 = 字号 + 行高 + 字距 + 字重，四属性一次给齐。
+ *
+ * 为什么要有这一层：组件里手写 `font-size: var(--vcl-fs-12)` 时，行高与字重是**缺失**的，
+ * 各文件各拍一套，结果「同级文字」的视觉级别不一致。这里把排版决策从组件收回到令牌层。
+ *
+ * 用法（组件模板/样式里挂类，不要再手写 font-size / line-height）：
+ *   <div class="vcl-t-label">表头</div>
+ *   <span class="vcl-t-body-strong">强调正文</span>
+ *
+ * 档位与取舍见 tokens.css 内的「复合字体标尺」注释块。
+ * 新增档位前先数真实引用：没有用量支撑的档位是死代码。
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/* caption 11/15 +0.2 —— 角标、辅助说明 */
+.vcl-t-caption {
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
+  letter-spacing: var(--vcl-text-caption-tracking);
+  font-weight: 400;
+}
+.vcl-t-caption-strong {
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
+  letter-spacing: var(--vcl-text-caption-tracking);
+  font-weight: 500;
+}
+
+/* label 12/16 +0.1 —— 表头、表单标签 */
+.vcl-t-label {
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  letter-spacing: var(--vcl-text-label-tracking);
+  font-weight: 400;
+}
+.vcl-t-label-strong {
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  letter-spacing: var(--vcl-text-label-tracking);
+  font-weight: 500;
+}
+.vcl-t-label-bold {
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  letter-spacing: var(--vcl-text-label-tracking);
+  font-weight: 600;
+}
+
+/* body 13/20 —— 正文 */
+.vcl-t-body {
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
+  letter-spacing: var(--vcl-text-body-tracking);
+  font-weight: 400;
+}
+.vcl-t-body-strong {
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
+  letter-spacing: var(--vcl-text-body-tracking);
+  font-weight: 500;
+}
+
+/* control 14/20 —— 控件文字 */
+.vcl-t-control {
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
+  letter-spacing: var(--vcl-text-control-tracking);
+  font-weight: 400;
+}
+.vcl-t-control-strong {
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
+  letter-spacing: var(--vcl-text-control-tracking);
+  font-weight: 500;
+}
+
+/* heading 20/28 —— 区块标题 */
+.vcl-t-heading {
+  font-size: var(--vcl-text-heading-size);
+  line-height: var(--vcl-text-heading-line);
+  letter-spacing: var(--vcl-text-heading-tracking);
+  font-weight: 500;
+}
+.vcl-t-heading-bold {
+  font-size: var(--vcl-text-heading-size);
+  line-height: var(--vcl-text-heading-line);
+  letter-spacing: var(--vcl-text-heading-tracking);
+  font-weight: 600;
+}
+
+/* subtitle 15/22 —— 次级标题、强调正文（2026-11-07 补，实测 5 处用量） */
+.vcl-t-subtitle {
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
+  font-weight: 400;
+}
+.vcl-t-subtitle-strong {
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
+  font-weight: 500;
+}
+
+/* title 18/26 —— 卡片标题（2026-11-07 补，实测 6 处用量） */
+.vcl-t-title {
+  font-size: var(--vcl-text-title-size);
+  line-height: var(--vcl-text-title-line);
+  letter-spacing: var(--vcl-text-title-tracking);
+  font-weight: 500;
+}
+.vcl-t-title-bold {
+  font-size: var(--vcl-text-title-size);
+  line-height: var(--vcl-text-title-line);
+  letter-spacing: var(--vcl-text-title-tracking);
+  font-weight: 600;
+}

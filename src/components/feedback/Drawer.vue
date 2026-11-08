@@ -7,9 +7,14 @@ import { registerModal } from '@/components/_internal/useModalManager'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
 import { useEscClose } from '@/components/_internal/useEscClose'
 import { useBodyScrollLock } from '@/components/_internal/useBodyScrollLock'
+import { useScrollEdge } from '@/components/_internal/scroll-edge'
 import { useT } from '@/components/_internal/i18n'
 
 const t = useT()
+
+/** 抽屉主体滚动视口：内容溢出时顶/底渐隐提示「还有更多」（表头与页脚留在滚动区外） */
+const bodyScrollEl = ref<HTMLElement | null>(null)
+const { atTop: bodyAtTop, atBottom: bodyAtBottom } = useScrollEdge(bodyScrollEl)
 
 interface Props {
   /** 显隐（v-model:visible） */
@@ -193,9 +198,22 @@ onUnmounted(unmountEsc)
               <IconSvg type="x" size="md" />
             </button>
           </div>
-          <div class="drawer-body">
-            <!-- @slot default: 抽屉主体内容 -->
-            <slot />
+          <!-- 主体滚动区：顶/底渐隐遮罩绝对定位，不占布局高度；header/footer 不随内容滚 -->
+          <div class="vcl-scroll-edge">
+            <div ref="bodyScrollEl" class="drawer-body">
+              <!-- @slot default: 抽屉主体内容 -->
+              <slot />
+            </div>
+            <div
+              class="vcl-scroll-edge__veil vcl-scroll-edge__veil--top"
+              :style="{ opacity: bodyAtTop ? 0 : 1 }"
+              aria-hidden="true"
+            />
+            <div
+              class="vcl-scroll-edge__veil vcl-scroll-edge__veil--bottom"
+              :style="{ opacity: bodyAtBottom ? 0 : 1 }"
+              aria-hidden="true"
+            />
           </div>
           <div v-if="$slots.footer" class="drawer-footer">
             <!-- @slot footer: 抽屉底部区域（仅传入时渲染，如按钮条） -->
@@ -207,4 +225,5 @@ onUnmounted(unmountEsc)
   </Teleport>
 </template>
 
+<style src="../_internal/scroll-edge.css"></style>
 <style src="./drawer-scoped.css" scoped></style>

@@ -13,9 +13,14 @@
 import { computed, ref, watch, type PropType } from 'vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import { useT } from '@/components/_internal/i18n'
+import { useScrollEdge } from '@/components/_internal/scroll-edge'
 import { isContainerNode, getTypeIcon, type DesignerNode, type DesignerNodeType } from './types'
 
 const t = useT()
+
+/** 树的可滚动视口：面板高度是紧的，内容溢出时靠边缘遮罩暗示「还有更多」（不占布局） */
+const treeScrollEl = ref<HTMLElement | null>(null)
+const { atTop: treeAtTop, atBottom: treeAtBottom } = useScrollEdge(treeScrollEl)
 
 const props = defineProps({
   nodes: { type: Array as PropType<DesignerNode[]>, default: () => [] },
@@ -236,7 +241,8 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
 </script>
 
 <template>
-  <aside class="ldo-panel">
+  <!-- 同上：与组件面板/属性面板并存，各自要有名字 -->
+  <aside class="ldo-panel" :aria-label="t('fbt.formOutline')">
     <div class="ldo-header">
       <IconSvg type="list-tree" size="sm" />
       <span>{{ t('fbt.formOutline') }}</span>
@@ -246,57 +252,77 @@ function hasMatchInChildren(children: DesignerNode[], q: string): boolean {
       <IconSvg type="search" size="xs" />
       <input v-model="searchQuery" class="ldo-search-input" :placeholder="t('fbt.searchNodesPh')" />
     </div>
-    <!-- 树 -->
-    <div class="ldo-tree" role="tree" :aria-label="t('fbd.structureTree')" @keydown="onTreeKeydown">
-      <div v-if="!flatTree.length" class="ldo-empty">
-        <span>{{ t('fbt.noNodes') }}</span>
+    <!-- 树：滚动视口 + 顶/底渐隐遮罩（表头/搜索留在滚动区外不动；遮罩绝对定位，不占布局高度） -->
+    <div class="vcl-scroll-edge">
+      <div
+        ref="treeScrollEl"
+        class="ldo-tree"
+        :role="flatTree.length ? 'tree' : undefined"
+        :aria-label="flatTree.length ? t('fbd.structureTree') : undefined"
+        @keydown="onTreeKeydown"
+      >
+        <div v-if="!flatTree.length" class="ldo-empty">
+          <span>{{ t('fbt.noNodes') }}</span>
+        </div>
+        <div
+          v-for="item in flatTree"
+          :key="item.node.id"
+          class="ldo-node"
+          :class="{
+            selected: item.node.id === selectedId,
+            container: isContainerNode(item.node),
+            'ldo-dragging': item.node.id === dragId,
+            'ldo-drop-before': dropTarget?.id === item.node.id && dropTarget.position === 'before',
+            'ldo-drop-after': dropTarget?.id === item.node.id && dropTarget.position === 'after',
+            'ldo-drop-inside': dropTarget?.id === item.node.id && dropTarget.position === 'inside',
+          }"
+          :style="{ 'padding-left': 8 + item.level * 16 + 'px' }"
+          :draggable="true"
+          role="treeitem"
+          :tabindex="(selectedId ?? flatTree[0]?.node.id) === item.node.id ? 0 : -1"
+          :aria-selected="item.node.id === selectedId"
+          :aria-expanded="item.hasChildren ? item.isExpanded : undefined"
+          @click="emit('select', item.node.id)"
+          @keydown.enter.prevent="emit('select', item.node.id)"
+          @keydown.space.prevent="emit('select', item.node.id)"
+          @dragstart="onDragStart(item.node.id, $event)"
+          @dragover="onDragOver(item.node.id, isContainerNode(item.node), $event)"
+          @dragleave="onDragLeave(item.node.id)"
+          @drop="onDrop(item.node.id, isContainerNode(item.node), $event)"
+          @dragend="onDragEnd"
+        >
+          <!-- 展开/折叠箭头 -->
+          <span v-if="item.hasChildren" class="ldo-expand-toggle" @click="toggleExpand(item.node.id, $event)">
+            <IconSvg :type="item.isExpanded ? 'chevron-down' : 'chevron-right'" size="xs" />
+          </span>
+          <!-- 无子节点时占位 -->
+          <span v-else class="ldo-expand-placeholder" />
+
+          <IconSvg :type="nodeIcon(item.node.type)" size="xs" class="ldo-tree-icon" />
+          <span class="ldo-tree-label" :title="item.node.label">{{ item.node.label }}</span>
+          <span class="ldo-tree-type">{{ typeShort(item.node.type) }}</span>
+          <span class="ldo-tree-actions" @click.stop>
+            <button type="button" class="ldo-del-btn" :title="t('common.delete')" @click="emit('remove', item.node.id)">
+              <IconSvg type="trash-2" size="xs" />
+            </button>
+          </span>
+        </div>
       </div>
       <div
-        v-for="item in flatTree"
-        :key="item.node.id"
-        class="ldo-node"
-        :class="{
-          selected: item.node.id === selectedId,
-          container: isContainerNode(item.node),
-          'ldo-dragging': item.node.id === dragId,
-          'ldo-drop-before': dropTarget?.id === item.node.id && dropTarget.position === 'before',
-          'ldo-drop-after': dropTarget?.id === item.node.id && dropTarget.position === 'after',
-          'ldo-drop-inside': dropTarget?.id === item.node.id && dropTarget.position === 'inside',
-        }"
-        :style="{ 'padding-left': 8 + item.level * 16 + 'px' }"
-        :draggable="true"
-        role="treeitem"
-        :tabindex="(selectedId ?? flatTree[0]?.node.id) === item.node.id ? 0 : -1"
-        :aria-selected="item.node.id === selectedId"
-        :aria-expanded="item.hasChildren ? item.isExpanded : undefined"
-        @click="emit('select', item.node.id)"
-        @keydown.enter.prevent="emit('select', item.node.id)"
-        @keydown.space.prevent="emit('select', item.node.id)"
-        @dragstart="onDragStart(item.node.id, $event)"
-        @dragover="onDragOver(item.node.id, isContainerNode(item.node), $event)"
-        @dragleave="onDragLeave(item.node.id)"
-        @drop="onDrop(item.node.id, isContainerNode(item.node), $event)"
-        @dragend="onDragEnd"
-      >
-        <!-- 展开/折叠箭头 -->
-        <span v-if="item.hasChildren" class="ldo-expand-toggle" @click="toggleExpand(item.node.id, $event)">
-          <IconSvg :type="item.isExpanded ? 'chevron-down' : 'chevron-right'" size="xs" />
-        </span>
-        <!-- 无子节点时占位 -->
-        <span v-else class="ldo-expand-placeholder" />
-
-        <IconSvg :type="nodeIcon(item.node.type)" size="xs" class="ldo-tree-icon" />
-        <span class="ldo-tree-label" :title="item.node.label">{{ item.node.label }}</span>
-        <span class="ldo-tree-type">{{ typeShort(item.node.type) }}</span>
-        <span class="ldo-tree-actions" @click.stop>
-          <button type="button" class="ldo-del-btn" :title="t('common.delete')" @click="emit('remove', item.node.id)">
-            <IconSvg type="trash-2" size="xs" />
-          </button>
-        </span>
-      </div>
+        class="vcl-scroll-edge__veil vcl-scroll-edge__veil--top"
+        :style="{ opacity: treeAtTop ? 0 : 1 }"
+        aria-hidden="true"
+      />
+      <div
+        class="vcl-scroll-edge__veil vcl-scroll-edge__veil--bottom"
+        :style="{ opacity: treeAtBottom ? 0 : 1 }"
+        aria-hidden="true"
+      />
     </div>
   </aside>
 </template>
+
+<style src="../../_internal/scroll-edge.css"></style>
 
 <style scoped>
 /* 展开/折叠箭头 */

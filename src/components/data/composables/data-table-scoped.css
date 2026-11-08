@@ -31,8 +31,20 @@
   flex: 1 1 var(--dt-scroll-min, 400px);
   min-height: 0;
 }
-.table-wrap.auto-height .card-view-scroll {
+/* 卡片视图外层：只做定位容器（不是滚动容器），底部渐隐遮罩挂在这里才不会随内容滚走 */
+.card-edge-wrap {
+  position: relative;
+  min-height: 0;
+  --vcl-scroll-edge-tone: var(--vcl-color-bg);
+}
+.table-wrap.auto-height .card-edge-wrap {
   flex: 1 1 var(--dt-scroll-min, 400px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.table-wrap.auto-height .card-view-scroll {
+  flex: 1;
   min-height: 0;
 }
 .table-wrap.auto-height .table-pagination {
@@ -60,17 +72,47 @@
   flex-direction: column;
 }
 .table-wrap.fullscreen .table-scroll,
-.table-wrap.fullscreen .card-view-scroll {
+.table-wrap.fullscreen .card-edge-wrap {
   flex: 1 1 0%;
+  min-height: 0;
+}
+.table-wrap.fullscreen .card-edge-wrap {
+  display: flex;
+  flex-direction: column;
+}
+.table-wrap.fullscreen .card-view-scroll {
+  flex: 1;
   min-height: 0;
 }
 .table-wrap.fullscreen .table-pagination {
   flex-shrink: 0;
 }
 
-/* 外层包裹：不创建滚动上下文，避免劫持 sticky 参考系 */
+/* 视觉隐藏但读屏可读：给只有控件的表头单元格补「文本内容」——
+   axe 的 empty-table-header 要的是 th 的文本节点，aria-label 不算。 */
+.dt-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 外层包裹：不创建滚动上下文，避免劫持 sticky 参考系。
+   同时充当底部渐隐遮罩的定位容器 —— 因为它不是滚动容器，遮罩不会随横向滚动跑掉。
+   渐隐色对齐表格自身的面（默认取页面底色会在表格底边留一条灰）。 */
 .table-hscroll {
   width: 100%;
+  position: relative;
+  --vcl-scroll-edge-tone: var(--vcl-color-surface);
+}
+
+/* 表格专用：渐隐必须压在表体之上、但低于吸顶表头（表头 sticky 的层级见 thead th）。
+   高度沿用工具类的 24px 等比；此处只补层级与 pointer-events 兜底。 */
+.dt-edge-veil {
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* 横向与纵向滚动统一由此层处理，表头 sticky 在此容器内生效 */
@@ -325,6 +367,7 @@ tfoot th.col-fixed-right {
   width: 100%;
   padding: var(--vcl-space-1) calc(6px * var(--vcl-scale));
   font-size: inherit;
+  line-height: inherit;
   font-family: inherit;
   border: none;
   outline: none;
@@ -579,14 +622,16 @@ td.cell-has-note {
   gap: var(--vcl-space-3);
 }
 .note-editor-title {
-  font-size: var(--vcl-fs-15);
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
   font-weight: 600;
   color: var(--vcl-color-text);
 }
 .note-editor-input {
   width: 100%;
   padding: var(--vcl-space-2) calc(12px * var(--vcl-scale));
-  font-size: var(--vcl-fs-14);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   border: 1px solid var(--vcl-color-border);
   border-radius: var(--vcl-radius-sm);
   outline: none;
@@ -846,6 +891,7 @@ th.drag-over {
   align-items: flex-start;
   gap: var(--vcl-space-2);
   font-size: var(--vcl-fs-13);
+  line-height: var(--vcl-text-body-line);
   position: relative;
 }
 .card-field.card-field-editing {
@@ -930,7 +976,8 @@ th.drag-over {
 .card-edit-select {
   width: 100%;
   padding: var(--vcl-space-1) calc(6px * var(--vcl-scale));
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   border: 1px solid var(--vcl-color-primary);
   border-radius: var(--vcl-radius-sm);
   background: var(--vcl-color-surface);
@@ -1037,6 +1084,7 @@ th.drag-over {
 .data-table.dense .row-action-btn {
   padding: var(--vcl-space-1) calc(8px * var(--vcl-scale));
   font-size: var(--vcl-fs-11);
+  line-height: var(--vcl-text-caption-line);
 }
 
 /* 卡片视图操作按钮 */

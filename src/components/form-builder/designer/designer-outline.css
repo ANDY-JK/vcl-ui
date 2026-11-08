@@ -2,7 +2,11 @@
 .ldo-panel {
   width: calc(190px * var(--vcl-scale));
   flex-shrink: 0;
-  overflow-y: auto;
+  /* 滚动下沉到 .ldo-tree：表头与搜索框滚动时保持不动（密排下少滚动一次就多一分可用高度）。
+     面板自身改为纵向 flex 容器并裁掉溢出，滚动交给子树视口。 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--vcl-color-bg, #fff);
   border-inline-end: 1px solid var(--vcl-color-border-light, #f1f5f9);
 }
@@ -38,6 +42,7 @@
   outline: none;
   background: transparent;
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text, #1e293b);
   min-width: 0;
 }
@@ -45,12 +50,18 @@
   color: var(--vcl-color-text-muted, #9ca3af);
 }
 .ldo-tree {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: calc(6px * var(--vcl-scale)) calc(4px * var(--vcl-scale));
 }
 .ldo-empty {
   padding: calc(20px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   text-align: center;
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  letter-spacing: var(--vcl-text-label-tracking);
   color: var(--vcl-color-text-muted, #94a3b8);
 }
 .ldo-node {

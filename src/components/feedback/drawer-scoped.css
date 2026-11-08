@@ -78,8 +78,16 @@
   }
 }
 
+/* 主体滚动区外壳：把「渐隐到哪个面色」对齐抽屉自身的面（默认值取页面底色，抽屉不是那个色） */
+.vcl-scroll-edge {
+  --vcl-scroll-edge-tone: var(--vcl-color-surface);
+  flex: 1;
+  min-height: 0;
+}
+
 .drawer-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: calc(20px * var(--vcl-scale));
 }

@@ -1,0 +1,53 @@
+/* ── 滚动边缘软化（scroll-edge fade）────────────────────────────────────────
+ * 与 _internal/scroll-edge.ts 配套使用。规则与理由见该文件头部注释。
+ *
+ * 密排约束：
+ *   - 遮罩高度 24px 随 --vcl-scale 等比，不写死；
+ *   - 只占视觉层，不占布局高度（absolute），不挤压内容；
+ *   - 默认取 --vcl-color-bg 作为渐隐色，宿主可覆盖 --vcl-scroll-edge-tone 贴合自己的面。
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.vcl-scroll-edge {
+  /* 渐隐到哪个面色：默认页面底色，宿主容器换面时覆盖本变量即可 */
+  --vcl-scroll-edge-tone: var(--vcl-color-bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.vcl-scroll-edge__viewport {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.vcl-scroll-edge__veil {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: calc(24px * var(--vcl-scale));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--vcl-transition-fast);
+  backdrop-filter: blur(calc(2px * var(--vcl-scale)));
+  -webkit-backdrop-filter: blur(calc(2px * var(--vcl-scale)));
+}
+
+.vcl-scroll-edge__veil--top {
+  top: 0;
+  background: linear-gradient(to bottom, var(--vcl-scroll-edge-tone), transparent);
+}
+
+.vcl-scroll-edge__veil--bottom {
+  bottom: 0;
+  background: linear-gradient(to top, var(--vcl-scroll-edge-tone), transparent);
+}
+
+/* 减弱动效不在此处单写 @media：`motion-tokens.spec` 要求组件层不许各自留 reduced 块 ——
+   全库统一由 tokens.css 的 `:root[data-vcl-motion='reduced'] *` / 系统偏好那段压停 transition。
+   本文件的淡入淡出本是「状态提示」而非装饰，被全局压成 0.01ms 后仍能正确切换透明度。 */

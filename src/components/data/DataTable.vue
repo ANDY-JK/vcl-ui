@@ -19,6 +19,7 @@ import {
 } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
+import { useScrollEdge } from '@/components/_internal/scroll-edge'
 import IconSvg from '@/components/basic/IconSvg.vue'
 import Result from '@/components/feedback/Result.vue'
 import Loading from '@/components/feedback/Loading.vue'
@@ -512,6 +513,16 @@ const {
       !props.maxHeight && (!props.pageSize || props.pageSize <= 0) && props.data.length > (props.pageVirtualMin ?? 0),
   },
 )
+/**
+ * 表体底部渐隐：内容被切断时提示「下面还有」，**不占布局高度**。
+ *
+ * 只做底部一条：表头是 `sticky` 贴在滚动区顶部的，顶部再加一条渐隐会把它一起虚化。
+ * （这也偏离了 `scroll-edge` 的两条遮罩默认形态 —— 表格是唯一一处「顶边被吸顶表头占住」的场景。）
+ */
+const { atBottom: _tableAtBottom } = useScrollEdge(scrollContainerRef)
+/** 卡片视图滚动体（移动端形态）：与表体各自计状态，互不干扰 */
+const _cardScrollRef = ref<HTMLElement | null>(null)
+const { atBottom: _cardAtBottom } = useScrollEdge(_cardScrollRef)
 // 回填前向引用，供 useTableColumns/useTableExtras 使用
 watch(
   displayData,
@@ -1561,8 +1572,12 @@ provideDataTableContext({
                   :class="{ 'col-fixed-left': _hasFixedLeftCol }"
                   :aria-label="t('table.selectAll')"
                 >
+                  <!-- 视觉隐藏文本：`empty-table-header` 判据要的是 th 的**文本内容**，
+                       aria-label 不算文本 —— 只靠 th 的 aria-label 会被判空表头。 -->
+                  <span class="dt-sr">{{ t('table.selectAll') }}</span>
                   <input
                     type="checkbox"
+                    :aria-label="t('table.selectAll')"
                     :checked="isAllSelected"
                     :indeterminate="isIndeterminateSelection"
                     @click.stop="toggleSelectAll"
@@ -1963,7 +1978,9 @@ provideDataTableContext({
             <!-- 汇总行 -->
             <tfoot v-if="_summaryData && !isLoading && _effectivePagedData.length">
               <tr>
-                <th v-if="selectable" class="th-checkbox" :class="{ 'col-fixed-left': _hasFixedLeftCol }" />
+                <th v-if="selectable" class="th-checkbox" :class="{ 'col-fixed-left': _hasFixedLeftCol }">
+                  <span class="dt-sr">{{ t('table.selectAll') }}</span>
+                </th>
                 <th
                   v-for="col in _displayColumns"
                   :key="col.key"
@@ -1990,172 +2007,193 @@ provideDataTableContext({
             </tfoot>
           </table>
         </div>
+        <!-- 表体底部渐隐：绝对定位在 .table-hscroll 内（该层不是滚动容器，所以遮罩不随横向滚动跑） -->
+        <div
+          class="vcl-scroll-edge__veil vcl-scroll-edge__veil--bottom dt-edge-veil"
+          :style="{ opacity: _tableAtBottom ? 0 : 1 }"
+          aria-hidden="true"
+        />
       </div>
 
       <!-- ========== 移动端卡片视图 ========== -->
       <!-- 卡片模式大数据自动启用分页（避免一次性渲染数万 DOM 节点） -->
       <template v-if="isCardViewEffective && !isLoading && _cardVisibleData.length">
-        <div
-          class="card-view-scroll"
-          :class="{ 'card-scroll-fixed': !!maxHeight }"
-          :style="
-            maxHeight
-              ? { maxHeight }
-              : autoHeight
-                ? { '--dt-scroll-min': (_dense ? 32 : 40) * 10 + 'px', maxHeight: _lockedMaxH || undefined }
-                : _cardViewHeight
-                  ? { maxHeight: _cardViewHeight }
-                  : undefined
-          "
-          @scroll="onScrollCardView"
-        >
+        <!-- 卡片视图外层：定位容器（不是滚动容器），底部渐隐挂这里 -->
+        <div class="card-edge-wrap">
           <div
-            v-for="(row, idx) in _cardVisibleData"
-            :key="rowMetaMap.get(row)?.key ?? idx"
-            :data-row-key="rowMetaMap.get(row)?.key ?? ''"
-            class="card-view-item"
-            :class="{ 'card-selected': _selectedKeySet.has(rowMetaMap.get(row)?.key ?? '') }"
-            @click="emit('row-click', row, idx)"
-            @contextmenu.prevent="showRowContextMenu(row, $event)"
+            ref="_cardScrollRef"
+            class="card-view-scroll"
+            :class="{ 'card-scroll-fixed': !!maxHeight }"
+            :style="
+              maxHeight
+                ? { maxHeight }
+                : autoHeight
+                  ? { '--dt-scroll-min': (_dense ? 32 : 40) * 10 + 'px', maxHeight: _lockedMaxH || undefined }
+                  : _cardViewHeight
+                    ? { maxHeight: _cardViewHeight }
+                    : undefined
+            "
+            @scroll="onScrollCardView"
           >
-            <div v-if="selectable" class="card-checkbox" @click.stop>
-              <input
-                type="checkbox"
-                :aria-label="t('table.selectRow')"
-                :checked="_selectedKeySet.has(rowMetaMap.get(row)?.key ?? '')"
-                @change="toggleRowSelect(row)"
-              />
-            </div>
             <div
-              v-for="col in _displayColumns"
-              :key="col.key"
-              class="card-field"
-              :class="{
-                'card-field-editing':
-                  editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') && editingCell?.colKey === col.key,
-                'card-field-invalid': isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key),
-                'cell-readonly': !editable || isColumnReadonly(col),
-              }"
-              @contextmenu.prevent="showContextMenu(col, $event)"
+              v-for="(row, idx) in _cardVisibleData"
+              :key="rowMetaMap.get(row)?.key ?? idx"
+              :data-row-key="rowMetaMap.get(row)?.key ?? ''"
+              class="card-view-item"
+              :class="{ 'card-selected': _selectedKeySet.has(rowMetaMap.get(row)?.key ?? '') }"
+              @click="emit('row-click', row, idx)"
+              @contextmenu.prevent="showRowContextMenu(row, $event)"
             >
-              <span class="card-field-label" @click.stop="col.sortable !== false && toggleSort(col)">
-                {{ colTitle(col) }}
-                <span
-                  v-if="col.sortable !== false"
-                  class="sort-arrows card-sort-arrows"
-                  :class="{ 'sort-active': sortState.key === col.key }"
-                >
-                  <IconSvg type="chevron-up" size="sm" class="sort-icon sort-asc" :class="sortArrowClass(col, 'asc')" />
-                  <IconSvg
-                    type="chevron-down"
-                    size="sm"
-                    class="sort-icon sort-desc"
-                    :class="sortArrowClass(col, 'desc')"
-                  />
-                </span>
-                <span
-                  v-if="col.filterable !== false"
-                  class="card-filter-icon"
-                  :class="{ 'has-filter': isFilterActive(col.key) }"
-                  @click.stop="toggleFilter(col, $event)"
-                >
-                  <IconSvg type="list" size="sm" />
-                  <span v-if="isFilterActive(col.key)" class="filter-dot" />
-                </span>
-              </span>
-              <span class="card-field-value-wrap">
-                <!-- 编辑输入框 -->
+              <div v-if="selectable" class="card-checkbox" @click.stop>
                 <input
-                  v-if="
-                    editable &&
-                    !col.options &&
-                    editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
-                    editingCell?.colKey === col.key
-                  "
-                  :ref="setEditInputEl"
-                  v-model="editValue"
-                  class="cell-edit-input card-edit-input"
-                  :inputmode="editInputMode(col)"
-                  :aria-invalid="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
-                  :aria-describedby="
-                    isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)
-                      ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)
-                      : undefined
-                  "
-                  @keydown="(e) => onEditKeydown(e, _displayColumns, rowMetaMap.get(row)?.key ?? '')"
-                  @blur="commitEdit('blur')"
-                  @click.stop
+                  type="checkbox"
+                  :aria-label="t('table.selectRow')"
+                  :checked="_selectedKeySet.has(rowMetaMap.get(row)?.key ?? '')"
+                  @change="toggleRowSelect(row)"
                 />
-                <!-- 归一化失败就地提示（卡片视图与表格视图同一套 editInvalidKey 状态） -->
-                <span
-                  v-if="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
-                  :id="cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)"
-                  class="cell-edit-invalid-hint"
-                  role="alert"
-                >
-                  {{ editInvalidKey ? t(editInvalidKey) : '' }}
-                </span>
-                <!-- 下拉选项编辑（H5 用原生 select） -->
-                <select
-                  v-else-if="
-                    editable &&
-                    col.options &&
-                    editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
-                    editingCell?.colKey === col.key
-                  "
-                  v-model="editValue"
-                  class="card-edit-select"
-                  @change="commitEdit('blur')"
-                  @blur="commitEdit('blur')"
-                  @click.stop
-                >
-                  <option
-                    v-for="opt in col.options"
-                    :key="typeof opt === 'string' ? opt : opt.value"
-                    :value="typeof opt === 'string' ? opt : opt.value"
-                  >
-                    {{ typeof opt === 'string' ? opt : opt.label || opt.value }}
-                  </option>
-                </select>
-                <!-- 显示值 -->
-                <span
-                  v-else
-                  class="card-field-value"
-                  :class="{ 'cell-has-note': noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key) }"
-                  @click.stop="onCardFieldClick(row, col, $event)"
-                  @dblclick.stop="onCellDblClick(row, col, $event)"
-                >
-                  <span
-                    v-if="typeof col.cell === 'function'"
-                    v-html="sanitizeHTML(col.cell(cellShow(row, col), row))"
-                  />
-                  <template v-else>{{ cellShow(row, col) }}</template>
-                </span>
-              </span>
-              <!-- 备注指示器 -->
-              <span
-                v-if="noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key)"
-                class="cell-note-dot card-note-dot"
-                :title="t('table.editNote')"
-                @click.stop="startNoteEdit($event, rowMetaMap.get(row)?.key ?? '', col.key)"
-              />
-            </div>
-            <!-- 卡片视图操作按钮 -->
-            <div v-if="_hasActions" class="card-actions" @click.stop>
-              <button
-                v-for="act in rowActions!"
-                v-show="!act.visible || act.visible(row, idx)"
-                :key="act.key"
-                type="button"
-                :class="['row-action-btn', `row-action-${act.variant || 'default'}`]"
-                :title="act.label"
-                @click="emit('row-action', act.key, row, idx)"
+              </div>
+              <div
+                v-for="col in _displayColumns"
+                :key="col.key"
+                class="card-field"
+                :class="{
+                  'card-field-editing':
+                    editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') && editingCell?.colKey === col.key,
+                  'card-field-invalid': isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key),
+                  'cell-readonly': !editable || isColumnReadonly(col),
+                }"
+                @contextmenu.prevent="showContextMenu(col, $event)"
               >
-                <IconSvg v-if="act.icon" :type="act.icon" size="sm" />
-                {{ act.label }}
-              </button>
+                <span class="card-field-label" @click.stop="col.sortable !== false && toggleSort(col)">
+                  {{ colTitle(col) }}
+                  <span
+                    v-if="col.sortable !== false"
+                    class="sort-arrows card-sort-arrows"
+                    :class="{ 'sort-active': sortState.key === col.key }"
+                  >
+                    <IconSvg
+                      type="chevron-up"
+                      size="sm"
+                      class="sort-icon sort-asc"
+                      :class="sortArrowClass(col, 'asc')"
+                    />
+                    <IconSvg
+                      type="chevron-down"
+                      size="sm"
+                      class="sort-icon sort-desc"
+                      :class="sortArrowClass(col, 'desc')"
+                    />
+                  </span>
+                  <span
+                    v-if="col.filterable !== false"
+                    class="card-filter-icon"
+                    :class="{ 'has-filter': isFilterActive(col.key) }"
+                    @click.stop="toggleFilter(col, $event)"
+                  >
+                    <IconSvg type="list" size="sm" />
+                    <span v-if="isFilterActive(col.key)" class="filter-dot" />
+                  </span>
+                </span>
+                <span class="card-field-value-wrap">
+                  <!-- 编辑输入框 -->
+                  <input
+                    v-if="
+                      editable &&
+                      !col.options &&
+                      editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
+                      editingCell?.colKey === col.key
+                    "
+                    :ref="setEditInputEl"
+                    v-model="editValue"
+                    class="cell-edit-input card-edit-input"
+                    :inputmode="editInputMode(col)"
+                    :aria-invalid="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
+                    :aria-describedby="
+                      isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)
+                        ? cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)
+                        : undefined
+                    "
+                    @keydown="(e) => onEditKeydown(e, _displayColumns, rowMetaMap.get(row)?.key ?? '')"
+                    @blur="commitEdit('blur')"
+                    @click.stop
+                  />
+                  <!-- 归一化失败就地提示（卡片视图与表格视图同一套 editInvalidKey 状态） -->
+                  <span
+                    v-if="isEditingInvalid(rowMetaMap.get(row)?.key ?? '', col.key)"
+                    :id="cellErrorId(rowMetaMap.get(row)?.key ?? '', col.key)"
+                    class="cell-edit-invalid-hint"
+                    role="alert"
+                  >
+                    {{ editInvalidKey ? t(editInvalidKey) : '' }}
+                  </span>
+                  <!-- 下拉选项编辑（H5 用原生 select） -->
+                  <select
+                    v-else-if="
+                      editable &&
+                      col.options &&
+                      editingCell?.rowKey === (rowMetaMap.get(row)?.key ?? '') &&
+                      editingCell?.colKey === col.key
+                    "
+                    v-model="editValue"
+                    class="card-edit-select"
+                    @change="commitEdit('blur')"
+                    @blur="commitEdit('blur')"
+                    @click.stop
+                  >
+                    <option
+                      v-for="opt in col.options"
+                      :key="typeof opt === 'string' ? opt : opt.value"
+                      :value="typeof opt === 'string' ? opt : opt.value"
+                    >
+                      {{ typeof opt === 'string' ? opt : opt.label || opt.value }}
+                    </option>
+                  </select>
+                  <!-- 显示值 -->
+                  <span
+                    v-else
+                    class="card-field-value"
+                    :class="{ 'cell-has-note': noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key) }"
+                    @click.stop="onCardFieldClick(row, col, $event)"
+                    @dblclick.stop="onCellDblClick(row, col, $event)"
+                  >
+                    <span
+                      v-if="typeof col.cell === 'function'"
+                      v-html="sanitizeHTML(col.cell(cellShow(row, col), row))"
+                    />
+                    <template v-else>{{ cellShow(row, col) }}</template>
+                  </span>
+                </span>
+                <!-- 备注指示器 -->
+                <span
+                  v-if="noteMode && hasNote(rowMetaMap.get(row)?.key ?? '', col.key)"
+                  class="cell-note-dot card-note-dot"
+                  :title="t('table.editNote')"
+                  @click.stop="startNoteEdit($event, rowMetaMap.get(row)?.key ?? '', col.key)"
+                />
+              </div>
+              <!-- 卡片视图操作按钮 -->
+              <div v-if="_hasActions" class="card-actions" @click.stop>
+                <button
+                  v-for="act in rowActions!"
+                  v-show="!act.visible || act.visible(row, idx)"
+                  :key="act.key"
+                  type="button"
+                  :class="['row-action-btn', `row-action-${act.variant || 'default'}`]"
+                  :title="act.label"
+                  @click="emit('row-action', act.key, row, idx)"
+                >
+                  <IconSvg v-if="act.icon" :type="act.icon" size="sm" />
+                  {{ act.label }}
+                </button>
+              </div>
             </div>
           </div>
+          <!-- 卡片视图底部渐隐：与表体同一条判据（滚动体不是它自己，所以不随内容滚） -->
+          <div
+            class="vcl-scroll-edge__veil vcl-scroll-edge__veil--bottom dt-edge-veil"
+            :style="{ opacity: _cardAtBottom ? 0 : 1 }"
+            aria-hidden="true"
+          />
         </div>
       </template>
 
@@ -2536,4 +2574,5 @@ provideDataTableContext({
   </div>
 </template>
 
+<style src="../_internal/scroll-edge.css"></style>
 <style src="./composables/data-table-scoped.css" scoped></style>
