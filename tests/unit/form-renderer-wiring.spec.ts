@@ -791,7 +791,7 @@ describe('各分支 v-model 回写（子组件 emit → 父层转发）', () => 
       global: { stubs: { FieldError: true, AmapWidget: true } },
     })
     const mp = w.findComponent({ name: 'RendererMapPicker' })
-    mp.vm.$emit('update:form-data-field', { key: 'addr', value: '深圳市南山区' })
+    mp.vm.$emit('update:formDataField', { key: 'addr', value: '深圳市南山区' })
     await nextTick()
     expect(w.emitted('update:form-data-field')?.at(-1)).toEqual([{ key: 'addr', value: '深圳市南山区' }])
   })

@@ -7,7 +7,7 @@
  * - 使用 computeFloatingPosition 自动判断弹出方向（上/下）
  * - HTML 转义 + \n→<br> 支持多行文本
  */
-import { ref, onUnmounted, type Ref } from 'vue'
+import { ref, onUnmounted, getCurrentInstance, type Ref } from 'vue'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 import { EXPAND_ICON_TEXT_MIN } from './utils'
 
@@ -92,9 +92,12 @@ export function useTableTooltip(options: UseTableTooltipOptions): TableTooltipRe
     }
   }
 
-  onUnmounted(() => {
-    if (_tooltipTimer) clearTimeout(_tooltipTimer)
-  })
+  // 同 useTableColumns：单测直接调用时没有宿主实例，onUnmounted 只会刷 warn
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      if (_tooltipTimer) clearTimeout(_tooltipTimer)
+    })
+  }
 
   return {
     _tooltipText,

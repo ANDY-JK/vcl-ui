@@ -216,7 +216,7 @@ describe('高级系列分派', () => {
     mp.vm.$emit('update:modelValue', { lng: 1, lat: 2 })
     await flushPromises()
     expect(w.emitted('update:modelValue')!.at(-1)![0]).toEqual({ lng: 1, lat: 2 })
-    mp.vm.$emit('update:form-data-field', { key: 'lat', value: 2 })
+    mp.vm.$emit('update:formDataField', { key: 'lat', value: 2 })
     await flushPromises()
     expect(w.emitted('update:form-data-field'), '额外事件也要转发').toBeTruthy()
     w.unmount()

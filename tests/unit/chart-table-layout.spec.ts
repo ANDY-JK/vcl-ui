@@ -38,7 +38,10 @@ vi.mock('@/components/chart/Chart.vue', async () => {
   const stub = defineComponent({
     name: 'ChartStub',
     props: chartProps,
-    emits: ['chart-click', 'chart-ready'],
+    // 'click' 必须一起声明：真实 Chart.vue 会 emit('click')，而 ChartTable 用 `@click` 把它
+    // 转成自己的 chart-click。桩子不声明就会在 `$emit('click')` 时触发 Vue 警告
+    // （"emitted event click but it is neither declared…"），而且桩子与真实组件的契约也不一致。
+    emits: ['click', 'chart-click', 'chart-ready'],
     template: '<div class="chart-stub" />',
   })
   // __esModule: true 是关键：defineAsyncComponent 的加载器按 __esModule/Module

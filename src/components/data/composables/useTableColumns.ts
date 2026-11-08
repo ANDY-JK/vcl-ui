@@ -2,7 +2,7 @@
 //    禁止引入外部列宽输入（已移除 Column.width）
 //    需我确认：autoFitSampleSize/minColumnWidth 等参数默认值调整
 // ==================== 列管理（显隐 / 拖拽 / 固定偏移 / 自动列宽） ====================
-import { ref, computed, watch, nextTick, onUnmounted, type ComputedRef, type Ref } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted, getCurrentInstance, type ComputedRef, type Ref } from 'vue'
 import type { Column } from './types'
 import { measureColumnWidth, measureDomTextWidth, sortColumnsByOrder } from './utils'
 import { BP_LG } from '@/components/_internal/breakpoints'
@@ -405,10 +405,15 @@ export function useTableColumns(
     }, _AUTOFIT_DEBOUNCE_MS)
   })
 
-  onUnmounted(() => {
-    if (_dataDebounce) clearTimeout(_dataDebounce)
-    if (_autoFitTimer) clearTimeout(_autoFitTimer)
-  })
+  // 只在真的有宿主组件时注册卸载清理：单测会直接调用本 composable（不在任何组件里），
+  // 无活动实例时 onUnmounted 无效且会刷 warn（每次跑单测 3 条），把真警告淹掉。
+  // 没有宿主也就没有卸载，不存在"漏清理"的对象。
+  if (getCurrentInstance()) {
+    onUnmounted(() => {
+      if (_dataDebounce) clearTimeout(_dataDebounce)
+      if (_autoFitTimer) clearTimeout(_autoFitTimer)
+    })
+  }
 
   // --- 移动端卡片视图 ---
   // 无 window（SSR/预渲染）时按最宽档处理：服务端不该渲染出卡片视图，水合后 resize 监听会纠正
