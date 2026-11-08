@@ -583,7 +583,7 @@ const fldIds = {
           @update="updateNode(selectedNode.id, $event)"
           @name-change="onLabelChange(selectedNode.id, $event)"
         />
-        <aside v-else class="ldp-props" :style="{ width: `${propsW}px` }">
+        <aside v-else class="ldp-props" :aria-label="t('fbp.propsConfig')" :style="{ width: `${propsW}px` }">
           <div class="ldp-props-empty">
             <span>{{ t('fbd.emptySelectTip') }}</span>
           </div>

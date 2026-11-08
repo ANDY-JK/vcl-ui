@@ -360,7 +360,10 @@ defineExpose({
 </script>
 
 <template>
-  <div class="base-chart-frame" :style="containerStyle" role="img" :aria-label="ariaLabel">
+  <!-- 图像语义只给**画布那一块**：原来 `role="img"` 挂在整个 frame 上，
+       而 frame 里还有工具行的按钮元素，于是每个图表都命中 axe 的
+       `nested-interactive`（img 里不能嵌交互元素）。frame 退回普通容器。 -->
+  <div class="base-chart-frame" :style="containerStyle">
     <!-- 图上方 HTML 工具行（下载/放大/还原）：与图区分行，不再压在 canvas 上 -->
     <div v-if="toolBtns.length" class="chart-toolbar">
       <button
@@ -376,7 +379,7 @@ defineExpose({
         <IconSvg :type="b.icon" size="sm" />
       </button>
     </div>
-    <div ref="chartRef" class="base-chart">
+    <div ref="chartRef" class="base-chart" role="img" :aria-label="ariaLabel">
       <!-- 空数据遮罩 -->
       <div v-if="showEmpty" class="chart-empty-overlay" role="status">
         <span class="chart-empty-text">{{ emptyText }}</span>

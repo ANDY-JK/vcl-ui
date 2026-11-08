@@ -439,6 +439,7 @@ export default {
     shortSteps: 'Steps',
     canvasRoot: 'Form root',
     canvasTip: 'Tip: drag components onto the canvas or into containers',
+    canvasRegion: 'Form canvas',
     emptyTitle: 'Click or drag fields from the left to add',
     emptyHint: 'Supports nested layout containers, WYSIWYG',
     moveUp: 'Move up',

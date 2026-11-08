@@ -56,7 +56,8 @@ function onDragStart(e: DragEvent, type: DesignerNodeType): void {
 </script>
 
 <template>
-  <aside class="ldp-panel">
+  <!-- 侧栏是 complementary 地标：同一页有多个时必须各有可访问名，否则 axe 判 landmark-unique -->
+  <aside class="ldp-panel" :aria-label="t('fbt.fieldComponents')">
     <div class="ldp-panel-header">
       <IconSvg type="layers" size="sm" />
       <span>{{ t('fbt.fieldComponents') }}</span>

@@ -153,7 +153,8 @@ watch(
 </script>
 
 <template>
-  <aside ref="panelRef" class="ldp-props">
+  <!-- 同上：属性面板与组件面板/大纲并存 -->
+  <aside ref="panelRef" class="ldp-props" :aria-label="t('fbp.propsConfig')">
     <div v-if="node" class="ldp-props-body">
       <!-- 字段头部 -->
       <div class="ldp-props-header">

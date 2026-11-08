@@ -25,7 +25,11 @@ const { selectedKeys: _selectedKeys, currentPage: _currentPage, displayPages, se
 </script>
 
 <template>
-  <!-- ========== 分页控件 ========== -->
+  <!-- 分页控件。地标形态与 `nav/Pagination.vue` 保持一致的 <nav>：
+       [2026-11-08 记录] 曾试过改成 role="group" 来消掉「一页多表时多个同名 nav」的
+       axe landmark-unique，但被 `table-pagination-a11y.spec` 拦下 —— 那份契约是
+       「第 140 轮」专门补的（nav 地标 + aria-label + aria-current + type=button 四件套），
+       契约优先于过闸口。该 axe 条目继续按「规则 × 页面」登记为已知取舍。 -->
   <nav
     v-if="!fullscreen && pageSize > 0 && totalPages > 1"
     class="table-pagination"

@@ -72,7 +72,7 @@ const TRADEOFF: Record<string, Set<string>> = {
   label: new Set(['data-table', 'storage']),
   'scrollable-region-focusable': new Set(['divider', 'avatar']),
   'label-title-only': new Set(['popover', 'route-planner']),
-  'landmark-unique': new Set(['pagination', 'breadcrumb', 'route-planner', 'form-builder']),
+  'landmark-unique': new Set(['pagination', 'breadcrumb', 'route-planner', 'form-builder', 'data-table']),
   'landmark-main-is-top-level': new Set(['form-builder']),
   'landmark-no-duplicate-main': new Set(['form-builder']),
 }
@@ -101,17 +101,37 @@ const TRADEOFF: Record<string, Set<string>> = {
 // 1280 视口缩放 1.0→0.833，divider 与 avatar 两条 scrollable 登记对不再溢出命中
 // （探针实测 = 0），取舍总数 15→13。两条仍留登记集内作回涨探针：基准若再往窄
 // （1280）方向改，总数回升到 15 会被本断言拦下提示重核，而不是静默放过。
-const BASELINE_TOTAL = 13
+// [2026-11-08 由 13 降为 11] 修掉 data-table 的两条真取舍（不是内容变短导致的假消失）：
+//   ① `empty-table-header`：全选列的表头 `<th>` 只有 `<input>`，没有**文本内容**
+//      （aria-label 不算 axe 的「表头文本」）→ 补视觉隐藏文本 `.dt-sr`；
+//   ② `label`：全选框 `<input type="checkbox">` 无可访问名 → 补 `aria-label`。
+// 两条都是代码修复，`TRADEOFF` 里对应条目保留作回涨探针：若哪天又退回去，总数回到 13 会被断言拦下。
+// `label` 在 storage 页的那条仍为已知取舍（那是演示页自绘控件，不在本轮范围）。
+//
+// [2026-11-08 由 11 降为 9] 设计器画布由 `<main>` 改为 `<section role="region">`：
+// 外层 AppLayout 已经是 `<main>`，画布再嵌一个 main 会同时命中
+// `landmark-main-is-top-level` 与 `landmark-no-duplicate-main` 两条。画布语义上是页内一块区域，
+// 不是页面主内容，改成带 aria-label 的 region 才对。两条 tradeoff 归零（11 → 9）。
+// [2026-11-08 由 9 降为 8，又回到 9] 设计器侧栏补名确实消掉了 form-builder 的 landmark-unique，
+// 但 data-table 那条**修不了**：表格分页被 `table-pagination-a11y.spec` 钉死必须与 nav/Pagination 一致地
+// 使用 <nav>（第 140 轮契约），一页多表就必然出现多个同名「分页导航」地标。契约优先，故回到 9，
+// 并把 data-table 登记进 TRADEOFF 作为有据的已知取舍。
+const BASELINE_TOTAL = 9
 // 基线里各「规则 × 页面」条数（升即红；仅覆盖 TRADEOFF 类别，三方/demo 内联不计入）
 const BASELINE_BY_RULE: Record<string, number> = {
-  'nested-interactive': 2,
-  'empty-table-header': 1,
-  label: 2,
+  // [2026-11-08 收紧] 图表 frame 的 role="img" 已挪到画布那块，`nested-interactive` 归零
+  'nested-interactive': 0,
+  // [2026-11-08 收紧] 全选列表头补了视觉隐藏文本，`empty-table-header` 归零
+  'empty-table-header': 0,
+  // [2026-11-08 收紧] 全选框补了 aria-label，data-table 那条已消失；剩 storage 页自绘控件是 TRADEOFF
+  label: 0,
   'scrollable-region-focusable': 0,
   'label-title-only': 2,
-  'landmark-unique': 4,
-  'landmark-main-is-top-level': 1,
-  'landmark-no-duplicate-main': 1,
+  // [2026-11-08 收紧] 设计器侧栏补名后 form-builder 不再命中；data-table 走 TRADEOFF（契约要求 nav）
+  'landmark-unique': 0,
+  // [2026-11-08 收紧] 设计器画布由 <main> 改 region，两条 landmark 归零
+  'landmark-main-is-top-level': 0,
+  'landmark-no-duplicate-main': 0,
 }
 
 const isThirdParty = (text: string) => THIRD_PARTY.some((r) => r.test(text))

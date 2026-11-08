@@ -205,8 +205,12 @@ const { ZOOM_MIN, ZOOM_MAX, zoom, zoomPercent, zoomStyle, zoomIn, zoomOut, reset
 </script>
 
 <template>
-  <main
+  <!-- 画布用 region 而不是 <main>：外层 AppLayout 已经是 <main>，再嵌一个 main 会造成
+       「重复 main / main 不在顶层」两条 axe 违规。画布语义上是页内的一块区域，不是页面主内容。 -->
+  <section
     class="ldc-canvas"
+    role="region"
+    :aria-label="t('fbt.canvasRegion')"
     :class="{ 'drag-over': canvasDragOver }"
     @dragover="onCanvasDragOver"
     @dragleave="onCanvasDragLeave"
@@ -663,5 +667,5 @@ const { ZOOM_MIN, ZOOM_MAX, zoom, zoomPercent, zoomStyle, zoomIn, zoomOut, reset
         </div>
       </div>
     </div>
-  </main>
+  </section>
 </template>

@@ -179,19 +179,21 @@ describe('BaseChart · 导出 PNG', () => {
 describe('BaseChart · aria-label 取名（标题三种形态）', () => {
   it('title 为字符串 → 直接用', async () => {
     const w = await mountSettled({ option: { title: '纯字符串标题', series: [{ type: 'bar', data: [1] }] } })
-    expect(w.attributes('aria-label')).toBe('纯字符串标题')
+    // [2026-11-08] 可访问名从 frame 根元素下移到**画布那块**（.base-chart[role=img]）：
+    // 根元素里还有工具行按钮，role="img" 罩住按钮会命中 axe 的 nested-interactive。
+    expect(w.find('.base-chart').attributes('aria-label')).toBe('纯字符串标题')
   })
 
   it('title 为数组 → 各段 text 用「、」连接（多标题图才有完整语义）', async () => {
     const w = await mountSettled({
       option: { title: [{ text: '主标题' }, { text: '副标题' }], series: [{ type: 'bar', data: [1] }] },
     })
-    expect(w.attributes('aria-label')).toBe('主标题、副标题')
+    expect(w.find('.base-chart').attributes('aria-label')).toBe('主标题、副标题')
   })
 
   it('**数组里全是空 text → 回退空态文案**（不能朗读出空字符串）', async () => {
     const w = await mountSettled({ option: { title: [{ text: '' }, {}], series: [{ type: 'bar', data: [1] }] } })
-    const label = w.attributes('aria-label')
+    const label = w.find('.base-chart').attributes('aria-label')
     expect(label, 'aria-label 不能为空').toBeTruthy()
     expect(label).not.toBe('')
   })

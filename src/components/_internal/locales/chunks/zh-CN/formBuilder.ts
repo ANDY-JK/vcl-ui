@@ -437,6 +437,7 @@ export default {
     shortSteps: '步骤',
     canvasRoot: '表单根',
     canvasTip: '提示：拖拽组件到画布或容器内',
+    canvasRegion: '表单画布',
     emptyTitle: '从左侧点击或拖拽添加字段',
     emptyHint: '支持布局容器嵌套，所见即所得',
     moveUp: '上移',
