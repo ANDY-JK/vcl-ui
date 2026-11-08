@@ -3,6 +3,14 @@
  * 语言包已按模块分块维护；新增 key 请同时更新 zh-CN 与 en-US 对应分块。
  */
 export default {
+  carousel: {
+    trackLabel: 'Carousel content (arrow keys to navigate)',
+    prev: 'Previous slide',
+    next: 'Next slide',
+    dotsLabel: 'Slide navigation',
+    goto: 'Go to slide {n}',
+    slideLabel: 'Slide {n} of {total}',
+  },
   imagePreview: {
     imageLabel: 'Image {n}',
     loadFailed: 'Failed to load image: please retry or upload it again',

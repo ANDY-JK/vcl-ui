@@ -374,6 +374,7 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 | `FormBuilder`                                             | `stopSubmit` / `setSubmitting` / `submitting` / `getFormData()` / `validate()` / `errors`                           | 表单提交与校验全家桶                                     |
 | `LowCodeNav`                                              | `refresh()`                                                                                                         | 宿主存完新表单后重取导航（「用户自建表单」派生导航项时必须） |
 | `InputOTP`                                                | `focusFirstEmpty()`                                                                                                 | 聚焦到第一个空格子（模态打开 / 校验失败后）              |
+| `Carousel`                                                | `next()` / `prev()` / `goTo(i)`                                                                                     | 程序化翻页（宿主做「下一条公告」按钮时）                 |
 | `login` / `portal_login` / `register` / `forgot-password` | `resetForm()`                                                                                                       | 清表单                                                   |
 
 **内部区块 expose（⛔ 非公开 API，仅 DataTable 主文件经 ref 驱动，消费方勿依赖）**：

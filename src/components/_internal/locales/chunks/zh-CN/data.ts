@@ -3,6 +3,14 @@
  * 语言包已按模块分块维护；新增 key 请同时更新 zh-CN 与 en-US 对应分块。
  */
 export default {
+  carousel: {
+    trackLabel: '轮播内容（方向键翻页）',
+    prev: '上一页',
+    next: '下一页',
+    dotsLabel: '轮播页码',
+    goto: '跳到第 {n} 页',
+    slideLabel: '第 {n} 页 / 共 {total} 页',
+  },
   imagePreview: {
     imageLabel: '图片 {n}',
     loadFailed: '图片加载失败：请重试或重新上传',

@@ -38,6 +38,7 @@ const demoMap: Record<string, any> = {
 
   // 数据展示
   card: defineAsyncComponent({ loader: () => import('./data/CardDemo.vue'), errorComponent: ErrorFallback }),
+  carousel: defineAsyncComponent({ loader: () => import('./data/CarouselDemo.vue'), errorComponent: ErrorFallback }),
   'toggle-list': defineAsyncComponent({
     loader: () => import('./data/ToggleListDemo.vue'),
     errorComponent: ErrorFallback,

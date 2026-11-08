@@ -5,7 +5,7 @@
       "named": 0
     },
     "data": {
-      "components": 12,
+      "components": 13,
       "named": 1
     },
     "form": {
@@ -54,6 +54,6 @@
     }
   },
   "unparsed": [],
-  "totalComponents": 70,
+  "totalComponents": 71,
   "totalNamed": 183
 }

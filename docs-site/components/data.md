@@ -13,6 +13,7 @@
 | `Collapse` | 5 | 2 | 1 |
 | `Divider` | 3 | 0 | 0 |
 | `Image` | 12 | 3 | 0 |
+| `Carousel` | 8 | 2 | 1 |
 | `ImagePreview` | 3 | 2 | 1 |
 | `ProgressBar` | 15 | 2 | 0 |
 | `Skeleton` | 7 | 0 | 1 |
@@ -275,6 +276,36 @@
 | `load` | `src: string` | 图片加载成功 |
 | `error` | `src: string` | 图片加载失败 |
 | `click` | `src: string` | 图片点击 |
+
+## `Carousel`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/carousel`（Props 表与交互行为以 demo 页为准）
+
+### Props
+
+| 属性 | 类型 | 默认值 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `count` | `number` | — | 是 | 页数（= 直接子元素个数）。用于圆点/箭头/循环判定 |
+| `modelValue` | `number` | `undefined` | 否 | 受控当前页（可选）；不传则内部自管 |
+| `autoplay` | `number` | `0` | 否 | 自动播放间隔（毫秒）。0 = 不自动播放 |
+| `loop` | `boolean` | `true` | 否 | 是否循环（末页→首页） |
+| `arrows` | `boolean` | `true` | 否 | 显示左右箭头 |
+| `dots` | `boolean` | `true` | 否 | 显示底部圆点 |
+| `height` | `string` | `''` | 否 | 轨道高度（CSS 长度；不传则 180px 等比） |
+| `ariaLabel` | `string` | `''` | 否 | 无障碍名：读屏念「<名字>，轮播，第 2 页 / 共 5 页」 |
+
+### Events
+
+| 事件 | 载荷 | 说明 |
+| --- | --- | --- |
+| `'update:modelValue'` | `index: number` | 当前页变化（用户滑动 / 点箭头 / 自动播放都会触发） |
+| `change` | `index: number, total: number` | 当前页变化（附页码与总页数，便于宿主埋点） |
+
+### Slots
+
+| 插槽 | 作用域参数 | 说明 | 兜底内容预览 |
+| --- | --- | --- | --- |
+| `default` | — | 每页内容；直接子元素个数应等于 count（滚动吸附由 CSS 负责） | — |
 
 ## `ImagePreview`
 
