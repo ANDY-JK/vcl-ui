@@ -329,7 +329,7 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 
    **2026-11-02 补 `check:docs`（#349）**：它只要 1.0s，却是连续六批给组件加 prop 之后**唯一**
    能抓到「API 文档没重新生成」的闸口 —— 单测、类型检查、lint 全绿都覆盖不到这一层。
-2. **整链**：`npm run quality-check` —— **58 步 / 约 24 分钟**（最近实测 1401s，含 e2e **134 例跑产物** 9.6 分钟），**唯一权威**，含 `build`、`e2e`、许可清单、**版本三件套对齐**、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
+2. **整链**：`npm run quality-check` —— **58 步 / 约 24 分钟**（最近实测 1455s，含 e2e **134 例跑产物** 9.4 分钟），**唯一权威**，含 `build`、`e2e`、许可清单、**版本三件套对齐**、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
 
 `.husky/pre-commit` 现在跑「`lint-staged`（暂存区格式化）+ 快链」，把显然会坏的提交挡在落库之前。跳过方式：`git commit --no-verify`，或 `SKIP_QUICK_CHECK=1 git commit ...`。
 
