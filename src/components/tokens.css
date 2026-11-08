@@ -90,6 +90,16 @@
   --vcl-color-border: #d5d8de;
   --vcl-color-border-light: #e8eaef;
 
+  /* 图标色彩四级（吸收 BoardUI 的 icon-primary…quaternary）
+     **只做别名、不新增色值**：全部指回既有文字色阶，所以主题覆盖、暗色、
+     自定义主题、等比缩放都会自动跟着走 —— 吸收的是"分级用法"，不是它的调色板。
+     用法：主图标（导航/工具栏）primary；次要操作 secondary；
+     占位与弱提示 tertiary；纯装饰性分隔 tertiary/quaternary。 */
+  --vcl-icon-primary: var(--vcl-color-text);
+  --vcl-icon-secondary: var(--vcl-color-text-secondary);
+  --vcl-icon-tertiary: var(--vcl-color-text-muted);
+  --vcl-icon-quaternary: var(--vcl-color-border);
+
   /* 侧边栏 — 深灰蓝 */
   --vcl-color-sidebar: #1a1f2e;
   --vcl-color-sidebar-hover: rgba(255, 255, 255, 0.08);

@@ -73,6 +73,13 @@ export default defineComponent({
     type: { type: String, required: true },
     size: { type: String, default: 'md' },
     color: { type: String, default: 'currentColor' },
+    /**
+     * 图标语义层级（吸收 BoardUI 的 icon-primary…quaternary）。
+     * 只给出 intents 名字，取值全在 tokens.css 的 `--vcl-icon-*` 别名里 ——
+     * 主题覆盖/暗色/自定义主题都自动跟随，组件不写死任何颜色。
+     * 与 `color` 的关系：传了 `color` 就用 `color`（显式优先），否则用 tone，再否则 currentColor。
+     */
+    tone: { type: String, default: '' },
     provider: { type: String, default: 'lucide' },
   },
   setup(props) {
@@ -94,7 +101,9 @@ export default defineComponent({
 
     return () => {
       const sz = px.value
-      const clr = props.color
+      // 显式 color 优先；否则按 tone 取 `--vcl-icon-*`（四级语义）；都没给就跟随文字色
+      const clr =
+        props.color !== 'currentColor' ? props.color : props.tone ? `var(--vcl-icon-${props.tone})` : 'currentColor'
 
       // Solar 提供者 → @iconify/vue（数据动态加载，加载完成前渲染兜底）
       if (props.provider === 'solar') {

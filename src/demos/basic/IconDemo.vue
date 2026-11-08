@@ -60,6 +60,14 @@ const morphStates = ref(morphPairs.map(() => false))
 function toggleMorph(i: number) {
   morphStates.value[i] = !morphStates.value[i]
 }
+
+/** 语义四级示意数据（模板里不写内联大数组，避免属性换行噪声） */
+const toneLevels = [
+  { tone: 'primary', label: 'primary', desc: '主导航 / 工具栏主图标' },
+  { tone: 'secondary', label: 'secondary', desc: '次要操作' },
+  { tone: 'tertiary', label: 'tertiary', desc: '占位与弱提示' },
+  { tone: 'quaternary', label: 'quaternary', desc: '装饰性分隔' },
+]
 </script>
 
 <template>
@@ -268,6 +276,28 @@ function toggleMorph(i: number) {
     </Card>
 
     <!-- ══════════════ Props 表 ══════════════ -->
+    <!-- ══════════════ 语义四级（tone） ══════════════ -->
+    <Card title="语义四级（tone）" title-as="h2" style="margin-bottom: calc(24px * var(--vcl-scale))">
+      <p
+        style="
+          font-size: calc(12px * var(--vcl-scale));
+          color: var(--vcl-color-text-muted);
+          margin-bottom: calc(12px * var(--vcl-scale));
+        "
+      >
+        四级沿用 BoardUI 的「分级用法」：主操作 / 次要 / 弱提示 / 纯装饰。 但取值全部指回我们自己的
+        <code>--vcl-icon-*</code> 别名 —— 切暗色、换主题、等比缩放都会跟着走。
+        切一下右上角的主题按钮，这四行颜色应当整体跟着变。
+      </p>
+      <div class="tone-grid">
+        <div v-for="t in toneLevels" :key="t.tone" class="tone-item">
+          <IconSvg type="settings" size="lg" :tone="t.tone" />
+          <code class="tone-name">{{ t.label }}</code>
+          <span class="tone-desc">{{ t.desc }}</span>
+        </div>
+      </div>
+    </Card>
+
     <Card title="IconSvg Props" title-as="h2">
       <table class="props-table">
         <thead>
@@ -302,6 +332,14 @@ function toggleMorph(i: number) {
             <td>string</td>
             <td>'currentColor'</td>
             <td>描边颜色</td>
+          </tr>
+          <tr>
+            <td><code>tone</code></td>
+            <td>'primary' | 'secondary' | 'tertiary' | 'quaternary' | ''</td>
+            <td>''</td>
+            <td>
+              语义层级：取 <code>--vcl-icon-*</code> 令牌，随主题/暗色/缩放自动跟随；显式 <code>color</code> 优先于它
+            </td>
           </tr>
         </tbody>
       </table>
@@ -428,6 +466,30 @@ code {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
   border-bottom: 2px solid var(--vcl-color-border);
   text-align: left;
+}
+.tone-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: calc(12px * var(--vcl-scale));
+}
+.tone-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(4px * var(--vcl-scale));
+  padding: calc(10px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
+}
+.tone-name {
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+}
+.tone-desc {
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
+  color: var(--vcl-color-text-muted);
+  text-align: center;
 }
 .props-table td {
   padding: calc(6px * var(--vcl-scale)) calc(8px * var(--vcl-scale));
