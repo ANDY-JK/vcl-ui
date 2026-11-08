@@ -104,7 +104,8 @@
     "sync:demo-table": "node scripts/sync-demo-table.mjs",
     "build:demo": "node scripts/build-demo.mjs",
     "serve:demo": "node scripts/serve-demo-dist.mjs --port 3722",
-    "e2e:audit": "npm run build:demo && playwright test -c playwright.demo.config.ts"
+    "e2e:audit": "node scripts/build-demo.mjs && node scripts/e2e-prod.mjs --audit-only",
+    "test:e2e:prod": "node scripts/build-demo.mjs && node scripts/e2e-prod.mjs"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",

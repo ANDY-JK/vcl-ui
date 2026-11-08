@@ -32,15 +32,16 @@ process.env.E2E_BASE ||= BASE_URL
 export default defineConfig({
   testDir: './tests/e2e',
   // 只跑"整站逐页"这类受益最明显的 spec
-  // 默认只跑「整站逐页」这类受益最明显的 spec；E2E_PROD_ALL=1 时跑全量（评估「能不能整体切产物」）
-  testMatch: process.env.E2E_PROD_ALL ? /\.spec\.ts$/ : /site-audit\.spec\.ts$/,
+  // 默认**跑全量**（134 条已验证在产物上全绿，且比 dev 快）；E2E_PROD_AUDIT_ONLY=1 时只跑 site-audit。
+  // 旧的 `E2E_PROD_ALL` 开关已退役 —— 那时产物模式还不完整，需要显式开启才敢跑全量。
+  testMatch: process.env.E2E_PROD_AUDIT_ONLY ? /site-audit\.spec\.ts$/ : /\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: [['list']],
-  // site-audit 要扫 51 页；全量模式下按单条 90s 兜（有 spec 会在产物下等 dev-only 的东西）
-  timeout: process.env.E2E_PROD_ALL ? 90_000 : 25 * 60 * 1000,
+  // site-audit 要扫 51 页（自己 set 了 20 分钟）；其余用例按单条 90s 兜底
+  timeout: 25 * 60 * 1000,
   expect: { timeout: 10_000 },
   use: {
     baseURL: BASE_URL,

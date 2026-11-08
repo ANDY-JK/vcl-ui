@@ -164,12 +164,12 @@ const STEPS = [
   // RTL 方向语义守卫（6.3 #3 第二阶段）：定位类属性"看起来对了"不等于"逻辑属性生效" ——
   // 判据必须是计算样式（RTL 下 left 解析为 auto），位置偏移会被整页翻转掩盖。
   ['check:rtl-semantics', 'npm run check:rtl-semantics'],
-  ['test:e2e', 'npm run test:e2e'],
-  // 产物模式审计（第 58 步）：前 57 步都在 dev server 上跑，唯独"交付形态"没人验 ——
-  // env-guard 在生产构建下会剥掉全部 VITE_* 凭证、打包会做 tree-shaking 与分包，
-  // 这些只有跑产物才暴露（本轮就抓到 amap key 在产物里必然缺失）。
-  // 只跑 site-audit 一条：全量已在 9.47 验证可跑，但那 133 条重复覆盖了 dev 的 90%。
-  ['audit:prod', 'npm run e2e:audit'],
+  // e2e 跑**产物形态**（第 57 步）。为什么不跑 dev：
+  // ① 产物 134 条 9.5 分钟，比 dev 的 13.7 分钟更快（少了每页现编译）
+  // ② 交付形态才是要验的东西 —— env-guard 在生产构建剥掉凭证、打包会 tree-shaking 分包
+  // ③ 此前"dev 全量 + 产物只跑 site-audit"两步共约 17.7 分钟，合并后省 8 分钟
+  // 本地仍可用 `npx playwright test` 跑 dev 模式做快速反馈（命令未变）。
+  ['test:e2e', 'npm run test:e2e:prod'],
 ]
 
 const args = process.argv.slice(2)
