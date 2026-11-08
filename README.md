@@ -171,10 +171,10 @@ const handleClick = () => console.log('clicked')
 
 | 域              | 主要组件                                                            | 说明                |
 | --------------- | ------------------------------------------------------------------- | ------------------- |
-| `basic`         | Button / IconSvg / Tag                                              | 基础组件            |
+| `basic`         | Button / IconSvg / Tag / Kbd                                        | 基础组件            |
 | `data`          | DataTable / Tree / Collapse / Image / ProgressBar / Skeleton …      | 数据展示            |
-| `form`          | Input / Select / Group / IconPicker / Upload / CameraCapture        | 表单控件            |
-| `feedback`      | Toast / Loading / Popover / Drawer / ConfirmModal / ErrorBoundary … | 反馈                |
+| `form`          | Input / Select / Group / SegmentedControl / IconPicker / Upload …   | 表单控件            |
+| `feedback`      | Toast / NotificationCenter / Loading / Popover / Drawer / …         | 反馈                |
 | `nav`           | Tabs / Steps / Pagination / Breadcrumb / Menu                       | 导航                |
 | `layout`        | AppLayout / ModalBox / Flex / AccordionNav                          | 布局                |
 | `chart`         | Chart / BaseChart / ChartTable / ChartLegend（20+ 图表类型）        | 图表                |
@@ -372,6 +372,7 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 | `Select`                                                  | `openMenu()`                                                                                                        | 程序化展开面板                                           |
 | `Upload`                                                  | `retryFile()` / `triggerFileInput()`                                                                                | 重试失败上传 / 手动打开文件选择                          |
 | `FormBuilder`                                             | `stopSubmit` / `setSubmitting` / `submitting` / `getFormData()` / `validate()` / `errors`                           | 表单提交与校验全家桶                                     |
+| `LowCodeNav`                                              | `refresh()`                                                                                                         | 宿主存完新表单后重取导航（「用户自建表单」派生导航项时必须） |
 | `login` / `portal_login` / `register` / `forgot-password` | `resetForm()`                                                                                                       | 清表单                                                   |
 
 **内部区块 expose（⛔ 非公开 API，仅 DataTable 主文件经 ref 驱动，消费方勿依赖）**：

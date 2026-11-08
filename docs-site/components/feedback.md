@@ -9,6 +9,7 @@
 | `Toast` | 8 | 0 | 0 |
 | `Loading` | 9 | 0 | 0 |
 | `Popover` | 7 | 0 | 2 |
+| `NotificationCenter` | 6 | 4 | 0 |
 | `Result` | 5 | 1 | 2 |
 | `Drawer` | 11 | 4 | 3 |
 | `OfflineIndicator` | 0 | 0 | 0 |
@@ -94,6 +95,30 @@
 | --- | --- | --- | --- |
 | `default` | — | tooltip 模式为触发器内容；popover 模式为浮层主体内容 | — |
 | `trigger` | — | 触发器元素（popover 模式必填）；不传则回退自带可访问名的纯图标按钮 | — |
+
+## `NotificationCenter`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/notification-center`（Props 表与交互行为以 demo 页为准）
+
+### Props
+
+| 属性 | 类型 | 默认值 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `items` | `NotificationItem[]` | — | 是 | 通知列表（受控；`read` 由宿主维护） |
+| `title` | `string` | — | 否 | 面板标题 |
+| `maxHeight` | `string` | — | 否 | 列表最大高度（含滚动） |
+| `unreadFilter` | `boolean` | `true` | 否 | 显示「只看未读」开关 |
+| `showFooter` | `boolean` | `true` | 否 | 显示底部操作条（全部已读 / 清空） |
+| `ariaLabel` | `string` | — | 否 | 无障碍触发器名 |
+
+### Events
+
+| 事件 | 载荷 | 说明 |
+| --- | --- | --- |
+| `'item-click'` | `item: NotificationItem` | 某条被点击（同时会 emit read，如果它未读） |
+| `read` | `item: NotificationItem` | 某条被读 |
+| `'read-all'` | `无` | 全部已读 |
+| `clear` | `无` | 清空 |
 
 ## `Result`
 

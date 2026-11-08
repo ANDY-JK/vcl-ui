@@ -9,6 +9,7 @@
 | `Input` | 25 | 6 | 0 |
 | `Select` | 26 | 5 | 2 |
 | `Group` | 18 | 2 | 0 |
+| `SegmentedControl` | 6 | 2 | 0 |
 | `IconPicker` | 6 | 5 | 0 |
 | `Upload` | 19 | 5 | 2 |
 | `CameraCapture` | 6 | 5 | 0 |
@@ -163,6 +164,28 @@
 | --- | --- | --- |
 | `'update:modelValue'` | `v: GroupValue` | v-model——受控值（形状随 type：checkbox 为数组、range 滑块为 [起, 止]） |
 | `change` | `v: GroupValue` | 值提交（与 update:modelValue 同步抛出） |
+
+## `SegmentedControl`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/segmented-control`（Props 表与交互行为以 demo 页为准）
+
+### Props
+
+| 属性 | 类型 | 默认值 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `modelValue` | `string \| number` | — | 是 | 当前选中值。只收 string \| number —— 布尔值属于 Switch 的语义，不属于分段选择 |
+| `options` | `Option[]` | — | 是 | 选项列表（复用全局 Option 结构；`value` 为布尔值的选项不在本组件契约内） |
+| `disabled` | `boolean` | `false` | 否 | 整组禁用 |
+| `ariaLabel` | `string` | — | 否 | 无障碍组名：读屏念「<名字>，单选组」 |
+| `size` | `'sm' \| 'md'` | `'md'` | 否 | sm = 更矮一档，用于工具条内嵌；md = 常规 |
+| `block` | `boolean` | `false` | 否 | 撑满容器宽度，每段等分（筛选条常用） |
+
+### Events
+
+| 事件 | 载荷 | 说明 |
+| --- | --- | --- |
+| `'update:modelValue'` | `value: SegValue` | 选中值变化（配合 v-model 使用） |
+| `change` | `value: SegValue, option: Option` | 选中值变化，附带被选中的选项，便于宿主做联动（如切换后重新拉数据） |
 
 ## `IconPicker`
 

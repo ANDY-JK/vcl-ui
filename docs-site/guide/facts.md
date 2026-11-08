@@ -14,9 +14,9 @@ title: 事实清单（自动生成）
 | 事实 | 值 | 怎么算的 |
 | --- | --- | --- |
 | 域入口数 | **13** | `package.json` 的 `exports`，去掉 `./css`/`./i18n` 等辅助子路径 |
-| 组件数 | **66** | `gen:docs` 解析 `defineProps`/`defineEmits`/`defineSlots` 得到 |
+| 组件数 | **69** | `gen:docs` 解析 `defineProps`/`defineEmits`/`defineSlots` 得到 |
 | 命名导出数 | **183** | 同上，含类型与 composable |
-| demo 组件演示页数 | **46** | `src/demos/ComponentDemo.vue` 的 `demoMap` 顶层键数（一个键一页，页面含 Props 表） |
+| demo 组件演示页数 | **49** | `src/demos/ComponentDemo.vue` 的 `demoMap` 顶层键数（一个键一页，页面含 Props 表） |
 | 解析失败组件 | **0** | 应为 0；非 0 时 `check:docs` 直接红 |
 
 域入口清单：
@@ -39,10 +39,10 @@ title: 事实清单（自动生成）
 
 | 语言 | 键数 | 分块文件 |
 | --- | --- | --- |
-| zh-CN | **1505** | 16 |
-| en-US | **1505** | 16 |
+| zh-CN | **1515** | 16 |
+| en-US | **1515** | 16 |
 
-两侧键数一致（1505）。`check:i18n` 逐块比对键集，不只是数量。
+两侧键数一致（1515）。`check:i18n` 逐块比对键集，不只是数量。
 
 内置语言**只有这两门**。其他语言需宿主通过覆盖键值实现，库不提供官方包。
 
@@ -50,7 +50,7 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 整链步数 | **56** |
+| 整链步数 | **57** |
 
 步清单（顺序即执行顺序）：
 
@@ -83,40 +83,41 @@ title: 事实清单（自动生成）
 27. `check:css-breakpoints`
 28. `check:css-fonts`
 29. `check:css-scale`
-30. `check:offline`
-31. `check:i18n`
-32. `check:demo-props`
-33. `check:error-demo`
-34. `check:template-statements`
-35. `check:vendor-data`
-36. `check:vendor-vulns`
-37. `check:deps`
-38. `test:unit`
-39. `check:console-noise`
-40. `bench:check`
-41. `check:coverage-domains`
-42. `build`
-43. `smoke:entries`
-44. `verify:pkg`
-45. `check:licenses`
-46. `check:release-consistency`
-47. `docs:build`
-48. `check:docs`
-49. `check:audit`
-50. `check:doc-completeness`
-51. `gen:facts`
-52. `check:facts`
-53. `check:tech-debt`
-54. `check:rtl`
-55. `check:rtl-semantics`
-56. `test:e2e`
+30. `check:type-tokens`
+31. `check:offline`
+32. `check:i18n`
+33. `check:demo-props`
+34. `check:error-demo`
+35. `check:template-statements`
+36. `check:vendor-data`
+37. `check:vendor-vulns`
+38. `check:deps`
+39. `test:unit`
+40. `check:console-noise`
+41. `bench:check`
+42. `check:coverage-domains`
+43. `build`
+44. `smoke:entries`
+45. `verify:pkg`
+46. `check:licenses`
+47. `check:release-consistency`
+48. `docs:build`
+49. `check:docs`
+50. `check:audit`
+51. `check:doc-completeness`
+52. `gen:facts`
+53. `check:facts`
+54. `check:tech-debt`
+55. `check:rtl`
+56. `check:rtl-semantics`
+57. `test:e2e`
 
 ## 测试规模（读自最近一次整链留痕）
 
 | 事实 | 值 |
 | --- | --- |
-| 单测文件数 | **454** |
-| 单测用例数 | **6825** |
+| 单测文件数 | **462** |
+| 单测用例数 | **6906** |
 
 ::: info 这两个数会随每次提交变化
 它们来自 `reports/quality-check-logs/*-test-unit.log`（按后缀匹配，**不依赖步骤序号**；每次整链运行前清空），

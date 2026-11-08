@@ -1,7 +1,7 @@
 {
   "domains": {
     "basic": {
-      "components": 3,
+      "components": 4,
       "named": 0
     },
     "data": {
@@ -9,11 +9,11 @@
       "named": 1
     },
     "form": {
-      "components": 9,
+      "components": 10,
       "named": 10
     },
     "feedback": {
-      "components": 9,
+      "components": 10,
       "named": 14
     },
     "nav": {
@@ -54,6 +54,6 @@
     }
   },
   "unparsed": [],
-  "totalComponents": 66,
+  "totalComponents": 69,
   "totalNamed": 183
 }
