@@ -9,7 +9,7 @@
  * Escape 优先级链与 body-click 的弹窗守卫仍留在 DataTable：它们读六个业务弹窗状态，
  * 是业务编排。本文件只接「该不该退出」的裁决回调（shouldStay）。
  */
-import { ref, watch, onDeactivated, nextTick, type Ref } from 'vue'
+import { ref, watch, onDeactivated, nextTick, getCurrentInstance, type Ref } from 'vue'
 import { useFullscreenNodeRelocation, useFullscreenBounds, waitForSidebarCollapse } from './useTableFullscreen'
 
 export interface FullscreenOrchestrationOptions {
@@ -104,10 +104,14 @@ export function useTableFullscreenOrchestration(o: FullscreenOrchestrationOption
     _isFullscreen.value = false
   }
 
-  onDeactivated(() => {
-    // KeepAlive 失活不能把全屏态带进缓存（表格挂在 body 上，类与监听仍生效）
-    if (_isFullscreen.value) _isFullscreen.value = false
-  })
+  // 同其他 composable：单测会直接调用（没有活动组件实例 / 不在 KeepAlive 里），
+  // onDeactivated 在那种上下文里无效且会刷 warn。有实例才注册。
+  if (getCurrentInstance()) {
+    onDeactivated(() => {
+      // KeepAlive 失活不能把全屏态带进缓存（表格挂在 body 上，类与监听仍生效）
+      if (_isFullscreen.value) _isFullscreen.value = false
+    })
+  }
 
   watch(_isFullscreen, async (v) => {
     _lockedMaxH.value = ''

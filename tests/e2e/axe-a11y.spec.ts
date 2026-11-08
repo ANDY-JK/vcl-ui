@@ -140,6 +140,24 @@ const isDemoInline = (text: string) => DEMO_INLINE.some((r) => r.test(text))
 test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) => {
   test.setTimeout(15 * 60_000)
   let total = 0
+
+  /**
+   * 阻断高德 SDK 的外链请求，理由两条：
+   *
+   * 1) **不在审计范围**：`webapi.amap.com` 注入的 DOM（markers / logo / iframe / select）
+   *    本来就在 THIRD_PARTY 里逐节点放行 —— 我们改不掉第三方 DOM。
+   * 2) **消除时序 flake**：SDK 加载完成时会在 amap 页创建一个**滚动容器**，
+   *    命中 `scrollable-region-focusable`；加载没完成时则不命中。
+   *    于是同一个 HEAD 跑两次结果可能不同（2026-11-09 整链红过一次、单跑又绿）。
+   *    把 SDK 掐掉，页面 DOM 就退化成我们自己的"地图未就绪"状态，扫描结果确定。
+   *
+   * 需要审计地图页真实 DOM 时，把 ACTION 里的 blockAmapSdk 传给本测试体（默认开）。
+   */
+  const blockAmapSdk = process.env.E2E_AUDIT_AMAP !== '1'
+  if (blockAmapSdk) {
+    await page.route(/webapi\.amap\.com|restapi\.amap\.com|webapi\.amap\.com\/maps/, (route) => route.abort())
+  }
+
   const byRule: Record<string, number> = {}
   const unexempted: string[] = []
   let tradeoffCount = 0

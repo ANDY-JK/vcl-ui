@@ -12,7 +12,7 @@
  *
  * 隐藏集合（toggleVisible）与表单数据写入由宿主注入，保持与渲染/提交链路解耦。
  */
-import { ref, onScopeDispose, type Ref } from 'vue'
+import { ref, onScopeDispose, getCurrentScope, type Ref } from 'vue'
 import type { FormField, FormData } from './types'
 import { checkApiUrl, type ApiUrlPolicy } from './api-url-guard'
 
@@ -31,11 +31,15 @@ export function useFormEvents(
   const hiddenByEvent = ref<Set<string>>(new Set())
   /** callApi 防抖定时器（按字段 key 分桶，避免不同字段互相推迟） */
   const apiTimers = new Map<string, ReturnType<typeof setTimeout>>()
-  // 宿主卸载后丢弃待发的防抖请求，避免回调触达已卸载作用域
-  onScopeDispose(() => {
-    for (const timer of apiTimers.values()) clearTimeout(timer)
-    apiTimers.clear()
-  })
+  // 宿主卸载后丢弃待发的防抖请求，避免回调触达已卸载作用域。
+  // 判 getCurrentScope()：单测会直接调用本 composable（不在任何 effect scope 里），
+  // 此时 onScopeDispose 无效且会刷 warn（噪音棘轮里登记为已知噪音，但没必要留着）。
+  if (getCurrentScope()) {
+    onScopeDispose(() => {
+      for (const timer of apiTimers.values()) clearTimeout(timer)
+      apiTimers.clear()
+    })
+  }
 
   /** 字段是否被事件动作隐藏 */
   function isHiddenByEvent(key: string): boolean {
