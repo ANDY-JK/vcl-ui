@@ -17,11 +17,16 @@ const demoMap: Record<string, any> = {
   button: defineAsyncComponent({ loader: () => import('./basic/ButtonDemo.vue'), errorComponent: ErrorFallback }),
   icon: defineAsyncComponent({ loader: () => import('./basic/IconDemo.vue'), errorComponent: ErrorFallback }),
   tag: defineAsyncComponent({ loader: () => import('./basic/TagDemo.vue'), errorComponent: ErrorFallback }),
+  kbd: defineAsyncComponent({ loader: () => import('./basic/KbdDemo.vue'), errorComponent: ErrorFallback }),
 
   // 表单组件 — 四大类
   input: defineAsyncComponent({ loader: () => import('./form/InputDemo.vue'), errorComponent: ErrorFallback }),
   select: defineAsyncComponent({ loader: () => import('./form/SelectDemo.vue'), errorComponent: ErrorFallback }),
   group: defineAsyncComponent({ loader: () => import('./form/GroupDemo.vue'), errorComponent: ErrorFallback }),
+  'segmented-control': defineAsyncComponent({
+    loader: () => import('./form/SegmentedControlDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
   // 其他表单
   upload: defineAsyncComponent({ loader: () => import('./form/UploadDemo.vue'), errorComponent: ErrorFallback }),
   // 采集合并演示（拍照 + 扫码三段同页；旧 /barcode-scanner /camera-capture /capture-fallback 路由已重定向）
@@ -49,6 +54,10 @@ const demoMap: Record<string, any> = {
   toast: defineAsyncComponent({ loader: () => import('./feedback/ToastDemo.vue'), errorComponent: ErrorFallback }),
   result: defineAsyncComponent({ loader: () => import('./feedback/ResultDemo.vue'), errorComponent: ErrorFallback }),
   popover: defineAsyncComponent({ loader: () => import('./feedback/PopoverDemo.vue'), errorComponent: ErrorFallback }),
+  'notification-center': defineAsyncComponent({
+    loader: () => import('./feedback/NotificationCenterDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
   loading: defineAsyncComponent({ loader: () => import('./feedback/LoadingDemo.vue'), errorComponent: ErrorFallback }),
   drawer: defineAsyncComponent({ loader: () => import('./feedback/DrawerDemo.vue'), errorComponent: ErrorFallback }),
   'error-boundary': defineAsyncComponent({

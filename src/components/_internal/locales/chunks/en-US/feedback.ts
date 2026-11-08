@@ -16,6 +16,18 @@ export default {
     panel: 'Drawer panel',
     close: 'Close drawer',
   },
+
+  notification: {
+    title: 'Notifications',
+    open: 'Open notifications',
+    close: 'Close notifications',
+    empty: 'No notifications',
+    emptyUnread: 'No unread notifications',
+    unreadCount: '{n} unread',
+    unreadOnly: 'Unread only',
+    markAllRead: 'Mark all read',
+    clear: 'Clear',
+  },
   popover: {
     trigger: 'More info',
   },

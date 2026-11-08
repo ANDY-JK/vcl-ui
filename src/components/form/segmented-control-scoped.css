@@ -1,0 +1,114 @@
+/* ── 分段控制器（SegmentedControl）─────────────────────────────────────────
+ * 设计取向：一排摊平、不换行、不折行撑高。放不下时横向滚，而不是把工具条变两行。
+ * 尺寸全部走 --vcl-scale 等比；颜色全部走语义令牌（暗色自动跟随）。
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.seg {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(2px * var(--vcl-scale));
+  padding: calc(2px * var(--vcl-scale));
+  background: var(--vcl-color-bg-alt);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-md);
+  /* 选项溢出时横向滚动，绝不折行（折行 = 工具条高度翻倍，密排不可接受） */
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+/* 溢出滚动但不显示滚动条：分段控制器的滚动条比选项本身还显眼，且只在极窄容器出现 */
+.seg::-webkit-scrollbar {
+  display: none;
+}
+
+.seg-block {
+  display: flex;
+  width: 100%;
+}
+
+.seg-block .seg-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+.seg-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(4px * var(--vcl-scale));
+  flex-shrink: 0;
+  /* 与控件档同高：md 走控件高度的 76%（32/42），比输入框矮一档，内嵌工具条不抢版面 */
+  height: calc(32px * var(--vcl-scale));
+  min-width: calc(48px * var(--vcl-scale));
+  padding: 0 calc(10px * var(--vcl-scale));
+  border: none;
+  border-radius: calc(6px * var(--vcl-scale));
+  background: transparent;
+  color: var(--vcl-color-text-muted);
+  font-family: inherit;
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
+  letter-spacing: var(--vcl-text-control-tracking);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast),
+    box-shadow var(--vcl-transition-fast);
+}
+
+.seg-sm .seg-btn {
+  height: calc(26px * var(--vcl-scale));
+  min-width: calc(40px * var(--vcl-scale));
+  padding: 0 calc(8px * var(--vcl-scale));
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  letter-spacing: var(--vcl-text-label-tracking);
+}
+
+@media (hover: hover) {
+  .seg-btn:not(.active):not(:disabled):hover {
+    color: var(--vcl-color-text);
+    background: var(--vcl-color-bg-hover);
+  }
+}
+
+/* 选中段：抬成「浮起的小块」——面色 + 轻阴影，不靠重色块抢眼（重色块在密排里太吵）。
+   用 --vcl-color-surface 而不是 --vcl-color-bg：后者是页面底色 #f4f5f7，压在 #eaecf0 的
+   轨道上几乎看不出选中（对比度不足 1.05:1）；与 Tabs 的 pills 选中态取同一个令牌，同一套视觉语言。 */
+.seg-btn.active {
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
+  font-weight: 600;
+  box-shadow: var(--vcl-shadow-sm);
+}
+
+.seg-btn:focus-visible {
+  outline: var(--vcl-focus-ring);
+  outline-offset: calc(1px * var(--vcl-scale));
+  z-index: 1;
+}
+
+.seg-btn:disabled {
+  cursor: not-allowed;
+  opacity: var(--vcl-disabled-opacity);
+}
+
+.seg-disabled {
+  opacity: var(--vcl-disabled-opacity);
+}
+
+.seg-icon {
+  flex-shrink: 0;
+}
+
+.seg-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

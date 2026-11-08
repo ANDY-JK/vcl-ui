@@ -16,6 +16,18 @@ export default {
     panel: '抽屉面板',
     close: '关闭抽屉',
   },
+
+  notification: {
+    title: '通知中心',
+    open: '打开通知中心',
+    close: '关闭通知中心',
+    empty: '暂无通知',
+    emptyUnread: '没有未读通知',
+    unreadCount: '{n} 条未读',
+    unreadOnly: '只看未读',
+    markAllRead: '全部已读',
+    clear: '清空',
+  },
   popover: {
     trigger: '查看详情',
   },

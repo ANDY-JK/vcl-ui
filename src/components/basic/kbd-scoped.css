@@ -1,0 +1,47 @@
+/* ── Kbd 快捷键标记 ────────────────────────────────────────────────────────
+ * 密排取向：键帽高度只有 18/22，能塞进表格行、菜单行、提示条而不撑高。
+ * 尺寸走 --vcl-scale 等比；颜色走语义令牌（暗色自动跟随）。
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.kbd-group {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(2px * var(--vcl-scale));
+  vertical-align: middle;
+  font-family: inherit;
+}
+
+.kbd-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: calc(18px * var(--vcl-scale));
+  height: calc(18px * var(--vcl-scale));
+  padding: 0 calc(4px * var(--vcl-scale));
+  border: 1px solid var(--vcl-color-border);
+  border-bottom-width: calc(2px * var(--vcl-scale));
+  border-radius: calc(4px * var(--vcl-scale));
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text-secondary);
+  font-size: var(--vcl-fs-10);
+  line-height: 1;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.kbd-md .kbd-key {
+  min-width: calc(20px * var(--vcl-scale));
+  height: calc(22px * var(--vcl-scale));
+  padding: 0 calc(5px * var(--vcl-scale));
+  font-size: var(--vcl-text-caption-size);
+  letter-spacing: var(--vcl-text-caption-tracking);
+}
+
+/* 分隔符：比键帽再淡一档，不抢注意力 */
+.kbd-sep {
+  color: var(--vcl-color-text-muted);
+  font-size: var(--vcl-fs-10);
+  line-height: 1;
+  user-select: none;
+}

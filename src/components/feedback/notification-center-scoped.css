@@ -1,0 +1,311 @@
+/* ── 通知中心（NotificationCenter）─────────────────────────────────────────
+ * 密排取向：行高低、单行截断、不铺卡片。面板宽度固定档，宽度不跟铃铛走。
+ * 尺寸走 --vcl-scale 等比，颜色走语义令牌（暗色自动跟随）。
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.nc-root {
+  display: inline-flex;
+  position: relative;
+}
+
+/* 触发器：与顶栏其他图标按钮同尺 */
+.nc-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(32px * var(--vcl-scale));
+  height: calc(32px * var(--vcl-scale));
+  padding: 0;
+  border: none;
+  border-radius: var(--vcl-radius-md);
+  background: transparent;
+  color: var(--vcl-color-text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--vcl-transition-fast),
+    color var(--vcl-transition-fast);
+}
+
+@media (hover: hover) {
+  .nc-trigger:hover {
+    background: var(--vcl-color-bg-alt);
+    color: var(--vcl-color-text);
+  }
+}
+
+.nc-trigger.is-open {
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text);
+}
+
+.nc-trigger:focus-visible {
+  outline: var(--vcl-focus-ring);
+  outline-offset: var(--vcl-focus-ring-offset);
+}
+
+/* 未读角标：数字压在铃铛右上角，不撑大按钮 */
+.nc-badge {
+  position: absolute;
+  top: calc(2px * var(--vcl-scale));
+  right: calc(1px * var(--vcl-scale));
+  min-width: calc(14px * var(--vcl-scale));
+  height: calc(14px * var(--vcl-scale));
+  padding: 0 calc(3px * var(--vcl-scale));
+  border-radius: calc(7px * var(--vcl-scale));
+  background: var(--vcl-color-danger);
+  color: var(--vcl-color-text-inverse);
+  font-size: var(--vcl-fs-10);
+  line-height: calc(14px * var(--vcl-scale));
+  font-weight: 600;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* 读屏专用：角标数字对屏幕阅读器不可读，用隐藏文本给出「N 条未读」 */
+.nc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 面板 */
+.nc-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: calc(300px * var(--vcl-scale));
+  width: calc(340px * var(--vcl-scale));
+  background: var(--vcl-color-surface);
+  border: 1px solid var(--vcl-color-border-light);
+  border-radius: var(--vcl-radius-lg);
+  box-shadow: var(--vcl-shadow-lg);
+  overflow: hidden;
+  /* 面板是「面」，列表渐隐要渐到面上，不是页面底 */
+  --vcl-scroll-edge-tone: var(--vcl-color-surface);
+}
+
+.nc-header {
+  display: flex;
+  align-items: center;
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-bottom: 1px solid var(--vcl-color-border-light);
+  flex-shrink: 0;
+}
+
+.nc-title {
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  font-weight: 600;
+  color: var(--vcl-color-text);
+}
+
+.nc-count {
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
+  color: var(--vcl-color-text-muted);
+  letter-spacing: var(--vcl-text-caption-tracking);
+}
+
+.nc-spacer {
+  flex: 1;
+}
+
+/* 文字按钮：头部/页脚的轻量操作，不用 Button 组件（避免在 8px 行高里塞 42px 控件） */
+.nc-text-btn {
+  padding: 0 calc(4px * var(--vcl-scale));
+  border: none;
+  background: transparent;
+  color: var(--vcl-color-primary-on-surface);
+  font-family: inherit;
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  cursor: pointer;
+  border-radius: var(--vcl-radius-sm);
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .nc-text-btn:not(:disabled):hover {
+    background: var(--vcl-color-bg-alt);
+  }
+}
+
+.nc-text-btn:disabled {
+  color: var(--vcl-color-text-muted);
+  opacity: var(--vcl-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.nc-text-btn:focus-visible,
+.nc-icon-btn:focus-visible {
+  outline: var(--vcl-focus-ring);
+  outline-offset: calc(1px * var(--vcl-scale));
+}
+
+.nc-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(24px * var(--vcl-scale));
+  height: calc(24px * var(--vcl-scale));
+  padding: 0;
+  border: none;
+  border-radius: var(--vcl-radius-sm);
+  background: transparent;
+  color: var(--vcl-color-text-muted);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .nc-icon-btn:hover {
+    background: var(--vcl-color-bg-alt);
+    color: var(--vcl-color-text);
+  }
+}
+
+/* 列表外壳：只做「定位容器」——不裁高度、不吃 flex 伸缩。
+   ⚠ 别在这里写 max-height 再让内层 `max-height: inherit`：两者互相决定高度会形成
+   尺寸自激，而 useFloating 的 ResizeObserver 每次回调都调 updatePosition → 主线程卡死。 */
+.nc-list-wrap {
+  position: relative;
+  display: block;
+  flex: none;
+}
+
+.nc-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: var(--vcl-space-1) 0;
+  list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--vcl-color-border) transparent;
+}
+
+/* 单行通知：图标 20 + 主区 + 时间 + 未读点，高度由内容撑（约 40px） */
+.nc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vcl-space-2);
+  width: 100%;
+  padding: calc(7px * var(--vcl-scale)) var(--vcl-space-3);
+  border: none;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--vcl-color-text);
+  transition: background var(--vcl-transition-fast);
+}
+
+@media (hover: hover) {
+  .nc-item:hover {
+    background: var(--vcl-color-bg-alt);
+  }
+}
+
+.nc-item:focus-visible {
+  outline: var(--vcl-focus-ring);
+  outline-offset: calc(-2px * var(--vcl-scale));
+}
+
+.nc-item.is-unread .nc-item-title {
+  font-weight: 600;
+}
+
+.nc-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: calc(20px * var(--vcl-scale));
+  height: calc(20px * var(--vcl-scale));
+  border-radius: var(--vcl-radius-sm);
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text-secondary);
+  margin-top: calc(1px * var(--vcl-scale));
+}
+
+.nc-item-icon.is-success {
+  background: var(--vcl-color-success-bg);
+  color: var(--vcl-color-success-text);
+}
+.nc-item-icon.is-warning {
+  background: var(--vcl-color-warning-bg);
+  color: var(--vcl-color-warning-text);
+}
+.nc-item-icon.is-error {
+  background: var(--vcl-color-danger-bg);
+  color: var(--vcl-color-danger-on-surface);
+}
+.nc-item-icon.is-info {
+  background: var(--vcl-color-info-bg);
+  color: var(--vcl-color-info-text);
+}
+
+.nc-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: calc(1px * var(--vcl-scale));
+  flex: 1;
+  min-width: 0;
+}
+
+.nc-item-title {
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nc-item-desc {
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
+  letter-spacing: var(--vcl-text-caption-tracking);
+  color: var(--vcl-color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nc-item-time {
+  flex-shrink: 0;
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
+  letter-spacing: var(--vcl-text-caption-tracking);
+  color: var(--vcl-color-text-muted);
+  margin-top: calc(2px * var(--vcl-scale));
+}
+
+/* 未读点：比角标更轻，只在行尾点一下 */
+.nc-dot {
+  flex-shrink: 0;
+  width: calc(6px * var(--vcl-scale));
+  height: calc(6px * var(--vcl-scale));
+  border-radius: 50%;
+  background: var(--vcl-color-primary);
+  margin-top: calc(7px * var(--vcl-scale));
+}
+
+.nc-empty {
+  padding: calc(28px * var(--vcl-scale)) var(--vcl-space-3);
+  text-align: center;
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  color: var(--vcl-color-text-muted);
+}
+
+.nc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vcl-space-2);
+  padding: var(--vcl-space-2) var(--vcl-space-3);
+  border-top: 1px solid var(--vcl-color-border-light);
+  flex-shrink: 0;
+}
