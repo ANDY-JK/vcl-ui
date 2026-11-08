@@ -165,6 +165,11 @@ const STEPS = [
   // 判据必须是计算样式（RTL 下 left 解析为 auto），位置偏移会被整页翻转掩盖。
   ['check:rtl-semantics', 'npm run check:rtl-semantics'],
   ['test:e2e', 'npm run test:e2e'],
+  // 产物模式审计（第 58 步）：前 57 步都在 dev server 上跑，唯独"交付形态"没人验 ——
+  // env-guard 在生产构建下会剥掉全部 VITE_* 凭证、打包会做 tree-shaking 与分包，
+  // 这些只有跑产物才暴露（本轮就抓到 amap key 在产物里必然缺失）。
+  // 只跑 site-audit 一条：全量已在 9.47 验证可跑，但那 133 条重复覆盖了 dev 的 90%。
+  ['audit:prod', 'npm run e2e:audit'],
 ]
 
 const args = process.argv.slice(2)
