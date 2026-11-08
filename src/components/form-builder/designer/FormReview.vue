@@ -116,6 +116,7 @@ async function handleSubmit(data: Record<string, unknown>): Promise<void> {
 }
 .frv-done {
   font-size: var(--vcl-fs-16);
+  line-height: 1.4;
   font-weight: 600;
   color: var(--vcl-color-success, #059669);
 }

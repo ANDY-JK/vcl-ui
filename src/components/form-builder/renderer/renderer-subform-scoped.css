@@ -90,5 +90,6 @@
   padding: calc(16px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   text-align: center;
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text-muted, #94a3b8);
 }

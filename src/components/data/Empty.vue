@@ -57,6 +57,7 @@ withDefaults(defineProps<Props>(), {
 .empty-title {
   margin: 0;
   font-size: calc(36px * var(--vcl-scale));
+  line-height: 1.2;
   font-weight: 500;
   color: var(--vcl-color-text);
 }

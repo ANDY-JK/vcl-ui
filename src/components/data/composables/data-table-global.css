@@ -45,7 +45,8 @@
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   border: none;
   border-bottom: 1px solid var(--vcl-color-border-light);
-  font-size: var(--vcl-fs-14);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   outline: none;
   background: var(--vcl-color-surface);
   color: var(--vcl-color-text);
@@ -68,7 +69,8 @@
   border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .dt-filter-option-sort-label {
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text-muted);
   flex-shrink: 0;
 }
@@ -173,13 +175,15 @@
   flex-shrink: 0;
   margin-inline-start: calc(6px * var(--vcl-scale));
   color: var(--vcl-color-text-muted);
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
 }
 .dt-filter-no-result {
   padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
   color: var(--vcl-color-text-muted);
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
 }
 
 /* 滚动进度条：贴在选项列表和操作按钮之间 */
@@ -321,7 +325,8 @@
 .dt-col-search {
   width: 100%;
   padding: calc(6px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   border: 1px solid var(--vcl-color-border);
   border-radius: var(--vcl-radius-sm);
   background: var(--vcl-color-surface);
@@ -385,7 +390,8 @@
 .dt-col-no-result {
   padding: calc(24px * var(--vcl-scale)) 0;
   text-align: center;
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text-muted);
 }
 .dt-col-footer {
@@ -397,7 +403,8 @@
   border-top: 1px solid var(--vcl-color-border-light);
 }
 .dt-col-footer-fixed {
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-primary-on-surface);
   background: var(--vcl-color-primary-light);
   border-radius: var(--vcl-radius-sm);

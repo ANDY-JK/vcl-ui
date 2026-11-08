@@ -28,7 +28,9 @@
   flex-shrink: 0;
 }
 .ldc-title {
-  font-size: var(--vcl-fs-18);
+  font-size: var(--vcl-text-title-size);
+  line-height: var(--vcl-text-title-line);
+  letter-spacing: var(--vcl-text-title-tracking);
   font-weight: 700;
   margin: 0 0 calc(4px * var(--vcl-scale));
   color: var(--vcl-color-text, #1e293b);
@@ -100,7 +102,9 @@
   line-height: 1.1;
 }
 .ldc-stat-label {
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
+  letter-spacing: var(--vcl-text-caption-tracking);
   color: var(--vcl-color-text-muted, #94a3b8);
 }
 
@@ -203,7 +207,8 @@
   border: none;
   outline: none;
   background: transparent;
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text, #1e293b);
 }
 .ldc-search-input::placeholder {
@@ -283,7 +288,9 @@
   align-items: flex-start;
   gap: calc(8px * var(--vcl-scale));
   padding: calc(4px * var(--vcl-scale)) 0;
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
+  letter-spacing: var(--vcl-text-label-tracking);
   border-bottom: 1px solid var(--vcl-color-border-light, #f8fafc);
 }
 .ldc-detail-row:last-child {
@@ -364,11 +371,13 @@
 .ldc-page-ellipsis {
   padding: 0 calc(4px * var(--vcl-scale));
   color: var(--vcl-color-text-muted, #9ca3af);
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
 }
 .ldc-page-info {
   margin-inline-start: calc(8px * var(--vcl-scale));
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-muted, #94a3b8);
 }
 
@@ -467,7 +476,8 @@
 }
 .ldc-share-qr-hint {
   margin: 0;
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-muted, #94a3b8);
   text-align: center;
 }
@@ -503,7 +513,8 @@
   }
 }
 .ldc-share-copy-label {
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
   font-weight: 600;
   color: var(--vcl-color-text, #1e293b);
 }
@@ -520,7 +531,8 @@
 }
 .ldc-share-copy-tip {
   margin-top: auto;
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-primary, #3b82f6);
 }
 
@@ -549,7 +561,8 @@
   border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
   background: var(--vcl-color-danger-light, #fef2f2);
   color: var(--vcl-color-danger-on-surface);
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
 }
 
 /* 记录操作列按钮 */

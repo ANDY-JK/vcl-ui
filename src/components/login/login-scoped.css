@@ -112,6 +112,8 @@
 }
 .brand-logo h2 {
   font-size: calc(36px * var(--vcl-scale));
+  /* 品牌大字是单点用法，不占标尺档位；用无单位行高，随字号等比缩放 */
+  line-height: 1.2;
   font-weight: 600;
   margin-bottom: var(--vcl-space-3);
   letter-spacing: -0.5px;
@@ -162,12 +164,14 @@
 }
 .login-header h1 {
   font-size: var(--vcl-fs-22);
+  line-height: 1.3;
   font-weight: 600;
   color: var(--vcl-color-text);
   margin-bottom: var(--vcl-space-2);
 }
 .login-header p {
-  font-size: var(--vcl-ctrl-font-size);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   color: var(--vcl-color-text-secondary);
 }
 
@@ -227,7 +231,9 @@
   border: none;
   padding: 0;
   cursor: pointer;
+  /* 继承父级字号时，行高必须一起继承 —— 只继承字号会拿到浏览器默认行高，与段落错位 */
   font-size: inherit;
+  line-height: inherit;
 }
 @media (hover: hover) {
   .forgot-password:hover {
@@ -265,13 +271,15 @@
   color: var(--vcl-color-text-muted);
 }
 .social-text {
-  font-size: calc(14px * var(--vcl-scale));
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   color: var(--vcl-color-text-secondary);
 }
 
 .footer-text {
   text-align: center;
-  font-size: var(--vcl-ctrl-font-size);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   color: var(--vcl-color-text-muted);
   padding-top: var(--vcl-space-8);
 }
@@ -284,6 +292,7 @@
   padding: 0;
   cursor: pointer;
   font-size: inherit;
+  line-height: inherit;
 }
 @media (hover: hover) {
   .register-link:hover {
@@ -308,6 +317,7 @@
   }
   .login-header h1 {
     font-size: calc(28px * var(--vcl-scale));
+    line-height: 1.3;
   }
   .social-btn {
     padding: var(--vcl-space-2);

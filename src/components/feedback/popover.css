@@ -11,12 +11,14 @@
 .popover-title {
   padding: var(--vcl-space-2) calc(14px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   font-weight: 600;
   border-bottom: 1px solid var(--vcl-color-border-light);
 }
 .popover-body {
   padding: calc(12px * var(--vcl-scale)) calc(14px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-secondary);
 }
 

@@ -14,6 +14,7 @@
   position: absolute;
   left: var(--vcl-space-3);
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text-muted);
   white-space: nowrap;
 }

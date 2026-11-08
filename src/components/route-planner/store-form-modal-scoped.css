@@ -12,6 +12,7 @@
 .form-row label {
   display: block;
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   font-weight: 500;
   color: var(--vcl-color-text-secondary);
   margin-bottom: var(--vcl-space-1);
@@ -47,6 +48,7 @@
 
 .form-hint {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-muted);
   margin: var(--vcl-space-2) 0 0;
 }
@@ -96,6 +98,7 @@
 
 .form-error {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-danger-on-surface);
   margin: var(--vcl-space-1) 0 0;
 }

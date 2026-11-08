@@ -199,6 +199,7 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   z-index: 1;
   text-align: center;
   font-size: calc(11px * var(--vcl-scale));
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-muted);
   font-weight: 600;
   padding: var(--vcl-space-1) 0;
@@ -209,6 +210,7 @@ function onPick(part: 'hour' | 'minute' | 'second', v: number) {
   padding: calc(6px * var(--vcl-scale)) 0;
   text-align: center;
   font-size: calc(12px * var(--vcl-scale));
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text);
   cursor: pointer;
   user-select: none;

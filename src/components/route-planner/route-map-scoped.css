@@ -73,6 +73,7 @@
 
 .guide-hint {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   margin-top: var(--vcl-space-1);
 }
 
@@ -105,5 +106,6 @@
 
 .legend-text {
   font-size: calc(13px * var(--vcl-scale));
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text-secondary);
 }

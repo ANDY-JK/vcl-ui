@@ -64,6 +64,7 @@
 .capfb-err {
   margin: 0;
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-danger-on-surface);
 }
 .capfb-busy {

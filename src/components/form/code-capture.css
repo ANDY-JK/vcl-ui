@@ -65,6 +65,7 @@
   min-width: 0;
   text-align: center;
   font-size: calc(16px * var(--vcl-scale));
+  line-height: 1.4;
   font-weight: 600;
   color: #fff;
   overflow: hidden;
@@ -143,7 +144,8 @@
   bottom: calc(14px * var(--vcl-scale));
   margin: 0;
   text-align: center;
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
   color: rgba(255, 255, 255, 0.78);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   pointer-events: none;
@@ -284,6 +286,7 @@
   left: 0;
   margin-top: 2px;
   font-size: var(--vcl-fs-10);
+  line-height: 1.4;
   color: #fff;
   background: rgba(0, 0, 0, 0.55);
   padding: 1px calc(5px * var(--vcl-scale));
@@ -322,7 +325,8 @@
 .codecap-frozen-chip {
   margin-top: calc(4px * var(--vcl-scale));
   max-width: calc(150px * var(--vcl-scale));
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   color: #fff;
   background: rgba(0, 0, 0, 0.65);
   padding: 2px calc(7px * var(--vcl-scale));
@@ -427,6 +431,7 @@
   background: transparent;
   color: var(--vcl-color-primary-light, #a5b4fc);
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   cursor: pointer;
   font-family: inherit;
 }

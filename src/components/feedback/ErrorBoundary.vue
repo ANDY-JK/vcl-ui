@@ -138,12 +138,14 @@ onUnmounted(clearEscalation)
 }
 .eb-title {
   font-size: calc(28px * var(--vcl-scale));
+  line-height: 1.3;
   font-weight: 600;
   color: var(--vcl-color-text);
   margin-bottom: var(--vcl-space-1);
 }
 .eb-desc {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-muted);
   margin-bottom: var(--vcl-space-4);
   max-width: calc(400px * var(--vcl-scale));

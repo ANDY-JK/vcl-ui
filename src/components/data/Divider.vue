@@ -50,6 +50,7 @@ withDefaults(defineProps<Props>(), {
 .divider-text {
   padding: 0 calc(16px * var(--vcl-scale));
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-muted);
   white-space: nowrap;
 }

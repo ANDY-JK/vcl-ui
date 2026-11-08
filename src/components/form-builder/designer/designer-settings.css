@@ -28,7 +28,8 @@
   font-weight: 600;
 }
 .ld-tip {
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-success-text);
   background: var(--vcl-color-success-bg);
   padding: calc(4px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
@@ -147,6 +148,7 @@
 .ld-settings-row label {
   display: block;
   font-size: var(--vcl-fs-10);
+  line-height: var(--vcl-text-caption-line);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -159,7 +161,8 @@
   border: 1px solid var(--vcl-color-border, #e2e8f0);
   border-radius: var(--vcl-radius-sm, calc(6px * var(--vcl-scale)));
   padding: calc(7px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   font-family: inherit;
   resize: vertical;
   background: var(--vcl-color-surface);
@@ -192,7 +195,8 @@
   gap: calc(8px * var(--vcl-scale));
 }
 .ld-storage-test {
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-danger-on-surface);
 }
 .ld-storage-test.ok {
@@ -227,7 +231,8 @@
   background: rgba(59, 130, 246, 0.06);
 }
 .ld-layout-thumb span {
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-muted, #94a3b8);
   font-weight: 500;
 }
@@ -319,7 +324,8 @@
 }
 .ld-import-error {
   color: var(--vcl-color-danger-on-surface);
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
 }
 
 /* 拖放上传区 */

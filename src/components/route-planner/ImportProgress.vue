@@ -53,6 +53,7 @@ const percent = (current: number, total: number): number => {
   justify-content: space-between;
   margin-bottom: var(--vcl-space-2);
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text);
 }
 

@@ -17,6 +17,7 @@
 .ftc-title {
   margin: 0;
   font-size: var(--vcl-fs-16);
+  line-height: 1.4;
   white-space: nowrap;
 }
 .ftc-search {
@@ -26,7 +27,8 @@
 .ftc-stat {
   padding: 2px calc(10px * var(--vcl-scale));
   border-radius: calc(10px * var(--vcl-scale));
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
   font-weight: 600;
   background: var(--vcl-color-bg-soft);
   /* 未完成态：原写死 #94a3b8（浅灰）压 bg-soft 对比不足 4.5 AA，改用文字二级色 */
@@ -39,7 +41,8 @@
 }
 .ftc-fields-more {
   margin: 0 0 calc(6px * var(--vcl-scale));
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text-secondary);
 }
 .ftc-table-wrap {
@@ -51,13 +54,15 @@
   width: 100%;
   border-collapse: collapse;
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   background: var(--vcl-color-bg, #fff);
 }
 .ftc-table th {
   text-align: left;
   padding: calc(8px * var(--vcl-scale)) calc(10px * var(--vcl-scale));
   font-weight: 600;
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-secondary);
   background: var(--vcl-color-surface, #f8fafc);
   border-bottom: 2px solid var(--vcl-color-border);
@@ -94,6 +99,7 @@
 }
 .ftc-td-upload :deep(.card-label) {
   font-size: var(--vcl-fs-10) !important;
+  line-height: 1.4 !important;
 }
 .ftc-td-status {
   text-align: center;

@@ -30,6 +30,7 @@
   flex: 1;
   text-align: center;
   font-size: calc(14px * var(--vcl-scale));
+  line-height: var(--vcl-text-control-line);
   font-weight: 600;
   color: var(--vcl-color-text);
 }
@@ -41,6 +42,7 @@
 .dp-weekday {
   text-align: center;
   font-size: calc(11px * var(--vcl-scale));
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-muted);
   padding: var(--vcl-space-1) 0;
   font-weight: 500;

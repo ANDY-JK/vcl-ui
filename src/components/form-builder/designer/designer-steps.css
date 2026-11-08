@@ -49,7 +49,8 @@
 }
 .ld-steps-header label {
   font-weight: 600;
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text, #1e293b);
 }
 .ld-btn-sm {
@@ -80,7 +81,8 @@
   flex-shrink: 0;
 }
 .ld-step-fields {
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
 }
 .ld-step-fields-label {
   display: block;
@@ -123,7 +125,8 @@
 }
 .ld-step-empty {
   color: var(--vcl-color-text-muted, #94a3b8);
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: var(--vcl-text-label-line);
   font-style: italic;
 }
 
@@ -144,7 +147,8 @@
   min-width: calc(140px * var(--vcl-scale));
 }
 .ld-settings-switch-row label {
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   font-weight: 600;
   color: var(--vcl-color-text-secondary, #475569);
   white-space: nowrap;

@@ -39,6 +39,7 @@
   margin: 0 0 calc(12px * var(--vcl-scale));
   padding-bottom: calc(8px * var(--vcl-scale));
   font-size: var(--vcl-fs-15);
+  line-height: var(--vcl-text-subtitle-line);
   font-weight: 600;
   color: var(--vcl-color-text, #1e293b);
   border-bottom: 1px solid var(--vcl-color-border, #e2e8f0);
@@ -68,6 +69,7 @@
 .fb-camera-label,
 .fb-scancode-label {
   font-size: var(--vcl-fs-13);
+  line-height: var(--vcl-text-body-line);
   font-weight: 500;
   color: var(--vcl-color-text-secondary, #64748b);
 }
@@ -91,6 +93,7 @@
   flex: 1;
   min-width: 0;
   font-size: var(--vcl-fs-14);
+  line-height: var(--vcl-text-control-line);
   font-family: monospace;
   color: var(--vcl-color-text, #0f172a);
   word-break: break-all;
@@ -135,6 +138,7 @@
 }
 .fb-adv-label {
   font-size: var(--vcl-fs-13);
+  line-height: var(--vcl-text-body-line);
   font-weight: 500;
   color: var(--vcl-color-text-secondary, #64748b);
 }

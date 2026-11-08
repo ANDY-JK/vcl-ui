@@ -224,5 +224,6 @@ function onClick() {
 }
 .v-image-text {
   font-size: calc(14px * var(--vcl-scale));
+  line-height: var(--vcl-text-control-line);
 }
 </style>

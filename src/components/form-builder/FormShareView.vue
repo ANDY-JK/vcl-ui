@@ -281,6 +281,7 @@ const canFillAgain = computed(() => formSchema.value?.submitMode === 'multiple')
 .fsv-title {
   margin: 0 0 calc(4px * var(--vcl-scale));
   font-size: var(--vcl-fs-20);
+  line-height: var(--vcl-text-heading-line);
   font-weight: 700;
   color: var(--vcl-color-text, #1e293b);
 }

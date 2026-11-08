@@ -41,7 +41,8 @@
   position: absolute;
   margin: 0;
   text-align: center;
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-primary-on-surface);
   z-index: 2;
   pointer-events: none;
@@ -97,7 +98,8 @@
   bottom: calc(4px * var(--vcl-scale));
   right: calc(6px * var(--vcl-scale));
   z-index: 8;
-  font-size: calc(13px * var(--vcl-scale));
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   font-weight: 600;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
@@ -160,7 +162,9 @@
   cursor: inherit;
 }
 .upload-hint {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   color: var(--vcl-color-text-secondary);
 }
 .upload-link {
@@ -168,7 +172,9 @@
   font-weight: 500;
 }
 .upload-limit {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   color: var(--vcl-color-text-muted);
 }
 .upload-list {
@@ -216,7 +222,9 @@
   min-width: 0;
 }
 .upload-file-name {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -225,7 +233,8 @@
 .upload-file-meta {
   display: flex;
   gap: calc(12px * var(--vcl-scale));
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-muted);
   margin-top: var(--vcl-space-1);
 }

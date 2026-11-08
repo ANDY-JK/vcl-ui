@@ -14,6 +14,7 @@
   padding: calc(24px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   text-align: center;
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text-muted, #94a3b8);
 }
 .ld-forms-error {
@@ -114,6 +115,7 @@
 .ld-share-qr-hint {
   margin: 0;
   font-size: var(--vcl-fs-11);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-muted, #94a3b8);
   text-align: center;
 }
@@ -150,6 +152,7 @@
 }
 .ld-share-copy-label {
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   font-weight: 600;
   color: var(--vcl-color-text, #1e293b);
 }
@@ -167,5 +170,6 @@
 .ld-share-copy-tip {
   margin-top: auto;
   font-size: var(--vcl-fs-11);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-primary, #3b82f6);
 }

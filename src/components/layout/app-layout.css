@@ -99,7 +99,9 @@
   flex-shrink: 0;
 }
 .vcl-logo-text {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   font-weight: 600;
   white-space: nowrap;
   letter-spacing: 0.3px;
@@ -195,14 +197,16 @@
 }
 .vcl-topbar-prompt {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: var(--vcl-ctrl-font-size);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   color: var(--vcl-color-primary-on-surface);
   /* axe 达标增益：原 0.7 洗白令合成对比 3.84 跌破 AA，去 opacity 直接用令牌色 */
   margin-inline-end: var(--vcl-space-1);
 }
 .vcl-topbar-category {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: var(--vcl-ctrl-font-size);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   font-weight: 600;
   color: var(--vcl-color-primary-on-surface);
   letter-spacing: 0.3px;
@@ -212,14 +216,16 @@
 }
 .vcl-topbar-sep {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: var(--vcl-ctrl-font-size);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   color: var(--vcl-color-text-secondary);
   font-weight: 300;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .vcl-topbar-title {
-  font-size: var(--vcl-ctrl-font-size);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   font-weight: 500;
   color: var(--vcl-color-sidebar-text-active);
   letter-spacing: 0.2px;
@@ -498,7 +504,8 @@
   line-height: 1;
 }
 .vcl-user-name {
-  font-size: var(--vcl-ctrl-font-size);
+  font-size: var(--vcl-text-control-size);
+  line-height: var(--vcl-text-control-line);
   color: var(--vcl-color-text-muted);
   max-width: calc(100px * var(--vcl-scale));
   overflow: hidden;
@@ -638,7 +645,8 @@
   pointer-events: none;
 }
 .vcl-nav-percent {
-  font-size: calc(13px * var(--vcl-scale));
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-primary-on-surface);
   font-weight: 600;
   /* axe 达标增益：原 0.7 洗白令合成对比 3.84 跌破 AA，去 opacity 直接用令牌色 */

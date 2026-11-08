@@ -158,6 +158,7 @@ function save(): void {
   flex-shrink: 0;
   width: calc(88px * var(--vcl-scale));
   font-size: calc(14px * var(--vcl-scale));
+  line-height: var(--vcl-text-control-line);
   color: var(--vcl-color-text-secondary);
   text-align: right;
 }
@@ -181,6 +182,7 @@ function save(): void {
 .scp-error {
   color: var(--vcl-color-danger-on-surface);
   font-size: calc(14px * var(--vcl-scale));
+  line-height: var(--vcl-text-control-line);
 }
 .scp-actions {
   display: flex;

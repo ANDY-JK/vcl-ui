@@ -87,6 +87,7 @@ const colorMap: Record<string, string> = {
 
 .result-title {
   font-size: calc(36px * var(--vcl-scale));
+  line-height: 1.2;
   font-weight: 600;
   margin-bottom: calc(8px * var(--vcl-scale));
   color: var(--vcl-color-text);

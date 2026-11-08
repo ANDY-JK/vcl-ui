@@ -39,6 +39,7 @@
 .ldc-canvas-tip {
   margin-inline-start: auto;
   font-size: var(--vcl-fs-10);
+  line-height: calc(14px * var(--vcl-scale));
 }
 
 /* ── 画布缩放控制 ── */
@@ -220,6 +221,7 @@
 .ldc-container--card > .ldc-container-head {
   background: var(--vcl-color-surface, #fff);
   font-size: var(--vcl-fs-13);
+  line-height: var(--vcl-text-body-line);
   font-weight: 600;
 }
 .ldc-container--card > .ldc-container-body {
@@ -287,6 +289,7 @@
 }
 .ldc-slot-label {
   font-size: var(--vcl-fs-11);
+  line-height: var(--vcl-text-caption-line);
   font-weight: 600;
   color: var(--vcl-color-text-secondary, #6b7280);
   margin-bottom: calc(6px * var(--vcl-scale));
@@ -357,6 +360,7 @@
 .ldc-collapse-title {
   flex: 1;
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   font-weight: 600;
   color: var(--vcl-color-text, #1e293b);
 }
@@ -467,6 +471,7 @@
 }
 .ldc-steps-indicator {
   font-size: var(--vcl-fs-11);
+  line-height: var(--vcl-text-caption-line);
   font-weight: 600;
   color: var(--vcl-color-text-muted, #94a3b8);
   margin: 0 auto;

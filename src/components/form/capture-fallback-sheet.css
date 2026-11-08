@@ -41,6 +41,7 @@
 }
 .capfb-title {
   font-size: calc(16px * var(--vcl-scale));
+  line-height: 1.4;
   font-weight: 600;
   color: var(--vcl-color-text);
 }

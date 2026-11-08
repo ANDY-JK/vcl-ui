@@ -38,24 +38,28 @@
 .fb-richtext-body :deep(h1),
 .fb-richtext-preview :deep(h1) {
   font-size: 1.6em;
+  line-height: 1.25;
   font-weight: 600;
   margin: 0.5em 0 0.35em;
 }
 .fb-richtext-body :deep(h2),
 .fb-richtext-preview :deep(h2) {
   font-size: 1.4em;
+  line-height: 1.28;
   font-weight: 600;
   margin: 0.5em 0 0.35em;
 }
 .fb-richtext-body :deep(h3),
 .fb-richtext-preview :deep(h3) {
   font-size: 1.2em;
+  line-height: 1.3;
   font-weight: 600;
   margin: 0.5em 0 0.35em;
 }
 .fb-richtext-body :deep(h4),
 .fb-richtext-preview :deep(h4) {
   font-size: 1.05em;
+  line-height: 1.35;
   font-weight: 600;
   margin: 0.5em 0 0.3em;
 }
@@ -73,7 +77,8 @@
   padding: calc(10px * var(--vcl-scale)) calc(12px * var(--vcl-scale));
   overflow-x: auto;
   font-family: var(--fb-rt-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
-  font-size: var(--vcl-fs-12);
+  font-size: var(--vcl-text-label-size);
+  line-height: 1.5;
   margin: calc(8px * var(--vcl-scale)) 0;
 }
 .fb-richtext-body :deep(code),
@@ -83,6 +88,7 @@
   border-radius: calc(3px * var(--vcl-scale));
   padding: 1px calc(5px * var(--vcl-scale));
   font-size: 0.92em;
+  line-height: inherit;
 }
 .fb-richtext-body :deep(pre code),
 .fb-richtext-preview :deep(pre code) {
@@ -129,7 +135,8 @@
   display: flex;
   justify-content: flex-end;
   padding: 2px calc(8px * var(--vcl-scale));
-  font-size: var(--vcl-fs-11);
+  font-size: var(--vcl-text-caption-size);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-muted, #94a3b8);
   border-top: 1px solid var(--vcl-color-border-light, #f1f5f9);
   background: var(--vcl-color-bg-alt, #f8fafc);

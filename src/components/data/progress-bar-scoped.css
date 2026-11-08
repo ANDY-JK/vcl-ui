@@ -51,6 +51,7 @@
 }
 .progress-text {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-secondary);
   font-weight: 500;
   min-width: calc(40px * var(--vcl-scale));

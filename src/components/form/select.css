@@ -25,7 +25,8 @@
   flex: 1;
   border: none;
   background: transparent;
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
   outline: none;
 }
 .panel-list {
@@ -93,10 +94,12 @@
   flex: 1;
 }
 .item-label {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
 }
 .item-desc {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-muted);
 }
 .menu-divider {
@@ -127,7 +130,8 @@
   justify-content: center;
   padding: calc(24px * var(--vcl-scale));
   color: var(--vcl-color-text-muted);
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
 }
 .panel-status svg {
   animation: spin 1s linear infinite;

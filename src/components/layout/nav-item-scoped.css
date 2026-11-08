@@ -82,6 +82,7 @@
    ================================================================ */
 .nav-arrow {
   font-size: calc(13px * var(--vcl-scale));
+  line-height: var(--vcl-text-body-line);
   transition: transform var(--vcl-transition-normal);
   opacity: 0.4;
   flex-shrink: 0;

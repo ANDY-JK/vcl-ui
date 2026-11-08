@@ -53,6 +53,7 @@
 }
 .step-label {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   font-weight: 500;
   color: var(--vcl-color-text-muted);
 }
@@ -65,6 +66,7 @@
 
 .step-desc {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-muted);
   margin-top: var(--vcl-space-1);
 }

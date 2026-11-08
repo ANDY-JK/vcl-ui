@@ -38,6 +38,7 @@
   top: 0;
   transform: translateY(-50%);
   font-size: calc(11px * var(--vcl-scale));
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-primary-on-surface);
   background: var(--fl-label-bg, var(--vcl-color-surface));
   padding: 0 var(--vcl-space-1);

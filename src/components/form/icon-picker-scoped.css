@@ -54,6 +54,7 @@
   flex: 1;
   padding: var(--vcl-space-2) var(--vcl-space-3);
   font-size: calc(14px * var(--vcl-scale));
+  line-height: var(--vcl-text-control-line);
   border: none;
   background: transparent;
   cursor: pointer;

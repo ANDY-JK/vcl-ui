@@ -72,6 +72,7 @@
 }
 .fb-rt-panel-label {
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text-muted, #64748b);
   width: calc(60px * var(--vcl-scale));
   flex-shrink: 0;
@@ -94,6 +95,7 @@
   flex-direction: column;
   gap: calc(4px * var(--vcl-scale));
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-text-muted, #64748b);
 }
 .fb-rt-panel-field input[type='text'] {
@@ -119,6 +121,7 @@
 }
 .fb-rt-panel-hint {
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-warning, #d97706);
 }
 .fb-rt-panel-hint.is-error {

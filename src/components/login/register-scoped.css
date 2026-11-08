@@ -114,6 +114,7 @@
 }
 .brand-logo h2 {
   font-size: calc(36px * var(--vcl-scale));
+  line-height: 1.2;
   font-weight: 600;
   margin-bottom: var(--vcl-space-3);
 }
@@ -138,12 +139,14 @@
 }
 .login-header h1 {
   font-size: var(--vcl-fs-22);
+  line-height: 1.3;
   font-weight: 600;
   color: var(--vcl-color-text);
   margin-bottom: var(--vcl-space-2);
 }
 .login-header p {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-secondary);
 }
 
@@ -156,7 +159,8 @@
 
 .footer-text {
   text-align: center;
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-muted);
   padding-top: var(--vcl-space-8);
 }
@@ -193,5 +197,6 @@
   }
   .login-header h1 {
     font-size: calc(32px * var(--vcl-scale));
+    line-height: 1.3;
   }
 }

@@ -71,7 +71,8 @@
 }
 
 .toolbar-count {
-  font-size: var(--vcl-fs-13);
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text-muted);
   flex-shrink: 0;
 }
@@ -111,6 +112,7 @@
   margin-inline-start: auto;
   padding: var(--vcl-space-1) calc(10px * var(--vcl-scale));
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   color: var(--vcl-color-danger-on-surface);
   background: none;
   border: none;
@@ -215,6 +217,7 @@
 .toolbar-zoom-btn {
   padding: var(--vcl-space-1) calc(8px * var(--vcl-scale));
   font-size: var(--vcl-fs-12);
+  line-height: var(--vcl-text-label-line);
   font-family: inherit;
   font-variant-numeric: tabular-nums;
   min-width: calc(42px * var(--vcl-scale));

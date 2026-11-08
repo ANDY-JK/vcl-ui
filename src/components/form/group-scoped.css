@@ -135,6 +135,7 @@
 }
 .switch-label {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text);
 }
 
@@ -246,6 +247,7 @@
   min-width: calc(34px * var(--vcl-scale));
   text-align: right;
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   color: var(--vcl-color-text-secondary);

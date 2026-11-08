@@ -12,6 +12,7 @@
   border: none;
   background: transparent;
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-secondary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -64,6 +65,7 @@
   border: 1.5px solid var(--vcl-color-border);
   background: var(--vcl-color-bg);
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-secondary);
   cursor: pointer;
   transition: all var(--vcl-transition-fast);

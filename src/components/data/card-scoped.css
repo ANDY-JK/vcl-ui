@@ -39,6 +39,7 @@
 }
 .stat-label {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   color: var(--vcl-color-text-muted);
   margin-top: var(--vcl-space-1);
 }
@@ -86,6 +87,7 @@
 }
 .grid-title {
   font-size: calc(15px * var(--vcl-scale));
+  line-height: var(--vcl-text-subtitle-line);
   font-weight: 600;
 }
 /* 卡片头部状态竖条（accent bar）：标题左侧 3px 竖条，颜色随 accent prop。

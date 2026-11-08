@@ -33,7 +33,9 @@
 }
 
 .state-empty .hint {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   margin-top: var(--vcl-space-1);
 }
 
@@ -94,6 +96,7 @@
 
 .source-badge {
   font-size: calc(13px * var(--vcl-scale));
+  line-height: var(--vcl-text-body-line);
   font-weight: 500;
   padding: var(--vcl-space-0) calc(6px * var(--vcl-scale));
   border-radius: var(--vcl-radius-lg);
@@ -124,17 +127,23 @@
 .stat-num {
   display: block;
   font-size: calc(36px * var(--vcl-scale));
+  /* 单点大数字：无单位行高，随字号等比 */
+  line-height: 1.1;
   font-weight: 700;
   color: var(--vcl-color-text);
 }
 
 .stat-label {
-  font-size: calc(13px * var(--vcl-scale));
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
+  letter-spacing: var(--vcl-text-body-tracking);
   color: var(--vcl-color-text-muted);
 }
 
 .summary-route {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   color: var(--vcl-color-success-text);
   text-align: center;
   padding-top: var(--vcl-space-1);
@@ -142,7 +151,9 @@
 }
 
 .enriching-tip {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   color: var(--vcl-color-primary-on-surface);
   text-align: center;
   margin: 0 0 var(--vcl-space-2);
@@ -228,6 +239,7 @@
 /* 门店密度标签 */
 .density-tag {
   font-size: calc(13px * var(--vcl-scale));
+  line-height: var(--vcl-text-body-line);
   font-weight: 500;
   padding: var(--vcl-space-1) var(--vcl-space-1);
   border-radius: var(--vcl-radius-md);
@@ -256,7 +268,9 @@
 }
 
 .day-cities {
-  font-size: calc(13px * var(--vcl-scale));
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
+  letter-spacing: var(--vcl-text-body-tracking);
   color: var(--vcl-color-text-muted);
   max-width: calc(120px * var(--vcl-scale));
   overflow: hidden;
@@ -328,6 +342,7 @@
 
 .route-icon {
   font-size: var(--vcl-ctrl-font-size);
+  line-height: 1;
 }
 
 .route-arrow {
@@ -402,7 +417,9 @@
 }
 
 .store-name {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   color: var(--vcl-color-text);
   white-space: nowrap;
   overflow: hidden;
@@ -411,6 +428,7 @@
 
 .store-city {
   font-size: calc(9px * var(--vcl-scale));
+  line-height: 1.5;
   color: var(--vcl-color-text-muted);
   flex-shrink: 0;
 }
@@ -420,7 +438,8 @@
 }
 
 .seg-info {
-  font-size: calc(13px * var(--vcl-scale));
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text-secondary);
   white-space: nowrap;
   background: var(--vcl-color-bg-alt);
@@ -461,7 +480,9 @@
 }
 
 .skipped-header {
-  font-size: calc(15px * var(--vcl-scale));
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  letter-spacing: var(--vcl-text-subtitle-tracking);
   font-weight: 600;
   color: var(--vcl-color-warning-text);
   margin-bottom: var(--vcl-space-1);
@@ -475,7 +496,8 @@
 }
 
 .skipped-item {
-  font-size: calc(13px * var(--vcl-scale));
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text-muted);
   padding: var(--vcl-space-0) calc(6px * var(--vcl-scale));
   background: var(--vcl-color-warning-bg);
@@ -483,7 +505,8 @@
 }
 
 .skipped-hint {
-  font-size: calc(13px * var(--vcl-scale));
+  font-size: var(--vcl-text-body-size);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-warning-text);
   margin: var(--vcl-space-1) 0 0;
 }

@@ -212,6 +212,7 @@ defineExpose({
 }
 .logo-section h1 {
   font-size: calc(36px * var(--vcl-scale));
+  line-height: 1.2;
   font-weight: 600;
   color: var(--vcl-color-text);
 }

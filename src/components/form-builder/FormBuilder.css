@@ -32,6 +32,7 @@
 .fb-title {
   margin: 0 0 calc(6px * var(--vcl-scale));
   font-size: var(--vcl-fs-18);
+  line-height: var(--vcl-text-title-line);
   font-weight: 700;
   color: var(--vcl-color-text, #1e293b);
 }
@@ -153,10 +154,12 @@
   align-items: baseline;
   gap: 2px;
   font-size: var(--vcl-fs-13);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text-secondary, #64748b);
 }
 .fb-step-current {
   font-size: var(--vcl-fs-18);
+  line-height: var(--vcl-text-title-line);
   font-weight: 700;
   color: var(--vcl-color-primary, #3b82f6);
 }
@@ -169,12 +172,14 @@
 .fb-step-title {
   margin-inline-start: calc(8px * var(--vcl-scale));
   font-size: var(--vcl-fs-13);
+  line-height: var(--vcl-text-body-line);
   color: var(--vcl-color-text, #1e293b);
   font-weight: 500;
 }
 .fb-step-completion {
   margin-inline-start: calc(4px * var(--vcl-scale));
   font-size: var(--vcl-fs-11);
+  line-height: var(--vcl-text-caption-line);
   color: var(--vcl-color-text-muted, #94a3b8);
   font-weight: 400;
 }
