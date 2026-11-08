@@ -11,61 +11,7 @@ import {
   getMorphIconNode,
 } from '@/components/_internal/morphicons-registry'
 import { warnOnce } from '@/components/_internal/warnOnce'
-
-const sizeMap: Record<string, number> = { xs: 12, sm: 16, md: 20, lg: 24, xl: 28 }
-
-/** 渲染尺寸 → 尺寸类名。兜底函数只拿得到渲染尺寸（拿不到 props），故按数值反查 */
-const PX_CLASS: Record<number, string> = {
-  12: 'icon-sz-xs',
-  16: 'icon-sz-sm',
-  20: 'icon-sz-md',
-  24: 'icon-sz-lg',
-  28: 'icon-sz-xl',
-}
-
-/**
- * 图标的渲染尺寸走 CSS 而非 width/height 属性：属性值只能是 SVG 用户单位，塞不进
- * calc()，图标就会在整体等比缩放时保持恒定——按钮缩了、图标没缩，正是「头大身子小」。
- * 这里保留属性（库内部按它算 viewBox 与描边比例），再由 .icon-svg 的 CSS 覆盖实际尺寸。
- */
-function sizeClass(size: string): string {
-  return `icon-svg ${PX_CLASS[sizeMap[size] ?? 20] ?? 'icon-sz-md'}`
-}
-
-/** kebab-case → PascalCase（容忍空段如 foo--bar，避免 w[0] undefined 崩溃） */
-function toPascal(kebab: string): string {
-  return kebab
-    .split('-')
-    .filter(Boolean)
-    .map((w) => w[0]!.toUpperCase() + w.slice(1))
-    .join('')
-}
-
-/** 兜底占位 SVG（图标未命中或 Solar 数据异步加载中时使用） */
-function renderFallback(sz: number, clr: string) {
-  return h(
-    'svg',
-    {
-      class: `icon-svg ${PX_CLASS[sz] ?? 'icon-sz-md'}`,
-      width: sz,
-      height: sz,
-      color: clr,
-      viewBox: '0 0 24 24',
-      fill: 'none',
-      stroke: 'currentColor',
-      'stroke-width': 2,
-      'stroke-linecap': 'round',
-      'stroke-linejoin': 'round',
-      'aria-hidden': true,
-    },
-    [
-      h('rect', { x: 3, y: 3, width: 7, height: 7, rx: 1 }),
-      h('rect', { x: 14, y: 3, width: 7, height: 7, rx: 1 }),
-      h('rect', { x: 3, y: 14, width: 7, height: 7, rx: 1 }),
-      h('rect', { x: 14, y: 14, width: 7, height: 7, rx: 1 }),
-    ],
-  )
-}
+import { renderFallback, sizeClass, sizeMap, toPascal, toSolarIconName } from '@/components/_internal/icon-variants'
 
 export default defineComponent({
   name: 'IconSvg',
@@ -88,16 +34,6 @@ export default defineComponent({
     const solarReady = ref(isSolarReady())
     // Morphicons 组件与几何数据同样按需加载（全量 557KB / gzip 127KB），仅 provider='morphicons' 时引入
     const morphReady = ref(isMorphiconsReady())
-
-    /** Solar 图标变体后缀 */
-    const SOLAR_VARIANTS = ['linear', 'bold', 'broken', 'outline', 'bold-duotone', 'line-duotone']
-    function toSolarIconName(name: string): string {
-      const parts = name.split('-')
-      const lastTwo = parts.slice(-2).join('-')
-      const lastOne = parts[parts.length - 1]!
-      const hasVariant = SOLAR_VARIANTS.includes(lastTwo) || SOLAR_VARIANTS.includes(lastOne)
-      return `solar:${name}${hasVariant ? '' : '-linear'}`
-    }
 
     return () => {
       const sz = px.value
