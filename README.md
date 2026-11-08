@@ -321,13 +321,15 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 
 本仓 `git remote` 为空 → `.github/workflows` 里的 ci / release **从来没有执行过**。质量链因此长期只靠"人记得手动跑"，出现过「整链已红 10 天没人知道」（R5-C14）。现在分两档：
 
-1. **快链**：`npm run quick-check` —— **18 步 / 约 2 分钟**（`typecheck` + `lint` + 12 道快速闸口 + `test:unit`）。
+1. **快链**：`npm run quick-check` —— **28 步 / 约 5 分钟**（`typecheck` + `lint` + 快速闸口 + `test:unit`）。
    完整清单以 `scripts/quality-check.mjs` 的 `QUICK_STEPS` 为准，`npm run quick-check -- --list` 可打印。
+   > 上面这两个数字（28 / 57）是**手写**的，历史上漂过两次（"18 步""43 步"）。**要数字就查真源**：
+   > 快链看 `QUICK_STEPS.length`，整链看最近一次留痕 `reports/quality-check-latest.json` 的 `executedSteps`。
    留痕写 `reports/quick-check-latest.json`（与整链**分开写**，否则跑一次快链就把整链的权威证据覆盖成半份）。
 
    **2026-11-02 补 `check:docs`（#349）**：它只要 1.0s，却是连续六批给组件加 prop 之后**唯一**
    能抓到「API 文档没重新生成」的闸口 —— 单测、类型检查、lint 全绿都覆盖不到这一层。
-2. **整链**：`npm run quality-check` —— **43 步 / 约 21 分钟**（实测 1293s，含 e2e 108 例 9.1 分钟），**唯一权威**，含 `build`、`e2e`、许可清单、**版本三件套对齐**、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
+2. **整链**：`npm run quality-check` —— **57 步 / 约 23 分钟**（最近实测 1401s，含 e2e **134 例跑产物** 9.6 分钟），**唯一权威**，含 `build`、`e2e`、许可清单、**版本三件套对齐**、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
 
 `.husky/pre-commit` 现在跑「`lint-staged`（暂存区格式化）+ 快链」，把显然会坏的提交挡在落库之前。跳过方式：`git commit --no-verify`，或 `SKIP_QUICK_CHECK=1 git commit ...`。
 
