@@ -46,6 +46,11 @@
   color: white;
   border-color: var(--vcl-color-primary-solid);
 }
+/* 按下态（第三档）：不用 :hover 顶替 —— 触屏没有 hover，按下必须有独立反馈 */
+.btn-primary:active:not(:disabled) {
+  background: var(--vcl-color-primary-solid-active);
+  border-color: var(--vcl-color-primary-solid-active);
+}
 @media (hover: hover) {
   .btn-primary:hover:not(:disabled) {
     background: var(--vcl-color-primary-solid-hover);
@@ -91,6 +96,10 @@
     background: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
     border-color: var(--vcl-color-danger-solid-hover, var(--vcl-color-danger-hover));
   }
+}
+.btn-danger:active:not(:disabled) {
+  background: var(--vcl-color-danger-solid-active, var(--vcl-color-danger-hover));
+  border-color: var(--vcl-color-danger-solid-active, var(--vcl-color-danger-hover));
 }
 
 .btn-ghost {

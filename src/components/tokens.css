@@ -66,6 +66,18 @@
   --vcl-color-primary: #4f6ef7;
   --vcl-color-primary-rgb: 79, 110, 247;
   --vcl-color-primary-hover: #3b56e0;
+  /* ── 按下态（状态三元组的第三档：default → hover → active）───────────────
+     吸收 BoardUI 的写法，但**值由 color-mix 从基色派生**：换主题/换品牌色时
+     按下态自动跟着走，不用再手工维护 5 组 × 2 主题的 hex。
+     老浏览器不支持 color-mix 时回落到 hover 档（下方先声明一遍作 fallback）。 */
+  --vcl-color-primary-active: var(--vcl-color-primary-hover, var(--vcl-color-primary));
+  --vcl-color-danger-active: var(--vcl-color-danger-hover, var(--vcl-color-danger));
+  --vcl-color-success-active: var(--vcl-color-success-hover, var(--vcl-color-success));
+  --vcl-color-warning-active: var(--vcl-color-warning-hover, var(--vcl-color-warning));
+  --vcl-color-info-active: var(--vcl-color-info-hover, var(--vcl-color-info));
+  --vcl-color-primary-solid-active: var(--vcl-color-primary-solid-hover);
+  --vcl-color-danger-solid-active: var(--vcl-color-danger-solid-hover);
+
   --vcl-color-primary-light: #eef1fe;
   /* 主色「当文字/图标色用」的自适应取值 —— 组件要写 `color:` 时用这个，不要用 -solid：
      -solid 的本义是「实心底压白字」（见下方语义色实心底段），亮暗各自只为那个场景保证对比度。
@@ -397,6 +409,18 @@
   /* 主色调 — 保持品牌蓝一致，hover 提亮 */
   --vcl-color-primary: #6b8af9;
   --vcl-color-primary-hover: #8aa5fb;
+  /* ── 按下态（状态三元组的第三档：default → hover → active）───────────────
+     吸收 BoardUI 的写法，但**值由 color-mix 从基色派生**：换主题/换品牌色时
+     按下态自动跟着走，不用再手工维护 5 组 × 2 主题的 hex。
+     老浏览器不支持 color-mix 时回落到 hover 档（下方先声明一遍作 fallback）。 */
+  --vcl-color-primary-active: var(--vcl-color-primary-hover, var(--vcl-color-primary));
+  --vcl-color-danger-active: var(--vcl-color-danger-hover, var(--vcl-color-danger));
+  --vcl-color-success-active: var(--vcl-color-success-hover, var(--vcl-color-success));
+  --vcl-color-warning-active: var(--vcl-color-warning-hover, var(--vcl-color-warning));
+  --vcl-color-info-active: var(--vcl-color-info-hover, var(--vcl-color-info));
+  --vcl-color-primary-solid-active: var(--vcl-color-primary-solid-hover);
+  --vcl-color-danger-solid-active: var(--vcl-color-danger-solid-hover);
+
   --vcl-color-primary-light: #1e2433;
   /* 主色当文字用：暗底取提亮档（各档暗底 4.83~5.77），不能用亮色那支的 #3b56e0 */
   --vcl-color-primary-on-surface: #6b8af9;
@@ -715,5 +739,31 @@
     content: ' (' attr(href) ')';
     font-size: 0.85em;
     color: #555;
+  }
+}
+
+/* 支持 color-mix 时覆盖为「再压一档」的真实按下态（亮色压黑、暗色提白，方向与 hover 一致） */
+@supports (color: color-mix(in srgb, red, blue)) {
+  :root {
+    --vcl-color-primary-active: color-mix(in srgb, var(--vcl-color-primary) 84%, #000);
+    --vcl-color-danger-active: color-mix(in srgb, var(--vcl-color-danger) 84%, #000);
+    --vcl-color-success-active: color-mix(in srgb, var(--vcl-color-success) 84%, #000);
+    --vcl-color-warning-active: color-mix(in srgb, var(--vcl-color-warning) 84%, #000);
+    --vcl-color-info-active: color-mix(in srgb, var(--vcl-color-info) 84%, #000);
+    --vcl-color-primary-solid-active: color-mix(in srgb, var(--vcl-color-primary-solid) 84%, #000);
+    --vcl-color-danger-solid-active: color-mix(in srgb, var(--vcl-color-danger-solid) 84%, #000);
+  }
+}
+
+/* 支持 color-mix 时覆盖为「再压一档」的真实按下态（亮色压黑、暗色提白，方向与 hover 一致） */
+@supports (color: color-mix(in srgb, red, blue)) {
+  :root[data-theme='dark'] {
+    --vcl-color-primary-active: color-mix(in srgb, var(--vcl-color-primary) 84%, #fff);
+    --vcl-color-danger-active: color-mix(in srgb, var(--vcl-color-danger) 84%, #fff);
+    --vcl-color-success-active: color-mix(in srgb, var(--vcl-color-success) 84%, #fff);
+    --vcl-color-warning-active: color-mix(in srgb, var(--vcl-color-warning) 84%, #fff);
+    --vcl-color-info-active: color-mix(in srgb, var(--vcl-color-info) 84%, #fff);
+    --vcl-color-primary-solid-active: color-mix(in srgb, var(--vcl-color-primary-solid) 84%, #fff);
+    --vcl-color-danger-solid-active: color-mix(in srgb, var(--vcl-color-danger-solid) 84%, #fff);
   }
 }
