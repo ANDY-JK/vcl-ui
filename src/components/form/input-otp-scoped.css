@@ -1,0 +1,63 @@
+/* ── InputOTP 验证码分格输入 ────────────────────────────────────────────────
+ * 密排取向：格子 36×42、间距 8，一行放完；不加立体感（6 个立体格子会抢注意力）。
+ * 所有尺寸走 --vcl-scale；颜色全部走语义令牌，暗色/自定义主题自动跟随。
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.otp-group {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(8px * var(--vcl-scale));
+}
+
+.otp-cell {
+  box-sizing: border-box;
+  width: calc(36px * var(--vcl-scale));
+  height: calc(42px * var(--vcl-scale));
+  padding: 0;
+  border: 1px solid var(--vcl-color-border);
+  border-radius: var(--vcl-radius-md);
+  background: var(--vcl-color-surface);
+  color: var(--vcl-color-text);
+  font-size: var(--vcl-text-subtitle-size);
+  line-height: var(--vcl-text-subtitle-line);
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  transition:
+    border-color var(--vcl-transition-fast),
+    box-shadow var(--vcl-transition-fast);
+}
+
+/* 焦点态统一走 --vcl-focus-ring（组件不许各写一套 outline） */
+.otp-cell:focus-visible,
+.otp-cell:focus {
+  border-color: var(--vcl-color-primary);
+  box-shadow: var(--vcl-focus-ring);
+}
+
+/* 输满后整组给一个"完成"的边框色：不换行、不加图标，只换描边 */
+.otp-complete .otp-cell {
+  border-color: var(--vcl-color-primary);
+}
+
+.otp-disabled .otp-cell {
+  background: var(--vcl-color-bg-alt);
+  color: var(--vcl-color-text-muted);
+  cursor: not-allowed;
+}
+
+.otp-readonly .otp-cell {
+  background: var(--vcl-color-bg-alt);
+}
+
+/* 窄屏：格子略缩，避免 6 位在 320px 上横向溢出 */
+@media (max-width: 480px) {
+  .otp-cell {
+    width: calc(32px * var(--vcl-scale));
+    height: calc(38px * var(--vcl-scale));
+  }
+  .otp-group {
+    gap: calc(6px * var(--vcl-scale));
+  }
+}

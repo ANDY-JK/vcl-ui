@@ -27,6 +27,10 @@ const demoMap: Record<string, any> = {
     loader: () => import('./form/SegmentedControlDemo.vue'),
     errorComponent: ErrorFallback,
   }),
+  'input-otp': defineAsyncComponent({
+    loader: () => import('./form/InputOTPDemo.vue'),
+    errorComponent: ErrorFallback,
+  }),
   // 其他表单
   upload: defineAsyncComponent({ loader: () => import('./form/UploadDemo.vue'), errorComponent: ErrorFallback }),
   // 采集合并演示（拍照 + 扫码三段同页；旧 /barcode-scanner /camera-capture /capture-fallback 路由已重定向）

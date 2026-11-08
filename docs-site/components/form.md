@@ -10,6 +10,7 @@
 | `Select` | 26 | 5 | 2 |
 | `Group` | 18 | 2 | 0 |
 | `SegmentedControl` | 6 | 2 | 0 |
+| `InputOTP` | 7 | 2 | 0 |
 | `IconPicker` | 6 | 5 | 0 |
 | `Upload` | 19 | 5 | 2 |
 | `CameraCapture` | 6 | 5 | 0 |
@@ -186,6 +187,29 @@
 | --- | --- | --- |
 | `'update:modelValue'` | `value: SegValue` | 选中值变化（配合 v-model 使用） |
 | `change` | `value: SegValue, option: Option` | 选中值变化，附带被选中的选项，便于宿主做联动（如切换后重新拉数据） |
+
+## `InputOTP`
+
+> 🔗 在线示例：`npm run dev` 启动 demo 站后访问 `#/input-otp`（Props 表与交互行为以 demo 页为准）
+
+### Props
+
+| 属性 | 类型 | 默认值 | 必填 | 说明 |
+| --- | --- | --- | --- | --- |
+| `modelValue` | `string` | — | 是 | 整串值：不足 `length` 位时右侧留空（不补占位符） |
+| `length` | `number` | `6` | 否 | 位数（默认 6；短信码 4~6、TOTP 6、部分平台 8） |
+| `type` | `'numeric' \| 'alphanumeric'` | `'numeric'` | 否 | numeric = 只收数字；alphanumeric = 数字+字母（TOTP 长密钥场景） |
+| `disabled` | `boolean` | `false` | 否 | 整组禁用 |
+| `readonly` | `boolean` | `false` | 否 | 只读（可聚焦可复制，不可改） |
+| `ariaLabel` | `string` | `''` | 否 | 无障碍名：读屏念「<名字>，6 位验证码」 |
+| `autofocus` | `boolean` | `false` | 否 | 是否自动聚焦第一格（模态里通常要） |
+
+### Events
+
+| 事件 | 载荷 | 说明 |
+| --- | --- | --- |
+| `'update:modelValue'` | `value: string` | 整串值变化（每敲一位都会更新，宿主可用 `length` 判断是否输完） |
+| `complete` | `value: string` | 输满时的回调：宿主不必自己数位数 |
 
 ## `IconPicker`
 

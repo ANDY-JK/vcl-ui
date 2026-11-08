@@ -14,9 +14,9 @@ title: 事实清单（自动生成）
 | 事实 | 值 | 怎么算的 |
 | --- | --- | --- |
 | 域入口数 | **13** | `package.json` 的 `exports`，去掉 `./css`/`./i18n` 等辅助子路径 |
-| 组件数 | **69** | `gen:docs` 解析 `defineProps`/`defineEmits`/`defineSlots` 得到 |
+| 组件数 | **70** | `gen:docs` 解析 `defineProps`/`defineEmits`/`defineSlots` 得到 |
 | 命名导出数 | **183** | 同上，含类型与 composable |
-| demo 组件演示页数 | **49** | `src/demos/ComponentDemo.vue` 的 `demoMap` 顶层键数（一个键一页，页面含 Props 表） |
+| demo 组件演示页数 | **50** | `src/demos/ComponentDemo.vue` 的 `demoMap` 顶层键数（一个键一页，页面含 Props 表） |
 | 解析失败组件 | **0** | 应为 0；非 0 时 `check:docs` 直接红 |
 
 域入口清单：
@@ -116,8 +116,8 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 单测文件数 | **462** |
-| 单测用例数 | **6906** |
+| 单测文件数 | **463** |
+| 单测用例数 | **6913** |
 
 ::: info 这两个数会随每次提交变化
 它们来自 `reports/quality-check-logs/*-test-unit.log`（按后缀匹配，**不依赖步骤序号**；每次整链运行前清空），
