@@ -211,6 +211,11 @@ const ELLIPSIS_VERDICTS = new Map([
   ['store-name', 'title'],
   ['contact', 'title'],
   ['dt-col-title', 'title'],
+  // 分段控制器段内文字：窄容器/长选项名会截断（min-width 48 + nowrap），绑 :title 出全值
+  ['seg-label', 'title'],
+  // 通知中心行内标题/副文案：单行截断保密排（行高低才能一屏扫十几条），绑 :title 出全值
+  ['nc-item-title', 'title'],
+  ['nc-item-desc', 'title'],
   ['cell-text', 'covered'],
   ['cell-text-inner', 'covered'],
   ['truncated', 'covered'],

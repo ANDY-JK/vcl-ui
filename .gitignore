@@ -100,3 +100,7 @@ tests/fixtures/coverage-marker/.full-run-fresh
 
 # CI 热缓存（vendor-vulns 离线兜底，actions/cache 跨 run 复用）
 /.ci-cache/
+
+# 工具产物：AI 编程助手的工作计划目录（plans/*.md），不是项目文件
+# [2026-11-08] 未跟踪但此前也没被忽略 → `git add .` 会把它带进仓库
+/.zcode/

@@ -82,6 +82,7 @@
     "check:edit-single-writer": "node scripts/check-edit-single-writer.mjs",
     "check:css-fonts": "node scripts/check-css-fonts.mjs",
     "check:css-scale": "node scripts/check-css-scale.mjs",
+    "check:type-tokens": "node scripts/check-type-tokens.mjs",
     "check:offline": "node scripts/check-offline.mjs",
     "gen:demo-assets": "node scripts/gen-demo-assets.mjs",
     "apply-scale": "node scripts/apply-scale.mjs --write",

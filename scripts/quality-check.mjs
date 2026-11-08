@@ -113,6 +113,7 @@ const STEPS = [
   ['check:css-breakpoints', 'npm run check:css-breakpoints'],
   ['check:css-fonts', 'npm run check:css-fonts'],
   ['check:css-scale', 'npm run check:css-scale'],
+  ['check:type-tokens', 'npm run check:type-tokens'],
   ['check:offline', 'npm run check:offline'],
   ['check:i18n', 'npm run check:i18n'],
   ['check:demo-props', 'npm run check:demo-props'],

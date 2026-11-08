@@ -2,9 +2,12 @@
 //    需我确认：新增组件导出、export 路径调整
 // 设计令牌必须先于所有组件样式进入产物 CSS（vcl-ui/css），否则 --color-*/--z-* 全部悬空
 import './tokens.css'
+// 复合字体工具类：消费 tokens.css 的 --vcl-text-*，必须紧跟令牌之后（同属「底座」层）
+import './type-scale.css'
 // 基础
 export { default as Button } from './basic/Button.vue'
 export { default as IconSvg } from './basic/IconSvg.vue'
+export { default as Kbd } from './basic/Kbd.vue'
 export { default as Tag } from './basic/Tag.vue'
 
 // 数据展示
@@ -25,6 +28,7 @@ export { default as Empty } from './data/Empty.vue'
 export { default as Input } from './form/Input.vue'
 export { default as Select } from './form/Select.vue'
 export { default as Group } from './form/Group.vue'
+export { default as SegmentedControl } from './form/SegmentedControl.vue'
 export { default as IconPicker } from './form/IconPicker.vue'
 export { default as Upload } from './form/Upload.vue'
 export { default as CameraCapture } from './form/CameraCapture.vue'
@@ -77,6 +81,8 @@ export type { DropZoneConfig, DropZoneFile } from './form/utils/types'
 export { default as Toast } from './feedback/Toast.vue'
 export { default as Loading } from './feedback/Loading.vue'
 export { default as Popover } from './feedback/Popover.vue'
+export { default as NotificationCenter } from './feedback/NotificationCenter.vue'
+export type { NotificationItem, NotificationType } from './feedback/notification-types'
 export { default as Result } from './feedback/Result.vue'
 export { default as Drawer } from './feedback/Drawer.vue'
 export { default as OfflineIndicator } from './feedback/OfflineIndicator.vue'

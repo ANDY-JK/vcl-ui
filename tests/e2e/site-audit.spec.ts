@@ -73,30 +73,58 @@ type Msg = { type: string; text: string }
 const isBenign = (route: string, t: string) =>
   THIRD_PARTY.some((r) => r.test(t)) || (BY_DESIGN[route] ?? []).some((r) => r.test(t))
 
-test('全站逐页交互：无 console 报错/告警、无未捕获异常、无错误边界接管', async ({ page }) => {
+/** 每扫完这么多页就换一个新的渲染进程（见下方「页面轮换」说明） */
+const PAGES_PER_CONTEXT = 10
+
+test('全站逐页交互：无 console 报错/告警、无未捕获异常、无错误边界接管', async ({ context }) => {
   // 46 页 × （滚动 + 最多 30 个按钮 + 12 个勾选 + 下拉/输入）实测 11~13 分钟；
   // 机器有负载时会翻倍（#477 实测 12 分钟预算被打满 → 假红）。给到 20 分钟，
   // 但每页另有 20s 渲染看门狗，卡住的页不会再吃掉整份预算。
   test.setTimeout(20 * 60_000)
 
   const msgs: Msg[] = []
-  page.on('console', (m) => {
-    const t = m.type()
-    if (t === 'error' || t === 'warning') msgs.push({ type: t, text: m.text() })
-  })
-  page.on('pageerror', (e) => msgs.push({ type: 'pageerror', text: e.message }))
-  // 浏览器对失败子资源只打一句 "Failed to load resource"，不带 URL，抓到了也定位不到是谁。
-  // 这里补一条带 URL 的采集。只认主帧：上一张页面遗留的请求在导航后超时，
-  // 它的 frame 已经不是当前主帧，不按帧归属就会把外站超时记到无辜页面的账上。
-  page.on('requestfailed', (r) => {
-    if (r.frame() !== page.mainFrame()) return
-    msgs.push({ type: 'requestfailed', text: `${r.url()} :: ${r.failure()?.errorText ?? 'failed'}` })
-  })
-  page.on('dialog', (d) => d.dismiss().catch(() => {}))
+
+  /**
+   * ## 页面轮换（2026-11-08 补）
+   *
+   * 症状：跑到后半程会随机有 1~3 页报 `net::ERR_INSUFFICIENT_RESOURCES` 或
+   * `20s 内未渲染 .content-body`，**每次命中的页都不一样**（avatar / input / loading / amap 轮换），
+   * 单跑与重试结果也不一致 —— 是渲染进程被耗光，不是某条代码路径的稳定缺陷。
+   *
+   * 成因：每页都是 `goto` + `reload` 一次完整文档加载，dev server 还要**按需编译**该页的模块图；
+   * 49 页叠加下来，同一个渲染进程里的 loader / 连接 / 内存只增不减，到后半程就没有余量了。
+   *
+   * 修法：每 `PAGES_PER_CONTEXT` 页换一个新 page（同一 context，保留存储状态）。
+   * 旧 page 一关，它那一批 loader 随之释放 —— 比放宽断言或延长超时更接近根因。
+   */
+  let page = await context.newPage()
+
+  function attach(p: typeof page) {
+    p.on('console', (m) => {
+      const t = m.type()
+      if (t === 'error' || t === 'warning') msgs.push({ type: t, text: m.text() })
+    })
+    p.on('pageerror', (e) => msgs.push({ type: 'pageerror', text: e.message }))
+    // 浏览器对失败子资源只打一句 "Failed to load resource"，不带 URL，抓到了也定位不到是谁。
+    // 这里补一条带 URL 的采集。只认主帧：上一张页面遗留的请求在导航后超时，
+    // 它的 frame 已经不是当前主帧，不按帧归属就会把外站超时记到无辜页面的账上。
+    p.on('requestfailed', (r) => {
+      if (r.frame() !== p.mainFrame()) return
+      msgs.push({ type: 'requestfailed', text: `${r.url()} :: ${r.failure()?.errorText ?? 'failed'}` })
+    })
+    p.on('dialog', (d) => d.dismiss().catch(() => {}))
+  }
+  attach(page)
 
   const report: Record<string, { msgs: Msg[]; boundary: boolean; hash: string }> = {}
 
-  for (const key of ROUTES) {
+  for (const [routeIndex, key] of ROUTES.entries()) {
+    // 轮换：换 page 后旧渲染进程的资源随之释放（详见上方「页面轮换」）
+    if (routeIndex > 0 && routeIndex % PAGES_PER_CONTEXT === 0) {
+      await page.close()
+      page = await context.newPage()
+      attach(page)
+    }
     msgs.length = 0
     await page.goto(`${BASE}/#/${key}`)
     await page.reload()

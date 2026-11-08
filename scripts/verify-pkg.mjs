@@ -172,7 +172,11 @@ const esmChunks = walk('dist')
 const BUDGET_KB = [
   [/^core-chunk-.*\.js$/, 1000],
   [/^vendor-heavy-.*\.js$/, 900],
-  [/^form-builder\/index\.js$/, 700], // 原 form-builder-chunk 预算随代码内联迁到 entry
+  // [2026-11-08] 700 → 710：新增滚动边缘软化接入（designer/OutlineTree 用 useScrollEdge），
+  // 实测 form-builder/index.js 701KB 顶破了原来的 700KB。这是**新功能带来的真实增长**
+  // （构建已剥离注释，不是文档变长）。留 1.3% 余量：再涨到 710 说明又加了一整套能力，
+  // 那时应该拆分而不是继续抬。抬预算必须在这里留痕，不许静默改数。
+  [/^form-builder\/index\.js$/, 710], // 原 form-builder-chunk 预算随代码内联迁到 entry
   [/^morphicons-icons-data-.*\.js$/, 700],
   [/^solar-icons-data-.*\.js$/, 280],
   // 随包分发的扫码解码 wasm（base64 文本）：2026-09-28 实测 1271.53KB，+15% 余量。
