@@ -5,7 +5,10 @@ import { test, expect } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const BASE = process.env.E2E_BASE || 'http://localhost:3721'
+// 显式覆盖（可选）。真正的基址在 test 内部按「E2E_BASE > 配置的 baseURL > dev 默认端口」决定 ——
+// 这样同一份 spec 既能跑 dev（3721），也能跑产物（playwright.demo.config.ts 的 3722）。
+// 注意：test.info() 只能在 test/hook 内调用，不能在模块顶层。
+const BASE_OVERRIDE = process.env.E2E_BASE ?? ''
 const ROOT = process.cwd()
 
 // 从 demoMap 解析路由 key，避免手写清单与源码漂移
@@ -77,6 +80,7 @@ const isBenign = (route: string, t: string) =>
 const ROUTES_PER_CONTEXT = 10
 
 test('全站逐页交互：无 console 报错/告警、无未捕获异常、无错误边界接管', async ({ browser }) => {
+  const BASE = BASE_OVERRIDE || test.info().project.use.baseURL || 'http://localhost:3721'
   // 46 页 × （滚动 + 最多 30 个按钮 + 12 个勾选 + 下拉/输入）实测 11~13 分钟；
   // 机器有负载时会翻倍（#477 实测 12 分钟预算被打满 → 假红）。给到 20 分钟，
   // 但每页另有 20s 渲染看门狗，卡住的页不会再吃掉整份预算。

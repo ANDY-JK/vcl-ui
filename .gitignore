@@ -22,6 +22,7 @@ tests/fixtures/*.y4m
 
 # 构建产物
 dist/
+dist-demo/
 
 # 依赖目录（已被跟踪，清理历史后禁止再进版本控制）
 node_modules/

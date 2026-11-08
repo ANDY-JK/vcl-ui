@@ -101,7 +101,10 @@
     "check:tech-debt": "node scripts/check-tech-debt.mjs",
     "check:rtl": "node scripts/check-rtl.mjs",
     "check:rtl-semantics": "node scripts/check-rtl-semantics.mjs",
-    "sync:demo-table": "node scripts/sync-demo-table.mjs"
+    "sync:demo-table": "node scripts/sync-demo-table.mjs",
+    "build:demo": "vite build -c vite.demo.config.ts",
+    "serve:demo": "node scripts/serve-demo-dist.mjs --port 3722",
+    "e2e:audit": "npm run build:demo && playwright test -c playwright.demo.config.ts"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",

@@ -57,4 +57,23 @@ installErrorGuard(app, {
     guardLog.length = Math.min(guardLog.length, 30)
   },
 })
-app.mount('#app')
+/* ===== 产物模式的运行时配置（2026-11-08）=====
+   库的 runtimeEnv() 在 DEV=false 时恒返回 {} —— 产物刻意不携带凭证。
+   所以静态产物跑起来后，amap 会报 js-key-missing。这里在挂载前向**同源服务器**
+   取一次演示站凭证并注入，产物本身仍然零密钥（与 env-guard 的承诺一致）。 */
+async function loadRuntimeConfig() {
+  if (import.meta.env.DEV) return
+  try {
+    const res = await fetch('/api/demo-config')
+    if (!res.ok) return
+    const cfg = (await res.json()) as { amapKey?: string; amapSecret?: string }
+    if (cfg.amapKey) {
+      const { setAmapKeys } = await import('@/components/amap')
+      setAmapKeys({ jsKey: cfg.amapKey, restKey: cfg.amapKey, securityCode: cfg.amapSecret ?? '' })
+    }
+  } catch {
+    // 静态服务器没提供配置（比如纯静态托管）：保持不变，amap 页面会提示缺 key
+  }
+}
+
+void loadRuntimeConfig().finally(() => app.mount('#app'))
