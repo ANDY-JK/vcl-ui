@@ -1,4 +1,4 @@
-// 发包前自检（六件事，任一不过即非零退出）
+// 发包前自检（七件事，任一不过即非零退出）
 // 1) 每个 .vue 源文件都要有对应 .d.ts —— 抓到过 IconPicker 静默缺失
 // 2) package.json exports 声明的每个目标文件必须真实存在
 // 3) .env.local 里的真值不得出现在可执行产物（跳过源码里本来就有的值，避免假阳性）
@@ -6,7 +6,8 @@
 //    3.4 消费者开 skipLibCheck:false 会报 73 条 TS2707（已发生）
 // 5) 产物里不得有不可达 chunk —— 本机删不掉旧 dist，旧版本代码会跟着发布（见 [5] 注释）
 // 6) 体积预算 —— 大块产物设绝对上限防「慢慢变胖没人看」（基线 2026-09-20，含 15~30% 余量）
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+// 7) 产物陈旧度 —— dist 必须比 src 新，否则上面 6 项验的都是上一次构建的快照
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import ts from 'typescript'
 import { gzipSync } from 'node:zlib'
@@ -324,6 +325,46 @@ if (cssStats) {
   )
 }
 if (oversize.length) fail.push(`产物超体积预算: ${oversize.join(', ')}`)
+
+/**
+ * [7] **产物陈旧度**：dist 必须比 src 新。
+ *
+ * 为什么需要这一节：上面 6 项全部读 `dist/`，而 dist 是上一次构建的快照。
+ * 于是"新增了一个 .ts 但没构建"会表现为 `[1] .ts 缺声明文件` —— **看起来像配置错**，
+ * 实际只是没 build（本轮就撞了一次：抽出 `_internal/icon-variants.ts` 后先看到"缺声明"，
+ * 重跑 `npm run build` 后自动通过）。
+ *
+ * 更危险的是反向：源码删了什么/改小了，dist 还是旧的 → **各项全绿，但验的是旧产物**。
+ * 这里把"陈旧"显式判红，让红的原因指向真正的原因。
+ *
+ * 判据：src/ 下最新 mtime > dist/ 下最新 mtime → 陈旧（构建产物总是晚于输入，正常情况下必然更晚）。
+ */
+const newestMtime = (dir) => {
+  let newest = 0
+  const visit = (d) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, e.name)
+      if (e.isDirectory()) {
+        if (!SKIP_DIRS.has(e.name)) visit(p)
+      } else {
+        const t = statSync(p).mtimeMs
+        if (t > newest) newest = t
+      }
+    }
+  }
+  visit(dir)
+  return newest
+}
+const srcNewest = newestMtime('src')
+const distNewest = newestMtime('dist')
+const staleMs = srcNewest - distNewest
+if (staleMs > 1000) {
+  fail.push(
+    `dist 比 src 旧 ${(staleMs / 1000).toFixed(0)}s —— 上面 6 项验的是旧产物。先 npm run build 再跑本脚本`,
+  )
+}
+console.log(`[7] 产物陈旧度 src 最新 - dist 最新 = ${(staleMs / 1000).toFixed(0)}s（>1s 即判红）`)
+
 
 if (fail.length) {
   console.error('\n❌ verify:pkg 未通过')
