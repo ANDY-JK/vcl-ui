@@ -155,6 +155,9 @@ const STEPS = [
   //    check 才会红 —— 那才是它真正该拦的东西。
   ['gen:facts', 'npm run gen:facts'],
   ['check:facts', 'npm run check:facts'],
+  // README 里手写的链步数（'快链 N 步 / 整链 N 步'）必须与真源一致 ——
+  // check:facts 只管 docs-site 正文，README 不在受检范围，这行历史上漂过两次。
+  ['check:chain-doc', 'npm run check:chain-doc'],
   // 台账/ADR 腐化（6.3 #4）：只查机械可验证项（closed 提交号真实存在、ADR 索引无死链）。
   // 放在文档类闸口末尾 —— 它最便宜（纯读文件 + git cat-file），失败时前面已经验过更重的东西。
   ['check:tech-debt', 'npm run check:tech-debt'],
@@ -189,7 +192,7 @@ const flag = (name) => {
 const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:review-appendix', 'check:edit-single-writer', 'check:esc-consume', 'check:public-surface', 'check:async-assert', 'check:debt-evidence', 'check:review-history', 'check:canwrite-usage', 'check:i18n-usage', 'check:event-codes', 'check:demo-routes', 'check:gate-wiring',
     // check:docs 进快链（#349）：它 1.0s，却是我连续六批加 prop 之后唯一能抓到
     // "API 文档没重新生成"的闸口 —— 单测/类型/lint 全绿也覆盖不到这一层
-    'check:docs', 'check:css-tokens', 'check:i18n', 'test:unit']
+    'check:docs', 'check:chain-doc', 'check:css-tokens', 'check:i18n', 'test:unit']
 const quick = args.includes('--quick')
 if (args.includes('--list')) {
   STEPS.forEach(([n, c], i) => console.log(`${String(i + 1).padStart(2)}. ${n.padEnd(24)} ${c}`))

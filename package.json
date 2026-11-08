@@ -105,7 +105,8 @@
     "build:demo": "node scripts/build-demo.mjs",
     "serve:demo": "node scripts/serve-demo-dist.mjs --port 3722",
     "e2e:audit": "node scripts/build-demo.mjs && node scripts/e2e-prod.mjs --audit-only",
-    "test:e2e:prod": "node scripts/build-demo.mjs && node scripts/e2e-prod.mjs"
+    "test:e2e:prod": "node scripts/build-demo.mjs && node scripts/e2e-prod.mjs",
+    "check:chain-doc": "node scripts/check-chain-doc.mjs"
   },
   "main": "./dist/vcl-ui.cjs",
   "module": "./dist/vcl-ui.js",
