@@ -2219,6 +2219,24 @@
       "cmd": "npx vitest run tests/unit/menu-interaction.spec.ts --no-coverage",
       "expect": "red",
       "note": "变异后：scheduleLeave 回调不再清 hoverKey → 鼠标移开后子菜单永久挂着（#476 实测的抽取回归，抽离前 Menu.vue 里就是 hoverKey.value = null）"
+    },
+    {
+      "id": "route-result-format-time-round",
+      "file": "src/components/route-planner/RouteResult.vue",
+      "find": "  const total = Math.round(min)\n  const h = Math.floor(total / 60)\n  const m = total % 60",
+      "replace": "  const h = Math.floor(min / 60)\n  const m = Math.round(min % 60)",
+      "cmd": "npx vitest run tests/unit/route-result-format.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：59.6 分钟被渲染成「60分钟」——先分后舍入会产生 m=60，汇总卡与分天行头同时错"
+    },
+    {
+      "id": "route-result-format-distance-round",
+      "file": "src/components/route-planner/RouteResult.vue",
+      "find": "  const meters = Math.round(m)\n  if (meters < 1000) return t('routePlanner.meters', { m: meters })\n  return t('routePlanner.kilometers', { km: (meters / 1000).toFixed(1) })",
+      "replace": "  if (m < 1000) return t('routePlanner.meters', { m: Math.round(m) })\n  return t('routePlanner.kilometers', { km: (m / 1000).toFixed(1) })",
+      "cmd": "npx vitest run tests/unit/route-result-format.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：999.6 米先判「米」再四舍五入成「1000米」——单位判定与展示刻度不一致"
     }
   ]
 }

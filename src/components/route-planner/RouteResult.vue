@@ -35,8 +35,11 @@ const currentDay = ref(1)
 
 /** 格式化时间 */
 function formatTime(min: number): string {
-  const h = Math.floor(min / 60)
-  const m = Math.round(min % 60)
+  if (!Number.isFinite(min)) return '—'
+  // 先整体四舍五入到整分钟再拆分：分开算会得到 h=0 / m=60（59.6 渲染成"60分钟"）。
+  const total = Math.round(min)
+  const h = Math.floor(total / 60)
+  const m = total % 60
   if (h === 0) return t('routePlanner.minutes', { m })
   if (m === 0) return t('routePlanner.hours', { h })
   return t('routePlanner.hoursMinutes', { h, m })
@@ -44,8 +47,11 @@ function formatTime(min: number): string {
 
 /** 格式化距离 */
 function formatDistance(m: number): string {
-  if (m < 1000) return t('routePlanner.meters', { m: Math.round(m) })
-  return t('routePlanner.kilometers', { km: (m / 1000).toFixed(1) })
+  if (!Number.isFinite(m)) return '—'
+  // 单位判定与展示用同一个刻度（都取整米）：否则 999.6 会走"米"分支再 round 成"1000米"。
+  const meters = Math.round(m)
+  if (meters < 1000) return t('routePlanner.meters', { m: meters })
+  return t('routePlanner.kilometers', { km: (meters / 1000).toFixed(1) })
 }
 
 /** 当天途经城市串（首日带起点）：模板文本与 title 共用一份，避免两处各拼一遍后不同步 */
