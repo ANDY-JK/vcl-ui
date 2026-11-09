@@ -60,13 +60,13 @@ describe('FormDesigner · 撤销/重做', () => {
     const confirmBtn = w.findAll('.confirm-btn').find((b) => b.text() === '清空')
     await confirmBtn!.trigger('click')
     await nextTick()
-    expect((w.vm as any).nodes.length).toBe(0)
+    expect((w.vm as unknown as { nodes: unknown[] }).nodes.length).toBe(0)
     // 撤销 → 恢复清空前节点
     const undoBtn = w.findAll('button.ld-btn').find((b) => b.text().includes('撤销'))
     expect(undoBtn!.attributes('disabled')).toBeUndefined()
     await undoBtn!.trigger('click')
     await nextTick()
-    expect((w.vm as any).nodes.length).toBe(1)
+    expect((w.vm as unknown as { nodes: unknown[] }).nodes.length).toBe(1)
   })
 })
 
@@ -118,7 +118,7 @@ describe('FormDesigner · 删除节点', () => {
     const w = mount(Wrapper, { global: { stubs: { teleport: true } }, attachTo: document.body })
     // 通过大纲树/画布删除链路较深，此处验证组件 expose 的删除入口可用（removeNode 经事件）
     // 直接验证受控回写基本流：节点存在
-    expect((w.vm as any).nodes.length).toBe(1)
+    expect((w.vm as unknown as { nodes: unknown[] }).nodes.length).toBe(1)
     await flushPromises()
   })
 })

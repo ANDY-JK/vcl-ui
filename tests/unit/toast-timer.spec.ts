@@ -4,6 +4,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import Toast from '@/components/feedback/Toast.vue'
+import type { ToastAPI } from '@/components/feedback/composables/toast-context'
 
 function items() {
   return document.querySelectorAll('.toast-item').length
@@ -22,7 +23,7 @@ describe('Toast · 自动关闭定时器', () => {
   it('卸载后定时器不再触发 removeToast（不操作已卸载状态）', async () => {
     vi.useFakeTimers()
     const w = mount(Toast, { attachTo: document.body })
-    const vm = w.vm as any
+    const vm = w.vm as ToastAPI
 
     vm.show('消息', 'info', 3000)
     await nextTick()
@@ -38,7 +39,7 @@ describe('Toast · 自动关闭定时器', () => {
   it('remove 手动关闭时同步清理对应定时器', async () => {
     vi.useFakeTimers()
     const w = mount(Toast, { attachTo: document.body })
-    const vm = w.vm as any
+    const vm = w.vm as ToastAPI
 
     const id = vm.show('消息', 'info', 3000)
     await nextTick()
@@ -56,7 +57,7 @@ describe('Toast · 自动关闭定时器', () => {
   it('clearAll 清理全部 toast 与定时器', async () => {
     vi.useFakeTimers()
     const w = mount(Toast, { attachTo: document.body })
-    const vm = w.vm as any
+    const vm = w.vm as ToastAPI
 
     vm.show('a', 'info', 1000)
     vm.show('b', 'info', 2000)

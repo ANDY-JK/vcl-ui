@@ -2,6 +2,7 @@
 //    需我确认：色板值修改、grid 间距调整
 import type { EChartsOption, DataZoomComponentOption } from 'echarts'
 import type { BuildParams, MarkLineConfig, MarkAreaConfig } from '../utils/types'
+import type { ChartOption } from '@/components/_internal/api-any'
 
 /** 图表默认动画时长（组件的 prop 默认值与 options 兜底共用一份） */
 export const DEFAULT_ANIMATION_MS = 800
@@ -54,7 +55,7 @@ export function resolvePalette(palette: string | undefined, customColors: string
 }
 
 /** 根据 legendPosition 返回 legend 位置配置 */
-export function resolveLegendPosition(pos: BuildParams['legendPosition']): Record<string, any> {
+export function resolveLegendPosition(pos: BuildParams['legendPosition']): ChartOption {
   const vertical = pos === 'left' || pos === 'right'
   if (vertical) {
     return pos === 'left'
@@ -73,7 +74,7 @@ export function buildLegendConfig(
   showLegend: boolean,
   position: BuildParams['legendPosition'] = 'bottom',
   p: BuildParams,
-): { option: Record<string, any> | undefined; effectivePosition: BuildParams['legendPosition'] } {
+): { option: ChartOption | undefined; effectivePosition: BuildParams['legendPosition'] } {
   const empty = { option: undefined, effectivePosition: position }
   if (!showLegend || data.length === 0) return empty
 

@@ -5,6 +5,7 @@
 // ==================== 数据核心：排序 + 数据管道 + 分页/虚拟滚动 ====================
 import { ref, computed, watch, onUnmounted, getCurrentInstance, type Ref, type ComputedRef } from 'vue'
 import type { Column, ColumnFilterState, RowMeta } from './types'
+import type { TableRow } from '@/components/_internal/api-any'
 import { getCellText, calcTableTotalPages } from './utils'
 import { compareCellValues } from './table-sort'
 import { createPinyinMatcher } from '@/components/_internal/usePinyinSearch'
@@ -26,7 +27,7 @@ export function stableRowId(row: object): string {
 /** 行唯一键：优先 rowKey 字段值，空/缺省则回退 stableRowId。
  *  行 key、行选择、右键定位、编辑 override、导出取值必须全部走这里——
  *  否则 rowKey 字段缺失的行会共用空串 ''，一次选中即串成整表。 */
-export function resolveRowKey(row: Record<string, any>, rowKeyField?: string): string {
+export function resolveRowKey(row: TableRow, rowKeyField?: string): string {
   const rawKey = row[rowKeyField ?? 'seq']
   return rawKey != null && String(rawKey) !== '' ? String(rawKey) : stableRowId(row)
 }
@@ -39,7 +40,7 @@ export function useTableCore(
     sortKey?: string
     sortOrder?: 'asc' | 'desc'
     // Data
-    data: Record<string, any>[]
+    data: TableRow[]
     rowKey?: string
     striped?: boolean
     truncateThreshold?: number
@@ -160,8 +161,8 @@ export function useTableCore(
     return result
   })
 
-  const rowMetaMap = computed<Map<Record<string, any>, RowMeta>>(() => {
-    const map = new Map<Record<string, any>, RowMeta>()
+  const rowMetaMap = computed<Map<TableRow, RowMeta>>(() => {
+    const map = new Map<TableRow, RowMeta>()
     const cols = visibleColumns.value
     const threshold = props.truncateThreshold ?? 0
     const doStripe = props.striped ?? true

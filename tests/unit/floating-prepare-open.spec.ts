@@ -1,4 +1,3 @@
-/* eslint-disable vue/one-component-per-file -- 测试夹具：宿主组件只为挂载 useFloating（本仓既有约定） */
 /**
  * useFloating · 打开前预定位不许假设面板高 200px（TD-92，#390）
  *

@@ -5,8 +5,9 @@
  *
  * 两条原因，都踩过：
  *   ① `vue/one-component-per-file`：spec 里再写一个 `defineComponent` 会让该文件**两个**
- *      组件定义各报一条，全仓 lint 的 warning 数正压在阈值上（`--max-warnings 147`），
- *      多两条直接断链 —— 与 `lowcode-nav-host.ts` / `anno-host.ts` 同款做法（本文件只含一个组件）。
+ *      组件定义各报一条 —— lint 预算现已收紧到 `--max-warnings 0`（2026-11-09 清零轮），
+ *      多一条就断链；与 `lowcode-nav-host.ts` / `anno-host.ts` 同款做法（本文件只含一个组件），
+ *      其余需要多组件的夹具文件在文件头用带理由的 `eslint-disable` 显式登记。
  *   ② 语义必须按**宿主的方式**取：`@vue/test-utils` 的 `wrapper.vm` 会退到组件的**内部代理**，
  *      于是 `defineExpose({})` 这种变异在 `vm` 上照样能看到 `refresh`（假绿）。宿主用的是模板 ref，
  *      拿到的只是 `defineExpose` 的对象 —— 所以这里显式走 `$refs`。

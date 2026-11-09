@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- 测试夹具:多桩组件/宿主组件按用例组装配(本仓既有约定,见 floating-prepare-open.spec.ts) */
 // 全局错误兜底：覆盖 ErrorBoundary（onErrorCaptured）拦不到的三类逃逸口
 // ① 未被任何边界捕获的 Vue 错误 ② 异步链错误 ③ 发版后懒加载 chunk 失效自愈
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'

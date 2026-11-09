@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue
 import Chart from '@/components/chart/Chart.vue'
 import { useT } from '@/components/_internal/i18n'
 import type { Column } from '@/components/data/composables/types'
+import type { TableRow } from '@/components/_internal/api-any'
 import type { ChartProps } from './utils/types'
 import type { ECElementEvent, ECharts } from 'echarts'
 import { DEFAULT_ANIMATION_MS } from './options/common'
@@ -69,7 +70,7 @@ const props = withDefaults(
     /** 下半部分表格列定义（DataTable Column 结构） */
     columns?: Column[]
     /** 下半部分表格数据 */
-    tableData?: Record<string, any>[]
+    tableData?: TableRow[]
     /** 显示表格区（初始值，之后由按钮控制；默认开） */
     showTable?: boolean
     /** 表格区标题 */

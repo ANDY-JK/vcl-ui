@@ -2,6 +2,7 @@
 // ⛔ 保护 — 切换列表，禁止：clamp() → px，展开/折叠动画
 //    需我确认：ExtraColumn 接口扩展、toggle 行为
 import IconSvg from '@/components/basic/IconSvg.vue'
+import type { TableRow } from '@/components/_internal/api-any'
 import Loading from '@/components/feedback/Loading.vue'
 import Empty from './Empty.vue'
 import { computed } from 'vue'
@@ -16,7 +17,7 @@ interface ExtraColumn {
 
 interface Props {
   /** 列表数据（行对象按各 *Field prop 取列） */
-  items: Record<string, any>[]
+  items: TableRow[]
   /** 行唯一键字段名（默认 'id'） */
   idKey?: string
   /** 标题字段名（默认 'display_name'） */
@@ -64,15 +65,15 @@ const effectiveButtonLabel = computed(() => props.buttonLabel || t('common.sendE
 
 const emit = defineEmits<{
   /** 开关切换：[行对象, 切换后的新值]（内部同步回写行数据，extraColumns 状态标签立即更新） */
-  toggle: [item: Record<string, any>, newValue: boolean]
+  toggle: [item: TableRow, newValue: boolean]
   /** 行点击 */
-  'item-click': [item: Record<string, any>]
+  'item-click': [item: TableRow]
   /** variant='button' 时点击按钮，payload: { name, phone, address, item } */
-  'button-click': [payload: { name: string; phone: string; address: string; item: Record<string, any> }]
+  'button-click': [payload: { name: string; phone: string; address: string; item: TableRow }]
 }>()
 
 /** switch toggle — 同步更新 item 数据，使 extraColumns 等状态标签立即更新 */
-function onToggle(item: Record<string, any>, newValue: boolean) {
+function onToggle(item: TableRow, newValue: boolean) {
   if (props.toggleField) {
     item[props.toggleField] = newValue
   }
@@ -82,7 +83,7 @@ function onToggle(item: Record<string, any>, newValue: boolean) {
 /** 行点击/键盘激活：事件来自行内真实控件（开关/按钮）时不抢发 itemClick。
     click 的 detail>0 说明是真实点击且已由 label @click.stop 拦截内层；
     keydown 只认 target 为行本身（内层控件自己的 Enter/Space 行为归控件） */
-function onItemClick(e: MouseEvent | KeyboardEvent, item: Record<string, any>) {
+function onItemClick(e: MouseEvent | KeyboardEvent, item: TableRow) {
   if (e.type === 'keydown' && e.target !== e.currentTarget) return
   emit('item-click', item)
 }

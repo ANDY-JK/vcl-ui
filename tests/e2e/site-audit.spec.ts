@@ -257,9 +257,12 @@ test('全站逐页交互：无 console 报错/告警、无未捕获异常、无�
 
   // 汇总打印，便于直接读
   const bad = Object.entries(report).filter(([, v]) => v.msgs.length || v.boundary)
+  // eslint-disable-next-line no-console -- 测试取证输出:运行时证据落日志,不进产物
   console.log(`\n=== 深审：${ROUTES.length} 页，问题页 ${bad.length} ===`)
   for (const [k, v] of bad) {
+  // eslint-disable-next-line no-console -- 测试取证输出:运行时证据落日志,不进产物
     console.log(`\n[${k}]${v.boundary ? ' ⚠ 错误边界接管' : ''} hash=${v.hash}`)
+  // eslint-disable-next-line no-console -- 测试取证输出:运行时证据落日志,不进产物
     for (const m of v.msgs) console.log(`  - ${m.type}: ${m.text}`)
   }
 

@@ -1,4 +1,5 @@
 // DynamicForm 组件类型定义
+import type { TableRow, CellValue, TreeChildren } from '@/components/_internal/api-any'
 
 /** 内置格式化：字符串快捷方式 */
 export type BuiltinFormat = 'trim' | 'number' | 'lat' | 'lng' | 'date' | 'upper' | 'lower'
@@ -80,7 +81,7 @@ export interface FieldConfig {
   // ---- 仅 type='cascader' / 'tree-select' 时生效 ----
   // children 的 any[] 是决策：级联树的深度与节点字段由调用方决定（可递归任意层），
   // 收成具体结构会限制用法；消费方按 children?: CascaderOption[] 自行递归收窄
-  cascaderOptions?: { value: string | number; label: string; children?: any[]; disabled?: boolean }[]
+  cascaderOptions?: { value: string | number; label: string; children?: TreeChildren; disabled?: boolean }[]
   // ---- 仅 type='number' 时生效 ----
   min?: number
   max?: number
@@ -156,7 +157,7 @@ export interface ExportColumn {
   width?: number
   /** 值格式化：(原始值, 行, 列索引) => 显示值 */
   // val/row 的 any 与返回 any 同 DataTable render：行数据为消费方任意结构（见 data/composables/types.ts）
-  format?: (val: any, row: Record<string, any>, colIndex: number) => any
+  format?: (val: CellValue, row: TableRow, colIndex: number) => CellValue
   /** 值为图片时的列宽高 */
   imageWidth?: number
   imageHeight?: number
@@ -175,7 +176,7 @@ export interface ExportSheet {
   /** columns（horizontal/vertical/multi 通用） */
   columns?: ExportColumn[]
   /** 行数据（horizontal 模式，优先级高于 columns） */
-  rows?: Record<string, any>[]
+  rows?: TableRow[]
   /** 从字段 key 快速生成列 */
   fields?: string[]
   /** multi 模式每行配对列数，默认 2（即 4 列/行：H V H V） */
@@ -190,7 +191,7 @@ export interface ExportExcelOptions {
   /** 单 sheet 快捷写法 */
   sheetName?: string
   columns?: ExportColumn[]
-  rows?: Record<string, any>[]
+  rows?: TableRow[]
   layout?: ExportSheet['layout']
   /** 导出为 CSV（忽略多 sheet） */
   asCSV?: boolean

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, nextTick, reactive, ref } from 'vue'
 import DataTable from '@/components/data/DataTable.vue'
+import type { TableRow } from '@/components/_internal/api-any'
 import Card from '@/components/data/Card.vue'
 import ModalBox from '@/components/layout/ModalBox.vue'
 import { createLocalStorage } from '@/components/data/composables/types'
@@ -403,7 +404,7 @@ const rowContextActions: RowContextAction[] = [
     },
   },
 ]
-function onRowAction(actionKey: string, row: Record<string, any>) {
+function onRowAction(actionKey: string, row: TableRow) {
   if (actionKey === 'delete') {
     actionRows.value = actionRows.value.filter((r) => r.id !== row.id)
     actionLog.value = `已删除：${row.name}`
@@ -533,7 +534,7 @@ const sumData = [
   { id: 6, product: '充电宝20000mAh', category: '电子产品', qty: 98, amount: 15582 },
 ]
 /** 函数式汇总：入参是 props.data 全量，不是当前页 —— 这是固定的口径 */
-function summaryFn(rows: Record<string, any>[]) {
+function summaryFn(rows: TableRow[]) {
   const qty = rows.reduce((s, r) => s + Number(r.qty), 0)
   const amount = rows.reduce((s, r) => s + Number(r.amount), 0)
   return { product: `共 ${rows.length} 条`, qty, amount }
@@ -596,11 +597,11 @@ const classCols: Column[] = [
 ]
 const classData = baseData
 /** 行类名：月薪过万加高亮行 */
-function rowClassOf(row: Record<string, any>) {
+function rowClassOf(row: TableRow) {
   return Number(row.amount) >= 15000 ? 'row-high-salary' : ''
 }
 /** 单元格类名：离线行整行置灰、金额列等宽 */
-function cellClassOf(colKey: string, row: Record<string, any>) {
+function cellClassOf(colKey: string, row: TableRow) {
   if (colKey === 'amount') return 'cell-mono'
   return row.status === '离线' ? 'cell-offline' : ''
 }
@@ -1531,7 +1532,7 @@ const lineMode = ref<'callback' | 'key'>('callback')
             :page-size="4"
             @sort="(k: string, o: string) => evSay(`sort: ${k} ${o}`)"
             @filter="(f: Record<string, string[]>) => evSay(`filter: ${JSON.stringify(f)}`)"
-            @row-click="(r: Record<string, any>, i: number) => evSay(`row-click: ${r.name} #${i}`)"
+            @row-click="(r: TableRow, i: number) => evSay(`row-click: ${r.name} #${i}`)"
             @selection-change="(ks: string[]) => evSay(`selection-change: ${ks.length} 行`)"
             @page-change="(p: number, s: number) => evSay(`page-change: ${p}/${s}`)"
             @cell-change="(rk: string, ck: string, v: string) => evSay(`cell-change: ${rk}.${ck}=${v}`)"

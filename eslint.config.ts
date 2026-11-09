@@ -127,8 +127,11 @@ export default [
   },
 
   // scripts/ 的审计/取证脚本是 Node CLI 工具，stdout 就是它们的输出接口，no-console
-  // 对它们是全量误报（曾占 152 条 warning，把棘轮数字撑到失真）。豁免后 package.json
-  // 的 --max-warnings 同步收紧到新的真实值。
+  // 对它们是全量误报（曾占 152 条 warning，把棘轮数字撑到失真）。
+  //
+  // 全仓告警已于「lint 清零轮」收敛到 0：字面 any 收进 _internal/api-any.ts 单点豁免，
+  // 测试夹具/取证输出用带理由的行级或文件级 disable。package.json 的 --max-warnings
+  // 随之从 147 收紧到 0 —— 从此**任何**新告警都会直接打断整链，不再有预算余量可藏。
   {
     files: ['scripts/**'],
     rules: {

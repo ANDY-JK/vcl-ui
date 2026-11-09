@@ -4,6 +4,7 @@
 import { ref, computed, watch, nextTick, type Ref, type ComputedRef } from 'vue'
 import { csvCell } from '@/components/_internal/tabular-export'
 import type { Column, ColumnFilterState, RowContextAction, TableStorage } from './types'
+import type { TableRow } from '@/components/_internal/api-any'
 import { getCellText, clampFloatingPosition, markLayerOpen } from './utils'
 import { useTablePersistence } from './useTablePersistence'
 import { resolveRowKey } from './useTableCore'
@@ -16,7 +17,7 @@ const t = useT()
 export function useTableExtras(
   props: {
     columns: Column[]
-    data: Record<string, any>[]
+    data: TableRow[]
     exportFileName?: string
     exportable?: boolean
     excelExportable?: boolean
@@ -40,7 +41,7 @@ export function useTableExtras(
   emit: (...args: unknown[]) => void,
   options: {
     // 数据核心
-    displayData: ComputedRef<Record<string, any>[]>
+    displayData: ComputedRef<TableRow[]>
     tableWrapRef: { value: HTMLElement | null }
     // 筛选
     filteredOptions: ComputedRef<{ value: string }[]>
@@ -63,7 +64,7 @@ export function useTableExtras(
     dynamicFixedLeft?: Ref<Set<string>>
     dynamicFixedRight?: Ref<Set<string>>
     // 分页
-    pagedData?: ComputedRef<Record<string, any>[]>
+    pagedData?: ComputedRef<TableRow[]>
   },
 ) {
   const {
@@ -153,7 +154,7 @@ export function useTableExtras(
     above: boolean
     columnKey: string | null
     rowKey: string | null
-    row: Record<string, any> | null
+    row: TableRow | null
     rowIndex: number
   }>({ visible: false, x: 0, y: 0, above: false, columnKey: null, rowKey: null, row: null, rowIndex: -1 })
   const contextMenuStyle = computed(() => {
@@ -188,7 +189,7 @@ export function useTableExtras(
   }
 
   /** 行右键菜单：右键数据行触发 */
-  function showRowContextMenu(row: Record<string, any>, event: MouseEvent) {
+  function showRowContextMenu(row: TableRow, event: MouseEvent) {
     if (!props.rowContextActions?.length) return
     closeContextMenu()
     markLayerOpen()
@@ -303,7 +304,7 @@ export function useTableExtras(
     }
   }
 
-  function toggleRowSelect(row: Record<string, any>) {
+  function toggleRowSelect(row: TableRow) {
     const key = resolveRowKey(row, props.rowKey)
     if (_selectedKeySet.value.has(key)) {
       updateSelectedKeys(_selectedKeys.value.filter((k) => k !== key))

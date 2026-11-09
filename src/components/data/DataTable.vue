@@ -1,4 +1,4 @@
-<script setup lang="ts" generic="T extends Record<string, any> = Record<string, any>">
+<script setup lang="ts" generic="T extends TableRow = TableRow">
 import { useDataTableScroll } from './useDataTableScroll'
 import { reportError } from '@/components/_internal/runtime-observer'
 // ⛔ 保护 — 禁止：clamp() → px，table-layout:fixed 删除，列宽计算链路，结构层级
@@ -17,6 +17,7 @@ import {
   toRef,
   type ComputedRef,
 } from 'vue'
+import type { TableRow } from '@/components/_internal/api-any'
 import { useT } from '@/components/_internal/i18n'
 import { useIdSafe } from '@/components/_internal/useIdCompat'
 import { useScrollEdge } from '@/components/_internal/scroll-edge'
@@ -269,13 +270,11 @@ const emit = defineEmits<Emits>()
 
 const t = useT()
 
-/** 类型安全包装：composable 返回的 row 是 Record<string, any>，通过断言转为 T 传给用户回调 */
-const _rowClass = (row: Record<string, any>, idx: number) => props.rowClass?.(row as T, idx) ?? ''
-const _rowStyle = (row: Record<string, any>, idx: number) => props.rowStyle?.(row as T, idx) ?? {}
-const _cellClass = (colKey: string, row: Record<string, any>, idx: number) =>
-  props.cellClass?.(colKey, row as T, idx) ?? ''
-const _cellStyle = (colKey: string, row: Record<string, any>, idx: number) =>
-  props.cellStyle?.(colKey, row as T, idx) ?? {}
+/** 类型安全包装：composable 返回的 row 是 TableRow，通过断言转为 T 传给用户回调 */
+const _rowClass = (row: TableRow, idx: number) => props.rowClass?.(row as T, idx) ?? ''
+const _rowStyle = (row: TableRow, idx: number) => props.rowStyle?.(row as T, idx) ?? {}
+const _cellClass = (colKey: string, row: TableRow, idx: number) => props.cellClass?.(colKey, row as T, idx) ?? ''
+const _cellStyle = (colKey: string, row: TableRow, idx: number) => props.cellStyle?.(colKey, row as T, idx) ?? {}
 
 /** 行级左边线：rowLine 回调优先，未设置回调时走 rowLineKey+lineColors 字段映射；
  *  无命中返回空串（不渲染线）。非法色名照原样返回——CSS 类不命中即无线，天然兜底。
@@ -314,7 +313,7 @@ function onHeaderCellClick(e: MouseEvent, col: Column) {
 }
 
 /** 单元格 mouseenter */
-function onCellMouseEnter(e: MouseEvent, row: Record<string, any>, colKey: string) {
+function onCellMouseEnter(e: MouseEvent, row: TableRow, colKey: string) {
   const rowMeta = rowMetaMap.value.get(row)
   showTooltip(e, rowMeta?.texts[colKey] ?? '')
   showNoteTooltip(e, rowMeta?.key ?? '', colKey)
@@ -355,7 +354,7 @@ function onContextItemClick(act: RowContextAction) {
 }
 
 // 前向引用：useTableCore 产出 displayData 后回填，解决与 useTableColumns 的循环依赖
-const _displayDataRef = ref<Record<string, any>[]>([])
+const _displayDataRef = ref<TableRow[]>([])
 
 // 操作按钮列是否可见 + 动态宽度
 const _hasActions = computed(() => (props.rowActions?.length ?? 0) > 0)
@@ -407,7 +406,7 @@ const {
   onColDragLeave,
   onColDrop,
   onColDragEnd,
-} = useTableColumns(props, tableWrapRef, _displayDataRef as ComputedRef<Record<string, any>[]>, _actionColWidth)
+} = useTableColumns(props, tableWrapRef, _displayDataRef as ComputedRef<TableRow[]>, _actionColWidth)
 /** 存在左侧固定列时，选择框列并入左侧固定（未开启固定则随内容滚动） */
 const _hasFixedLeftCol = computed(() => _displayColumns.value.some((c) => isColumnFixed(c) === 'left'))
 /** 存在右侧固定列时，操作列并入右侧固定（未开启固定则随内容滚动） */
@@ -1001,7 +1000,7 @@ const {
 } = useTableExtras(props, emit as (...args: unknown[]) => void, {
   // v2（Q5）：@export 监听在否决定服务端导出还是内置 CSV/Excel
   hasExportListener: () => !!_dtInstance?.vnode.props?.onExport,
-  displayData: _displayDataRef as ComputedRef<Record<string, any>[]>,
+  displayData: _displayDataRef as ComputedRef<TableRow[]>,
   tableWrapRef,
   filteredOptions,
   filterDraft,
@@ -1084,7 +1083,7 @@ function exportCSVWithFeedback(): boolean {
 
 /** 单元格单击：选项列弹出面板，否则走选择逻辑
  *  @patch 2026-07-15 Ctrl+单击 → 行高亮+进度条标记；普通单击 → 仅单元格选中 */
-function onCellClick(row: Record<string, any>, col: Column, event: MouseEvent) {
+function onCellClick(row: TableRow, col: Column, event: MouseEvent) {
   // @patch 2026-08-09 拖选结束的 click 不改变选区（长按/拖拽已建立矩形选区）
   // 抑制标志由 useRangePointer 内部管理（M3 第十二刀下沉后不再暴露可变变量）
   if (shouldSuppressClick()) return
@@ -1111,13 +1110,13 @@ function onCellClick(row: Record<string, any>, col: Column, event: MouseEvent) {
 
 /** 卡片视图字段点击：options 列打开选项面板，其余列仅标记活动表格。
  *  卡片视图没有 <td>，也就不会走 selectCell —— 不标记的话该表的 Ctrl+Z/C/V 会静默失效。 */
-function onCardFieldClick(row: Record<string, any>, col: Column, event: MouseEvent) {
+function onCardFieldClick(row: TableRow, col: Column, event: MouseEvent) {
   markEditActive()
   if (isOptionDroppable(col)) openOptDrop(row, col, event)
 }
 
 /** 单元格双击：编辑模式且列可编辑 → 进入编辑；否则仅保留单元格选中态，清除浏览器双击产生的文本全选 */
-function onCellDblClick(row: Record<string, any>, col: Column, e?: MouseEvent) {
+function onCellDblClick(row: TableRow, col: Column, e?: MouseEvent) {
   // TD-77（#274）：此前是 `props.editable && col.editable !== false` —— **漏了图片列**。
   // 双击图片单元格会进内联编辑：图片被隐藏、换成文本框，用户能把 URL 以外的文本写进图片列。
   // 全仓另 5 处都排除了 image/options，只有这里没跟上（TD-77 第三次同类漏判）。
@@ -1163,14 +1162,14 @@ function onFilterKeyTrigger(col: Column, e: KeyboardEvent) {
 
 // ==================== 单元格右键菜单 → useTableCellMenus（复制 / 粘贴 / 清空动作已下沉） ====================
 /** 获取单元格即时显示值（本地覆盖优先） */
-function cellVal(row: Record<string, any>, colKey: string, metaVal: string): string {
+function cellVal(row: TableRow, colKey: string, metaVal: string): string {
   const rk = rowMetaMap.value.get(row)?.key ?? ''
   return getCellValue(rk, colKey, metaVal)
 }
 
 /** 展示层文本：空白 → blankText 占位。包在 cellVal 最外层，确保编辑清空后同样占位。
  *  cellVal / rowMetaMap.texts 保持原值供导出、筛选、列宽测量使用 */
-function cellShow(row: Record<string, any>, col: Column): string {
+function cellShow(row: TableRow, col: Column): string {
   return blankPlaceholder(cellVal(row, col.key, rowMetaMap.value.get(row)?.texts[col.key] ?? ''), props.blankText)
 }
 
@@ -1194,7 +1193,7 @@ const _summaryData = computed(() => {
   if (typeof props.summary === 'function') return props.summary(props.data)
   return props.summary
 })
-function handleRowClick(row: Record<string, any>, idx: number) {
+function handleRowClick(row: TableRow, idx: number) {
   const key = rowMetaMap.value.get(row)?.key ?? ''
   const next = new Set(_clickedRowKeys.value)
   if (next.has(key)) next.delete(key)
@@ -1318,7 +1317,7 @@ onMounted(() => {
   let _lastAutoFitLen = 0
   watch(
     _displayDataRef,
-    (val: Record<string, any>[]) => {
+    (val: TableRow[]) => {
       const len = (val && val.length) || 0
       if (!_firstDataReady && len > 0) {
         _firstDataReady = true
@@ -1904,10 +1903,12 @@ provideDataTableContext({
                       <span class="cell-text-inner">
                         <!-- @slot cell: 单元格内容自定义渲染（作用域：column、row、value） -->
                         <slot name="cell" :column="col" :row="row" :value="cellShow(row, col)">
+                          <!-- eslint-disable vue/no-v-html -- col.cell 返回值已经 sanitizeHTML 消毒(TD-124 有用例守) -->
                           <span
                             v-if="typeof col.cell === 'function'"
                             v-html="sanitizeHTML(col.cell(cellShow(row, col), row))"
                           />
+                          <!-- eslint-enable vue/no-v-html -->
                           <span
                             v-else-if="col.options && col.options.length && typeof col.options[0] === 'object'"
                             :style="{
@@ -2156,10 +2157,12 @@ provideDataTableContext({
                     @click.stop="onCardFieldClick(row, col, $event)"
                     @dblclick.stop="onCellDblClick(row, col, $event)"
                   >
+                    <!-- eslint-disable vue/no-v-html -- col.cell 返回值已经 sanitizeHTML 消毒(TD-124 有用例守) -->
                     <span
                       v-if="typeof col.cell === 'function'"
                       v-html="sanitizeHTML(col.cell(cellShow(row, col), row))"
                     />
+                    <!-- eslint-enable vue/no-v-html -->
                     <template v-else>{{ cellShow(row, col) }}</template>
                   </span>
                 </span>
@@ -2421,6 +2424,7 @@ provideDataTableContext({
             @click.stop
             @keydown="onTooltipKeydown"
           >
+            <!-- eslint-disable-next-line vue/no-v-html -- 值经 sanitizeHTML 内置消毒(TD-124 有用例守),非原始用户输入 -->
             <span v-html="sanitizeHTML(_tooltipText)" />
           </div>
 

@@ -4,6 +4,7 @@
 // 状态与开合逻辑归本模块；触发接线（onCellClick / onCellDblClick 等）留在主文件。
 import { ref, watch, nextTick, type ComputedRef, type Ref } from 'vue'
 import type { Column, ColumnOption, RowMeta } from './types'
+import type { TableRow } from '@/components/_internal/api-any'
 import type { WriteEntry } from './cell-types'
 import { isColumnReadonly } from './cell-types'
 import { clampFloatingPosition, markLayerOpen } from './utils'
@@ -20,7 +21,7 @@ interface MenuState {
   above: boolean
   columnKey: string | null
   rowKey: string | null
-  row: Record<string, any> | null
+  row: TableRow | null
   rowIndex: number
 }
 
@@ -32,11 +33,11 @@ export function useTableCellMenus(
     cellContextMenu?: boolean
   },
   deps: {
-    rowMetaMap: Ref<Map<Record<string, any>, RowMeta>>
+    rowMetaMap: Ref<Map<TableRow, RowMeta>>
     /** 单元格即时显示值（本地覆盖优先） */
-    cellVal: (row: Record<string, any>, colKey: string, metaVal: string) => string
+    cellVal: (row: TableRow, colKey: string, metaVal: string) => string
     selectCell: (rowKey: string, colKey: string, value: string, ctrlKey: boolean) => void
-    effectivePagedData: ComputedRef<Record<string, any>[]>
+    effectivePagedData: ComputedRef<TableRow[]>
     tableWrapRef: Ref<HTMLElement | null>
     /** 表头/行/单元格右键共用状态（useTableExtras 产出） */
     contextMenu: Ref<MenuState>
@@ -145,7 +146,7 @@ export function useTableCellMenus(
     })
   })
 
-  function openOptDrop(row: Record<string, any>, col: Column, event: MouseEvent) {
+  function openOptDrop(row: TableRow, col: Column, event: MouseEvent) {
     // 防御：非编辑模式或列级禁用不允许打开选项面板
     if (!isOptionDroppable(col)) return
     // 标记活动表格：卡片视图的字段点击不经 selectCell，不标记会导致 Ctrl+Z 静默失效
@@ -214,14 +215,14 @@ export function useTableCellMenus(
 
   // ==================== 单元格右键菜单 ====================
   /** 单元格右键守卫：cellContextMenu=false 时不拦截，冒泡到行右键/浏览器默认 */
-  function onCellContextMenuGuard(row: Record<string, any>, col: Column, e: MouseEvent) {
+  function onCellContextMenuGuard(row: TableRow, col: Column, e: MouseEvent) {
     if (!props.cellContextMenu) return
     e.preventDefault?.()
     e.stopPropagation()
     onCellContextMenu(row, col, e)
   }
 
-  function onCellContextMenu(row: Record<string, any>, col: Column, event: MouseEvent) {
+  function onCellContextMenu(row: TableRow, col: Column, event: MouseEvent) {
     // 右键格设为当前选中（清空旧选区），菜单操作基于该格
     markLayerOpen()
     const rk = rowMetaMap.value.get(row)?.key ?? ''

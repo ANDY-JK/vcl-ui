@@ -4,6 +4,7 @@
 // ==================== DataTable 类型定义 ====================
 
 import type { CellValueType } from './cell-input'
+import type { TableRow, CellValue } from '@/components/_internal/api-any'
 
 /** 表格列定义（#438：跨域被 chart / form-builder 使用，从 data 域入口导出） */
 export interface Column {
@@ -35,11 +36,12 @@ export interface Column {
   /**
    * 自定义渲染，返回纯文本。
    * value/row 保留 any 是决策不是偷懒：DataTable 的行数据是消费方任意结构
-   * （Record<string, any>），列值来自该结构的某列，类型不可知；改 unknown 会逼
+   * （TableRow），列值来自该结构的某列，类型不可知；改 unknown 会逼
    * 每个使用方在回调里写守卫——那是把库的成本转嫁给使用者。
+   * 字面 any 的单点豁免在 _internal/api-any.ts（全仓唯一），本文件只引用别名。
    * v2 处理方向：DataTable<T> 泛型化后收成 T[keyof T]，属破坏性变更，攒批。
    */
-  render?: (value: any, row: Record<string, any>, index: number) => string
+  render?: (value: CellValue, row: TableRow, index: number) => string
   /** 预设下拉选项：存在时编辑模式渲染为下拉面板；支持 string 或 { value, label?, color? } */
   options?: (string | ColumnOption)[]
   /** 筛选候选值：服务端分页时由外部传入全量可选值，优先于从 data 提取 */
@@ -49,7 +51,7 @@ export interface Column {
    * ⚠️ 安全：返回值经过内置消毒（剥离 script/style/事件处理器），但仍不建议传入不可信内容。
    * value/row 的 any 同 render：行数据为消费方任意结构，见上。
    */
-  cell?: (value: any, row: Record<string, any>) => string
+  cell?: (value: CellValue, row: TableRow) => string
 }
 
 /** 下拉选项对象：列预设 options 可混用 string 与此对象 */
@@ -68,7 +70,7 @@ export interface RowAction {
   icon?: string
   variant?: 'default' | 'primary' | 'danger' | 'success' | 'warning' | 'outline' | 'info' | string
   /** 条件显示：返回 false 则该行不显示此按钮 */
-  visible?: (row: Record<string, any>, index: number) => boolean
+  visible?: (row: TableRow, index: number) => boolean
 }
 
 /** 行右键菜单项 */
@@ -78,7 +80,7 @@ export interface RowContextAction {
   icon?: string
   danger?: boolean
   /** 内联回调：绑定后直接执行，优先级高于 rowContextAction 事件 */
-  onClick?: (row: Record<string, any>, index: number) => void
+  onClick?: (row: TableRow, index: number) => void
 }
 
 export interface ColumnFilterState {
@@ -170,7 +172,7 @@ export type Emits = {
   /** v-model:filters——外部程序化控制筛选状态（服务端筛选场景） */
   'update:filters': [filters: Record<string, string[]>]
   /** 行点击 */
-  'row-click': [row: Record<string, any>, index: number]
+  'row-click': [row: TableRow, index: number]
   /** v-model:selectedKeys——选中行键集合 */
   'update:selected-keys': [keys: string[]]
   /** v-model:currentPage——当前页码 */
@@ -178,7 +180,7 @@ export type Emits = {
   /** 翻页：[页码, 每页行数]（服务端分页接此事件换数据） */
   'page-change': [page: number, pageSize: number]
   /** 选中集合变化：[行键数组, 行对象数组] */
-  'selection-change': [keys: string[], rows: Record<string, any>[]]
+  'selection-change': [keys: string[], rows: TableRow[]]
   /** 单元格编辑提交：[行键, 列键, 新值]——新值已经过 Column.type 归一化 */
   'cell-change': [rowKey: string, colKey: string, newValue: string]
   /** 备注保存：[行键, 列键, 备注文本] */
@@ -186,9 +188,9 @@ export type Emits = {
   /** 批量修改/填充柄提交：一次动作为一条记录，[列键, 新值, 受影响行键集合] */
   'batch-change': [colKey: string, newValue: string, rowKeys: string[]]
   /** 行操作按钮点击：[actionKey, 行对象, 行号] */
-  'row-action': [actionKey: string, row: Record<string, any>, index: number]
+  'row-action': [actionKey: string, row: TableRow, index: number]
   /** 行右键菜单项点击：[actionKey, 行对象, 行号] */
-  'row-context-action': [actionKey: string, row: Record<string, any>, index: number]
+  'row-context-action': [actionKey: string, row: TableRow, index: number]
   /** 全局搜索词变化（searchMode='server' 时接此事件由后端过滤） */
   search: [term: string]
   /** 进入/退出全屏 */

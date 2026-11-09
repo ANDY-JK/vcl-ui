@@ -227,6 +227,7 @@ test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) =
     tradeoffCount,
     `已知取舍条数应为 ${BASELINE_TOTAL}（当前 ${tradeoffCount}）——基线数字变了要同步 BASELINE_*`,
   ).toBe(BASELINE_TOTAL)
+  // eslint-disable-next-line no-console -- 测试取证输出:运行时证据落日志,不进产物
   console.log(`axe 全站扫描：路由 ${ROUTES.length}，已知取舍 ${tradeoffCount}，未豁免违规 ${total}`)
 })
 
@@ -278,5 +279,6 @@ test('暗色主题对比度值守：全站 color-contrast 不新增', async ({ p
     `暗色下对比度不足 ${nodes} 处——涉及 ${offenders.slice(0, 10).join(', ')}。` +
       `改法优先调 tokens.css 的颜色令牌（两套暗色块同值），别在组件里写死色值。`,
   ).toEqual([])
+  // eslint-disable-next-line no-console -- 测试取证输出:运行时证据落日志,不进产物
   console.log(`axe 暗色扫描：路由 ${ROUTES.length}，对比度违规 0`)
 })

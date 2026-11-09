@@ -37,12 +37,12 @@ export type MappedComponent = Record<string, unknown> | ((...args: never[]) => u
 /** 跨 Vue 版本收敛到 defineCustomElement 入参（3.5 解析为构造类型，须经 unknown 中转） */
 export const asWC = (c: MappedComponent): WCComponent => c as unknown as WCComponent
 
-/** Group 是五合一组件（默认 type=radio）；作为 vc-switch 注册时默认锁定为开关形态 */
+/** Group 是五合一组件（默认 type=radio）；作为 vc-switch 注册时默认锁定为开关形态（type prop 显式带 type: String） */
 const Switch = defineComponent({
   name: 'VcSwitchElement',
   props: {
     ...(Group.props as WCComponent extends { props?: infer P } ? P : Record<string, never>),
-    type: { ...((Group.props as Record<string, { default?: unknown }> | undefined)?.type ?? {}), default: 'switch' },
+    type: { type: String, ...((Group.props as Record<string, { default?: unknown }>)?.type ?? {}), default: 'switch' },
   },
   setup(rawProps) {
     const props = rawProps as { type?: string } & Record<string, unknown>

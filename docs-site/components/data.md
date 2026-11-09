@@ -103,16 +103,16 @@
 | `sort` | `key: string, order: 'asc' \| 'desc'` | 排序变化：表头点击排序后抛出（受控排序经 sortKey/sortOrder 驱动时同样触发） |
 | `filter` | `filters: Record<string, string[]>` | 筛选变化：列头筛选提交后抛出当前全量筛选状态（filterMode='server' 时接此事件由后端处理） |
 | `'update:filters'` | `filters: Record<string, string[]>` | v-model:filters——外部程序化控制筛选状态（服务端筛选场景） |
-| `'row-click'` | `row: Record<string, any>, index: number` | 行点击 |
+| `'row-click'` | `row: TableRow, index: number` | 行点击 |
 | `'update:selected-keys'` | `keys: string[]` | v-model:selectedKeys——选中行键集合 |
 | `'update:current-page'` | `page: number` | v-model:currentPage——当前页码 |
 | `'page-change'` | `page: number, pageSize: number` | 翻页：[页码, 每页行数]（服务端分页接此事件换数据） |
-| `'selection-change'` | `keys: string[], rows: Record<string, any>[]` | 选中集合变化：[行键数组, 行对象数组] |
+| `'selection-change'` | `keys: string[], rows: TableRow[]` | 选中集合变化：[行键数组, 行对象数组] |
 | `'cell-change'` | `rowKey: string, colKey: string, newValue: string` | 单元格编辑提交：[行键, 列键, 新值]——新值已经过 Column.type 归一化 |
 | `'cell-note'` | `rowKey: string, colKey: string, note: string` | 备注保存：[行键, 列键, 备注文本] |
 | `'batch-change'` | `colKey: string, newValue: string, rowKeys: string[]` | 批量修改/填充柄提交：一次动作为一条记录，[列键, 新值, 受影响行键集合] |
-| `'row-action'` | `actionKey: string, row: Record<string, any>, index: number` | 行操作按钮点击：[actionKey, 行对象, 行号] |
-| `'row-context-action'` | `actionKey: string, row: Record<string, any>, index: number` | 行右键菜单项点击：[actionKey, 行对象, 行号] |
+| `'row-action'` | `actionKey: string, row: TableRow, index: number` | 行操作按钮点击：[actionKey, 行对象, 行号] |
+| `'row-context-action'` | `actionKey: string, row: TableRow, index: number` | 行右键菜单项点击：[actionKey, 行对象, 行号] |
 | `search` | `term: string` | 全局搜索词变化（searchMode='server' 时接此事件由后端过滤） |
 | `'fullscreen-change'` | `isFullscreen: boolean` | 进入/退出全屏 |
 | `export` | `无` | v2（Q5）：onExport 回调 prop 收敛为事件——有监听=服务端导出（宿主自处理），无监听=内置 CSV/Excel 导出 |
@@ -135,7 +135,7 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `items` | `Record<string, any>[]` | — | 是 | 列表数据（行对象按各 *Field prop 取列） |
+| `items` | `TableRow[]` | — | 是 | 列表数据（行对象按各 *Field prop 取列） |
 | `idKey` | `string` | `'id'` | 否 | 行唯一键字段名（默认 'id'） |
 | `titleField` | `string` | `'display_name'` | 否 | 标题字段名（默认 'display_name'） |
 | `descriptionField` | `string` | `'description'` | 否 | 描述字段名（默认 'description'） |
@@ -153,9 +153,9 @@
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `toggle` | `item: Record<string, any>, newValue: boolean` | 开关切换：[行对象, 切换后的新值]（内部同步回写行数据，extraColumns 状态标签立即更新） |
-| `'item-click'` | `item: Record<string, any>` | 行点击 |
-| `'button-click'` | `payload: { name: string; phone: string; address: string; item: Record<string, any> }` | variant='button' 时点击按钮，payload: { name, phone, address, item } |
+| `toggle` | `item: TableRow, newValue: boolean` | 开关切换：[行对象, 切换后的新值]（内部同步回写行数据，extraColumns 状态标签立即更新） |
+| `'item-click'` | `item: TableRow` | 行点击 |
+| `'button-click'` | `payload: { name: string; phone: string; address: string; item: TableRow }` | variant='button' 时点击按钮，payload: { name, phone, address, item } |
 
 ## `Card`
 

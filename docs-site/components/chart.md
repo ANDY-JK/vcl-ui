@@ -116,7 +116,7 @@
 | `markLine` | `ChartProps['markLine']` | — | 否 | 同 Chart：标注线（均值线/目标线/警戒线） |
 | `markArea` | `ChartProps['markArea']` | — | 否 | 同 Chart：标注区域（高亮区间） |
 | `columns` | `Column[]` | `() => []` | 否 | 下半部分表格列定义（DataTable Column 结构） |
-| `tableData` | `Record<string, any>[]` | `() => []` | 否 | 下半部分表格数据 |
+| `tableData` | `TableRow[]` | `() => []` | 否 | 下半部分表格数据 |
 | `showTable` | `boolean` | `true` | 否 | 显示表格区（初始值，之后由按钮控制；默认开） |
 | `tableTitle` | `string` | `''` | 否 | 表格区标题 |
 | `rowKey` | `string` | `'rank'` | 否 | 表格行键字段（默认 'rank'） |

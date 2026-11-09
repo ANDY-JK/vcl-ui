@@ -273,7 +273,9 @@ describe('主题适配护栏 · 组件样式禁止硬编码颜色', () => {
     for (const h of hits) byFile.set(h.file, (byFile.get(h.file) ?? 0) + 1)
     const top = [...byFile.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15)
     // 全库盘点只报告，不做断言（历史债不阻塞 CI）
+  // eslint-disable-next-line no-console -- 测试取证输出:运行时证据落日志,不进产物
     console.log(`[全库硬编码色值盘点] 共 ${hits.length} 处，涉及 ${byFile.size} 个文件。Top:`)
+  // eslint-disable-next-line no-console -- 测试取证输出:运行时证据落日志,不进产物
     for (const [f, n] of top) console.log(`  ${n.toString().padStart(4)}  ${f}`)
     expect(hits.length).toBeGreaterThan(0)
   })

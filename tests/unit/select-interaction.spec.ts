@@ -61,7 +61,7 @@ describe('Select · 单选与多选', () => {
       computed: { options: () => options },
     }
     const w = mount(Wrapper, { global: { stubs: { teleport: true } }, attachTo: document.body })
-    const vm = w.vm as any
+    const vm = w.vm as unknown as { val: (string | number | boolean)[] }
 
     await w.find('input.trigger-input').trigger('click')
     await w.findAll('.panel-item')[0].trigger('click')

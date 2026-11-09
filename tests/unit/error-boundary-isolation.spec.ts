@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- 测试夹具:多桩组件/宿主组件按用例组装配(本仓既有约定,见 floating-prepare-open.spec.ts) */
 // 修复锁定：错误边界跨页残留 + retry 原地复发升级
 // 背景 1：AppLayout 包住整个 RouterView 的 ErrorBoundary 未传 watchKey，某页抛错后 hasError 永久为 true，
 //         fallback 顶掉整个 RouterView，切换任何导航项都仍是同一张「页面加载异常」，只能整页刷新。

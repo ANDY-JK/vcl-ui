@@ -60,16 +60,16 @@ const lightboxSrc = ref('')
 
 // ==================== 地图 ====================
 const mapCenter = ref<[number, number]>([116.397428, 39.90923])
-let mapIns: any = null
-let originMarker: any = null
-const poiMarkers: any[] = []
-let infoWin: any = null
+let mapIns: AMap.Map | null = null
+let originMarker: AMap.Marker | null = null
+const poiMarkers: AMap.Marker[] = []
+let infoWin: AMap.InfoWindow | null = null
 
-function onMapInit(map: any) {
+function onMapInit(map: AMap.Map) {
   mapIns = map
-  mapIns.plugin(['AMap.ToolBar', 'AMap.Scale'], () => {
-    mapIns.addControl(new ((AMap as unknown as Record<string, unknown>).ToolBar as new () => AMap.ToolBar)())
-    mapIns.addControl(new ((AMap as unknown as Record<string, unknown>).Scale as new () => AMap.Scale)())
+  map.plugin(['AMap.ToolBar', 'AMap.Scale'], () => {
+    map.addControl(new ((AMap as unknown as Record<string, unknown>).ToolBar as new () => AMap.ToolBar)())
+    map.addControl(new ((AMap as unknown as Record<string, unknown>).Scale as new () => AMap.Scale)())
   })
   infoWin = new AMap.InfoWindow({ isCustom: true, offset: new AMap.Pixel(0, -35) })
 }
@@ -113,9 +113,10 @@ function highlightMarker(idx: number, on: boolean) {
 
 function renderMap(center: { latitude: number; longitude: number }, list: (PoiItem & { distanceM: number })[]) {
   if (!mapIns) return
+  const map = mapIns // 回调里窄化不传导,先取局部非空引用
   clearMarkers()
   mapCenter.value = [center.longitude, center.latitude]
-  mapIns.setZoomAndCenter(18, [center.longitude, center.latitude])
+  map.setZoomAndCenter(18, [center.longitude, center.latitude])
   // 原始位置红色大头针 — 使用 DOM API 构建避免 XSS
   const pinWrapper = document.createElement('div')
   pinWrapper.style.cssText = 'position:relative;width:25px;height:34px;'
@@ -144,7 +145,7 @@ function renderMap(center: { latitude: number; longitude: number }, list: (PoiIt
     offset: new AMap.Pixel(-13, -34),
     zIndex: 100,
   })
-  mapIns.add(originMarker)
+  map.add(originMarker)
   // POI 标记
   list.forEach((p, i) => {
     const m = new AMap.Marker({
@@ -186,10 +187,12 @@ function renderMap(center: { latitude: number; longitude: number }, list: (PoiIt
       iwRoot.appendChild(iwName)
       iwRoot.appendChild(iwAddr)
       iwRoot.appendChild(iwFooter)
+      if (!infoWin || !map) return
       infoWin.setContent(iwRoot)
-      infoWin.open(mapIns, m.getPosition())
+      // 类型定义把 position 收成 Vector2(运行时也接受 LngLat);标记本就钉在该坐标,直接用数组
+      infoWin.open(map, [p.longitude, p.latitude])
     })
-    mapIns.add(m)
+    map.add(m)
     poiMarkers.push(m)
   })
 }
@@ -201,7 +204,8 @@ function focusPoi(idx: number) {
   activeIdx.value = idx
   highlightMarker(idx, true)
   const m = poiMarkers[idx]
-  mapIns.setCenter(m.getPosition())
+  const pos = m.getPosition()
+  if (pos) mapIns.setCenter(pos)
   m.emit('click')
 }
 function hoverPoi(idx: number, on: boolean) {

@@ -100,7 +100,7 @@ function retry() {
 
     <Card title="自定义 fallback slot" title-as="h2">
       <ErrorBoundary title="自定义错误">
-        <template #fallback="{ error, retry }">
+        <template #fallback="{ error, retry: retrySlot }">
           <div
             style="
               padding: calc(24px * var(--vcl-scale));
@@ -121,7 +121,7 @@ function retry() {
             >
               {{ error?.message }}
             </p>
-            <Button text="自定义重试" variant="primary" size="sm" @click="retry" />
+            <Button text="自定义重试" variant="primary" size="sm" @click="retrySlot" />
           </div>
         </template>
         <div style="padding: calc(20px * var(--vcl-scale)); text-align: center; color: var(--vcl-color-text-muted)">

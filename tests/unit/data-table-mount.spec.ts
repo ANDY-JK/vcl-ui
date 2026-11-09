@@ -11,6 +11,7 @@ import DataTable from '@/components/data/DataTable.vue'
 import DataTableBatchDialog from '@/components/data/DataTableBatchDialog.vue'
 import { useT } from '@/components/_internal/i18n'
 import type { Column } from '@/components/data/composables/types'
+import type { TableRow } from '@/components/_internal/api-any'
 
 const t = useT()
 
@@ -19,7 +20,7 @@ const COLS: Column[] = [
   { key: 'value', title: '数值' },
 ]
 
-function genRows(n: number): Record<string, any>[] {
+function genRows(n: number): TableRow[] {
   return Array.from({ length: n }, (_, i) => ({ id: `r${i}`, name: `行${i}`, value: String(i) }))
 }
 

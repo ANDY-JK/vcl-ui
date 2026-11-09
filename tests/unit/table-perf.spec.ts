@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest'
 import { ref, computed } from 'vue'
 import { useTableCore } from '@/components/data/composables/useTableCore'
 import type { Column, ColumnFilterState } from '@/components/data/composables/types'
+import type { TableRow } from '@/components/_internal/api-any'
 
 const ROWS = 10_000
 const COLS = 10
@@ -13,9 +14,9 @@ function genCols(n: number): Column[] {
   return Array.from({ length: n }, (_, i) => ({ key: `col${i}`, title: `列${i}` }))
 }
 
-function genRows(n: number): Record<string, any>[] {
+function genRows(n: number): TableRow[] {
   return Array.from({ length: n }, (_, i) => {
-    const row: Record<string, any> = { id: `r${i}` }
+    const row: TableRow = { id: `r${i}` }
     for (let c = 0; c < COLS; c++) row[`col${c}`] = `值${i}-${c}`
     return row
   })

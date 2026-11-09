@@ -9,11 +9,11 @@ const t = useT()
 
 interface Props {
   /** 当前时间字符串（可为空） */
-  value: string
+  value?: string
   /** 时间格式：'HH:mm'（默认）| 'HH:mm:ss'（含秒列） */
-  format: 'HH:mm' | 'HH:mm:ss'
+  format?: 'HH:mm' | 'HH:mm:ss'
   /** 分钟步进，默认 1（需能被 60 整除效果最佳） */
-  step: number
+  step?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {

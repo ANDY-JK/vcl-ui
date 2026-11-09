@@ -3,6 +3,7 @@
 // 泛型 T 不下传——区块组件只接触列配置、状态引用与行为函数（any 化内部通道），外部类型面不受影响。
 import { inject, provide, type ComputedRef, type InjectionKey, type Ref } from 'vue'
 import type { Column, ColumnFilterState } from './types'
+import type { TableRow } from '@/components/_internal/api-any'
 
 /** 列设置面板区块对外暴露的实例契约（defineExpose 对齐） */
 export interface ColumnSettingsPanelExpose {
@@ -83,7 +84,7 @@ export interface DataTableContext {
   isCardViewEffective: ComputedRef<boolean>
   toggleCardMode: () => void
   /** 行数统计（displayData/displayTotal） */
-  displayData: ComputedRef<Record<string, any>[]>
+  displayData: ComputedRef<TableRow[]>
   displayTotal: ComputedRef<number>
   /** 区块实例（列设置面板 / 批量弹窗，工具栏按钮驱动） */
   colSettingsPanel: Ref<ColumnSettingsPanelExpose | null>

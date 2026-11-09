@@ -4,6 +4,7 @@ import { reportWarn } from '@/components/_internal/runtime-observer'
 // ==================== 筛选全链路（状态 / 选项计算 / 拼音 / 下拉定位 / 开关） ====================
 import { ref, computed, watch, nextTick } from 'vue'
 import type { Column, ColumnFilterState, FilterOption, OptionSort } from './types'
+import type { TableRow } from '@/components/_internal/api-any'
 import { matchPinyin, measureTextWidth, markLayerOpen } from './utils'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 import { useT } from '@/components/_internal/i18n'
@@ -12,7 +13,7 @@ import { useT } from '@/components/_internal/i18n'
 const t = useT()
 
 export function useTableFilter(
-  props: { columns: Column[]; data: Record<string, any>[]; pinyinSearch?: boolean },
+  props: { columns: Column[]; data: TableRow[]; pinyinSearch?: boolean },
   emit: (e: 'filter', filters: Record<string, string[]>) => void,
   tableWrapRef: { value: HTMLElement | null },
   hiddenColumns: { value: Set<string> },

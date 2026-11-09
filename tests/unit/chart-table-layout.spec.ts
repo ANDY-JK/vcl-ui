@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- 测试夹具:多桩组件/宿主组件按用例组装配(本仓既有约定,见 floating-prepare-open.spec.ts) */
 // ChartTable 行为锁定（Q4 后半·chart 域）——图表+表格复合容器的布局与开关。
 // ChartTable.vue 294 行此前 0% 覆盖。Chart/DataTable 用 stub 替掉（Chart 拽 echarts、
 // DataTable 是动态 import 的大家伙），本组只锁 ChartTable 自己的契约：
@@ -54,7 +55,7 @@ vi.mock('@/components/data/DataTable.vue', async () => {
   const { defineComponent } = await import('vue')
   const stub = defineComponent({
     name: 'DataTableStub',
-    props: ['columns', 'data', 'rowKey', 'striped', 'dense', 'autoHeight'],
+    props: { columns: Array, data: Array, rowKey: String, striped: Boolean, dense: Boolean, autoHeight: Boolean },
     template: '<div class="table-stub" />',
   })
   return { default: stub, __esModule: true }

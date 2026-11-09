@@ -1,5 +1,6 @@
 // 单例 canvas 复用，避免每次测量创建新元素
 import { fileToBase64 } from '@/components/_internal/utils'
+import type { TableRow, CellValue } from '@/components/_internal/api-any'
 
 let _measureCanvas: HTMLCanvasElement | null = null
 function _getMeasureCtx(): CanvasRenderingContext2D | null {
@@ -64,7 +65,7 @@ import { computePointerPosition } from '@/components/_internal/useFloating'
  *  展示层占位请用 blankPlaceholder —— 本函数同时喂导出/筛选/测宽，
  *  注入占位符会污染导出的 CSV/Excel 数据。 */
 // value/row 的 any 是公开 API 决策：行数据为消费方任意结构（见 types.ts 的 render 注释）
-export function getCellText(value: any, col: Column, row: Record<string, any>, idx: number): string {
+export function getCellText(value: CellValue, col: Column, row: TableRow, idx: number): string {
   if (col.render) {
     // 防御：render 声明返回 string，但实际可能返回 VNode/数字等任意类型
     const rendered = col.render(value, row, idx)
@@ -177,7 +178,7 @@ export function isLayerFresh(ms = 200): boolean {
  *  缩略图列被摊平会大片留白），富余让给文字列 */
 export function measureColumnWidth(
   col: Column,
-  sample: Record<string, any>[],
+  sample: TableRow[],
   imageDomains?: string[],
 ): { maxW: number; allImage: boolean } {
   let maxW = 0

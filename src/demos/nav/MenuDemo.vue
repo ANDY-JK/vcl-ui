@@ -87,6 +87,7 @@ const hMenuItems = [
 ]
 
 function onSelect(item: { key: string | number; label: string }) {
+  // eslint-disable-next-line no-console -- 演示页事件日志:演示行为的人类可读取证,不进产物
   console.log('Menu select:', item)
 }
 </script>

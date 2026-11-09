@@ -4,6 +4,7 @@
 // ==================== 列管理（显隐 / 拖拽 / 固定偏移 / 自动列宽） ====================
 import { ref, computed, watch, nextTick, onUnmounted, getCurrentInstance, type ComputedRef, type Ref } from 'vue'
 import type { Column } from './types'
+import type { TableRow } from '@/components/_internal/api-any'
 import { measureColumnWidth, measureDomTextWidth, sortColumnsByOrder } from './utils'
 import { BP_LG } from '@/components/_internal/breakpoints'
 
@@ -33,7 +34,7 @@ export function useTableColumns(
     imageDomains?: string[]
   },
   tableWrapRef: Ref<HTMLElement | null>,
-  displayData: ComputedRef<Record<string, any>[]>,
+  displayData: ComputedRef<TableRow[]>,
   actionsWidth?: ComputedRef<number>,
 ) {
   // --- 列显隐 ---

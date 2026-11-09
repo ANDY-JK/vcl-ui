@@ -1,6 +1,7 @@
 // ⛔ 保护 — 图表类型定义，禁止：ChartType/ChartData 接口结构调整
 //    需我确认：新增图表类型枚举值
 import type { EChartsOption } from 'echarts'
+import type { ChartOption } from '@/components/_internal/api-any'
 
 /** 支持的图表类型 */
 export type ChartType =
@@ -90,7 +91,7 @@ export interface LineSeriesItem {
   color?: string
   smooth?: boolean
   showSymbol?: boolean
-  areaStyle?: Record<string, any> | boolean
+  areaStyle?: ChartOption | boolean
 }
 
 /** 雷达图指标 */
@@ -102,7 +103,7 @@ export interface RadarIndicator {
 /** 桑基图节点/连接 */
 export interface SankeyNode {
   name: string
-  itemStyle?: Record<string, any>
+  itemStyle?: ChartOption
 }
 export interface SankeyLink {
   source: string
@@ -117,7 +118,7 @@ export interface GraphNode {
   value?: number
   category?: number
   symbolSize?: number
-  itemStyle?: Record<string, any>
+  itemStyle?: ChartOption
 }
 export interface GraphLink {
   source: string

@@ -35,7 +35,7 @@ describe('planRoute · 基础行为', () => {
 
   it('无坐标门店被过滤（null 坐标不计入规划）', () => {
     // 算法按 longitude/latitude 非 null 判定有效；null 坐标门店被排除
-    const plan = planRoute(opts([mkStore('bad', null as any, null as any)]))
+    const plan = planRoute(opts([mkStore('bad', null as unknown as number, null as unknown as number)]))
     expect(plan.totalStores).toBe(0)
   })
 

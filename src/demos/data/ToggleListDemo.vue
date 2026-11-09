@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ToggleList from '@/components/data/ToggleList.vue'
+import type { TableRow } from '@/components/_internal/api-any'
 import Card from '@/components/data/Card.vue'
 import Toast from '@/components/feedback/Toast.vue'
 
@@ -28,7 +29,8 @@ const buttonItems = ref([
   { id: 3, display_name: '王五', description: '深圳市南山区科技园南路88号', phone: '13700137000', icon: 'user' },
 ])
 
-function onToggle(item: Record<string, any>, val: boolean) {
+function onToggle(item: TableRow, val: boolean) {
+  // eslint-disable-next-line no-console -- 演示页事件日志:演示行为的人类可读取证,不进产物
   console.log('toggle', item.display_name, val)
 }
 

@@ -12,6 +12,7 @@ import {
   buildMarkArea,
 } from '@/components/chart/options/common'
 import type { BuildParams, ChartType } from '@/components/chart/utils/types'
+import type { ChartOption } from '@/components/_internal/api-any'
 
 /** 构造最小 BuildParams */
 function baseParams(type: ChartType, over: Partial<BuildParams> = {}): BuildParams {
@@ -32,13 +33,13 @@ function baseParams(type: ChartType, over: Partial<BuildParams> = {}): BuildPara
 }
 
 /** 从 option 中取首个 series（兼容 timeline compound） */
-function firstSeries(opt: Record<string, any>): Record<string, any> {
-  if (opt.baseOption) return (opt.baseOption as Record<string, any>).series?.[0] ?? {}
+function firstSeries(opt: ChartOption): ChartOption {
+  if (opt.baseOption) return (opt.baseOption as ChartOption).series?.[0] ?? {}
   return opt.series?.[0] ?? {}
 }
 
 describe('buildChartOption · 21 种图表类型', () => {
-  const cases: { type: ChartType; seriesType: string; data?: Record<string, any>; series?: any[] }[] = [
+  const cases: { type: ChartType; seriesType: string; data?: ChartOption; series?: ChartOption[] }[] = [
     { type: 'line', seriesType: 'line' },
     { type: 'bar', seriesType: 'bar' },
     { type: 'area', seriesType: 'line' }, // area 内部是 line + areaStyle
@@ -78,13 +79,10 @@ describe('buildChartOption · 21 种图表类型', () => {
   ]
 
   it.each(cases)('$type → series.type 正确', ({ type, seriesType, data, series }) => {
-    const opt = buildChartOption(type, baseParams(type, { data: data ?? {}, ...(series ? { series } : {}) })) as Record<
-      string,
-      any
-    >
+    const opt = buildChartOption(type, baseParams(type, { data: data ?? {}, ...(series ? { series } : {}) })) as ChartOption
     if (type === 'mixed') {
       // mixed：series 数组同时含 line 与 bar（首个按实现为 bar）
-      const types = (opt.series as Record<string, any>[]).map((s) => s.type)
+      const types = (opt.series as ChartOption[]).map((s) => s.type)
       expect(types).toContain('line')
       expect(types).toContain('bar')
       return
@@ -96,7 +94,7 @@ describe('buildChartOption · 21 种图表类型', () => {
 
   it('未知类型回退为柱状图（不抛错）', () => {
     const opt = buildChartOption('not-a-type' as ChartType, baseParams('bar'))
-    expect((opt as Record<string, any>).series[0].type).toBe('bar')
+    expect((opt as ChartOption).series[0].type).toBe('bar')
   })
 })
 
@@ -109,8 +107,8 @@ describe('buildCommonChrome · 公共底座', () => {
   })
 
   it('darkMode 切换坐标轴文字颜色', () => {
-    const light = buildChartOption('bar', baseParams('bar')) as Record<string, any>
-    const dark = buildChartOption('bar', baseParams('bar', { darkMode: true })) as Record<string, any>
+    const light = buildChartOption('bar', baseParams('bar')) as ChartOption
+    const dark = buildChartOption('bar', baseParams('bar', { darkMode: true })) as ChartOption
     // darkMode 影响 axisLabel 文字色（mutedColor），不影响色板
     expect(light.xAxis.axisLabel.color).not.toEqual(dark.xAxis.axisLabel.color)
     expect(dark.xAxis.axisLabel.color).toBe('#888')
@@ -168,17 +166,14 @@ describe('common 智能默认', () => {
 
 describe('bar/line 高级控制', () => {
   it('horizontal + stacked100：x/y 互换且 y 轴 0-100', () => {
-    const opt = buildChartOption('bar', baseParams('bar', { horizontal: true, stacked100: true })) as Record<
-      string,
-      any
-    >
+    const opt = buildChartOption('bar', baseParams('bar', { horizontal: true, stacked100: true })) as ChartOption
     expect(opt.xAxis.type).toBe('value')
     expect(opt.yAxis.type).toBe('category')
     expect(opt.series[0].stack).toBe('total')
   })
 
   it('line smooth 与 showSymbol 透传', () => {
-    const opt = buildChartOption('line', baseParams('line', { smooth: true, showSymbol: false })) as Record<string, any>
+    const opt = buildChartOption('line', baseParams('line', { smooth: true, showSymbol: false })) as ChartOption
     expect(opt.series[0].smooth).toBe(true)
     expect(opt.series[0].showSymbol).toBe(false)
   })

@@ -12,7 +12,7 @@ const ErrorFallback = {
   </div>`,
 }
 
-const demoMap: Record<string, any> = {
+const demoMap: Record<string, unknown> = {
   // 基础组件
   button: defineAsyncComponent({ loader: () => import('./basic/ButtonDemo.vue'), errorComponent: ErrorFallback }),
   icon: defineAsyncComponent({ loader: () => import('./basic/IconDemo.vue'), errorComponent: ErrorFallback }),

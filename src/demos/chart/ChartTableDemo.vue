@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import Chart from '@/components/chart/Chart.vue'
+import type { TableRow, ChartOption } from '@/components/_internal/api-any'
 import ChartTable from '@/components/chart/ChartTable.vue'
 import Card from '@/components/data/Card.vue'
 
@@ -270,8 +271,7 @@ for (const q of QUARTERS)
     }
 function agg(field: string) {
   const m = new Map<string, number>()
-  for (const d of rawData)
-    m.set((d as Record<string, any>)[field], (m.get((d as Record<string, any>)[field]) || 0) + d.sales)
+  for (const d of rawData) m.set((d as TableRow)[field], (m.get((d as TableRow)[field]) || 0) + d.sales)
   return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([n, v]) => ({ name: n, value: v }))
 }
 const totalSales = computed(() => rawData.reduce((s, d) => s + d.sales, 0))
@@ -301,7 +301,7 @@ const tblData = computed(() => {
       sales: d.value,
       pct: totalSales.value > 0 ? ((d.value / totalSales.value) * 100).toFixed(1) + '%' : '0%',
     }))
-  const f2 = rawData.filter((d) => (d as Record<string, any>)[f] === slice.value)
+  const f2 = rawData.filter((d) => (d as TableRow)[f] === slice.value)
   const m = new Map<string, number>()
   for (const d of f2) m.set(d.store, (m.get(d.store) || 0) + d.sales)
   const t = f2.reduce((s, d) => s + d.sales, 0)
@@ -316,7 +316,7 @@ const tblCols = computed(() => [
   { key: 'pct', title: '占比', width: 80, align: 'right' as const },
 ])
 
-function onPie(p: any) {
+function onPie(p: ChartOption) {
   slice.value = p.name || null
 }
 function setPie(d: (typeof dims)[0]) {
@@ -343,7 +343,7 @@ const trendData = computed(() => {
   if (trendGranularity.value === 'quarter') {
     const map = new Map<string, Map<string, number>>()
     for (const d of rawData) {
-      const k = (d as Record<string, any>)[tDim.value]
+      const k = (d as TableRow)[tDim.value]
       if (!items.includes(k)) continue
       if (!map.has(k)) map.set(k, new Map())
       map.get(k)!.set(d.quarter, (map.get(k)!.get(d.quarter) || 0) + d.sales)
@@ -356,9 +356,9 @@ const trendData = computed(() => {
   // 按周：最近13个季度周
   const map = new Map<string, Map<string, number>>()
   for (const d of rawData) {
-    const k = (d as Record<string, any>)[tDim.value]
+    const k = (d as TableRow)[tDim.value]
     if (!items.includes(k)) continue
-    const wk = d.quarter + '-W' + (d as Record<string, any>).week
+    const wk = d.quarter + '-W' + (d as TableRow).week
     if (!map.has(k)) map.set(k, new Map())
     map.get(k)!.set(wk, (map.get(k)!.get(wk) || 0) + d.sales)
   }

@@ -155,10 +155,12 @@ const selectedKey = ref<string | number | null>(null)
 
 function onCheckChange(keys: (string | number)[], node: TreeNode) {
   checkedKeys.value = keys
+  // eslint-disable-next-line no-console -- 演示页事件日志:演示行为的人类可读取证,不进产物
   console.log('check-change:', keys, node.label)
 }
 
 function onNodeClick(node: TreeNode) {
+  // eslint-disable-next-line no-console -- 演示页事件日志:演示行为的人类可读取证,不进产物
   console.log('node-click:', node.label)
 }
 </script>
