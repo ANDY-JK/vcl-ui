@@ -10,7 +10,7 @@
  * 宽度自适应的一条虚线胶囊，比 Upload 的 card 变体（固定 110×110 方块）更合身；
  * 桌面弹文件框、移动端弹系统选择器（自带「拍摄 / 相册」入口）。
  */
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { openSystemCapture } from './utils/capture-fallback'
 import Input from '@/components/form/Input.vue'
@@ -88,7 +88,6 @@ function reset() {
   inputText.value = ''
 }
 defineExpose({ reset })
-onUnmounted(() => {})
 </script>
 
 <template>

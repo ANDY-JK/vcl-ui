@@ -2210,6 +2210,15 @@
       "cmd": "npx vitest run tests/unit/chart-expose-surface.spec.ts --no-coverage",
       "expect": "red",
       "note": "把 Chart 的 showLoading 转发改成空实现 → 宿主调 chartRef.value.showLoading() 不再落到 ECharts 实例，spec 立刻红；此前这条转发链 0 覆盖"
+    },
+    {
+      "id": "menu-hover-leave-clears",
+      "file": "src/components/nav/menu-hover.ts",
+      "find": "      hoverKey.value = null\n      leaveTimer = null\n",
+      "replace": "      /* M3: no-op */\n",
+      "cmd": "npx vitest run tests/unit/menu-interaction.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：scheduleLeave 回调不再清 hoverKey → 鼠标移开后子菜单永久挂着（#476 实测的抽取回归，抽离前 Menu.vue 里就是 hoverKey.value = null）"
     }
   ]
 }

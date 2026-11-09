@@ -133,6 +133,49 @@ describe('Menu · hover 模式延时开合（horizontal）', () => {
     await w.vm.$nextTick()
     expect(isRowExpanded(w, '系统管理')).toBe(false)
   })
+
+  // ── 收起方向（#476）：上面三条只锁了"进入"，**离开**一直是漏的 ──────────────
+  //
+  // 实测缺陷：`menu-hover.ts` 的 `scheduleLeave()` 定时器回调是空操作
+  // （`/* M3: no-op */`），而同一文件头 JSDoc 写的是"150ms 后 hoverKey = null"。
+  // 表现：鼠标移开后子菜单**永远挂在屏幕上**，只能点一次父项或按 Esc 才收。
+  // 抽离前 Menu.vue 里那行是 `hoverKey.value = null`（`git show 5651845^`），
+  // 说明这是抽离时丢的，不是设计如此 —— 所以此处按"文档即契约"锁死。
+
+  it('**展开后移开 150ms → 收起**（鼠标离开后子菜单必须自己关）', async () => {
+    const w = mountMenu({ mode: 'horizontal' })
+    await wrapByLabel(w, '系统管理').trigger('mouseenter')
+    vi.advanceTimersByTime(160)
+    await w.vm.$nextTick()
+    expect(isRowExpanded(w, '系统管理'), '先确认已展开').toBe(true)
+
+    await wrapByLabel(w, '系统管理').trigger('mouseleave')
+    vi.advanceTimersByTime(160)
+    await w.vm.$nextTick()
+    expect(isRowExpanded(w, '系统管理'), '移开后必须收起，否则子菜单一直挡在页面上').toBe(false)
+  })
+
+  it('移出后 150ms 内移回 → 不收起（进出窗口给用户改主意的余地）', async () => {
+    const w = mountMenu({ mode: 'horizontal' })
+    await wrapByLabel(w, '系统管理').trigger('mouseenter')
+    vi.advanceTimersByTime(160)
+    await w.vm.$nextTick()
+
+    await wrapByLabel(w, '系统管理').trigger('mouseleave')
+    vi.advanceTimersByTime(100) // 还在窗口内
+    await w.findAll('.menu-submenu')[0].trigger('mouseenter') // 移回子菜单 → cancelLeave
+    vi.advanceTimersByTime(200) // 越过窗口
+    await w.vm.$nextTick()
+    expect(isRowExpanded(w, '系统管理'), '移回子菜单后不该被收起').toBe(true)
+  })
+
+  it('卸载时清掉 pending 定时器（不留回调写已卸载组件的 ref）', async () => {
+    const w = mountMenu({ mode: 'horizontal' })
+    await wrapByLabel(w, '系统管理').trigger('mouseenter')
+    expect(vi.getTimerCount(), 'enter 定时器已挂').toBeGreaterThan(0)
+    w.unmount()
+    expect(vi.getTimerCount(), '卸载后不该还有菜单定时器在跑').toBe(0)
+  })
 })
 
 describe('Menu · 键盘导航', () => {

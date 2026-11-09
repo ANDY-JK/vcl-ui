@@ -50,7 +50,9 @@ export function useMenuHover(hoverKey: Ref<string | number | null>) {
   function scheduleLeave(): void {
     clearTimers()
     leaveTimer = setTimeout(() => {
-      /* M3: no-op */
+      // 收起悬停态（#476：抽离时这行被误写成 no-op，导致子菜单移开后一直挂着）
+      hoverKey.value = null
+      leaveTimer = null
     }, HOVER_SWITCH_MS)
   }
   function cancelLeave(): void {
