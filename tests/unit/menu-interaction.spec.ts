@@ -176,6 +176,27 @@ describe('Menu · hover 模式延时开合（horizontal）', () => {
     w.unmount()
     expect(vi.getTimerCount(), '卸载后不该还有菜单定时器在跑').toBe(0)
   })
+
+  it('从 A 移到 B：A 的收起定时器被取消，只有 B 展开（否则 A 会在 B 展开后被自己收起）', async () => {
+    const w = mountMenu({
+      mode: 'horizontal',
+      items: [
+        { key: 'a', label: '甲', children: [{ key: 'a1', label: '甲一' }] },
+        { key: 'b', label: '乙', children: [{ key: 'b1', label: '乙一' }] },
+      ],
+    })
+    await wrapByLabel(w, '甲').trigger('mouseenter')
+    vi.advanceTimersByTime(160)
+    await w.vm.$nextTick()
+    expect(isRowExpanded(w, '甲'), '甲先展开').toBe(true)
+
+    await wrapByLabel(w, '甲').trigger('mouseleave') // 排入"甲收起"
+    await wrapByLabel(w, '乙').trigger('mouseenter') // 立刻进乙 → 必须清掉"甲收起"
+    vi.advanceTimersByTime(160)
+    await w.vm.$nextTick()
+    expect(isRowExpanded(w, '乙'), '乙展开').toBe(true)
+    expect(isRowExpanded(w, '甲'), '甲已不悬停 → 收起').toBe(false)
+  })
 })
 
 describe('Menu · 键盘导航', () => {
