@@ -17,6 +17,16 @@ async function statOf(status: Locator): Promise<{ forms: number; records: number
  *      那令牌就已经送出去了 —— 必须用 network 事件证明它没发出）
  */
 const PAGE = '/#/lowcode-nav'
+/**
+ * **每次运行唯一的名字后缀**（会话内固定）。
+ *
+ * 为什么必须有：演示站的低代码 store 是**内存实现**，而 playwright 的
+ * `reuseExistingServer` 会复用还没退出的静态服务 —— 上一次运行（尤其是中断/失败的那次）
+ * 建的表单会原样留在里面。用固定名字时，本轮再建同名表单就会让 `hasText` 定位器
+ * 命中 2 个元素而报 strict mode violation（实测踩过：同一份「改过名的台账」两条）。
+ * 加后缀后，历史的残留数据不再与本次断言竞争，用例可以重复跑任意多次。
+ */
+const RUN = Date.now().toString(36)
 
 test('连上参考后端：状态行报出后端自报的两份数，出现"断开"；断开后状态消失', async ({ page }) => {
   await page.goto(PAGE)
@@ -110,7 +120,7 @@ test('用户在**自己的库**里建表单：保存后后端自报表单数 +1�
   await build.locator('.ldp-field-item').first().click()
   await build.getByRole('button', { name: '保存' }).click()
   const dialog = page.getByRole('dialog')
-  await dialog.locator('.ld-save-input').fill('你自己的巡检表')
+  await dialog.locator('.ld-save-input').fill(`巡检表-${RUN}`)
   await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
 
   // ① 后端自报的表单数 +1（数据进了**你的库**，不是页面内存）。
@@ -121,14 +131,14 @@ test('用户在**自己的库**里建表单：保存后后端自报表单数 +1�
 
   // ② 导航由后端下发 → 新表单以「我的表单」项出现（保存后不刷新页面）
   const nav = page.locator('.lcn-demo-nav')
-  const added = nav.locator('.lcn-demo-item').filter({ hasText: '你自己的巡检表' })
+  const added = nav.locator('.lcn-demo-item').filter({ hasText: `巡检表-${RUN}` })
   await expect(added, '保存后它成了导航项（后端下发）').toBeVisible({ timeout: 15_000 })
 
   // ③ 断开重连：仍在（结构存在后端，不是页面状态）
   await page.locator('[data-test="backend-disconnect-btn"]').click()
   await page.locator('[data-test="backend-connect-btn"]').click()
   await expect(status).toContainText('已连接', { timeout: 15_000 })
-  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '你自己的巡检表' }), '重连后仍在').toBeVisible({
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: `巡检表-${RUN}` }), '重连后仍在').toBeVisible({
     timeout: 15_000,
   })
   expect((await statOf(status)).forms, '重连后表单数也没变少').toBeGreaterThanOrEqual(before.forms + 1)
@@ -145,18 +155,18 @@ test('重命名写进**你的库**：导航项标签跟着变，重连后仍是�
   await expect(status).toContainText('已连接', { timeout: 15_000 })
 
   // 自己建一份再改名：**别动 seed 里那份**。共享后端上"改掉别人依赖的数据"
-// 会把另一个 spec（`lowcode-nav-shell` 找 `服务端：客户台账`）打红 —— 上一轮踩的是"新增数据"，
-// 这次踩的是"改掉数据"，同一类：凡写共享 fixture，就要自带数据、别动别人的。
+  // 会把另一个 spec（`lowcode-nav-shell` 找 `服务端：客户台账`）打红 —— 上一轮踩的是"新增数据"，
+  // 这次踩的是"改掉数据"，同一类：凡写共享 fixture，就要自带数据、别动别人的。
   const build = page.locator('.lcn-demo-build')
   await build.locator('.ldp-field-item').first().click()
   await build.getByRole('button', { name: '保存' }).click()
   const dialog = page.getByRole('dialog')
-  await dialog.locator('.ld-save-input').fill('待改名表')
+  await dialog.locator('.ld-save-input').fill(`待改名表-${RUN}`)
   await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
 
   // 「我的表单」列表读的是当前 store —— 连上后即你的库
   const admin = page.locator('[data-test="form-admin"]')
-  const seedRow = admin.locator('.lcn-admin-row').filter({ hasText: '待改名表' })
+  const seedRow = admin.locator('.lcn-admin-row').filter({ hasText: `待改名表-${RUN}` })
   await expect(seedRow, '列表来自当前 store').toBeVisible({ timeout: 15_000 })
 
   // 记下 id 再按 id 定位：点进"改名态"后名字进了 input 的 value，
@@ -166,27 +176,27 @@ test('重命名写进**你的库**：导航项标签跟着变，重连后仍是�
   const row = admin.locator(`.lcn-admin-row[data-form-id="${formId}"]`)
 
   await row.locator('[data-test="rename-btn"]').click()
-  await row.locator('[data-test="rename-input"]').fill('改过名的台账')
+  await row.locator('[data-test="rename-input"]').fill(`改过的台账-${RUN}`)
   await row.locator('[data-test="rename-save"]').click()
 
   // 列表、导航同时变（导航来自后端 → 说明改的是库，不是页面）
   const nav = page.locator('.lcn-demo-nav')
-  await expect(admin.locator('.lcn-admin-row').filter({ hasText: '改过名的台账' })).toBeVisible({
+  await expect(admin.locator('.lcn-admin-row').filter({ hasText: `改过的台账-${RUN}` })).toBeVisible({
     timeout: 15_000,
   })
-  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '改过名的台账' })).toBeVisible({
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: `改过的台账-${RUN}` })).toBeVisible({
     timeout: 15_000,
   })
-  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '待改名表' }), '旧名字要没了').toHaveCount(0)
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: `待改名表-${RUN}` }), '旧名字要没了').toHaveCount(0)
 
   // 断开重连：仍是新名字（=改名落了库；若是"新建"则旧项会复活）
   await page.locator('[data-test="backend-disconnect-btn"]').click()
   await page.locator('[data-test="backend-connect-btn"]').click()
   await expect(status).toContainText('已连接', { timeout: 15_000 })
-  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '改过名的台账' })).toBeVisible({
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: `改过的台账-${RUN}` })).toBeVisible({
     timeout: 15_000,
   })
-  await expect(nav.locator('.lcn-demo-item').filter({ hasText: '待改名表' })).toHaveCount(0)
+  await expect(nav.locator('.lcn-demo-item').filter({ hasText: `待改名表-${RUN}` })).toHaveCount(0)
 })
 
 /**
@@ -204,22 +214,22 @@ test('删除写进**你的库**：导航项消失，重连后仍不在', async (
   await build.locator('.ldp-field-item').first().click()
   await build.getByRole('button', { name: '保存' }).click()
   const dialog = page.getByRole('dialog')
-  await dialog.locator('.ld-save-input').fill('待删除表')
+  await dialog.locator('.ld-save-input').fill(`待删除表-${RUN}`)
   await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
 
   const nav = page.locator('.lcn-demo-nav')
-  const item = nav.locator('.lcn-demo-item').filter({ hasText: '待删除表' })
+  const item = nav.locator('.lcn-demo-item').filter({ hasText: `待删除表-${RUN}` })
   await expect(item, '建好了才谈删').toBeVisible({ timeout: 15_000 })
 
   // 两步删除：先点「删除」再「确认删除」（避免一键误删用户的表单与它的记录）
   const admin = page.locator('[data-test="form-admin"]')
-  const row = admin.locator('.lcn-admin-row').filter({ hasText: '待删除表' })
+  const row = admin.locator('.lcn-admin-row').filter({ hasText: `待删除表-${RUN}` })
   await expect(row).toBeVisible({ timeout: 15_000 })
   await row.locator('[data-test="delete-btn"]').click()
   await expect(row.locator('[data-test="delete-confirm"]'), '要先确认').toBeVisible()
   await row.locator('[data-test="delete-confirm"]').click()
 
-  await expect(admin.locator('.lcn-admin-row').filter({ hasText: '待删除表' })).toHaveCount(0)
+  await expect(admin.locator('.lcn-admin-row').filter({ hasText: `待删除表-${RUN}` })).toHaveCount(0)
   await expect(item).toHaveCount(0)
 
   // 断开重连：仍不在（=删除落了库）
@@ -252,9 +262,14 @@ test('两个标签页：一个刚改名、另一个拿旧版本号删除 → 被
   await buildA.locator('.ldp-field-item').first().click()
   await buildA.getByRole('button', { name: '保存' }).click()
   const dialogA = a.getByRole('dialog')
-  await dialogA.locator('.ld-save-input').fill('并发删除表')
+  await dialogA.locator('.ld-save-input').fill(`并发删除表-${RUN}`)
   await dialogA.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
-  await expect(a.locator('.lcn-demo-nav').locator('.lcn-demo-item').filter({ hasText: '并发删除表' })).toBeVisible({
+  await expect(
+    a
+      .locator('.lcn-demo-nav')
+      .locator('.lcn-demo-item')
+      .filter({ hasText: `并发删除表-${RUN}` }),
+  ).toBeVisible({
     timeout: 15_000,
   })
 
@@ -262,15 +277,15 @@ test('两个标签页：一个刚改名、另一个拿旧版本号删除 → 被
   await b.locator('[data-test="backend-disconnect-btn"]').click()
   await b.locator('[data-test="backend-connect-btn"]').click()
   await expect(b.locator('[data-test="backend-status"]')).toContainText('已连接', { timeout: 15_000 })
-  const rowB = b.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: '并发删除表' })
+  const rowB = b.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: `并发删除表-${RUN}` })
   await expect(rowB, 'B 也看得到它').toBeVisible({ timeout: 15_000 })
 
   // ③ A 改名（后端版本号 +1）
-  const rowA = a.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: '并发删除表' })
+  const rowA = a.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: `并发删除表-${RUN}` })
   const idA = await rowA.getAttribute('data-form-id')
   const stableA = a.locator(`[data-test="form-admin"] .lcn-admin-row[data-form-id="${idA}"]`)
   await stableA.locator('[data-test="rename-btn"]').click()
-  await stableA.locator('[data-test="rename-input"]').fill('并发删除表（甲改）')
+  await stableA.locator('[data-test="rename-input"]').fill(`并发删除表（甲改）-${RUN}`)
   await stableA.locator('[data-test="rename-save"]').click()
   await expect(a.locator('.lcn-demo-nav').locator('.lcn-demo-item').filter({ hasText: '甲改' })).toBeVisible({
     timeout: 15_000,
@@ -288,10 +303,15 @@ test('两个标签页：一个刚改名、另一个拿旧版本号删除 → 被
   await b.locator('[data-test="backend-connect-btn"]').click()
   await expect(b.locator('[data-test="backend-status"]')).toContainText('已连接', { timeout: 15_000 })
   await expect(
-    b.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: '并发删除表（甲改）' }),
+    b.locator('[data-test="form-admin"] .lcn-admin-row').filter({ hasText: `并发删除表（甲改）-${RUN}` }),
     '删除被挡住 → 甲改的名字还在',
   ).toBeVisible({ timeout: 15_000 })
-  await expect(a.locator('.lcn-demo-nav').locator('.lcn-demo-item').filter({ hasText: '并发删除表（甲改）' })).toBeVisible()
+  await expect(
+    a
+      .locator('.lcn-demo-nav')
+      .locator('.lcn-demo-item')
+      .filter({ hasText: `并发删除表（甲改）-${RUN}` }),
+  ).toBeVisible()
 
   await ctx.close()
 })

@@ -17,6 +17,13 @@ import { AxeBuilder } from '@axe-core/playwright'
 const PAGE = '/#/lowcode-nav'
 const item = (key: string) => `.lcn-demo-item[data-key="${key}"]`
 
+/**
+ * **每次运行唯一的名字后缀**。演示站 store 是内存实现，`reuseExistingServer` 会复用
+ * 上一次没退出的静态服务 —— 残留的同名表单会让 `hasText` 定位器命中多个元素
+ * （strict mode violation）。加后缀后本轮数据与历史残留互不竞争。
+ */
+const RUN = Date.now().toString(36)
+
 test.describe('低代码导航外壳 · 宿主接入示例', () => {
   test('后端下发的导航定义（真 HTTP）渲染成导航；脏数据不渲染，但问题可查', async ({ page }) => {
     const navHits: string[] = []
@@ -55,7 +62,9 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
     await page.locator('.lcn-demo-nav ' + item('form-customers')).click()
 
     // 走的是注入 store 里的真设计（节点树 → toFormSchema → FormBuilder）
-    await expect(page.getByRole('textbox', { name: '客户名称' }), '设计里的 text 字段渲染成输入框').toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('textbox', { name: '客户名称' }), '设计里的 text 字段渲染成输入框').toBeVisible({
+      timeout: 15_000,
+    })
     await expect(page.getByRole('combobox', { name: '客户等级' }), 'select 字段的 label 也在').toBeVisible()
 
     // 填值：外壳把数据变化 emit 给宿主（事件日志看得见）
@@ -153,16 +162,16 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
     // 保存：工具栏「保存」→ 弹窗改名 → 确认
     await build.getByRole('button', { name: '保存' }).click()
     const dialog = page.getByRole('dialog')
-    await dialog.locator('.ld-save-input').fill('巡检台账')
+    await dialog.locator('.ld-save-input').fill(`巡检台账-${RUN}`)
     await dialog.locator('.modal-footer').getByRole('button', { name: '保存' }).click()
 
     // 保存后：导航**自己**多出一项（宿主 store 收到设计 + navRef.refresh()），不用刷新页面
-    const added = nav.locator('.lcn-demo-item').filter({ hasText: '巡检台账' })
+    const added = nav.locator('.lcn-demo-item').filter({ hasText: `巡检台账-${RUN}` })
     await expect(added, '保存后新表单成为导航项').toBeVisible({ timeout: 10_000 })
     expect(await nav.locator('.lcn-demo-item').count()).toBe(before + 1)
-    await expect(page.locator('[data-event="designer-saved"]').first()).toContainText('巡检台账')
+    await expect(page.locator('[data-event="designer-saved"]').first()).toContainText(`巡检台账-${RUN}`)
     await expect(page.locator('[data-test="store-stat"]'), '走宿主 store，不写本机存储').toContainText(
-      'localStorage 记录：0 条'
+      'localStorage 记录：0 条',
     )
 
     // 点进去能渲染刚建的字段（设计 → store → 导航 → 页面这条链真的通）
@@ -203,7 +212,7 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
     })
     await expect(
       nav.locator('.lcn-demo-item').filter({ hasText: '工单' }),
-      '换实现后旧 store 的导航项必须消失'
+      '换实现后旧 store 的导航项必须消失',
     ).toHaveCount(0)
 
     // 每个仓储请求都必须带令牌；表单份数由**服务端**报出来（不是前端自己数的）
@@ -211,15 +220,14 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
     expect(listCalls.length, '导航必须来自服务端').toBeGreaterThan(0)
     expect(
       listCalls.every((c) => c.auth === 'Bearer demo-token-r105'),
-      '宿主必须把令牌接上（缺它后端 401）'
+      '宿主必须把令牌接上（缺它后端 401）',
     ).toBe(true)
     // 表单份数由**服务端**报出来（不是前端自己数的）。
     // 同样不断言绝对值：另一个 spec 文件也会往这个共享后端存表单（≥1 = 至少有那份 seed）
     await expect
-      .poll(
-        async () => Number(/(\d+)\s*份表单/.exec((await serverStat.textContent()) ?? '')?.[1] ?? -1),
-        { timeout: 10_000 },
-      )
+      .poll(async () => Number(/(\d+)\s*份表单/.exec((await serverStat.textContent()) ?? '')?.[1] ?? -1), {
+        timeout: 10_000,
+      })
       .toBeGreaterThanOrEqual(1)
 
     // 打开服务端表单：页面区渲染的是**服务端下发的字段**
@@ -239,16 +247,13 @@ test.describe('低代码导航外壳 · 宿主接入示例', () => {
     await pageArea.getByRole('textbox', { name: /服务端字段·客户名称/ }).fill('进来一条真数据')
     await pageArea.getByRole('button', { name: '提交' }).click()
     await expect
-      .poll(
-        async () =>
-          Number(/(\d+)\s*条收集记录/.exec((await serverStat.textContent()) ?? '')?.[1] ?? -1),
-        { timeout: 10_000 },
-      )
+      .poll(async () => Number(/(\d+)\s*条收集记录/.exec((await serverStat.textContent()) ?? '')?.[1] ?? -1), {
+        timeout: 10_000,
+      })
       .toBeGreaterThanOrEqual(before + 1)
     const recordPosts = storeCalls.filter((c) => c.method === 'POST' && c.url.includes('/records/'))
     expect(recordPosts.length, '提交必须 POST 到收集记录路由（外壳不自动外发，是宿主发的）').toBeGreaterThan(0)
     expect(recordPosts[0].auth, '落库请求同样要带令牌').toBe('Bearer demo-token-r105')
     await expect(page.locator('[data-event="record-saved"]').first()).toBeVisible()
   })
-
 })
