@@ -2237,6 +2237,24 @@
       "cmd": "npx vitest run tests/unit/route-result-format.spec.ts --no-coverage",
       "expect": "red",
       "note": "变异后：999.6 米先判「米」再四舍五入成「1000米」——单位判定与展示刻度不一致"
+    },
+    {
+      "id": "idempotency-factory-throws-fallback",
+      "file": "src/components/form-builder/idempotency.ts",
+      "find": "  if (factory) {\n    try {\n      const key = factory()\n      if (typeof key === 'string' && key.trim()) return key.trim()\n    } catch {\n      /* 落到默认实现 */\n    }\n  }\n  return createIdempotencyKey()",
+      "replace": "  return factory ? factory() : createIdempotencyKey()",
+      "cmd": "npx vitest run tests/unit/idempotency-fallback.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：宿主自定义的幂等键生成器一抛异常，整个表单提交就失败（useFormRemote 在 fetch 前调它）——辅助件不该拖垮主流程"
+    },
+    {
+      "id": "idempotency-factory-blank-string",
+      "file": "src/components/form-builder/idempotency.ts",
+      "find": "      if (typeof key === 'string' && key.trim()) return key.trim()",
+      "replace": "      if (key) return key",
+      "cmd": "npx vitest run tests/unit/idempotency-fallback.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：纯空白/非字符串的 factory 返回值被当成合法键发出去——`\" \"` 当请求头等于没有幂等键，服务端去重静默失效"
     }
   ]
 }

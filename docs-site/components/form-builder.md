@@ -120,7 +120,7 @@
 | `getStorageScope` | 读取当前作用域（未设置返回空串） |
 | `scopedKey` | 给一个存储键加上当前作用域。 |
 | `createIdempotencyKey` | 生成幂等键。优先 randomUUID（安全上下文），否则退化为时间戳 + 强随机。 |
-| `makeIdempotencyKey` | 取一个幂等键：配了自定义生成器就用它，否则用默认实现 |
+| `makeIdempotencyKey` | 取一个幂等键：配了自定义生成器就用它，否则用默认实现。 |
 | `setIdempotencyKeyFactory` | 设置自定义幂等键生成器；传 null 恢复默认（randomUUID） |
 | `IDEMPOTENCY_HEADER` | 请求头名（宿主要在服务端读同名头） |
 | `checkApiUrl` | 判定一个 URL 是否允许被 fetch。 |

@@ -48,7 +48,26 @@ export function setIdempotencyKeyFactory(fn: (() => string) | null): void {
   factory = fn
 }
 
-/** 取一个幂等键：配了自定义生成器就用它，否则用默认实现 */
+/**
+ * 取一个幂等键：配了自定义生成器就用它，否则用默认实现。
+ *
+ * 宿主自定义生成器是**辅助**（接 traceId / 租户前缀），不是提交通路的必需件：
+ * 它抛异常、返回空/纯空白、或返回非字符串（宿主用 JS 传参时没有类型保护）时，
+ * 一律退回默认实现。理由 —— 幂等键只是一个请求头，而 `useFormRemote` 在
+ * fetch **之前**调它；生成器一坏就让用户表单提交失败，那是"为了埋点把业务搞挂"。
+ * 默认实现本身不依赖任何外部服务，不会失败。
+ *
+ * 为什么连纯空白也要挡：`" "` 当请求头发出去等于**没有**幂等键（服务端要么忽略、
+ * 要么按空值处理），却会让人误以为"键已带上"，比抛异常更难发现。
+ */
 export function makeIdempotencyKey(): string {
-  return factory ? factory() : createIdempotencyKey()
+  if (factory) {
+    try {
+      const key = factory()
+      if (typeof key === 'string' && key.trim()) return key.trim()
+    } catch {
+      /* 落到默认实现 */
+    }
+  }
+  return createIdempotencyKey()
 }
