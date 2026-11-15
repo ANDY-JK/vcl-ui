@@ -233,39 +233,13 @@ try {
 
 const results = []
 const t0 = Date.now()
-mkdirSync(LOG_DIR, { recursive: true }) // 必须在跑第一步之前建好，否则日志流打不开
 /**
- * 每次跑之前清空日志目录（2026-10-19 加）。
+ * 并发闸口（#514）：**抢锁必须在清日志之前**。
  *
- * 起因：插入新步骤会让后续步号整体后移，而旧文件按「步号-步骤名」命名留在原地，
- * 于是同一个编号下可能同时存在两个不同步骤的日志（如 `14-test-unit.log` 是插步前的、
- * `14-check-deps.log` 是插步后的）。**我自己就被它骗过一轮**：读着插步前的旧
- * `14-test-unit.log`，得出"新 spec 没被跑到"的错误结论。
- *
- * 留痕的价值在于"反映最近一次运行"，混着历史文件就失去了这个性质。
- */
-const stale = readdirSync(LOG_DIR).filter((f) => f.endsWith('.log'))
-if (stale.length) console.log(`[runner] 清理旧日志：${stale.length} 个`)
-for (const f of stale) {
-  try {
-    // 用 unlinkSync 而不是 rmSync：本机实测（Node 24 / Windows）`rmSync` 对这批文件
-    // **报成功但文件仍在**（`existsSync` 仍为 true，且不抛错），而 `unlinkSync` 确实删掉。
-    // 这正是"以为清了其实没清"的来源，也让旧日志一直混在留痕目录里。
-    unlinkSync(join(LOG_DIR, f))
-  } catch (err) {
-    // 不静默：删不掉就让用户看到
-    console.warn(`[runner] 旧日志清理失败（${f}）：${err?.code ?? err}`)
-  }
-}
-/**
- * 并发闸口（#514）：起跑前先抢锁。
- *
- * 起因：一轮整链在第 39 步 `test:unit` 红，报的是「用例失败」，翻日志才发现是
- * 「覆盖目录 is already in use by another Vitest process」—— 两个进程并发跑覆盖率会互删报告。
- * 两个整链并发更是纯粹的破坏，**一步都不该启动**。
- *
- * 逃生口：锁被活着的进程占着 → 直接 exit 3（区别于用例失败的 exit 1），
- * 并把「等它跑完」和「删陈旧锁」两条动作打清楚。持有者已死 → 接管（陈旧锁不永久阻塞）。
+ * 顺序踩过一次坑（#519）：锁的代码原本放在「清理旧日志」之后，于是抢不到锁的那次
+ * 已经把并发者的日志清空了才 exit 3 —— 两边互相清、两边都报"日志文件不存在"，
+ * 而终端说的是"环境忙，一步都没启动"（假话：日志已经被它删了）。
+ * 现在的顺序：抢锁 → 拿不到就退 → 拿到了才动日志目录。
  */
 const lock = acquireLock(LOCK_PATH, { head })
 if (!lock.ok) {
@@ -279,6 +253,31 @@ if (lock.tookOverFrom) {
     `[runner] 接管陈旧锁：原持有者 pid=${lock.tookOverFrom.pid}（${lock.tookOverFrom.head || '未知'}，` +
       `开始于 ${lock.tookOverFrom.startedAt || '未知'}）—— 进程已退出或锁超龄`,
   )
+}
+mkdirSync(LOG_DIR, { recursive: true }) // 必须在跑第一步之前建好，否则日志流打不开
+/**
+ * 每次跑之前清空日志目录（2026-10-19 加）。
+ *
+ * 起因：插入新步骤会让后续步号整体后移，而旧文件按「步号-步骤名」命名留在原地，
+ * 于是同一个编号下可能同时存在两个不同步骤的日志（如 `14-test-unit.log` 是插步前的、
+ * `14-check-deps.log` 是插步后的）。**我自己就被它骗过一轮**：读着插步前的旧
+ * `14-test-unit.log`，得出"新 spec 没被跑到"的错误结论。
+ *
+ * 留痕的价值在于"反映最近一次运行"，混着历史文件就失去了这个性质。
+ * 前提：**必须在持锁之后**（#519），否则会把并发者的日志清掉。
+ */
+const stale = readdirSync(LOG_DIR).filter((f) => f.endsWith('.log'))
+if (stale.length) console.log(`[runner] 清理旧日志：${stale.length} 个`)
+for (const f of stale) {
+  try {
+    // 用 unlinkSync 而不是 rmSync：本机实测（Node 24 / Windows）`rmSync` 对这批文件
+    // **报成功但文件仍在**（`existsSync` 仍为 true，且不抛错），而 `unlinkSync` 确实删掉。
+    // 这正是"以为清了其实没清"的来源，也让旧日志一直混在留痕目录里。
+    unlinkSync(join(LOG_DIR, f))
+  } catch (err) {
+    // 不静默：删不掉就让用户看到
+    console.warn(`[runner] 旧日志清理失败（${f}）：${err?.code ?? err}`)
+  }
 }
 let lockReleased = false
 function releaseOnce() {

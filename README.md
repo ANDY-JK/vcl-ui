@@ -31,6 +31,16 @@
 
 > 与主流库的客观包数据对照（含抓取日期与复现命令）见文档站 `docs-site/guide/comparison.md`。
 
+## 🖼 界面预览
+
+演示站里两个典型页面的实际样子（暗色主题，截图即上方在线演示）：
+
+| Select 选择器 | DataTable 数据表格 |
+| --- | --- |
+| ![Select 选择器](docs/images/demo-select-dark.png) | ![DataTable 数据表格](docs/images/demo-datatable-dark.png) |
+
+> 这两张图正是**想要改进的对象** —— 觉得哪里不好看、哪里布局别扭，欢迎按 [CONTRIBUTING.md](CONTRIBUTING.md) 直接改。
+
 ## 📦 安装
 
 > ⚠️ **尚未发布到 npm**：`npm view vcl-ui version` 会失败（registry 无此包）。
