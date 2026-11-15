@@ -89,7 +89,10 @@ export function useDataTableScroll<T extends Record<string, unknown>>(opts: {
       const el = e.target as HTMLElement
       const max = el.scrollHeight - el.clientHeight
       scrollable.value = max > 0
-      scrollProgress.value = max > 0 ? Math.round((el.scrollTop / max) * 100) : 0
+      // 百分比必须钳在 [0,100]：macOS 橡皮筋回弹会把 scrollTop 推成负值或超过 max，
+      // 而进度条是 `width: X%` —— `-10%` 是无效声明（整条被浏览器丢掉、进度条消失），
+      // `138%` 则溢出轨道。两种情况都只是一次滚动事件，钳一下就不会露出坏值。
+      scrollProgress.value = max > 0 ? Math.min(100, Math.max(0, Math.round((el.scrollTop / max) * 100))) : 0
     })
   }
 
@@ -104,6 +107,10 @@ export function useDataTableScroll<T extends Record<string, unknown>>(opts: {
     const el = findScrollEl(barEl)
     if (!el) return
     const rect = barEl.getBoundingClientRect()
+    // 进度条没有可量宽度时**没有"点在哪"可言**：容器隐藏、flex 塌陷、首帧未布局都会这样。
+    // 此时 `(clientX - left) / width` 要么 0/0 = NaN（scrollTo 空操作 + `width:'NaN%'` 整条失效），
+    // 要么除零得 Infinity 被下面钳成 1（把表格直接甩到最底部）。两种都该忽略这次点击。
+    if (!(rect.width > 0)) return
     const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
     const target = Math.round(pct * (el.scrollHeight - el.clientHeight))
     el.scrollTo({ top: target, behavior: 'instant' as ScrollBehavior })

@@ -41,8 +41,12 @@ export function createAmapLoader(config: AmapLoaderConfig = {}): AmapLoader {
       // 空 key 不初始化也不锁死：host 常见「异步拉配置后再 setAmapKey()」，
       // 若以空 key 调 initAMapApiLoader 会立即置位 initialized，之后换 key 只能提示刷新 — 地图永久不可用
       if (!key) return
-      initialized = true
+      // 记账必须落在**副作用之后**：initAMapApiLoader 会向 document 注入 <script>，
+      // 它一抛异常（配置非法 / 文档不可用）这次就没加载成功。先置 initialized 的话，
+      // 组件下次挂载会命中 `if (initialized) return` —— 地图永久空白，连 setAmapKeys()
+      // 都只回一句「需刷新页面」，而其实重试就能好（SDK 不能热换 key，但**能**重试失败的加载）。
       loadScript({ key, version: '2.0', plugins: ['AMap.ToolBar', 'AMap.Scale'] })
+      initialized = true
     },
 
     isInitialized() {

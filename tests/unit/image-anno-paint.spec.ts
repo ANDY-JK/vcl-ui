@@ -99,6 +99,42 @@ describe('paintAnno · 绘制契约', () => {
     expect(calls).toContain('strokeRect:0,5,10,5')
   })
 
+  it('**宽高异号也按逐轴归一化描边**（左下拖 / 右上拖，#497）', () => {
+    // 旧实现只在 w 与 h 同号时正确：异号时它把 strokeRect 交给 canvas 的隐形归一化，
+    // 而 hitTest 那边不会归一化 → 框看得见却点不中。这里把绘制侧的形状也钉成"永远为正"。
+    const a = mockCtx()
+    paintAnno(a.ctx, { type: 'rect', id: '1', color: '#000', lw: 2, x: 100, y: 100, w: -50, h: 30 }, false)
+    expect(a.calls, '左下拖：x 左移 50、y 不动').toContain('strokeRect:50,100,50,30')
+
+    const b = mockCtx()
+    paintAnno(b.ctx, { type: 'rect', id: '1', color: '#000', lw: 2, x: 100, y: 100, w: 50, h: -30 }, false)
+    expect(b.calls, '右上拖：y 上移 30、x 不动').toContain('strokeRect:100,70,50,30')
+  })
+
+  it('**circle 未选中：椭圆按中心 + 半轴画，虚线装饰清掉**', () => {
+    const { ctx, calls } = mockCtx()
+    paintAnno(ctx, { type: 'circle', id: 'c', color: '#0f0', lw: 3, x: 100, y: 50, w: 80, h: 40 }, false)
+    expect(calls, '中心 (140,70)、半轴 40/20').toContain('ellipse:140,70,40,20')
+    expect(calls).toContain('dash:')
+    expect(calls.at(-1), '收尾清虚线').toBe('dash:')
+  })
+
+  it('**circle 选中：虚线框 + 四角把手 + 恢复实线**', () => {
+    const { ctx, calls } = mockCtx()
+    paintAnno(ctx, { type: 'circle', id: 'c', color: '#0f0', lw: 3, x: 100, y: 50, w: 80, h: 40 }, true)
+    expect(calls).toContain('dash:5,3')
+    expect(calls, '半轴不受选中影响').toContain('ellipse:140,70,40,20')
+    expect(calls.filter((c) => c === 'fillRect'), '四角各一个白色把手').toHaveLength(4)
+    expect(calls.filter((c) => c.startsWith('strokeRect')), '把手黑描边 4 条').toHaveLength(4)
+    expect(calls.at(-1)).toBe('dash:')
+  })
+
+  it('**circle 负宽高：中心在半轴左上侧，半径取绝对值**', () => {
+    const { ctx, calls } = mockCtx()
+    paintAnno(ctx, { type: 'circle', id: 'c', color: '#0f0', lw: 2, x: 100, y: 100, w: -40, h: -20 }, false)
+    expect(calls, '中心 (80,90)、半轴 20/10').toContain('ellipse:80,90,20,10')
+  })
+
   it('pen：moveTo 首点 + lineTo 后续，选中加粗白描边', () => {
     const { ctx, calls } = mockCtx()
     const pen = {

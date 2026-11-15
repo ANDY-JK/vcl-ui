@@ -304,6 +304,40 @@ describe('命中检测', () => {
     expect(api.hitTest({ x: 160, y: 120 }), '归一化区域外不该命中').toBeNull()
   })
 
+  /* ── 宽高异号（#497）：从右下往左上之外的两个斜向拖拽 ──
+   * 起点 (100,100)、终点分别 (50,130) 与 (150,70)：
+   *   · 左下拖 → w=-50、h=+30；右上拖 → w=+50、h=-30；
+   * canvas 对负 w/h 自动归一化（strokeRect 画得出来，用户看得见），
+   * 但旧 hitTest 只在「w 与 h 同号」时正确 —— 异号时 ry + rh 与 ry 顺序颠倒，
+   * 区间判成空集，于是**画得出来却点不中**（选不中、拖不动、删不掉）。 */
+
+  it('**rect：宽为负、高为正（左下拖）→ 区域内必须命中**', () => {
+    const { api } = host
+    api.annotations.value = [rect({ x: 100, y: 100, w: -50, h: 30 })]
+    // 实际覆盖区域：x ∈ [50,100]、y ∈ [100,130]
+    expect(api.hitTest({ x: 75, y: 115 })?.id, '框内（左下方向）应命中').toBe('r1')
+    expect(api.hitTest({ x: 52, y: 102 })?.id, '靠近左上角内侧应命中').toBe('r1')
+    expect(api.hitTest({ x: 40, y: 115 }), '框外左侧不该命中').toBeNull()
+    expect(api.hitTest({ x: 75, y: 140 }), '框外下方不该命中').toBeNull()
+  })
+
+  it('**rect：宽为正、高为负（右上拖）→ 区域内必须命中**', () => {
+    const { api } = host
+    api.annotations.value = [rect({ x: 100, y: 100, w: 50, h: -30 })]
+    // 实际覆盖区域：x ∈ [100,150]、y ∈ [70,100]
+    expect(api.hitTest({ x: 125, y: 85 })?.id, '框内（右上方向）应命中').toBe('r1')
+    expect(api.hitTest({ x: 148, y: 98 })?.id, '靠近右下角内侧应命中').toBe('r1')
+    expect(api.hitTest({ x: 160, y: 85 }), '框外右侧不该命中').toBeNull()
+    expect(api.hitTest({ x: 125, y: 60 }), '框外上方不该命中').toBeNull()
+  })
+
+  it('**rect：宽高异号时 pad 容差仍生效（边缘外 6px 内命中）**', () => {
+    const { api } = host
+    api.annotations.value = [rect({ x: 100, y: 100, w: -50, h: 30 })]
+    expect(api.hitTest({ x: 46, y: 115 })?.id, '左边缘外 pad 内应命中').toBe('r1')
+    expect(api.hitTest({ x: 75, y: 134 })?.id, '下边缘外 pad 内应命中').toBe('r1')
+  })
+
   it('**circle：椭圆内命中、外不命中**', () => {
     const { api } = host
     api.annotations.value = [{ type: 'circle', id: 'c1', x: 100, y: 100, w: 80, h: 40, color: '#000', lw: 2 }]

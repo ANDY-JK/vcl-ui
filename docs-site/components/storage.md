@@ -10,7 +10,7 @@
 | `storageSet` | 轻量写入 —— token、标记、小配置。同步，不阻塞。 |
 | `storageGet` | 轻量读取 —— 自动判过期 |
 | `storageDelete` | 轻量删除 |
-| `storageHas` | 检查 key 是否存在且未过期 |
+| `storageHas` | 检查 key 是否存在且未过期。 |
 | `dbPut` | 在任意 store 中存入数据（store 不存在则自动创建） |
 | `dbGet` | 从任意 store 中读取数据 |
 | `dbDelete` | 从任意 store 中删除数据 |

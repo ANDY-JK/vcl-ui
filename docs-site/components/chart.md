@@ -142,12 +142,12 @@
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 | --- | --- | --- | --- | --- |
-| `items` | `{ name: string; color: string; visible: boolean }[]` | — | 是 | 图例项：名称 + 色值 + 当前可见态 |
+| `items` | `{ key?: string; name: string; color: string; visible: boolean }[]` | — | 是 | 图例项：名称 + 色值 + 当前可见态。 `key` 是项的**唯一身份**（与展示名分开，#489）：两个系列可以同名，而隐藏集合、 DOM key 都必须按身份走 —— 否则点其中一个会两个一起消失。 不传 `key`（或传空串）时退化为按**展示名**，此时同名项在 `toggle` 事件里 无法区分（都发同一个 name）—— 需要精确控制请显式传 `key`（#492）。 |
 
 ### Events
 
 | 事件 | 载荷 | 说明 |
 | --- | --- | --- |
-| `toggle` | `name: string` | 点击单个图例：切换该序列可见性 |
+| `toggle` | `identity: string` | 点击单个图例：切换该项（传了 key 发 key，否则发展示名） |
 | `'toggle-all'` | `visible: boolean` | 全部显示 / 全部隐藏 |
 

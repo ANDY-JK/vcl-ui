@@ -227,6 +227,70 @@ describe('useTableColumns 列宽拖拽', () => {
 })
 
 describe('useTableColumns autoFit', () => {
+  /* ── 冷却计时器的状态机必须能回到"立即"（#508）──
+   *
+   * 冷却实现里两条分支对 `_autoFitTimer` 的处理**不对称**：
+   *   首调用  → setTimeout(0)   → 回调里 `_autoFitTimer = null` 再跑 core  ✅
+   *   合并调用 → setTimeout(300) → 回调**直接**跑 core，从不清零            ❌
+   *
+   * 于是"同帧并发合并"这件事只要发生过**一次**，`_autoFitTimer` 就永远是个
+   * 已失效的 timer id（真值），此后每次 `applyAutoFit()` 都走合并分支：
+   * **永久 300ms 延后**，注释里写的"首调用走 setTimeout(0)"变成不可达代码。
+   * 用户可见症状：窗口缩放 / 数据加载后列宽总慢半拍，且拖窗口期间连续触发会
+   * 被反复延后（冷却窗口永远关不上）。
+   */
+
+  it('**一次合并之后必须回到"立即执行"**（不能永久延后 300ms）', async () => {
+    const wrap = { getBoundingClientRect: () => ({ width: 802 }) }
+    const p = { columns: cols, autoFit: true, selectable: false, bordered: false }
+    const api = useTableColumns(
+      p as never,
+      { value: wrap } as never,
+      computed(() => emptyData.value),
+    )
+
+    vi.useFakeTimers()
+    // 同帧两次调用 → 第一次 0ms、第二次把它合并成 300ms
+    api.applyAutoFit()
+    api.applyAutoFit()
+    vi.advanceTimersByTime(400)
+    expect(Object.keys(api.columnWidths.value).length, '合并那次应当已经算过').toBeGreaterThan(0)
+
+    // 冷却早已结束：下一次调用必须**立刻**重算，而不是又排一个 300ms
+    api.columnWidths.value = {}
+    api.applyAutoFit()
+    vi.advanceTimersByTime(10)
+    expect(
+      Object.keys(api.columnWidths.value).length,
+      '冷却结束后应回到立即执行（10ms 内算完），现在却要等满 300ms',
+    ).toBeGreaterThan(0)
+    vi.useRealTimers()
+  })
+
+  it('同帧连发 5 次 → 冷却窗口内合并成**一次**重算（冷却的本意）', async () => {
+    // 用容器量宽次数当"跑了几次 core"的观测点：每次 core 都会量一次容器
+    let measured = 0
+    const wrap = {
+      getBoundingClientRect: () => {
+        measured++
+        return { width: 802 }
+      },
+    }
+    const p = { columns: cols, autoFit: true, selectable: false, bordered: false }
+    const api = useTableColumns(
+      p as never,
+      { value: wrap } as never,
+      computed(() => emptyData.value),
+    )
+
+    vi.useFakeTimers()
+    for (let i = 0; i < 5; i++) api.applyAutoFit() // 同一同步块内连发
+    expect(measured, '还没到时间不该算').toBe(0)
+    vi.advanceTimersByTime(300)
+    expect(measured, '连发 5 次合并成 1 次，不是各算一遍').toBe(1)
+    vi.useRealTimers()
+  })
+
   it('容器未挂载时 applyAutoFit 直接返回', async () => {
     const { api } = makeApi()
     api.applyAutoFit()

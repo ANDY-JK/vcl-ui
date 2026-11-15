@@ -60,6 +60,11 @@ export function useSelectKeyboard(d: SelectKeyboardDeps) {
       return
     }
     if (e.key === 'ArrowUp') {
+      // 面板关着时**不动游标**（#499）：ArrowDown 在关着时是"开面板然后 return"，
+      // Home/End 在关着时直接 return，只有 ↑ 以前不看 open —— 于是"先按 ↑ 再按 ↓"
+      // 打开面板时游标已被偷偷推到 0，用户第一次按 ↓ 会落到第 2 条（跳过第一条）。
+      // ↑ 不负责开面板（与既有行为一致），那它就不该改任何状态。
+      if (!d.open.value) return
       e.preventDefault?.()
       highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
       return
@@ -75,8 +80,16 @@ export function useSelectKeyboard(d: SelectKeyboardDeps) {
       e.preventDefault?.()
       if (highlightIdx.value >= 0) {
         const item = navItems.value[highlightIdx.value]
-        if (!d.isMenu.value) d.selectOption(item as Option)
-        return
+        if (item) {
+          if (!d.isMenu.value) d.selectOption(item as Option)
+          return
+        }
+        // 陈旧游标（#493）：用户高亮了第 3 项后又输入筛选词，列表只剩 1 项，
+        // 而 highlightIdx 没有 watcher 重置。旧实现把 undefined 直接交给 selectOption，
+        // 真宿主第一行 `if (opt.disabled)` 就抛 TypeError、面板白掉。
+        // 语义上"高亮项已经不存在" == "没有高亮" —— 清掉游标，继续走精确匹配/提交路径。
+        highlightIdx.value = -1
+        if (d.isMenu.value) return
       }
       const text = d.comboText.value.trim()
       if (!text) return
@@ -160,13 +173,19 @@ export function useSelectKeyboard(d: SelectKeyboardDeps) {
           if (flatNode) d.onTreeNodeClick(flatNode)
         } else {
           const item = navItems.value[highlightIdx.value]
-          if (d.isMenu.value) d.onMenuClick(item as MenuItem)
-          else d.selectOption(item as Option)
+          // 同 #493：列表被筛选缩短后高亮项可能已不存在，不能把 undefined 交给宿主
+          if (!item) {
+            highlightIdx.value = -1
+            return
+          }
+          d.selectOption(item as Option)
         }
       }
       return
     }
     if (e.key === 'ArrowUp') {
+      // 同 #499：面板关着时不动游标（见 onComboKeydown 的同名注释）
+      if (!d.open.value) return
       e.preventDefault?.()
       highlightIdx.value = Math.max(highlightIdx.value - 1, 0)
       return

@@ -41,6 +41,11 @@ function openBatchEdit() {
 function confirmBatchEdit() {
   if (!_batchCol.value || _batchShow.value === false) return
   emit('batch-change', _batchCol.value, _batchValue.value, [..._selectedKeys.value])
+  // #511：确定（含输入框回车）是**最常走**的关闭路径，早先只隐藏不停用陷阱 ——
+  // 于是 useFocusTrap 的 active 永远为真：window 上的 keydown 监听留到卸载才摘、
+  // lastFocusedEl 一直不清、同一实例再次 open() 时 activate() 因 `if (active) return` 空转。
+  // 三条关闭路径必须一致（取消/Esc 早就对了）。
+  deactivateTrap()
   _batchShow.value = false
 }
 function closeBatchEdit() {

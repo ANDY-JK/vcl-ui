@@ -169,7 +169,11 @@ test('全站 axe 无障碍扫描：基线值守，不新增', async ({ page }) =
     // 会把「无 h1」误报成 page-has-heading-one —— 09-20 全链假红过一次。
     // 历史全量探针证实 45 条路由均有 h1（挂载 100~800ms），
     // 等 h1 可见即页面就绪，比固定 sleep 确定。
-    await page.locator('h1').first().waitFor({ state: 'visible', timeout: 15_000 })
+    // 30s 而不是 15s：15s 是「路由异步 chunk 挂载」的经验值，但整链串行跑到这一步时
+    // （前面已有 theme-editor / table-screenshot 等重活，site-audit 单文件可占 5 分钟）
+    // 机器负载会把挂载推过 15s —— 09-20 与 11-14 各假红过一次（页面快照只有侧栏、无 h1，
+    // 断言根本没跑到，不是对比度违规）。等 h1 的语义不变，只放宽上限。
+    await page.locator('h1').first().waitFor({ state: 'visible', timeout: 30_000 })
     // 还要等入场动画收尾：login 卡片带 slideUp 0.5s（库组件 login/login.vue），
     // 动画中段 axe 取到的是混合色（h1 #a4a6aa on #f8f9fa = 2.31），一次误报 9 条
     // color-contrast —— 09-20 全链真红过。无限动画（loading 页 spinner）不纳入等待条件。
@@ -250,7 +254,11 @@ test('暗色主题对比度值守：全站 color-contrast 不新增', async ({ p
 
   for (const route of ROUTES) {
     await page.goto(`${BASE}/#/${route}`)
-    await page.locator('h1').first().waitFor({ state: 'visible', timeout: 15_000 })
+    // 30s 而不是 15s：15s 是「路由异步 chunk 挂载」的经验值，但整链串行跑到这一步时
+    // （前面已有 theme-editor / table-screenshot 等重活，site-audit 单文件可占 5 分钟）
+    // 机器负载会把挂载推过 15s —— 09-20 与 11-14 各假红过一次（页面快照只有侧栏、无 h1，
+    // 断言根本没跑到，不是对比度违规）。等 h1 的语义不变，只放宽上限。
+    await page.locator('h1').first().waitFor({ state: 'visible', timeout: 30_000 })
     // 手动切暗色（走 data-theme，与用户点「暗色」同一条路径；不依赖系统偏好）
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'))
     await page.waitForFunction(() =>

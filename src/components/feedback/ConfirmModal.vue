@@ -43,8 +43,13 @@ const props = withDefaults(
 )
 
 // 默认标题用 computed 回退而非 prop 工厂：工厂只在实例创建时求值一次，
-// 常驻弹窗中途切语言后标题会停在旧语言
-const effTitle = computed(() => props.title ?? t('confirmModal.title'))
+// 常驻弹窗中途切语言后标题会停在旧语言。
+//
+// 判据是「trim 后非空」而不是 `?? t(...)`（#500）：prop 文档写的是「空串用内置 i18n」，
+// 而 `??` 只兜 null/undefined —— 宿主把 title 绑到可选字段（`title=""`）时，
+// 弹窗头部就是一片空白，无障碍名退到 `common.dialog`，用户看到"没有标题的确认框"。
+// 同族 `confirmText`/`cancelText` 在 #487 已用 `.trim() ||` 修过，这个字段当时漏在外面。
+const effTitle = computed(() => props.title?.trim() || t('confirmModal.title'))
 
 const emit = defineEmits<{
   /** v-model:visible——显隐 */

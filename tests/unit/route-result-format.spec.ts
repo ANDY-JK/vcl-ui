@@ -119,6 +119,29 @@ describe('RouteResult · 门店密度', () => {
     const w = mountResult(makePlan({ timeMin: 10, distM: 5000, stores: [] }))
     expect(w.find('.density-tag').exists()).toBe(false)
   })
+
+  /* ── 非有限距离（#504）──
+   * 同文件的 `formatTime` / `formatDistance` 都先 `Number.isFinite` 再格式化，
+   * 只有 `storeDensity` 只挡了 `<= 0` —— NaN 会穿透成「NaN家/100km」，
+   * Infinity 会被算成 0 家/100km（"密度偏低"这种**看着正常其实胡说**的结论）。
+   * `plan` 是对外 prop，宿主自己拼的 RoutePlan 里出现 NaN 距离并不需要做错什么。 */
+
+  it('**距离是 NaN → 不显示密度标签**（不能把 NaN 写进标签）', () => {
+    const w = mountResult(makePlan({ timeMin: 10, distM: NaN }))
+    expect(w.find('.density-tag').exists(), 'NaN 距离应当视为"没有可用距离"').toBe(false)
+    expect(w.text()).not.toContain('NaN')
+  })
+
+  it('**距离是 Infinity → 也不显示密度标签**（否则会算出 0 家/100km 的假结论）', () => {
+    const w = mountResult(makePlan({ timeMin: 10, distM: Infinity }))
+    expect(w.find('.density-tag').exists()).toBe(false)
+  })
+
+  it('非有限距离下其它数字仍然降级成「—」（同文件既有口径不被破坏）', () => {
+    const w = mountResult(makePlan({ timeMin: NaN, distM: NaN }))
+    expect(statNum(w, 2)).toBe('—')
+    expect(statNum(w, 3)).toBe('—')
+  })
 })
 
 describe('RouteResult · 缺坐标与导航出口', () => {
@@ -146,5 +169,36 @@ describe('RouteResult · 分天折叠', () => {
     expect(w.find('.day-detail').exists()).toBe(false)
     await w.find('.day-header').trigger('click')
     expect(w.find('.day-detail').exists()).toBe(true)
+  })
+
+  /* ── 展开状态必须对读屏可见（#503）──
+   * 天头是 `role="button" tabindex="0"` 的自绘 disclosure，但没写 `aria-expanded`：
+   * 读屏只能念出"按钮"，**念不出当前是展开还是折叠** —— 用户按了回车也不知道发生了什么。
+   * 库里其余 disclosure（Collapse / Tree / Select / Popover / Menu / NavItem /
+   * NotificationCenter）全都写了 `aria-expanded`，只有这里漏了。 */
+
+  it('**天头暴露 aria-expanded，且随展开状态翻转**', async () => {
+    const w = mountResult(makePlan({ timeMin: 10, distM: 5000 }))
+    const header = w.find('.day-header')
+    expect(header.attributes('role')).toBe('button')
+    expect(header.attributes('aria-expanded'), '展开时必须是 true').toBe('true')
+    await header.trigger('click')
+    expect(w.find('.day-header').attributes('aria-expanded'), '折叠后必须是 false').toBe('false')
+    await w.find('.day-header').trigger('click')
+    expect(w.find('.day-header').attributes('aria-expanded')).toBe('true')
+  })
+
+  it('多天时每天各自暴露自己的展开状态（不能共用一个布尔）', () => {
+    const plan = makePlan({ timeMin: 10, distM: 5000 })
+    plan.days.push({
+      day: 2,
+      stores: [store('s3')],
+      drivingTimeMin: 20,
+      drivingDistanceM: 8000,
+      accommodation: null,
+    } as (typeof plan.days)[number])
+    const w = mountResult(plan)
+    const states = w.findAll('.day-header').map((h) => h.attributes('aria-expanded'))
+    expect(states, '默认只展开第一天').toEqual(['true', 'false'])
   })
 })

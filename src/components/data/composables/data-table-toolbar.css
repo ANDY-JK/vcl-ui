@@ -97,7 +97,15 @@
   color: var(--vcl-color-text-muted);
 }
 
+/* 关闭单个筛选：真按钮（#498），但要看起来仍是一枚"图标"——
+   去掉按钮默认的边框/底色/内边距，只留图标本身；焦点环由全局 :focus-visible 接管。 */
 .filter-chip-close {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: none;
   cursor: pointer;
   opacity: 0.6;
   transition: opacity var(--vcl-transition-fast);

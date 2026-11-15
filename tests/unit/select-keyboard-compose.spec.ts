@@ -18,6 +18,7 @@ function harness() {
   const comboText = ref('')
   const open = ref(false)
   const highlight = ref(-1)
+  const emitted: (string | number | boolean)[][] = []
   const d = useSelectKeyboard({
     navItems: computed(() => items),
     navCount: computed(() => items.length),
@@ -45,10 +46,60 @@ function harness() {
     onMenuClick: () => calls.push('menuClick'),
     onTreeNodeClick: () => calls.push('treeClick'),
     focusComboInput: () => calls.push('focus'),
-    emitValue: () => calls.push('emitValue'),
+    emitValue: (v) => {
+      emitted.push(v)
+      calls.push('emitValue')
+    },
     externalHighlight: highlight,
   })
-  return { ...d, calls, items, highlight, comboText, open }
+  return { ...d, calls, emitted, items, highlight, comboText, open }
+}
+
+/**
+ * 可配 `multiple` / `allowCreate` 的 harness（#499 补的组合框提交分支）。
+ * `findExact` / `matchOptions` 直接给，避免依赖真实选项列表的防抖更新。
+ */
+function comboHarness(cfg: {
+  multiple?: boolean
+  allowCreate?: boolean
+  modelValue?: (string | number | boolean)[]
+  exact?: Option
+  fresh?: Option[]
+}) {
+  const items = [opt('a'), opt('b'), opt('c')]
+  const calls: string[] = []
+  const emitted: (string | number | boolean)[][] = []
+  const comboText = ref('')
+  const open = ref(true)
+  const highlight = ref(-1)
+  const d = useSelectKeyboard({
+    navItems: computed(() => items),
+    navCount: computed(() => items.length),
+    visibleTreeNodes: computed(() => []),
+    isMenu: computed(() => false),
+    isTreeSelect: computed(() => false),
+    open,
+    comboText,
+    modelValue: computed(() => cfg.modelValue),
+    multiple: cfg.multiple ?? false,
+    allowCreate: cfg.allowCreate ?? false,
+    isImeComposing: () => false,
+    matchOptions: () => cfg.fresh ?? [],
+    findExact: () => cfg.exact,
+    commitComboValue: (t) => calls.push(`commit:${t}`),
+    toggleOpen: () => calls.push('toggleOpen'),
+    closePanel: () => calls.push('close'),
+    selectOption: () => calls.push('selectOption'),
+    onMenuClick: () => calls.push('menuClick'),
+    onTreeNodeClick: () => calls.push('treeClick'),
+    focusComboInput: () => calls.push('focus'),
+    emitValue: (v) => {
+      emitted.push(v)
+      calls.push(`emit:${v.join('|')}`)
+    },
+    externalHighlight: highlight,
+  })
+  return { ...d, calls, emitted, items, comboText, open, highlight }
 }
 
 const key = (k: string, extra: Record<string, unknown> = {}) =>
@@ -92,6 +143,20 @@ describe('useSelectKeyboard · 游标与收口', () => {
     expect(h.highlight.value).toBe(0)
   })
 
+  it('**ArrowUp 未打开时不动游标**（#499：与 ArrowDown / Home / End 同口径）', () => {
+    const h = harness()
+    let prevented = 0
+    h.onComboKeydown(key('ArrowUp', { preventDefault: () => prevented++ }))
+    expect(h.highlight.value, '面板关着时按 ↑ 只是"没反应"').toBe(-1)
+    expect(prevented, '没打开就不该拦默认行为').toBe(0)
+    // 后果：↑ 之后按 ↓ 打开面板，游标仍是 -1，第一次 ↓ 落在第 0 条而不是第 1 条
+    h.onComboKeydown(key('ArrowDown'))
+    expect(h.open.value).toBe(true)
+    expect(h.highlight.value).toBe(-1)
+    h.onComboKeydown(key('ArrowDown'))
+    expect(h.highlight.value).toBe(0)
+  })
+
   it('Enter + 游标命中 → 走 selectOption（单选/非菜单）', () => {
     const h = harness()
     h.open.value = true
@@ -103,6 +168,68 @@ describe('useSelectKeyboard · 游标与收口', () => {
   it('反向保护：空输入 + 无游标 → 不派发任何事件', () => {
     const h = harness()
     h.open.value = true
+    h.onComboKeydown(key('Enter'))
+    expect(h.calls).toEqual([])
+  })
+})
+
+describe('onComboKeydown · 组合框提交分支（#499）', () => {
+  it('多选 + 精确命中 → 追加值并清空输入、聚焦回输入框', () => {
+    const h = comboHarness({ multiple: true, modelValue: ['x'], exact: opt('b'), fresh: [] })
+    h.comboText.value = 'b'
+    h.onComboKeydown(key('Enter'))
+    expect(h.emitted).toEqual([['x', 'b']])
+    expect(h.comboText.value).toBe('')
+    expect(h.calls).toContain('focus')
+  })
+
+  it('多选 + 精确命中但**已在选中里** → 不重复追加（幂等）', () => {
+    const h = comboHarness({ multiple: true, modelValue: ['b'], exact: opt('b'), fresh: [] })
+    h.comboText.value = 'b'
+    h.onComboKeydown(key('Enter'))
+    expect(h.emitted, '同一个值不能进两次').toEqual([])
+    expect(h.comboText.value, '仍然清空输入并聚焦').toBe('')
+  })
+
+  it('多选 + 精确命中但选项禁用 → 不选中（与鼠标点击同口径）', () => {
+    const h = comboHarness({ multiple: true, modelValue: [], exact: opt('b', true), fresh: [] })
+    h.comboText.value = 'b'
+    h.onComboKeydown(key('Enter'))
+    expect(h.emitted).toEqual([])
+  })
+
+  it('多选 + 无精确命中 + allowCreate → 用**即时匹配**的首项而不是 stale 列表', () => {
+    const h = comboHarness({ multiple: true, allowCreate: true, modelValue: [], exact: undefined, fresh: [opt('fresh-1'), opt('fresh-2')] })
+    h.comboText.value = 'fres'
+    h.onComboKeydown(key('Enter'))
+    expect(h.emitted, '应按即时匹配结果建值').toEqual([['fresh-1']])
+  })
+
+  it('多选 + 无精确命中 + allowCreate 且即时匹配为空 → 用输入文本建值', () => {
+    const h = comboHarness({ multiple: true, allowCreate: true, modelValue: [], exact: undefined, fresh: [] })
+    h.comboText.value = '新值'
+    h.onComboKeydown(key('Enter'))
+    expect(h.emitted).toEqual([['新值']])
+  })
+
+  it('多选 + 无精确命中 + **不允许创建** → 什么都不做（不清输入、不 emit）', () => {
+    const h = comboHarness({ multiple: true, allowCreate: false, modelValue: [], exact: undefined, fresh: [opt('b')] })
+    h.comboText.value = 'zzz'
+    h.onComboKeydown(key('Enter'))
+    expect(h.emitted).toEqual([])
+    expect(h.comboText.value, '没结果就别偷偷清输入').toBe('zzz')
+  })
+
+  it('单选 + 允许创建 → 提交文本并关面板', () => {
+    const h = comboHarness({ multiple: false, allowCreate: true, exact: undefined })
+    h.comboText.value = '自定义'
+    h.onComboKeydown(key('Enter'))
+    expect(h.calls).toEqual(['commit:自定义', 'close'])
+  })
+
+  it('单选 + 无精确命中且不允许创建 → 不提交（避免把随便打的字当值）', () => {
+    const h = comboHarness({ multiple: false, allowCreate: false, exact: undefined })
+    h.comboText.value = 'zzz'
     h.onComboKeydown(key('Enter'))
     expect(h.calls).toEqual([])
   })

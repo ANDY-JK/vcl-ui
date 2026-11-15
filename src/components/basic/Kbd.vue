@@ -11,7 +11,13 @@
 import { computed } from 'vue'
 
 interface Props {
-  /** 按键：`'Ctrl+K'` 或 `['Ctrl', 'K']`；`Mod` 按平台展开 */
+  /**
+   * 按键：`'Ctrl+K'` 或 `['Ctrl', 'K']`；`Mod` 按平台展开。
+   *
+   * `+` 既是分隔符又可能是按键本身：**相邻两个 `+`（`'Ctrl++'`）表示加号键**，
+   * 整串只有一个 `'+'` 也表示加号键；只有空白的段（`' Ctrl +  + K '` 中间那段）
+   * 仍按噪声丢掉。尾部单个 `+`（`'Ctrl+'`）视为手误丢弃。
+   */
   keys: string | string[]
   /** 键与键之间的分隔符（默认 `+`；传空串则只留间距） */
   sep?: string
@@ -71,12 +77,46 @@ function glyphOf(key: string): string {
   }
 }
 
+/**
+ * 解析字符串形式的按键（#483）。
+ *
+ * 不能用 `s.split('+')`：`'Ctrl++'` 会变成 `['Ctrl', '', '']`，空段被过滤掉后
+ * 加号键**静默消失**（放大快捷键是最常见的一种），`keys: '+'` 更是整串变空。
+ * 反过来也不能把空段一律当加号键 —— `' Ctrl +  + K '` 中间那段只有空白，
+ * 是既有契约里明确要丢掉的噪声（`kbd.spec.ts`「空串与多余空白被忽略」）。
+ *
+ * 判据：**相邻的两个 `+` 才是按键**，只有一个空白可 trim 掉的段是噪声。
+ * 尾部单个 `+` 按手误处理，不产键帽。
+ */
+function splitKeys(s: string): string[] {
+  if (s.trim() === '+') return ['+']
+  const out: string[] = []
+  let buf = ''
+  const flushText = () => {
+    const t = buf.trim()
+    if (t) out.push(t)
+    buf = ''
+  }
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] !== '+') {
+      buf += s[i]
+      continue
+    }
+    if (s[i + 1] === '+') {
+      flushText()
+      out.push('+')
+      i++ // 吃掉第二个 +
+      continue
+    }
+    flushText()
+  }
+  flushText()
+  return out
+}
+
 const glyphs = computed<string[]>(() => {
-  const raw = Array.isArray(props.keys) ? props.keys : props.keys.split('+')
-  return raw
-    .map((k) => k.trim())
-    .filter(Boolean)
-    .map(glyphOf)
+  const raw = Array.isArray(props.keys) ? props.keys.map((k) => k.trim()) : splitKeys(props.keys)
+  return raw.filter(Boolean).map(glyphOf)
 })
 </script>
 

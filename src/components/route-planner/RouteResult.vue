@@ -97,9 +97,13 @@ const totalDist = computed(() => {
   return formatDistance(props.plan.totalDrivingDistanceM)
 })
 
-/** 计算某天的门店密度（家/100km），距离为 0 时返回 null */
+/** 计算某天的门店密度（家/100km），距离为 0 或**不可用**时返回 null */
 function storeDensity(day: { stores: { length: number }; drivingDistanceM: number }): number | null {
-  if (day.drivingDistanceM <= 0 || day.stores.length === 0) return null
+  // 非有限距离（NaN / Infinity）当作"没有可用距离"（#504）：同文件的 formatTime / formatDistance
+  // 都先 Number.isFinite 再格式化，只有这里以前只挡了 `<= 0`。`plan` 是对外 prop，
+  // 宿主自己拼的 RoutePlan 里出现 NaN 距离并不需要做错什么 —— 而症状很隐蔽：
+  // NaN 会渲染成「NaN家/100km」，Infinity 会被算成「0家/100km」这种**看着正常其实胡说**的结论。
+  if (!Number.isFinite(day.drivingDistanceM) || day.drivingDistanceM <= 0 || day.stores.length === 0) return null
   return Math.round((day.stores.length / (day.drivingDistanceM / 1000)) * 100)
 }
 
@@ -186,6 +190,7 @@ function densityLabel(density: number | null): { text: string; cls: string } {
             class="day-header"
             role="button"
             tabindex="0"
+            :aria-expanded="expandedDay === day.day"
             @click="toggleDay(day.day)"
             @keydown.enter="toggleDay(day.day)"
             @keydown.space.prevent="toggleDay(day.day)"

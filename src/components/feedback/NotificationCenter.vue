@@ -133,8 +133,10 @@ watch(open, async (v) => {
 useClickOutside([triggerRef, floatingRef], () => {
   if (open.value) close()
 })
-// useEscClose 返回的是 { onKeydown, mount, unmount }，**调用方必须自己挂生命周期** ——
+// useEscClose 返回的是 { onKeydown, mount, unmount }：**挂载要自己来** ——
 // 直接调用而不 mount 等于没绑键盘（初版就漏了这一步，Esc 关不掉面板）。
+// 卸载则已由 composable 自己兜底（#512 起它在组件作用域内注册 onBeforeUnmount），
+// 这里的 onBeforeUnmount 是显式表达意图；重复卸载是幂等的。
 const esc = useEscClose(
   () => open.value,
   () => true,

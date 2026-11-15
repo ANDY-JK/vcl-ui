@@ -24,9 +24,9 @@ const props = withDefaults(
     message: string
     /** 确认按钮 loading */
     loading?: boolean
-    /** 确认按钮文字（空串用内置 i18n，语言切换实时跟随） */
+    /** 确认按钮文字（空串/纯空白用内置 i18n，语言切换实时跟随） */
     confirmText?: string
-    /** 取消按钮文字（空串用内置 i18n） */
+    /** 取消按钮文字（空串/纯空白用内置 i18n） */
     cancelText?: string
   }>(),
   {
@@ -36,9 +36,12 @@ const props = withDefaults(
 )
 
 // 默认文案用 computed 回退而非 prop 工厂：工厂只在实例创建时求值一次，
-// 常驻弹窗中途切语言后按钮会停在旧语言
-const effConfirmText = computed(() => props.confirmText ?? t('confirmModal.confirm'))
-const effCancelText = computed(() => props.cancelText ?? t('confirmModal.cancel'))
+// 常驻弹窗中途切语言后按钮会停在旧语言（#23）。
+// 回退判据用 `trim() ||` 而不是 `??`：prop 文档承诺「空串用内置 i18n」，
+// 而 `??` 只兜 null/undefined，宿主把配置项留空时会渲染出**空白按钮**（#487）。
+// 纯空白同理 —— 它看起来是"有值"，实际读屏念不出任何名字。
+const effConfirmText = computed(() => props.confirmText?.trim() || t('confirmModal.confirm'))
+const effCancelText = computed(() => props.cancelText?.trim() || t('confirmModal.cancel'))
 
 const emit = defineEmits<{
   /** 点击确认 */
@@ -73,7 +76,10 @@ const variantMeta = computed(() => {
       btnClass: 'btn-primary',
     },
   }
-  return map[props.variant]
+  // 未知档位回退 danger（#487）：TS 挡不住 JS 宿主或模板里拼错的 variant，
+  // 以前 `map[variant]` 给 undefined，模板再取 .bg 直接整块抛错 ——
+  // 变体只是外观档位，没理由因为档位不认识就让确认框不可用。
+  return map[props.variant] ?? map.danger
 })
 
 function onCancel() {

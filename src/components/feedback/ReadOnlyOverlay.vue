@@ -72,7 +72,13 @@ watch(
       prevFocus = null
       return
     }
-    prevFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    // typeof document 守卫（#506）：本回调带 immediate: true，会在 **setup 阶段同步执行**，
+    // SSR 下同样会跑。`attach()` 自己挡了，但上面这行 `document.activeElement` 以前没挡 ——
+    // 又因为回调是 async 函数，ReferenceError 变成 **unhandled rejection** 而不是同步崩溃：
+    // 渲染照常出 HTML、用例全绿、进程退出码却是 1 —— 三层信号自相矛盾，极难定位。
+    // 宿主在服务端渲染一个 visible 本来就为 true 的遮罩（权限在服务端判定）时必中。
+    prevFocus =
+      typeof document !== 'undefined' && document.activeElement instanceof HTMLElement ? document.activeElement : null
     attach()
     await nextTick()
     overlayRef.value?.focus()

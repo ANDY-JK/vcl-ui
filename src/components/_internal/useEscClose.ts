@@ -18,6 +18,8 @@
  * onUnmounted(unmount)
  * ```
  */
+import { getCurrentInstance, onBeforeUnmount } from 'vue'
+
 interface EscEntry {
   isVisible: () => boolean
   isClosable: () => boolean
@@ -40,7 +42,6 @@ function isTopVisible(entry: EscEntry): boolean {
 
 export function useEscClose(isVisible: () => boolean, isClosable: () => boolean, onClose: () => void) {
   const entry: EscEntry = { isVisible, isClosable, onClose }
-
   function onKeydown(e: KeyboardEvent) {
     if (e.key !== 'Escape') return
     // 已被**内层**消费的 Esc 不再往上关（2026-11-01 #280）。
@@ -66,6 +67,25 @@ export function useEscClose(isVisible: () => boolean, isClosable: () => boolean,
     if (i >= 0) _stack.splice(i, 1)
     window.removeEventListener('keydown', onKeydown)
   }
+
+  /**
+   * 组件卸载时兜底摘掉监听（#512）。
+   *
+   * 以前这里**不**兜底，docblock 写的是"调用方必须自己挂生命周期"—— 于是调用方只要
+   * `onMounted(mount)` 之后忘了 `onUnmounted(unmount)`，监听就一直活着，且模块级 `_stack`
+   * 里那条 entry 永不摘除：
+   *   · 组件销毁后按 Esc，回调照样执行（回调里常是 `emit('close')` —— 对已销毁组件抛事件）；
+   *   · 更要命的是 `isTopVisible()` 会把这个**死弹层**当成"最上层可见"，
+   *     于是**真弹层按 Esc 反而关不掉**（被死 entry 吞掉）。这个"幽灵栈顶"效应已由
+   *     `esc-close-unmount.spec.ts` 的交叉污染用例实测到。
+   * 同族的 `useFocusTrap` 末行就做了兜底（`onBeforeUnmount(() => deactivate())`）。
+   *
+   * 用 `getCurrentInstance()` 判一下：本 composable 也允许在**组件外**纯函数式使用
+   * （只取 `onKeydown` 自己挂监听，`tests/unit/utils.spec.ts` 即如此），
+   * 那种场景调 `onBeforeUnmount` 会警告 "no active component instance"。
+   * 重复卸载是安全的：`_stack.indexOf` 找不到就不动栈，`removeEventListener` 是 no-op。
+   */
+  if (getCurrentInstance()) onBeforeUnmount(unmount)
 
   return { onKeydown, mount, unmount }
 }

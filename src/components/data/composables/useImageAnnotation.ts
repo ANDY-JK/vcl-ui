@@ -110,7 +110,15 @@ export function useImageAnnotation(
     for (let i = annotations.value.length - 1; i >= 0; i--) {
       const a = annotations.value[i]
       if (a.type === 'rect') {
-        const [rx, ry, rw, rh] = a.w >= 0 ? [a.x, a.y, a.w, a.h] : [a.x + a.w, a.y + a.h, -a.w, -a.h]
+        // 宽高**逐轴**归一化（#497）：拖拽方向有四种，w 与 h 可以异号
+        // （左下拖 w<0,h>0；右上拖 w>0,h<0）。旧实现按「w>=0 就认为 h 也 >=0」整体分支，
+        // 异号时 ry + rh 与 ry 顺序颠倒 → 区间变成空集 → 框画得出来却**点不中**
+        // （选不中、拖不动、删不掉）。canvas 侧 strokeRect 对负 w/h 会自动归一化，
+        // 所以边界表现是"看得见、摸不着"。
+        const rx = a.w >= 0 ? a.x : a.x + a.w
+        const ry = a.h >= 0 ? a.y : a.y + a.h
+        const rw = Math.abs(a.w)
+        const rh = Math.abs(a.h)
         if (p.x >= rx - pad && p.x <= rx + rw + pad && p.y >= ry - pad && p.y <= ry + rh + pad) return a
       } else if (a.type === 'circle') {
         const cx = a.x + a.w / 2

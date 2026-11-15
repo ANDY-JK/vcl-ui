@@ -62,3 +62,14 @@
     background: var(--vcl-color-bg-alt);
   }
 }
+/* 忙碌态真禁用（#507）：关掉 hover 反馈与手型光标 ——
+   否则指针还在告诉用户「这能点」，而点击被 handler 静默忽略 */
+.capfb-x:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+@media (hover: hover) {
+  .capfb-x:disabled:hover {
+    background: transparent;
+  }
+}

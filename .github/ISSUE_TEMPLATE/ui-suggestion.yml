@@ -1,0 +1,37 @@
+name: 界面 / 布局改进建议
+description: 对某个组件或整站外观、布局、美化方向的建议
+labels: ["ui", "enhancement"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: 涉及范围
+      options:
+        - 单个组件（请写明组件名）
+        - 整体布局 / 导航
+        - 主题 / 配色 / 暗色模式
+        - 文档站
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: 现状描述
+      description: 现在的样子 / 哪里不满意
+      placeholder: 最好附截图或复现步骤（npm run dev 后哪个页面）
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望效果
+      description: 想改成什么样，附参考图 / 参考站点更好
+    validations:
+      required: true
+  - type: checkboxes
+    id: willing
+    attributes:
+      label: 意向
+      options:
+        - label: 我愿意提交 PR 实现这个改进

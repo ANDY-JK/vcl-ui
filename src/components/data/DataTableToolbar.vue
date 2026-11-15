@@ -104,13 +104,18 @@ function handleClearSort(): void {
           <!-- 列可能已被移除但持久化筛选残留：找不到列时回退显示 key，避免非空断言崩溃 -->
           {{ colTitle(columns.find((c) => c.key === key)) || key }}
           <span class="filter-chip-count">({{ s.selectedValues.length }})</span>
-          <IconSvg
-            type="x"
-            size="sm"
+          <!-- 关闭控件必须是**真按钮**（#498）：以前这里直接放 IconSvg —— 它渲染出的 svg
+               带 aria-hidden="true" 且没有 role/tabindex，于是键盘 Tab 走不到、
+               aria-label 也念不出来，「清除单个筛选」只剩鼠标能用
+               （唯一的键盘出路是「清除筛选」把全部筛选清掉，粒度丢失）。 -->
+          <button
+            type="button"
             class="filter-chip-close"
             :aria-label="t('table.removeFilter', { name: colTitle(columns.find((c) => c.key === key)) || key })"
             @click="removeFilter(key)"
-          />
+          >
+            <IconSvg type="x" size="sm" />
+          </button>
         </span>
       </template>
       <!-- 清除操作居中 -->

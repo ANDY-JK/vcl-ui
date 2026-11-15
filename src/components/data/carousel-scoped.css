@@ -71,6 +71,13 @@
   inset-inline-end: calc(8px * var(--vcl-scale));
 }
 
+/* RTL（#485）：按钮位置靠 inset-inline-* 自动换了边，但 ‹ / › 是**物理字形**，
+   不镜像的话右侧的「上一页」会指左、左侧的「下一页」会指右，正好与动作相反。
+   与 Carousel.vue 的 trackRtl() 同口径：宿主 <html dir="rtl"> 或组件自带 dir 都命中。 */
+[dir='rtl'] .carousel-arrow > span {
+  transform: scaleX(-1);
+}
+
 @media (hover: hover) {
   .carousel-arrow:hover:not(:disabled) {
     background: var(--vcl-color-surface);

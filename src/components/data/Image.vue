@@ -30,9 +30,9 @@ const props = withDefaults(
     lazy?: boolean
     /** 点击放大预览（默认开） */
     preview?: boolean
-    /** 加载中文本（空串用内置 i18n） */
+    /** 加载中文本。默认空 = 只显示占位图标、不显示文字（传了才渲染） */
     loadingText?: string
-    /** 加载失败文本（空串用内置 i18n） */
+    /** 加载失败文本。默认空 = 只显示错误图标、不显示文字（同上） */
     errorText?: string
   }>(),
   {
@@ -45,6 +45,14 @@ const props = withDefaults(
     errorText: '',
   },
 )
+
+// 关于 loadingText / errorText 的「空串」语义（#501）：
+// 曾经这两个 prop 的注释写的是「空串用内置 i18n」，与实现相反 —— 模板里是
+// `v-if="loadingText"` / `v-if="errorText"`，空串 = **不显示文字**（只留图标）。
+// 而且 `image` 命名空间下只有 `label` 一个键，**没有** loading/error 的文案可回退。
+// 组件默认尺寸 80px（头像/缩略图），在小格子里塞一行"加载中"本身就是坏设计：
+// 实现是对的，错的是注释 —— 所以这里改注释，不硬加一段回退文案。
+// 行为由 `tests/unit/image-states.spec.ts` 钉住（「自定义才显示」「不传只有图标」）。
 
 const emit = defineEmits<{
   /** 图片加载成功 */

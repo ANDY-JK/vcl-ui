@@ -877,6 +877,18 @@ function cellErrorId(rowKey: string, colKey: string): string {
   return `${cellErrorIdBase}-${rowKey}-${colKey}`
 }
 
+/**
+ * 筛选下拉面板的 id：列头触发器用 `aria-controls` 指向它（#505）。
+ *
+ * 为什么需要：筛选触发器是 `role="button"` 的自绘控件，它**弹出**一个筛选面板 ——
+ * 但它既没有 `aria-expanded`（读屏念不出"面板开着"），也没有 `aria-haspopup`
+ * （读屏不知道按下去会弹什么）。库里其余同类（`Select` / `Popover` / `Tree` / `Menu`）
+ * 都把这三件写全了，只有这里漏了 —— 于是**同族里少一格**。
+ * 面板打开后焦点会移到搜索框（`toggleFilter` 里的 nextTick focus），
+ * 所以面板按 dialog 语义声明 role 是对得上的。
+ */
+const filterDropdownId = useIdSafe('dt-filter-dd')
+
 function isEditingInvalid(rowKey: string, colKey: string): boolean {
   const c = editingCell.value
   return !!editInvalidKey.value && !!c && c.rowKey === rowKey && c.colKey === colKey
@@ -1656,6 +1668,9 @@ provideDataTableContext({
                         tabindex="0"
                         role="button"
                         :aria-label="t('table.filter')"
+                        :aria-expanded="activeFilterKey === col.key"
+                        aria-haspopup="dialog"
+                        :aria-controls="activeFilterKey === col.key ? filterDropdownId : undefined"
                         @click.stop="toggleFilter(col, $event)"
                         @keydown.enter.prevent.stop="onFilterKeyTrigger(col, $event)"
                         @keydown.space.prevent.stop="onFilterKeyTrigger(col, $event)"
@@ -2226,9 +2241,12 @@ provideDataTableContext({
       <Teleport to="body">
         <div
           v-if="activeFilterKey"
+          :id="filterDropdownId"
           class="dt-filter-dropdown"
           :class="{ 'dt-dropdown-above': filterDropdownAbove }"
           :style="filterDropdownStyle"
+          role="dialog"
+          :aria-label="t('table.filter')"
           tabindex="-1"
           @click.stop
           @keydown="onFilterKeydown"

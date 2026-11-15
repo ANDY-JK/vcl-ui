@@ -86,6 +86,16 @@ const solarIcons = ref<string[]>([])
 /** morphicons 图标名（惰性加载后填充），整库规范名 */
 const morphIcons = ref<string[]>([])
 const morphLoading = ref(false)
+/**
+ * morphicons 是否**已经尝试过**加载（成功或失败都算，#491）。
+ *
+ * 为什么需要单独一个标志：加载失败时 `morphIcons` 被置成 `[]`，而 `[]` 的 length 也是 0，
+ * 于是 `if (morphIcons.value.length) return` 这个幂等判据在失败后**失效** ——
+ * 用户每次点回 Morphicons 标签页都会重新 `await ensureMorphicons()` 一遍
+ * （可选 peer 没装时就是每次都抛一次错 + 刷一次噪音）。
+ * 记一个"试过了"就能让它只试一次；真要重试，用户重新打开面板即可（下面 `open` watcher 里重置）。
+ */
+const morphAttempted = ref(false)
 
 // 事件处理用命名函数：模板内联多语句 handler 会被 prettier(semi:false) 去分号重排，导致 Vue 表达式解析失败
 function selectProvider(p: 'lucide' | 'solar' | 'morphicons') {
@@ -142,7 +152,9 @@ function loadSolarIcons() {
 
 /** 加载 morphicons 图标列表：整库规范名，纯本地，无需网络 */
 async function loadMorphIcons() {
-  if (morphIcons.value.length) return
+  // 幂等判据用「试过没有」而不是「列表非空」：失败时列表是空数组，按 length 判会每次重试（#491）
+  if (morphAttempted.value) return
+  morphAttempted.value = true
   morphLoading.value = true
   try {
     await ensureMorphicons()
@@ -230,6 +242,12 @@ watch(open, (val) => {
   if (val) {
     iconPage.value = 1
     colorProbeTick.value++
+    // 重新打开面板 = 允许重试 morphicons（#491）：上一次失败可能是可选 peer 刚装上、
+    // 或网络/文件读取偶发失败；用户明确又打开了一次，就再试一次。
+    if (localProvider.value === 'morphicons') {
+      morphAttempted.value = false
+      loadMorphIcons()
+    }
     nextTick(() => {
       if (iconSentinel.value) _iconObserver?.observe(iconSentinel.value)
     })

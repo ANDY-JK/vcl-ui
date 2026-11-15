@@ -2255,6 +2255,546 @@
       "cmd": "npx vitest run tests/unit/idempotency-fallback.spec.ts --no-coverage",
       "expect": "red",
       "note": "变异后：纯空白/非字符串的 factory 返回值被当成合法键发出去——`\" \"` 当请求头等于没有幂等键，服务端去重静默失效"
+    },
+    {
+      "id": "amap-loader-init-latch-order",
+      "file": "src/components/amap/amap-loader.ts",
+      "find": "      loadScript({ key, version: '2.0', plugins: ['AMap.ToolBar', 'AMap.Scale'] })\n      initialized = true",
+      "replace": "      initialized = true\n      loadScript({ key, version: '2.0', plugins: ['AMap.ToolBar', 'AMap.Scale'] })",
+      "cmd": "npx vitest run tests/unit/amap-loader-retry.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：脚本注入抛异常时协调器已「记账成功」，之后每次挂载都 early-return——地图永久空白，且 setAmapKeys 只回「需刷新」，而其实重试就能好"
+    },
+    {
+      "id": "amap-loader-empty-key-lock",
+      "file": "src/components/amap/amap-loader.ts",
+      "find": "      if (!key) return",
+      "replace": "      /* 变异：删掉空 key 守卫 */",
+      "cmd": "npx vitest run tests/unit/amap-loader-retry.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：宿主先用空 key 挂载（异步拉配置的常见形态）就把 initialized 置位，之后拿到真 key 也不会加载——地图永久不可用，只能刷新"
+    },
+    {
+      "id": "amap-loader-key-subscription-autosinit",
+      "file": "src/components/amap/amap-loader.ts",
+      "find": "  if (keys.jsKey) amapLoader.ensureInit(keys.jsKey)",
+      "replace": "  void keys /* 变异：订阅到了但什么都不做 */",
+      "cmd": "npx vitest run tests/unit/amap-loader-singleton.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：宿主 setAmapKeys 注入 key 后没人补初始化，地图一直不加载——「空 key 不锁死」的承诺在末端断掉，前面所有设计白做"
+    },
+    {
+      "id": "amap-key-shared-warn-latch",
+      "file": "src/components/amap/amap-key.ts",
+      "find": "  if (!key && !_warnedJs) {",
+      "replace": "  if (!key && !_warnedRest) {",
+      "cmd": "npx vitest run tests/unit/amap-key.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：两类 Key 又共用一个棘轮——宿主先打 REST 接口就把警告额度用光，地图空白时连「请设置 JS Key」都不出现，提示的是不相干的另一种病"
+    },
+    {
+      "id": "amap-key-subscriber-throw-isolation",
+      "file": "src/components/amap/amap-key.ts",
+      "find": "  _subscribers.forEach((fn) => {\n    try {\n      fn(keys)\n    } catch {\n      /* 订阅者异常不影响主流程 */\n    }\n  })",
+      "replace": "  _subscribers.forEach((fn) => {\n    fn(keys)\n  })",
+      "cmd": "npx vitest run tests/unit/amap-key.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：一个订阅者抛异常就中断其余订阅者，并让 setAmapKey 本身失败——宿主设 key 反被第三方回调搞崩"
+    },
+    {
+      "id": "amap-key-setmapkey-drops-security-code",
+      "file": "src/components/amap/amap-key.ts",
+      "find": "  _override = { ..._override, jsKey: key, restKey: key }",
+      "replace": "  _override = { jsKey: key, restKey: key }",
+      "cmd": "npx vitest run tests/unit/amap-key.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：只调 setAmapKey 就把先前设好的 securityCode 抹掉——高德以「未配置安全密钥」静默失败，比缺 key 更难定位"
+    },
+    {
+      "id": "chart-tosize-non-finite-number",
+      "file": "src/components/chart/utils/chart-utils.ts",
+      "find": "  if (typeof val === 'number') return Number.isFinite(val) ? `${val}px` : fallback",
+      "replace": "  if (typeof val === 'number') return `${val}px`",
+      "cmd": "npx vitest run tests/unit/chart-to-size.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：width/height 传 NaN（parseFloat 拿空串、容器高减内边距都能造出来）→ 拼出 `NaNpx`，浏览器整条丢掉该声明，图直接消失且控制台无提示"
+    },
+    {
+      "id": "chart-tosize-untrimmed-band",
+      "file": "src/components/chart/utils/chart-utils.ts",
+      "find": "  const v = val.trim()\n  if (!v || NON_FINITE.test(v)) return fallback",
+      "replace": "  const v = val",
+      "cmd": "npx vitest run tests/unit/chart-to-size.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：'   ' / ' 20 ' / 'NaN' 字符串原样进 CSS —— 纯空白与带空白的数字都成了无效声明，宿主从配置里读出来的尺寸静默失效"
+    },
+    {
+      "id": "chart-tosize-numeric-forms",
+      "file": "src/components/chart/utils/chart-utils.ts",
+      "find": "  if (NUMERIC.test(v)) return `${Number(v)}px`",
+      "replace": "  if (/^\\d+(\\.\\d+)?$/.test(v)) return `${v}px`",
+      "cmd": "npx vitest run tests/unit/chart-to-size.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：'.5' / '-20' / '+8' 这些合法数字写法不再补 px —— 文档承诺「数字 px」在这三种写法上断掉，CSS 收到无单位长度直接忽略"
+    },
+    {
+      "id": "nav-data-weakmap-stale-cache",
+      "file": "src/components/layout/utils/navData.ts",
+      "find": "function getFlat(nodes?: NavNode[]): NavNode[] {\n  return nodes ? flattenNodes(nodes) : _flat\n}",
+      "replace": "const _flatCache = new WeakMap<NavNode[], NavNode[]>()\nfunction getFlat(nodes?: NavNode[]): NavNode[] {\n  if (!nodes || nodes === navTree) return _flat\n  let cached = _flatCache.get(nodes)\n  if (!cached) {\n    cached = flattenNodes(nodes)\n    _flatCache.set(nodes, cached)\n  }\n  return cached\n}",
+      "cmd": "npx vitest run tests/unit/nav-data.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：按数组引用缓存扁平结果——宿主用 push/splice 原地改 navItems 时引用不变，新页面取不到标题、已删除的路由还留在上一页/下一页里"
+    },
+    {
+      "id": "nav-data-next-off-by-one-guard",
+      "file": "src/components/layout/utils/navData.ts",
+      "find": "    next: idx < flat.length - 1 ? flat[idx + 1] : null,",
+      "replace": "    next: idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null,",
+      "cmd": "npx vitest run tests/unit/nav-data.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：idx=-1 时不再给 flat[0] —— 这条是**故意保留**的既有语义（app-layout-behavior.spec.ts:177「下一页始终可前进」），登记在此防止后人当 bug 改掉"
+    },
+    {
+      "id": "kbd-naive-split-restores",
+      "file": "src/components/basic/Kbd.vue",
+      "find": "  const raw = Array.isArray(props.keys) ? props.keys.map((k) => k.trim()) : splitKeys(props.keys)",
+      "replace": "  const raw = Array.isArray(props.keys) ? props.keys : props.keys.split('+')",
+      "cmd": "npx vitest run tests/unit/kbd.spec.ts tests/unit/kbd-plus-key.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：回到 String.split('+') —— 'Ctrl++'（放大快捷键）只剩 Ctrl、keys=\"+\" 渲染空 span，加号键静默消失"
+    },
+    {
+      "id": "kbd-plus-pair-rule",
+      "file": "src/components/basic/Kbd.vue",
+      "find": "    if (s[i + 1] === '+') {\n      flushText()\n      out.push('+')\n      i++ // 吃掉第二个 +\n      continue\n    }",
+      "replace": "    /* 变异：不再识别相邻的两个 + */",
+      "cmd": "npx vitest run tests/unit/kbd-plus-key.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：相邻两个 + 被当成两个分隔符 —— 解析回退到「加号键丢失」，但空白噪声规则仍在（所以只有加号键那几条红）"
+    },
+    {
+      "id": "use-id-outside-instance-guard",
+      "file": "src/components/_internal/useIdCompat.ts",
+      "find": "    const hasInstance = getInstance ? !!getInstance() : true\n    const id = hasInstance ? nativeUseId() : ''\n    if (id) return id",
+      "replace": "    return nativeUseId()",
+      "cmd": "npx vitest run tests/unit/use-id-compat-native.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：setup 之外 / await 之后调用直接拿框架的空串 —— label[for=\"\"]、aria-controls=\"\" 静默断链，且多次调用都拿到同一个空 id"
+    },
+    {
+      "id": "use-id-fallback-no-increment",
+      "file": "src/components/_internal/useIdCompat.ts",
+      "find": "  seq += 1\n  return `vcl-${prefix}-${seq}`",
+      "replace": "  return `vcl-${prefix}-0`",
+      "cmd": "npx vitest run tests/unit/use-id-compat-fallback.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：3.4 退化路径不再自增 —— 同页所有控件拿到同一个 id，label[for] 全指向第一个控件"
+    },
+    {
+      "id": "carousel-rtl-keyboard-mirror",
+      "file": "src/components/data/Carousel.vue",
+      "find": "  const rtl = trackRtl()\n  if (e.key === 'ArrowRight') {\n    e.preventDefault()\n    if (rtl) prev()\n    else next()\n  } else if (e.key === 'ArrowLeft') {\n    e.preventDefault()\n    if (rtl) next()\n    else prev()\n  }",
+      "replace": "  if (e.key === 'ArrowRight') {\n    e.preventDefault()\n    next()\n  } else if (e.key === 'ArrowLeft') {\n    e.preventDefault()\n    prev()\n  }",
+      "cmd": "npx vitest run tests/unit/carousel-rtl.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：RTL 下方向键不镜像 —— 右键让内容往左翻、左键往右翻，与浏览器原生滚动和镜像后的箭头图标都相反"
+    },
+    {
+      "id": "carousel-rtl-arrow-glyph-flip",
+      "file": "src/components/data/carousel-scoped.css",
+      "find": "[dir='rtl'] .carousel-arrow > span {\n  transform: scaleX(-1);\n}",
+      "replace": "/* 变异：RTL 下字形不镜像 */",
+      "cmd": "npx vitest run tests/unit/carousel-rtl.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：按钮位置靠 inset-inline 换了边，但 ‹/› 是物理字形不跟着翻 —— 右侧「上一页」指左、左侧「下一页」指右，箭头指向与动作相反"
+    },
+    {
+      "id": "table-scroll-seek-zero-width",
+      "file": "src/components/data/useDataTableScroll.ts",
+      "find": "    if (!(rect.width > 0)) return\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/data-table-scroll-bounds.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：进度条宽度为 0 时照算比例——0/0 得 NaN（scrollTo 空操作 + width:'NaN%' 整条失效），除零得 Infinity 把表格甩到最底部"
+    },
+    {
+      "id": "table-scroll-progress-clamp",
+      "file": "src/components/data/useDataTableScroll.ts",
+      "find": "      scrollProgress.value = max > 0 ? Math.min(100, Math.max(0, Math.round((el.scrollTop / max) * 100))) : 0",
+      "replace": "      scrollProgress.value = max > 0 ? Math.round((el.scrollTop / max) * 100) : 0",
+      "cmd": "npx vitest run tests/unit/data-table-scroll-bounds.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：橡皮筋回弹时百分比出界——'-10%' 是无效宽度（进度条消失）、'138%' 溢出轨道，都不报错只是看不见"
+    },
+    {
+      "id": "confirm-content-empty-confirm-text",
+      "file": "src/components/layout/ConfirmContent.vue",
+      "find": "const effConfirmText = computed(() => props.confirmText?.trim() || t('confirmModal.confirm'))",
+      "replace": "const effConfirmText = computed(() => props.confirmText ?? t('confirmModal.confirm'))",
+      "cmd": "npx vitest run tests/unit/confirm-content-contract.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：宿主把确认文案留空（配置项没填 / v-bind 空值）就渲染空白按钮——用户看不出这一下要干什么，读屏也没有名字"
+    },
+    {
+      "id": "confirm-content-empty-cancel-text",
+      "file": "src/components/layout/ConfirmContent.vue",
+      "find": "const effCancelText = computed(() => props.cancelText?.trim() || t('confirmModal.cancel'))",
+      "replace": "const effCancelText = computed(() => props.cancelText ?? t('confirmModal.cancel'))",
+      "cmd": "npx vitest run tests/unit/confirm-content-contract.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：取消按钮同样会变成空白 —— 危险操作弹窗里两颗无名按钮，只能靠位置猜"
+    },
+    {
+      "id": "confirm-content-unknown-variant-crash",
+      "file": "src/components/layout/ConfirmContent.vue",
+      "find": "  return map[props.variant] ?? map.danger",
+      "replace": "  return map[props.variant]",
+      "cmd": "npx vitest run tests/unit/confirm-content-contract.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：variant 拼错（'info'/'Info' 或 JS 动态值）取到 undefined，模板读 .bg 直接整块抛错，确认框白掉"
+    },
+    {
+      "id": "ssr-guard-safe-window-no-guard",
+      "file": "src/components/_internal/ssr-guard.ts",
+      "find": "  return isBrowser ? window : undefined",
+      "replace": "  return window",
+      "cmd": "npx vitest run tests/unit/ssr-guard-node.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：服务端调用 safeWindow() 直接 ReferenceError（window 在 node 里根本不存在），库在 SSR 里 import 就崩"
+    },
+    {
+      "id": "ssr-guard-safe-run-runs-on-server",
+      "file": "src/components/_internal/ssr-guard.ts",
+      "find": "  if (!isBrowser) return fallback\n  try {",
+      "replace": "  try {",
+      "cmd": "npx vitest run tests/unit/ssr-guard-node.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：SSR 下也执行回调 —— 服务端会跑 addEventListener 之类的浏览器副作用（或抛错被吞成 fallback 之外的怪行为）"
+    },
+    {
+      "id": "ssr-guard-localstorage-privacy-crash",
+      "file": "src/components/_internal/ssr-guard.ts",
+      "find": "  try {\n    if (isBrowser && window.localStorage) return window.localStorage\n  } catch {\n    // 某些环境（隐私模式）访问 localStorage 会抛异常\n  }\n  return undefined",
+      "replace": "  if (isBrowser && window.localStorage) return window.localStorage\n  return undefined",
+      "cmd": "npx vitest run tests/unit/ssr-guard-browser.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：Safari 无痕/禁用站点数据时取 localStorage 本身抛 SecurityError → 库在模块/ setup 期整页崩（这条 try 就是为它写的）"
+    },
+    {
+      "id": "chart-legend-identity-dropped",
+      "file": "src/components/chart/composables/useChartLegend.ts",
+      "find": "  return `${prefix}:${name}#${n}`",
+      "replace": "  return name",
+      "cmd": "npx vitest run tests/unit/chart-legend-identity.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：项身份退回展示名 —— 同名系列/同名数据项点一个藏两个，:key 还撞出 Vue 的 Duplicate keys 警告"
+    },
+    {
+      "id": "chart-legend-filter-by-name",
+      "file": "src/components/chart/composables/useChartLegend.ts",
+      "find": "        const key = itemKey('series', name, seen)\n        if (hidden.has(key)) {",
+      "replace": "        const key = name\n        if (hidden.has(key)) {",
+      "cmd": "npx vitest run tests/unit/chart-legend-identity.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：过滤侧按展示名判隐藏（身份侧按 key）—— 两套口径对不上，「点图例藏不住」复发"
+    },
+    {
+      "id": "designer-active-step-no-clamp",
+      "file": "src/components/form-builder/designer/slot-utils.ts",
+      "find": "  const saved = node.containerConfig?.activeStep\n  if (typeof saved === 'number' && Number.isFinite(saved)) return Math.min(max, Math.max(0, saved))\n  return 0",
+      "replace": "  return node.containerConfig?.activeStep ?? 0",
+      "cmd": "npx vitest run tests/unit/designer-slot-utils.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：读侧不钳制 activeStep —— schema 里存了越界值（导入的 schema / 步骤被删）就返回越界下标，activeSlotOf 把它当槽位号 → 拖入字段落到不存在的槽位（丢字段）"
+    },
+    {
+      "id": "icon-picker-morph-retry-by-length",
+      "file": "src/components/form/IconPicker.vue",
+      "find": "  // 幂等判据用「试过没有」而不是「列表非空」：失败时列表是空数组，按 length 判会每次重试（#491）\n  if (morphAttempted.value) return\n  morphAttempted.value = true",
+      "replace": "  if (morphIcons.value.length) return",
+      "cmd": "npx vitest run tests/unit/icon-picker-morph-retry.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：幂等判据退回按列表长度 —— morphicons 加载失败时列表是 []，length 恒 0，每次切回该标签页都会重新加载一遍（可选 peer 没装时反复抛错）"
+    },
+    {
+      "id": "chart-legend-empty-key-identity",
+      "file": "src/components/chart/ChartLegend.vue",
+      "find": "  const k = item.key?.trim()\n  return k || item.name",
+      "replace": "  return item.key ?? item.name",
+      "cmd": "npx vitest run tests/unit/chart-legend-host-items.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：宿主传 key=\"\" 或纯空白时 toggle 发出空串/空格 —— DOM 那边用下标、事件这边用空串，两条身份对不上，宿主找不到要切换的项，点了没反应"
+    },
+    {
+      "id": "chart-legend-dom-key-uniqueness",
+      "file": "src/components/chart/ChartLegend.vue",
+      "find": "    return `${base}#${n}`",
+      "replace": "    return base",
+      "cmd": "npx vitest run tests/unit/chart-legend-host-items.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：同名项（或宿主传了相同 key）共用一个 v-for key —— 无状态按钮在 happy-dom 里看不出错，但这是硬规则，插进带状态子组件就会串状态"
+    },
+    {
+      "id": "select-keyboard-combo-stale-highlight",
+      "file": "src/components/form/composables/useSelectKeyboard.ts",
+      "find": "        if (item) {\n          if (!d.isMenu.value) d.selectOption(item as Option)\n          return\n        }",
+      "replace": "        if (!d.isMenu.value) d.selectOption(item as Option)\n        return",
+      "cmd": "npx vitest run tests/unit/select-keyboard-stale-highlight.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：输入筛选词把列表缩短后，陈旧游标取到 undefined 并直接交给 selectOption —— 真宿主第一行 if (opt.disabled) 抛 TypeError，Select 面板白掉"
+    },
+    {
+      "id": "select-keyboard-trigger-stale-highlight",
+      "file": "src/components/form/composables/useSelectKeyboard.ts",
+      "find": "          if (!item) {\n            highlightIdx.value = -1\n            return\n          }",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/select-keyboard-stale-highlight.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：触发器模式的 Enter 也不检查高亮项是否还存在 —— 同样的 undefined 交给 selectOption，非输入型 Select 一样崩"
+    },
+    {
+      "id": "input-otp-initial-no-sanitize",
+      "file": "src/components/form/InputOTP.vue",
+      "find": "const local = ref<string>(sanitize(props.modelValue ?? ''))",
+      "replace": "const local = ref<string>(props.modelValue ?? '')",
+      "cmd": "npx vitest run tests/unit/input-otp-initial-value.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：挂载时初值不走 sanitize —— numeric 里的分隔符/字母原样渲染、alphanumeric 小写不大写、一长串非法字符还把 isComplete 误判成已输满"
+    },
+    {
+      "id": "input-otp-length-change-unsynced",
+      "file": "src/components/form/InputOTP.vue",
+      "find": "watch(\n  () => props.length,\n  () => {\n    const value = sanitize(local.value)\n    if (value === local.value) return\n    local.value = value\n    emit('update:modelValue', value)\n  },\n)",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/input-otp-initial-value.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：length 缩短时 chars 少画格子但 local 仍是旧长串、也不写回宿主 —— 组件显示的与宿主拿到的整串分叉"
+    },
+    {
+      "id": "storage-has-by-value",
+      "file": "src/components/storage/local-storage.ts",
+      "find": "export function storageHas(key: string): boolean {\n  return readItem(key) !== null\n}",
+      "replace": "export function storageHas(key: string): boolean {\n  return storageGet(key) !== null\n}",
+      "cmd": "npx vitest run tests/unit/storage-has-null-value.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：判存在退回按读回来的值 —— storageSet('k', null) 之后报「键不存在」，与真的 delete 过不可区分"
+    },
+    {
+      "id": "storage-corrupt-json-as-present",
+      "file": "src/components/storage/local-storage.ts",
+      "find": "    warnOnce('storageGet', `[Storage] 读取失败（返回 null）: ${key} — ${String(e)}`)\n    return null",
+      "replace": "    warnOnce('storageGet', `[Storage] 读取失败（返回 null）: ${key} — ${String(e)}`)\n    return {} as StoreItem<T>",
+      "cmd": "npx vitest run tests/unit/storage-has-null-value.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：损坏的 JSON 被当成「存在」—— storageHas 报 true，宿主要么拿到 undefined 值、要么以为用户配置还在"
+    },
+    {
+      "id": "anno-hit-test-rect-mixed-sign",
+      "file": "src/components/data/composables/useImageAnnotation.ts",
+      "find": "        const rx = a.w >= 0 ? a.x : a.x + a.w\n        const ry = a.h >= 0 ? a.y : a.y + a.h\n        const rw = Math.abs(a.w)\n        const rh = Math.abs(a.h)",
+      "replace": "        const [rx, ry, rw, rh] = a.w >= 0 ? [a.x, a.y, a.w, a.h] : [a.x + a.w, a.y + a.h, -a.w, -a.h]",
+      "cmd": "npx vitest run tests/unit/image-annotation.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：命中检测退回「w>=0 就认为 h 也 >=0」的整体分支 —— 左下拖 / 右上拖画出的框区间判成空集，看得见却点不中（选不了、拖不动、删不掉）"
+    },
+    {
+      "id": "anno-paint-rect-mixed-sign",
+      "file": "src/components/data/composables/image-anno-paint.ts",
+      "find": "    const rx = a.w >= 0 ? a.x : a.x + a.w\n    const ry = a.h >= 0 ? a.y : a.y + a.h\n    const rw = Math.abs(a.w)\n    const rh = Math.abs(a.h)",
+      "replace": "    const [rx, ry, rw, rh] = a.w >= 0 ? [a.x, a.y, a.w, a.h] : [a.x + a.w, a.y + a.h, -a.w, -a.h]",
+      "cmd": "npx vitest run tests/unit/image-anno-paint.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：绘制侧又把异号宽高丢给 canvas 隐形归一化 —— 绘制与命中检测的矩形公式再次分叉（同族：两套口径迟早不一致）"
+    },
+    {
+      "id": "anno-paint-circle-negative-radius",
+      "file": "src/components/data/composables/image-anno-paint.ts",
+      "find": "    const rx = Math.abs(a.w) / 2",
+      "replace": "    const rx = a.w / 2",
+      "cmd": "npx vitest run tests/unit/image-anno-paint.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：椭圆半轴丢掉 Math.abs —— 反向拖拽（w/h<0）时半径变负，canvas 的 ellipse 会抛 IndexSizeError，整条渲染链中断"
+    },
+    {
+      "id": "toolbar-chip-close-not-a-button",
+      "file": "src/components/data/DataTableToolbar.vue",
+      "find": "          <button\n            type=\"button\"\n            class=\"filter-chip-close\"\n            :aria-label=\"t('table.removeFilter', { name: colTitle(columns.find((c) => c.key === key)) || key })\"\n            @click=\"removeFilter(key)\"\n          >\n            <IconSvg type=\"x\" size=\"sm\" />\n          </button>",
+      "replace": "          <span class=\"filter-chip-close\">\n            <IconSvg type=\"x\" size=\"sm\" />\n          </span>",
+      "cmd": "npx vitest run tests/unit/data-table-toolbar-chips.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：关闭控件退回非按钮元素（等同旧的裸 IconSvg）—— 键盘 Tab 到不了、读屏念不到，只剩鼠标能移除单个筛选"
+    },
+    {
+      "id": "toolbar-chip-close-no-name",
+      "file": "src/components/data/DataTableToolbar.vue",
+      "find": ":aria-label=\"t('table.removeFilter', { name: colTitle(columns.find((c) => c.key === key)) || key })\"",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/data-table-toolbar-chips.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：按钮丢掉可访问名 —— 多个 chip 时读屏只能念出「按钮」，用户分不清关的是哪一列"
+    },
+    {
+      "id": "select-keyboard-combo-arrowup-closed",
+      "file": "src/components/form/composables/useSelectKeyboard.ts",
+      "find": "      // 面板关着时**不动游标**（#499）：ArrowDown 在关着时是\"开面板然后 return\"，\n      // Home/End 在关着时直接 return，只有 ↑ 以前不看 open —— 于是\"先按 ↑ 再按 ↓\"\n      // 打开面板时游标已被偷偷推到 0，用户第一次按 ↓ 会落到第 2 条（跳过第一条）。\n      // ↑ 不负责开面板（与既有行为一致），那它就不该改任何状态。\n      if (!d.open.value) return",
+      "replace": "      if (!d.open.value) void 0",
+      "cmd": "npx vitest run tests/unit/select-keyboard-compose.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：组合框关着时 ↑ 又去动游标 —— 先 ↑ 再 ↓ 开面板，第一次 ↓ 落到第 2 条，第一条被跳过"
+    },
+    {
+      "id": "select-keyboard-trigger-arrowup-closed",
+      "file": "src/components/form/composables/useSelectKeyboard.ts",
+      "find": "      // 同 #499：面板关着时不动游标（见 onComboKeydown 的同名注释）\n      if (!d.open.value) return",
+      "replace": "      // 同 #499：面板关着时不动游标（见 onComboKeydown 的同名注释）\n      if (!d.open.value) void 0",
+      "cmd": "npx vitest run tests/unit/select-keyboard-trigger.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：触发器型关着时 ↑ 又去动游标 —— 同一类错在两条键位路径上各犯一次"
+    },
+    {
+      "id": "confirm-modal-title-empty-string",
+      "file": "src/components/feedback/ConfirmModal.vue",
+      "find": "const effTitle = computed(() => props.title?.trim() || t('confirmModal.title'))",
+      "replace": "const effTitle = computed(() => props.title ?? t('confirmModal.title'))",
+      "cmd": "npx vitest run tests/unit/confirm-modal-empty-title.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：空串标题原样透传 —— 弹窗头部一片空白，无障碍名也退回通用文案，文档承诺的「空串用内置 i18n」失效（#487 同族，当时漏了这个字段）"
+    },
+    {
+      "id": "confirm-modal-loading-closable",
+      "file": "src/components/feedback/ConfirmModal.vue",
+      "find": ":closable=\"closable && !loading\"",
+      "replace": ":closable=\"closable\"",
+      "cmd": "npx vitest run tests/unit/confirm-modal-empty-title.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：loading 期间又出现关闭按钮 —— 用户能在提交中把弹窗关掉，宿主拿不到结果却以为操作在进行"
+    },
+    {
+      "id": "field-type-group-literal-union",
+      "file": "src/components/form-builder/designer/types/domain.ts",
+      "find": "  group: string\n",
+      "replace": "  group: '基础' | '选择' | '高级' | '高级字段' | '布局容器' | '布局'\n",
+      "cmd": "npm run typecheck && npx vitest run tests/unit/designer-panel.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：把 group 声明回中文字面量联合 —— TS2322（string 不能赋给该联合），正好证明旧声明的 `as` 断言在掩盖一个真类型错；联合还少了 fbGroup.display 一组"
+    },
+    {
+      "id": "route-result-density-non-finite",
+      "file": "src/components/route-planner/RouteResult.vue",
+      "find": "  if (!Number.isFinite(day.drivingDistanceM) || day.drivingDistanceM <= 0 || day.stores.length === 0) return null",
+      "replace": "  if (day.drivingDistanceM <= 0 || day.stores.length === 0) return null",
+      "cmd": "npx vitest run tests/unit/route-result-format.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：NaN 距离穿透成「NaN家/100km」、Infinity 被算成「0家/100km」的假结论 —— 同文件 formatTime/formatDistance 都挡了非有限值，只有这里没挡"
+    },
+    {
+      "id": "route-result-day-header-aria-expanded",
+      "file": "src/components/route-planner/RouteResult.vue",
+      "find": "            :aria-expanded=\"expandedDay === day.day\"\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/route-result-format.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：自绘 disclosure 不暴露展开状态 —— 读屏只念出「按钮」，用户按了回车也不知道是展开还是折叠（库里其余 disclosure 全都有 aria-expanded）"
+    },
+    {
+      "id": "data-table-filter-trigger-no-expanded",
+      "file": "src/components/data/DataTable.vue",
+      "find": "                        :aria-expanded=\"activeFilterKey === col.key\"\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/data-table-filter-trigger-a11y.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：筛选触发器不暴露浮层开合 —— 读屏念不出「筛选面板开着」，用户按了回车不知道弹出了什么（Select/Popover/Tree/Menu 全都有）"
+    },
+    {
+      "id": "data-table-filter-trigger-no-haspopup",
+      "file": "src/components/data/DataTable.vue",
+      "find": "                        aria-haspopup=\"dialog\"\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/data-table-filter-trigger-a11y.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：读屏不知道按下去会弹浮层（aria-haspopup 缺失）"
+    },
+    {
+      "id": "data-table-filter-dropdown-no-id",
+      "file": "src/components/data/DataTable.vue",
+      "find": "          :id=\"filterDropdownId\"\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/data-table-filter-trigger-a11y.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：面板没有 id → 触发器的 aria-controls 指向一个不存在的元素，指向关系是假的"
+    },
+    {
+      "id": "readonly-overlay-ssr-unguarded-document",
+      "file": "src/components/feedback/ReadOnlyOverlay.vue",
+      "find": "    prevFocus =\n      typeof document !== 'undefined' && document.activeElement instanceof HTMLElement ? document.activeElement : null",
+      "replace": "    prevFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null",
+      "cmd": "npx vitest run tests/unit/ssr-smoke.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：SSR 下 setup 期（watch immediate）裸摸 document → ReferenceError；因为回调是 async 函数，它变成 unhandled rejection —— 渲染照常出 HTML、用例全绿，进程退出码却是 1"
+    },
+    {
+      "id": "capture-sheet-no-esc-close",
+      "file": "src/components/form/CaptureFallbackSheet.vue",
+      "find": "onMounted(mountEsc)",
+      "replace": "onMounted(() => {})",
+      "cmd": "npx vitest run tests/unit/capture-fallback-sheet.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：dialog 不挂 Esc → 键盘用户只能 Tab 到右上角 ✕；在\"相机不可用\"这种失败态里，按 Esc 什么都 不发生时弹层看起来像卡死（库里另外四个弹层全都挂了）"
+    },
+    {
+      "id": "capture-sheet-busy-close-clickable",
+      "file": "src/components/form/CaptureFallbackSheet.vue",
+      "find": "<button type=\"button\" class=\"capfb-x\" :aria-label=\"t('form.cancel')\" :disabled=\"props.busy\" @click=\"close\">",
+      "replace": "<button type=\"button\" class=\"capfb-x\" :aria-label=\"t('form.cancel')\" @click=\"close\">",
+      "cmd": "npx vitest run tests/unit/capture-fallback-sheet.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：busy 时 ✕ 仍可聚焦、仍念\"取消，按钮\"、仍有手型光标 —— 按下去被 handler 静默忽略（看起来能点、点了没反应的经典形态）"
+    },
+    {
+      "id": "autofit-cooldown-timer-never-reset",
+      "file": "src/components/data/composables/useTableColumns.ts",
+      "find": "    const waitMs = _autoFitTimer ? _AUTOFIT_COOLDOWN_MS : 0\n    if (_autoFitTimer) clearTimeout(_autoFitTimer)\n    _autoFitTimer = setTimeout(() => {\n      _autoFitTimer = null\n      applyAutoFitCore()\n    }, waitMs) // 首调用 waitMs=0 也走 setTimeout，收集同帧内的并发触发",
+      "replace": "    if (_autoFitTimer) {\n      clearTimeout(_autoFitTimer)\n      _autoFitTimer = setTimeout(applyAutoFitCore, _AUTOFIT_COOLDOWN_MS)\n      return\n    }\n    _autoFitTimer = setTimeout(() => {\n      _autoFitTimer = null\n      applyAutoFitCore()\n    }, 0)",
+      "cmd": "npx vitest run tests/unit/table-columns.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：合并分支的计时器 id 永不清零 → 变量永远是真值 → 此后每次 applyAutoFit 都永久延后 300ms（列宽慢半拍、冷却窗口关不上），注释里\"首调用走 setTimeout(0)\"变成不可达代码"
+    },
+    {
+      "id": "carousel-dots-no-roving-key",
+      "file": "src/components/data/Carousel.vue",
+      "find": "        :data-roving-key=\"String(i - 1)\"\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/carousel.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：圆点没有 data-roving-key → useRovingTabindex 的 querySelector 找不到目标 → 方向键只推进内部停靠点、真实焦点不动（用户按右键毫无反应，Tab 落点却已挪走）"
+    },
+    {
+      "id": "carousel-dots-keydown-not-on-container",
+      "file": "src/components/data/Carousel.vue",
+      "find": "      @keydown=\"dotRoving.onKeydown($event)\"\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/carousel.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：keydown 不在容器上 → composable 里 e.currentTarget 不是能搜到所有项的容器，方向键彻底不工作（同族的 Tabs/SegmentedControl/NotificationCenter 都挂在容器上）"
+    },
+    {
+      "id": "batch-dialog-confirm-keeps-focus-trap",
+      "file": "src/components/data/DataTableBatchDialog.vue",
+      "find": "  // 三条关闭路径必须一致（取消/Esc 早就对了）。\n  deactivateTrap()",
+      "replace": "  // 三条关闭路径必须一致（取消/Esc 早就对了）。",
+      "cmd": "npx vitest run tests/unit/data-table-batch-dialog-trap.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：确定/回车这条主路径只隐藏不停用陷阱 → useFocusTrap 的 active 永远为真（window 监听留到卸载、lastFocusedEl 不清、再次 open 时 activate 空转）"
+    },
+    {
+      "id": "esc-close-no-unmount-fallback",
+      "file": "src/components/_internal/useEscClose.ts",
+      "find": "  if (getCurrentInstance()) onBeforeUnmount(unmount)\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/esc-close-unmount.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "变异后：调用方忘了 unmount 时监听与 _stack entry 永久残留 —— 已销毁组件仍被全局 Esc 唤起，且死 entry 占据「最上层可见」把真弹层的 Esc 吞掉（同族 useFocusTrap 末行有兜底）"
     }
   ]
 }

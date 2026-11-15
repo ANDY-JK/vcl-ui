@@ -62,8 +62,11 @@ describe('useChartLegend · 图例项', () => {
 describe('useChartLegend · 显隐与同步', () => {
   it('点击切换：隐藏集合变化 → chartOption 把对应 series.data 置空 + 抛 legendselectchanged', () => {
     const h = harness(barOption)
-    h.onLegendToggle('S1')
-    expect(h.hiddenSeries.value.has('S1')).toBe(true)
+    // #489：隐藏集合按**项身份**（key）记，不是按展示名 —— 同名系列要能各自独立显隐。
+    // 这里用图例项给出的 key，而不是硬编 'S1'。
+    const key = h.legendItems.value[0].key
+    h.onLegendToggle(key)
+    expect(h.hiddenSeries.value.has(key)).toBe(true)
     expect(h.legendItems.value[0].visible).toBe(false)
     const opt = h.chartOption.value as unknown as { series: Array<{ name: string; data: number[] }> }
     expect(opt.series[0].data).toEqual([])
@@ -85,7 +88,7 @@ describe('useChartLegend · 显隐与同步', () => {
       series: [{ type: 'pie', data: [{ name: '甲', value: 1 }, { name: '乙', value: 2 }] }],
     } as unknown as EChartsOption
     const h = harness(pie, 'pie')
-    h.onLegendToggle('甲')
+    h.onLegendToggle(h.legendItems.value[0].key)
     const opt = h.chartOption.value as unknown as { series: Array<{ data: Array<{ name: string }> }> }
     expect(opt.series[0].data.map((d) => d.name)).toEqual(['乙'])
   })
@@ -93,7 +96,8 @@ describe('useChartLegend · 显隐与同步', () => {
   it('ECharts 事件反向同步：selected=false 的项进入隐藏集合', () => {
     const h = harness(barOption)
     h.syncFromEcharts({ S1: false, S2: true })
-    expect([...h.hiddenSeries.value]).toEqual(['S1'])
+    // #489：ECharts 报的是系列名，隐藏集合按身份记 → 名字要映射回身份
+    expect([...h.hiddenSeries.value]).toEqual([h.legendItems.value[0].key])
     expect(h.legendItems.value[0].visible).toBe(false)
   })
 

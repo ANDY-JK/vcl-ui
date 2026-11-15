@@ -42,7 +42,8 @@ watch(
 )
 
 // 生成唯一 ID，用于触发器与内容面板的 aria 关联
-// useIdSafe 保证 SSR/CSR 一致（Math.random() 会导致水合不匹配 + aria-controls 断链）
+// useIdSafe 取代 Math.random()：随机 id 每次都变，ARIA 关联（aria-controls）在重渲染后会断链。
+// 原生 useId 路径下 SSR/CSR 一致；3.4 退化路径是模块自增，不保证两端一致（本库不支持 SSR 同构）
 const autoId = useIdSafe('collapse-panel')
 const panelId = computed(() => props.id || autoId)
 const triggerId = computed(() => `collapse-trigger-${panelId.value.replace('collapse-panel-', '')}`)

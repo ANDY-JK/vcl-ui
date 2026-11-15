@@ -118,6 +118,64 @@ describe('Carousel · 翻页决策', () => {
   })
 })
 
+describe('Carousel · 圆点的 roving tabindex（#509）', () => {
+  /**
+   * 圆点是 `role="tablist"` + `role="tab"` 的顺序容器，用共享的 `useRovingTabindex`。
+   *
+   * 这个 composable 的契约（看 `Tabs` / `SegmentedControl` / `NotificationCenter`
+   * 三处调用即知）有两条，缺一条焦点就跟不上：
+   *   ① keydown 挂在**容器**上 —— 它内部靠 `e.currentTarget.querySelector(...)` 找目标，
+   *      `currentTarget` 必须是能搜到所有项的容器，不能是其中某一项；
+   *   ② 每个项上要有 `data-roving-key="<key>"` —— 它就是被 querySelector 找的那个标记。
+   *
+   * Carousel 以前两条都没做（keydown 挂在下每个圆点按钮上、且完全没有 data-roving-key）：
+   * 于是方向键只推进了**内部停靠点**，`el?.focus()` 查到 null → **真实焦点一动不动**。
+   * 用户按右键看不到任何反应，而 Tab 的落点已经悄悄挪走。
+   */
+  function mountAttached(props: Record<string, unknown> = {}) {
+    return mount(Carousel, {
+      props: { count: 3, autoplay: 0, ...props } as never,
+      slots: { default: '<div class="s">一</div><div class="s">二</div><div class="s">三</div>' },
+      attachTo: document.body,
+    })
+  }
+
+  it('每个圆点都带 data-roving-key（composable 靠它找焦点目标）', () => {
+    const w = mountAttached()
+    const keys = dots(w).map((d) => d.attributes('data-roving-key'))
+    expect(keys).toEqual(['0', '1', '2'])
+    w.unmount()
+  })
+
+  it('**方向键必须移动真实焦点**（不只是内部停靠点）', async () => {
+    const w = mountAttached()
+    const all = dots(w)
+    ;(all[0]!.element as HTMLElement).focus()
+    expect(document.activeElement).toBe(all[0]!.element)
+
+    await all[0]!.trigger('keydown', { key: 'ArrowRight' })
+    expect(document.activeElement, '焦点必须跟到第 2 个圆点，而不是留在原地').toBe(all[1]!.element)
+    expect(dots(w)[1]!.attributes('tabindex'), '停靠点也要跟过去').toBe('0')
+    expect(dots(w)[0]!.attributes('tabindex')).toBe('-1')
+
+    await dots(w)[1]!.trigger('keydown', { key: 'End' })
+    expect(document.activeElement, 'End 应落到最后一个圆点').toBe(dots(w)[2]!.element)
+    w.unmount()
+  })
+
+  it('焦点与停靠点始终同进同出（不会出现"焦点在 A、Tab 落点在 B"）', async () => {
+    const w = mountAttached()
+    const all = dots(w)
+    ;(all[2]!.element as HTMLElement).focus()
+    await all[2]!.trigger('keydown', { key: 'ArrowLeft' })
+    const focusedIdx = dots(w).findIndex((d) => d.element === document.activeElement)
+    const stopIdx = dots(w).findIndex((d) => d.attributes('tabindex') === '0')
+    expect(focusedIdx).toBeGreaterThanOrEqual(0)
+    expect(focusedIdx, '获得焦点的那个必须就是唯一的 Tab 停靠点').toBe(stopIdx)
+    w.unmount()
+  })
+})
+
 describe('Carousel · 自动播放', () => {
   it('autoplay=0 不起定时器', async () => {
     const spy = vi.spyOn(globalThis, 'setInterval')

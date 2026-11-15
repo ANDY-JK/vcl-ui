@@ -17,7 +17,14 @@ export function paintAnno(ctx: CanvasRenderingContext2D, a: Annotation, sel: boo
   ctx.lineWidth = lw
 
   if (a.type === 'rect') {
-    const [rx, ry, rw, rh] = a.w >= 0 ? [a.x, a.y, a.w, a.h] : [a.x + a.w, a.y + a.h, -a.w, -a.h]
+    // 宽高**逐轴**归一化（#497）：拖拽有四个方向，w 与 h 可以异号（左下拖 / 右上拖）。
+    // canvas 的 strokeRect 对负 w/h 本来就会自动归一化，但**命中检测那边不会** ——
+    // 两边必须用同一个矩形，否则"画得出来却点不中"。这里统一成永远为正的区域，
+    // 让绘制与 hitTest 的形状在代码上也一致，而不是靠 canvas 隐形兜底。
+    const rx = a.w >= 0 ? a.x : a.x + a.w
+    const ry = a.h >= 0 ? a.y : a.y + a.h
+    const rw = Math.abs(a.w)
+    const rh = Math.abs(a.h)
     if (sel) ctx.setLineDash([5, 3])
     else ctx.setLineDash([])
     ctx.strokeRect(rx, ry, rw, rh)

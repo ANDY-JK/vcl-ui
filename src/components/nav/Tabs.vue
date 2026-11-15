@@ -10,7 +10,8 @@ import { registerTabsHost, unregisterTabsHost, tabIdOf, type TabsContext } from 
 
 export type { TabItem }
 
-/** 实例级前缀，防止多个 Tabs 同页时 aria id 冲突；useIdSafe 保证 SSR/CSR 一致 */
+/** 实例级前缀，防止多个 Tabs 同页时 aria id 冲突；原生 useId 路径下 SSR/CSR 一致
+ *  （3.4 退化路径是模块自增，**不**保证两端一致 —— 本库不支持 SSR 同构，见 useIdCompat 头注释） */
 const tabId = useIdSafe('tabs')
 
 // icon 仅在 variant='tabbar' 时渲染，underline/pill 变体静默忽略

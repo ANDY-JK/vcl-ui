@@ -177,36 +177,41 @@ export const navTree: NavNode[] = [
   },
 ]
 
-/** 缓存默认数据扁平化结果 */
+/** 缓存默认数据扁平化结果（`navTree` 是模块常量，永远不变，缓存是安全的） */
 const _flat = flattenNodes(navTree)
 
-/** 扁平化缓存（按引用键，避免重复计算） */
-const _flatCache = new WeakMap<NavNode[], NavNode[]>()
-
-function getFlat(nodes: NavNode[]): NavNode[] {
-  if (nodes === navTree) return _flat
-  let cached = _flatCache.get(nodes)
-  if (!cached) {
-    cached = flattenNodes(nodes)
-    _flatCache.set(nodes, cached)
-  }
-  return cached
+/**
+ * 取扁平列表。**只给默认 navTree 用缓存**；外部传入的数组每次现算。
+ *
+ * 以前这里按数组引用做了 `WeakMap<NavNode[], NavNode[]>` 缓存，键是引用、
+ * 值却是"某一刻的快照"：宿主把 navItems 放 store 里用 `push/splice` 原地增删
+ * （响应式数组最常见的用法）时引用不变，于是拿到陈旧的扁平结果 ——
+ * 新页面 `getCurrentLabel()` 返回空（面包屑标题消失）、`getPrevNext()` 当它
+ * "不在导航里"，删掉的项还留在上一页/下一页里。
+ *
+ * 几十个节点的扁平化比重建一套带失效协议的缓存便宜得多，而且这里**没有**可靠的
+ * 失效信号（数组长度不变、只换元素时连 length 都不变）。
+ */
+function getFlat(nodes?: NavNode[]): NavNode[] {
+  return nodes ? flattenNodes(nodes) : _flat
 }
 
 /** 根据路由获取当前组件名（返回经 i18n 翻译的显示文案） */
 export function getCurrentLabel(currentRoute: string, nodes?: NavNode[]): string {
-  const flat = nodes ? getFlat(nodes) : _flat
-  const item = flat.find((item) => item.route === currentRoute)
+  const flat = getFlat(nodes)
+  const item = flat.find((i) => i.route === currentRoute)
   return item ? navLabel(item.label) : ''
 }
 
 /** 根据当前路由获取上一个/下一个组件 */
 export function getPrevNext(currentRoute: string, nodes?: NavNode[]) {
-  const flat = nodes ? getFlat(nodes) : _flat
+  const flat = getFlat(nodes)
   const idx = flat.findIndex((item) => item.route === currentRoute)
   return {
     current: idx >= 0 ? flat[idx] : null,
     prev: idx > 0 ? flat[idx - 1] : null,
+    // 既有语义（app-layout-behavior.spec.ts:177「故意让下一页始终可前进」）：
+    // idx = -1 时这里会给出 flat[0]，是刻意保留的行为，不是 bug。
     next: idx < flat.length - 1 ? flat[idx + 1] : null,
   }
 }
@@ -229,7 +234,9 @@ function findCategoryLabel(nodes: NavNode[], route: string): string {
       for (const c of n.children) {
         if (c.route === route) return navLabel(n.label)
         const deep = findCategoryLabel(c.children ?? [], route)
-        if (deep) return deep || navLabel(n.label)
+        // 以前写的是 `deep || navLabel(n.label)`：外层 `if (deep)` 已保证 deep 非空，
+        // `||` 那一支永远走不到 —— 留着只会让人误以为"深层回退到本层"是种语义。
+        if (deep) return deep
       }
     }
   }

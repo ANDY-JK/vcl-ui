@@ -36,11 +36,11 @@ setRuntimeObserver({
 
 | 事件码 | 级别 | 触发场景 | context 字段 | 代码位置 |
 | --- | --- | --- | --- | --- |
-| `amap/js-key-missing` | error | [amap] 未设置高德 JS API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY | — | `src/components/amap/amap-key.ts:85` |
-| `amap/key-swapped-after-init` | warn | [amap] 高德地图已用旧 Key 初始化，新 Key 需刷新页面才能生效（JS SDK 无法热换） | — | `src/components/amap/amap-loader.ts:70` |
+| `amap/js-key-missing` | error | [amap] 未设置高德 JS API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY | — | `src/components/amap/amap-key.ts:89` |
+| `amap/key-swapped-after-init` | warn | [amap] 高德地图已用旧 Key 初始化，新 Key 需刷新页面才能生效（JS SDK 无法热换） | — | `src/components/amap/amap-loader.ts:74` |
 | `amap/keyword-search-failed` | warn | [amap] 关键词搜索失败: | `{ keywords, city }` | `src/components/amap/amap-service.ts:165` |
 | `amap/nearby-search-failed` | warn | [amap] 周边搜索失败 | — | `src/components/amap/amap-service.ts:229` |
-| `amap/rest-key-missing` | error | [amap] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY | — | `src/components/amap/amap-key.ts:100` |
+| `amap/rest-key-missing` | error | [amap] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY | — | `src/components/amap/amap-key.ts:104` |
 | `chart/init-failed` | error | [BaseChart] ECharts 初始化失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:175` |
 | `chart/set-option-failed` | error | [BaseChart] setOption 失败: | `{ error: String(e) }` | `src/components/chart/BaseChart.vue:200` |
 | `form-builder/geocode-failed` | warn | [map-picker] 反向地理编码失败，已忽略（坐标不受影响）: | `{ error: String(err) }` | `src/components/form-builder/renderer/RendererMapPicker.vue:99` |

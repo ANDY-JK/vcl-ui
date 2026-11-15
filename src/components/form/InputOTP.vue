@@ -63,13 +63,35 @@ const inputs = ref<HTMLInputElement[]>([])
  * 为什么不是纯受控：纯受控下"没有 v-model 的宿主"敲字看不到任何变化（值永远回弹）。
  * 这里本地先落值、再通知宿主；宿主用 v-model 时 props 更新会覆盖本地（行为仍受控）。
  * 同时它也是**重复 emit 的守门人**：值没变就不抛，complete 不会连抛两次。
+ *
+ * ⚠ 初始值必须走 `sanitize`（#494）：下面 `props.modelValue` 的 watcher 净化了**后续变更**，
+ * 而挂载时的初值以前是原样吃进来的 —— 同一个值"挂载时给"和"挂载后 setProps 给"
+ * 结果不一样：numeric 里的分隔符/字母原样渲染、alphanumeric 的小写不大写、
+ * 一长串非法字符还会把 `isComplete` 误判成已输满。
  */
-const local = ref<string>(props.modelValue ?? '')
+const local = ref<string>(sanitize(props.modelValue ?? ''))
 
 watch(
   () => props.modelValue,
   (v) => {
     local.value = sanitize(v ?? '')
+  },
+)
+
+/**
+ * `length` 变化（如 6 位短信码 ↔ 8 位 TOTP）也要重新净化并写回宿主（#494）。
+ * 不这么做的话 `chars` 少画格子、但 `local` 仍是旧长串，宿主 modelValue 与组件状态分叉。
+ *
+ * 这里**故意不用 `commit`**：码长变化不是"用户输满"，不该抛 `complete`；
+ * 只同步值即可。
+ */
+watch(
+  () => props.length,
+  () => {
+    const value = sanitize(local.value)
+    if (value === local.value) return
+    local.value = value
+    emit('update:modelValue', value)
   },
 )
 

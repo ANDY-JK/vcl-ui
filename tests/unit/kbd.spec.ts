@@ -99,3 +99,73 @@ describe('Kbd · 尺寸与语义', () => {
     w.unmount()
   })
 })
+
+/**
+ * 字形表：两个平台各跑一遍。
+ * 为什么值得逐条钉：这些字形是**平台的用户预期**（mac 用户找 ⌥/⇧，Windows 用户找 Alt/Shift），
+ * 一旦有人"统一成一套字形"就会静默变成错的提示 —— 不报错、不红，用户照着按发现不灵。
+ */
+describe('Kbd · 平台字形表', () => {
+  const MAC = ['Meta+Shift+Alt+Ctrl', ['⌘', '⇧', '⌥', '⌃']] as const
+  const WIN = ['Meta+Shift+Alt+Ctrl', ['Win', 'Shift', 'Alt', 'Ctrl']] as const
+
+  it('mac：修饰键用符号字形', () => {
+    mockPlatform('MacIntel', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)')
+    const w = mount(Kbd, { props: { keys: MAC[0] } })
+    expect(keys(w)).toEqual(MAC[1])
+    w.unmount()
+  })
+
+  it('Windows：修饰键用文字字形', () => {
+    mockPlatform('Win32', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
+    const w = mount(Kbd, { props: { keys: WIN[0] } })
+    expect(keys(w)).toEqual(WIN[1])
+    w.unmount()
+  })
+
+  it('别名归一到同一字形（Cmd/Option/Control/Escape）', () => {
+    mockPlatform('MacIntel', 'Mozilla/5.0 (Macintosh)')
+    const w = mount(Kbd, { props: { keys: ['Cmd', 'Option', 'Control', 'Escape'] } })
+    expect(keys(w)).toEqual(['⌘', '⌥', '⌃', 'Esc'])
+    w.unmount()
+  })
+
+  it('非 mac 上 Backspace 用文字（⌫ 只有 mac 认）', () => {
+    mockPlatform('Win32', 'Mozilla/5.0 (Windows NT 10.0)')
+    expect(keys(mount(Kbd, { props: { keys: 'Backspace' } }))).toEqual(['Backspace'])
+    mockPlatform('MacIntel', 'Mozilla/5.0 (Macintosh)')
+    expect(keys(mount(Kbd, { props: { keys: 'Backspace' } }))).toEqual(['⌫'])
+  })
+
+  it('方向键与 Tab 用箭头字形（两平台一致）', () => {
+    const w = mount(Kbd, { props: { keys: ['Up', 'Down', 'Left', 'Right', 'Tab'] } })
+    expect(keys(w)).toEqual(['↑', '↓', '←', '→', '⇥'])
+    w.unmount()
+  })
+
+  it('iPhone/iPad 也按 mac 处理（触屏设备同样没有 Win/Ctrl 键）', () => {
+    mockPlatform('iPhone', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)')
+    expect(keys(mount(Kbd, { props: { keys: 'Mod+K' } }))).toEqual(['⌘', 'K'])
+  })
+
+  it('userAgentData.platform 优先参与判定（UA 里没有 mac 字样时也认得出）', () => {
+    // 现代 Chromium 会逐步收紧 UA 字符串，platform 才是可靠来源
+    Object.defineProperty(navigator, 'userAgentData', { value: { platform: 'macOS' }, configurable: true })
+    mockPlatform('', '')
+    expect(keys(mount(Kbd, { props: { keys: 'Mod+K' } }))).toEqual(['⌘', 'K'])
+    Object.defineProperty(window.navigator, 'userAgentData', { get: undefined, configurable: true })
+    delete (navigator as unknown as { userAgentData?: unknown }).userAgentData
+  })
+
+  it('没有 navigator（SSR/非浏览器环境）不抛错，按非 mac 处理', () => {
+    const realNav = globalThis.navigator
+    Object.defineProperty(globalThis, 'navigator', { value: undefined, configurable: true })
+    try {
+      const w = mount(Kbd, { props: { keys: 'Mod+K' } })
+      expect(keys(w)).toEqual(['Ctrl', 'K'])
+      w.unmount()
+    } finally {
+      Object.defineProperty(globalThis, 'navigator', { value: realNav, configurable: true })
+    }
+  })
+})

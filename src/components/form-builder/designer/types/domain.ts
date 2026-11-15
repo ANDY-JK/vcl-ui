@@ -460,7 +460,19 @@ export interface FieldTypeMeta {
   type: DesignerNodeType
   label: string
   icon: string
-  group: '基础' | '选择' | '高级' | '高级字段' | '布局容器' | '布局'
+  /**
+   * **翻译后的分组标题**（如 zh-CN 的「基础」「展示」、en-US 的 "Basic" / "Display"）。
+   *
+   * 为什么是 `string` 而不是中文字面量联合（#502）：注册表里 `group` 存的是 **i18n key**
+   * （`fbGroup.basic` / `fbGroup.display` …），`getFieldTypes()` 会按当前语言翻成标题。
+   * 旧声明写的是 `'基础' | '选择' | …` 六个中文字面量，两个问题：
+   *   1. 运行时值是**翻译结果**，en-US 下是 "Advanced fields"，跟这六个值都不相等；
+   *   2. 联合**少了 `fbGroup.display`（「展示」）这一组** —— 注册表里其实有 7 个 group key。
+   * 它靠 `as` 断言按进类型系统，于是 `meta.group === '展示'` 会**报类型错**、
+   * 可在 zh-CN 运行时本来是成立的 —— "类型错 + 运行时对"是最坑的一种。
+   * 需要按分组判断时，请拿它与**同一个 group key 翻出来的标题**相比（`DesignerPanel` 就是这么做的），
+   */
+  group: string
   /** 是否容器节点 */
   isContainer?: boolean
   defaults: Partial<DesignerNode>
@@ -477,7 +489,7 @@ export function getFieldTypes(): FieldTypeMeta[] {
     type: r.type as DesignerNodeType,
     label: t(r.label),
     icon: r.icon,
-    group: t(r.group) as FieldTypeMeta['group'],
+    group: t(r.group),
     isContainer: r.isContainer,
     defaults: (typeof r.defaults === 'function' ? r.defaults() : r.defaults) as Partial<DesignerNode>,
   }))

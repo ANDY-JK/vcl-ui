@@ -244,16 +244,20 @@ export function useTableColumns(
   function applyAutoFit() {
     if (!props.autoFit) return
 
-    // ★ 冷却机制：窗口内重复调用只重置计时器，实际执行最后一次
-    if (_autoFitTimer) {
-      clearTimeout(_autoFitTimer)
-      _autoFitTimer = setTimeout(applyAutoFitCore, _AUTOFIT_COOLDOWN_MS)
-      return
-    }
+    // ★ 冷却机制：窗口内重复调用只重置计时器，实际执行最后一次。
+    //
+    // #508：两条分支**必须都**把 `_autoFitTimer` 归零。旧写法里合并分支直接
+    // `setTimeout(applyAutoFitCore, 300)` —— 计时器触发后 id 留在变量里（永远是真值），
+    // 于是"同帧并发合并"只要发生过一次，此后每次调用都走合并分支、**永久延后 300ms**，
+    // 上面注释那句"首调用走 setTimeout(0)"变成不可达代码。用户可见症状：窗口缩放 /
+    // 数据加载后列宽总慢半拍；连续触发时冷却窗口也就永远关不上。
+    // 现在统一成"先算该等多久 → 清掉旧计时器 → 排一个新的（触发时归零再跑）"。
+    const waitMs = _autoFitTimer ? _AUTOFIT_COOLDOWN_MS : 0
+    if (_autoFitTimer) clearTimeout(_autoFitTimer)
     _autoFitTimer = setTimeout(() => {
       _autoFitTimer = null
       applyAutoFitCore()
-    }, 0) // 首调用也走 setTimeout，收集同帧内的并发触发
+    }, waitMs) // 首调用 waitMs=0 也走 setTimeout，收集同帧内的并发触发
   }
 
   /** applyAutoFit 实际计算逻辑（原 applyAutoFit 函数体，未改动） */

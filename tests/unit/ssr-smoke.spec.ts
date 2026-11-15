@@ -61,6 +61,7 @@ import ForgotPasswordPage from '@/components/login/forgot-password.vue'
 import RouteMap from '@/components/route-planner/RouteMap.vue'
 import StorageConfigPanel from '@/components/storage/StorageConfigPanel.vue'
 import ModalShell from '@/components/_internal/ModalShell.vue'
+import ReadOnlyOverlay from '@/components/feedback/ReadOnlyOverlay.vue'
 import { scanComponentTree, findSmokeGaps, findUncoveredDomains, extractListedNames } from '../../scripts/ssr-smoke-coverage.mjs'
 
 const cases: Array<[string, unknown, Record<string, unknown>]> = [
@@ -126,6 +127,10 @@ const cases: Array<[string, unknown, Record<string, unknown>]> = [
   ['RouteMap', RouteMap, { stores: [], plan: null }],
   ['StorageConfigPanel', StorageConfigPanel, {}],
   ['ModalShell', ModalShell, {}],
+  // ReadOnlyOverlay 两种显隐都要冒烟（#506）：它的 watch(immediate) 在 setup 阶段同步跑，
+  // visible=true 那条分支里有裸 document.activeElement —— 以前冒烟没覆盖到它。
+  ['ReadOnlyOverlay.hidden', ReadOnlyOverlay, { visible: false }],
+  ['ReadOnlyOverlay.shown', ReadOnlyOverlay, { visible: true, reason: '只读' }],
   [
     'FormTargetCollect',
     FormTargetCollect,

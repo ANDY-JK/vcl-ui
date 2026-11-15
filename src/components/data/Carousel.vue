@@ -74,7 +74,18 @@ const t = useT()
  */
 const SCROLL_SETTLE_MS = 90
 
-/** 圆点是 tablist：按 roving tabindex 规矩，整组只留 1 个 Tab 停靠点 */
+/**
+ * 圆点是 tablist：按 roving tabindex 规矩，整组只留 1 个 Tab 停靠点。
+ *
+ * ⚠️ `useRovingTabindex` 的两条契约（#509，参照 `Tabs` / `SegmentedControl` /
+ * `NotificationCenter` 三处调用）：
+ *   ① keydown 必须挂在**容器**上 —— 它内部用 `e.currentTarget.querySelector(...)`
+ *      找目标，`currentTarget` 得是能搜到所有项的容器；挂在某一项上就只会搜自己，
+ *      查到 null → `el?.focus()` 空转，**方向键推不动真实焦点**（停靠点动了、焦点没动）。
+ *   ② 每个项要有 `data-roving-key="<key>"` —— 它就是被 querySelector 找的标记。
+ * 以前这两条都没有：方向键只推进内部停靠点，真实焦点一动不动，用户按右键看不到反应，
+ * 而 Tab 的落点已经悄悄挪走。
+ */
 const dotRoving = useRovingTabindex({
   keys: () => Array.from({ length: total.value }, (_, i) => i),
   activeKey: () => activeIndex.value,
@@ -155,13 +166,38 @@ function onScroll() {
   }, SCROLL_SETTLE_MS)
 }
 
+/**
+ * 轨道当前是不是 RTL（#485）。
+ *
+ * 运行时读，不缓存：宿主切语言时 `<html dir="rtl">` 会变，组件不该要求重建。
+ * 优先用计算值（覆盖 `direction: rtl` 这种纯样式设置），再回退到最近祖先的
+ * `dir` 属性 —— happy-dom 的 getComputedStyle 不解析 dir 继承，测试环境靠这一条。
+ *
+ * 取证（真 Chrome，RTL flex + scroll-snap）：三页的 `offsetLeft` 是 [0, -300, -600]，
+ * 所以**第 0 页在右、下一页在左**；`goTo` 的 `target.offsetLeft - track.offsetLeft`
+ * 在 RTL 下本来就是负的、正好对，别去"修"它。要镜像的只有键位与箭头字形。
+ */
+function trackRtl(): boolean {
+  const el = trackRef.value
+  if (!el) return false
+  if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+    if (window.getComputedStyle(el).direction === 'rtl') return true
+  }
+  return el.closest('[dir]')?.getAttribute('dir') === 'rtl'
+}
+
 function onKeydown(e: KeyboardEvent) {
+  // 键位是**物理方向**：右键该往视觉右边翻。RTL 下视觉右边是上一页（起始方向），
+  // 所以两个键要互换 —— 否则按右键内容往左走，与浏览器原生滚动和箭头图标都相反。
+  const rtl = trackRtl()
   if (e.key === 'ArrowRight') {
     e.preventDefault()
-    next()
+    if (rtl) prev()
+    else next()
   } else if (e.key === 'ArrowLeft') {
     e.preventDefault()
-    prev()
+    if (rtl) next()
+    else prev()
   }
 }
 
@@ -252,7 +288,13 @@ defineExpose({
       </button>
     </template>
 
-    <div v-if="dots && total > 1" class="carousel-dots" role="tablist" :aria-label="t('carousel.dotsLabel')">
+    <div
+      v-if="dots && total > 1"
+      class="carousel-dots"
+      role="tablist"
+      :aria-label="t('carousel.dotsLabel')"
+      @keydown="dotRoving.onKeydown($event)"
+    >
       <button
         v-for="i in total"
         :key="`dot-${i - 1}`"
@@ -262,10 +304,10 @@ defineExpose({
         role="tab"
         :aria-selected="i - 1 === activeIndex"
         :tabindex="dotRoving.tabindexFor(i - 1)"
+        :data-roving-key="String(i - 1)"
         :aria-label="t('carousel.goto', { n: i })"
         @click="goTo(i - 1)"
         @focus="dotRoving.focusKey(i - 1)"
-        @keydown="dotRoving.onKeydown($event)"
       />
     </div>
   </div>

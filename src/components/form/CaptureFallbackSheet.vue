@@ -6,9 +6,10 @@
  * 只负责弹层外壳：遮罩、标题栏、焦点陷阱、开合动画；内容与业务语义交给 CaptureFallbackPanel。
  * CodeCapture 不用本弹层 —— 它在自己的卡片内换页，避免两层弹层叠加。
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useT } from '@/components/_internal/i18n'
 import { useFocusTrap } from '@/components/_internal/useFocusTrap'
+import { useEscClose } from '@/components/_internal/useEscClose'
 import CaptureFallbackPanel from './CaptureFallbackPanel.vue'
 import IconSvg from '@/components/basic/IconSvg.vue'
 
@@ -88,6 +89,22 @@ function close() {
   emit('update:modelValue', false)
   emit('close')
 }
+
+/**
+ * ESC 关闭（#507）：本组件声明 `role="dialog" aria-modal="true"`，对话框的键盘契约第一条
+ * 就是 Escape 关闭；库里 `ModalShell` / `Drawer` / `Popover` / `NotificationCenter`
+ * **全都**走这个共享 composable，只有这里以前没挂 —— 键盘用户唯一出路是 Tab 到 ✕。
+ *
+ * 可见/可关闭两个谓词都交给它：`busy` 时 `isClosable()` 为 false，Esc 被**自身**吞掉
+ * （不会穿透去关掉下层弹层），与"识别中不许关"的语义一致。
+ */
+const { mount: mountEsc, unmount: unmountEsc } = useEscClose(
+  () => props.modelValue,
+  () => !props.busy,
+  close,
+)
+onMounted(mountEsc)
+onUnmounted(unmountEsc)
 </script>
 
 <template>
@@ -104,7 +121,9 @@ function close() {
       >
         <div class="capfb-head">
           <span class="capfb-title">{{ title }}</span>
-          <button type="button" class="capfb-x" :aria-label="t('form.cancel')" @click="close">
+          <!-- busy 时真禁用（#507）：`close()` 里的 early-return 只挡住"效果"，
+               按钮看上去仍可点、读屏仍念"取消，按钮" —— 按下去静默无事最难报。 -->
+          <button type="button" class="capfb-x" :aria-label="t('form.cancel')" :disabled="props.busy" @click="close">
             <IconSvg type="x" size="sm" />
           </button>
         </div>

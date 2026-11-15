@@ -34,8 +34,9 @@ const ENV_KEYS: AmapKeys = {
 /** 运行时覆盖的 Key（优先于环境变量） */
 let _override: Partial<AmapKeys> = {}
 
-/** 是否已警告过未设置 Key */
-let _warned = false
+/** 两类 Key 各自是否已经警告过未设置（互不压制，见下方 getAmapJsKey 的说明） */
+let _warnedJs = false
+let _warnedRest = false
 
 /** Key 变更订阅者（amap-loader 等需要感知 key 变化的模块注册） */
 const _subscribers = new Set<(keys: AmapKeys) => void>()
@@ -81,14 +82,17 @@ export function setAmapKeys(keys: { jsKey?: string; restKey?: string; securityCo
 /** 获取 JS API Key（前端地图 SDK 用） */
 export function getAmapJsKey(): string {
   const key = getKeys().jsKey
-  if (!key && !_warned) {
+  // 警告棘轮按 Key 种类分开：JS Key 缺失会让地图整块空白，REST Key 缺失只影响服务端接口。
+  // 以前两类共用一个 `_warned`，谁先被调用谁就独占警告 —— 宿主若先打了 REST 接口，
+  // 之后地图空白时连「请设置 JS Key」这句都不会出现，提示的是另一件不相干的事。
+  if (!key && !_warnedJs) {
     reportEvent(
       'amap/js-key-missing',
       '[amap] 未设置高德 JS API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY',
       undefined,
       'error',
     )
-    _warned = true
+    _warnedJs = true
   }
   return key
 }
@@ -96,14 +100,14 @@ export function getAmapJsKey(): string {
 /** 获取 REST API Key（驾车路线、地理编码等服务端接口用） */
 export function getAmapRestKey(): string {
   const key = getKeys().restKey
-  if (!key && !_warned) {
+  if (!key && !_warnedRest) {
     reportEvent(
       'amap/rest-key-missing',
       '[amap] 未设置高德 REST API Key，请调用 setAmapKey() 或配置 VITE_AMAP_KEY',
       undefined,
       'error',
     )
-    _warned = true
+    _warnedRest = true
   }
   return key
 }

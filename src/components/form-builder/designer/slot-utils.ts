@@ -86,11 +86,22 @@ function collapseActiveIndex(node: DesignerNode): number {
   return openIdx >= 0 ? openIdx : 0
 }
 
-/** steps 容器：当前步骤下标（本地状态 → containerConfig.activeStep → 0） */
+/** steps 容器：当前步骤下标（本地状态 → containerConfig.activeStep → 0）
+ *
+ * ⚠ 配置值必须**钳到有效范围**（#490）：写侧 `setActiveStep` 钳了，读侧以前没钳。
+ * schema 里的 activeStep 可能是越界的 —— 从别的工具导入的 schema 写了 activeStep: 99，
+ * 或步骤被删了但 activeStep 没同步改。返回越界下标时：
+ *   · `activeSlotOf` 把它当**槽位号**返回 → 拖入的字段落到一个不存在的槽位（丢字段）；
+ *   · `DesignerCanvas` 的步骤条上没有任何一项是 active，且下一步按钮的 disabled 判定全错。
+ */
 function activeStepIndex(node: DesignerNode): number {
+  const steps = stepSlots(node)
+  const max = Math.max(0, steps.length - 1)
   const v = localActiveStep.value[node.id]
-  if (v !== undefined && v >= 0 && v < stepSlots(node).length) return v
-  return node.containerConfig?.activeStep ?? 0
+  if (v !== undefined && v >= 0 && v < steps.length) return v
+  const saved = node.containerConfig?.activeStep
+  if (typeof saved === 'number' && Number.isFinite(saved)) return Math.min(max, Math.max(0, saved))
+  return 0
 }
 
 /** tabs/collapse/steps 容器当前激活槽位（拖拽落入用）；card/grid 返回 undefined */

@@ -266,8 +266,8 @@
 | `round` | `boolean` | — | 否 | 圆形 |
 | `lazy` | `boolean` | `true` | 否 | 懒加载（默认开） |
 | `preview` | `boolean` | `true` | 否 | 点击放大预览（默认开） |
-| `loadingText` | `string` | `''` | 否 | 加载中文本（空串用内置 i18n） |
-| `errorText` | `string` | `''` | 否 | 加载失败文本（空串用内置 i18n） |
+| `loadingText` | `string` | `''` | 否 | 加载中文本。默认空 = 只显示占位图标、不显示文字（传了才渲染） |
+| `errorText` | `string` | `''` | 否 | 加载失败文本。默认空 = 只显示错误图标、不显示文字（同上） |
 
 ### Events
 

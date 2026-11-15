@@ -109,8 +109,8 @@
 | `variant` | `'danger' \| 'warning' \| 'primary'` | `'danger'` | 否 | 语义色：danger 危险操作（默认）\| warning 谨慎 \| primary 常规确认 |
 | `message` | `string` | — | 是 | 正文消息 |
 | `loading` | `boolean` | `false` | 否 | 确认按钮 loading |
-| `confirmText` | `string` | — | 否 | 确认按钮文字（空串用内置 i18n，语言切换实时跟随） |
-| `cancelText` | `string` | — | 否 | 取消按钮文字（空串用内置 i18n） |
+| `confirmText` | `string` | — | 否 | 确认按钮文字（空串/纯空白用内置 i18n，语言切换实时跟随） |
+| `cancelText` | `string` | — | 否 | 取消按钮文字（空串/纯空白用内置 i18n） |
 
 ### Events
 
