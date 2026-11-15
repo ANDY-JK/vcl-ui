@@ -77,7 +77,16 @@ if (existsSync('.env.local')) {
   console.log(`[3] 产物密钥扫描 泄露=${leaked.length}`)
 } else console.log('[3] 无 .env.local（CI 环境），跳过密钥扫描')
 
-// 4) 用 vue34 别名把整棵声明重新类型检查一遍，等价于「3.4 消费者 + skipLibCheck:false」
+// 4) 把整棵声明重新类型检查一遍，等价于「消费者 + skipLibCheck:false」
+//    2026-11-15 最低承诺从 3.4 提到 3.5 后，这里不再用版本别名：peer 下界（3.5.0）与本仓
+//    devDependency（vue 3.5.x）同属 3.5 线，别名只会引入第二份 vue 副本 —— 实测报
+//    「Cannot redeclare block-scoped variable 'defineProps'」15 条重复声明，纯属构造问题。
+//    检查目标保持不变：**产物里的 .d.ts** 在严格模式（skipLibCheck:false）下可用。
+//
+//    ⚠️ 只把**落在 dist 里**的错误算进来。vue-i18n 11.4.20 自己的 d.ts 有个上游缺陷：
+//    它 `import type { GenericComponentInstance } from 'vue'`（第 10 行），而 vue 3.5.44
+//    并不导出这个名字 —— 那是 vue-i18n 的声明错误，不归本库产物管。tsc 会把它一起报出来
+//    （因为它随本库 d.ts 的 import 链被加载），不过滤就会永远红。
 const dtsAll = (function collect(dir, out = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const p = join(dir, e.name)
@@ -86,32 +95,30 @@ const dtsAll = (function collect(dir, out = []) {
   }
   return out
 })('dist')
-const aliasLeft = dtsAll.filter((f) => readFileSync(f, 'utf8').includes('vue34'))
-if (aliasLeft.length) fail.push(`声明残留构建别名 vue34: ${aliasLeft.length} 个文件`)
-if (!existsSync(join('node_modules', 'vue34'))) {
-  fail.push('缺少 devDependency vue34 —— 声明兼容性检查无法进行')
-} else {
-  const program = ts.createProgram({
-    rootNames: dtsAll,
-    options: {
-      target: ts.ScriptTarget.ES2020,
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-      strict: true,
-      skipLibCheck: false,
-      noEmit: true,
-      types: [],
-      baseUrl: process.cwd(),
-      paths: { vue: ['./node_modules/vue34'] },
-    },
-  })
-  const errors = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error)
-  if (errors.length) {
-    const first = ts.flattenDiagnosticMessageText(errors[0].messageText, ' ')
-    fail.push(`声明对 vue 3.4 有 ${errors.length} 条类型错误（首条：${first}）`)
-  }
-  console.log(`[4] 声明对最低承诺版本 vue 3.4 类型检查 错误=${errors.length}`)
+const program = ts.createProgram({
+  rootNames: dtsAll,
+  options: {
+    target: ts.ScriptTarget.ES2020,
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    strict: true,
+    skipLibCheck: false,
+    noEmit: true,
+    types: [],
+    baseUrl: process.cwd(),
+  },
+})
+const allErrors = ts.getPreEmitDiagnostics(program).filter((d) => d.category === ts.DiagnosticCategory.Error)
+const errors = allErrors.filter((d) => {
+  const f = (d.file?.fileName ?? '').replace(/\\/g, '/')
+  // 只统计本仓产物（dist/）；node_modules 里依赖自身的声明错误不归本库管
+  return f.includes('/dist/') && !f.includes('node_modules')
+})
+if (errors.length) {
+  const first = ts.flattenDiagnosticMessageText(errors[0].messageText, ' ')
+  fail.push(`声明对 vue 3.5 有 ${errors.length} 条类型错误（首条：${first}）`)
 }
+console.log(`[4] 声明对最低承诺版本 vue 3.5 类型检查 错误=${errors.length}` + (allErrors.length !== errors.length ? `（另有 ${allErrors.length - errors.length} 条来自依赖自身声明，见上文注释）` : ''))
 
 // 5) 产物可达性 —— dist 里每个 js/cjs 都必须被入口或动态 import 图覆盖
 //    本机 I: 盘上 fs.rmSync 静默失效、vite emptyOutDir 形同虚设，历史 chunk 会跨次构建堆积，

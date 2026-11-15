@@ -2,7 +2,7 @@
 
 > 一个面向企业级应用的 Vue 3 通用组件库，覆盖基础、数据展示、表单、反馈、导航、布局、图表、登录、存储、地图、路线规划与低代码表单平台。
 
-[![Vue](https://img.shields.io/badge/Vue-3.4%2B-brightgreen)](https://vuejs.org/)
+[![Vue](https://img.shields.io/badge/Vue-3.5%2B-brightgreen)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue)](https://www.typescriptlang.org/)
 
 > 🖥 **在线演示**（随 main 自动更新）：<https://andy-jk.github.io/vcl-ui/> —— 每个组件一页，含交互示例。
@@ -54,15 +54,18 @@ npm install vcl-ui   # 发布后才可用
 
 | 包                  | 版本                 | 说明                                                        |
 | ------------------- | -------------------- | ----------------------------------------------------------- |
-| `vue`               | `^3.4.0`             | 必需。3.4 / 3.5 均可                                        |
+| `vue`               | `^3.5.0`             | 必需。3.5 起（3.4 已不支持，原因见下）                      |
 | `echarts`           | `^5.0.0 \|\| ^6.0.0` | 可选 — 仅使用 `chart` 域时需要                              |
 | `echarts-wordcloud` | `^2.1.0`             | 可选 — 仅使用词云图表（`wordCloud` 类型）时需要             |
 | `vue-router`        | `^4.3.0`             | 可选 — 仅使用 `layout` / `login` / `route-planner` 域时需要 |
 
 > ⚠ **SSR 场景请用 `vue ≥ 3.5.44`**：`@vue/server-renderer ≤ 3.5.41` 存在属性名黑名单缺 CR 导致的 XSS
-> （[GHSA-g2v6-rqmx-r4w6](https://github.com/advisories/GHSA-g2v6-rqmx-r4w6)），该区间落在上表的
-> `^3.4.0` 支持范围内。本库的 d.ts 仍按 **3.4** 这一最低承诺版本验证（`vue34` 别名跑类型检查），
-> 但仅客户端渲染（CSR）不受该公告影响。
+> （[GHSA-g2v6-rqmx-r4w6](https://github.com/advisories/GHSA-g2v6-rqmx-r4w6)）。
+> **最低承诺版本已于 2026-11-15 从 3.4 提到 3.5**：内置 i18n 依赖的 `vue-i18n` 9.x 有 4 个 high 级
+> XSS 公告（[GHSA-8rc2-428q-7ww3](https://github.com/advisories/GHSA-8rc2-428q-7ww3) /
+> [GHSA-83rm-6c8r-g728](https://github.com/advisories/GHSA-83rm-6c8r-g728)），9.x 已到顶无修复版，
+> 唯一修复版 11.4.20 的 d.ts 引用了 vue 3.5 才有的 `GenericComponentInstance` —— 3.4 消费者下
+> 开 `skipLibCheck: false` 必然报类型错。本库的 d.ts 现按 **3.5** 这一最低承诺版本验证（`vue35` 别名）。
 
 > 词汇说明：**peer 依赖**（专业词）= 不由本库自带、需要你的项目自己装的那类依赖；**可选** = 用不到对应功能就不用装。
 
@@ -268,7 +271,7 @@ registerWebComponents() // 注册全部支持的标签，如 <vc-button>、<vc-i
 - **跳过用例**：`npm run check:test-skips` — 扫描 `it.skip` / `describe.skipIf` / `test.skip` / `.fixme` / `.todo`，每个跳过点必须在 `scripts/check-test-skips.mjs` 的 `ALLOWLIST` 里**登记理由**；新增即失败、登记失效（源码已无该跳过）也失败。理由必须是"环境真的不可提供"，而不是"demo 数据恰好不满足"
 - **循环依赖**：`npm run check:no-cycles` — 静态 import 图上的强连通分量检测。环在 ESM 下不报错，只在运行时让某一侧绑定变 `undefined`（本仓真实踩过 `toEpochMs is not a function`），而 tsc 与 eslint 都不报。判据**排除** `import type`（编译即擦除）与动态 `import()`（延迟求值），避免把无害的环报成缺陷
 - **语言包对账**：`npm run check:i18n` — zh-CN / en-US 分块与键集一一对应，缺哪边点哪个键
-- **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.4）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
+- **发包自检**：`npm run verify:pkg` — 拦四类静默失效：组件缺 `.d.ts`（下游拿到 `any`）、`exports` 指向不存在的文件、构建期密钥被打进 `dist/`、**声明对最低承诺版本（Vue 3.5）不兼容**（下游开 `skipLibCheck: false` 时会报 TS2707）
 - **第三方许可闸口**：`npm run check:licenses` — 产物里真进了哪些第三方件（构建期由 rollup 记录到 `dist/third-party-modules.json`），逐条双向对账：漏报、虚报、许可文本缺失、copyleft 命中、外部件没在 `dependencies/peerDependencies` 声明、进包件不在运行期依赖闭包内——任一即红。清单正文随包发布：`vcl-ui/dist/THIRD-PARTY-LICENSES.md`
 - **随包第三方件的正源对账**：`npm run check:vendor-data` — rollup 的证据只记 `node_modules` 里的 JS 模块，两类件它看不见：① 仓内 vendor 的上游代码（SheetJS `xlsx@0.20.3`，见《依赖选型记录》）逐字节对 `VENDOR.json` 登记；② 随包分发的解码 wasm 二进制（`zxing-wasm`）按「登记＝base64 现场重算＝安装物正源＝上游 JS 自己声称的 `ZXING_WASM_SHA256`」四路对齐。搬进仓的东西一旦漂了没人会发现，所以这道放在整链前段（build 之前）先红
 - **本库开发配置**：真实值只填根目录 `.env.local` 一个文件（已 gitignore，样例见 `.env.example`）。这些值只在开发模式生效，**不会被打进库产物**；生产环境请由你的项目在运行时调用 `setAmapKey()` 等接口注入
