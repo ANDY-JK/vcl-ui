@@ -4,25 +4,25 @@
   "license": "MIT",
   "upstreamSource": "https://github.com/zh-lx/pinyin-pro",
   "vendoredFrom": "随初始提交 3262567（2026-08-17）入库，入库时未登记来源与版本",
-  "versionNote": "与上游任何已发布产物都对不上字节：本仓 index.js 563,928 B / sha256 40abb146…，实测上游 2.0.0–3.29.5 中最近者为 3.6.2（561,222 B）但哈希不等，故按内容哈希登记、版本留 unknown；补版本后重跑 check:licenses 即可。",
+  "versionNote": "与上游任何已发布产物都对不上字节：本仓 index.js 538,723 B / sha256 0a135489…，实测上游 2.0.0–3.29.5 中最近者为 3.6.2（561,222 B）但哈希不等，故按内容哈希登记、版本留 unknown；补版本后重跑 check:licenses 即可。2026-11-15 更正：此前登记的 563,928 B 是 Windows 检出时的 CRLF 字节数（core.autocrlf=true + `* text=auto eol=lf` 的检出转换），仓库对象本身是 LF；现已把三条登记改成对象原样字节，并用 .gitattributes 把本目录钉成 -text，避免任何平台检出再发生换行转换。",
   "files": [
     {
       "path": "index.js",
       "source": "dist/index.js",
-      "bytes": 563928,
-      "sha256": "40abb146d5dac3641d5fb0233071b8ac930890d5c22b74acaa566eebe5754c70"
+      "bytes": 538723,
+      "sha256": "0a135489d94b52928424c22f1a8c21c2d1f15746bf69df3154384fc414e250aa"
     },
     {
       "path": "index.d.ts",
       "source": "dist/index.d.ts",
-      "bytes": 1401,
-      "sha256": "8b328efc25a0b5a965d347cf2a421402c887380281bf2c4119d34e68faf9eead"
+      "bytes": 1362,
+      "sha256": "66bc1dd867b6fd87a759a19fe7390513b1b3329da1a2313eed8540b02625e93f"
     },
     {
       "path": "LICENSE",
       "source": "LICENSE",
-      "bytes": 1091,
-      "sha256": "78a96a7af30756a001be5d809a1de014f7618184a388feeb13f2730a8e2e198e"
+      "bytes": 1070,
+      "sha256": "824f6069c5a59b0c1650d0fb9f8d091866c6019eb761c8e658dfc03f001eabd2"
     }
   ]
 }
