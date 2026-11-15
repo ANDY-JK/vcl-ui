@@ -1,0 +1,22 @@
+# gitleaks 配置 —— 默认规则全开，只对「测试夹具里的显式假凭证」开一条精确豁免
+#
+# 2026-11-15 首次上 CI 时 gitleaks 报了 1 条：
+#   tests/unit/s3-transport.spec.ts:12  secretAccessKey: 'test-secret-access-key'
+# RuleID=generic-api-key（按熵值判定）。那两行是签名单测的夹具值，文件头第 5 行已写明
+# 「凭证为假值：本文件所有断言都是确定性/结构断言，不依赖任何真实凭证或真实服务端」。
+#
+# 豁免范围刻意收窄到**字面串**而不是整目录：把 tests/** 整体放行会让真正的密钥
+# 藏在测试里也扫不出来 —— 那正是密钥扫描最该防的形态。
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+  [[rules.allowlists]]
+  description = "签名单测里的显式假凭证字面量（非真实密钥）"
+  condition = "OR"
+  regexTarget = "line"
+  regexes = [
+    '''test-secret-access-key''',
+    '''test-access-key-id''',
+  ]
