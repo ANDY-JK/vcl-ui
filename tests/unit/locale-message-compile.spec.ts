@@ -41,17 +41,22 @@ for (const [locale, messages] of [
   })
 }
 
-// 守卫有效性自检：注入一条裸非 ASCII 占位符消息，确认本守卫的检测信号确实能触发
+// 守卫有效性自检：注入一条**必然编译失败**的消息，确认本守卫的检测信号确实能触发
 // （避免「守卫永远绿」——即信号源根本没接上的假安全）
+//
+// ⚠️ 样本随 vue-i18n 大版本换过：9.x 对裸非 ASCII 占位符（`{文件名}`）打 console.error
+// 并回退原文渲染；**11.x 起该形态被接受**（自检会变成永远绿），而**非法占位符名**
+// （`{a b}`，含空格）与**未闭合花括号**改为**抛出** `Message compilation error`。
+// 这里钉的是"信号源还接得上"，所以样本必须用当前版本仍然非法的输入。
 describe('语言包消息编译守卫 · 自检', () => {
-  it('裸 {文件名} 占位符会被检测到编译报错', () => {
+  it('非法占位符名（含空格）会被检测到编译失败', () => {
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    i18n.global.mergeLocaleMessage('zh-CN', {
-      __guardProbe: { bad: '对象名 {appleId}-{文件名}' },
-    })
-    i18n.global.t('__guardProbe.bad', {}, { locale: 'zh-CN' })
-
-    const log = errSpy.mock.calls.map((c) => c.join(' ')).join('\n')
-    expect(log).toContain('Message compilation error')
+    expect(() => {
+      i18n.global.mergeLocaleMessage('zh-CN', {
+        __guardProbe: { bad: '对象名 {appleId}-{a b}' },
+      })
+      i18n.global.t('__guardProbe.bad', {}, { locale: 'zh-CN' })
+    }).toThrow(/Message compilation error/)
+    errSpy.mockRestore()
   })
 })

@@ -221,7 +221,7 @@
     "jszip": "^3.10.1",
     "morphicons": "^1.7.1",
     "qrcode": "^1.5.4",
-    "vue-i18n": "^9.14.5",
+    "vue-i18n": "^11.4.20",
     "zxing-wasm": "^3.1.4"
   },
   "devDependencies": {
@@ -238,6 +238,7 @@
     "eslint-plugin-vue": "^10.10.0",
     "fast-check": "^4.10.2",
     "happy-dom": "^20.11.1",
+    "html2canvas": "^1.4.1",
     "husky": "^9.1.7",
     "jiti": "^2.7.0",
     "lint-staged": "^17.3.0",
@@ -253,8 +254,7 @@
     "vue-eslint-parser": "^10.4.1",
     "vue-router": "^4.3.0",
     "vue-tsc": "^2.0.0",
-    "vue34": "npm:vue@~3.4.38",
-    "html2canvas": "^1.4.1"
+    "vue34": "npm:vue@~3.4.38"
   },
   "overrides": {
     "nanoid": "3.3.18",
