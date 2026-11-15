@@ -10,7 +10,12 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
+      # fetch-depth: 0 —— 必须全量历史。`check:tech-debt`（在 test:unit 里跑）
+      # 用 `git cat-file -e <sha>^{commit}` 核对台账里的提交号，浅克隆只有 1 个提交，
+      # 台账里历史修复记录全部"不存在"→ 假红（2026-11-15 首次上 CI 即命中）。
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:

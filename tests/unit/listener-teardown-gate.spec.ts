@@ -74,7 +74,10 @@ export function scanListenerTeardown(file: string, src: string): Violation[] {
   }
   // 兜底：真注册语句形状
   const globalRegistered = /(window|document)\.addEventListener\(/.test(code)
-  const hasTeardown = /onBeforeUnmount|onUnmounted|onScopeDispose/.test(code)
+  // ⚠️ 必须匹配**调用形状** `onUnmounted(`，不能只匹配标识符 ——
+  // 否则 `import { onBeforeUnmount } from 'vue'` 这一行就能顶替真正的注册
+  // （#513 的变异条目第一次跑出来就是"绿"：删掉兜底调用后仍过了，因为 import 里还有这个名字）。
+  const hasTeardown = /\bonBeforeUnmount\s*\(|\bonUnmounted\s*\(|\bonScopeDispose\s*\(/.test(code)
   if (globalRegistered && !hasTeardown) {
     out.push({ file, rule: 'B-no-teardown', detail: '注册了 window/document 级监听，但文件内没有卸载钩子' })
   }
@@ -150,5 +153,17 @@ describe('全局监听器卸载兜底（#513）', () => {
       export const x = 1
     `
     expect(scanListenerTeardown('doc-only.ts', docblockEventName)).toEqual([])
+
+    // ⑥ **只 import 不调用**不算有兜底（#513 变异条目踩到的坑：
+    //    `import { onBeforeUnmount } from 'vue'` 里的标识符曾顶替真调用）
+    const importOnly = `
+      import { onBeforeUnmount } from 'vue'
+      window.addEventListener('keydown', h)
+      function h() {}
+    `
+    expect(scanListenerTeardown('import-only.ts', importOnly)).toEqual([
+      expect.objectContaining({ rule: 'A-unbalanced' }),
+      expect.objectContaining({ rule: 'B-no-teardown' }),
+    ])
   })
 })
