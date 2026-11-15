@@ -22,7 +22,7 @@ export function parseVendorVulnsWiring(text: string) {
   const end = nextStep < 0 ? lines.length : nextStep
   const stepText = step < 0 ? '' : lines.slice(step, end).join('\n')
 
-  const envMatch = /VENDOR_VULNS_CACH[LOCAL_PATH]
+  const envMatch = /VENDOR_VULNS_CACHE:\s*(\S+)/.exec(text)
   const pathMatch = /^\s+path:\s*(\S+)/m.exec(text)
   const keyMatch = /^\s+key:\s*(.+)$/m.exec(text)
   const hasCacheStep = /uses:\s*actions\/cache@v4/.test(text)

@@ -10,13 +10,10 @@ const env = loadEnv('test', process.cwd(), '')
 const run = process.env.S3_REAL_TEST === '1' && Boolean(env.VITE_S3_ENDPOINT)
 
 describe.skipIf(!run)('S3Backend · 真实云端 CRUD（缤纷云实桶）', () => {
-  const backend = new S3Backend({
-    endpoint: env.VITE_S3_ENDPOINT,
-    region: env.VITE_S3_REGION || 'us-east-1',
-    bucket: env.VITE_S3_BUCKET,
-    accessKeyId: env.VITE_S3_ACCESS_KEY_ID,
-    secretAccessKey: env.VITE_S3_SECRET_ACCESS_KEY,
-  })
+  // ⚠️ 构造必须放进 beforeAll：`describe.skipIf` 的回调体**照样执行**（它负责注册测试结构），
+  // 空配置在这里 `new S3Backend` 会当场抛「请填写 S3 桶级访问域名」—— 跳过就变成了 FAIL。
+  // beforeAll 在跳过时不执行，skip 才是真的 skip。
+  let backend!: S3Backend
   // 测试专用 appleId（与真实数据隔离；结束清空）
   const TEST_ID = 999_999_901
   const pngB64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
@@ -26,7 +23,14 @@ describe.skipIf(!run)('S3Backend · 真实云端 CRUD（缤纷云实桶）', () 
     ts: Date.now(),
   })
 
-  beforeAll(async () => {
+  beforeAll(() => {
+    backend = new S3Backend({
+      endpoint: env.VITE_S3_ENDPOINT,
+      region: env.VITE_S3_REGION || 'us-east-1',
+      bucket: env.VITE_S3_BUCKET,
+      accessKeyId: env.VITE_S3_ACCESS_KEY_ID,
+      secretAccessKey: env.VITE_S3_SECRET_ACCESS_KEY,
+    })
     // 清测试残留（含墓碑），保证幂等；真实网络放宽钩子超时
   }, 30_000)
 

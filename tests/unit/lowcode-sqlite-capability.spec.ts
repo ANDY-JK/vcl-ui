@@ -1,3 +1,5 @@
+// @vitest-environment node —— node:sqlite 是内置模块：在 happy-dom 环境下 vitest 会
+// 尝试 bundle 它并报 "Cannot bundle built-in module"（CI 上这条必红）
 // TD-22 收口：node:sqlite 能力探针（sqlite-capability.mjs）
 //
 // 钉三件事：

@@ -1,5 +1,5 @@
 {
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/_internal/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -14,7 +14,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/basic/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -29,7 +29,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/feedback/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -44,7 +44,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/data/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -59,7 +59,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/form-builder/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -74,7 +74,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/layout/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -89,7 +89,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/storage/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -104,7 +104,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/amap/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -119,7 +119,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/route-planner/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -134,7 +134,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/form/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -149,7 +149,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/chart/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -164,7 +164,7 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/nav/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -179,9 +179,10 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/login/index.ts": {
     "s": {
-      "0": 0
+      "0": 0,
+      "1": 0
     },
     "b": {
       "0": [
@@ -193,7 +194,7 @@
       "0": 0
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/shared/index.ts": {
     "s": {
       "0": 1,
       "1": 1
@@ -208,12 +209,14 @@
       "0": 1
     }
   },
-  "[LOCAL_PATH]": {
+  "/synthetic/repo/src/components/newdomain/index.ts": {
     "s": {
-      "0": 1
+      "0": 1,
+      "1": 1
     },
     "b": {
       "0": [
+        1,
         1
       ]
     },
