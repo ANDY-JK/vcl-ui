@@ -2795,6 +2795,15 @@
       "cmd": "npx vitest run tests/unit/esc-close-unmount.spec.ts --no-coverage",
       "expect": "red",
       "note": "变异后：调用方忘了 unmount 时监听与 _stack entry 永久残留 —— 已销毁组件仍被全局 Esc 唤起，且死 entry 占据「最上层可见」把真弹层的 Esc 吞掉（同族 useFocusTrap 末行有兜底）"
+    },
+    {
+      "id": "esc-close-unmount-fallback-gate",
+      "file": "src/components/_internal/useEscClose.ts",
+      "find": "  if (getCurrentInstance()) onBeforeUnmount(unmount)\n",
+      "replace": "",
+      "cmd": "npx vitest run tests/unit/listener-teardown-gate.spec.ts --no-coverage",
+      "expect": "red",
+      "note": "同一处修复的第二道防线：行为用例守「症状消失」，这个形态闸口守「这类形状不再出现」—— #512 删回旧写法后，判据 B（有全局监听却无卸载钩子）必须红"
     }
   ]
 }

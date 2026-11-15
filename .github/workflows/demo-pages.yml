@@ -1,0 +1,54 @@
+name: Demo site (GitHub Pages)
+
+# 把 demo 站作为静态站点发布到 GitHub Pages：
+# 谁想帮忙调界面/布局，不用装环境就能在浏览器里直接看效果。
+# 演示站用 hash 路由（src/demos/router.ts = createWebHashHistory），
+# 因此部署在 /<repo>/ 子路径下也不需要 404 回退配置。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build demo (base = repo 子路径)
+        # 直接调 vite CLI，不走 scripts/build-demo.mjs —— 那份脚本是给 Windows 上
+        # esbuild 临时目录竞态兜底的，Linux runner 用不上。
+        run: npx vite build -c vite.demo.config.ts --base=/${{ github.event.repository.name }}/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-demo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

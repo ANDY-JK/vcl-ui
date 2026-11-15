@@ -5,6 +5,9 @@
 [![Vue](https://img.shields.io/badge/Vue-3.4%2B-brightgreen)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4%2B-blue)](https://www.typescriptlang.org/)
 
+> 🖥 **在线演示**（随 main 自动更新）：<https://andy-jk.github.io/vcl-ui/> —— 每个组件一页，含交互示例。
+> 想帮忙改界面/布局？先看 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## ✨ 特性
 
 分两层看：**标配**是主流 Vue 3 组件库普遍都有的（不构成选型理由）；**差异点**才是它存在的理由。
@@ -446,9 +449,9 @@ git push --follow-tags
 npm run release:dry-run    # = npm publish --dry-run --registry https://registry.npmjs.org
 ```
 
-> 发布前置状态（2026-09-21）：本地仓库**尚未配置 git remote**，推送地址待维护者提供；
-> 提供后 `git remote add origin <url> && git push -u origin main --follow-tags` 即可，
-> 标签推送即触发 Release 流水线。检查清单见 `workspace/发布检查清单-2026-09-21.md`。
+> 远端仓库：<https://github.com/ANDY-JK/vcl-ui>（2026-11-15 起启用）。
+> 打标签并 `git push origin --follow-tags` 即触发 Release 流水线。
+> 检查清单见 `workspace/发布检查清单-2026-09-21.md`。
 
 ## 📄 License
 
