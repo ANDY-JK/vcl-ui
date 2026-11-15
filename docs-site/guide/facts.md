@@ -50,7 +50,7 @@ title: 事实清单（自动生成）
 
 | 事实 | 值 |
 | --- | --- |
-| 整链步数 | **58** |
+| 整链步数 | **55** |
 
 步清单（顺序即执行顺序）：
 
@@ -71,54 +71,51 @@ title: 事实清单（自动生成）
 15. `check:public-surface`
 16. `check:async-assert`
 17. `check:debt-evidence`
-18. `check:review-history`
-19. `check:canwrite-usage`
-20. `check:i18n-usage`
-21. `check:event-codes`
-22. `check:demo-routes`
-23. `check:review-appendix`
-24. `check:gate-wiring`
-25. `check:css-tokens`
-26. `check:contrast`
-27. `check:css-breakpoints`
-28. `check:css-fonts`
-29. `check:css-scale`
-30. `check:type-tokens`
-31. `check:offline`
-32. `check:i18n`
-33. `check:demo-props`
-34. `check:error-demo`
-35. `check:template-statements`
-36. `check:vendor-data`
-37. `check:vendor-vulns`
-38. `check:deps`
-39. `test:unit`
-40. `check:console-noise`
-41. `bench:check`
-42. `check:coverage-domains`
-43. `build`
-44. `smoke:entries`
-45. `verify:pkg`
-46. `check:licenses`
-47. `check:release-consistency`
-48. `docs:build`
-49. `check:docs`
-50. `check:audit`
-51. `check:doc-completeness`
-52. `gen:facts`
-53. `check:facts`
-54. `check:chain-doc`
-55. `check:tech-debt`
-56. `check:rtl`
-57. `check:rtl-semantics`
-58. `test:e2e`
+18. `check:canwrite-usage`
+19. `check:i18n-usage`
+20. `check:event-codes`
+21. `check:demo-routes`
+22. `check:gate-wiring`
+23. `check:css-tokens`
+24. `check:contrast`
+25. `check:css-breakpoints`
+26. `check:css-fonts`
+27. `check:css-scale`
+28. `check:type-tokens`
+29. `check:offline`
+30. `check:i18n`
+31. `check:demo-props`
+32. `check:error-demo`
+33. `check:template-statements`
+34. `check:vendor-data`
+35. `check:vendor-vulns`
+36. `check:deps`
+37. `test:unit`
+38. `check:console-noise`
+39. `bench:check`
+40. `check:coverage-domains`
+41. `build`
+42. `smoke:entries`
+43. `verify:pkg`
+44. `check:licenses`
+45. `check:release-consistency`
+46. `docs:build`
+47. `check:docs`
+48. `check:doc-completeness`
+49. `gen:facts`
+50. `check:facts`
+51. `check:chain-doc`
+52. `check:tech-debt`
+53. `check:rtl`
+54. `check:rtl-semantics`
+55. `test:e2e`
 
 ## 测试规模（读自最近一次整链留痕）
 
 | 事实 | 值 |
 | --- | --- |
-| 单测文件数 | **500** |
-| 单测用例数 | **7332** |
+| 单测文件数 | **499** |
+| 单测用例数 | **7325** |
 
 ::: info 这两个数会随每次提交变化
 它们来自 `reports/quality-check-logs/*-test-unit.log`（按后缀匹配，**不依赖步骤序号**；每次整链运行前清空），

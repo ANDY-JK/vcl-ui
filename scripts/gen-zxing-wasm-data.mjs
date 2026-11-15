@@ -3,7 +3,7 @@
 // 为什么要它：zxing-wasm 的默认 `locateFile`（见 node_modules/zxing-wasm/dist/es/share.js 里的 W 常量）
 // 把 `zxing_reader.wasm` 映射到 https://fastly.jsdelivr.net/npm/zxing-wasm@<ver>/dist/reader/…，
 // 于是**首次扫码必须联网向第三方 CDN 取约 950KB 二进制**。CDN 一抖用户就是「识别中…」长挂
-// （2026-09-28 实测：整链尾段 >45s 不返回；见 docs/全量审查报告-2026-09-28.md §9.7）。
+// （2026-09-28 实测：整链尾段 >45s 不返回）。
 // 本脚本把 npm 包里那个 wasm 原样搬进仓，运行时以 `wasmBinary` 直接喂给解码器，扫码零外发。
 //
 // ## 为什么 base64 要分片（#416）
@@ -112,7 +112,7 @@ function renderBarrel(src, total) {
 //
 // 用途：把 zxing-wasm 的解码 wasm 二进制随本包分发，使首次扫码不再向 fastly.jsdelivr.net 取件
 // （zxing-wasm 默认 locateFile 走那个 CDN，网络一抖就是「识别中…」长挂，根因见
-//  docs/全量审查报告-2026-09-28.md §9.7）。消费方见 useBarcodeScanner.ts 的 warmBarcodeDecoder。
+//  这也正是本包随包分发 wasm 的原因。消费方见 useBarcodeScanner.ts 的 warmBarcodeDecoder。
 //
 // 体积：base64 文本 ${(src.base64.length / 1024 / 1024).toFixed(2)}MB（原始 ${src.buf.length.toLocaleString('en-US')} 字节），
 // 由 manualChunks 拆成独立懒加载 chunk，只有真的打开扫码界面才会加载。

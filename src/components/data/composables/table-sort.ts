@@ -17,6 +17,8 @@
  * 这样既有用例不必跟着改。
  */
 
+import { getLocale } from '../../_internal/i18n'
+
 /** 比较投影：能当数就用数，否则当字符串 */
 type Projection = { kind: 'num'; num: number } | { kind: 'str'; str: string } | { kind: 'empty' }
 
@@ -46,6 +48,25 @@ function project(v: unknown): Projection {
  * 一侧是数、另一侧是文本时按文本比 —— 混合类型列没有正确答案，
  * 统一交给 `localeCompare(numeric:true)` 至少保证**同一份数据每次排出同样的顺序**。
  */
+/**
+ * 文本比较用的 locale —— **不能传 `undefined`**。
+ *
+ * `localeCompare(b, undefined, ...)` 表示"跟随宿主运行环境"，于是同一份数据
+ * 在中文机器上按拼音、在英文或 CI（`en-US`）机器上按**码点**排。首次把仓库接上 CI
+ * 就实测到这条：`'张三'.localeCompare('王五')` 在 zh-CN 下是正数（王 wang < 张 zhang），
+ * 在 en-US 下行成负数（张 U+5F20 < 王 U+738B）。
+ *
+ * 排序行为只应由库自己的语言决定，所以显式取 i18n 当前语言（缺省 zh-CN）。
+ */
+export function compareLocale(): string {
+  return getLocale() || 'zh-CN'
+}
+
+/** 文本比较：`numeric` 让 `'第9章'` 排在 `'第10章'` 前 */
+export function compareText(a: string, b: string): number {
+  return a.localeCompare(b, compareLocale(), { numeric: true })
+}
+
 export function compareCellValues(a: unknown, b: unknown): number {
   const pa = project(a)
   const pb = project(b)
@@ -59,5 +80,5 @@ export function compareCellValues(a: unknown, b: unknown): number {
   }
   const sa = pa.kind === 'num' ? String(pa.num) : pa.str
   const sb = pb.kind === 'num' ? String(pb.num) : pb.str
-  return sa.localeCompare(sb, undefined, { numeric: true })
+  return compareText(sa, sb)
 }

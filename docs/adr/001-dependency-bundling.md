@@ -2,7 +2,7 @@
 
 - 状态：已接受（2026-09-30 起文；决策实际形成于 2026-09-20~09-28 的多轮 PoC 与审查）
 - 决策人：维护者
-- 关联：README《依赖选型记录》、`scripts/gen-third-party-licenses.mjs`、`scripts/check-vendor-data.mjs`、`docs/全量审查报告-2026-09-28.md` §9
+- 关联：README《依赖选型记录》、`scripts/gen-third-party-licenses.mjs`、`scripts/check-vendor-data.mjs`
 
 ## 背景
 

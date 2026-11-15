@@ -39,7 +39,7 @@ function base64ToArrayBuffer(b64: string): ArrayBuffer {
  * `readBarcodes` 触发的模块启动：空载 842ms、4 并发 3.39s，整机繁忙时实测能拖过
  * 45s 且不返回——期间界面停在「识别中…」且按钮全灰，用户只能关掉重来。
  * 那段时间花在向第三方 CDN 取 953,527 字节的 wasm（zxing 默认 `locateFile` 写死 jsdelivr，
- * 根因与取证见 docs/全量审查报告-2026-09-28.md §9.7），所以本包把那个 wasm 带上了。
+ * 这也正是本包把那个 wasm 带上的原因。
  *
  * 兼容性闸门：比的是 zxing 自己导出的 `ZXING_WASM_SHA256`（它期望的字节）与随包件的 sha256，
  * 不等就说明宿主装的 zxing JS 与我们带的 wasm 不配套 —— 此时**不传** `wasmBinary`，

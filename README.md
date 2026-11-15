@@ -324,15 +324,15 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 
 本仓 `git remote` 为空 → `.github/workflows` 里的 ci / release **从来没有执行过**。质量链因此长期只靠"人记得手动跑"，出现过「整链已红 10 天没人知道」（R5-C14）。现在分两档：
 
-1. **快链**：`npm run quick-check` —— **29 步 / 约 5 分钟**（`typecheck` + `lint` + 快速闸口 + `test:unit`）。
+1. **快链**：`npm run quick-check` —— **27 步 / 约 5 分钟**（`typecheck` + `lint` + 快速闸口 + `test:unit`）。
    完整清单以 `scripts/quality-check.mjs` 的 `QUICK_STEPS` 为准，`npm run quick-check -- --list` 可打印。
-   > 上面这两个数字（28 / 57）是**手写**的，历史上漂过两次（"18 步""43 步"）。**要数字就查真源**：
+   > 上面这两个数字（27 / 55）是**手写**的，历史上漂过两次（"18 步""43 步"）。**要数字就查真源**：
    > 快链看 `QUICK_STEPS.length`，整链看最近一次留痕 `reports/quality-check-latest.json` 的 `executedSteps`。
    留痕写 `reports/quick-check-latest.json`（与整链**分开写**，否则跑一次快链就把整链的权威证据覆盖成半份）。
 
    **2026-11-02 补 `check:docs`（#349）**：它只要 1.0s，却是连续六批给组件加 prop 之后**唯一**
    能抓到「API 文档没重新生成」的闸口 —— 单测、类型检查、lint 全绿都覆盖不到这一层。
-2. **整链**：`npm run quality-check` —— **58 步 / 约 24 分钟**（最近实测 1455s，含 e2e **134 例跑产物** 9.4 分钟），**唯一权威**，含 `build`、`e2e`、许可清单、**版本三件套对齐**、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
+2. **整链**：`npm run quality-check` —— **55 步 / 约 24 分钟**（最近实测 1455s，含 e2e **134 例跑产物** 9.4 分钟），**唯一权威**，含 `build`、`e2e`、许可清单、**版本三件套对齐**、文档构建。留痕 `reports/quality-check-latest.json`。逐步输出落 `reports/quality-check-logs/<NN>-<name>.log`（失败时直接回看，不随终端滚掉）。
 
 `.husky/pre-commit` 现在跑「`lint-staged`（暂存区格式化）+ 快链」，把显然会坏的提交挡在落库之前。跳过方式：`git commit --no-verify`，或 `SKIP_QUICK_CHECK=1 git commit ...`。
 
@@ -389,7 +389,7 @@ API 表「说明」列不允许空缺（`check:doc-completeness` 闸口）：pro
 
 1. ~~`FormBuilder` 的 `validate` / `validateForm` / `validateAndGet` 三个近义入口收敛为单一动词~~ —— ✅ 已删后两个，只留 `validate()`；要数据用 `getFormData()`、要错误明细用 `errors`。
 2. ~~`login` 的 `notifyFailed` / `recordFailedAttempt` 是宿主回写钩子而非组件行为~~ —— ✅ 已删两个暴露方法，改 `authResult` prop（`{ ok, message? }`，watch 驱动同一套锁定计数）。
-3. 审查报告 09-20 曾记「BatchDialog 六近义名 / ColumnSettings 八名」——那是扫描正则把 `show: _batchShow` 的键与源标识符重复计数所致，实际暴露面就是上表 3/4 个动词，以本条为准。
+3. 早期一版扫描口径曾把 `DataTableBatchDialog` / `DataTableColumnSettings` 的暴露面数成「BatchDialog 六近义名 / ColumnSettings 八名」——那是正则把 `show: _batchShow` 的键与源标识符重复计数所致，实际暴露面就是上表 3/4 个动词，以本条为准。
 
 ## ⬆️ 从 1.x 升级到 2.0（破坏性变更清单）
 
@@ -451,7 +451,6 @@ npm run release:dry-run    # = npm publish --dry-run --registry https://registry
 
 > 远端仓库：<https://github.com/ANDY-JK/vcl-ui>（2026-11-15 起启用）。
 > 打标签并 `git push origin --follow-tags` 即触发 Release 流水线。
-> 检查清单见 `workspace/发布检查清单-2026-09-21.md`。
 
 ## 📄 License
 
@@ -481,7 +480,8 @@ npm run release:dry-run    # = npm publish --dry-run --registry https://registry
 
 > **扫码不联网（2026-09-28 改）**：`zxing-wasm` 的 JS 是外部件，但它的解码 wasm 二进制**不在 JS 里**——
 > 该包默认 `locateFile` 会在首次识别时向 `https://fastly.jsdelivr.net/npm/zxing-wasm@3.1.4/.../zxing_reader.wasm`
-> 取约 950KB，CDN 一抖界面就是「识别中…」长挂（根因与取证见 `docs/全量审查报告-2026-09-28.md` §9.7）。
+> 取约 950KB，CDN 一抖界面就是「识别中…」长挂（根因就是这条上游默认的联网取件路径：
+> `locateFile` 指向 CDN，取件失败时解码器一直停在等待态，既不报错也不回落）。
 > 本库把那个 wasm 按原字节内联进产物（`scripts/gen-zxing-wasm-data.mjs` 生成，正源＝安装物里那份，
 > sha256 三方对账由 `check:licenses` 守），**扫码全程零跨源请求**——e2e 用例
 > `capture-fallback.spec.ts`「扫码零外发」把全部非本机请求拦死仍要求出结果。

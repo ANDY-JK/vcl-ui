@@ -553,7 +553,7 @@ const DERIVED_SPECS = [
  * 随包分发的**第三方二进制**（base64 形态）。
  * rollup 的 `chunk.modules` 只记 JS 模块，看不见这类件——它们进没进包、字节对不对，必须单独判。
  * 本库有它是因为 zxing-wasm 的解码 wasm 默认由浏览器向 fastly.jsdelivr.net 取件（CDN 一抖就是
- * 「识别中…」长挂，见 docs/全量审查报告-2026-09-28.md §9.7），2026-09-28 起改为随包分发。
+ * 「识别中…」长挂），2026-09-28 起改为随包分发。
  */
 export const VENDOR_BINARIES = [
   {

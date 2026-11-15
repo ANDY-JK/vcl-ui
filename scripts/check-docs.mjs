@@ -68,16 +68,16 @@ try {
 
 // ==================== 治理索引也要比对（TD-103，#388） ====================
 //
-// `gen:governance-index` 产出的两份索引（docs/protected-files.md、workspace/README.md）
+// `gen:governance-index` 产出的 `docs/protected-files.md`
 // 此前**只有写、没有校验**：本闸口只扫 docs-site/components，于是索引能静默漂移 ——
 // #387 重跑时才发现 `Toast.vue` 头部带 `⛔ 保护` 却不在索引里（82 → 83）。
 //
 // 修法：把生成器抽成 `renderGovernanceIndex()`（纯函数，只算不写），这里重新算一遍
-// 与已提交文件逐字节比对。**不新增质量链步骤** —— 它们和 API 文档是同一类产物
+// 与已提交文件逐字节比对。**不新增质量链步骤** —— 它和 API 文档是同一类产物
 // （"生成的文档不许漂移"），挂在同一个闸口里比再立一道更贴近它守的东西。
 //
 // 夹具模式（--committed）下跳过：该参数只用于"喂一份过期的 API 文档"，
-// 夹具目录里本来就没有这两份治理索引文件。
+// 夹具目录里本来就没有这份治理索引文件。
 let govDrift = 0
 if (!fixtureMode) {
   const { files: govFiles, stats: govStats } = renderGovernanceIndex(GOV_ROOT)
@@ -92,8 +92,7 @@ if (!fixtureMode) {
     }
   }
   console.log(
-    `[check:docs] 治理索引 ${Object.keys(govFiles).length} 份（受保护文件 ${govStats.protectedCount} 个，` +
-      `台账 ${govStats.ledgers} 份），漂移 ${govDrift}`,
+    `[check:docs] 治理索引 ${Object.keys(govFiles).length} 份（受保护文件 ${govStats.protectedCount} 个），漂移 ${govDrift}`,
   )
 }
 

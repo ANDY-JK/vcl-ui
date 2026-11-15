@@ -21,13 +21,13 @@
 import { describe, it, expect } from 'vitest'
 import { spawnSync } from 'node:child_process'
 import { resolve, join } from 'node:path'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 
 const SCRIPT = resolve('scripts/check-docs.mjs')
 
 /**
- * 本文件的用例都要 spawnSync 跑一次「生成器 + 闸口」子进程（扫描 83 个受保护文件 / 15 份台账）。
+ * 本文件的用例都要 spawnSync 跑一次「生成器 + 闸口」子进程（扫描 83 个受保护文件）。
  * 单独跑 2s 左右，但整套用例并行（vitest pool: forks）满载时会到 20s+，
  * 撞上全局 `testTimeout: 20_000` 就变成**假失败**（#407 实测撞过一次）。
  * 这类"闸门自测"必须稳定，否则红/绿都不再可信 —— 单独给它 60s。
@@ -59,9 +59,12 @@ describe('check:docs 闸门自测', () => {
  *
  * ## 它守的是什么
  *
- * `gen:governance-index` 产出的 `docs/protected-files.md` / `workspace/README.md`
+ * `gen:governance-index` 产出的 `docs/protected-files.md`
  * 此前**只有写、没有校验** —— 索引可以静默漂移。#387 重跑时才发现 `Toast.vue`
  * 头部带 `⛔ 保护` 却不在索引里（82 → 83），等于"变更评审会照着漏了它的索引做"。
+ *
+ * （同一生成器当年还出一份 workspace 台账索引，`workspace/` 随公开化整体移除后
+ * 该产物与相关断言、夹具一并删掉；现在治理索引只剩 `docs/protected-files.md` 一份。）
  *
  * ## 为什么用夹具目录而不是改真实文件
  *
@@ -73,7 +76,7 @@ describe('check:docs · 治理索引新鲜度', () => {
   const GEN = resolve('scripts/gen-governance-index.mjs')
   const ROOT = process.cwd()
 
-  /** 造一个最小仓库：一个受保护组件 + 一份台账 */
+  /** 造一个最小仓库：一个受保护组件（治理索引只剩受保护文件这一份产物） */
   function makeFixture(): string {
     const dir = mkdtempSync(join(tmpdir(), 'vcl-gov-'))
     mkdirSync(join(dir, 'src', 'components', 'feedback'), { recursive: true })
@@ -82,9 +85,7 @@ describe('check:docs · 治理索引新鲜度', () => {
       '<script setup lang="ts">\n// ⛔ 保护 — 提示消息，禁止：clamp() → px，动画时序\n</script>\n',
       'utf8',
     )
-    mkdirSync(join(dir, 'workspace'), { recursive: true })
-    writeFileSync(join(dir, 'workspace', '需求-2026-01-01.md'), '# 台账\n', 'utf8')
-    // 生成器直接 writeFileSync 到 docs/ 与 workspace/，目录缺一不可
+    // 生成器直接 writeFileSync 到 docs/，目录缺一不可
     mkdirSync(join(dir, 'docs'), { recursive: true })
     return dir
   }
@@ -100,7 +101,10 @@ describe('check:docs · 治理索引新鲜度', () => {
       const r = check(dir)
       const out = `${r.stdout ?? ''}${r.stderr ?? ''}`
       expect(r.status, `刚生成的索引就被判漂移：\n${out}`).toBe(0)
-      expect(out, '没打印治理索引的统计行').toContain('治理索引 2 份')
+      // 产物只剩受保护文件这一份（workspace 台账索引随目录移除）：查文件本身，
+      // 不写死"N 份"的文案断言——那种断言会跟着产物的增减一起漂。
+      expect(existsSync(join(dir, 'docs', 'protected-files.md')), '生成器没写出受保护文件索引').toBe(true)
+      expect(out, '没打印治理索引的统计行（治理索引那一半没在夹具目录上跑）').toContain('治理索引')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

@@ -6,6 +6,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import type { Column, ColumnFilterState, FilterOption, OptionSort } from './types'
 import type { TableRow } from '@/components/_internal/api-any'
 import { matchPinyin, measureTextWidth, markLayerOpen } from './utils'
+import { compareText } from './table-sort'
 import { computeFloatingPosition } from '@/components/_internal/useFloating'
 import { useT } from '@/components/_internal/i18n'
 
@@ -69,9 +70,7 @@ export function useTableFilter(
     // 服务端分页：外部传入全量候选值，优先使用，无需从 data 提取
     const col = props.columns.find((c) => c.key === colKey)
     if (col?.filterValues && col.filterValues.length > 0) {
-      return col.filterValues
-        .map((v) => ({ value: v, count: 0 }))
-        .sort((a, b) => a.value.localeCompare(b.value, undefined, { numeric: true }))
+      return col.filterValues.map((v) => ({ value: v, count: 0 })).sort((a, b) => compareText(a.value, b.value))
     }
 
     const otherFilters = Object.entries(filterState.value).filter(
@@ -99,7 +98,7 @@ export function useTableFilter(
     }
     return Array.from(counts.entries())
       .map(([value, count]) => ({ value, count, label: labels.get(value) || undefined }))
-      .sort((a, b) => a.value.localeCompare(b.value, undefined, { numeric: true }))
+      .sort((a, b) => compareText(a.value, b.value))
   }
 
   const activeFilterOptions = computed<FilterOption[]>(() => {
@@ -121,9 +120,7 @@ export function useTableFilter(
       list = [...list].sort((a, b) => (s === 'count' ? a.count - b.count : b.count - a.count))
     } else {
       list = [...list].sort((a, b) =>
-        s === 'name-desc'
-          ? b.value.localeCompare(a.value, undefined, { numeric: true })
-          : a.value.localeCompare(b.value, undefined, { numeric: true }),
+        s === 'name-desc' ? compareText(b.value, a.value) : compareText(a.value, b.value),
       )
     }
     return list

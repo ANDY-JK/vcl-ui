@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * quality-check —— 43 步质量链的唯一执行器（含执行留痕）
+ * quality-check —— 55 步质量链的唯一执行器（含执行留痕）
  *
  * 为什么要有这个脚本：
  *   原先 quality-check 是 package.json 里一条 `&&` 串联的长命令。它有两个结构性缺陷
@@ -12,7 +12,7 @@
  *   最后写 reports/quality-check-latest.json，并把「未执行」的步骤显式标出来。
  *
  * 用法：
- *   node scripts/quality-check.mjs                # 跑全部 43 步
+ *   node scripts/quality-check.mjs                # 跑全部 55 步
  *   node scripts/quality-check.mjs --from=13      # 从第 13 步开始（快速复跑用）
  *   node scripts/quality-check.mjs --only=check:constants   # 只跑名字含关键字的步骤
  *   node scripts/quality-check.mjs --skip=e2e     # 跳过匹配关键字的步骤（本地快速链）
@@ -20,6 +20,7 @@
  */
 import { spawn } from 'node:child_process'
 import { mkdirSync, writeFileSync, createWriteStream, readdirSync, unlinkSync, readFileSync } from 'node:fs'
+import { acquireLock, releaseLock, LOCK_PATH, LOCK_ENV, BUSY_REPORT_PATH, detectEnvBusy, ENV_BUSY_HINT } from './qa-lock.mjs'
 import { execSync } from 'node:child_process'
 import { join } from 'node:path'
 
@@ -36,27 +37,53 @@ const logNameFor = (no, name) => `${String(no).padStart(2, '0')}-${name.replace(
 /** 跑一步：输出**同时**打到终端与日志文件，返回退出码 */
 function runStep(cmd, logPath) {
   return new Promise((resolve) => {
+    // 日志目录可能在运行期被别的进程清掉（并发跑另一个整链时它会 `清理旧日志`）——
+    // 每步前重建一次，别让"写日志失败"把整链打崩（#517）。
+    try {
+      mkdirSync(LOG_DIR, { recursive: true })
+    } catch {
+      /* 建不了就继续：下面 stream 的 error 处理器会兜住 */
+    }
     const stream = createWriteStream(logPath, { flags: 'w' })
-    const child = spawn(cmd, { shell: true })
+    /**
+     * 写流必须兜住错误（#517）：2026-11-15 实测一次整链跑到第 37 步后**进程直接退出码 1、
+     * 既没写留痕也没留失败日志** —— 起因是并发的另一个整链在清日志目录，
+     * 本进程的写流报错没人接 → 未处理 'error' 事件 → 整个 runner 崩掉。
+     * 现在的语义：日志写不进去只降级为"本步留痕缺失"，不再把整链一起带走。
+     */
+    let streamError = null
+    stream.on('error', (err) => {
+      streamError = err
+      console.error(`\n[runner] 日志写入失败（${logPath}）：${err?.code ?? err?.message ?? err}`)
+      console.error('         该步仍继续执行；留痕可能缺失（多半是另一个进程在清日志目录）。')
+    })
+    // 复入标记（#516）：链自己已持锁，把标记放进子进程环境，
+    // 于是链内的 `npm run test:unit`（走 with-qa-lock 包装器）不会再抢一次自己的锁 ——
+    // 父子进程 pid 不同，光靠 pid 认不出"我是链的一部分"。
+    const child = spawn(cmd, { shell: true, env: { ...process.env, [LOCK_ENV]: String(process.pid) } })
     const tee = (chunk) => {
       process.stdout.write(chunk)
-      stream.write(chunk)
+      if (!streamError) stream.write(chunk)
     }
     child.stdout.on('data', tee)
     child.stderr.on('data', tee)
     child.on('close', (code) => {
+      // ⚠️ 必须等**写流真的关上**再 resolve（#515）：`stream.end()` 只是把缓冲排进队列，
+      // `close` 事件才是数据落到磁盘的时刻。此前 resolve 在 end() 后立刻发生，
+      // 下一步的「空输出守卫」读文件时最后一段（含 `134 passed` 汇总行）还在缓冲里
+      // → 把跑满 10 分钟的 e2e 误判成"日志为空、未真正执行"（2026-11-15 实测整链假红）。
       stream.end()
-      resolve(code === null ? -1 : code)
+      stream.on('close', () => resolve({ code: code === null ? -1 : code, streamError }))
     })
     child.on('error', (err) => {
       stream.write(`\n[runner] spawn 失败：${err?.message ?? err}\n`)
+      stream.on('close', () => resolve({ code: -1, streamError }))
       stream.end()
-      resolve(-1)
     })
   })
 }
 
-/** 43 步：与审查报告口径一致（顺序即依赖顺序） */
+/** 55 步：顺序即依赖顺序 */
 const STEPS = [
   ['typecheck', 'npm run typecheck'],
   ['lint', 'npm run lint'],
@@ -96,9 +123,6 @@ const STEPS = [
   ['check:async-assert', 'npm run check:async-assert'],
   // #443：台账证据路径不许成死链（文件改名/拆走后 open 行仍指旧位置）。
   ['check:debt-evidence', 'npm run check:debt-evidence'],
-  // #446（TD-08）：历史审查报告必须带「历史快照」横幅，只有最新一份能自称当前。
-  ['check:review-history', 'npm run check:review-history'],
-  // #448（TD-79 类）：可写判据只许有 canWrite 一份实现 —— 新入口手写判据即红。
   ['check:canwrite-usage', 'npm run check:canwrite-usage'],
   // #449：代码用到的 i18n key 必须在语言包里（check:i18n 只看两侧对账，看不到调用点）。
   ['check:i18n-usage', 'npm run check:i18n-usage'],
@@ -106,7 +130,6 @@ const STEPS = [
   ['check:event-codes', 'npm run check:event-codes'],
   // #451：demo 路由双向对账 —— 孤立页（并页遗留）与幽灵路由（指向不存在的文件）。
   ['check:demo-routes', 'npm run check:demo-routes'],
-  ['check:review-appendix', 'npm run check:review-appendix'],
   ['check:gate-wiring', 'npm run check:gate-wiring'],
   ['check:css-tokens', 'npm run check:css-tokens'],
   ['check:contrast', 'node scripts/contrast-audit.mjs'],
@@ -139,7 +162,6 @@ const STEPS = [
   ['check:release-consistency', 'npm run check:release-consistency'],
   ['docs:build', 'npm run docs:build'],
   ['check:docs', 'npm run check:docs'],
-  ['check:audit', 'npm run check:audit'],
   ['check:doc-completeness', 'npm run check:doc-completeness'],
   // 口径单一真源（6.2 #8）：事实页漂移 + 正文手写数字与真源冲突，两件都拦。
   // 放在文档类闸口之后：它依赖 docs-site/guide/facts.md，且比上面两个更"语义"。
@@ -184,12 +206,12 @@ const flag = (name) => {
 /**
  * 快链（--quick）：给「本地提交前」用的**最小充分**集合，目标 ≈ 90s。
  *
- * 为什么需要：整链 27 步约 10 分钟，没人会在每次提交前跑它；而本仓 `git remote` 为空、
+ * 为什么需要：整链 55 步约 24 分钟，没人会在每次提交前跑它；而本仓 `git remote` 为空、
  * CI 从不执行 —— 于是「闸口存在」和「闸口执行」是两件事（报告 6.2 #2 / R5-C14）。
  * 快链把显然会坏的提交挡在本地，整链仍是唯一权威（build / e2e / 许可 / 文档都在整链里）。
  * 逃生口：`git commit --no-verify` 或 `SKIP_QUICK_CHECK=1`。
  */
-const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:review-appendix', 'check:edit-single-writer', 'check:esc-consume', 'check:public-surface', 'check:async-assert', 'check:debt-evidence', 'check:review-history', 'check:canwrite-usage', 'check:i18n-usage', 'check:event-codes', 'check:demo-routes', 'check:gate-wiring',
+const QUICK_STEPS = ['typecheck', 'lint', 'check:constants', 'check:result-consumed', 'check:no-cycles', 'check:icons', 'check:icon-names', 'check:test-skips', 'check:mutation-tool', 'check:mutation-audit', 'check:hover-guard', 'check:tab-sequence', 'check:edit-single-writer', 'check:esc-consume', 'check:public-surface', 'check:async-assert', 'check:debt-evidence', 'check:canwrite-usage', 'check:i18n-usage', 'check:event-codes', 'check:demo-routes', 'check:gate-wiring',
     // check:docs 进快链（#349）：它 1.0s，却是我连续六批加 prop 之后唯一能抓到
     // "API 文档没重新生成"的闸口 —— 单测/类型/lint 全绿也覆盖不到这一层
     'check:docs', 'check:chain-doc', 'check:css-tokens', 'check:i18n', 'test:unit']
@@ -235,9 +257,44 @@ for (const f of stale) {
     console.warn(`[runner] 旧日志清理失败（${f}）：${err?.code ?? err}`)
   }
 }
-console.log(`\n▶ quality-check：${STEPS.length} 步，HEAD=${head.slice(0, 7)}${quick ? `，快链档位（${QUICK_STEPS.length} 步）` : ''}${skip ? `，跳过含「${skip}」的步骤` : ''}\n`)
+/**
+ * 并发闸口（#514）：起跑前先抢锁。
+ *
+ * 起因：一轮整链在第 39 步 `test:unit` 红，报的是「用例失败」，翻日志才发现是
+ * 「覆盖目录 is already in use by another Vitest process」—— 两个进程并发跑覆盖率会互删报告。
+ * 两个整链并发更是纯粹的破坏，**一步都不该启动**。
+ *
+ * 逃生口：锁被活着的进程占着 → 直接 exit 3（区别于用例失败的 exit 1），
+ * 并把「等它跑完」和「删陈旧锁」两条动作打清楚。持有者已死 → 接管（陈旧锁不永久阻塞）。
+ */
+const lock = acquireLock(LOCK_PATH, { head })
+if (!lock.ok) {
+  console.error(`\n⏸  环境忙：另一个整链/测试任务正在跑（pid=${lock.holder?.pid}，HEAD=${lock.holder?.head?.slice(0, 7) || '未知'}）`)
+  console.error(ENV_BUSY_HINT)
+  process.exit(3)
+}
+if (lock.tookOverFrom) {
+  // 接管要让人看见：否则"上一轮明明是红的/卡住的"会被无声继承
+  console.warn(
+    `[runner] 接管陈旧锁：原持有者 pid=${lock.tookOverFrom.pid}（${lock.tookOverFrom.head || '未知'}，` +
+      `开始于 ${lock.tookOverFrom.startedAt || '未知'}）—— 进程已退出或锁超龄`,
+  )
+}
+let lockReleased = false
+function releaseOnce() {
+  if (lockReleased) return
+  lockReleased = true
+  releaseLock(LOCK_PATH)
+}
+process.on('exit', releaseOnce)
+process.on('SIGINT', () => process.exit(130))
 
+console.log(`\n▶ quality-check：${STEPS.length} 步，HEAD=${head.slice(0, 7)}${quick ? `，快链档位（${QUICK_STEPS.length} 步）` : ''}${skip ? `，跳过含「${skip}」的步骤` : ''}\n`)
 let brokenAt = null
+/** 本轮断链是否属于**环境类**（#514 覆盖目录被占 / #517 日志目录被并发清空）—— 决定留痕写哪、退出码用哪个 */
+let brokenByEnv = false
+/** 环境类失败的具体成因，写进留痕（别把两种情况混成一个 nvBusy） */
+let brokenByEnvReason = ''
 for (let i = 0; i < STEPS.length; i++) {
   const [name, cmd] = STEPS[i]
   const no = i + 1
@@ -261,7 +318,9 @@ for (let i = 0; i < STEPS.length; i++) {
   }
   const started = Date.now()
   const logFile = join(LOG_DIR, logNameFor(no, name))
-  const code = await runStep(cmd, logFile)
+  const stepResult = await runStep(cmd, logFile)
+  const code = stepResult.code
+  const streamError = stepResult.streamError
   const secs = Math.round((Date.now() - started) / 100) / 10
 
   /**
@@ -284,15 +343,42 @@ for (let i = 0; i < STEPS.length; i++) {
     // 这些命令正常时确实可能不输出（或只输出极短内容），不适用本守卫
   ])
   let emptyOutput = false
+  /**
+   * 「日志不存在」与「日志为空」要分开（#515）。
+   *
+   * 空输出守卫原本把两种情况混成一句"日志为空"。但**文件根本不存在**几乎只有一种成因：
+   * 另一个整链/快链进程在跑（它们启动时会清空 `reports/quality-check-logs/`），
+   * 或者有人手动删了目录 —— 2026-11-15 实测：整链跑到第 37 步 `test:unit`（跑了 230s）
+   * 报"日志为空"，而目录里 0 个文件（并发的那次把日志清了）。
+   * 把两种情况分开报，下次看到就能立刻分辨"闸口静默"还是"日志被别的进程清掉"。
+   */
+  let logMissing = false
   if (code === 0 && !EMPTY_OK.has(name)) {
     try {
       emptyOutput = readFileSync(logFile, 'utf8').trim().length === 0
     } catch {
-      emptyOutput = true
+      logMissing = true
     }
   }
 
-  const failed = code !== 0 || emptyOutput
+  // 日志写失败时"日志不存在"是**写不进去**的结果，不是"这步没真正执行"——
+  // 别把写流故障升级成步骤失败（#517）。
+  const failed = code !== 0 || emptyOutput || (logMissing && !streamError)
+  /**
+   * 失败再分类（#514）：这一红是**环境忙**还是**真失败**？
+   *
+   * 覆盖目录被另一个 vitest 进程占着时，`test:unit` 也会 exit=1 —— 但那不是用例红。
+   * 判成环境忙后：终端提示换成"等它跑完"，留痕也不覆盖权威文件（否则 gen:facts 的
+   * 真源会被打成 `_未测` → check:facts 假红，2026-11-15 实测过）。
+   */
+  let envBusy = null
+  if (failed && !emptyOutput && !logMissing) {
+    try {
+      envBusy = detectEnvBusy(readFileSync(logFile, 'utf8'))
+    } catch {
+      envBusy = null
+    }
+  }
   results.push({
     no,
     name,
@@ -302,10 +388,27 @@ for (let i = 0; i < STEPS.length; i++) {
     seconds: secs,
     logFile,
     ...(emptyOutput ? { emptyOutput: true } : {}),
+    ...(logMissing ? { logMissing: true } : {}),
+    ...(envBusy ? { envBusy } : {}),
+    // 日志写不进去 ≠ 本步失败：如实记下"留痕缺失"，别让它把整链判红（#517）
+    ...(streamError ? { logWriteFailed: String(streamError?.code ?? streamError?.message ?? streamError) } : {}),
   })
   if (failed) {
     brokenAt = no
-    if (emptyOutput) {
+    if (envBusy) {
+      console.error(`\n⏸  第 ${no} 步「${name}」—— **环境忙，不是用例失败**`)
+      console.error(`   占用者：pid=${envBusy.pid ?? '未知'}（${envBusy.detail.slice(0, 100)}）`)
+      console.error(ENV_BUSY_HINT)
+      brokenByEnv = true
+      brokenByEnvReason = 'env-busy'
+    } else if (logMissing) {
+      console.error(`\n✖ 第 ${no} 步「${name}」**日志文件不存在**（${logFile}）`)
+      console.error('   常见成因：另一个整链/快链进程正在跑 —— 它启动时会清空日志目录，')
+      console.error('   于是本步的日志被清掉（exit=0 与 stdout 都正常，只有留痕没了）。')
+      console.error(`   手动复跑：${cmd}`)
+      brokenByEnv = true
+      brokenByEnvReason = 'log-missing'
+    } else if (emptyOutput) {
       console.error(`\n✖ 第 ${no} 步「${name}」exit=0 但**日志为空** —— 视为未真正执行`)
       console.error('   一个"通过了但什么也没说"的闸口等于没有这一步。')
       console.error(`   手动复跑：${cmd}`)
@@ -337,16 +440,38 @@ const stamp = {
   passed: results.filter((r) => r.status === 'pass').length,
   failed: failed.length,
   failedStep: brokenAt,
+  ...(brokenByEnv ? { envBusy: true, envBusyReason: brokenByEnvReason } : {}),
   notExecuted: notRun,
   results,
 }
-writeFileSync(
-  // 快链与整链分文件留痕：否则跑一次快链就把 quality-check-latest.json（整链的权威证据）
-  // 覆盖成 6/23 的半份，读的人会以为整链没跑完。
-  quick ? 'reports/quick-check-latest.json' : 'reports/quality-check-latest.json',
-  JSON.stringify(stamp, null, 2),
-  'utf8',
-)
+/**
+ * 留痕落盘（#514 / #517 / #518）。
+ *
+ * - 快链 / 整链分文件（历史口径，别混）；
+ * - **环境类失败**另写 BUSY_REPORT_PATH，不覆盖权威留痕：权威留痕是 `gen:facts` 的真源，
+ *   把它写成"第 39 步失败"会让「单测文件数/用例数」退化成 `_未测`，正文数字随即与真源
+ *   不一致 → `check:facts` 假红（2026-11-15 实测）；
+ * - **部分运行**（`--only` / `--skip` / `--from`）也另写文件（#518）：这类跑法只执行几步，
+ *   覆盖权威留痕等于把"整链 55/55"降级成"1/55 通过" —— 实测发生过一次
+ *   （`--only=typecheck` 把 `quality-check-latest.json` 写成 `passed: 1 / 55`，
+ *   于是 `gen:facts` 读不到用例数、`check:facts` 报"真源未测"）。
+ *   分文件的语义与快链分文件完全一样：**只有一次完整的整链运行才配写权威留痕**。
+ */
+const isPartialRun = from > 1 || Boolean(skip) || Boolean(only)
+const reportPath = brokenByEnv
+  ? BUSY_REPORT_PATH
+  : quick
+    ? 'reports/quick-check-latest.json'
+    : isPartialRun
+      ? 'reports/quality-check-partial.json'
+      : 'reports/quality-check-latest.json'
+try {
+  writeFileSync(reportPath, JSON.stringify(stamp, null, 2), 'utf8')
+} catch (err) {
+  // 留痕写不进去也必须说清楚（#517）：静默失败会让人以为"这一轮没跑"
+  console.error(`\n✖ 留痕写入失败（${reportPath}）：${err?.code ?? err?.message ?? err}`)
+  console.error('   本轮结果只在终端里，权威留痕仍是上一次成功的那份。')
+}
 
 console.log('─'.repeat(72))
 console.log(
@@ -356,7 +481,9 @@ if (failed.length) console.log(`失败点：第 ${failed[0].no} 步「${failed[0
 else if (notRun.length) console.log(`未执行 ${notRun.length} 步（--only/--skip/--from 生效时属预期）`)
 if (brokenAt) console.log(`（断链位置已写入留痕的 failedStep 字段；该步完整输出见上行的 logFile）`)
 console.log(
-  `留痕：${quick ? 'reports/quick-check-latest.json' : 'reports/quality-check-latest.json'}（HEAD=${head.slice(0, 7)}）`,
+  `留痕：${reportPath}（HEAD=${head.slice(0, 7)}）${brokenByEnv ? '【环境类失败，未覆盖权威留痕】' : isPartialRun ? '【部分运行，未覆盖权威留痕】' : ''}`,
 )
 console.log(`逐步日志：${LOG_DIR}/（每步一个 .log，失败时可直接回看，不再随终端滚掉）`)
-process.exit(failed.length ? 1 : 0)
+releaseOnce()
+// 环境忙用 exit 3 与"真失败"（1）区分：调用方/CI 能据此不重试整链、只等占用者退出
+process.exit(brokenByEnv ? 3 : failed.length ? 1 : 0)

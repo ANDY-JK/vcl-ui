@@ -48,7 +48,6 @@ export default defineConfig({
           { text: '与主流库对照', link: '/guide/comparison' },
           { text: '术语表', link: '/guide/glossary' },
           { text: '事实清单（自动生成）', link: '/guide/facts' },
-          { text: '审查报告导读（自动生成）', link: '/guide/audit' },
           { text: '可观测信号（自动生成）', link: '/guide/observability' },
         ],
       },

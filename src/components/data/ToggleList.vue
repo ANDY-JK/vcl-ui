@@ -116,7 +116,7 @@ function onRowSpace(e: KeyboardEvent, item: Parameters<typeof onItemClick>[1]) {
         注意：切到 checkbox 未选中态由尾部开关独立处理——axe 会报
         nested-interactive（button 内嵌可聚焦 checkbox）。解除办法是拆掉嵌套
         （行改 group + 复选框独立），但那要改 Enter 契约并动 demo/单测，
-        已登记为取舍项（见 docs/全量审查报告-2026-09-20.md Q12）。
+        已登记为取舍项（见 docs/tech-debt.md 的 a11y 条目）。
       -->
       <div
         v-for="item in items"

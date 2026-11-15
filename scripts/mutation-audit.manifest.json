@@ -565,33 +565,6 @@
       "note": "变异后：链里的死链不报（删了脚本留死链）（#335）"
     },
     {
-      "id": "review-appendix-gate-cols",
-      "file": "scripts/check-review-appendix.mjs",
-      "find": "  const bad = rows.filter((l) => cols(l) !== 5)",
-      "replace": "  const bad = rows.filter((l) => false)",
-      "cmd": "npx vitest run tests/unit/review-appendix-gate.spec.ts --no-coverage",
-      "expect": "red",
-      "note": "变异后：列数错（未转义竖线）不再报，附录解析全错也没人知道（#334）"
-    },
-    {
-      "id": "review-appendix-gate-numbering",
-      "file": "scripts/check-review-appendix.mjs",
-      "find": "  if (bad.length || miss.length) failed = true",
-      "replace": "  if (bad.length) failed = true",
-      "cmd": "npx vitest run tests/unit/review-appendix-gate.spec.ts --no-coverage",
-      "expect": "red",
-      "note": "变异后：编号断档不报，某轮留痕没入册也无人知晓（#334）"
-    },
-    {
-      "id": "review-appendix-gate-parity",
-      "file": "scripts/check-review-appendix.mjs",
-      "find": "if (new Set(counts).size > 1) {",
-      "replace": "if (false) {",
-      "cmd": "npx vitest run tests/unit/review-appendix-gate.spec.ts --no-coverage",
-      "expect": "red",
-      "note": "变异后：多份文档行数不一致不报（真源与成稿脱节）（#334）"
-    },
-    {
       "id": "css-breakpoints-gate-allowlist",
       "file": "scripts/check-css-breakpoints.mjs",
       "find": "const ALLOWED = new Set([480, 640, 767, 1023])",
@@ -2050,15 +2023,6 @@
       "note": "断言落在 Promise 本体（TD-88 的恒真值假绿）→ check:async-assert 当场 exit 1"
     },
     {
-      "id": "tech-debt-rounds-metric-broken",
-      "file": "scripts/check-tech-debt.mjs",
-      "find": "const rowsAtHead = countAppendixRows(existsSync(APPENDIX) ? readFileSync(APPENDIX, 'utf8') : '')",
-      "replace": "const rowsAtHead = 0",
-      "cmd": "npx vitest run tests/unit/tech-debt-gate.spec.ts --no-coverage",
-      "expect": "red",
-      "note": "轮次口径被短路（head 恒 0）→ 行数倒挂分支硬报「审查报告行数倒挂」并退 1（#441）"
-    },
-    {
       "id": "e2e-print-media-immediate-read",
       "file": "tests/e2e/print-media.spec.ts",
       "find": "      .poll(() => css(page, ':root', '--vcl-scale'), { message: '打印介质切换后 --vcl-scale 应归位', timeout: 10_000 })",
@@ -2093,15 +2057,6 @@
       "cmd": "npx vitest run tests/unit/coverage-ranking.spec.ts --no-coverage",
       "expect": "red",
       "note": "覆盖率排行改回原始语句口径 → 模板行又把测全的组件排到榜尾（TD-67 复活），静态接线判据当场红"
-    },
-    {
-      "id": "review-history-banner-removed",
-      "file": "docs/全量审查报告-2026-09-24.md",
-      "find": "历史快照（非当前事实）",
-      "replace": "旧快照（非当前事实）",
-      "cmd": "npx vitest run tests/unit/review-history.spec.ts --no-coverage",
-      "expect": "red",
-      "note": "历史报告摘掉过期横幅 → check:review-history 点名该报告（TD-08 复活）"
     },
     {
       "id": "canwrite-inline-reimplementation",
