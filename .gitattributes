@@ -18,3 +18,12 @@
 *.pdf binary
 *.mp4 binary
 *.wasm binary
+
+# vendored 第三方载荷必须按**字节原样**保存：换行符转换会改 sha256，
+# 而 check:vendor-data 正是拿 sha256 与上游核对"这份代码没被改过"。
+# 2026-11-15 实测：pinyin-pro/index.js 仓库内是 CRLF（563,928 B），CI 的 Linux 检出
+# 被上面的 `* text=auto eol=lf` 转成 LF（538,723 B）→ sha256 不符 → CI 红，
+# 而本地（Windows）永远是绿的 —— 这类"只有跨平台才暴露"的差异必须在属性层钉死。
+src/components/_internal/pinyin-pro/** -text
+src/components/_internal/xlsx/** -text
+src/components/_internal/zxing-wasm/** -text
